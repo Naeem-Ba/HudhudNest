@@ -1,0 +1,71 @@
+<h2>Wohnung Details</h2>
+
+  <div class="wohnung-detail-container">
+  <h2>{{ wohnung?.titel }}</h2>
+
+  <div class="wohnung-info">
+    <p><strong>Ort:</strong>
+      {{ wohnung?.stadt }} {{ wohnung?.plz }}
+    </p>
+
+    <p><strong>Adresse:</strong>
+      {{ wohnung?.adresse || '—' }}
+    </p>
+
+    <p><strong>Größe:</strong>
+      {{ wohnung?.flaeche ? (wohnung?.flaeche + ' m²') : '—' }}
+    </p>
+
+    <p><strong>Zimmer:</strong>
+      {{ wohnung?.zimmer || '—' }}
+    </p>
+
+    <p><strong>Etage:</strong>
+      {{ wohnung?.geschoss || '—' }}
+    </p>
+
+    <p><strong>Preis:</strong>
+      {{ wohnung?.kaufpreis || wohnung?.warmmiete || wohnung?.kaltmiete
+        | currency:'EUR':'symbol' }}
+    </p>
+
+    <p><strong>Nebenkosten:</strong>
+      {{ wohnung?.nebenkosten ? (wohnung?.nebenkosten | currency:'EUR':'symbol') : '—' }}
+    </p>
+
+    <p><strong>Kaution:</strong>
+      {{ wohnung?.kaution ? (wohnung?.kaution | currency:'EUR':'symbol') : '—' }}
+    </p>
+
+    <p><strong>Frei ab:</strong>
+      {{ wohnung?.freiAb ? (wohnung?.freiAb | date:'dd.MM.yyyy') : '—' }}
+    </p>
+  </div>
+
+  <div class="extras">
+    <p><strong>Ausstattung:</strong></p>
+    <ul>
+      <li *ngIf="wohnung?.balkon">Balkon</li>
+      <li *ngIf="wohnung?.aufzug">Aufzug</li>
+      <li *ngIf="wohnung?.stellplatz">Stellplatz</li>
+      <li *ngIf="wohnung?.amenities?.length">
+      <ng-container *ngFor="let a of wohnung?.amenities; let last = last">
+      {{ a.name }}<span *ngIf="!last">, </span>
+     </ng-container>
+     </li>
+    </ul>
+  </div>
+
+  <div *ngIf="wohnung?.bilder?.length" class="bilder-section">
+    <h3>Bilder</h3>
+    <img *ngFor="let bild of wohnung?.bilder"
+         [src]="bild.url"
+         [alt]="wohnung?.titel"
+         [class.main]="bild.isMain" />
+  </div>
+
+  <button routerLink="/wohnungen" class="back-btn">⬅ Zurück zur Übersicht</button>
+</div>
+
+
+<a routerLink="/">Zurück zur Übersicht</a>

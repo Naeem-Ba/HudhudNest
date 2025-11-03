@@ -1,0 +1,28 @@
+.container {
+  max-width: 700px;
+  margin: 20px auto;
+  padding: 15px;
+  font-family: Arial, sans-serif;
+  background-color: #fafafa;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
+
+.details p {
+  margin: 5px 0;
+}
+
+.back-btn {
+  margin-top: 20px;
+  padding: 10px 15px;
+  background-color: #264653;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.back-btn:hover {
+  background-color: #1b3a48;
+}
