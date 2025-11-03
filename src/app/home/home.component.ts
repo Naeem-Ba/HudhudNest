@@ -8,4 +8,4 @@ import { Component } from '@angular/core';
     <p>Hier kannst du Wohnungen zum Mieten oder Kaufen finden.</p>
   `
 })
-export class Home {}
+export class HomeComponent {}

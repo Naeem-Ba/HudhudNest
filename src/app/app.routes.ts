@@ -1,16 +1,15 @@
-import { Routes, provideRouter } from '@angular/router';
-import { Home } from './home/home';
-import { Wohnungen } from './wohnungen/wohnungen';
-import { WohnungDetail } from './wohnungen/wohnung-detail';
-import { Login } from './login/login';
+import { Routes } from '@angular/router';
+import { HomeComponent } from './home/home.component';
+import { WohnungenComponent } from './wohnungen/wohnungen.component';
+import { WohnungDetailComponent } from './wohnung-detail/wohnung-detail.component';
+import { LoginComponent } from './login/login.component';
 
 export const routes: Routes = [
-  { path: '', component: Home },
-  { path: 'wohnungen', component: Wohnungen },
-  { path: 'wohnungen/:id', component: WohnungDetail },
-  { path: 'login', component: Login },
+  { path: '', component: HomeComponent },
+  { path: 'wohnungen', component: WohnungenComponent },
+  { path: 'wohnungen/:id', component: WohnungDetailComponent },
+  { path: 'login', component: LoginComponent },
   { path: '**', redirectTo: '' }
 ];
-export const appConfig = {
-  providers: [provideRouter(routes)]
-};
+
+

@@ -1,0 +1,35 @@
+<h2>Login</h2>
+
+<form (ngSubmit)="onLogin()" #loginForm="ngForm">
+  <label for="email">E-Mail:</label>
+  <input type="email" id="email" name="email" [(ngModel)]="loginData.email" required />
+
+  <label for="password">Passwort:</label>
+  <input type="password" id="password" name="password" [(ngModel)]="loginData.password" required />
+
+  <button type="submit" [disabled]="loginForm.invalid">Einloggen</button>
+</form>
+
+<hr />
+
+<!-- زر التسجيل لأول مرة -->
+<p>Noch kein Konto?</p>
+<button (click)="toggleRegister()">Registrieren</button>
+
+<!-- نموذج التسجيل (يظهر عند الضغط على الزر) -->
+<div *ngIf="showRegister" class="register-form">
+  <h3>Registrierung</h3>
+
+  <form (ngSubmit)="onRegister()" #registerForm="ngForm">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" [(ngModel)]="registerData.name" required />
+
+    <label for="emailReg">E-Mail:</label>
+    <input type="email" id="emailReg" name="emailReg" [(ngModel)]="registerData.email" required />
+
+    <label for="passReg">Passwort:</label>
+    <input type="password" id="passReg" name="passReg" [(ngModel)]="registerData.password" required />
+
+    <button type="submit" [disabled]="registerForm.invalid">Registrieren</button>
+  </form>
+</div>

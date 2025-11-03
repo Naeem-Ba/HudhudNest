@@ -2,16 +2,16 @@ import { Component, OnInit  } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { WohnungenService, Wohnung } from '../wohnungenservice';
+import { WohnungenService, Wohnung } from '../services/wohnungenservice';
 
 @Component({
   selector: 'app-wohnung-detail',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './wohnung-detail.html',
+  templateUrl: './wohnung-detail.component.html',
 
 })
-export class WohnungDetail implements OnInit {
+export class WohnungDetailComponent implements OnInit {
   wohnung?: Wohnung;
 
   constructor(
