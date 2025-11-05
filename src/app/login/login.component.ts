@@ -1,30 +1,50 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { RouterLink } from '@angular/router';
+import { BenutzerService, Benutzer } from '../services/benutzer.service';
+
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink], 
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.component.html'
 })
 export class LoginComponent {
-  loginData = { email: '', password: '' };
-  registerData = { name: '', email: '', password: '' };
+  loginData: Benutzer = { Email: '', PasswordHash: '' };
+  registerData: Benutzer = { Name: '', Email: '', PasswordHash: '' };
   showRegister = false;
+  message = '';
+
+  constructor(private benutzerService: BenutzerService) {}
 
   onLogin() {
-    console.log('Login:', this.loginData);
-    // هنا يمكنك استدعاء API لتسجيل الدخول
+    this.benutzerService.login(this.loginData).subscribe({
+      next: (user) => {
+        this.message = `Willkommen, ${user.Name || user.Email}!`;
+        localStorage.setItem('loggedUser', JSON.stringify(user));
+      },
+      error: (err) => {
+        this.message = 'Falsche E-Mail oder Passwort.';
+        console.error(err);
+      }
+    });
+  }
+
+  onRegister() {
+    this.benutzerService.register(this.registerData).subscribe({
+      next: (user) => {
+        this.message = 'Registrierung erfolgreich! Du kannst dich jetzt einloggen.';
+        this.showRegister = false;
+      },
+      error: (err) => {
+        this.message = 'Fehler bei der Registrierung.';
+        console.error(err);
+      }
+    });
   }
 
   toggleRegister() {
     this.showRegister = !this.showRegister;
-  }
-
-  onRegister() {
-    console.log('Register:', this.registerData);
-    // هنا يمكنك استدعاء API لتسجيل المستخدم الجديد
+    this.message = '';
   }
 }

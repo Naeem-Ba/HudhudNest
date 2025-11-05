@@ -1,14 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { WohnungenService, Wohnung } from '../services/wohnungenservice';
+import { WohnungenService, Wohnung } from '../services/wohnungen.service';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-wohnungen',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './wohnungen.component.html',
 })
 export class WohnungenComponent implements OnInit {
