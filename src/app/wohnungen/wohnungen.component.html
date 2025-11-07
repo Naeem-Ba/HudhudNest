@@ -2,37 +2,37 @@
   <h2>Verfügbare Wohnungen</h2>
 
   <div *ngFor="let w of wohnungen" class="wohnung-card">
-    <h3>{{ w.titel }}</h3>
+    <h3>{{ w.Titel }}</h3>
 
-    <p *ngIf="w.ownerId"><strong>Owner ID:</strong> {{ w.ownerId }}</p>
+    <p *ngIf="w.OwnerId"><strong>Owner ID:</strong> {{ w.OwnerId }}</p>
 
     <p><strong>Ort:</strong>
-      {{ w.stadt || '—' }} {{ w.plz || '—' }}
+      {{ w.Stadt || '—' }} {{ w.PLZ || '—' }}
     </p>
 
     <p><strong>Größe:</strong>
-      {{ w.flaeche ? (w.flaeche + ' m²') : '—' }}
+      {{ w.Flaeche ? (w.Flaeche + ' m²') : '—' }}
     </p>
 
     <p><strong>Preis:</strong>
       <span class="preis">
-        {{ w.kaufpreis || w.warmmiete || w.kaltmiete | currency:'EUR':'symbol' }}
+        {{ w.Kaufpreis || w.Warmmiete || w.Kaltmiete | currency:'EUR':'symbol' }}
       </span>
     </p>
 
-    <div *ngIf="w.bilder?.length">
+    <div *ngIf="w.Bilder?.length">
       <strong>Bilder:</strong>
-      <div *ngFor="let b of w.bilder" class="wohnung-bild">
-        <img [src]="b.url" [alt]="b.altText || 'Bild'" [class.main]="b.isMain">
+      <div *ngFor="let b of w.Bilder" class="wohnung-bild">
+        <img [src]="b.Url" [alt]="b.AltText || 'Bild'" [class.main]="b.IsMain">
       </div>
     </div>
 
-    <div *ngIf="w.amenities?.length">
+    <div *ngIf="w.Amenities?.length">
       <strong>Amenities:</strong>
-      <span *ngFor="let a of w.amenities">{{ a.name }} </span>
+      <span *ngFor="let a of w.Amenities">{{ a.AmenityId }} </span>
     </div>
     <button class="details-btn"
-            (click)="gotoDetails(w.id)">
+            (click)="gotoDetails(w.Id)">
       Details ansehen
     </button>
   </div>

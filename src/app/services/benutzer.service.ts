@@ -20,11 +20,12 @@ export class BenutzerService {
   constructor(private http: HttpClient) {}
 
   register(data: Benutzer): Observable<Benutzer> {
+    console.log('Daten gesendet an Backend:', data);
+    
     return this.http.post<Benutzer>(this.apiUrl, data).pipe(
       catchError(err => {
         console.error('Fehler bei der Registrierung:', err);
         return throwError(() => err);
-        console.log('Daten gesendet an Backend:', data);
       })
     );
   }

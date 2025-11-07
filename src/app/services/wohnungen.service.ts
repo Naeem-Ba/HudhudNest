@@ -3,29 +3,29 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface Wohnung {
-  id: number;
-  titel: string;
-  beschreibung?: string;
-  adresse?: string;
-  stadt?: string;
-  plz?: string;
-  zumMieten: boolean;
-  zumKaufen: boolean;
-  kaltmiete?: number;
-  warmmiete?: number;
-  kaufpreis?: number;
-  nebenkosten?: number;
-  kaution?: number;
-  zimmer?: number;
-  flaeche?: number;
-  geschoss?: number;
-  freiAb?: string; // ISO date
-  balkon?: boolean;
-  aufzug?: boolean;
-  stellplatz?: boolean;
-  bilder?: { id: number; url: string; isMain: boolean ; altText?: string;}[];
-  amenities?: { id: number; name: string }[];
-  ownerId?: number;
+  Id: number;
+  Titel: string;
+  Beschreibung: string;
+  Adresse: string;
+  Stadt: string;
+  PLZ: string;
+  ZumMieten: boolean;
+  ZumKaufen: boolean;
+  Kaltmiete?: number;
+  Warmmiete?: number;
+  Kaufpreis?: number;
+  Nebenkosten?: number;
+  Kaution?: number;
+  Zimmer?: number;
+  Flaeche?: number;
+  Geschoss?: number;
+  FreiAb?: string; // ISO date
+  Balkon?: boolean;
+  Aufzug?: boolean;
+  Stellplatz?: boolean;
+  Bilder?: { Id: number; Url: string; IsMain: boolean ; AltText?: string;}[];
+  Amenities?: { Id: number; AmenityId: number }[];
+  OwnerId?: number;
 }
 
 @Injectable({

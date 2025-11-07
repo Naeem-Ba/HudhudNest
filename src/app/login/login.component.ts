@@ -18,10 +18,13 @@ export class LoginComponent {
   constructor(private benutzerService: BenutzerService) {}
 
   onLogin() {
+    console.log('Registrierungsdaten:', this.registerData);
     this.benutzerService.login(this.loginData).subscribe({
       next: (user) => {
         this.message = `Willkommen, ${user.Name || user.Email}!`;
         localStorage.setItem('loggedUser', JSON.stringify(user));
+        this.showRegister = false;
+      console.log('Registrierung erfolgreich:', user);
       },
       error: (err) => {
         this.message = 'Falsche E-Mail oder Passwort.';
