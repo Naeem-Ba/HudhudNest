@@ -1,0 +1,22 @@
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+nav a,
+nav button {
+  margin-right: 10px;
+  text-decoration: none;
+}
+.active {
+  font-weight: bold;
+}
+button {
+  background: none;
+  border: none;
+  color: blue;
+  cursor: pointer;
+}
+button:hover {
+  text-decoration: underline;
+}

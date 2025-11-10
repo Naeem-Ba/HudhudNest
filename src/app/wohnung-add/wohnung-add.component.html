@@ -1,1 +1,30 @@
-<p>wohnung-add works!</p>
+<h2>Neue Wohnung hinzufügen</h2>
+
+<form (ngSubmit)="onSubmit()" #form="ngForm">
+  <label>Titel:</label><br />
+  <input type="text" name="Titel" [(ngModel)]="wohnung.Titel" required /><br /><br />
+
+  <label>Beschreibung:</label><br />
+  <textarea name="Bschreibung" [(ngModel)]="wohnung.Beschreibung"></textarea><br /><br />
+
+  <label>Adresse:</label><br />
+  <input type="text" name="Adresse" [(ngModel)]="wohnung.Adresse" /><br /><br />
+
+  <label>Zum Mieten (€):</label><br />
+  <input type="checkbox" name="ZumMieten" [(ngModel)]="wohnung.ZumMieten" /><br /><br />
+
+  <label>Kaltmiete (€):</label><br />
+  <input type="number" name="Kaltmiete" [(ngModel)]="wohnung.Kaltmiete" /><br /><br />
+
+  <label>Kaution (€):</label><br />
+  <input type="number" name="Kaution" [(ngModel)]="wohnung.Kaution" /><br /><br />
+
+  <label>Zimmer:</label><br />
+  <input type="number" name="Zimmer" [(ngModel)]="wohnung.Zimmer" /><br /><br />
+
+  <label>Flaeche m²:</label><br />
+  <input type="number" name="Flaeche" [(ngModel)]="wohnung.Flaeche" /><br /><br />
+
+
+  <button type="submit" [disabled]="!form.valid">Speichern</button>
+</form>

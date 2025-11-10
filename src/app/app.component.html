@@ -1,10 +1,19 @@
 <header>
   <h1>WohnungsApp</h1>
-  <nav>
-    <a routerLink="/">Startseite</a>
-    <a routerLink="/wohnungen">Wohnungen</a>
-    <a routerLink="/login">Login</a>
-  </nav>
+<nav>
+  <a routerLink="" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Start</a> |
+  <a routerLink="wohnungen" routerLinkActive="active">Wohnungen</a> |
+  <a *ngIf="showAddButton && (isLoggedIn$ | async)" routerLink="wohnung-add" routerLinkActive="active">
+  ➕ Neue Wohnung hinzufügen
+</a> |
+  <ng-container *ngIf="!isLoggedIn">
+    <a routerLink="login" routerLinkActive="active">Login</a> |
+  </ng-container>
+  <ng-container *ngIf="isLoggedIn">
+    <button (click)="onLogout()">Abmelden</button>
+  </ng-container>
+
+</nav>
 </header>
 
 <main>

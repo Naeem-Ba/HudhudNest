@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { BenutzerService, Benutzer } from '../services/benutzer.service';
+import { AuthService} from '../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -15,22 +17,23 @@ export class LoginComponent {
   showRegister = false;
   message = '';
 
-  constructor(private benutzerService: BenutzerService) {}
+  constructor(private benutzerService: BenutzerService, private router: Router,private authService: AuthService) {}
 
   onLogin() {
-    console.log('Registrierungsdaten:', this.registerData);
-    this.benutzerService.login(this.loginData).subscribe({
-      next: (user) => {
-        this.message = `Willkommen, ${user.Name || user.Email}!`;
-        localStorage.setItem('loggedUser', JSON.stringify(user));
-        this.showRegister = false;
-      console.log('Registrierung erfolgreich:', user);
-      },
-      error: (err) => {
-        this.message = 'Falsche E-Mail oder Passwort.';
-        console.error(err);
-      }
-    });
+  this.benutzerService.login(this.loginData).subscribe({
+    next: (user) => {
+      this.message = 'Login erfolgreich!';
+      localStorage.setItem('loggedUser', JSON.stringify(user));
+
+      // 🔥 بعد نجاح تسجيل الدخول
+      this.authService.login(user);
+      this.router.navigate(['/home']);
+    },
+    error: (err) => {
+      this.message = 'Fehler beim Login.';
+      console.error('Fehler beim Login:', err);
+    }
+  });
   }
 
   onRegister() {

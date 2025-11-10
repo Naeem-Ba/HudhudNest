@@ -15,14 +15,14 @@ export interface Benutzer {
 })
 export class BenutzerService {
 
-  private apiUrl = 'https://localhost:7136/api/Benutzer';
+  private apiUrl = 'https://localhost:7136/api/Benutzer/';
 
   constructor(private http: HttpClient) {}
 
   register(data: Benutzer): Observable<Benutzer> {
     console.log('Daten gesendet an Backend:', data);
     
-    return this.http.post<Benutzer>(this.apiUrl, data).pipe(
+    return this.http.post<Benutzer>(`${this.apiUrl}register`, data).pipe(
       catchError(err => {
         console.error('Fehler bei der Registrierung:', err);
         return throwError(() => err);
@@ -32,9 +32,10 @@ export class BenutzerService {
 
   // تسجيل الدخول
   login(data: Benutzer): Observable<Benutzer> {
-    return this.http.post<Benutzer>(`${this.apiUrl}/login`, data).pipe(
+    return this.http.post<Benutzer>(`${this.apiUrl}login`, data).pipe(
       map(user => {
         if (!user) throw new Error('Ungültige Anmeldedaten');
+        localStorage.setItem('loggedUser', JSON.stringify(user));
         return user;
       }),
       catchError(err => {
@@ -43,9 +44,10 @@ export class BenutzerService {
       })
     );
   }
+  logout() {
+  localStorage.removeItem('loggedUser');
+  console.log('Benutzer wurde abgemeldet.');
+}
 
-  // جلب جميع المستخدمين
-  getAll(): Observable<Benutzer[]> {
-    return this.http.get<Benutzer[]>(this.apiUrl);
-  }
+
 }

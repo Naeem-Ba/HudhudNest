@@ -1,44 +1,44 @@
 <h2>Wohnung Details</h2>
 
-  <div class="wohnung-detail-container">
-  <h2>{{ wohnung?.Titel }}</h2>
+  <div *ngIf="wohnung as w" class="wohnung-detail-container">
+  <h2>{{ wohnung.Titel }}</h2>
 
   <div class="wohnung-info">
     <p><strong>Ort:</strong>
-      {{ wohnung?.Stadt }} {{ wohnung?.PLZ }}
+      {{ wohnung.Stadt }} {{ wohnung.PLZ }}
     </p>
 
     <p><strong>Adresse:</strong>
-      {{ wohnung?.Adresse || '—' }}
+      {{ wohnung.Adresse || '—' }}
     </p>
 
     <p><strong>Größe:</strong>
-      {{ wohnung?.Flaeche ? (wohnung?.Flaeche + ' m²') : '—' }}
+      {{ wohnung.Flaeche ? (wohnung.Flaeche + ' m²') : '—' }}
     </p>
 
     <p><strong>Zimmer:</strong>
-      {{ wohnung?.Zimmer || '—' }}
+      {{ wohnung.Zimmer || '—' }}
     </p>
 
     <p><strong>Etage:</strong>
-      {{ wohnung?.Geschoss || '—' }}
+      {{ wohnung.Geschoss || '—' }}
     </p>
 
     <p><strong>Preis:</strong>
-      {{ wohnung?.Kaufpreis || wohnung?.Warmmiete || wohnung?.Kaltmiete
+      {{ wohnung.Kaufpreis || wohnung.Warmmiete || wohnung.Kaltmiete
         | currency:'EUR':'symbol' }}
     </p>
 
     <p><strong>Nebenkosten:</strong>
-      {{ wohnung?.Nebenkosten ? (wohnung?.Nebenkosten | currency:'EUR':'symbol') : '—' }}
+      {{ wohnung.Nebenkosten ? (wohnung.Nebenkosten | currency:'EUR':'symbol') : '—' }}
     </p>
 
     <p><strong>Kaution:</strong>
-      {{ wohnung?.Kaution ? (wohnung?.Kaution | currency:'EUR':'symbol') : '—' }}
+      {{ wohnung.Kaution ? (wohnung.Kaution | currency:'EUR':'symbol') : '—' }}
     </p>
 
     <p><strong>Frei ab:</strong>
-      {{ wohnung?.FreiAb ? (wohnung?.FreiAb | date:'dd.MM.yyyy') : '—' }}
+      {{ wohnung.FreiAb ? (wohnung.FreiAb | date:'dd.MM.yyyy') : '—' }}
     </p>
   </div>
 

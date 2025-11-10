@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { WohnungenService, Wohnung } from '../services/wohnungen.service';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../services/auth.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-wohnungen',
@@ -12,15 +14,19 @@ import { FormsModule } from '@angular/forms';
 })
 export class WohnungenComponent implements OnInit {
   wohnungen: Wohnung[] = [];
-
-  constructor(private wohnungenService: WohnungenService, private router: Router) {}
+  isLoggedIn$!: Observable<boolean>;
+  constructor(
+    private wohnungenService: WohnungenService,
+    private router: Router,
+    private authService: AuthService
+  ) { this.isLoggedIn$ = this.authService.isLoggedIn$;}
 
   ngOnInit(): void {
-    this.wohnungenService.getWohnungen().subscribe(data => {
-      this.wohnungen = data;
-    });
-    
-  }
+  this.wohnungenService.getWohnungen().subscribe(data => {
+    this.wohnungen = data;  // تأكد أن القائمة تتحدث بعد إضافة شقة جديدة
+  });
+}
+
   gotoDetails(id: number) {
     // Navigiert zu einer Detail-Seite, z.B. /wohnungen/1
     this.router.navigate(['/wohnungen', id]);

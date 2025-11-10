@@ -3,14 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface Wohnung {
-  Id: number;
+  Id?: number;
   Titel: string;
   Beschreibung: string;
   Adresse: string;
-  Stadt: string;
-  PLZ: string;
+  Stadt?: string;
+  PLZ?: string;
   ZumMieten: boolean;
-  ZumKaufen: boolean;
+  ZumKaufen?: boolean;
   Kaltmiete?: number;
   Warmmiete?: number;
   Kaufpreis?: number;
@@ -39,8 +39,12 @@ export class WohnungenService {
   getWohnungen(): Observable<Wohnung[]> {
     return this.http.get<Wohnung[]>(this.apiUrl);
   }
-
   getWohnung(id: number): Observable<Wohnung> {
-    return this.http.get<Wohnung>(`${this.apiUrl}/${id}`);
+    const url = `${this.apiUrl}/${id}`;
+    return this.http.get<Wohnung>(url);
+  }
+
+   addWohnung(wohnung: Wohnung): Observable<Wohnung> {
+    return this.http.post<Wohnung>(this.apiUrl, wohnung);
   }
 }
