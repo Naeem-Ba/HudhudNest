@@ -9,8 +9,6 @@ export class AuthService {
   constructor() {
     // عند تشغيل التطبيق، تحقق إن كان هناك مستخدم فعلي (token صالح)
     this.loggedIn.next(this.isLoggedIn());
-    const isAuth = this.isLoggedIn();
-    this.loggedIn.next(isAuth);
   }
 
   isLoggedIn(): boolean {
