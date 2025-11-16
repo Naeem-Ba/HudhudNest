@@ -22,8 +22,15 @@ export class WohnungenComponent implements OnInit {
   ) { this.isLoggedIn$ = this.authService.isLoggedIn$;}
 
   ngOnInit(): void {
+   // تحميل الشقق من السيرفر أول مرة
   this.wohnungenService.getWohnungen().subscribe(data => {
-    this.wohnungen = data;  // تأكد أن القائمة تتحدث بعد إضافة شقة جديدة
+    console.log('📦 Wohnungen vom Server:', data);
+    this.wohnungen = data;
+  });
+
+  // 🔁 عند إضافة شقة جديدة، تُضاف محليًا مباشرة
+  this.wohnungenService.wohnungAdded$.subscribe(neueWohnung => {
+    this.wohnungen.push(neueWohnung);
   });
 }
 

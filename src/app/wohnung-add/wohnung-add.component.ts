@@ -11,11 +11,12 @@ import { WohnungenComponent } from '../wohnungen/wohnungen.component';
   templateUrl: './wohnung-add.component.html'
 })
 export class WohnungAddComponent {
+  selectedFile: File | null = null; 
     wohnung = {
     Titel: '',
     Beschreibung: '',
     Adresse: '',
-    ZumMieten: true,
+    ZumMieten: false,
     Kaltmiete:0,
     Kaution:0,
     Zimmer:0,
@@ -23,17 +24,39 @@ export class WohnungAddComponent {
   };
 
   constructor(private router: Router, private wohnungenService: WohnungenService) {}
-
-onSubmit() {
-  console.log('📦 Gesendete Wohnung:', this.wohnung);
+  onFileSelected(event: any) {
+  this.selectedFile = event.target.files[0] ?? null;
+}
+  onSubmit() {
   this.wohnungenService.addWohnung(this.wohnung).subscribe({
-    next: (neu) => {
-      alert('Wohnung wurde hinzugefügt!');
-      this.router.navigate(['/wohnungen']);
+    next: (neuWohnung) => {
+      if (this.selectedFile) {
+        this.wohnungenService.uploadWohnungBild(neuWohnung.Id!, this.selectedFile).subscribe({
+          next: (res) => {
+            alert('Wohnung und Bild wurden gespeichert!');
+            this.router.navigate(['/wohnungen']);
+          },
+          error: (err) => console.error('Fehler beim Hochladen:', err)
+        });
+      } else {
+        alert('Wohnung wurde hinzugefügt!');
+        this.router.navigate(['/wohnungen']);
+      }
     },
-    error: (err) => {
-      console.error('Fehler beim Hinzufügen:', err);
-    }
+    error: (err) => console.error('Fehler beim Hinzufügen:', err)
   });
 }
+
+//onSubmit() {
+//  console.log('📦 Gesendete Wohnung:', this.wohnung);
+//  this.wohnungenService.addWohnung(this.wohnung).subscribe({
+//    next: (res) => {
+//      alert('Wohnung wurde hinzugefügt!');
+//      this.router.navigate(['/wohnungen']);
+//    },
+//    error: (err) => {
+//     console.error('Fehler beim Hinzufügen:', err);
+//    }
+//  });
+//}
 }

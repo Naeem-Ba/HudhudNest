@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable,Subject } from 'rxjs';
 
 export interface Wohnung {
   Id?: number;
@@ -34,6 +34,10 @@ export interface Wohnung {
 export class WohnungenService {
   private apiUrl = 'https://localhost:7136/api/wohnungen'; 
 
+   // 🟢 Subject لإرسال إشعارات عند إضافة شقة جديدة
+  private wohnungAddedSource = new Subject<Wohnung>();
+  wohnungAdded$ = this.wohnungAddedSource.asObservable();
+
   constructor(private http: HttpClient) {}
 
   getWohnungen(): Observable<Wohnung[]> {
@@ -45,6 +49,25 @@ export class WohnungenService {
   }
 
    addWohnung(wohnung: Wohnung): Observable<Wohnung> {
-    return this.http.post<Wohnung>(this.apiUrl, wohnung);
+    return new Observable(observer => {
+      this.http.post<Wohnung>(this.apiUrl, wohnung).subscribe({
+        next: (res) => {
+          // عند نجاح الحفظ، أرسل الإشعار لباقي المكونات
+          this.wohnungAddedSource.next(res);
+          observer.next(res);
+          observer.complete();
+        },
+        error: (err) => observer.error(err)
+      });
+    });
+    
   }
+  uploadWohnungBild(wohnungId: number, file: File) {
+  const formData = new FormData();
+  formData.append('file', file);
+  return this.http.post<{ id: number; url: string }>(
+    `https://localhost:7136/api/wohnungsbild/${wohnungId}`,
+    formData
+  );
+}
 }

@@ -12,9 +12,9 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   {
   path: 'wohnung-add',
+  canActivate: [AuthGuard],
    loadComponent: () => import('./wohnung-add/wohnung-add.component')
     .then(m => m.WohnungAddComponent),
-  canActivate: [AuthGuard]
 },
   { path: '**', redirectTo: 'home' },
 ];

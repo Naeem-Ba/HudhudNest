@@ -25,6 +25,10 @@
   <label>Flaeche m²:</label><br />
   <input type="number" name="Flaeche" [(ngModel)]="wohnung.Flaeche" /><br /><br />
 
+  <label>Bild hochladen:</label>
+  <input type="file" (change)="onFileSelected($event)" /><br /><br />
+
+
 
   <button type="submit" [disabled]="!form.valid">Speichern</button>
 </form>

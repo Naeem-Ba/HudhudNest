@@ -5,8 +5,17 @@
 
   <div *ngFor="let w of wohnungen" class="wohnung-card">
     <h3>{{ w.Titel }}</h3>
+    
+     <div *ngIf="w.Bilder && w.Bilder.length > 0">
+  <img [src]="w.Bilder[0].Url" width="200" />
+</div>
+ />
 
     <p *ngIf="w.OwnerId"><strong>Owner ID:</strong> {{ w.OwnerId }}</p>
+
+     <p><strong>Adresse:</strong>
+      {{ w.Adresse || '—' }}
+    </p>
 
     <p><strong>Ort:</strong>
       {{ w.Stadt || '—' }} {{ w.PLZ || '—' }}
