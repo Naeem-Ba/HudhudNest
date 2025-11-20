@@ -1,19 +1,26 @@
-import { Component, OnInit  } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef  } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { RouterModule } from '@angular/router';
 import { WohnungenService,Wohnung} from '../services/wohnungen.service';
 
 
 @Component({
   selector: 'app-wohnung-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './wohnung-detail.component.html',
 
 })
 export class WohnungDetailComponent implements OnInit {
   wohnung!: Wohnung;
+  
+  currentIndex = 0;
+
+  startX = 0;
+  currentX = 0;
+  isDragging = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -21,13 +28,53 @@ export class WohnungDetailComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // ID aus der URL holen
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.wohnungenService.getWohnung(id).subscribe((data) => {
+    this.wohnungenService.getWohnung(id).subscribe(data => {
       this.wohnung = data;
     });
   }
-  isLast(item: any, array: any[]) {
-  return array.indexOf(item) === array.length - 1;
+  getCurrentImageUrl() {
+  if (!this.wohnung || !this.wohnung.Bilder || this.wohnung.Bilder.length === 0) {
+    return '';
+  }
+  return this.wohnung.Bilder[this.currentIndex].Url;
 }
+
+  prev() {
+    if (this.wohnung?.Bilder && this.currentIndex > 0) {
+      this.currentIndex--;
+    }
+  }
+
+  next() {
+    if (this.wohnung?.Bilder && this.currentIndex < this.wohnung.Bilder.length - 1) {
+      this.currentIndex++;
+    }
+  }
+
+  dragStart(event: any) {
+    this.isDragging = true;
+    this.startX = event.type.includes('mouse')
+      ? event.pageX
+      : event.touches[0].clientX;
+  }
+
+  dragMove(event: any) {
+    if (!this.isDragging) return;
+
+    this.currentX = event.type.includes('mouse')
+      ? event.pageX
+      : event.touches[0].clientX;
+  }
+
+  dragEnd() {
+    if (!this.isDragging) return;
+    this.isDragging = false;
+
+    const diff = this.currentX - this.startX;
+
+    if (diff > 70) this.prev();
+    else if (diff < -70) this.next();
+  }
+
 }

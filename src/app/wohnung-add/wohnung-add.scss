@@ -1,0 +1,10 @@
+.preview-container {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.preview-box {
+  border: 1px solid #ddd;
+  padding: 5px;
+  border-radius: 5px;
+}

@@ -1,5 +1,28 @@
 <h2>Wohnung Details</h2>
 
+  <div *ngIf="wohnung?.Bilder?.length" class="carousel">
+
+  <div class="carousel-window"
+       (mousedown)="dragStart($event)"
+       (mousemove)="dragMove($event)"
+       (mouseup)="dragEnd()"
+       (mouseleave)="dragEnd()"
+       (touchstart)="dragStart($event)"
+       (touchmove)="dragMove($event)"
+       (touchend)="dragEnd()">
+
+    <img [src]="getCurrentImageUrl()"
+         class="carousel-image"
+         [alt]="wohnung.Titel" />
+
+          <!-- أزرار التنقل على الصورة نفسها -->
+    <button class="arrow left" (click)="prev()">&#10094;</button>
+    <button class="arrow right" (click)="next()">&#10095;</button>
+
+  </div>
+
+</div>
+
   <div *ngIf="wohnung as w" class="wohnung-detail-container">
   <h2>{{ wohnung.Titel }}</h2>
 
@@ -56,16 +79,10 @@
     </ul>
   </div>
 
-  <div *ngIf="wohnung?.Bilder?.length" class="bilder-section">
-    <h3>Bilder</h3>
-    <img *ngFor="let bild of wohnung?.Bilder"
-         [src]="bild.Url"
-         [alt]="wohnung?.Titel"
-         [class.main]="bild.IsMain" />
-  </div>
+  <p><strong>Beschreibung:</strong>
+      {{ wohnung.Beschreibung}}
+    </p>
 
-  <button routerLink="/wohnungen" class="back-btn">⬅ Zurück zur Übersicht</button>
+  <button type="button" routerLink="/wohnungen" class="back-btn">⬅ Zurück zur Übersicht</button>
 </div>
 
-
-<a routerLink="/">Zurück zur Übersicht</a>

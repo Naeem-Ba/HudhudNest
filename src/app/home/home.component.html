@@ -1,0 +1,34 @@
+ <div class="home-container">
+      <h1>🏠 Willkommen zu Wohnungen App!</h1>
+      <p>Finden Sie Ihre Traumwohnung oder fügen Sie eine neue hinzu.</p>
+
+      <div class="buttons">
+        <button routerLink="/wohnungen" class="btn primary">Wohnungen ansehen</button>
+        <button routerLink="/wohnung-add" class="btn secondary">Neue Wohnung hinzufügen</button>
+      </div>
+
+    <!--  <h2>Neueste Wohnungen</h2>
+      <div class="wohnung-list">
+        <div *ngFor="let w of wohnungen" class="wohnung-card" [routerLink]="['/wohnungen', w.Id]">
+          <img *ngIf="w.Bilder?.length" [src]="w.Bilder[0].Url" [alt]="w.Titel" />
+          <div class="card-info">
+            <h3>{{ w.Titel }}</h3>
+            <p>{{ w.Stadt || '—' }}, {{ w.PLZ || '—' }}</p>
+            <p>
+              {{ w.Kaufpreis ? (w.Kaufpreis | currency:'EUR') 
+                : w.Warmmiete ? (w.Warmmiete | currency:'EUR') 
+                : w.Kaltmiete ? (w.Kaltmiete | currency:'EUR') : '—' }}
+            </p>
+          </div>
+        </div>
+      </div>-->
+
+      <div class="info-box">
+        <h3>Tipps:</h3>
+        <ul>
+          <li>Mehrere Bilder pro Wohnung sind möglich.</li>
+          <li>Klicken Sie auf eine Wohnung, um Details zu sehen.</li>
+          <li>Verwenden Sie die Navigation, um schnell zu wechseln.</li>
+        </ul>
+      </div>
+    </div>

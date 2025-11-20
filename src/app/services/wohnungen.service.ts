@@ -23,11 +23,49 @@ export interface Wohnung {
   Balkon?: boolean;
   Aufzug?: boolean;
   Stellplatz?: boolean;
-  Bilder?: { Id: number; Url: string; IsMain: boolean ; AltText?: string;}[];
-  Amenities?: { Id: number; AmenityId: number }[];
-  OwnerId?: number;
+  Heizung?: string;
+  Energieausweis?: string; // Enum als string
+  Zustand?: string; // Enum als string
+  Status?: string; // Enum als string
+ // OwnerId?: number;
+ // CreatedAt?: string; // ISO date
+ // UpdatedAt?: string; // ISO date
+  Bilder?: Bild[];
+  Amenities?: Amenity[];
+  Messages?: Message[];
+  WohnungAmenities?: WohnungAmenity[];
+  Favorites?: Favorite[];
+}
+export interface Favorite {
+  UserId: number;
+  WohnungId:number;
+}
+export interface WohnungAmenity {
+  Id: number;
+  WohnungId:number;
+  Url: string;
+  AmenityId: number;
+}
+export interface Bild {
+  Id: number;
+  WohnungId:number;
+  Url: string;
+  IsMain: boolean;
+  AltText?: string;
+}
+export interface Message {
+  Id: number;
+  WohnungId: number;
+  UserId?: number;
+  SenderName?: string;
+  SenderEmail?: string;
+  Message: string;
 }
 
+export interface Amenity {
+  Id: number;
+  Name: number;
+}
 @Injectable({
   providedIn: 'root'
 })
@@ -39,18 +77,23 @@ export class WohnungenService {
   wohnungAdded$ = this.wohnungAddedSource.asObservable();
 
   constructor(private http: HttpClient) {}
-
+   // GET ALL
+  // ----------------------------------------------------
   getWohnungen(): Observable<Wohnung[]> {
     return this.http.get<Wohnung[]>(this.apiUrl);
   }
+  // GET BY ID
+  // ----------------------------------------------------
   getWohnung(id: number): Observable<Wohnung> {
     const url = `${this.apiUrl}/${id}`;
     return this.http.get<Wohnung>(url);
   }
 
-   addWohnung(wohnung: Wohnung): Observable<Wohnung> {
+   // ADD WOHNUNG (WITH IMAGES)
+  // ---------------------------------------------------
+   addWohnung(formData: FormData): Observable<any> {
     return new Observable(observer => {
-      this.http.post<Wohnung>(this.apiUrl, wohnung).subscribe({
+      this.http.post<Wohnung>(this.apiUrl, formData).subscribe({
         next: (res) => {
           // عند نجاح الحفظ، أرسل الإشعار لباقي المكونات
           this.wohnungAddedSource.next(res);
@@ -62,12 +105,16 @@ export class WohnungenService {
     });
     
   }
-  uploadWohnungBild(wohnungId: number, file: File) {
-  const formData = new FormData();
-  formData.append('file', file);
-  return this.http.post<{ id: number; url: string }>(
-    `https://localhost:7136/api/wohnungsbild/${wohnungId}`,
-    formData
-  );
+   // UPLOAD IMAGES ONLY (CORRECT ENDPOINT)
+  // ----------------------------------------------------
+ uploadWohnungBilder(wohnungId: number, files: File[]): Observable<Bild[]> {
+
+    const formData = new FormData();
+    files.forEach(file => formData.append("files", file));
+
+    return this.http.post<Bild[]>(
+      `${this.apiUrl}/${wohnungId}/bilder`,
+      formData);
 }
+
 }
