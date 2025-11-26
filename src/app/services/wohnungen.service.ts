@@ -27,9 +27,9 @@ export interface Wohnung {
   Energieausweis?: string; // Enum als string
   Zustand?: string; // Enum als string
   Status?: string; // Enum als string
- // OwnerId?: number;
- // CreatedAt?: string; // ISO date
- // UpdatedAt?: string; // ISO date
+  OwnerId?: number;
+  CreatedAt?: string; // ISO date
+  UpdatedAt?: string; // ISO date
   Bilder?: Bild[];
   Amenities?: Amenity[];
   Messages?: Message[];

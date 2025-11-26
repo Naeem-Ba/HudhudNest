@@ -72,7 +72,7 @@
       <li *ngIf="wohnung?.Aufzug">Aufzug</li>
       <li *ngIf="wohnung?.Stellplatz">Stellplatz</li>
       <li *ngIf="wohnung?.Amenities?.length">
-      <ng-container *ngFor="let a of wohnung?.Amenities; let last = last">
+      <ng-container *ngFor="let a of wohnung?.WohnungAmenities; let last = last">
       {{ a.AmenityId }}<span *ngIf="!last">, </span>
      </ng-container>
      </li>

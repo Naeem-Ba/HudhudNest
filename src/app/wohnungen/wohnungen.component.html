@@ -39,7 +39,7 @@
 
     <div *ngIf="w.Amenities?.length">
       <strong>Amenities:</strong>
-      <span *ngFor="let a of w.Amenities">{{ a.AmenityId }} </span>
+      <span *ngFor="let a of w.WohnungAmenities">{{ a.AmenityId }} </span>
     </div>
     <button class="details-btn"
         *ngIf="w.Id"

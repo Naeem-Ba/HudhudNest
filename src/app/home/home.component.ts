@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { WohnungenService, Wohnung } from '../services/wohnungen.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
+  imports: [RouterOutlet, RouterLink, CommonModule, RouterLinkActive],
   templateUrl: `./home.component.html`
 })
 export class HomeComponent implements OnInit {
