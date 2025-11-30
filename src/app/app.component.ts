@@ -3,29 +3,16 @@ import { Router, RouterOutlet, RouterLink, RouterLinkActive, NavigationEnd } fro
 import { CommonModule } from '@angular/common';
 import { AuthService } from './services/auth.service';
 import { Observable, filter } from 'rxjs';
+import { NavbarComponent } from './navbar/navbar.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, CommonModule, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, CommonModule, RouterLinkActive, NavbarComponent],
   template: `
-    <header>
-      <h1>🏠 Immobilien App</h1>
-      <nav>
-        <a routerLink="" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Start</a> |
-        <a routerLink="wohnungen" routerLinkActive="active">Wohnungen</a> |
-        <a *ngIf="showAddButton && (isLoggedIn$ | async)" routerLink="wohnung-add" routerLinkActive="active">➕ Neue Wohnung hinzufügen</a> |
-        <a *ngIf="!(isLoggedIn$ | async)" routerLink="login">Login</a>
-        <a *ngIf="isLoggedIn$ | async" (click)="onLogout()" style="cursor:pointer">Abmelden</a>
-      </nav>
-    </header>
-
-    <hr />
-
-    <main>
-      <router-outlet></router-outlet>
-    </main>
-  `
+    <router-outlet></router-outlet>
+  `,
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
   isLoggedIn$: Observable<boolean>;

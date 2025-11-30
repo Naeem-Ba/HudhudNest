@@ -9,7 +9,8 @@ import { WohnungenComponent } from '../wohnungen/wohnungen.component';
   selector: 'app-wohnung-add',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './wohnung-add.component.html'
+  templateUrl: './wohnung-add.component.html',
+  styleUrls: ['./wohnung-add.component.scss']
 })
 export class WohnungAddComponent {
 

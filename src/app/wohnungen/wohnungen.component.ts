@@ -11,6 +11,7 @@ import { Observable } from 'rxjs';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './wohnungen.component.html',
+  styleUrls: ['./wohnungen.component.scss']
 })
 export class WohnungenComponent implements OnInit {
   wohnungen: Wohnung[] = [];

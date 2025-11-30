@@ -21,12 +21,12 @@ export class LoginComponent {
 
   onLogin() {
   this.benutzerService.login(this.loginData).subscribe({
-    next: (user) => {
+    next: (userData) => {
       this.message = 'Login erfolgreich!';
-      localStorage.setItem('loggedUser', JSON.stringify(user));
+      localStorage.setItem('loggedUser', JSON.stringify(userData));
 
       // 🔥 بعد نجاح تسجيل الدخول
-      this.authService.login(user);
+      this.authService.login(userData);
       this.router.navigate(['/home']);
     },
     error: (err) => {

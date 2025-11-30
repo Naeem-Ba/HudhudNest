@@ -1,0 +1,34 @@
+ <header class="navbar">
+      <div class="logo">🏠 Immobilien</div>
+
+      <nav class="nav-links">
+        <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+        <a routerLink="/wohnungen" routerLinkActive="active">Wohnungen</a>
+
+        <a *ngIf="isLoggedIn$ | async" 
+           routerLink="/wohnung-add" 
+           routerLinkActive="active">➕ Hinzufügen</a>
+      </nav>
+
+      <!-- ACCOUNT DROPDOWN -->
+      <div class="account" *ngIf="isLoggedIn$ | async; else loginBtn">
+          <!-- صورة الحساب -->
+  <img class="avatar-img" 
+       [src]="profileImageUrl"
+       (error)="useFallbackImage()"
+       (click)="toggleDropdown()"
+  />
+        <div class="avatar" (click)="toggleDropdown()">
+          {{ avatarLetter }}
+        </div>
+
+        <div class="dropdown" [class.open]="dropdownOpen">
+          <p class="user-email">{{ userEmail }}</p>
+          <a (click)="logout()">Abmelden</a>
+        </div>
+      </div>
+
+      <ng-template #loginBtn>
+        <button class="login-btn" routerLink="/login">Login</button>
+      </ng-template>
+    </header>

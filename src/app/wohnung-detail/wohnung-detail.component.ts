@@ -11,6 +11,7 @@ import { WohnungenService,Wohnung} from '../services/wohnungen.service';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './wohnung-detail.component.html',
+  styleUrls: ['./wohnung-detail.component.scss']
 
 })
 export class WohnungDetailComponent implements OnInit {
