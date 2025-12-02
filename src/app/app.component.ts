@@ -1,14 +1,13 @@
 import { Component } from '@angular/core';
-import { Router, RouterOutlet, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
+import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './services/auth.service';
 import { Observable, filter } from 'rxjs';
-import { NavbarComponent } from './navbar/navbar.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, CommonModule, RouterLinkActive, NavbarComponent],
+  imports: [RouterOutlet, CommonModule,],
   template: `
     <router-outlet></router-outlet>
   `,

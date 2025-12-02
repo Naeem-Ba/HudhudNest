@@ -21,11 +21,11 @@
 <!--      MODAL الصور      -->
 <!-- ===================== -->
 
-<div class="image-modal" *ngIf="modalOpen" (click)="closeModal()">
+<div class="carousel-modal" *ngIf="modalOpen" (click)="closeModal()">
   
-  <div class="modal-content" (click)="$event.stopPropagation()">
+  <div class="carousel-modal-content" (click)="$event.stopPropagation()">
 
-    <img [src]="getCurrentImageUrl()" class="modal-image" />
+    <img [src]="getCurrentImageUrl()" class="carousel-modal-image" />
 
     <!-- زر الإغلاق -->
     <button class="close-btn" (click)="closeModal()">&times;</button>

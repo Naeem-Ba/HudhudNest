@@ -1,35 +1,82 @@
-<h2>Login</h2>
+<div class="auth-container">
 
-<form (ngSubmit)="onLogin()" #loginForm="ngForm">
-  <label for="email">E-Mail:</label>
-  <input type="email" id="email" name="email" [(ngModel)]="loginData.Email" required />
+  <h2 *ngIf="!showRegister">Login</h2>
+  <h2 *ngIf="showRegister">Registrierung</h2>
 
-  <label for="password">Passwort:</label>
-  <input type="password" id="password" name="password" [(ngModel)]="loginData.PasswordHash" required />
+  <!-- رسالة نجاح / خطأ -->
+  <div *ngIf="message" class="alert" [ngClass]="{'success': success, 'error': !success}">
+    {{ message }}
+  </div>
 
-  <button type="submit" [disabled]="loginForm.invalid">Einloggen</button>
-</form>
+  <!-- نموذج تسجيل الدخول -->
+  <form *ngIf="!showRegister" (ngSubmit)="onLogin()" #loginForm="ngForm">
 
-<hr />
+    <label>E-Mail:</label>
+    <input type="email"
+           name="email"
+           [(ngModel)]="loginData.Email"
+           required
+           email
+           #emailCtrl="ngModel">
 
-<!-- زر التسجيل لأول مرة -->
-<p>Noch kein Konto?</p>
-<button (click)="toggleRegister()">Registrieren Sie sich</button>
+    <div class="error" *ngIf="emailCtrl.invalid && emailCtrl.touched">
+      Bitte geben Sie eine gültige E-Mail ein.
+    </div>
 
-<!-- نموذج التسجيل (يظهر عند الضغط على الزر) -->
-<div *ngIf="showRegister" class="register-form">
-  <h3>Registrierung</h3>
+    <label>Passwort:</label>
+    <input type="password"
+           name="password"
+           [(ngModel)]="loginData.PasswordHash"
+           required
+           minlength="5"
+           #passCtrl="ngModel">
 
-  <form (ngSubmit)="onRegister()" #registerForm="ngForm">
-    <label for="name">Name:</label>
-    <input type="text" id="name" name="name" [(ngModel)]="registerData.Name" required />
+    <div class="error" *ngIf="passCtrl.invalid && passCtrl.touched">
+      Das Passwort muss mindestens 6 Zeichen enthalten.
+    </div>
 
-    <label for="emailReg">E-Mail:</label>
-    <input type="email" id="emailReg" name="emailReg" [(ngModel)]="registerData.Email" required />
+    <button type="submit" [disabled]="loginForm.invalid">Einloggen</button>
 
-    <label for="passReg">Passwort:</label>
-    <input type="password" id="passReg" name="passReg" [(ngModel)]="registerData.PasswordHash" required />
+    <p class="switch">Noch kein Konto?
+      <a (click)="toggleRegister()">Jetzt registrieren</a>
+    </p>
 
-    <button type="submit" [disabled]="registerForm.invalid">Registrieren</button>
+  </form>
+
+
+  <!-- نموذج التسجيل -->
+  <form *ngIf="showRegister" (ngSubmit)="onRegister()" #regForm="ngForm">
+
+    <label>Name:</label>
+    <input type="text"
+           name="name"
+           [(ngModel)]="registerData.Name"
+           required>
+
+    <label>E-Mail:</label>
+    <input type="email"
+           name="emailReg"
+           [(ngModel)]="registerData.Email"
+           required
+           email
+           #emailRegCtrl="ngModel">
+
+    <div class="error" *ngIf="emailRegCtrl.invalid && emailRegCtrl.touched">
+      Ungültige E-Mail Adresse.
+    </div>
+
+    <label>Passwort:</label>
+    <input type="password"
+           name="passReg"
+           [(ngModel)]="registerData.PasswordHash"
+           required
+           minlength="6">
+
+    <button type="submit" [disabled]="regForm.invalid">Registrieren</button>
+
+    <p class="switch">Bereits ein Konto?
+      <a (click)="toggleRegister()">Zum Login</a>
+    </p>
+
   </form>
 </div>

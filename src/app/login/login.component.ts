@@ -16,6 +16,7 @@ export class LoginComponent {
   registerData: Benutzer = { Name: '', Email: '', PasswordHash: '' };
   showRegister = false;
   message = '';
+  success = false;
 
   constructor(private benutzerService: BenutzerService, private router: Router,private authService: AuthService) {}
 
@@ -23,15 +24,14 @@ export class LoginComponent {
   this.benutzerService.login(this.loginData).subscribe({
     next: (userData) => {
       this.message = 'Login erfolgreich!';
-      localStorage.setItem('loggedUser', JSON.stringify(userData));
+      this.authService.login(userData);
 
       // 🔥 بعد نجاح تسجيل الدخول
-      this.authService.login(userData);
-      this.router.navigate(['/home']);
+      setTimeout(() => this.router.navigate(['/home']), 800);
     },
     error: (err) => {
-      this.message = 'Fehler beim Login.';
-      console.error('Fehler beim Login:', err);
+      this.success = false;
+      this.message = 'E-Mail oder Passwort ist falsch.';
     }
   });
   }
@@ -39,12 +39,13 @@ export class LoginComponent {
   onRegister() {
     this.benutzerService.register(this.registerData).subscribe({
       next: (user) => {
-        this.message = 'Registrierung erfolgreich! Du kannst dich jetzt einloggen.';
-        this.showRegister = false;
+        this.success = true;
+      this.message = 'Registrierung erfolgreich! Bitte einloggen.';
+      this.showRegister = false;
       },
       error: (err) => {
-        this.message = 'Fehler bei der Registrierung.';
-        console.error(err);
+        this.success = false;
+      this.message = 'Fehler bei der Registrierung.';
       }
     });
   }
