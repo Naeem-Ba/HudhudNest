@@ -1,27 +1,42 @@
 <h2>Wohnung Details</h2>
 
-  <div *ngIf="wohnung?.Bilder?.length" class="carousel">
+<!-- الصورة الرئيسية -->
+<div *ngIf="wohnung?.Bilder?.length" class="carousel">
 
   <div class="carousel-window"
-       (mousedown)="dragStart($event)"
-       (mousemove)="dragMove($event)"
-       (mouseup)="dragEnd()"
-       (mouseleave)="dragEnd()"
-       (touchstart)="dragStart($event)"
-       (touchmove)="dragMove($event)"
-       (touchend)="dragEnd()">
+       (click)="openModal()">
 
     <img [src]="getCurrentImageUrl()"
          class="carousel-image"
          [alt]="wohnung.Titel" />
 
-          <!-- أزرار التنقل على الصورة نفسها -->
-    <button class="arrow left" (click)="prev()">&#10094;</button>
-    <button class="arrow right" (click)="next()">&#10095;</button>
+    <button class="arrow left" (click)="prev(); $event.stopPropagation()">&#10094;</button>
+    <button class="arrow right" (click)="next(); $event.stopPropagation()">&#10095;</button>
 
   </div>
-
 </div>
+
+
+<!-- ===================== -->
+<!--      MODAL الصور      -->
+<!-- ===================== -->
+
+<div class="image-modal" *ngIf="modalOpen" (click)="closeModal()">
+  
+  <div class="modal-content" (click)="$event.stopPropagation()">
+
+    <img [src]="getCurrentImageUrl()" class="modal-image" />
+
+    <!-- زر الإغلاق -->
+    <button class="close-btn" (click)="closeModal()">&times;</button>
+
+    <!-- الأسهم -->
+    <button class="arrow left modal-arrow" (click)="prev(); $event.stopPropagation()">&#10094;</button>
+    <button class="arrow right modal-arrow" (click)="next(); $event.stopPropagation()">&#10095;</button>
+
+  </div>
+</div>
+
 
   <div *ngIf="wohnung as w" class="wohnung-detail-container">
   <h2>{{ wohnung.Titel }}</h2>

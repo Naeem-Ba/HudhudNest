@@ -29,12 +29,8 @@ export class AppComponent {
       this.showAddButton = event.urlAfterRedirects.startsWith('/wohnungen');
     });
     if (!this.authService.isLoggedIn()) {
-    this.router.navigate(['/login']);
+    this.router.navigate(['/home']);
   }
   }
 
-  onLogout() {
-    this.authService.logout();
-    this.router.navigate(['/home']);
-  }
 }

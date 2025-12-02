@@ -22,6 +22,7 @@ export class WohnungDetailComponent implements OnInit {
   startX = 0;
   currentX = 0;
   isDragging = false;
+  modalOpen = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -77,5 +78,14 @@ export class WohnungDetailComponent implements OnInit {
     if (diff > 70) this.prev();
     else if (diff < -70) this.next();
   }
+
+openModal() {
+  this.modalOpen = true;
+}
+
+closeModal() {
+  this.modalOpen = false;
+}
+
 
 }

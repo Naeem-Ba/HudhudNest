@@ -17,6 +17,7 @@ export class NavbarComponent {
   dropdownOpen = false;
   avatarLetter = '?';
   userEmail = '';
+  hasCustomImage = false;
 
   profileImageUrl = 'assets/default-avatar.png';
 
@@ -28,13 +29,15 @@ export class NavbarComponent {
       this.userEmail = user.email || user.Email;
       this.avatarLetter = this.userEmail?.charAt(0)?.toUpperCase() || '?';
 
-       if (user.imageUrl) {
+       if  (user.imageUrl && user.imageUrl.trim() !== '') {
       this.profileImageUrl = user.imageUrl;
+      this.hasCustomImage = true;
     }
     }
   }
   useFallbackImage() {
   this.profileImageUrl = 'assets/default-avatar.png';
+  this.hasCustomImage = false;
 }
 
   toggleDropdown() {
@@ -43,8 +46,9 @@ export class NavbarComponent {
 
   logout() {
     this.auth.logout();
-    this.router.navigate(['/login']);
+    this.router.navigate(['/home']);
   }
+
   ngOnInit() {
   document.addEventListener('click', this.handleClickOutside.bind(this));
 }
@@ -59,4 +63,5 @@ handleClickOutside(event: any) {
     this.dropdownOpen = false;
   }
 }
+
 }

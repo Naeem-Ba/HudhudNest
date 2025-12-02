@@ -13,14 +13,20 @@
       <!-- ACCOUNT DROPDOWN -->
       <div class="account" *ngIf="isLoggedIn$ | async; else loginBtn">
           <!-- صورة الحساب -->
-  <img class="avatar-img" 
-       [src]="profileImageUrl"
-       (error)="useFallbackImage()"
-       (click)="toggleDropdown()"
-  />
-        <div class="avatar" (click)="toggleDropdown()">
-          {{ avatarLetter }}
-        </div>
+  <!-- إذا كان لديه صورة شخصية -->
+<img *ngIf="profileImageUrl && hasCustomImage"
+     class="avatar-img"
+     [src]="profileImageUrl"
+     (error)="useFallbackImage()"
+     (click)="toggleDropdown()"
+/>
+
+<!-- إذا لم يكن لديه صورة شخصية -->
+<div *ngIf="!hasCustomImage"
+     class="avatar"
+     (click)="toggleDropdown()">
+  {{ avatarLetter }}
+</div>
 
         <div class="dropdown" [class.open]="dropdownOpen">
           <p class="user-email">{{ userEmail }}</p>

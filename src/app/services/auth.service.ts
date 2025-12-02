@@ -7,13 +7,14 @@ export class AuthService {
   isLoggedIn$ = this.loggedIn.asObservable();
 
   constructor() {
-     // تحقق عند تشغيل التطبيق إن كان هناك مستخدم محفوظ
-    this.loggedIn.next(this.isLoggedIn());
+     const user = localStorage.getItem('loggedUser');
+    this.loggedIn.next(!!user);
   }
 
   isLoggedIn(): boolean {
-  const user = localStorage.getItem('loggedUser');
-  return user !== null && user !== 'undefined' && user.trim() !== '' && user !== 'null';
+     return this.loggedIn.value;
+  //const user = localStorage.getItem('loggedUser');
+  //return user !== null && user !== 'undefined' && user.trim() !== '' && user !== 'null';
 
 }
 
