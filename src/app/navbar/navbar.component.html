@@ -1,13 +1,19 @@
  <header class="navbar">
-      <div class="logo">🏠 Immobilien</div>
+      <div class="navbar-left">
+    <a routerLink="/Home" class="logo-container">
+      <img src="images/horizontal-logo.png" alt="Logo" />
+    </a>
+  </div>
 
       <nav class="nav-links">
         <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
         <a routerLink="/wohnungen" routerLinkActive="active">Wohnungen</a>
-
+        
         <a *ngIf="isLoggedIn$ | async" 
-           routerLink="/wohnung-add" 
-           routerLinkActive="active">➕ Hinzufügen</a>
+        routerLink="/wohnung-add" 
+        routerLinkActive="active">➕ Hinzufügen</a>
+
+        <a routerLink="/kontakt" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">kontakt</a>
       </nav>
 
       <!-- ACCOUNT DROPDOWN -->

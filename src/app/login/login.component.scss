@@ -1,0 +1,205 @@
+/* LAYOUT MAIN WRAPPER */
+.auth-page {
+  display: flex;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+  background: #ffffff;
+}
+
+/* LEFT PANEL */
+.auth-left {
+  width: 45%;
+  padding: 60px 70px;
+  display: flex;
+  flex-direction: column;
+  background: white;
+}
+
+.logo {
+  width: 150px;
+  margin-bottom: 35px;
+}
+
+/* TITLE */
+h1 {
+  font-size: 28px;
+  margin-bottom: 25px;
+  font-weight: 600;
+}
+
+/* SOCIAL BUTTONS */
+.social {
+  width: 100%;
+  padding: 12px;
+  border-radius: 30px;
+  border: 1px solid #ccc;
+  background: white;
+  font-size: 15px;
+  cursor: pointer;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: 0.25s ease;
+}
+
+.social .icon {
+  font-size: 18px;
+}
+
+.social.google:hover {
+  border-color: #999;
+  background: #f7f7f7;
+}
+
+.social.apple {
+  background: black;
+  color: white;
+}
+
+.social.apple:hover {
+  background: #333;
+}
+
+/* DIVIDER */
+.divider {
+  text-align: center;
+  margin: 25px 0;
+  color: #777;
+}
+
+/* INPUT FIELDS */
+label {
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  transition: 0.2s;
+  font-size: 15px;
+}
+
+input:focus {
+  border-color: #000;
+}
+
+/* PASSWORD WITH ICON */
+.password-wrapper {
+  position: relative;
+}
+
+.toggle-pass {
+  position: absolute;
+  right: 12px;
+  top: 13px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 18px;
+}
+
+/* SUBMIT BUTTON */
+.submit {
+  margin-top: 30px;
+  padding: 14px;
+  background: #ffca00;
+  border: none;
+  font-size: 17px;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.submit:hover:not(:disabled) {
+  background: #e5b700;
+}
+
+.submit:disabled {
+  background: #ffdd75;
+  cursor: not-allowed;
+}
+
+/* SWITCH TEXT */
+.switch {
+  margin-top: 20px;
+}
+
+.switch a {
+  color: #0072ff;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.switch a:hover {
+  text-decoration: underline;
+}
+
+/* RIGHT PANEL */
+.auth-right {
+  width: 55%;
+  overflow: hidden;
+}
+
+.side-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ALERTS */
+.alert {
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.alert.success {
+  background: #d3f9d8;
+  color: #2b8a3e;
+}
+
+.alert.error {
+  background: #ffe3e3;
+  color: #b00020;
+}
+
+/* =======================
+   RESPONSIVE DESIGN
+========================== */
+
+/* Tablets */
+@media (max-width: 992px) {
+  .auth-page {
+    flex-direction: column;
+  }
+
+  .auth-left {
+    width: 100%;
+    padding: 40px;
+  }
+
+  .auth-right {
+    display: none;
+  }
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+  h1 {
+    font-size: 22px;
+  }
+
+  .auth-left {
+    padding: 25px;
+  }
+
+  .submit {
+    font-size: 16px;
+  }
+}

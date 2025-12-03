@@ -4,6 +4,7 @@ import { HomeComponent } from './home/home.component';
 import { WohnungenComponent } from './wohnungen/wohnungen.component';
 import { WohnungDetailComponent } from './wohnung-detail/wohnung-detail.component';
 import { LoginComponent } from './login/login.component';
+import {KontaktComponent} from './kontakt/kontakt.component';
 import { AuthGuard } from './services/auth-guard';
 import { NavbarComponent } from './navbar/navbar.component';
 
@@ -15,6 +16,7 @@ export const routes: Routes = [
       { path: 'home', component: HomeComponent },
       { path: 'wohnungen', component: WohnungenComponent },
       { path: 'wohnungen/:id', component: WohnungDetailComponent },
+      { path: 'kontakt', component: KontaktComponent },
 
       {
         path: 'wohnung-add',

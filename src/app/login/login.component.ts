@@ -9,13 +9,16 @@ import { AuthService} from '../services/auth.service';
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './login.component.html'
+  templateUrl: './login.component.html',
+  styleUrls: ['login.component.scss']
 })
 export class LoginComponent {
   loginData: Benutzer = { Email: '', PasswordHash: '' };
   registerData: Benutzer = { Name: '', Email: '', PasswordHash: '' };
   showRegister = false;
   message = '';
+  showPass = false;
+  showPassReg = false;
   success = false;
 
   constructor(private benutzerService: BenutzerService, private router: Router,private authService: AuthService) {}
@@ -23,6 +26,7 @@ export class LoginComponent {
   onLogin() {
   this.benutzerService.login(this.loginData).subscribe({
     next: (userData) => {
+      this.success = true;
       this.message = 'Login erfolgreich!';
       this.authService.login(userData);
 
@@ -40,12 +44,12 @@ export class LoginComponent {
     this.benutzerService.register(this.registerData).subscribe({
       next: (user) => {
         this.success = true;
-      this.message = 'Registrierung erfolgreich! Bitte einloggen.';
-      this.showRegister = false;
+        this.message = 'Registrierung erfolgreich! Bitte einloggen.';
+        this.showRegister = false;
       },
       error: (err) => {
         this.success = false;
-      this.message = 'Fehler bei der Registrierung.';
+        this.message = 'Fehler bei der Registrierung.';
       }
     });
   }

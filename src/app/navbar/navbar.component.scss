@@ -8,6 +8,16 @@
       border-bottom:1px solid #ddd;
     }
 
+    .logo-container img {
+  height: 48px;
+  width: auto;
+  transition: transform 0.25s ease;
+}
+
+.logo-container:hover img {
+  transform: scale(1.05);
+}
+
     .nav-links a {
       margin-right:20px;
       text-decoration:none;
@@ -84,3 +94,19 @@
       border-radius:5px;
       cursor:pointer;
     }
+
+    /* Responsive */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .navbar-links {
+    gap: 20px;
+  }
+
+  .logo-container img {
+    height: 40px;
+  }
+}
