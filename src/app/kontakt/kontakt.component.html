@@ -1,16 +1,72 @@
-<div class="kontakt-container">
-  <h1>Kontakt</h1>
+<div class="kontakt-page">
+  <div class="kontakt-card">
+    <h1>Kontakt</h1>
 
-  <form>
-    <label>Name</label>
-    <input type="text" />
+    <div *ngIf="messageText" class="alert" [ngClass]="{ 'success': success, 'error': !success }">
+      {{ messageText }}
+    </div>
 
-    <label>E-Mail</label>
-    <input type="email" />
+    <form #contactForm="ngForm" (ngSubmit)="onSubmit(contactForm)" novalidate>
 
-    <label>Nachricht</label>
-    <textarea></textarea>
+      <label for="name">Name *</label>
+      <input id="name"
+             name="name"
+             [(ngModel)]="model.name"
+             #nameCtrl="ngModel"
+             required
+             minlength="2" />
+      <div class="field-error" *ngIf="nameCtrl.invalid && nameCtrl.touched">
+        Bitte geben Sie Ihren Namen ein (min. 2 Zeichen).
+      </div>
 
-    <button>Senden</button>
-  </form>
+      <label for="email">E-Mail *</label>
+      <input id="email"
+             name="email"
+             type="email"
+             [(ngModel)]="model.email"
+             #emailCtrl="ngModel"
+             required
+             email />
+      <div class="field-error" *ngIf="emailCtrl.invalid && emailCtrl.touched">
+        Bitte geben Sie eine gültige E-Mail Adresse ein.
+      </div>
+
+      <label for="subject">Betreff *</label>
+      <input id="subject"
+             name="subject"
+             [(ngModel)]="model.subject"
+             #subCtrl="ngModel"
+             required
+             minlength="3" />
+      <div class="field-error" *ngIf="subCtrl.invalid && subCtrl.touched">
+        Kurzer Betreff (min. 3 Zeichen).
+      </div>
+
+      <label for="message">Nachricht *</label>
+      <textarea id="message"
+                name="message"
+                rows="6"
+                [(ngModel)]="model.message"
+                #msgCtrl="ngModel"
+                required
+                minlength="10"></textarea>
+      <div class="field-error" *ngIf="msgCtrl.invalid && msgCtrl.touched">
+        Bitte geben Sie eine Nachricht (min. 10 Zeichen).
+      </div>
+
+      <button type="submit" class="send-btn" [disabled]="sending">
+        <span *ngIf="!sending">Senden</span>
+        <span *ngIf="sending" class="spinner">⏳ Senden...</span>
+      </button>
+    </form>
+  </div>
+
+  <aside class="contact-info">
+    <h3>Kontaktdaten</h3>
+    <p><strong>Telefon:</strong> +49 157 72378923</p>
+    <p><strong>E-Mail:</strong> naeem.bazzazeh@gmail.com</p>
+
+    <h4>Oder besuchen Sie uns</h4>
+    <p>Mazzeh aliskan 5<br/>11963 Damascus</p>
+  </aside>
 </div>
