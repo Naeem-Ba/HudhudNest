@@ -1,0 +1,49 @@
+<div class="details-container" *ngIf="!loading">
+
+  <h2>📄 تفاصيل الرسالة</h2>
+
+  <div class="info-box">
+    <div class="label">الاسم:</div>
+    <div>{{ message.Name }}</div>
+  </div>
+
+  <div class="info-box">
+    <div class="label">البريد الإلكتروني:</div>
+    <div>{{ message.Email }}</div>
+  </div>
+
+  <div class="info-box">
+    <div class="label">العنوان:</div>
+    <div>{{ message.Subject }}</div>
+  </div>
+
+  <div class="info-box">
+    <div class="label">الرسالة:</div>
+    <div>{{ message.Message }}</div>
+  </div>
+
+  <div class="info-box">
+    <div class="label">التاريخ:</div>
+    <div>{{ message.SentAt | date:'medium' }}</div>
+  </div>
+
+  <!--<div class="info-box">
+    <div class="label">الحالة:</div>
+    <span *ngIf="message.isRead; else unread">✔ مقروءة</span>
+    <ng-template #unread><span class="unread">❗ غير مقروءة</span></ng-template>
+  </div>-->
+
+  <div class="actions">
+
+    <button class="read-btn" *ngIf="!message.isRead" (click)="setAsRead()">
+      ✔ تحديد كمقروءة
+    </button>
+
+  <div class="actions">
+    <button class="delete-btn" (click)="deleteMessage()">🗑 حذف</button>
+    <button class="back-btn" (click)="goBack()">⬅ رجوع</button>
+  </div>
+
+</div>
+
+<div *ngIf="loading" class="loading">جار التحميل...</div>

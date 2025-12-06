@@ -6,7 +6,9 @@ import { WohnungDetailComponent } from './wohnung-detail/wohnung-detail.componen
 import { LoginComponent } from './login/login.component';
 import {KontaktComponent} from './kontakt/kontakt.component';
 import { AuthGuard } from './services/auth-guard';
+import { AdminMessagesComponent } from './admin/messages/messages.component';
 import { NavbarComponent } from './navbar/navbar.component';
+import { AdminGuard } from './services/admin-guard';
 
 export const routes: Routes = [
   {
@@ -29,7 +31,18 @@ export const routes: Routes = [
   },
 
   { path: 'login', component: LoginComponent },
-
+{
+  path: 'admin/messages',
+  component: AdminMessagesComponent,
+  canActivate: [AdminGuard]
+},
+{
+  path: 'admin/messages/:id',
+  loadComponent: () =>
+    import('./admin/message-details/message-details.component')
+      .then(m => m.MessageDetailComponent),
+  canActivate: [AdminGuard]
+},
   { path: '**', redirectTo: 'home' },
 ];
 

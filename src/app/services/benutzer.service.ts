@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { AuthService } from './auth.service';
 
 export interface Benutzer {
   Id?: number;
@@ -17,7 +18,7 @@ export class BenutzerService {
 
   private apiUrl = 'https://localhost:7136/api/Benutzer/';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private auth: AuthService) {}
 
   register(data: Benutzer): Observable<Benutzer> {
     console.log('Daten gesendet an Backend:', data);
@@ -45,7 +46,7 @@ export class BenutzerService {
     );
   }
   logout() {
-  localStorage.removeItem('loggedUser');
+  this.auth.logout();
   console.log('Benutzer wurde abgemeldet.');
 }
 

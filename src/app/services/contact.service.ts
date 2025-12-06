@@ -3,10 +3,10 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface ContactDto {
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
+  Name: string;
+  Email: string;
+  Subject: string;
+  Message: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -21,5 +21,16 @@ export class ContactService {
 
   getMessages(): Observable<any> {
     return this.http.get<any>(this.apiUrl);
+  }
+
+  getMessageById(id: number) {
+  return this.http.get(`${this.apiUrl}/${id}`);
+  }
+  markAsRead(id: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}/read`, {});
+  }
+
+  deleteMessage(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
   }
 }

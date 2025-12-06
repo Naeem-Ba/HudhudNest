@@ -11,7 +11,7 @@
       <label for="name">Name *</label>
       <input id="name"
              name="name"
-             [(ngModel)]="model.name"
+             [(ngModel)]="model.Name"
              #nameCtrl="ngModel"
              required
              minlength="2" />
@@ -23,7 +23,7 @@
       <input id="email"
              name="email"
              type="email"
-             [(ngModel)]="model.email"
+             [(ngModel)]="model.Email"
              #emailCtrl="ngModel"
              required
              email />
@@ -34,7 +34,7 @@
       <label for="subject">Betreff *</label>
       <input id="subject"
              name="subject"
-             [(ngModel)]="model.subject"
+             [(ngModel)]="model.Subject"
              #subCtrl="ngModel"
              required
              minlength="3" />
@@ -46,7 +46,7 @@
       <textarea id="message"
                 name="message"
                 rows="6"
-                [(ngModel)]="model.message"
+                [(ngModel)]="model.Message"
                 #msgCtrl="ngModel"
                 required
                 minlength="10"></textarea>

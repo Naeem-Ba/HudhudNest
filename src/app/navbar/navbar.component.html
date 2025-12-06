@@ -14,6 +14,7 @@
         routerLinkActive="active">➕ Hinzufügen</a>
 
         <a routerLink="/kontakt" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">kontakt</a>
+        <a *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)" routerLink="/admin/messages">📨 Messages</a>
       </nav>
 
       <!-- ACCOUNT DROPDOWN -->

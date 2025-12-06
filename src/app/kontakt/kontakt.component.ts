@@ -13,10 +13,10 @@ import { RouterLink } from '@angular/router';
 })
 export class KontaktComponent {
   model = {
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
+    Name: '',
+    Email: '',
+    Subject: '',
+    Message: ''
   };
 
   sending = false;
