@@ -1,91 +1,122 @@
-<h2>Neue Wohnung hinzufügen</h2>
+<div class="card">
+  <h2>Wohnung hinzufügen</h2>
 
-<form (ngSubmit)="onSubmit()" #form="ngForm">
-  <label>Titel:</label><br />
-  <input type="text" name="Titel" [(ngModel)]="wohnung.Titel" required /><br /><br />
+  <form (ngSubmit)="onSubmit()" #form="ngForm">
 
-  <label>Beschreibung:</label><br />
-  <textarea name="Beschreibung" [(ngModel)]="wohnung.Beschreibung" required ></textarea><br /><br />
+    <!-- Titel -->
+    <label>Titel:</label>
+    <input type="text" name="Titel" [(ngModel)]="wohnung.Titel" required />
 
-  <label>Adresse:</label><br />
-  <input type="text" name="Adresse" [(ngModel)]="wohnung.Adresse" required /><br /><br />
+    <!-- Beschreibung -->
+    <label>Beschreibung:</label>
+    <textarea name="Beschreibung" [(ngModel)]="wohnung.Beschreibung"></textarea>
 
-  <label>Stadt:</label><br />
-  <input type="text" name="Stadt" [(ngModel)]="wohnung.Stadt" required /><br /><br />
+    <!-- Adresse -->
+    <label>Adresse:</label>
+    <input type="text" name="Adresse" [(ngModel)]="wohnung.Adresse" />
 
-  <label>PLZ:</label><br />
-  <input type="text" name="PLZ" [(ngModel)]="wohnung.PLZ" /><br /><br />
+    <label>Stadt:</label>
+    <input type="text" name="Stadt" [(ngModel)]="wohnung.Stadt" />
 
-  <label>Zum Mieten (€):</label><br />
-  <input type="checkbox" name="ZumMieten" [(ngModel)]="wohnung.ZumMieten" /><br /><br />
+    <label>PLZ:</label>
+    <input type="text" name="PLZ" [(ngModel)]="wohnung.PLZ" />
 
-  <label>Zum Kaufen (€):</label><br />
-  <input type="checkbox" name="ZumKaufen" [(ngModel)]="wohnung.ZumKaufen" /><br /><br />
+    <!-- Zum Mieten / Kaufen -->
+    <div class="row">
+      <label>
+        <input type="checkbox" [(ngModel)]="wohnung.ZumMieten" name="ZumMieten" />
+        Mieten
+      </label>
 
-  <label>Kaltmiete (€):</label><br />
-  <input type="number" name="Kaltmiete" [(ngModel)]="wohnung.Kaltmiete" /><br /><br />
-
-  <label>Warmmiete (€):</label><br />
-  <input type="number" name="Warmmiete" [(ngModel)]="wohnung.Warmmiete" /><br /><br />
-
-  <label>Kaufpreis (€):</label><br />
-  <input type="number" name="Kaufpreis" [(ngModel)]="wohnung.Kaufpreis" /><br /><br />
-
-  <label>Nebenkosten (€):</label><br />
-  <input type="number" name="Nebenkosten" [(ngModel)]="wohnung.Nebenkosten" /><br /><br />
-
-  <label>Kaution (€):</label><br />
-  <input type="number" name="Kaution" [(ngModel)]="wohnung.Kaution" /><br /><br />
-
-  <label>Zimmer:</label><br />
-  <input type="number" name="Zimmer" [(ngModel)]="wohnung.Zimmer" required /><br /><br />
-
-  <label>Flaeche m²:</label><br />
-  <input type="number" name="Flaeche" [(ngModel)]="wohnung.Flaeche" required /><br /><br />
-
-  <label>Geschoss:</label><br />
-  <input type="number" name="Geschoss" [(ngModel)]="wohnung.Geschoss" /><br /><br />
-
-  <label>FreiAb:</label><br />
-  <input type="date" name="FreiAb" [(ngModel)]="wohnung.FreiAb" /><br /><br />
-
-  <label>Balkon:</label><br />
-  <input type="checkbox" name="Balkon" [(ngModel)]="wohnung.Balkon" /><br /><br />
-
-  <label>Aufzug:</label><br />
-  <input type="checkbox" name="Aufzug" [(ngModel)]="wohnung.Aufzug" /><br /><br />
-
-  <label>Stellplatz:</label><br />
-  <input type="checkbox" name="Stellplatz" [(ngModel)]="wohnung.Stellplatz" /><br /><br />
-  
-  <label>Heizung:</label><br />
-  <input type="text" name="Heizung" [(ngModel)]="wohnung.Heizung" /><br /><br />
-  
-  <label>Energieausweis:</label><br />
-  <input type="text" name="Energieausweis" [(ngModel)]="wohnung.Energieausweis" /><br /><br />
-  
-  <label>Zustand:</label><br />
-  <input type="text" name="Zustand" [(ngModel)]="wohnung.Zustand" /><br /><br />
-  
-  <label>Status:</label><br />
-  <input type="text" name="Status" [(ngModel)]="wohnung.Status" /><br /><br />
-
-  <label>Bild hochladen:</label>
-  <input type="file" multiple (change)="onFileSelected($event)" /><br /><br />
-
-  <!-- عرض أسماء الملفات -->
-  <div *ngIf="selectedFiles.length > 0">
-   <p>Ausgewählte Dateien:</p>
-   <ul>
-     <li *ngFor="let file of selectedFiles">{{ file.name }}</li>
-   </ul>
- </div>
- <!-- معاينات الصور -->
-  <div class="preview-container" *ngIf="previews.length > 0">
-    <div *ngFor="let img of previews" class="preview-box">
-      <img [src]="img" width="100" height="100" />
+      <label>
+        <input type="checkbox" [(ngModel)]="wohnung.ZumKaufen" name="ZumKaufen" />
+        Kaufen
+      </label>
     </div>
-  </div>
+
+    <!-- Preise -->
+    <label>Kaltmiete:</label>
+    <input type="number" name="Kaltmiete" [(ngModel)]="wohnung.Kaltmiete" />
+
+    <label>Warmmiete:</label>
+    <input type="number" name="Warmmiete" [(ngModel)]="wohnung.Warmmiete" />
+
+    <label>Kaufpreis:</label>
+    <input type="number" name="Kaufpreis" [(ngModel)]="wohnung.Kaufpreis" />
+
+    <!-- Details -->
+    <label>Nebenkosten:</label>
+    <input type="number" name="Nebenkosten" [(ngModel)]="wohnung.Nebenkosten" />
+
+    <label>Kaution:</label>
+    <input type="number" name="Kaution" [(ngModel)]="wohnung.Kaution" />
+
+    <label>Zimmer:</label>
+    <input type="number" name="Zimmer" [(ngModel)]="wohnung.Zimmer" />
+
+    <label>Fläche (m²):</label>
+    <input type="number" name="Flaeche" [(ngModel)]="wohnung.Flaeche" />
+
+    <label>Geschoss:</label>
+    <input type="number" name="Geschoss" [(ngModel)]="wohnung.Geschoss" />
+
+    <label>Frei ab:</label>
+    <input type="date" name="FreiAb" [(ngModel)]="wohnung.FreiAb" />
+
+    <!-- Checkboxes -->
+    <div class="row">
+      <label><input type="checkbox" [(ngModel)]="wohnung.Balkon" name="Balkon" /> Balkon</label>
+      <label><input type="checkbox" [(ngModel)]="wohnung.Aufzug" name="Aufzug" /> Aufzug</label>
+      <label><input type="checkbox" [(ngModel)]="wohnung.Stellplatz" name="Stellplatz" /> Stellplatz</label>
+    </div>
+
+    <!-- Heizung -->
+    <label>Heizung:</label>
+    <input type="text" name="Heizung" [(ngModel)]="wohnung.Heizung" />
+
+    <!-- ENUM: Zustand -->
+    <label>Zustand:</label>
+    <select name="Zustand" [(ngModel)]="wohnung.Zustand">
+      <option value="" disabled selected >-- Bitte wählen --</option>
+      <option *ngFor="let item of zustandList" [value]="item.id">
+        {{ item.label }}
+      </option>
+    </select>
+
+    <!-- ENUM: Status -->
+    <label>Status:</label>
+    <select name="Status" [(ngModel)]="wohnung.Status">
+      <option value="" disabled selected >-- Bitte wählen --</option>
+      <option *ngFor="let item of statusList" [value]="item.id">
+        {{ item.label }}
+      </option>
+    </select>
+
+    <!-- ENUM: Energieausweis -->
+    <label>Energieausweis:</label>
+    <select name="Energieausweis" [(ngModel)]="wohnung.Energieausweis">
+      <option value="" disabled selected >-- Bitte wählen --</option>
+      <option *ngFor="let item of EnergieausweisTypList" [value]="item.id">
+        {{ item.label }}
+      </option>
+    </select>
+
+   <label>Bild hochladen:</label>
+   <input type="file" multiple (change)="onFileSelected($event)" /><br /><br />
+
+    <!-- عرض أسماء الملفات -->
+    <div *ngIf="selectedFiles.length > 0">
+     <p>Ausgewählte Dateien:</p>
+     <ul>
+       <li *ngFor="let file of selectedFiles">{{ file.name }}</li>
+     </ul>
+   </div>
+   <!-- معاينات الصور -->
+    <div class="preview-container" *ngIf="previews.length > 0">
+      <div *ngFor="let img of previews" class="preview-box">
+        <img [src]="img" width="100" height="100" />
+      </div>
+    </div>
 
   <button type="submit" [disabled]="!form.valid">Speichern</button>
 </form>

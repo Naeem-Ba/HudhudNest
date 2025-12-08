@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { EnumService, EnumItem } from '../services/enum.service';
 import { WohnungenService ,Wohnung} from '../services/wohnungen.service';
 import { WohnungenComponent } from '../wohnungen/wohnungen.component';
 
@@ -16,6 +17,9 @@ export class WohnungAddComponent {
 
   selectedFiles: File[] = [];
   previews: string[] = [];
+  zustandList: any[] = [];
+  statusList: any[] = [];
+  EnergieausweisTypList: any[] = [];
 
     wohnung: any = {
     Titel: '',
@@ -38,12 +42,18 @@ export class WohnungAddComponent {
     Aufzug:false,
     Stellplatz:false,
     Heizung: '',
-    Energieausweis:'', // Enum als string
-    Zustand:'', // Enum als string
-    Status:'',
+    Energieausweis:0,
+    Zustand:0,
+    Status:0,
   };
 
-  constructor(private router: Router, private wohnungenService: WohnungenService) {}
+  constructor(private router: Router, private wohnungenService: WohnungenService,private enumService: EnumService) {}
+
+  ngOnInit(): void {
+    this.enumService.getZustand().subscribe(res => this.zustandList = res);
+    this.enumService.getStatus().subscribe(res => this.statusList = res);
+    this.enumService.getEnergieausweisTyp().subscribe(res => this.EnergieausweisTypList = res);
+  }
 
   onFileSelected(event: any) {
     const files: File[] = Array.from(event.target.files);

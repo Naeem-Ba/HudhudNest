@@ -24,9 +24,9 @@ export interface Wohnung {
   Aufzug?: boolean;
   Stellplatz?: boolean;
   Heizung?: string;
-  Energieausweis?: string; // Enum als string
-  Zustand?: string; // Enum als string
-  Status?: string; // Enum als string
+  Energieausweis?: 0;
+  Zustand?: 0; 
+  Status?: 0; 
   OwnerId?: number;
   CreatedAt?: string; // ISO date
   UpdatedAt?: string; // ISO date
