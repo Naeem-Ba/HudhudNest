@@ -46,4 +46,13 @@ export class EnumService {
       `${this.baseUrl}/EnergieausweisTyp`
     );
   }
+
+  // --------------------------
+  //  Stadt Enum
+  // --------------------------
+  getStadt(): Observable<{ id: number; label: string }[]> {
+    return this.http.get<{ id: number; label: string }[]>(
+      `${this.baseUrl}/Stadt`
+    );
+  }
 }

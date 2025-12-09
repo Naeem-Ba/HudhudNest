@@ -17,6 +17,7 @@ export class WohnungAddComponent {
 
   selectedFiles: File[] = [];
   previews: string[] = [];
+  stadtList: any[] = [];
   zustandList: any[] = [];
   statusList: any[] = [];
   EnergieausweisTypList: any[] = [];
@@ -25,7 +26,7 @@ export class WohnungAddComponent {
     Titel: '',
     Beschreibung: '',
     Adresse: '',
-    Stadt: '',
+    Stadt: 0,
     PLZ: '',
     ZumMieten: false,
     ZumKaufen: false,
@@ -50,6 +51,7 @@ export class WohnungAddComponent {
   constructor(private router: Router, private wohnungenService: WohnungenService,private enumService: EnumService) {}
 
   ngOnInit(): void {
+     this.enumService.getStadt().subscribe(res => this.stadtList = res);
     this.enumService.getZustand().subscribe(res => this.zustandList = res);
     this.enumService.getStatus().subscribe(res => this.statusList = res);
     this.enumService.getEnergieausweisTyp().subscribe(res => this.EnergieausweisTypList = res);

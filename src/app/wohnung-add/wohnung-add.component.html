@@ -15,8 +15,14 @@
     <label>Adresse:</label>
     <input type="text" name="Adresse" [(ngModel)]="wohnung.Adresse" />
 
+    <!-- ENUM: Stadt -->
     <label>Stadt:</label>
-    <input type="text" name="Stadt" [(ngModel)]="wohnung.Stadt" />
+    <select name="Stadt" [(ngModel)]="wohnung.Stadt">
+      <option value="" disabled selected >-- Bitte wählen --</option>
+      <option *ngFor="let item of stadtList" [value]="item.id">
+        {{ item.label }}
+      </option>
+    </select>
 
     <label>PLZ:</label>
     <input type="text" name="PLZ" [(ngModel)]="wohnung.PLZ" />
