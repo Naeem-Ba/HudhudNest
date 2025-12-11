@@ -27,7 +27,7 @@ export class AppComponent {
       // زر الإضافة يظهر فقط في صفحة /wohnungen
       this.showAddButton = event.urlAfterRedirects.startsWith('/wohnungen');
     });
-    if (!this.authService.isLoggedIn()) {
+    if (!this.authService.isLoggedIn$) {
     this.router.navigate(['/home']);
   }
   }

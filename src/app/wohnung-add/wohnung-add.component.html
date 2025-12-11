@@ -3,6 +3,22 @@
 
   <form (ngSubmit)="onSubmit()" #form="ngForm">
 
+    
+    <!-- Zum Mieten / Kaufen -->
+    <div class="toggle-container">
+        <button type="button"
+            [class.active]="wohnung.ZumKaufen"
+            (click)="setMode('kaufen')">
+            Zum Kaufen
+        </button>
+
+       <button type="button"
+            [class.active]="wohnung.ZumMieten"
+            (click)="setMode('mieten')">
+           Zum Mieten
+       </button>
+    </div>
+
     <!-- Titel -->
     <label>Titel:</label>
     <input type="text" name="Titel" [(ngModel)]="wohnung.Titel" required />
@@ -18,7 +34,7 @@
     <!-- ENUM: Stadt -->
     <label>Stadt:</label>
     <select name="Stadt" [(ngModel)]="wohnung.Stadt">
-      <option value="" disabled selected >-- Bitte wählen --</option>
+      <option value="" disabled >-- Bitte wählen --</option>
       <option *ngFor="let item of stadtList" [value]="item.id">
         {{ item.label }}
       </option>
@@ -27,35 +43,27 @@
     <label>PLZ:</label>
     <input type="text" name="PLZ" [(ngModel)]="wohnung.PLZ" />
 
-    <!-- Zum Mieten / Kaufen -->
-    <div class="row">
-      <label>
-        <input type="checkbox" [(ngModel)]="wohnung.ZumMieten" name="ZumMieten" />
-        Mieten
-      </label>
+    <!-- Mietdetails -->
+    <div class="section" *ngIf="wohnung.ZumMieten">
+      <label *ngIf="wohnung.ZumMieten">Kaltmiete:</label>
+      <input type="number" name="Kaltmiete" [(ngModel)]="wohnung.Kaltmiete" />
 
-      <label>
-        <input type="checkbox" [(ngModel)]="wohnung.ZumKaufen" name="ZumKaufen" />
-        Kaufen
-      </label>
+      <label *ngIf="wohnung.ZumMieten">Warmmiete:</label>
+      <input type="number" name="Warmmiete" [(ngModel)]="wohnung.Warmmiete" />
+
+      <label *ngIf="wohnung.ZumMieten">Nebenkosten:</label>
+      <input type="number" name="Nebenkosten" [(ngModel)]="wohnung.Nebenkosten" />
+
+      <label *ngIf="wohnung.ZumMieten">Kaution:</label>
+      <input type="number" name="Kaution" [(ngModel)]="wohnung.Kaution" />
     </div>
 
-    <!-- Preise -->
-    <label>Kaltmiete:</label>
-    <input type="number" name="Kaltmiete" [(ngModel)]="wohnung.Kaltmiete" />
+    <!-- Kaufdetails -->
+     <div class="section" *ngIf="wohnung.ZumKaufen">
+      <label *ngIf="wohnung.ZumKaufen">Kaufpreis:</label>
+      <input type="number" name="Kaufpreis" [(ngModel)]="wohnung.Kaufpreis" />
+    </div>
 
-    <label>Warmmiete:</label>
-    <input type="number" name="Warmmiete" [(ngModel)]="wohnung.Warmmiete" />
-
-    <label>Kaufpreis:</label>
-    <input type="number" name="Kaufpreis" [(ngModel)]="wohnung.Kaufpreis" />
-
-    <!-- Details -->
-    <label>Nebenkosten:</label>
-    <input type="number" name="Nebenkosten" [(ngModel)]="wohnung.Nebenkosten" />
-
-    <label>Kaution:</label>
-    <input type="number" name="Kaution" [(ngModel)]="wohnung.Kaution" />
 
     <label>Zimmer:</label>
     <input type="number" name="Zimmer" [(ngModel)]="wohnung.Zimmer" />
@@ -83,7 +91,7 @@
     <!-- ENUM: Zustand -->
     <label>Zustand:</label>
     <select name="Zustand" [(ngModel)]="wohnung.Zustand">
-      <option value="" disabled selected >-- Bitte wählen --</option>
+      <option value="" disabled >-- Bitte wählen --</option>
       <option *ngFor="let item of zustandList" [value]="item.id">
         {{ item.label }}
       </option>
@@ -92,7 +100,7 @@
     <!-- ENUM: Status -->
     <label>Status:</label>
     <select name="Status" [(ngModel)]="wohnung.Status">
-      <option value="" disabled selected >-- Bitte wählen --</option>
+      <option value="" disabled >-- Bitte wählen --</option>
       <option *ngFor="let item of statusList" [value]="item.id">
         {{ item.label }}
       </option>
@@ -101,7 +109,7 @@
     <!-- ENUM: Energieausweis -->
     <label>Energieausweis:</label>
     <select name="Energieausweis" [(ngModel)]="wohnung.Energieausweis">
-      <option value="" disabled selected >-- Bitte wählen --</option>
+      <option value="" disabled >-- Bitte wählen --</option>
       <option *ngFor="let item of EnergieausweisTypList" [value]="item.id">
         {{ item.label }}
       </option>

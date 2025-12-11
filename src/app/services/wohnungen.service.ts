@@ -7,7 +7,7 @@ export interface Wohnung {
   Titel: string;
   Beschreibung: string;
   Adresse: string;
-  Stadt?: 0;
+  Stadt?: string;
   PLZ?: string;
   ZumMieten: boolean;
   ZumKaufen?: boolean;

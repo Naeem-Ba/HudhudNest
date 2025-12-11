@@ -9,7 +9,7 @@ export const AdminGuard: CanActivateFn = () => {
 
   return auth.isAdmin$.pipe(
     map(isAdmin => {
-      if (isAdmin) return true;
+      if (isAdmin === true) return true;
 
       router.navigate(['/not-authorized']);
       return false;

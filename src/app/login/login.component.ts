@@ -3,51 +3,53 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { BenutzerService, Benutzer } from '../services/benutzer.service';
-import { AuthService} from '../services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './login.component.html',
-  styleUrls: ['login.component.scss']
+  styleUrls: ['./login.component.scss']
 })
 export class LoginComponent {
   loginData: Benutzer = { Email: '', PasswordHash: '' };
   registerData: Benutzer = { Name: '', Email: '', PasswordHash: '' };
   showRegister = false;
   message = '';
+  success = false;
   showPass = false;
   showPassReg = false;
-  success = false;
 
-  constructor(private benutzerService: BenutzerService, private router: Router,private authService: AuthService) {}
+  constructor(
+    private benutzerService: BenutzerService,
+    private router: Router
+  ) {}
 
   onLogin() {
-  this.benutzerService.login(this.loginData).subscribe({
-    next: (userData) => {
-      this.success = true;
-      this.message = 'Login erfolgreich!';
-      this.authService.login(userData);
+    this.benutzerService.login(this.loginData).subscribe({
+      next: () => {
+        this.success = true;
+        this.message = 'Login erfolgreich!';
 
-      // 🔥 بعد نجاح تسجيل الدخول
-      setTimeout(() => this.router.navigate(['/home']), 800);
-    },
-    error: (err) => {
-      this.success = false;
-      this.message = 'E-Mail oder Passwort ist falsch.';
-    }
-  });
+        setTimeout(() => {
+          this.router.navigate(['/home']);
+        }, 600);
+      },
+      error: () => {
+        this.success = false;
+        this.message = 'E-Mail oder Passwort ist falsch.';
+      }
+    });
   }
 
   onRegister() {
     this.benutzerService.register(this.registerData).subscribe({
-      next: (user) => {
+      next: () => {
         this.success = true;
         this.message = 'Registrierung erfolgreich! Bitte einloggen.';
         this.showRegister = false;
       },
-      error: (err) => {
+      error: () => {
         this.success = false;
         this.message = 'Fehler bei der Registrierung.';
       }

@@ -26,7 +26,7 @@ export class WohnungAddComponent {
     Titel: '',
     Beschreibung: '',
     Adresse: '',
-    Stadt: 0,
+    Stadt: '',
     PLZ: '',
     ZumMieten: false,
     ZumKaufen: false,
@@ -43,12 +43,34 @@ export class WohnungAddComponent {
     Aufzug:false,
     Stellplatz:false,
     Heizung: '',
-    Energieausweis:0,
-    Zustand:0,
-    Status:0,
+    Energieausweis:'',
+    Zustand:'',
+    Status:'',
   };
 
   constructor(private router: Router, private wohnungenService: WohnungenService,private enumService: EnumService) {}
+
+    // عند تغيير حالة "ZumMieten" تعطيل "ZumKaufen"
+  setMode(mode: 'mieten' | 'kaufen') {
+  if (mode === 'mieten') {
+    this.wohnung.ZumMieten = true;
+    this.wohnung.ZumKaufen = false;
+
+    // تنظيف قيم البيع
+    this.wohnung.Kaufpreis = 0;
+  }
+
+  if (mode === 'kaufen') {
+    this.wohnung.ZumKaufen = true;
+    this.wohnung.ZumMieten = false;
+
+    // تنظيف قيم الإيجار
+    this.wohnung.Kaltmiete = 0;
+    this.wohnung.Warmmiete = 0;
+    this.wohnung.Nebenkosten = 0;
+    this.wohnung.Kaution = 0;
+  }
+}
 
   ngOnInit(): void {
      this.enumService.getStadt().subscribe(res => this.stadtList = res);

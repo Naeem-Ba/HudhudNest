@@ -30,13 +30,6 @@
       </span>
     </p>
 
-    <!--<div *ngIf="w.Bilder?.length">
-      <strong>Bilder:</strong>
-      <div *ngFor="let b of w.Bilder" class="wohnung-bild">
-        <img [src]="b.Url" [alt]="b.AltText || 'Bild'" [class.main]="b.IsMain" class="bild">
-      </div>
-    </div>-->
-
     <div *ngIf="w.Amenities?.length">
       <strong>Amenities:</strong>
       <span *ngFor="let a of w.WohnungAmenities">{{ a.AmenityId }} </span>

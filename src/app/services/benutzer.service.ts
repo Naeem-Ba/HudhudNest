@@ -20,35 +20,43 @@ export class BenutzerService {
 
   constructor(private http: HttpClient, private auth: AuthService) {}
 
-  register(data: Benutzer): Observable<Benutzer> {
-    console.log('Daten gesendet an Backend:', data);
-    
-    return this.http.post<Benutzer>(`${this.apiUrl}register`, data).pipe(
-      catchError(err => {
-        console.error('Fehler bei der Registrierung:', err);
-        return throwError(() => err);
-      })
+  register(data: Benutzer): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}register`, data).pipe(
+      catchError(err => throwError(() => err))
     );
   }
+login(data: Benutzer): Observable<any> {
+  return this.http.post<any>(`${this.apiUrl}login`, data).pipe(
 
-  // تسجيل الدخول
-  login(data: Benutzer): Observable<Benutzer> {
-    return this.http.post<Benutzer>(`${this.apiUrl}login`, data).pipe(
-      map(user => {
-        if (!user) throw new Error('Ungültige Anmeldedaten');
-        localStorage.setItem('loggedUser', JSON.stringify(user));
-        return user;
-      }),
-      catchError(err => {
-        console.error('Fehler beim Login:', err);
-        return throwError(() => err);
-      })
-    );
-  }
-  logout() {
-  this.auth.logout();
-  console.log('Benutzer wurde abgemeldet.');
+    map(res => {
+      console.log("🔥 Backend response:", res);
+
+      if (!res || !res.token) throw new Error('Ungültige Anmeldedaten');
+
+      this.auth.login(res);
+      return res;
+    }),
+
+    catchError(err => {
+      console.error("❌ Login error:", err);
+      return throwError(() => err);
+    })
+  );
 }
 
+//  login(data: Benutzer): Observable<any> {
+//    return this.http.post<any>(`${this.apiUrl}login`, data).pipe(
+//      map(res => {
+//        if (!res || !res.token) throw new Error('Ungültige Anmeldedaten');
 
+//        this.auth.login(res);
+//        return res;
+//      }),
+//      catchError(err => throwError(() => err))
+//    );
+//  }
+
+  logout() {
+    this.auth.logout();
+  }
 }
