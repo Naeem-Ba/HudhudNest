@@ -1,0 +1,28 @@
+{
+  "COMMON": {
+    "PLEASE_SELECT": "-- Bitte wählen --",
+    "SAVE": "Speichern"
+  },
+  "ENUM": {
+    "STADT": {
+      "0": "Damaskus",
+      "1": "Aleppo",
+      "2": "Homs"
+    },
+    "ZUSTAND": {
+      "0": "Unbekannt",
+      "1": "Neu",
+      "2": "Renoviert"
+    },
+    "STATUS": {
+      "0": "Verfügbar",
+      "1": "Reserviert",
+      "2": "Verkauft"
+    },
+    "ENERGIEAUSWEIS": {
+      "0": "Nicht verfügbar",
+      "1": "Bei Bedarf",
+      "2": "Nach Verbrauch"
+    }
+  }
+}

@@ -5,11 +5,14 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { Observable } from 'rxjs';
+import { EnumTranslatePipe } from '../pipes/enum-translate.pipe';
+import { TranslateModule } from '@ngx-translate/core';
+import { LanguageSelectorComponent } from '../language-selector/language-selector.component';
 
 @Component({
   selector: 'app-wohnungen',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, EnumTranslatePipe, TranslateModule, LanguageSelectorComponent],
   templateUrl: './wohnungen.component.html',
   styleUrls: ['./wohnungen.component.scss']
 })

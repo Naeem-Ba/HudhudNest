@@ -43,6 +43,8 @@ export const routes: Routes = [
       .then(m => m.MessageDetailComponent),
   canActivate: [AdminGuard]
 },
+{ path: 'language', loadComponent: () => import('./language-selector/language-selector.component').then(m => m.LanguageSelectorComponent) },
+
   { path: '**', redirectTo: 'home' },
 ];
 

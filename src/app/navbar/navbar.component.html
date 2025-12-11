@@ -15,6 +15,12 @@
 
         <a routerLink="/kontakt" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">kontakt</a>
         <a *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)" routerLink="/admin/messages">📨 Messages</a>
+
+            <!-- LANGUAGE SWITCHER -->
+          <div class="lang-switcher">
+            <button (click)="switchLang('en')">EN</button>
+            <button (click)="switchLang('ar')">AR</button>
+          </div>
       </nav>
 
       <!-- ACCOUNT DROPDOWN -->

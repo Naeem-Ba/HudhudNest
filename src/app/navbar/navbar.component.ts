@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { Observable, Subscription } from 'rxjs';
+import { LanguageService } from '../services/language.service';
 
 @Component({
   selector: 'app-navbar',
@@ -22,10 +23,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   private userSub!: Subscription;
 
-  constructor(private auth: AuthService, private router: Router) {
+  constructor(private auth: AuthService, private router: Router, private lang: LanguageService) {
     // لا نقرأ localStorage هنا — نستخدم الـ Observables من الـ Service
     this.isLoggedIn$ = this.auth.isLoggedIn$;
     this.isAdmin$ = this.auth.isAdmin$;
+  }
+
+  switchLang(lang: string) {
+  this.lang.use(lang);
   }
 
   ngOnInit() {

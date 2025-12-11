@@ -100,7 +100,7 @@
     <!-- ENUM: Status -->
     <label>Status:</label>
     <select name="Status" [(ngModel)]="wohnung.Status">
-      <option value="" disabled >-- Bitte wählen --</option>
+      <option value="" disabled>-- Bitte wählen --</option>
       <option *ngFor="let item of statusList" [value]="item.id">
         {{ item.label }}
       </option>
@@ -109,7 +109,7 @@
     <!-- ENUM: Energieausweis -->
     <label>Energieausweis:</label>
     <select name="Energieausweis" [(ngModel)]="wohnung.Energieausweis">
-      <option value="" disabled >-- Bitte wählen --</option>
+      <option value="" disabled>-- Bitte wählen --</option>
       <option *ngFor="let item of EnergieausweisTypList" [value]="item.id">
         {{ item.label }}
       </option>
