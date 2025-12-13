@@ -1,0 +1,91 @@
+{
+  "COMMON": {
+    "PLEASE_SELECT": "-- Bitte wählen --",
+    "SAVE": "Speichern"
+  },
+  "ENUM": {
+    "STADT": {
+      "0": "Damaskus",
+      "1": "Aleppo",
+      "2": "Homs"
+    },
+    "ZUSTAND": {
+      "0": "Unbekannt",
+      "1": "Neu",
+      "2": "Renoviert"
+    },
+    "STATUS": {
+      "0": "Verfügbar",
+      "1": "Reserviert",
+      "2": "Verkauft"
+    },
+    "ENERGIEAUSWEIS": {
+      "0": "Nicht verfügbar",
+      "1": "Bei Bedarf",
+      "2": "Nach Verbrauch"
+    }
+  },
+  
+  "home": {
+    "title": "Willkommen zu Wohnungen App!",
+    "subtitle": "Finden Sie Ihre Traumwohnung oder fügen Sie eine neue hinzu.",
+    "btn_view": "Wohnungen ansehen",
+    "btn_add": "Neue Wohnung hinzufügen",
+    "tips": "Tipps",
+    "tips_list": {
+      "multi_images": "Mehrere Bilder pro Wohnung sind möglich.",
+      "click_details": "Klicken Sie auf eine Wohnung, um Details zu sehen.",
+      "use_nav": "Verwenden Sie die Navigation, um schnell zu wechseln."
+    }
+  },
+
+  "wohnung_detail": {
+    "title": "Wohnung Details",
+    "back": "Zurück zur Übersicht",
+    "ort": "Ort",
+    "adresse": "Adresse",
+    "groesse": "Größe",
+    "zimmer": "Zimmer",
+    "etage": "Etage",
+    "preis": "Preis",
+    "nebenkosten": "Nebenkosten",
+    "kaution": "Kaution",
+    "frei_ab": "Frei ab",
+    "beschreibung": "Beschreibung",
+    "ausstattung": "Ausstattung",
+    "balkon": "Balkon",
+    "aufzug": "Aufzug",
+    "stellplatz": "Stellplatz"
+  },
+
+  "wohnung_add": {
+    "title": "Wohnung hinzufügen",
+    "mode_buy": "Zum Kaufen",
+    "mode_rent": "Zum Mieten",
+    "titel": "Titel",
+    "beschreibung": "Beschreibung",
+    "adresse": "Adresse",
+    "stadt": "Stadt",
+    "plz": "PLZ",
+    "kaltmiete": "Kaltmiete",
+    "warmmiete": "Warmmiete",
+    "nebenkosten": "Nebenkosten",
+    "kaution": "Kaution",
+    "kaufpreis": "Kaufpreis",
+    "zimmer": "Zimmer",
+    "flaeche": "Fläche (m²)",
+    "geschoss": "Geschoss",
+    "frei_ab": "Frei ab",
+    "balkon": "Balkon",
+    "aufzug": "Aufzug",
+    "stellplatz": "Stellplatz",
+    "heizung": "Heizung",
+    "zustand": "Zustand",
+    "status": "Status",
+    "energieausweis": "Energieausweis",
+    "bild_hochladen": "Bild hochladen",
+    "selected_files": "Ausgewählte Dateien",
+    "save": "Speichern",
+    "choose": "-- Bitte wählen --"
+  }
+}

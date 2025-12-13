@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -13,27 +13,46 @@ import { LanguageService } from '../services/language.service';
   styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent implements OnInit, OnDestroy {
+
   isLoggedIn$: Observable<boolean>;
   isAdmin$: Observable<boolean>;
+
   dropdownOpen = false;
+  langMenuOpen = false;
+
+  currentLang = 'ar';
+
   avatarLetter = '?';
   userEmail = '';
-  hasCustomImage = false;
   profileImageUrl = 'assets/default-avatar.png';
+  hasCustomImage = false;
 
   private userSub!: Subscription;
 
-  constructor(private auth: AuthService, private router: Router, private lang: LanguageService) {
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+    private lang: LanguageService,
+    private cd: ChangeDetectorRef 
+  ) {
     // لا نقرأ localStorage هنا — نستخدم الـ Observables من الـ Service
     this.isLoggedIn$ = this.auth.isLoggedIn$;
     this.isAdmin$ = this.auth.isAdmin$;
   }
 
-  switchLang(lang: string) {
+  toggleLangMenu() {
+  this.langMenuOpen = !this.langMenuOpen;
+}
+changeLang(lang: 'ar' | 'en' | 'de') {
   this.lang.use(lang);
-  }
+  this.currentLang = lang;
+  this.langMenuOpen = false;
+  this.cd.detectChanges();  //  ⭐ يجبر Angular على إعادة التحديث
+}
 
   ngOnInit() {
+    
+    this.currentLang = this.lang.getCurrent();
     // اشترك لتحديث واجهة المستخدم تلقائياً عند تغير المستخدم
     this.userSub = this.auth.currentUser$.subscribe(user => {
       if (user) {

@@ -4,12 +4,15 @@ import { ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { WohnungenService,Wohnung} from '../services/wohnungen.service';
+import { EnumTranslatePipe } from '../pipes/enum-translate.pipe';
+import { TranslateModule } from '@ngx-translate/core';
+import { LanguageSelectorComponent } from '../language-selector/language-selector.component';
 
 
 @Component({
   selector: 'app-wohnung-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, EnumTranslatePipe, TranslateModule, LanguageSelectorComponent ],
   templateUrl: './wohnung-detail.component.html',
   styleUrls: ['./wohnung-detail.component.scss']
 

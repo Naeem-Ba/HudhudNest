@@ -5,11 +5,14 @@ import { Router } from '@angular/router';
 import { EnumService, EnumItem } from '../services/enum.service';
 import { WohnungenService ,Wohnung} from '../services/wohnungen.service';
 import { WohnungenComponent } from '../wohnungen/wohnungen.component';
+import { EnumTranslatePipe } from '../pipes/enum-translate.pipe';
+import { TranslateModule } from '@ngx-translate/core';
+import { LanguageSelectorComponent } from '../language-selector/language-selector.component';
 
 @Component({
   selector: 'app-wohnung-add',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, EnumTranslatePipe, TranslateModule, LanguageSelectorComponent],
   templateUrl: './wohnung-add.component.html',
   styleUrls: ['./wohnung-add.component.scss']
 })

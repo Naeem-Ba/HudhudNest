@@ -1,29 +1,53 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, map } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  private loggedIn = new BehaviorSubject<boolean>(this.hasToken());
+  // ❗ نبدأ دائماً بـ false
+  private loggedIn = new BehaviorSubject<boolean>(false);
   isLoggedIn$ = this.loggedIn.asObservable();
 
-  private currentUserSubject = new BehaviorSubject<any>(this.loadUser());
+  private currentUserSubject = new BehaviorSubject<any>(null);
   currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor() {}
+    // لمعرفة ما إذا كان المستخدم Admin
+  isAdmin$ = this.currentUser$.pipe(
+    map(user => user?.Role === 'Admin')
+  );
 
-  private hasToken(): boolean {
+ constructor(private http: HttpClient) {
+    this.validateSession(); // استدعاء واحد فقط
+  }
+
+    /**
+   * يتحقق من الجلسة عبر السيرفر
+   */
+  validateSession(): void {
     const token = localStorage.getItem('token');
-    return token !== null && token.trim() !== '' && token !== 'undefined';
+
+    if (!token || token === 'undefined') {
+      this.logout();
+      return;
+    }
+
+    this.http.get<any>('https://localhost:7136/api/auth/me')
+      .subscribe({
+        next: user => {
+          this.currentUserSubject.next(user);
+          this.loggedIn.next(true);
+        },
+        error: () => {
+          this.logout(); // token غير صالح
+        }
+      });
   }
 
-  private loadUser() {
-    const u = localStorage.getItem('loggedUser');
-    try { return u ? JSON.parse(u) : null; }
-    catch { return null; }
-  }
-
-  login(res: any) {
+  /**
+   * عند تسجيل الدخول
+   */
+  login(res: any): void {
     localStorage.setItem('token', res.token);
     localStorage.setItem('loggedUser', JSON.stringify(res.user));
 
@@ -31,16 +55,15 @@ export class AuthService {
     this.loggedIn.next(true);
   }
 
-  logout() {
+  /**
+   * تسجيل الخروج
+   */
+  logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('loggedUser');
 
     this.currentUserSubject.next(null);
     this.loggedIn.next(false);
   }
-
-  // لمعرفة ما إذا كان المستخدم Admin
-  isAdmin$ = this.currentUser$.pipe(
-    map(user => user?.role === 'Admin')
-  );
 }
+

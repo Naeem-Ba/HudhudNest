@@ -1,10 +1,10 @@
  <div class="home-container">
-      <h1>🏠 Willkommen zu Wohnungen App!</h1>
-      <p>Finden Sie Ihre Traumwohnung oder fügen Sie eine neue hinzu.</p>
+      <h1>🏠 {{ 'home.title' | translate }}</h1>
+      <p>{{ 'home.subtitle' | translate }}</p>
 
       <div class="buttons">
-        <button routerLink="/wohnungen" class="btn primary">Wohnungen ansehen</button>
-        <button routerLink="/wohnung-add" class="btn secondary">Neue Wohnung hinzufügen</button>
+        <button routerLink="/wohnungen" class="btn primary">{{ 'home.btn_view' | translate }}</button>
+        <button routerLink="/wohnung-add" class="btn secondary">{{ 'home.btn_add' | translate }}</button>
       </div>
 
     <!--  <h2>Neueste Wohnungen</h2>
@@ -24,11 +24,11 @@
       </div>-->
 
       <div class="info-box">
-        <h3>Tipps:</h3>
+        <h3>{{ 'home.tips' | translate }}</h3>
         <ul>
-          <li>Mehrere Bilder pro Wohnung sind möglich.</li>
-          <li>Klicken Sie auf eine Wohnung, um Details zu sehen.</li>
-          <li>Verwenden Sie die Navigation, um schnell zu wechseln.</li>
+          <li>{{ 'home.tips_list.multi_images' | translate }}</li>
+          <li>{{ 'home.tips_list.click_details' | translate }}</li>
+          <li>{{ 'home.tips_list.use_nav' | translate }}</li>
         </ul>
       </div>
     </div>

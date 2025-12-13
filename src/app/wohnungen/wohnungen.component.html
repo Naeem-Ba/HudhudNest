@@ -1,7 +1,7 @@
 
 <div class="wohnungen-list">
 
-  <h2>Verfügbare Wohnungen</h2>
+  <h2>{{ 'APARTMENTS.TITLE' | translate }}</h2>
 
   <div *ngFor="let w of wohnungen" class="wohnung-card">
     <h3>{{ w.Titel }}</h3>
@@ -12,32 +12,41 @@
 
     <p *ngIf="w.OwnerId"><strong>Owner ID:</strong> {{ w.OwnerId }}</p>
 
-     <p><strong>Adresse:</strong>
+     <p><strong>{{ 'APARTMENTS.ADDRESS' | translate }}:</strong>
       {{ w.Adresse || '—' }}
     </p>
 
-    <p><strong>Ort:</strong>
-      {{ w.Stadt || '—' }} {{ w.PLZ || '—' }}
+    <p><strong>{{ 'APARTMENTS.CITY' | translate }}:</strong>
+      {{ w.Stadt | enumTranslate:'STADT' }} {{ w.PLZ || '—' }}
     </p>
 
-    <p><strong>Größe:</strong>
+    <p><strong>{{ 'APARTMENTS.SIZE' | translate }}</strong>
       {{ w.Flaeche ? (w.Flaeche + ' m²') : '—' }}
     </p>
 
-    <p><strong>Preis:</strong>
+    <p><strong>{{ 'APARTMENTS.PRICE' | translate }}:</strong>
       <span class="preis">
         {{ w.Kaufpreis || w.Warmmiete || w.Kaltmiete | currency:'EUR':'symbol' }}
       </span>
     </p>
 
     <div *ngIf="w.Amenities?.length">
-      <strong>Amenities:</strong>
+      <strong>{{ 'APARTMENTS.STATUS' | translate }}:</strong>
       <span *ngFor="let a of w.WohnungAmenities">{{ a.AmenityId }} </span>
     </div>
+
+ <!--    <p><strong>{{ 'APARTMENTS.STATUS' | translate }}:</strong>
+      {{ w.Status | enumTranslate:'STATUS' }}
+    </p>
+
+    <p><strong>{{ 'APARTMENTS.CONDITION' | translate }}:</strong>
+      {{ w.Zustand | enumTranslate:'ZUSTAND' }}
+    </p>
+  -->
     <button class="details-btn"
         *ngIf="w.Id"
         (click)="gotoDetails(w.Id)">
-      Details ansehen
+       {{ 'APARTMENTS.DETAILS' | translate }}
     </button>
   </div>
 </div>

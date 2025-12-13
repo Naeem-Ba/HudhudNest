@@ -13,15 +13,22 @@
         routerLink="/wohnung-add" 
         routerLinkActive="active">➕ Hinzufügen</a>
 
-        <a routerLink="/kontakt" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">kontakt</a>
-        <a *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)" routerLink="/admin/messages">📨 Messages</a>
-
-            <!-- LANGUAGE SWITCHER -->
-          <div class="lang-switcher">
-            <button (click)="switchLang('en')">EN</button>
-            <button (click)="switchLang('ar')">AR</button>
-          </div>
+        <a *ngIf="!(isAdmin$ | async)" routerLink="/kontakt" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">kontakt</a>
+        <a *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)" routerLink="/admin/messages" routerLinkActive="active">📨 Messages</a>
       </nav>
+      
+      <!-- LANGUAGE DROPDOWN -->
+<div class="lang-dropdown">
+  <button class="lang-btn" (click)="toggleLangMenu()">
+    {{ currentLang.toUpperCase() }} ▼
+  </button>
+
+  <ul class="lang-menu" *ngIf="langMenuOpen">
+    <li (click)="changeLang('ar')">العربية</li>
+    <li (click)="changeLang('en')">English</li>
+    <li (click)="changeLang('de')">Deutsch</li>
+  </ul>
+</div>
 
       <!-- ACCOUNT DROPDOWN -->
       <div class="account" *ngIf="isLoggedIn$ | async; else loginBtn">

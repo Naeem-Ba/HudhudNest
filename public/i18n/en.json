@@ -39,5 +39,29 @@
       "1": "On demand",
       "2": "By consumption"
     }
+  },
+
+  "home": {
+    "title": "Welcome to the Real Estate World app!",
+    "subtitle": "Find your perfect apartment or add a new one.",
+    "btn_view": "View apartments",
+    "btn_add": "Add a new apartment",
+    "tips": "Tips",
+    "tips_list": {
+      "multi_images": "You can add multiple images per apartment.",
+      "click_details": "Tap any apartment to see details.",
+      "use_nav": "Use the navigation bar to quickly move around."
+    }
+  },
+  
+  "APARTMENTS": {
+    "TITLE": "Available Apartments",
+    "ADDRESS": "Address",
+    "CITY": "City",
+    "SIZE": "Size",
+    "PRICE": "Price",
+    "STATUS": "Status",
+    "CONDITION": "Condition",
+    "DETAILS": "View Details"
   }
 }

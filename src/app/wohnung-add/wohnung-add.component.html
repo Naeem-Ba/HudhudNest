@@ -1,5 +1,5 @@
 <div class="card">
-  <h2>Wohnung hinzufügen</h2>
+  <h2>{{ 'wohnung_add.title' | translate }}</h2>
 
   <form (ngSubmit)="onSubmit()" #form="ngForm">
 
@@ -9,34 +9,34 @@
         <button type="button"
             [class.active]="wohnung.ZumKaufen"
             (click)="setMode('kaufen')">
-            Zum Kaufen
+            {{ 'wohnung_add.mode_buy' | translate }}
         </button>
 
        <button type="button"
             [class.active]="wohnung.ZumMieten"
             (click)="setMode('mieten')">
-           Zum Mieten
+           {{ 'wohnung_add.mode_rent' | translate }}
        </button>
     </div>
 
     <!-- Titel -->
-    <label>Titel:</label>
+    <label>{{ 'wohnung_add.titel' | translate }}</label>
     <input type="text" name="Titel" [(ngModel)]="wohnung.Titel" required />
 
     <!-- Beschreibung -->
-    <label>Beschreibung:</label>
+    <label>{{ 'wohnung_add.beschreibung' | translate }}</label>
     <textarea name="Beschreibung" [(ngModel)]="wohnung.Beschreibung"></textarea>
 
     <!-- Adresse -->
-    <label>Adresse:</label>
+    <label>{{ 'wohnung_add.adresse' | translate }}</label>
     <input type="text" name="Adresse" [(ngModel)]="wohnung.Adresse" />
 
     <!-- ENUM: Stadt -->
-    <label>Stadt:</label>
+    <label>{{ 'wohnung_add.stadt' | translate }}</label>
     <select name="Stadt" [(ngModel)]="wohnung.Stadt">
-      <option value="" disabled >-- Bitte wählen --</option>
+      <option value="" disabled >{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
       <option *ngFor="let item of stadtList" [value]="item.id">
-        {{ item.label }}
+       {{ item.label | enumTranslate:'STADT' }}
       </option>
     </select>
 
@@ -91,7 +91,7 @@
     <!-- ENUM: Zustand -->
     <label>Zustand:</label>
     <select name="Zustand" [(ngModel)]="wohnung.Zustand">
-      <option value="" disabled >-- Bitte wählen --</option>
+      <option value="" disabled >{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
       <option *ngFor="let item of zustandList" [value]="item.id">
         {{ item.label }}
       </option>
@@ -100,7 +100,7 @@
     <!-- ENUM: Status -->
     <label>Status:</label>
     <select name="Status" [(ngModel)]="wohnung.Status">
-      <option value="" disabled>-- Bitte wählen --</option>
+      <option value="" disabled>{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
       <option *ngFor="let item of statusList" [value]="item.id">
         {{ item.label }}
       </option>
@@ -109,7 +109,7 @@
     <!-- ENUM: Energieausweis -->
     <label>Energieausweis:</label>
     <select name="Energieausweis" [(ngModel)]="wohnung.Energieausweis">
-      <option value="" disabled>-- Bitte wählen --</option>
+      <option value="" disabled>{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
       <option *ngFor="let item of EnergieausweisTypList" [value]="item.id">
         {{ item.label }}
       </option>

@@ -1,4 +1,4 @@
-<h2>Wohnung Details</h2>
+<h2>{{ 'wohnung_detail.title' | translate }}</h2>
 
 <!-- الصورة الرئيسية -->
 <div *ngIf="wohnung?.Bilder?.length" class="carousel">
@@ -42,7 +42,7 @@
   <h2>{{ wohnung.Titel }}</h2>
 
   <div class="wohnung-info">
-    <p><strong>Ort:</strong>
+    <p><strong>{{ 'wohnung_detail.ort' | translate }}:</strong>
       {{ wohnung.Stadt }} {{ wohnung.PLZ }}
     </p>
 
@@ -98,6 +98,6 @@
       {{ wohnung.Beschreibung}}
     </p>
 
-  <button type="button" routerLink="/wohnungen" class="back-btn">⬅ Zurück zur Übersicht</button>
+  <button type="button" routerLink="/wohnungen" class="back-btn">⬅ {{ 'wohnung_detail.back' | translate }}</button>
 </div>
 

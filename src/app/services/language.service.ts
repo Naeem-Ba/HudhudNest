@@ -4,8 +4,8 @@ import { TranslateService } from '@ngx-translate/core';
 @Injectable({ providedIn: 'root' })
 export class LanguageService {
 
-  defaultLang = 'en';
-  supported = ['en', 'ar'];
+  defaultLang = 'ar';
+  supported = ['en', 'ar', 'de'];
 
   constructor(private translate: TranslateService) {
 
