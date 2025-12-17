@@ -42,50 +42,50 @@
   <h2>{{ wohnung.Titel }}</h2>
 
   <div class="wohnung-info">
-    <p><strong>{{ 'wohnung_detail.ort' | translate }}:</strong>
+    <p><strong>{{ 'wohnung_detail.ort' | translate }} : </strong>
       {{ wohnung.Stadt }} {{ wohnung.PLZ }}
     </p>
 
-    <p><strong>Adresse:</strong>
+    <p><strong>{{ 'wohnung_detail.adresse' | translate }} : </strong>
       {{ wohnung.Adresse || '—' }}
     </p>
 
-    <p><strong>Größe:</strong>
+    <p><strong>{{ 'wohnung_detail.groesse' | translate }} : </strong>
       {{ wohnung.Flaeche ? (wohnung.Flaeche + ' m²') : '—' }}
     </p>
 
-    <p><strong>Zimmer:</strong>
+    <p><strong>{{ 'wohnung_detail.zimmer' | translate }} : </strong>
       {{ wohnung.Zimmer || '—' }}
     </p>
 
-    <p><strong>Etage:</strong>
+    <p><strong>{{ 'wohnung_detail.etage' | translate }} : </strong>
       {{ wohnung.Geschoss || '—' }}
     </p>
 
-    <p><strong>Preis:</strong>
+    <p><strong>{{ 'wohnung_detail.preis' | translate }} : </strong>
       {{ wohnung.Kaufpreis || wohnung.Warmmiete || wohnung.Kaltmiete
         | currency:'EUR':'symbol' }}
     </p>
 
-    <p><strong>Nebenkosten:</strong>
+    <p><strong>{{ 'wohnung_detail.nebenkosten' | translate }} : </strong>
       {{ wohnung.Nebenkosten ? (wohnung.Nebenkosten | currency:'EUR':'symbol') : '—' }}
     </p>
 
-    <p><strong>Kaution:</strong>
+    <p><strong>{{ 'wohnung_detail.kaution' | translate }} : </strong>
       {{ wohnung.Kaution ? (wohnung.Kaution | currency:'EUR':'symbol') : '—' }}
     </p>
 
-    <p><strong>Frei ab:</strong>
+    <p><strong>{{ 'wohnung_detail.frei_ab' | translate }} : </strong>
       {{ wohnung.FreiAb ? (wohnung.FreiAb | date:'dd.MM.yyyy') : '—' }}
     </p>
   </div>
 
   <div class="extras">
-    <p><strong>Ausstattung:</strong></p>
+    <p><strong>{{ 'wohnung_detail.ausstattung' | translate }} : </strong></p>
     <ul>
-      <li *ngIf="wohnung?.Balkon">Balkon</li>
-      <li *ngIf="wohnung?.Aufzug">Aufzug</li>
-      <li *ngIf="wohnung?.Stellplatz">Stellplatz</li>
+      <li *ngIf="wohnung?.Balkon">{{ 'wohnung_detail.balkon' | translate }}</li>
+      <li *ngIf="wohnung?.Aufzug">{{ 'wohnung_detail.aufzug' | translate }}</li>
+      <li *ngIf="wohnung?.Stellplatz">{{ 'wohnung_detail.stellplatz' | translate }}</li>
       <li *ngIf="wohnung?.Amenities?.length">
       <ng-container *ngFor="let a of wohnung?.WohnungAmenities; let last = last">
       {{ a.AmenityId }}<span *ngIf="!last">, </span>
@@ -94,7 +94,7 @@
     </ul>
   </div>
 
-  <p><strong>Beschreibung:</strong>
+  <p><strong>{{ 'wohnung_detail.beschreibung' | translate }} : </strong>
       {{ wohnung.Beschreibung}}
     </p>
 

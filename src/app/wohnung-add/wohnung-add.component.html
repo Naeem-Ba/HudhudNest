@@ -33,48 +33,48 @@
 
     <!-- ENUM: Stadt -->
     <label>{{ 'wohnung_add.stadt' | translate }}</label>
-    <select name="Stadt" [(ngModel)]="wohnung.Stadt">
-      <option value="" disabled >{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
-      <option *ngFor="let item of stadtList" [value]="item.id">
-       {{ item.label | enumTranslate:'STADT' }}
+    <select name="Stadt" [(ngModel)]="wohnung.Stadt" >
+      <option value="null" disabled selected >{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
+      <option *ngFor="let item of StadtList" [value]="item.id">
+       {{ item.id| enumTranslate:'STADT' }}
       </option>
     </select>
 
-    <label>PLZ:</label>
+    <label>{{ 'wohnung_add.plz' | translate }}</label>
     <input type="text" name="PLZ" [(ngModel)]="wohnung.PLZ" />
 
     <!-- Mietdetails -->
     <div class="section" *ngIf="wohnung.ZumMieten">
-      <label *ngIf="wohnung.ZumMieten">Kaltmiete:</label>
+      <label *ngIf="wohnung.ZumMieten">{{ 'wohnung_add.kaltmiete' | translate }}</label>
       <input type="number" name="Kaltmiete" [(ngModel)]="wohnung.Kaltmiete" />
 
-      <label *ngIf="wohnung.ZumMieten">Warmmiete:</label>
+      <label *ngIf="wohnung.ZumMieten">{{ 'wohnung_add.warmmiete' | translate }}</label>
       <input type="number" name="Warmmiete" [(ngModel)]="wohnung.Warmmiete" />
 
-      <label *ngIf="wohnung.ZumMieten">Nebenkosten:</label>
+      <label *ngIf="wohnung.ZumMieten">{{ 'wohnung_add.nebenkosten' | translate }}</label>
       <input type="number" name="Nebenkosten" [(ngModel)]="wohnung.Nebenkosten" />
 
-      <label *ngIf="wohnung.ZumMieten">Kaution:</label>
+      <label *ngIf="wohnung.ZumMieten">{{ 'wohnung_add.kaution' | translate }}</label>
       <input type="number" name="Kaution" [(ngModel)]="wohnung.Kaution" />
     </div>
 
     <!-- Kaufdetails -->
      <div class="section" *ngIf="wohnung.ZumKaufen">
-      <label *ngIf="wohnung.ZumKaufen">Kaufpreis:</label>
+      <label *ngIf="wohnung.ZumKaufen">{{ 'wohnung_add.kaufpreis' | translate }}</label>
       <input type="number" name="Kaufpreis" [(ngModel)]="wohnung.Kaufpreis" />
     </div>
 
 
-    <label>Zimmer:</label>
+    <label>{{ 'wohnung_add.zimmer' | translate }}</label>
     <input type="number" name="Zimmer" [(ngModel)]="wohnung.Zimmer" />
 
-    <label>Fläche (m²):</label>
+    <label>{{ 'wohnung_add.flaeche' | translate }}</label>
     <input type="number" name="Flaeche" [(ngModel)]="wohnung.Flaeche" />
 
-    <label>Geschoss:</label>
+    <label>{{ 'wohnung_add.geschoss' | translate }}</label>
     <input type="number" name="Geschoss" [(ngModel)]="wohnung.Geschoss" />
 
-    <label>Frei ab:</label>
+    <label>{{ 'wohnung_add.frei_ab' | translate }}</label>
     <input type="date" name="FreiAb" [(ngModel)]="wohnung.FreiAb" />
 
     <!-- Checkboxes -->
@@ -85,42 +85,42 @@
     </div>
 
     <!-- Heizung -->
-    <label>Heizung:</label>
+    <label>{{ 'wohnung_add.heizung' | translate }}</label>
     <input type="text" name="Heizung" [(ngModel)]="wohnung.Heizung" />
 
     <!-- ENUM: Zustand -->
-    <label>Zustand:</label>
+    <label>{{ 'wohnung_add.zustand' | translate }}</label>
     <select name="Zustand" [(ngModel)]="wohnung.Zustand">
-      <option value="" disabled >{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
-      <option *ngFor="let item of zustandList" [value]="item.id">
-        {{ item.label }}
+      <option value="" disabled selected >{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
+      <option *ngFor="let item of ZustandList" [value]="item.id">
+       {{ item.id | enumTranslate:'ZUSTAND' }}
       </option>
     </select>
 
     <!-- ENUM: Status -->
-    <label>Status:</label>
+    <label>{{ 'wohnung_add.status' | translate }}</label>
     <select name="Status" [(ngModel)]="wohnung.Status">
-      <option value="" disabled>{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
-      <option *ngFor="let item of statusList" [value]="item.id">
-        {{ item.label }}
+      <option value="" disabled selected >{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
+      <option *ngFor="let item of StatusList" [value]="item.id">
+        {{ item.id | enumTranslate:'STATUS' }}
       </option>
     </select>
 
     <!-- ENUM: Energieausweis -->
-    <label>Energieausweis:</label>
+    <label>{{ 'wohnung_add.energieausweis' | translate }}</label>
     <select name="Energieausweis" [(ngModel)]="wohnung.Energieausweis">
-      <option value="" disabled>{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
+      <option value="" disabled selected >{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
       <option *ngFor="let item of EnergieausweisTypList" [value]="item.id">
-        {{ item.label }}
+        {{ item.id | enumTranslate:'ENERGIEAUSWEISTYP' }}
       </option>
     </select>
 
-   <label>Bild hochladen:</label>
+   <label>{{ 'wohnung_add.bild_hochladen' | translate }}</label>
    <input type="file" multiple (change)="onFileSelected($event)" /><br /><br />
 
     <!-- عرض أسماء الملفات -->
     <div *ngIf="selectedFiles.length > 0">
-     <p>Ausgewählte Dateien:</p>
+     <p>{{ 'wohnung_add.selected_files' | translate }}</p>
      <ul>
        <li *ngFor="let file of selectedFiles">{{ file.name }}</li>
      </ul>
@@ -132,5 +132,5 @@
       </div>
     </div>
 
-  <button type="submit" [disabled]="!form.valid">Speichern</button>
+  <button type="submit" [disabled]="!form.valid">{{ 'COMMON.SAVE' | translate }}</button>
 </form>

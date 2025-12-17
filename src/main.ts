@@ -1,7 +1,7 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { HttpClient , HttpClientModule} from '@angular/common/http';
+import { HttpClient} from '@angular/common/http';
 import { importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -20,9 +20,8 @@ bootstrapApplication(AppComponent, {
     provideRouter(routes),
     provideHttpClient(),
     importProvidersFrom(
-      HttpClientModule,
       TranslateModule.forRoot({
-        defaultLanguage: 'en',
+        defaultLanguage: 'ar',
         loader: {
           provide: TranslateLoader,
           useFactory: HttpLoaderFactory,

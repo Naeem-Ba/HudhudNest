@@ -41,7 +41,7 @@
     }
   },
 
-  "home": {
+  "HOME": {
     "title": "Welcome to the Real Estate World app!",
     "subtitle": "Find your perfect apartment or add a new one.",
     "btn_view": "View apartments",
@@ -63,5 +63,36 @@
     "STATUS": "Status",
     "CONDITION": "Condition",
     "DETAILS": "View Details"
+  },
+  "wohnung_add": {
+    "title": "Add apartment",
+    "mode_buy": "For purchase",
+    "mode_rent": "For rent",
+    "titel": "Address",
+    "beschreibung": "Description",
+    "adresse": "Address",
+    "stadt": "City",
+    "plz": "Postal code",
+    "kaltmiete": "Cold rent",
+    "warmmiete": "Warm rent",
+    "nebenkosten": "Additional costs",
+    "kaution": "Deposit",
+    "kaufpreis": "Purchase price",
+    "zimmer": "Number of rooms",
+    "flaeche": "Area (m²)",
+    "geschoss": "Floor",
+    "frei_ab": "Available from",
+    "balkon": "Balcony",
+    "aufzug": "elevator",
+    "stellplatz": "parking lot",
+    "heizung": "heating",
+    "zustand": "condition",
+    "status": "status",
+    "energieausweis": "energy certificate",
+    "bild_hochladen": "upload images",
+    "selected_files": "selected files",
+    "save": "save",
+    "choose":  "-- Please choose --",
+    "WoBiSave": "Apartment and pictures have been saved!"
   }
 }

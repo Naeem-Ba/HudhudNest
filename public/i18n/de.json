@@ -3,21 +3,37 @@
     "PLEASE_SELECT": "-- Bitte wählen --",
     "SAVE": "Speichern"
   },
+
   "ENUM": {
     "STADT": {
       "0": "Damaskus",
       "1": "Aleppo",
-      "2": "Homs"
+      "2": "Homs",
+      "3": "Latakia",
+      "4": "Hama",
+      "5": "Deir ez-Zor",
+      "6": "Raqqa",
+      "7": "Idlib",
+      "8": "Al-Hasakah",
+      "9": "Qamishli",
+      "10": "Daraa",
+      "11": "As-Suwayda",
+      "12": "Quneitra",
+      "13": "Tartus"
     },
     "ZUSTAND": {
       "0": "Unbekannt",
       "1": "Neu",
-      "2": "Renoviert"
+      "2": "Renoviert",
+      "3": "Guter Zustand",
+      "4": "Renovierungsbedürftig"
     },
     "STATUS": {
       "0": "Verfügbar",
       "1": "Reserviert",
-      "2": "Verkauft"
+      "2": "Verkauft",
+      "3": "Vermietet",
+      "4": "Archiviert"
     },
     "ENERGIEAUSWEIS": {
       "0": "Nicht verfügbar",
@@ -25,26 +41,37 @@
       "2": "Nach Verbrauch"
     }
   },
-  
-  "home": {
-    "title": "Willkommen zu Wohnungen App!",
-    "subtitle": "Finden Sie Ihre Traumwohnung oder fügen Sie eine neue hinzu.",
+
+  "HOME": {
+    "title": "Willkommen in der Immobilienwelt!",
+    "subtitle": "Finden Sie Ihre perfekte Wohnung oder fügen Sie eine neue hinzu.",
     "btn_view": "Wohnungen ansehen",
     "btn_add": "Neue Wohnung hinzufügen",
     "tips": "Tipps",
     "tips_list": {
-      "multi_images": "Mehrere Bilder pro Wohnung sind möglich.",
+      "multi_images": "Sie können mehrere Bilder pro Wohnung hochladen.",
       "click_details": "Klicken Sie auf eine Wohnung, um Details zu sehen.",
-      "use_nav": "Verwenden Sie die Navigation, um schnell zu wechseln."
+      "use_nav": "Nutzen Sie die Navigation für schnelles Wechseln."
     }
   },
 
+  "APARTMENTS": {
+    "TITLE": "Verfügbare Wohnungen",
+    "ADDRESS": "Adresse",
+    "CITY": "Stadt",
+    "SIZE": "Fläche",
+    "PRICE": "Preis",
+    "STATUS": "Status",
+    "CONDITION": "Zustand",
+    "DETAILS": "Details anzeigen"
+  },
+
   "wohnung_detail": {
-    "title": "Wohnung Details",
+    "title": "Wohnungsdetails",
     "back": "Zurück zur Übersicht",
-    "ort": "Ort",
+    "ort": "Stadt",
     "adresse": "Adresse",
-    "groesse": "Größe",
+    "groesse": "Fläche",
     "zimmer": "Zimmer",
     "etage": "Etage",
     "preis": "Preis",
@@ -60,8 +87,8 @@
 
   "wohnung_add": {
     "title": "Wohnung hinzufügen",
-    "mode_buy": "Zum Kaufen",
-    "mode_rent": "Zum Mieten",
+    "mode_buy": "Kaufen",
+    "mode_rent": "Mieten",
     "titel": "Titel",
     "beschreibung": "Beschreibung",
     "adresse": "Adresse",
@@ -83,9 +110,9 @@
     "zustand": "Zustand",
     "status": "Status",
     "energieausweis": "Energieausweis",
-    "bild_hochladen": "Bild hochladen",
+    "bild_hochladen": "Bilder hochladen",
     "selected_files": "Ausgewählte Dateien",
     "save": "Speichern",
-    "choose": "-- Bitte wählen --"
+    "WoBiSave": "Wohnung und Bilder wurden gespeichert!"
   }
 }

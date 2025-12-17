@@ -1,35 +1,35 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { EnumService, EnumItem } from '../services/enum.service';
 import { WohnungenService ,Wohnung} from '../services/wohnungen.service';
-import { WohnungenComponent } from '../wohnungen/wohnungen.component';
 import { EnumTranslatePipe } from '../pipes/enum-translate.pipe';
 import { TranslateModule } from '@ngx-translate/core';
-import { LanguageSelectorComponent } from '../language-selector/language-selector.component';
+import { TranslateService } from '@ngx-translate/core';
+
 
 @Component({
   selector: 'app-wohnung-add',
   standalone: true,
-  imports: [CommonModule, FormsModule, EnumTranslatePipe, TranslateModule, LanguageSelectorComponent],
+  imports: [CommonModule, FormsModule, EnumTranslatePipe, TranslateModule],
   templateUrl: './wohnung-add.component.html',
   styleUrls: ['./wohnung-add.component.scss']
 })
-export class WohnungAddComponent {
+export class WohnungAddComponent implements OnInit { //إضافة OnInit
 
   selectedFiles: File[] = [];
   previews: string[] = [];
-  stadtList: any[] = [];
-  zustandList: any[] = [];
-  statusList: any[] = [];
-  EnergieausweisTypList: any[] = [];
+  StadtList: EnumItem[] = []; //استخدم النوع المحدد
+  ZustandList: EnumItem[] = [];
+  StatusList: EnumItem[] = [];
+  EnergieausweisTypList: EnumItem[] = [];
 
-    wohnung: any = {
+    wohnung: Wohnung ={
     Titel: '',
     Beschreibung: '',
     Adresse: '',
-    Stadt: '',
+    Stadt: 0,
     PLZ: '',
     ZumMieten: false,
     ZumKaufen: false,
@@ -46,12 +46,16 @@ export class WohnungAddComponent {
     Aufzug:false,
     Stellplatz:false,
     Heizung: '',
-    Energieausweis:'',
-    Zustand:'',
-    Status:'',
+    Energieausweis: 0,
+    Zustand: 0,
+    Status: 0,
   };
 
-  constructor(private router: Router, private wohnungenService: WohnungenService,private enumService: EnumService) {}
+  constructor(
+    private router: Router,
+    private wohnungenService: WohnungenService,
+    private enumService: EnumService,
+    private translate: TranslateService) {}
 
     // عند تغيير حالة "ZumMieten" تعطيل "ZumKaufen"
   setMode(mode: 'mieten' | 'kaufen') {
@@ -76,10 +80,10 @@ export class WohnungAddComponent {
 }
 
   ngOnInit(): void {
-     this.enumService.getStadt().subscribe(res => this.stadtList = res);
-    this.enumService.getZustand().subscribe(res => this.zustandList = res);
-    this.enumService.getStatus().subscribe(res => this.statusList = res);
-    this.enumService.getEnergieausweisTyp().subscribe(res => this.EnergieausweisTypList = res);
+    this.enumService.getEnum('STADT').subscribe(res => this.StadtList = res);
+    this.enumService.getEnum('ZUSTAND').subscribe(res => this.ZustandList = res);
+    this.enumService.getEnum('STATUS').subscribe(res => this.StatusList = res);
+    this.enumService.getEnum('ENERGIEAUSWEISTYP').subscribe(res => this.EnergieausweisTypList = res);
   }
 
   onFileSelected(event: any) {
@@ -109,13 +113,21 @@ onSubmit() {
     formData.append('Bilder', file);
   });
 
-  this.wohnungenService.addWohnung(formData).subscribe({
-    next: () => {
-      alert('Wohnung + Bilder wurden gespeichert!');
+this.wohnungenService.addWohnung(formData).subscribe({
+  next: () => {
+
+    // ترجمة الرسالة داخل TypeScript بشكل صحيح
+    this.translate.get('wohnung_add.WoBiSave').subscribe(message => {
+      alert(message);
       this.router.navigate(['/wohnungen']);
-    },
-    error: (err) => console.error(err)
-  });
+    });
+
+  },
+  error: (err) => {
+    console.error(err);
+  }
+});
+
 }
 
 }

@@ -15,6 +15,7 @@ export const routes: Routes = [
     path: '',
     component: LayoutComponent,
     children: [
+      { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: 'home', component: HomeComponent },
       { path: 'wohnungen', component: WohnungenComponent },
       { path: 'wohnungen/:id', component: WohnungDetailComponent },

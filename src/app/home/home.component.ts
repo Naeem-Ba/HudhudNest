@@ -10,7 +10,7 @@ import { LanguageSelectorComponent } from '../language-selector/language-selecto
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, CommonModule, RouterLinkActive, EnumTranslatePipe, TranslateModule, LanguageSelectorComponent],
+  imports: [RouterLink, CommonModule, RouterLinkActive, EnumTranslatePipe, TranslateModule, LanguageSelectorComponent],
   templateUrl: `./home.component.html`
 })
 export class HomeComponent implements OnInit {

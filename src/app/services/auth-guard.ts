@@ -9,10 +9,11 @@ export const AuthGuard: CanActivateFn = () => {
 
   return auth.isLoggedIn$.pipe(
     map(isLogged => {
-      if (isLogged) return true;
+      if (isLogged) return true; // إذا سجل الدخول، اسمح بالوصول
 
-      router.navigate(['/login']);
-      return false;
+      router.navigate(['/login']); // وإلا، قم بالتوجيه إلى /login
+      console.log('AuthGuard is blocking navigation.')
+      return false; //  وامنعه من الوصول
     })
   );
 };

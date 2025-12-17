@@ -7,7 +7,7 @@ export interface Wohnung {
   Titel: string;
   Beschreibung: string;
   Adresse: string;
-  Stadt?: string;
+  Stadt?: number;
   PLZ?: string;
   ZumMieten: boolean;
   ZumKaufen?: boolean;
@@ -24,9 +24,9 @@ export interface Wohnung {
   Aufzug?: boolean;
   Stellplatz?: boolean;
   Heizung?: string;
-  Energieausweis?: 0;
-  Zustand?: 0; 
-  Status?: 0; 
+  Energieausweis?: number;
+  Zustand?: number; 
+  Status?: number; 
   OwnerId?: number;
   CreatedAt?: string; // ISO date
   UpdatedAt?: string; // ISO date

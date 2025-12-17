@@ -6,7 +6,7 @@ import { ContactService } from '../../services/contact.service';
 @Component({
   selector: 'app-message-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './message-details.component.html',
   styleUrls: ['./message-details.component.scss']
 })

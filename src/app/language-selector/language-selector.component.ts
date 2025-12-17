@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LanguageService } from '../services/language.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { LanguageService, LangCode } from '../services/language.service';
 
 @Component({
   selector: 'app-language-selector',
@@ -10,18 +10,64 @@ import { TranslateModule } from '@ngx-translate/core';
   template: `
     <div class="lang-selector">
       <h3>{{ 'COMMON.CHANGE_LANGUAGE' | translate }}</h3>
-      <button (click)="setLang('en')" [disabled]="isCurrent('en')">EN</button>
-      <button (click)="setLang('ar')" [disabled]="isCurrent('ar')">AR</button>
+
+      <!--
+        توليد أزرار اللغات ديناميكيًا
+        بدون تكرار وبدون hardcode
+      -->
+      <button
+        *ngFor="let lang of languages"
+        (click)="changeLanguage(lang.code)"
+        [disabled]="isCurrent(lang.code)"
+      >
+        {{ lang.label }}
+      </button>
     </div>
   `,
   styles: [`
-    .lang-selector { padding: 1rem; }
-    button { margin-right: 0.5rem; }
+    .lang-selector {
+      padding: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    button {
+      padding: 0.4rem 0.8rem;
+      cursor: pointer;
+    }
+
+    button[disabled] {
+      opacity: 0.6;
+      cursor: default;
+    }
   `]
 })
 export class LanguageSelectorComponent {
-  constructor(private lang: LanguageService) {}
 
-  setLang(l: string) { this.lang.use(l); }
-  isCurrent(l: string) { return this.lang.getCurrent() === l; }
+  /**
+   * قائمة اللغات
+   * يتم تهيئتها داخل constructor
+   * لأن service لا يكون متاحًا قبل ذلك
+   */
+  languages: readonly {
+    code: LangCode;
+    label: string;
+    dir: 'ltr' | 'rtl';
+  }[];
+
+  constructor(private langService: LanguageService) {
+    // تهيئة اللغات بعد حقن الخدمة
+    this.languages = this.langService.getLanguages();
+  }
+
+  /** تغيير اللغة */
+  changeLanguage(code: LangCode): void {
+    this.langService.use(code);
+  }
+
+  /** التحقق من اللغة الحالية */
+  isCurrent(code: LangCode): boolean {
+    return this.langService.getCurrent() === code;
+  }
 }
