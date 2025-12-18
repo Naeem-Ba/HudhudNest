@@ -27,4 +27,5 @@ export class EnumTranslatePipe implements PipeTransform {
     // إذا لم يجد الترجمة (أي أعاد المفتاح نفسه)، نعيد النص الأصلي أو فارغ
     return translated !== translationKey ? translated : `ID: ${id}`;
   }
+  
 }

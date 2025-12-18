@@ -29,7 +29,7 @@ export class WohnungAddComponent implements OnInit { //إضافة OnInit
     Titel: '',
     Beschreibung: '',
     Adresse: '',
-    Stadt: 0,
+    Stadt: null as any,
     PLZ: '',
     ZumMieten: false,
     ZumKaufen: false,
@@ -46,9 +46,9 @@ export class WohnungAddComponent implements OnInit { //إضافة OnInit
     Aufzug:false,
     Stellplatz:false,
     Heizung: '',
-    Energieausweis: 0,
-    Zustand: 0,
-    Status: 0,
+    Energieausweis: null as any,
+    Zustand: null as any,
+    Status: null as any,
   };
 
   constructor(

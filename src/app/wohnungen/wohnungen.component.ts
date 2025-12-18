@@ -6,8 +6,9 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { Observable } from 'rxjs';
 import { EnumTranslatePipe } from '../pipes/enum-translate.pipe';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageSelectorComponent } from '../language-selector/language-selector.component';
+import { EnumService } from '../services/enum.service'; 
 
 @Component({
   selector: 'app-wohnungen',
@@ -22,7 +23,9 @@ export class WohnungenComponent implements OnInit {
   constructor(
     private wohnungenService: WohnungenService,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private enumService: EnumService,
+    private translate: TranslateService
   ) { this.isLoggedIn$ = this.authService.isLoggedIn$;}
 
   ngOnInit(): void {

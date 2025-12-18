@@ -17,7 +17,7 @@
     </p>
 
     <p><strong>{{ 'APARTMENTS.CITY' | translate }}:</strong>
-      {{ w.Stadt | enumTranslate:'STADT' }} {{ w.PLZ || '—' }}
+      <!--{{ w.Stadt | enumTranslate:'STADT' }} {{ w.PLZ || '—' }}-->
     </p>
 
     <p><strong>{{ 'APARTMENTS.SIZE' | translate }}</strong>
@@ -35,14 +35,10 @@
       <span *ngFor="let a of w.WohnungAmenities">{{ a.AmenityId }} </span>
     </div>
 
- <!--    <p><strong>{{ 'APARTMENTS.STATUS' | translate }}:</strong>
+    <p><strong>{{ 'APARTMENTS.STATUS' | translate }}:</strong>
       {{ w.Status | enumTranslate:'STATUS' }}
     </p>
 
-    <p><strong>{{ 'APARTMENTS.CONDITION' | translate }}:</strong>
-      {{ w.Zustand | enumTranslate:'ZUSTAND' }}
-    </p>
-  -->
     <button class="details-btn"
         *ngIf="w.Id"
         (click)="gotoDetails(w.Id)">
