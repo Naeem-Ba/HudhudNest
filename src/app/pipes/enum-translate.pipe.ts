@@ -5,27 +5,24 @@ import { EnumService } from '../services/enum.service';
 @Pipe({
   name: 'enumTranslate',
   standalone: true,
-  pure: false // مهم جداً لأن الترجمة قد تتغير أو البيانات قد تتأخر
+  pure: false
 })
 export class EnumTranslatePipe implements PipeTransform {
 
   constructor(
-    private translate: TranslateService,
-    private enumService: EnumService //  حقن الخدمة
+    private enumService: EnumService,
+    private translate: TranslateService
   ) {}
 
-  transform(id: any, group: string): string {
-    if (id === null || id === undefined) return '';
+  transform(id: any | null | undefined, group: string): string {
+    if (id == null || id === undefined || id === '') return '---';
 
-    // بناء المفتاح بناءً على الـ ID ليتطابق مع ملف JSON
-    // مثال: ENUM.STADT.0
-    const translationKey = `ENUM.${group.toUpperCase()}.${id}`;
+    const key = this.enumService.getKey(group, id);
+    if (!key) return '-/-';
 
-    // محاولة الترجمة
-    const translated = this.translate.instant(translationKey);
+    const tKey = `ENUM.${group.toUpperCase()}.${key}`;
+    const translated = this.translate.instant(tKey);
 
-    // إذا لم يجد الترجمة (أي أعاد المفتاح نفسه)، نعيد النص الأصلي أو فارغ
-    return translated !== translationKey ? translated : `ID: ${id}`;
+    return translated !== tKey ? translated : key;
   }
-  
 }

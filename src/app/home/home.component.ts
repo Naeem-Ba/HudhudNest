@@ -11,7 +11,8 @@ import { LanguageSelectorComponent } from '../language-selector/language-selecto
   selector: 'app-home',
   standalone: true,
   imports: [RouterLink, CommonModule, RouterLinkActive, EnumTranslatePipe, TranslateModule, LanguageSelectorComponent],
-  templateUrl: `./home.component.html`
+  templateUrl: `./home.component.html`,
+  styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
   wohnungen: Wohnung[] = [];
@@ -20,8 +21,13 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     this.wohnungenService.getWohnungen().subscribe({
-      next: data => this.wohnungen = data.reverse().slice(0, 6), // آخر 6 شقق
-      error: err => console.error(err)
-    });
+    next: data => {
+      // ترتيب حسب المعرف (الأحدث أولاً) وأخذ أول 6
+      this.wohnungen = data
+        .sort((a, b) => (b.Id || 0) - (a.Id || 0))
+        .slice(0, 6);
+    },
+    error: err => console.error('Error fetching latest properties', err)
+  });
   }
 }

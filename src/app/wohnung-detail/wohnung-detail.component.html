@@ -43,7 +43,7 @@
 
   <div class="wohnung-info">
     <p><strong>{{ 'wohnung_detail.ort' | translate }} : </strong>
-      {{ wohnung.Stadt }} {{ wohnung.PLZ }}
+      {{ wohnung.Stadt| enumTranslate:'STADT' }} {{ wohnung.PLZ }}
     </p>
 
     <p><strong>{{ 'wohnung_detail.adresse' | translate }} : </strong>

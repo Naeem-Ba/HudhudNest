@@ -5,39 +5,39 @@
   },
   "ENUM": {
     "STADT": {
-      "0": "Damascus",
-      "1": "Aleppo",
-      "2": "Homs",
-      "3": "Latakia",
-      "4": "Hama",
-      "5": "Deir ez-Zor",
-      "6": "Raqqa",
-      "7": "Idlib",
-      "8": "Al-Hasakah",
-      "9": "Qamishli",
-      "10": "Daraa",
-      "11": "As-Suwayda",
-      "12": "Quneitra",
-      "13": "Tartus"
+      "DAMASKUS": "Damascus",
+      "ALEPPO": "Aleppo",
+      "HOMS": "Homs",
+      "LATTAKIA": "Lattakia",
+      "HAMA": "Hama",
+      "DEIREZZOR": "Deir ez-Zor",
+      "RAQQA": "Raqqa",
+      "IDLIB": "Idlib",
+      "HASAKAH": "Hasakah",
+      "QAMISHLI": "Qamishli",
+      "DARAA": "Daraa",
+      "SWEIDA": "Sweida",
+      "QUNEITRA": "Quneitra",
+      "TARTUS": "Tartus"
     },
     "ZUSTAND": {
-      "0": "Unknown",
-      "1": "New",
-      "2": "Renovated",
-      "3": "Good condition",
-      "4": "Needs renovation"
+      "UNKNOWN": "Unknown",
+      "NEW": "New",
+      "RENOVATED": "Renovated",
+      "GOOD_CONDITION": "Good Condition",
+      "NEEDS_RENOVATION": "Needs Renovation"
     },
     "STATUS": {
-      "0": "Available",
-      "1": "Reserved",
-      "2": "Sold",
-      "3": "Rented",
-      "4": "Archived"
+      "AVAILABLE": "Available",
+      "RESERVED": "Reserved",
+      "SOLD": "Sold",
+      "RENTED": "Rented",
+      "ARCHIVED": "Archived"
     },
-    "ENERGIEAUSWEIS": {
-      "0": "Not available",
-      "1": "On demand",
-      "2": "By consumption"
+    "ENERGIEAUSWEISTYP": {
+      "NOT_AVAILABLE": "Not Available",
+      "BY_DEMAND": "By Demand",
+      "BY_CONSUMPTION": "By Consumption"
     }
   },
 
@@ -66,7 +66,7 @@
   },
   "wohnung_add": {
     "title": "Add apartment",
-    "mode_buy": "For purchase",
+    "mode_sale": "For sale",
     "mode_rent": "For rent",
     "titel": "Address",
     "beschreibung": "Description",

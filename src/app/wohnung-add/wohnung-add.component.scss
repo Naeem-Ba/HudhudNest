@@ -77,6 +77,31 @@ textarea:focus {
   background: #1976d2;
   color: white;
 }
+
+/* ====== Select (ENUM Dropdowns) ====== */
+select {
+  width: 100%;
+  padding: 9px 10px;
+  font-size: 14px;
+  border-radius: 7px;
+  border: 1px solid #ccc;
+  background: #f7f7f7;
+  color: #000;          
+  transition: 0.2s;
+}
+
+select:focus {
+  border-color: #1976d2;
+  background: #fff;
+  outline: none;
+  box-shadow: 0 0 3px rgba(25, 118, 210, 0.25);
+}
+
+/* ====== Option ====== */
+option {
+  color: #000;              /* مهم جدًا */
+  background: #fff;
+}
 /* ====== تشيك بوكس ====== */
 input[type="checkbox"] {
   transform: scale(1.1);  /* أصغر قليلاً */
@@ -124,6 +149,30 @@ button[disabled] {
 }
 
 /* ====== قائمة الملفات ====== */
+
+.file-upload-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+
+  .btn-upload {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    padding: 8px 15px;
+    cursor: pointer;
+    border-radius: 4px;
+    
+    &:hover {
+      background-color: #e0e0e0;
+    }
+  }
+
+  .file-count {
+    font-size: 0.9em;
+    color: #666;
+  }
+}
 ul {
   background: #f7f7f7;
   padding: 10px;          /* أقل */

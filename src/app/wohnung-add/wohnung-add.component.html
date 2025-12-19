@@ -9,7 +9,7 @@
         <button type="button"
             [class.active]="wohnung.ZumKaufen"
             (click)="setMode('kaufen')">
-            {{ 'wohnung_add.mode_buy' | translate }}
+            {{ 'wohnung_add.mode_sale' | translate }}
         </button>
 
        <button type="button"
@@ -34,9 +34,9 @@
     <!-- ENUM: Stadt -->
     <label>{{ 'wohnung_add.stadt' | translate }}</label>
     <select name="Stadt" [(ngModel)]="wohnung.Stadt" >
-      <option [ngValue]="null" disabled selected >{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
-      <option *ngFor="let item of StadtList" [value]="item.id">
-       {{ item.id| enumTranslate:'STADT' }}
+      <option [ngValue]="null">{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
+      <option *ngFor="let item of StadtList" [ngValue]="item.Id">
+       {{ item.Id| enumTranslate:'STADT' }}
       </option>
     </select>
 
@@ -92,8 +92,8 @@
     <label>{{ 'wohnung_add.zustand' | translate }}</label>
     <select name="Zustand" [(ngModel)]="wohnung.Zustand">
       <option [ngValue]="null" disabled selected >{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
-      <option *ngFor="let item of ZustandList" [value]="item.id">
-       {{ item.id | enumTranslate:'ZUSTAND' }}
+      <option *ngFor="let item of ZustandList" [ngValue]="item.Id">
+       {{ item.Id | enumTranslate:'ZUSTAND' }}
       </option>
     </select>
 
@@ -101,8 +101,8 @@
     <label>{{ 'wohnung_add.status' | translate }}</label>
     <select name="Status" [(ngModel)]="wohnung.Status">
       <option [ngValue]="null" disabled selected >{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
-      <option *ngFor="let item of StatusList" [value]="item.id">
-        {{ item.id | enumTranslate:'STATUS' }}
+      <option *ngFor="let item of StatusList" [ngValue]="item.Id">
+        {{ item.Id | enumTranslate:'STATUS' }}
       </option>
     </select>
 
@@ -110,13 +110,29 @@
     <label>{{ 'wohnung_add.energieausweis' | translate }}</label>
     <select name="Energieausweis" [(ngModel)]="wohnung.Energieausweis">
       <option [ngValue]="null" disabled selected >{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
-      <option *ngFor="let item of EnergieausweisTypList" [value]="item.id">
-        {{ item.id | enumTranslate:'ENERGIEAUSWEISTYP' }}
+      <option *ngFor="let item of EnergieausweisTypList" [ngValue]="item.Id">
+        {{ item.Id | enumTranslate:'ENERGIEAUSWEISTYP' }}
       </option>
     </select>
 
-   <label>{{ 'wohnung_add.bild_hochladen' | translate }}</label>
-   <input type="file" multiple (change)="onFileSelected($event)" /><br /><br />
+   <label></label>
+
+<input 
+  type="file" 
+  #fileInput 
+  hidden 
+  multiple 
+  (change)="onFileSelected($event)" />
+
+<div class="file-upload-wrapper">
+  <button type="button" class="btn-upload" (click)="fileInput.click()">
+    {{ 'wohnung_add.bild_hochladen' | translate }}
+  </button>
+  
+  <span class="file-count" *ngIf="selectedFiles.length > 0">
+    ({{ selectedFiles.length }}) {{ 'wohnung_add.selected_files' | translate }}
+  </span>
+</div>
 
     <!-- عرض أسماء الملفات -->
     <div *ngIf="selectedFiles.length > 0">

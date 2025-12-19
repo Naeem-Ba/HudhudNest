@@ -29,6 +29,7 @@ export class WohnungenComponent implements OnInit {
   ) { this.isLoggedIn$ = this.authService.isLoggedIn$;}
 
   ngOnInit(): void {
+
    // تحميل الشقق من السيرفر أول مرة
   this.wohnungenService.getWohnungen().subscribe(data => {
     console.log('📦 Wohnungen vom Server:', data);

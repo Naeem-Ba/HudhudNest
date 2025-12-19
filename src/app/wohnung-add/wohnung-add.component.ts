@@ -80,10 +80,11 @@ export class WohnungAddComponent implements OnInit { //إضافة OnInit
 }
 
   ngOnInit(): void {
-    this.enumService.getEnum('STADT').subscribe(res => this.StadtList = res);
-    this.enumService.getEnum('ZUSTAND').subscribe(res => this.ZustandList = res);
-    this.enumService.getEnum('STATUS').subscribe(res => this.StatusList = res);
-    this.enumService.getEnum('ENERGIEAUSWEISTYP').subscribe(res => this.EnergieausweisTypList = res);
+    // تحميل القوائم وربطها
+    this.StadtList = this.enumService.getList('STADT');
+    this.ZustandList = this.enumService.getList('ZUSTAND');
+    this.StatusList = this.enumService.getList('STATUS');
+    this.EnergieausweisTypList = this.enumService.getList('ENERGIEAUSWEISTYP');
   }
 
   onFileSelected(event: any) {
@@ -105,9 +106,14 @@ export class WohnungAddComponent implements OnInit { //إضافة OnInit
 onSubmit() {
   const formData = new FormData();
 
-  for (const key in this.wohnung) {
-    formData.append(key, (this.wohnung as any)[key]);
-  }
+  Object.keys(this.wohnung).forEach(key => {
+    const value = (this.wohnung as any)[key];
+    
+    // إرسال القيم فقط إذا لم تكن null أو undefined
+    if (value !== null && value !== undefined && value !== '') {
+      formData.append(key, value);
+    }
+  });
 
   this.selectedFiles.forEach(file => {
     formData.append('Bilder', file);
