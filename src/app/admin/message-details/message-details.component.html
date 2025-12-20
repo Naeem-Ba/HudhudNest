@@ -1,14 +1,14 @@
 <div class="details-container" *ngIf="!loading">
 
-  <h2>📄 تفاصيل الرسالة</h2>
+  <h2>{{ 'ADMIN_MSG.details_title' | translate }} : </h2>
 
   <div class="info-box">
-    <div class="label">الاسم:</div>
+    <div class="label">{{ 'ADMIN_MSG.table.name' | translate }} : </div>
     <div>{{ message.Name }}</div>
   </div>
 
   <div class="info-box">
-    <div class="label">البريد الإلكتروني:</div>
+    <div class="label">{{ 'ADMIN_MSG.table.email' | translate }} : </div>
     <div>{{ message.Email }}</div>
   </div>
 
@@ -23,7 +23,7 @@
   </div>
 
   <div class="info-box">
-    <div class="label">التاريخ:</div>
+    <div class="label">{{ 'ADMIN_MSG.table.date' | translate }} : </div>
     <div>{{ message.SentAt | date:'medium' }}</div>
   </div>
 

@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
+import { BehaviorSubject } from 'rxjs';
+
 export type LangCode = 'en' | 'ar' | 'de';
 
 @Injectable({ providedIn: 'root' })
@@ -11,6 +13,10 @@ export class LanguageService {
     { code: 'ar', label: 'العربية', dir: 'rtl' },
     { code: 'de', label: 'Deutsch', dir: 'ltr' }
   ] as const;
+
+  // سنضيف هذا الـ Subject لمراقبة تغيير اللغة
+  private langSubject = new BehaviorSubject<LangCode>('ar');
+  currentLang$ = this.langSubject.asObservable();
 
   private currentLang: LangCode = 'ar';
 
@@ -34,11 +40,12 @@ export class LanguageService {
     // ضبط اتجاه الصفحة (مهم جدًا للعربية)
     const dir = this.languages.find(l => l.code === lang)?.dir ?? 'ltr';
     document.documentElement.dir = dir;
+    document.documentElement.lang = lang;
   }
 
   /** اللغة الحالية */
   getCurrent(): LangCode {
-    return this.currentLang;
+    return this.langSubject.value;
   }
 
   /** جميع اللغات المدعومة */

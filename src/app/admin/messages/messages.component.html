@@ -11,11 +11,11 @@
   <table *ngIf="messages.length > 0" class="messages-table">
     <thead>
       <tr>
-        <th>الاسم</th>
-        <th>البريد</th>
-        <th>الرسالة</th>
-        <th>التاريخ</th>
-        <th>الحالة</th>
+        <th>{{ 'ADMIN_MSG.table.name' | translate }}</th>
+        <th>{{ 'ADMIN_MSG.table.email' | translate }}</th>
+        <th>{{ 'ADMIN_MSG.table.message' | translate }}</th>
+        <th>{{ 'ADMIN_MSG.table.date' | translate }}</th>
+        <th>{{ 'ADMIN_MSG.table.status' | translate }}</th>
       </tr>
     </thead>
     <tbody>
@@ -24,12 +24,12 @@
         <td>{{ msg.Email }}</td>
         <td>{{ msg.Message }}</td>
         <td>{{ msg.SentAt | date:'medium' }}</td>
-        <td>{{ msg.IsRead ? 'مقروءة' : 'غير مقروءة' }}</td>
+        <td>{{ msg.IsRead ? ('ADMIN_MSG.status.read' | translate) : ('ADMIN_MSG.status.unread' | translate) }}</td>
       </tr>
     </tbody>
   </table>
     <div class="actions">
-    <button class="back-btn" (click)="goBack()">⬅ رجوع</button>
+    <button class="back-btn" (click)="goBack()">{{ 'COMMON.BACK' | translate }}</button>
   </div>
 
 

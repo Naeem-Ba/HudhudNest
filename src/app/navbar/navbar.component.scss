@@ -1,157 +1,208 @@
+/* المتغيرات الأساسية */
+$primary-color: #007bff;
+$text-dark: #333;
+$bg-light: #f7f7f7;
+$border-color: #ddd;
+$white: #ffffff;
 
-    .navbar {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:12px 20px;
-      background:#f7f7f7;
-      border-bottom:1px solid #ddd;
-    }
-
-    .logo-container img {
-  height: 48px;
-  width: auto;
-  transition: transform 0.25s ease;
-}
-
-.logo-container:hover img {
-  transform: scale(1.05);
-}
-
-    .nav-links a {
-      margin-right:20px;
-      text-decoration:none;
-      color:#333;
-      font-weight:500;
-    }
-
-    .nav-links a.active {
-      color:#007bff;
-      font-weight:bold;
-    }
-
-    .account {
-      position:relative;
-      cursor:pointer;
-    }
-
-    .avatar {
-      width:40px;
-      height:40px;
-      background:#007bff;
-      color:white;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      border-radius:50%;
-      font-size:18px;
-      font-weight:bold;
-      user-select:none;
-    }
-
-    .dropdown {
-      position:absolute;
-      right:0;
-      top:50px;
-      width:180px;
-      background:white;
-      border:1px solid #ddd;
-      border-radius:8px;
-      padding:10px;
-      display:none;
-      box-shadow:0px 2px 10px rgba(0,0,0,0.15);
-    }
-    .avatar-img {
-  width:40px;
-  height:40px;
-  border-radius:50%;
-  object-fit:cover;
-  cursor:pointer;
-  border:2px solid #007bff;
-}
-
-    .dropdown.open {
-      display:block;
-    }
-
-    .dropdown a {
-      color:#d00;
-      cursor:pointer;
-      font-weight:500;
-    }
-
-    .user-email {
-      font-size:14px;
-      margin-bottom:10px;
-      color:#333;
-    }
-
-    .login-btn {
-      padding:6px 14px;
-      background:#007bff;
-      color:white;
-      border:none;
-      border-radius:5px;
-      cursor:pointer;
-    }
-
-    .lang-btn {
-     padding: 6px 12px;
-     border-radius: 6px;
-     background: #eee;
-     border: 1px solid #ccc;
-     cursor: pointer;
-     font-weight: bold;
-    }
-    
-    .lang-btn:hover {
-    background: #ddd;
-    }
-    .lang-dropdown {
-  position: relative;
-  margin-right: 12px;
-}
-
-.lang-btn {
-  padding: 6px 10px;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.lang-menu {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  background: white;
-  border: 1px solid #ddd;
-  list-style: none;
-  padding: 4px 0;
-  margin: 0;
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  background: $bg-light;
+  border-bottom: 1px solid $border-color;
+  min-height: 70px;
+  flex-wrap: nowrap;
+  position: sticky;
+  top: 0;
   z-index: 1000;
 }
 
-.lang-menu li {
-  padding: 6px 12px;
+/* الشعار */
+.logo-container img {
+  height: 48px;
+  width: auto;
+  display: block;
+}
+
+/* الروابط */
+.nav-links {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  margin-inline-start: 30px; /* مسافة من الشعار تدعم RTL */
+
+  a {
+    margin-inline-end: 20px; /* مسافة بين الروابط تدعم RTL */
+    text-decoration: none;
+    color: $text-dark;
+    font-weight: 500;
+    white-space: nowrap; // يمنع انكسار النص في اللغات الطويلة
+    transition: color 0.2s ease;
+
+    &:hover, &.active {
+      color: $primary-color;
+    }
+    
+    &.active {
+      font-weight: bold;
+    }
+  }
+}
+
+/* الجهة اليمنى */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* القوائم المنسدلة (الحساب واللغة) */
+.account, .lang-dropdown {
+  position: relative;
+}
+
+.dropdown, .lang-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  inset-inline-end: 0; /* يحاذي القائمة لليمين في LTR ولليسار في RTL */
+  background: $white;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  box-shadow: 0px 4px 15px rgba(0,0,0,0.15);
+  min-width: 200px;
+  width: max-content;
+  display: none;
+  z-index: 1100;
+  overflow: hidden;
+
+  &.open {
+    display: block;
+    animation: fadeIn 0.2s ease;
+  }
+}
+
+/* تفاصيل قائمة الحساب */
+.dropdown {
+  padding: 12px;
+
+  .dropdown-header {
+    padding-bottom: 8px;
+  }
+
+  .user-email {
+    font-size: 13px;
+    color: #666;
+    margin: 0;
+    word-break: break-all; // يكسر الإيميلات الطويلة جداً
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px solid #eee;
+    margin: 10px 0;
+  }
+
+  .logout-link {
+    color: #d00;
+    cursor: pointer;
+    font-weight: 600;
+    display: block;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+/* قائمة اللغة */
+.lang-menu {
+  padding: 5px 0;
+  min-width: 120px;
+
+  li {
+    padding: 10px 15px;
+    cursor: pointer;
+    list-style: none;
+    font-size: 14px;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #f2f2f2;
+      color: $primary-color;
+    }
+  }
+}
+
+/* الأزرار والأفاتار */
+.lang-btn {
+  padding: 8px 12px;
+  background: #eee;
+  border: 1px solid #ccc;
+  border-radius: 6px;
   cursor: pointer;
+  font-weight: bold;
+  white-space: nowrap;
 }
 
-.lang-menu li:hover {
-  background: #f2f2f2;
+.login-btn {
+  padding: 8px 18px;
+  background: $primary-color;
+  color: $white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  white-space: nowrap;
+
+  &:hover {
+    background: darken($primary-color, 10%);
+  }
 }
 
+.avatar-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-    /* Responsive */
-@media (max-width: 768px) {
+.avatar, .avatar-img {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid $primary-color;
+  flex-shrink: 0;
+}
+
+.avatar {
+  background: $primary-color;
+  color: $white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.avatar-img {
+  object-fit: cover;
+}
+
+/* الأنيميشن */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* التجاوب مع الموبايل */
+@media (max-width: 992px) {
+  .nav-links {
+    display: none; // يمكن استبدالها لاحقاً بـ Burger Menu
+  }
+  
   .navbar {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .navbar-links {
-    gap: 20px;
-  }
-
-  .logo-container img {
-    height: 40px;
+    padding: 10px;
   }
 }

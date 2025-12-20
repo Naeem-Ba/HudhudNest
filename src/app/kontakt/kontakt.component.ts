@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ContactService } from '../services/contact.service';
 import { RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-kontakt',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule,TranslateModule],
   templateUrl: './kontakt.component.html',
   styleUrls: ['./kontakt.component.scss']
 })
@@ -23,7 +24,10 @@ export class KontaktComponent {
   messageText = '';
   success = false;
 
-  constructor(private contactService: ContactService ) {}
+  constructor(
+    private contactService: ContactService,
+    private translate: TranslateService
+  ) {}
 
   onSubmit(form: NgForm) {
     // مارك الحقول كـ touched لعرض الرسائل لو لازم
@@ -31,7 +35,7 @@ export class KontaktComponent {
 
     if (form.invalid) {
       this.success = false;
-      this.messageText = 'Bitte füllen Sie alle erforderlichen Felder korrekt aus.';
+      this.messageText = this.translate.instant('KONTAKT.error_validation');
       return;
     }
 
@@ -41,14 +45,14 @@ export class KontaktComponent {
       next: (res) => {
         this.sending = false;
         this.success = true;
-        this.messageText = 'Ihre Nachricht wurde erfolgreich gesendet. Wir melden uns bald bei Ihnen.';
+        this.messageText = this.translate.instant('KONTAKT.success_msg');
         form.resetForm();
       },
       error: (err) => {
         console.error('Kontakt senden Fehler', err);
         this.sending = false;
         this.success = false;
-        this.messageText = 'Beim Senden ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
+        this.messageText = this.translate.instant('KONTAKT.error_msg');
       }
     });
   }

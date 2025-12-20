@@ -2,11 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router,RouterLink} from '@angular/router';
 import { ContactService } from '../../services/contact.service';
+import { TranslateModule } from '@ngx-translate/core';
+
 
 @Component({
   selector: 'app-admin-messages',
   standalone: true,
-  imports: [CommonModule,RouterLink],
+  imports: [CommonModule,RouterLink, TranslateModule],
   templateUrl: './messages.component.html',
   styleUrls: ['./messages.component.scss']
 })

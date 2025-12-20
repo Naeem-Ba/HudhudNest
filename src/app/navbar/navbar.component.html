@@ -1,60 +1,79 @@
- <header class="navbar">
-      <div class="navbar-left">
-    <a routerLink="/Home" class="logo-container">
+<header class="navbar">
+  <div class="navbar-left">
+    <a routerLink="/home" class="logo-container">
       <img src="images/horizontal-logo.png" alt="Logo" />
     </a>
   </div>
 
-      <nav class="nav-links">
-        <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
-        <a routerLink="/wohnungen" routerLinkActive="active">Wohnungen</a>
-        
-        <a *ngIf="isLoggedIn$ | async" 
-        routerLink="/wohnung-add" 
-        routerLinkActive="active">➕ Hinzufügen</a>
+  <nav class="nav-links">
+    <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      {{ 'NAVBAR.HOME' | translate }}
+    </a>
+    <a routerLink="/wohnungen" routerLinkActive="active">
+      {{ 'NAVBAR.WOHNUNGEN' | translate }}
+    </a>
+    
+    <a *ngIf="isLoggedIn$ | async" 
+       routerLink="/wohnung-add" 
+       routerLinkActive="active">
+       ➕ {{ 'NAVBAR.ADD' | translate }}
+    </a>
 
-        <a *ngIf="!(isAdmin$ | async)" routerLink="/kontakt" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">kontakt</a>
-        <a *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)" routerLink="/admin/messages" routerLinkActive="active">📨 Messages</a>
-      </nav>
-      
-      <!-- LANGUAGE DROPDOWN -->
-<div class="lang-dropdown">
-  <button class="lang-btn" (click)="toggleLangMenu()">
-    {{ currentLang.toUpperCase() }} ▼
-  </button>
+    <a *ngIf="!(isAdmin$ | async)" 
+       routerLink="/kontakt" 
+       routerLinkActive="active" 
+       [routerLinkActiveOptions]="{ exact: true }">
+       {{ 'NAVBAR.CONTACT' | translate }}
+    </a>
 
-  <ul class="lang-menu" *ngIf="langMenuOpen">
-    <li (click)="changeLang('ar')">العربية</li>
-    <li (click)="changeLang('en')">English</li>
-    <li (click)="changeLang('de')">Deutsch</li>
-  </ul>
-</div>
+    <a *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)" 
+       routerLink="/admin/messages" 
+       routerLinkActive="active">
+       📨 {{ 'NAVBAR.MESSAGES' | translate }}
+    </a>
+  </nav>
 
-      <!-- ACCOUNT DROPDOWN -->
-      <div class="account" *ngIf="isLoggedIn$ | async; else loginBtn">
-          <!-- صورة الحساب -->
-  <!-- إذا كان لديه صورة شخصية -->
-<img *ngIf="profileImageUrl && hasCustomImage"
-     class="avatar-img"
-     [src]="profileImageUrl"
-     (error)="useFallbackImage()"
-     (click)="toggleDropdown()"
-/>
+  <div class="navbar-right">
+    
+    <div class="lang-dropdown">
+      <button class="lang-btn" (click)="toggleLangMenu(); $event.stopPropagation()">
+        {{ currentLang.toUpperCase() }} ▼
+      </button>
+      <ul class="lang-menu" [class.open]="langMenuOpen">
+        <li (click)="changeLang('ar')">العربية</li>
+        <li (click)="changeLang('en')">English</li>
+        <li (click)="changeLang('de')">Deutsch</li>
+      </ul>
+    </div>
 
-<!-- إذا لم يكن لديه صورة شخصية -->
-<div *ngIf="!hasCustomImage"
-     class="avatar"
-     (click)="toggleDropdown()">
-  {{ avatarLetter }}
-</div>
+    <div class="account" *ngIf="isLoggedIn$ | async; else loginBtn">
+      <div class="avatar-wrapper" (click)="toggleDropdown(); $event.stopPropagation()">
+        <img *ngIf="hasCustomImage"
+             class="avatar-img"
+             [src]="profileImageUrl"
+             (error)="useFallbackImage()" />
 
-        <div class="dropdown" [class.open]="dropdownOpen">
-          <p class="user-email">{{ userEmail }}</p>
-          <a (click)="logout()">Abmelden</a>
+        <div *ngIf="!hasCustomImage" class="avatar">
+          {{ avatarLetter }}
         </div>
       </div>
 
-      <ng-template #loginBtn>
-        <button class="login-btn" routerLink="/login">Login</button>
-      </ng-template>
-    </header>
+      <div class="dropdown" [class.open]="dropdownOpen">
+        <div class="dropdown-header">
+          <p class="user-email">{{ userEmail }}</p>
+        </div>
+        <hr />
+        <a (click)="logout()" class="logout-link">
+          {{ 'NAVBAR.LOGOUT' | translate }}
+        </a>
+      </div>
+    </div>
+
+    <ng-template #loginBtn>
+      <button class="login-btn" routerLink="/login">
+        {{ 'NAVBAR.LOGIN' | translate }}
+      </button>
+    </ng-template>
+
+  </div>
+</header>

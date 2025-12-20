@@ -1,9 +1,58 @@
 {
   "COMMON": {
-    "PLEASE_SELECT": "-- Bitte wählen --",
-    "SAVE": "Speichern"
+   "SAVE": "Speichern",
+    "BACK": "Zurück",
+    "LOADING": "Laden...",
+    "PLEASE_SELECT": "Bitte auswählen",
+    "DELETE": "Löschen"
   },
-
+  "NAVBAR": {
+    "HOME": "Home",
+    "WOHNUNGEN": "Wohnungen",
+    "ADD": "Hinzufügen",
+    "CONTACT": "Kontakt",
+    "MESSAGES": "Nachrichten",
+    "LOGIN": "Login",
+    "LOGOUT": "Abmelden"
+  },
+   "KONTAKT": {
+    "title": "Kontaktieren Sie uns",
+    "name": "Vollständiger Name",
+    "nameCtrl": "Bitte geben Sie Ihren Namen ein (mindestens 3 Zeichen).",
+    "email": "E-Mail-Adresse",
+    "emailCtrl": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+    "subject": "Betreff",
+    "subCtrl":"Kurztitel (mindestens 3 Zeichen).",
+    "message": "Nachricht",
+    "msgCtrl": "Bitte geben Sie eine Nachricht ein (mindestens 10 Zeichen).",
+    "send": "Senden",
+    "sending": "Wird gesendet...",
+    "info_title": "Kontaktinformationen",
+    "telefon": "Telefon",
+    "adresse": "Adresse",
+    "stadt": "Stadt",
+    "strasse": "Strasse",
+    "success_msg": "Ihre Nachricht wurde erfolgreich gesendet!",
+    "error_msg": "Beim Senden ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+    "error_validation": "Bitte füllen Sie alle erforderlichen Felder korrekt aus."
+  },
+  "ADMIN_MSG": {
+    "title": "Kommunikationsnachrichten",
+    "details_title": "Nachrichtendetails",
+    "empty": "Noch keine Nachrichten.",
+    "table": {
+      "name": "Name",
+      "email":  "E-Mail",
+      "message": "Nachricht",
+      "date": "Datum",
+      "status": "Status"
+    },
+    "status": {
+      "read": "Gelesen",
+      "unread": "Ungelesen",
+      "mark_read": "Als gelesen markieren"
+    }
+  },
   "ENUM": {
     "STADT": {
       "DAMASKUS": "Damaskus",
@@ -43,8 +92,8 @@
   },
 
   "HOME": {
-    "title": "Willkommen in der Immobilienwelt!",
-    "subtitle": "Finden Sie Ihre perfekte Wohnung oder fügen Sie eine neue hinzu.",
+    "title": "Finden Sie Ihr Traumhaus",
+    "subtitle": "Wir bieten Ihnen die besten Wohnungen zum Mieten oder Kaufen",
     "btn_view": "Wohnungen ansehen",
     "btn_add": "Neue Wohnung hinzufügen",
     "tips": "Tipps",
@@ -52,7 +101,10 @@
       "multi_images": "Sie können mehrere Bilder pro Wohnung hochladen.",
       "click_details": "Klicken Sie auf eine Wohnung, um Details zu sehen.",
       "use_nav": "Nutzen Sie die Navigation für schnelles Wechseln."
-    }
+    },
+    "view_all": "Alle anzeigen",
+    "latest_apartments": "Neueste Wohnungen"
+
   },
 
   "APARTMENTS": {

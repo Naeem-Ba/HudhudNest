@@ -5,8 +5,7 @@ import { Router } from '@angular/router';
 import { EnumService, EnumItem } from '../services/enum.service';
 import { WohnungenService ,Wohnung} from '../services/wohnungen.service';
 import { EnumTranslatePipe } from '../pipes/enum-translate.pipe';
-import { TranslateModule } from '@ngx-translate/core';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 
 @Component({

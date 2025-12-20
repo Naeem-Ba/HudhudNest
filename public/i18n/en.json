@@ -1,7 +1,57 @@
 {
   "COMMON": {
-    "PLEASE_SELECT": "-- Please select --",
-    "SAVE": "Save"
+    "SAVE": "Save",
+    "BACK": "Back",
+    "LOADING": "Loading...",
+    "PLEASE_SELECT": "Please select",
+    "DELETE": "Delete"
+  },
+  "NAVBAR": {
+    "HOME": "Home",
+    "WOHNUNGEN": "Apartments",
+    "ADD": "Add Property",
+    "CONTACT": "Contact",
+    "MESSAGES": "Messages",
+    "LOGIN": "Login",
+    "LOGOUT": "Logout"
+  },
+   "KONTAKT": {
+    "title": "Contact Us",
+    "name": "Full Name",
+    "nameCtrl": "Please enter your name (at least 3 characters).",
+    "email": "Email Address",
+    "emailCtrl": "Please enter a valid email address.",
+    "subject": "Subject",
+    "subCtrl": "Short Title (at least 3 characters).",
+    "message": "Message",
+    "msgCtrl": "Please enter a message (at least 10 characters).",
+    "send": "Send",
+    "sending": "Sending...",
+    "info_title": "Contact Information",
+    "telefon": "Phone",
+    "adresse": "Address",
+    "stadt": "City",
+    "strasse": "Street",
+    "success_msg": "Your message was sent successfully!",
+    "error_msg": "An error occurred while sending. Please try again later.",
+    "error_validation": "Please fill in all required fields correctly."
+  },
+  "ADMIN_MSG": {
+    "title": "Communication Messages",
+    "details_title": "Message Details",
+    "empty": "No messages yet.",
+    "table": {
+      "name": "Name",
+      "email": "Email",
+      "message": "Message",
+      "date": "Date",
+      "status": "Status"
+    },
+    "status": {
+      "read": "Read",
+      "unread": "Unread",
+      "mark_read": "Mark as Read"
+    }
   },
   "ENUM": {
     "STADT": {
@@ -42,8 +92,8 @@
   },
 
   "HOME": {
-    "title": "Welcome to the Real Estate World app!",
-    "subtitle": "Find your perfect apartment or add a new one.",
+    "title": "Find Your Dream Home",
+    "subtitle": "Best apartments for rent or sale at the best prices",
     "btn_view": "View apartments",
     "btn_add": "Add a new apartment",
     "tips": "Tips",
@@ -51,7 +101,9 @@
       "multi_images": "You can add multiple images per apartment.",
       "click_details": "Tap any apartment to see details.",
       "use_nav": "Use the navigation bar to quickly move around."
-    }
+    },
+    "view_all": "view all",
+    "latest_apartments": "latest apartments"
   },
   
   "APARTMENTS": {

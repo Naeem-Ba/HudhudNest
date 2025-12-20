@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ContactService } from '../../services/contact.service';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-message-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule,TranslateModule],
   templateUrl: './message-details.component.html',
   styleUrls: ['./message-details.component.scss']
 })

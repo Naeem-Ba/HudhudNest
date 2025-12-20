@@ -4,11 +4,12 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { Observable, Subscription } from 'rxjs';
 import { LanguageService } from '../services/language.service';
-
+import { TranslateModule } from '@ngx-translate/core';
+import { LanguageSelectorComponent } from '../language-selector/language-selector.component';
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive,TranslateModule, LanguageSelectorComponent],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.scss']
 })
@@ -52,16 +53,23 @@ changeLang(lang: 'ar' | 'en' | 'de') {
 
   ngOnInit() {
     
-    this.currentLang = this.lang.getCurrent();
-    // اشترك لتحديث واجهة المستخدم تلقائياً عند تغير المستخدم
-    this.userSub = this.auth.currentUser$.subscribe(user => {
-      if (user) {
-        this.userEmail = user.email || '';
-        this.avatarLetter = this.userEmail ? this.userEmail.charAt(0).toUpperCase() : '?';
-        if (user.imageUrl && user.imageUrl.trim() !== '') {
-          this.profileImageUrl = user.imageUrl;
-          this.hasCustomImage = true;
-        } else {
+   // 1. مراقبة اللغة بشكل تلقائي
+  this.lang.currentLang$.subscribe(l => {
+    this.currentLang = l;
+  });
+
+  // 2. مراقبة المستخدم وتحديث الصورة/الحرف
+  this.userSub = this.auth.currentUser$.subscribe(user => {
+    if (user) {
+      this.userEmail = user.email || '';
+      // استخراج الحرف الأول بأمان
+      this.avatarLetter = this.userEmail ? this.userEmail.charAt(0).toUpperCase() : '?';
+
+        // التأكد من وجود صورة
+      if (user.imageUrl && user.imageUrl.length > 5) {
+        this.profileImageUrl = user.imageUrl;
+        this.hasCustomImage = true;
+      } else {
           this.profileImageUrl = 'assets/default-avatar.png';
           this.hasCustomImage = false;
         }
