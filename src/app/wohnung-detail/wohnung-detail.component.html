@@ -1,6 +1,7 @@
 
 <!-- الصورة الرئيسية -->
 <div *ngIf="wohnung?.Bilder?.length" class="carousel">
+  
   <h2>{{ 'wohnung_detail.title' | translate }}</h2>
   
   <div class="carousel-window"
@@ -43,7 +44,7 @@
 
   <div class="wohnung-info">
     <p><strong>{{ 'wohnung_detail.ort' | translate }} : </strong>
-      {{ w.Stadt| enumTranslate:'STADT'}} {{ wohnung.PLZ }}
+      {{ w.Stadt | enumTranslate:'STADT'}} {{ wohnung.PLZ }}
     </p>
 
     <p><strong>{{ 'wohnung_detail.adresse' | translate }} : </strong>

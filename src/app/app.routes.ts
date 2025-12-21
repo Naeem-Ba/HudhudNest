@@ -30,6 +30,13 @@ export const routes: Routes = [
       },
     ]
   },
+  {
+  path: 'profile',
+  loadComponent: () =>
+    import('./profile/profile.component')
+      .then(m => m.ProfileComponent),
+  canActivate: [AuthGuard]
+},
 
   { path: 'login', component: LoginComponent },
 {

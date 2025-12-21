@@ -17,6 +17,14 @@ export class EnumTranslatePipe implements PipeTransform {
   transform(id: any | null | undefined, group: string): string {
     if (id == null || id === undefined || id === '') return '---';
 
+    // إذا كانت String (مثل DAMASKUS)
+  if (typeof id === 'string') {
+    const tKey = `ENUM.${group}.${id}`;
+    const translated = this.translate.instant(tKey);
+    return translated !== tKey ? translated : id;
+  }
+  
+     // إذا كانت Id
     const key = this.enumService.getKey(group, id);
     if (!key) return '-/-';
 

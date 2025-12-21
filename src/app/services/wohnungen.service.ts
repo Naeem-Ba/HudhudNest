@@ -7,26 +7,32 @@ export interface Wohnung {
   Titel: string;
   Beschreibung: string;
   Adresse: string;
-  Stadt?: number;
+
+   Stadt?: number;          // ENUM: STADT
+  Zustand?: number;        // ENUM: ZUSTAND
+  Status?: number;         // ENUM: STATUS
+  Energieausweis?: number; // ENUM: ENERGIEAUSWEISTYP
+
   PLZ?: string;
   ZumMieten: boolean;
   ZumKaufen?: boolean;
+
   Kaltmiete?: number;
   Warmmiete?: number;
   Kaufpreis?: number;
   Nebenkosten?: number;
   Kaution?: number;
+
   Zimmer?: number;
   Flaeche?: number;
   Geschoss?: number;
   FreiAb?: string; // ISO date
+  
   Balkon?: boolean;
   Aufzug?: boolean;
   Stellplatz?: boolean;
   Heizung?: string;
-  Energieausweis?: number;
-  Zustand?: number; 
-  Status?: number; 
+  
   OwnerId?: number;
   CreatedAt?: string; // ISO date
   UpdatedAt?: string; // ISO date

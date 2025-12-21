@@ -60,7 +60,11 @@
 
       <div class="dropdown" [class.open]="dropdownOpen">
         <div class="dropdown-header">
-          <p class="user-email">{{ userEmail }}</p>
+            <a class="user-email"
+             routerLink="/profile"
+             (click)="dropdownOpen = false">
+             {{ userEmail }}
+            </a>
         </div>
         <hr />
         <a (click)="logout()" class="logout-link">

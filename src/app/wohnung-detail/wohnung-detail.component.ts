@@ -11,20 +11,25 @@ import { TranslateModule } from '@ngx-translate/core';
 @Component({
   selector: 'app-wohnung-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, EnumTranslatePipe, TranslateModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    EnumTranslatePipe,
+    TranslateModule
+  ],
   templateUrl: './wohnung-detail.component.html',
   styleUrls: ['./wohnung-detail.component.scss']
 
 })
 export class WohnungDetailComponent implements OnInit {
-  wohnung!: Wohnung;
   
+  wohnung!: Wohnung;
   currentIndex = 0;
+  modalOpen = false;
 
   startX = 0;
   currentX = 0;
   isDragging = false;
-  modalOpen = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -33,8 +38,8 @@ export class WohnungDetailComponent implements OnInit {
 
   ngOnInit() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.wohnungenService.getWohnung(id).subscribe(data => {
-      this.wohnung = data;
+    this.wohnungenService.getWohnung(id).subscribe(w => {
+      this.wohnung = w;
     });
   }
   getCurrentImageUrl() {

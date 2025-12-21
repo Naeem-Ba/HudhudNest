@@ -6,9 +6,14 @@ import { AuthService } from './auth.service';
 
 export interface Benutzer {
   Id?: number;
+  Vorname?: string;
   Name?: string;
+  DisplayName?: string;
   Email: string;
-  PasswordHash: string;
+  PasswordHash?: string;
+  Phone?: string;
+  IsAgent?: boolean;
+  ImageUrl?: string;
 }
 
 @Injectable({
@@ -43,18 +48,6 @@ login(data: Benutzer): Observable<any> {
     })
   );
 }
-
-//  login(data: Benutzer): Observable<any> {
-//    return this.http.post<any>(`${this.apiUrl}login`, data).pipe(
-//      map(res => {
-//        if (!res || !res.token) throw new Error('Ungültige Anmeldedaten');
-
-//        this.auth.login(res);
-//        return res;
-//      }),
-//      catchError(err => throwError(() => err))
-//    );
-//  }
 
   logout() {
     this.auth.logout();

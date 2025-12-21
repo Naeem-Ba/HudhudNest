@@ -61,7 +61,7 @@ changeLang(lang: 'ar' | 'en' | 'de') {
   // 2. مراقبة المستخدم وتحديث الصورة/الحرف
   this.userSub = this.auth.currentUser$.subscribe(user => {
     if (user) {
-      this.userEmail = user.email || '';
+      this.userEmail = user.Email || '';
       // استخراج الحرف الأول بأمان
       this.avatarLetter = this.userEmail ? this.userEmail.charAt(0).toUpperCase() : '?';
 
