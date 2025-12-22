@@ -1,9 +1,10 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { APP_INITIALIZER, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { AuthInterceptor } from './app/services/auth-interceptor';
 
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
@@ -40,6 +41,9 @@ bootstrapApplication(AppComponent, {
           deps: [HttpClient]
         }
       })
+    ),
+    provideHttpClient(
+      withInterceptors([AuthInterceptor])
     )
   ]
 }).catch(console.error);

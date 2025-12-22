@@ -12,6 +12,9 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<any>(null);
   currentUser$ = this.currentUserSubject.asObservable();
 
+  // رابط البروفايل الموحد
+  private readonly AUTH_API = 'https://localhost:7136/api/profile/me';
+
     // لمعرفة ما إذا كان المستخدم Admin
   isAdmin$ = this.currentUser$.pipe(
     map(user => user?.Role === 'Admin')
@@ -26,22 +29,21 @@ export class AuthService {
    */
   validateSession(): void {
     const token = localStorage.getItem('token');
-
-    if (!token || token === 'undefined') {
+    if (!token || token === 'undefined' || token === 'null') {
       this.logout();
       return;
     }
 
-    this.http.get<any>('https://localhost:7136/api/auth/me')
-      .subscribe({
-        next: user => {
-          this.currentUserSubject.next(user);
-          this.loggedIn.next(true);
-        },
-        error: () => {
-          this.logout(); // token غير صالح
-        }
-      });
+    // نستخدم نفس رابط البروفايل للتحقق من التوكن
+    this.http.get<any>(this.AUTH_API).subscribe({
+      next: (user) => {
+        this.currentUserSubject.next(user);
+        this.loggedIn.next(true);
+      },
+      error: () => {
+        this.logout(); // إذا انتهت صلاحية التوكن أو الرابط خطأ
+      }
+    });
   }
 
   /**
@@ -54,6 +56,13 @@ export class AuthService {
     this.currentUserSubject.next(res.user);
     this.loggedIn.next(true);
   }
+  
+  restoreSession() {
+  const token = localStorage.getItem('token');
+  if (token) {
+    this.validateSession();
+  }
+}
 
   /**
    * تسجيل الخروج

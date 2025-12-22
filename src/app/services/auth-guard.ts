@@ -6,6 +6,13 @@ import { map } from 'rxjs/operators';
 export const AuthGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
+  const token = localStorage.getItem('token');
+
+  // إذا لم يوجد توكن أصلاً، لا داعي للانتظار
+  if (!token) {
+    router.navigate(['/login']);
+    return false;
+  }
 
   return auth.isLoggedIn$.pipe(
     map(isLogged => {

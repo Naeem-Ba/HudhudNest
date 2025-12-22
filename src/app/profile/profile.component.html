@@ -1,96 +1,62 @@
-<div class="profile-wrapper" *ngIf="user">
+<div class="profile-wrapper">
+  
+  <div *ngIf="isLoading()" class="state-info">جاري مزامنة بياناتك...</div>
 
-  <div class="profile-card">
+  <div *ngIf="errorMsg()" class="state-info error">{{ errorMsg() }}</div>
 
-    <h2 class="title">الملف الشخصي</h2>
+  <div class="profile-card" *ngIf="user() && !isLoading()">
+    
+    <div class="header-section">
+      <h2>إعدادات الحساب</h2>
+      <p>قم بتحديث معلوماتك الشخصية وصورة البروفايل</p>
+    </div>
 
-    <!-- ===== Avatar ===== -->
-    <div class="avatar-section">
-      <div class="avatar-preview">
-        <img [src]="user.ImageUrl || 'default-avatar.png'" />
+    <div class="avatar-container">
+      <div class="img-wrapper">
+        <img [src]="avatarPreview() || 'assets/default-avatar.png'" alt="User Avatar">
       </div>
-
-      <label class="upload-btn">
-        📷 تغيير الصورة
-        <input
-          type="file"
-          accept="image/*"
-          hidden
-          (change)="onFileChange($event)"
-        />
+      <label class="upload-badge">
+        <input type="file" (change)="onFileSelected($event)" hidden accept="image/*">
+        <span>📷</span>
       </label>
     </div>
 
-    <!-- ===== Form ===== -->
-    <form class="form-grid" novalidate>
-
-      <div class="form-group">
-        <label for="vorname">الاسم الأول</label>
-        <input
-          id="vorname"
-          name="vorname"
-          type="text"
-          [(ngModel)]="user.Vorname"
-        />
+    <form class="custom-form">
+      <div class="field">
+        <label>الاسم الأول</label>
+        <input type="text" [(ngModel)]="user()!.Vorname" name="fn">
       </div>
 
-      <div class="form-group">
-        <label for="name">اسم العائلة</label>
-        <input
-          id="name"
-          name="name"
-          type="text"
-          [(ngModel)]="user.Name"
-        />
+      <div class="field">
+        <label>اسم العائلة</label>
+        <input type="text" [(ngModel)]="user()!.Name" name="ln">
       </div>
 
-      <div class="form-group">
-        <label for="displayName">اسم العرض</label>
-        <input
-          id="displayName"
-          name="displayName"
-          type="text"
-          [(ngModel)]="user.DisplayName"
-        />
+      <div class="field">
+        <label>اسم العرض (الاسم المستعار)</label>
+        <input type="text" [(ngModel)]="user()!.DisplayName" name="dn">
       </div>
 
-      <div class="form-group">
-        <label for="email">البريد الإلكتروني</label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          [value]="user.Email"
-          disabled
-        />
+      <div class="field">
+        <label>البريد الإلكتروني (لا يمكن تعديله)</label>
+        <input type="email" [value]="user()!.Email" disabled>
       </div>
 
-      <div class="form-group">
-        <label for="phone">رقم الهاتف</label>
-        <input
-          id="phone"
-          name="phone"
-          type="tel"
-          [(ngModel)]="user.Phone"
-        />
+      <div class="field">
+        <label>رقم الهاتف</label>
+        <input type="tel" [(ngModel)]="user()!.Phone" name="ph">
       </div>
 
-      <div class="form-group checkbox">
-        <label>
-          <input
-            type="checkbox"
-            name="isAgent"
-            [(ngModel)]="user.IsAgent"
-          />
-          وكيل عقاري
-        </label>
-      </div>
-
+      <label class="checkbox-field">
+        <input type="checkbox" [(ngModel)]="user()!.IsAgent" name="ag">
+        <span>تفعيل حسابي كوكيل عقاري موثق</span>
+      </label>
     </form>
 
-    <button class="save-btn" (click)="save()">
-      💾 حفظ التغييرات
-    </button>
+    <div class="actions">
+      <button class="btn-save" (click)="onSaveProfile()">حفظ التغييرات</button>
+      <button class="btn-delete" (click)="onDeleteAccount()">حذف الحساب نهائياً</button>
+    </div>
 
   </div>
 </div>
