@@ -64,6 +64,12 @@ export class ProfileComponent implements OnInit {
     const userData = this.user();
     if (!userData) return;
 
+    // شرط جديد: إذا كان وكيلاً، يجب إدخال رقم الهاتف
+  if (userData.IsAgent && (!userData.Phone || userData.Phone.trim() === '')) {
+    alert('⚠️ عذراً، يجب إدخال رقم الهاتف لتفعيل حساب الوكيل العقاري.');
+    return;
+  }
+
     this.profileService.updateProfile(userData).subscribe({
       next: (updated) => {
         this.user.set(updated);
@@ -87,29 +93,39 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
+    // استبدال المعاينة فوراً قبل الرفع لتحسين تجربة المستخدم (UX)
+  const reader = new FileReader();
+  reader.onload = () => {
+    this.avatarPreview.set(reader.result as string);
+  };
+  reader.readAsDataURL(file);
+
     if (file.size / 1024 / 1024 > this.maxFileSizeMB) {
       alert(`حجم الصورة يجب أن لا يتجاوز ${this.maxFileSizeMB} ميجابايت`);
       return;
     }
 
-    // عرض صورة مؤقتة للمستخدم (UX)
-    const reader = new FileReader();
-    reader.onload = () => this.avatarPreview.set(reader.result as string);
-    reader.readAsDataURL(file);
-
-    // الرفع الفعلي للسيرفر
-    this.profileService.uploadAvatar(file).subscribe({
-      next: (res) => {
-        if (this.user()) {
-          const updatedUser = { ...this.user()!, ImageUrl: res.imageUrl };
-          this.user.set(updatedUser);
-          this.updateAvatarPreview(res.imageUrl);
-          this.authService.updateCurrentUser(updatedUser);
-        }
-      },
-      error: () => alert('❌ حدث خطأ أثناء رفع الصورة')
-    });
-  }
+    // الرفع للسيرفر (سيقوم السيرفر باستبدال الملف القديم بنفس الاسم)
+  this.profileService.uploadAvatar(file).subscribe({
+    next: (res) => {
+      if (this.user()) {
+        const updatedUser = { ...this.user()!, ImageUrl: res.imageUrl };
+        this.user.set(updatedUser);
+        
+        // إضافة Timestamp للرابط لإجبار المتصفح على تحديث الصورة حتى لو لم يتغير الاسم
+        // هذا يمنع مشكلة الـ Caching
+        const cacheBuster = `?t=${new Date().getTime()}`;
+        this.avatarPreview.set(`${this.baseUrl}${res.imageUrl}${cacheBuster}`);
+        
+        this.authService.updateCurrentUser(updatedUser);
+      }
+    },
+    error: () => {
+      alert('❌ فشل رفع الصورة، تم استعادة الصورة السابقة.');
+      this.updateAvatarPreview(this.user()?.ImageUrl); // استعادة المعاينة الأصلية عند الخطأ
+    }
+  });
+}
 
   /** حذف الحساب */
   onDeleteAccount(): void {
@@ -122,5 +138,50 @@ export class ProfileComponent implements OnInit {
         error: () => alert('فشل حذف الحساب حالياً')
       });
     }
+  }
+
+  showPasswordForm = signal(false); // للتحكم في ظهور واجهة تغيير كلمة المرور
+  passwordData = {
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: ''
+  };
+
+  /** وظيفة تغيير كلمة المرور */
+  onChangePassword(): void {
+    const { currentPassword, newPassword, confirmPassword } = this.passwordData;
+
+    // 1. تحققات أولية
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      alert('الرجاء تعبئة جميع حقول كلمة المرور');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert('كلمة المرور الجديدة غير متطابقة مع التأكيد');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      alert('كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل');
+      return;
+    }
+
+    // 2. إرسال الطلب (نفترض وجود دالة changePassword في ProfileService)
+//    this.profileService.changePassword(this.passwordData).subscribe({
+ //     next: () => {
+ //       alert('✅ تم تغيير كلمة المرور بنجاح');
+ //       this.resetPasswordForm();
+ //     },
+ //     error: (err) => {
+ //       console.error(err);
+ //       alert('❌ فشل تغيير كلمة المرور. تأكد من كلمة المرور الحالية.');
+//      }
+//    });
+  }
+
+  resetPasswordForm() {
+    this.passwordData = { currentPassword: '', newPassword: '', confirmPassword: '' };
+    this.showPasswordForm.set(false);
   }
 }

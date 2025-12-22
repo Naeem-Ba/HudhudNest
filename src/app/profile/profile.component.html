@@ -43,14 +43,52 @@
       </div>
 
       <div class="field">
-        <label>رقم الهاتف</label>
-        <input type="tel" [(ngModel)]="user()!.Phone" name="ph">
-      </div>
+      <label>
+        رقم الهاتف 
+        <span *ngIf="user()?.IsAgent" style="color: red;">* (إلزامي للوكلاء)</span>
+      </label>
+      <input type="tel" [(ngModel)]="user()!.Phone" name="ph" [placeholder]="user()?.IsAgent ? 'يجب إدخال الرقم هنا' : ''">
+    </div>
 
+    <div class="agent-section">
       <label class="checkbox-field">
         <input type="checkbox" [(ngModel)]="user()!.IsAgent" name="ag">
         <span>تفعيل حسابي كوكيل عقاري موثق</span>
       </label>
+
+      <div class="tax-field" *ngIf="user()?.IsAgent" [@expandAnimation]>
+        <div class="field">
+          <label>الرقم الضريبي (Steuernummer)</label>
+          <!--<input type="text" [(ngModel)]="user()!.TaxNumber" name="tn" placeholder="مثال: 12/345/67890">-->
+        </div>
+      </div>
+    </div>
+
+              <div class="password-section">
+    <button type="button" class="btn-toggle-pass" (click)="showPasswordForm.set(!showPasswordForm())">
+      {{ showPasswordForm() ? 'إلغاء تغيير كلمة المرور' : '🔐 تغيير كلمة المرور' }}
+    </button>
+
+    <div class="password-fields" *ngIf="showPasswordForm()" [@expandAnimation]>
+      <div class="field">
+        <label>كلمة المرور الحالية</label>
+        <input type="password" [(ngModel)]="passwordData.currentPassword" placeholder="••••••••">
+      </div>
+
+      <div class="field">
+        <label>كلمة المرور الجديدة</label>
+        <input type="password" [(ngModel)]="passwordData.newPassword" placeholder="••••••••">
+      </div>
+
+      <div class="field">
+        <label>تأكيد كلمة المرور الجديدة</label>
+        <input type="password" [(ngModel)]="passwordData.confirmPassword" placeholder="••••••••">
+      </div>
+
+      <!--<button class="btn-save-pass" (click) Arab="onChangePassword()">تحديث كلمة المرور</button>-->
+    </div>
+  </div>
+
     </form>
 
     <div class="actions">
