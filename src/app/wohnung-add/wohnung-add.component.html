@@ -31,6 +31,19 @@
     <label>{{ 'wohnung_add.adresse' | translate }}</label>
     <input type="text" name="Adresse" [(ngModel)]="wohnung.Adresse" />
 
+    <div class="map-selection-section">
+  <label>{{ 'wohnung_add.select_location' | translate }}</label>
+  <p><small>{{ 'wohnung_add.map_instruction' | translate }}</small></p>
+  
+  <app-map-picker
+  (locationChange)="onLocationSelected($event)">
+</app-map-picker>
+
+<p *ngIf="lat">
+  📍 {{ lat }}, {{ lng }}
+</p>
+</div>
+
     <!-- ENUM: Stadt -->
     <label>{{ 'wohnung_add.stadt' | translate }}</label>
     <select name="Stadt" [(ngModel)]="wohnung.Stadt" >

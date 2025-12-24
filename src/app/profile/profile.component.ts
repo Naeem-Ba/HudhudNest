@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProfileService, UserProfile } from '../services/profile.service';
 import { AuthService } from '../services/auth.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
 })
@@ -15,17 +16,20 @@ export class ProfileComponent implements OnInit {
   // استخدام التبعيات الحديثة inject بدل Constructor
   private profileService = inject(ProfileService);
   private authService = inject(AuthService);
+  private translate = inject(TranslateService);
 
   // الحالة (State) الخاصة بالمكون
   user = signal<UserProfile | null>(null);
   isLoading = signal(true);
   errorMsg = signal('');
   avatarPreview = signal<string | null>(null);
+  showPasswordForm = signal(false)
   
   // إعدادات الملفات
   readonly baseUrl = 'https://localhost:7136';
   readonly allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
   readonly maxFileSizeMB = 2;
+  passwordData = { currentPassword: '', newPassword: '', confirmPassword: '' };
 
   ngOnInit(): void {
     this.fetchProfile();
@@ -33,7 +37,7 @@ export class ProfileComponent implements OnInit {
 
   /** تحميل بيانات الملف الشخصي من السيرفر */
   fetchProfile(): void {
-    this.isLoading.set(true);
+    this.isLoading.set(false);
     this.profileService.getMe().subscribe({
       next: (data) => {
         this.user.set({ ...data });
@@ -42,7 +46,7 @@ export class ProfileComponent implements OnInit {
       },
       error: (err) => {
         console.error('Fetch Error:', err);
-        this.errorMsg.set('تعذر تحميل البيانات، يرجى التحقق من الجلسة.');
+        this.errorMsg.set(this.translate.instant('PROFILE.FETCH_ERROR'));
         this.isLoading.set(false);
       }
     });
@@ -60,23 +64,29 @@ export class ProfileComponent implements OnInit {
   }
 
   /** حفظ التعديلات النصية */
-  onSaveProfile(): void {
-    const userData = this.user();
-    if (!userData) return;
+    onSaveProfile(): void {
+      const userData = this.user();
+      if (!userData) return;
 
-    // شرط جديد: إذا كان وكيلاً، يجب إدخال رقم الهاتف
-  if (userData.IsAgent && (!userData.Phone || userData.Phone.trim() === '')) {
-    alert('⚠️ عذراً، يجب إدخال رقم الهاتف لتفعيل حساب الوكيل العقاري.');
-    return;
-  }
+     // التحقق: إذا كان وكيلاً، يجب أن يكون الهاتف والرقم الضريبي غير فارغين
+    if (userData.IsAgent) {
+     const isPhoneEmpty = !userData.Phone || !userData.Phone.trim();
+     const isTaxEmpty = !userData.TaxNumber || !userData.TaxNumber.trim();
 
+     if (isPhoneEmpty || isTaxEmpty) {
+        // ستظهر هذه الرسالة إذا كان أحدهما أو كلاهما فارغاً
+        alert(this.translate.instant('PROFILE.MESSAGES.AGENT_VALIDATION'));
+       return;
+     }
+    }
+    // إذا اجتاز التحقق، يتم الإرسال للسيرفر
     this.profileService.updateProfile(userData).subscribe({
       next: (updated) => {
         this.user.set(updated);
         this.authService.updateCurrentUser(updated);
-        alert('✅ تم تحديث بياناتك بنجاح');
+        alert(this.translate.instant('PROFILE.MESSAGES.SAVE_SUCCESS'));
       },
-      error: () => alert('❌ فشل حفظ التعديلات')
+      error: () => alert(this.translate.instant('PROFILE.MESSAGES.SAVE_ERROR'))
     });
   }
 
@@ -101,7 +111,7 @@ export class ProfileComponent implements OnInit {
   reader.readAsDataURL(file);
 
     if (file.size / 1024 / 1024 > this.maxFileSizeMB) {
-      alert(`حجم الصورة يجب أن لا يتجاوز ${this.maxFileSizeMB} ميجابايت`);
+      alert(this.translate.instant('PROFILE.MESSAGES.SAVE_ERROR'));
       return;
     }
 
@@ -121,7 +131,7 @@ export class ProfileComponent implements OnInit {
       }
     },
     error: () => {
-      alert('❌ فشل رفع الصورة، تم استعادة الصورة السابقة.');
+      alert(this.translate.instant('PROFILE.MESSAGES.SAVE_ERROR'));
       this.updateAvatarPreview(this.user()?.ImageUrl); // استعادة المعاينة الأصلية عند الخطأ
     }
   });
@@ -129,59 +139,66 @@ export class ProfileComponent implements OnInit {
 
   /** حذف الحساب */
   onDeleteAccount(): void {
-    if (confirm('⚠️ تحذير: سيتم حذف حسابك نهائياً. هل أنت متأكد؟')) {
+    if (confirm(this.translate.instant('PROFILE.MESSAGES.DELETE_CONFIRM'))) {
       this.profileService.deleteAccount().subscribe({
         next: () => {
-          alert('تم حذف الحساب. وداعاً!');
+          alert(this.translate.instant('PROFILE.MESSAGES.DELETE_SUCCESS'));
           // هنا يفضل التوجيه لصفحة تسجيل الدخول أو الرئيسية
         },
-        error: () => alert('فشل حذف الحساب حالياً')
+        error: () => alert(this.translate.instant('PROFILE.MESSAGES.DELETE_ERROR'))
       });
     }
   }
 
-  showPasswordForm = signal(false); // للتحكم في ظهور واجهة تغيير كلمة المرور
-  passwordData = {
-  currentPassword: '',
-  newPassword: '',
-  confirmPassword: ''
-  };
-
   /** وظيفة تغيير كلمة المرور */
   onChangePassword(): void {
-    const { currentPassword, newPassword, confirmPassword } = this.passwordData;
+  const { currentPassword, newPassword, confirmPassword } = this.passwordData;
 
-    // 1. تحققات أولية
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      alert('الرجاء تعبئة جميع حقول كلمة المرور');
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      alert('كلمة المرور الجديدة غير متطابقة مع التأكيد');
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      alert('كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل');
-      return;
-    }
-
-    // 2. إرسال الطلب (نفترض وجود دالة changePassword في ProfileService)
-//    this.profileService.changePassword(this.passwordData).subscribe({
- //     next: () => {
- //       alert('✅ تم تغيير كلمة المرور بنجاح');
- //       this.resetPasswordForm();
- //     },
- //     error: (err) => {
- //       console.error(err);
- //       alert('❌ فشل تغيير كلمة المرور. تأكد من كلمة المرور الحالية.');
-//      }
-//    });
+  // 1. التحققات المحلية (Frontend Validation)
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    this.showAlert('PROFILE.MESSAGES.FILL_ALL_FIELDS');
+    return;
   }
 
-  resetPasswordForm() {
-    this.passwordData = { currentPassword: '', newPassword: '', confirmPassword: '' };
-    this.showPasswordForm.set(false);
+  if (newPassword !== confirmPassword) {
+    this.showAlert('PROFILE.MESSAGES.PASS_MISMATCH');
+    return;
   }
+
+  if (newPassword.length < 6) {
+    this.showAlert('PROFILE.MESSAGES.PASS_LENGTH');
+    return;
+  }
+
+  // 2. تجهيز البيانات (إرسال المفيد فقط)
+  const payload = {
+    currentPassword: currentPassword,
+    newPassword: newPassword
+  };
+
+  // 3. إرسال الطلب
+  this.profileService.changePassword(payload).subscribe({
+    next: () => {
+      this.showAlert('PROFILE.MESSAGES.PASS_SUCCESS');
+      this.resetPasswordForm();
+    },
+    error: (err) => {
+      console.error('Password Change Error:', err);
+      // التحقق إذا كان الخطأ من السيرفر (مثلاً كلمة المرور الحالية خاطئة)
+      this.showAlert('PROFILE.MESSAGES.PASS_ERROR');
+    }
+  });
+}
+
+/** دالة مساعدة لضمان جلب الترجمة بشكل صحيح */
+private showAlert(key: string): void {
+  this.translate.get(key).subscribe((translation: string) => {
+    alert(translation);
+  });
+}
+
+resetPasswordForm() {
+  this.passwordData = { currentPassword: '', newPassword: '', confirmPassword: '' };
+  this.showPasswordForm.set(false);
+}
 }

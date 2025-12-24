@@ -39,65 +39,82 @@
 </div>
 
 
-  <div *ngIf="wohnung as w" class="wohnung-detail-container">
-  <h2>{{ wohnung.Titel }}</h2>
+ <div *ngIf="wohnung as w" class="wohnung-detail-container">
+  <div class="detail-header">
+    <span class="badge" [class.rent]="w.ZumMieten" [class.sale]="w.ZumKaufen">
+      {{ (w.ZumMieten ? 'wohnung_add.mode_rent' : 'wohnung_add.mode_sale') | translate }}
+    </span>
+    <h2>{{ w.Titel }}</h2>
+  </div>
 
   <div class="wohnung-info">
     <p><strong>{{ 'wohnung_detail.ort' | translate }} : </strong>
-      {{ w.Stadt | enumTranslate:'STADT'}} {{ wohnung.PLZ }}
+      {{ w.Stadt | enumTranslate:'STADT'}} {{ w.PLZ }}
     </p>
 
     <p><strong>{{ 'wohnung_detail.adresse' | translate }} : </strong>
-      {{ wohnung.Adresse || '—' }}
+      {{ w.Adresse || '—' }}
     </p>
 
     <p><strong>{{ 'wohnung_detail.groesse' | translate }} : </strong>
-      {{ wohnung.Flaeche ? (wohnung.Flaeche + ' m²') : '—' }}
+      {{ w.Flaeche ? (w.Flaeche + ' m²') : '—' }}
     </p>
 
     <p><strong>{{ 'wohnung_detail.zimmer' | translate }} : </strong>
-      {{ wohnung.Zimmer || '—' }}
+      {{ w.Zimmer || '—' }}
     </p>
+
+    <div *ngIf="w.ZumKaufen" class="price-section">
+      <p class="main-price"><strong>{{ 'wohnung_add.kaufpreis' | translate }} : </strong>
+        {{ w.Kaufpreis | currency:'EUR':'symbol' }}
+      </p>
+    </div>
+
+    <div *ngIf="w.ZumMieten" class="price-section">
+      <p class="main-price"><strong>{{ 'wohnung_add.warmmiete' | translate }} : </strong>
+        {{ w.Warmmiete | currency:'EUR':'symbol' }}
+      </p>
+      <p><strong>{{ 'wohnung_add.kaltmiete' | translate }} : </strong>
+        {{ w.Kaltmiete | currency:'EUR':'symbol' }}
+      </p>
+      <p><strong>{{ 'wohnung_detail.nebenkosten' | translate }} : </strong>
+        {{ w.Nebenkosten | currency:'EUR':'symbol' }}
+      </p>
+      <p><strong>{{ 'wohnung_detail.kaution' | translate }} : </strong>
+        {{ w.Kaution | currency:'EUR':'symbol' }}
+      </p>
+    </div>
 
     <p><strong>{{ 'wohnung_detail.etage' | translate }} : </strong>
-      {{ wohnung.Geschoss || '—' }}
-    </p>
-
-    <p><strong>{{ 'wohnung_detail.preis' | translate }} : </strong>
-      {{ wohnung.Kaufpreis || wohnung.Warmmiete || wohnung.Kaltmiete
-        | currency:'EUR':'symbol' }}
-    </p>
-
-    <p><strong>{{ 'wohnung_detail.nebenkosten' | translate }} : </strong>
-      {{ wohnung.Nebenkosten ? (wohnung.Nebenkosten | currency:'EUR':'symbol') : '—' }}
-    </p>
-
-    <p><strong>{{ 'wohnung_detail.kaution' | translate }} : </strong>
-      {{ wohnung.Kaution ? (wohnung.Kaution | currency:'EUR':'symbol') : '—' }}
+      {{ w.Geschoss || '0' }}
     </p>
 
     <p><strong>{{ 'wohnung_detail.frei_ab' | translate }} : </strong>
-      {{ wohnung.FreiAb ? (wohnung.FreiAb | date:'dd.MM.yyyy') : '—' }}
+      {{ w.FreiAb ? (w.FreiAb | date:'dd.MM.yyyy') : '—' }}
+    </p>
+
+    <p><strong>{{ 'wohnung_add.zustand' | translate }} : </strong>
+      {{ w.Zustand | enumTranslate:'ZUSTAND' }}
+    </p>
+
+    <p><strong>{{ 'wohnung_add.heizung' | translate }} : </strong>
+      {{ w.Heizung || '—' }}
     </p>
   </div>
 
   <div class="extras">
     <p><strong>{{ 'wohnung_detail.ausstattung' | translate }} : </strong></p>
     <ul>
-      <li *ngIf="wohnung?.Balkon">{{ 'wohnung_detail.balkon' | translate }}</li>
-      <li *ngIf="wohnung?.Aufzug">{{ 'wohnung_detail.aufzug' | translate }}</li>
-      <li *ngIf="wohnung?.Stellplatz">{{ 'wohnung_detail.stellplatz' | translate }}</li>
-      <li *ngIf="wohnung?.Amenities?.length">
-      <ng-container *ngFor="let a of wohnung?.WohnungAmenities; let last = last">
-      {{ a.AmenityId }}<span *ngIf="!last">, </span>
-     </ng-container>
-     </li>
+      <li *ngIf="w.Balkon">{{ 'wohnung_detail.balkon' | translate }}</li>
+      <li *ngIf="w.Aufzug">{{ 'wohnung_detail.aufzug' | translate }}</li>
+      <li *ngIf="w.Stellplatz">{{ 'wohnung_detail.stellplatz' | translate }}</li>
     </ul>
   </div>
 
-  <p><strong>{{ 'wohnung_detail.beschreibung' | translate }} : </strong>
-      {{ wohnung.Beschreibung}}
-    </p>
+  <div class="description-box">
+    <p><strong>{{ 'wohnung_detail.beschreibung' | translate }} : </strong></p>
+    <p class="text-content">{{ w.Beschreibung }}</p>
+  </div>
 
   <button type="button" routerLink="/wohnungen" class="back-btn">⬅ {{ 'wohnung_detail.back' | translate }}</button>
 </div>

@@ -14,6 +14,9 @@ export interface Wohnung {
   Energieausweis?: number; // ENUM: ENERGIEAUSWEISTYP
 
   PLZ?: string;
+  Latitude?: number,
+  Longitude?: number,
+
   ZumMieten: boolean;
   ZumKaufen?: boolean;
 

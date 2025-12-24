@@ -116,6 +116,26 @@
     "CONDITION": "Condition",
     "DETAILS": "View Details"
   },
+  "wohnung_detail": {
+    "title": "Apartment details",
+    "back": "Back to overview",
+    "ort": "City",
+    "adresse": "Address",
+    "select_location": "select location",
+    "map_instruction": "map instruction",
+    "groesse": "Area",
+    "zimmer": "Room",
+    "etage": "Floor",
+    "preis": "Price",
+    "nebenkosten": "Additional costs",
+    "kaution": "Deposit",
+    "frei_ab": "Available from",
+    "beschreibung": "Description",
+    "ausstattung": "Amenities",
+    "balkon": "Balcony",
+    "aufzug": "Elevator",
+    "stellplatz": "Parking space"
+  },
   "wohnung_add": {
     "title": "Add apartment",
     "mode_sale": "For sale",
@@ -146,5 +166,41 @@
     "save": "save",
     "choose":  "-- Please choose --",
     "WoBiSave": "Apartment and pictures have been saved!"
+  },
+  "PROFILE": {
+    "SYNC_DATA": "Syncing your data...",
+    "FETCH_ERROR": "Could not load data, please check your session.",
+    "TITLE": "Account Settings",
+    "SUBTITLE": "Update your personal information and profile picture",
+    "UPLOAD_HINT": "Click to change image",
+    "FIRST_NAME": "First Name",
+    "LAST_NAME": "Last Name",
+    "DISPLAY_NAME": "Display Name (Alias)",
+    "EMAIL_LOCKED": "Email (Cannot be edited)",
+    "PHONE": "Phone Number",
+    "PHONE_REQUIRED_AGENT": "* (Required for Agents)",
+    "PHONE_PLACEHOLDER": "Enter number here",
+    "AGENT_CHECKBOX": "Activate my account as a verified real estate agent",
+    "TAX_NUMBER": "Tax Number",
+    "AGENT_VERIFIED_MSG": "Congratulations! Your account has been activated as a verified real estate agent.",
+    "TAX_PLACEHOLDER": "e.g., 12/345/67890",
+    "CHANGE_PASS_BTN": "Change Password",
+    "CANCEL_PASS_BTN": "Cancel Password Change",
+    "CURRENT_PASS": "Current Password",
+    "NEW_PASS": "New Password",
+    "SAVE_PASS":"Update password",
+    "CONFIRM_PASS": "Confirm New Password",
+    "SAVE_CHANGES": "Save Changes",
+    "DELETE_ACCOUNT": "Delete Account Permanently",
+    "MESSAGES": {
+      "SAVE_SUCCESS": "✅ Data updated successfully",
+      "SAVE_ERROR": "❌ Failed to save changes",
+      "PASS_MISMATCH": "New password does not match confirmation",
+      "PASS_LENGTH": "New password must be at least 6 characters long",
+      "PASS_SUCCESS": "✅ Password changed successfully",
+      "PASS_ERROR": "❌ Password change failed",
+      "AGENT_VALIDATION": "⚠️ Phone number and tax number are required to activate the agent account.",
+      "DELETE_CONFIRM": "⚠️ Warning: Your account will be permanently deleted. Are you sure?"
+    }
   }
 }

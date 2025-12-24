@@ -10,6 +10,7 @@ export interface UserProfile {
   Email: string;
   Phone?: string;
   IsAgent: boolean;
+  TaxNumber?: string; // تم إضافة الرقم الضريبي هنا
   ImageUrl?: string;
 }
 
@@ -31,6 +32,10 @@ export class ProfileService {
     const fd = new FormData();
     fd.append('file', file);
     return this.http.post<{ imageUrl: string }>(`${this.api}avatar`, fd);
+  }
+  
+  changePassword(data: any): Observable<any> {
+    return this.http.post(`${this.api}change-password`, data);
   }
 
   deleteAccount(): Observable<any> {

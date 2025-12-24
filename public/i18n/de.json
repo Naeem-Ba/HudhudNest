@@ -144,6 +144,8 @@
     "titel": "Titel",
     "beschreibung": "Beschreibung",
     "adresse": "Adresse",
+    "select_location": "Standort auswählen",
+    "map_instruction": "Kartenanweisung",
     "stadt": "Stadt",
     "plz": "PLZ",
     "kaltmiete": "Kaltmiete",
@@ -166,5 +168,43 @@
     "selected_files": "Ausgewählte Dateien",
     "save": "Speichern",
     "WoBiSave": "Wohnung und Bilder wurden gespeichert!"
+  },
+
+  "PROFILE": {
+    "SYNC_DATA": "Daten werden synchronisiert...",
+    "FETCH_ERROR": "Daten konnten nicht geladen werden. Bitte überprüfen Sie Ihre Sitzung.",
+    "TITLE": "Kontoeinstellungen",
+    "SUBTITLE": "Aktualisieren Sie Ihre persönlichen Informationen und Ihr Profilbild",
+    "UPLOAD_HINT": "Klicken, um Bild zu ändern",
+    "FIRST_NAME": "Vorname",
+    "LAST_NAME": "Nachname",
+    "DISPLAY_NAME": "Anzeigename (Pseudonym)",
+    "EMAIL_LOCKED": "E-Mail (nicht bearbeitbar)",
+    "PHONE": "Telefonnummer",
+    "PHONE_REQUIRED_AGENT": "* (Pflichtfeld für Makler)",
+    "PHONE_PLACEHOLDER": "Nummer hier eingeben",
+    "AGENT_CHECKBOX": "Mein Konto als verifizierter Immobilienmakler aktivieren",
+    "TAX_NUMBER": "Steuernummer",
+    "AGENT_VERIFIED_MSG": "Herzlichen Glückwunsch! Ihr Konto ist als verifizierter Immobilienmakler aktiviert.",
+    "TAX_PLACEHOLDER": "z.B. 12/345/67890",
+    "CHANGE_PASS_BTN": "Passwort ändern",
+    "CANCEL_PASS_BTN": "Passwortänderung abbrechen",
+    "CURRENT_PASS": "Aktuelles Passwort",
+    "NEW_PASS": "Neues Passwort",
+    "SAVE_PASS":"Passwort aktualisieren",
+    "CONFIRM_PASS": "Neues Passwort bestätigen",
+    "SAVE_CHANGES": "Änderungen speichern",
+    "DELETE_ACCOUNT": "Konto dauerhaft löschen",
+    "MESSAGES": {
+      "SAVE_SUCCESS": "✅ Daten erfolgreich aktualisiert",
+      "SAVE_ERROR": "❌ Fehler beim Speichern der Änderungen",
+      "PASS_MISMATCH": "Das neue Passwort stimmt nicht mit der Bestätigung überein",
+      "PASS_LENGTH": "Das neue Passwort muss mindestens 6 Zeichen lang sein",
+      "PASS_SUCCESS": "✅ Passwort erfolgreich geändert",
+      "PASS_ERROR": "❌ Passwortänderung fehlgeschlagen",
+      "AGENT_VALIDATION": "⚠️ Telefonnummer und Steuernummer sind erforderlich, um das Maklerkonto zu aktivieren.",
+      "DELETE_CONFIRM": "⚠️ Warnung: Ihr Konto wird dauerhaft gelöscht. Sind Sie sicher?"
+    }
   }
 }
+

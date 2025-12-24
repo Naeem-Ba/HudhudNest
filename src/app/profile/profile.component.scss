@@ -185,3 +185,24 @@ $bg-light: #f8fafc;
     }
   }
 }
+
+.verified-agent-badge {
+  background-color: #f0fdf4; // لون أخضر فاتح
+  border: 1px solid #bbf7d0;
+  padding: 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+  margin: 1rem 0;
+
+  .success-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .success-text {
+    color: #166534;
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin: 0;
+  }
+}

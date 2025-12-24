@@ -36,7 +36,7 @@
   <div class="navbar-right">
     
     <div class="lang-dropdown">
-      <button class="lang-btn" (click)="toggleLangMenu(); $event.stopPropagation()">
+      <button class="lang-btn" (click)="toggleLangMenu($event); $event.stopPropagation()">
         {{ currentLang.toUpperCase() }} ▼
       </button>
       <ul class="lang-menu" [class.open]="langMenuOpen">
@@ -47,7 +47,7 @@
     </div>
 
     <div class="account" *ngIf="isLoggedIn$ | async; else loginBtn">
-      <div class="avatar-wrapper" (click)="toggleDropdown(); $event.stopPropagation()">
+      <div class="avatar-wrapper" (click)="toggleDropdown($event); $event.stopPropagation()">
         <img *ngIf="hasCustomImage"
              class="avatar-img"
              [src]="profileImageUrl"

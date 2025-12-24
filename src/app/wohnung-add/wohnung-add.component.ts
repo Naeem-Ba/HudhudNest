@@ -6,12 +6,13 @@ import { EnumService, EnumItem } from '../services/enum.service';
 import { WohnungenService ,Wohnung} from '../services/wohnungen.service';
 import { EnumTranslatePipe } from '../pipes/enum-translate.pipe';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { MapPickerComponent } from '../map-picker/map-picker.component';
 
 
 @Component({
   selector: 'app-wohnung-add',
   standalone: true,
-  imports: [CommonModule, FormsModule, EnumTranslatePipe, TranslateModule],
+  imports: [CommonModule, FormsModule, EnumTranslatePipe, TranslateModule,MapPickerComponent],
   templateUrl: './wohnung-add.component.html',
   styleUrls: ['./wohnung-add.component.scss']
 })
@@ -30,6 +31,8 @@ export class WohnungAddComponent implements OnInit { //إضافة OnInit
     Adresse: '',
     Stadt: null as any,
     PLZ: '',
+    Latitude: 0,
+  Longitude: 0,
     ZumMieten: false,
     ZumKaufen: false,
     Kaltmiete:0,
@@ -102,6 +105,15 @@ export class WohnungAddComponent implements OnInit { //إضافة OnInit
     });
   
 }
+
+lat!: number;
+lng!: number;
+
+onLocationSelected(loc: { lat: number; lng: number }) {
+  this.lat = loc.lat;
+  this.lng = loc.lng;
+}
+
 onSubmit() {
   const formData = new FormData();
 
