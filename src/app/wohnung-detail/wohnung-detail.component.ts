@@ -6,6 +6,7 @@ import { RouterModule } from '@angular/router';
 import { WohnungenService,Wohnung} from '../services/wohnungen.service';
 import { EnumTranslatePipe } from '../pipes/enum-translate.pipe';
 import { TranslateModule } from '@ngx-translate/core';
+import{ WohnungMapViewComponent}  from './wohnungMapView/wohnungMapView.component';
 
 
 @Component({
@@ -15,7 +16,8 @@ import { TranslateModule } from '@ngx-translate/core';
     CommonModule,
     RouterModule,
     EnumTranslatePipe,
-    TranslateModule
+    TranslateModule,
+    WohnungMapViewComponent
   ],
   templateUrl: './wohnung-detail.component.html',
   styleUrls: ['./wohnung-detail.component.scss']

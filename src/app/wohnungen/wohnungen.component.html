@@ -21,7 +21,7 @@
     </p>
 
     <p><strong>{{ 'APARTMENTS.SIZE' | translate }}</strong>
-      {{ w.Flaeche ? (w.Flaeche + ' m²') : '—' }}
+      {{ w.Flaeche ? ('wohnung_detail.Unit_of_measurement' | translate: { value: w.Flaeche }) : '—' }}
     </p>
 
     <p><strong>{{ 'APARTMENTS.PRICE' | translate }}:</strong>

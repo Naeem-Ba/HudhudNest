@@ -124,6 +124,7 @@
     "ort": "Stadt",
     "adresse": "Adresse",
     "groesse": "Fläche",
+    "Unit_of_measurement":"{{ value }} (m²)",
     "zimmer": "Zimmer",
     "etage": "Etage",
     "preis": "Preis",
@@ -134,7 +135,8 @@
     "ausstattung": "Ausstattung",
     "balkon": "Balkon",
     "aufzug": "Aufzug",
-    "stellplatz": "Stellplatz"
+    "stellplatz": "Stellplatz",
+    "LOCATION": "LAGE DER WOHNUNG"
   },
 
   "wohnung_add": {

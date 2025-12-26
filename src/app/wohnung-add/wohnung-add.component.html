@@ -31,30 +31,36 @@
     <label>{{ 'wohnung_add.adresse' | translate }}</label>
     <input type="text" name="Adresse" [(ngModel)]="wohnung.Adresse" />
 
-    <div class="map-selection-section">
-  <label>{{ 'wohnung_add.select_location' | translate }}</label>
-  <p><small>{{ 'wohnung_add.map_instruction' | translate }}</small></p>
+    <!--<div class="map-selection-section">
+      <label>{{ 'wohnung_add.select_location' | translate }}</label>
+     <p><small>{{ 'wohnung_add.map_instruction' | translate }}</small></p>
   
-  <app-map-picker
-  (locationChange)="onLocationSelected($event)">
-</app-map-picker>
-
-<p *ngIf="lat">
-  📍 {{ lat }}, {{ lng }}
-</p>
-</div>
-
-    <!-- ENUM: Stadt -->
-    <label>{{ 'wohnung_add.stadt' | translate }}</label>
-    <select name="Stadt" [(ngModel)]="wohnung.Stadt" >
-      <option [ngValue]="null">{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
-      <option *ngFor="let item of StadtList" [ngValue]="item.Id">
-       {{ item.Id| enumTranslate:'STADT' }}
-      </option>
-    </select>
+    </div>-->
 
     <label>{{ 'wohnung_add.plz' | translate }}</label>
     <input type="text" name="PLZ" [(ngModel)]="wohnung.PLZ" />
+
+    <!-- ENUM: Stadt -->
+    <label>{{ 'wohnung_add.stadt' | translate }}</label>
+    <select
+      name="Stadt"
+      [(ngModel)]="wohnung.Stadt"
+      (ngModelChange)="onCityChange($event)">
+      <option [ngValue]="null">{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
+      <option *ngFor="let item of StadtList" [ngValue]="item.Id">
+        {{ item.Id | enumTranslate:'STADT' }}
+      </option>
+    </select>
+
+    <app-map-picker
+      [lang]="currentLang"
+      (locationChange)="onLocationSelected($event)">
+    </app-map-picker>
+
+    <p *ngIf="wohnung.Latitude">
+      📍 {{ wohnung.Latitude }}, {{ wohnung.Longitude }}
+    </p>
+
 
     <!-- Mietdetails -->
     <div class="section" *ngIf="wohnung.ZumMieten">

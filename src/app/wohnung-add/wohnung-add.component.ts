@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -7,6 +7,8 @@ import { WohnungenService ,Wohnung} from '../services/wohnungen.service';
 import { EnumTranslatePipe } from '../pipes/enum-translate.pipe';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MapPickerComponent } from '../map-picker/map-picker.component';
+import { CITY_MAPS } from '../map-picker/city-map.config';
+import { LanguageService } from '../services/language.service';
 
 
 @Component({
@@ -18,6 +20,9 @@ import { MapPickerComponent } from '../map-picker/map-picker.component';
 })
 export class WohnungAddComponent implements OnInit { //إضافة OnInit
 
+  @ViewChild(MapPickerComponent) mapPicker!: MapPickerComponent;
+  
+  currentLang!: any;
   selectedFiles: File[] = [];
   previews: string[] = [];
   StadtList: EnumItem[] = []; //استخدم النوع المحدد
@@ -32,7 +37,7 @@ export class WohnungAddComponent implements OnInit { //إضافة OnInit
     Stadt: null as any,
     PLZ: '',
     Latitude: 0,
-  Longitude: 0,
+    Longitude: 0,
     ZumMieten: false,
     ZumKaufen: false,
     Kaltmiete:0,
@@ -57,7 +62,8 @@ export class WohnungAddComponent implements OnInit { //إضافة OnInit
     private router: Router,
     private wohnungenService: WohnungenService,
     private enumService: EnumService,
-    private translate: TranslateService) {}
+    private translate: TranslateService,
+    private languageService: LanguageService) {}
 
     // عند تغيير حالة "ZumMieten" تعطيل "ZumKaufen"
   setMode(mode: 'mieten' | 'kaufen') {
@@ -87,6 +93,10 @@ export class WohnungAddComponent implements OnInit { //إضافة OnInit
     this.ZustandList = this.enumService.getList('ZUSTAND');
     this.StatusList = this.enumService.getList('STATUS');
     this.EnergieausweisTypList = this.enumService.getList('ENERGIEAUSWEISTYP');
+     this.currentLang = this.languageService.getCurrent();
+     this.languageService.currentLang$.subscribe(lang => {
+      this.currentLang = lang;
+    });
   }
 
   onFileSelected(event: any) {
@@ -109,10 +119,19 @@ export class WohnungAddComponent implements OnInit { //إضافة OnInit
 lat!: number;
 lng!: number;
 
-onLocationSelected(loc: { lat: number; lng: number }) {
-  this.lat = loc.lat;
-  this.lng = loc.lng;
-}
+ onLocationSelected(loc: { lat: number; lng: number }) {
+    this.wohnung.Latitude = loc.lat;
+    this.wohnung.Longitude = loc.lng;
+  }
+
+  onCityChange(cityId: number) {
+    const city = CITY_MAPS.find(c => c.id === cityId);
+    if (!city) return;
+
+    this.mapPicker.updateCenter(city.lat, city.lng, city.zoom);
+    this.wohnung.Latitude = city.lat;
+    this.wohnung.Longitude = city.lng;
+  }
 
 onSubmit() {
   const formData = new FormData();

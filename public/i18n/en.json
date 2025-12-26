@@ -124,6 +124,7 @@
     "select_location": "select location",
     "map_instruction": "map instruction",
     "groesse": "Area",
+    "Unit_of_measurement":"{{ value }} (m²)",
     "zimmer": "Room",
     "etage": "Floor",
     "preis": "Price",
@@ -134,7 +135,8 @@
     "ausstattung": "Amenities",
     "balkon": "Balcony",
     "aufzug": "Elevator",
-    "stellplatz": "Parking space"
+    "stellplatz": "Parking space",
+    "LOCATION": "APARTMENT LOCATION"
   },
   "wohnung_add": {
     "title": "Add apartment",
@@ -143,6 +145,8 @@
     "titel": "Address",
     "beschreibung": "Description",
     "adresse": "Address",
+    "select_location": "Select location",
+    "map_instruction": "Map instructions",
     "stadt": "City",
     "plz": "Postal code",
     "kaltmiete": "Cold rent",

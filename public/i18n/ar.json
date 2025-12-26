@@ -123,6 +123,7 @@
     "ort": "المدينة",
     "adresse": "العنوان",
     "groesse": "المساحة",
+    "Unit_of_measurement":"{{ value }} متر مربع",
     "zimmer": "عدد الغرف",
     "etage": "الطابق",
     "preis": "السعر",
@@ -133,7 +134,8 @@
     "ausstattung": "المرافق",
     "balkon": "شرفة",
     "aufzug": "مصعد",
-    "stellplatz": "موقف سيارة"
+    "stellplatz": "موقف سيارة",
+    "LOCATION": "موقع الشقة"
   },
 
   "wohnung_add": {

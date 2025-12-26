@@ -1,0 +1,13 @@
+<div id="wohnung-map" class="map-container"></div>
+
+<div class="map-wrapper" [class.fullscreen]="isFullscreen">
+
+  <!-- زر تكبير -->
+  <button class="fullscreen-btn" (click)="toggleFullscreen()">
+    {{ isFullscreen ? '✕' : '⛶' }}
+  </button>
+
+  <!-- الخريطة -->
+  <div id="wohnung-map" class="map-container"></div>
+
+</div>

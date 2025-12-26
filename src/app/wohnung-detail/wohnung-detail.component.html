@@ -56,8 +56,9 @@
       {{ w.Adresse || '—' }}
     </p>
 
-    <p><strong>{{ 'wohnung_detail.groesse' | translate }} : </strong>
-      {{ w.Flaeche ? (w.Flaeche + ' m²') : '—' }}
+    <p>
+     <strong>{{ 'wohnung_detail.groesse' | translate }} : </strong>
+     {{ w.Flaeche ? ('wohnung_detail.Unit_of_measurement' | translate: { value: w.Flaeche }) : '—' }}
     </p>
 
     <p><strong>{{ 'wohnung_detail.zimmer' | translate }} : </strong>
@@ -115,6 +116,18 @@
     <p><strong>{{ 'wohnung_detail.beschreibung' | translate }} : </strong></p>
     <p class="text-content">{{ w.Beschreibung }}</p>
   </div>
+
+  <section class="location-section" *ngIf="wohnung?.Latitude && wohnung?.Longitude">
+  <h3>{{ 'wohnung_detail.LOCATION' | translate }}</h3>
+
+  <app-wohnungMapView
+    [lat]="wohnung!.Latitude!"
+    [lng]="wohnung!.Longitude!"
+    [zoom]="16"
+    [title]="wohnung.Titel"
+  ></app-wohnungMapView>
+</section>
+
 
   <button type="button" routerLink="/wohnungen" class="back-btn">⬅ {{ 'wohnung_detail.back' | translate }}</button>
 </div>

@@ -2,11 +2,12 @@ import {
   Component,
   AfterViewInit,
   OnDestroy,
-  EventEmitter,
+  Input,
   Output,
-  Input
+  EventEmitter
 } from '@angular/core';
 import * as L from 'leaflet';
+import { LangCode } from '../services/language.service';
 
 @Component({
   selector: 'app-map-picker',
@@ -16,10 +17,9 @@ import * as L from 'leaflet';
 })
 export class MapPickerComponent implements AfterViewInit, OnDestroy {
 
-  /** لغة الخريطة (مرتبطة بلغة التطبيق) */
-  @Input() lang: 'ar' | 'en' | 'de' = 'ar';
+  @Input() lang: LangCode = 'ar';
+  @Input() center?: { lat: number; lng: number; zoom?: number };
 
-  /** الإحداثيات المختارة */
   @Output() locationChange = new EventEmitter<{
     lat: number;
     lng: number;
@@ -29,23 +29,16 @@ export class MapPickerComponent implements AfterViewInit, OnDestroy {
   private marker?: L.Marker;
   private tileLayer?: L.TileLayer;
 
-  /** إحداثيات دمشق */
-  private readonly DAMASCUS = {
-    lat: 33.5138,
-    lng: 36.2765
-  };
-
   ngAfterViewInit(): void {
     this.initMap();
   }
 
-  /** تهيئة الخريطة */
   private initMap(): void {
-    this.map = L.map('map', {
-      center: [this.DAMASCUS.lat, this.DAMASCUS.lng],
-      zoom: 13
-    });
+    const lat = this.center?.lat ?? 33.5138;
+    const lng = this.center?.lng ?? 36.2765;
+    const zoom = this.center?.zoom ?? 13;
 
+    this.map = L.map('map').setView([lat, lng], zoom);
     this.loadTiles();
 
     this.map.on('click', (e: L.LeafletMouseEvent) => {
@@ -53,7 +46,6 @@ export class MapPickerComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  /** تحميل البلاطات حسب اللغة */
   private loadTiles(): void {
     if (this.tileLayer) {
       this.map.removeLayer(this.tileLayer);
@@ -66,25 +58,18 @@ export class MapPickerComponent implements AfterViewInit, OnDestroy {
     this.tileLayer.addTo(this.map);
   }
 
-  /** اختيار مصدر البلاطات */
   private getTileUrl(): string {
-    // Carto – مجاني ويدعم العربية جزئياً
+    // خرائط تدعم العربية بشكل أفضل
     return 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png';
   }
 
-  /** وضع أو تحريك Marker */
   private setMarker(lat: number, lng: number): void {
     if (!this.marker) {
-      this.marker = L.marker([lat, lng], {
-        draggable: true
-      }).addTo(this.map);
+      this.marker = L.marker([lat, lng], { draggable: true }).addTo(this.map);
 
       this.marker.on('dragend', () => {
         const pos = this.marker!.getLatLng();
-        this.locationChange.emit({
-          lat: pos.lat,
-          lng: pos.lng
-        });
+        this.locationChange.emit({ lat: pos.lat, lng: pos.lng });
       });
     } else {
       this.marker.setLatLng([lat, lng]);
@@ -93,17 +78,11 @@ export class MapPickerComponent implements AfterViewInit, OnDestroy {
     this.locationChange.emit({ lat, lng });
   }
 
-  /** تغيير اللغة من الخارج */
-  ngOnChanges(): void {
-    if (this.map) {
-      this.loadTiles();
-    }
+  updateCenter(lat: number, lng: number, zoom = 13) {
+    this.map.setView([lat, lng], zoom);
   }
 
   ngOnDestroy(): void {
-    if (this.map) {
-      this.map.off();
-      this.map.remove();
-    }
+    this.map?.remove();
   }
 }
