@@ -138,6 +138,13 @@
     "stellplatz": "Parking space",
     "LOCATION": "APARTMENT LOCATION"
   },
+  "MAP": {
+  "APARTMENT_LOCATION": "Apartment location {{title}}",
+  "YOUR_LOCATION": "Your current location",
+  "FULLSCREEN": "Fullscreen map",
+  "OPEN_GOOGLE": "Open in Google Maps",
+  "MY_LOCATION": "Find my location"
+  },
   "wohnung_add": {
     "title": "Add apartment",
     "mode_sale": "For sale",

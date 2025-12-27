@@ -1,13 +1,19 @@
-import { Component, Input, AfterViewInit } from '@angular/core';
+import { Component, Input, AfterViewInit, OnDestroy } from '@angular/core';
 import * as L from 'leaflet';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { LanguageService } from '../../services/language.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-wohnungMapView',
   standalone: true,
+  imports: [
+    TranslateModule,
+  ],
   templateUrl: './wohnungMapView.component.html',
   styleUrls: ['./wohnungMapView.component.scss']
 })
-export class WohnungMapViewComponent implements AfterViewInit {
+export class WohnungMapViewComponent implements AfterViewInit, OnDestroy {
 
   @Input({ required: true }) lat!: number;
   @Input({ required: true }) lng!: number;
@@ -16,11 +22,36 @@ export class WohnungMapViewComponent implements AfterViewInit {
 
   private map!: L.Map;
   private marker!: L.Marker;
+  private langSub?: Subscription;
+
+  private longPressTimer: any;
+  activeTooltip: string | null = null;
+  private longPressTriggered = false;
 
   isFullscreen = false;
+  popupText = '';
+
+  constructor(
+    private translate: TranslateService,
+    private languageService: LanguageService
+  ) {}
 
   ngAfterViewInit(): void {
+    this.initPopupText();
     this.initMap();
+
+    // تحديث الـ Popup عند تغيير اللغة
+    this.langSub = this.languageService.currentLang$.subscribe(() => {
+      this.initPopupText();
+      if (this.marker) {
+        this.marker.bindPopup(this.popupText);
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.langSub?.unsubscribe();
+    this.map?.remove();
   }
 
   private initMap(): void {
@@ -36,19 +67,99 @@ export class WohnungMapViewComponent implements AfterViewInit {
     }).addTo(this.map);
 
     this.marker = L.marker([this.lat, this.lng]).addTo(this.map);
-
-    if (this.title) {
-      this.marker.bindPopup(this.title);
-    }
+    this.marker.bindPopup(this.popupText);
   }
 
+  private initPopupText(): void {
+    const title = this.title ?? '';
+    this.translate
+      .get('MAP.APARTMENT_LOCATION', { title })
+      .subscribe(text => {
+        this.popupText = text;
+      });
+  }
+
+  // ⛶ Fullscreen
   toggleFullscreen(): void {
     this.isFullscreen = !this.isFullscreen;
 
-    // Leaflet يحتاج إعادة حساب الحجم
     setTimeout(() => {
       this.map.invalidateSize();
       this.map.setView([this.lat, this.lng], this.zoom);
     }, 200);
   }
+
+  // 📍 فتح في Google Maps
+  openInGoogleMaps(): void {
+    const url = `https://www.google.com/maps?q=${this.lat},${this.lng}`;
+    window.open(url, '_blank');
+  }
+
+  // 🧭 تحديد موقعي الحالي
+  locateMe(): void {
+    if (!navigator.geolocation) {
+      alert('Geolocation not supported');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const { latitude, longitude } = pos.coords;
+
+        const userMarker = L.marker([latitude, longitude], {
+          icon: L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/64/64113.png',
+            iconSize: [28, 28],
+            iconAnchor: [14, 28]
+          })
+        }).addTo(this.map);
+
+        this.translate.get('MAP.YOUR_LOCATION').subscribe(text => {
+          userMarker.bindPopup(text).openPopup();
+        });
+
+        this.map.setView([latitude, longitude], 14);
+      },
+      () => alert('Location permission denied')
+    );
+  }
+  onTouchStart(event: TouchEvent, key: string) {
+  this.longPressTriggered = false;
+
+  this.longPressTimer = setTimeout(() => {
+    this.activeTooltip = key;
+    this.longPressTriggered = true;
+  }, 500); // ⏱️ مدة الـ long-press
+}
+
+onTouchEnd() {
+  clearTimeout(this.longPressTimer);
+
+  // إخفاء Tooltip بعد الرفع
+  setTimeout(() => {
+    this.activeTooltip = null;
+  }, 1500);
+}
+
+onClick(event: Event, action: 'google' | 'locate' | 'fullscreen') {
+  // إذا كان هذا click ناتج عن long-press → تجاهله
+  if (this.longPressTriggered) {
+    event.preventDefault();
+    event.stopPropagation();
+    return;
+  }
+
+  // تنفيذ الفعل الطبيعي
+  switch (action) {
+    case 'google':
+      this.openInGoogleMaps();
+      break;
+    case 'locate':
+      this.locateMe();
+      break;
+    case 'fullscreen':
+      this.toggleFullscreen();
+      break;
+  }
+}
 }

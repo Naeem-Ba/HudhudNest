@@ -137,7 +137,13 @@
     "stellplatz": "موقف سيارة",
     "LOCATION": "موقع الشقة"
   },
-
+  "MAP": {
+  "APARTMENT_LOCATION": "موقع الشقة {{title}}",
+  "YOUR_LOCATION": "موقعك الحالي",
+  "FULLSCREEN": "عرض الخريطة بحجم كامل",
+  "OPEN_GOOGLE": "فتح في خرائط Google",
+  "MY_LOCATION": "تحديد موقعي الحالي"
+  },
   "wohnung_add": {
     "title": "إضافة شقة",
     "mode_sale": "للبيع",

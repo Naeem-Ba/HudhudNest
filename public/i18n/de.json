@@ -138,7 +138,13 @@
     "stellplatz": "Stellplatz",
     "LOCATION": "LAGE DER WOHNUNG"
   },
-
+  "MAP": {
+  "APARTMENT_LOCATION": "Standort der Wohnung {{title}}",
+  "YOUR_LOCATION": "Ihr aktueller Standort",
+  "FULLSCREEN": "Karte im Vollbild anzeigen",
+  "OPEN_GOOGLE": "In Google Maps öffnen",
+  "MY_LOCATION": "Meinen Standort finden"
+  },
   "wohnung_add": {
     "title": "Wohnung hinzufügen",
     "mode_sale": "verkaufen",

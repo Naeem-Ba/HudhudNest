@@ -1,11 +1,41 @@
-<div id="wohnung-map" class="map-container"></div>
-
 <div class="map-wrapper" [class.fullscreen]="isFullscreen">
 
-  <!-- زر تكبير -->
-  <button class="fullscreen-btn" (click)="toggleFullscreen()">
-    {{ isFullscreen ? '✕' : '⛶' }}
-  </button>
+  <!-- أزرار التحكم -->
+  <div class="map-actions"></div>
+    <button
+      class="map-btn" 
+      (click)="toggleFullscreen()"
+      (touchstart)="onTouchStart($event, 'MAP.OPEN_GOOGLE')"
+      (touchend)="onTouchEnd()"
+      (touchcancel)="onTouchEnd()"
+      [attr.aria-label]="('MAP.FULLSCREEN' | translate)"
+      [title]="('MAP.FULLSCREEN' | translate)">
+      ⛶
+    </button>
+
+    <button
+      class="map-btn" 
+      (click)="onClick($event, 'google')"
+      (touchstart)="onTouchStart($event, 'MAP.OPEN_GOOGLE')"
+      (touchend)="onTouchEnd()"
+      (touchcancel)="onTouchEnd()"
+      [attr.aria-label]="('MAP.OPEN_GOOGLE' | translate)"
+      [title]="('MAP.OPEN_GOOGLE' | translate)">
+      📍
+    </button>
+
+    <button
+      class="map-btn" 
+      (click)="locateMe()"
+      (touchstart)="onTouchStart($event, 'MAP.OPEN_GOOGLE')"
+      (touchend)="onTouchEnd()"
+      (touchcancel)="onTouchEnd()"
+      [attr.aria-label]="('MAP.MY_LOCATION' | translate)"
+      [title]="('MAP.MY_LOCATION' | translate)">
+      🧭
+    </button>
+
+
 
   <!-- الخريطة -->
   <div id="wohnung-map" class="map-container"></div>
