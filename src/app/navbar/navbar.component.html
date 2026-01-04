@@ -39,7 +39,18 @@
        (click)="mobileMenuOpen = false">
        📨 {{ 'NAVBAR.MESSAGES' | translate }}
     </a>
+
+    <div class="mobile-lang-section">
+      <hr class="mobile-divider">
+      <p class="lang-label">{{ 'NAVBAR.SELECT_LANGUAGE' | translate }}</p>
+      <div class="lang-options-mobile">
+        <span (click)="changeLang('ar')" [class.active]="currentLang === 'ar'">العربية</span>
+        <span (click)="changeLang('en')" [class.active]="currentLang === 'en'">English</span>
+        <span (click)="changeLang('de')" [class.active]="currentLang === 'de'">Deutsch</span>
+      </div>
+    </div>
   </nav>
+
 
   <div class="navbar-right">
     

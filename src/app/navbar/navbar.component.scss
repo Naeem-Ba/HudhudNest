@@ -26,19 +26,19 @@ $white: #ffffff;
   display: block;
 }
 
-/* الروابط */
+/* الروابط (للكمبيوتر) */
 .nav-links {
   display: flex;
   align-items: center;
   flex-grow: 1;
-  margin-inline-start: 30px; /* مسافة من الشعار تدعم RTL */
+  margin-inline-start: 30px;
 
   a {
-    margin-inline-end: 20px; /* مسافة بين الروابط تدعم RTL */
+    margin-inline-end: 20px;
     text-decoration: none;
     color: $text-dark;
     font-weight: 500;
-    white-space: nowrap; // يمنع انكسار النص في اللغات الطويلة
+    white-space: nowrap; // منع انكسار النص في الكمبيوتر فقط
     transition: color 0.2s ease;
 
     &:hover, &.active {
@@ -58,7 +58,7 @@ $white: #ffffff;
   gap: 15px;
 }
 
-/* القوائم المنسدلة (الحساب واللغة) */
+/* القوائم المنسدلة */
 .account, .lang-dropdown {
   position: relative;
 }
@@ -66,7 +66,7 @@ $white: #ffffff;
 .dropdown, .lang-menu {
   position: absolute;
   top: calc(100% + 10px);
-  inset-inline-end: 0; /* يحاذي القائمة لليمين في LTR ولليسار في RTL */
+  inset-inline-end: 0;
   background: $white;
   border: 1px solid $border-color;
   border-radius: 8px;
@@ -86,57 +86,25 @@ $white: #ffffff;
 /* تفاصيل قائمة الحساب */
 .dropdown {
   padding: 12px;
-
-  .dropdown-header {
-    padding-bottom: 8px;
-  }
-
   .user-email {
     font-size: 13px;
     color: #666;
-    margin: 0;
-    word-break: break-all; // يكسر الإيميلات الطويلة جداً
+    word-break: break-all;
   }
-
   hr {
     border: 0;
     border-top: 1px solid #eee;
     margin: 10px 0;
   }
-
   .logout-link {
     color: #d00;
     cursor: pointer;
     font-weight: 600;
-    display: block;
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
+    &:hover { text-decoration: underline; }
   }
 }
 
-/* قائمة اللغة */
-.lang-menu {
-  padding: 5px 0;
-  min-width: 120px;
-
-  li {
-    padding: 10px 15px;
-    cursor: pointer;
-    list-style: none;
-    font-size: 14px;
-    transition: background 0.2s;
-
-    &:hover {
-      background: #f2f2f2;
-      color: $primary-color;
-    }
-  }
-}
-
-/* الأزرار والأفاتار */
+/* زر اللغة والموبايل */
 .lang-btn {
   padding: 8px 12px;
   background: #eee;
@@ -144,7 +112,119 @@ $white: #ffffff;
   border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
-  white-space: nowrap;
+}
+
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: $text-dark;
+  margin-inline-end: 10px;
+}
+
+/* الأفاتار */
+.avatar, .avatar-img {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid $primary-color;
+  flex-shrink: 0;
+}
+.avatar {
+  background: $primary-color;
+  color: $white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* ========================================= */
+/* التعديلات الجديدة للموبايل واختفاء الكلمات */
+/* ========================================= */
+
+@media (max-width: 992px) {
+  .mobile-menu-btn {
+    display: block;
+  }
+
+  // إخفاء قائمة اللغة الأصلية في الموبايل لأننا سنضعها داخل المنسدلة
+  .desktop-only {
+    display: none !important;
+  }
+
+  .nav-links {
+    display: none; 
+    flex-direction: column;
+    align-items: flex-start; // يضمن البداية الصحيحة في RTL/LTR
+    position: absolute;
+    top: 70px;
+    left: 0;
+    width: 100%;
+    background: $white;
+    border-bottom: 3px solid $primary-color;
+    padding: 15px 25px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    z-index: 999;
+    margin: 0;
+
+    &.mobile-open {
+      display: flex; 
+    }
+
+    a {
+      margin: 8px 0;
+      width: 100%;
+      font-size: 17px;
+      white-space: normal; // حل مشكلة اختفاء الكلمات العربية (يسمح للنص بالالتفاف)
+      overflow-wrap: break-word; // كسر الكلمات الطويلة جداً
+      padding: 10px 0;
+      border-bottom: 1px solid #f9f9f9;
+    }
+  }
+
+  /* تنسيق قسم اللغة الجديد داخل القائمة المنسدلة */
+  .mobile-lang-section {
+    width: 100%;
+    margin-top: 10px;
+    padding-top: 10px;
+
+    .mobile-divider {
+      border: 0;
+      border-top: 1px solid $border-color;
+      margin-bottom: 15px;
+    }
+
+    .lang-label {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .lang-options-mobile {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap; // لضمان عدم خروج الأزرار عن الشاشة
+      
+      span {
+        padding: 6px 15px;
+        border: 1px solid $border-color;
+        border-radius: 20px;
+        font-size: 14px;
+        cursor: pointer;
+        background: #fdfdfd;
+        
+        &.active {
+          background: $primary-color;
+          color: white;
+          border-color: $primary-color;
+        }
+      }
+    }
+  }
 }
 
 .login-btn {
@@ -155,100 +235,9 @@ $white: #ffffff;
   border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
-  white-space: nowrap;
-
-  &:hover {
-    background: darken($primary-color, 10%);
-  }
 }
 
-.avatar-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.avatar, .avatar-img {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 2px solid $primary-color;
-  flex-shrink: 0;
-}
-
-.avatar {
-  background: $primary-color;
-  color: $white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 1.1rem;
-}
-
-.avatar-img {
-  object-fit: cover;
-}
-
-/* الأنيميشن */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-/* التجاوب مع الموبايل */
-@media (max-width: 992px) {
-  .nav-links {
-    display: none; // يمكن استبدالها لاحقاً بـ Burger Menu
-  }
-  
-  .navbar {
-    padding: 10px;
-  }
-}
-/* زر الموبايل - مخفي في الشاشات الكبيرة */
-.mobile-menu-btn {
-  display: none;
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: $text-dark;
-  margin-inline-end: 10px;
-}
-
-@media (max-width: 992px) {
-  .mobile-menu-btn {
-    display: block; // يظهر فقط في الموبايل
-  }
-
-  .nav-links {
-    display: none; // إخفاء الروابط العادية
-    flex-direction: column;
-    position: absolute;
-    top: 70px;
-    left: 0;
-    width: 100%;
-    background: $white;
-    border-bottom: 2px solid $primary-color;
-    padding: 20px;
-    box-shadow: 0 10px 15px rgba(0,0,0,0.1);
-    z-index: 999;
-    margin: 0;
-
-    &.mobile-open {
-      display: flex; // تظهر عند الضغط على الزر
-    }
-
-    a {
-      margin: 10px 0;
-      width: 100%;
-      font-size: 18px;
-    }
-  }
-
-  .navbar-left {
-    display: flex;
-    align-items: center;
-  }
 }

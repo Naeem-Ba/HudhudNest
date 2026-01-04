@@ -113,7 +113,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
   changeLang(lang: 'ar' | 'en' | 'de'): void {
     this.lang.use(lang);
     this.currentLang = lang;
+
+    // تغيير اتجاه الصفحة برمجياً
+    const htmlTag = document.documentElement;
+    htmlTag.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+    htmlTag.lang = lang;
+
     this.langMenuOpen = false;
+    this.mobileMenuOpen = false; // أغلق القائمة بعد اختيار اللغة
     this.cd.detectChanges();
   }
 
