@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { WohnungenService, Wohnung } from '../services/wohnungen.service';
 import { EnumTranslatePipe } from '../pipes/enum-translate.pipe';
@@ -10,7 +9,7 @@ import { LanguageSelectorComponent } from '../language-selector/language-selecto
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, CommonModule, RouterLinkActive, EnumTranslatePipe, TranslateModule, LanguageSelectorComponent],
+  imports: [RouterLink, CommonModule, EnumTranslatePipe, TranslateModule],
   templateUrl: `./home.component.html`,
   styleUrls: ['./home.component.scss']
 })

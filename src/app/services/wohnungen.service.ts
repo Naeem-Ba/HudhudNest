@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable,Subject } from 'rxjs';
+import { ApiService } from './core/api.service'; 
 
 export interface Wohnung {
   Id?: number;
@@ -78,31 +78,33 @@ export interface Amenity {
 @Injectable({
   providedIn: 'root'
 })
+
 export class WohnungenService {
-  private apiUrl = 'https://localhost:7136/api/wohnungen'; 
+ 
+  private readonly endpoint = '/wohnungen';
 
    // 🟢 Subject لإرسال إشعارات عند إضافة شقة جديدة
   private wohnungAddedSource = new Subject<Wohnung>();
   wohnungAdded$ = this.wohnungAddedSource.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private api: ApiService) {}
    // GET ALL
   // ----------------------------------------------------
   getWohnungen(): Observable<Wohnung[]> {
-    return this.http.get<Wohnung[]>(this.apiUrl);
+    return this.api.get<Wohnung[]>(this.endpoint);
   }
   // GET BY ID
   // ----------------------------------------------------
   getWohnung(id: number): Observable<Wohnung> {
-    const url = `${this.apiUrl}/${id}`;
-    return this.http.get<Wohnung>(url);
+    const url = `${this.endpoint}/${id}`;
+    return this.api.get<Wohnung>(url);
   }
 
    // ADD WOHNUNG (WITH IMAGES)
   // ---------------------------------------------------
    addWohnung(formData: FormData): Observable<any> {
     return new Observable(observer => {
-      this.http.post<Wohnung>(this.apiUrl, formData).subscribe({
+      this.api.post<Wohnung>(this.endpoint, formData).subscribe({
         next: (res) => {
           // عند نجاح الحفظ، أرسل الإشعار لباقي المكونات
           this.wohnungAddedSource.next(res);
@@ -121,8 +123,8 @@ export class WohnungenService {
     const formData = new FormData();
     files.forEach(file => formData.append("files", file));
 
-    return this.http.post<Bild[]>(
-      `${this.apiUrl}/${wohnungId}/bilder`,
+    return this.api.post<Bild[]>(
+      `${this.endpoint}/${wohnungId}/bilder`,
       formData);
 }
 

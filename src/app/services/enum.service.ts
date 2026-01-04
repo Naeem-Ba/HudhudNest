@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable, of, firstValueFrom } from 'rxjs';
 import { tap, shareReplay } from 'rxjs/operators';
+import { ApiService } from './core/api.service';
+
 
 export interface EnumItem {
   Id: number;
@@ -11,15 +12,15 @@ export interface EnumItem {
 @Injectable({ providedIn: 'root' })
 export class EnumService {
 
-  private baseUrl = 'https://localhost:7136/api/enums';
+  private readonly endpoint = '/enums';
   private cache = new Map<string, EnumItem[]>();
 
-  constructor(private http: HttpClient) {}
+  constructor( private api: ApiService) {}
 
   async loadAll(): Promise<void> {
     const groups = ['STADT', 'ZUSTAND', 'STATUS', 'ENERGIEAUSWEISTYP'];
     const promises = groups.map(g => 
-      firstValueFrom(this.http.get<EnumItem[]>(`${this.baseUrl}/${g.toUpperCase()}`))
+      firstValueFrom(this.api.get<EnumItem[]>(`${this.endpoint}/${g.toUpperCase()}`))
         .then(data => {
           this.cache.set(g.toUpperCase(), data);
         })

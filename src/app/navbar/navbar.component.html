@@ -1,34 +1,42 @@
 <header class="navbar">
   <div class="navbar-left">
+
+    <button class="mobile-menu-btn" (click)="toggleMobileMenu($event)">
+      ☰
+    </button>
+
     <a routerLink="/home" class="logo-container">
       <img src="images/horizontal-logo.png" alt="Logo" />
     </a>
   </div>
 
-  <nav class="nav-links">
-    <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+  <nav class="nav-links" [class.mobile-open]="mobileMenuOpen">
+    <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="mobileMenuOpen = false">
       {{ 'NAVBAR.HOME' | translate }}
     </a>
-    <a routerLink="/wohnungen" routerLinkActive="active">
+    <a routerLink="/wohnungen" routerLinkActive="active" (click)="mobileMenuOpen = false">
       {{ 'NAVBAR.WOHNUNGEN' | translate }}
     </a>
     
     <a *ngIf="isLoggedIn$ | async" 
        routerLink="/wohnung-add" 
-       routerLinkActive="active">
+       routerLinkActive="active"
+       (click)="mobileMenuOpen = false">
        ➕ {{ 'NAVBAR.ADD' | translate }}
     </a>
 
     <a *ngIf="!(isAdmin$ | async)" 
        routerLink="/kontakt" 
        routerLinkActive="active" 
-       [routerLinkActiveOptions]="{ exact: true }">
+       [routerLinkActiveOptions]="{ exact: true }"
+       (click)="mobileMenuOpen = false">
        {{ 'NAVBAR.CONTACT' | translate }}
     </a>
 
     <a *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)" 
        routerLink="/admin/messages" 
-       routerLinkActive="active">
+       routerLinkActive="active"
+       (click)="mobileMenuOpen = false">
        📨 {{ 'NAVBAR.MESSAGES' | translate }}
     </a>
   </nav>

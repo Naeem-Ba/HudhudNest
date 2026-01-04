@@ -7,13 +7,12 @@ import { AuthService } from '../services/auth.service';
 import { Observable } from 'rxjs';
 import { EnumTranslatePipe } from '../pipes/enum-translate.pipe';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LanguageSelectorComponent } from '../language-selector/language-selector.component';
 import { EnumService } from '../services/enum.service'; 
 
 @Component({
   selector: 'app-wohnungen',
   standalone: true,
-  imports: [CommonModule, FormsModule, EnumTranslatePipe, TranslateModule, LanguageSelectorComponent],
+  imports: [CommonModule, FormsModule, EnumTranslatePipe, TranslateModule],
   templateUrl: './wohnungen.component.html',
   styleUrls: ['./wohnungen.component.scss']
 })

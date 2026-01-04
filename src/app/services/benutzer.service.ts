@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { AuthService } from './auth.service';
+import { ApiService } from './core/api.service';
+
 
 export interface Benutzer {
   Id?: number;
@@ -21,17 +22,16 @@ export interface Benutzer {
 })
 export class BenutzerService {
 
-  private apiUrl = 'https://localhost:7136/api/Benutzer/';
-
-  constructor(private http: HttpClient, private auth: AuthService) {}
+  private readonly endpoint = '/Benutzer';
+  constructor(private api: ApiService, private auth: AuthService) {}
 
   register(data: Benutzer): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}register`, data).pipe(
+    return this.api.post<any>(`${this.endpoint}/register`, data).pipe(
       catchError(err => throwError(() => err))
     );
   }
 login(data: Benutzer): Observable<any> {
-  return this.http.post<any>(`${this.apiUrl}login`, data).pipe(
+  return this.api.post<any>(`${this.endpoint}/login`, data).pipe(
 
     map(res => {
       console.log("🔥 Backend response:", res);

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ApiService } from './core/api.service';
 
 export interface UserProfile {
   Id: number;
@@ -16,29 +16,30 @@ export interface UserProfile {
 
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
-  private api = 'https://localhost:7136/api/profile/';
+  
+   private readonly endpoint = '/profile';
 
-  constructor(private http: HttpClient) {}
+  constructor(private api: ApiService) {}
 
   getMe(): Observable<UserProfile> {
-    return this.http.get<UserProfile>(`${this.api}me`);
+    return this.api.get<UserProfile>(`${this.endpoint}me`);
   }
 
   updateProfile(data: UserProfile): Observable<UserProfile> {
-    return this.http.put<UserProfile>(this.api, data);
+    return this.api.put<UserProfile>(this.endpoint, data);
   }
 
   uploadAvatar(file: File): Observable<{ imageUrl: string }> {
     const fd = new FormData();
     fd.append('file', file);
-    return this.http.post<{ imageUrl: string }>(`${this.api}avatar`, fd);
+    return this.api.post<{ imageUrl: string }>(`${this.endpoint}/avatar`, fd);
   }
   
   changePassword(data: any): Observable<any> {
-    return this.http.post(`${this.api}change-password`, data);
+    return this.api.post(`${this.endpoint}change-password`, data);
   }
 
   deleteAccount(): Observable<any> {
-    return this.http.delete(`${this.api}delete`);
+    return this.api.delete(`${this.endpoint}/delete`);
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, map } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
+import { ApiService } from './core/api.service';
+
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -13,14 +14,14 @@ export class AuthService {
   currentUser$ = this.currentUserSubject.asObservable();
 
   // رابط البروفايل الموحد
-  private readonly AUTH_API = 'https://localhost:7136/api/profile/me';
+  private readonly endpoint = '/profile/me';
 
     // لمعرفة ما إذا كان المستخدم Admin
   isAdmin$ = this.currentUser$.pipe(
     map(user => user?.Role === 'Admin')
   );
 
- constructor(private http: HttpClient) {
+ constructor(private api: ApiService) {
     this.validateSession(); // استدعاء واحد فقط
   }
 
@@ -35,7 +36,7 @@ export class AuthService {
     }
 
     // نستخدم نفس رابط البروفايل للتحقق من التوكن
-    this.http.get<any>(this.AUTH_API).subscribe({
+    this.api.get<any>(this.endpoint).subscribe({
       next: (user) => {
         this.currentUserSubject.next(user);
         this.loggedIn.next(true);
