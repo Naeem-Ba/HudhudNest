@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute} from '@angular/router';
 import { EnumService, EnumItem } from '../services/enum.service';
 import { WohnungenService ,Wohnung} from '../services/wohnungen.service';
 import { EnumTranslatePipe } from '../pipes/enum-translate.pipe';
@@ -29,6 +29,9 @@ export class WohnungAddComponent implements OnInit { //إضافة OnInit
   ZustandList: EnumItem[] = [];
   StatusList: EnumItem[] = [];
   EnergieausweisTypList: EnumItem[] = [];
+  isEditMode = false;
+  wohnungId!: number;
+
 
     wohnung: Wohnung ={
     Titel: '',
@@ -60,6 +63,7 @@ export class WohnungAddComponent implements OnInit { //إضافة OnInit
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute, 
     private wohnungenService: WohnungenService,
     private enumService: EnumService,
     private translate: TranslateService,
@@ -93,11 +97,30 @@ export class WohnungAddComponent implements OnInit { //إضافة OnInit
     this.ZustandList = this.enumService.getList('ZUSTAND');
     this.StatusList = this.enumService.getList('STATUS');
     this.EnergieausweisTypList = this.enumService.getList('ENERGIEAUSWEISTYP');
+
      this.currentLang = this.languageService.getCurrent();
      this.languageService.currentLang$.subscribe(lang => {
       this.currentLang = lang;
     });
+
+    this.wohnungId = Number(this.route.snapshot.paramMap.get('id'));
+
+  if (this.wohnungId) {
+    this.isEditMode = true;
+    this.loadWohnung();
   }
+  }
+
+  loadWohnung() {
+  this.wohnungenService.getWohnung(this.wohnungId).subscribe({
+    next: (w) => {
+      this.wohnung = { ...w }; 
+      this.previews = w.Bilder?.map(b => b.Url) ?? [];
+    },
+    error: err => console.error(err)
+  });
+}
+
 
   onFileSelected(event: any) {
     const files: File[] = Array.from(event.target.files);
@@ -136,12 +159,9 @@ lng!: number;
 onSubmit() {
   const formData = new FormData();
 
-  Object.keys(this.wohnung).forEach(key => {
-    const value = (this.wohnung as any)[key];
-    
-    // إرسال القيم فقط إذا لم تكن null أو undefined
+  Object.entries(this.wohnung).forEach(([key, value]) => {
     if (value !== null && value !== undefined && value !== '') {
-      formData.append(key, value);
+      formData.append(key, value as any);
     }
   });
 
@@ -149,21 +169,29 @@ onSubmit() {
     formData.append('Bilder', file);
   });
 
-this.wohnungenService.addWohnung(formData).subscribe({
-  next: () => {
-
-    // ترجمة الرسالة داخل TypeScript بشكل صحيح
-    this.translate.get('wohnung_add.WoBiSave').subscribe(message => {
-      alert(message);
-      this.router.navigate(['/wohnungen']);
-    });
-
-  },
-  error: (err) => {
-    console.error(err);
+  if (this.isEditMode) {
+    this.updateWohnung(formData);
+  } else {
+    this.createWohnung(formData);
   }
-});
-
+}
+createWohnung(formData: FormData) {
+  this.wohnungenService.addWohnung(formData).subscribe({
+    next: () => this.afterSave(),
+    error: err => console.error(err)
+  });
+}
+updateWohnung(formData: FormData) {
+  this.wohnungenService.updateWohnung(this.wohnungId, formData).subscribe({
+    next: () => this.afterSave(),
+    error: err => console.error(err)
+  });
+}
+afterSave() {
+  this.translate.get('wohnung_add.WoBiSave').subscribe(msg => {
+    alert(msg);
+    this.router.navigate(['/meine-anzeigen']);
+  });
 }
 
 }

@@ -1,0 +1,33 @@
+<div class="container">
+  <h2>Meine Anzeigen</h2>
+
+  <div class="card" *ngFor="let w of wohnungen">
+    <img *ngIf="w.Bilder?.length"
+         [src]="w.Bilder[0].Url"
+         alt="Wohnung">
+
+    <div class="info">
+      <h3>{{ w.Titel }}</h3>
+
+      <p>📅 Erstellt: {{ w.CreatedAt | date:'shortDate' }}</p>
+      <!--<p>⏳ Läuft ab in {{ daysLeft(w.ExpiresAt!) }} Tagen</p>-->
+
+      <div class="actions">
+        <button (click)="edit(w.Id!)">✏️ Bearbeiten</button>
+        <button class="danger" (click)="delete(w.Id!)">🗑️ Löschen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<!--
+<button
+[routerLink]="['/wohnungen/edit', wohnung.id]"
+  class="btn btn-primary">
+  تعديل
+</button>
+-->

@@ -121,11 +121,25 @@ export class WohnungenService {
  uploadWohnungBilder(wohnungId: number, files: File[]): Observable<Bild[]> {
 
     const formData = new FormData();
-    files.forEach(file => formData.append("files", file));
+    files.forEach(file => formData.append("Bilder", file));
 
     return this.api.post<Bild[]>(
       `${this.endpoint}/${wohnungId}/bilder`,
       formData);
+}
+
+  // update Wohnung
+  // ---------------------------------------------------
+updateWohnung(id: number, formData: FormData): Observable<any> {
+  return this.api.put(`${this.endpoint}/${id}`, formData);
+}
+
+getMyWohnungen() {
+  return this.api.get<Wohnung[]>('/mine');
+}
+
+deleteWohnung(id: number) {
+  return this.api.delete(`/${id}`);
 }
 
 }

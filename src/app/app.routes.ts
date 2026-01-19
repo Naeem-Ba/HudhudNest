@@ -11,25 +11,41 @@ import { NavbarComponent } from './navbar/navbar.component';
 import { AdminGuard } from './services/admin-guard';
 
 export const routes: Routes = [
-  {
-    path: '',
-    component: LayoutComponent,
-    children: [
-      { path: '', redirectTo: 'home', pathMatch: 'full' },
-      { path: 'home', component: HomeComponent },
-      { path: 'wohnungen', component: WohnungenComponent },
-      { path: 'wohnungen/:id', component: WohnungDetailComponent },
-      { path: 'kontakt', component: KontaktComponent },
+ {
+  path: '',
+  component: LayoutComponent,
+  children: [
+    { path: '', redirectTo: 'home', pathMatch: 'full' },
+    { path: 'home', component: HomeComponent },
+    { path: 'wohnungen', component: WohnungenComponent },
+    { path: 'wohnungen/:id', component: WohnungDetailComponent },
+    { path: 'kontakt', component: KontaktComponent },
 
-      {
-        path: 'wohnung-add',
-        canActivate: [AuthGuard],
-        loadComponent: () =>
-          import('./wohnung-add/wohnung-add.component')
-            .then(m => m.WohnungAddComponent)
-      },
-    ]
-  },
+    {
+      path: 'wohnung-add',
+      canActivate: [AuthGuard],
+      loadComponent: () =>
+        import('./wohnung-add/wohnung-add.component')
+          .then(m => m.WohnungAddComponent)
+    },
+
+    {
+      path: 'wohnungen/edit/:id',
+      canActivate: [AuthGuard],
+      loadComponent: () =>
+        import('./wohnung-add/wohnung-add.component')
+          .then(m => m.WohnungAddComponent)
+    },
+
+    {
+      path: 'meine-anzeigen',
+      canActivate: [AuthGuard],
+      loadComponent: () =>
+        import('./meine-anzeigen/meine-anzeigen.component')
+          .then(m => m.MeineAnzeigenComponent)
+    }
+  ]
+},
   {
   path: 'profile',
   loadComponent: () =>

@@ -54,7 +54,7 @@
 
   <div class="navbar-right">
     
-    <div class="lang-dropdown">
+    <div class="lang-dropdown desktop-only">
       <button class="lang-btn" (click)="toggleLangMenu($event); $event.stopPropagation()">
         {{ currentLang.toUpperCase() }} ▼
       </button>
@@ -84,6 +84,12 @@
              (click)="dropdownOpen = false">
              {{ userEmail }}
             </a>
+            <div>
+              <hr />
+            <a routerLink="/meine-anzeigen">
+            🏠 meine-anzeigen<!--{{ 'PROFILE.MY_ADS' | translate }}-->
+             </a>
+             </div>
         </div>
         <hr />
         <a (click)="logout()" class="logout-link">

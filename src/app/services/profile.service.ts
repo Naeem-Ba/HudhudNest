@@ -22,7 +22,7 @@ export class ProfileService {
   constructor(private api: ApiService) {}
 
   getMe(): Observable<UserProfile> {
-    return this.api.get<UserProfile>(`${this.endpoint}me`);
+    return this.api.get<UserProfile>(`${this.endpoint}/me`);
   }
 
   updateProfile(data: UserProfile): Observable<UserProfile> {
@@ -36,7 +36,7 @@ export class ProfileService {
   }
   
   changePassword(data: any): Observable<any> {
-    return this.api.post(`${this.endpoint}change-password`, data);
+    return this.api.post(`${this.endpoint}/change-password`, data);
   }
 
   deleteAccount(): Observable<any> {
