@@ -11,8 +11,8 @@
          class="carousel-image"
          [alt]="wohnung.Titel" />
 
-    <button class="arrow left" (click)="prev(); $event.stopPropagation()">&#10094;</button>
-    <button class="arrow right" (click)="next(); $event.stopPropagation()">&#10095;</button>
+    <button class="arrow left" (click)="isRTL ? next() : prev(); $event.stopPropagation()">&#10094;</button>
+    <button class="arrow right" (click)="isRTL ? prev() : next(); $event.stopPropagation()">&#10095;</button>
 
   </div>
 </div>

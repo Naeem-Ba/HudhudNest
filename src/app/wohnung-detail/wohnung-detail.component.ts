@@ -6,6 +6,7 @@ import { WohnungenService,Wohnung} from '../services/wohnungen.service';
 import { EnumTranslatePipe } from '../pipes/enum-translate.pipe';
 import { TranslateModule } from '@ngx-translate/core';
 import{ WohnungMapViewComponent}  from './wohnungMapView/wohnungMapView.component';
+import { TranslateService } from '@ngx-translate/core';
 
 
 @Component({
@@ -34,7 +35,8 @@ export class WohnungDetailComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private wohnungenService: WohnungenService
+    private wohnungenService: WohnungenService,
+    private translate: TranslateService
   ) {}
 
   ngOnInit() {
@@ -93,6 +95,10 @@ openModal() {
 
 closeModal() {
   this.modalOpen = false;
+}
+
+get isRTL(): boolean {
+  return this.translate.currentLang === 'ar';
 }
 
 
