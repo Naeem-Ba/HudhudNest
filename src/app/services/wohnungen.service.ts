@@ -135,11 +135,11 @@ updateWohnung(id: number, formData: FormData): Observable<any> {
 }
 
 getMyWohnungen() {
-  return this.api.get<Wohnung[]>('/mine');
+  return this.api.get<Wohnung[]>(`${this.endpoint}/mine`);
 }
 
 deleteWohnung(id: number) {
-  return this.api.delete(`/${id}`);
+  return this.api.delete(`${this.endpoint}/${id}`);
 }
 
 }
