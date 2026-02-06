@@ -13,8 +13,8 @@ import { AuthService } from '../services/auth.service';
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent {
-  loginData: Benutzer = { Email: '', PasswordHash: '' };
-  registerData: Benutzer = { Name: '', Email: '', PasswordHash: '' };
+  loginData: Benutzer = { Email: '', Password: '' };
+  registerData: Benutzer = { Name: '', Email: '', Password: '' };
   showRegister = false;
   message = '';
   success = false;

@@ -11,7 +11,7 @@ export interface Benutzer {
   Name?: string;
   DisplayName?: string;
   Email: string;
-  PasswordHash?: string;
+  Password?: string;
   Phone?: string;
   IsAgent?: boolean;
   ImageUrl?: string;
@@ -22,7 +22,7 @@ export interface Benutzer {
 })
 export class BenutzerService {
 
-  private readonly endpoint = '/Benutzer';
+  private readonly endpoint = '/Auth';
   constructor(private api: ApiService, private auth: AuthService) {}
 
   register(data: Benutzer): Observable<any> {

@@ -8,7 +8,7 @@ export interface Wohnung {
   Beschreibung: string;
   Adresse: string;
 
-   Stadt?: number;          // ENUM: STADT
+  Stadt?: number;          // ENUM: STADT
   Zustand?: number;        // ENUM: ZUSTAND
   Status?: number;         // ENUM: STATUS
   Energieausweis?: number; // ENUM: ENERGIEAUSWEISTYP

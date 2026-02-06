@@ -4,7 +4,7 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
 
   // ❌ لا ترسل التوكن للملفات أو auth endpoints
   if (
-    req.url.includes('/login') ||
+    req.url.endsWith('/login') ||
     req.url.includes('/register') ||
     req.url.includes('/assets/')
   ) {

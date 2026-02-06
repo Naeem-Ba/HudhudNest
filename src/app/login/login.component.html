@@ -39,7 +39,7 @@
 
       <div class="password-wrapper">
         <input type="{{ showPass ? 'text' : 'password' }}"
-               [(ngModel)]="loginData.PasswordHash"
+               [(ngModel)]="loginData.Password"
                name="password"
                required minlength="5">
         <span class="toggle-pass" (click)="showPass = !showPass">
@@ -74,7 +74,7 @@
 
       <div class="password-wrapper">
         <input type="{{ showPassReg ? 'text' : 'password' }}"
-               [(ngModel)]="registerData.PasswordHash"
+               [(ngModel)]="registerData.Password"
                name="passReg"
                required minlength="6">
         <span class="toggle-pass" (click)="showPassReg = !showPassReg">
