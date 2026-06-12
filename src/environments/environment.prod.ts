@@ -3,6 +3,7 @@
 export const environment = {
   production: true,
 
-  apiUrl: 'https://wohnungen-api.onrender.com/api',
-  baseUrl: 'https://bizorealestateworld.netlify.app'
+  baseUrl: 'http://localhost:5010',
+  apiUrl: 'http://localhost:5010/api',
+  signalRUrl: 'http://localhost:5010/notificationHub'
 };

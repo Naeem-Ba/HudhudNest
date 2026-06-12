@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+﻿import { Routes } from '@angular/router';
 import { LayoutComponent } from './layout/layout';
 import { HomeComponent } from './home/home.component';
 import { WohnungenComponent } from './wohnungen/wohnungen.component';
@@ -38,6 +38,12 @@ export const routes: Routes = [
     },
 
     {
+  path: 'auth/login',
+  loadComponent: () =>
+    import('./features/auth/login/login.page').then(m => m.LoginPage)
+},
+
+    {
       path: 'meine-anzeigen',
       canActivate: [AuthGuard],
       loadComponent: () =>
@@ -69,6 +75,53 @@ export const routes: Routes = [
 },
 { path: 'language', loadComponent: () => import('./language-selector/language-selector.component').then(m => m.LanguageSelectorComponent) },
 
-  { path: '**', redirectTo: 'home' },
+  {
+  path: 'auth/send-otp',
+  loadComponent: () => import('./features/auth/send-otp/send-otp.page').then(m => m.SendOtpPage)
+},
+{
+  path: 'auth/verify-otp',
+  loadComponent: () => import('./features/auth/verify-otp/verify-otp.page').then(m => m.VerifyOtpPage)
+},
+{
+  path: 'auth/register',
+  loadComponent: () => import('./features/auth/register/register.page').then(m => m.RegisterPage)
+},
+{
+  path: 'auth/forgot-password',
+  loadComponent: () => import('./features/auth/forgot-password/forgot-password.page').then(m => m.ForgotPasswordPage)
+},
+{
+  path: 'auth/reset-password',
+  loadComponent: () => import('./features/auth/reset-password/reset-password.page').then(m => m.ResetPasswordPage)
+},
+{
+  path: 'properties-new',
+  loadComponent: () => import('./features/properties/property-list/property-list.page').then(m => m.PropertyListPage)
+},
+{
+  path: 'favorites',
+  loadComponent: () => import('./features/favorites/favorites.page').then(m => m.FavoritesPage)
+},
+{
+  path: 'notifications',
+  loadComponent: () => import('./features/notifications/notifications.page').then(m => m.NotificationsPage)
+},
+{
+  path: 'offline',
+  loadComponent: () => import('./features/offline/offline.page').then(m => m.OfflinePage)
+},
+{ path: '**', redirectTo: 'home' },
+  {
+  path: 'auth/send-otp',
+  loadComponent: () =>
+    import('./features/auth/send-otp/send-otp.page').then(m => m.SendOtpPage)
+},
+{
+  path: 'auth/verify-otp',
+  loadComponent: () =>
+    import('./features/auth/verify-otp/verify-otp.page').then(m => m.VerifyOtpPage)
+},
 ];
+
 

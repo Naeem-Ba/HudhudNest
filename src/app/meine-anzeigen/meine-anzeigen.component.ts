@@ -27,7 +27,7 @@ export class MeineAnzeigenComponent implements OnInit {
   }
 
   edit(id: number) {
-    this.router.navigate(['/edit', id]);
+    this.router.navigate(['/wohnungen/edit', id]);
   }
 
   delete(id: number) {

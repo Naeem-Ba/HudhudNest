@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { AuthService } from './auth.service';
@@ -22,7 +22,7 @@ export interface Benutzer {
 })
 export class BenutzerService {
 
-  private readonly endpoint = '/Auth';
+  private readonly endpoint = '/auth';
   constructor(private api: ApiService, private auth: AuthService) {}
 
   register(data: Benutzer): Observable<any> {
@@ -34,16 +34,16 @@ login(data: Benutzer): Observable<any> {
   return this.api.post<any>(`${this.endpoint}/login`, data).pipe(
 
     map(res => {
-      console.log("🔥 Backend response:", res);
+      console.log("ðŸ”¥ Backend response:", res);
 
-      if (!res || !res.token) throw new Error('Ungültige Anmeldedaten');
+      if (!res || !res.accessToken) throw new Error('UngÃ¼ltige Anmeldedaten');
 
       this.auth.login(res);
       return res;
     }),
 
     catchError(err => {
-      console.error("❌ Login error:", err);
+      console.error("âŒ Login error:", err);
       return throwError(() => err);
     })
   );
@@ -53,3 +53,4 @@ login(data: Benutzer): Observable<any> {
     this.auth.logout();
   }
 }
+

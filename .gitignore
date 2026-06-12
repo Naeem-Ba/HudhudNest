@@ -40,3 +40,10 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Local migration backups
+_migration_backup_*/
+*.bak_*
+
+# Local migration scripts
+apply-clean-batch-migration.ps1

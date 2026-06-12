@@ -1,17 +1,18 @@
-import { ApplicationConfig } from '@angular/core';
+﻿import { ApplicationConfig } from '@angular/core';
 import { provideRouter, withHashLocation } from '@angular/router';
-import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { AuthInterceptor } from './services/auth-interceptor';
 
+import { routes } from './app.routes';
+import { AuthInterceptor } from './services/auth-interceptor';
+import { ApiErrorInterceptor } from './core/interceptors/api-error.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-   // أضف withHashLocation() هنا كمعامل ثانٍ لدالة provideRouter
     provideRouter(routes, withHashLocation()),
     provideHttpClient(
       withInterceptors([
-        AuthInterceptor
+        AuthInterceptor,
+        ApiErrorInterceptor
       ])
     )
   ]

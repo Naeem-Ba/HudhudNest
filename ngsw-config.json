@@ -1,0 +1,23 @@
+﻿{
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "resources": { "files": ["/favicon.ico", "/index.html", "/*.css", "/*.js"] }
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "resources": { "files": ["/assets/**", "/i18n/**"] }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "api-readonly",
+      "urls": ["/api/properties*", "/api/enums*", "/api/lookups*", "/api/amenities*"],
+      "cacheConfig": { "strategy": "freshness", "maxSize": 100, "maxAge": "1h", "timeout": "5s" }
+    }
+  ]
+}
