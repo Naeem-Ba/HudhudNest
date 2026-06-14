@@ -3,7 +3,6 @@ import { LayoutComponent } from './layout/layout';
 import { HomeComponent } from './home/home.component';
 import { WohnungenComponent } from './wohnungen/wohnungen.component';
 import { WohnungDetailComponent } from './wohnung-detail/wohnung-detail.component';
-import { LoginComponent } from './login/login.component';
 import { KontaktComponent } from './kontakt/kontakt.component';
 import { AuthGuard } from './services/auth-guard';
 import { AdminMessagesComponent } from './admin/messages/messages.component';
@@ -82,7 +81,7 @@ export const routes: Routes = [
   },
 
   // Legacy login route
-  { path: 'login', component: LoginComponent },
+  { path: 'login', redirectTo: 'auth/login', pathMatch: 'full' },
 
   // Profile
   {

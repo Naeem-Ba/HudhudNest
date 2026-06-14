@@ -1,18 +1,29 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
-import { AuthService } from './auth.service';
+import { CanActivateFn, Router, UrlTree } from '@angular/router';
 import { map } from 'rxjs/operators';
+import { AuthService } from './auth.service';
 
-export const AdminGuard: CanActivateFn = () => {
+export const AdminGuard: CanActivateFn = (_route, state) => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
+  auth.restoreSession();
+
+  if (!auth.getAccessToken()) {
+    return router.createUrlTree(['/auth/login'], {
+      queryParams: {
+        returnUrl: state.url
+      }
+    });
+  }
+
   return auth.isAdmin$.pipe(
     map(isAdmin => {
-      if (isAdmin === true) return true;
+      if (isAdmin) {
+        return true;
+      }
 
-      router.navigate(['/not-authorized']);
-      return false;
+      return router.createUrlTree(['/not-authorized']);
     })
   );
 };

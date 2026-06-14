@@ -1,7 +1,7 @@
 ﻿import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthApiService } from '../../../core/services/auth-api.service';
 
 @Component({
@@ -51,6 +51,7 @@ export class LoginPage {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthApiService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly loading = signal(false);
   readonly error = signal('');
@@ -70,7 +71,10 @@ export class LoginPage {
     this.error.set('');
 
     this.auth.login(this.form.getRawValue()).subscribe({
-      next: () => this.router.navigate(['/favorites']),
+      next: () => {
+  const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
+  this.router.navigateByUrl(returnUrl);
+},
       error: () => {
         this.loading.set(false);
         this.error.set('\u062A\u0639\u0630\u0631 \u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u062F\u062E\u0648\u0644.');
