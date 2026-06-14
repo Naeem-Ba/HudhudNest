@@ -166,15 +166,70 @@ export class WohnungAddComponent implements OnInit {
   }
 
   onSubmit(): void {
-    const payload = this.buildPropertyPayload();
+  const payload = this.buildPropertyPayload();
+  const validationMessage = this.validatePropertyPayload(payload);
 
-    if (this.isEditMode) {
-      this.updateWohnung(payload);
-    } else {
-      this.createWohnung(payload);
-    }
+  if (validationMessage) {
+    alert(validationMessage);
+    return;
   }
 
+  if (this.isEditMode) {
+    this.updateWohnung(payload);
+  } else {
+    this.createWohnung(payload);
+  }
+}
+
+private validatePropertyPayload(payload: PropertySavePayload): string | null {
+  if (!payload.Title?.trim()) {
+    return 'Bitte geben Sie einen Titel ein.';
+  }
+
+  if (!payload.Description?.trim()) {
+    return 'Bitte geben Sie eine Beschreibung ein.';
+  }
+
+  if (!payload.City?.trim()) {
+    return 'Bitte wählen Sie eine Stadt aus.';
+  }
+
+  if (!payload.Street?.trim()) {
+    return 'Bitte geben Sie eine Adresse ein.';
+  }
+
+  if (payload.ListingType === 1 && (!payload.ColdRent || payload.ColdRent <= 0)) {
+    return 'Bitte geben Sie eine Kaltmiete größer als 0 ein.';
+  }
+
+  if (payload.ListingType === 2 && (!payload.PurchasePrice || payload.PurchasePrice <= 0)) {
+    return 'Bitte geben Sie einen Kaufpreis größer als 0 ein.';
+  }
+
+  if (
+    payload.ListingType === 3 &&
+    (!payload.ColdRent || payload.ColdRent <= 0 || !payload.PurchasePrice || payload.PurchasePrice <= 0)
+  ) {
+    return 'Bei Miete und Kauf müssen Kaltmiete und Kaufpreis größer als 0 sein.';
+  }
+
+  if (payload.Rooms !== null && payload.Rooms !== undefined && (payload.Rooms < 1 || payload.Rooms > 50)) {
+    return 'Die Zimmeranzahl muss zwischen 1 und 50 liegen.';
+  }
+
+  if (payload.Area !== null && payload.Area !== undefined && payload.Area <= 10) {
+    return 'Die Fläche muss größer als 10 m² sein.';
+  }
+
+  const hasLat = payload.Latitude !== null && payload.Latitude !== undefined;
+  const hasLng = payload.Longitude !== null && payload.Longitude !== undefined;
+
+  if (hasLat !== hasLng) {
+    return 'Latitude und Longitude müssen beide gesetzt sein oder beide leer bleiben.';
+  }
+
+  return null;
+}
   createWohnung(payload: PropertySavePayload): void {
   this.wohnungenService.addWohnung(payload).subscribe({
     next: (created) => {
@@ -321,13 +376,18 @@ private uploadImagesOrFinish(propertyId: string): void {
   }
 
   private toNullableNumber(value: unknown): number | null {
-    if (value === null || value === undefined || value === '') {
-      return null;
-    }
-
-    const n = Number(value);
-    return Number.isFinite(n) ? n : null;
+  if (value === null || value === undefined || value === '') {
+    return null;
   }
+
+  const n = Number(value);
+
+  if (!Number.isFinite(n)) {
+    return null;
+  }
+
+  return n > 0 ? n : null;
+}
 
   private toNullableInteger(value: unknown): number | null {
     const n = this.toNullableNumber(value);
