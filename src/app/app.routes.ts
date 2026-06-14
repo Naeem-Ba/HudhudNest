@@ -7,6 +7,7 @@ import { KontaktComponent } from './kontakt/kontakt.component';
 import { AuthGuard } from './services/auth-guard';
 import { AdminMessagesComponent } from './admin/messages/messages.component';
 import { AdminGuard } from './services/admin-guard';
+import { LoginComponent } from './login/login.component';
 
 export const routes: Routes = [
   {
@@ -50,10 +51,9 @@ export const routes: Routes = [
 
   // Auth routes
   {
-    path: 'auth/login',
-    loadComponent: () =>
-      import('./features/auth/login/login.page').then(m => m.LoginPage)
-  },
+  path: 'auth/login',
+  component: LoginComponent
+},
   {
     path: 'auth/send-otp',
     loadComponent: () =>
