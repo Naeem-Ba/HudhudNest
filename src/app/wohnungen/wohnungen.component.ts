@@ -3,11 +3,8 @@ import { CommonModule } from '@angular/common';
 import { WohnungenService, Wohnung } from '../services/wohnungen.service';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from '../services/auth.service';
-import { Observable } from 'rxjs';
 import { EnumTranslatePipe } from '../pipes/enum-translate.pipe';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { EnumService } from '../services/enum.service'; 
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-wohnungen',
@@ -18,35 +15,53 @@ import { EnumService } from '../services/enum.service';
 })
 export class WohnungenComponent implements OnInit {
   wohnungen: Wohnung[] = [];
-  isLoggedIn$!: Observable<boolean>;
+  loading = false;
+  errorMessage = '';
+
   constructor(
-    private wohnungenService: WohnungenService,
-    private router: Router,
-    private authService: AuthService,
-    private enumService: EnumService,
-    private translate: TranslateService
-  ) { this.isLoggedIn$ = this.authService.isLoggedIn$;}
+    private readonly wohnungenService: WohnungenService,
+    private readonly router: Router
+  ) {}
 
   ngOnInit(): void {
+    this.loading = true;
+    this.errorMessage = '';
 
-   // تحميل الشقق من السيرفر أول مرة
-  this.wohnungenService.getWohnungen().subscribe(data => {
-    console.log('📦 Wohnungen vom Server:', data);
-    this.wohnungen = data;
-  });
+    this.wohnungenService.getWohnungen().subscribe({
+      next: data => {
+        console.log('Wohnungen vom Server:', data);
+        this.wohnungen = data;
+        this.loading = false;
+      },
+      error: err => {
+        console.error('Fehler beim Laden der Wohnungen:', err);
+        this.errorMessage = 'Die Wohnungen konnten nicht geladen werden.';
+        this.loading = false;
+      }
+    });
 
-  // 🔁 عند إضافة شقة جديدة، تُضاف محليًا مباشرة
-  this.wohnungenService.wohnungAdded$.subscribe(neueWohnung => {
-    this.wohnungen.push(neueWohnung);
-  });
-}
-
-  gotoDetails(id: string | undefined): void {
-  if (!id) {
-    return;
+    this.wohnungenService.wohnungAdded$.subscribe(neueWohnung => {
+      this.wohnungen = [neueWohnung, ...this.wohnungen];
+    });
   }
 
-  this.router.navigate(['/wohnungen', id]);
-}
-  
+  gotoDetails(id: string | undefined): void {
+    if (!id) {
+      return;
+    }
+
+    this.router.navigate(['/wohnungen', id]);
+  }
+
+  getMainImage(w: Wohnung): string {
+    return w.Bilder?.[0]?.Url || 'assets/no-image.jpg';
+  }
+
+  getPrice(w: Wohnung): number | undefined {
+    return w.Kaufpreis || w.Warmmiete || w.Kaltmiete;
+  }
+
+  getId(w: Wohnung): string | undefined {
+    return w.Id || w.id;
+  }
 }
