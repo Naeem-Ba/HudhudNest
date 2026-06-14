@@ -3,13 +3,12 @@ import { CommonModule } from '@angular/common';
 import { WohnungenService, Wohnung } from '../services/wohnungen.service';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { EnumTranslatePipe } from '../pipes/enum-translate.pipe';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-wohnungen',
   standalone: true,
-  imports: [CommonModule, FormsModule, EnumTranslatePipe, TranslateModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './wohnungen.component.html',
   styleUrls: ['./wohnungen.component.scss']
 })
