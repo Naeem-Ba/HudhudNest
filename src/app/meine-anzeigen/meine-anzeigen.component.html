@@ -1,33 +1,37 @@
 <div class="container">
   <h2>Meine Anzeigen</h2>
 
+  <p *ngIf="loading">Lade Anzeigen...</p>
+
+  <p *ngIf="errorMessage" class="text-danger">
+    {{ errorMessage }}
+  </p>
+
+  <p *ngIf="!loading && !errorMessage && wohnungen.length === 0">
+    Keine Anzeigen vorhanden.
+  </p>
+
   <div class="card" *ngFor="let w of wohnungen">
-    <img *ngIf="w.Bilder?.length"
-         [src]="w.Bilder[0].Url"
-         alt="Wohnung">
+    <img
+      [src]="getMainImage(w)"
+      alt="Wohnung"
+      style="max-width: 220px; height: auto;"
+    >
 
     <div class="info">
-      <h3>{{ w.Titel }}</h3>
+      <h3>{{ w.Titel || 'Ohne Titel' }}</h3>
 
-      <p>📅 Erstellt: {{ w.CreatedAt | date:'shortDate' }}</p>
-      <!--<p>⏳ Läuft ab in {{ daysLeft(w.ExpiresAt!) }} Tagen</p>-->
+      <p><strong>Adresse:</strong> {{ w.Adresse || '—' }}</p>
+      <p><strong>Stadt:</strong> {{ w.Stadt || '—' }}</p>
+      <p><strong>Preis:</strong> {{ getPrice(w) || '—' }}</p>
+      <p><strong>Fläche:</strong> {{ w.Flaeche || '—' }} m²</p>
+      <p><strong>Zimmer:</strong> {{ w.Zimmer || '—' }}</p>
+      <p><strong>Erstellt:</strong> {{ w.CreatedAt | date:'shortDate' }}</p>
 
-      <div class="actions">
-        <button (click)="edit(w.Id!)">✏️ Bearbeiten</button>
-        <button class="danger" (click)="delete(w.Id!)">🗑️ Löschen</button>
+      <div class="actions" *ngIf="getId(w) as id">
+        <button type="button" (click)="edit(id)">Bearbeiten</button>
+        <button type="button" class="danger" (click)="delete(id)">Löschen</button>
       </div>
     </div>
   </div>
 </div>
-
-
-
-
-
-<!--
-<button
-[routerLink]="['/wohnungen/edit', wohnung.id]"
-  class="btn btn-primary">
-  تعديل
-</button>
--->

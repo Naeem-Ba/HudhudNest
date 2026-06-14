@@ -1,8 +1,7 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router, RouterModule} from '@angular/router';
-import { WohnungenService ,Wohnung} from '../services/wohnungen.service';
+import { Router, RouterModule } from '@angular/router';
+import { WohnungenService, Wohnung } from '../services/wohnungen.service';
 
 @Component({
   standalone: true,
@@ -11,41 +10,73 @@ import { WohnungenService ,Wohnung} from '../services/wohnungen.service';
   styleUrls: ['./meine-anzeigen.component.scss']
 })
 export class MeineAnzeigenComponent implements OnInit {
-
   wohnungen: Wohnung[] = [];
+  loading = false;
+  errorMessage = '';
   now = new Date();
 
   constructor(
-    private service: WohnungenService,
-    private router: Router
+    private readonly service: WohnungenService,
+    private readonly router: Router
   ) {}
 
-  ngOnInit() {
-    this.service.getMyWohnungen().subscribe(res => {
-      this.wohnungen = res;
+  ngOnInit(): void {
+    this.loading = true;
+    this.errorMessage = '';
+
+    this.service.getMyWohnungen().subscribe({
+      next: res => {
+        console.log('Meine Anzeigen:', res);
+        this.wohnungen = res;
+        this.loading = false;
+      },
+      error: err => {
+        console.error('Fehler beim Laden meiner Anzeigen:', err);
+        this.errorMessage = 'Die Anzeigen konnten nicht geladen werden.';
+        this.loading = false;
+      }
     });
   }
 
- edit(id: string): void {
-  if (!id) {
-    return;
+  edit(id: string | undefined): void {
+    if (!id) {
+      return;
+    }
+
+    this.router.navigate(['/wohnungen/edit', id]);
   }
 
-  this.router.navigate(['/wohnungen/edit', id]);
-}
+  delete(id: string | undefined): void {
+    if (!id) {
+      return;
+    }
 
-delete(id: string): void {
-  if (!id) {
-    return;
+    this.service.deleteWohnung(id).subscribe({
+      next: () => {
+        this.wohnungen = this.wohnungen.filter(w => w.Id !== id && w.id !== id);
+      },
+      error: err => console.error('Fehler beim Löschen:', err)
+    });
   }
 
-  this.service.deleteWohnung(id).subscribe(() => {
-    this.wohnungen = this.wohnungen.filter(w => w.Id !== id && w.id !== id);
-  });
-}
+  daysLeft(exp: string | undefined): number | null {
+    if (!exp) {
+      return null;
+    }
 
-  daysLeft(exp: string) {
     const diff = new Date(exp).getTime() - this.now.getTime();
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  }
+
+  getMainImage(w: Wohnung): string {
+    return w.Bilder?.[0]?.Url || 'assets/no-image.jpg';
+  }
+
+  getPrice(w: Wohnung): number | undefined {
+    return w.Kaufpreis || w.Warmmiete || w.Kaltmiete;
+  }
+
+  getId(w: Wohnung): string | undefined {
+    return w.Id || w.id;
   }
 }

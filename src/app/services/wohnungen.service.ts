@@ -168,6 +168,10 @@ export class WohnungenService {
   );
 }
 
+publishWohnung(id: string): Observable<void> {
+  return this.api.patch<void>(`${this.endpoint}/${id}/publish`, {});
+}
+
   updateWohnung(id: string, payload: Partial<PropertySavePayload>): Observable<void> {
   return this.api.put<void>(`${this.endpoint}/${id}`, {
     PropertyId: id,
@@ -210,58 +214,91 @@ export class WohnungenService {
     return [];
   }
 
-  private toWohnung(property: any): Wohnung {
-    const id = this.toStringId(property?.Id ?? property?.id);
-    const listingType = property?.ListingType ?? property?.listingType ?? '';
-    const images = property?.Images ?? property?.images ?? property?.Bilder ?? property?.bilder ?? [];
+ private toWohnung(property: any): Wohnung {
+  const id = this.toStringId(property?.Id ?? property?.id);
+  const listingType = property?.ListingType ?? property?.listingType ?? '';
+  const listingTypeText = String(listingType).toLowerCase();
 
-    return {
-      Id: id,
-      id,
+  const existingImages =
+    property?.Images ??
+    property?.images ??
+    property?.Bilder ??
+    property?.bilder ??
+    [];
 
-      Titel: property?.Titel ?? property?.Title ?? property?.title ?? '',
-      Beschreibung: property?.Beschreibung ?? property?.Description ?? property?.description ?? '',
-      Adresse: property?.Adresse ?? property?.Street ?? property?.street ?? '',
+  const mainImageUrl = property?.MainImageUrl ?? property?.mainImageUrl;
+  const imageUrls = property?.ImageUrls ?? property?.imageUrls ?? [];
 
-      Stadt: property?.Stadt ?? property?.City ?? property?.city ?? '',
-      Zustand: property?.Zustand ?? property?.Condition ?? property?.condition ?? '',
-      Status: property?.Status ?? property?.PropertyStatus ?? property?.status ?? '',
-      Energieausweis: property?.Energieausweis ?? property?.EnergyEfficiency ?? property?.energyEfficiency ?? '',
+  const images = [
+    ...existingImages,
+    ...(mainImageUrl ? [{ Url: mainImageUrl, IsMain: true }] : []),
+    ...imageUrls.map((url: string) => ({ Url: url, IsMain: false }))
+  ];
 
-      PLZ: property?.PLZ ?? property?.PostalCode ?? property?.postalCode ?? '',
-      Latitude: this.toNumber(property?.Latitude ?? property?.latitude),
-      Longitude: this.toNumber(property?.Longitude ?? property?.longitude),
+  const isRent =
+    listingType === 1 ||
+    listingType === '1' ||
+    listingTypeText.includes('forrent') ||
+    listingTypeText.includes('rent');
 
-      ZumMieten: property?.ZumMieten ?? String(listingType).toLowerCase().includes('rent'),
-      ZumKaufen: property?.ZumKaufen ?? String(listingType).toLowerCase().includes('sale'),
+  const isSale =
+    listingType === 2 ||
+    listingType === '2' ||
+    listingTypeText.includes('forsale') ||
+    listingTypeText.includes('sale');
 
-      Kaltmiete: this.toNumber(property?.Kaltmiete ?? property?.ColdRent ?? property?.coldRent),
-      Warmmiete: this.toNumber(property?.Warmmiete ?? property?.WarmRent ?? property?.warmRent),
-      Kaufpreis: this.toNumber(property?.Kaufpreis ?? property?.PurchasePrice ?? property?.purchasePrice),
-      Nebenkosten: this.toNumber(property?.Nebenkosten),
-      Kaution: this.toNumber(property?.Kaution),
+  const isRentAndSale =
+    listingType === 3 ||
+    listingType === '3' ||
+    listingTypeText.includes('rentandsale');
 
-      Zimmer: this.toNumber(property?.Zimmer ?? property?.Rooms ?? property?.rooms),
-      Flaeche: this.toNumber(property?.Flaeche ?? property?.Area ?? property?.area),
-      Geschoss: this.toNumber(property?.Geschoss ?? property?.Floor ?? property?.floor),
-      FreiAb: property?.FreiAb ?? property?.AvailableFrom ?? property?.availableFrom,
+  return {
+    Id: id,
+    id,
 
-      Balkon: property?.Balkon ?? property?.HasBalcony ?? property?.hasBalcony ?? false,
-      Aufzug: property?.Aufzug ?? property?.HasElevator ?? property?.hasElevator ?? false,
-      Stellplatz: property?.Stellplatz ?? property?.HasParkingSpace ?? property?.hasParkingSpace ?? false,
-      Heizung: property?.Heizung ?? property?.HeatingType ?? property?.heatingType ?? '',
+    Titel: property?.Titel ?? property?.Title ?? property?.title ?? '',
+    Beschreibung: property?.Beschreibung ?? property?.Description ?? property?.description ?? '',
+    Adresse: property?.Adresse ?? property?.Street ?? property?.street ?? '',
 
-      OwnerId: this.toStringId(property?.OwnerId ?? property?.ownerId),
-      CreatedAt: property?.CreatedAt ?? property?.createdAt,
-      UpdatedAt: property?.UpdatedAt ?? property?.updatedAt,
+    Stadt: property?.Stadt ?? property?.City ?? property?.city ?? '',
+    Zustand: property?.Zustand ?? property?.Condition ?? property?.condition ?? '',
+    Status: property?.Status ?? property?.PropertyStatus ?? property?.status ?? '',
+    Energieausweis: property?.Energieausweis ?? property?.EnergyEfficiency ?? property?.energyEfficiency ?? '',
 
-      Bilder: images.map((image: any) => this.toBild(image, id)),
-      Amenities: property?.Amenities ?? property?.amenities ?? [],
-      Messages: property?.Messages ?? property?.messages ?? [],
-      WohnungAmenities: property?.WohnungAmenities ?? [],
-      Favorites: property?.Favorites ?? property?.favorites ?? []
-    };
-  }
+    PLZ: property?.PLZ ?? property?.PostalCode ?? property?.postalCode ?? '',
+    Latitude: this.toNumber(property?.Latitude ?? property?.latitude),
+    Longitude: this.toNumber(property?.Longitude ?? property?.longitude),
+
+    ZumMieten: property?.ZumMieten ?? (isRent || isRentAndSale),
+    ZumKaufen: property?.ZumKaufen ?? (isSale || isRentAndSale),
+
+    Kaltmiete: this.toNumber(property?.Kaltmiete ?? property?.ColdRent ?? property?.coldRent),
+    Warmmiete: this.toNumber(property?.Warmmiete ?? property?.WarmRent ?? property?.warmRent),
+    Kaufpreis: this.toNumber(property?.Kaufpreis ?? property?.PurchasePrice ?? property?.purchasePrice),
+    Nebenkosten: this.toNumber(property?.Nebenkosten ?? property?.AdditionalCosts ?? property?.additionalCosts),
+    Kaution: this.toNumber(property?.Kaution ?? property?.Deposit ?? property?.deposit),
+
+    Zimmer: this.toNumber(property?.Zimmer ?? property?.Rooms ?? property?.rooms),
+    Flaeche: this.toNumber(property?.Flaeche ?? property?.Area ?? property?.area),
+    Geschoss: this.toNumber(property?.Geschoss ?? property?.Floor ?? property?.floor),
+    FreiAb: property?.FreiAb ?? property?.AvailableFrom ?? property?.availableFrom,
+
+    Balkon: property?.Balkon ?? property?.HasBalcony ?? property?.hasBalcony ?? false,
+    Aufzug: property?.Aufzug ?? property?.HasElevator ?? property?.hasElevator ?? false,
+    Stellplatz: property?.Stellplatz ?? property?.HasParkingSpace ?? property?.hasParkingSpace ?? false,
+    Heizung: property?.Heizung ?? property?.HeatingType ?? property?.heatingType ?? '',
+
+    OwnerId: this.toStringId(property?.OwnerId ?? property?.ownerId),
+    CreatedAt: property?.CreatedAt ?? property?.createdAt,
+    UpdatedAt: property?.UpdatedAt ?? property?.updatedAt,
+
+    Bilder: images.map((image: any) => this.toBild(image, id)),
+    Amenities: property?.Amenities ?? property?.amenities ?? [],
+    Messages: property?.Messages ?? property?.messages ?? [],
+    WohnungAmenities: property?.WohnungAmenities ?? [],
+    Favorites: property?.Favorites ?? property?.favorites ?? []
+  };
+}
 
   private toBild(image: any, wohnungId: string): Bild {
     return {
