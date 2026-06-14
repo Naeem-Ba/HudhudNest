@@ -1,9 +1,15 @@
-//src/environments/environment.prod.ts
+import { AppEnvironment } from './environment.model';
 
-export const environment = {
+export const environment: AppEnvironment = {
   production: true,
+  environmentName: 'production',
 
-  baseUrl: 'http://localhost:5010',
-  apiUrl: 'http://localhost:5010/api',
-  signalRUrl: 'http://localhost:5010/notificationHub'
+  // TODO: replace with the real Production API origin before production release.
+  baseUrl: 'https://api.example.com',
+
+  // TODO: replace with the real Production REST API URL.
+  apiUrl: 'https://api.example.com/api',
+
+  // TODO: replace with the real Production SignalR hub URL.
+  signalRUrl: 'https://api.example.com/notificationHub'
 };

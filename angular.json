@@ -36,12 +36,12 @@
           "configurations": {
             "production": {
               "fileReplacements": [
-                  {
-                 "replace": "src/environments/environment.ts",
-                 "with": "src/environments/environment.prod.ts"
-                 }
-                 ],
-                 "budgets": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
+              "budgets": [
                 {
                   "type": "initial",
                   "maximumWarning": "500kB",
@@ -59,6 +59,27 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "staging": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.staging.ts"
+                }
+              ],
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all"
             }
           },
           "defaultConfiguration": "production"
@@ -66,8 +87,8 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
-             "ssl": true,
-             "port": 4200
+            "ssl": true,
+            "port": 4200
           },
           "configurations": {
             "production": {
@@ -75,6 +96,9 @@
             },
             "development": {
               "buildTarget": "Wohnungsmieten:build:development"
+            },
+            "staging": {
+              "buildTarget": "Wohnungsmieten:build:staging"
             }
           },
           "defaultConfiguration": "development"
@@ -93,13 +117,13 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
-               "src/assets",
+              "src/assets",
               {
-                 "glob": "**/*",
-                  "input": "node_modules/leaflet/dist/images",
-                   "output": "assets/leaflet"
-                  }
-                ],
+                "glob": "**/*",
+                "input": "node_modules/leaflet/dist/images",
+                "output": "assets/leaflet"
+              }
+            ],
             "styles": [
               "src/styles.scss"
             ]
