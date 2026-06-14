@@ -2,11 +2,11 @@
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { AuthService } from './auth.service';
-import { ApiService } from './core/api.service';
-
+import { BackendApiService } from '../core/services/backend-api.service';
 
 export interface Benutzer {
-  Id?: number;
+  Id?: string;
+  id?: string;
   Vorname?: string;
   Name?: string;
   DisplayName?: string;
@@ -21,36 +21,39 @@ export interface Benutzer {
   providedIn: 'root'
 })
 export class BenutzerService {
-
   private readonly endpoint = '/auth';
-  constructor(private api: ApiService, private auth: AuthService) {}
+
+  constructor(
+    private readonly api: BackendApiService,
+    private readonly auth: AuthService
+  ) {}
 
   register(data: Benutzer): Observable<any> {
     return this.api.post<any>(`${this.endpoint}/register`, data).pipe(
       catchError(err => throwError(() => err))
     );
   }
-login(data: Benutzer): Observable<any> {
-  return this.api.post<any>(`${this.endpoint}/login`, data).pipe(
 
-    map(res => {
-      console.log("ðŸ”¥ Backend response:", res);
+  login(data: Benutzer): Observable<any> {
+    return this.api.post<any>(`${this.endpoint}/login`, data).pipe(
+      map(res => {
+        console.log('Backend response:', res);
 
-      if (!res || !res.accessToken) throw new Error('UngÃ¼ltige Anmeldedaten');
+        if (!res || !res.accessToken) {
+          throw new Error('Ungültige Anmeldedaten');
+        }
 
-      this.auth.login(res);
-      return res;
-    }),
+        this.auth.login(res);
+        return res;
+      }),
+      catchError(err => {
+        console.error('Login error:', err);
+        return throwError(() => err);
+      })
+    );
+  }
 
-    catchError(err => {
-      console.error("âŒ Login error:", err);
-      return throwError(() => err);
-    })
-  );
-}
-
-  logout() {
+  logout(): void {
     this.auth.logout();
   }
 }
-
