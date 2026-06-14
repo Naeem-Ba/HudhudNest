@@ -49,7 +49,7 @@ export const RefreshAuthInterceptor: HttpInterceptorFn = (req, next) => {
       if (!shouldTryRefresh) {
         if (error.status === 401 && !isAuthEndpoint(req.url)) {
           tokenStorage.clear();
-          void router.navigateByUrl('/login');
+          void router.navigateByUrl('/auth/login');
         }
 
         return throwError(() => error);
@@ -63,7 +63,7 @@ export const RefreshAuthInterceptor: HttpInterceptorFn = (req, next) => {
 
           if (!newAccessToken) {
             tokenStorage.clear();
-            void router.navigateByUrl('/login');
+            void router.navigateByUrl('/auth/login');
             return throwError(() => error);
           }
 
@@ -77,7 +77,7 @@ export const RefreshAuthInterceptor: HttpInterceptorFn = (req, next) => {
         }),
         catchError(refreshError => {
           tokenStorage.clear();
-          void router.navigateByUrl('/login');
+          void router.navigateByUrl('/auth/login');
           return throwError(() => refreshError);
         }),
         finalize(() => {

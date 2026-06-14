@@ -26,17 +26,23 @@ export class MeineAnzeigenComponent implements OnInit {
     });
   }
 
-  edit(id: number) {
-    this.router.navigate(['/wohnungen/edit', id]);
+ edit(id: string): void {
+  if (!id) {
+    return;
   }
 
-  delete(id: number) {
-    if (!confirm('Anzeige wirklich löschen?')) return;
+  this.router.navigate(['/wohnungen/edit', id]);
+}
 
-    this.service.deleteWohnung(id).subscribe(() => {
-      this.wohnungen = this.wohnungen.filter(w => w.Id !== id);
-    });
+delete(id: string): void {
+  if (!id) {
+    return;
   }
+
+  this.service.deleteWohnung(id).subscribe(() => {
+    this.wohnungen = this.wohnungen.filter(w => w.Id !== id && w.id !== id);
+  });
+}
 
   daysLeft(exp: string) {
     const diff = new Date(exp).getTime() - this.now.getTime();

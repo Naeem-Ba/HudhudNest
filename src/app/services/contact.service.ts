@@ -1,7 +1,6 @@
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiService } from './core/api.service'; 
-
+import { BackendApiService } from '../core/services/backend-api.service';
 
 export interface ContactDto {
   Name: string;
@@ -10,28 +9,55 @@ export interface ContactDto {
   Message: string;
 }
 
+export interface ContactMessageDto {
+  Id?: string;
+  id?: string;
+
+  Name?: string;
+  name?: string;
+
+  Email?: string;
+  email?: string;
+
+  Subject?: string;
+  subject?: string;
+
+  Message?: string;
+  message?: string;
+
+  IsRead?: boolean;
+  isRead?: boolean;
+
+  CreatedAt?: string;
+  createdAt?: string;
+
+  SentAt?: string;
+sentAt?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ContactService {
-  
   private readonly endpoint = '/contact';
-  constructor(private api: ApiService) {}
 
-  sendContact(payload: ContactDto): Observable<any> {
-    return this.api.post(this.endpoint, payload);
+  constructor(private readonly api: BackendApiService) {}
+
+  sendContact(payload: ContactDto): Observable<ContactMessageDto> {
+    return this.api.post<ContactMessageDto>(this.endpoint, payload);
   }
 
-  getMessages(): Observable<any> {
-    return this.api.get<any>(this.endpoint);
+  getMessages(): Observable<ContactMessageDto[]> {
+    return this.api.get<ContactMessageDto[]>(this.endpoint);
   }
 
-  getMessageById(id: number) {
-  return this.api.get(`${this.endpoint}/${id}`);
-  }
-  markAsRead(id: number): Observable<any> {
-    return this.api.put(`${this.endpoint}/${id}/read`, {});
+  getMessageById(id: string): Observable<ContactMessageDto> {
+    return this.api.get<ContactMessageDto>(`${this.endpoint}/${id}`);
   }
 
-  deleteMessage(id: number): Observable<any> {
-    return this.api.delete(`${this.endpoint}/${id}`);
+  markAsRead(id: string): Observable<void> {
+    return this.api.put<void>(`${this.endpoint}/${id}/read`, {});
+  }
+
+  deleteMessage(id: string): Observable<void> {
+    return this.api.delete<void>(`${this.endpoint}/${id}`);
   }
 }

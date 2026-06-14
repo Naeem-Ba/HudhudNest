@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { firstValueFrom, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { ApiService } from './core/api.service';
+import { BackendApiService } from '../core/services/backend-api.service';
 
 export interface EnumItem {
   Id: number | string;
@@ -13,7 +13,7 @@ export class EnumService {
   private readonly endpoint = '/enums';
   private readonly cache = new Map<string, EnumItem[]>();
 
-  constructor(private readonly api: ApiService) {}
+  constructor(private readonly api: BackendApiService) {}
 
   async loadAll(): Promise<void> {
     const groups = ['STADT', 'ZUSTAND', 'STATUS', 'ENERGIEAUSWEISTYP'];

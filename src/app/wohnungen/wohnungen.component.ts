@@ -41,9 +41,12 @@ export class WohnungenComponent implements OnInit {
   });
 }
 
-  gotoDetails(id: number) {
-    // Navigiert zu einer Detail-Seite, z.B. /wohnungen/1
-    this.router.navigate(['/wohnungen', id]);
+  gotoDetails(id: string | undefined): void {
+  if (!id) {
+    return;
   }
+
+  this.router.navigate(['/wohnungen', id]);
+}
   
 }

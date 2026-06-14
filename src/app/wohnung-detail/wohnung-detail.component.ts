@@ -40,10 +40,15 @@ export class WohnungDetailComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.wohnungenService.getWohnung(id).subscribe(w => {
-      this.wohnung = w;
-    });
+    const id = this.route.snapshot.paramMap.get('id') ?? '';
+
+if (!id) {
+  return;
+}
+
+this.wohnungenService.getWohnung(id).subscribe(w => {
+  this.wohnung = w;
+});
   }
   getCurrentImageUrl() {
   if (!this.wohnung || !this.wohnung.Bilder || this.wohnung.Bilder.length === 0) {

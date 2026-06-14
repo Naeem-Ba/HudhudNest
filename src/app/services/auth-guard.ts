@@ -1,26 +1,22 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { CanActivateFn, Router, UrlTree } from '@angular/router';
 import { AuthService } from './auth.service';
-import { map } from 'rxjs/operators';
 
-export const AuthGuard: CanActivateFn = () => {
+export const AuthGuard: CanActivateFn = (_route, state): boolean | UrlTree => {
   const auth = inject(AuthService);
   const router = inject(Router);
-  const token = localStorage.getItem('token');
 
-  // إذا لم يوجد توكن أصلاً، لا داعي للانتظار
-  if (!token) {
-    router.navigate(['/login']);
-    return false;
+  auth.restoreSession();
+
+  const token = auth.getAccessToken();
+
+  if (token) {
+    return true;
   }
 
-  return auth.isLoggedIn$.pipe(
-    map(isLogged => {
-      if (isLogged) return true; // إذا سجل الدخول، اسمح بالوصول
-
-      router.navigate(['/login']); // وإلا، قم بالتوجيه إلى /login
-      console.log('AuthGuard is blocking navigation.')
-      return false; //  وامنعه من الوصول
-    })
-  );
+  return router.createUrlTree(['/auth/login'], {
+    queryParams: {
+      returnUrl: state.url
+    }
+  });
 };
