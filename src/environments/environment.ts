@@ -1,12 +1,15 @@
-export const environment = {
-  production: false,
+import { AppEnvironment } from './environment.model';
 
-  // Backend base URL, without /api
-  baseUrl: 'http://localhost:5010',
+export const environment: AppEnvironment = {
+  production: false,
+  environmentName: 'local',
+
+  // Backend local HTTPS profile from PropertyApi/Properties/launchSettings.json
+  baseUrl: 'https://localhost:7136',
 
   // REST API base URL
-  apiUrl: 'http://localhost:5010/api',
+  apiUrl: 'https://localhost:7136/api',
 
   // SignalR hub URL
-  signalRUrl: 'http://localhost:5010/notificationHub'
+  signalRUrl: 'https://localhost:7136/notificationHub'
 };
