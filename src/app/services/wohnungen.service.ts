@@ -48,6 +48,34 @@ export interface Wohnung {
   WohnungAmenities?: WohnungAmenity[];
   Favorites?: Favorite[];
 }
+export interface PropertySavePayload {
+  OwnerId: string;
+  Title: string;
+  Description: string;
+  ListingType: number;
+  Street: string;
+  City: string;
+  Region?: string | null;
+  CountryCode: string;
+  PostalCode?: string | null;
+  Latitude?: number | null;
+  Longitude?: number | null;
+  ColdRent?: number | null;
+  WarmRent?: number | null;
+  PurchasePrice?: number | null;
+  Deposit?: number | null;
+  AdditionalCosts?: number | null;
+  CurrencyCode: string;
+  Rooms?: number | null;
+  Area?: number | null;
+  Floor?: number | null;
+  HasBalcony: boolean;
+  HasElevator: boolean;
+  HasParkingSpace: boolean;
+  HeatingType: number;
+  AvailableFrom?: string | null;
+  AmenityIds?: string[] | null;
+}
 
 export interface Favorite {
   UserId: string;
@@ -112,34 +140,41 @@ export class WohnungenService {
    * 1) POST /properties JSON
    * 2) POST /properties/{id}/images FormData files
    */
-  addWohnung(formData: FormData): Observable<Wohnung> {
-    return new Observable(observer => {
-      this.api.post<any>(this.endpoint, formData).subscribe({
-        next: res => {
-          const mapped = this.toWohnung(res);
-          this.wohnungAddedSource.next(mapped);
-          observer.next(mapped);
-          observer.complete();
-        },
-        error: err => observer.error(err)
-      });
+  addWohnung(payload: PropertySavePayload): Observable<Wohnung> {
+  return new Observable(observer => {
+    this.api.post<any>(this.endpoint, payload).subscribe({
+      next: res => {
+        const mapped = this.toWohnung({
+          ...payload,
+          Id: res?.Id ?? res?.id
+        });
+
+        this.wohnungAddedSource.next(mapped);
+        observer.next(mapped);
+        observer.complete();
+      },
+      error: err => observer.error(err)
     });
-  }
+  });
+}
 
   uploadWohnungBilder(wohnungId: string, files: File[]): Observable<Bild[]> {
-    const formData = new FormData();
+  const formData = new FormData();
 
-    // Backend contract: use "files" only.
-    files.forEach(file => formData.append('files', file));
+  files.forEach(file => formData.append('files', file));
 
-    return this.api.post<any[]>(`${this.endpoint}/${wohnungId}/images`, formData).pipe(
-      map(images => (images ?? []).map(image => this.toBild(image, wohnungId)))
-    );
-  }
+  return this.api.post<any[]>(`${this.endpoint}/${wohnungId}/images`, formData).pipe(
+    map(images => (images ?? []).map(image => this.toBild(image, wohnungId)))
+  );
+}
 
-  updateWohnung(id: string, formData: FormData): Observable<any> {
-    return this.api.put(`${this.endpoint}/${id}`, formData);
-  }
+  updateWohnung(id: string, payload: Partial<PropertySavePayload>): Observable<void> {
+  return this.api.put<void>(`${this.endpoint}/${id}`, {
+    PropertyId: id,
+    RequestingUserId: '00000000-0000-0000-0000-000000000000',
+    ...payload
+  });
+}
 
   getMyWohnungen(): Observable<Wohnung[]> {
     return this.api.get<any>(this.endpoint).pipe(
