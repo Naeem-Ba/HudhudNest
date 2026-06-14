@@ -1,9 +1,9 @@
 ﻿import { Injectable } from '@angular/core';
 import { Observable, Subject, map } from 'rxjs';
-import { ApiService } from './core/api.service';
+import { BackendApiService } from '../core/services/backend-api.service';
 
 export interface Wohnung {
-  Id?: any;
+  Id?: string;
   id?: string;
 
   Titel: string;
@@ -38,7 +38,7 @@ export interface Wohnung {
   Stellplatz?: boolean;
   Heizung?: string;
 
-  OwnerId?: any;
+  OwnerId?: string;
   CreatedAt?: string;
   UpdatedAt?: string;
 
@@ -50,37 +50,37 @@ export interface Wohnung {
 }
 
 export interface Favorite {
-  UserId: any;
-  WohnungId: any;
+  UserId: string;
+  WohnungId: string;
 }
 
 export interface WohnungAmenity {
-  Id: any;
-  WohnungId: any;
+  Id: string;
+  WohnungId: string;
   Url: string;
-  AmenityId: any;
+  AmenityId: string;
 }
 
 export interface Bild {
-  Id: any;
-  WohnungId: any;
+  Id: string;
+  WohnungId: string;
   Url: string;
   IsMain: boolean;
   AltText?: string;
 }
 
 export interface Message {
-  Id: any;
-  WohnungId: any;
-  UserId?: any;
+  Id: string;
+  WohnungId: string;
+  UserId?: string;
   SenderName?: string;
   SenderEmail?: string;
   Message: string;
 }
 
 export interface Amenity {
-  Id: any;
-  Name: any;
+  Id: string;
+  Name: string;
 }
 
 @Injectable({
@@ -92,7 +92,7 @@ export class WohnungenService {
   private readonly wohnungAddedSource = new Subject<Wohnung>();
   readonly wohnungAdded$ = this.wohnungAddedSource.asObservable();
 
-  constructor(private readonly api: ApiService) {}
+  constructor(private readonly api: BackendApiService) {}
 
   getWohnungen(): Observable<Wohnung[]> {
     return this.api.get<any>(this.endpoint).pipe(
@@ -100,13 +100,19 @@ export class WohnungenService {
     );
   }
 
-  getWohnung(id: any): Observable<Wohnung> {
+  getWohnung(id: string): Observable<Wohnung> {
     return this.api.get<any>(`${this.endpoint}/${id}`).pipe(
       map(item => this.toWohnung(item))
     );
   }
 
-  addWohnung(formData: FormData): Observable<any> {
+  /**
+   * مؤقتًا: ما زالت صفحة الإضافة القديمة ترسل FormData.
+   * في خطوة لاحقة سنفصل:
+   * 1) POST /properties JSON
+   * 2) POST /properties/{id}/images FormData files
+   */
+  addWohnung(formData: FormData): Observable<Wohnung> {
     return new Observable(observer => {
       this.api.post<any>(this.endpoint, formData).subscribe({
         next: res => {
@@ -120,17 +126,18 @@ export class WohnungenService {
     });
   }
 
-  uploadWohnungBilder(wohnungId: any, files: File[]): Observable<Bild[]> {
+  uploadWohnungBilder(wohnungId: string, files: File[]): Observable<Bild[]> {
     const formData = new FormData();
+
+    // Backend contract: use "files" only.
     files.forEach(file => formData.append('files', file));
-    files.forEach(file => formData.append('Images', file));
 
     return this.api.post<any[]>(`${this.endpoint}/${wohnungId}/images`, formData).pipe(
       map(images => (images ?? []).map(image => this.toBild(image, wohnungId)))
     );
   }
 
-  updateWohnung(id: any, formData: FormData): Observable<any> {
+  updateWohnung(id: string, formData: FormData): Observable<any> {
     return this.api.put(`${this.endpoint}/${id}`, formData);
   }
 
@@ -140,7 +147,7 @@ export class WohnungenService {
     );
   }
 
-  deleteWohnung(id: any): Observable<any> {
+  deleteWohnung(id: string): Observable<any> {
     return this.api.delete(`${this.endpoint}/${id}`);
   }
 
@@ -169,9 +176,8 @@ export class WohnungenService {
   }
 
   private toWohnung(property: any): Wohnung {
-    const id = property?.Id ?? property?.id;
+    const id = this.toStringId(property?.Id ?? property?.id);
     const listingType = property?.ListingType ?? property?.listingType ?? '';
-
     const images = property?.Images ?? property?.images ?? property?.Bilder ?? property?.bilder ?? [];
 
     return {
@@ -210,7 +216,7 @@ export class WohnungenService {
       Stellplatz: property?.Stellplatz ?? property?.HasParkingSpace ?? property?.hasParkingSpace ?? false,
       Heizung: property?.Heizung ?? property?.HeatingType ?? property?.heatingType ?? '',
 
-      OwnerId: property?.OwnerId ?? property?.ownerId,
+      OwnerId: this.toStringId(property?.OwnerId ?? property?.ownerId),
       CreatedAt: property?.CreatedAt ?? property?.createdAt,
       UpdatedAt: property?.UpdatedAt ?? property?.updatedAt,
 
@@ -222,14 +228,22 @@ export class WohnungenService {
     };
   }
 
-  private toBild(image: any, wohnungId: any): Bild {
+  private toBild(image: any, wohnungId: string): Bild {
     return {
-      Id: image?.Id ?? image?.id ?? image?.ImageId ?? image?.imageId ?? '',
-      WohnungId: image?.WohnungId ?? image?.propertyId ?? wohnungId,
+      Id: this.toStringId(image?.Id ?? image?.id ?? image?.ImageId ?? image?.imageId),
+      WohnungId: this.toStringId(image?.WohnungId ?? image?.propertyId ?? wohnungId),
       Url: image?.Url ?? image?.url ?? image?.ImageUrl ?? image?.imageUrl ?? 'assets/no-image.jpg',
       IsMain: image?.IsMain ?? image?.isMain ?? false,
       AltText: image?.AltText ?? image?.altText ?? ''
     };
+  }
+
+  private toStringId(value: unknown): string {
+    if (value === null || value === undefined) {
+      return '';
+    }
+
+    return String(value);
   }
 
   private toNumber(value: any): number | undefined {
