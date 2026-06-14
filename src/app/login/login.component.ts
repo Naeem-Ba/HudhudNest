@@ -56,7 +56,7 @@ export class LoginComponent {
     this.message = '';
 
     const request = {
-      email: this.loginData.Email,
+      email: this.loginData.Email.trim().toLowerCase(),
       password: this.loginData.Password
     };
 
@@ -80,44 +80,119 @@ export class LoginComponent {
   }
 
   onRegister(): void {
-  if (this.loading) {
-    return;
-  }
+    if (this.loading) {
+      return;
+    }
 
-  this.loading = true;
-  this.message = '';
+    this.loading = true;
+    this.message = '';
 
-  const fullName = (this.registerData.Name ?? '').trim();
-  const nameParts = fullName.split(/\s+/).filter(Boolean);
+    const fullName = (this.registerData.Name ?? '').trim();
+    const email = this.registerData.Email.trim().toLowerCase();
+    const password = this.registerData.Password;
 
-  const firstName = nameParts[0] || 'User';
-  const lastName = nameParts.slice(1).join(' ') || firstName;
+    const nameParts = fullName.split(/\s+/).filter(Boolean);
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || firstName;
 
-  const request = {
-    firstName,
-    lastName,
-    email: this.registerData.Email,
-    password: this.registerData.Password
-  };
-
-  this.authApi.register(request).subscribe({
-    next: () => {
-      this.loading = false;
-      this.success = true;
-      this.message = 'Registrierung erfolgreich! Bitte einloggen.';
-      this.showRegister = false;
-    },
-    error: () => {
+    const validationMessage = this.validateRegisterForm(firstName, lastName, email, password);
+    if (validationMessage) {
       this.loading = false;
       this.success = false;
-      this.message = 'Fehler bei der Registrierung.';
+      this.message = validationMessage;
+      return;
     }
-  });
-}
+
+    const request = {
+      firstName,
+      lastName,
+      email,
+      password
+    };
+
+    this.authApi.register(request).subscribe({
+      next: () => {
+        this.loading = false;
+        this.success = true;
+        this.message = 'Registrierung erfolgreich! Bitte einloggen.';
+        this.showRegister = false;
+
+        this.loginData.Email = email;
+        this.loginData.Password = '';
+        this.registerData.Password = '';
+      },
+      error: (error) => {
+        this.loading = false;
+        this.success = false;
+        this.message = this.getRegisterErrorMessage(error);
+      }
+    });
+  }
 
   toggleRegister(): void {
     this.showRegister = !this.showRegister;
     this.message = '';
     this.success = false;
+  }
+
+  private validateRegisterForm(
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string
+  ): string | null {
+    if (!firstName || !lastName) {
+      return 'Bitte geben Sie Ihren vollständigen Namen ein.';
+    }
+
+    if (!email) {
+      return 'Bitte geben Sie Ihre E-Mail-Adresse ein.';
+    }
+
+    if (/\s/.test(email)) {
+      return 'Die E-Mail-Adresse darf keine Leerzeichen enthalten.';
+    }
+
+    if (!this.isValidEmail(email)) {
+      return 'Bitte geben Sie eine gültige E-Mail-Adresse ein.';
+    }
+
+    if (!password) {
+      return 'Bitte geben Sie ein Passwort ein.';
+    }
+
+    if (password.length < 8) {
+      return 'Das Passwort muss mindestens 8 Zeichen lang sein.';
+    }
+
+    return null;
+  }
+
+  private isValidEmail(email: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  private getRegisterErrorMessage(error: unknown): string {
+    const response = error as {
+      error?: {
+        message?: string;
+        errors?: Record<string, string[]>;
+      };
+    };
+
+    const backendMessage = response.error?.message;
+    if (backendMessage) {
+      return backendMessage;
+    }
+
+    const backendErrors = response.error?.errors;
+    if (backendErrors) {
+      const messages = Object.values(backendErrors).flat();
+      if (messages.length > 0) {
+        return messages.join(' ');
+      }
+    }
+
+    return 'Fehler bei der Registrierung. Bitte prüfen Sie Ihre Eingaben.';
   }
 }
