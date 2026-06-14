@@ -176,32 +176,41 @@ export class WohnungAddComponent implements OnInit {
   }
 
   createWohnung(payload: PropertySavePayload): void {
-    this.wohnungenService.addWohnung(payload).subscribe({
-      next: (created) => {
-        const propertyId = created.Id ?? created.id;
+  this.wohnungenService.addWohnung(payload).subscribe({
+    next: (created) => {
+      const propertyId = created.Id ?? created.id;
 
-        if (!propertyId) {
-          console.error('تم إنشاء العقار لكن لم يرجع Backend معرف العقار.');
+      if (!propertyId) {
+        console.error('تم إنشاء العقار لكن لم يرجع Backend معرف العقار.');
+        this.afterSave();
+        return;
+      }
+
+      this.wohnungenService.publishWohnung(propertyId).subscribe({
+        next: () => this.uploadImagesOrFinish(propertyId),
+        error: err => {
+          console.error('تم إنشاء العقار، لكن حدث خطأ أثناء نشره:', err);
           this.afterSave();
-          return;
         }
-
-        if (this.selectedFiles.length === 0) {
-          this.afterSave();
-          return;
-        }
-
-        this.wohnungenService.uploadWohnungBilder(propertyId, this.selectedFiles).subscribe({
-          next: () => this.afterSave(),
-          error: err => {
-            console.error('تم إنشاء العقار، لكن حدث خطأ أثناء رفع الصور:', err);
-            this.afterSave();
-          }
-        });
-      },
-      error: err => console.error('خطأ إنشاء العقار:', err)
-    });
+      });
+    },
+    error: err => console.error('خطأ إنشاء العقار:', err)
+  });
+}
+private uploadImagesOrFinish(propertyId: string): void {
+  if (this.selectedFiles.length === 0) {
+    this.afterSave();
+    return;
   }
+
+  this.wohnungenService.uploadWohnungBilder(propertyId, this.selectedFiles).subscribe({
+    next: () => this.afterSave(),
+    error: err => {
+      console.error('تم إنشاء العقار ونشره، لكن حدث خطأ أثناء رفع الصور:', err);
+      this.afterSave();
+    }
+  });
+}
 
   updateWohnung(payload: PropertySavePayload): void {
     if (!this.wohnungId) {
