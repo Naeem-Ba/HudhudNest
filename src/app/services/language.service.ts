@@ -4,52 +4,77 @@ import { BehaviorSubject } from 'rxjs';
 
 export type LangCode = 'en' | 'ar' | 'de';
 
+interface LanguageOption {
+  code: LangCode;
+  label: string;
+  dir: 'rtl' | 'ltr';
+}
+
 @Injectable({ providedIn: 'root' })
 export class LanguageService {
-
-  // مصدر واحد للحقيقة (Single Source of Truth)
-  private readonly languages = [
-    { code: 'en', label: 'English', dir: 'ltr' },
+  private readonly languages: readonly LanguageOption[] = [
     { code: 'ar', label: 'العربية', dir: 'rtl' },
+    { code: 'en', label: 'English', dir: 'ltr' },
     { code: 'de', label: 'Deutsch', dir: 'ltr' }
-  ] as const;
+  ];
 
-  // سنضيف هذا الـ Subject لمراقبة تغيير اللغة
-  private langSubject = new BehaviorSubject<LangCode>('ar');
-  currentLang$ = this.langSubject.asObservable();
+  private readonly langSubject = new BehaviorSubject<LangCode>('ar');
+  readonly currentLang$ = this.langSubject.asObservable();
 
   private currentLang: LangCode = 'ar';
 
-  constructor(private translate: TranslateService) {
+  constructor(private readonly translate: TranslateService) {
+    this.translate.addLangs(this.languages.map(language => language.code));
+    this.setFallbackLanguage('ar');
     this.init();
   }
 
-  /** تهيئة اللغة عند تشغيل التطبيق */
-  private init() {
-    const saved = localStorage.getItem('lang') as LangCode | null;
-    const lang = saved ?? 'en';
-    this.use(lang);
+  use(lang: LangCode): void {
+    const normalizedLang = this.isSupported(lang) ? lang : 'ar';
+    const language = this.languages.find(item => item.code === normalizedLang) ?? this.languages[0];
+
+    this.currentLang = normalizedLang;
+    this.langSubject.next(normalizedLang);
+
+    this.translate.use(normalizedLang);
+    localStorage.setItem('lang', normalizedLang);
+
+    document.documentElement.dir = language.dir;
+    document.documentElement.lang = normalizedLang;
+    document.body.classList.toggle('rtl', language.dir === 'rtl');
+    document.body.classList.toggle('ltr', language.dir === 'ltr');
   }
 
-  /** تغيير اللغة */
-  use(lang: LangCode) {
-    this.currentLang = lang;
-    this.translate.use(lang);
-    localStorage.setItem('lang', lang);
-
-    // ضبط اتجاه الصفحة (مهم جدًا للعربية)
-    const dir = this.languages.find(l => l.code === lang)?.dir ?? 'ltr';
-    document.documentElement.dir = dir;
-    document.documentElement.lang = lang;
-  }
-
-  /** اللغة الحالية */
   getCurrent(): LangCode {
-    return this.langSubject.value;
+    return this.currentLang;
   }
 
-  /** جميع اللغات المدعومة */
-  getLanguages() {
+  getLanguages(): readonly LanguageOption[] {
     return this.languages;
+  }
+
+  private init(): void {
+    const savedLang = localStorage.getItem('lang') as LangCode | null;
+    const browserLang = this.translate.getBrowserLang() as LangCode | undefined;
+    const initialLang = this.isSupported(savedLang) ? savedLang : this.isSupported(browserLang) ? browserLang : 'ar';
+
+    this.use(initialLang);
+  }
+
+  private isSupported(lang: string | null | undefined): lang is LangCode {
+    return lang === 'ar' || lang === 'en' || lang === 'de';
+  }
+
+  private setFallbackLanguage(lang: LangCode): void {
+    const translateAny = this.translate as any;
+
+    if (typeof translateAny.setFallbackLang === 'function') {
+      translateAny.setFallbackLang(lang);
+      return;
+    }
+
+    if (typeof translateAny.setDefaultLang === 'function') {
+      translateAny.setDefaultLang(lang);
+    }
   }
 }

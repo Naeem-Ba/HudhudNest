@@ -1,40 +1,46 @@
 <div class="profile-wrapper">
-  
-  <div *ngIf="isLoading()" class="state-info">{{ 'PROFILE.SYNC_DATA' | translate }}</div>
+  <app-loading-spinner *ngIf="isLoading()" [label]="'PROFILE.SYNC_DATA' | translate"></app-loading-spinner>
 
-  <div *ngIf="errorMsg()" class="state-info error">{{ errorMsg() }}</div>
+  <div *ngIf="!isLoading() && errorMsg()" class="state-info error" role="alert">
+    <span aria-hidden="true">⚠️</span>
+    {{ errorMsg() }}
+    <button type="button" (click)="fetchProfile()">{{ 'COMMON.RETRY' | translate }}</button>
+  </div>
 
   <div class="profile-card" *ngIf="user() && !isLoading()">
-    
     <div class="header-section">
       <h2>{{ 'PROFILE.TITLE' | translate }}</h2>
       <p>{{ 'PROFILE.SUBTITLE' | translate }}</p>
     </div>
 
     <div class="avatar-container">
-      <div class="img-wrapper">
-        <img [src]="avatarPreview() || 'assets/default-avatar.png'" alt="User Avatar">
+      <div class="img-wrapper" [class.uploading]="isUploading()">
+        <img [src]="avatarPreview() || fallbackAvatar" alt="User Avatar" appImageFallback="/images/default-avatar.svg">
+        <span class="avatar-loading" *ngIf="isUploading()">⏳</span>
       </div>
-      <label class="upload-badge">
-        <input type="file" (change)="onFileSelected($event)" hidden accept="image/*">
+      <label class="upload-badge" [class.disabled]="isUploading()">
+        <input type="file" (change)="onFileSelected($event)" hidden accept="image/png,image/jpeg,image/jpg" [disabled]="isUploading()">
         <span>📷</span>
       </label>
+      <p class="upload-hint">{{ 'PROFILE.UPLOAD_HINT' | translate }}</p>
     </div>
 
-    <form class="custom-form">
+    <form class="custom-form" #profileForm="ngForm" novalidate>
       <div class="field">
-        <label>{{ 'PROFILE.FIRST_NAME' | translate }}</label>
-        <input type="text" [(ngModel)]="user()!.Vorname" name="fn">
+        <label>{{ 'PROFILE.FIRST_NAME' | translate }} *</label>
+        <input type="text" [ngModel]="user()?.Vorname" (ngModelChange)="patchUserField('Vorname', $event)" name="fn" #fn="ngModel" required minlength="2">
+        <div class="field-error" *ngIf="fn.invalid && (fn.touched || submitted)">⚠️ {{ 'VALIDATION.REQUIRED' | translate }}</div>
       </div>
 
       <div class="field">
-        <label>{{ 'PROFILE.LAST_NAME' | translate }}</label>
-        <input type="text" [(ngModel)]="user()!.Name" name="ln">
+        <label>{{ 'PROFILE.LAST_NAME' | translate }} *</label>
+        <input type="text" [ngModel]="user()?.Name" (ngModelChange)="patchUserField('Name', $event)" name="ln" #ln="ngModel" required minlength="2">
+        <div class="field-error" *ngIf="ln.invalid && (ln.touched || submitted)">⚠️ {{ 'VALIDATION.REQUIRED' | translate }}</div>
       </div>
 
       <div class="field">
         <label>{{ 'PROFILE.DISPLAY_NAME' | translate }}</label>
-        <input type="text" [(ngModel)]="user()!.DisplayName" name="dn">
+        <input type="text" [ngModel]="user()?.DisplayName" (ngModelChange)="patchUserField('DisplayName', $event)" name="dn" maxlength="80">
       </div>
 
       <div class="field">
@@ -43,70 +49,89 @@
       </div>
 
       <div class="field">
-      <label>
-       {{ 'PROFILE.PHONE' | translate }}
-        <span *ngIf="user()?.IsAgent" style="color: red;">{{ 'PROFILE.PHONE_REQUIRED_AGENT' | translate }}</span>
-      </label>
-      <input type="tel" [(ngModel)]="user()!.Phone" name="ph" [placeholder]="user()?.IsAgent ? ('PROFILE.PHONE_PLACEHOLDER' | translate) : ''">
-    </div>
-
-    <div class="agent-section">
-  <div class="verified-agent-badge" *ngIf="user()?.IsAgent && user()?.TaxNumber && user()?.Phone">
-    <div class="success-icon">✅</div>
-    <p class="success-text">{{ 'PROFILE.AGENT_VERIFIED_MSG' | translate }}</p>
-    </div>
-
-  <div class="agent-setup" *ngIf="!(user()?.IsAgent && user()?.TaxNumber && user()?.Phone)">
-    <label class="checkbox-field">
-      <input type="checkbox" [(ngModel)]="user()!.IsAgent" name="ag">
-      <span>{{ 'PROFILE.AGENT_CHECKBOX' | translate }}</span>
-    </label>
-
-    <div class="tax-field" *ngIf="user()?.IsAgent" >
-      <div class="field">
-        <label>{{ 'PROFILE.TAX_NUMBER' | translate }}
-          <span *ngIf="user()?.IsAgent" style="color: red;">{{ 'PROFILE.PHONE_REQUIRED_AGENT' | translate }}</span>
+        <label>
+          {{ 'PROFILE.PHONE' | translate }}
+          <span *ngIf="user()?.IsAgent" class="required-note">{{ 'PROFILE.PHONE_REQUIRED_AGENT' | translate }}</span>
         </label>
-        <input type="text" 
-               [(ngModel)]="user()!.TaxNumber" 
-               name="tn" 
-               [placeholder]="'PROFILE.TAX_PLACEHOLDER' | translate">
-      </div>
-    </div>
-  </div>
-</div>
-
-              <div class="password-section">
-    <button type="button" class="btn-toggle-pass" (click)="showPasswordForm.set(!showPasswordForm())">
-      {{ showPasswordForm() ? ('PROFILE.CANCEL_PASS_BTN' | translate) : ('PROFILE.CHANGE_PASS_BTN' | translate)}}
-    </button>
-
-    <div class="password-fields" *ngIf="showPasswordForm()" [@expandAnimation]>
-      <div class="field">
-        <label>{{ 'PROFILE.CURRENT_PASS' | translate }}</label>
-        <input type="password" [(ngModel)]="passwordData.currentPassword" name="currentPassword" placeholder="••••••••">
+        <input
+          type="tel"
+          [ngModel]="user()?.Phone" (ngModelChange)="patchUserField('Phone', $event)"
+          name="ph"
+          #ph="ngModel"
+          [required]="user()?.IsAgent"
+          [placeholder]="user()?.IsAgent ? ('PROFILE.PHONE_PLACEHOLDER' | translate) : ''"
+        >
+        <div class="field-error" *ngIf="ph.invalid && (ph.touched || submitted)">⚠️ {{ 'PROFILE.PHONE_REQUIRED_AGENT' | translate }}</div>
       </div>
 
-      <div class="field">
-        <label>{{ 'PROFILE.NEW_PASS' | translate }}</label>
-        <input type="password" [(ngModel)]="passwordData.newPassword" name="newPassword" placeholder="••••••••">
+      <div class="agent-section">
+        <div class="verified-agent-badge" *ngIf="user()?.IsAgent && user()?.TaxNumber && user()?.Phone">
+          <div class="success-icon">✅</div>
+          <p class="success-text">{{ 'PROFILE.AGENT_VERIFIED_MSG' | translate }}</p>
+        </div>
+
+        <div class="agent-setup" *ngIf="!(user()?.IsAgent && user()?.TaxNumber && user()?.Phone)">
+          <label class="checkbox-field">
+            <input type="checkbox" [ngModel]="user()?.IsAgent" (ngModelChange)="patchUserField('IsAgent', $event)" name="ag">
+            <span>{{ 'PROFILE.AGENT_CHECKBOX' | translate }}</span>
+          </label>
+
+          <div class="tax-field" *ngIf="user()?.IsAgent">
+            <div class="field">
+              <label>
+                {{ 'PROFILE.TAX_NUMBER' | translate }}
+                <span class="required-note">{{ 'VALIDATION.REQUIRED' | translate }}</span>
+              </label>
+              <input
+                type="text"
+                [ngModel]="user()?.TaxNumber" (ngModelChange)="patchUserField('TaxNumber', $event)"
+                name="tn"
+                #tn="ngModel"
+                required
+                [placeholder]="'PROFILE.TAX_PLACEHOLDER' | translate"
+              >
+              <div class="field-error" *ngIf="tn.invalid && (tn.touched || submitted)">⚠️ {{ 'VALIDATION.REQUIRED' | translate }}</div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="field">
-        <label>{{ 'PROFILE.CONFIRM_PASS' | translate }}</label>
-        <input type="password" [(ngModel)]="passwordData.confirmPassword" name="confirmPassword" placeholder="••••••••">
+      <div class="password-section">
+        <button type="button" class="btn-toggle-pass" (click)="showPasswordForm.set(!showPasswordForm())">
+          {{ showPasswordForm() ? ('PROFILE.CANCEL_PASS_BTN' | translate) : ('PROFILE.CHANGE_PASS_BTN' | translate) }}
+        </button>
+
+        <div class="password-fields" *ngIf="showPasswordForm()">
+          <div class="field">
+            <label>{{ 'PROFILE.CURRENT_PASS' | translate }} *</label>
+            <input type="password" [(ngModel)]="passwordData.currentPassword" name="currentPassword" placeholder="••••••••">
+            <div class="field-error" *ngIf="passwordSubmitted && !passwordData.currentPassword">⚠️ {{ 'VALIDATION.REQUIRED' | translate }}</div>
+          </div>
+
+          <div class="field">
+            <label>{{ 'PROFILE.NEW_PASS' | translate }} *</label>
+            <input type="password" [(ngModel)]="passwordData.newPassword" name="newPassword" placeholder="••••••••">
+            <div class="field-error" *ngIf="passwordSubmitted && passwordData.newPassword.length < 8">⚠️ {{ 'AUTH.ERRORS.PASSWORD_MIN' | translate }}</div>
+          </div>
+
+          <div class="field">
+            <label>{{ 'PROFILE.CONFIRM_PASS' | translate }} *</label>
+            <input type="password" [(ngModel)]="passwordData.confirmPassword" name="confirmPassword" placeholder="••••••••">
+            <div class="field-error" *ngIf="passwordSubmitted && passwordMismatch()">⚠️ {{ 'PROFILE.MESSAGES.PASS_MISMATCH' | translate }}</div>
+          </div>
+
+          <button type="button" class="btn-save-pass" [disabled]="isSaving()" (click)="onChangePassword()">
+            {{ isSaving() ? ('COMMON.SAVING' | translate) : ('PROFILE.SAVE_PASS' | translate) }}
+          </button>
+        </div>
       </div>
-
-      <button class="btn-save-pass" (click)="onChangePassword()">{{ 'PROFILE.SAVE_PASS' | translate }}</button>
-    </div>
-  </div>
-
     </form>
 
     <div class="actions">
-      <button class="btn-save" (click)="onSaveProfile()">{{ 'PROFILE.SAVE_CHANGES' | translate }}</button>
-      <button class="btn-delete" (click)="onDeleteAccount()">{{ 'PROFILE.DELETE_ACCOUNT' | translate }}</button>
+      <button class="btn-save" [disabled]="isSaving() || profileForm.invalid || hasAgentValidationError(user())" (click)="onSaveProfile(profileForm)">
+        {{ isSaving() ? ('COMMON.SAVING' | translate) : ('PROFILE.SAVE_CHANGES' | translate) }}
+      </button>
+      <button class="btn-delete" type="button" (click)="onDeleteAccount()">{{ 'PROFILE.DELETE_ACCOUNT' | translate }}</button>
     </div>
-
   </div>
 </div>

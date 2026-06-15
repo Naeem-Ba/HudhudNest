@@ -12,6 +12,7 @@ import { Observable, Subscription } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { LanguageService } from '../services/language.service';
 import { UrlService } from '../services/core/url.service';
+import { ImageFallbackDirective } from '../shared/directives/image-fallback.directive';
 
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -22,7 +23,8 @@ import { TranslateModule } from '@ngx-translate/core';
     CommonModule,
     RouterLink,
     RouterLinkActive,
-    TranslateModule
+    TranslateModule,
+    ImageFallbackDirective
   ],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.scss']
@@ -49,10 +51,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
   /* ===== User UI ===== */
   avatarLetter = '?';
   userEmail = '';
-  profileImageUrl = 'assets/default-avatar.png';
+  profileImageUrl = '/images/default-avatar.svg';
   hasCustomImage = false;
 
   private userSub!: Subscription;
+  private readonly boundClickOutside = (event: MouseEvent) => this.handleClickOutside(event);
 
   /* ============================= */
 
@@ -83,16 +86,16 @@ export class NavbarComponent implements OnInit, OnDestroy {
         this.profileImageUrl = imageUrl;
         this.hasCustomImage = true;
       } else {
-        this.profileImageUrl = 'assets/default-avatar.png';
+        this.profileImageUrl = '/images/default-avatar.svg';
         this.hasCustomImage = false;
       }
     });
 
-    document.addEventListener('click', this.handleClickOutside.bind(this));
+    document.addEventListener('click', this.boundClickOutside);
   }
 
   ngOnDestroy(): void {
-    document.removeEventListener('click', this.handleClickOutside.bind(this));
+    document.removeEventListener('click', this.boundClickOutside);
     if (this.userSub) this.userSub.unsubscribe();
   }
 
@@ -131,14 +134,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   useFallbackImage(): void {
-    this.profileImageUrl = 'assets/default-avatar.png';
+    this.profileImageUrl = '/images/default-avatar.svg';
     this.hasCustomImage = false;
   }
 
   private resetUserUI(): void {
     this.userEmail = '';
     this.avatarLetter = '?';
-    this.profileImageUrl = 'assets/default-avatar.png';
+    this.profileImageUrl = '/images/default-avatar.svg';
     this.hasCustomImage = false;
   }
 

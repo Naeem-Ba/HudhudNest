@@ -1,10 +1,13 @@
 {
   "COMMON": {
-   "SAVE": "Speichern",
+    "SAVE": "Speichern",
     "BACK": "Zurück",
     "LOADING": "Laden...",
     "PLEASE_SELECT": "Bitte auswählen",
-    "DELETE": "Löschen"
+    "DELETE": "Löschen",
+    "RETRY": "Erneut versuchen",
+    "SAVING": "Speichern...",
+    "CHANGE_LANGUAGE": "Sprache ändern"
   },
   "NAVBAR": {
     "HOME": "Home",
@@ -13,16 +16,17 @@
     "CONTACT": "Kontakt",
     "MESSAGES": "Nachrichten",
     "LOGIN": "Login",
-    "LOGOUT": "Abmelden"
+    "LOGOUT": "Abmelden",
+    "SELECT_LANGUAGE": "Sprache auswählen"
   },
-   "KONTAKT": {
+  "KONTAKT": {
     "title": "Kontaktieren Sie uns",
     "name": "Vollständiger Name",
     "nameCtrl": "Bitte geben Sie Ihren Namen ein (mindestens 3 Zeichen).",
     "email": "E-Mail-Adresse",
     "emailCtrl": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
     "subject": "Betreff",
-    "subCtrl":"Kurztitel (mindestens 3 Zeichen).",
+    "subCtrl": "Kurztitel (mindestens 3 Zeichen).",
     "message": "Nachricht",
     "msgCtrl": "Bitte geben Sie eine Nachricht ein (mindestens 10 Zeichen).",
     "send": "Senden",
@@ -34,7 +38,11 @@
     "strasse": "Strasse",
     "success_msg": "Ihre Nachricht wurde erfolgreich gesendet!",
     "error_msg": "Beim Senden ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
-    "error_validation": "Bitte füllen Sie alle erforderlichen Felder korrekt aus."
+    "error_validation": "Bitte füllen Sie alle erforderlichen Felder korrekt aus.",
+    "subtitle": "Senden Sie uns Ihre Nachricht, wir antworten so schnell wie möglich.",
+    "name_placeholder": "Vollständigen Namen eingeben",
+    "subject_placeholder": "Betreff eingeben",
+    "message_placeholder": "Nachricht klar formulieren"
   },
   "ADMIN_MSG": {
     "title": "Kommunikationsnachrichten",
@@ -42,7 +50,7 @@
     "empty": "Noch keine Nachrichten.",
     "table": {
       "name": "Name",
-      "email":  "E-Mail",
+      "email": "E-Mail",
       "message": "Nachricht",
       "date": "Datum",
       "status": "Status"
@@ -90,7 +98,6 @@
       "BY_CONSUMPTION": "Nach Verbrauch"
     }
   },
-
   "HOME": {
     "title": "Finden Sie Ihr Traumhaus",
     "subtitle": "Wir bieten Ihnen die besten Wohnungen zum Mieten oder Kaufen",
@@ -104,9 +111,7 @@
     },
     "view_all": "Alle anzeigen",
     "latest_apartments": "Neueste Wohnungen"
-
   },
-
   "APARTMENTS": {
     "TITLE": "Verfügbare Wohnungen",
     "ADDRESS": "Adresse",
@@ -115,16 +120,21 @@
     "PRICE": "Preis",
     "STATUS": "Status",
     "CONDITION": "Zustand",
-    "DETAILS": "Details anzeigen"
+    "DETAILS": "Details anzeigen",
+    "SUBTITLE": "Durchsuchen Sie die neuesten verfügbaren Immobilien.",
+    "EMPTY_TITLE": "Keine Immobilien verfügbar",
+    "EMPTY_MESSAGE": "Es wurden keine passenden Immobilien gefunden.",
+    "IMAGE_ALT": "Immobilienbild",
+    "NO_TITLE": "Immobilie ohne Titel",
+    "ROOMS": "Zimmer"
   },
-
   "wohnung_detail": {
     "title": "Wohnungsdetails",
     "back": "Zurück zur Übersicht",
     "ort": "Stadt",
     "adresse": "Adresse",
     "groesse": "Fläche",
-    "Unit_of_measurement":"{{ value }} (m²)",
+    "Unit_of_measurement": "{{ value }} (m²)",
     "zimmer": "Zimmer",
     "etage": "Etage",
     "preis": "Preis",
@@ -136,14 +146,18 @@
     "balkon": "Balkon",
     "aufzug": "Aufzug",
     "stellplatz": "Stellplatz",
-    "LOCATION": "LAGE DER WOHNUNG"
+    "LOCATION": "LAGE DER WOHNUNG",
+    "not_found_title": "Immobilie nicht gefunden",
+    "not_found_message": "Diese Immobilie wurde nicht gefunden oder entfernt.",
+    "no_extras": "Keine zusätzlichen Ausstattungen angegeben.",
+    "no_description": "Keine Beschreibung verfügbar."
   },
   "MAP": {
-  "APARTMENT_LOCATION": "Standort der Wohnung {{title}}",
-  "YOUR_LOCATION": "Ihr aktueller Standort",
-  "FULLSCREEN": "Karte im Vollbild anzeigen",
-  "OPEN_GOOGLE": "In Google Maps öffnen",
-  "MY_LOCATION": "Meinen Standort finden"
+    "APARTMENT_LOCATION": "Standort der Wohnung {{title}}",
+    "YOUR_LOCATION": "Ihr aktueller Standort",
+    "FULLSCREEN": "Karte im Vollbild anzeigen",
+    "OPEN_GOOGLE": "In Google Maps öffnen",
+    "MY_LOCATION": "Meinen Standort finden"
   },
   "wohnung_add": {
     "title": "Wohnung hinzufügen",
@@ -175,9 +189,22 @@
     "bild_hochladen": "Bilder hochladen",
     "selected_files": "Ausgewählte Dateien",
     "save": "Speichern",
-    "WoBiSave": "Wohnung und Bilder wurden gespeichert!"
+    "WoBiSave": "Wohnung und Bilder wurden gespeichert!",
+    "edit_title": "Immobilie bearbeiten",
+    "listing_type": "Anzeigentyp",
+    "preview_alt": "Bildvorschau",
+    "validation_listing_type": "Wählen Sie Verkauf oder Vermietung.",
+    "validation_title": "Der Titel muss mindestens 3 Zeichen lang sein.",
+    "validation_description": "Die Beschreibung muss mindestens 10 Zeichen lang sein.",
+    "validation_city": "Stadt ist erforderlich.",
+    "validation_address": "Adresse ist erforderlich.",
+    "validation_cold_rent": "Die Miete muss größer als null sein.",
+    "validation_purchase_price": "Der Kaufpreis muss größer als null sein.",
+    "validation_rent_sale": "Für Verkauf und Vermietung müssen Miete und Kaufpreis angegeben werden.",
+    "validation_rooms": "Zimmeranzahl muss zwischen 1 und 50 liegen.",
+    "validation_area": "Die Fläche muss größer als 10 m² sein.",
+    "validation_location": "Breiten- und Längengrad müssen zusammen angegeben werden."
   },
-
   "PROFILE": {
     "SYNC_DATA": "Daten werden synchronisiert...",
     "FETCH_ERROR": "Daten konnten nicht geladen werden. Bitte überprüfen Sie Ihre Sitzung.",
@@ -199,7 +226,7 @@
     "CANCEL_PASS_BTN": "Passwortänderung abbrechen",
     "CURRENT_PASS": "Aktuelles Passwort",
     "NEW_PASS": "Neues Passwort",
-    "SAVE_PASS":"Passwort aktualisieren",
+    "SAVE_PASS": "Passwort aktualisieren",
     "CONFIRM_PASS": "Neues Passwort bestätigen",
     "SAVE_CHANGES": "Änderungen speichern",
     "DELETE_ACCOUNT": "Konto dauerhaft löschen",
@@ -211,8 +238,104 @@
       "PASS_SUCCESS": "✅ Passwort erfolgreich geändert",
       "PASS_ERROR": "❌ Passwortänderung fehlgeschlagen",
       "AGENT_VALIDATION": "⚠️ Telefonnummer und Steuernummer sind erforderlich, um das Maklerkonto zu aktivieren.",
-      "DELETE_CONFIRM": "⚠️ Warnung: Ihr Konto wird dauerhaft gelöscht. Sind Sie sicher?"
-    }
+      "DELETE_CONFIRM": "⚠️ Warnung: Ihr Konto wird dauerhaft gelöscht. Sind Sie sicher?",
+      "INVALID_IMAGE_TYPE": "Nicht unterstützter Bildtyp. Verwenden Sie PNG, JPG oder WebP.",
+      "IMAGE_TOO_LARGE": "Das Bild ist zu groß. Maximal 5 MB.",
+      "AVATAR_SUCCESS": "Profilbild erfolgreich aktualisiert.",
+      "FILL_ALL_FIELDS": "Bitte korrigieren Sie die Pflichtfelder.",
+      "DELETE_SUCCESS": "Konto gelöscht.",
+      "DELETE_ERROR": "Konto konnte nicht gelöscht werden."
+    },
+    "MY_ADS": "Meine Anzeigen"
+  },
+  "VALIDATION": {
+    "REQUIRED": "Dieses Feld ist erforderlich.",
+    "FIX_FIELDS": "Bitte korrigieren Sie die markierten Felder.",
+    "IMAGE_TYPE": "Nicht unterstützter Bildtyp. Verwenden Sie PNG, JPG oder WebP.",
+    "IMAGE_SIZE": "Das Bild ist zu groß. Maximal 5 MB."
+  },
+  "PROPERTY_LIST": {
+    "EYEBROW": "Ausgewählte Immobilien",
+    "TITLE": "Immobilienliste",
+    "SUBTITLE": "Klare Karten mit Bildern, Preisen und Kurzinformationen.",
+    "EMPTY_TITLE": "Keine Ergebnisse",
+    "EMPTY_MESSAGE": "In dieser Liste wurden keine Immobilien gefunden.",
+    "ROOMS": "Zimmer"
+  },
+  "FAVORITES": {
+    "TITLE": "Favoriten",
+    "SUBTITLE": "Gespeicherte Immobilien für schnellen Zugriff.",
+    "EMPTY_TITLE": "Ihre Favoritenliste ist leer",
+    "EMPTY_MESSAGE": "Gespeicherte Immobilien erscheinen hier."
+  },
+  "NOTIFICATIONS": {
+    "TITLE": "Benachrichtigungen",
+    "SUBTITLE": "Aktuelle Hinweise und Konto-Updates.",
+    "CONNECTION_STATE": "Verbindungsstatus",
+    "EMPTY_TITLE": "Keine Benachrichtigungen",
+    "EMPTY_MESSAGE": "Neue Benachrichtigungen erscheinen hier.",
+    "READ": "Gelesen",
+    "MARK_READ": "Als gelesen markieren"
+  },
+  "AUTH": {
+    "LOGIN_TITLE": "Anmelden",
+    "LOGIN_SUBTITLE": "Melden Sie sich an, um Immobilien und Favoriten zu verwalten.",
+    "GOOGLE_DISABLED": "Google-Anmeldung ist noch nicht aktiviert.",
+    "APPLE_DISABLED": "Apple-Anmeldung ist noch nicht aktiviert.",
+    "OR": "oder",
+    "EMAIL": "E-Mail",
+    "EMAIL_PLACEHOLDER": "name@example.com",
+    "PASSWORD": "Passwort",
+    "TOGGLE_PASSWORD": "Passwort anzeigen oder ausblenden",
+    "LOADING": "Wird verarbeitet...",
+    "LOGIN_BUTTON": "Anmelden",
+    "NO_ACCOUNT": "Noch kein Konto?",
+    "CREATE_ACCOUNT": "Konto erstellen",
+    "REGISTER_TITLE": "Neues Konto erstellen",
+    "REGISTER_SUBTITLE": "Geben Sie Ihre Basisdaten ein.",
+    "NAME": "Vollständiger Name",
+    "NAME_PLACEHOLDER": "Vollständigen Namen eingeben",
+    "REGISTER_BUTTON": "Registrieren",
+    "HAS_ACCOUNT": "Sie haben bereits ein Konto?",
+    "GO_LOGIN": "Anmelden",
+    "REGISTER_SUCCESS": "Konto erfolgreich erstellt.",
+    "FIRST_NAME": "Vorname",
+    "LAST_NAME": "Nachname",
+    "PHONE_OPTIONAL": "Telefonnummer (optional)",
+    "PHONE_PLACEHOLDER": "+49 ...",
+    "FORGOT_TITLE": "Passwort zurücksetzen",
+    "FORGOT_SUBTITLE": "Geben Sie Ihre E-Mail ein, wir senden einen Link.",
+    "SENDING": "Senden...",
+    "SEND_RESET_LINK": "Link senden",
+    "FORGOT_SUCCESS": "Falls die E-Mail existiert, wurde ein Link gesendet.",
+    "RESET_TITLE": "Neues Passwort festlegen",
+    "RESET_TOKEN": "Reset-Token",
+    "NEW_PASSWORD": "Neues Passwort",
+    "RESET_BUTTON": "Passwort aktualisieren",
+    "RESET_SUCCESS": "Passwort erfolgreich aktualisiert.",
+    "SEND_OTP_TITLE": "Bestätigungscode senden",
+    "PHONE": "Telefonnummer",
+    "SEND_OTP_BUTTON": "Code senden",
+    "SEND_OTP_SUCCESS": "Bestätigungscode gesendet.",
+    "VERIFY_OTP_TITLE": "Code bestätigen",
+    "OTP_CODE": "Bestätigungscode",
+    "VERIFY_OTP_BUTTON": "Bestätigen",
+    "VERIFY_OTP_SUCCESS": "Code erfolgreich bestätigt.",
+    "ERRORS": {
+      "FIX_FIELDS": "Bitte korrigieren Sie die Felder vor dem Absenden.",
+      "FULL_NAME_REQUIRED": "Der vollständige Name ist erforderlich.",
+      "EMAIL_REQUIRED": "E-Mail ist erforderlich.",
+      "INVALID_EMAIL": "Ungültige E-Mail-Adresse.",
+      "PASSWORD_REQUIRED": "Passwort ist erforderlich.",
+      "PASSWORD_MIN": "Das Passwort muss mindestens 8 Zeichen lang sein.",
+      "REGISTER_FAILED": "Konto konnte nicht erstellt werden. Prüfen Sie die Daten.",
+      "FORGOT_FAILED": "Reset-Link konnte nicht gesendet werden.",
+      "RESET_FAILED": "Passwort konnte nicht aktualisiert werden.",
+      "SEND_OTP_FAILED": "Bestätigungscode konnte nicht gesendet werden.",
+      "VERIFY_OTP_FAILED": "Der Code ist ungültig oder abgelaufen.",
+      "INVALID_CREDENTIALS": "E-Mail oder Passwort ist falsch.",
+      "EMAIL_NO_SPACES": "E-Mail darf keine Leerzeichen enthalten."
+    },
+    "LOGIN_SUCCESS": "Erfolgreich angemeldet."
   }
 }
-

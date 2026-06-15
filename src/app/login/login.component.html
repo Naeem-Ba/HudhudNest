@@ -1,103 +1,143 @@
 <div class="auth-page">
-
-  <!-- LEFT -->
   <div class="auth-left">
-    
-    <a routerLink="/Home" class="logo-container">
-      <img src="/images/horizontal-logo.png" alt="Logo" />
+    <a routerLink="/home" class="logo-container" aria-label="Home">
+      <img src="/images/horizontal-logo.png" alt="Logo" appImageFallback="/images/default-avatar.svg" />
     </a>
 
+    <h1>{{ showRegister ? ('AUTH.REGISTER_TITLE' | translate) : ('AUTH.LOGIN_TITLE' | translate) }}</h1>
+    <p class="auth-subtitle">{{ showRegister ? ('AUTH.REGISTER_SUBTITLE' | translate) : ('AUTH.LOGIN_SUBTITLE' | translate) }}</p>
 
-    <h1>{{ showRegister ? 'Registrierung' : 'Erstelle deinen Account' }}</h1>
-
-    <!-- Social Buttons -->
-    <button class="social google">
-      <span class="icon">G</span> Fortfahren mit Google
+    <button type="button" class="social google" disabled>
+      <span class="icon">G</span> {{ 'AUTH.GOOGLE_DISABLED' | translate }}
     </button>
 
-    <button class="social apple">
-      <span class="icon"></span> Fortfahren mit Apple
+    <button type="button" class="social apple" disabled>
+      <span class="icon"></span> {{ 'AUTH.APPLE_DISABLED' | translate }}
     </button>
 
-    <div class="divider">oder</div>
+    <div class="divider">{{ 'AUTH.OR' | translate }}</div>
 
-    <!-- Alerts -->
-    <div *ngIf="message" class="alert" [ngClass]="{success: success, error: !success}">
+    <div *ngIf="message" class="alert" [ngClass]="{ success: success, error: !success }" role="alert">
+      <span aria-hidden="true">{{ success ? '✅' : '⚠️' }}</span>
       {{ message }}
     </div>
 
-    <!-- LOGIN FORM -->
-    <form *ngIf="!showRegister" (ngSubmit)="onLogin()" #loginForm="ngForm">
+    <form *ngIf="!showRegister" (ngSubmit)="onLogin(loginForm)" #loginForm="ngForm" novalidate>
+      <label for="login-email">{{ 'AUTH.EMAIL' | translate }} *</label>
+      <input
+        id="login-email"
+        type="email"
+        [(ngModel)]="loginData.Email"
+        name="email"
+        #loginEmail="ngModel"
+        required
+        email
+        autocomplete="email"
+        [placeholder]="'AUTH.EMAIL_PLACEHOLDER' | translate"
+      />
+      <div class="field-error" *ngIf="loginEmail.invalid && (loginEmail.touched || submitted)">
+        ⚠️ {{ loginEmail.errors?.['required'] ? ('AUTH.ERRORS.EMAIL_REQUIRED' | translate) : ('AUTH.ERRORS.INVALID_EMAIL' | translate) }}
+      </div>
 
-      <label>E-Mail-Adresse *</label>
-      <input type="email"
-             [(ngModel)]="loginData.Email"
-             name="email"
-             required email>
-
-      <label>Passwort *</label>
-
+      <label for="login-password">{{ 'AUTH.PASSWORD' | translate }} *</label>
       <div class="password-wrapper">
-        <input type="{{ showPass ? 'text' : 'password' }}"
-               [(ngModel)]="loginData.Password"
-               name="password"
-               required minlength="5">
-        <span class="toggle-pass" (click)="showPass = !showPass">
+        <input
+          id="login-password"
+          [type]="showPass ? 'text' : 'password'"
+          [(ngModel)]="loginData.Password"
+          name="password"
+          #loginPassword="ngModel"
+          required
+          minlength="8"
+          autocomplete="current-password"
+          placeholder="••••••••"
+        />
+        <button type="button" class="toggle-pass" (click)="showPass = !showPass" [attr.aria-label]="'AUTH.TOGGLE_PASSWORD' | translate">
           {{ showPass ? '🙈' : '👁️' }}
-        </span>
+        </button>
+      </div>
+      <div class="field-error" *ngIf="loginPassword.invalid && (loginPassword.touched || submitted)">
+        ⚠️ {{ loginPassword.errors?.['required'] ? ('AUTH.ERRORS.PASSWORD_REQUIRED' | translate) : ('AUTH.ERRORS.PASSWORD_MIN' | translate) }}
       </div>
 
-      <button type="submit" class="submit" [disabled]="loginForm.invalid">
-        Fortfahren
+      <button type="submit" class="submit" [disabled]="loginForm.invalid || loading">
+        <span *ngIf="loading">⏳ {{ 'AUTH.LOADING' | translate }}</span>
+        <span *ngIf="!loading">{{ 'AUTH.LOGIN_BUTTON' | translate }}</span>
       </button>
 
       <p class="switch">
-        Bereits registriert?
-        <a (click)="toggleRegister()">Jetzt anmelden</a>
+        {{ 'AUTH.NO_ACCOUNT' | translate }}
+        <a role="button" tabindex="0" (click)="toggleRegister()">{{ 'AUTH.CREATE_ACCOUNT' | translate }}</a>
       </p>
-
     </form>
 
-    <!-- REGISTER FORM -->
-    <form *ngIf="showRegister" (ngSubmit)="onRegister()" #regForm="ngForm">
+    <form *ngIf="showRegister" (ngSubmit)="onRegister(regForm)" #regForm="ngForm" novalidate>
+      <label for="register-name">{{ 'AUTH.NAME' | translate }} *</label>
+      <input
+        id="register-name"
+        type="text"
+        [(ngModel)]="registerData.Name"
+        name="name"
+        #registerName="ngModel"
+        required
+        minlength="3"
+        autocomplete="name"
+        [placeholder]="'AUTH.NAME_PLACEHOLDER' | translate"
+      />
+      <div class="field-error" *ngIf="registerName.invalid && (registerName.touched || submitted)">
+        ⚠️ {{ 'AUTH.ERRORS.FULL_NAME_REQUIRED' | translate }}
+      </div>
 
-      <label>Name *</label>
-      <input type="text" [(ngModel)]="registerData.Name" name="name" required>
+      <label for="register-email">{{ 'AUTH.EMAIL' | translate }} *</label>
+      <input
+        id="register-email"
+        type="email"
+        [(ngModel)]="registerData.Email"
+        name="emailReg"
+        #registerEmail="ngModel"
+        required
+        email
+        autocomplete="email"
+        [placeholder]="'AUTH.EMAIL_PLACEHOLDER' | translate"
+      />
+      <div class="field-error" *ngIf="registerEmail.invalid && (registerEmail.touched || submitted)">
+        ⚠️ {{ registerEmail.errors?.['required'] ? ('AUTH.ERRORS.EMAIL_REQUIRED' | translate) : ('AUTH.ERRORS.INVALID_EMAIL' | translate) }}
+      </div>
 
-      <label>E-Mail-Adresse *</label>
-      <input type="email"
-             [(ngModel)]="registerData.Email"
-             name="emailReg"
-             required email>
-
-      <label>Passwort *</label>
-
+      <label for="register-password">{{ 'AUTH.PASSWORD' | translate }} *</label>
       <div class="password-wrapper">
-        <input type="{{ showPassReg ? 'text' : 'password' }}"
-               [(ngModel)]="registerData.Password"
-               name="passReg"
-               required minlength="6">
-        <span class="toggle-pass" (click)="showPassReg = !showPassReg">
+        <input
+          id="register-password"
+          [type]="showPassReg ? 'text' : 'password'"
+          [(ngModel)]="registerData.Password"
+          name="passReg"
+          #registerPassword="ngModel"
+          required
+          minlength="8"
+          autocomplete="new-password"
+          placeholder="••••••••"
+        />
+        <button type="button" class="toggle-pass" (click)="showPassReg = !showPassReg" [attr.aria-label]="'AUTH.TOGGLE_PASSWORD' | translate">
           {{ showPassReg ? '🙈' : '👁️' }}
-        </span>
+        </button>
+      </div>
+      <div class="field-error" *ngIf="registerPassword.invalid && (registerPassword.touched || submitted)">
+        ⚠️ {{ registerPassword.errors?.['required'] ? ('AUTH.ERRORS.PASSWORD_REQUIRED' | translate) : ('AUTH.ERRORS.PASSWORD_MIN' | translate) }}
       </div>
 
-      <button type="submit" class="submit" [disabled]="regForm.invalid">
-        Registrieren
+      <button type="submit" class="submit" [disabled]="regForm.invalid || loading">
+        <span *ngIf="loading">⏳ {{ 'AUTH.LOADING' | translate }}</span>
+        <span *ngIf="!loading">{{ 'AUTH.REGISTER_BUTTON' | translate }}</span>
       </button>
 
       <p class="switch">
-        Bereits ein Konto?
-        <a (click)="toggleRegister()">Zum Login</a>
+        {{ 'AUTH.HAS_ACCOUNT' | translate }}
+        <a role="button" tabindex="0" (click)="toggleRegister()">{{ 'AUTH.GO_LOGIN' | translate }}</a>
       </p>
-
     </form>
-
   </div>
 
-  <!-- RIGHT -->
-  <div class="auth-right">
-    <img src="/images/login.jpg" class="side-image" />
+  <div class="auth-right" aria-hidden="true">
+    <img src="/images/login.jpg" class="side-image" alt="" loading="lazy" />
   </div>
-
 </div>

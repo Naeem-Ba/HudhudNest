@@ -1,6 +1,6 @@
-﻿import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { EnumService, EnumItem } from '../services/enum.service';
 import { WohnungenService, Wohnung, PropertySavePayload } from '../services/wohnungen.service';
@@ -9,6 +9,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MapPickerComponent } from '../map-picker/map-picker.component';
 import { CITY_MAPS } from '../map-picker/city-map.config';
 import { LanguageService, LangCode } from '../services/language.service';
+import { ToastService } from '../shared/services/toast.service';
+import { ImageFallbackDirective } from '../shared/directives/image-fallback.directive';
 
 @Component({
   selector: 'app-wohnung-add',
@@ -18,7 +20,8 @@ import { LanguageService, LangCode } from '../services/language.service';
     FormsModule,
     EnumTranslatePipe,
     TranslateModule,
-    MapPickerComponent
+    MapPickerComponent,
+    ImageFallbackDirective
   ],
   templateUrl: './wohnung-add.component.html',
   styleUrls: ['./wohnung-add.component.scss']
@@ -29,6 +32,12 @@ export class WohnungAddComponent implements OnInit {
   currentLang: LangCode = 'ar';
   selectedFiles: File[] = [];
   previews: string[] = [];
+  isSaving = false;
+  submitted = false;
+  submitError = '';
+  readonly fallbackImage = '/images/no-image.svg';
+  readonly allowedImageTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+  readonly maxImageSizeMB = 5;
 
   StadtList: EnumItem[] = [];
   ZustandList: EnumItem[] = [];
@@ -75,7 +84,8 @@ export class WohnungAddComponent implements OnInit {
     private readonly wohnungenService: WohnungenService,
     private readonly enumService: EnumService,
     private readonly translate: TranslateService,
-    private readonly languageService: LanguageService
+    private readonly languageService: LanguageService,
+    private readonly toast: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -131,9 +141,30 @@ export class WohnungAddComponent implements OnInit {
       return;
     }
 
-    this.selectedFiles = [...this.selectedFiles, ...files];
+    const validFiles: File[] = [];
 
-    files.forEach(file => {
+    for (const file of files) {
+      if (!this.allowedImageTypes.includes(file.type)) {
+        this.toast.error(this.translate.instant('VALIDATION.IMAGE_TYPE'));
+        continue;
+      }
+
+      if (file.size / 1024 / 1024 > this.maxImageSizeMB) {
+        this.toast.error(this.translate.instant('VALIDATION.IMAGE_SIZE'));
+        continue;
+      }
+
+      validFiles.push(file);
+    }
+
+    if (validFiles.length === 0) {
+      input.value = '';
+      return;
+    }
+
+    this.selectedFiles = [...this.selectedFiles, ...validFiles];
+
+    validFiles.forEach(file => {
       const reader = new FileReader();
 
       reader.onload = (e: ProgressEvent<FileReader>) => {
@@ -146,6 +177,15 @@ export class WohnungAddComponent implements OnInit {
 
       reader.readAsDataURL(file);
     });
+
+    input.value = '';
+  }
+
+  removeSelectedFile(index: number): void {
+    this.selectedFiles.splice(index, 1);
+    this.previews.splice(index, 1);
+    this.selectedFiles = [...this.selectedFiles];
+    this.previews = [...this.previews];
   }
 
   onLocationSelected(loc: { lat: number; lng: number }): void {
@@ -153,79 +193,96 @@ export class WohnungAddComponent implements OnInit {
     this.wohnung.Longitude = loc.lng;
   }
 
-  onCityChange(cityId: number): void {
-    const city = CITY_MAPS.find(c => c.id === cityId);
+  onCityChange(cityId: number | string | null): void {
+    const numericCityId = Number(cityId);
+    const city = CITY_MAPS.find(c => c.id === numericCityId);
 
     if (!city) {
       return;
     }
 
-    this.mapPicker.updateCenter(city.lat, city.lng, city.zoom);
+    this.mapPicker?.updateCenter(city.lat, city.lng, city.zoom);
     this.wohnung.Latitude = city.lat;
     this.wohnung.Longitude = city.lng;
   }
 
-  onSubmit(): void {
-  const payload = this.buildPropertyPayload();
-  const validationMessage = this.validatePropertyPayload(payload);
+  onSubmit(form?: NgForm): void {
+    this.submitted = true;
+    this.submitError = '';
 
-  if (validationMessage) {
-    alert(validationMessage);
-    return;
-  }
+    if (form) {
+      form.control.markAllAsTouched();
+    }
 
-  if (this.isEditMode) {
-    this.updateWohnung(payload);
-  } else {
-    this.createWohnung(payload);
+    if (form?.invalid) {
+      this.submitError = this.translate.instant('VALIDATION.FIX_FIELDS');
+      this.toast.error(this.submitError);
+      return;
+    }
+
+    const payload = this.buildPropertyPayload();
+    const validationMessage = this.validatePropertyPayload(payload);
+
+    if (validationMessage) {
+      this.submitError = validationMessage;
+      this.toast.error(validationMessage);
+      return;
+    }
+
+    this.isSaving = true;
+
+    if (this.isEditMode) {
+      this.updateWohnung(payload);
+    } else {
+      this.createWohnung(payload);
+    }
   }
-}
 
 private validatePropertyPayload(payload: PropertySavePayload): string | null {
   if (!payload.Title?.trim()) {
-    return 'Bitte geben Sie einen Titel ein.';
+    return this.translate.instant('wohnung_add.validation_title');
   }
 
   if (!payload.Description?.trim()) {
-    return 'Bitte geben Sie eine Beschreibung ein.';
+    return this.translate.instant('wohnung_add.validation_description');
   }
 
   if (!payload.City?.trim()) {
-    return 'Bitte wählen Sie eine Stadt aus.';
+    return this.translate.instant('wohnung_add.validation_city');
   }
 
   if (!payload.Street?.trim()) {
-    return 'Bitte geben Sie eine Adresse ein.';
+    return this.translate.instant('wohnung_add.validation_address');
   }
 
   if (payload.ListingType === 1 && (!payload.ColdRent || payload.ColdRent <= 0)) {
-    return 'Bitte geben Sie eine Kaltmiete größer als 0 ein.';
+    return this.translate.instant('wohnung_add.validation_cold_rent');
   }
 
   if (payload.ListingType === 2 && (!payload.PurchasePrice || payload.PurchasePrice <= 0)) {
-    return 'Bitte geben Sie einen Kaufpreis größer als 0 ein.';
+    return this.translate.instant('wohnung_add.validation_purchase_price');
   }
 
   if (
     payload.ListingType === 3 &&
     (!payload.ColdRent || payload.ColdRent <= 0 || !payload.PurchasePrice || payload.PurchasePrice <= 0)
   ) {
-    return 'Bei Miete und Kauf müssen Kaltmiete und Kaufpreis größer als 0 sein.';
+    return this.translate.instant('wohnung_add.validation_rent_sale');
   }
 
   if (payload.Rooms !== null && payload.Rooms !== undefined && (payload.Rooms < 1 || payload.Rooms > 50)) {
-    return 'Die Zimmeranzahl muss zwischen 1 und 50 liegen.';
+    return this.translate.instant('wohnung_add.validation_rooms');
   }
 
   if (payload.Area !== null && payload.Area !== undefined && payload.Area <= 10) {
-    return 'Die Fläche muss größer als 10 m² sein.';
+    return this.translate.instant('wohnung_add.validation_area');
   }
 
   const hasLat = payload.Latitude !== null && payload.Latitude !== undefined;
   const hasLng = payload.Longitude !== null && payload.Longitude !== undefined;
 
   if (hasLat !== hasLng) {
-    return 'Latitude und Longitude müssen beide gesetzt sein oder beide leer bleiben.';
+    return this.translate.instant('wohnung_add.validation_location');
   }
 
   return null;
@@ -249,7 +306,7 @@ private validatePropertyPayload(payload: PropertySavePayload): string | null {
         }
       });
     },
-    error: err => console.error('خطأ إنشاء العقار:', err)
+    error: err => this.handleSaveError(err, 'تعذر إنشاء العقار.')
   });
 }
 private uploadImagesOrFinish(propertyId: string): void {
@@ -287,15 +344,23 @@ private uploadImagesOrFinish(propertyId: string): void {
           }
         });
       },
-      error: err => console.error('خطأ تعديل العقار:', err)
+      error: err => this.handleSaveError(err, 'تعذر تعديل العقار.')
     });
   }
 
   afterSave(): void {
-    this.translate.get('wohnung_add.WoBiSave').subscribe(msg => {
-      alert(msg);
-      this.router.navigate(['/meine-anzeigen']);
-    });
+    this.isSaving = false;
+    this.submitted = false;
+    const message = this.translate.instant('wohnung_add.WoBiSave');
+    this.toast.success(message);
+    this.router.navigate(['/meine-anzeigen']);
+  }
+
+  private handleSaveError(error: unknown, fallbackMessage: string): void {
+    console.error(fallbackMessage, error);
+    this.isSaving = false;
+    this.submitError = fallbackMessage;
+    this.toast.error(fallbackMessage);
   }
 
   private buildPropertyPayload(): PropertySavePayload {
