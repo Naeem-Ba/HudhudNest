@@ -1,10 +1,13 @@
 {
-    "COMMON": {
+  "COMMON": {
     "SAVE": "حفظ",
     "BACK": "رجوع",
     "LOADING": "جارٍ التحميل...",
     "PLEASE_SELECT": "يرجى الاختيار",
-    "DELETE": "حذف"
+    "DELETE": "حذف",
+    "RETRY": "إعادة المحاولة",
+    "SAVING": "جارٍ الحفظ...",
+    "CHANGE_LANGUAGE": "تغيير اللغة"
   },
   "NAVBAR": {
     "HOME": "الرئيسية",
@@ -13,18 +16,19 @@
     "CONTACT": "تواصل معنا",
     "MESSAGES": "الرسائل",
     "LOGIN": "تسجيل الدخول",
-    "LOGOUT": "تسجيل الخروج"
+    "LOGOUT": "تسجيل الخروج",
+    "SELECT_LANGUAGE": "اختيار اللغة"
   },
   "KONTAKT": {
     "title": "تواصل معنا",
     "name": "الاسم الكامل",
     "nameCtrl": "الرجاء إدخال اسمك (3 أحرف على الأقل).",
     "email": "البريد الإلكتروني",
-    "emailCtrl":"يرجى إدخال عنوان بريد إلكتروني صالح.",
+    "emailCtrl": "يرجى إدخال عنوان بريد إلكتروني صالح.",
     "subject": "الموضوع",
-    "subCtrl":"عنوان مختصر (3 أحرف على الأقل).",
+    "subCtrl": "عنوان مختصر (3 أحرف على الأقل).",
     "message": "الرسالة",
-    "msgCtrl":"الرجاء إدخال رسالة (10 أحرف على الأقل).",
+    "msgCtrl": "الرجاء إدخال رسالة (10 أحرف على الأقل).",
     "send": "إرسال",
     "sending": "جارٍ الإرسال...",
     "info_title": "بيانات التواصل",
@@ -34,7 +38,11 @@
     "strasse": "الشارع",
     "success_msg": "تم إرسال رسالتك بنجاح!",
     "error_msg": "حدث خطأ أثناء الإرسال، يرجى المحاولة لاحقاً.",
-    "error_validation": "يرجى ملء جميع الحقول المطلوبة بشكل صحيح."
+    "error_validation": "يرجى ملء جميع الحقول المطلوبة بشكل صحيح.",
+    "subtitle": "أرسل لنا رسالتك وسنرد عليك في أقرب وقت.",
+    "name_placeholder": "اكتب اسمك الكامل",
+    "subject_placeholder": "اكتب موضوع الرسالة",
+    "message_placeholder": "اكتب رسالتك بوضوح هنا"
   },
   "ADMIN_MSG": {
     "title": "رسائل التواصل",
@@ -54,7 +62,7 @@
     }
   },
   "ENUM": {
-      "STADT": {
+    "STADT": {
       "DAMASKUS": "دمشق",
       "ALEPPO": "حلب",
       "HOMS": "حمص",
@@ -70,7 +78,7 @@
       "QUNEITRA": "القنيطرة",
       "TARTUS": "طرطوس"
     },
-     "ZUSTAND": {
+    "ZUSTAND": {
       "UNKNOWN": "غير معروفة",
       "NEW": "جديد",
       "RENOVATED": "مجدّد",
@@ -90,7 +98,6 @@
       "BY_CONSUMPTION": "حسب الاستهلاك"
     }
   },
-
   "APARTMENTS": {
     "TITLE": "الشقق المتاحة",
     "ADDRESS": "العنوان",
@@ -99,9 +106,14 @@
     "PRICE": "السعر",
     "STATUS": "الحالة",
     "CONDITION": "النوع",
-    "DETAILS": "عرض التفاصيل"
+    "DETAILS": "عرض التفاصيل",
+    "SUBTITLE": "استعرض أحدث العقارات المتاحة واختر ما يناسبك.",
+    "EMPTY_TITLE": "لا توجد عقارات متاحة حاليًا",
+    "EMPTY_MESSAGE": "لم يتم العثور على عقارات مطابقة. حاول لاحقًا أو غيّر معايير البحث.",
+    "IMAGE_ALT": "صورة العقار",
+    "NO_TITLE": "عقار بدون عنوان",
+    "ROOMS": "غرف"
   },
-  
   "HOME": {
     "title": "ابحث عن منزل أحلامك",
     "subtitle": "نقدم لك أفضل الشقق للإيجار أو الشراء بأفضل الأسعار",
@@ -116,14 +128,13 @@
     "view_all": "عرض الكل",
     "latest_apartments": "احدث الشقق"
   },
-
   "wohnung_detail": {
     "title": "تفاصيل الشقة",
     "back": "العودة للقائمة",
     "ort": "المدينة",
     "adresse": "العنوان",
     "groesse": "المساحة",
-    "Unit_of_measurement":"{{ value }} متر مربع",
+    "Unit_of_measurement": "{{ value }} متر مربع",
     "zimmer": "عدد الغرف",
     "etage": "الطابق",
     "preis": "السعر",
@@ -135,14 +146,18 @@
     "balkon": "شرفة",
     "aufzug": "مصعد",
     "stellplatz": "موقف سيارة",
-    "LOCATION": "موقع الشقة"
+    "LOCATION": "موقع الشقة",
+    "not_found_title": "العقار غير موجود",
+    "not_found_message": "لم نتمكن من العثور على هذا العقار أو ربما تم حذفه.",
+    "no_extras": "لا توجد مرافق إضافية مذكورة.",
+    "no_description": "لا يوجد وصف متاح لهذا العقار."
   },
   "MAP": {
-  "APARTMENT_LOCATION": "موقع الشقة {{title}}",
-  "YOUR_LOCATION": "موقعك الحالي",
-  "FULLSCREEN": "عرض الخريطة بحجم كامل",
-  "OPEN_GOOGLE": "فتح في خرائط Google",
-  "MY_LOCATION": "تحديد موقعي الحالي"
+    "APARTMENT_LOCATION": "موقع الشقة {{title}}",
+    "YOUR_LOCATION": "موقعك الحالي",
+    "FULLSCREEN": "عرض الخريطة بحجم كامل",
+    "OPEN_GOOGLE": "فتح في خرائط Google",
+    "MY_LOCATION": "تحديد موقعي الحالي"
   },
   "wohnung_add": {
     "title": "إضافة شقة",
@@ -175,7 +190,21 @@
     "selected_files": "الصور المختارة",
     "save": "حفظ",
     "choose": "-- الرجاء الاختيار --",
-    "WoBiSave": "تم حفظ الشقة والصور!"
+    "WoBiSave": "تم حفظ الشقة والصور!",
+    "edit_title": "تعديل العقار",
+    "listing_type": "نوع الإعلان",
+    "preview_alt": "معاينة الصورة",
+    "validation_listing_type": "اختر هل العقار للبيع أو للإيجار.",
+    "validation_title": "العنوان يجب أن يحتوي على 3 أحرف على الأقل.",
+    "validation_description": "الوصف يجب أن يحتوي على 10 أحرف على الأقل.",
+    "validation_city": "المدينة مطلوبة.",
+    "validation_address": "العنوان مطلوب.",
+    "validation_cold_rent": "الإيجار يجب أن يكون أكبر من صفر.",
+    "validation_purchase_price": "سعر الشراء يجب أن يكون أكبر من صفر.",
+    "validation_rent_sale": "لإعلان البيع والإيجار يجب إدخال الإيجار وسعر الشراء.",
+    "validation_rooms": "عدد الغرف يجب أن يكون بين 1 و 50.",
+    "validation_area": "المساحة يجب أن تكون أكبر من 10 م².",
+    "validation_location": "يجب تحديد خط العرض وخط الطول معًا."
   },
   "PROFILE": {
     "SYNC_DATA": "جاري مزامنة بياناتك...",
@@ -198,7 +227,7 @@
     "CANCEL_PASS_BTN": "إلغاء تغيير كلمة المرور",
     "CURRENT_PASS": "كلمة المرور الحالية",
     "NEW_PASS": "كلمة المرور الجديدة",
-    "SAVE_PASS":"تحديث كلمة المرور", 
+    "SAVE_PASS": "تحديث كلمة المرور",
     "CONFIRM_PASS": "تأكيد كلمة المرور الجديدة",
     "SAVE_CHANGES": "حفظ التغييرات",
     "DELETE_ACCOUNT": "حذف الحساب نهائياً",
@@ -210,7 +239,104 @@
       "PASS_SUCCESS": "✅ تم تغيير كلمة المرور بنجاح",
       "PASS_ERROR": "❌ فشل تغيير كلمة المرور",
       "AGENT_VALIDATION": "⚠️ عذراً، يجب إدخال رقم الهاتف والرقم الضريبي لتفعيل حساب الوكيل العقاري.",
-      "DELETE_CONFIRM": "⚠️ تحذير: سيتم حذف حسابك نهائياً. هل أنت متأكد؟"
-    }
+      "DELETE_CONFIRM": "⚠️ تحذير: سيتم حذف حسابك نهائياً. هل أنت متأكد؟",
+      "INVALID_IMAGE_TYPE": "نوع الصورة غير مدعوم. استخدم PNG أو JPG أو WebP.",
+      "IMAGE_TOO_LARGE": "حجم الصورة كبير جدًا. الحد الأقصى 5MB.",
+      "AVATAR_SUCCESS": "تم تحديث صورة البروفايل بنجاح.",
+      "FILL_ALL_FIELDS": "يرجى تصحيح الحقول المطلوبة.",
+      "DELETE_SUCCESS": "تم حذف الحساب.",
+      "DELETE_ERROR": "تعذر حذف الحساب."
+    },
+    "MY_ADS": "إعلاناتي"
+  },
+  "VALIDATION": {
+    "REQUIRED": "هذا الحقل مطلوب.",
+    "FIX_FIELDS": "يرجى تصحيح الحقول المظللة قبل المتابعة.",
+    "IMAGE_TYPE": "نوع الصورة غير مدعوم. استخدم PNG أو JPG أو WebP.",
+    "IMAGE_SIZE": "حجم الصورة كبير جدًا. الحد الأقصى 5MB."
+  },
+  "PROPERTY_LIST": {
+    "EYEBROW": "عقارات مختارة",
+    "TITLE": "قائمة العقارات",
+    "SUBTITLE": "بطاقات واضحة مع صور وأسعار وتفاصيل مختصرة.",
+    "EMPTY_TITLE": "لا توجد نتائج",
+    "EMPTY_MESSAGE": "لم يتم العثور على عقارات في هذه القائمة.",
+    "ROOMS": "غرف"
+  },
+  "FAVORITES": {
+    "TITLE": "المفضلة",
+    "SUBTITLE": "العقارات التي حفظتها للرجوع إليها بسرعة.",
+    "EMPTY_TITLE": "قائمة المفضلة فارغة",
+    "EMPTY_MESSAGE": "عند إضافة عقار إلى المفضلة سيظهر هنا."
+  },
+  "NOTIFICATIONS": {
+    "TITLE": "الإشعارات",
+    "SUBTITLE": "آخر التنبيهات والتحديثات الخاصة بحسابك.",
+    "CONNECTION_STATE": "حالة الاتصال",
+    "EMPTY_TITLE": "لا توجد إشعارات",
+    "EMPTY_MESSAGE": "ستظهر الإشعارات الجديدة هنا عند توفرها.",
+    "READ": "مقروء",
+    "MARK_READ": "تحديد كمقروء"
+  },
+  "AUTH": {
+    "LOGIN_TITLE": "تسجيل الدخول",
+    "LOGIN_SUBTITLE": "ادخل إلى حسابك لإدارة العقارات والمفضلة.",
+    "GOOGLE_DISABLED": "الدخول عبر Google غير مفعّل حاليًا.",
+    "APPLE_DISABLED": "الدخول عبر Apple غير مفعّل حاليًا.",
+    "OR": "أو",
+    "EMAIL": "البريد الإلكتروني",
+    "EMAIL_PLACEHOLDER": "name@example.com",
+    "PASSWORD": "كلمة المرور",
+    "TOGGLE_PASSWORD": "إظهار أو إخفاء كلمة المرور",
+    "LOADING": "جارٍ التنفيذ...",
+    "LOGIN_BUTTON": "دخول",
+    "NO_ACCOUNT": "ليس لديك حساب؟",
+    "CREATE_ACCOUNT": "إنشاء حساب",
+    "REGISTER_TITLE": "إنشاء حساب جديد",
+    "REGISTER_SUBTITLE": "أدخل بياناتك الأساسية لإنشاء حساب.",
+    "NAME": "الاسم الكامل",
+    "NAME_PLACEHOLDER": "اكتب اسمك الكامل",
+    "REGISTER_BUTTON": "تسجيل",
+    "HAS_ACCOUNT": "لديك حساب بالفعل؟",
+    "GO_LOGIN": "تسجيل الدخول",
+    "REGISTER_SUCCESS": "تم إنشاء الحساب بنجاح.",
+    "FIRST_NAME": "الاسم الأول",
+    "LAST_NAME": "اسم العائلة",
+    "PHONE_OPTIONAL": "رقم الهاتف (اختياري)",
+    "PHONE_PLACEHOLDER": "+49 ...",
+    "FORGOT_TITLE": "استعادة كلمة المرور",
+    "FORGOT_SUBTITLE": "أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين.",
+    "SENDING": "جارٍ الإرسال...",
+    "SEND_RESET_LINK": "إرسال رابط الاستعادة",
+    "FORGOT_SUCCESS": "تم إرسال رابط الاستعادة إن كان البريد مسجّلًا.",
+    "RESET_TITLE": "تعيين كلمة مرور جديدة",
+    "RESET_TOKEN": "رمز إعادة التعيين",
+    "NEW_PASSWORD": "كلمة المرور الجديدة",
+    "RESET_BUTTON": "تحديث كلمة المرور",
+    "RESET_SUCCESS": "تم تحديث كلمة المرور بنجاح.",
+    "SEND_OTP_TITLE": "إرسال رمز التحقق",
+    "PHONE": "رقم الهاتف",
+    "SEND_OTP_BUTTON": "إرسال الرمز",
+    "SEND_OTP_SUCCESS": "تم إرسال رمز التحقق.",
+    "VERIFY_OTP_TITLE": "تأكيد رمز التحقق",
+    "OTP_CODE": "رمز التحقق",
+    "VERIFY_OTP_BUTTON": "تأكيد",
+    "VERIFY_OTP_SUCCESS": "تم تأكيد الرمز بنجاح.",
+    "ERRORS": {
+      "FIX_FIELDS": "يرجى تصحيح الحقول قبل الإرسال.",
+      "FULL_NAME_REQUIRED": "الاسم الكامل مطلوب.",
+      "EMAIL_REQUIRED": "البريد الإلكتروني مطلوب.",
+      "INVALID_EMAIL": "البريد الإلكتروني غير صحيح.",
+      "PASSWORD_REQUIRED": "كلمة المرور مطلوبة.",
+      "PASSWORD_MIN": "كلمة المرور يجب أن تكون 8 أحرف على الأقل.",
+      "REGISTER_FAILED": "تعذر إنشاء الحساب. تحقق من البيانات وحاول مرة أخرى.",
+      "FORGOT_FAILED": "تعذر إرسال رابط الاستعادة.",
+      "RESET_FAILED": "تعذر تحديث كلمة المرور.",
+      "SEND_OTP_FAILED": "تعذر إرسال رمز التحقق.",
+      "VERIFY_OTP_FAILED": "رمز التحقق غير صحيح أو منتهي الصلاحية.",
+      "INVALID_CREDENTIALS": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+      "EMAIL_NO_SPACES": "البريد الإلكتروني لا يجب أن يحتوي على مسافات."
+    },
+    "LOGIN_SUCCESS": "تم تسجيل الدخول بنجاح."
   }
 }

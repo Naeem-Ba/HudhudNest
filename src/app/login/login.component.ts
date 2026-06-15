@@ -1,8 +1,13 @@
 import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+
 import { AuthApiService } from '../core/services/auth-api.service';
+import { AuthService } from '../services/auth.service';
+import { ToastService } from '../shared/services/toast.service';
+import { ImageFallbackDirective } from '../shared/directives/image-fallback.directive';
 
 interface LoginFormModel {
   Email: string;
@@ -18,7 +23,7 @@ interface RegisterFormModel {
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, ImageFallbackDirective],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
@@ -40,15 +45,23 @@ export class LoginComponent {
   showPass = false;
   showPassReg = false;
   loading = false;
+  submitted = false;
 
   constructor(
     private readonly authApi: AuthApiService,
+    private readonly authState: AuthService,
     private readonly router: Router,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly translate: TranslateService,
+    private readonly toast: ToastService
   ) {}
 
-  onLogin(): void {
-    if (this.loading) {
+  onLogin(form: NgForm): void {
+    this.submitted = true;
+    form.control.markAllAsTouched();
+
+    if (form.invalid || this.loading) {
+      this.setError(this.t('AUTH.ERRORS.FIX_FIELDS'));
       return;
     }
 
@@ -62,25 +75,27 @@ export class LoginComponent {
 
     this.authApi.login(request).subscribe({
       next: () => {
+        this.authState.restoreSession();
         this.success = true;
-        this.message = 'Login erfolgreich!';
+        this.message = this.t('AUTH.LOGIN_SUCCESS');
+        this.toast.success(this.message);
 
         const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
-
-        setTimeout(() => {
-          this.router.navigateByUrl(returnUrl);
-        }, 300);
+        this.router.navigateByUrl(returnUrl);
       },
       error: () => {
         this.loading = false;
-        this.success = false;
-        this.message = 'E-Mail oder Passwort ist falsch.';
+        this.setError(this.t('AUTH.ERRORS.INVALID_CREDENTIALS'));
       }
     });
   }
 
-  onRegister(): void {
-    if (this.loading) {
+  onRegister(form: NgForm): void {
+    this.submitted = true;
+    form.control.markAllAsTouched();
+
+    if (form.invalid || this.loading) {
+      this.setError(this.t('AUTH.ERRORS.FIX_FIELDS'));
       return;
     }
 
@@ -98,33 +113,26 @@ export class LoginComponent {
     const validationMessage = this.validateRegisterForm(firstName, lastName, email, password);
     if (validationMessage) {
       this.loading = false;
-      this.success = false;
-      this.message = validationMessage;
+      this.setError(validationMessage);
       return;
     }
 
-    const request = {
-      firstName,
-      lastName,
-      email,
-      password
-    };
-
-    this.authApi.register(request).subscribe({
+    this.authApi.register({ firstName, lastName, email, password }).subscribe({
       next: () => {
         this.loading = false;
         this.success = true;
-        this.message = 'Registrierung erfolgreich! Bitte einloggen.';
+        this.message = this.t('AUTH.REGISTER_SUCCESS');
+        this.toast.success(this.message);
         this.showRegister = false;
+        this.submitted = false;
 
         this.loginData.Email = email;
         this.loginData.Password = '';
         this.registerData.Password = '';
       },
-      error: (error) => {
+      error: error => {
         this.loading = false;
-        this.success = false;
-        this.message = this.getRegisterErrorMessage(error);
+        this.setError(this.getRegisterErrorMessage(error));
       }
     });
   }
@@ -133,39 +141,41 @@ export class LoginComponent {
     this.showRegister = !this.showRegister;
     this.message = '';
     this.success = false;
+    this.submitted = false;
   }
 
-  private validateRegisterForm(
-    firstName: string,
-    lastName: string,
-    email: string,
-    password: string
-  ): string | null {
+  private validateRegisterForm(firstName: string, lastName: string, email: string, password: string): string | null {
     if (!firstName || !lastName) {
-      return 'Bitte geben Sie Ihren vollständigen Namen ein.';
+      return this.t('AUTH.ERRORS.FULL_NAME_REQUIRED');
     }
 
     if (!email) {
-      return 'Bitte geben Sie Ihre E-Mail-Adresse ein.';
+      return this.t('AUTH.ERRORS.EMAIL_REQUIRED');
     }
 
     if (/\s/.test(email)) {
-      return 'Die E-Mail-Adresse darf keine Leerzeichen enthalten.';
+      return this.t('AUTH.ERRORS.EMAIL_NO_SPACES');
     }
 
     if (!this.isValidEmail(email)) {
-      return 'Bitte geben Sie eine gültige E-Mail-Adresse ein.';
+      return this.t('AUTH.ERRORS.INVALID_EMAIL');
     }
 
     if (!password) {
-      return 'Bitte geben Sie ein Passwort ein.';
+      return this.t('AUTH.ERRORS.PASSWORD_REQUIRED');
     }
 
     if (password.length < 8) {
-      return 'Das Passwort muss mindestens 8 Zeichen lang sein.';
+      return this.t('AUTH.ERRORS.PASSWORD_MIN');
     }
 
     return null;
+  }
+
+  private setError(message: string): void {
+    this.success = false;
+    this.message = message;
+    this.toast.error(message);
   }
 
   private isValidEmail(email: string): boolean {
@@ -193,6 +203,10 @@ export class LoginComponent {
       }
     }
 
-    return 'Fehler bei der Registrierung. Bitte prüfen Sie Ihre Eingaben.';
+    return this.t('AUTH.ERRORS.REGISTER_FAILED');
+  }
+
+  private t(key: string): string {
+    return this.translate.instant(key);
   }
 }

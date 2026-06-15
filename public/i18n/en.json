@@ -4,7 +4,10 @@
     "BACK": "Back",
     "LOADING": "Loading...",
     "PLEASE_SELECT": "Please select",
-    "DELETE": "Delete"
+    "DELETE": "Delete",
+    "RETRY": "Retry",
+    "SAVING": "Saving...",
+    "CHANGE_LANGUAGE": "Change language"
   },
   "NAVBAR": {
     "HOME": "Home",
@@ -13,9 +16,10 @@
     "CONTACT": "Contact",
     "MESSAGES": "Messages",
     "LOGIN": "Login",
-    "LOGOUT": "Logout"
+    "LOGOUT": "Logout",
+    "SELECT_LANGUAGE": "Select language"
   },
-   "KONTAKT": {
+  "KONTAKT": {
     "title": "Contact Us",
     "name": "Full Name",
     "nameCtrl": "Please enter your name (at least 3 characters).",
@@ -34,7 +38,11 @@
     "strasse": "Street",
     "success_msg": "Your message was sent successfully!",
     "error_msg": "An error occurred while sending. Please try again later.",
-    "error_validation": "Please fill in all required fields correctly."
+    "error_validation": "Please fill in all required fields correctly.",
+    "subtitle": "Send us your message and we will reply as soon as possible.",
+    "name_placeholder": "Enter your full name",
+    "subject_placeholder": "Enter the message subject",
+    "message_placeholder": "Write your message clearly here"
   },
   "ADMIN_MSG": {
     "title": "Communication Messages",
@@ -90,7 +98,6 @@
       "BY_CONSUMPTION": "By Consumption"
     }
   },
-
   "HOME": {
     "title": "Find Your Dream Home",
     "subtitle": "Best apartments for rent or sale at the best prices",
@@ -105,7 +112,6 @@
     "view_all": "view all",
     "latest_apartments": "latest apartments"
   },
-  
   "APARTMENTS": {
     "TITLE": "Available Apartments",
     "ADDRESS": "Address",
@@ -114,7 +120,13 @@
     "PRICE": "Price",
     "STATUS": "Status",
     "CONDITION": "Condition",
-    "DETAILS": "View Details"
+    "DETAILS": "View Details",
+    "SUBTITLE": "Browse the latest available properties.",
+    "EMPTY_TITLE": "No properties available",
+    "EMPTY_MESSAGE": "No matching properties were found. Try again later or adjust your search.",
+    "IMAGE_ALT": "Property image",
+    "NO_TITLE": "Untitled property",
+    "ROOMS": "rooms"
   },
   "wohnung_detail": {
     "title": "Apartment details",
@@ -124,7 +136,7 @@
     "select_location": "select location",
     "map_instruction": "map instruction",
     "groesse": "Area",
-    "Unit_of_measurement":"{{ value }} (m²)",
+    "Unit_of_measurement": "{{ value }} (m²)",
     "zimmer": "Room",
     "etage": "Floor",
     "preis": "Price",
@@ -136,14 +148,18 @@
     "balkon": "Balcony",
     "aufzug": "Elevator",
     "stellplatz": "Parking space",
-    "LOCATION": "APARTMENT LOCATION"
+    "LOCATION": "APARTMENT LOCATION",
+    "not_found_title": "Property not found",
+    "not_found_message": "We could not find this property or it may have been removed.",
+    "no_extras": "No additional amenities listed.",
+    "no_description": "No description is available for this property."
   },
   "MAP": {
-  "APARTMENT_LOCATION": "Apartment location {{title}}",
-  "YOUR_LOCATION": "Your current location",
-  "FULLSCREEN": "Fullscreen map",
-  "OPEN_GOOGLE": "Open in Google Maps",
-  "MY_LOCATION": "Find my location"
+    "APARTMENT_LOCATION": "Apartment location {{title}}",
+    "YOUR_LOCATION": "Your current location",
+    "FULLSCREEN": "Fullscreen map",
+    "OPEN_GOOGLE": "Open in Google Maps",
+    "MY_LOCATION": "Find my location"
   },
   "wohnung_add": {
     "title": "Add apartment",
@@ -175,8 +191,22 @@
     "bild_hochladen": "upload images",
     "selected_files": "selected files",
     "save": "save",
-    "choose":  "-- Please choose --",
-    "WoBiSave": "Apartment and pictures have been saved!"
+    "choose": "-- Please choose --",
+    "WoBiSave": "Apartment and pictures have been saved!",
+    "edit_title": "Edit property",
+    "listing_type": "Listing type",
+    "preview_alt": "Image preview",
+    "validation_listing_type": "Choose whether the property is for sale or rent.",
+    "validation_title": "Title must be at least 3 characters.",
+    "validation_description": "Description must be at least 10 characters.",
+    "validation_city": "City is required.",
+    "validation_address": "Address is required.",
+    "validation_cold_rent": "Rent must be greater than zero.",
+    "validation_purchase_price": "Purchase price must be greater than zero.",
+    "validation_rent_sale": "For sale and rent listing, enter both rent and purchase price.",
+    "validation_rooms": "Rooms must be between 1 and 50.",
+    "validation_area": "Area must be greater than 10 m².",
+    "validation_location": "Latitude and longitude must be provided together."
   },
   "PROFILE": {
     "SYNC_DATA": "Syncing your data...",
@@ -199,7 +229,7 @@
     "CANCEL_PASS_BTN": "Cancel Password Change",
     "CURRENT_PASS": "Current Password",
     "NEW_PASS": "New Password",
-    "SAVE_PASS":"Update password",
+    "SAVE_PASS": "Update password",
     "CONFIRM_PASS": "Confirm New Password",
     "SAVE_CHANGES": "Save Changes",
     "DELETE_ACCOUNT": "Delete Account Permanently",
@@ -211,7 +241,104 @@
       "PASS_SUCCESS": "✅ Password changed successfully",
       "PASS_ERROR": "❌ Password change failed",
       "AGENT_VALIDATION": "⚠️ Phone number and tax number are required to activate the agent account.",
-      "DELETE_CONFIRM": "⚠️ Warning: Your account will be permanently deleted. Are you sure?"
-    }
+      "DELETE_CONFIRM": "⚠️ Warning: Your account will be permanently deleted. Are you sure?",
+      "INVALID_IMAGE_TYPE": "Unsupported image type. Use PNG, JPG, or WebP.",
+      "IMAGE_TOO_LARGE": "The image is too large. Maximum size is 5MB.",
+      "AVATAR_SUCCESS": "Profile image updated successfully.",
+      "FILL_ALL_FIELDS": "Please fix the required fields.",
+      "DELETE_SUCCESS": "Account deleted.",
+      "DELETE_ERROR": "Could not delete the account."
+    },
+    "MY_ADS": "My listings"
+  },
+  "VALIDATION": {
+    "REQUIRED": "This field is required.",
+    "FIX_FIELDS": "Please fix the highlighted fields before continuing.",
+    "IMAGE_TYPE": "Unsupported image type. Use PNG, JPG, or WebP.",
+    "IMAGE_SIZE": "The image is too large. Maximum size is 5MB."
+  },
+  "PROPERTY_LIST": {
+    "EYEBROW": "Featured properties",
+    "TITLE": "Properties list",
+    "SUBTITLE": "Clear cards with images, prices, and short details.",
+    "EMPTY_TITLE": "No results",
+    "EMPTY_MESSAGE": "No properties were found in this list.",
+    "ROOMS": "rooms"
+  },
+  "FAVORITES": {
+    "TITLE": "Favorites",
+    "SUBTITLE": "Properties you saved for quick access.",
+    "EMPTY_TITLE": "Your favorites list is empty",
+    "EMPTY_MESSAGE": "Saved properties will appear here."
+  },
+  "NOTIFICATIONS": {
+    "TITLE": "Notifications",
+    "SUBTITLE": "Latest account alerts and updates.",
+    "CONNECTION_STATE": "Connection state",
+    "EMPTY_TITLE": "No notifications",
+    "EMPTY_MESSAGE": "New notifications will appear here.",
+    "READ": "Read",
+    "MARK_READ": "Mark as read"
+  },
+  "AUTH": {
+    "LOGIN_TITLE": "Login",
+    "LOGIN_SUBTITLE": "Access your account to manage properties and favorites.",
+    "GOOGLE_DISABLED": "Google login is not enabled yet.",
+    "APPLE_DISABLED": "Apple login is not enabled yet.",
+    "OR": "or",
+    "EMAIL": "Email",
+    "EMAIL_PLACEHOLDER": "name@example.com",
+    "PASSWORD": "Password",
+    "TOGGLE_PASSWORD": "Show or hide password",
+    "LOADING": "Processing...",
+    "LOGIN_BUTTON": "Login",
+    "NO_ACCOUNT": "No account yet?",
+    "CREATE_ACCOUNT": "Create account",
+    "REGISTER_TITLE": "Create a new account",
+    "REGISTER_SUBTITLE": "Enter your basic details to create an account.",
+    "NAME": "Full name",
+    "NAME_PLACEHOLDER": "Enter your full name",
+    "REGISTER_BUTTON": "Register",
+    "HAS_ACCOUNT": "Already have an account?",
+    "GO_LOGIN": "Login",
+    "REGISTER_SUCCESS": "Account created successfully.",
+    "FIRST_NAME": "First name",
+    "LAST_NAME": "Last name",
+    "PHONE_OPTIONAL": "Phone number (optional)",
+    "PHONE_PLACEHOLDER": "+49 ...",
+    "FORGOT_TITLE": "Reset password",
+    "FORGOT_SUBTITLE": "Enter your email and we will send you a reset link.",
+    "SENDING": "Sending...",
+    "SEND_RESET_LINK": "Send reset link",
+    "FORGOT_SUCCESS": "A reset link was sent if the email exists.",
+    "RESET_TITLE": "Set a new password",
+    "RESET_TOKEN": "Reset token",
+    "NEW_PASSWORD": "New password",
+    "RESET_BUTTON": "Update password",
+    "RESET_SUCCESS": "Password updated successfully.",
+    "SEND_OTP_TITLE": "Send verification code",
+    "PHONE": "Phone number",
+    "SEND_OTP_BUTTON": "Send code",
+    "SEND_OTP_SUCCESS": "Verification code sent.",
+    "VERIFY_OTP_TITLE": "Verify code",
+    "OTP_CODE": "Verification code",
+    "VERIFY_OTP_BUTTON": "Verify",
+    "VERIFY_OTP_SUCCESS": "Code verified successfully.",
+    "ERRORS": {
+      "FIX_FIELDS": "Please fix the fields before submitting.",
+      "FULL_NAME_REQUIRED": "Full name is required.",
+      "EMAIL_REQUIRED": "Email is required.",
+      "INVALID_EMAIL": "Invalid email address.",
+      "PASSWORD_REQUIRED": "Password is required.",
+      "PASSWORD_MIN": "Password must be at least 8 characters.",
+      "REGISTER_FAILED": "Could not create the account. Check the data and try again.",
+      "FORGOT_FAILED": "Could not send the reset link.",
+      "RESET_FAILED": "Could not update the password.",
+      "SEND_OTP_FAILED": "Could not send the verification code.",
+      "VERIFY_OTP_FAILED": "The code is invalid or expired.",
+      "INVALID_CREDENTIALS": "Email or password is incorrect.",
+      "EMAIL_NO_SPACES": "Email must not contain spaces."
+    },
+    "LOGIN_SUCCESS": "Logged in successfully."
   }
 }

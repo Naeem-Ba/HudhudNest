@@ -1,4 +1,3 @@
-/* المتغيرات الأساسية */
 $primary-color: #007bff;
 $text-dark: #333;
 $bg-light: #f7f7f7;
@@ -9,75 +8,78 @@ $white: #ffffff;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
+  gap: 1rem;
+  padding-inline: 20px;
   background: $bg-light;
   border-bottom: 1px solid $border-color;
   min-height: 70px;
-  flex-wrap: nowrap;
   position: sticky;
   top: 0;
   z-index: 1000;
 }
 
-/* الشعار */
+.navbar-left,
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  min-width: 0;
+}
+
 .logo-container img {
   height: 48px;
   width: auto;
   display: block;
+  max-width: 180px;
+  object-fit: contain;
 }
 
-/* الروابط (للكمبيوتر) */
 .nav-links {
   display: flex;
   align-items: center;
-  flex-grow: 1;
-  margin-inline-start: 30px;
+  flex: 1 1 auto;
+  gap: 1.25rem;
+  min-width: 0;
 
   a {
-    margin-inline-end: 20px;
     text-decoration: none;
     color: $text-dark;
-    font-weight: 500;
-    white-space: nowrap; 
+    font-weight: 600;
+    white-space: nowrap;
     transition: color 0.2s ease;
 
-    &:hover, &.active {
+    &:hover,
+    &.active {
       color: $primary-color;
     }
-    
+
     &.active {
-      font-weight: bold;
+      font-weight: 800;
     }
   }
 }
 
-/* القسم الخاص باللغة في الموبايل - مخفي افتراضياً في الكمبيوتر */
 .mobile-lang-section {
   display: none;
 }
 
-/* الجهة اليمنى */
-.navbar-right {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-/* القوائم المنسدلة */
-.account, .lang-dropdown {
+.account,
+.lang-dropdown {
   position: relative;
 }
 
-.dropdown, .lang-menu {
+.dropdown,
+.lang-menu {
   position: absolute;
-  top: calc(100% + 10px);
+  inset-block-start: calc(100% + 10px);
   inset-inline-end: 0;
   background: $white;
   border: 1px solid $border-color;
-  border-radius: 8px;
-  box-shadow: 0px 4px 15px rgba(0,0,0,0.15);
-  min-width: 200px;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.14);
+  min-width: 220px;
   width: max-content;
+  max-width: min(340px, calc(100vw - 2rem));
   display: none;
   z-index: 1100;
   overflow: hidden;
@@ -88,139 +90,187 @@ $white: #ffffff;
   }
 }
 
-/* تفاصيل قائمة الحساب */
 .dropdown {
-  padding: 12px;
-  .user-email {
-    font-size: 13px;
-    color: #666;
-    word-break: break-all;
+  padding: .85rem;
+
+  a {
+    display: block;
+    padding: .55rem .4rem;
+    color: $text-dark;
+    text-decoration: none;
+    border-radius: 8px;
+    overflow-wrap: anywhere;
+
+    &:hover {
+      background: #f1f5f9;
+    }
   }
+
+  .user-email {
+    font-size: .86rem;
+    color: #475569;
+  }
+
   hr {
     border: 0;
     border-top: 1px solid #eee;
-    margin: 10px 0;
+    margin: .45rem 0;
   }
+
   .logout-link {
-    color: #d00;
+    color: #dc2626;
     cursor: pointer;
-    font-weight: 600;
-    &:hover { text-decoration: underline; }
+    font-weight: 700;
   }
 }
 
-/* زر اللغة والموبايل */
+.lang-menu {
+  list-style: none;
+  padding: .35rem;
+  margin: 0;
+
+  li {
+    padding: .65rem .8rem;
+    border-radius: 8px;
+    cursor: pointer;
+
+    &:hover {
+      background: #f1f5f9;
+    }
+  }
+}
+
+.lang-btn,
+.login-btn,
+.mobile-menu-btn {
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
 .lang-btn {
-  padding: 8px 12px;
+  padding: .55rem .8rem;
   background: #eee;
   border: 1px solid #ccc;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
 }
 
 .mobile-menu-btn {
   display: none;
-  background: none;
-  border: none;
-  font-size: 28px;
-  cursor: pointer;
+  background: transparent;
+  border: 0;
+  font-size: 1.8rem;
   color: $text-dark;
-  margin-inline-end: 10px;
+  min-width: 44px;
+  min-height: 44px;
 }
 
-/* الأفاتار */
-.avatar, .avatar-img {
+.avatar,
+.avatar-img {
   width: 42px;
   height: 42px;
   border-radius: 50%;
   border: 2px solid $primary-color;
   flex-shrink: 0;
+  object-fit: cover;
 }
+
 .avatar {
   background: $primary-color;
   color: $white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
+  font-weight: 800;
+}
+
+.avatar-wrapper {
+  cursor: pointer;
 }
 
 .login-btn {
-  padding: 8px 18px;
+  padding: .55rem 1rem;
   background: $primary-color;
   color: $white;
   border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
 }
 
-/* ========================================= */
-/* التعديلات الخاصة بالموبايل */
-/* ========================================= */
+:host-context(html[dir='rtl']) .nav-links,
+:host-context(html[dir='rtl']) .mobile-lang-section,
+:host-context(html[dir='rtl']) .dropdown {
+  text-align: right;
+}
 
 @media (max-width: 992px) {
   .mobile-menu-btn {
-    display: block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  // إخفاء زر اللغة الأصلي في الموبايل
   .desktop-only {
     display: none !important;
   }
 
+  .navbar {
+    padding-inline: .75rem;
+  }
+
+  .logo-container img {
+    height: 42px;
+    max-width: 150px;
+  }
+
   .nav-links {
-    display: none; 
+    display: none;
     flex-direction: column;
     align-items: flex-start;
     position: absolute;
-    top: 70px;
-    left: 0;
+    inset-block-start: 70px;
+    inset-inline: 0;
     width: 100%;
     background: $white;
     border-bottom: 3px solid $primary-color;
-    padding: 15px 25px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    padding: 1rem 1.25rem;
+    box-shadow: 0 12px 22px rgba(0,0,0,0.1);
     z-index: 999;
     margin: 0;
+    gap: 0;
 
     &.mobile-open {
-      display: flex; 
+      display: flex;
 
-      // إظهار قسم اللغة فقط عندما تفتح القائمة في الموبايل
       .mobile-lang-section {
         display: block;
         width: 100%;
-        margin-top: 10px;
-        padding-top: 10px;
+        margin-top: .75rem;
+        padding-top: .75rem;
 
         .mobile-divider {
           border: 0;
           border-top: 1px solid $border-color;
-          margin-bottom: 15px;
+          margin-bottom: .9rem;
         }
 
         .lang-label {
-          font-size: 13px;
-          color: #888;
-          margin-bottom: 12px;
+          font-size: .86rem;
+          color: #64748b;
+          margin-bottom: .75rem;
           display: block;
         }
 
         .lang-options-mobile {
           display: flex;
-          gap: 10px;
+          gap: .65rem;
           flex-wrap: wrap;
-          
+
           span {
-            padding: 6px 15px;
+            padding: .5rem .9rem;
             border: 1px solid $border-color;
-            border-radius: 20px;
-            font-size: 14px;
+            border-radius: 999px;
+            font-size: .9rem;
             cursor: pointer;
-            background: #fdfdfd;
-            
+            background: #fff;
+
             &.active {
               background: $primary-color;
               color: white;
@@ -232,14 +282,18 @@ $white: #ffffff;
     }
 
     a {
-      margin: 8px 0;
+      margin: 0;
       width: 100%;
-      font-size: 17px;
-      white-space: normal; 
-      overflow-wrap: break-word;
-      padding: 10px 0;
-      border-bottom: 1px solid #f9f9f9;
+      font-size: 1rem;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      padding: .85rem 0;
+      border-bottom: 1px solid #f1f5f9;
     }
+  }
+
+  :host-context(html[dir='rtl']) .nav-links {
+    align-items: flex-end;
   }
 }
 

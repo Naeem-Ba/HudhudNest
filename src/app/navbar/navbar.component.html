@@ -1,12 +1,12 @@
 <header class="navbar">
   <div class="navbar-left">
 
-    <button class="mobile-menu-btn" (click)="toggleMobileMenu($event)">
+    <button class="mobile-menu-btn" type="button" (click)="toggleMobileMenu($event)" [attr.aria-expanded]="mobileMenuOpen" aria-label="فتح القائمة">
       ☰
     </button>
 
     <a routerLink="/home" class="logo-container">
-      <img src="images/horizontal-logo.png" alt="Logo" />
+      <img src="images/horizontal-logo.png" alt="Logo" appImageFallback="/images/no-image.svg" />
     </a>
   </div>
 
@@ -55,7 +55,7 @@
   <div class="navbar-right">
     
     <div class="lang-dropdown desktop-only">
-      <button class="lang-btn" (click)="toggleLangMenu($event); $event.stopPropagation()">
+      <button class="lang-btn" type="button" (click)="toggleLangMenu($event); $event.stopPropagation()" [attr.aria-expanded]="langMenuOpen">
         {{ currentLang.toUpperCase() }} ▼
       </button>
       <ul class="lang-menu" [class.open]="langMenuOpen">
@@ -70,6 +70,8 @@
         <img *ngIf="hasCustomImage"
              class="avatar-img"
              [src]="profileImageUrl"
+             alt=""
+             appImageFallback="/images/default-avatar.svg"
              (error)="useFallbackImage()" />
 
         <div *ngIf="!hasCustomImage" class="avatar">
@@ -86,9 +88,9 @@
             </a>
             <div>
               <hr />
-            <a routerLink="/meine-anzeigen">
-            🏠 meine-anzeigen<!--{{ 'PROFILE.MY_ADS' | translate }}-->
-             </a>
+            <a routerLink="/meine-anzeigen" (click)="dropdownOpen = false">
+              🏠 {{ 'PROFILE.MY_ADS' | translate }}
+            </a>
              </div>
         </div>
         <hr />
@@ -99,7 +101,7 @@
     </div>
 
     <ng-template #loginBtn>
-      <button class="login-btn" routerLink="/login">
+      <button class="login-btn" type="button" routerLink="/login">
         {{ 'NAVBAR.LOGIN' | translate }}
       </button>
     </ng-template>

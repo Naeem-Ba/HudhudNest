@@ -1,49 +1,45 @@
-import { bootstrapApplication } from '@angular/platform-browser';
-import { AppComponent } from './app/app.component';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { APP_INITIALIZER, importProvidersFrom } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideRouter, withHashLocation } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { AuthInterceptor } from './app/services/auth-interceptor';
 
-import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
+import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
-import { EnumService } from './app/services/enum.service';
+import { AppComponent } from './app/app.component';
 import { routes } from './app/app.routes';
+import { AuthInterceptor } from './app/services/auth-interceptor';
+import { ApiErrorInterceptor } from './app/core/interceptors/api-error.interceptor';
+import { EnumService } from './app/services/enum.service';
 
-export function HttpLoaderFactory(http: HttpClient) {
+export function httpLoaderFactory(http: HttpClient): TranslateHttpLoader {
   return new TranslateHttpLoader(http, '/i18n/', '.json');
 }
 
-export function preloadEnums(enumService: EnumService) {
-  return () => enumService.loadAll(); // ⬅️ مهم
+export function preloadEnums(enumService: EnumService): () => Promise<unknown> {
+  return () => enumService.loadAll();
 }
 
 bootstrapApplication(AppComponent, {
   providers: [
-    provideHttpClient(),
-    provideRouter(routes),
-
+    provideRouter(routes, withHashLocation()),
+    provideHttpClient(withInterceptors([AuthInterceptor, ApiErrorInterceptor])),
     {
       provide: APP_INITIALIZER,
       useFactory: preloadEnums,
       deps: [EnumService],
       multi: true
     },
-
     importProvidersFrom(
       TranslateModule.forRoot({
-        defaultLanguage: 'ar',
+        fallbackLang: 'ar',
         loader: {
           provide: TranslateLoader,
-          useFactory: HttpLoaderFactory,
+          useFactory: httpLoaderFactory,
           deps: [HttpClient]
         }
-      })
-    ),
-    provideHttpClient(
-      withInterceptors([AuthInterceptor])
+      } as any)
     )
   ]
 }).catch(console.error);

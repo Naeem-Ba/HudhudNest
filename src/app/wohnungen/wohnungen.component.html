@@ -1,61 +1,63 @@
-<h2>{{ 'APARTMENTS.TITLE' | translate }}</h2>
+<section class="wohnungen-page">
+  <header class="page-header">
+    <h2>{{ 'APARTMENTS.TITLE' | translate }}</h2>
+    <p>{{ 'APARTMENTS.SUBTITLE' | translate }}</p>
+  </header>
 
-<p *ngIf="loading">Lade Wohnungen...</p>
+  <app-skeleton-card-grid *ngIf="loading" [count]="6"></app-skeleton-card-grid>
 
-<p *ngIf="errorMessage" class="text-danger">
-  {{ errorMessage }}
-</p>
+  <div *ngIf="!loading && errorMessage" class="state-card error-state" role="alert">
+    <span aria-hidden="true">⚠️</span>
+    <p>{{ errorMessage }}</p>
+    <button type="button" (click)="loadWohnungen()">{{ 'COMMON.RETRY' | translate }}</button>
+  </div>
 
-<p *ngIf="!loading && !errorMessage && wohnungen.length === 0">
-  Keine Wohnungen gefunden.
-</p>
+  <app-empty-state
+    *ngIf="!loading && !errorMessage && wohnungen.length === 0"
+    icon="🏠"
+    [title]="'APARTMENTS.EMPTY_TITLE' | translate"
+    [message]="'APARTMENTS.EMPTY_MESSAGE' | translate"
+  ></app-empty-state>
 
-<div *ngFor="let w of wohnungen" class="wohnung-card">
-  <h3>{{ w.Titel || 'Ohne Titel' }}</h3>
+  <div class="wohnungen-grid" *ngIf="!loading && !errorMessage && wohnungen.length > 0">
+    <article *ngFor="let w of wohnungen; trackBy: trackById" class="wohnung-card">
+      <div class="image-wrapper">
+        <img
+          [src]="getMainImage(w)"
+          [alt]="w.Titel || ('APARTMENTS.IMAGE_ALT' | translate)"
+          loading="lazy"
+          appImageFallback="/images/no-image.svg"
+        />
+      </div>
 
-  <img
-    [src]="getMainImage(w)"
-    alt="Wohnung"
-    width="200"
-  />
+      <div class="card-body">
+        <h3 class="line-clamp-2">{{ w.Titel || ('APARTMENTS.NO_TITLE' | translate) }}</h3>
 
-  <p *ngIf="w.OwnerId">
-    <strong>Owner ID:</strong> {{ w.OwnerId }}
-  </p>
+        <p class="description line-clamp-3">{{ getDescription(w) }}</p>
 
-  <p>
-    <strong>{{ 'APARTMENTS.ADDRESS' | translate }}:</strong>
-    {{ w.Adresse || '—' }}
-  </p>
+        <p class="meta line-clamp-1">
+          <strong>{{ 'APARTMENTS.ADDRESS' | translate }}:</strong>
+          {{ getLocation(w) }}
+        </p>
 
-  <p>
-    <strong>{{ 'APARTMENTS.CITY' | translate }}:</strong>
-    {{ w.Stadt || '—' }} {{ w.PLZ || '' }}
-  </p>
+        <div class="facts">
+          <span *ngIf="w.Flaeche">{{ w.Flaeche }} m²</span>
+          <span *ngIf="w.Zimmer">{{ w.Zimmer }} {{ 'APARTMENTS.ROOMS' | translate }}</span>
+          <span *ngIf="w.Status">{{ w.Status }}</span>
+        </div>
 
-  <p>
-    <strong>{{ 'APARTMENTS.SIZE' | translate }}:</strong>
-    {{ w.Flaeche ? (w.Flaeche + ' m²') : '—' }}
-  </p>
-
-  <p>
-    <strong>{{ 'APARTMENTS.PRICE' | translate }}:</strong>
-    <span class="preis">
-      {{ getPrice(w) || '—' }}
-    </span>
-  </p>
-
-  <p>
-    <strong>{{ 'APARTMENTS.STATUS' | translate }}:</strong>
-    {{ w.Status || '—' }}
-  </p>
-
-  <button
-    class="details-btn"
-    type="button"
-    *ngIf="getId(w) as id"
-    (click)="gotoDetails(id)"
-  >
-    {{ 'APARTMENTS.DETAILS' | translate }}
-  </button>
-</div>
+        <div class="card-footer">
+          <strong class="preis">{{ getFormattedPrice(w) }}</strong>
+          <button
+            class="details-btn"
+            type="button"
+            *ngIf="getId(w) as id"
+            (click)="gotoDetails(id)"
+          >
+            {{ 'APARTMENTS.DETAILS' | translate }}
+          </button>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>

@@ -3,31 +3,34 @@ import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './services/auth.service';
 import { Observable, filter } from 'rxjs';
+import { ToastContainerComponent } from './shared/ui/toast-container.component';
+import { LanguageService } from './services/language.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule,],
+  imports: [RouterOutlet, CommonModule, ToastContainerComponent],
   template: `
     <router-outlet></router-outlet>
+    <app-toast-container></app-toast-container>
   `,
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
   isLoggedIn$: Observable<boolean>;
-  showAddButton: boolean = false;
+  showAddButton = false;
 
-  constructor(private authService: AuthService, private router: Router) {
+  constructor(
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly languageService: LanguageService
+  ) {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
 
-    // نراقب تغيّر المسار لتحديد ظهور زر الإضافة
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: any) => {
-      // زر الإضافة يظهر فقط في صفحة /wohnungen
-      this.showAddButton = event.urlAfterRedirects.startsWith('/wohnungen');
-    });
-
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        this.showAddButton = event.urlAfterRedirects.startsWith('/wohnungen');
+      });
   }
-
 }

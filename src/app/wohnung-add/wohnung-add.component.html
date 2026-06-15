@@ -1,171 +1,157 @@
 <div class="card">
-  <h2>{{ 'wohnung_add.title' | translate }}</h2>
+  <h2>{{ isEditMode ? ('wohnung_add.edit_title' | translate) : ('wohnung_add.title' | translate) }}</h2>
 
-  <form (ngSubmit)="onSubmit()" #form="ngForm">
+  <div *ngIf="submitError" class="form-alert" role="alert">
+    <span aria-hidden="true">⚠️</span>
+    {{ submitError }}
+  </div>
 
-    
-    <!-- Zum Mieten / Kaufen -->
-    <div class="toggle-container">
-        <button type="button"
-            [class.active]="wohnung.ZumKaufen"
-            (click)="setMode('kaufen')">
-            {{ 'wohnung_add.mode_sale' | translate }}
-        </button>
+  <form (ngSubmit)="onSubmit(form)" #form="ngForm" novalidate>
+    <div class="toggle-container" role="group" [attr.aria-label]="'wohnung_add.listing_type' | translate">
+      <button type="button" [class.active]="wohnung.ZumKaufen" (click)="setMode('kaufen')">
+        {{ 'wohnung_add.mode_sale' | translate }}
+      </button>
 
-       <button type="button"
-            [class.active]="wohnung.ZumMieten"
-            (click)="setMode('mieten')">
-           {{ 'wohnung_add.mode_rent' | translate }}
-       </button>
+      <button type="button" [class.active]="wohnung.ZumMieten" (click)="setMode('mieten')">
+        {{ 'wohnung_add.mode_rent' | translate }}
+      </button>
     </div>
 
-    <!-- Titel -->
-    <label>{{ 'wohnung_add.titel' | translate }}</label>
-    <input type="text" name="Titel" [(ngModel)]="wohnung.Titel" required />
+    <div class="field-error" *ngIf="submitted && !wohnung.ZumMieten && !wohnung.ZumKaufen">
+      ⚠️ {{ 'wohnung_add.validation_listing_type' | translate }}
+    </div>
 
-    <!-- Beschreibung -->
-    <label>{{ 'wohnung_add.beschreibung' | translate }}</label>
-    <textarea name="Beschreibung" [(ngModel)]="wohnung.Beschreibung"></textarea>
+    <label for="title">{{ 'wohnung_add.titel' | translate }} *</label>
+    <input id="title" type="text" name="Titel" [(ngModel)]="wohnung.Titel" #titleCtrl="ngModel" required minlength="3" />
+    <div class="field-error" *ngIf="titleCtrl.invalid && (titleCtrl.touched || submitted)">
+      ⚠️ {{ titleCtrl.errors?.['required'] ? ('VALIDATION.REQUIRED' | translate) : ('wohnung_add.validation_title' | translate) }}
+    </div>
 
-    <!-- Adresse -->
-    <label>{{ 'wohnung_add.adresse' | translate }}</label>
-    <input type="text" name="Adresse" [(ngModel)]="wohnung.Adresse" />
+    <label for="description">{{ 'wohnung_add.beschreibung' | translate }} *</label>
+    <textarea id="description" name="Beschreibung" [(ngModel)]="wohnung.Beschreibung" #descCtrl="ngModel" required minlength="10"></textarea>
+    <div class="field-error" *ngIf="descCtrl.invalid && (descCtrl.touched || submitted)">
+      ⚠️ {{ descCtrl.errors?.['required'] ? ('VALIDATION.REQUIRED' | translate) : ('wohnung_add.validation_description' | translate) }}
+    </div>
 
-    <!--<div class="map-selection-section">
-      <label>{{ 'wohnung_add.select_location' | translate }}</label>
-     <p><small>{{ 'wohnung_add.map_instruction' | translate }}</small></p>
-  
-    </div>-->
+    <label for="address">{{ 'wohnung_add.adresse' | translate }} *</label>
+    <input id="address" type="text" name="Adresse" [(ngModel)]="wohnung.Adresse" #addressCtrl="ngModel" required />
+    <div class="field-error" *ngIf="addressCtrl.invalid && (addressCtrl.touched || submitted)">
+      ⚠️ {{ 'wohnung_add.validation_address' | translate }}
+    </div>
 
-    <label>{{ 'wohnung_add.plz' | translate }}</label>
-    <input type="text" name="PLZ" [(ngModel)]="wohnung.PLZ" />
+    <label for="plz">{{ 'wohnung_add.plz' | translate }}</label>
+    <input id="plz" type="text" name="PLZ" [(ngModel)]="wohnung.PLZ" maxlength="20" />
 
-    <!-- ENUM: Stadt -->
-    <label>{{ 'wohnung_add.stadt' | translate }}</label>
-    <select
-      name="Stadt"
-      [(ngModel)]="wohnung.Stadt"
-      (ngModelChange)="onCityChange($event)">
+    <label for="city">{{ 'wohnung_add.stadt' | translate }} *</label>
+    <select id="city" name="Stadt" [(ngModel)]="wohnung.Stadt" #cityCtrl="ngModel" required (ngModelChange)="onCityChange($event)">
       <option [ngValue]="null">{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
       <option *ngFor="let item of StadtList" [ngValue]="item.Id">
         {{ item.Id | enumTranslate:'STADT' }}
       </option>
     </select>
+    <div class="field-error" *ngIf="cityCtrl.invalid && (cityCtrl.touched || submitted)">
+      ⚠️ {{ 'wohnung_add.validation_city' | translate }}
+    </div>
 
-    <app-map-picker
-      [lang]="currentLang"
-      (locationChange)="onLocationSelected($event)">
-    </app-map-picker>
+    <app-map-picker [lang]="currentLang" (locationChange)="onLocationSelected($event)"></app-map-picker>
 
-    <p *ngIf="wohnung.Latitude">
+    <p class="location-preview" *ngIf="wohnung.Latitude && wohnung.Longitude">
       📍 {{ wohnung.Latitude }}, {{ wohnung.Longitude }}
     </p>
 
-
-    <!-- Mietdetails -->
     <div class="section" *ngIf="wohnung.ZumMieten">
-      <label *ngIf="wohnung.ZumMieten">{{ 'wohnung_add.kaltmiete' | translate }}</label>
-      <input type="number" name="Kaltmiete" [(ngModel)]="wohnung.Kaltmiete" />
+      <label for="coldRent">{{ 'wohnung_add.kaltmiete' | translate }} *</label>
+      <input id="coldRent" type="number" name="Kaltmiete" [(ngModel)]="wohnung.Kaltmiete" #coldRent="ngModel" required min="1" />
+      <div class="field-error" *ngIf="coldRent.invalid && (coldRent.touched || submitted)">⚠️ {{ 'wohnung_add.validation_cold_rent' | translate }}</div>
 
-      <label *ngIf="wohnung.ZumMieten">{{ 'wohnung_add.warmmiete' | translate }}</label>
-      <input type="number" name="Warmmiete" [(ngModel)]="wohnung.Warmmiete" />
+      <label for="warmRent">{{ 'wohnung_add.warmmiete' | translate }}</label>
+      <input id="warmRent" type="number" name="Warmmiete" [(ngModel)]="wohnung.Warmmiete" min="0" />
 
-      <label *ngIf="wohnung.ZumMieten">{{ 'wohnung_add.nebenkosten' | translate }}</label>
-      <input type="number" name="Nebenkosten" [(ngModel)]="wohnung.Nebenkosten" />
+      <label for="additionalCosts">{{ 'wohnung_add.nebenkosten' | translate }}</label>
+      <input id="additionalCosts" type="number" name="Nebenkosten" [(ngModel)]="wohnung.Nebenkosten" min="0" />
 
-      <label *ngIf="wohnung.ZumMieten">{{ 'wohnung_add.kaution' | translate }}</label>
-      <input type="number" name="Kaution" [(ngModel)]="wohnung.Kaution" />
+      <label for="deposit">{{ 'wohnung_add.kaution' | translate }}</label>
+      <input id="deposit" type="number" name="Kaution" [(ngModel)]="wohnung.Kaution" min="0" />
     </div>
 
-    <!-- Kaufdetails -->
-     <div class="section" *ngIf="wohnung.ZumKaufen">
-      <label *ngIf="wohnung.ZumKaufen">{{ 'wohnung_add.kaufpreis' | translate }}</label>
-      <input type="number" name="Kaufpreis" [(ngModel)]="wohnung.Kaufpreis" />
+    <div class="section" *ngIf="wohnung.ZumKaufen">
+      <label for="purchasePrice">{{ 'wohnung_add.kaufpreis' | translate }} *</label>
+      <input id="purchasePrice" type="number" name="Kaufpreis" [(ngModel)]="wohnung.Kaufpreis" #purchasePrice="ngModel" required min="1" />
+      <div class="field-error" *ngIf="purchasePrice.invalid && (purchasePrice.touched || submitted)">⚠️ {{ 'wohnung_add.validation_purchase_price' | translate }}</div>
     </div>
 
+    <label for="rooms">{{ 'wohnung_add.zimmer' | translate }}</label>
+    <input id="rooms" type="number" name="Zimmer" [(ngModel)]="wohnung.Zimmer" min="1" max="50" />
 
-    <label>{{ 'wohnung_add.zimmer' | translate }}</label>
-    <input type="number" name="Zimmer" [(ngModel)]="wohnung.Zimmer" />
+    <label for="area">{{ 'wohnung_add.flaeche' | translate }}</label>
+    <input id="area" type="number" name="Flaeche" [(ngModel)]="wohnung.Flaeche" min="11" />
 
-    <label>{{ 'wohnung_add.flaeche' | translate }}</label>
-    <input type="number" name="Flaeche" [(ngModel)]="wohnung.Flaeche" />
+    <label for="floor">{{ 'wohnung_add.geschoss' | translate }}</label>
+    <input id="floor" type="number" name="Geschoss" [(ngModel)]="wohnung.Geschoss" />
 
-    <label>{{ 'wohnung_add.geschoss' | translate }}</label>
-    <input type="number" name="Geschoss" [(ngModel)]="wohnung.Geschoss" />
+    <label for="availableFrom">{{ 'wohnung_add.frei_ab' | translate }}</label>
+    <input id="availableFrom" type="date" name="FreiAb" [(ngModel)]="wohnung.FreiAb" />
 
-    <label>{{ 'wohnung_add.frei_ab' | translate }} </label>
-    <input type="date" name="FreiAb" [(ngModel)]="wohnung.FreiAb" />
-
-    <!-- Checkboxes -->
     <div class="row">
-      <label><input type="checkbox" [(ngModel)]="wohnung.Balkon" name="Balkon" /> {{ 'wohnung_add.balkon' | translate }} </label>
-      <label><input type="checkbox" [(ngModel)]="wohnung.Aufzug" name="Aufzug" /> {{ 'wohnung_add.aufzug' | translate }} </label>
-      <label><input type="checkbox" [(ngModel)]="wohnung.Stellplatz" name="Stellplatz" /> {{ 'wohnung_add.stellplatz' | translate }} </label>
+      <label><input type="checkbox" [(ngModel)]="wohnung.Balkon" name="Balkon" /> {{ 'wohnung_add.balkon' | translate }}</label>
+      <label><input type="checkbox" [(ngModel)]="wohnung.Aufzug" name="Aufzug" /> {{ 'wohnung_add.aufzug' | translate }}</label>
+      <label><input type="checkbox" [(ngModel)]="wohnung.Stellplatz" name="Stellplatz" /> {{ 'wohnung_add.stellplatz' | translate }}</label>
     </div>
 
-    <!-- Heizung -->
-    <label>{{ 'wohnung_add.heizung' | translate }}</label>
-    <input type="text" name="Heizung" [(ngModel)]="wohnung.Heizung" />
+    <label for="heating">{{ 'wohnung_add.heizung' | translate }}</label>
+    <input id="heating" type="text" name="Heizung" [(ngModel)]="wohnung.Heizung" />
 
-    <!-- ENUM: Zustand -->
-    <label>{{ 'wohnung_add.zustand' | translate }}</label>
-    <select name="Zustand" [(ngModel)]="wohnung.Zustand">
-      <option [ngValue]="null" disabled selected >{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
+    <label for="condition">{{ 'wohnung_add.zustand' | translate }}</label>
+    <select id="condition" name="Zustand" [(ngModel)]="wohnung.Zustand">
+      <option [ngValue]="null">{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
       <option *ngFor="let item of ZustandList" [ngValue]="item.Id">
-       {{ item.Id | enumTranslate:'ZUSTAND' }}
+        {{ item.Id | enumTranslate:'ZUSTAND' }}
       </option>
     </select>
 
-    <!-- ENUM: Status -->
-    <label>{{ 'wohnung_add.status' | translate }}</label>
-    <select name="Status" [(ngModel)]="wohnung.Status">
-      <option [ngValue]="null" disabled selected >{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
+    <label for="status">{{ 'wohnung_add.status' | translate }}</label>
+    <select id="status" name="Status" [(ngModel)]="wohnung.Status">
+      <option [ngValue]="null">{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
       <option *ngFor="let item of StatusList" [ngValue]="item.Id">
         {{ item.Id | enumTranslate:'STATUS' }}
       </option>
     </select>
 
-    <!-- ENUM: Energieausweis -->
-    <label>{{ 'wohnung_add.energieausweis' | translate }}</label>
-    <select name="Energieausweis" [(ngModel)]="wohnung.Energieausweis">
-      <option [ngValue]="null" disabled selected >{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
+    <label for="energy">{{ 'wohnung_add.energieausweis' | translate }}</label>
+    <select id="energy" name="Energieausweis" [(ngModel)]="wohnung.Energieausweis">
+      <option [ngValue]="null">{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
       <option *ngFor="let item of EnergieausweisTypList" [ngValue]="item.Id">
         {{ item.Id | enumTranslate:'ENERGIEAUSWEISTYP' }}
       </option>
     </select>
 
-   <label></label>
+    <input type="file" #fileInput hidden multiple accept="image/png,image/jpeg,image/jpg,image/webp" (change)="onFileSelected($event)" />
 
-<input 
-  type="file" 
-  #fileInput 
-  hidden 
-  multiple 
-  (change)="onFileSelected($event)" />
+    <div class="file-upload-wrapper">
+      <button type="button" class="btn-upload" (click)="fileInput.click()">
+        {{ 'wohnung_add.bild_hochladen' | translate }}
+      </button>
+      <span class="file-count" *ngIf="selectedFiles.length > 0">
+        {{ selectedFiles.length }} {{ 'wohnung_add.selected_files' | translate }}
+      </span>
+    </div>
 
-<div class="file-upload-wrapper">
-  <button type="button" class="btn-upload" (click)="fileInput.click()">
-    {{ 'wohnung_add.bild_hochladen' | translate }}
-  </button>
-  
-  <span class="file-count" *ngIf="selectedFiles.length > 0">
-    ({{ selectedFiles.length }}) {{ 'wohnung_add.selected_files' | translate }}
-  </span>
-</div>
+    <ul class="file-list" *ngIf="selectedFiles.length > 0">
+      <li *ngFor="let file of selectedFiles; let i = index">
+        <span class="line-clamp-1">{{ file.name }}</span>
+        <button type="button" class="remove-file" (click)="removeSelectedFile(i)">×</button>
+      </li>
+    </ul>
 
-    <!-- عرض أسماء الملفات -->
-    <div *ngIf="selectedFiles.length > 0">
-     <p>{{ 'wohnung_add.selected_files' | translate }}</p>
-     <ul>
-       <li *ngFor="let file of selectedFiles">{{ file.name }}</li>
-     </ul>
-   </div>
-   <!-- معاينات الصور -->
     <div class="preview-container" *ngIf="previews.length > 0">
-      <div *ngFor="let img of previews" class="preview-box">
-        <img [src]="img" width="100" height="100" />
+      <div *ngFor="let img of previews; let i = index" class="preview-box">
+        <img [src]="img || fallbackImage" [alt]="'wohnung_add.preview_alt' | translate" appImageFallback="/images/no-image.svg" />
       </div>
     </div>
 
-  <button type="submit" [disabled]="!form.valid">{{ 'COMMON.SAVE' | translate }}</button>
-</form>
+    <button type="submit" [disabled]="form.invalid || isSaving">
+      <span *ngIf="isSaving">⏳ {{ 'COMMON.SAVING' | translate }}</span>
+      <span *ngIf="!isSaving">{{ 'COMMON.SAVE' | translate }}</span>
+    </button>
+  </form>
+</div>

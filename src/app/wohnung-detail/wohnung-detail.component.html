@@ -1,134 +1,144 @@
+<section class="detail-page">
+  <app-loading-spinner *ngIf="loading" [label]="'COMMON.LOADING' | translate"></app-loading-spinner>
 
-<!-- الصورة الرئيسية -->
-<div *ngIf="wohnung?.Bilder?.length" class="carousel">
-  
-  <h2>{{ 'wohnung_detail.title' | translate }}</h2>
-  
-  <div class="carousel-window"
-       (click)="openModal()">
-
-    <img [src]="getCurrentImageUrl()"
-         class="carousel-image"
-         [alt]="wohnung.Titel" />
-
-    <button class="arrow left" (click)="isRTL ? next() : prev(); $event.stopPropagation()">&#10094;</button>
-    <button class="arrow right" (click)="isRTL ? prev() : next(); $event.stopPropagation()">&#10095;</button>
-
-  </div>
-</div>
-
-
-<!-- ===================== -->
-<!--      MODAL الصور      -->
-<!-- ===================== -->
-
-<div class="carousel-modal" *ngIf="modalOpen" (click)="closeModal()">
-  
-  <div class="carousel-modal-content" (click)="$event.stopPropagation()">
-
-    <img [src]="getCurrentImageUrl()" class="carousel-modal-image" />
-
-    <!-- زر الإغلاق -->
-    <button class="close-btn" (click)="closeModal()">&times;</button>
-
-    <!-- الأسهم -->
-    <button class="arrow left modal-arrow" (click)="prev(); $event.stopPropagation()">&#10094;</button>
-    <button class="arrow right modal-arrow" (click)="next(); $event.stopPropagation()">&#10095;</button>
-
-  </div>
-</div>
-
-
- <div *ngIf="wohnung as w" class="wohnung-detail-container">
-  <div class="detail-header">
-    <span class="badge" [class.rent]="w.ZumMieten" [class.sale]="w.ZumKaufen">
-      {{ (w.ZumMieten ? 'wohnung_add.mode_rent' : 'wohnung_add.mode_sale') | translate }}
-    </span>
-    <h2>{{ w.Titel }}</h2>
+  <div *ngIf="!loading && errorMessage" class="state-card error-state" role="alert">
+    <span aria-hidden="true">⚠️</span>
+    <p>{{ errorMessage }}</p>
+    <button type="button" (click)="loadWohnung()">{{ 'COMMON.RETRY' | translate }}</button>
   </div>
 
-  <div class="wohnung-info">
-    <p><strong>{{ 'wohnung_detail.ort' | translate }} : </strong>
-      {{ w.Stadt | enumTranslate:'STADT'}} {{ w.PLZ }}
-    </p>
+  <app-empty-state
+    *ngIf="!loading && !errorMessage && !wohnung"
+    icon="🏠"
+    [title]="'wohnung_detail.not_found_title' | translate"
+    [message]="'wohnung_detail.not_found_message' | translate"
+  ></app-empty-state>
 
-    <p><strong>{{ 'wohnung_detail.adresse' | translate }} : </strong>
-      {{ w.Adresse || '—' }}
-    </p>
+  <ng-container *ngIf="!loading && !errorMessage && wohnung as w">
+    <section class="hero-section">
+      <div class="carousel">
+        <div
+          class="carousel-window"
+          [class.clickable]="hasImages()"
+          (click)="openModal()"
+          (mousedown)="dragStart($event)"
+          (mousemove)="dragMove($event)"
+          (mouseup)="dragEnd()"
+          (mouseleave)="dragEnd()"
+          (touchstart)="dragStart($event)"
+          (touchmove)="dragMove($event)"
+          (touchend)="dragEnd()"
+        >
+          <img
+            [src]="getCurrentImageUrl()"
+            class="carousel-image"
+            [alt]="getCurrentImageAlt()"
+            appImageFallback="/images/no-image.svg"
+          />
 
-    <p>
-     <strong>{{ 'wohnung_detail.groesse' | translate }} : </strong>
-     {{ w.Flaeche ? ('wohnung_detail.Unit_of_measurement' | translate: { value: w.Flaeche }) : '—' }}
-    </p>
+          <button
+            *ngIf="hasImages() && currentIndex > 0"
+            class="arrow left"
+            type="button"
+            (click)="isRTL ? next() : prev(); $event.stopPropagation()"
+            aria-label="السابق"
+          >
+            &#10094;
+          </button>
 
-    <p><strong>{{ 'wohnung_detail.zimmer' | translate }} : </strong>
-      {{ w.Zimmer || '—' }}
-    </p>
+          <button
+            *ngIf="hasImages() && currentIndex < (w.Bilder?.length || 0) - 1"
+            class="arrow right"
+            type="button"
+            (click)="isRTL ? prev() : next(); $event.stopPropagation()"
+            aria-label="التالي"
+          >
+            &#10095;
+          </button>
+        </div>
 
-    <div *ngIf="w.ZumKaufen" class="price-section">
-      <p class="main-price"><strong>{{ 'wohnung_add.kaufpreis' | translate }} : </strong>
-        {{ w.Kaufpreis | currency:'EUR':'symbol' }}
-      </p>
+        <p class="image-counter" *ngIf="hasImages()">
+          {{ currentIndex + 1 }} / {{ w.Bilder?.length }}
+        </p>
+      </div>
+
+      <div class="summary-card">
+        <span class="badge" [class.rent]="w.ZumMieten" [class.sale]="w.ZumKaufen">
+          {{ (w.ZumMieten ? 'wohnung_add.mode_rent' : 'wohnung_add.mode_sale') | translate }}
+        </span>
+        <h1 class="line-clamp-3">{{ getSafeText(w.Titel, ('APARTMENTS.NO_TITLE' | translate)) }}</h1>
+        <p class="location line-clamp-2">📍 {{ getSafeText(w.Adresse) }}، {{ getSafeText(w.Stadt) }} {{ getSafeText(w.PLZ, '') }}</p>
+
+        <strong class="main-price" *ngIf="w.ZumKaufen">{{ getFormattedPrice(w.Kaufpreis) }}</strong>
+        <strong class="main-price" *ngIf="w.ZumMieten">{{ getFormattedPrice(w.Warmmiete || w.Kaltmiete) }}</strong>
+      </div>
+    </section>
+
+    <div class="wohnung-detail-container">
+      <section class="details-card">
+        <h2>{{ 'wohnung_detail.title' | translate }}</h2>
+
+        <div class="info-grid">
+          <p><strong>{{ 'wohnung_detail.ort' | translate }}:</strong> {{ w.Stadt | enumTranslate:'STADT' }} {{ getSafeText(w.PLZ, '') }}</p>
+          <p><strong>{{ 'wohnung_detail.adresse' | translate }}:</strong> {{ getSafeText(w.Adresse) }}</p>
+          <p><strong>{{ 'wohnung_detail.groesse' | translate }}:</strong> {{ w.Flaeche ? ('wohnung_detail.Unit_of_measurement' | translate: { value: w.Flaeche }) : '—' }}</p>
+          <p><strong>{{ 'wohnung_detail.zimmer' | translate }}:</strong> {{ getSafeText(w.Zimmer) }}</p>
+          <p><strong>{{ 'wohnung_detail.etage' | translate }}:</strong> {{ getSafeText(w.Geschoss) }}</p>
+          <p><strong>{{ 'wohnung_detail.frei_ab' | translate }}:</strong> {{ w.FreiAb ? (w.FreiAb | date:'dd.MM.yyyy') : '—' }}</p>
+          <p><strong>{{ 'wohnung_add.zustand' | translate }}:</strong> {{ w.Zustand ? (w.Zustand | enumTranslate:'ZUSTAND') : '—' }}</p>
+          <p><strong>{{ 'wohnung_add.heizung' | translate }}:</strong> {{ getSafeText(w.Heizung) }}</p>
+        </div>
+      </section>
+
+      <section class="details-card" *ngIf="w.ZumKaufen || w.ZumMieten">
+        <h2>{{ 'wohnung_detail.preis' | translate }}</h2>
+
+        <div class="info-grid">
+          <p *ngIf="w.ZumKaufen"><strong>{{ 'wohnung_add.kaufpreis' | translate }}:</strong> {{ getFormattedPrice(w.Kaufpreis) }}</p>
+          <p *ngIf="w.ZumMieten"><strong>{{ 'wohnung_add.warmmiete' | translate }}:</strong> {{ getFormattedPrice(w.Warmmiete) }}</p>
+          <p *ngIf="w.ZumMieten"><strong>{{ 'wohnung_add.kaltmiete' | translate }}:</strong> {{ getFormattedPrice(w.Kaltmiete) }}</p>
+          <p *ngIf="w.ZumMieten"><strong>{{ 'wohnung_detail.nebenkosten' | translate }}:</strong> {{ getFormattedPrice(w.Nebenkosten) }}</p>
+          <p *ngIf="w.ZumMieten"><strong>{{ 'wohnung_detail.kaution' | translate }}:</strong> {{ getFormattedPrice(w.Kaution) }}</p>
+        </div>
+      </section>
+
+      <section class="details-card extras">
+        <h2>{{ 'wohnung_detail.ausstattung' | translate }}</h2>
+        <ul *ngIf="hasExtras(w); else noExtras">
+          <li *ngIf="w.Balkon">{{ 'wohnung_detail.balkon' | translate }}</li>
+          <li *ngIf="w.Aufzug">{{ 'wohnung_detail.aufzug' | translate }}</li>
+          <li *ngIf="w.Stellplatz">{{ 'wohnung_detail.stellplatz' | translate }}</li>
+        </ul>
+        <ng-template #noExtras>
+          <p class="muted">{{ 'wohnung_detail.no_extras' | translate }}</p>
+        </ng-template>
+      </section>
+
+      <section class="details-card description-box">
+        <h2>{{ 'wohnung_detail.beschreibung' | translate }}</h2>
+        <p class="text-content">{{ getSafeText(w.Beschreibung, ('wohnung_detail.no_description' | translate)) }}</p>
+      </section>
+
+      <section class="details-card location-section" *ngIf="w.Latitude && w.Longitude">
+        <h2>{{ 'wohnung_detail.LOCATION' | translate }}</h2>
+        <app-wohnungMapView
+          [lat]="w.Latitude"
+          [lng]="w.Longitude"
+          [zoom]="16"
+          [title]="w.Titel"
+        ></app-wohnungMapView>
+      </section>
+
+      <button type="button" routerLink="/wohnungen" class="back-btn">⬅ {{ 'wohnung_detail.back' | translate }}</button>
     </div>
-
-    <div *ngIf="w.ZumMieten" class="price-section">
-      <p class="main-price"><strong>{{ 'wohnung_add.warmmiete' | translate }} : </strong>
-        {{ w.Warmmiete | currency:'EUR':'symbol' }}
-      </p>
-      <p><strong>{{ 'wohnung_add.kaltmiete' | translate }} : </strong>
-        {{ w.Kaltmiete | currency:'EUR':'symbol' }}
-      </p>
-      <p><strong>{{ 'wohnung_detail.nebenkosten' | translate }} : </strong>
-        {{ w.Nebenkosten | currency:'EUR':'symbol' }}
-      </p>
-      <p><strong>{{ 'wohnung_detail.kaution' | translate }} : </strong>
-        {{ w.Kaution | currency:'EUR':'symbol' }}
-      </p>
-    </div>
-
-    <p><strong>{{ 'wohnung_detail.etage' | translate }} : </strong>
-      {{ w.Geschoss || '0' }}
-    </p>
-
-    <p><strong>{{ 'wohnung_detail.frei_ab' | translate }} : </strong>
-      {{ w.FreiAb ? (w.FreiAb | date:'dd.MM.yyyy') : '—' }}
-    </p>
-
-    <p><strong>{{ 'wohnung_add.zustand' | translate }} : </strong>
-      {{ w.Zustand | enumTranslate:'ZUSTAND' }}
-    </p>
-
-    <p><strong>{{ 'wohnung_add.heizung' | translate }} : </strong>
-      {{ w.Heizung || '—' }}
-    </p>
-  </div>
-
-  <div class="extras">
-    <p><strong>{{ 'wohnung_detail.ausstattung' | translate }} : </strong></p>
-    <ul>
-      <li *ngIf="w.Balkon">{{ 'wohnung_detail.balkon' | translate }}</li>
-      <li *ngIf="w.Aufzug">{{ 'wohnung_detail.aufzug' | translate }}</li>
-      <li *ngIf="w.Stellplatz">{{ 'wohnung_detail.stellplatz' | translate }}</li>
-    </ul>
-  </div>
-
-  <div class="description-box">
-    <p><strong>{{ 'wohnung_detail.beschreibung' | translate }} : </strong></p>
-    <p class="text-content">{{ w.Beschreibung }}</p>
-  </div>
-
-  <section class="location-section" *ngIf="wohnung?.Latitude && wohnung?.Longitude">
-  <h3>{{ 'wohnung_detail.LOCATION' | translate }}</h3>
-
-  <app-wohnungMapView
-    [lat]="wohnung!.Latitude!"
-    [lng]="wohnung!.Longitude!"
-    [zoom]="16"
-    [title]="wohnung.Titel"
-  ></app-wohnungMapView>
+  </ng-container>
 </section>
 
-
-  <button type="button" routerLink="/wohnungen" class="back-btn">⬅ {{ 'wohnung_detail.back' | translate }}</button>
+<div class="carousel-modal" *ngIf="modalOpen" (click)="closeModal()">
+  <div class="carousel-modal-content" (click)="$event.stopPropagation()">
+    <img [src]="getCurrentImageUrl()" class="carousel-modal-image" [alt]="getCurrentImageAlt()" appImageFallback="/images/no-image.svg" />
+    <button class="close-btn" type="button" (click)="closeModal()" aria-label="إغلاق">&times;</button>
+    <button class="arrow left modal-arrow" type="button" (click)="isRTL ? next() : prev(); $event.stopPropagation()">&#10094;</button>
+    <button class="arrow right modal-arrow" type="button" (click)="isRTL ? prev() : next(); $event.stopPropagation()">&#10095;</button>
+  </div>
 </div>
-

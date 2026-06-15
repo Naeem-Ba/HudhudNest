@@ -1,50 +1,48 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthApiService } from '../../../core/services/auth-api.service';
+import { FormErrorComponent } from '../../../shared/ui/form-error.component';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-forgot-password-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslateModule, FormErrorComponent],
   template: `
-    <section class="auth-page" dir="rtl">
-      <form class="auth-card" [formGroup]="form" (ngSubmit)="submit()">
-        <h1>&#1575;&#1587;&#1578;&#1593;&#1575;&#1583;&#1577; &#1603;&#1604;&#1605;&#1577; &#1575;&#1604;&#1605;&#1585;&#1608;&#1585;</h1>
+    <section class="auth-page">
+      <form class="auth-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <h1>{{ 'AUTH.FORGOT_TITLE' | translate }}</h1>
+        <p>{{ 'AUTH.FORGOT_SUBTITLE' | translate }}</p>
 
-        <input formControlName="email" placeholder="&#1575;&#1604;&#1576;&#1585;&#1610;&#1583; &#1575;&#1604;&#1573;&#1604;&#1603;&#1578;&#1585;&#1608;&#1606;&#1610;">
+        <label>{{ 'AUTH.EMAIL' | translate }}</label>
+        <input formControlName="email" [placeholder]="'AUTH.EMAIL_PLACEHOLDER' | translate" autocomplete="email">
+        <app-form-error [control]="form.controls.email" [submitted]="submitted()"></app-form-error>
 
         <button [disabled]="form.invalid || loading()">
-          <ng-container *ngIf="loading(); else sendText">
-            &#1580;&#1575;&#1585;&#1613; &#1575;&#1604;&#1573;&#1585;&#1587;&#1575;&#1604;...
-          </ng-container>
-          <ng-template #sendText>
-            &#1573;&#1585;&#1587;&#1575;&#1604; &#1585;&#1575;&#1576;&#1591; &#1575;&#1604;&#1575;&#1587;&#1578;&#1593;&#1575;&#1583;&#1577;
-          </ng-template>
+          <ng-container *ngIf="loading(); else sendText">⏳ {{ 'AUTH.SENDING' | translate }}</ng-container>
+          <ng-template #sendText>{{ 'AUTH.SEND_RESET_LINK' | translate }}</ng-template>
         </button>
 
-        <p class="success" *ngIf="success()">{{ success() }}</p>
-        <p class="error" *ngIf="error()">{{ error() }}</p>
+        <p class="success" *ngIf="success()">✅ {{ success() }}</p>
+        <p class="error" *ngIf="error()">⚠️ {{ error() }}</p>
       </form>
     </section>
   `,
   styles: [`
-    .auth-page{min-height:70vh;display:grid;place-items:center;background:#f7f7f7;padding:2rem}
-    .auth-card{width:min(450px,100%);background:#fff;padding:2rem;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.08)}
-    input,button{width:100%;box-sizing:border-box;padding:.85rem 1rem;border-radius:10px;margin:.5rem 0}
-    input{border:1px solid #ccc}
-    button{border:0;background:#1e3a5f;color:white;font-weight:700;cursor:pointer}
-    button:disabled{opacity:.6;cursor:not-allowed}
-    .error{color:#b00020}
-    .success{color:#137333}
+    .auth-page{min-height:70vh;display:grid;place-items:center;background:#f7f7f7;padding:2rem}.auth-card{width:min(450px,100%);background:#fff;padding:2rem;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.08);display:grid;gap:.55rem}h1,p{margin:0}p{line-height:1.7}label{font-weight:700;margin-top:.5rem}input,button{width:100%;box-sizing:border-box;padding:.85rem 1rem;border-radius:10px}input{border:1px solid #cbd5e1}button{margin-top:1rem;border:0;background:#1e3a5f;color:white;font-weight:700;cursor:pointer}button:disabled{opacity:.6;cursor:not-allowed}.error{color:#b00020}.success{color:#137333}
   `]
 })
 export class ForgotPasswordPage {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthApiService);
+  private readonly translate = inject(TranslateService);
+  private readonly toast = inject(ToastService);
 
   readonly loading = signal(false);
+  readonly submitted = signal(false);
   readonly error = signal('');
   readonly success = signal('');
 
@@ -53,6 +51,8 @@ export class ForgotPasswordPage {
   });
 
   submit(): void {
+    this.submitted.set(true);
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -65,11 +65,13 @@ export class ForgotPasswordPage {
     this.auth.forgotPassword(this.form.getRawValue()).subscribe({
       next: () => {
         this.loading.set(false);
-        this.success.set('\u062A\u0645 \u0625\u0631\u0633\u0627\u0644 \u0637\u0644\u0628 \u0627\u0633\u062A\u0639\u0627\u062F\u0629 \u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631.');
+        const message = this.translate.instant('AUTH.FORGOT_SUCCESS');
+        this.success.set(message);
+        this.toast.success(message);
       },
       error: () => {
         this.loading.set(false);
-        this.error.set('\u062A\u0639\u0630\u0631 \u0625\u0631\u0633\u0627\u0644 \u0637\u0644\u0628 \u0627\u0644\u0627\u0633\u062A\u0639\u0627\u062F\u0629.');
+        this.error.set(this.translate.instant('AUTH.ERRORS.FORGOT_FAILED'));
       }
     });
   }

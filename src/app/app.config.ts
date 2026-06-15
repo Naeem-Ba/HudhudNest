@@ -1,4 +1,4 @@
-﻿import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig } from '@angular/core';
 import { provideRouter, withHashLocation } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
@@ -9,11 +9,6 @@ import { ApiErrorInterceptor } from './core/interceptors/api-error.interceptor';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes, withHashLocation()),
-    provideHttpClient(
-      withInterceptors([
-        AuthInterceptor,
-        ApiErrorInterceptor
-      ])
-    )
+    provideHttpClient(withInterceptors([AuthInterceptor, ApiErrorInterceptor]))
   ]
 };
