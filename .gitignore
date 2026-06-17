@@ -47,3 +47,9 @@ _migration_backup_*/
 
 # Local migration scripts
 apply-clean-batch-migration.ps1
+
+# Local Angular merge backups
+_backup_*/
+_tmp_angular_fixes_*/
+_phase1_patch/
+PHASE1_INTEGRATION_FIX_REPORT.md

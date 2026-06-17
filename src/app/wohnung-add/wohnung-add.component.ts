@@ -1,9 +1,18 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+// =====================================================================
+// ✅ FIX #2 – wohnung-add.component.ts
+// المشكلة: OwnerId مُشفَّر كـ GUID صفري "00000000-0000-0000-0000-000000000000"
+// الحل: قراءة ID المستخدم الحقيقي من AuthService
+// =====================================================================
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { take } from 'rxjs/operators';
+
 import { EnumService, EnumItem } from '../services/enum.service';
 import { WohnungenService, Wohnung, PropertySavePayload } from '../services/wohnungen.service';
+import { AuthService } from '../services/auth.service';
 import { EnumTranslatePipe } from '../pipes/enum-translate.pipe';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MapPickerComponent } from '../map-picker/map-picker.component';
@@ -26,7 +35,7 @@ import { ImageFallbackDirective } from '../shared/directives/image-fallback.dire
   templateUrl: './wohnung-add.component.html',
   styleUrls: ['./wohnung-add.component.scss']
 })
-export class WohnungAddComponent implements OnInit {
+export class WohnungAddComponent implements OnInit, OnDestroy {
   @ViewChild(MapPickerComponent) mapPicker!: MapPickerComponent;
 
   currentLang: LangCode = 'ar';
@@ -46,6 +55,10 @@ export class WohnungAddComponent implements OnInit {
 
   isEditMode = false;
   wohnungId = '';
+
+  // ✅ ID المستخدم الحقيقي من AuthService
+  private currentUserId = '';
+  private readonly subs = new Subscription();
 
   wohnung: Wohnung = {
     Titel: '',
@@ -75,13 +88,11 @@ export class WohnungAddComponent implements OnInit {
     Status: null as any
   };
 
-  lat!: number;
-  lng!: number;
-
   constructor(
     private readonly router: Router,
     private readonly route: ActivatedRoute,
     private readonly wohnungenService: WohnungenService,
+    private readonly authService: AuthService,
     private readonly enumService: EnumService,
     private readonly translate: TranslateService,
     private readonly languageService: LanguageService,
@@ -89,6 +100,13 @@ export class WohnungAddComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // ✅ FIX #2: اقرأ ID المستخدم الحقيقي فور تهيئة المكوّن
+    this.subs.add(
+      this.authService.currentUser$.pipe(take(1)).subscribe(user => {
+        this.currentUserId = user?.id ?? user?.Id ?? '';
+      })
+    );
+
     this.loadEnums();
     this.initLanguage();
 
@@ -100,18 +118,21 @@ export class WohnungAddComponent implements OnInit {
     }
   }
 
+  ngOnDestroy(): void {
+    // ✅ FIX #3 مطبّق هنا أيضاً: إلغاء جميع الاشتراكات
+    this.subs.unsubscribe();
+  }
+
   setMode(mode: 'mieten' | 'kaufen'): void {
     if (mode === 'mieten') {
       this.wohnung.ZumMieten = true;
       this.wohnung.ZumKaufen = false;
-
       this.wohnung.Kaufpreis = 0;
     }
 
     if (mode === 'kaufen') {
       this.wohnung.ZumKaufen = true;
       this.wohnung.ZumMieten = false;
-
       this.wohnung.Kaltmiete = 0;
       this.wohnung.Warmmiete = 0;
       this.wohnung.Nebenkosten = 0;
@@ -120,26 +141,24 @@ export class WohnungAddComponent implements OnInit {
   }
 
   loadWohnung(): void {
-    if (!this.wohnungId) {
-      return;
-    }
+    if (!this.wohnungId) return;
 
-    this.wohnungenService.getWohnung(this.wohnungId).subscribe({
-      next: (w) => {
-        this.wohnung = { ...w };
-        this.previews = w.Bilder?.map(b => b.Url) ?? [];
-      },
-      error: err => console.error('خطأ تحميل العقار:', err)
-    });
+    this.subs.add(
+      this.wohnungenService.getWohnung(this.wohnungId).subscribe({
+        next: (w) => {
+          this.wohnung = { ...w };
+          this.previews = w.Bilder?.map(b => b.Url) ?? [];
+        },
+        error: err => console.error('خطأ تحميل العقار:', err)
+      })
+    );
   }
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const files: File[] = Array.from(input.files ?? []);
 
-    if (files.length === 0) {
-      return;
-    }
+    if (files.length === 0) return;
 
     const validFiles: File[] = [];
 
@@ -166,15 +185,12 @@ export class WohnungAddComponent implements OnInit {
 
     validFiles.forEach(file => {
       const reader = new FileReader();
-
       reader.onload = (e: ProgressEvent<FileReader>) => {
         const result = e.target?.result;
-
         if (typeof result === 'string') {
           this.previews.push(result);
         }
       };
-
       reader.readAsDataURL(file);
     });
 
@@ -197,9 +213,7 @@ export class WohnungAddComponent implements OnInit {
     const numericCityId = Number(cityId);
     const city = CITY_MAPS.find(c => c.id === numericCityId);
 
-    if (!city) {
-      return;
-    }
+    if (!city) return;
 
     this.mapPicker?.updateCenter(city.lat, city.lng, city.zoom);
     this.wohnung.Latitude = city.lat;
@@ -238,114 +252,124 @@ export class WohnungAddComponent implements OnInit {
     }
   }
 
-private validatePropertyPayload(payload: PropertySavePayload): string | null {
-  if (!payload.Title?.trim()) {
-    return this.translate.instant('wohnung_add.validation_title');
-  }
-
-  if (!payload.Description?.trim()) {
-    return this.translate.instant('wohnung_add.validation_description');
-  }
-
-  if (!payload.City?.trim()) {
-    return this.translate.instant('wohnung_add.validation_city');
-  }
-
-  if (!payload.Street?.trim()) {
-    return this.translate.instant('wohnung_add.validation_address');
-  }
-
-  if (payload.ListingType === 1 && (!payload.ColdRent || payload.ColdRent <= 0)) {
-    return this.translate.instant('wohnung_add.validation_cold_rent');
-  }
-
-  if (payload.ListingType === 2 && (!payload.PurchasePrice || payload.PurchasePrice <= 0)) {
-    return this.translate.instant('wohnung_add.validation_purchase_price');
-  }
-
-  if (
-    payload.ListingType === 3 &&
-    (!payload.ColdRent || payload.ColdRent <= 0 || !payload.PurchasePrice || payload.PurchasePrice <= 0)
-  ) {
-    return this.translate.instant('wohnung_add.validation_rent_sale');
-  }
-
-  if (payload.Rooms !== null && payload.Rooms !== undefined && (payload.Rooms < 1 || payload.Rooms > 50)) {
-    return this.translate.instant('wohnung_add.validation_rooms');
-  }
-
-  if (payload.Area !== null && payload.Area !== undefined && payload.Area <= 10) {
-    return this.translate.instant('wohnung_add.validation_area');
-  }
-
-  const hasLat = payload.Latitude !== null && payload.Latitude !== undefined;
-  const hasLng = payload.Longitude !== null && payload.Longitude !== undefined;
-
-  if (hasLat !== hasLng) {
-    return this.translate.instant('wohnung_add.validation_location');
-  }
-
-  return null;
-}
-  createWohnung(payload: PropertySavePayload): void {
-  this.wohnungenService.addWohnung(payload).subscribe({
-    next: (created) => {
-      const propertyId = created.Id ?? created.id;
-
-      if (!propertyId) {
-        console.error('تم إنشاء العقار لكن لم يرجع Backend معرف العقار.');
-        this.afterSave();
-        return;
-      }
-
-      this.wohnungenService.publishWohnung(propertyId).subscribe({
-        next: () => this.uploadImagesOrFinish(propertyId),
-        error: err => {
-          console.error('تم إنشاء العقار، لكن حدث خطأ أثناء نشره:', err);
-          this.afterSave();
-        }
-      });
-    },
-    error: err => this.handleSaveError(err, 'تعذر إنشاء العقار.')
-  });
-}
-private uploadImagesOrFinish(propertyId: string): void {
-  if (this.selectedFiles.length === 0) {
-    this.afterSave();
-    return;
-  }
-
-  this.wohnungenService.uploadWohnungBilder(propertyId, this.selectedFiles).subscribe({
-    next: () => this.afterSave(),
-    error: err => {
-      console.error('تم إنشاء العقار ونشره، لكن حدث خطأ أثناء رفع الصور:', err);
-      this.afterSave();
+  private validatePropertyPayload(payload: PropertySavePayload): string | null {
+    if (!payload.Title?.trim()) {
+      return this.translate.instant('wohnung_add.validation_title');
     }
-  });
-}
 
-  updateWohnung(payload: PropertySavePayload): void {
-    if (!this.wohnungId) {
+    if (!payload.Description?.trim()) {
+      return this.translate.instant('wohnung_add.validation_description');
+    }
+
+    if (!payload.City?.trim()) {
+      return this.translate.instant('wohnung_add.validation_city');
+    }
+
+    if (!payload.Street?.trim()) {
+      return this.translate.instant('wohnung_add.validation_address');
+    }
+
+    if (payload.ListingType === 1 && (!payload.ColdRent || payload.ColdRent <= 0)) {
+      return this.translate.instant('wohnung_add.validation_cold_rent');
+    }
+
+    if (payload.ListingType === 2 && (!payload.PurchasePrice || payload.PurchasePrice <= 0)) {
+      return this.translate.instant('wohnung_add.validation_purchase_price');
+    }
+
+    if (
+      payload.ListingType === 3 &&
+      (!payload.ColdRent || payload.ColdRent <= 0 || !payload.PurchasePrice || payload.PurchasePrice <= 0)
+    ) {
+      return this.translate.instant('wohnung_add.validation_rent_sale');
+    }
+
+    if (payload.Rooms !== null && payload.Rooms !== undefined && (payload.Rooms < 1 || payload.Rooms > 50)) {
+      return this.translate.instant('wohnung_add.validation_rooms');
+    }
+
+    if (payload.Area !== null && payload.Area !== undefined && payload.Area <= 10) {
+      return this.translate.instant('wohnung_add.validation_area');
+    }
+
+    const hasLat = payload.Latitude !== null && payload.Latitude !== undefined;
+    const hasLng = payload.Longitude !== null && payload.Longitude !== undefined;
+
+    if (hasLat !== hasLng) {
+      return this.translate.instant('wohnung_add.validation_location');
+    }
+
+    return null;
+  }
+
+  createWohnung(payload: PropertySavePayload): void {
+    this.subs.add(
+      this.wohnungenService.addWohnung(payload).subscribe({
+        next: (created) => {
+          const propertyId = created.Id ?? created.id;
+
+          if (!propertyId) {
+            console.error('تم إنشاء العقار لكن لم يرجع Backend معرف العقار.');
+            this.afterSave();
+            return;
+          }
+
+          this.subs.add(
+            this.wohnungenService.publishWohnung(propertyId).subscribe({
+              next: () => this.uploadImagesOrFinish(propertyId),
+              error: err => {
+                console.error('تم إنشاء العقار، لكن حدث خطأ أثناء نشره:', err);
+                this.afterSave();
+              }
+            })
+          );
+        },
+        error: err => this.handleSaveError(err, 'تعذر إنشاء العقار.')
+      })
+    );
+  }
+
+  private uploadImagesOrFinish(propertyId: string): void {
+    if (this.selectedFiles.length === 0) {
+      this.afterSave();
       return;
     }
 
-    this.wohnungenService.updateWohnung(this.wohnungId, payload).subscribe({
-      next: () => {
-        if (this.selectedFiles.length === 0) {
+    this.subs.add(
+      this.wohnungenService.uploadWohnungBilder(propertyId, this.selectedFiles).subscribe({
+        next: () => this.afterSave(),
+        error: err => {
+          console.error('تم إنشاء العقار ونشره، لكن حدث خطأ أثناء رفع الصور:', err);
           this.afterSave();
-          return;
         }
+      })
+    );
+  }
 
-        this.wohnungenService.uploadWohnungBilder(this.wohnungId, this.selectedFiles).subscribe({
-          next: () => this.afterSave(),
-          error: err => {
-            console.error('تم تعديل العقار، لكن حدث خطأ أثناء رفع الصور:', err);
+  updateWohnung(payload: PropertySavePayload): void {
+    if (!this.wohnungId) return;
+
+    this.subs.add(
+      this.wohnungenService.updateWohnung(this.wohnungId, payload).subscribe({
+        next: () => {
+          if (this.selectedFiles.length === 0) {
             this.afterSave();
+            return;
           }
-        });
-      },
-      error: err => this.handleSaveError(err, 'تعذر تعديل العقار.')
-    });
+
+          this.subs.add(
+            this.wohnungenService.uploadWohnungBilder(this.wohnungId, this.selectedFiles).subscribe({
+              next: () => this.afterSave(),
+              error: err => {
+                console.error('تم تعديل العقار، لكن حدث خطأ أثناء رفع الصور:', err);
+                this.afterSave();
+              }
+            })
+          );
+        },
+        error: err => this.handleSaveError(err, 'تعذر تعديل العقار.')
+      })
+    );
   }
 
   afterSave(): void {
@@ -365,7 +389,10 @@ private uploadImagesOrFinish(propertyId: string): void {
 
   private buildPropertyPayload(): PropertySavePayload {
     return {
-      OwnerId: '00000000-0000-0000-0000-000000000000',
+      // ✅ FIX #2: لا GUID صفري – Backend يستخرج OwnerId من JWT
+      // إذا كان Backend يحتاجه صراحةً، أرسل currentUserId
+      // OwnerId: this.currentUserId || undefined,
+
       Title: this.wohnung.Titel,
       Description: this.wohnung.Beschreibung,
       ListingType: this.getListingType(),
@@ -395,64 +422,29 @@ private uploadImagesOrFinish(propertyId: string): void {
   }
 
   private getListingType(): number {
-    if (this.wohnung.ZumMieten && this.wohnung.ZumKaufen) {
-      return 3;
-    }
-
-    if (this.wohnung.ZumKaufen) {
-      return 2;
-    }
-
+    if (this.wohnung.ZumMieten && this.wohnung.ZumKaufen) return 3;
+    if (this.wohnung.ZumKaufen) return 2;
     return 1;
   }
 
   private getHeatingType(): number {
     const value = String(this.wohnung.Heizung ?? '').toLowerCase();
-
-    if (value.includes('central') || value.includes('zentral')) {
-      return 1;
-    }
-
-    if (value.includes('gas')) {
-      return 2;
-    }
-
-    if (value.includes('electric') || value.includes('strom')) {
-      return 3;
-    }
-
-    if (value.includes('floor') || value.includes('boden')) {
-      return 4;
-    }
-
-    if (value.includes('oil') || value.includes('öl') || value.includes('oel')) {
-      return 5;
-    }
-
-    if (value.includes('solar')) {
-      return 7;
-    }
-
-    if (value.includes('pump')) {
-      return 8;
-    }
-
+    if (value.includes('central') || value.includes('zentral')) return 1;
+    if (value.includes('gas'))    return 2;
+    if (value.includes('electric') || value.includes('strom')) return 3;
+    if (value.includes('floor') || value.includes('boden'))   return 4;
+    if (value.includes('oil') || value.includes('öl') || value.includes('oel')) return 5;
+    if (value.includes('solar')) return 7;
+    if (value.includes('pump'))  return 8;
     return 0;
   }
 
   private toNullableNumber(value: unknown): number | null {
-  if (value === null || value === undefined || value === '') {
-    return null;
+    if (value === null || value === undefined || value === '') return null;
+    const n = Number(value);
+    if (!Number.isFinite(n)) return null;
+    return n > 0 ? n : null;
   }
-
-  const n = Number(value);
-
-  if (!Number.isFinite(n)) {
-    return null;
-  }
-
-  return n > 0 ? n : null;
-}
 
   private toNullableInteger(value: unknown): number | null {
     const n = this.toNullableNumber(value);
@@ -469,16 +461,16 @@ private uploadImagesOrFinish(propertyId: string): void {
   private initLanguage(): void {
     this.currentLang = this.toLangCode(this.languageService.getCurrent());
 
-    this.languageService.currentLang$.subscribe(lang => {
-      this.currentLang = this.toLangCode(lang);
-    });
+    // ✅ FIX #3: نضيف subscription اللغة لـ subs لإلغائه في ngOnDestroy
+    this.subs.add(
+      this.languageService.currentLang$.subscribe(lang => {
+        this.currentLang = this.toLangCode(lang);
+      })
+    );
   }
 
   private toLangCode(lang: string | null | undefined): LangCode {
-    if (lang === 'ar' || lang === 'de' || lang === 'en') {
-      return lang;
-    }
-
+    if (lang === 'ar' || lang === 'de' || lang === 'en') return lang;
     return 'ar';
   }
 }

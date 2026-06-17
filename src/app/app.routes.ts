@@ -1,30 +1,47 @@
-﻿import { Routes } from '@angular/router';
-import { LayoutComponent } from './layout/layout';
-import { HomeComponent } from './home/home.component';
-import { WohnungenComponent } from './wohnungen/wohnungen.component';
-import { WohnungDetailComponent } from './wohnung-detail/wohnung-detail.component';
-import { KontaktComponent } from './kontakt/kontakt.component';
+// =====================================================================
+// ✅ FIX #11+12 – app.routes.ts
+// المشكلة #11: 'wohnungen/edit/:id' يأتي بعد 'wohnungen/:id'
+//              فيطابق Angular المسار الخاطئ (التفاصيل بدل التعديل)
+// المشكلة #12: بعض المكوّنات مُحمَّلة مباشرة (Eager) بدل Lazy Loading
+// الحل: ترتيب المسارات الثابتة قبل الديناميكية + Lazy Loading للجميع
+// =====================================================================
+import { Routes } from '@angular/router';
 import { AuthGuard } from './services/auth-guard';
-import { AdminMessagesComponent } from './admin/messages/messages.component';
 import { AdminGuard } from './services/admin-guard';
-import { LoginComponent } from './login/login.component';
 
 export const routes: Routes = [
+  // ─────────────────────────────────────────────
+  // Layout الرئيسي (يحتوي Navbar + Footer)
+  // ─────────────────────────────────────────────
   {
     path: '',
-    component: LayoutComponent,
+    loadComponent: () => import('./layout/layout').then(m => m.LayoutComponent),
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
 
-      { path: 'home', component: HomeComponent },
-      { path: 'kontakt', component: KontaktComponent },
-
-      // Legacy property routes - kept temporarily.
-      { path: 'wohnungen', component: WohnungenComponent },
-      { path: 'wohnungen/:id', component: WohnungDetailComponent },
-
+      // ✅ FIX #12: Lazy Loading لجميع صفحات Layout
       {
-        path: 'wohnung-add',
+        path: 'home',
+        loadComponent: () =>
+          import('./home/home.component').then(m => m.HomeComponent)
+      },
+      {
+        path: 'kontakt',
+        loadComponent: () =>
+          import('./kontakt/kontakt.component').then(m => m.KontaktComponent)
+      },
+
+      // Legacy property routes
+      {
+        path: 'wohnungen',
+        loadComponent: () =>
+          import('./wohnungen/wohnungen.component').then(m => m.WohnungenComponent)
+      },
+
+      // ✅ FIX #11: مسار التعديل يجب أن يأتي قبل مسار التفاصيل (:id)
+      //             لأن Angular يُطابق المسارات بالترتيب
+      {
+        path: 'wohnungen/edit/:id',          // ← ثابت: يجب أن يكون أولاً
         canActivate: [AuthGuard],
         loadComponent: () =>
           import('./wohnung-add/wohnung-add.component')
@@ -32,7 +49,14 @@ export const routes: Routes = [
       },
 
       {
-        path: 'wohnungen/edit/:id',
+        path: 'wohnungen/:id',               // ← ديناميكي: يأتي بعد الثابت
+        loadComponent: () =>
+          import('./wohnung-detail/wohnung-detail.component')
+            .then(m => m.WohnungDetailComponent)
+      },
+
+      {
+        path: 'wohnung-add',
         canActivate: [AuthGuard],
         loadComponent: () =>
           import('./wohnung-add/wohnung-add.component')
@@ -49,11 +73,15 @@ export const routes: Routes = [
     ]
   },
 
-  // Auth routes
+  // ─────────────────────────────────────────────
+  // Auth Routes (بدون Layout)
+  // ─────────────────────────────────────────────
   {
-  path: 'auth/login',
-  component: LoginComponent
-},
+    path: 'auth/login',
+    // ✅ FIX #12: Lazy Loading بدل Eager
+    loadComponent: () =>
+      import('./login/login.component').then(m => m.LoginComponent)
+  },
   {
     path: 'auth/send-otp',
     loadComponent: () =>
@@ -72,30 +100,37 @@ export const routes: Routes = [
   {
     path: 'auth/forgot-password',
     loadComponent: () =>
-      import('./features/auth/forgot-password/forgot-password.page').then(m => m.ForgotPasswordPage)
+      import('./features/auth/forgot-password/forgot-password.page')
+        .then(m => m.ForgotPasswordPage)
   },
   {
     path: 'auth/reset-password',
     loadComponent: () =>
-      import('./features/auth/reset-password/reset-password.page').then(m => m.ResetPasswordPage)
+      import('./features/auth/reset-password/reset-password.page')
+        .then(m => m.ResetPasswordPage)
   },
 
-  // Legacy login route
+  // Legacy login redirect
   { path: 'login', redirectTo: 'auth/login', pathMatch: 'full' },
 
-  // Profile
+  // ─────────────────────────────────────────────
+  // صفحات المستخدم
+  // ─────────────────────────────────────────────
   {
     path: 'profile',
+    canActivate: [AuthGuard],
     loadComponent: () =>
-      import('./profile/profile.component').then(m => m.ProfileComponent),
-    canActivate: [AuthGuard]
+      import('./profile/profile.component').then(m => m.ProfileComponent)
   },
 
-  // New property routes
+  // ─────────────────────────────────────────────
+  // صفحات العقارات الجديدة
+  // ─────────────────────────────────────────────
   {
     path: 'properties',
     loadComponent: () =>
-      import('./features/properties/property-list/property-list.page').then(m => m.PropertyListPage)
+      import('./features/properties/property-list/property-list.page')
+        .then(m => m.PropertyListPage)
   },
   {
     path: 'properties-new',
@@ -103,32 +138,45 @@ export const routes: Routes = [
     pathMatch: 'full'
   },
 
-  // Favorites / notifications
+  // ─────────────────────────────────────────────
+  // المفضلة والإشعارات
+  // ─────────────────────────────────────────────
   {
     path: 'favorites',
+    canActivate: [AuthGuard],
     loadComponent: () =>
       import('./features/favorites/favorites.page').then(m => m.FavoritesPage)
   },
   {
     path: 'notifications',
+    canActivate: [AuthGuard],
     loadComponent: () =>
-      import('./features/notifications/notifications.page').then(m => m.NotificationsPage)
+      import('./features/notifications/notifications.page')
+        .then(m => m.NotificationsPage)
   },
 
+  // ─────────────────────────────────────────────
   // Admin
+  // ─────────────────────────────────────────────
   {
     path: 'admin/messages',
-    component: AdminMessagesComponent,
-    canActivate: [AdminGuard]
+    canActivate: [AdminGuard],
+    // ✅ FIX #12: Lazy Loading بدل Eager
+    loadComponent: () =>
+      import('./admin/messages/messages.component')
+        .then(m => m.AdminMessagesComponent)
   },
   {
     path: 'admin/messages/:id',
+    canActivate: [AdminGuard],
     loadComponent: () =>
       import('./admin/message-details/message-details.component')
-        .then(m => m.MessageDetailComponent),
-    canActivate: [AdminGuard]
+        .then(m => m.MessageDetailComponent)
   },
 
+  // ─────────────────────────────────────────────
+  // متفرقات
+  // ─────────────────────────────────────────────
   {
     path: 'language',
     loadComponent: () =>
@@ -141,5 +189,6 @@ export const routes: Routes = [
       import('./features/offline/offline.page').then(m => m.OfflinePage)
   },
 
+  // Wildcard
   { path: '**', redirectTo: 'home' }
 ];
