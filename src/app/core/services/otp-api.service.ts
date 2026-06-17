@@ -1,12 +1,13 @@
-﻿import { Injectable } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { Observable, map, tap } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
 import { TokenStorageService } from './token-storage.service';
 import {
   AuthTokenResponse,
   SendOtpRequest,
   SendOtpResponse,
-  VerifyOtpRequest
+  VerifyOtpRequest,
+  normalizeAuthTokenResponse
 } from '../models/auth.model';
 
 @Injectable({ providedIn: 'root' })
@@ -21,8 +22,9 @@ export class OtpApiService {
   }
 
   verifyOtp(request: VerifyOtpRequest): Observable<AuthTokenResponse> {
-    return this.api
-      .post<AuthTokenResponse>('/auth/phone/verify', request)
-      .pipe(tap(response => this.tokenStorage.storeTokens(response)));
+    return this.api.post<unknown>('/auth/phone/verify', request).pipe(
+      map(response => normalizeAuthTokenResponse(response)),
+      tap(response => this.tokenStorage.storeTokens(response))
+    );
   }
 }

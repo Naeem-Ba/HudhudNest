@@ -1,6 +1,10 @@
-﻿export interface ApiPagedResult<T> {
+export interface ApiPagedResult<T> {
   items?: T[];
   Items?: T[];
+  data?: T[];
+  Data?: T[];
+  results?: T[];
+  Results?: T[];
   totalCount?: number;
   TotalCount?: number;
   page?: number;
@@ -18,5 +22,5 @@
 export function unwrapItems<T>(response: T[] | ApiPagedResult<T> | null | undefined): T[] {
   if (!response) return [];
   if (Array.isArray(response)) return response;
-  return response.items ?? response.Items ?? [];
+  return response.items ?? response.Items ?? response.data ?? response.Data ?? response.results ?? response.Results ?? [];
 }

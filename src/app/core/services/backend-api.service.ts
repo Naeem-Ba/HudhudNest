@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -7,7 +7,7 @@ export type QueryValue = string | number | boolean | null | undefined;
 
 @Injectable({ providedIn: 'root' })
 export class BackendApiService {
-  private readonly baseUrl = environment.apiUrl;
+  private readonly baseUrl = this.normalizeBaseUrl(environment.apiBaseUrl || environment.apiUrl);
 
   constructor(private readonly http: HttpClient) {}
 
@@ -36,16 +36,32 @@ export class BackendApiService {
   }
 
   private url(path: string): string {
+    if (/^https?:\/\//i.test(path)) {
+      return path;
+    }
+
     return `${this.baseUrl}${path.startsWith('/') ? path : '/' + path}`;
+  }
+
+  private normalizeBaseUrl(value: string): string {
+    const normalized = (value || '').trim().replace(/\/+$/, '');
+
+    if (!normalized) {
+      throw new Error('API base URL is missing. Configure API_URL or environment.apiBaseUrl.');
+    }
+
+    return /\/api$/i.test(normalized) ? normalized : `${normalized}/api`;
   }
 
   private params(query?: Record<string, QueryValue>): HttpParams {
     let params = new HttpParams();
+
     Object.entries(query ?? {}).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
         params = params.set(key, String(value));
       }
     });
+
     return params;
   }
 }

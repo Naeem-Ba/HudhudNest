@@ -1,4 +1,4 @@
-﻿export interface User {
+export interface User {
   id: string;
   email?: string;
   firstName?: string;
@@ -67,4 +67,46 @@ export interface ResetPasswordRequest {
   email: string;
   token: string;
   newPassword: string;
+}
+
+function asString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value : undefined;
+}
+
+function asNumber(value: unknown): number | undefined {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : undefined;
+}
+
+function asStringArray(value: unknown): string[] | undefined {
+  if (Array.isArray(value)) {
+    return value.map(String).filter(Boolean);
+  }
+
+  if (typeof value === 'string' && value.trim()) {
+    return [value];
+  }
+
+  return undefined;
+}
+
+export function normalizeAuthTokenResponse(response: unknown): AuthTokenResponse {
+  const raw = (response ?? {}) as Record<string, unknown>;
+  const accessToken =
+    asString(raw['accessToken']) ??
+    asString(raw['AccessToken']) ??
+    asString(raw['token']) ??
+    asString(raw['Token']) ??
+    '';
+
+  return {
+    accessToken,
+    refreshToken: asString(raw['refreshToken']) ?? asString(raw['RefreshToken']),
+    expiresAt: asString(raw['expiresAt']) ?? asString(raw['ExpiresAt']),
+    expiresIn: asNumber(raw['expiresIn'] ?? raw['ExpiresIn']),
+    userId: asString(raw['userId']) ?? asString(raw['UserId']),
+    email: asString(raw['email']) ?? asString(raw['Email']),
+    phoneNumber: asString(raw['phoneNumber']) ?? asString(raw['PhoneNumber']) ?? asString(raw['phone']) ?? asString(raw['Phone']),
+    roles: asStringArray(raw['roles'] ?? raw['Roles'] ?? raw['role'] ?? raw['Role'])
+  };
 }

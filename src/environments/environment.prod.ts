@@ -1,15 +1,17 @@
-import { AppEnvironment } from './environment.model';
+import {
+  AppEnvironment,
+  createAppEnvironment,
+  readApiUrlFromProcessEnv,
+  readBaseUrlFromProcessEnv,
+  readSignalRUrlFromProcessEnv
+} from './environment.model';
 
-export const environment: AppEnvironment = {
+const apiBaseUrl = readApiUrlFromProcessEnv() || 'https://wohnungen-api.onrender.com/api';
+
+export const environment: AppEnvironment = createAppEnvironment({
   production: true,
   environmentName: 'production',
-
-  // TODO: replace with the real Production API origin before production release.
-  baseUrl: 'https://api.example.com',
-
-  // TODO: replace with the real Production REST API URL.
-  apiUrl: 'https://api.example.com/api',
-
-  // TODO: replace with the real Production SignalR hub URL.
-  signalRUrl: 'https://api.example.com/notificationHub'
-};
+  apiBaseUrl,
+  baseUrl: readBaseUrlFromProcessEnv(),
+  signalRUrl: readSignalRUrlFromProcessEnv()
+});
