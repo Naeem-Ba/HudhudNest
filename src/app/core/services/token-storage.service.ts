@@ -1,48 +1,52 @@
-﻿import { Injectable } from '@angular/core';
-import { AuthTokenResponse } from '../models/auth.model';
+import { Injectable } from '@angular/core';
+
+export interface AuthTokenResponse {
+  accessToken?: string | null;
+  AccessToken?: string | null;
+  token?: string | null;
+  Token?: string | null;
+  refreshToken?: string | null;
+  RefreshToken?: string | null;
+}
 
 @Injectable({ providedIn: 'root' })
 export class TokenStorageService {
-  private readonly accessTokenKey = 'accessToken';
-  private readonly legacyTokenKey = 'token';
-  private readonly refreshTokenKey = 'refreshToken';
+  private accessToken: string | null = null;
+  private readonly refreshTokenKey = 'wohnungsapp_refresh';
 
   storeTokens(response: AuthTokenResponse): void {
-    if (response?.accessToken) {
-      sessionStorage.setItem(this.accessTokenKey, response.accessToken);
+    const accessToken = response?.accessToken ?? response?.AccessToken ?? response?.token ?? response?.Token ?? null;
+    const refreshToken = response?.refreshToken ?? response?.RefreshToken ?? null;
 
-      // Compatibility مع الكود القديم الذي قد يبحث عن token
-      sessionStorage.setItem(this.legacyTokenKey, response.accessToken);
+    if (accessToken) {
+      this.accessToken = accessToken;
     }
 
-    if (response?.refreshToken) {
-      sessionStorage.setItem(this.refreshTokenKey, response.refreshToken);
+    if (refreshToken) {
+      sessionStorage.setItem(this.refreshTokenKey, refreshToken);
     }
+  }
+
+  setAccessToken(token: string | null): void {
+    this.accessToken = token;
   }
 
   getAccessToken(): string | null {
-    return (
-      sessionStorage.getItem(this.accessTokenKey) ||
-      sessionStorage.getItem(this.legacyTokenKey) ||
-      localStorage.getItem(this.accessTokenKey) ||
-      localStorage.getItem(this.legacyTokenKey)
-    );
+    return this.accessToken;
   }
 
   getRefreshToken(): string | null {
-    return (
-      sessionStorage.getItem(this.refreshTokenKey) ||
-      localStorage.getItem(this.refreshTokenKey)
-    );
+    return sessionStorage.getItem(this.refreshTokenKey);
   }
 
   clear(): void {
-    sessionStorage.removeItem(this.accessTokenKey);
-    sessionStorage.removeItem(this.legacyTokenKey);
+    this.accessToken = null;
     sessionStorage.removeItem(this.refreshTokenKey);
 
-    localStorage.removeItem(this.accessTokenKey);
-    localStorage.removeItem(this.legacyTokenKey);
-    localStorage.removeItem(this.refreshTokenKey);
+    // Remove legacy unsafe keys that may have been written by older code.
+    for (const key of ['accessToken', 'token', 'refreshToken', 'loggedUser', 'user']) {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    }
   }
 }

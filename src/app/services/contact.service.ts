@@ -1,12 +1,17 @@
-﻿import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { Observable, map } from 'rxjs';
 import { BackendApiService } from '../core/services/backend-api.service';
+import { ApiPagedResult, unwrapItems } from '../core/models/api.model';
 
 export interface ContactDto {
-  Name: string;
-  Email: string;
-  Subject: string;
-  Message: string;
+  Name?: string;
+  Email?: string;
+  Subject?: string;
+  Message?: string;
+  name?: string;
+  email?: string;
+  subject?: string;
+  message?: string;
 }
 
 export interface ContactMessageDto {
@@ -32,7 +37,7 @@ export interface ContactMessageDto {
   createdAt?: string;
 
   SentAt?: string;
-sentAt?: string;
+  sentAt?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -42,11 +47,13 @@ export class ContactService {
   constructor(private readonly api: BackendApiService) {}
 
   sendContact(payload: ContactDto): Observable<ContactMessageDto> {
-    return this.api.post<ContactMessageDto>(this.endpoint, payload);
+    return this.api.post<ContactMessageDto>(this.endpoint, this.toBackendContactRequest(payload));
   }
 
   getMessages(): Observable<ContactMessageDto[]> {
-    return this.api.get<ContactMessageDto[]>(this.endpoint);
+    return this.api
+      .get<ContactMessageDto[] | ApiPagedResult<ContactMessageDto>>(this.endpoint)
+      .pipe(map(response => unwrapItems(response)));
   }
 
   getMessageById(id: string): Observable<ContactMessageDto> {
@@ -60,4 +67,14 @@ export class ContactService {
   deleteMessage(id: string): Observable<void> {
     return this.api.delete<void>(`${this.endpoint}/${id}`);
   }
+
+  private toBackendContactRequest(payload: ContactDto): Record<string, string> {
+    return {
+      name: String(payload.name ?? payload.Name ?? '').trim(),
+      email: String(payload.email ?? payload.Email ?? '').trim(),
+      subject: String(payload.subject ?? payload.Subject ?? '').trim(),
+      message: String(payload.message ?? payload.Message ?? '').trim()
+    };
+  }
 }
+

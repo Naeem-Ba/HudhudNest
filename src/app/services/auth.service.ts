@@ -1,8 +1,19 @@
-﻿import { Injectable } from '@angular/core';
+// =====================================================================
+// ✅ FIX #1b – auth.service.ts
+// المشكلة: AuthService يخزّن التوكنات مباشرة في localStorage/sessionStorage
+//           بالتوازي مع TokenStorageService مما يسبب تكراراً وتناقضاً
+// الحل: AuthService يستخدم TokenStorageService حصراً
+// =====================================================================
+import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, map } from 'rxjs';
+import { TokenStorageService } from '../core/services/token-storage.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+
+  // ✅ استخدام inject() الحديث بدلاً من constructor
+  private readonly tokenStorage = inject(TokenStorageService);
+
   private readonly loggedIn = new BehaviorSubject<boolean>(false);
   readonly isLoggedIn$ = this.loggedIn.asObservable();
 
@@ -20,8 +31,13 @@ export class AuthService {
     this.validateSession();
   }
 
+  /**
+   * ✅ يتحقق من صلاحية التوكن الموجود في الذاكرة
+   * يُستدعى عند بدء التطبيق أو عند الوصول لصفحة محمية
+   */
   validateSession(): void {
-    const token = this.getAccessToken();
+    // ✅ قراءة من TokenStorageService (في الذاكرة) فقط
+    const token = this.tokenStorage.getAccessToken();
 
     if (!token || token === 'undefined' || token === 'null') {
       this.clearSession();
@@ -35,6 +51,7 @@ export class AuthService {
       return;
     }
 
+    // ✅ التحقق من انتهاء صلاحية التوكن
     if (payload.exp && Date.now() >= payload.exp * 1000) {
       this.clearSession();
       return;
@@ -55,22 +72,18 @@ export class AuthService {
 
     this.currentUserSubject.next(user);
     this.loggedIn.next(true);
-    sessionStorage.setItem('loggedUser', JSON.stringify(user));
   }
 
+  /**
+   * ✅ تسجيل الدخول – يُخزِّن التوكنات عبر TokenStorageService فقط
+   */
   login(res: any): void {
     const accessToken = res?.accessToken ?? res?.AccessToken ?? res?.token ?? res?.Token;
     const refreshToken = res?.refreshToken ?? res?.RefreshToken ?? '';
 
     if (accessToken) {
-      sessionStorage.setItem('accessToken', accessToken);
-      sessionStorage.setItem('token', accessToken);
-      localStorage.setItem('token', accessToken);
-    }
-
-    if (refreshToken) {
-      sessionStorage.setItem('refreshToken', refreshToken);
-      localStorage.setItem('refreshToken', refreshToken);
+      // ✅ TokenStorageService يخزّن في الذاكرة فقط
+      this.tokenStorage.storeTokens({ accessToken, refreshToken });
     }
 
     this.validateSession();
@@ -86,30 +99,21 @@ export class AuthService {
 
   updateCurrentUser(user: any): void {
     this.currentUserSubject.next(user);
-    sessionStorage.setItem('loggedUser', JSON.stringify(user));
-    localStorage.setItem('loggedUser', JSON.stringify(user));
+    // ✅ لا localStorage لبيانات المستخدم – في الذاكرة فقط
   }
 
+  /**
+   * ✅ قراءة التوكن من TokenStorageService (الذاكرة) فقط
+   */
   getAccessToken(): string | null {
-    return (
-      sessionStorage.getItem('accessToken') ||
-      sessionStorage.getItem('token') ||
-      localStorage.getItem('accessToken') ||
-      localStorage.getItem('token')
-    );
+    return this.tokenStorage.getAccessToken();
   }
 
+  /**
+   * ✅ مسح الجلسة – يمسح الذاكرة عبر TokenStorageService
+   */
   private clearSession(): void {
-    sessionStorage.removeItem('accessToken');
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('refreshToken');
-    sessionStorage.removeItem('loggedUser');
-
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('loggedUser');
-
+    this.tokenStorage.clear();
     this.currentUserSubject.next(null);
     this.loggedIn.next(false);
   }

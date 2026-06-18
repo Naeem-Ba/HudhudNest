@@ -1,5 +1,5 @@
-﻿import { Injectable } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { Observable, map, tap } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
 import { TokenStorageService } from './token-storage.service';
 import {
@@ -8,7 +8,8 @@ import {
   LoginRequest,
   RegisterRequest,
   RegisterResponse,
-  ResetPasswordRequest
+  ResetPasswordRequest,
+  normalizeAuthTokenResponse
 } from '../models/auth.model';
 
 @Injectable({ providedIn: 'root' })
@@ -23,17 +24,19 @@ export class AuthApiService {
   }
 
   login(request: LoginRequest): Observable<AuthTokenResponse> {
-    return this.api
-      .post<AuthTokenResponse>('/auth/login', request)
-      .pipe(tap(response => this.tokenStorage.storeTokens(response)));
+    return this.api.post<unknown>('/auth/login', request).pipe(
+      map(response => normalizeAuthTokenResponse(response)),
+      tap(response => this.tokenStorage.storeTokens(response))
+    );
   }
 
   refreshToken(): Observable<AuthTokenResponse> {
     const refreshToken = this.tokenStorage.getRefreshToken();
 
-    return this.api
-      .post<AuthTokenResponse>('/auth/refresh', { refreshToken })
-      .pipe(tap(response => this.tokenStorage.storeTokens(response)));
+    return this.api.post<unknown>('/auth/refresh', { refreshToken }).pipe(
+      map(response => normalizeAuthTokenResponse(response)),
+      tap(response => this.tokenStorage.storeTokens(response))
+    );
   }
 
   forgotPassword(request: ForgotPasswordRequest): Observable<unknown> {

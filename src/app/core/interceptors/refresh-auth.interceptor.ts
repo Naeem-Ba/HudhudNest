@@ -1,89 +1,39 @@
-﻿import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, finalize, switchMap, throwError } from 'rxjs';
-import { AuthApiService } from '../services/auth-api.service';
+import { catchError, throwError } from 'rxjs';
 import { TokenStorageService } from '../services/token-storage.service';
 
-let refreshInProgress = false;
-
 function isAuthEndpoint(url: string): boolean {
+  const lower = url.toLowerCase();
   return (
-    url.includes('/auth/login') ||
-    url.includes('/auth/register') ||
-    url.includes('/auth/refresh') ||
-    url.includes('/auth/phone/send-otp') ||
-    url.includes('/auth/phone/verify') ||
-    url.includes('/auth/forgot-password') ||
-    url.includes('/auth/reset-password')
+    lower.includes('/auth/login') ||
+    lower.includes('/auth/register') ||
+    lower.includes('/auth/refresh') ||
+    lower.includes('/auth/phone/send-otp') ||
+    lower.includes('/auth/phone/verify') ||
+    lower.includes('/auth/forgot-password') ||
+    lower.includes('/auth/reset-password')
   );
 }
 
 export const RefreshAuthInterceptor: HttpInterceptorFn = (req, next) => {
   const tokenStorage = inject(TokenStorageService);
-  const authApi = inject(AuthApiService);
   const router = inject(Router);
 
   const accessToken = tokenStorage.getAccessToken();
-
-  const authReq = accessToken
-    ? req.clone({
-        setHeaders: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      })
+  const authReq = accessToken && !req.headers.has('Authorization')
+    ? req.clone({ setHeaders: { Authorization: `Bearer ${accessToken}` } })
     : req;
 
   return next(authReq).pipe(
     catchError((error: unknown) => {
-      if (!(error instanceof HttpErrorResponse)) {
-        return throwError(() => error);
+      if (error instanceof HttpErrorResponse && error.status === 401 && !isAuthEndpoint(req.url)) {
+        tokenStorage.clear();
+        void router.navigateByUrl('/auth/login');
       }
 
-      const shouldTryRefresh =
-        error.status === 401 &&
-        !isAuthEndpoint(req.url) &&
-        !refreshInProgress &&
-        !!tokenStorage.getRefreshToken();
-
-      if (!shouldTryRefresh) {
-        if (error.status === 401 && !isAuthEndpoint(req.url)) {
-          tokenStorage.clear();
-          void router.navigateByUrl('/auth/login');
-        }
-
-        return throwError(() => error);
-      }
-
-      refreshInProgress = true;
-
-      return authApi.refreshToken().pipe(
-        switchMap(response => {
-          const newAccessToken = response.accessToken;
-
-          if (!newAccessToken) {
-            tokenStorage.clear();
-            void router.navigateByUrl('/auth/login');
-            return throwError(() => error);
-          }
-
-          const retryReq = req.clone({
-            setHeaders: {
-              Authorization: `Bearer ${newAccessToken}`
-            }
-          });
-
-          return next(retryReq);
-        }),
-        catchError(refreshError => {
-          tokenStorage.clear();
-          void router.navigateByUrl('/auth/login');
-          return throwError(() => refreshError);
-        }),
-        finalize(() => {
-          refreshInProgress = false;
-        })
-      );
+      return throwError(() => error);
     })
   );
 };

@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { firstValueFrom, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { BackendApiService } from '../core/services/backend-api.service';
@@ -13,33 +13,58 @@ export class EnumService {
   private readonly endpoint = '/enums';
   private readonly cache = new Map<string, EnumItem[]>();
 
+  /**
+   * UI still uses the older German group names, while the backend now exposes
+   * domain enum names. This map keeps the old templates working without calling
+   * non-existing backend endpoints.
+   */
+  private readonly backendGroupByUiGroup: Record<string, string | null> = {
+    STADT: null,
+    ZUSTAND: 'PropertyCondition',
+    STATUS: 'PropertyStatus',
+    ENERGIEAUSWEISTYP: 'EnergyEfficiency',
+    HEIZUNG: 'HeatingType',
+    LISTINGTYPE: 'ListingType',
+    PROPERTYCONDITION: 'PropertyCondition',
+    PROPERTYSTATUS: 'PropertyStatus',
+    ENERGYEFFICIENCY: 'EnergyEfficiency',
+    HEATINGTYPE: 'HeatingType'
+  };
+
   constructor(private readonly api: BackendApiService) {}
 
   async loadAll(): Promise<void> {
-    const groups = ['STADT', 'ZUSTAND', 'STATUS', 'ENERGIEAUSWEISTYP'];
+    const groups = ['STADT', 'ZUSTAND', 'STATUS', 'ENERGIEAUSWEISTYP', 'HEIZUNG', 'LISTINGTYPE'];
     await Promise.all(groups.map(group => this.loadGroup(group)));
   }
 
   private async loadGroup(group: string): Promise<void> {
     const normalized = group.toUpperCase();
+    const backendGroup = this.backendGroupByUiGroup[normalized] ?? group;
 
     if (normalized === 'STADT') {
       this.cache.set(normalized, this.localCities());
       return;
     }
 
+    if (!backendGroup) {
+      this.cache.set(normalized, []);
+      return;
+    }
+
     try {
       const data = await firstValueFrom(
-        this.api.get<unknown>(`${this.endpoint}/${normalized}`).pipe(
+        this.api.get<unknown>(`${this.endpoint}/${backendGroup}`).pipe(
           map(response => this.normalize(response)),
           catchError(error => {
-            console.warn(`Enum '${normalized}' could not be loaded. Using empty list.`, error);
+            console.warn(`Enum '${backendGroup}' could not be loaded. Using empty list.`, error);
             return of([] as EnumItem[]);
           })
         )
       );
 
       this.cache.set(normalized, data);
+      this.cache.set(backendGroup.toUpperCase(), data);
     } catch {
       this.cache.set(normalized, []);
     }
@@ -61,7 +86,7 @@ export class EnumService {
 
     if (response && typeof response === 'object') {
       const obj = response as Record<string, unknown>;
-      const list = obj['items'] ?? obj['Items'] ?? obj['values'] ?? obj['Values'];
+      const list = obj['items'] ?? obj['Items'] ?? obj['values'] ?? obj['Values'] ?? obj['data'] ?? obj['Data'];
 
       if (Array.isArray(list)) {
         return list.map((item, index) => this.toEnumItem(item, index));

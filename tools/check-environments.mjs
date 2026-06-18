@@ -6,7 +6,7 @@ const files = [
   'src/environments/environment.staging.ts'
 ];
 
-const forbidden = [/localhost/i, /127\.0\.0\.1/i, /http:\/\//i];
+const forbidden = [/localhost/i, /127\.0\.0\.1/i, /example\.com/i, /http:\/\//i];
 let failed = false;
 
 for (const file of files) {
@@ -20,13 +20,13 @@ for (const file of files) {
     }
   }
 
-  if (!content.includes('/api')) {
-    console.error(`[environment-check] ${file} does not contain an API URL with /api.`);
+  if (!content.includes('readApiUrlFromProcessEnv()')) {
+    console.error(`[environment-check] ${file} does not read API_URL from process.env.`);
     failed = true;
   }
 
-  if (!content.includes('/notificationHub')) {
-    console.error(`[environment-check] ${file} does not contain a SignalR notification hub URL.`);
+  if (!content.includes('/api')) {
+    console.error(`[environment-check] ${file} does not contain an API URL with /api.`);
     failed = true;
   }
 }

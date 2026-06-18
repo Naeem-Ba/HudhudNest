@@ -1,6 +1,13 @@
-﻿import { Injectable } from '@angular/core';
+// =====================================================================
+// âœ… FIX #6 â€“ wohnungen.service.ts
+// Ø§Ù„Ù…Ø´ÙƒÙ„Ø© Ø§Ù„Ø£ÙˆÙ„Ù‰: getMyWohnungen() ØªØ¬Ù„Ø¨ ÙƒÙ„ Ø§Ù„Ø¹Ù‚Ø§Ø±Ø§Øª Ù„Ø§ Ø¹Ù‚Ø§Ø±Ø§Øª Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…
+// Ø§Ù„Ù…Ø´ÙƒÙ„Ø© Ø§Ù„Ø«Ø§Ù†ÙŠØ©: RequestingUserId = GUID ØµÙØ±ÙŠ ÙÙŠ updateWohnung()
+// Ø§Ù„Ø­Ù„: Ø§Ø³ØªØ®Ø¯Ø§Ù… /properties/my Ù„Ø¹Ù‚Ø§Ø±Ø§Øª Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… + AuthService Ù„Ù„Ù€ ID
+// =====================================================================
+import { Injectable, inject } from '@angular/core';
 import { Observable, Subject, map } from 'rxjs';
 import { BackendApiService } from '../core/services/backend-api.service';
+import { AuthService } from './auth.service';
 
 export interface Wohnung {
   Id?: string;
@@ -48,8 +55,10 @@ export interface Wohnung {
   WohnungAmenities?: WohnungAmenity[];
   Favorites?: Favorite[];
 }
+
 export interface PropertySavePayload {
-  OwnerId: string;
+  // âœ… OwnerId Ø§Ø®ØªÙŠØ§Ø±ÙŠ â€“ Backend ÙŠØ³ØªØ®Ø±Ø¬Ù‡ Ù…Ù† JWT Token
+  OwnerId?: string;
   Title: string;
   Description: string;
   ListingType: number;
@@ -117,10 +126,12 @@ export interface Amenity {
 export class WohnungenService {
   private readonly endpoint = '/properties';
 
+  // âœ… inject() Ø§Ù„Ø­Ø¯ÙŠØ«
+  private readonly api = inject(BackendApiService);
+  private readonly authService = inject(AuthService);
+
   private readonly wohnungAddedSource = new Subject<Wohnung>();
   readonly wohnungAdded$ = this.wohnungAddedSource.asObservable();
-
-  constructor(private readonly api: BackendApiService) {}
 
   getWohnungen(): Observable<Wohnung[]> {
     return this.api.get<any>(this.endpoint).pipe(
@@ -134,56 +145,78 @@ export class WohnungenService {
     );
   }
 
-  /**
-   * مؤقتًا: ما زالت صفحة الإضافة القديمة ترسل FormData.
-   * في خطوة لاحقة سنفصل:
-   * 1) POST /properties JSON
-   * 2) POST /properties/{id}/images FormData files
-   */
   addWohnung(payload: PropertySavePayload): Observable<Wohnung> {
-  return new Observable(observer => {
-    this.api.post<any>(this.endpoint, payload).subscribe({
-      next: res => {
-        const mapped = this.toWohnung({
-          ...payload,
-          Id: res?.Id ?? res?.id
-        });
+    return new Observable(observer => {
+      this.api.post<any>(this.endpoint, payload).subscribe({
+        next: res => {
+          const mapped = this.toWohnung({
+            ...payload,
+            Id: res?.Id ?? res?.id
+          });
 
-        this.wohnungAddedSource.next(mapped);
-        observer.next(mapped);
-        observer.complete();
-      },
-      error: err => observer.error(err)
+          this.wohnungAddedSource.next(mapped);
+          observer.next(mapped);
+          observer.complete();
+        },
+        error: err => observer.error(err)
+      });
     });
-  });
-}
+  }
 
   uploadWohnungBilder(wohnungId: string, files: File[]): Observable<Bild[]> {
-  const formData = new FormData();
+    const formData = new FormData();
+    files.forEach(file => formData.append('files', file));
 
-  files.forEach(file => formData.append('files', file));
+    return this.api.post<any[]>(`${this.endpoint}/${wohnungId}/images`, formData).pipe(
+      map(images => (images ?? []).map(image => this.toBild(image, wohnungId)))
+    );
+  }
 
-  return this.api.post<any[]>(`${this.endpoint}/${wohnungId}/images`, formData).pipe(
-    map(images => (images ?? []).map(image => this.toBild(image, wohnungId)))
-  );
-}
+  publishWohnung(id: string): Observable<void> {
+    return this.api.patch<void>(`${this.endpoint}/${id}/publish`, {});
+  }
 
-publishWohnung(id: string): Observable<void> {
-  return this.api.patch<void>(`${this.endpoint}/${id}/publish`, {});
-}
-
+  /**
+   * âœ… FIX #6a: Ù„Ø§ GUID ØµÙØ±ÙŠ â€“ RequestingUserId Ù…Ù† AuthService
+   */
   updateWohnung(id: string, payload: Partial<PropertySavePayload>): Observable<void> {
-  return this.api.put<void>(`${this.endpoint}/${id}`, {
-    PropertyId: id,
-    RequestingUserId: '00000000-0000-0000-0000-000000000000',
-    ...payload
-  });
-}
+    // Ù†Ù‚Ø±Ø£ ID Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø§Ù„Ø­Ø§Ù„ÙŠ Ù…Ù† AuthService
+    let currentUserId = '';
+    this.authService.currentUser$.subscribe(u => {
+      currentUserId = u?.id ?? u?.Id ?? '';
+    }).unsubscribe();
 
+    return this.api.put<void>(`${this.endpoint}/${id}`, {
+      PropertyId: id,
+      // âœ… Ø¥Ø°Ø§ ÙƒØ§Ù† Backend ÙŠØ³ØªØ®Ø±Ø¬ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ù…Ù† JWT: Ø§Ø­Ø°Ù RequestingUserId ØªÙ…Ø§Ù…Ø§Ù‹
+      // âœ… Ø¥Ø°Ø§ ÙƒØ§Ù† ÙŠØ­ØªØ§Ø¬Ù‡: Ø£Ø±Ø³Ù„ currentUserId
+      ...(currentUserId ? { RequestingUserId: currentUserId } : {}),
+      ...payload
+    });
+  }
+
+  /**
+   * âœ… FIX #6b: getMyWohnungen ØªØ³ØªØ®Ø¯Ù… endpoint Ù…Ø®ØµØµ /properties/my
+   *
+   * Ø¥Ø°Ø§ Ù„Ù… ÙŠÙƒÙ† Backend ÙŠØ¯Ø¹Ù… /properties/my:
+   * Ø§Ø³ØªØ®Ø¯Ù… getWohnungen() ÙˆÙÙ„ØªØ± Ø¨Ù€ OwnerId ÙŠØ¯ÙˆÙŠØ§Ù‹
+   * (Ø±Ø§Ø¬Ø¹ Ø§Ù„ØªØ¹Ù„ÙŠÙ‚ Ø£Ø¯Ù†Ø§Ù‡)
+   */
   getMyWohnungen(): Observable<Wohnung[]> {
-    return this.api.get<any>(this.endpoint).pipe(
+    // âœ… Ø§Ù„Ø®ÙŠØ§Ø± 1: endpoint Ù…Ø®ØµØµ Ù„Ø¹Ù‚Ø§Ø±Ø§Øª Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… (Ø§Ù„Ø£ÙØ¶Ù„)
+    return this.api.get<any>(`${this.endpoint}/my`).pipe(
       map(response => this.extractItems(response).map(item => this.toWohnung(item)))
     );
+
+    // âœ… Ø§Ù„Ø®ÙŠØ§Ø± 2 (Ø¥Ø°Ø§ Ù„Ù… ÙŠØ¯Ø¹Ù… Backend /my):
+    // Ø§Ù‚Ø±Ø£ userId Ø«Ù… ÙÙ„ØªØ±
+    // let userId = '';
+    // this.authService.currentUser$.subscribe(u => userId = u?.id ?? '').unsubscribe();
+    // return this.api.get<any>(this.endpoint, { ownerId: userId }).pipe(
+    //   map(response => this.extractItems(response)
+    //     .filter(item => (item?.OwnerId ?? item?.ownerId) === userId)
+    //     .map(item => this.toWohnung(item)))
+    // );
   }
 
   deleteWohnung(id: string): Observable<any> {
@@ -191,114 +224,81 @@ publishWohnung(id: string): Observable<void> {
   }
 
   private extractItems(response: any): any[] {
-    if (Array.isArray(response)) {
-      return response;
-    }
-
-    if (Array.isArray(response?.Items)) {
-      return response.Items;
-    }
-
-    if (Array.isArray(response?.items)) {
-      return response.items;
-    }
-
-    if (Array.isArray(response?.Data)) {
-      return response.Data;
-    }
-
-    if (Array.isArray(response?.data)) {
-      return response.data;
-    }
-
+    if (Array.isArray(response)) return response;
+    if (Array.isArray(response?.Items))  return response.Items;
+    if (Array.isArray(response?.items))  return response.items;
+    if (Array.isArray(response?.Data))   return response.Data;
+    if (Array.isArray(response?.data))   return response.data;
     return [];
   }
 
- private toWohnung(property: any): Wohnung {
-  const id = this.toStringId(property?.Id ?? property?.id);
-  const listingType = property?.ListingType ?? property?.listingType ?? '';
-  const listingTypeText = String(listingType).toLowerCase();
+  private toWohnung(property: any): Wohnung {
+    const id = this.toStringId(property?.Id ?? property?.id);
+    const listingType = property?.ListingType ?? property?.listingType ?? '';
+    const listingTypeText = String(listingType).toLowerCase();
 
-  const existingImages =
-    property?.Images ??
-    property?.images ??
-    property?.Bilder ??
-    property?.bilder ??
-    [];
+    const existingImages =
+      property?.Images ?? property?.images ??
+      property?.Bilder ?? property?.bilder ?? [];
 
-  const mainImageUrl = property?.MainImageUrl ?? property?.mainImageUrl;
-  const imageUrls = property?.ImageUrls ?? property?.imageUrls ?? [];
+    const mainImageUrl = property?.MainImageUrl ?? property?.mainImageUrl;
+    const imageUrls = property?.ImageUrls ?? property?.imageUrls ?? [];
 
-  const images = [
-    ...existingImages,
-    ...(mainImageUrl ? [{ Url: mainImageUrl, IsMain: true }] : []),
-    ...imageUrls.map((url: string) => ({ Url: url, IsMain: false }))
-  ];
+    const images = [
+      ...existingImages,
+      ...(mainImageUrl ? [{ Url: mainImageUrl, IsMain: true }] : []),
+      ...imageUrls.map((url: string) => ({ Url: url, IsMain: false }))
+    ];
 
-  const isRent =
-    listingType === 1 ||
-    listingType === '1' ||
-    listingTypeText.includes('forrent') ||
-    listingTypeText.includes('rent');
+    const isRent =
+      listingType === 1 || listingType === '1' ||
+      listingTypeText.includes('forrent') || listingTypeText.includes('rent');
 
-  const isSale =
-    listingType === 2 ||
-    listingType === '2' ||
-    listingTypeText.includes('forsale') ||
-    listingTypeText.includes('sale');
+    const isSale =
+      listingType === 2 || listingType === '2' ||
+      listingTypeText.includes('forsale') || listingTypeText.includes('sale');
 
-  const isRentAndSale =
-    listingType === 3 ||
-    listingType === '3' ||
-    listingTypeText.includes('rentandsale');
+    const isRentAndSale =
+      listingType === 3 || listingType === '3' ||
+      listingTypeText.includes('rentandsale');
 
-  return {
-    Id: id,
-    id,
-
-    Titel: property?.Titel ?? property?.Title ?? property?.title ?? '',
-    Beschreibung: property?.Beschreibung ?? property?.Description ?? property?.description ?? '',
-    Adresse: property?.Adresse ?? property?.Street ?? property?.street ?? '',
-
-    Stadt: property?.Stadt ?? property?.City ?? property?.city ?? '',
-    Zustand: property?.Zustand ?? property?.Condition ?? property?.condition ?? '',
-    Status: property?.Status ?? property?.PropertyStatus ?? property?.status ?? '',
-    Energieausweis: property?.Energieausweis ?? property?.EnergyEfficiency ?? property?.energyEfficiency ?? '',
-
-    PLZ: property?.PLZ ?? property?.PostalCode ?? property?.postalCode ?? '',
-    Latitude: this.toNumber(property?.Latitude ?? property?.latitude),
-    Longitude: this.toNumber(property?.Longitude ?? property?.longitude),
-
-    ZumMieten: property?.ZumMieten ?? (isRent || isRentAndSale),
-    ZumKaufen: property?.ZumKaufen ?? (isSale || isRentAndSale),
-
-    Kaltmiete: this.toNumber(property?.Kaltmiete ?? property?.ColdRent ?? property?.coldRent),
-    Warmmiete: this.toNumber(property?.Warmmiete ?? property?.WarmRent ?? property?.warmRent),
-    Kaufpreis: this.toNumber(property?.Kaufpreis ?? property?.PurchasePrice ?? property?.purchasePrice),
-    Nebenkosten: this.toNumber(property?.Nebenkosten ?? property?.AdditionalCosts ?? property?.additionalCosts),
-    Kaution: this.toNumber(property?.Kaution ?? property?.Deposit ?? property?.deposit),
-
-    Zimmer: this.toNumber(property?.Zimmer ?? property?.Rooms ?? property?.rooms),
-    Flaeche: this.toNumber(property?.Flaeche ?? property?.Area ?? property?.area),
-    Geschoss: this.toNumber(property?.Geschoss ?? property?.Floor ?? property?.floor),
-    FreiAb: property?.FreiAb ?? property?.AvailableFrom ?? property?.availableFrom,
-
-    Balkon: property?.Balkon ?? property?.HasBalcony ?? property?.hasBalcony ?? false,
-    Aufzug: property?.Aufzug ?? property?.HasElevator ?? property?.hasElevator ?? false,
-    Stellplatz: property?.Stellplatz ?? property?.HasParkingSpace ?? property?.hasParkingSpace ?? false,
-    Heizung: property?.Heizung ?? property?.HeatingType ?? property?.heatingType ?? '',
-
-    OwnerId: this.toStringId(property?.OwnerId ?? property?.ownerId),
-    CreatedAt: property?.CreatedAt ?? property?.createdAt,
-    UpdatedAt: property?.UpdatedAt ?? property?.updatedAt,
-
-    Bilder: images.map((image: any) => this.toBild(image, id)),
-    Amenities: property?.Amenities ?? property?.amenities ?? [],
-    Messages: property?.Messages ?? property?.messages ?? [],
-    WohnungAmenities: property?.WohnungAmenities ?? [],
-    Favorites: property?.Favorites ?? property?.favorites ?? []
-  };
-}
+    return {
+      Id: id, id,
+      Titel: property?.Titel ?? property?.Title ?? property?.title ?? '',
+      Beschreibung: property?.Beschreibung ?? property?.Description ?? property?.description ?? '',
+      Adresse: property?.Adresse ?? property?.Street ?? property?.street ?? '',
+      Stadt: property?.Stadt ?? property?.City ?? property?.city ?? '',
+      Zustand: property?.Zustand ?? property?.Condition ?? property?.condition ?? '',
+      Status: property?.Status ?? property?.PropertyStatus ?? property?.status ?? '',
+      Energieausweis: property?.Energieausweis ?? property?.EnergyEfficiency ?? property?.energyEfficiency ?? '',
+      PLZ: property?.PLZ ?? property?.PostalCode ?? property?.postalCode ?? '',
+      Latitude: this.toNumber(property?.Latitude ?? property?.latitude),
+      Longitude: this.toNumber(property?.Longitude ?? property?.longitude),
+      ZumMieten: property?.ZumMieten ?? (isRent || isRentAndSale),
+      ZumKaufen: property?.ZumKaufen ?? (isSale || isRentAndSale),
+      Kaltmiete: this.toNumber(property?.Kaltmiete ?? property?.ColdRent ?? property?.coldRent),
+      Warmmiete: this.toNumber(property?.Warmmiete ?? property?.WarmRent ?? property?.warmRent),
+      Kaufpreis: this.toNumber(property?.Kaufpreis ?? property?.PurchasePrice ?? property?.purchasePrice),
+      Nebenkosten: this.toNumber(property?.Nebenkosten ?? property?.AdditionalCosts ?? property?.additionalCosts),
+      Kaution: this.toNumber(property?.Kaution ?? property?.Deposit ?? property?.deposit),
+      Zimmer: this.toNumber(property?.Zimmer ?? property?.Rooms ?? property?.rooms),
+      Flaeche: this.toNumber(property?.Flaeche ?? property?.Area ?? property?.area),
+      Geschoss: this.toNumber(property?.Geschoss ?? property?.Floor ?? property?.floor),
+      FreiAb: property?.FreiAb ?? property?.AvailableFrom ?? property?.availableFrom,
+      Balkon: property?.Balkon ?? property?.HasBalcony ?? property?.hasBalcony ?? false,
+      Aufzug: property?.Aufzug ?? property?.HasElevator ?? property?.hasElevator ?? false,
+      Stellplatz: property?.Stellplatz ?? property?.HasParkingSpace ?? property?.hasParkingSpace ?? false,
+      Heizung: property?.Heizung ?? property?.HeatingType ?? property?.heatingType ?? '',
+      OwnerId: this.toStringId(property?.OwnerId ?? property?.ownerId),
+      CreatedAt: property?.CreatedAt ?? property?.createdAt,
+      UpdatedAt: property?.UpdatedAt ?? property?.updatedAt,
+      Bilder: images.map((image: any) => this.toBild(image, id)),
+      Amenities: property?.Amenities ?? property?.amenities ?? [],
+      Messages: property?.Messages ?? property?.messages ?? [],
+      WohnungAmenities: property?.WohnungAmenities ?? [],
+      Favorites: property?.Favorites ?? property?.favorites ?? []
+    };
+  }
 
   private toBild(image: any, wohnungId: string): Bild {
     return {
@@ -311,18 +311,12 @@ publishWohnung(id: string): Observable<void> {
   }
 
   private toStringId(value: unknown): string {
-    if (value === null || value === undefined) {
-      return '';
-    }
-
+    if (value === null || value === undefined) return '';
     return String(value);
   }
 
   private toNumber(value: any): number | undefined {
-    if (value === null || value === undefined || value === '') {
-      return undefined;
-    }
-
+    if (value === null || value === undefined || value === '') return undefined;
     const n = Number(value);
     return Number.isFinite(n) ? n : undefined;
   }

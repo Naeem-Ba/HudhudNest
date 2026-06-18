@@ -1,15 +1,17 @@
-import { AppEnvironment } from './environment.model';
+import {
+  AppEnvironment,
+  createAppEnvironment,
+  readApiUrlFromProcessEnv,
+  readBaseUrlFromProcessEnv,
+  readSignalRUrlFromProcessEnv
+} from './environment.model';
 
-export const environment: AppEnvironment = {
+const apiBaseUrl = readApiUrlFromProcessEnv() || 'https://wohnungen-api.onrender.com/api';
+
+export const environment: AppEnvironment = createAppEnvironment({
   production: true,
   environmentName: 'staging',
-
-  // TODO: replace with the real Staging API origin before deploying Staging.
-  baseUrl: 'https://staging-api.example.com',
-
-  // TODO: replace with the real Staging REST API URL.
-  apiUrl: 'https://staging-api.example.com/api',
-
-  // TODO: replace with the real Staging SignalR hub URL.
-  signalRUrl: 'https://staging-api.example.com/notificationHub'
-};
+  apiBaseUrl,
+  baseUrl: readBaseUrlFromProcessEnv(),
+  signalRUrl: readSignalRUrlFromProcessEnv()
+});
