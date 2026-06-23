@@ -63,4 +63,29 @@ export class PropertyApiService {
   private toStringArray(value: unknown): string[] {
     return Array.isArray(value) ? value.map(String).filter(Boolean) : [];
   }
+  // أضف هذه الـ methods لـ PropertyApiService الموجود
+
+/** حذف عقار */
+deleteProperty(id: string): Observable<void> {
+  return this.api.delete<void>(`/properties/${id}`);
+}
+
+/** إنشاء عقار جديد */
+createProperty(payload: unknown): Observable<unknown> {
+  return this.api.post<unknown>('/properties', payload);
+}
+
+/** تحديث عقار */
+updateProperty(id: string, payload: unknown): Observable<unknown> {
+  return this.api.put<unknown>(`/properties/${id}`, payload);
+}
+
+/** رفع صور عقار — POST /api/properties/{id}/images */
+uploadImages(propertyId: string, formData: FormData): Observable<unknown[]> {
+  return this.api.postFormData<unknown[]>(
+    `/properties/${propertyId}/images`,
+    formData
+  );
+}
+
 }

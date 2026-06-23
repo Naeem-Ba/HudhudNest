@@ -1,0 +1,124 @@
+<!-- src/app/features/properties/property-list/property-list.page.html -->
+
+<section class="properties-page">
+
+  <!-- Page Header -->
+  <header class="page-header">
+    <h1>{{ 'PROPERTY_LIST.TITLE' | translate }}</h1>
+    <p>{{ 'PROPERTY_LIST.SUBTITLE' | translate }}</p>
+  </header>
+
+  <!-- Skeleton Loading -->
+  <app-skeleton-card-grid *ngIf="loading()" [count]="6" />
+
+  <!-- Error State -->
+  <div *ngIf="!loading() && error()" class="state-card error-state" role="alert">
+    <span aria-hidden="true">⚠️</span>
+    <p>{{ error() | translate }}</p>
+    <button type="button" (click)="loadProperties()">
+      {{ 'COMMON.RETRY' | translate }}
+    </button>
+  </div>
+
+  <!-- Empty State -->
+  <app-empty-state
+    *ngIf="!loading() && !error() && properties().length === 0"
+    icon="🏠"
+    [title]="'PROPERTY_LIST.EMPTY_TITLE' | translate"
+    [message]="'PROPERTY_LIST.EMPTY_MESSAGE' | translate"
+  />
+
+  <!-- Properties Grid -->
+  <div
+    class="properties-grid"
+    *ngIf="!loading() && !error() && properties().length > 0"
+  >
+    <article
+      *ngFor="let property of properties(); trackBy: trackById"
+      class="property-card"
+      (click)="goToDetails(property.id)"
+      role="button"
+      tabindex="0"
+      [attr.aria-label]="property.title"
+    >
+      <div class="image-wrapper">
+        <img
+          [src]="getMainImage(property)"
+          [alt]="property.title || ('PROPERTY_LIST.IMAGE_ALT' | translate)"
+          loading="lazy"
+          appImageFallback="/images/no-image.svg"
+        />
+        <span
+          class="badge"
+          [class.badge--rent]="property.listingType === 'ForRent'"
+          [class.badge--sale]="property.listingType === 'ForSale'"
+        >
+          {{ property.listingType === 'ForSale'
+              ? ('PROPERTY.MODE_SALE' | translate)
+              : ('PROPERTY.MODE_RENT' | translate) }}
+        </span>
+      </div>
+
+      <div class="card-body">
+        <h2 class="line-clamp-2">
+          {{ property.title || ('PROPERTY_LIST.NO_TITLE' | translate) }}
+        </h2>
+
+        <p class="location line-clamp-1">
+          📍 {{ getLocation(property) }}
+        </p>
+
+        <div class="specs">
+          <span *ngIf="property.area">
+            📏 {{ property.area }} م²
+          </span>
+          <span *ngIf="property.rooms">
+            🛏️ {{ property.rooms }} {{ 'PROPERTY.ROOMS' | translate }}
+          </span>
+          <span *ngIf="property.floor != null">
+            🏢 {{ 'PROPERTY.FLOOR' | translate }} {{ property.floor }}
+          </span>
+        </div>
+
+        <div class="card-footer">
+          <strong class="price">{{ getFormattedPrice(property) }}</strong>
+          <button
+            type="button"
+            class="details-btn"
+            (click)="goToDetails(property.id); $event.stopPropagation()"
+          >
+            {{ 'COMMON.DETAILS' | translate }}
+          </button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <!-- Pagination -->
+  <nav
+    class="pagination"
+    *ngIf="!loading() && properties().length > 0"
+    aria-label="pagination"
+  >
+    <button
+      type="button"
+      [disabled]="!hasPrevious()"
+      (click)="prevPage()"
+    >
+      ← {{ 'COMMON.PREVIOUS' | translate }}
+    </button>
+
+    <span class="page-info">
+      {{ 'COMMON.PAGE' | translate }} {{ currentPage() }} / {{ totalPages() }}
+    </span>
+
+    <button
+      type="button"
+      [disabled]="!hasNext()"
+      (click)="nextPage()"
+    >
+      {{ 'COMMON.NEXT' | translate }} →
+    </button>
+  </nav>
+
+</section>

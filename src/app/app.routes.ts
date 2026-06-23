@@ -13,8 +13,8 @@
 import { Routes } from '@angular/router';
 import { LayoutComponent } from './layout/layout';
 import { HomeComponent } from './features/home/home.component';
-import { WohnungenComponent } from './wohnungen/wohnungen.component';
-import { WohnungDetailComponent } from './wohnung-detail/wohnung-detail.component';
+import { WohnungenComponent } from './features/properties/property-list/property-list.page';
+import { WohnungDetailComponent } from './features/property-detail/property-detail.page';
 import { LoginComponent } from './login/login.component';
 import { KontaktComponent } from './kontakt/kontakt.component';
 import { AuthGuard } from './services/auth-guard';
@@ -38,26 +38,26 @@ export const routes: Routes = [
 
       // ✅ صفحات تحتاج تسجيل دخول (Lazy)
       {
-        path: 'wohnung-add',
-        canActivate: [AuthGuard],
-        loadComponent: () =>
-          import('./wohnung-add/wohnung-add.component')
-            .then(m => m.WohnungAddComponent)
-      },
-      {
-        path: 'wohnungen/edit/:id',
-        canActivate: [AuthGuard],
-        loadComponent: () =>
-          import('./wohnung-add/wohnung-add.component')
-            .then(m => m.WohnungAddComponent)
-      },
-      {
-        path: 'meine-anzeigen',
-        canActivate: [AuthGuard],
-        loadComponent: () =>
-          import('./meine-anzeigen/meine-anzeigen.component')
-            .then(m => m.MeineAnzeigenComponent)
-      }
+  path: 'my-listings',
+  canActivate: [AuthGuard],
+  loadComponent: () =>
+    import('./features/my-listings/my-listings.page')
+      .then(m => m.MyListingsPage)
+},
+{
+  path: 'property-form',
+  canActivate: [AuthGuard],
+  loadComponent: () =>
+    import('./features/property-form/property-form.page')
+      .then(m => m.PropertyFormPage)
+},
+{
+  path: 'properties/edit/:id',
+  canActivate: [AuthGuard],
+  loadComponent: () =>
+    import('./features/property-form/property-form.page')
+      .then(m => m.PropertyFormPage)
+}
     ]
   },
 
@@ -128,11 +128,17 @@ export const routes: Routes = [
 
   // ─── Features ───────────────────────────────────────────────────────────
   {
-    path: 'properties-new',
-    loadComponent: () =>
-      import('./features/properties/property-list/property-list.page')
-        .then(m => m.PropertyListPage)
-  },
+  path: 'properties',
+  loadComponent: () =>
+    import('./features/properties/property-list/property-list.page')
+      .then(m => m.PropertyListPage)
+},
+{
+  path: 'properties/:id',
+  loadComponent: () =>
+    import('./features/property-detail/property-detail.page')
+      .then(m => m.PropertyDetailPage)
+},
   {
     path: 'favorites',
     loadComponent: () =>

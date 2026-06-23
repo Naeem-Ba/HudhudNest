@@ -1,0 +1,111 @@
+<!-- src/app/features/my-listings/my-listings.page.html -->
+
+<section class="my-listings-page">
+
+  <header class="page-header">
+    <h1>{{ 'MY_LISTINGS.TITLE' | translate }}</h1>
+    <a class="btn btn--primary" routerLink="/property-form">
+      ➕ {{ 'MY_LISTINGS.ADD_NEW' | translate }}
+    </a>
+  </header>
+
+  <!-- Skeleton -->
+  <app-skeleton-card-grid *ngIf="loading()" [count]="4" />
+
+  <!-- Error -->
+  <div *ngIf="!loading() && error()" class="state-card error-state" role="alert">
+    <span aria-hidden="true">⚠️</span>
+    <p>{{ error() | translate }}</p>
+    <button type="button" (click)="loadMyListings()">
+      {{ 'COMMON.RETRY' | translate }}
+    </button>
+  </div>
+
+  <!-- Empty -->
+  <app-empty-state
+    *ngIf="!loading() && !error() && listings().length === 0"
+    icon="🏠"
+    [title]="'MY_LISTINGS.EMPTY_TITLE' | translate"
+    [message]="'MY_LISTINGS.EMPTY_MESSAGE' | translate"
+  />
+
+  <!-- Listings Grid -->
+  <div class="listings-grid"
+    *ngIf="!loading() && !error() && listings().length > 0"
+  >
+    <article
+      *ngFor="let p of listings(); trackBy: trackById"
+      class="listing-card"
+      [class.expiring]="isExpiringSoon(p.expiresAt)"
+    >
+      <!-- Image -->
+      <div class="card-image">
+        <img
+          [src]="getMainImage(p)"
+          [alt]="p.title || ''"
+          loading="lazy"
+          appImageFallback="/images/no-image.svg"
+        />
+        <span class="status-badge"
+          [class.status--published]="p.isPublished"
+          [class.status--draft]="!p.isPublished">
+          {{ p.isPublished
+              ? ('MY_LISTINGS.PUBLISHED' | translate)
+              : ('MY_LISTINGS.DRAFT' | translate) }}
+        </span>
+      </div>
+
+      <!-- Info -->
+      <div class="card-body">
+        <h2 class="line-clamp-2">{{ p.title || ('PROPERTY_LIST.NO_TITLE' | translate) }}</h2>
+
+        <dl class="meta-grid">
+          <dt>{{ 'PROPERTY_DETAIL.CITY' | translate }}</dt>
+          <dd>{{ p.city || '—' }}</dd>
+
+          <dt>{{ 'PROPERTY_DETAIL.PRICE' | translate }}</dt>
+          <dd>{{ getPrice(p) }}</dd>
+
+          <dt>{{ 'PROPERTY_DETAIL.AREA' | translate }}</dt>
+          <dd>{{ p.area ? (p.area + ' م²') : '—' }}</dd>
+
+          <dt>{{ 'PROPERTY_DETAIL.ROOMS' | translate }}</dt>
+          <dd>{{ p.rooms ?? '—' }}</dd>
+        </dl>
+
+        <!-- Expiry Warning -->
+        <p class="expiry-warning" *ngIf="isExpiringSoon(p.expiresAt)">
+          ⚠️ {{ 'MY_LISTINGS.EXPIRING_IN' | translate: { days: daysLeft(p.expiresAt) } }}
+        </p>
+
+        <!-- Created At -->
+        <time class="created-at" *ngIf="p.createdAt">
+          {{ 'MY_LISTINGS.CREATED_AT' | translate }}:
+          {{ p.createdAt | date:'dd/MM/yyyy' }}
+        </time>
+
+        <!-- Actions -->
+        <div class="card-actions">
+          <button
+            type="button"
+            class="btn btn--secondary"
+            (click)="edit(p.id)"
+          >
+            ✏️ {{ 'COMMON.EDIT' | translate }}
+          </button>
+          <button
+            type="button"
+            class="btn btn--danger"
+            [disabled]="deletingId() === p.id"
+            (click)="confirmDelete(p.id)"
+          >
+            {{ deletingId() === p.id
+                ? ('COMMON.DELETING' | translate)
+                : ('COMMON.DELETE' | translate) }}
+          </button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+</section>

@@ -1,7 +1,7 @@
 import { Component, Input, AfterViewInit, OnDestroy } from '@angular/core';
 import * as L from 'leaflet';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LanguageService } from '../../services/language.service';
+import { LanguageService } from '../../../services/language.service';
 import { Subscription } from 'rxjs';
 
 @Component({

@@ -1,0 +1,261 @@
+<!-- src/app/features/property-detail/property-detail.page.html -->
+
+<section class="detail-page">
+
+  <!-- Loading -->
+  <app-loading-spinner *ngIf="loading()" [label]="'COMMON.LOADING' | translate" />
+
+  <!-- Error -->
+  <div *ngIf="!loading() && error()" class="state-card error-state" role="alert">
+    <span aria-hidden="true">⚠️</span>
+    <p>{{ error() | translate }}</p>
+    <button type="button" (click)="ngOnInit()">{{ 'COMMON.RETRY' | translate }}</button>
+  </div>
+
+  <!-- Not Found -->
+  <app-empty-state
+    *ngIf="!loading() && !error() && !property()"
+    icon="🏠"
+    [title]="'PROPERTY_DETAIL.NOT_FOUND_TITLE' | translate"
+    [message]="'PROPERTY_DETAIL.NOT_FOUND_MESSAGE' | translate"
+  />
+
+  <!-- Main Content -->
+  <ng-container *ngIf="!loading() && !error() && property() as p">
+
+    <!-- Hero: Gallery + Summary -->
+    <section class="hero">
+
+      <!-- Gallery -->
+      <div class="gallery"
+        (mousedown)="onDragStart($event)"
+        (mouseup)="onDragEnd($event)"
+        (touchstart)="onDragStart($event)"
+        (touchend)="onDragEnd($event)"
+      >
+        <div class="gallery-window" [class.clickable]="hasImages()" (click)="openModal()">
+          <img
+            [src]="currentImageUrl()"
+            [alt]="currentImageAlt()"
+            class="gallery-img"
+            appImageFallback="/images/no-image.svg"
+          />
+          <button *ngIf="hasImages() && currentIndex() > 0"
+            class="arrow arrow--prev" type="button"
+            (click)="isRTL() ? next() : prev(); $event.stopPropagation()"
+            [attr.aria-label]="'COMMON.PREVIOUS' | translate">
+            &#10094;
+          </button>
+          <button *ngIf="hasImages() && currentIndex() < images().length - 1"
+            class="arrow arrow--next" type="button"
+            (click)="isRTL() ? prev() : next(); $event.stopPropagation()"
+            [attr.aria-label]="'COMMON.NEXT' | translate">
+            &#10095;
+          </button>
+        </div>
+        <p class="image-counter" *ngIf="hasImages()">
+          {{ currentIndex() + 1 }} / {{ images().length }}
+        </p>
+      </div>
+
+      <!-- Summary Card -->
+      <div class="summary">
+        <span class="badge"
+          [class.badge--rent]="isRentListing()"
+          [class.badge--sale]="isSaleListing()">
+          {{ isSaleListing()
+              ? ('PROPERTY.MODE_SALE' | translate)
+              : ('PROPERTY.MODE_RENT' | translate) }}
+        </span>
+
+        <h1 class="line-clamp-3">{{ safe(p.title, ('PROPERTY_LIST.NO_TITLE' | translate)) }}</h1>
+        <p class="location">📍 {{ safe(p.street) }}، {{ safe(p.city) }} {{ safe(p.postalCode, '') }}</p>
+
+        <strong class="main-price" *ngIf="isSaleListing()">
+          {{ formatPrice(p.purchasePrice) }}
+        </strong>
+        <strong class="main-price" *ngIf="isRentListing()">
+          {{ formatPrice(p.warmRent ?? p.coldRent) }}
+        </strong>
+
+        <!-- Average Rating -->
+        <div class="rating-summary" *ngIf="averageRating()">
+          <span class="stars">★ {{ averageRating() }}</span>
+          <span class="review-count">({{ reviews().length }} {{ 'REVIEW.REVIEWS' | translate }})</span>
+        </div>
+
+        <!-- Actions -->
+        <div class="action-buttons">
+          <button type="button" class="btn btn--primary"
+            (click)="showVisitForm.set(!showVisitForm())">
+            📅 {{ 'VISIT.REQUEST' | translate }}
+          </button>
+          <button type="button" class="btn btn--secondary"
+            *ngIf="isLoggedIn()"
+            (click)="showReviewForm.set(!showReviewForm())">
+            ⭐ {{ 'REVIEW.ADD' | translate }}
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Visit Request Form -->
+    <section class="card" *ngIf="showVisitForm()">
+      <h2>{{ 'VISIT.REQUEST' | translate }}</h2>
+      <form [formGroup]="visitForm" (ngSubmit)="submitVisit()" novalidate>
+        <div class="field">
+          <label for="proposedAt">{{ 'VISIT.DATE' | translate }} *</label>
+          <input id="proposedAt" type="datetime-local" formControlName="proposedAt" />
+        </div>
+        <div class="field">
+          <label for="visitorName">{{ 'VISIT.NAME' | translate }} *</label>
+          <input id="visitorName" type="text" formControlName="visitorName" />
+        </div>
+        <div class="field">
+          <label for="visitorPhone">{{ 'VISIT.PHONE' | translate }} * (+963...)</label>
+          <input id="visitorPhone" type="tel" formControlName="visitorPhone" />
+        </div>
+        <div class="field">
+          <label for="visitorNote">{{ 'VISIT.NOTE' | translate }}</label>
+          <textarea id="visitorNote" formControlName="visitorNote" rows="3"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn--primary"
+            [disabled]="visitForm.invalid || savingVisit()">
+            {{ savingVisit() ? ('COMMON.SAVING' | translate) : ('VISIT.SUBMIT' | translate) }}
+          </button>
+          <button type="button" class="btn btn--ghost"
+            (click)="showVisitForm.set(false)">
+            {{ 'COMMON.CANCEL' | translate }}
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Review Form -->
+    <section class="card" *ngIf="showReviewForm()">
+      <h2>{{ 'REVIEW.ADD' | translate }}</h2>
+      <form [formGroup]="reviewForm" (ngSubmit)="submitReview()" novalidate>
+        <div class="field">
+          <label>{{ 'REVIEW.RATING' | translate }}</label>
+          <div class="star-selector">
+            <button *ngFor="let star of starsRange" type="button"
+              [class.active]="reviewForm.value.rating! >= star"
+              (click)="reviewForm.patchValue({ rating: star })">
+              ★
+            </button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="comment">{{ 'REVIEW.COMMENT' | translate }}</label>
+          <textarea id="comment" formControlName="comment" rows="3"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn--primary"
+            [disabled]="reviewForm.invalid || savingReview()">
+            {{ savingReview() ? ('COMMON.SAVING' | translate) : ('REVIEW.SUBMIT' | translate) }}
+          </button>
+          <button type="button" class="btn btn--ghost"
+            (click)="showReviewForm.set(false)">
+            {{ 'COMMON.CANCEL' | translate }}
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Property Details -->
+    <section class="card">
+      <h2>{{ 'PROPERTY_DETAIL.INFO' | translate }}</h2>
+      <dl class="info-grid">
+        <dt>{{ 'PROPERTY_DETAIL.CITY' | translate }}</dt>
+        <dd>{{ safe(p.city) }}</dd>
+        <dt>{{ 'PROPERTY_DETAIL.STREET' | translate }}</dt>
+        <dd>{{ safe(p.street) }}</dd>
+        <dt>{{ 'PROPERTY_DETAIL.AREA' | translate }}</dt>
+        <dd>{{ p.area ? (p.area + ' م²') : '—' }}</dd>
+        <dt>{{ 'PROPERTY_DETAIL.ROOMS' | translate }}</dt>
+        <dd>{{ safe(p.rooms) }}</dd>
+        <dt>{{ 'PROPERTY_DETAIL.FLOOR' | translate }}</dt>
+        <dd>{{ safe(p.floor) }}</dd>
+        <dt>{{ 'PROPERTY_DETAIL.AVAILABLE_FROM' | translate }}</dt>
+        <dd>{{ p.availableFrom ? (p.availableFrom | date:'dd/MM/yyyy') : '—' }}</dd>
+        <dt>{{ 'PROPERTY_DETAIL.CONDITION' | translate }}</dt>
+        <dd>{{ safe(p.condition) }}</dd>
+      </dl>
+    </section>
+
+    <!-- Price Details -->
+    <section class="card">
+      <h2>{{ 'PROPERTY_DETAIL.PRICE' | translate }}</h2>
+      <dl class="info-grid">
+        <ng-container *ngIf="isSaleListing()">
+          <dt>{{ 'PROPERTY.PURCHASE_PRICE' | translate }}</dt>
+          <dd>{{ formatPrice(p.purchasePrice) }}</dd>
+        </ng-container>
+        <ng-container *ngIf="isRentListing()">
+          <dt>{{ 'PROPERTY.COLD_RENT' | translate }}</dt>
+          <dd>{{ formatPrice(p.coldRent) }}</dd>
+          <dt>{{ 'PROPERTY.WARM_RENT' | translate }}</dt>
+          <dd>{{ formatPrice(p.warmRent) }}</dd>
+          <dt>{{ 'PROPERTY.ADDITIONAL_COSTS' | translate }}</dt>
+          <dd>{{ formatPrice(p.additionalCosts) }}</dd>
+          <dt>{{ 'PROPERTY.DEPOSIT' | translate }}</dt>
+          <dd>{{ formatPrice(p.deposit) }}</dd>
+        </ng-container>
+      </dl>
+    </section>
+
+    <!-- Features -->
+    <section class="card">
+      <h2>{{ 'PROPERTY_DETAIL.FEATURES' | translate }}</h2>
+      <ul class="features-list">
+        <li *ngIf="p.hasBalcony">✅ {{ 'PROPERTY.HAS_BALCONY' | translate }}</li>
+        <li *ngIf="p.hasElevator">✅ {{ 'PROPERTY.HAS_ELEVATOR' | translate }}</li>
+        <li *ngIf="p.hasParkingSpace">✅ {{ 'PROPERTY.HAS_PARKING' | translate }}</li>
+        <li *ngIf="!p.hasBalcony && !p.hasElevator && !p.hasParkingSpace">
+          {{ 'PROPERTY_DETAIL.NO_FEATURES' | translate }}
+        </li>
+      </ul>
+    </section>
+
+    <!-- Description -->
+    <section class="card" *ngIf="p.description">
+      <h2>{{ 'PROPERTY_DETAIL.DESCRIPTION' | translate }}</h2>
+      <p class="description-text">{{ p.description }}</p>
+    </section>
+
+    <!-- Reviews -->
+    <section class="card">
+      <h2>{{ 'REVIEW.SECTION_TITLE' | translate }}
+        <span *ngIf="averageRating()" class="avg-rating">★ {{ averageRating() }}</span>
+      </h2>
+
+      <app-loading-spinner *ngIf="loadingReviews()" />
+
+      <div *ngIf="!loadingReviews() && reviews().length === 0" class="muted">
+        {{ 'REVIEW.NO_REVIEWS' | translate }}
+      </div>
+
+      <div class="review-list">
+        <article *ngFor="let review of reviews()" class="review-card">
+          <div class="review-header">
+            <span class="reviewer">{{ review.reviewerName || ('REVIEW.ANONYMOUS' | translate) }}</span>
+            <span class="review-stars">{{ '★'.repeat(review.rating) }}</span>
+            <time class="review-date">{{ review.createdAt | date:'dd/MM/yyyy' }}</time>
+          </div>
+          <p *ngIf="review.comment">{{ review.comment }}</p>
+        </article>
+      </div>
+    </section>
+
+  </ng-container>
+
+  <!-- Image Modal -->
+  <div class="modal-overlay" *ngIf="modalOpen()" (click)="closeModal()" role="dialog">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <button class="close-btn" type="button" (click)="closeModal()">✕</button>
+      <img [src]="currentImageUrl()" [alt]="currentImageAlt()" class="modal-img" />
+    </div>
+  </div>
+
+</section>
