@@ -59,11 +59,12 @@ export class ResetPasswordPage {
     };
   }
 
-  readonly form = this.fb.nonNullable.group({
-    email: ['', [Validators.required, Validators.email]],
-    token: ['', Validators.required],
-    newPassword: ['', [Validators.required, Validators.minLength(8)]]
-  });
+ readonly form = this.fb.nonNullable.group({
+  email: ['', [Validators.required, Validators.email]],
+  token: ['', Validators.required],
+  newPassword: ['', [Validators.required, Validators.minLength(8)]],
+  confirmPassword: ['', [Validators.required, Validators.minLength(8)]]
+});
 
   submit(): void {
     this.submitted.set(true);
@@ -77,7 +78,21 @@ export class ResetPasswordPage {
     this.error.set('');
     this.success.set('');
 
-    this.auth.resetPassword(this.form.getRawValue()).subscribe({
+    const raw = this.form.getRawValue();
+
+    if (raw.newPassword !== raw.confirmPassword) {
+      const message = this.translate.instant('AUTH.ERRORS.PASSWORD_MISMATCH');
+      this.error.set(message);
+      this.toast.error(message);
+      return;
+    }
+
+    this.auth.resetPassword({
+      email: raw.email,
+      token: raw.token,
+      newPassword: raw.newPassword,
+      confirmPassword: raw.confirmPassword
+    }).subscribe({
       next: () => {
         this.loading.set(false);
         const message = this.translate.instant('AUTH.RESET_SUCCESS');

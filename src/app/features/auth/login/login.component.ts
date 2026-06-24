@@ -4,10 +4,10 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { AuthApiService } from '../core/services/auth-api.service';
-import { AuthService } from '../services/auth.service';
-import { ToastService } from '../shared/services/toast.service';
-import { ImageFallbackDirective } from '../shared/directives/image-fallback.directive';
+import { AuthApiService } from '../../../core/services/auth-api.service';
+import { AuthService } from '../../../services/auth.service';
+import { ToastService } from '../../../shared/services/toast.service';
+import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
 
 interface LoginFormModel {
   Email: string;

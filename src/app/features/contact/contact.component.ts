@@ -1,17 +1,17 @@
-import { Component } from '@angular/core';
+﻿import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { ContactService } from '../services/contact.service';
-import { ToastService } from '../shared/services/toast.service';
+import { ContactService } from '../../services/contact.service';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-kontakt',
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule],
-  templateUrl: './kontakt.component.html',
-  styleUrls: ['./kontakt.component.scss']
+  templateUrl: './contact.component.html',
+  styles: []
 })
 export class KontaktComponent {
   model = {
