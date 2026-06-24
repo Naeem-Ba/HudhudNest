@@ -5,6 +5,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AuthApiService } from '../../../core/services/auth-api.service';
+import { SocialAuthService } from '../../../core/services/social-auth.service';
+import { AuthTokenResponse, TokenStorageService } from '../../../core/services/token-storage.service';
 import { AuthService } from '../../../services/auth.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
@@ -50,11 +52,21 @@ export class LoginComponent {
   constructor(
     private readonly authApi: AuthApiService,
     private readonly authState: AuthService,
+    private readonly socialAuth: SocialAuthService,
+    private readonly tokenStorage: TokenStorageService,
     private readonly router: Router,
     private readonly route: ActivatedRoute,
     private readonly translate: TranslateService,
     private readonly toast: ToastService
   ) {}
+
+  get googleAvailable(): boolean {
+    return this.socialAuth.isGoogleAvailable;
+  }
+
+  get appleAvailable(): boolean {
+    return this.socialAuth.isAppleAvailable;
+  }
 
   onLogin(form: NgForm): void {
     this.submitted = true;
@@ -75,17 +87,46 @@ export class LoginComponent {
 
     this.authApi.login(request).subscribe({
       next: () => {
-        this.authState.restoreSession();
-        this.success = true;
-        this.message = this.t('AUTH.LOGIN_SUCCESS');
-        this.toast.success(this.message);
-
-        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
-        this.router.navigateByUrl(returnUrl);
+        this.refreshAuthState();
+        this.completeLoginSuccess();
       },
       error: () => {
         this.loading = false;
         this.setError(this.t('AUTH.ERRORS.INVALID_CREDENTIALS'));
+      }
+    });
+  }
+
+  onGoogleLogin(): void {
+    if (this.loading || !this.googleAvailable) {
+      return;
+    }
+
+    this.loading = true;
+    this.message = '';
+
+    this.socialAuth.loginWithGoogle().subscribe({
+      next: response => this.completeSocialLogin(response),
+      error: error => {
+        this.loading = false;
+        this.setError(this.socialAuth.getSocialErrorMessage(error));
+      }
+    });
+  }
+
+  onAppleLogin(): void {
+    if (this.loading || !this.appleAvailable) {
+      return;
+    }
+
+    this.loading = true;
+    this.message = '';
+
+    this.socialAuth.loginWithApple().subscribe({
+      next: response => this.completeSocialLogin(response),
+      error: error => {
+        this.loading = false;
+        this.setError(this.socialAuth.getSocialErrorMessage(error));
       }
     });
   }
@@ -144,6 +185,32 @@ export class LoginComponent {
     this.submitted = false;
   }
 
+  private completeSocialLogin(response: AuthTokenResponse): void {
+    this.tokenStorage.storeTokens(response, false);
+    this.refreshAuthState();
+    this.completeLoginSuccess();
+  }
+
+  private completeLoginSuccess(): void {
+    this.loading = false;
+    this.success = true;
+    this.message = this.t('AUTH.LOGIN_SUCCESS');
+    this.toast.success(this.message);
+
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
+    void this.router.navigateByUrl(returnUrl);
+  }
+
+  private refreshAuthState(): void {
+    const authState = this.authState as unknown as {
+      restoreSession?: () => void;
+      validateSession?: () => void;
+    };
+
+    authState.restoreSession?.();
+    authState.validateSession?.();
+  }
+
   private validateRegisterForm(firstName: string, lastName: string, email: string, password: string): string | null {
     if (!firstName || !lastName) {
       return this.t('AUTH.ERRORS.FULL_NAME_REQUIRED');
@@ -173,6 +240,7 @@ export class LoginComponent {
   }
 
   private setError(message: string): void {
+    this.loading = false;
     this.success = false;
     this.message = message;
     this.toast.error(message);

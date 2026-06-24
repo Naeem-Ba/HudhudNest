@@ -7,13 +7,31 @@
     <h1>{{ showRegister ? ('AUTH.REGISTER_TITLE' | translate) : ('AUTH.LOGIN_TITLE' | translate) }}</h1>
     <p class="auth-subtitle">{{ showRegister ? ('AUTH.REGISTER_SUBTITLE' | translate) : ('AUTH.LOGIN_SUBTITLE' | translate) }}</p>
 
-    <button type="button" class="social google" disabled>
-      <span class="icon">G</span> {{ 'AUTH.GOOGLE_DISABLED' | translate }}
-    </button>
+   <button
+  type="button"
+  class="social google"
+  [disabled]="loading || !googleAvailable"
+  (click)="onGoogleLogin()">
+  <span class="icon">G</span>
+  {{
+    googleAvailable
+      ? ('AUTH.GOOGLE_LOGIN' | translate)
+      : ('AUTH.GOOGLE_DISABLED' | translate)
+  }}
+</button>
 
-    <button type="button" class="social apple" disabled>
-      <span class="icon"></span> {{ 'AUTH.APPLE_DISABLED' | translate }}
-    </button>
+<button
+  type="button"
+  class="social apple"
+  [disabled]="loading || !appleAvailable"
+  (click)="onAppleLogin()">
+  <span class="icon"></span>
+  {{
+    appleAvailable
+      ? ('AUTH.APPLE_LOGIN' | translate)
+      : ('AUTH.APPLE_DISABLED' | translate)
+  }}
+</button>
 
     <div class="divider">{{ 'AUTH.OR' | translate }}</div>
 
