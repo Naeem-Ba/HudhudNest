@@ -35,6 +35,10 @@ export class BackendApiService {
     return this.http.post<T>(this.url(path), formData);
   }
 
+  postFormData<T>(path: string, formData: FormData): Observable<T> {
+  return this.upload<T>(path, formData);
+}
+
   private url(path: string): string {
     if (/^https?:\/\//i.test(path)) {
       return path;

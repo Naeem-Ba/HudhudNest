@@ -3,7 +3,8 @@ import {
   createAppEnvironment,
   readApiUrlFromProcessEnv,
   readBaseUrlFromProcessEnv,
-  readSignalRUrlFromProcessEnv
+  readSignalRUrlFromProcessEnv,
+  readProcessEnv
 } from './environment.model';
 
 const apiBaseUrl = readApiUrlFromProcessEnv() || 'https://wohnungen-api.onrender.com/api';
@@ -13,5 +14,9 @@ export const environment: AppEnvironment = createAppEnvironment({
   environmentName: 'staging',
   apiBaseUrl,
   baseUrl: readBaseUrlFromProcessEnv(),
-  signalRUrl: readSignalRUrlFromProcessEnv()
+  signalRUrl: readSignalRUrlFromProcessEnv(),
+
+    googleClientId: readProcessEnv('GOOGLE_CLIENT_ID') ?? '',
+    appleClientId: readProcessEnv('APPLE_CLIENT_ID') ?? '',
+    appleRedirectUri: readProcessEnv('APPLE_REDIRECT_URI') ?? ''
 });

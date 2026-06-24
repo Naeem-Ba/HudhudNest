@@ -1,4 +1,4 @@
-export type AppEnvironmentName = 'local' | 'staging' | 'production';
+﻿export type AppEnvironmentName = 'local' | 'staging' | 'production';
 
 export interface AppEnvironment {
   production: boolean;
@@ -15,6 +15,15 @@ export interface AppEnvironment {
 
   /** SignalR notification hub URL. */
   signalRUrl: string;
+
+  /** Google OAuth Client ID. Empty value disables Google login button. */
+  googleClientId: string;
+
+  /** Apple Services ID / Client ID. Empty value disables Apple login button. */
+  appleClientId: string;
+
+  /** Apple redirect URI. Required for Apple Sign In popup flow. */
+  appleRedirectUri: string;
 }
 
 declare const process:
@@ -37,11 +46,7 @@ export function readProcessEnv(key: string): string | undefined {
 }
 
 export function readApiUrlFromProcessEnv(): string | undefined {
-  if (typeof process === 'undefined') {
-    return undefined;
-  }
-
-  return clean(process.env ? process.env['API_URL'] : undefined);
+  return readProcessEnv('API_URL');
 }
 
 export function readBaseUrlFromProcessEnv(): string | undefined {
@@ -71,6 +76,9 @@ export function createAppEnvironment(config: {
   apiBaseUrl: string;
   baseUrl?: string;
   signalRUrl?: string;
+  googleClientId?: string;
+  appleClientId?: string;
+  appleRedirectUri?: string;
 }): AppEnvironment {
   const apiBaseUrl = normalizeApiBaseUrl(config.apiBaseUrl);
   const baseUrl = withoutTrailingSlash(config.baseUrl ?? backendOriginFromApiBaseUrl(apiBaseUrl));
@@ -82,6 +90,9 @@ export function createAppEnvironment(config: {
     baseUrl,
     apiBaseUrl,
     apiUrl: apiBaseUrl,
-    signalRUrl
+    signalRUrl,
+    googleClientId: config.googleClientId ?? '',
+    appleClientId: config.appleClientId ?? '',
+    appleRedirectUri: config.appleRedirectUri ?? ''
   };
 }
