@@ -1,153 +1,142 @@
-// =====================================================================
-// 🔧 FIX — refresh-auth.interceptor.ts
-//
-// المشكلة الأصلية:
-//   الاسم "RefreshAuthInterceptor" مُضلِّل — لم يكن يُجدِّد التوكن أبداً.
-//   عند أي 401: كان يحذف التوكنات ويُحوِّل المستخدم لصفحة تسجيل الدخول.
-//   النتيجة: المستخدم يُسجَّل خروجه عند كل تحديث للصفحة.
-//
-// الإصلاح:
-//   1. عند الـ 401: نحاول استخدام refreshToken لطلب accessToken جديد.
-//   2. عند النجاح: نُعيد الطلب الأصلي بالتوكن الجديد.
-//   3. عند الفشل: نحذف التوكنات ونُحوِّل لصفحة الدخول.
-//   4. إذا جاءت عدة طلبات بـ 401 في نفس الوقت: يُرسَل طلب refresh واحد فقط،
-//      والبقية تنتظر نتيجته (عبر BehaviorSubject مشترك).
-//
-// المسار: src/app/core/interceptors/refresh-auth.interceptor.ts
-// =====================================================================
-
-import {
-  HttpBackend,
-  HttpClient,
-  HttpErrorResponse,
-  HttpInterceptorFn
-} from '@angular/common/http';
+import { HttpBackend, HttpClient, HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import {
-  BehaviorSubject,
-  catchError,
-  filter,
-  switchMap,
-  take,
-  throwError
-} from 'rxjs';
-import { TokenStorageService, AuthTokenResponse } from '../services/token-storage.service';
-import { environment } from '../../../environments/environment';
+import { catchError, finalize, map, Observable, of, shareReplay, switchMap, throwError } from 'rxjs';
 
-// ─── حالة الـ refresh المشتركة بين جميع الطلبات ──────────────────────────────
-// هذه المتغيرات خارج الدالة حتى تُشارَك بين جميع استدعاءات الـ interceptor.
-let isRefreshing = false;
-const refreshCompleted$ = new BehaviorSubject<boolean>(false);
+import { environment } from '../../../environments/environment';
+import { normalizeAuthTokenResponse } from '../models/auth.model';
+import { TokenStorageService } from '../services/token-storage.service';
+
+let refreshRequest$: Observable<string> | null = null;
 
 /**
- * هل هذا URL خاص بالمصادقة؟
- * نتجاهل أخطاء الـ 401 من هذه المسارات لتجنب الحلقة اللانهائية.
+ * Normalize a URL so interceptor decisions are deterministic for absolute and relative URLs.
  */
+function toAbsoluteUrl(url: string): string {
+  const appOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
+
+  try {
+    return new URL(url, appOrigin).href.replace(/\/+$/, '').toLowerCase();
+  } catch {
+    return url.replace(/\/+$/, '').toLowerCase();
+  }
+}
+
+/**
+ * JWT must only be attached to our REST API. This prevents token leakage to i18n,
+ * static files, SignalR URLs, analytics, maps, or any future third-party request.
+ */
+function isBackendApiRequest(url: string): boolean {
+  const apiBaseUrl = toAbsoluteUrl(environment.apiBaseUrl || environment.apiUrl);
+  const requestUrl = toAbsoluteUrl(url);
+
+  return requestUrl === apiBaseUrl || requestUrl.startsWith(`${apiBaseUrl}/`);
+}
+
+/** Auth endpoints must not trigger refresh loops or receive stale Authorization headers. */
 function isAuthEndpoint(url: string): boolean {
-  const lower = url.toLowerCase();
+  const path = toAbsoluteUrl(url);
+
   return (
-    lower.includes('/auth/login') ||
-    lower.includes('/auth/register') ||
-    lower.includes('/auth/refresh') ||
-    lower.includes('/auth/phone/send-otp') ||
-    lower.includes('/auth/phone/verify') ||
-    lower.includes('/auth/forgot-password') ||
-    lower.includes('/auth/reset-password')
+    path.includes('/auth/login') ||
+    path.includes('/auth/register') ||
+    path.includes('/auth/refresh') ||
+    path.includes('/auth/logout') ||
+    path.includes('/auth/phone/send-otp') ||
+    path.includes('/auth/phone/verify') ||
+    path.includes('/auth/forgot-password') ||
+    path.includes('/auth/reset-password')
   );
 }
 
-/** مسح التوكنات والتوجيه لصفحة الدخول */
+function withBearerToken(req: Parameters<HttpInterceptorFn>[0], token: string) {
+  return req.clone({
+    setHeaders: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+}
+
 function clearAndRedirect(tokenStorage: TokenStorageService, router: Router): void {
-  isRefreshing = false;
   tokenStorage.clear();
-  void router.navigateByUrl('/auth/login');
+
+  if (router.url !== '/auth/login' && router.url !== '/login') {
+    void router.navigateByUrl('/auth/login');
+  }
+}
+
+function requestNewAccessToken(
+  httpBackend: HttpBackend,
+  tokenStorage: TokenStorageService,
+  router: Router,
+  refreshToken: string
+): Observable<string> {
+  if (!refreshRequest$) {
+    const directHttp = new HttpClient(httpBackend);
+
+    refreshRequest$ = directHttp
+      .post<unknown>(`${environment.apiUrl}/auth/refresh`, { refreshToken })
+      .pipe(
+        map(response => normalizeAuthTokenResponse(response)),
+        switchMap(tokens => {
+          if (!tokens.accessToken) {
+            return throwError(() => new Error('Refresh response did not contain an access token.'));
+          }
+
+          // Keep the previous "remember me" storage location when rotating tokens.
+          tokenStorage.storeTokens(tokens, tokenStorage.isRemembered());
+          return of(tokens.accessToken);
+        }),
+        catchError(error => {
+          // All waiting requests receive the same error instead of hanging forever.
+          clearAndRedirect(tokenStorage, router);
+          return throwError(() => error);
+        }),
+        finalize(() => {
+          refreshRequest$ = null;
+        }),
+        shareReplay({ bufferSize: 1, refCount: false })
+      );
+  }
+
+  return refreshRequest$;
 }
 
 export const RefreshAuthInterceptor: HttpInterceptorFn = (req, next) => {
   const tokenStorage = inject(TokenStorageService);
-  const router      = inject(Router);
-  // ✅ HttpBackend يتجاوز جميع الـ interceptors — يمنع الحلقة اللانهائية
+  const router = inject(Router);
   const httpBackend = inject(HttpBackend);
 
-  // ── إضافة Authorization header إذا كان التوكن موجوداً ───────────────────
+  const isApiRequest = isBackendApiRequest(req.url);
+  const isAuthRequest = isAuthEndpoint(req.url);
   const accessToken = tokenStorage.getAccessToken();
-  const authReq = accessToken && !req.headers.has('Authorization')
-    ? req.clone({ setHeaders: { Authorization: `Bearer ${accessToken}` } })
+
+  const request = isApiRequest && !isAuthRequest && accessToken && !req.headers.has('Authorization')
+    ? withBearerToken(req, accessToken)
     : req;
 
-  return next(authReq).pipe(
+  return next(request).pipe(
     catchError((error: unknown) => {
-
-      // نتجاهل أي خطأ غير 401، أو إذا كان الطلب لمسار مصادقة
       if (
         !(error instanceof HttpErrorResponse) ||
         error.status !== 401 ||
-        isAuthEndpoint(req.url)
+        !isApiRequest ||
+        isAuthRequest
       ) {
         return throwError(() => error);
       }
 
       const refreshToken = tokenStorage.getRefreshToken();
 
-      // لا يوجد refresh token — أوقف الجلسة مباشرةً
       if (!refreshToken) {
         clearAndRedirect(tokenStorage, router);
         return throwError(() => error);
       }
 
-      // ── الحالة أ: refresh جارٍ بالفعل — انتظر نتيجته ────────────────────
-      if (isRefreshing) {
-        return refreshCompleted$.pipe(
-          filter(done => done === true),   // انتظر حتى يكتمل الـ refresh
-          take(1),
-          switchMap(() => {
-            const newToken = tokenStorage.getAccessToken();
-            if (!newToken) return throwError(() => error);
-
-            // أعد الطلب الأصلي بالتوكن الجديد
-            const retryReq = req.clone({
-              setHeaders: { Authorization: `Bearer ${newToken}` }
-            });
-            return next(retryReq);
-          })
-        );
-      }
-
-      // ── الحالة ب: أبدأ refresh جديداً ────────────────────────────────────
-      isRefreshing = true;
-      refreshCompleted$.next(false);
-
-      // HttpClient مبني على HttpBackend مباشرةً (يتجاوز الـ interceptors)
-      const directHttp = new HttpClient(httpBackend);
-
-      return directHttp
-        .post<AuthTokenResponse>(`${environment.apiUrl}/auth/refresh`, { refreshToken })
-        .pipe(
-          switchMap(res => {
-            // ✅ خزِّن التوكنات الجديدة
-            tokenStorage.storeTokens(res);
-            isRefreshing = false;
-            refreshCompleted$.next(true);   // أخبر الطلبات المنتظِرة
-
-            const newToken = tokenStorage.getAccessToken();
-            if (!newToken) {
-              clearAndRedirect(tokenStorage, router);
-              return throwError(() => error);
-            }
-
-            // ✅ أعد الطلب الأصلي بالتوكن الجديد
-            const retryReq = req.clone({
-              setHeaders: { Authorization: `Bearer ${newToken}` }
-            });
-            return next(retryReq);
-          }),
-          catchError(refreshError => {
-            // الـ refresh فشل (التوكن منتهي الصلاحية أو مُبطَل من الـ Backend)
-            clearAndRedirect(tokenStorage, router);
-            return throwError(() => refreshError);
-          })
-        );
+      return requestNewAccessToken(httpBackend, tokenStorage, router, refreshToken).pipe(
+        switchMap(newAccessToken => next(withBearerToken(req, newAccessToken))),
+        catchError(refreshError => throwError(() => refreshError))
+      );
     })
   );
 };

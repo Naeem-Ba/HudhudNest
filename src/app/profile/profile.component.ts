@@ -1,9 +1,9 @@
 // =====================================================================
-// âœ… FIX #7 â€“ profile.component.ts
-// Ø§Ù„Ù…Ø´ÙƒÙ„Ø© Ø§Ù„Ø£ÙˆÙ„Ù‰: uploadAvatar() ØªÙØ±Ø¬Ø¹ Ø®Ø·Ø£ Ø¯Ø§Ø¦Ù…Ø§Ù‹ â€“ endpoint ØºÙŠØ± Ù…ÙƒØªÙ…Ù„
-// Ø§Ù„Ù…Ø´ÙƒÙ„Ø© Ø§Ù„Ø«Ø§Ù†ÙŠØ© (#13): deleteAccount() Ù„Ø§ ØªÙØ³Ø¬Ù‘Ù„ Ø®Ø±ÙˆØ¬Ø§Ù‹ Ø¨Ø¹Ø¯ Ø§Ù„Ø­Ø°Ù
-// Ø§Ù„Ø­Ù„ #7: Ø¥Ø®ÙØ§Ø¡ Ø²Ø± Ø§Ù„Ø±ÙØ¹ Ù…Ø¹ Ø¥Ø´Ø¹Ø§Ø± ÙˆØ§Ø¶Ø­ Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù…
-// Ø§Ù„Ø­Ù„ #13: Ù…Ø³Ø­ Ø§Ù„Ø¬Ù„Ø³Ø© ÙˆØ§Ù„ØªÙˆØ¬ÙŠÙ‡ Ù„ØµÙØ­Ø© ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„ Ø¨Ø¹Ø¯ Ø§Ù„Ø­Ø°Ù
+// Ã¢Å“â€¦ FIX #7 Ã¢â‚¬â€œ profile.component.ts
+// Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â´Ã™Æ’Ã™â€žÃ˜Â© Ã˜Â§Ã™â€žÃ˜Â£Ã™Ë†Ã™â€žÃ™â€°: uploadAvatar() Ã˜ÂªÃ™ÂÃ˜Â±Ã˜Â¬Ã˜Â¹ Ã˜Â®Ã˜Â·Ã˜Â£ Ã˜Â¯Ã˜Â§Ã˜Â¦Ã™â€¦Ã˜Â§Ã™â€¹ Ã¢â‚¬â€œ endpoint Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã™Æ’Ã˜ÂªÃ™â€¦Ã™â€ž
+// Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â´Ã™Æ’Ã™â€žÃ˜Â© Ã˜Â§Ã™â€žÃ˜Â«Ã˜Â§Ã™â€ Ã™Å Ã˜Â© (#13): deleteAccount() Ã™â€žÃ˜Â§ Ã˜ÂªÃ™ÂÃ˜Â³Ã˜Â¬Ã™â€˜Ã™â€ž Ã˜Â®Ã˜Â±Ã™Ë†Ã˜Â¬Ã˜Â§Ã™â€¹ Ã˜Â¨Ã˜Â¹Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â°Ã™Â
+// Ã˜Â§Ã™â€žÃ˜Â­Ã™â€ž #7: Ã˜Â¥Ã˜Â®Ã™ÂÃ˜Â§Ã˜Â¡ Ã˜Â²Ã˜Â± Ã˜Â§Ã™â€žÃ˜Â±Ã™ÂÃ˜Â¹ Ã™â€¦Ã˜Â¹ Ã˜Â¥Ã˜Â´Ã˜Â¹Ã˜Â§Ã˜Â± Ã™Ë†Ã˜Â§Ã˜Â¶Ã˜Â­ Ã™â€žÃ™â€žÃ™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦
+// Ã˜Â§Ã™â€žÃ˜Â­Ã™â€ž #13: Ã™â€¦Ã˜Â³Ã˜Â­ Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€žÃ˜Â³Ã˜Â© Ã™Ë†Ã˜Â§Ã™â€žÃ˜ÂªÃ™Ë†Ã˜Â¬Ã™Å Ã™â€¡ Ã™â€žÃ˜ÂµÃ™ÂÃ˜Â­Ã˜Â© Ã˜ÂªÃ˜Â³Ã˜Â¬Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¯Ã˜Â®Ã™Ë†Ã™â€ž Ã˜Â¨Ã˜Â¹Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â°Ã™Â
 // =====================================================================
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -21,7 +21,7 @@ import { ImageFallbackDirective } from '../shared/directives/image-fallback.dire
 @Component({
   selector: 'app-profile',
   standalone: true,
-  // âœ… FIX #15: OnPush Ù„ØªØ­Ø³ÙŠÙ† Ø§Ù„Ø£Ø¯Ø§Ø¡ â€“ ÙŠØ¹Ù…Ù„ Ø¬ÙŠØ¯Ø§Ù‹ Ù…Ø¹ Signals
+  // Ã¢Å“â€¦ FIX #15: OnPush Ã™â€žÃ˜ÂªÃ˜Â­Ã˜Â³Ã™Å Ã™â€  Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â¯Ã˜Â§Ã˜Â¡ Ã¢â‚¬â€œ Ã™Å Ã˜Â¹Ã™â€¦Ã™â€ž Ã˜Â¬Ã™Å Ã˜Â¯Ã˜Â§Ã™â€¹ Ã™â€¦Ã˜Â¹ Signals
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
@@ -39,7 +39,7 @@ export class ProfileComponent implements OnInit {
   private readonly translate      = inject(TranslateService);
   private readonly urlService     = inject(UrlService);
   private readonly toast          = inject(ToastService);
-  // âœ… FIX #13: Ù†Ø­ØªØ§Ø¬ Router Ù„Ù„ØªÙˆØ¬ÙŠÙ‡ Ø¨Ø¹Ø¯ Ø­Ø°Ù Ø§Ù„Ø­Ø³Ø§Ø¨
+  // Ã¢Å“â€¦ FIX #13: Ã™â€ Ã˜Â­Ã˜ÂªÃ˜Â§Ã˜Â¬ Router Ã™â€žÃ™â€žÃ˜ÂªÃ™Ë†Ã˜Â¬Ã™Å Ã™â€¡ Ã˜Â¨Ã˜Â¹Ã˜Â¯ Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã˜Â§Ã˜Â¨
   private readonly router         = inject(Router);
 
   user          = signal<UserProfile | null>(null);
@@ -50,8 +50,8 @@ export class ProfileComponent implements OnInit {
   avatarPreview = signal<string | null>(null);
   showPasswordForm = signal(false);
 
-  // âœ… FIX #7: Ø¥Ø¸Ù‡Ø§Ø± Ø±Ø³Ø§Ù„Ø© "Ø§Ù„ÙˆØ¸ÙŠÙØ© Ù‚ÙŠØ¯ Ø§Ù„ØªØ·ÙˆÙŠØ±" Ø¨Ø¯Ù„Ø§Ù‹ Ù…Ù† Ø®Ø·Ø£ ØµØ§Ù…Øª
-  avatarUploadAvailable = false; // â† Ø§Ø¬Ø¹Ù„Ù‡Ø§ true Ø¹Ù†Ø¯Ù…Ø§ ÙŠÙƒÙˆÙ† Backend Ø¬Ø§Ù‡Ø²Ø§Ù‹
+  // Ã¢Å“â€¦ FIX #7: Ã˜Â¥Ã˜Â¸Ã™â€¡Ã˜Â§Ã˜Â± Ã˜Â±Ã˜Â³Ã˜Â§Ã™â€žÃ˜Â© "Ã˜Â§Ã™â€žÃ™Ë†Ã˜Â¸Ã™Å Ã™ÂÃ˜Â© Ã™â€šÃ™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â·Ã™Ë†Ã™Å Ã˜Â±" Ã˜Â¨Ã˜Â¯Ã™â€žÃ˜Â§Ã™â€¹ Ã™â€¦Ã™â€  Ã˜Â®Ã˜Â·Ã˜Â£ Ã˜ÂµÃ˜Â§Ã™â€¦Ã˜Âª
+  avatarUploadAvailable = false; // Ã¢â€ Â Ã˜Â§Ã˜Â¬Ã˜Â¹Ã™â€žÃ™â€¡Ã˜Â§ true Ã˜Â¹Ã™â€ Ã˜Â¯Ã™â€¦Ã˜Â§ Ã™Å Ã™Æ’Ã™Ë†Ã™â€  Backend Ã˜Â¬Ã˜Â§Ã™â€¡Ã˜Â²Ã˜Â§Ã™â€¹
 
   submitted         = false;
   passwordSubmitted = false;
@@ -102,7 +102,7 @@ export class ProfileComponent implements OnInit {
     this.profileService.updateProfile(user).subscribe({
       next: updated => {
         this.user.set(updated);
-        this.authService.updateCurrentUser(updated);
+        this.syncAuthStateFromProfile(updated);
         this.isSaving.set(false);
         this.submitted = false;
         this.toast.success(this.translate.instant('PROFILE.MESSAGES.SAVE_SUCCESS'));
@@ -115,15 +115,15 @@ export class ProfileComponent implements OnInit {
   }
 
   /**
-   * âœ… FIX #7: Ø¥Ø°Ø§ Ù„Ù… ÙŠÙƒÙ† Ø§Ù„Ù€ endpoint Ø¬Ø§Ù‡Ø²Ø§Ù‹ØŒ Ø£Ø®Ø¨Ø± Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø¨ÙˆØ¶ÙˆØ­
-   * Ø¨Ø¯Ù„Ø§Ù‹ Ù…Ù† Ø¥Ø±Ø³Ø§Ù„ Ø·Ù„Ø¨ ÙŠÙØ´Ù„ Ø¨ØµÙ…Øª
+   * Ã¢Å“â€¦ FIX #7: Ã˜Â¥Ã˜Â°Ã˜Â§ Ã™â€žÃ™â€¦ Ã™Å Ã™Æ’Ã™â€  Ã˜Â§Ã™â€žÃ™â‚¬ endpoint Ã˜Â¬Ã˜Â§Ã™â€¡Ã˜Â²Ã˜Â§Ã™â€¹Ã˜Å’ Ã˜Â£Ã˜Â®Ã˜Â¨Ã˜Â± Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã˜Â¨Ã™Ë†Ã˜Â¶Ã™Ë†Ã˜Â­
+   * Ã˜Â¨Ã˜Â¯Ã™â€žÃ˜Â§Ã™â€¹ Ã™â€¦Ã™â€  Ã˜Â¥Ã˜Â±Ã˜Â³Ã˜Â§Ã™â€ž Ã˜Â·Ã™â€žÃ˜Â¨ Ã™Å Ã™ÂÃ˜Â´Ã™â€ž Ã˜Â¨Ã˜ÂµÃ™â€¦Ã˜Âª
    */
   onFileSelected(event: Event): void {
-    // âœ… FIX #7: Ø¥Ø°Ø§ Ù„Ù… ØªÙƒÙ† Ø§Ù„ÙˆØ¸ÙŠÙØ© Ø¬Ø§Ù‡Ø²Ø©ØŒ Ø£Ø®Ø¨Ø± Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… ÙÙˆØ±Ø§Ù‹
+    // Ã¢Å“â€¦ FIX #7: Ã˜Â¥Ã˜Â°Ã˜Â§ Ã™â€žÃ™â€¦ Ã˜ÂªÃ™Æ’Ã™â€  Ã˜Â§Ã™â€žÃ™Ë†Ã˜Â¸Ã™Å Ã™ÂÃ˜Â© Ã˜Â¬Ã˜Â§Ã™â€¡Ã˜Â²Ã˜Â©Ã˜Å’ Ã˜Â£Ã˜Â®Ã˜Â¨Ã˜Â± Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã™ÂÃ™Ë†Ã˜Â±Ã˜Â§Ã™â€¹
     if (!this.avatarUploadAvailable) {
       this.toast.warning(this.translate.instant('PROFILE.MESSAGES.AVATAR_COMING_SOON')
-        || 'ÙˆØ¸ÙŠÙØ© Ø±ÙØ¹ Ø§Ù„ØµÙˆØ±Ø© Ù‚ÙŠØ¯ Ø§Ù„ØªØ·ÙˆÙŠØ± ÙˆØ³ØªÙƒÙˆÙ† Ù…ØªØ§Ø­Ø© Ù‚Ø±ÙŠØ¨Ø§Ù‹.');
-      // Ø£Ø¹Ø¯ Ø¶Ø¨Ø· Ù‚ÙŠÙ…Ø© Ø§Ù„Ø­Ù‚Ù„
+        || 'Ã™Ë†Ã˜Â¸Ã™Å Ã™ÂÃ˜Â© Ã˜Â±Ã™ÂÃ˜Â¹ Ã˜Â§Ã™â€žÃ˜ÂµÃ™Ë†Ã˜Â±Ã˜Â© Ã™â€šÃ™Å Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â·Ã™Ë†Ã™Å Ã˜Â± Ã™Ë†Ã˜Â³Ã˜ÂªÃ™Æ’Ã™Ë†Ã™â€  Ã™â€¦Ã˜ÂªÃ˜Â§Ã˜Â­Ã˜Â© Ã™â€šÃ˜Â±Ã™Å Ã˜Â¨Ã˜Â§Ã™â€¹.');
+      // Ã˜Â£Ã˜Â¹Ã˜Â¯ Ã˜Â¶Ã˜Â¨Ã˜Â· Ã™â€šÃ™Å Ã™â€¦Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â­Ã™â€šÃ™â€ž
       const input = event.target as HTMLInputElement;
       input.value = '';
       return;
@@ -155,7 +155,7 @@ export class ProfileComponent implements OnInit {
         this.avatarPreview.set(
           this.urlService.buildWithCacheBuster(res.imageUrl) || this.fallbackAvatar
         );
-        this.authService.updateCurrentUser(updated);
+        this.syncAuthStateFromProfile(updated);
         this.isUploading.set(false);
         this.toast.success(this.translate.instant('PROFILE.MESSAGES.AVATAR_SUCCESS'));
       },
@@ -202,19 +202,19 @@ export class ProfileComponent implements OnInit {
   }
 
   /**
-   * âœ… FIX #13: Ø¨Ø¹Ø¯ Ø­Ø°Ù Ø§Ù„Ø­Ø³Ø§Ø¨ â†’ Ù…Ø³Ø­ Ø§Ù„Ø¬Ù„Ø³Ø© â†’ Ø§Ù„ØªÙˆØ¬ÙŠÙ‡ Ù„ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„
+   * Ã¢Å“â€¦ FIX #13: Ã˜Â¨Ã˜Â¹Ã˜Â¯ Ã˜Â­Ã˜Â°Ã™Â Ã˜Â§Ã™â€žÃ˜Â­Ã˜Â³Ã˜Â§Ã˜Â¨ Ã¢â€ â€™ Ã™â€¦Ã˜Â³Ã˜Â­ Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€žÃ˜Â³Ã˜Â© Ã¢â€ â€™ Ã˜Â§Ã™â€žÃ˜ÂªÃ™Ë†Ã˜Â¬Ã™Å Ã™â€¡ Ã™â€žÃ˜ÂªÃ˜Â³Ã˜Â¬Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¯Ã˜Â®Ã™Ë†Ã™â€ž
    */
   onDeleteAccount(): void {
     if (!confirm(this.translate.instant('PROFILE.MESSAGES.DELETE_CONFIRM'))) return;
 
     this.profileService.deleteAccount().subscribe({
       next: () => {
-        // âœ… FIX #13: Ù…Ø³Ø­ Ø§Ù„ØªÙˆÙƒÙ† ÙˆØ¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø¬Ù„Ø³Ø©
-        this.authService.logout();
+        // Ã¢Å“â€¦ FIX #13: Ã™â€¦Ã˜Â³Ã˜Â­ Ã˜Â§Ã™â€žÃ˜ÂªÃ™Ë†Ã™Æ’Ã™â€  Ã™Ë†Ã˜Â¨Ã™Å Ã˜Â§Ã™â€ Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â¬Ã™â€žÃ˜Â³Ã˜Â©
+        this.authService.logoutLocal();
 
         this.toast.success(this.translate.instant('PROFILE.MESSAGES.DELETE_SUCCESS'));
 
-        // âœ… FIX #13: ØªÙˆØ¬ÙŠÙ‡ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø®Ø§Ø±Ø¬ Ø§Ù„ØªØ·Ø¨ÙŠÙ‚
+        // Ã¢Å“â€¦ FIX #13: Ã˜ÂªÃ™Ë†Ã˜Â¬Ã™Å Ã™â€¡ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã˜Â®Ã˜Â§Ã˜Â±Ã˜Â¬ Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â·Ã˜Â¨Ã™Å Ã™â€š
         this.router.navigateByUrl('/auth/login');
       },
       error: () => {
@@ -240,6 +240,29 @@ export class ProfileComponent implements OnInit {
     );
   }
 
+  /**
+   * Keeps AuthService independent from Profile DTO shape.
+   * The profile endpoint returns UserProfile, while AuthService owns AuthenticatedUser.
+   */
+  private syncAuthStateFromProfile(profile: UserProfile): void {
+    const id = profile.id ?? profile.Id ?? '';
+    const displayName =
+      profile.DisplayName?.trim() ||
+      [profile.Vorname, profile.Name].filter(Boolean).join(' ').trim() ||
+      profile.Email ||
+      '';
+
+    this.authService.updateCurrentUser({
+      id,
+      Id: id,
+      email: profile.Email ?? '',
+      Email: profile.Email ?? '',
+      displayName,
+      DisplayName: displayName,
+      ImageUrl: profile.ImageUrl ?? null,
+      imageUrl: profile.ImageUrl ?? null
+    });
+  }
   private resetPasswordForm(): void {
     this.passwordData     = { currentPassword: '', newPassword: '', confirmPassword: '' };
     this.passwordSubmitted = false;

@@ -1,89 +1,106 @@
-// =====================================================================
-// ✅ FIX #1b – auth.service.ts
-// المشكلة: AuthService يخزّن التوكنات مباشرة في localStorage/sessionStorage
-//           بالتوازي مع TokenStorageService مما يسبب تكراراً وتناقضاً
-// الحل: AuthService يستخدم TokenStorageService حصراً
-// =====================================================================
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, map } from 'rxjs';
+import { BehaviorSubject, map, Observable, tap } from 'rxjs';
+
+import { AuthApiService } from '../core/services/auth-api.service';
 import { TokenStorageService } from '../core/services/token-storage.service';
+
+export interface AuthenticatedUser {
+  id: string;
+  Id: string;
+  email: string;
+  Email: string;
+  displayName: string;
+  DisplayName: string;
+  roles: string[];
+  Roles: string[];
+  ImageUrl?: string | null;
+  imageUrl?: string | null;
+  [key: string]: unknown;
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-
-  // ✅ استخدام inject() الحديث بدلاً من constructor
   private readonly tokenStorage = inject(TokenStorageService);
+  private readonly authApi = inject(AuthApiService);
 
   private readonly loggedIn = new BehaviorSubject<boolean>(false);
   readonly isLoggedIn$ = this.loggedIn.asObservable();
 
-  private readonly currentUserSubject = new BehaviorSubject<any>(null);
+  private readonly currentUserSubject = new BehaviorSubject<AuthenticatedUser | null>(null);
   readonly currentUser$ = this.currentUserSubject.asObservable();
 
   readonly isAdmin$ = this.currentUser$.pipe(
-    map(user => {
-      const roles = user?.roles ?? user?.Roles ?? [];
-      return Array.isArray(roles) && roles.includes('Admin');
-    })
+    map(user => user?.roles?.includes('Admin') ?? false)
   );
 
   constructor() {
     this.validateSession();
   }
 
+  get currentUserSnapshot(): AuthenticatedUser | null {
+    return this.currentUserSubject.value;
+  }
+
+  getCurrentUserId(): string | null {
+    const user = this.currentUserSnapshot;
+    return user?.id || user?.Id || null;
+  }
+
   /**
-   * ✅ يتحقق من صلاحية التوكن الموجود في الذاكرة
-   * يُستدعى عند بدء التطبيق أو عند الوصول لصفحة محمية
+   * Rebuilds the in-memory user state from the current access token.
+   * Important: when the access token is missing/expired, we do not clear the
+   * refresh token here. The app initializer/interceptor may still use it to
+   * recover the session safely.
    */
   validateSession(): void {
-    // ✅ قراءة من TokenStorageService (في الذاكرة) فقط
     const token = this.tokenStorage.getAccessToken();
 
     if (!token || token === 'undefined' || token === 'null') {
-      this.clearSession();
+      this.setAnonymousState();
       return;
     }
 
     const payload = this.decodeJwt(token);
 
     if (!payload) {
-      this.clearSession();
+      this.tokenStorage.setAccessToken(null);
+      this.setAnonymousState();
       return;
     }
 
-    // ✅ التحقق من انتهاء صلاحية التوكن
-    if (payload.exp && Date.now() >= payload.exp * 1000) {
-      this.clearSession();
+    const expiresAtSeconds = this.readNumericClaim(payload, 'exp');
+    if (expiresAtSeconds !== null && Date.now() >= expiresAtSeconds * 1000) {
+      this.tokenStorage.setAccessToken(null);
+      this.setAnonymousState();
       return;
     }
 
     const roles = this.extractRoles(payload);
+    const id = String(payload.sub ?? payload.nameid ?? payload.userId ?? payload.UserId ?? '');
+    const email = String(payload.email ?? '');
+    const displayName = String(payload.name ?? payload.unique_name ?? payload.email ?? '');
 
-    const user = {
-      id: payload.sub ?? payload.nameid ?? payload.userId ?? payload.UserId ?? '',
-      Id: payload.sub ?? payload.nameid ?? payload.userId ?? payload.UserId ?? '',
-      email: payload.email ?? '',
-      Email: payload.email ?? '',
-      displayName: payload.name ?? payload.unique_name ?? payload.email ?? '',
-      DisplayName: payload.name ?? payload.unique_name ?? payload.email ?? '',
+    this.currentUserSubject.next({
+      id,
+      Id: id,
+      email,
+      Email: email,
+      displayName,
+      DisplayName: displayName,
       roles,
       Roles: roles
-    };
-
-    this.currentUserSubject.next(user);
+    });
     this.loggedIn.next(true);
   }
 
-  /**
-   * ✅ تسجيل الدخول – يُخزِّن التوكنات عبر TokenStorageService فقط
-   */
-  login(res: any): void {
-    const accessToken = res?.accessToken ?? res?.AccessToken ?? res?.token ?? res?.Token;
-    const refreshToken = res?.refreshToken ?? res?.RefreshToken ?? '';
+  /** Stores tokens from login/refresh responses, then rebuilds auth state. */
+  login(response: unknown): void {
+    const res = (response ?? {}) as Record<string, unknown>;
+    const accessToken = res['accessToken'] ?? res['AccessToken'] ?? res['token'] ?? res['Token'];
+    const refreshToken = res['refreshToken'] ?? res['RefreshToken'];
 
-    if (accessToken) {
-      // ✅ TokenStorageService يخزّن في الذاكرة فقط
-      this.tokenStorage.storeTokens({ accessToken, refreshToken });
+    if (typeof accessToken === 'string' && accessToken.trim()) {
+      this.tokenStorage.storeTokens({ accessToken, refreshToken: String(refreshToken ?? '') });
     }
 
     this.validateSession();
@@ -93,32 +110,66 @@ export class AuthService {
     this.validateSession();
   }
 
-  logout(): void {
+  /**
+   * Performs a real logout: backend refresh-token invalidation + local cleanup.
+   * Callers subscribe because this is an HTTP operation.
+   */
+  logout(): Observable<void> {
+    return this.authApi.logout().pipe(
+      tap(() => this.clearSession())
+    );
+  }
+
+  /** Local-only cleanup for cases where the backend account/session is already gone. */
+  logoutLocal(): void {
     this.clearSession();
   }
 
-  updateCurrentUser(user: any): void {
-    this.currentUserSubject.next(user);
-    // ✅ لا localStorage لبيانات المستخدم – في الذاكرة فقط
+  updateCurrentUser(user: Partial<AuthenticatedUser> | null): void {
+    if (!user) {
+      this.setAnonymousState();
+      return;
+    }
+
+    const current = this.currentUserSubject.value;
+    const id = String(user.id ?? user.Id ?? current?.id ?? '');
+    const email = String(user.email ?? user.Email ?? current?.email ?? '');
+    const displayName = String(
+      user.displayName ?? user.DisplayName ?? current?.displayName ?? email
+    );
+    const extractedRoles = this.extractRoles(user);
+    const roles = extractedRoles.length > 0 ? extractedRoles : (current?.roles ?? []);
+
+    this.currentUserSubject.next({
+      ...(current ?? {}),
+      ...user,
+      id,
+      Id: id,
+      email,
+      Email: email,
+      displayName,
+      DisplayName: displayName,
+      roles,
+      Roles: roles
+    });
+    this.loggedIn.next(true);
   }
 
-  /**
-   * ✅ قراءة التوكن من TokenStorageService (الذاكرة) فقط
-   */
   getAccessToken(): string | null {
     return this.tokenStorage.getAccessToken();
   }
 
-  /**
-   * ✅ مسح الجلسة – يمسح الذاكرة عبر TokenStorageService
-   */
   private clearSession(): void {
     this.tokenStorage.clear();
+    this.setAnonymousState();
+  }
+
+  private setAnonymousState(): void {
     this.currentUserSubject.next(null);
     this.loggedIn.next(false);
   }
 
-  private decodeJwt(token: string): any | null {
+  private decodeJwt(token: string): Record<string, unknown> | null {
     try {
       const payload = token.split('.')[1];
 
@@ -130,27 +181,38 @@ export class AuthService {
       const json = decodeURIComponent(
         atob(base64)
           .split('')
-          .map(char => '%' + ('00' + char.charCodeAt(0).toString(16)).slice(-2))
+          .map(char => `%${(`00${char.charCodeAt(0).toString(16)}`).slice(-2)}`)
           .join('')
       );
 
-      return JSON.parse(json);
+      return JSON.parse(json) as Record<string, unknown>;
     } catch {
       return null;
     }
   }
 
-  private extractRoles(payload: any): string[] {
+  /**
+   * Reads a numeric JWT claim safely.
+   * JWT payload is decoded as unknown values, so arithmetic is only allowed after validation.
+   */
+  private readNumericClaim(source: Record<string, unknown>, claimName: string): number | null {
+    const rawValue = source[claimName];
+    const numericValue = typeof rawValue === 'number' ? rawValue : Number(rawValue);
+
+    return Number.isFinite(numericValue) ? numericValue : null;
+  }
+  private extractRoles(source: Record<string, unknown>): string[] {
     const roleClaim =
-      payload.role ??
-      payload.roles ??
-      payload.Roles ??
-      payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+      source['role'] ??
+      source['roles'] ??
+      source['Role'] ??
+      source['Roles'] ??
+      source['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
 
     if (!roleClaim) {
       return [];
     }
 
-    return Array.isArray(roleClaim) ? roleClaim : [roleClaim];
+    return Array.isArray(roleClaim) ? roleClaim.map(String) : [String(roleClaim)];
   }
 }

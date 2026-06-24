@@ -19,7 +19,7 @@
     </a>
     
     <a *ngIf="isLoggedIn$ | async" 
-       routerLink="/wohnung-add" 
+       routerLink="/property-form" 
        routerLinkActive="active"
        (click)="mobileMenuOpen = false">
        ➕ {{ 'NAVBAR.ADD' | translate }}
@@ -88,7 +88,7 @@
             </a>
             <div>
               <hr />
-            <a routerLink="/meine-anzeigen" (click)="dropdownOpen = false">
+            <a routerLink="/my-listings" (click)="dropdownOpen = false">
               🏠 {{ 'PROFILE.MY_ADS' | translate }}
             </a>
              </div>
@@ -101,7 +101,7 @@
     </div>
 
     <ng-template #loginBtn>
-      <button class="login-btn" type="button" routerLink="/login">
+      <button class="login-btn" type="button" routerLink="/auth/login">
         {{ 'NAVBAR.LOGIN' | translate }}
       </button>
     </ng-template>

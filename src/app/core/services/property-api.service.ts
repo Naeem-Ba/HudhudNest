@@ -1,5 +1,5 @@
-﻿import { Injectable } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { catchError, map, Observable, throwError } from 'rxjs';
 import { BackendApiService, QueryValue } from './backend-api.service';
 import { ApiPagedResult, unwrapItems } from '../models/api.model';
 import { Property, PropertyFilterDto } from '../models/property.model';
@@ -13,6 +13,25 @@ export class PropertyApiService {
     return this.api
       .get<Property[] | ApiPagedResult<Property>>('/properties', filter as Record<string, QueryValue>)
       .pipe(map(response => unwrapItems(response).map(item => this.toProperty(item))));
+  }
+
+  /**
+   * Loads only the authenticated user's own listings.
+   * This avoids the unsafe frontend fallback of requesting all properties and
+   * filtering them by ownerId on the client.
+   */
+  getMyProperties(): Observable<Property[]> {
+    return this.getPropertyCollection('/properties/mine').pipe(
+      catchError(error => {
+        // Compatibility fallback for older backend builds that exposed /properties/my.
+        // It is still safe because ownership is resolved from JWT on the backend.
+        if (error?.status === 404) {
+          return this.getPropertyCollection('/properties/my');
+        }
+
+        return throwError(() => error);
+      })
+    );
   }
 
   getProperty(id: string): Observable<Property> {
@@ -38,6 +57,12 @@ export class PropertyApiService {
       `/properties/${propertyId}/images`,
       formData
     );
+  }
+
+  private getPropertyCollection(path: string): Observable<Property[]> {
+    return this.api
+      .get<Property[] | ApiPagedResult<Property>>(path)
+      .pipe(map(response => unwrapItems(response).map(item => this.toProperty(item))));
   }
 
   private toProperty(item: unknown): Property {

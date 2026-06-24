@@ -144,9 +144,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    this.auth.logout();
     this.dropdownOpen = false;
-    this.router.navigate(['/home']);
+    this.mobileMenuOpen = false;
+
+    // Invalidate the backend refresh token before leaving the authenticated UI.
+    this.auth.logout().subscribe({
+      next: () => void this.router.navigateByUrl('/home'),
+      error: () => void this.router.navigateByUrl('/home')
+    });
   }
 
   useFallbackImage(): void {
