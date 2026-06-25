@@ -66,12 +66,14 @@ export const routes: Routes = [
       },
       {
         path: 'favorites',
+        canActivate: [AuthGuard],
         loadComponent: () =>
           import('./features/favorites/favorites.page')
             .then(m => m.FavoritesPage)
       },
       {
         path: 'notifications',
+        canActivate: [AuthGuard],
         loadComponent: () =>
           import('./features/notifications/notifications.page')
             .then(m => m.NotificationsPage)

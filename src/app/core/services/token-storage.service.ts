@@ -30,13 +30,12 @@ export class TokenStorageService {
     }
 
     if (refreshToken) {
+      sessionStorage.setItem(this.REFRESH_KEY, refreshToken);
+      localStorage.removeItem(this.REFRESH_KEY);
+
       if (remember) {
-        localStorage.setItem(this.REFRESH_KEY, refreshToken);
         localStorage.setItem(this.REMEMBER_KEY, 'true');
-        sessionStorage.removeItem(this.REFRESH_KEY);
       } else {
-        sessionStorage.setItem(this.REFRESH_KEY, refreshToken);
-        localStorage.removeItem(this.REFRESH_KEY);
         localStorage.removeItem(this.REMEMBER_KEY);
       }
     }
@@ -51,7 +50,7 @@ export class TokenStorageService {
   }
 
   getRefreshToken(): string | null {
-    return sessionStorage.getItem(this.REFRESH_KEY) ?? localStorage.getItem(this.REFRESH_KEY);
+    return sessionStorage.getItem(this.REFRESH_KEY);
   }
 
   isRemembered(): boolean {
