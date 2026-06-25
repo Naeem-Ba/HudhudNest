@@ -13,6 +13,14 @@ export const routes: Routes = [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: 'home', component: HomeComponent },
 
+       {
+    path: '',
+    loadComponent: () =>
+      import('./features/landing/landing-page.component')
+        .then(m => m.LandingPageComponent),
+    title: 'منصة عقارية رقمية في سوريا'
+  },
+
       {
         path: 'wohnungen',
         loadComponent: () =>

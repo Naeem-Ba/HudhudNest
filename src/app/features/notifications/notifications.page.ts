@@ -1,3 +1,24 @@
+// ═══════════════════════════════════════════════════════════════
+// ✅ إصلاح L-2: استبدال signal<any[]> بـ signal<NotificationItem[]>
+//
+// المشكلة القديمة:
+//   readonly notifications = signal<any[]>([]); ← يُعطِّل TypeScript type checking
+//
+// المشاكل الناتجة عن any[]:
+//   - الـ IDE لا يُكمِّل الأسماء تلقائياً
+//   - TypeScript لا يكتشف الأخطاء عند كتابة item.nonExistentField
+//   - أي تغيير في الـ Backend API لا يُكتشف في compile time
+//   - الكود يبدو "يعمل" لكن قد يفشل في Runtime
+//
+// الإصلاح:
+//   استخدام NotificationItem المُعرَّف في notification.model.ts
+//   مع دالة toNotificationItem() للتحويل الآمن من Backend response.
+//
+// التعليم — لماذا Typed Signals مهم؟
+//   TypeScript = كود يصعب كسره
+//   any         = تخلٍّ عن هذه الحماية
+//   Type Safety = فريق يعمل بثقة ومشروع قابل للصيانة
+// ═══════════════════════════════════════════════════════════════
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
@@ -6,6 +27,9 @@ import { NotificationsApiService } from '../../core/services/notifications-api.s
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { ToastService } from '../../shared/services/toast.service';
+
+// ✅ استيراد النموذج المُحدَّد بدلاً من any
+import { NotificationItem, toNotificationItem } from '../../core/models/notification.model';
 
 @Component({
   selector: 'app-notifications-page',
@@ -39,15 +63,25 @@ import { ToastService } from '../../shared/services/toast.service';
       ></app-empty-state>
 
       <div class="notifications-list" *ngIf="!loading() && notifications().length > 0 && !error()">
-        <article class="card" *ngFor="let notification of notifications(); trackBy: trackById" [class.unread]="!isRead(notification)">
+        <!--
+          ✅ التحسين: trackBy يستخدم item.id الآن (مُحدَّد النوع)
+          بدلاً من item?.id ?? item?.Id ?? index (any-style)
+        -->
+        <article
+          class="card"
+          *ngFor="let notification of notifications(); trackBy: trackById"
+          [class.unread]="!notification.isRead"
+        >
           <div>
-            <h2 class="line-clamp-2">{{ getTitle(notification) }}</h2>
-            <p class="line-clamp-3">{{ getBody(notification) }}</p>
-            <small *ngIf="getDate(notification)">{{ getDate(notification) | date:'short' }}</small>
+            <!-- ✅ الحقول محددة النوع — TypeScript يكتشف الأخطاء compile-time -->
+            <h2 class="line-clamp-2">{{ notification.message }}</h2>
+            <small *ngIf="notification.createdAt">{{ notification.createdAt | date:'short' }}</small>
           </div>
 
-          <button type="button" [disabled]="isRead(notification)" (click)="markAsRead(notification)">
-            {{ isRead(notification) ? ('NOTIFICATIONS.READ' | translate) : ('NOTIFICATIONS.MARK_READ' | translate) }}
+          <button type="button" [disabled]="notification.isRead" (click)="markAsRead(notification)">
+            {{ notification.isRead
+               ? ('NOTIFICATIONS.READ' | translate)
+               : ('NOTIFICATIONS.MARK_READ' | translate) }}
           </button>
         </article>
       </div>
@@ -80,7 +114,9 @@ export class NotificationsPage implements OnDestroy {
   private readonly toast = inject(ToastService);
   private readonly subscriptions = new Subscription();
 
-  readonly notifications = signal<any[]>([]);
+  // ✅ إصلاح L-2: النوع المحدد بدلاً من any[]
+  // TypeScript سيكتشف الآن أي خطأ في الوصول لحقل غير موجود
+  readonly notifications = signal<NotificationItem[]>([]);
   readonly loading = signal(true);
   readonly error = signal('');
 
@@ -88,10 +124,13 @@ export class NotificationsPage implements OnDestroy {
     this.load();
     this.notificationsApi.connect();
 
+    // الاشتراك في الإشعارات الفورية من SignalR
     this.subscriptions.add(
-      this.notificationsApi.realtime$.subscribe(notification => {
+      this.notificationsApi.realtime$.subscribe(rawNotification => {
+        // ✅ تحويل آمن من Backend format إلى NotificationItem
+        const notification = toNotificationItem(rawNotification);
         this.notifications.update(items => [notification, ...items]);
-        this.toast.info(this.getTitle(notification), 'إشعار جديد');
+        this.toast.info(notification.message, 'إشعار جديد');
       })
     );
   }
@@ -105,8 +144,10 @@ export class NotificationsPage implements OnDestroy {
     this.error.set('');
 
     this.notificationsApi.getNotifications().subscribe({
-      next: items => {
-        this.notifications.set(items as any[] ?? []);
+      next: (items: unknown[]) => {
+        // ✅ تحويل كل عنصر باستخدام toNotificationItem() بشكل صريح وآمن
+        const typed: NotificationItem[] = (items ?? []).map(toNotificationItem);
+        this.notifications.set(typed);
         this.loading.set(false);
       },
       error: () => {
@@ -116,35 +157,20 @@ export class NotificationsPage implements OnDestroy {
     });
   }
 
-  trackById(index: number, item: any): string {
-    return String(item?.id ?? item?.Id ?? index);
+  // ✅ trackBy بنوع محدد: NotificationItem له id مضمون
+  trackById(index: number, item: NotificationItem): string {
+    return item.id || String(index);
   }
 
-  getTitle(item: any): string {
-    return String(item?.title ?? item?.Title ?? 'إشعار');
-  }
+  markAsRead(item: NotificationItem): void {
+    if (!item.id || item.isRead) return;
 
-  getBody(item: any): string {
-    return String(item?.body ?? item?.Body ?? item?.message ?? item?.Message ?? 'لا توجد تفاصيل إضافية.');
-  }
-
-  getDate(item: any): string | null {
-    return item?.createdAt ?? item?.CreatedAt ?? null;
-  }
-
-  isRead(item: any): boolean {
-    return !!(item?.isRead ?? item?.IsRead);
-  }
-
-  markAsRead(item: any): void {
-    const id = item?.id ?? item?.Id;
-    if (!id || this.isRead(item)) return;
-
-    this.notificationsApi.markAsRead(String(id)).subscribe({
+    this.notificationsApi.markAsRead(item.id).subscribe({
       next: () => {
-        item.isRead = true;
-        item.IsRead = true;
-        this.notifications.update(items => [...items]);
+        // تحديث الـ Signal بطريقة immutable (إنشاء object جديد)
+        this.notifications.update(items =>
+          items.map(n => n.id === item.id ? { ...n, isRead: true } : n)
+        );
       },
       error: () => this.toast.error('تعذر تعليم الإشعار كمقروء.')
     });
