@@ -1,0 +1,601 @@
+<!-- ════════════════════════════════════════════════════════
+     landing-page.component.html
+     صفحة هبوط PropertyApp – منصة عقارية رقمية في سوريا
+     ════════════════════════════════════════════════════════ -->
+
+<!-- ═══════════ SEO Meta (يُضاف عبر Angular Meta service أو index.html) ═══════════ -->
+<!-- راجع ملف README لكيفية إضافة meta tags عبر Angular -->
+
+<main class="lp-root" dir="rtl" lang="ar">
+
+  <!-- ══════════════════════════════════════════════════════
+       القسم 1: Hero Section
+       ══════════════════════════════════════════════════════ -->
+  <section class="hero" aria-label="الصفحة الرئيسية">
+    <div class="hero__bg" aria-hidden="true">
+      <img
+        src="/assets/images/landing/hero-property.jpg"
+        alt=""
+        class="hero__bg-img"
+        fetchpriority="high"
+      />
+      <div class="hero__overlay"></div>
+    </div>
+
+    <div class="container hero__content">
+      <!-- شارة الثقة -->
+      <div class="hero__badge">
+        <span class="badge-dot"></span>
+        نسخة تجريبية قيد الإطلاق في سوريا
+      </div>
+
+      <!-- العنوان الرئيسي -->
+      <h1 class="hero__title">
+        عقارك القادم في سوريا<br>
+        <span class="hero__title-accent">أوضح، أسرع، وأكثر تنظيمًا.</span>
+      </h1>
+
+      <!-- العنوان الفرعي -->
+      <p class="hero__subtitle">
+        منصة رقمية تساعدك على البحث عن شقق وعقارات للبيع أو الإيجار،
+        مع معلومات منظمة، صور واضحة، وتواصل مباشر مع المالك أو المكتب العقاري.
+      </p>
+
+      <!-- أزرار CTA -->
+      <div class="hero__ctas">
+        <button
+          type="button"
+          class="btn btn--primary"
+          (click)="scrollToForm()"
+          aria-label="انضم إلى قائمة انتظار PropertyApp"
+        >
+          انضم لقائمة الانتظار
+        </button>
+        <button
+          type="button"
+          class="btn btn--ghost"
+          (click)="scrollToForm()"
+          aria-label="أعلن عن عقارك على PropertyApp"
+        >
+          اعرض عقارك قريبًا
+        </button>
+      </div>
+
+      <!-- إحصائيات صغيرة تبني الثقة -->
+      <div class="hero__stats" aria-label="إحصائيات سريعة">
+        <div class="hero__stat">
+          <strong>٥+</strong>
+          <span>مدن سورية</span>
+        </div>
+        <div class="hero__stat-divider" aria-hidden="true"></div>
+        <div class="hero__stat">
+          <strong>مجاني</strong>
+          <span>في البداية</span>
+        </div>
+        <div class="hero__stat-divider" aria-hidden="true"></div>
+        <div class="hero__stat">
+          <strong>MVP</strong>
+          <span>قريباً</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       القسم 2: المشكلة والحل
+       ══════════════════════════════════════════════════════ -->
+  <section class="section section--light" aria-labelledby="problem-heading">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-eyebrow">لماذا PropertyApp؟</p>
+        <h2 id="problem-heading" class="section-title">
+          البحث عن عقار في سوريا لا يزال مُرهقًا
+        </h2>
+        <p class="section-desc">
+          نسمع نفس الشكاوى يومياً. PropertyApp يهدف إلى معالجتها تدريجياً.
+        </p>
+      </div>
+
+      <div class="problem-solution">
+        <!-- المشكلة -->
+        <div class="problem-col">
+          <div class="ps-label ps-label--problem">الوضع الحالي</div>
+          <ul class="ps-list" role="list">
+            <li class="ps-item ps-item--problem">
+              <span class="ps-icon" aria-hidden="true">✕</span>
+              <span>البحث في مجموعات فيسبوك وواتساب عشوائي وغير منظم</span>
+            </li>
+            <li class="ps-item ps-item--problem">
+              <span class="ps-icon" aria-hidden="true">✕</span>
+              <span>صعوبة معرفة ما إذا كان الإعلان حقيقياً أو مكرراً</span>
+            </li>
+            <li class="ps-item ps-item--problem">
+              <span class="ps-icon" aria-hidden="true">✕</span>
+              <span>نقص الصور والمعلومات الأساسية في معظم الإعلانات</span>
+            </li>
+            <li class="ps-item ps-item--problem">
+              <span class="ps-icon" aria-hidden="true">✕</span>
+              <span>صعوبة مقارنة الأسعار والمناطق في مكان واحد</span>
+            </li>
+            <li class="ps-item ps-item--problem">
+              <span class="ps-icon" aria-hidden="true">✕</span>
+              <span>ضعف الثقة بين الباحث والمالك أو المكتب العقاري</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- الفاصل -->
+        <div class="ps-arrow" aria-hidden="true">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <path d="M6 16h20M20 10l6 6-6 6" stroke="#D6A84F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <!-- الحل -->
+        <div class="solution-col">
+          <div class="ps-label ps-label--solution">مع PropertyApp</div>
+          <ul class="ps-list" role="list">
+            <li class="ps-item ps-item--solution">
+              <span class="ps-icon" aria-hidden="true">✓</span>
+              <span>منصة واحدة تجمع عقارات سوريا بطريقة منظمة وقابلة للبحث</span>
+            </li>
+            <li class="ps-item ps-item--solution">
+              <span class="ps-icon" aria-hidden="true">✓</span>
+              <span>صور واضحة ومعلومات أساسية موحدة لكل إعلان</span>
+            </li>
+            <li class="ps-item ps-item--solution">
+              <span class="ps-icon" aria-hidden="true">✓</span>
+              <span>تصفية حسب المدينة، المنطقة، السعر، النوع، والهدف</span>
+            </li>
+            <li class="ps-item ps-item--solution">
+              <span class="ps-icon" aria-hidden="true">✓</span>
+              <span>تواصل مباشر مع المالك أو المكتب العقاري</span>
+            </li>
+            <li class="ps-item ps-item--solution">
+              <span class="ps-icon" aria-hidden="true">✓</span>
+              <span>آليات تحقق تدريجية لتقليل العشوائية وزيادة الشفافية</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       القسم 3: المميزات
+       ══════════════════════════════════════════════════════ -->
+  <section class="section section--white" aria-labelledby="features-heading">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-eyebrow">ما يميّزنا</p>
+        <h2 id="features-heading" class="section-title">
+          كل ما تحتاجه في مكان واحد
+        </h2>
+      </div>
+
+      <div class="features-grid" role="list">
+        <article class="feature-card" role="listitem">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <circle cx="12" cy="12" r="8" stroke="#0F2742" stroke-width="2"/>
+              <path d="M18 18l5 5" stroke="#D6A84F" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">بحث أسهل</h3>
+          <p class="feature-desc">
+            فلترة حسب المدينة، المنطقة، السعر، نوع العقار، والهدف — بيع أو إيجار — في ثوانٍ.
+          </p>
+        </article>
+
+        <article class="feature-card" role="listitem">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <rect x="3" y="3" width="22" height="22" rx="4" stroke="#0F2742" stroke-width="2"/>
+              <path d="M7 17l4-5 4 4 4-6" stroke="#D6A84F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">معلومات أوضح</h3>
+          <p class="feature-desc">
+            صور، وصف تفصيلي، موقع تقريبي، مساحة، أدوار، وبيانات تواصل منظمة — كل شيء في مكانه.
+          </p>
+        </article>
+
+        <article class="feature-card" role="listitem">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <path d="M5 6h18M5 10h14M5 14h10" stroke="#0F2742" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="20" cy="19" r="5" fill="#1F9D6A" opacity=".15" stroke="#1F9D6A" stroke-width="1.5"/>
+              <path d="M18 19l1.5 1.5L22 17" stroke="#1F9D6A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">تواصل مباشر</h3>
+          <p class="feature-desc">
+            تواصل مع المالك أو المكتب العقاري مباشرةً دون خطوات معقدة أو وسطاء غير ضروريين.
+          </p>
+        </article>
+
+        <article class="feature-card" role="listitem">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <circle cx="14" cy="14" r="11" stroke="#0F2742" stroke-width="2"/>
+              <path d="M9 14l3 3 7-7" stroke="#D6A84F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">تغطية قابلة للتوسع</h3>
+          <p class="feature-desc">
+            نبدأ من سوريا بخدمة المدن الكبرى والمغتربين، مع تصميم يدعم التوسع لأسواق عربية وعالمية.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       القسم 4: كيف تعمل المنصة
+       ══════════════════════════════════════════════════════ -->
+  <section class="section section--navy" aria-labelledby="how-heading">
+    <div class="container">
+      <div class="section-header section-header--light">
+        <p class="section-eyebrow section-eyebrow--gold">بخطوات بسيطة</p>
+        <h2 id="how-heading" class="section-title section-title--white">
+          كيف يعمل PropertyApp؟
+        </h2>
+      </div>
+
+      <ol class="steps-list" aria-label="خطوات استخدام المنصة">
+        <li class="step-item">
+          <div class="step-number" aria-hidden="true">١</div>
+          <div class="step-body">
+            <h3 class="step-title">اختر نوع العقار أو المدينة</h3>
+            <p class="step-desc">
+              حدّد ما إذا كنت تبحث عن إيجار أو شراء، ثم اختر مدينتك أو منطقتك المفضلة.
+            </p>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-number" aria-hidden="true">٢</div>
+          <div class="step-body">
+            <h3 class="step-title">تصفّح العروض المنظمة</h3>
+            <p class="step-desc">
+              اطّلع على عقارات بصور وأسعار ومعلومات واضحة، وقارن الخيارات بسهولة.
+            </p>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-number" aria-hidden="true">٣</div>
+          <div class="step-body">
+            <h3 class="step-title">تواصل أو انضم للقائمة</h3>
+            <p class="step-desc">
+              تواصل مباشرةً مع صاحب الإعلان، أو سجّل الآن في قائمة الانتظار وكن أول من يُخطَر عند الإطلاق.
+            </p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       القسم 5: نموذج قائمة الانتظار
+       ══════════════════════════════════════════════════════ -->
+  <section
+    class="section section--form"
+    id="waitlist-form"
+    aria-labelledby="form-heading"
+  >
+    <div class="container container--narrow">
+      <div class="section-header">
+        <p class="section-eyebrow">قائمة الانتظار</p>
+        <h2 id="form-heading" class="section-title">
+          كن من أوائل مستخدمي PropertyApp
+        </h2>
+        <p class="section-desc">
+          سجّل اهتمامك الآن ونتواصل معك عند إطلاق المنصة في منطقتك.
+        </p>
+      </div>
+
+      <!-- ── حالة النجاح ── -->
+      <div
+        *ngIf="formState() === 'success'"
+        class="form-success"
+        role="status"
+        aria-live="polite"
+      >
+        <div class="form-success__icon" aria-hidden="true">✓</div>
+        <h3 class="form-success__title">تم التسجيل بنجاح!</h3>
+        <p class="form-success__msg">
+          شكرًا لك، تم تسجيل اهتمامك بنجاح.
+          سنرسل لك التحديثات عند إطلاق PropertyApp.
+        </p>
+        <button type="button" class="btn btn--outline-navy" (click)="resetForm()">
+          تسجيل شخص آخر
+        </button>
+      </div>
+
+      <!-- ── النموذج ── -->
+      <form
+        *ngIf="formState() !== 'success'"
+        class="lead-form"
+        [formGroup]="form"
+        (ngSubmit)="submitForm()"
+        novalidate
+        aria-label="نموذج الانضمام لقائمة الانتظار"
+      >
+        <!-- الاسم الكامل -->
+        <div class="field-group">
+          <label class="field-label" for="fullName">
+            الاسم الكامل <span class="required" aria-label="مطلوب">*</span>
+          </label>
+          <input
+            id="fullName"
+            type="text"
+            class="field-input"
+            [class.field-input--error]="isFieldInvalid('fullName')"
+            formControlName="fullName"
+            placeholder="مثال: أحمد محمد"
+            autocomplete="name"
+            maxlength="60"
+            aria-describedby="fullName-error"
+          />
+          <p
+            *ngIf="isFieldInvalid('fullName')"
+            id="fullName-error"
+            class="field-error"
+            role="alert"
+          >{{ getError('fullName') }}</p>
+        </div>
+
+        <!-- رقم الهاتف -->
+        <div class="field-group">
+          <label class="field-label" for="phone">
+            رقم الهاتف أو واتساب <span class="required" aria-label="مطلوب">*</span>
+          </label>
+          <input
+            id="phone"
+            type="tel"
+            class="field-input"
+            [class.field-input--error]="isFieldInvalid('phoneOrWhatsapp')"
+            formControlName="phoneOrWhatsapp"
+            placeholder="مثال: 0933123456 أو +963933123456"
+            autocomplete="tel"
+            inputmode="tel"
+            dir="ltr"
+            aria-describedby="phone-error phone-hint"
+          />
+          <p id="phone-hint" class="field-hint">يمكن إدخال رقم واتساب</p>
+          <p
+            *ngIf="isFieldInvalid('phoneOrWhatsapp')"
+            id="phone-error"
+            class="field-error"
+            role="alert"
+          >{{ getError('phoneOrWhatsapp') }}</p>
+        </div>
+
+        <!-- نوع المستخدم -->
+        <div class="field-group">
+          <label class="field-label" for="userType">
+            أنا… <span class="required" aria-label="مطلوب">*</span>
+          </label>
+          <select
+            id="userType"
+            class="field-select"
+            [class.field-input--error]="isFieldInvalid('userType')"
+            formControlName="userType"
+            aria-describedby="userType-error"
+          >
+            <option value="" disabled selected>اختر ما ينطبق عليك</option>
+            <option
+              *ngFor="let opt of userTypeOptions"
+              [value]="opt[0]"
+            >{{ opt[1] }}</option>
+          </select>
+          <p
+            *ngIf="isFieldInvalid('userType')"
+            id="userType-error"
+            class="field-error"
+            role="alert"
+          >{{ getError('userType') }}</p>
+        </div>
+
+        <!-- المدينة -->
+        <div class="field-group">
+          <label class="field-label" for="city">
+            المدينة أو المنطقة <span class="required" aria-label="مطلوب">*</span>
+          </label>
+          <select
+            id="city"
+            class="field-select"
+            [class.field-input--error]="isFieldInvalid('city')"
+            formControlName="city"
+            aria-describedby="city-error"
+          >
+            <option value="" disabled selected>اختر مدينتك أو منطقتك</option>
+            <option *ngFor="let c of cities" [value]="c">{{ c }}</option>
+          </select>
+          <p
+            *ngIf="isFieldInvalid('city')"
+            id="city-error"
+            class="field-error"
+            role="alert"
+          >{{ getError('city') }}</p>
+        </div>
+
+        <!-- ملاحظات (اختياري) -->
+        <div class="field-group">
+          <label class="field-label" for="notes">
+            ملاحظات إضافية
+            <span class="field-optional">(اختياري)</span>
+          </label>
+          <textarea
+            id="notes"
+            class="field-textarea"
+            formControlName="notes"
+            placeholder="مثال: أبحث عن شقة من غرفتين في منطقة المزة بسعر لا يتجاوز 200 دولار"
+            rows="3"
+            maxlength="300"
+            aria-describedby="notes-error"
+          ></textarea>
+          <p
+            *ngIf="isFieldInvalid('notes')"
+            id="notes-error"
+            class="field-error"
+            role="alert"
+          >{{ getError('notes') }}</p>
+        </div>
+
+        <!-- خطأ عام -->
+        <div
+          *ngIf="formState() === 'error'"
+          class="form-error-banner"
+          role="alert"
+          aria-live="assertive"
+        >
+          <span aria-hidden="true">⚠️</span>
+          {{ errorMessage }}
+        </div>
+
+        <!-- زر الإرسال -->
+        <button
+          type="submit"
+          class="btn btn--primary btn--full"
+          [disabled]="formState() === 'loading'"
+          [attr.aria-busy]="formState() === 'loading'"
+          aria-label="إرسال بيانات الانضمام لقائمة الانتظار"
+        >
+          <ng-container *ngIf="formState() === 'loading'; else submitText">
+            <span class="spinner" aria-hidden="true"></span>
+            جارٍ التسجيل…
+          </ng-container>
+          <ng-template #submitText>
+            انضم الآن لقائمة الانتظار
+          </ng-template>
+        </button>
+
+        <p class="form-privacy">
+          لن نشارك بياناتك مع أطراف ثالثة ولن نرسل رسائل غير مرغوب فيها.
+        </p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       القسم 6: الثقة والشفافية
+       ══════════════════════════════════════════════════════ -->
+  <section class="section section--light" aria-labelledby="trust-heading">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-eyebrow">شفافية كاملة</p>
+        <h2 id="trust-heading" class="section-title">
+          نبني الثقة خطوة بخطوة
+        </h2>
+        <p class="section-desc">
+          نحن في مرحلة MVP الأولى. إليك ما نلتزم به، وما هو قيد التطوير.
+        </p>
+      </div>
+
+      <div class="trust-grid" role="list">
+        <div class="trust-card" role="listitem">
+          <div class="trust-icon" aria-hidden="true">📸</div>
+          <h3 class="trust-title">صور حقيقية مطلوبة</h3>
+          <p class="trust-desc">نشجّع أصحاب العقارات على رفع صور فعلية للعقار، ولا نقبل صور وهمية أو مستعارة.</p>
+        </div>
+        <div class="trust-card" role="listitem">
+          <div class="trust-icon" aria-hidden="true">📞</div>
+          <h3 class="trust-title">معلومات تواصل واضحة</h3>
+          <p class="trust-desc">كل إعلان يجب أن يحتوي معلومات تواصل صحيحة. نحن هنا للربط بينك وبين الطرف الآخر.</p>
+        </div>
+        <div class="trust-card" role="listitem">
+          <div class="trust-icon" aria-hidden="true">⚠️</div>
+          <h3 class="trust-title">لا تدفع قبل التحقق</h3>
+          <p class="trust-desc">ننصح دائماً بزيارة العقار شخصياً والتحقق من الوثائق قبل دفع أي مبالغ. المنصة تُيسّر التواصل ولا تضمن الصفقة.</p>
+        </div>
+        <div class="trust-card" role="listitem">
+          <div class="trust-icon" aria-hidden="true">🔧</div>
+          <h3 class="trust-title">التحسين مستمر</h3>
+          <p class="trust-desc">آليات التحقق من الإعلانات ستتحسن تدريجياً. نحن صادقون بشأن كوننا في مرحلة البداية.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       القسم 7: الأسئلة الشائعة
+       ══════════════════════════════════════════════════════ -->
+  <section class="section section--white" aria-labelledby="faq-heading">
+    <div class="container container--narrow">
+      <div class="section-header">
+        <p class="section-eyebrow">استفسارات</p>
+        <h2 id="faq-heading" class="section-title">أسئلة شائعة</h2>
+      </div>
+
+      <dl class="faq-list">
+        <div
+          *ngFor="let faq of faqs; let i = index"
+          class="faq-item"
+          [class.faq-item--open]="openFaqIndex() === i"
+        >
+          <dt class="faq-question">
+            <button
+              type="button"
+              class="faq-btn"
+              [attr.aria-expanded]="openFaqIndex() === i"
+              [attr.aria-controls]="'faq-answer-' + i"
+              (click)="toggleFaq(i)"
+            >
+              {{ faq.q }}
+              <span class="faq-chevron" aria-hidden="true">
+                {{ openFaqIndex() === i ? '▲' : '▼' }}
+              </span>
+            </button>
+          </dt>
+          <dd
+            class="faq-answer"
+            [id]="'faq-answer-' + i"
+            [attr.aria-hidden]="openFaqIndex() !== i"
+          >
+            <p>{{ faq.a }}</p>
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       القسم 8: Final CTA
+       ══════════════════════════════════════════════════════ -->
+  <section class="section section--cta" aria-labelledby="final-cta-heading">
+    <div class="container container--narrow">
+      <h2 id="final-cta-heading" class="final-cta__title">
+        كن من أوائل مستخدمي PropertyApp
+      </h2>
+      <p class="final-cta__desc">
+        ساعدنا في بناء تجربة عقارية أكثر تنظيمًا في سوريا.
+        صوتك ورأيك سيشكّلان شكل المنصة القادمة.
+      </p>
+      <button
+        type="button"
+        class="btn btn--gold"
+        (click)="scrollToForm()"
+        aria-label="الانضمام لقائمة انتظار PropertyApp"
+      >
+        انضم الآن لقائمة الانتظار
+      </button>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       Footer
+       ══════════════════════════════════════════════════════ -->
+  <footer class="footer" role="contentinfo">
+    <div class="container footer__inner">
+      <div class="footer__brand">
+        <span class="footer__logo">PropertyApp</span>
+        <p class="footer__tagline">منصة عقارية رقمية · سوريا أولاً</p>
+      </div>
+      <p class="footer__copy">
+        &copy; {{ currentYear }} PropertyApp · جميع الحقوق محفوظة ·
+        <a href="/privacy" class="footer__link">سياسة الخصوصية</a>
+      </p>
+    </div>
+  </footer>
+
+</main>

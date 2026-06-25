@@ -12,7 +12,7 @@ const apiBaseUrl = readApiUrlFromProcessEnv() || 'https://localhost:7136/api';
 export const environment: AppEnvironment = createAppEnvironment({
   production: false,
   environmentName: 'local',
-  apiBaseUrl,
+  apiBaseUrl: 'https://wohnungen-api.onrender.com',
   baseUrl: readBaseUrlFromProcessEnv(),
   signalRUrl: readSignalRUrlFromProcessEnv(),
   googleClientId: readProcessEnv('GOOGLE_CLIENT_ID') ?? '',

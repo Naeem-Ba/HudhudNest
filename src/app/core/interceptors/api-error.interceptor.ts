@@ -1,7 +1,26 @@
+// ═══════════════════════════════════════════════════════════════
+// ✅ إصلاح L-3: إخفاء backendError من console.warn في Production
+//
+// المشكلة القديمة:
+//   console.warn('[API Error]', { backendError: error.error });
+//   في Production → يعرض تفاصيل الخطأ الداخلية في DevTools للمتصفح.
+//   هذا يساعد المهاجم في فهم بنية الـ Backend وثغراته.
+//
+// الإصلاح:
+//   في Production: نُسجِّل فقط URL + Method + Status
+//   في Development: نُسجِّل التفاصيل الكاملة للمساعدة في التطوير
+//
+// التعليم — Security Through Obscurity ليس كافياً، لكنه طبقة إضافية:
+//   رسائل الخطأ التفصيلية في Console تساعد:
+//     ✅ المطور أثناء التطوير
+//     ❌ المهاجم في Production
+//   الحل: نُفرِّق بين البيئتين.
+// ═══════════════════════════════════════════════════════════════
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { ToastService } from '../../shared/services/toast.service';
+import { environment } from '../../../environments/environment';
 
 function extractBackendMessage(error: HttpErrorResponse): string | null {
   const body = error.error;
@@ -23,7 +42,7 @@ function extractBackendMessage(error: HttpErrorResponse): string | null {
   if (validationErrors && typeof validationErrors === 'object') {
     const messages = Object.values(validationErrors).flat().filter(Boolean);
     if (messages.length > 0) {
-      return messages.join(' ');
+      return (messages as string[]).join(' ');
     }
   }
 
@@ -88,13 +107,37 @@ export const ApiErrorInterceptor: HttpInterceptorFn = (req, next) => {
           toast.error(friendlyMessage, 'خطأ');
         }
 
-        console.warn('[API Error]', {
-          url: req.url,
-          method: req.method,
-          status: error.status,
-          message: friendlyMessage,
-          backendError: error.error
-        });
+        // ✅ إصلاح L-3: تقسيم الـ Logging بين Development و Production
+        //
+        // Development:
+        //   نُظهر backendError الكامل للمساعدة في debugging
+        //   المطور يحتاج كل التفاصيل لإصلاح المشكلة
+        //
+        // Production:
+        //   نُسجِّل فقط URL + Status + الرسالة الودية
+        //   لا نُظهر backendError لأنه قد يحتوي على:
+        //     - Stack traces تكشف بنية الـ Backend
+        //     - رسائل قاعدة البيانات
+        //     - مسارات الملفات الداخلية
+        if (!environment.production) {
+          // Development: logging كامل للمساعدة في التطوير
+          console.warn('[API Error]', {
+            url: req.url,
+            method: req.method,
+            status: error.status,
+            message: friendlyMessage,
+            backendError: error.error  // ← متاح في Development فقط
+          });
+        } else {
+          // Production: logging محدود — لا تفاصيل داخلية
+          console.warn('[API Error]', {
+            url: req.url,
+            method: req.method,
+            status: error.status,
+            message: friendlyMessage
+            // backendError: مُخفَى في Production ✅
+          });
+        }
       }
 
       return throwError(() => error);
