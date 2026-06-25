@@ -9,7 +9,11 @@ export class LeadService {
   private readonly http = inject(HttpClient);
 
   // Backend الحالي عندك يحتوي /api/Contact وليس /api/leads
-  private readonly apiUrl = `${environment.apiBaseUrl}/api/Contact`;
+  private readonly baseUrl = environment.apiBaseUrl
+  .replace(/\/+$/, '')
+  .replace(/\/api$/i, '');
+
+private readonly apiUrl = `${this.baseUrl}/api/Contact`;
 
   private readonly timeoutMs = 12_000;
 
