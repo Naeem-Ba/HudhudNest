@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { EnumService } from '../services/enum.service';
+import { EnumService } from '../core/services/enum.service';
 
 @Pipe({
   name: 'enumTranslate',

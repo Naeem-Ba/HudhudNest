@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { firstValueFrom, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { BackendApiService } from '../core/services/backend-api.service';
-
+import { BackendApiService } from '../api/backend-api.service';
 export interface EnumItem {
   Id: number | string;
   Key: string;

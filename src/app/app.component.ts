@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService } from './services/auth.service';
+import { AuthService } from './core/auth/auth.service';
 import { Observable, filter } from 'rxjs';
 import { ToastContainerComponent } from './shared/ui/toast-container.component';
-import { LanguageService } from './services/language.service';
+import { LanguageService } from './core/services/language.service';
 
 @Component({
   selector: 'app-root',

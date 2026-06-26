@@ -7,7 +7,7 @@ import {
   EventEmitter
 } from '@angular/core';
 import * as L from 'leaflet';
-import { LangCode } from '../services/language.service';
+import { LangCode } from '../core/services/language.service';
 
 @Component({
   selector: 'app-map-picker',

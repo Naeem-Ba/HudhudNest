@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, from, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AuthTokenResponse } from './token-storage.service';
+import { AuthTokenResponse } from '../services/token-storage.service';
 
 declare global {
   interface Window {

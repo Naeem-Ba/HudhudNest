@@ -29,7 +29,7 @@ import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { PropertyApiService } from '../../../core/services/property-api.service';
+import { PropertyApiService } from '../../../core/api/property-api.service';
 import { Property, PropertyFilterDto } from '../../../core/models/property.model';
 import { EmptyStateComponent } from '../../../shared/ui/empty-state.component';
 import { SkeletonCardGridComponent } from '../../../shared/ui/skeleton-card-grid.component';

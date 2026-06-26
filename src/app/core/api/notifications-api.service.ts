@@ -15,7 +15,7 @@ import { Observable, Subject, map } from 'rxjs';
 import * as signalR from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
 import { BackendApiService } from './backend-api.service';
-import { TokenStorageService } from './token-storage.service';
+import { TokenStorageService } from '../services/token-storage.service';
 import { ApiPagedResult, unwrapItems } from '../models/api.model';
 import { NotificationItem, toNotificationItem } from '../models/notification.model';
 

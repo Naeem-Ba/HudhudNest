@@ -4,9 +4,9 @@
       <h2>✨ {{ 'HOME.latest_apartments' | translate }}</h2>
       <button><a routerLink="/wohnungen" class="view-all">{{ 'HOME.view_all' | translate }}</a></button>
     </div>
-
+<!--
     <div class="compact-grid">
-      <div *ngFor="let w of wohnungen" class="compact-card" [routerLink]="['/wohnungen', w.Id]">
+      <div *ngFor="let w of Property" class="compact-card" [routerLink]="['/wohnungen', w.Id]">
         
         <div class="card-media">
           <span class="badge" [class.buy]="w.ZumKaufen">{{ (w.ZumKaufen ? 'wohnung_add.mode_sale' : 'wohnung_add.mode_rent') | translate }}</span>
@@ -28,7 +28,7 @@
     </div>
   </section>
 </div>
-
+-->
   <div class="info-box">
     <h3>💡 {{ 'HOME.tips' | translate }}</h3>
     <ul>

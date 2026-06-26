@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router,RouterLink} from '@angular/router';
-import { ContactService } from '../../services/contact.service';
+import { ContactService } from '../../core/api/contact.service';
 import { TranslateModule } from '@ngx-translate/core';
 
 

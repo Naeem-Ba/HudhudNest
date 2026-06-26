@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { LanguageService, LangCode } from '../services/language.service';
+import { LanguageService, LangCode } from '../core/services/language.service';
 
 @Component({
   selector: 'app-language-selector',

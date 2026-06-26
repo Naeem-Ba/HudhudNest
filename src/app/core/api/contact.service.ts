@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { BackendApiService } from '../core/services/backend-api.service';
-import { ApiPagedResult, unwrapItems } from '../core/models/api.model';
+import { BackendApiService } from './backend-api.service';
+import { ApiPagedResult, unwrapItems } from '../models/api.model';
 
 export interface ContactDto {
   Name?: string;

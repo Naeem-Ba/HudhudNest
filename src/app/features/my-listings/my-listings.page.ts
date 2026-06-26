@@ -11,7 +11,7 @@ import { Router, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { PropertyApiService } from '../../core/services/property-api.service';
+import { PropertyApiService } from '../../core/api/property-api.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { Property } from '../../core/models/property.model';
 import { SkeletonCardGridComponent } from '../../shared/ui/skeleton-card-grid.component';

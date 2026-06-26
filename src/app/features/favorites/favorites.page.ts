@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { FavoritesApiService } from '../../core/services/favorites-api.service';
+import { FavoritesApiService } from '../../core/api/favorites-api.service';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { catchError, map, Observable, throwError } from 'rxjs';
-import { BackendApiService, QueryValue } from './backend-api.service';
+import { BackendApiService, QueryValue } from '../api/backend-api.service';
 import { ApiPagedResult, unwrapItems } from '../models/api.model';
 import { Property, PropertyFilterDto } from '../models/property.model';
 import { apiToCamelCase } from '../adapters/api-naming.adapter';

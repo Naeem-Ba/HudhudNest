@@ -29,10 +29,10 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { PropertyApiService } from '../../core/services/property-api.service';
-import { ReviewService } from '../../core/services/review.service';
-import { VisitService } from '../../core/services/visit.service';
-import { AuthService } from '../../services/auth.service';
+import { PropertyApiService } from '../../core/api/property-api.service';
+import { ReviewService } from '../../core/api/review.service';
+import { VisitService } from '../../core/api/visit.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { Property } from '../../core/models/property.model';
 import { ReviewDto } from '../../core/models/review.model';
 import { CreateVisitRequest, validateCreateVisit } from '../../core/models/visit.model';
