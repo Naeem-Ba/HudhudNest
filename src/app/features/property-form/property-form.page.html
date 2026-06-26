@@ -1,184 +1,342 @@
-<div class="card">
-  <h2>
-    {{ isEditMode() ? ('wohnung_add.edit_title' | translate) : ('wohnung_add.title' | translate) }}
-  </h2>
+﻿<!-- ================================================================
+     property-form.page.html â€” Add / Edit Property
+     ================================================================ -->
+<div class="form-page">
+  <div class="container">
 
-  <div *ngIf="submitError()" class="form-alert" role="alert">
-    <span aria-hidden="true">⚠️</span>
-    {{ submitError() | translate }}
+    <!-- Page Header -->
+    <div class="form-page-header">
+      <div>
+        <h1>{{ isEditMode() ? ('wohnung_add.edit_title' | translate) : ('wohnung_add.title' | translate) }}</h1>
+        <p>{{ 'wohnung_add.subtitle' | translate }}</p>
+      </div>
+      <a routerLink="/my-listings" class="btn btn--outline btn--sm">
+        {{ 'COMMON.CANCEL' | translate }}
+      </a>
+    </div>
+
+    <!-- Error Banner -->
+    <div class="form-alert" *ngIf="submitError()" role="alert">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+        <circle cx="9" cy="9" r="8" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M9 5v4M9 13h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      {{ submitError() | translate }}
+    </div>
+
+    <form class="property-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <div class="form-grid">
+
+        <!-- â•â•â•â•â•â• SECTION 1: Listing Type â•â•â•â•â•â• -->
+        <div class="form-section">
+          <div class="form-section__header">
+            <span class="form-section__num">Ù¡</span>
+            <div>
+              <h2 class="form-section__title">{{ 'wohnung_add.listing_type' | translate }}</h2>
+              <p class="form-section__desc">{{ 'wohnung_add.listing_type_desc' | translate }}</p>
+            </div>
+          </div>
+          <div class="form-section__body">
+            <div class="listing-type-toggle" role="group" [attr.aria-label]="'wohnung_add.listing_type' | translate">
+              <button type="button"
+                class="listing-type-btn"
+                [class.listing-type-btn--active]="isSale"
+                (click)="setListingType(2)">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                  <path d="M3 9.5L11 2l8 7.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M8 21V13h6v8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                {{ 'wohnung_add.mode_sale' | translate }}
+                <span class="listing-type-badge">{{ 'wohnung_add.sale_hint' | translate }}</span>
+              </button>
+              <button type="button"
+                class="listing-type-btn"
+                [class.listing-type-btn--active]="isRent"
+                (click)="setListingType(1)">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                  <rect x="1" y="6" width="20" height="15" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M6 6V4a5 5 0 0110 0v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                {{ 'wohnung_add.mode_rent' | translate }}
+                <span class="listing-type-badge">{{ 'wohnung_add.rent_hint' | translate }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- â•â•â•â•â•â• SECTION 2: Basic Info â•â•â•â•â•â• -->
+        <div class="form-section">
+          <div class="form-section__header">
+            <span class="form-section__num">Ù¢</span>
+            <div>
+              <h2 class="form-section__title">{{ 'wohnung_add.basic_info' | translate }}</h2>
+              <p class="form-section__desc">{{ 'wohnung_add.basic_info_desc' | translate }}</p>
+            </div>
+          </div>
+          <div class="form-section__body">
+            <div class="form-grid-2">
+              <!-- Title -->
+              <div class="form-group form-group--full">
+                <label for="title">{{ 'wohnung_add.titel' | translate }} <span class="required">*</span></label>
+                <input id="title" type="text" formControlName="title"
+                  [placeholder]="'wohnung_add.title_placeholder' | translate" />
+                <p class="field-error" *ngIf="hasError(f.title)">
+                  {{ f.title.errors?.['required'] ? ('VALIDATION.REQUIRED' | translate) : ('wohnung_add.validation_title' | translate) }}
+                </p>
+              </div>
+
+              <!-- Description -->
+              <div class="form-group form-group--full">
+                <label for="description">{{ 'wohnung_add.beschreibung' | translate }} <span class="required">*</span></label>
+                <textarea id="description" formControlName="description" rows="5"
+                  [placeholder]="'wohnung_add.desc_placeholder' | translate"></textarea>
+                <p class="field-error" *ngIf="hasError(f.description)">
+                  {{ f.description.errors?.['required'] ? ('VALIDATION.REQUIRED' | translate) : ('wohnung_add.validation_description' | translate) }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- â•â•â•â•â•â• SECTION 3: Location â•â•â•â•â•â• -->
+        <div class="form-section">
+          <div class="form-section__header">
+            <span class="form-section__num">Ù£</span>
+            <div>
+              <h2 class="form-section__title">{{ 'wohnung_add.location' | translate }}</h2>
+              <p class="form-section__desc">{{ 'wohnung_add.location_desc' | translate }}</p>
+            </div>
+          </div>
+          <div class="form-section__body">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="street">{{ 'wohnung_add.adresse' | translate }} <span class="required">*</span></label>
+                <input id="street" type="text" formControlName="street"
+                  [placeholder]="'wohnung_add.street_placeholder' | translate" />
+                <p class="field-error" *ngIf="hasError(f.street)">{{ 'wohnung_add.validation_address' | translate }}</p>
+              </div>
+
+              <div class="form-group">
+                <label for="city">{{ 'wohnung_add.stadt' | translate }} <span class="required">*</span></label>
+                <input id="city" type="text" formControlName="city"
+                  [placeholder]="'wohnung_add.city_placeholder' | translate" />
+                <p class="field-error" *ngIf="hasError(f.city)">{{ 'wohnung_add.validation_city' | translate }}</p>
+              </div>
+
+              <div class="form-group">
+                <label for="region">{{ 'PROPERTY_FORM.REGION' | translate }}</label>
+                <input id="region" type="text" formControlName="region"
+                  [placeholder]="'PROPERTY_FORM.REGION_PLACEHOLDER' | translate" />
+              </div>
+
+              <div class="form-group">
+                <label for="postalCode">{{ 'wohnung_add.plz' | translate }}</label>
+                <input id="postalCode" type="text" formControlName="postalCode" maxlength="20" />
+              </div>
+
+              <div class="form-group">
+                <label for="countryCode">{{ 'PROPERTY_FORM.COUNTRY' | translate }}</label>
+                <input id="countryCode" type="text" formControlName="countryCode" maxlength="2"
+                  placeholder="SY" style="text-transform:uppercase" />
+              </div>
+            </div>
+
+            <!-- Map Picker -->
+            <div class="map-section">
+              <p class="map-label">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+                  <path d="M7.5 1C5.29 1 3.5 2.79 3.5 5c0 2.62 4 9 4 9s4-6.38 4-9c0-2.21-1.79-4-4-4z" fill="var(--primary)" opacity=".8"/>
+                </svg>
+                {{ 'wohnung_add.map_hint' | translate }}
+              </p>
+              <app-map-picker
+                [lang]="currentLang()"
+                (locationChange)="onLocationSelected($event)">
+              </app-map-picker>
+              <p class="location-preview" *ngIf="f.latitude.value && f.longitude.value">
+                âœ“ {{ 'wohnung_add.location_selected' | translate }}: {{ f.latitude.value | number:'1.4-4' }}, {{ f.longitude.value | number:'1.4-4' }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- â•â•â•â•â•â• SECTION 4: Pricing â•â•â•â•â•â• -->
+        <div class="form-section">
+          <div class="form-section__header">
+            <span class="form-section__num">Ù¤</span>
+            <div>
+              <h2 class="form-section__title">{{ 'wohnung_add.pricing' | translate }}</h2>
+              <p class="form-section__desc">{{ 'wohnung_add.pricing_desc' | translate }}</p>
+            </div>
+          </div>
+          <div class="form-section__body">
+            <div class="form-grid-2">
+              <!-- Currency -->
+              <div class="form-group form-group--full">
+                <label for="currencyCode">{{ 'PROPERTY_FORM.CURRENCY' | translate }}</label>
+                <select id="currencyCode" formControlName="currencyCode">
+                  <option value="SYP">Ù„.Ø³ â€” Ø§Ù„Ù„ÙŠØ±Ø© Ø§Ù„Ø³ÙˆØ±ÙŠØ©</option>
+                  <option value="USD">$ â€” Ø§Ù„Ø¯ÙˆÙ„Ø§Ø± Ø§Ù„Ø£Ù…Ø±ÙŠÙƒÙŠ</option>
+                  <option value="EUR">â‚¬ â€” Ø§Ù„ÙŠÙˆØ±Ùˆ</option>
+                </select>
+              </div>
+
+              <!-- For Rent -->
+              <ng-container *ngIf="isRent">
+                <div class="form-group">
+                  <label for="coldRent">{{ 'wohnung_add.kaltmiete' | translate }} <span class="required">*</span></label>
+                  <input id="coldRent" type="number" formControlName="coldRent" min="1" />
+                  <p class="field-error" *ngIf="hasError(f['coldRent'])">{{ 'VALIDATION.REQUIRED' | translate }}</p>
+                </div>
+                <div class="form-group">
+                  <label for="warmRent">{{ 'wohnung_add.warmmiete' | translate }}</label>
+                  <input id="warmRent" type="number" formControlName="warmRent" min="0" />
+                </div>
+                <div class="form-group">
+                  <label for="additionalCosts">{{ 'PROPERTY_FORM.ADDITIONAL_COSTS' | translate }}</label>
+                  <input id="additionalCosts" type="number" formControlName="additionalCosts" min="0" />
+                </div>
+                <div class="form-group">
+                  <label for="deposit">{{ 'PROPERTY_FORM.DEPOSIT' | translate }}</label>
+                  <input id="deposit" type="number" formControlName="deposit" min="0" />
+                </div>
+              </ng-container>
+
+              <!-- For Sale -->
+              <ng-container *ngIf="isSale">
+                <div class="form-group">
+                  <label for="purchasePrice">{{ 'wohnung_add.kaufpreis' | translate }} <span class="required">*</span></label>
+                  <input id="purchasePrice" type="number" formControlName="purchasePrice" min="1" />
+                  <p class="field-error" *ngIf="hasError(f['purchasePrice'])">{{ 'VALIDATION.REQUIRED' | translate }}</p>
+                </div>
+                <div class="form-group">
+                  <label for="depositSale">{{ 'PROPERTY_FORM.DEPOSIT' | translate }}</label>
+                  <input id="depositSale" type="number" formControlName="deposit" min="0" />
+                </div>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+
+        <!-- â•â•â•â•â•â• SECTION 5: Property Details â•â•â•â•â•â• -->
+        <div class="form-section">
+          <div class="form-section__header">
+            <span class="form-section__num">Ù¥</span>
+            <div>
+              <h2 class="form-section__title">{{ 'wohnung_add.details' | translate }}</h2>
+              <p class="form-section__desc">{{ 'wohnung_add.details_desc' | translate }}</p>
+            </div>
+          </div>
+          <div class="form-section__body">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="rooms">{{ 'wohnung_add.zimmer' | translate }}</label>
+                <input id="rooms" type="number" formControlName="rooms" min="0" step="0.5" />
+              </div>
+              <div class="form-group">
+                <label for="area">{{ 'wohnung_add.flaeche' | translate }}</label>
+                <input id="area" type="number" formControlName="area" min="1" />
+              </div>
+              <div class="form-group">
+                <label for="floor">{{ 'wohnung_add.etage' | translate }}</label>
+                <input id="floor" type="number" formControlName="floor" />
+              </div>
+              <div class="form-group">
+                <label for="availableFrom">{{ 'wohnung_add.verfuegbar_ab' | translate }}</label>
+                <input id="availableFrom" type="date" formControlName="availableFrom" />
+              </div>
+              <div class="form-group">
+                <label for="heatingType">{{ 'PROPERTY_FORM.HEATING' | translate }}</label>
+                <select id="heatingType" formControlName="heatingType">
+                  <option [value]="1">{{ 'HEATING.CENTRAL' | translate }}</option>
+                  <option [value]="2">{{ 'HEATING.FLOOR' | translate }}</option>
+                  <option [value]="3">{{ 'HEATING.GAS' | translate }}</option>
+                  <option [value]="4">{{ 'HEATING.ELECTRIC' | translate }}</option>
+                  <option [value]="5">{{ 'HEATING.OIL' | translate }}</option>
+                  <option [value]="0">{{ 'HEATING.OTHER' | translate }}</option>
+                </select>
+              </div>
+
+              <!-- Checkboxes -->
+              <div class="form-group form-group--full">
+                <label class="section-sublabel">{{ 'wohnung_add.features' | translate }}</label>
+                <div class="checkbox-grid">
+                  <label class="checkbox-item">
+                    <input type="checkbox" formControlName="hasBalcony" />
+                    <span class="checkbox-box"></span>
+                    <span>{{ 'wohnung_add.balkon' | translate }}</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" formControlName="hasElevator" />
+                    <span class="checkbox-box"></span>
+                    <span>{{ 'wohnung_add.aufzug' | translate }}</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" formControlName="hasParkingSpace" />
+                    <span class="checkbox-box"></span>
+                    <span>{{ 'wohnung_add.parkplatz' | translate }}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- â•â•â•â•â•â• SECTION 6: Images â•â•â•â•â•â• -->
+        <div class="form-section" *ngIf="isEditMode()">
+          <div class="form-section__header">
+            <span class="form-section__num">Ù¦</span>
+            <div>
+              <h2 class="form-section__title">{{ 'wohnung_add.images' | translate }}</h2>
+              <p class="form-section__desc">{{ 'wohnung_add.images_desc' | translate }}</p>
+            </div>
+          </div>
+          <div class="form-section__body">
+            <div class="image-upload-zone"
+              (dragover)="$event.preventDefault()"
+              (drop)="$event.preventDefault()">
+              <label class="image-upload-label" *ngIf="true">
+                <input type="file" multiple accept="image/jpeg,image/png,image/webp"
+                  (change)="onFileSelected($event)" hidden />
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                  <rect x="1" y="1" width="38" height="38" rx="8" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"/>
+                  <path d="M20 14v12M14 20h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <strong>{{ 'wohnung_add.upload_click' | translate }}</strong>
+                <span>{{ 'wohnung_add.upload_hint' | translate }}</span>
+              </label>
+              <div class="upload-progress" *ngIf="false">
+                <span class="spinner-ring" style="width:28px;height:28px;border-width:3px"></span>
+                <p>{{ 'wohnung_add.uploading' | translate }}</p>
+              </div>
+            </div>
+
+            <!-- Preview -->
+            <div class="image-previews" *ngIf="false">
+              <div *ngFor="let url of []; let i = index" class="image-preview">
+                <img [src]="url" [alt]="'ØµÙˆØ±Ø© ' + (i+1)" appImageFallback="/images/no-image.svg" />
+                <button type="button" class="remove-img-btn" (click)="removeImage(i)" aria-label="Ø­Ø°Ù Ø§Ù„ØµÙˆØ±Ø©">Ã—</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /form-grid -->
+
+      <!-- â”€â”€ Submit Bar â”€â”€ -->
+      <div class="form-submit-bar">
+        <a routerLink="/my-listings" class="btn btn--outline">
+          {{ 'COMMON.CANCEL' | translate }}
+        </a>
+        <button type="submit" class="btn btn--primary" [disabled]="isSaving() || form.invalid">
+          <span *ngIf="isSaving()" class="spinner-ring"></span>
+          {{ isSaving()
+              ? ('COMMON.SAVING' | translate)
+              : (isEditMode() ? ('COMMON.SAVE_CHANGES' | translate) : ('wohnung_add.submit' | translate)) }}
+        </button>
+      </div>
+
+    </form>
   </div>
-
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
-    <!-- Listing type -->
-    <div class="toggle-container" role="group" [attr.aria-label]="'wohnung_add.listing_type' | translate">
-      <button type="button" [class.active]="isSale" (click)="setListingType(2)">
-        {{ 'wohnung_add.mode_sale' | translate }}
-      </button>
-
-      <button type="button" [class.active]="isRent" (click)="setListingType(1)">
-        {{ 'wohnung_add.mode_rent' | translate }}
-      </button>
-    </div>
-
-    <!-- Basic data -->
-    <label for="title">{{ 'wohnung_add.titel' | translate }} *</label>
-    <input id="title" type="text" formControlName="title" />
-    <div class="field-error" *ngIf="hasError(f.title)">
-      ⚠️
-      {{
-        f.title.errors?.['required']
-          ? ('VALIDATION.REQUIRED' | translate)
-          : ('wohnung_add.validation_title' | translate)
-      }}
-    </div>
-
-    <label for="description">{{ 'wohnung_add.beschreibung' | translate }} *</label>
-    <textarea id="description" formControlName="description"></textarea>
-    <div class="field-error" *ngIf="hasError(f.description)">
-      ⚠️
-      {{
-        f.description.errors?.['required']
-          ? ('VALIDATION.REQUIRED' | translate)
-          : ('wohnung_add.validation_description' | translate)
-      }}
-    </div>
-
-    <!-- Location -->
-    <label for="street">{{ 'wohnung_add.adresse' | translate }} *</label>
-    <input id="street" type="text" formControlName="street" />
-    <div class="field-error" *ngIf="hasError(f.street)">
-      ⚠️ {{ 'wohnung_add.validation_address' | translate }}
-    </div>
-
-    <label for="postalCode">{{ 'wohnung_add.plz' | translate }}</label>
-    <input id="postalCode" type="text" formControlName="postalCode" maxlength="20" />
-
-    <label for="city">{{ 'wohnung_add.stadt' | translate }} *</label>
-    <input id="city" type="text" formControlName="city" />
-    <div class="field-error" *ngIf="hasError(f.city)">
-      ⚠️ {{ 'wohnung_add.validation_city' | translate }}
-    </div>
-
-    <label for="region">{{ 'PROPERTY_FORM.REGION' | translate }}</label>
-    <input id="region" type="text" formControlName="region" />
-
-    <label for="countryCode">{{ 'PROPERTY_FORM.COUNTRY' | translate }}</label>
-    <input id="countryCode" type="text" formControlName="countryCode" maxlength="2" />
-
-    <app-map-picker
-      [lang]="currentLang()"
-      (locationChange)="onLocationSelected($event)">
-    </app-map-picker>
-
-    <p class="location-preview" *ngIf="f.latitude.value && f.longitude.value">
-      📍 {{ f.latitude.value }}, {{ f.longitude.value }}
-    </p>
-
-    <!-- Rent pricing -->
-    <div class="section" *ngIf="isRent">
-      <label for="coldRent">{{ 'wohnung_add.kaltmiete' | translate }} *</label>
-      <input id="coldRent" type="number" formControlName="coldRent" min="1" />
-      <div class="field-error" *ngIf="submitError() === 'PROPERTY_FORM.COLD_RENT_REQUIRED'">
-        ⚠️ {{ 'wohnung_add.validation_cold_rent' | translate }}
-      </div>
-
-      <label for="warmRent">{{ 'wohnung_add.warmmiete' | translate }}</label>
-      <input id="warmRent" type="number" formControlName="warmRent" min="0" />
-
-      <label for="additionalCosts">{{ 'wohnung_add.nebenkosten' | translate }}</label>
-      <input id="additionalCosts" type="number" formControlName="additionalCosts" min="0" />
-
-      <label for="deposit">{{ 'wohnung_add.kaution' | translate }}</label>
-      <input id="deposit" type="number" formControlName="deposit" min="0" />
-    </div>
-
-    <!-- Sale pricing -->
-    <div class="section" *ngIf="isSale">
-      <label for="purchasePrice">{{ 'wohnung_add.kaufpreis' | translate }} *</label>
-      <input id="purchasePrice" type="number" formControlName="purchasePrice" min="1" />
-      <div class="field-error" *ngIf="submitError() === 'PROPERTY_FORM.PURCHASE_PRICE_REQUIRED'">
-        ⚠️ {{ 'wohnung_add.validation_purchase_price' | translate }}
-      </div>
-    </div>
-
-    <label for="currencyCode">{{ 'PROPERTY_FORM.CURRENCY' | translate }}</label>
-    <input id="currencyCode" type="text" formControlName="currencyCode" maxlength="3" />
-
-    <!-- Property details -->
-    <label for="rooms">{{ 'wohnung_add.zimmer' | translate }}</label>
-    <input id="rooms" type="number" formControlName="rooms" min="1" max="50" />
-
-    <label for="area">{{ 'wohnung_add.flaeche' | translate }}</label>
-    <input id="area" type="number" formControlName="area" min="1" />
-
-    <label for="floor">{{ 'wohnung_add.geschoss' | translate }}</label>
-    <input id="floor" type="number" formControlName="floor" min="0" />
-
-    <label for="availableFrom">{{ 'wohnung_add.frei_ab' | translate }}</label>
-    <input id="availableFrom" type="date" formControlName="availableFrom" />
-
-    <label for="heatingType">{{ 'wohnung_add.heizung' | translate }}</label>
-    <input id="heatingType" type="number" formControlName="heatingType" min="0" />
-
-    <!-- Features -->
-    <div class="row">
-      <label>
-        <input type="checkbox" formControlName="hasBalcony" />
-        {{ 'wohnung_add.balkon' | translate }}
-      </label>
-
-      <label>
-        <input type="checkbox" formControlName="hasElevator" />
-        {{ 'wohnung_add.aufzug' | translate }}
-      </label>
-
-      <label>
-        <input type="checkbox" formControlName="hasParkingSpace" />
-        {{ 'wohnung_add.stellplatz' | translate }}
-      </label>
-    </div>
-
-    <!-- Images -->
-    <input
-      type="file"
-      #fileInput
-      hidden
-      multiple
-      accept="image/png,image/jpeg,image/jpg,image/webp"
-      (change)="onFileSelected($event)" />
-
-    <div class="file-upload-wrapper">
-      <button type="button" class="btn-upload" (click)="fileInput.click()">
-        {{ 'wohnung_add.bild_hochladen' | translate }}
-      </button>
-
-      <span class="file-count" *ngIf="selectedFiles().length > 0">
-        {{ selectedFiles().length }} {{ 'wohnung_add.selected_files' | translate }}
-      </span>
-    </div>
-
-    <ul class="file-list" *ngIf="selectedFiles().length > 0">
-      <li *ngFor="let file of selectedFiles(); let i = index">
-        <span class="line-clamp-1">{{ file.name }}</span>
-        <button type="button" class="remove-file" (click)="removeImage(i)">×</button>
-      </li>
-    </ul>
-
-    <div class="preview-container" *ngIf="previews().length > 0">
-      <div *ngFor="let img of previews(); let i = index" class="preview-box">
-        <img
-          [src]="img || fallbackImage"
-          [alt]="'wohnung_add.preview_alt' | translate"
-          appImageFallback="/images/no-image.svg" />
-
-        <button type="button" class="remove-file" (click)="removeImage(i)">×</button>
-      </div>
-    </div>
-
-    <!-- Submit -->
-    <button type="submit" [disabled]="form.invalid || isSaving()">
-      <span *ngIf="isSaving()">⏳ {{ 'COMMON.SAVING' | translate }}</span>
-      <span *ngIf="!isSaving()">{{ 'COMMON.SAVE' | translate }}</span>
-    </button>
-  </form>
 </div>
+
