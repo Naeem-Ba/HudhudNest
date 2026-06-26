@@ -1,31 +1,42 @@
 // src/app/core/models/review.model.ts
-//
-// ✅ نموذج جديد كامل — مطابق لمواصفات الـ API (قسم 9.10)
 
 export interface ReviewDto {
   id: string;
   propertyId: string;
   reviewerId: string;
   reviewerName?: string;
-  rating: number;          // 1 إلى 5
+  reviewerImageUrl?: string | null;
+  rating: number;
   comment?: string | null;
   createdAt: string;
 }
 
-// طلب إضافة تقييم
+export interface PropertyReviewSummaryDto {
+  averageRating: number;
+  totalCount: number;
+  reviews: ReviewDto[];
+}
+
 export interface CreateReviewRequest {
   propertyId: string;
-  rating: number;          // 1 إلى 5 (مطلوب من Backend validator)
+  rating: number;
   comment?: string | null;
 }
 
-// تحقق من القيود
+export const REVIEW_COMMENT_MAX_LENGTH = 1000;
+
 export function validateCreateReview(request: CreateReviewRequest): string | null {
   if (!request.propertyId?.trim()) {
     return 'REVIEW.PROPERTY_REQUIRED';
   }
+
   if (!Number.isInteger(request.rating) || request.rating < 1 || request.rating > 5) {
     return 'REVIEW.RATING_RANGE';
   }
+
+  if (request.comment && request.comment.length > REVIEW_COMMENT_MAX_LENGTH) {
+    return 'REVIEW.COMMENT_TOO_LONG';
+  }
+
   return null;
 }

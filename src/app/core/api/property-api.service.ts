@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { catchError, map, Observable, throwError } from 'rxjs';
 import { BackendApiService, QueryValue } from '../api/backend-api.service';
-import { ApiPagedResult, unwrapItems } from '../models/api.model';
+import { ApiPagedResult, normalizePagedResult, PagedResult, unwrapItems } from '../models/api.model';
 import { Property, PropertyFilterDto } from '../models/property.model';
 import { apiToCamelCase } from '../adapters/api-naming.adapter';
 
@@ -10,9 +10,26 @@ export class PropertyApiService {
   constructor(private readonly api: BackendApiService) {}
 
   getProperties(filter: PropertyFilterDto = {}): Observable<Property[]> {
+    return this.getPropertiesPaged(filter).pipe(map(result => result.items));
+  }
+
+  getPropertiesPaged(filter: PropertyFilterDto = {}): Observable<PagedResult<Property>> {
+    const page = filter.page ?? 1;
+    const pageSize = filter.pageSize ?? 20;
+
     return this.api
-      .get<Property[] | ApiPagedResult<Property>>('/properties', filter as Record<string, QueryValue>)
-      .pipe(map(response => unwrapItems(response).map(item => this.toProperty(item))));
+      .get<Property[] | ApiPagedResult<Property>>(
+        '/properties',
+        this.toQuery(filter)
+      )
+      .pipe(
+        map(response => normalizePagedResult(
+          response,
+          item => this.toProperty(item),
+          page,
+          pageSize
+        ))
+      );
   }
 
   /**
@@ -23,8 +40,6 @@ export class PropertyApiService {
   getMyProperties(): Observable<Property[]> {
     return this.getPropertyCollection('/properties/mine').pipe(
       catchError(error => {
-        // Compatibility fallback for older backend builds that exposed /properties/my.
-        // It is still safe because ownership is resolved from JWT on the backend.
         if (error?.status === 404) {
           return this.getPropertyCollection('/properties/my');
         }
@@ -63,6 +78,29 @@ export class PropertyApiService {
     return this.api
       .get<Property[] | ApiPagedResult<Property>>(path)
       .pipe(map(response => unwrapItems(response).map(item => this.toProperty(item))));
+  }
+
+  private toQuery(filter: PropertyFilterDto): Record<string, QueryValue> {
+    const query: Record<string, QueryValue> = {};
+
+    Object.entries(filter).forEach(([key, value]) => {
+      if (key === 'isPublished') {
+        return;
+      }
+
+      if (Array.isArray(value)) {
+        if (value.length > 0) {
+          query[key] = value.map(String);
+        }
+        return;
+      }
+
+      if (value !== undefined && value !== null && value !== '') {
+        query[key] = value as QueryValue;
+      }
+    });
+
+    return query;
   }
 
   private toProperty(item: unknown): Property {

@@ -1,4 +1,4 @@
-﻿// src/app/core/services/notifications-api.service.ts
+// src/app/core/services/notifications-api.service.ts
 //
 // ❌ المشاكل:
 //   1. SignalR: الـ token يُلتقط مرة واحدة عند الاتصال (static capture)
@@ -51,12 +51,12 @@ export class NotificationsApiService {
 
   getUnreadCount(): Observable<number> {
     return this.api
-      .get<number | { count?: number; Count?: number }>('/notifications/unread-count')
+      .get<number | { unreadCount?: number; UnreadCount?: number; count?: number; Count?: number }>('/notifications/unread-count')
       .pipe(
         map(response =>
           typeof response === 'number'
             ? response
-            : (response.count ?? response.Count ?? 0)
+            : (response.unreadCount ?? response.UnreadCount ?? response.count ?? response.Count ?? 0)
         )
       );
   }

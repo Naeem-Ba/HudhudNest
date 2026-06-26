@@ -1,5 +1,33 @@
+// src/app/core/api/profile.service.ts
+//
+// ✅ Bug Fix — updateProfile (Bug #2)
+//
+// المشكلة الأولى — Request body خاطئ:
+//   كان toUpdateRequest() يُرسل: { fullName, phoneNumber, isAgent, taxNumber }
+//   لكن Backend يتوقع UpdateProfileRequest:
+//     public sealed record UpdateProfileRequest(
+//         string? FirstName, string? LastName, string? DisplayName, string? PhoneNumber
+//     );
+//   أي: حقول مختلفة تماماً + حقول غير موجودة في الـ contract (isAgent, taxNumber).
+//
+// المشكلة الثانية — 204 NoContent بدون body:
+//   كان: put<BackendUserProfile>(...).pipe(map(user => toLegacyUserProfile(user)))
+//   لكن HttpPut /users/me يُعيد 204 NoContent → body = null
+//   map(null → toLegacyUserProfile(null)) يُعطي profile فارغاً ويُسبِّب أخطاءً صامتة.
+//
+// الإصلاح:
+//   1. تصحيح toUpdateRequest() ليُرسل { firstName, lastName, displayName, phoneNumber }
+//      (System.Text.Json يُطابق بدون حساسية لحالة الأحرف عند الاستقبال)
+//   2. تغيير put<void>() ثم switchMap(() => this.getMe()) لإعادة البيانات المحدَّثة
+//
+// التغييرات:
+//   - إضافة switchMap للـ imports
+//   - تغيير توقيع put من BackendUserProfile إلى void
+//   - استبدال map بـ switchMap → getMe() في updateProfile
+//   - إصلاح شامل لـ toUpdateRequest
+
 import { Injectable } from '@angular/core';
-import { Observable, map, throwError } from 'rxjs';
+import { Observable, map, switchMap, throwError } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
 
 export interface UserProfile {
@@ -76,10 +104,18 @@ export class ProfileService {
       .pipe(map(user => this.toLegacyUserProfile(user)));
   }
 
+  /**
+   * ✅ FIX: إصلاح مزدوج
+   *
+   * 1. put<void> لأن Backend يُعيد 204 NoContent — لا يوجد body لقراءته.
+   * 2. switchMap(() => this.getMe()) للحصول على البيانات المحدَّثة بعد الحفظ.
+   *    هذا النهج أكثر أماناً من الاعتماد على البيانات المُرسَلة (optimistic update)
+   *    لأن Backend قد يُطبِّق transformations على الحقول (trim, normalize, إلخ).
+   */
   updateProfile(data: UserProfile): Observable<UserProfile> {
     return this.api
-      .put<BackendUserProfile>('/users/me', this.toUpdateRequest(data))
-      .pipe(map(user => this.toLegacyUserProfile(user)));
+      .put<void>('/users/me', this.toUpdateRequest(data))
+      .pipe(switchMap(() => this.getMe()));
   }
 
   changePassword(data: ChangePasswordRequest): Observable<void> {
@@ -117,14 +153,25 @@ export class ProfileService {
     };
   }
 
+  /**
+   * ✅ FIX: إرسال الحقول الصحيحة المطابقة لـ Backend UpdateProfileRequest:
+   *   public sealed record UpdateProfileRequest(
+   *     string? FirstName, string? LastName, string? DisplayName, string? PhoneNumber
+   *   );
+   *
+   * الحقول المُحذوفة مقارنةً بالكود السابق:
+   *   - fullName   → غير موجود في UpdateProfileRequest (تم استبداله بـ firstName + lastName)
+   *   - isAgent    → غير موجود في UpdateProfileRequest (endpoint منفصل إن وُجد)
+   *   - taxNumber  → غير موجود في UpdateProfileRequest (endpoint منفصل إن وُجد)
+   *
+   * ملاحظة: System.Text.Json يُطابق camelCase ↔ PascalCase بدون حساسية أثناء الـ deserialization.
+   */
   private toUpdateRequest(user: UserProfile): Record<string, unknown> {
-    const fullName = [user.Vorname, user.Name].filter(Boolean).join(' ').trim();
-
     return {
-      fullName: user.DisplayName?.trim() || fullName || undefined,
-      phoneNumber: user.Phone?.trim() || undefined,
-      isAgent: user.IsAgent ?? false,
-      taxNumber: user.TaxNumber?.trim() || undefined
+      firstName:   user.Vorname?.trim()     || undefined,
+      lastName:    user.Name?.trim()        || undefined,
+      displayName: user.DisplayName?.trim() || undefined,
+      phoneNumber: user.Phone?.trim()       || undefined
     };
   }
 }

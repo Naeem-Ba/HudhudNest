@@ -1,34 +1,29 @@
 // src/app/core/models/analytics.model.ts
-//
-// ✅ نموذج جديد — مطابق لمواصفات الـ API (قسم 9.12)
+// Matches Backend DTOs in PropertyApi.Application.Analytics.DTOs.
 
-// إحصاءات عقار محدد — GET /api/Analytics/property/{propertyId}
+// GET /api/Analytics/property/{propertyId}
 export interface PropertyStatsDto {
   propertyId: string;
-  viewCount?: number;
-  favoriteCount?: number;
-  messageCount?: number;
-  visitCount?: number;
-  pendingVisits?: number;
-  confirmedVisits?: number;
-  averageRating?: number | null;
-  reviewCount?: number;
+  propertyTitle: string;
+  totalVisitRequests: number;
+  confirmedVisits: number;
+  totalMessages: number;
+  totalFavorites: number;
+  totalReviews: number;
+  averageRating: number;
+  areaAveragePrice: number | null;
 }
 
-// تحليلات السوق — GET /api/Analytics/market?countryCode=SY
-// يُخزَّن في Cache لمدة 5 دقائق من جهة الـ Backend
+// GET /api/Analytics/market?countryCode=SY
 export interface MarketInsightsDto {
-  countryCode?: string;
-  totalListings?: number;
-  activeListings?: number;
-  averageRentPrice?: number | null;
-  averageSalePrice?: number | null;
-  topCities?: MarketCityDto[];
-  generatedAt?: string;
+  cities: CityMarketInsightDto[];
+  generatedAt: string;
 }
 
-export interface MarketCityDto {
+export interface CityMarketInsightDto {
   city: string;
-  listingCount: number;
-  averagePrice?: number | null;
+  countryCode: string;
+  avgPriceForRent: number;
+  avgPriceForSale: number;
+  totalActiveListings: number;
 }

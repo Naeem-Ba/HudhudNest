@@ -1,4 +1,4 @@
-﻿import {
+import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
@@ -11,6 +11,7 @@ import {
   AbstractControl,
   FormBuilder,
   ReactiveFormsModule,
+  ValidationErrors,
   Validators
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -50,6 +51,66 @@ interface PropertySavePayload {
   HeatingType: number;
   AvailableFrom?: string | null;
   AmenityIds?: string[] | null;
+}
+
+const VALID_COUNTRY_CODES = new Set(['DE', 'SY', 'US', 'GB', 'FR', 'AE', 'SA', 'TR', 'EG', 'JO', 'LB']);
+const VALID_CURRENCY_CODES = new Set(['EUR', 'USD', 'GBP', 'SYP', 'TRY', 'AED', 'SAR', 'EGP', 'JOD', 'LBP']);
+
+function toNumberOrNull(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : null;
+}
+
+function positiveNumber(control: AbstractControl): ValidationErrors | null {
+  const value = toNumberOrNull(control.value);
+  return value === null || value > 0 ? null : { positiveNumber: true };
+}
+
+function nonNegativeNumber(control: AbstractControl): ValidationErrors | null {
+  const value = toNumberOrNull(control.value);
+  return value === null || value >= 0 ? null : { nonNegativeNumber: true };
+}
+
+function areaGreaterThanTen(control: AbstractControl): ValidationErrors | null {
+  const value = toNumberOrNull(control.value);
+  return value === null || value > 10 ? null : { areaGreaterThanTen: true };
+}
+
+function propertyFormValidator(group: AbstractControl): ValidationErrors | null {
+  const listingType = Number(group.get('listingType')?.value);
+  const coldRent = toNumberOrNull(group.get('coldRent')?.value);
+  const warmRent = toNumberOrNull(group.get('warmRent')?.value);
+  const purchasePrice = toNumberOrNull(group.get('purchasePrice')?.value);
+  const countryCode = String(group.get('countryCode')?.value ?? '').trim().toUpperCase();
+  const currencyCode = String(group.get('currencyCode')?.value ?? '').trim().toUpperCase();
+
+  const errors: ValidationErrors = {};
+
+  if (!VALID_COUNTRY_CODES.has(countryCode)) {
+    errors['invalidCountryCode'] = true;
+  }
+
+  if (!VALID_CURRENCY_CODES.has(currencyCode)) {
+    errors['invalidCurrencyCode'] = true;
+  }
+
+  if (listingType === 1 && (coldRent === null || coldRent <= 0)) {
+    errors['coldRentRequired'] = true;
+  }
+
+  if (listingType === 2 && (purchasePrice === null || purchasePrice <= 0)) {
+    errors['purchasePriceRequired'] = true;
+  }
+
+  if (warmRent !== null && coldRent !== null && warmRent < coldRent) {
+    errors['warmRentBelowColdRent'] = true;
+  }
+
+  return Object.keys(errors).length ? errors : null;
 }
 
 @Component({
@@ -92,28 +153,28 @@ export class PropertyFormPage implements OnInit {
     listingType: [1, Validators.required],
     title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(200)]],
     description: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(5000)]],
-    street: ['', Validators.required],
-    city: ['', Validators.required],
-    region: [null as string | null],
+    street: ['', [Validators.required, Validators.maxLength(300)]],
+    city: ['', [Validators.required, Validators.maxLength(150)]],
+    region: [null as string | null, Validators.maxLength(150)],
     postalCode: [null as string | null, Validators.maxLength(20)],
-    countryCode: ['SY', Validators.required],
-    latitude: [null as number | null],
-    longitude: [null as number | null],
-    currencyCode: ['SYP', Validators.required],
-    coldRent: [null as number | null],
-    warmRent: [null as number | null],
-    purchasePrice: [null as number | null],
-    deposit: [null as number | null],
-    additionalCosts: [null as number | null],
+    countryCode: ['SY', [Validators.required, Validators.minLength(2), Validators.maxLength(2)]],
+    latitude: [null as number | null, [Validators.min(-90), Validators.max(90)]],
+    longitude: [null as number | null, [Validators.min(-180), Validators.max(180)]],
+    currencyCode: ['SYP', [Validators.required, Validators.minLength(3), Validators.maxLength(3)]],
+    coldRent: [null as number | null, positiveNumber],
+    warmRent: [null as number | null, positiveNumber],
+    purchasePrice: [null as number | null, positiveNumber],
+    deposit: [null as number | null, nonNegativeNumber],
+    additionalCosts: [null as number | null, nonNegativeNumber],
     rooms: [null as number | null, [Validators.min(1), Validators.max(50)]],
-    area: [null as number | null, Validators.min(1)],
+    area: [null as number | null, areaGreaterThanTen],
     floor: [null as number | null, Validators.min(0)],
     availableFrom: [null as string | null],
     heatingType: [0],
     hasBalcony: [false],
     hasElevator: [false],
     hasParkingSpace: [false]
-  });
+  }, { validators: propertyFormValidator });
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id') ?? '';
@@ -151,6 +212,7 @@ export class PropertyFormPage implements OnInit {
           const property = p as any;
 
           this.form.patchValue({
+            listingType: property.listingType === 'ForSale' || property.listingType === 2 ? 2 : 1,
             title: property.title ?? '',
             description: property.description ?? '',
             street: property.street ?? '',
@@ -231,33 +293,26 @@ export class PropertyFormPage implements OnInit {
       this.form.patchValue({
         coldRent: null,
         warmRent: null,
-        deposit: null,
         additionalCosts: null
       });
     }
+
+    this.form.updateValueAndValidity();
   }
 
   onSubmit(): void {
     this.submitError.set('');
+    this.normalizeCodes();
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.submitError.set(this.firstValidationError());
       return;
     }
 
     const f = this.form.getRawValue();
     const isRent = f.listingType === 1;
     const isSale = f.listingType === 2;
-
-    if (isRent && !f.coldRent) {
-      this.submitError.set('PROPERTY_FORM.COLD_RENT_REQUIRED');
-      return;
-    }
-
-    if (isSale && !f.purchasePrice) {
-      this.submitError.set('PROPERTY_FORM.PURCHASE_PRICE_REQUIRED');
-      return;
-    }
 
     const payload: PropertySavePayload = {
       Title: f.title!.trim(),
@@ -266,15 +321,15 @@ export class PropertyFormPage implements OnInit {
       Street: f.street!.trim(),
       City: f.city!.trim(),
       Region: f.region?.trim() ?? null,
-      CountryCode: f.countryCode!.trim(),
+      CountryCode: f.countryCode!.trim().toUpperCase(),
       PostalCode: f.postalCode?.trim() ?? null,
       Latitude: f.latitude ?? null,
       Longitude: f.longitude ?? null,
-      CurrencyCode: f.currencyCode!.trim(),
+      CurrencyCode: f.currencyCode!.trim().toUpperCase(),
       ColdRent: isRent ? (f.coldRent ?? null) : null,
       WarmRent: isRent ? (f.warmRent ?? null) : null,
       PurchasePrice: isSale ? (f.purchasePrice ?? null) : null,
-      Deposit: isRent ? (f.deposit ?? null) : null,
+      Deposit: f.deposit ?? null,
       AdditionalCosts: isRent ? (f.additionalCosts ?? null) : null,
       Rooms: f.rooms ?? null,
       Area: f.area ?? null,
@@ -371,6 +426,33 @@ export class PropertyFormPage implements OnInit {
     }
 
     toast.show?.(message, type);
+  }
+
+  private normalizeCodes(): void {
+    const raw = this.form.getRawValue();
+    this.form.patchValue({
+      countryCode: raw.countryCode?.trim().toUpperCase() ?? 'SY',
+      currencyCode: raw.currencyCode?.trim().toUpperCase() ?? 'SYP'
+    }, { emitEvent: false });
+  }
+
+  private firstValidationError(): string {
+    const errors = this.form.errors ?? {};
+
+    if (errors['coldRentRequired']) return 'PROPERTY_FORM.COLD_RENT_REQUIRED';
+    if (errors['purchasePriceRequired']) return 'PROPERTY_FORM.PURCHASE_PRICE_REQUIRED';
+    if (errors['warmRentBelowColdRent']) return 'PROPERTY_FORM.WARM_RENT_BELOW_COLD_RENT';
+    if (errors['invalidCountryCode']) return 'PROPERTY_FORM.INVALID_COUNTRY_CODE';
+    if (errors['invalidCurrencyCode']) return 'PROPERTY_FORM.INVALID_CURRENCY_CODE';
+
+    if (this.f.area.errors?.['areaGreaterThanTen']) return 'PROPERTY_FORM.AREA_TOO_SMALL';
+    if (this.f.coldRent.errors?.['positiveNumber']) return 'PROPERTY_FORM.COLD_RENT_REQUIRED';
+    if (this.f.warmRent.errors?.['positiveNumber']) return 'PROPERTY_FORM.WARM_RENT_REQUIRED';
+    if (this.f.purchasePrice.errors?.['positiveNumber']) return 'PROPERTY_FORM.PURCHASE_PRICE_REQUIRED';
+    if (this.f.deposit.errors?.['nonNegativeNumber']) return 'PROPERTY_FORM.DEPOSIT_INVALID';
+    if (this.f.additionalCosts.errors?.['nonNegativeNumber']) return 'PROPERTY_FORM.ADDITIONAL_COSTS_INVALID';
+
+    return 'PROPERTY_FORM.VALIDATION_ERROR';
   }
 
   hasError(ctrl: AbstractControl | null | undefined): boolean {
