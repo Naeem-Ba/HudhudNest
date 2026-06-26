@@ -18,11 +18,26 @@ export class OtpApiService {
   ) {}
 
   sendOtp(request: SendOtpRequest): Observable<SendOtpResponse> {
-    return this.api.post<SendOtpResponse>('/auth/phone/send-otp', request);
+    const payload: SendOtpRequest = {
+      ...request,
+      phoneNumber: request.phoneNumber.trim(),
+      purpose: request.purpose ?? 'PhoneRegistration'
+    };
+
+    return this.api.post<SendOtpResponse>('/auth/phone/send-otp', payload);
   }
 
   verifyOtp(request: VerifyOtpRequest): Observable<AuthTokenResponse> {
-    return this.api.post<unknown>('/auth/phone/verify', request).pipe(
+    const payload: VerifyOtpRequest = {
+      ...request,
+      phoneNumber: request.phoneNumber.trim(),
+      code: request.code.trim(),
+      purpose: request.purpose ?? 'PhoneRegistration',
+      firstName: request.firstName?.trim() || undefined,
+      lastName: request.lastName?.trim() || undefined
+    };
+
+    return this.api.post<unknown>('/auth/phone/verify', payload).pipe(
       map(response => normalizeAuthTokenResponse(response)),
       tap(response => this.tokenStorage.storeTokens(response))
     );

@@ -3,7 +3,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
-export type QueryValue = string | number | boolean | null | undefined;
+export type QueryScalar = string | number | boolean;
+export type QueryValue = QueryScalar | readonly QueryScalar[] | null | undefined;
 
 @Injectable({ providedIn: 'root' })
 export class BackendApiService {
@@ -36,8 +37,8 @@ export class BackendApiService {
   }
 
   postFormData<T>(path: string, formData: FormData): Observable<T> {
-  return this.upload<T>(path, formData);
-}
+    return this.upload<T>(path, formData);
+  }
 
   private url(path: string): string {
     if (/^https?:\/\//i.test(path)) {
@@ -61,9 +62,20 @@ export class BackendApiService {
     let params = new HttpParams();
 
     Object.entries(query ?? {}).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params = params.set(key, String(value));
+      if (value === undefined || value === null || value === '') {
+        return;
       }
+
+      if (Array.isArray(value)) {
+        value
+          .filter(item => item !== undefined && item !== null && String(item) !== '')
+          .forEach(item => {
+            params = params.append(key, String(item));
+          });
+        return;
+      }
+
+      params = params.set(key, String(value));
     });
 
     return params;

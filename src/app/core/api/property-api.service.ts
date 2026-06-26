@@ -1,62 +1,52 @@
-// src/app/core/api/property-api.service.ts
-//
-// ✅ Bug Fix — getMyProperties (Bug #1)
-//
-// المشكلة:
-//   كان getMyProperties يستدعي /properties/mine ثم يتراجع إلى /properties/my.
-//   لا يوجد أي من هذين الـ endpoints في PropertiesController — كلاهما يعطي 404.
-//
-// الإصلاح:
-//   GET /api/Properties?ownerId={userId}
-//   PropertyFilterDto في الـ Backend يحتوي OwnerId: Guid?
-//   وفي الـ Frontend يحتوي ownerId?: string (موجود بالفعل في property.model.ts)
-//   ASP.NET Core يُطابق query parameters بدون حساسية لحالة الأحرف.
-//
-// التغييرات:
-//   - إضافة inject(AuthService) للحصول على userId من الـ JWT
-//   - استبدال الـ fallback المعطوب بـ getProperties({ ownerId })
-//   - حذف catchError من الـ imports (لم يعد مُستخدَماً)
-
 import { Injectable } from '@angular/core';
-import { map, Observable, throwError } from 'rxjs';
+import { catchError, map, Observable, throwError } from 'rxjs';
 import { BackendApiService, QueryValue } from '../api/backend-api.service';
-import { ApiPagedResult, unwrapItems } from '../models/api.model';
+import { ApiPagedResult, normalizePagedResult, PagedResult, unwrapItems } from '../models/api.model';
 import { Property, PropertyFilterDto } from '../models/property.model';
 import { apiToCamelCase } from '../adapters/api-naming.adapter';
-import { AuthService } from '../auth/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class PropertyApiService {
-  constructor(
-    private readonly api: BackendApiService,
-    // ✅ FIX: مُضاف للحصول على userId من الـ JWT بدلاً من استدعاء endpoint وهمي
-    private readonly auth: AuthService
-  ) {}
+  constructor(private readonly api: BackendApiService) {}
 
   getProperties(filter: PropertyFilterDto = {}): Observable<Property[]> {
+    return this.getPropertiesPaged(filter).pipe(map(result => result.items));
+  }
+
+  getPropertiesPaged(filter: PropertyFilterDto = {}): Observable<PagedResult<Property>> {
+    const page = filter.page ?? 1;
+    const pageSize = filter.pageSize ?? 20;
+
     return this.api
-      .get<Property[] | ApiPagedResult<Property>>('/properties', filter as Record<string, QueryValue>)
-      .pipe(map(response => unwrapItems(response).map(item => this.toProperty(item))));
+      .get<Property[] | ApiPagedResult<Property>>(
+        '/properties',
+        this.toQuery(filter)
+      )
+      .pipe(
+        map(response => normalizePagedResult(
+          response,
+          item => this.toProperty(item),
+          page,
+          pageSize
+        ))
+      );
   }
 
   /**
-   * ✅ FIX: استبدال /properties/mine + /properties/my (endpoints غير موجودة)
-   *         بـ GET /api/Properties?ownerId={userId}
-   *
-   * الـ Backend: PropertyFilterDto.OwnerId: Guid?
-   * الـ Frontend: PropertyFilterDto.ownerId?: string (موجود في property.model.ts)
-   *
-   * ملاحظة أمنية: الـ Backend يُنفِّذ فلترة الملكية عبر GetPropertiesListQuery
-   * وليس عبر JWT مباشرة على هذا الـ endpoint — المستخدم لا يستطيع تعديل
-   * استجابة الـ API بتغيير الـ ownerId لأن الـ AllowAnonymous هنا مقصود
-   * للسماح بالبحث العام، والـ ownerId مجرد معامل فلترة.
+   * Loads only the authenticated user's own listings.
+   * This avoids the unsafe frontend fallback of requesting all properties and
+   * filtering them by ownerId on the client.
    */
   getMyProperties(): Observable<Property[]> {
-    const userId = this.auth.getCurrentUserId();
-    if (!userId) {
-      return throwError(() => new Error('NOT_AUTHENTICATED'));
-    }
-    return this.getProperties({ ownerId: userId });
+    return this.getPropertyCollection('/properties/mine').pipe(
+      catchError(error => {
+        if (error?.status === 404) {
+          return this.getPropertyCollection('/properties/my');
+        }
+
+        return throwError(() => error);
+      })
+    );
   }
 
   getProperty(id: string): Observable<Property> {
@@ -88,6 +78,29 @@ export class PropertyApiService {
     return this.api
       .get<Property[] | ApiPagedResult<Property>>(path)
       .pipe(map(response => unwrapItems(response).map(item => this.toProperty(item))));
+  }
+
+  private toQuery(filter: PropertyFilterDto): Record<string, QueryValue> {
+    const query: Record<string, QueryValue> = {};
+
+    Object.entries(filter).forEach(([key, value]) => {
+      if (key === 'isPublished') {
+        return;
+      }
+
+      if (Array.isArray(value)) {
+        if (value.length > 0) {
+          query[key] = value.map(String);
+        }
+        return;
+      }
+
+      if (value !== undefined && value !== null && value !== '') {
+        query[key] = value as QueryValue;
+      }
+    });
+
+    return query;
   }
 
   private toProperty(item: unknown): Property {

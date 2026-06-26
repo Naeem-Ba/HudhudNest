@@ -34,7 +34,7 @@ import { ReviewService } from '../../core/api/review.service';
 import { VisitService } from '../../core/api/visit.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { Property } from '../../core/models/property.model';
-import { ReviewDto } from '../../core/models/review.model';
+import { REVIEW_COMMENT_MAX_LENGTH, ReviewDto, validateCreateReview } from '../../core/models/review.model';
 import { CreateVisitRequest, validateCreateVisit } from '../../core/models/visit.model';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
@@ -113,7 +113,7 @@ export class PropertyDetailPage implements OnInit {
   // ── Review Form (Reactive) ────────────────────────────────────────────
   readonly reviewForm = this.fb.group({
     rating:  [5, [Validators.required, Validators.min(1), Validators.max(5)]],
-    comment: ['', Validators.maxLength(2000)]
+    comment: ['', Validators.maxLength(REVIEW_COMMENT_MAX_LENGTH)]
   });
 
   readonly savingVisit  = signal(false);
@@ -164,7 +164,7 @@ export class PropertyDetailPage implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: data => {
-          this.reviews.set(data as any);
+          this.reviews.set(data);
           this.loadingReviews.set(false);
         },
         error: () => this.loadingReviews.set(false)
@@ -252,14 +252,22 @@ export class PropertyDetailPage implements OnInit {
     if (this.reviewForm.invalid || !this.property()) return;
 
     const raw = this.reviewForm.getRawValue();
+    const request = {
+      propertyId: this.property()!.id,
+      rating: raw.rating!,
+      comment: raw.comment?.trim() || null
+    };
+
+    const validationError = validateCreateReview(request);
+    if (validationError) {
+      this.toast.show(this.translate.instant(validationError), 'error');
+      return;
+    }
+
     this.savingReview.set(true);
 
     this.reviewService
-      .addReview({
-        propertyId: this.property()!.id,
-        rating: raw.rating!,
-        comment: raw.comment ?? null
-      })
+      .addReview(request)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: review => {

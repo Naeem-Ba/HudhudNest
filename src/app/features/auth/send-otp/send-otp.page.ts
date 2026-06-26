@@ -13,7 +13,7 @@ import { FormErrorComponent } from '../../../shared/ui/form-error.component';
 import { ToastService } from '../../../shared/services/toast.service';
 
 // ✅ FIX #10: Pattern للهاتف الدولي (اختياري + أو 00 ثم 7 إلى 15 رقم)
-const PHONE_PATTERN = /^\+?[0-9]{7,15}$/;
+const PHONE_PATTERN = /^\+[1-9]\d{7,14}$/;
 
 @Component({
   selector: 'app-send-otp-page',
@@ -154,7 +154,10 @@ export class SendOtpPage {
     this.error.set('');
     this.success.set('');
 
-    this.otpApi.sendOtp(this.form.getRawValue()).subscribe({
+    this.otpApi.sendOtp({
+      ...this.form.getRawValue(),
+      phoneNumber: this.form.controls.phoneNumber.value.trim()
+    }).subscribe({
       next: () => {
         this.loading.set(false);
         const message = this.translate.instant('AUTH.SEND_OTP_SUCCESS');

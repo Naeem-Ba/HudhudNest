@@ -1,17 +1,5 @@
 // =============================================================
 // src/app/features/properties/property-list/property-list.page.ts
-//
-// بديل عن: wohnungen/wohnungen.component.ts
-//
-// التحسينات:
-//   ✅ PropertyApiService (camelCase) بدل WohnungenService (PascalCase)
-//   ✅ Signals بدل class fields عادية
-//   ✅ ChangeDetectionStrategy.OnPush
-//   ✅ takeUntilDestroyed لمنع Memory Leaks
-//   ✅ inject() الحديث
-//   ✅ Pagination عبر PropertyFilterDto
-//   ✅ TranslateModule لجميع النصوص
-//   ✅ SkeletonCardGrid للتحميل
 // =============================================================
 
 import {
@@ -52,28 +40,21 @@ import { ImageFallbackDirective } from '../../../shared/directives/image-fallbac
   styleUrls: ['./property-list.page.scss']
 })
 export class PropertyListPage implements OnInit {
-
-  // ── DI الحديث ─────────────────────────────────────────────────────────
-  private readonly api      = inject(PropertyApiService);
-  private readonly router   = inject(Router);
+  private readonly api = inject(PropertyApiService);
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
-  // ── State (Signals) ────────────────────────────────────────────────────
   readonly properties = signal<Property[]>([]);
-  readonly loading    = signal(false);
-  readonly error      = signal('');
+  readonly loading = signal(false);
+  readonly error = signal('');
 
-  // ── Pagination ─────────────────────────────────────────────────────────
-  readonly currentPage  = signal(1);
-  readonly pageSize     = signal(20);
-  readonly totalCount   = signal(0);
-  readonly totalPages   = computed(() =>
-    Math.ceil(this.totalCount() / this.pageSize()) || 1
-  );
-  readonly hasNext     = computed(() => this.currentPage() < this.totalPages());
+  readonly currentPage = signal(1);
+  readonly pageSize = signal(20);
+  readonly totalCount = signal(0);
+  readonly totalPages = computed(() => Math.ceil(this.totalCount() / this.pageSize()) || 1);
+  readonly hasNext = computed(() => this.currentPage() < this.totalPages());
   readonly hasPrevious = computed(() => this.currentPage() > 1);
 
-  // ── Filter ─────────────────────────────────────────────────────────────
   readonly filter = signal<PropertyFilterDto>({
     page: 1,
     pageSize: 20,
@@ -82,6 +63,14 @@ export class PropertyListPage implements OnInit {
   });
 
   readonly fallbackImage = '/images/no-image.svg';
+
+  filtersOpen = false;
+  searchText = '';
+  selectedListingType: '' | 'ForRent' | 'ForSale' = '';
+  cityFilter = '';
+  minPrice: number | null = null;
+  maxPrice: number | null = null;
+  sortBy = 'CreatedAt';
 
   ngOnInit(): void {
     this.loadProperties();
@@ -92,11 +81,14 @@ export class PropertyListPage implements OnInit {
     this.error.set('');
 
     this.api
-      .getProperties(this.filter())
+      .getPropertiesPaged(this.filter())
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: data => {
-          this.properties.set(data ?? []);
+        next: result => {
+          this.properties.set(result.items);
+          this.totalCount.set(result.totalCount);
+          this.currentPage.set(result.page);
+          this.pageSize.set(result.pageSize);
           this.loading.set(false);
         },
         error: () => {
@@ -105,81 +97,6 @@ export class PropertyListPage implements OnInit {
         }
       });
   }
-
-  goToDetails(id: string | undefined): void {
-    if (id) {
-      this.router.navigate(['/properties', id]);
-    }
-  }
-
-  nextPage(): void {
-    if (this.hasNext()) {
-      this.currentPage.update(p => p + 1);
-      this.filter.update(f => ({ ...f, page: this.currentPage() }));
-      this.loadProperties();
-    }
-  }
-
-  prevPage(): void {
-    if (this.hasPrevious()) {
-      this.currentPage.update(p => p - 1);
-      this.filter.update(f => ({ ...f, page: this.currentPage() }));
-      this.loadProperties();
-    }
-  }
-
-  // ── Helper Methods ─────────────────────────────────────────────────────
-  trackById(_: number, property: Property): string {
-    return property.id ?? String(_);
-  }
-
-  getMainImage(property: Property): string {
-    return (
-      property.mainImageUrl
-      ?? property.images?.find(img => img.isMain)?.url
-      ?? property.images?.[0]?.url
-      ?? this.fallbackImage
-    );
-  }
-
-  getFormattedPrice(property: Property): string {
-    const price =
-      property.purchasePrice
-      ?? property.warmRent
-      ?? property.coldRent;
-
-    if (!price) return '—';
-
-    const currency = property.currencyCode ?? 'EUR';
-
-    try {
-      return new Intl.NumberFormat('ar', {
-        style: 'currency',
-        currency,
-        maximumFractionDigits: 0
-      }).format(price);
-    } catch {
-      return `${price.toLocaleString('ar')} ${currency}`;
-    }
-  }
-
-  getLocation(property: Property): string {
-    return [property.street, property.city, property.postalCode]
-      .filter(Boolean)
-      .join('، ') || '—';
-  }
-
-  // ---------------------------------------------------------------------------
-  // UI bridge for redesigned property-list template
-  // ---------------------------------------------------------------------------
-  filtersOpen = false;
-
-  searchText = '';
-  selectedListingType: '' | 'ForRent' | 'ForSale' = '';
-  cityFilter = '';
-  minPrice: number | null = null;
-  maxPrice: number | null = null;
-  sortBy = 'CreatedAt';
 
   get activeFiltersCount(): number {
     let count = 0;
@@ -197,35 +114,22 @@ export class PropertyListPage implements OnInit {
   applyFilters(): void {
     this.filtersOpen = false;
 
-    const self = this as any;
+    const sort = this.mapSort();
+    const city = this.cityFilter.trim();
 
-    if (typeof self.searchTextSignal?.set === 'function') {
-      self.searchTextSignal.set(this.searchText);
-    }
+    this.currentPage.set(1);
+    this.filter.set({
+      page: 1,
+      pageSize: this.pageSize(),
+      city: city || undefined,
+      listingType: this.selectedListingType || undefined,
+      minPrice: this.minPrice ?? undefined,
+      maxPrice: this.maxPrice ?? undefined,
+      sortBy: sort.sortBy,
+      sortDescending: sort.sortDescending
+    });
 
-    if (typeof self.city?.set === 'function') {
-      self.city.set(this.cityFilter);
-    }
-
-    if (typeof self.listingType?.set === 'function') {
-      self.listingType.set(this.selectedListingType);
-    }
-
-    if (typeof self.minPriceSignal?.set === 'function') {
-      self.minPriceSignal.set(this.minPrice);
-    }
-
-    if (typeof self.maxPriceSignal?.set === 'function') {
-      self.maxPriceSignal.set(this.maxPrice);
-    }
-
-    if (typeof self.currentPage?.set === 'function') {
-      self.currentPage.set(1);
-    }
-
-    if (typeof self.loadProperties === 'function') {
-      self.loadProperties();
-    }
+    this.loadProperties();
   }
 
   resetFilters(): void {
@@ -238,63 +142,94 @@ export class PropertyListPage implements OnInit {
     this.applyFilters();
   }
 
-  getPrice(property: any): string {
-    const value =
-      property?.purchasePrice ??
-      property?.warmRent ??
-      property?.coldRent ??
-      property?.price ??
-      0;
-
-    const currency = property?.currencyCode ?? 'SYP';
-
-    if (value === null || value === undefined || value === '') {
-      return `0 ${currency}`;
-    }
-
-    const numeric = Number(value);
-
-    if (Number.isNaN(numeric)) {
-      return `${value} ${currency}`;
-    }
-
-    return `${numeric.toLocaleString('de-DE')} ${currency}`;
-  }
-
   goToPage(page: number): void {
-    const self = this as any;
-    const safePage = Math.max(1, Number(page) || 1);
-
-    if (typeof self.currentPage?.set === 'function') {
-      self.currentPage.set(safePage);
-    } else if ('page' in self) {
-      self.page = safePage;
-    }
-
-    if (typeof self.loadProperties === 'function') {
-      self.loadProperties();
-    }
+    const safePage = Math.max(1, Math.min(Number(page) || 1, this.totalPages()));
+    this.currentPage.set(safePage);
+    this.filter.update(filter => ({ ...filter, page: safePage, pageSize: this.pageSize() }));
+    this.loadProperties();
   }
 
   pageNumbers(): number[] {
-    const total =
-      typeof (this as any).totalPages === 'function'
-        ? Number((this as any).totalPages())
-        : 1;
-
-    const current =
-      typeof (this as any).currentPage === 'function'
-        ? Number((this as any).currentPage())
-        : 1;
-
-    const pages: number[] = [];
+    const total = this.totalPages();
+    const current = this.currentPage();
     const start = Math.max(1, current - 2);
     const end = Math.min(total, current + 2);
+    const pages: number[] = [];
 
     for (let page = start; page <= end; page++) {
       pages.push(page);
     }
 
     return pages;
+  }
+
+  nextPage(): void {
+    if (this.hasNext()) {
+      this.goToPage(this.currentPage() + 1);
+    }
+  }
+
+  prevPage(): void {
+    if (this.hasPrevious()) {
+      this.goToPage(this.currentPage() - 1);
+    }
+  }
+
+  goToDetails(id: string | undefined): void {
+    if (id) {
+      this.router.navigate(['/properties', id]);
+    }
+  }
+
+  trackById(_: number, property: Property): string {
+    return property.id ?? String(_);
+  }
+
+  getMainImage(property: Property): string {
+    return (
+      property.mainImageUrl
+      ?? property.images?.find(img => img.isMain)?.url
+      ?? property.images?.[0]?.url
+      ?? this.fallbackImage
+    );
+  }
+
+  getPrice(property: Property): string {
+    return this.getFormattedPrice(property);
+  }
+
+  getFormattedPrice(property: Property): string {
+    const price = property.purchasePrice ?? property.warmRent ?? property.coldRent;
+
+    if (!price) return '—';
+
+    const currency = property.currencyCode ?? 'SYP';
+
+    try {
+      return new Intl.NumberFormat('ar', {
+        style: 'currency',
+        currency,
+        maximumFractionDigits: 0
+      }).format(price);
+    } catch {
+      return `${price.toLocaleString('ar')} ${currency}`;
+    }
+  }
+
+  getLocation(property: Property): string {
+    return [property.street, property.city, property.postalCode].filter(Boolean).join('، ') || '—';
+  }
+
+  private mapSort(): Pick<PropertyFilterDto, 'sortBy' | 'sortDescending'> {
+    const priceColumn = this.selectedListingType === 'ForSale' ? 'PurchasePrice' : 'ColdRent';
+
+    switch (this.sortBy) {
+      case 'Price':
+        return { sortBy: priceColumn, sortDescending: false };
+      case 'PriceDesc':
+        return { sortBy: priceColumn, sortDescending: true };
+      default:
+        return { sortBy: 'CreatedAt', sortDescending: true };
+    }
   }
 }
