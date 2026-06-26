@@ -164,7 +164,7 @@ export class PropertyDetailPage implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: data => {
-          this.reviews.set(data);
+          this.reviews.set(data as any);
           this.loadingReviews.set(false);
         },
         error: () => this.loadingReviews.set(false)

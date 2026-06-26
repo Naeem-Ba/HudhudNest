@@ -1,18 +1,34 @@
-// src/app/core/services/review.service.ts
+// src/app/core/api/review.service.ts
 //
-// ✅ خدمة جديدة كاملة — مطابقة لمواصفات الـ API (قسم 9.10)
+// ✅ Bug Fix — getPropertyReviews (Bug #3)
 //
-// Endpoints:
-//   GET    /api/Reviews/property/{propertyId}?page=1&pageSize=10   ← تقييمات عقار (عام)
-//   POST   /api/Reviews                                            ← إضافة تقييم (يتطلب تسجيل دخول)
-//   DELETE /api/Reviews/{id}                                       ← حذف تقييم (المالك أو Admin)
+// المشكلة:
+//   كان getPropertyReviews يُشغِّل:
+//     .get<ReviewDto[] | ApiPagedResult<ReviewDto>>(...)
+//     .pipe(map(response => unwrapItems(response).map(...)))
+//
+//   لكن Backend يُعيد PropertyReviewSummaryDto:
+//     { AverageRating: 4.2, TotalCount: 15, Reviews: [...] }
+//
+//   unwrapItems() يبحث عن items | Items | data | Data | results | Results
+//   → لا يجد أياً منها → يُعيد [] دائماً
+//   → التقييمات لا تظهر أبداً.
+//
+// الإصلاح:
+//   1. تغيير نوع الإرجاع إلى Observable<PropertyReviewSummaryDto>
+//   2. إضافة toReviewSummary() لقراءة حقل reviews مباشرةً
+//   3. تحديث toReview() لتضمين reviewerImageUrl
+//   4. حذف ApiPagedResult + unwrapItems (لم يعودا مطلوبَين)
 
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { BackendApiService } from '../api/backend-api.service';
-import { ApiPagedResult, unwrapItems } from '../models/api.model';
 import { apiToCamelCase } from '../adapters/api-naming.adapter';
-import { CreateReviewRequest, ReviewDto } from '../models/review.model';
+import {
+  CreateReviewRequest,
+  PropertyReviewSummaryDto,
+  ReviewDto
+} from '../models/review.model';
 
 @Injectable({ providedIn: 'root' })
 export class ReviewService {
@@ -21,19 +37,25 @@ export class ReviewService {
   constructor(private readonly api: BackendApiService) {}
 
   /**
-   * تقييمات عقار محدد — عام بدون JWT.
+   * ✅ FIX: تقييمات عقار محدد — عام بدون JWT.
+   *
+   * Backend يُعيد PropertyReviewSummaryDto (وليس PagedResult):
+   *   { averageRating, totalCount, reviews: ReviewDto[] }
+   *
+   * التغيير في نوع الإرجاع مقصود — يمنح المكونات الوصول لـ averageRating و totalCount
+   * بدلاً من إخفائهما. المكونات التي تحتاج فقط للقائمة تقرأ summary.reviews.
    */
   getPropertyReviews(
     propertyId: string,
     page = 1,
     pageSize = 10
-  ): Observable<ReviewDto[]> {
+  ): Observable<PropertyReviewSummaryDto> {
     return this.api
-      .get<ReviewDto[] | ApiPagedResult<ReviewDto>>(
+      .get<unknown>(
         `${this.endpoint}/property/${propertyId}`,
         { page, pageSize }
       )
-      .pipe(map(response => unwrapItems(response).map(item => this.toReview(item))));
+      .pipe(map(response => this.toReviewSummary(response)));
   }
 
   /**
@@ -42,7 +64,7 @@ export class ReviewService {
    * UNIQUE(PropertyId, ReviewerId) — لا يمكن تقييم نفس العقار مرتين.
    */
   addReview(request: CreateReviewRequest): Observable<ReviewDto> {
-    // ✅ الـ Backend يتوقع PascalCase
+    // Backend AddReviewRequest يتوقع PascalCase
     const body = {
       PropertyId: request.propertyId,
       Rating: request.rating,
@@ -61,6 +83,25 @@ export class ReviewService {
     return this.api.delete<void>(`${this.endpoint}/${reviewId}`);
   }
 
+  /**
+   * ✅ مُضاف: تحويل PropertyReviewSummaryDto من Backend
+   *
+   * بعد apiToCamelCase() على الاستجابة:
+   *   { averageRating: number, totalCount: number, reviews: unknown[] }
+   */
+  private toReviewSummary(raw: unknown): PropertyReviewSummaryDto {
+    const s = apiToCamelCase<Record<string, unknown>>(raw);
+    const rawReviews = s['reviews'];
+
+    return {
+      averageRating: Number(s['averageRating'] ?? 0),
+      totalCount: Number(s['totalCount'] ?? 0),
+      reviews: Array.isArray(rawReviews)
+        ? rawReviews.map(item => this.toReview(item))
+        : []
+    };
+  }
+
   private toReview(raw: unknown): ReviewDto {
     const r = apiToCamelCase<Record<string, unknown>>(raw);
     return {
@@ -68,6 +109,8 @@ export class ReviewService {
       propertyId: String(r['propertyId'] ?? ''),
       reviewerId: String(r['reviewerId'] ?? ''),
       reviewerName: r['reviewerName'] as string | undefined,
+      /** ✅ مُضاف: Backend PropertyReviewDto يُعيد ReviewerImageUrl */
+      reviewerImageUrl: r['reviewerImageUrl'] as string | null | undefined,
       rating: Number(r['rating'] ?? 0),
       comment: r['comment'] as string | null | undefined,
       createdAt: String(r['createdAt'] ?? '')

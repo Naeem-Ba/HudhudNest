@@ -1,13 +1,37 @@
+// src/app/core/api/property-api.service.ts
+//
+// ✅ Bug Fix — getMyProperties (Bug #1)
+//
+// المشكلة:
+//   كان getMyProperties يستدعي /properties/mine ثم يتراجع إلى /properties/my.
+//   لا يوجد أي من هذين الـ endpoints في PropertiesController — كلاهما يعطي 404.
+//
+// الإصلاح:
+//   GET /api/Properties?ownerId={userId}
+//   PropertyFilterDto في الـ Backend يحتوي OwnerId: Guid?
+//   وفي الـ Frontend يحتوي ownerId?: string (موجود بالفعل في property.model.ts)
+//   ASP.NET Core يُطابق query parameters بدون حساسية لحالة الأحرف.
+//
+// التغييرات:
+//   - إضافة inject(AuthService) للحصول على userId من الـ JWT
+//   - استبدال الـ fallback المعطوب بـ getProperties({ ownerId })
+//   - حذف catchError من الـ imports (لم يعد مُستخدَماً)
+
 import { Injectable } from '@angular/core';
-import { catchError, map, Observable, throwError } from 'rxjs';
+import { map, Observable, throwError } from 'rxjs';
 import { BackendApiService, QueryValue } from '../api/backend-api.service';
 import { ApiPagedResult, unwrapItems } from '../models/api.model';
 import { Property, PropertyFilterDto } from '../models/property.model';
 import { apiToCamelCase } from '../adapters/api-naming.adapter';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class PropertyApiService {
-  constructor(private readonly api: BackendApiService) {}
+  constructor(
+    private readonly api: BackendApiService,
+    // ✅ FIX: مُضاف للحصول على userId من الـ JWT بدلاً من استدعاء endpoint وهمي
+    private readonly auth: AuthService
+  ) {}
 
   getProperties(filter: PropertyFilterDto = {}): Observable<Property[]> {
     return this.api
@@ -16,22 +40,23 @@ export class PropertyApiService {
   }
 
   /**
-   * Loads only the authenticated user's own listings.
-   * This avoids the unsafe frontend fallback of requesting all properties and
-   * filtering them by ownerId on the client.
+   * ✅ FIX: استبدال /properties/mine + /properties/my (endpoints غير موجودة)
+   *         بـ GET /api/Properties?ownerId={userId}
+   *
+   * الـ Backend: PropertyFilterDto.OwnerId: Guid?
+   * الـ Frontend: PropertyFilterDto.ownerId?: string (موجود في property.model.ts)
+   *
+   * ملاحظة أمنية: الـ Backend يُنفِّذ فلترة الملكية عبر GetPropertiesListQuery
+   * وليس عبر JWT مباشرة على هذا الـ endpoint — المستخدم لا يستطيع تعديل
+   * استجابة الـ API بتغيير الـ ownerId لأن الـ AllowAnonymous هنا مقصود
+   * للسماح بالبحث العام، والـ ownerId مجرد معامل فلترة.
    */
   getMyProperties(): Observable<Property[]> {
-    return this.getPropertyCollection('/properties/mine').pipe(
-      catchError(error => {
-        // Compatibility fallback for older backend builds that exposed /properties/my.
-        // It is still safe because ownership is resolved from JWT on the backend.
-        if (error?.status === 404) {
-          return this.getPropertyCollection('/properties/my');
-        }
-
-        return throwError(() => error);
-      })
-    );
+    const userId = this.auth.getCurrentUserId();
+    if (!userId) {
+      return throwError(() => new Error('NOT_AUTHENTICATED'));
+    }
+    return this.getProperties({ ownerId: userId });
   }
 
   getProperty(id: string): Observable<Property> {
