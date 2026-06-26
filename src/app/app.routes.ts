@@ -1,9 +1,9 @@
 ﻿import { Routes } from '@angular/router';
 import { LayoutComponent } from './layout/layout';
 import { HomeComponent } from './features/home/home.component';
-import { AuthGuard } from './services/auth-guard';
+import { AuthGuard } from './core/guards/auth-guard';
 import { AdminMessagesComponent } from './admin/messages/messages.component';
-import { AdminGuard } from './services/admin-guard';
+import { AdminGuard } from './core/guards/admin-guard';
 
 export const routes: Routes = [
   {

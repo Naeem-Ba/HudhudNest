@@ -16,9 +16,9 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
 
-import { AuthService } from '../services/auth.service';
-import { LanguageService } from '../services/language.service';
-import { UrlService } from '../services/core/url.service';
+import { AuthService } from '../core/auth/auth.service'
+import { LanguageService } from '../core/services/language.service';
+import { UrlService } from '../core/services/url.service';
 import { ImageFallbackDirective } from '../shared/directives/image-fallback.directive';
 import { TranslateModule } from '@ngx-translate/core';
 

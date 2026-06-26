@@ -1,124 +1,294 @@
-<!-- src/app/features/properties/property-list/property-list.page.html -->
+<!-- ================================================================
+     property-list.page.html — Properties Listing Page
+     ================================================================ -->
+<div class="prop-list-root">
 
-<section class="properties-page">
-
-  <!-- Page Header -->
-  <header class="page-header">
-    <h1>{{ 'PROPERTY_LIST.TITLE' | translate }}</h1>
-    <p>{{ 'PROPERTY_LIST.SUBTITLE' | translate }}</p>
+  <!-- ── Page Header ── -->
+  <header class="prop-list-header">
+    <div class="container">
+      <div class="prop-list-header__inner">
+        <div>
+          <h1 class="prop-list-header__title">{{ 'PROPERTY_LIST.TITLE' | translate }}</h1>
+          <p class="prop-list-header__count" *ngIf="!loading() && totalCount() > 0">
+            {{ totalCount() }} {{ 'PROPERTY_LIST.RESULTS' | translate }}
+          </p>
+        </div>
+        <a routerLink="/property-form" class="btn btn--primary btn--sm" *ngIf="true">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          {{ 'NAVBAR.ADD' | translate }}
+        </a>
+      </div>
+    </div>
   </header>
 
-  <!-- Skeleton Loading -->
-  <app-skeleton-card-grid *ngIf="loading()" [count]="6" />
+  <div class="container prop-list-layout">
 
-  <!-- Error State -->
-  <div *ngIf="!loading() && error()" class="state-card error-state" role="alert">
-    <span aria-hidden="true">⚠️</span>
-    <p>{{ error() | translate }}</p>
-    <button type="button" (click)="loadProperties()">
-      {{ 'COMMON.RETRY' | translate }}
-    </button>
-  </div>
-
-  <!-- Empty State -->
-  <app-empty-state
-    *ngIf="!loading() && !error() && properties().length === 0"
-    icon="🏠"
-    [title]="'PROPERTY_LIST.EMPTY_TITLE' | translate"
-    [message]="'PROPERTY_LIST.EMPTY_MESSAGE' | translate"
-  />
-
-  <!-- Properties Grid -->
-  <div
-    class="properties-grid"
-    *ngIf="!loading() && !error() && properties().length > 0"
-  >
-    <article
-      *ngFor="let property of properties(); trackBy: trackById"
-      class="property-card"
-      (click)="goToDetails(property.id)"
-      role="button"
-      tabindex="0"
-      [attr.aria-label]="property.title"
-    >
-      <div class="image-wrapper">
-        <img
-          [src]="getMainImage(property)"
-          [alt]="property.title || ('PROPERTY_LIST.IMAGE_ALT' | translate)"
-          loading="lazy"
-          appImageFallback="/images/no-image.svg"
-        />
-        <span
-          class="badge"
-          [class.badge--rent]="property.listingType === 'ForRent'"
-          [class.badge--sale]="property.listingType === 'ForSale'"
-        >
-          {{ property.listingType === 'ForSale'
-              ? ('PROPERTY.MODE_SALE' | translate)
-              : ('PROPERTY.MODE_RENT' | translate) }}
-        </span>
+    <!-- ── Filters Sidebar ── -->
+    <aside class="filter-sidebar" [class.filter-sidebar--open]="filtersOpen" aria-label="فلاتر البحث">
+      <div class="filter-sidebar__header">
+        <h2 class="filter-sidebar__title">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <path d="M2 4h14M5 9h8M8 14h2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+          </svg>
+          {{ 'PROPERTY_LIST.FILTERS' | translate }}
+        </h2>
+        <button type="button" class="filter-sidebar__close" (click)="filtersOpen = false" aria-label="إغلاق">✕</button>
       </div>
 
-      <div class="card-body">
-        <h2 class="line-clamp-2">
-          {{ property.title || ('PROPERTY_LIST.NO_TITLE' | translate) }}
-        </h2>
+      <form class="filter-form" (ngSubmit)="applyFilters()" novalidate>
 
-        <p class="location line-clamp-1">
-          📍 {{ getLocation(property) }}
-        </p>
-
-        <div class="specs">
-          <span *ngIf="property.area">
-            📏 {{ property.area }} م²
-          </span>
-          <span *ngIf="property.rooms">
-            🛏️ {{ property.rooms }} {{ 'PROPERTY.ROOMS' | translate }}
-          </span>
-          <span *ngIf="property.floor != null">
-            🏢 {{ 'PROPERTY.FLOOR' | translate }} {{ property.floor }}
-          </span>
+        <!-- Search -->
+        <div class="filter-group">
+          <label class="filter-label">{{ 'PROPERTY_LIST.SEARCH' | translate }}</label>
+          <div class="search-input-wrapper">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <input
+              type="search"
+              class="search-input"
+              [(ngModel)]="searchText"
+              name="search"
+              [placeholder]="'PROPERTY_LIST.SEARCH_PLACEHOLDER' | translate"
+            />
+          </div>
         </div>
 
-        <div class="card-footer">
-          <strong class="price">{{ getFormattedPrice(property) }}</strong>
-          <button
-            type="button"
-            class="details-btn"
-            (click)="goToDetails(property.id); $event.stopPropagation()"
-          >
-            {{ 'COMMON.DETAILS' | translate }}
+        <!-- Listing Type -->
+        <div class="filter-group">
+          <label class="filter-label">{{ 'PROPERTY_LIST.LISTING_TYPE' | translate }}</label>
+          <div class="filter-toggle-group" role="group">
+            <button
+              type="button"
+              class="filter-toggle"
+              [class.filter-toggle--active]="selectedListingType === ''"
+              (click)="selectedListingType = ''"
+            >{{ 'PROPERTY_LIST.ALL' | translate }}</button>
+            <button
+              type="button"
+              class="filter-toggle"
+              [class.filter-toggle--active]="selectedListingType === 'ForRent'"
+              (click)="selectedListingType = 'ForRent'"
+            >{{ 'PROPERTY.MODE_RENT' | translate }}</button>
+            <button
+              type="button"
+              class="filter-toggle"
+              [class.filter-toggle--active]="selectedListingType === 'ForSale'"
+              (click)="selectedListingType = 'ForSale'"
+            >{{ 'PROPERTY.MODE_SALE' | translate }}</button>
+          </div>
+        </div>
+
+        <!-- City -->
+        <div class="filter-group">
+          <label class="filter-label" for="filter-city">{{ 'PROPERTY_LIST.CITY' | translate }}</label>
+          <input
+            id="filter-city"
+            type="text"
+            [(ngModel)]="cityFilter"
+            name="city"
+            [placeholder]="'PROPERTY_LIST.CITY_PLACEHOLDER' | translate"
+          />
+        </div>
+
+        <!-- Price Range -->
+        <div class="filter-group">
+          <label class="filter-label">{{ 'PROPERTY_LIST.PRICE_RANGE' | translate }}</label>
+          <div class="range-inputs">
+            <input
+              type="number"
+              [(ngModel)]="minPrice"
+              name="minPrice"
+              [placeholder]="'PROPERTY_LIST.MIN' | translate"
+              min="0"
+            />
+            <span class="range-sep">—</span>
+            <input
+              type="number"
+              [(ngModel)]="maxPrice"
+              name="maxPrice"
+              [placeholder]="'PROPERTY_LIST.MAX' | translate"
+              min="0"
+            />
+          </div>
+        </div>
+
+        <!-- Sort -->
+        <div class="filter-group">
+          <label class="filter-label" for="sort-by">{{ 'PROPERTY_LIST.SORT' | translate }}</label>
+          <select id="sort-by" [(ngModel)]="sortBy" name="sortBy">
+            <option value="CreatedAt">{{ 'PROPERTY_LIST.SORT_NEWEST' | translate }}</option>
+            <option value="Price">{{ 'PROPERTY_LIST.SORT_PRICE_ASC' | translate }}</option>
+            <option value="PriceDesc">{{ 'PROPERTY_LIST.SORT_PRICE_DESC' | translate }}</option>
+          </select>
+        </div>
+
+        <!-- Actions -->
+        <div class="filter-actions">
+          <button type="submit" class="btn btn--primary btn--full">
+            {{ 'PROPERTY_LIST.APPLY_FILTERS' | translate }}
+          </button>
+          <button type="button" class="btn btn--outline btn--full" (click)="resetFilters()">
+            {{ 'PROPERTY_LIST.RESET' | translate }}
           </button>
         </div>
+      </form>
+    </aside>
+
+    <!-- ── Mobile Overlay ── -->
+    <div class="filter-overlay" [class.filter-overlay--visible]="filtersOpen" (click)="filtersOpen = false" aria-hidden="true"></div>
+
+    <!-- ── Main Content ── -->
+    <main class="prop-list-main">
+
+      <!-- Mobile Filter Bar -->
+      <div class="mobile-filter-bar">
+        <button type="button" class="btn btn--outline btn--sm" (click)="filtersOpen = true">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M1 4h14M4 8h8M7 12h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          {{ 'PROPERTY_LIST.FILTERS' | translate }}
+          <span class="filter-badge" *ngIf="activeFiltersCount > 0">{{ activeFiltersCount }}</span>
+        </button>
+        <p class="mobile-count" *ngIf="!loading() && totalCount() > 0">
+          {{ totalCount() }} {{ 'PROPERTY_LIST.RESULTS' | translate }}
+        </p>
       </div>
-    </article>
+
+      <!-- Skeleton Loading -->
+      <app-skeleton-card-grid *ngIf="loading()" [count]="6" />
+
+      <!-- Error State -->
+      <div *ngIf="!loading() && error()" class="state-card error-state" role="alert">
+        <span aria-hidden="true">⚠️</span>
+        <p>{{ error() | translate }}</p>
+        <button type="button" class="btn btn--outline btn--sm" (click)="loadProperties()">
+          {{ 'COMMON.RETRY' | translate }}
+        </button>
+      </div>
+
+      <!-- Empty State -->
+      <app-empty-state
+        *ngIf="!loading() && !error() && properties().length === 0"
+        icon="🏠"
+        [title]="'PROPERTY_LIST.EMPTY_TITLE' | translate"
+        [message]="'PROPERTY_LIST.EMPTY_MESSAGE' | translate"
+      />
+
+      <!-- Properties Grid -->
+      <div
+        class="properties-grid"
+        *ngIf="!loading() && !error() && properties().length > 0"
+      >
+        <article
+          *ngFor="let property of properties(); trackBy: trackById"
+          class="property-card"
+          (click)="goToDetails(property.id)"
+          (keydown.enter)="goToDetails(property.id)"
+          role="button"
+          tabindex="0"
+          [attr.aria-label]="property.title"
+        >
+          <!-- Image -->
+          <div class="property-card__image">
+            <img
+              [src]="getMainImage(property)"
+              [alt]="property.title || ''"
+              loading="lazy"
+              appImageFallback="/images/no-image.svg"
+            />
+            <span
+              class="badge"
+              [class.badge--rent]="property.listingType === 'ForRent'"
+              [class.badge--sale]="property.listingType === 'ForSale'"
+            >
+              {{ property.listingType === 'ForSale'
+                  ? ('PROPERTY.MODE_SALE' | translate)
+                  : ('PROPERTY.MODE_RENT' | translate) }}
+            </span>
+            <!-- Favorite Button -->
+            <button
+              type="button"
+              class="fav-btn"
+              (click)="$event.stopPropagation()"
+              aria-label="أضف للمفضلة"
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M9 15.5S2 11 2 6.5a4 4 0 018-1.36A4 4 0 0118 6.5c0 4.5-7 9-9 9z" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Body -->
+          <div class="property-card__body">
+            <h2 class="property-card__title line-clamp-2">
+              {{ property.title || ('PROPERTY_LIST.NO_TITLE' | translate) }}
+            </h2>
+            <p class="property-card__location line-clamp-1">
+              📍 {{ getLocation(property) }}
+            </p>
+            <div class="property-card__specs">
+              <span *ngIf="property.rooms">
+                🛏 {{ property.rooms }} {{ 'PROPERTY.ROOMS' | translate }}
+              </span>
+              <span *ngIf="property.area">
+                📐 {{ property.area }} م²
+              </span>
+            </div>
+            <div class="property-card__footer">
+              <span class="property-card__price">
+                {{ getPrice(property) }}
+                <small>{{ property.currencyCode || 'SYP' }}</small>
+              </span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Pagination -->
+      <nav
+        class="pagination"
+        *ngIf="!loading() && totalPages() > 1"
+        aria-label="التنقل بين الصفحات"
+      >
+        <button
+          type="button"
+          class="pagination__btn"
+          [disabled]="!hasPrevious()"
+          (click)="goToPage(currentPage() - 1)"
+          aria-label="الصفحة السابقة"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M10 4l-4 4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+
+        <div class="pagination__pages">
+          <button
+            *ngFor="let page of pageNumbers()"
+            type="button"
+            class="pagination__page"
+            [class.pagination__page--active]="page === currentPage()"
+            (click)="goToPage(page)"
+          >{{ page }}</button>
+        </div>
+
+        <button
+          type="button"
+          class="pagination__btn"
+          [disabled]="!hasNext()"
+          (click)="goToPage(currentPage() + 1)"
+          aria-label="الصفحة التالية"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </nav>
+
+    </main>
   </div>
-
-  <!-- Pagination -->
-  <nav
-    class="pagination"
-    *ngIf="!loading() && properties().length > 0"
-    aria-label="pagination"
-  >
-    <button
-      type="button"
-      [disabled]="!hasPrevious()"
-      (click)="prevPage()"
-    >
-      ← {{ 'COMMON.PREVIOUS' | translate }}
-    </button>
-
-    <span class="page-info">
-      {{ 'COMMON.PAGE' | translate }} {{ currentPage() }} / {{ totalPages() }}
-    </span>
-
-    <button
-      type="button"
-      [disabled]="!hasNext()"
-      (click)="nextPage()"
-    >
-      {{ 'COMMON.NEXT' | translate }} →
-    </button>
-  </nav>
-
-</section>
+</div>

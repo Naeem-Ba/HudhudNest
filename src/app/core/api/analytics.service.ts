@@ -8,7 +8,7 @@
 
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { BackendApiService } from './backend-api.service';
+import { BackendApiService } from '../api/backend-api.service';
 import { apiToCamelCase } from '../adapters/api-naming.adapter';
 import { MarketInsightsDto, PropertyStatsDto } from '../models/analytics.model';
 

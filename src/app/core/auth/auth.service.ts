@@ -1,9 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, map, Observable, tap } from 'rxjs';
 
-import { AuthApiService } from '../core/services/auth-api.service';
-import { TokenStorageService } from '../core/services/token-storage.service';
-
+import { AuthApiService } from './auth-api.service';
+import { TokenStorageService } from '../services/token-storage.service';
 export interface AuthenticatedUser {
   id: string;
   Id: string;

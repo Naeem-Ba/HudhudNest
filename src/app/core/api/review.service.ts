@@ -9,7 +9,7 @@
 
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { BackendApiService } from './backend-api.service';
+import { BackendApiService } from '../api/backend-api.service';
 import { ApiPagedResult, unwrapItems } from '../models/api.model';
 import { apiToCamelCase } from '../adapters/api-naming.adapter';
 import { CreateReviewRequest, ReviewDto } from '../models/review.model';

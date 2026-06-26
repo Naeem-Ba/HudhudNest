@@ -34,11 +34,11 @@ import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import { routes } from './app.routes';
-import { AuthInterceptor } from './services/auth-interceptor';
+import { AuthInterceptor } from './core/interceptors/auth-interceptor';
 import { ApiErrorInterceptor } from './core/interceptors/api-error.interceptor';
-import { EnumService } from './services/enum.service';
+import { EnumService } from './core/services/enum.service';
 import { TokenStorageService } from './core/services/token-storage.service';
-import { AuthService } from './services/auth.service';
+import { AuthService } from './core/auth/auth.service';
 import { environment } from '../environments/environment';
 
 // ─── Factory: تحميل ملفات الترجمة ───────────────────────────────────────────

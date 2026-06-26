@@ -3,7 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { OtpApiService } from '../../../core/services/otp-api.service';
+import { OtpApiService } from '../../../core/api/otp-api.service';
 import { FormErrorComponent } from '../../../shared/ui/form-error.component';
 import { ToastService } from '../../../shared/services/toast.service';
 

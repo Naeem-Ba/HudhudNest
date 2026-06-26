@@ -18,11 +18,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
 
-import { PropertyApiService } from '../../core/services/property-api.service';
+import { PropertyApiService } from '../../core/api/property-api.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { MapPickerComponent } from '../../map-picker/map-picker.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
-import { LanguageService, LangCode } from '../../services/language.service';
+import { LanguageService, LangCode } from '../../core/services/language.service';
 
 interface PropertySavePayload {
   Title: string;

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ContactMessageDto, ContactService } from '../../services/contact.service';
+import { ContactMessageDto, ContactService } from '../../core/api/contact.service';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({

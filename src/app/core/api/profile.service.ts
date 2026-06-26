@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, map, throwError } from 'rxjs';
-import { BackendApiService } from '../core/services/backend-api.service';
+import { BackendApiService } from './backend-api.service';
 
 export interface UserProfile {
   Id?: string;

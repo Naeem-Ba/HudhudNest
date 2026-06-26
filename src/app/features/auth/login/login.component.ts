@@ -4,10 +4,10 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { AuthApiService } from '../../../core/services/auth-api.service';
-import { SocialAuthService } from '../../../core/services/social-auth.service';
+import { AuthApiService } from '../../../core/auth/auth-api.service';
+import { SocialAuthService } from '../../../core/auth/social-auth.service';
 import { AuthTokenResponse, TokenStorageService } from '../../../core/services/token-storage.service';
-import { AuthService } from '../../../services/auth.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
 

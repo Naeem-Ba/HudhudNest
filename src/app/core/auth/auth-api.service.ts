@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { catchError, finalize, map, Observable, of, tap } from 'rxjs';
 
-import { BackendApiService } from './backend-api.service';
-import { TokenStorageService } from './token-storage.service';
+import { BackendApiService } from '../api/backend-api.service';
+import { TokenStorageService } from '../services/token-storage.service';
 import {
   AuthTokenResponse,
   ForgotPasswordRequest,

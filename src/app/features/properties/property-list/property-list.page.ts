@@ -29,7 +29,7 @@ import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { PropertyApiService } from '../../../core/services/property-api.service';
+import { PropertyApiService } from '../../../core/api/property-api.service';
 import { Property, PropertyFilterDto } from '../../../core/models/property.model';
 import { EmptyStateComponent } from '../../../shared/ui/empty-state.component';
 import { SkeletonCardGridComponent } from '../../../shared/ui/skeleton-card-grid.component';
@@ -167,5 +167,134 @@ export class PropertyListPage implements OnInit {
     return [property.street, property.city, property.postalCode]
       .filter(Boolean)
       .join('، ') || '—';
+  }
+
+  // ---------------------------------------------------------------------------
+  // UI bridge for redesigned property-list template
+  // ---------------------------------------------------------------------------
+  filtersOpen = false;
+
+  searchText = '';
+  selectedListingType: '' | 'ForRent' | 'ForSale' = '';
+  cityFilter = '';
+  minPrice: number | null = null;
+  maxPrice: number | null = null;
+  sortBy = 'CreatedAt';
+
+  get activeFiltersCount(): number {
+    let count = 0;
+
+    if (this.searchText?.trim()) count++;
+    if (this.selectedListingType) count++;
+    if (this.cityFilter?.trim()) count++;
+    if (this.minPrice !== null && this.minPrice !== undefined) count++;
+    if (this.maxPrice !== null && this.maxPrice !== undefined) count++;
+    if (this.sortBy && this.sortBy !== 'CreatedAt') count++;
+
+    return count;
+  }
+
+  applyFilters(): void {
+    this.filtersOpen = false;
+
+    const self = this as any;
+
+    if (typeof self.searchTextSignal?.set === 'function') {
+      self.searchTextSignal.set(this.searchText);
+    }
+
+    if (typeof self.city?.set === 'function') {
+      self.city.set(this.cityFilter);
+    }
+
+    if (typeof self.listingType?.set === 'function') {
+      self.listingType.set(this.selectedListingType);
+    }
+
+    if (typeof self.minPriceSignal?.set === 'function') {
+      self.minPriceSignal.set(this.minPrice);
+    }
+
+    if (typeof self.maxPriceSignal?.set === 'function') {
+      self.maxPriceSignal.set(this.maxPrice);
+    }
+
+    if (typeof self.currentPage?.set === 'function') {
+      self.currentPage.set(1);
+    }
+
+    if (typeof self.loadProperties === 'function') {
+      self.loadProperties();
+    }
+  }
+
+  resetFilters(): void {
+    this.searchText = '';
+    this.selectedListingType = '';
+    this.cityFilter = '';
+    this.minPrice = null;
+    this.maxPrice = null;
+    this.sortBy = 'CreatedAt';
+    this.applyFilters();
+  }
+
+  getPrice(property: any): string {
+    const value =
+      property?.purchasePrice ??
+      property?.warmRent ??
+      property?.coldRent ??
+      property?.price ??
+      0;
+
+    const currency = property?.currencyCode ?? 'SYP';
+
+    if (value === null || value === undefined || value === '') {
+      return `0 ${currency}`;
+    }
+
+    const numeric = Number(value);
+
+    if (Number.isNaN(numeric)) {
+      return `${value} ${currency}`;
+    }
+
+    return `${numeric.toLocaleString('de-DE')} ${currency}`;
+  }
+
+  goToPage(page: number): void {
+    const self = this as any;
+    const safePage = Math.max(1, Number(page) || 1);
+
+    if (typeof self.currentPage?.set === 'function') {
+      self.currentPage.set(safePage);
+    } else if ('page' in self) {
+      self.page = safePage;
+    }
+
+    if (typeof self.loadProperties === 'function') {
+      self.loadProperties();
+    }
+  }
+
+  pageNumbers(): number[] {
+    const total =
+      typeof (this as any).totalPages === 'function'
+        ? Number((this as any).totalPages())
+        : 1;
+
+    const current =
+      typeof (this as any).currentPage === 'function'
+        ? Number((this as any).currentPage())
+        : 1;
+
+    const pages: number[] = [];
+    const start = Math.max(1, current - 2);
+    const end = Math.min(total, current + 2);
+
+    for (let page = start; page <= end; page++) {
+      pages.push(page);
+    }
+
+    return pages;
   }
 }

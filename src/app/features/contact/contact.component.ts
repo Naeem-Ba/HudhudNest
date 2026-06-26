@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { ContactService } from '../../services/contact.service';
+import { ContactService } from '../../core/api/contact.service';
 import { ToastService } from '../../shared/services/toast.service';
 
 @Component({

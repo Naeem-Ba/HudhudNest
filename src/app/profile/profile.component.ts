@@ -11,9 +11,9 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { ProfileService, UserProfile } from '../services/profile.service';
-import { AuthService } from '../services/auth.service';
-import { UrlService } from '../services/core/url.service';
+import { ProfileService, UserProfile } from '../core/api/profile.service';
+import { AuthService } from '../core/auth/auth.service';
+import { UrlService } from '../core/services/url.service';
 import { ToastService } from '../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../shared/ui/loading-spinner.component';
 import { ImageFallbackDirective } from '../shared/directives/image-fallback.directive';
