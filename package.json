@@ -11,7 +11,12 @@
     "start:staging": "ng serve --configuration staging",
     "build:staging": "ng build --configuration staging",
     "build:prod": "ng build --configuration production",
-    "check:env": "node tools/check-environments.mjs"
+    "check:env": "node tools/check-environments.mjs",
+    "build:ci": "npm run check:env && ng build --configuration production",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit",
+    "typecheck:strict": "tsc -p tsconfig.strict.json --noEmit",
+    "audit:frontend": "node tools/frontend-audit-guard.mjs",
+    "postmerge:verify": "npm run check:env && npm run audit:frontend && npm run typecheck && npm run build:prod"
   },
   "prettier": {
     "printWidth": 100,

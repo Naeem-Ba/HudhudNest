@@ -1,5 +1,5 @@
-﻿<!-- ================================================================
-     property-form.page.html â€” Add / Edit Property
+<!-- ================================================================
+     property-form.page.html — Add / Edit Property
      ================================================================ -->
 <div class="form-page">
   <div class="container">
@@ -26,11 +26,10 @@
 
     <form class="property-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
       <div class="form-grid">
-
-        <!-- â•â•â•â•â•â• SECTION 1: Listing Type â•â•â•â•â•â• -->
+        <!-- SECTION 1: Listing Type -->
         <div class="form-section">
           <div class="form-section__header">
-            <span class="form-section__num">Ù¡</span>
+            <span class="form-section__num">١</span>
             <div>
               <h2 class="form-section__title">{{ 'wohnung_add.listing_type' | translate }}</h2>
               <p class="form-section__desc">{{ 'wohnung_add.listing_type_desc' | translate }}</p>
@@ -63,11 +62,10 @@
             </div>
           </div>
         </div>
-
-        <!-- â•â•â•â•â•â• SECTION 2: Basic Info â•â•â•â•â•â• -->
+        <!-- SECTION 2: Basic Info -->
         <div class="form-section">
           <div class="form-section__header">
-            <span class="form-section__num">Ù¢</span>
+            <span class="form-section__num">٢</span>
             <div>
               <h2 class="form-section__title">{{ 'wohnung_add.basic_info' | translate }}</h2>
               <p class="form-section__desc">{{ 'wohnung_add.basic_info_desc' | translate }}</p>
@@ -97,11 +95,10 @@
             </div>
           </div>
         </div>
-
-        <!-- â•â•â•â•â•â• SECTION 3: Location â•â•â•â•â•â• -->
+        <!-- SECTION 3: Location -->
         <div class="form-section">
           <div class="form-section__header">
-            <span class="form-section__num">Ù£</span>
+            <span class="form-section__num">٣</span>
             <div>
               <h2 class="form-section__title">{{ 'wohnung_add.location' | translate }}</h2>
               <p class="form-section__desc">{{ 'wohnung_add.location_desc' | translate }}</p>
@@ -154,16 +151,15 @@
                 (locationChange)="onLocationSelected($event)">
               </app-map-picker>
               <p class="location-preview" *ngIf="f.latitude.value && f.longitude.value">
-                âœ“ {{ 'wohnung_add.location_selected' | translate }}: {{ f.latitude.value | number:'1.4-4' }}, {{ f.longitude.value | number:'1.4-4' }}
+                ✓ {{ 'wohnung_add.location_selected' | translate }}: {{ f.latitude.value | number:'1.4-4' }}, {{ f.longitude.value | number:'1.4-4' }}
               </p>
             </div>
           </div>
         </div>
-
-        <!-- â•â•â•â•â•â• SECTION 4: Pricing â•â•â•â•â•â• -->
+        <!-- SECTION 4: Pricing -->
         <div class="form-section">
           <div class="form-section__header">
-            <span class="form-section__num">Ù¤</span>
+            <span class="form-section__num">٤</span>
             <div>
               <h2 class="form-section__title">{{ 'wohnung_add.pricing' | translate }}</h2>
               <p class="form-section__desc">{{ 'wohnung_add.pricing_desc' | translate }}</p>
@@ -175,9 +171,9 @@
               <div class="form-group form-group--full">
                 <label for="currencyCode">{{ 'PROPERTY_FORM.CURRENCY' | translate }}</label>
                 <select id="currencyCode" formControlName="currencyCode">
-                  <option value="SYP">Ù„.Ø³ â€” Ø§Ù„Ù„ÙŠØ±Ø© Ø§Ù„Ø³ÙˆØ±ÙŠØ©</option>
-                  <option value="USD">$ â€” Ø§Ù„Ø¯ÙˆÙ„Ø§Ø± Ø§Ù„Ø£Ù…Ø±ÙŠÙƒÙŠ</option>
-                  <option value="EUR">â‚¬ â€” Ø§Ù„ÙŠÙˆØ±Ùˆ</option>
+                  <option value="SYP">ل.س — الليرة السورية</option>
+                  <option value="USD">$ — الدولار الأمريكي</option>
+                  <option value="EUR">€ — اليورو</option>
                 </select>
               </div>
 
@@ -217,11 +213,10 @@
             </div>
           </div>
         </div>
-
-        <!-- â•â•â•â•â•â• SECTION 5: Property Details â•â•â•â•â•â• -->
+        <!-- SECTION 5: Property Details -->
         <div class="form-section">
           <div class="form-section__header">
-            <span class="form-section__num">Ù¥</span>
+            <span class="form-section__num">٥</span>
             <div>
               <h2 class="form-section__title">{{ 'wohnung_add.details' | translate }}</h2>
               <p class="form-section__desc">{{ 'wohnung_add.details_desc' | translate }}</p>
@@ -281,11 +276,10 @@
             </div>
           </div>
         </div>
-
-        <!-- â•â•â•â•â•â• SECTION 6: Images â•â•â•â•â•â• -->
-        <div class="form-section" *ngIf="isEditMode()">
+        <!-- SECTION 6: Images -->
+        <div class="form-section">
           <div class="form-section__header">
-            <span class="form-section__num">Ù¦</span>
+            <span class="form-section__num">٦</span>
             <div>
               <h2 class="form-section__title">{{ 'wohnung_add.images' | translate }}</h2>
               <p class="form-section__desc">{{ 'wohnung_add.images_desc' | translate }}</p>
@@ -295,7 +289,7 @@
             <div class="image-upload-zone"
               (dragover)="$event.preventDefault()"
               (drop)="$event.preventDefault()">
-              <label class="image-upload-label" *ngIf="true">
+              <label class="image-upload-label">
                 <input type="file" multiple accept="image/jpeg,image/png,image/webp"
                   (change)="onFileSelected($event)" hidden />
                 <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
@@ -305,17 +299,17 @@
                 <strong>{{ 'wohnung_add.upload_click' | translate }}</strong>
                 <span>{{ 'wohnung_add.upload_hint' | translate }}</span>
               </label>
-              <div class="upload-progress" *ngIf="false">
+              <div class="upload-progress" *ngIf="isSaving()">
                 <span class="spinner-ring" style="width:28px;height:28px;border-width:3px"></span>
                 <p>{{ 'wohnung_add.uploading' | translate }}</p>
               </div>
             </div>
 
             <!-- Preview -->
-            <div class="image-previews" *ngIf="false">
-              <div *ngFor="let url of []; let i = index" class="image-preview">
-                <img [src]="url" [alt]="'ØµÙˆØ±Ø© ' + (i+1)" appImageFallback="/images/no-image.svg" />
-                <button type="button" class="remove-img-btn" (click)="removeImage(i)" aria-label="Ø­Ø°Ù Ø§Ù„ØµÙˆØ±Ø©">Ã—</button>
+            <div class="image-previews" *ngIf="previews().length > 0">
+              <div *ngFor="let url of previews(); let i = index" class="image-preview">
+                <img [src]="url" [alt]="'صورة ' + (i+1)" appImageFallback="/images/no-image.svg" />
+                <button type="button" class="remove-img-btn" (click)="removeImage(i)" aria-label="حذف الصورة">×</button>
               </div>
             </div>
           </div>
@@ -323,7 +317,7 @@
 
       </div><!-- /form-grid -->
 
-      <!-- â”€â”€ Submit Bar â”€â”€ -->
+      <!-- ── Submit Bar ── -->
       <div class="form-submit-bar">
         <a routerLink="/my-listings" class="btn btn--outline">
           {{ 'COMMON.CANCEL' | translate }}

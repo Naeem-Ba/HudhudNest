@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
-import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService } from './core/auth/auth.service';
+import { Component } from '@angular/core';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { Observable, filter } from 'rxjs';
-import { ToastContainerComponent } from './shared/ui/toast-container.component';
+
+import { AuthService } from './core/auth/auth.service';
 import { LanguageService } from './core/services/language.service';
+import { ToastContainerComponent } from './shared/ui/toast-container.component';
 
 @Component({
   selector: 'app-root',
@@ -17,7 +18,7 @@ import { LanguageService } from './core/services/language.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  isLoggedIn$: Observable<boolean>;
+  readonly isLoggedIn$: Observable<boolean>;
   showAddButton = false;
 
   constructor(
@@ -26,10 +27,11 @@ export class AppComponent {
     private readonly languageService: LanguageService
   ) {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
+    this.languageService.getCurrent();
 
     this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe((event: any) => {
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .subscribe(event => {
         this.showAddButton = event.urlAfterRedirects.startsWith('/wohnungen');
       });
   }

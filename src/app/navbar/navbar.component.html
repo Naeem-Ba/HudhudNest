@@ -1,11 +1,11 @@
-﻿<!-- ================================================================
-     navbar.component.html â€” Modern Sticky Navigation
+<!-- ================================================================
+     navbar.component.html — Modern Sticky Navigation
      ================================================================ -->
 <header class="navbar" [class.navbar--scrolled]="false" role="banner">
   <div class="navbar__inner">
 
-    <!-- â”€â”€ Logo â”€â”€ -->
-    <a routerLink="/home" class="navbar__brand" aria-label="PropertyApp â€” Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©">
+    <!-- ── Logo ── -->
+    <a routerLink="/home" class="navbar__brand" aria-label="PropertyApp — الرئيسية">
       <img
         src="/images/horizontal-logo.png"
         alt="PropertyApp"
@@ -14,8 +14,8 @@
       />
     </a>
 
-    <!-- â”€â”€ Desktop Nav â”€â”€ -->
-    <nav class="navbar__nav" role="navigation" aria-label="Ø§Ù„ØªÙ†Ù‚Ù„ Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠ">
+    <!-- ── Desktop Nav ── -->
+    <nav class="navbar__nav" role="navigation" aria-label="التنقل الرئيسي">
       <a routerLink="/home"
          routerLinkActive="navbar__link--active"
          [routerLinkActiveOptions]="{ exact: true }"
@@ -51,7 +51,7 @@
       </a>
     </nav>
 
-    <!-- â”€â”€ Right Actions â”€â”€ -->
+    <!-- ── Right Actions ── -->
     <div class="navbar__actions">
 
       <!-- Language Selector (Desktop) -->
@@ -61,7 +61,7 @@
           class="lang-btn"
           (click)="toggleLangMenu($event)"
           [attr.aria-expanded]="langMenuOpen"
-          aria-label="ØªØºÙŠÙŠØ± Ø§Ù„Ù„ØºØ©"
+          aria-label="تغيير اللغة"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
@@ -72,15 +72,15 @@
             <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
         </button>
-        <ul class="lang-menu" role="menu" aria-label="Ø§Ø®ØªØ± Ø§Ù„Ù„ØºØ©">
+        <ul class="lang-menu" role="menu" aria-label="اختر اللغة">
           <li role="menuitem" (click)="changeLang('ar')" [class.lang-menu__item--active]="currentLang === 'ar'">
-            <span>ðŸ‡¸ðŸ‡¾</span> Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©
+            <span>🇸🇾</span> العربية
           </li>
           <li role="menuitem" (click)="changeLang('en')" [class.lang-menu__item--active]="currentLang === 'en'">
-            <span>ðŸ‡¬ðŸ‡§</span> English
+            <span>🇬🇧</span> English
           </li>
           <li role="menuitem" (click)="changeLang('de')" [class.lang-menu__item--active]="currentLang === 'de'">
-            <span>ðŸ‡©ðŸ‡ª</span> Deutsch
+            <span>🇩🇪</span> Deutsch
           </li>
         </ul>
       </div>
@@ -93,7 +93,7 @@
             class="account__trigger"
             (click)="toggleDropdown($event)"
             [attr.aria-expanded]="dropdownOpen"
-            aria-label="Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…"
+            aria-label="قائمة المستخدم"
           >
             <img
               *ngIf="hasCustomImage"
@@ -112,7 +112,7 @@
           </button>
 
           <!-- Dropdown -->
-          <div class="account__dropdown" role="menu" aria-label="Ø®ÙŠØ§Ø±Ø§Øª Ø§Ù„Ø­Ø³Ø§Ø¨">
+          <div class="account__dropdown" role="menu" aria-label="خيارات الحساب">
             <div class="account__user-info">
               <span class="account__avatar account__avatar--lg account__avatar--letter">{{ avatarLetter }}</span>
               <div>
@@ -157,7 +157,7 @@
         class="mobile-toggle"
         (click)="toggleMobileMenu($event)"
         [attr.aria-expanded]="mobileMenuOpen"
-        aria-label="ÙØªØ­ Ø§Ù„Ù‚Ø§Ø¦Ù…Ø©"
+        aria-label="فتح القائمة"
       >
         <span class="mobile-toggle__bar" [class.mobile-toggle__bar--top]="mobileMenuOpen"></span>
         <span class="mobile-toggle__bar" [class.mobile-toggle__bar--mid]="mobileMenuOpen"></span>
@@ -166,8 +166,8 @@
     </div>
   </div>
 
-  <!-- â”€â”€ Mobile Drawer â”€â”€ -->
-  <div class="mobile-drawer" [class.mobile-drawer--open]="mobileMenuOpen" role="dialog" aria-modal="true" aria-label="Ø§Ù„Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ø¬Ø§Ù†Ø¨ÙŠØ©">
+  <!-- ── Mobile Drawer ── -->
+  <div class="mobile-drawer" [class.mobile-drawer--open]="mobileMenuOpen" role="dialog" aria-modal="true" aria-label="القائمة الجانبية">
     <nav class="mobile-drawer__nav" role="navigation">
       <a routerLink="/home" class="mobile-drawer__link" (click)="mobileMenuOpen = false">
         {{ 'NAVBAR.HOME' | translate }}
@@ -179,7 +179,7 @@
          routerLink="/property-form"
          class="mobile-drawer__link mobile-drawer__link--highlight"
          (click)="mobileMenuOpen = false">
-        âž• {{ 'NAVBAR.ADD' | translate }}
+        ➕ {{ 'NAVBAR.ADD' | translate }}
       </a>
       <a *ngIf="!(isAdmin$ | async)"
          routerLink="/kontakt"
@@ -218,7 +218,7 @@
       <div class="mobile-drawer__divider"></div>
       <p class="mobile-drawer__label">{{ 'NAVBAR.SELECT_LANGUAGE' | translate }}</p>
       <div class="mobile-lang">
-        <button type="button" class="mobile-lang__btn" [class.mobile-lang__btn--active]="currentLang === 'ar'" (click)="changeLang('ar')">Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©</button>
+        <button type="button" class="mobile-lang__btn" [class.mobile-lang__btn--active]="currentLang === 'ar'" (click)="changeLang('ar')">العربية</button>
         <button type="button" class="mobile-lang__btn" [class.mobile-lang__btn--active]="currentLang === 'en'" (click)="changeLang('en')">English</button>
         <button type="button" class="mobile-lang__btn" [class.mobile-lang__btn--active]="currentLang === 'de'" (click)="changeLang('de')">Deutsch</button>
       </div>

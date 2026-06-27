@@ -66,15 +66,16 @@ export class LanguageService {
   }
 
   private setFallbackLanguage(lang: LangCode): void {
-    const translateAny = this.translate as any;
+    const translateWithFallback = this.translate as TranslateService & {
+      setFallbackLang?: (lang: string) => void;
+      setDefaultLang?: (lang: string) => void;
+    };
 
-    if (typeof translateAny.setFallbackLang === 'function') {
-      translateAny.setFallbackLang(lang);
+    if (typeof translateWithFallback.setFallbackLang === 'function') {
+      translateWithFallback.setFallbackLang(lang);
       return;
     }
 
-    if (typeof translateAny.setDefaultLang === 'function') {
-      translateAny.setDefaultLang(lang);
-    }
+    translateWithFallback.setDefaultLang?.(lang);
   }
 }

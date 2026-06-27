@@ -1,6 +1,6 @@
 // =====================================================================
-// âœ… Unit Tests â€“ auth-guard.spec.ts
-// ØªØºØ·ÙŠØ©: Ø§Ù„Ø³Ù…Ø§Ø­ Ø¨Ø§Ù„ÙˆØµÙˆÙ„ØŒ Ø§Ù„Ø±ÙØ¶ØŒ ÙˆØ­Ø§Ù„Ø§Øª edge cases
+// ✅ Unit Tests – auth-guard.spec.ts
+// تغطية: السماح بالوصول، الرفض، وحالات edge cases
 // =====================================================================
 import { TestBed } from '@angular/core/testing';
 import { Router, UrlTree } from '@angular/router';
@@ -35,7 +35,7 @@ describe('AuthGuard', () => {
     router         = TestBed.inject(Router);
   });
 
-  it('âœ… ÙŠØ³Ù…Ø­ Ø¨Ø§Ù„ÙˆØµÙˆÙ„ Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„ØªÙˆÙƒÙ† Ù…ÙˆØ¬ÙˆØ¯Ø§Ù‹ ÙˆØµØ§Ù„Ø­Ø§Ù‹', () => {
+  it('✅ يسمح بالوصول إذا كان التوكن موجوداً وصالحاً', () => {
     authServiceSpy.getAccessToken.and.returnValue('valid-jwt-token');
     authServiceSpy.validateSession.and.stub();
 
@@ -46,7 +46,7 @@ describe('AuthGuard', () => {
     expect(result).toBeTrue();
   });
 
-  it('âœ… ÙŠÙØ¹ÙŠØ¯ UrlTree Ù„ØµÙØ­Ø© ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„ Ø¥Ø°Ø§ Ù„Ù… ÙŠÙˆØ¬Ø¯ ØªÙˆÙƒÙ†', () => {
+  it('✅ يعيد UrlTree لصفحة تسجيل الدخول إذا لم يوجد توكن', () => {
     authServiceSpy.getAccessToken.and.returnValue(null);
     authServiceSpy.validateSession.and.stub();
 
@@ -59,7 +59,7 @@ describe('AuthGuard', () => {
     expect(urlTree.toString()).toContain('/auth/login');
   });
 
-  it('âœ… ÙŠØ­ÙØ¸ returnUrl ÙÙŠ query params', () => {
+  it('✅ يحفظ returnUrl في query params', () => {
     authServiceSpy.getAccessToken.and.returnValue(null);
     authServiceSpy.validateSession.and.stub();
 
@@ -72,7 +72,7 @@ describe('AuthGuard', () => {
     expect(urlTree.queryParams['returnUrl']).toBe('/meine-anzeigen');
   });
 
-  it('âœ… ÙŠØ³ØªØ¯Ø¹ÙŠ validateSession Ù‚Ø¨Ù„ Ø§Ù„ØªØ­Ù‚Ù‚', () => {
+  it('✅ يستدعي validateSession قبل التحقق', () => {
     authServiceSpy.getAccessToken.and.returnValue('token');
     authServiceSpy.validateSession.and.stub();
 

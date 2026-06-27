@@ -24,7 +24,7 @@ export class WohnungMapViewComponent implements AfterViewInit, OnDestroy {
   private marker!: L.Marker;
   private langSub?: Subscription;
 
-  private longPressTimer: any;
+  private longPressTimer: ReturnType<typeof setTimeout> | null = null;
   activeTooltip: string | null = null;
   private longPressTriggered = false;
 
@@ -51,6 +51,9 @@ export class WohnungMapViewComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.langSub?.unsubscribe();
+    if (this.longPressTimer) {
+      clearTimeout(this.longPressTimer);
+    }
     this.map?.remove();
   }
 
@@ -123,7 +126,7 @@ export class WohnungMapViewComponent implements AfterViewInit, OnDestroy {
       () => alert('Location permission denied')
     );
   }
-  onTouchStart(event: TouchEvent, key: string) {
+  onTouchStart(event: TouchEvent, key: string): void {
   this.longPressTriggered = false;
 
   this.longPressTimer = setTimeout(() => {
@@ -132,8 +135,11 @@ export class WohnungMapViewComponent implements AfterViewInit, OnDestroy {
   }, 500); // ⏱️ مدة الـ long-press
 }
 
-onTouchEnd() {
-  clearTimeout(this.longPressTimer);
+onTouchEnd(): void {
+  if (this.longPressTimer) {
+    clearTimeout(this.longPressTimer);
+    this.longPressTimer = null;
+  }
 
   // إخفاء Tooltip بعد الرفع
   setTimeout(() => {
@@ -141,7 +147,7 @@ onTouchEnd() {
   }, 1500);
 }
 
-onClick(event: Event, action: 'google' | 'locate' | 'fullscreen') {
+onClick(event: Event, action: 'google' | 'locate' | 'fullscreen'): void {
   // إذا كان هذا click ناتج عن long-press → تجاهله
   if (this.longPressTriggered) {
     event.preventDefault();
