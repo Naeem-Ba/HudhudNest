@@ -1,14 +1,10 @@
-﻿name: Frontend CI
+name: Frontend CI
 
 on:
   push:
-    branches:
-      - main
-
+    branches: [ main, master, develop ]
   pull_request:
-    branches:
-      - main
-
+    branches: [ main, master, develop ]
   workflow_dispatch:
 
 permissions:
@@ -16,8 +12,9 @@ permissions:
 
 jobs:
   build:
-    name: Build Angular Production
+    name: Audit + Build Angular Production
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository
@@ -26,11 +23,20 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Frontend audit guard
+        run: npm run audit:frontend
+
+      - name: Environment validation
+        run: npm run check:env
+
+      - name: TypeScript check
+        run: npm run typecheck
+
       - name: Build production
-        run: npx ng build --configuration=production
+        run: npm run build:prod

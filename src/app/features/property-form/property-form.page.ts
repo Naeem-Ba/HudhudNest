@@ -14,12 +14,13 @@ import {
   ValidationErrors,
   Validators
 } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
 
 import { PropertyApiService } from '../../core/api/property-api.service';
+import { Property } from '../../core/models/property.model';
 import { ToastService } from '../../shared/services/toast.service';
 import { MapPickerComponent } from '../../map-picker/map-picker.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
@@ -121,6 +122,7 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
+    RouterLink,
     MapPickerComponent,
     ImageFallbackDirective
   ],
@@ -208,9 +210,7 @@ export class PropertyFormPage implements OnInit {
       .getProperty(id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: p => {
-          const property = p as any;
-
+        next: (property: Property) => {
           this.form.patchValue({
             listingType: property.listingType === 'ForSale' || property.listingType === 2 ? 2 : 1,
             title: property.title ?? '',
@@ -236,7 +236,9 @@ export class PropertyFormPage implements OnInit {
             hasParkingSpace: property.hasParkingSpace ?? false
           });
 
-          const urls = (property.images ?? []).map((img: { url?: string }) => img.url).filter(Boolean);
+          const urls = (property.images ?? [])
+            .map(image => image.url)
+            .filter((url): url is string => Boolean(url));
           this.previews.set(urls);
         },
         error: () => this.submitError.set('PROPERTY_FORM.LOAD_ERROR')
@@ -404,28 +406,12 @@ export class PropertyFormPage implements OnInit {
   }
 
   private showToast(message: string, type: 'success' | 'error'): void {
-    const toast = this.toast as unknown as {
-      show?: (message: string, type: 'success' | 'error') => void;
-      success?: (message: string) => void;
-      error?: (message: string) => void;
-    };
-
     if (type === 'success') {
-      if (toast.success) {
-        toast.success(message);
-        return;
-      }
-
-      toast.show?.(message, type);
+      this.toast.success(message);
       return;
     }
 
-    if (toast.error) {
-      toast.error(message);
-      return;
-    }
-
-    toast.show?.(message, type);
+    this.toast.error(message);
   }
 
   private normalizeCodes(): void {

@@ -15,8 +15,7 @@ export const environment: AppEnvironment = createAppEnvironment({
   apiBaseUrl,
   baseUrl: readBaseUrlFromProcessEnv(),
   signalRUrl: readSignalRUrlFromProcessEnv(),
-
-    googleClientId: readProcessEnv('GOOGLE_CLIENT_ID') ?? '',
-    appleClientId: readProcessEnv('APPLE_CLIENT_ID') ?? '',
-    appleRedirectUri: readProcessEnv('APPLE_REDIRECT_URI') ?? ''
+  googleClientId: readProcessEnv('GOOGLE_CLIENT_ID') ?? '',
+  appleClientId: readProcessEnv('APPLE_CLIENT_ID') ?? '',
+  appleRedirectUri: readProcessEnv('APPLE_REDIRECT_URI') ?? ''
 });
