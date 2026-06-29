@@ -4,8 +4,10 @@ import { catchError, finalize, map, Observable, of, tap } from 'rxjs';
 import { BackendApiService } from '../api/backend-api.service';
 import { TokenStorageService } from '../services/token-storage.service';
 import {
+  AppleLoginRequest,
   AuthTokenResponse,
   ForgotPasswordRequest,
+  GoogleLoginRequest,
   LoginRequest,
   RegisterRequest,
   RegisterResponse,
@@ -31,6 +33,20 @@ export class AuthApiService {
     );
   }
 
+  loginWithGoogle(request: GoogleLoginRequest): Observable<AuthTokenResponse> {
+    return this.api.post<unknown>('/auth/social/google', request).pipe(
+      map(response => normalizeAuthTokenResponse(response)),
+      tap(response => this.tokenStorage.storeTokens(response))
+    );
+  }
+
+  loginWithApple(request: AppleLoginRequest): Observable<AuthTokenResponse> {
+    return this.api.post<unknown>('/auth/social/apple', request).pipe(
+      map(response => normalizeAuthTokenResponse(response)),
+      tap(response => this.tokenStorage.storeTokens(response))
+    );
+  }
+
   refreshToken(): Observable<AuthTokenResponse> {
     const refreshToken = this.tokenStorage.getRefreshToken();
 
@@ -48,11 +64,6 @@ export class AuthApiService {
     return this.api.post('/auth/reset-password', request);
   }
 
-  /**
-   * Invalidates the refresh token on the backend, then clears local tokens.
-   * Local cleanup always happens, even if the network request fails, so the UI
-   * never keeps a stale authenticated state after logout.
-   */
   logout(): Observable<void> {
     const refreshToken = this.tokenStorage.getRefreshToken();
 

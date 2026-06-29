@@ -1,165 +1,322 @@
-import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, from, switchMap } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { Observable, Subscription } from 'rxjs';
+
 import { environment } from '../../../environments/environment';
-import { AuthTokenResponse } from '../services/token-storage.service';
+import { AuthApiService } from './auth-api.service';
+import { AuthTokenResponse } from '../models/auth.model';
 
 declare global {
   interface Window {
     google?: {
       accounts: {
         id: {
-          initialize(config: {
+          initialize: (config: {
             client_id: string;
-            callback: (response: { credential: string }) => void;
-            auto_select?: boolean;
-          }): void;
-          prompt(callback?: (notification: {
-            isNotDisplayed(): boolean;
-            isSkippedMoment(): boolean;
-          }) => void): void;
-          cancel(): void;
+            callback: (response: { credential?: string }) => void;
+            cancel_on_tap_outside?: boolean;
+            ux_mode?: 'popup' | 'redirect';
+          }) => void;
+          prompt: (callback?: (notification: unknown) => void) => void;
         };
       };
     };
+
     AppleID?: {
       auth: {
-        init(config: {
+        init: (config: {
           clientId: string;
           scope: string;
           redirectURI: string;
+          state?: string;
+          nonce?: string;
           usePopup?: boolean;
-        }): void;
-        signIn(): Promise<{
-          authorization: { code: string; id_token: string };
-          user?: { name?: { firstName?: string; lastName?: string }; email?: string };
+        }) => void;
+
+        signIn: () => Promise<{
+          authorization?: {
+            id_token?: string;
+            code?: string;
+          };
+          user?: {
+            name?: {
+              firstName?: string;
+              lastName?: string;
+            };
+            email?: string;
+          };
         }>;
       };
     };
   }
 }
+type BrowserCrypto = {
+  randomUUID?: () => string;
+  getRandomValues?: <T extends ArrayBufferView>(array: T) => T;
+};
 
-@Injectable({ providedIn: 'root' })
+
+@Injectable({
+  providedIn: 'root'
+})
 export class SocialAuthService {
-  private readonly http = inject(HttpClient);
-  private googleLoaded = false;
-  private appleLoaded = false;
+  private googleScriptPromise?: Promise<void>;
+  private appleScriptPromise?: Promise<void>;
+
+  constructor(private readonly authApi: AuthApiService) {}
 
   get isGoogleAvailable(): boolean {
-    return !!environment.googleClientId;
+    return Boolean(environment.googleClientId?.trim());
   }
 
   get isAppleAvailable(): boolean {
-    return !!environment.appleClientId && !!environment.appleRedirectUri;
+    return Boolean(environment.appleClientId?.trim());
   }
 
   loginWithGoogle(): Observable<AuthTokenResponse> {
-    return from(this.loadScript('google', 'https://accounts.google.com/gsi/client')).pipe(
-      switchMap(() => this.googlePrompt()),
-      switchMap(idToken => this.http.post<AuthTokenResponse>(
-        `${environment.apiUrl}/auth/social/google`,
-        { idToken }
-      ))
-    );
+    return new Observable<AuthTokenResponse>(observer => {
+      let backendSubscription: Subscription | undefined;
+
+      if (!this.isGoogleAvailable) {
+        observer.error(new Error('Google Client ID is not configured.'));
+        return undefined;
+      }
+
+      this.loadGoogleScript()
+        .then(() => {
+          if (!window.google?.accounts?.id) {
+            throw new Error('Google Identity Services is not available.');
+          }
+
+          window.google.accounts.id.initialize({
+            client_id: environment.googleClientId,
+            ux_mode: 'popup',
+            cancel_on_tap_outside: true,
+            callback: response => {
+              const idToken = response.credential;
+
+              if (!idToken) {
+                observer.error(new Error('Google did not return an ID token.'));
+                return;
+              }
+
+              backendSubscription = this.authApi.loginWithGoogle({ idToken }).subscribe({
+                next: tokenResponse => {
+                  observer.next(tokenResponse);
+                  observer.complete();
+                },
+                error: error => observer.error(error)
+              });
+            }
+          });
+
+          window.google.accounts.id.prompt();
+        })
+        .catch(error => observer.error(error));
+
+      return () => {
+        backendSubscription?.unsubscribe();
+      };
+    });
   }
 
   loginWithApple(): Observable<AuthTokenResponse> {
-    return from(this.loadScript(
-      'apple',
-      'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js'
-    )).pipe(
-      switchMap(() => this.appleSignIn()),
-      switchMap(payload => this.http.post<AuthTokenResponse>(
-        `${environment.apiUrl}/auth/social/apple`,
-        payload
-      ))
-    );
-  }
+    return new Observable<AuthTokenResponse>(observer => {
+      let backendSubscription: Subscription | undefined;
 
-  private googlePrompt(): Observable<string> {
-    return new Observable<string>(observer => {
-      window.google!.accounts.id.initialize({
-        client_id: environment.googleClientId,
-        callback: response => {
-          observer.next(response.credential);
-          observer.complete();
-        }
-      });
+      if (!this.isAppleAvailable) {
+        observer.error(new Error('Apple Client ID is not configured.'));
+        return undefined;
+      }
 
-      window.google!.accounts.id.prompt(notification => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          observer.error(new Error('GOOGLE_POPUP_CLOSED'));
-        }
-      });
+      this.loadAppleScript()
+        .then(() => {
+          if (!window.AppleID?.auth) {
+            throw new Error('Apple Sign In is not available.');
+          }
 
-      return () => window.google?.accounts.id.cancel();
-    });
-  }
+          const redirectUri =
+            environment.appleRedirectUri?.trim() ||
+            `${window.location.origin}/auth/apple/callback`;
 
-  private appleSignIn(): Observable<{
-    identityToken: string;
-    authorizationCode: string;
-    firstName?: string;
-    lastName?: string;
-  }> {
-    return new Observable(observer => {
-      window.AppleID!.auth.init({
-        clientId: environment.appleClientId,
-        scope: 'name email',
-        redirectURI: environment.appleRedirectUri,
-        usePopup: true
-      });
-
-      window.AppleID!.auth.signIn()
-        .then(response => {
-          observer.next({
-            identityToken: response.authorization.id_token,
-            authorizationCode: response.authorization.code,
-            firstName: response.user?.name?.firstName,
-            lastName: response.user?.name?.lastName
+          window.AppleID.auth.init({
+            clientId: environment.appleClientId,
+            scope: 'name email',
+            redirectURI: redirectUri,
+            state: this.createRandomValue(),
+            nonce: this.createRandomValue(),
+            usePopup: true
           });
-          observer.complete();
+
+          return window.AppleID.auth.signIn();
         })
-        .catch(error => observer.error(
-          new Error(error?.error === 'popup_closed_by_user' ? 'APPLE_POPUP_CLOSED' : 'APPLE_ERROR')
-        ));
-    });
-  }
+        .then(response => {
+          const identityToken = response.authorization?.id_token;
+          const authorizationCode = response.authorization?.code ?? null;
+          const firstName = response.user?.name?.firstName ?? null;
+          const lastName = response.user?.name?.lastName ?? null;
 
-  private loadScript(id: 'google' | 'apple', src: string): Promise<void> {
-    const loaded = id === 'google' ? this.googleLoaded : this.appleLoaded;
-    if (loaded) {
-      return Promise.resolve();
-    }
+          if (!identityToken) {
+            throw new Error('Apple did not return an identity token.');
+          }
 
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = src;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        if (id === 'google') {
-          this.googleLoaded = true;
-        } else {
-          this.appleLoaded = true;
-        }
-        resolve();
+          backendSubscription = this.authApi.loginWithApple({
+            identityToken,
+            authorizationCode,
+            firstName,
+            lastName
+          }).subscribe({
+            next: tokenResponse => {
+              observer.next(tokenResponse);
+              observer.complete();
+            },
+            error: error => observer.error(error)
+          });
+        })
+        .catch(error => observer.error(error));
+
+      return () => {
+        backendSubscription?.unsubscribe();
       };
-      script.onerror = () => reject(new Error(`${id.toUpperCase()}_SCRIPT_LOAD_FAILED`));
-      document.head.appendChild(script);
     });
   }
 
   getSocialErrorMessage(error: unknown): string {
-    const message = error instanceof Error ? error.message : String(error);
-    const map: Record<string, string> = {
-      GOOGLE_POPUP_CLOSED: 'تم إغلاق نافذة Google. حاول مرة أخرى.',
-      GOOGLE_SCRIPT_LOAD_FAILED: 'تعذر الاتصال بـ Google. تحقق من اتصالك.',
-      APPLE_POPUP_CLOSED: 'تم إغلاق نافذة Apple. حاول مرة أخرى.',
-      APPLE_SCRIPT_LOAD_FAILED: 'تعذر الاتصال بـ Apple.',
-      APPLE_ERROR: 'حدث خطأ في تسجيل الدخول بـ Apple.'
+    const typedError = error as {
+      error?: {
+        message?: string;
+        detail?: string;
+        title?: string;
+        errors?: Record<string, string[]>;
+      } | string;
+      message?: string;
+      status?: number;
     };
 
-    return map[message] ?? 'حدث خطأ في التسجيل الاجتماعي. حاول لاحقاً.';
+    if (typeof typedError.error === 'string' && typedError.error.trim()) {
+      return typedError.error;
+    }
+
+    if (typeof typedError.error === 'object') {
+      if (typedError.error?.message) {
+        return typedError.error.message;
+      }
+
+      if (typedError.error?.detail) {
+        return typedError.error.detail;
+      }
+
+      if (typedError.error?.title) {
+        return typedError.error.title;
+      }
+
+      if (typedError.error?.errors) {
+        const messages = Object.values(typedError.error.errors).flat();
+
+        if (messages.length > 0) {
+          return messages.join(' ');
+        }
+      }
+    }
+
+    if (typedError.message) {
+      return typedError.message;
+    }
+
+    if (typedError.status === 400) {
+      return 'Social login request was rejected by the server.';
+    }
+
+    if (typedError.status === 401) {
+      return 'Social login token was rejected by the server.';
+    }
+
+    if (typedError.status === 500) {
+      return 'Server error while processing social login.';
+    }
+
+    return 'Social login failed. Please try again.';
   }
+
+  private loadGoogleScript(): Promise<void> {
+    if (this.googleScriptPromise) {
+      return this.googleScriptPromise;
+    }
+
+    this.googleScriptPromise = this.loadScript(
+      'google-identity-services',
+      'https://accounts.google.com/gsi/client'
+    );
+
+    return this.googleScriptPromise;
+  }
+
+  private loadAppleScript(): Promise<void> {
+    if (this.appleScriptPromise) {
+      return this.appleScriptPromise;
+    }
+
+    this.appleScriptPromise = this.loadScript(
+      'apple-sign-in',
+      'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js'
+    );
+
+    return this.appleScriptPromise;
+  }
+
+  private loadScript(id: string, src: string): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const existingScript = document.getElementById(id) as HTMLScriptElement | null;
+
+      if (existingScript) {
+        if (existingScript.dataset['loaded'] === 'true') {
+          resolve();
+          return;
+        }
+
+        existingScript.addEventListener('load', () => resolve(), { once: true });
+        existingScript.addEventListener(
+          'error',
+          () => reject(new Error(`Failed to load script: ${src}`)),
+          { once: true }
+        );
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.id = id;
+      script.src = src;
+      script.async = true;
+      script.defer = true;
+
+      script.onload = () => {
+        script.dataset['loaded'] = 'true';
+        resolve();
+      };
+
+      script.onerror = () => {
+        reject(new Error(`Failed to load script: ${src}`));
+      };
+
+      document.head.appendChild(script);
+    });
+  }
+  private createRandomValue(): string {
+  const webCrypto = (globalThis as unknown as { crypto?: BrowserCrypto }).crypto;
+
+  if (webCrypto?.randomUUID) {
+    return webCrypto.randomUUID();
+  }
+
+  if (webCrypto?.getRandomValues) {
+    const array = new Uint32Array(4);
+    webCrypto.getRandomValues(array);
+
+    return Array.from(array)
+      .map(value => value.toString(16).padStart(8, '0'))
+      .join('');
+  }
+
+  return `${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}`;
+}
+
 }

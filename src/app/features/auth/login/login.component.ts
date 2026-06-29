@@ -17,7 +17,8 @@ interface LoginFormModel {
 }
 
 interface RegisterFormModel {
-  Name?: string;
+  FirstName: string;
+  LastName: string;
   Email: string;
   Password: string;
 }
@@ -35,11 +36,12 @@ export class LoginComponent {
     Password: ''
   };
 
-  registerData: RegisterFormModel = {
-    Name: '',
-    Email: '',
-    Password: ''
-  };
+registerData: RegisterFormModel = {
+  FirstName: '',
+  LastName: '',
+  Email: '',
+  Password: ''
+};
 
   showRegister = false;
   message = '';
@@ -143,13 +145,10 @@ export class LoginComponent {
     this.loading = true;
     this.message = '';
 
-    const fullName = (this.registerData.Name ?? '').trim();
+    const firstName = this.registerData.FirstName.trim();
+    const lastName = this.registerData.LastName.trim();
     const email = this.registerData.Email.trim().toLowerCase();
     const password = this.registerData.Password;
-
-    const nameParts = fullName.split(/\s+/).filter(Boolean);
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.slice(1).join(' ') || firstName;
 
     const validationMessage = this.validateRegisterForm(firstName, lastName, email, password);
     if (validationMessage) {
@@ -169,7 +168,12 @@ export class LoginComponent {
 
         this.loginData.Email = email;
         this.loginData.Password = '';
-        this.registerData.Password = '';
+        this.registerData = {
+  FirstName: '',
+  LastName: '',
+  Email: '',
+  Password: ''
+};
       },
       error: error => {
         this.loading = false;

@@ -95,9 +95,18 @@
       "FORGOT_FAILED": "تعذر إرسال رابط الاستعادة.",
       "RESET_FAILED": "تعذر تحديث كلمة المرور.",
       "SEND_OTP_FAILED": "تعذر إرسال رمز التحقق.",
-      "VERIFY_OTP_FAILED": "الرمز غير صحيح أو منتهي الصلاحية."
-    }
-  },
+      "VERIFY_OTP_FAILED": "الرمز غير صحيح أو منتهي الصلاحية.",
+            "FIRST_NAME_REQUIRED": "الاسم الأول مطلوب",
+      "FIRST_NAME_MIN": "يجب أن يكون الاسم الأول من حرفين على الأقل",
+      "LAST_NAME_REQUIRED": "الكنية مطلوبة",
+      "LAST_NAME_MIN": "يجب أن تكون الكنية من حرفين على الأقل",
+      "EMAIL_ALREADY_EXISTS": "هذا البريد الإلكتروني مسجل مسبقًا",
+      "SERVER_ERROR": "حدث خطأ في الخادم. حاول لاحقًا"
+    },
+    "FIRST_NAME_PLACEHOLDER": "أدخل الاسم الأول",
+    "LAST_NAME_PLACEHOLDER": "أدخل الكنية"
+    },
+  
   "ERRORS": {
     "EMAIL_REQUIRED": "البريد الإلكتروني مطلوب.",
     "INVALID_EMAIL": "صيغة البريد الإلكتروني غير صحيحة.",
