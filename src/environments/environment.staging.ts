@@ -17,5 +17,5 @@ export const environment: AppEnvironment = createAppEnvironment({
   signalRUrl: readSignalRUrlFromProcessEnv(),
   googleClientId: readProcessEnv('GOOGLE_CLIENT_ID') ?? '',
   appleClientId: readProcessEnv('APPLE_CLIENT_ID') ?? '',
-  appleRedirectUri: readProcessEnv('APPLE_REDIRECT_URI') ?? ''
+  appleRedirectUri: 'https://bizorealestateworld.netlify.app/auth/apple/callback'
 });

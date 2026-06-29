@@ -130,7 +130,19 @@
     "GOOGLE_LOGIN": "Continue with Google",
     "APPLE_LOGIN": "Continue with Apple",
     "LOGIN_SUCCESS": "Welcome! Logged in successfully.",
-    "REGISTER_SUCCESS": "Account created successfully! You can log in now."
+    "REGISTER_SUCCESS": "Account created successfully! You can log in now.",
+    "FIRST_NAME_PLACEHOLDER": "Enter your first name",
+    "LAST_NAME_PLACEHOLDER": "Enter your last name",
+    "GOOGLE_DISABLED": "Google login is not configured",
+    "APPLE_DISABLED": "Apple login is not configured",
+    "ERRORS": {
+      "FIRST_NAME_REQUIRED": "First name is required",
+      "FIRST_NAME_MIN": "First name must be at least 2 characters",
+      "LAST_NAME_REQUIRED": "Last name is required",
+      "LAST_NAME_MIN": "Last name must be at least 2 characters",
+      "EMAIL_ALREADY_EXISTS": "This email is already registered",
+      "SERVER_ERROR": "Server error. Please try again later"
+    }
   },
   "STRENGTH": {
     "WEAK": "Weak",
