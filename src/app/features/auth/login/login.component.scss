@@ -1,89 +1,60 @@
 /* ================================================================
-   login.component.scss — Modern Auth Layout
+   login.component.scss — Modern Auth Layout (fixed & completed)
    ================================================================ */
 
-/* ── Split Layout ── */
+/* ── Split Layout: image side + form side, side by side ── */
 .auth-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
   min-height: calc(100vh - var(--navbar-height, 68px));
 
   @media (max-width: 900px) {
+    /* On mobile the brand/photo panel is hidden (not stacked below the form) */
     grid-template-columns: 1fr;
   }
 }
 
-/* ── Brand Panel (Left/Right based on RTL) ── */
+/* ── Brand / Photo Panel ── */
 .auth-brand {
-  background: linear-gradient(160deg, var(--navy) 0%, #1a3a5c 55%, rgba(37,99,235,.15) 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 2.5rem;
   position: relative;
   overflow: hidden;
-
-  /* Decorative background dots */
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(rgba(214,168,79,.1) 1px, transparent 1px);
-    background-size: 28px 28px;
-  }
 
   @media (max-width: 900px) {
     display: none;
   }
 
+  &__photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(10, 25, 47, .15) 0%, rgba(10, 25, 47, .75) 100%);
+  }
+
   &__inner {
     position: relative;
-    max-width: 380px;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    align-items: flex-start;
+    padding: 2.5rem;
   }
 
   &__logo {
-    display: block;
-    margin-bottom: 3rem;
+    display: inline-flex;
 
     img {
-      height: 44px;
+      height: 40px;
       width: auto;
-      /* Make white logo on dark bg */
+      /* white logo on dark photo overlay */
       filter: brightness(0) invert(1);
     }
-  }
-
-  &__quote {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: #fff;
-    line-height: 1.4;
-    margin-bottom: 2.5rem;
-    font-family: var(--font-display);
-    border: none;
-
-    p { margin: 0; }
-  }
-
-  &__features {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-
-    li {
-      display: flex;
-      align-items: center;
-      gap: .75rem;
-      font-size: .9rem;
-      color: rgba(255,255,255,.78);
-      font-weight: 500;
-    }
-  }
-
-  &__feature-icon {
-    font-size: 1.2rem;
-    flex-shrink: 0;
   }
 }
 
@@ -103,8 +74,23 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+
+  h1 {
+    margin: 0 0 .35rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--navy, #0f2744);
+  }
 }
 
+.auth-subtitle {
+  margin: 0;
+  color: var(--gray-500, #64748b);
+  font-size: .9rem;
+  line-height: 1.6;
+}
+
+/* Logo shown only on mobile, since the brand panel is hidden there */
 .auth-panel__logo-mobile {
   display: none;
   justify-content: center;
@@ -114,13 +100,13 @@
     margin-bottom: .5rem;
 
     img {
-      height: 40px;
+      height: 36px;
       width: auto;
     }
   }
 }
 
-/* ── Tabs ── */
+/* ── Tabs (kept for optional future use) ── */
 .auth-tabs {
   display: flex;
   background: var(--gray-100);
@@ -161,13 +147,13 @@
   &--success {
     background: var(--success-soft);
     color: var(--success);
-    border: 1px solid rgba(22,163,74,.2);
+    border: 1px solid rgba(22, 163, 74, .2);
   }
 
   &--error {
     background: var(--danger-soft);
     color: var(--danger);
-    border: 1px solid rgba(220,38,38,.2);
+    border: 1px solid rgba(220, 38, 38, .2);
   }
 }
 
@@ -213,14 +199,14 @@
     &:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, .1);
     }
 
     &::placeholder { color: var(--gray-400); }
 
     &.ng-invalid.ng-touched {
       border-color: var(--danger) !important;
-      box-shadow: 0 0 0 3px rgba(220,38,38,.08) !important;
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, .08) !important;
     }
   }
 }
@@ -232,6 +218,15 @@
   font-weight: 500;
 
   &:hover { text-decoration: underline; }
+}
+
+/* ── Field error message ── */
+.field-error {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: .78rem;
+  color: var(--danger, #dc2626);
 }
 
 /* ── Password Field ── */
@@ -259,6 +254,33 @@
   border-radius: var(--r-sm);
 
   &:hover { color: var(--gray-700); }
+}
+
+/* ── Submit Button ── */
+.auth-submit {
+  width: 100%;
+  padding: .8rem 1rem;
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--primary, #2563eb);
+  color: #fff;
+  font-weight: 700;
+  font-size: .95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  transition: background .15s, opacity .15s;
+
+  &:hover:not(:disabled) {
+    background: var(--primary-dark, #1d4ed8);
+  }
+
+  &:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+  }
 }
 
 /* ── Social Buttons ── */
