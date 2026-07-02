@@ -1,31 +1,29 @@
-// =====================================================================
-// ✅ FIX #3 – navbar.component.ts
-// المشكلة: subscription اللغة (currentLang$) لا يُلغى في ngOnDestroy
-//           مما يُسبّب Memory Leak
-// الحل: إدارة جميع الاشتراكات بـ Subscription مركزية واحدة
-// =====================================================================
 import {
   Component,
   OnDestroy,
   OnInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
+  ElementRef,
+  HostListener,
+  ViewChild,
   inject
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
 
-import { AuthService } from '../core/auth/auth.service'
+import { AuthService } from '../core/auth/auth.service';
 import { LanguageService } from '../core/services/language.service';
 import { UrlService } from '../core/services/url.service';
 import { ImageFallbackDirective } from '../shared/directives/image-fallback.directive';
 import { TranslateModule } from '@ngx-translate/core';
 
+type AppLang = 'ar' | 'en' | 'de';
+
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  // ✅ FIX #15: إضافة OnPush لتحسين الأداء
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
@@ -46,6 +44,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private readonly cd         = inject(ChangeDetectorRef);
   private readonly urlService = inject(UrlService);
 
+  /* ===== [FIX-C] مراجع العناصر الحقيقية بدل مطابقة أصناف CSS نصياً ===== */
+  @ViewChild('accountRef')       private accountRef?: ElementRef<HTMLElement>;
+  @ViewChild('langRef')          private langRef?: ElementRef<HTMLElement>;
+  @ViewChild('mobileDrawerRef')  private mobileDrawerRef?: ElementRef<HTMLElement>;
+  @ViewChild('mobileToggleRef')  private mobileToggleRef?: ElementRef<HTMLElement>;
+
   /* ===== Observables ===== */
   readonly isLoggedIn$: Observable<boolean> = this.auth.isLoggedIn$;
   readonly isAdmin$: Observable<boolean>    = this.auth.isAdmin$;
@@ -54,7 +58,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   dropdownOpen   = false;
   langMenuOpen   = false;
   mobileMenuOpen = false;
-  currentLang    = 'ar';
+  currentLang: AppLang = 'ar';
 
   /* ===== User UI ===== */
   avatarLetter     = '?';
@@ -62,20 +66,16 @@ export class NavbarComponent implements OnInit, OnDestroy {
   profileImageUrl  = '/images/default-avatar.svg';
   hasCustomImage   = false;
 
-  /* ===== FIX #3: Subscription مركزية لإلغاء كل الاشتراكات ===== */
   private readonly subs = new Subscription();
-
-  private readonly boundClickOutside = (event: MouseEvent) =>
-    this.handleClickOutside(event);
 
   /* ============================= */
 
   ngOnInit(): void {
-    /* 🔤 FIX #3: إضافة subscription اللغة إلى subs */
+    /* 🔤 [FIX-A] كل لغة قادمة من الـ service تمر عبر applyLang() المركزية،
+       سواء عند أول تحميل أو عند أي تغيير لاحق — وليس فقط عند ضغط المستخدم */
     this.subs.add(
-      this.lang.currentLang$.subscribe(lang => {
-        this.currentLang = lang;
-        this.cd.markForCheck(); // ✅ لازم مع OnPush
+      this.lang.currentLang$.subscribe(rawLang => {
+        this.applyLang(this.normalizeLang(rawLang));
       })
     );
 
@@ -103,17 +103,40 @@ export class NavbarComponent implements OnInit, OnDestroy {
           this.hasCustomImage  = false;
         }
 
-        this.cd.markForCheck(); // ✅ لازم مع OnPush
+        this.cd.markForCheck();
       })
     );
-
-    document.addEventListener('click', this.boundClickOutside);
   }
 
   ngOnDestroy(): void {
-    /* ✅ FIX #3: يُلغي جميع الاشتراكات دفعة واحدة */
     this.subs.unsubscribe();
-    document.removeEventListener('click', this.boundClickOutside);
+  }
+
+  /* ===== [FIX-C] الإغلاق عند الضغط خارج القوائم — مربوط بدورة حياة المكوّن ===== */
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    this.handleClickOutside(event);
+  }
+
+  /* ===== Language helpers ===== */
+
+  /** [FIX-B] يضمن أن أي صيغة قادمة من الـ service (مثل en-US) تتحول لأحد القيم المدعومة فقط */
+  private normalizeLang(raw: string | null | undefined): AppLang {
+    const code = (raw ?? 'ar').toLowerCase().split(/[-_]/)[0];
+    if (code === 'en') return 'en';
+    if (code === 'de') return 'de';
+    return 'ar';
+  }
+
+  /** [FIX-A] نقطة مركزية واحدة تُطبّق اللغة على الحالة وعلى <html> معاً */
+  private applyLang(lang: AppLang): void {
+    this.currentLang = lang;
+
+    const htmlTag = document.documentElement;
+    htmlTag.dir  = lang === 'ar' ? 'rtl' : 'ltr';
+    htmlTag.lang = lang;
+
+    this.cd.markForCheck();
   }
 
   /* ===== UI Helpers ===== */
@@ -130,21 +153,18 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.dropdownOpen  = false;
   }
 
-  changeLang(lang: 'ar' | 'en' | 'de'): void {
+  changeLang(lang: AppLang): void {
     this.lang.use(lang);
-    this.currentLang = lang;
+    this.applyLang(lang);
 
-    const htmlTag = document.documentElement;
-    htmlTag.dir  = lang === 'ar' ? 'rtl' : 'ltr';
-    htmlTag.lang = lang;
-
+    /* [FIX-D] إغلاق صريح لكل القوائم بعد تغيير اللغة */
     this.langMenuOpen   = false;
     this.mobileMenuOpen = false;
     this.cd.markForCheck();
   }
 
   logout(): void {
-    this.dropdownOpen = false;
+    this.dropdownOpen   = false;
     this.mobileMenuOpen = false;
 
     // Invalidate the backend refresh token before leaving the authenticated UI.
@@ -166,13 +186,24 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.langMenuOpen   = false;
   }
 
-  handleClickOutside(event: MouseEvent): void {
-    const target = event.target as HTMLElement;
-    if (!target.closest('.account'))       this.dropdownOpen   = false;
-    if (!target.closest('.lang-dropdown')) this.langMenuOpen   = false;
-    if (!target.closest('.nav-links') && !target.closest('.mobile-menu-btn')) {
+  /* [FIX-C] الآن يعتمد على احتواء عنصر DOM حقيقي بدل اسم صنف CSS نصي */
+  private handleClickOutside(event: MouseEvent): void {
+    const target = event.target as Node;
+
+    if (this.accountRef && !this.accountRef.nativeElement.contains(target)) {
+      this.dropdownOpen = false;
+    }
+
+    if (this.langRef && !this.langRef.nativeElement.contains(target)) {
+      this.langMenuOpen = false;
+    }
+
+    const insideDrawer  = this.mobileDrawerRef?.nativeElement.contains(target) ?? false;
+    const insideToggle  = this.mobileToggleRef?.nativeElement.contains(target) ?? false;
+    if (!insideDrawer && !insideToggle) {
       this.mobileMenuOpen = false;
     }
+
     this.cd.markForCheck();
   }
 

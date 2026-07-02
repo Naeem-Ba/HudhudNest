@@ -1,6 +1,3 @@
-<!-- ================================================================
-     navbar.component.html — Modern Sticky Navigation
-     ================================================================ -->
 <header class="navbar" [class.navbar--scrolled]="false" role="banner">
   <div class="navbar__inner">
 
@@ -55,7 +52,7 @@
     <div class="navbar__actions">
 
       <!-- Language Selector (Desktop) -->
-      <div class="lang-dropdown" [class.lang-dropdown--open]="langMenuOpen">
+      <div #langRef class="lang-dropdown" [class.lang-dropdown--open]="langMenuOpen">
         <button
           type="button"
           class="lang-btn"
@@ -87,7 +84,7 @@
 
       <!-- User Account / Login -->
       <ng-container *ngIf="isLoggedIn$ | async; else loginButton">
-        <div class="account" [class.account--open]="dropdownOpen">
+        <div #accountRef class="account" [class.account--open]="dropdownOpen">
           <button
             type="button"
             class="account__trigger"
@@ -153,6 +150,7 @@
 
       <!-- Mobile Menu Toggle -->
       <button
+        #mobileToggleRef
         type="button"
         class="mobile-toggle"
         (click)="toggleMobileMenu($event)"
@@ -167,7 +165,7 @@
   </div>
 
   <!-- ── Mobile Drawer ── -->
-  <div class="mobile-drawer" [class.mobile-drawer--open]="mobileMenuOpen" role="dialog" aria-modal="true" aria-label="القائمة الجانبية">
+  <div #mobileDrawerRef class="mobile-drawer" [class.mobile-drawer--open]="mobileMenuOpen" role="dialog" aria-modal="true" aria-label="القائمة الجانبية">
     <nav class="mobile-drawer__nav" role="navigation">
       <a routerLink="/home" class="mobile-drawer__link" (click)="mobileMenuOpen = false">
         {{ 'NAVBAR.HOME' | translate }}
@@ -233,4 +231,3 @@
   (click)="mobileMenuOpen = false"
   aria-hidden="true"
 ></div>
-
