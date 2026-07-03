@@ -14,7 +14,8 @@
     "EDIT": "تعديل",
     "NEXT": "التالي",
     "PAGE": "الصفحة",
-    "PREVIOUS": "السابق"
+    "PREVIOUS": "السابق",
+    "area_unit": "م²"
   },
   "NAVBAR": {
     "HOME": "الرئيسية",
@@ -131,6 +132,9 @@
     "STRONG": "قوية"
   },
   "HOME": {
+        "stat_properties_value": "+١٠٠",
+    "stat_cities_value": "٥+",
+    "stat_free_value": "مجاني",
     "title": "اعثر على منزلك المناسب",
     "subtitle": "نساعدك في تصفح عقارات للبيع والإيجار بسهولة ووضوح",
     "btn_view": "عرض العقارات",

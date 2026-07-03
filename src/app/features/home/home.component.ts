@@ -1,13 +1,4 @@
-﻿// =====================================================================
-// ✅ FIX — home.component.ts
-//
-// الإصلاح: إضافة takeUntilDestroyed لإلغاء الـ Subscription
-//          تلقائياً عند إزالة Component من الشاشة
-//
-// المسار: src/app/home/home.component.ts
-// =====================================================================
-
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+﻿import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -26,10 +17,7 @@ import { TranslateModule } from '@ngx-translate/core';
 })
 export class HomeComponent implements OnInit {
 
-  // ✅ inject() الحديث بدلاً من constructor
   private readonly PropertyApiService = inject(PropertyApiService);
-
-  // ✅ DestroyRef يُخبر takeUntilDestroyed متى يُلغي الـ subscription
   private readonly destroyRef = inject(DestroyRef);
 
   Property: Property[] = [];
@@ -37,7 +25,7 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     this.PropertyApiService.getProperties()
       .pipe(
-        takeUntilDestroyed(this.destroyRef)  // ✅ يُلغى تلقائياً عند إزالة الـ Component
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
         next: data => {

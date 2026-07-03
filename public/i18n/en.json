@@ -105,7 +105,8 @@
     "CANCEL": "Cancel",
     "PREVIOUS": "Previous",
     "NEXT": "Next",
-    "PAGE": "Page"
+    "PAGE": "Page",
+    "area_unit": "m²"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome Back",
@@ -166,5 +167,10 @@
     "EMAIL_TAKEN": "This email is already in use. Try logging in.",
     "FIX_FIELDS": "Please correct the highlighted fields.",
     "REGISTER_FAILED": "Registration failed. Please try again."
-  }
+  },
+    "HOME": {
+    "stat_properties_value": "100+",
+    "stat_cities_value": "5+",
+    "stat_free_value": "Free"
+    }
 }

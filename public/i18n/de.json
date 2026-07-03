@@ -7,7 +7,8 @@
     "DELETE": "Löschen",
     "RETRY": "Erneut versuchen",
     "SAVING": "Speichern...",
-    "CHANGE_LANGUAGE": "Sprache ändern"
+    "CHANGE_LANGUAGE": "Sprache ändern",
+    "area_unit": "m²"
   },
   "NAVBAR": {
     "HOME": "Home",
@@ -99,6 +100,9 @@
     }
   },
   "HOME": {
+        "stat_properties_value": "100+",
+    "stat_cities_value": "5+",
+    "stat_free_value": "Kostenlos",
     "title": "Finden Sie Ihr Traumhaus",
     "subtitle": "Wir bieten Ihnen die besten Wohnungen zum Mieten oder Kaufen",
     "btn_view": "Wohnungen ansehen",
