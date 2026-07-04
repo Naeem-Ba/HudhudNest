@@ -1,162 +1,325 @@
-<div class="home">
+<div class="auth-layout">
 
-  <!-- ── Hero Search Banner ── -->
-  <section class="home-hero">
-    <div class="home-hero__bg">
-      <div class="home-hero__overlay"></div>
-    </div>
-    <div class="container home-hero__content">
-      <span class="home-hero__eyebrow">🏠 {{ 'HOME.hero_subtitle' | translate }}</span>
-      <h1 class="home-hero__title">{{ 'HOME.hero_title' | translate }}</h1>
-      <p class="home-hero__desc">{{ 'HOME.hero_desc' | translate }}</p>
-      <div class="home-hero__actions">
-        <a routerLink="/wohnungen" class="btn btn--gold btn--lg">
-          {{ 'HOME.browse_properties' | translate }}
-        </a>
-        <a routerLink="/property-form" class="btn btn--outline-light btn--lg">
-          {{ 'HOME.list_property' | translate }}
-        </a>
-      </div>
-    </div>
-  </section>
+  <!-- ================= Brand / Photo Panel ================= -->
+  <div class="auth-brand">
+    <img
+      src="/images/login.jpg"
+      class="auth-brand__photo"
+      alt=""
+      aria-hidden="true"
+      loading="lazy"
+    />
+    <div class="auth-brand__overlay" aria-hidden="true"></div>
 
-  <!-- ── Quick Stats ── -->
-  <section class="home-stats">
-    <div class="container">
-      <div class="stats-grid">
-        <div class="stat-item">
-          <!-- [FIX] كان: <span class="stat-item__number">+١٠٠</span> -->
-          <span class="stat-item__number">{{ 'HOME.stat_properties_value' | translate }}</span>
-          <span class="stat-item__label">{{ 'HOME.stat_properties' | translate }}</span>
-        </div>
-        <div class="stat-item">
-          <!-- [FIX] كان: <span class="stat-item__number">٥+</span> -->
-          <span class="stat-item__number">{{ 'HOME.stat_cities_value' | translate }}</span>
-          <span class="stat-item__label">{{ 'HOME.stat_cities' | translate }}</span>
-        </div>
-        <div class="stat-item">
-          <!-- [FIX] كان: <span class="stat-item__number">مجاني</span> -->
-          <span class="stat-item__number">{{ 'HOME.stat_free_value' | translate }}</span>
-          <span class="stat-item__label">{{ 'HOME.stat_free' | translate }}</span>
-        </div>
-      </div>
+    <div class="auth-brand__inner">
+      <a routerLink="/home" class="auth-brand__logo" aria-label="Home">
+        <img
+          src="/images/horizontal-logo.png"
+          alt="Logo"
+          appImageFallback="/images/default-avatar.svg"
+        />
+      </a>
     </div>
-  </section>
+  </div>
 
-  <!-- ── Latest Properties ── -->
-  <section class="home-section">
-    <div class="container">
-      <div class="home-section__header">
-        <div>
-          <p class="home-section__eyebrow">{{ 'HOME.latest_label' | translate }}</p>
-          <h2 class="home-section__title">{{ 'HOME.latest_apartments' | translate }}</h2>
-        </div>
-        <a routerLink="/wohnungen" class="btn btn--outline">
-          {{ 'HOME.view_all' | translate }}
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </a>
+  <!-- ================= Form Panel ================= -->
+  <div class="auth-panel">
+    <div class="auth-form-wrapper">
+
+      <!-- Logo (mobile only, brand panel is hidden below 900px) -->
+      <div class="auth-panel__logo-mobile">
+        <img
+          src="/images/horizontal-logo.png"
+          alt="Logo"
+          appImageFallback="/images/default-avatar.svg"
+        />
       </div>
 
-      <!-- Properties Grid -->
-      <div class="property-grid" *ngIf="Property.length > 0">
-        <article
-          *ngFor="let p of Property"
-          class="prop-card"
-          [routerLink]="['/wohnungen', p.id]"
-          tabindex="0"
-          role="button"
-          [attr.aria-label]="p.title"
+      <div>
+        <h1>
+          {{
+            showRegister
+              ? ('AUTH.REGISTER_TITLE' | translate)
+              : ('AUTH.LOGIN_TITLE' | translate)
+          }}
+        </h1>
+        <p class="auth-subtitle">
+          {{
+            showRegister
+              ? ('AUTH.REGISTER_SUBTITLE' | translate)
+              : ('AUTH.LOGIN_SUBTITLE' | translate)
+          }}
+        </p>
+      </div>
+
+      <!-- Social buttons -->
+      <div class="social-buttons">
+        <button
+          type="button"
+          class="social-btn social-btn--google"
+          [disabled]="loading || !googleAvailable"
+          (click)="onGoogleLogin()"
         >
-          <div class="prop-card__image">
-            <img
-              [src]="p.images?.[0]?.url || p.mainImageUrl || '/images/no-image.svg'"
-              [alt]="p.title || ''"
-              loading="lazy"
-              appImageFallback="/images/no-image.svg"
+          <span aria-hidden="true">G</span>
+          {{
+            googleAvailable
+              ? ('AUTH.GOOGLE_LOGIN' | translate)
+              : ('AUTH.GOOGLE_DISABLED' | translate)
+          }}
+        </button>
+
+        <button
+          type="button"
+          class="social-btn social-btn--apple"
+          [disabled]="loading || !appleAvailable"
+          (click)="onAppleLogin()"
+        >
+          <span aria-hidden="true"></span>
+          {{
+            appleAvailable
+              ? ('AUTH.APPLE_LOGIN' | translate)
+              : ('AUTH.APPLE_DISABLED' | translate)
+          }}
+        </button>
+      </div>
+
+      <div class="auth-divider">{{ 'AUTH.OR' | translate }}</div>
+
+      <div
+        *ngIf="message"
+        class="auth-alert"
+        [ngClass]="success ? 'auth-alert--success' : 'auth-alert--error'"
+        role="alert"
+      >
+        <span aria-hidden="true">{{ success ? '✅' : '⚠️' }}</span>
+        {{ message }}
+      </div>
+
+      <!-- ============ Login Form ============ -->
+      <form
+        *ngIf="!showRegister"
+        class="auth-form"
+        (ngSubmit)="onLogin(loginForm)"
+        #loginForm="ngForm"
+        novalidate
+      >
+        <div class="form-group">
+          <label for="login-email">{{ 'AUTH.EMAIL' | translate }} *</label>
+          <input
+            id="login-email"
+            type="email"
+            [(ngModel)]="loginData.Email"
+            name="email"
+            #loginEmail="ngModel"
+            required
+            email
+            autocomplete="email"
+            [placeholder]="'AUTH.EMAIL_PLACEHOLDER' | translate"
+          />
+          <div
+            class="field-error"
+            *ngIf="loginEmail.invalid && (loginEmail.touched || submitted)"
+          >
+            ⚠️
+            {{
+              loginEmail.errors?.['required']
+                ? ('AUTH.ERRORS.EMAIL_REQUIRED' | translate)
+                : ('AUTH.ERRORS.INVALID_EMAIL' | translate)
+            }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="form-group__header">
+            <label for="login-password">{{ 'AUTH.PASSWORD' | translate }} *</label>
+          </div>
+
+          <div class="password-field">
+            <input
+              id="login-password"
+              [type]="showPass ? 'text' : 'password'"
+              [(ngModel)]="loginData.Password"
+              name="password"
+              #loginPassword="ngModel"
+              required
+              minlength="8"
+              autocomplete="current-password"
+              placeholder="••••••••"
             />
-            <span class="badge"
-              [class.badge--rent]="p.listingType === 'ForRent'"
-              [class.badge--sale]="p.listingType === 'ForSale'">
-              {{ p.listingType === 'ForSale'
-                  ? ('PROPERTY.MODE_SALE' | translate)
-                  : ('PROPERTY.MODE_RENT' | translate) }}
-            </span>
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="showPass = !showPass"
+              [attr.aria-label]="'AUTH.TOGGLE_PASSWORD' | translate"
+            >
+              {{ showPass ? '🙈' : '👁️' }}
+            </button>
           </div>
-          <div class="prop-card__body">
-            <h3 class="prop-card__title line-clamp-2">{{ p.title || ('PROPERTY_LIST.NO_TITLE' | translate) }}</h3>
-            <p class="prop-card__location line-clamp-1">
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-                <path d="M6.5 1C4.57 1 3 2.57 3 4.5c0 2.63 3.5 7.5 3.5 7.5S10 7.13 10 4.5C10 2.57 8.43 1 6.5 1z" fill="var(--danger)" opacity=".8"/>
-              </svg>
-              {{ p.city || '' }}{{ p.region ? ', ' + p.region : '' }}
-            </p>
-            <div class="prop-card__specs">
-              <span *ngIf="p.rooms">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-                  <rect x="1" y="4" width="11" height="8" rx="1" stroke="currentColor" stroke-width="1.3"/>
-                  <path d="M1 7h11" stroke="currentColor" stroke-width="1.3"/>
-                </svg>
-                {{ p.rooms }}
-              </span>
-              <span *ngIf="p.area">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-                  <rect x="1" y="1" width="11" height="11" rx="1" stroke="currentColor" stroke-width="1.3"/>
-                </svg>
-                <!-- [FIX] كان: {{ p.area }} م² (وحدة ثابتة بالعربي) -->
-                {{ p.area }} {{ 'COMMON.area_unit' | translate }}
-              </span>
-            </div>
-            <p class="prop-card__price">
-              {{ (p.coldRent || p.warmRent || p.purchasePrice) | number }}
-              <span>{{ p.currencyCode || 'SYP' }}</span>
-            </p>
+
+          <div
+            class="field-error"
+            *ngIf="loginPassword.invalid && (loginPassword.touched || submitted)"
+          >
+            ⚠️
+            {{
+              loginPassword.errors?.['required']
+                ? ('AUTH.ERRORS.PASSWORD_REQUIRED' | translate)
+                : ('AUTH.ERRORS.PASSWORD_MIN' | translate)
+            }}
           </div>
-        </article>
-      </div>
-
-      <!-- Empty State -->
-      <div class="home-empty" *ngIf="Property.length === 0">
-        <div class="home-empty__icon">🏠</div>
-        <p>{{ 'HOME.no_properties' | translate }}</p>
-        <a routerLink="/property-form" class="btn btn--primary">
-          {{ 'HOME.be_first' | translate }}
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ── Tips Section ── -->
-  <section class="home-tips">
-    <div class="container">
-      <div class="tips-card">
-        <div class="tips-card__icon">💡</div>
-        <div>
-          <h3 class="tips-card__title">{{ 'HOME.tips' | translate }}</h3>
-          <ul class="tips-list">
-            <li>{{ 'HOME.tips_list.multi_images' | translate }}</li>
-            <li>{{ 'HOME.tips_list.click_details' | translate }}</li>
-            <li>{{ 'HOME.tips_list.use_nav' | translate }}</li>
-          </ul>
         </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- ── CTA: Add Your Property ── -->
-  <section class="home-cta">
-    <div class="container">
-      <div class="home-cta__inner">
-        <div class="home-cta__text">
-          <h2>{{ 'HOME.cta_title' | translate }}</h2>
-          <p>{{ 'HOME.cta_desc' | translate }}</p>
+        <button type="submit" class="auth-submit" [disabled]="loginForm.invalid || loading">
+          <span *ngIf="loading">⏳ {{ 'AUTH.LOADING' | translate }}</span>
+          <span *ngIf="!loading">{{ 'AUTH.LOGIN_BUTTON' | translate }}</span>
+        </button>
+
+        <p class="auth-switch">
+          {{ 'AUTH.NO_ACCOUNT' | translate }}
+          <button type="button" class="auth-switch__btn" (click)="toggleRegister()">
+            {{ 'AUTH.CREATE_ACCOUNT' | translate }}
+          </button>
+        </p>
+      </form>
+
+      <!-- ============ Register Form ============ -->
+      <form
+        *ngIf="showRegister"
+        class="auth-form"
+        (ngSubmit)="onRegister(regForm)"
+        #regForm="ngForm"
+        novalidate
+      >
+        <div class="form-group">
+          <label for="register-first-name">{{ 'AUTH.FIRST_NAME' | translate }} *</label>
+          <input
+            id="register-first-name"
+            type="text"
+            [(ngModel)]="registerData.FirstName"
+            name="firstName"
+            #registerFirstName="ngModel"
+            required
+            minlength="2"
+            autocomplete="given-name"
+            [placeholder]="'AUTH.FIRST_NAME_PLACEHOLDER' | translate"
+          />
+          <div
+            class="field-error"
+            *ngIf="registerFirstName.invalid && (registerFirstName.touched || submitted)"
+          >
+            ⚠️
+            {{
+              registerFirstName.errors?.['required']
+                ? ('AUTH.ERRORS.FIRST_NAME_REQUIRED' | translate)
+                : ('AUTH.ERRORS.FIRST_NAME_MIN' | translate)
+            }}
+          </div>
         </div>
-        <a routerLink="/property-form" class="btn btn--gold btn--lg">
-          {{ 'HOME.cta_button' | translate }}
-        </a>
-      </div>
+
+        <div class="form-group">
+          <label for="register-last-name">{{ 'AUTH.LAST_NAME' | translate }} *</label>
+          <input
+            id="register-last-name"
+            type="text"
+            [(ngModel)]="registerData.LastName"
+            name="lastName"
+            #registerLastName="ngModel"
+            required
+            minlength="2"
+            autocomplete="family-name"
+            [placeholder]="'AUTH.LAST_NAME_PLACEHOLDER' | translate"
+          />
+          <div
+            class="field-error"
+            *ngIf="registerLastName.invalid && (registerLastName.touched || submitted)"
+          >
+            ⚠️
+            {{
+              registerLastName.errors?.['required']
+                ? ('AUTH.ERRORS.LAST_NAME_REQUIRED' | translate)
+                : ('AUTH.ERRORS.LAST_NAME_MIN' | translate)
+            }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="register-email">{{ 'AUTH.EMAIL' | translate }} *</label>
+          <input
+            id="register-email"
+            type="email"
+            [(ngModel)]="registerData.Email"
+            name="emailReg"
+            #registerEmail="ngModel"
+            required
+            email
+            autocomplete="email"
+            [placeholder]="'AUTH.EMAIL_PLACEHOLDER' | translate"
+          />
+          <div
+            class="field-error"
+            *ngIf="registerEmail.invalid && (registerEmail.touched || submitted)"
+          >
+            ⚠️
+            {{
+              registerEmail.errors?.['required']
+                ? ('AUTH.ERRORS.EMAIL_REQUIRED' | translate)
+                : ('AUTH.ERRORS.INVALID_EMAIL' | translate)
+            }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="register-password">{{ 'AUTH.PASSWORD' | translate }} *</label>
+
+          <div class="password-field">
+            <input
+              id="register-password"
+              [type]="showPassReg ? 'text' : 'password'"
+              [(ngModel)]="registerData.Password"
+              name="passReg"
+              #registerPassword="ngModel"
+              required
+              minlength="8"
+              autocomplete="new-password"
+              placeholder="••••••••"
+            />
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="showPassReg = !showPassReg"
+              [attr.aria-label]="'AUTH.TOGGLE_PASSWORD' | translate"
+            >
+              {{ showPassReg ? '🙈' : '👁️' }}
+            </button>
+          </div>
+
+          <div
+            class="field-error"
+            *ngIf="registerPassword.invalid && (registerPassword.touched || submitted)"
+          >
+            ⚠️
+            {{
+              registerPassword.errors?.['required']
+                ? ('AUTH.ERRORS.PASSWORD_REQUIRED' | translate)
+                : ('AUTH.ERRORS.PASSWORD_MIN' | translate)
+            }}
+          </div>
+        </div>
+
+        <button type="submit" class="auth-submit" [disabled]="regForm.invalid || loading">
+          <span *ngIf="loading">⏳ {{ 'AUTH.LOADING' | translate }}</span>
+          <span *ngIf="!loading">{{ 'AUTH.REGISTER_BUTTON' | translate }}</span>
+        </button>
+
+        <p class="auth-switch">
+          {{ 'AUTH.HAS_ACCOUNT' | translate }}
+          <button type="button" class="auth-switch__btn" (click)="toggleRegister()">
+            {{ 'AUTH.GO_LOGIN' | translate }}
+          </button>
+        </p>
+      </form>
+
     </div>
-  </section>
+  </div>
 
 </div>
