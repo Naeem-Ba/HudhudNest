@@ -7,7 +7,15 @@
     "DELETE": "Löschen",
     "RETRY": "Erneut versuchen",
     "SAVING": "Speichern...",
-    "CHANGE_LANGUAGE": "Sprache ändern"
+    "CHANGE_LANGUAGE": "Sprache ändern",
+    "area_unit": "m²",
+    "CANCEL": "Abbrechen",
+    "DELETING": "Wird gelöscht...",
+    "DETAILS": "Details",
+    "EDIT": "Bearbeiten",
+    "NEXT": "Weiter",
+    "PAGE": "Seite",
+    "PREVIOUS": "Zurück"
   },
   "NAVBAR": {
     "HOME": "Home",
@@ -99,6 +107,9 @@
     }
   },
   "HOME": {
+    "stat_properties_value": "100+",
+    "stat_cities_value": "5+",
+    "stat_free_value": "Kostenlos",
     "title": "Finden Sie Ihr Traumhaus",
     "subtitle": "Wir bieten Ihnen die besten Wohnungen zum Mieten oder Kaufen",
     "btn_view": "Wohnungen ansehen",
@@ -110,7 +121,21 @@
       "use_nav": "Nutzen Sie die Navigation für schnelles Wechseln."
     },
     "view_all": "Alle anzeigen",
-    "latest_apartments": "Neueste Wohnungen"
+    "latest_apartments": "Neueste Wohnungen",
+    "hero_subtitle": "Ihr nächstes Zuhause beginnt hier",
+    "hero_title": "Finden Sie die Immobilie, die zu Ihrem Leben passt",
+    "hero_desc": "Entdecken Sie Immobilien zur Miete und zum Kauf mit klaren Angaben, Bildern und Standortinformationen.",
+    "browse_properties": "Immobilien entdecken",
+    "list_property": "Immobilie inserieren",
+    "stat_properties": "Immobilien",
+    "stat_cities": "Städte",
+    "stat_free": "Inserieren",
+    "latest_label": "Neu hinzugefügt",
+    "no_properties": "Noch keine Immobilien vorhanden.",
+    "be_first": "Erste Immobilie inserieren",
+    "cta_title": "Sie möchten eine Immobilie vermieten oder verkaufen?",
+    "cta_desc": "Erstellen Sie Ihr Inserat und erreichen Sie Menschen, die nach ihrem nächsten Zuhause suchen.",
+    "cta_button": "Immobilie inserieren"
   },
   "APARTMENTS": {
     "TITLE": "Verfügbare Wohnungen",
@@ -244,7 +269,8 @@
       "AVATAR_SUCCESS": "Profilbild erfolgreich aktualisiert.",
       "FILL_ALL_FIELDS": "Bitte korrigieren Sie die Pflichtfelder.",
       "DELETE_SUCCESS": "Konto gelöscht.",
-      "DELETE_ERROR": "Konto konnte nicht gelöscht werden."
+      "DELETE_ERROR": "Konto konnte nicht gelöscht werden.",
+      "AVATAR_COMING_SOON": "Das Hochladen des Profilbilds befindet sich in Entwicklung und wird bald verfügbar sein."
     },
     "MY_ADS": "Meine Anzeigen"
   },
@@ -260,7 +286,10 @@
     "SUBTITLE": "Klare Karten mit Bildern, Preisen und Kurzinformationen.",
     "EMPTY_TITLE": "Keine Ergebnisse",
     "EMPTY_MESSAGE": "In dieser Liste wurden keine Immobilien gefunden.",
-    "ROOMS": "Zimmer"
+    "ROOMS": "Zimmer",
+    "LOAD_ERROR": "Immobilien konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+    "NO_TITLE": "Immobilie ohne Titel",
+    "IMAGE_ALT": "Immobilienbild"
   },
   "FAVORITES": {
     "TITLE": "Favoriten",
@@ -334,8 +363,139 @@
       "SEND_OTP_FAILED": "Bestätigungscode konnte nicht gesendet werden.",
       "VERIFY_OTP_FAILED": "Der Code ist ungültig oder abgelaufen.",
       "INVALID_CREDENTIALS": "E-Mail oder Passwort ist falsch.",
-      "EMAIL_NO_SPACES": "E-Mail darf keine Leerzeichen enthalten."
+      "EMAIL_NO_SPACES": "E-Mail darf keine Leerzeichen enthalten.",
+      "PASSWORD_MISMATCH": "Passwort und Bestätigung stimmen nicht überein.",
+      "PHONE_REQUIRED": "Die Telefonnummer ist erforderlich.",
+      "PHONE_INVALID": "Ungültiges Telefonnummernformat.",
+      "FIRST_NAME_REQUIRED": "Der Vorname ist erforderlich.",
+      "FIRST_NAME_MIN": "Der Vorname muss mindestens 2 Zeichen lang sein.",
+      "LAST_NAME_REQUIRED": "Der Nachname ist erforderlich.",
+      "LAST_NAME_MIN": "Der Nachname muss mindestens 2 Zeichen lang sein.",
+      "EMAIL_ALREADY_EXISTS": "Diese E-Mail-Adresse ist bereits registriert.",
+      "SERVER_ERROR": "Ein Serverfehler ist aufgetreten. Bitte versuchen Sie es später erneut."
     },
-    "LOGIN_SUCCESS": "Erfolgreich angemeldet."
+    "LOGIN_SUCCESS": "Erfolgreich angemeldet.",
+    "CONFIRM_PASSWORD": "Passwort bestätigen",
+    "REMEMBER_ME": "Angemeldet bleiben",
+    "FORGOT_PASSWORD": "Passwort vergessen?",
+    "HAVE_ACCOUNT": "Sie haben bereits ein Konto?",
+    "BACK_TO_LOGIN": "Zurück zur Anmeldung",
+    "GOOGLE_LOGIN": "Mit Google fortfahren",
+    "APPLE_LOGIN": "Mit Apple fortfahren",
+    "PHONE_HINT": "Geben Sie bei Bedarf die Nummer mit Ländervorwahl ein",
+    "FIRST_NAME_PLACEHOLDER": "Vornamen eingeben",
+    "LAST_NAME_PLACEHOLDER": "Nachnamen eingeben"
+  },
+  "ERRORS": {
+    "EMAIL_REQUIRED": "E-Mail ist erforderlich.",
+    "INVALID_EMAIL": "Ungültige E-Mail-Adresse.",
+    "PASSWORD_REQUIRED": "Passwort ist erforderlich.",
+    "PASSWORD_MIN": "Das Passwort muss mindestens 8 Zeichen lang sein.",
+    "CONFIRM_REQUIRED": "Die Passwortbestätigung ist erforderlich.",
+    "PASSWORD_MISMATCH": "Passwort und Bestätigung stimmen nicht überein.",
+    "FIRST_NAME_REQUIRED": "Der Vorname ist erforderlich.",
+    "LAST_NAME_REQUIRED": "Der Nachname ist erforderlich.",
+    "NAME_MIN": "Der Name muss mindestens 2 Zeichen lang sein.",
+    "INVALID_CREDENTIALS": "E-Mail oder Passwort ist falsch.",
+    "TOO_MANY_REQUESTS": "Zu viele Versuche. Warten Sie eine Minute und versuchen Sie es erneut.",
+    "NETWORK_ERROR": "Verbindung zum Server nicht möglich. Prüfen Sie Ihre Internetverbindung.",
+    "LOGIN_FAILED": "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "EMAIL_TAKEN": "Diese E-Mail-Adresse wird bereits verwendet. Versuchen Sie, sich anzumelden.",
+    "FIX_FIELDS": "Bitte korrigieren Sie die rot markierten Felder.",
+    "REGISTER_FAILED": "Konto konnte nicht erstellt werden. Bitte versuchen Sie es erneut."
+  },
+  "STRENGTH": {
+    "WEAK": "Schwach",
+    "MEDIUM": "Mittel",
+    "STRONG": "Stark"
+  },
+  "PROPERTY_DETAIL": {
+    "NOT_FOUND_TITLE": "Immobilie nicht gefunden",
+    "NOT_FOUND_MESSAGE": "Die Immobilie wurde möglicherweise gelöscht oder der Link ist falsch.",
+    "LOAD_ERROR": "Immobiliendetails konnten nicht geladen werden.",
+    "NO_ID": "Immobilien-ID fehlt.",
+    "INFO": "Immobiliendetails",
+    "PRICE": "Preise",
+    "FEATURES": "Ausstattung",
+    "DESCRIPTION": "Beschreibung",
+    "CITY": "Stadt",
+    "STREET": "Straße",
+    "AREA": "Fläche",
+    "ROOMS": "Zimmeranzahl",
+    "FLOOR": "Etage",
+    "AVAILABLE_FROM": "Verfügbar ab",
+    "CONDITION": "Zustand",
+    "NO_FEATURES": "Keine zusätzlichen Ausstattungsmerkmale."
+  },
+  "PROPERTY": {
+    "MODE_RENT": "Zu vermieten",
+    "MODE_SALE": "Zu verkaufen",
+    "ROOMS": "Zimmer",
+    "FLOOR": "Etage",
+    "HAS_BALCONY": "Balkon",
+    "HAS_ELEVATOR": "Aufzug",
+    "HAS_PARKING": "Stellplatz",
+    "COLD_RENT": "Kaltmiete",
+    "WARM_RENT": "Warmmiete",
+    "ADDITIONAL_COSTS": "Nebenkosten",
+    "DEPOSIT": "Kaution",
+    "PURCHASE_PRICE": "Kaufpreis"
+  },
+  "PROPERTY_FORM": {
+    "LOAD_ERROR": "Immobiliendaten konnten nicht geladen werden.",
+    "SAVE_ERROR": "Immobilie konnte nicht gespeichert werden.",
+    "CREATE_SUCCESS": "Immobilie erfolgreich hinzugefügt.",
+    "UPDATE_SUCCESS": "Immobilie erfolgreich aktualisiert.",
+    "COLD_RENT_REQUIRED": "Für Mietimmobilien ist die Kaltmiete erforderlich.",
+    "PURCHASE_PRICE_REQUIRED": "Für zum Verkauf angebotene Immobilien ist der Kaufpreis erforderlich.",
+    "INVALID_FILE_TYPE": "Nicht unterstützter Dateityp. Erlaubt sind PNG, JPG und WebP.",
+    "FILE_TOO_LARGE": "Die Datei {{name}} ist größer als 5 MB.",
+    "IMAGE_UPLOAD_WARNING": "Die Immobilie wurde gespeichert, aber die Bilder konnten nicht hochgeladen werden.",
+    "COUNTRY": "Land",
+    "REGION": "Region",
+    "CURRENCY": "Währung"
+  },
+  "MY_LISTINGS": {
+    "TITLE": "Meine Anzeigen",
+    "ADD_NEW": "Neue Immobilie hinzufügen",
+    "EMPTY_TITLE": "Keine Anzeigen",
+    "EMPTY_MESSAGE": "Sie haben noch keine Immobilien hinzugefügt.",
+    "LOAD_ERROR": "Ihre Anzeigen konnten nicht geladen werden.",
+    "PUBLISHED": "Veröffentlicht",
+    "DRAFT": "Entwurf",
+    "CONFIRM_DELETE": "Möchten Sie diese Immobilie wirklich löschen?",
+    "DELETE_SUCCESS": "Immobilie erfolgreich gelöscht.",
+    "DELETE_ERROR": "Immobilie konnte nicht gelöscht werden.",
+    "EXPIRING_IN": "Läuft in {{days}} Tagen ab",
+    "CREATED_AT": "Hinzugefügt am"
+  },
+  "VISIT": {
+    "REQUEST": "Besichtigung anfragen",
+    "DATE": "Datum und Uhrzeit",
+    "NAME": "Name",
+    "PHONE": "Telefonnummer",
+    "NOTE": "Notizen",
+    "SUBMIT": "Anfrage senden",
+    "SUCCESS": "Besichtigungsanfrage erfolgreich gesendet.",
+    "ERROR": "Besichtigungsanfrage konnte nicht gesendet werden.",
+    "TOO_SOON": "Der Termin muss mindestens 2 Stunden in der Zukunft liegen.",
+    "TOO_FAR": "Termine können höchstens 90 Tage im Voraus gebucht werden.",
+    "NAME_REQUIRED": "Name ist erforderlich.",
+    "PHONE_REQUIRED": "Telefonnummer ist erforderlich.",
+    "INVALID_DATE": "Ungültiges Datum."
+  },
+  "REVIEW": {
+    "ADD": "Bewertung hinzufügen",
+    "SECTION_TITLE": "Bewertungen",
+    "RATING": "Bewertung",
+    "COMMENT": "Kommentar",
+    "SUBMIT": "Bewertung senden",
+    "SUCCESS": "Bewertung erfolgreich gesendet.",
+    "ERROR": "Bewertung konnte nicht gesendet werden.",
+    "NO_REVIEWS": "Noch keine Bewertungen.",
+    "REVIEWS": "Bewertungen",
+    "ANONYMOUS": "Anonymer Nutzer",
+    "PROPERTY_REQUIRED": "Immobilien-ID ist erforderlich.",
+    "RATING_RANGE": "Die Bewertung muss zwischen 1 und 5 liegen."
   }
 }

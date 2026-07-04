@@ -14,7 +14,8 @@
     "EDIT": "تعديل",
     "NEXT": "التالي",
     "PAGE": "الصفحة",
-    "PREVIOUS": "السابق"
+    "PREVIOUS": "السابق",
+    "area_unit": "م²"
   },
   "NAVBAR": {
     "HOME": "الرئيسية",
@@ -96,7 +97,7 @@
       "RESET_FAILED": "تعذر تحديث كلمة المرور.",
       "SEND_OTP_FAILED": "تعذر إرسال رمز التحقق.",
       "VERIFY_OTP_FAILED": "الرمز غير صحيح أو منتهي الصلاحية.",
-            "FIRST_NAME_REQUIRED": "الاسم الأول مطلوب",
+      "FIRST_NAME_REQUIRED": "الاسم الأول مطلوب",
       "FIRST_NAME_MIN": "يجب أن يكون الاسم الأول من حرفين على الأقل",
       "LAST_NAME_REQUIRED": "الكنية مطلوبة",
       "LAST_NAME_MIN": "يجب أن تكون الكنية من حرفين على الأقل",
@@ -105,8 +106,7 @@
     },
     "FIRST_NAME_PLACEHOLDER": "أدخل الاسم الأول",
     "LAST_NAME_PLACEHOLDER": "أدخل الكنية"
-    },
-  
+  },
   "ERRORS": {
     "EMAIL_REQUIRED": "البريد الإلكتروني مطلوب.",
     "INVALID_EMAIL": "صيغة البريد الإلكتروني غير صحيحة.",
@@ -131,6 +131,9 @@
     "STRONG": "قوية"
   },
   "HOME": {
+    "stat_properties_value": "+١٠٠",
+    "stat_cities_value": "٥+",
+    "stat_free_value": "مجاني",
     "title": "اعثر على منزلك المناسب",
     "subtitle": "نساعدك في تصفح عقارات للبيع والإيجار بسهولة ووضوح",
     "btn_view": "عرض العقارات",
@@ -142,7 +145,21 @@
       "use_nav": "استخدم شريط التنقل للوصول السريع."
     },
     "view_all": "عرض الكل",
-    "latest_apartments": "أحدث العقارات"
+    "latest_apartments": "أحدث العقارات",
+    "hero_subtitle": "طريقك الأسهل إلى عقارك القادم",
+    "hero_title": "اعثر على العقار الذي يناسبك",
+    "hero_desc": "تصفح عقارات للبيع والإيجار مع تفاصيل واضحة وصور ومعلومات عن الموقع.",
+    "browse_properties": "تصفح العقارات",
+    "list_property": "أضف عقارك",
+    "stat_properties": "عقار",
+    "stat_cities": "مدن",
+    "stat_free": "نشر الإعلان",
+    "latest_label": "أضيفت حديثًا",
+    "no_properties": "لا توجد عقارات مضافة حتى الآن.",
+    "be_first": "أضف أول عقار",
+    "cta_title": "لديك عقار للبيع أو الإيجار؟",
+    "cta_desc": "أنشئ إعلانك واعرض عقارك أمام الباحثين عن منزلهم القادم.",
+    "cta_button": "أضف عقارك الآن"
   },
   "KONTAKT": {
     "title": "تواصل معنا",
@@ -300,7 +317,10 @@
     "validation_purchase_price": "سعر البيع يجب أن يكون أكبر من صفر.",
     "validation_rooms": "عدد الغرف يجب أن يكون بين 1 و50.",
     "validation_area": "المساحة يجب أن تكون أكبر من 10 م².",
-    "validation_location": "خط العرض والطول يجب إدخالهما معاً."
+    "validation_location": "خط العرض والطول يجب إدخالهما معاً.",
+    "select_location": "تحديد الموقع",
+    "map_instruction": "حدد موقع العقار على الخريطة",
+    "validation_rent_sale": "في حال العرض للبيع والإيجار معًا، يجب تحديد الإيجار وسعر البيع."
   },
   "MY_LISTINGS": {
     "TITLE": "إعلاناتي",
@@ -378,7 +398,8 @@
       "AVATAR_COMING_SOON": "رفع صورة الحساب قيد التطوير وسيكون متاحاً قريباً.",
       "FILL_ALL_FIELDS": "يرجى تصحيح الحقول المطلوبة.",
       "DELETE_SUCCESS": "تم حذف الحساب.",
-      "DELETE_ERROR": "تعذر حذف الحساب."
+      "DELETE_ERROR": "تعذر حذف الحساب.",
+      "PASS_LENGTH": "يجب أن تتكون كلمة المرور الجديدة من 6 أحرف على الأقل."
     }
   },
   "VISIT": {
@@ -415,5 +436,66 @@
     "FIX_FIELDS": "يرجى تصحيح الحقول المحددة.",
     "IMAGE_TYPE": "نوع الصورة غير مدعوم. استخدم PNG أو JPG أو WebP.",
     "IMAGE_SIZE": "الصورة كبيرة جداً. الحد الأقصى 5 ميغابايت."
+  },
+  "ENUM": {
+    "STADT": {
+      "DAMASKUS": "دمشق",
+      "ALEPPO": "حلب",
+      "HOMS": "حمص",
+      "LATTAKIA": "اللاذقية",
+      "HAMA": "حماة",
+      "DEIREZZOR": "دير الزور",
+      "RAQQA": "الرقة",
+      "IDLIB": "إدلب",
+      "HASAKAH": "الحسكة",
+      "QAMISHLI": "القامشلي",
+      "DARAA": "درعا",
+      "SWEIDA": "السويداء",
+      "QUNEITRA": "القنيطرة",
+      "TARTUS": "طرطوس"
+    },
+    "ZUSTAND": {
+      "UNKNOWN": "غير معروف",
+      "NEW": "جديد",
+      "RENOVATED": "مجدّد",
+      "GOOD_CONDITION": "حالة جيدة",
+      "NEEDS_RENOVATION": "بحاجة إلى ترميم"
+    },
+    "STATUS": {
+      "AVAILABLE": "متاح",
+      "RESERVED": "محجوز",
+      "SOLD": "مباع",
+      "RENTED": "مؤجّر",
+      "ARCHIVED": "مؤرشف"
+    },
+    "ENERGIEAUSWEISTYP": {
+      "NOT_AVAILABLE": "غير متوفر",
+      "BY_DEMAND": "حسب الطلب",
+      "BY_CONSUMPTION": "حسب الاستهلاك"
+    }
+  },
+  "wohnung_detail": {
+    "title": "تفاصيل العقار",
+    "back": "العودة إلى القائمة",
+    "ort": "المدينة",
+    "adresse": "العنوان",
+    "groesse": "المساحة",
+    "Unit_of_measurement": "{{ value }} (م²)",
+    "zimmer": "الغرف",
+    "etage": "الطابق",
+    "preis": "السعر",
+    "nebenkosten": "التكاليف الإضافية",
+    "kaution": "التأمين",
+    "frei_ab": "متاح من",
+    "beschreibung": "الوصف",
+    "ausstattung": "المميزات",
+    "balkon": "شرفة",
+    "aufzug": "مصعد",
+    "stellplatz": "موقف سيارة",
+    "LOCATION": "موقع العقار",
+    "not_found_title": "العقار غير موجود",
+    "not_found_message": "لم يتم العثور على هذا العقار أو تمت إزالته.",
+    "no_extras": "لم يتم تحديد مميزات إضافية.",
+    "no_description": "لا يوجد وصف متاح."
   }
 }

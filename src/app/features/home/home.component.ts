@@ -1,51 +1,56 @@
-﻿// =====================================================================
-// ✅ FIX — home.component.ts
-//
-// الإصلاح: إضافة takeUntilDestroyed لإلغاء الـ Subscription
-//          تلقائياً عند إزالة Component من الشاشة
-//
-// المسار: src/app/home/home.component.ts
-// =====================================================================
-
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+﻿import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { TranslateModule } from '@ngx-translate/core';
 
 import { PropertyApiService } from '../../core/api/property-api.service';
-import { Property } from '../../core/models/property.model';
-import { EnumTranslatePipe } from '../../pipes/enum-translate.pipe';
-import { TranslateModule } from '@ngx-translate/core';
+import type { Property } from '../../core/models/property.model';
+import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, CommonModule, TranslateModule],
+  imports: [
+    CommonModule,
+    RouterLink,
+    TranslateModule,
+    ImageFallbackDirective
+  ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
 
-  // ✅ inject() الحديث بدلاً من constructor
-  private readonly PropertyApiService = inject(PropertyApiService);
-
-  // ✅ DestroyRef يُخبر takeUntilDestroyed متى يُلغي الـ subscription
+  private readonly propertyApiService = inject(PropertyApiService);
   private readonly destroyRef = inject(DestroyRef);
 
-  Property: Property[] = [];
+  properties: Property[] = [];
 
   ngOnInit(): void {
-    this.PropertyApiService.getProperties()
+    this.propertyApiService
+      .getProperties()
       .pipe(
-        takeUntilDestroyed(this.destroyRef)  // ✅ يُلغى تلقائياً عند إزالة الـ Component
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
         next: data => {
-          this.Property = [...data]
-            .sort((a, b) => this.dateValue(b.createdAt) - this.dateValue(a.createdAt))
+          this.properties = [...data]
+            .sort(
+              (a, b) =>
+                this.dateValue(b.createdAt) -
+                this.dateValue(a.createdAt)
+            )
             .slice(0, 6);
         },
-        error: err => console.error('Error fetching latest properties', err)
+        error: err => {
+          console.error(
+            'Error fetching latest properties',
+            err
+          );
+
+          this.properties = [];
+        }
       });
   }
 
@@ -55,6 +60,7 @@ export class HomeComponent implements OnInit {
     }
 
     const time = new Date(value).getTime();
+
     return Number.isFinite(time) ? time : 0;
   }
 }
