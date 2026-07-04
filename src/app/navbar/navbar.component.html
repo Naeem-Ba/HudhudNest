@@ -1,8 +1,12 @@
-<header class="navbar" [class.navbar--scrolled]="false" role="banner">
+<header class="navbar" role="banner">
   <div class="navbar__inner">
 
-    <!-- ── Logo ── -->
-    <a routerLink="/home" class="navbar__brand" aria-label="PropertyApp — الرئيسية">
+    <!-- Logo -->
+    <a
+      routerLink="/home"
+      class="navbar__brand"
+      aria-label="PropertyApp"
+    >
       <img
         src="/images/horizontal-logo.png"
         alt="PropertyApp"
@@ -11,85 +15,186 @@
       />
     </a>
 
-    <!-- ── Desktop Nav ── -->
-    <nav class="navbar__nav" role="navigation" aria-label="التنقل الرئيسي">
-      <a routerLink="/home"
-         routerLinkActive="navbar__link--active"
-         [routerLinkActiveOptions]="{ exact: true }"
-         class="navbar__link">
+    <!-- Desktop Navigation -->
+    <nav
+      class="navbar__nav"
+      role="navigation"
+      aria-label="التنقل الرئيسي"
+    >
+      <a
+        routerLink="/home"
+        routerLinkActive="navbar__link--active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="navbar__link"
+      >
         {{ 'NAVBAR.HOME' | translate }}
       </a>
-      <a routerLink="/wohnungen"
-         routerLinkActive="navbar__link--active"
-         class="navbar__link">
+
+      <a
+        routerLink="/wohnungen"
+        routerLinkActive="navbar__link--active"
+        class="navbar__link"
+      >
         {{ 'NAVBAR.WOHNUNGEN' | translate }}
       </a>
-      <a *ngIf="isLoggedIn$ | async"
-         routerLink="/property-form"
-         routerLinkActive="navbar__link--active"
-         class="navbar__link navbar__link--add">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+
+      <a
+        *ngIf="isLoggedIn$ | async"
+        routerLink="/property-form"
+        routerLinkActive="navbar__link--active"
+        class="navbar__link navbar__link--add"
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M7 1v12M1 7h12"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
         </svg>
+
         {{ 'NAVBAR.ADD' | translate }}
       </a>
-      <a *ngIf="!(isAdmin$ | async)"
-         routerLink="/kontakt"
-         routerLinkActive="navbar__link--active"
-         [routerLinkActiveOptions]="{ exact: true }"
-         class="navbar__link">
+
+      <a
+        *ngIf="!(isAdmin$ | async)"
+        routerLink="/kontakt"
+        routerLinkActive="navbar__link--active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="navbar__link"
+      >
         {{ 'NAVBAR.CONTACT' | translate }}
       </a>
-      <a *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
-         routerLink="/admin/messages"
-         routerLinkActive="navbar__link--active"
-         class="navbar__link">
+
+      <a
+        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
+        routerLink="/admin/messages"
+        routerLinkActive="navbar__link--active"
+        class="navbar__link"
+      >
         {{ 'NAVBAR.MESSAGES' | translate }}
       </a>
     </nav>
 
-    <!-- ── Right Actions ── -->
+    <!-- Actions -->
     <div class="navbar__actions">
 
-      <!-- Language Selector (Desktop) -->
-      <div #langRef class="lang-dropdown" [class.lang-dropdown--open]="langMenuOpen">
+      <!-- Desktop Language Selector -->
+      <div
+        #langRef
+        class="lang-dropdown"
+        [class.lang-dropdown--open]="langMenuOpen"
+      >
         <button
           type="button"
           class="lang-btn"
           (click)="toggleLangMenu($event)"
           [attr.aria-expanded]="langMenuOpen"
+          aria-haspopup="menu"
           aria-label="تغيير اللغة"
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M8 1c-1.5 2-2.5 4-2.5 7s1 5 2.5 7M8 1c1.5 2 2.5 4 2.5 7s-1 5-2.5 7M1 8h14" stroke="currentColor" stroke-width="1.25"/>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            aria-hidden="true"
+          >
+            <circle
+              cx="8"
+              cy="8"
+              r="7"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+
+            <path
+              d="M8 1c-1.5 2-2.5 4-2.5 7s1 5 2.5 7M8 1c1.5 2 2.5 4 2.5 7s-1 5-2.5 7M1 8h14"
+              stroke="currentColor"
+              stroke-width="1.25"
+            />
           </svg>
+
           <span>{{ currentLang.toUpperCase() }}</span>
-          <svg class="lang-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-            <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+
+          <svg
+            class="lang-chevron"
+            width="12"
+            height="12"
+            viewBox="0 0 12 12"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M2 4l4 4 4-4"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
           </svg>
         </button>
-        <ul class="lang-menu" role="menu" aria-label="اختر اللغة">
-          <li role="menuitem" (click)="changeLang('ar')" [class.lang-menu__item--active]="currentLang === 'ar'">
-            <span>🇸🇾</span> العربية
+
+        <!-- القائمة لا تُنشأ إلا عند الفتح -->
+        <ul
+          *ngIf="langMenuOpen"
+          class="lang-menu"
+          role="menu"
+          [attr.aria-label]="'NAVBAR.SELECT_LANGUAGE' | translate"
+        >
+          <li
+            role="menuitem"
+            tabindex="0"
+            (click)="changeLang('ar')"
+            (keydown.enter)="changeLang('ar')"
+            [class.lang-menu__item--active]="currentLang === 'ar'"
+          >
+            <span aria-hidden="true">🇸🇾</span>
+            <span>العربية</span>
           </li>
-          <li role="menuitem" (click)="changeLang('en')" [class.lang-menu__item--active]="currentLang === 'en'">
-            <span>🇬🇧</span> English
+
+          <li
+            role="menuitem"
+            tabindex="0"
+            (click)="changeLang('en')"
+            (keydown.enter)="changeLang('en')"
+            [class.lang-menu__item--active]="currentLang === 'en'"
+          >
+            <span aria-hidden="true">🇬🇧</span>
+            <span>English</span>
           </li>
-          <li role="menuitem" (click)="changeLang('de')" [class.lang-menu__item--active]="currentLang === 'de'">
-            <span>🇩🇪</span> Deutsch
+
+          <li
+            role="menuitem"
+            tabindex="0"
+            (click)="changeLang('de')"
+            (keydown.enter)="changeLang('de')"
+            [class.lang-menu__item--active]="currentLang === 'de'"
+          >
+            <span aria-hidden="true">🇩🇪</span>
+            <span>Deutsch</span>
           </li>
         </ul>
       </div>
 
-      <!-- User Account / Login -->
+      <!-- Account / Login -->
       <ng-container *ngIf="isLoggedIn$ | async; else loginButton">
-        <div #accountRef class="account" [class.account--open]="dropdownOpen">
+        <div
+          #accountRef
+          class="account"
+          [class.account--open]="dropdownOpen"
+        >
           <button
             type="button"
             class="account__trigger"
             (click)="toggleDropdown($event)"
             [attr.aria-expanded]="dropdownOpen"
+            aria-haspopup="menu"
             aria-label="قائمة المستخدم"
           >
             <img
@@ -100,42 +205,140 @@
               appImageFallback="/images/default-avatar.svg"
               (error)="useFallbackImage()"
             />
-            <span *ngIf="!hasCustomImage" class="account__avatar account__avatar--letter">
+
+            <span
+              *ngIf="!hasCustomImage"
+              class="account__avatar account__avatar--letter"
+            >
               {{ avatarLetter }}
             </span>
-            <svg class="account__chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-              <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+
+            <svg
+              class="account__chevron"
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M2 4l4 4 4-4"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
             </svg>
           </button>
 
-          <!-- Dropdown -->
-          <div class="account__dropdown" role="menu" aria-label="خيارات الحساب">
+          <!-- القائمة لا تُنشأ إلا عند الفتح -->
+          <div
+            *ngIf="dropdownOpen"
+            class="account__dropdown"
+            role="menu"
+            aria-label="خيارات الحساب"
+          >
             <div class="account__user-info">
-              <span class="account__avatar account__avatar--lg account__avatar--letter">{{ avatarLetter }}</span>
-              <div>
+              <span
+                class="account__avatar account__avatar--lg account__avatar--letter"
+                aria-hidden="true"
+              >
+                {{ avatarLetter }}
+              </span>
+
+              <div class="account__user-copy">
                 <p class="account__email">{{ userEmail }}</p>
               </div>
             </div>
+
             <div class="account__divider"></div>
-            <a routerLink="/profile" class="account__item" role="menuitem" (click)="dropdownOpen = false">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/>
-                <path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+
+            <a
+              routerLink="/profile"
+              class="account__item"
+              role="menuitem"
+              (click)="closeAccountMenu()"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                aria-hidden="true"
+              >
+                <circle
+                  cx="8"
+                  cy="5"
+                  r="3"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+
+                <path
+                  d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
               </svg>
+
               {{ 'PROFILE.TITLE' | translate }}
             </a>
-            <a routerLink="/my-listings" class="account__item" role="menuitem" (click)="dropdownOpen = false">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M2 4h12M2 8h9M2 12h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+
+            <a
+              routerLink="/my-listings"
+              class="account__item"
+              role="menuitem"
+              (click)="closeAccountMenu()"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M2 4h12M2 8h9M2 12h6"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
               </svg>
+
               {{ 'PROFILE.MY_ADS' | translate }}
             </a>
+
             <div class="account__divider"></div>
-            <button type="button" class="account__item account__item--danger" role="menuitem" (click)="logout()">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M10 3h3a1 1 0 011 1v8a1 1 0 01-1 1h-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                <path d="M7 10l3-3-3-3M10 8H2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+            <button
+              type="button"
+              class="account__item account__item--danger"
+              role="menuitem"
+              (click)="logout()"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M10 3h3a1 1 0 011 1v8a1 1 0 01-1 1h-3"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+
+                <path
+                  d="M7 10l3-3-3-3M10 8H2"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </svg>
+
               {{ 'NAVBAR.LOGOUT' | translate }}
             </button>
           </div>
@@ -143,7 +346,10 @@
       </ng-container>
 
       <ng-template #loginButton>
-        <a routerLink="/auth/login" class="btn btn--primary btn--sm">
+        <a
+          routerLink="/auth/login"
+          class="btn btn--primary btn--sm"
+        >
           {{ 'NAVBAR.LOGIN' | translate }}
         </a>
       </ng-template>
@@ -155,79 +361,168 @@
         class="mobile-toggle"
         (click)="toggleMobileMenu($event)"
         [attr.aria-expanded]="mobileMenuOpen"
+        aria-controls="mobile-navigation-drawer"
         aria-label="فتح القائمة"
       >
-        <span class="mobile-toggle__bar" [class.mobile-toggle__bar--top]="mobileMenuOpen"></span>
-        <span class="mobile-toggle__bar" [class.mobile-toggle__bar--mid]="mobileMenuOpen"></span>
-        <span class="mobile-toggle__bar" [class.mobile-toggle__bar--bot]="mobileMenuOpen"></span>
+        <span
+          class="mobile-toggle__bar"
+          [class.mobile-toggle__bar--top]="mobileMenuOpen"
+        ></span>
+
+        <span
+          class="mobile-toggle__bar"
+          [class.mobile-toggle__bar--mid]="mobileMenuOpen"
+        ></span>
+
+        <span
+          class="mobile-toggle__bar"
+          [class.mobile-toggle__bar--bot]="mobileMenuOpen"
+        ></span>
       </button>
     </div>
   </div>
 
-  <!-- ── Mobile Drawer ── -->
-  <div #mobileDrawerRef class="mobile-drawer" [class.mobile-drawer--open]="mobileMenuOpen" role="dialog" aria-modal="true" aria-label="القائمة الجانبية">
-    <nav class="mobile-drawer__nav" role="navigation">
-      <a routerLink="/home" class="mobile-drawer__link" (click)="mobileMenuOpen = false">
+  <!-- Mobile Drawer -->
+  <div
+    #mobileDrawerRef
+    id="mobile-navigation-drawer"
+    class="mobile-drawer"
+    [class.mobile-drawer--open]="mobileMenuOpen"
+    [attr.aria-hidden]="!mobileMenuOpen"
+  >
+    <nav
+      class="mobile-drawer__nav"
+      role="navigation"
+      aria-label="التنقل الرئيسي"
+    >
+      <a
+        routerLink="/home"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
         {{ 'NAVBAR.HOME' | translate }}
       </a>
-      <a routerLink="/wohnungen" class="mobile-drawer__link" (click)="mobileMenuOpen = false">
+
+      <a
+        routerLink="/wohnungen"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
         {{ 'NAVBAR.WOHNUNGEN' | translate }}
       </a>
-      <a *ngIf="isLoggedIn$ | async"
-         routerLink="/property-form"
-         class="mobile-drawer__link mobile-drawer__link--highlight"
-         (click)="mobileMenuOpen = false">
-        ➕ {{ 'NAVBAR.ADD' | translate }}
+
+      <a
+        *ngIf="isLoggedIn$ | async"
+        routerLink="/property-form"
+        class="mobile-drawer__link mobile-drawer__link--highlight"
+        (click)="closeMobileMenu()"
+      >
+        <span aria-hidden="true">➕</span>
+        {{ 'NAVBAR.ADD' | translate }}
       </a>
-      <a *ngIf="!(isAdmin$ | async)"
-         routerLink="/kontakt"
-         class="mobile-drawer__link"
-         (click)="mobileMenuOpen = false">
+
+      <a
+        *ngIf="!(isAdmin$ | async)"
+        routerLink="/kontakt"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
         {{ 'NAVBAR.CONTACT' | translate }}
       </a>
-      <a *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
-         routerLink="/admin/messages"
-         class="mobile-drawer__link"
-         (click)="mobileMenuOpen = false">
+
+      <a
+        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
+        routerLink="/admin/messages"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
         {{ 'NAVBAR.MESSAGES' | translate }}
       </a>
 
       <!-- Mobile User Section -->
       <ng-container *ngIf="isLoggedIn$ | async; else mobileLoginBtn">
         <div class="mobile-drawer__divider"></div>
-        <a routerLink="/profile" class="mobile-drawer__link" (click)="mobileMenuOpen = false">
+
+        <a
+          routerLink="/profile"
+          class="mobile-drawer__link"
+          (click)="closeMobileMenu()"
+        >
           {{ 'PROFILE.TITLE' | translate }}
         </a>
-        <a routerLink="/my-listings" class="mobile-drawer__link" (click)="mobileMenuOpen = false">
+
+        <a
+          routerLink="/my-listings"
+          class="mobile-drawer__link"
+          (click)="closeMobileMenu()"
+        >
           {{ 'PROFILE.MY_ADS' | translate }}
         </a>
-        <button type="button" class="mobile-drawer__link mobile-drawer__link--danger" (click)="logout()">
+
+        <button
+          type="button"
+          class="mobile-drawer__link mobile-drawer__link--danger"
+          (click)="logout()"
+        >
           {{ 'NAVBAR.LOGOUT' | translate }}
         </button>
       </ng-container>
+
       <ng-template #mobileLoginBtn>
         <div class="mobile-drawer__divider"></div>
-        <a routerLink="/auth/login" class="btn btn--primary btn--full" (click)="mobileMenuOpen = false">
+
+        <a
+          routerLink="/auth/login"
+          class="btn btn--primary btn--full"
+          (click)="closeMobileMenu()"
+        >
           {{ 'NAVBAR.LOGIN' | translate }}
         </a>
       </ng-template>
 
-      <!-- Mobile Language -->
+      <!-- Mobile Language Selector -->
       <div class="mobile-drawer__divider"></div>
-      <p class="mobile-drawer__label">{{ 'NAVBAR.SELECT_LANGUAGE' | translate }}</p>
+
+      <p class="mobile-drawer__label">
+        {{ 'NAVBAR.SELECT_LANGUAGE' | translate }}
+      </p>
+
       <div class="mobile-lang">
-        <button type="button" class="mobile-lang__btn" [class.mobile-lang__btn--active]="currentLang === 'ar'" (click)="changeLang('ar')">العربية</button>
-        <button type="button" class="mobile-lang__btn" [class.mobile-lang__btn--active]="currentLang === 'en'" (click)="changeLang('en')">English</button>
-        <button type="button" class="mobile-lang__btn" [class.mobile-lang__btn--active]="currentLang === 'de'" (click)="changeLang('de')">Deutsch</button>
+        <button
+          type="button"
+          class="mobile-lang__btn"
+          [class.mobile-lang__btn--active]="currentLang === 'ar'"
+          (click)="changeLang('ar')"
+        >
+          العربية
+        </button>
+
+        <button
+          type="button"
+          class="mobile-lang__btn"
+          [class.mobile-lang__btn--active]="currentLang === 'en'"
+          (click)="changeLang('en')"
+        >
+          English
+        </button>
+
+        <button
+          type="button"
+          class="mobile-lang__btn"
+          [class.mobile-lang__btn--active]="currentLang === 'de'"
+          (click)="changeLang('de')"
+        >
+          Deutsch
+        </button>
       </div>
     </nav>
   </div>
 </header>
 
-<!-- Mobile overlay -->
+<!-- Mobile Overlay -->
 <div
   class="mobile-overlay"
   [class.mobile-overlay--visible]="mobileMenuOpen"
-  (click)="mobileMenuOpen = false"
+  (click)="closeMobileMenu()"
   aria-hidden="true"
 ></div>
