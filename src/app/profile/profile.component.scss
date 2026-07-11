@@ -1,3 +1,5 @@
+@use '../../styles/breakpoints' as bp;
+
 $primary-color: #2563eb;
 $danger-color: #dc2626;
 $text-main: #1e293b;
@@ -5,6 +7,7 @@ $bg-light: #f8fafc;
 
 .profile-wrapper {
   min-height: calc(100vh - 90px);
+  min-height: calc(100dvh - 90px);
   background-color: $bg-light;
   display: flex;
   align-items: center;
@@ -311,7 +314,7 @@ $bg-light: #f8fafc;
   }
 }
 
-@media (max-width: 520px) {
+@include bp.mobile {
   .profile-wrapper {
     align-items: flex-start;
   }

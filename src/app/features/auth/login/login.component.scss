@@ -1,3 +1,5 @@
+@use '../../../../styles/breakpoints' as bp;
+
 /* ================================================================
    login.component.scss — Modern Auth Layout (fixed & completed)
    ================================================================ */
@@ -7,8 +9,9 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   min-height: calc(100vh - var(--navbar-height, 68px));
+  min-height: calc(100dvh - var(--navbar-height, 68px));
 
-  @media (max-width: 900px) {
+  @include bp.tablet {
     /* On mobile the brand/photo panel is hidden (not stacked below the form) */
     grid-template-columns: 1fr;
   }
@@ -19,7 +22,7 @@
   position: relative;
   overflow: hidden;
 
-  @media (max-width: 900px) {
+  @include bp.tablet {
     display: none;
   }
 
@@ -95,7 +98,7 @@
   display: none;
   justify-content: center;
 
-  @media (max-width: 900px) {
+  @include bp.tablet {
     display: flex;
     margin-bottom: .5rem;
 
@@ -289,7 +292,7 @@
   grid-template-columns: 1fr 1fr;
   gap: .75rem;
 
-  @media (max-width: 400px) {
+  @include bp.mobile {
     grid-template-columns: 1fr;
   }
 }
@@ -368,4 +371,24 @@
     text-decoration: underline;
     text-underline-offset: 2px;
   }
+}
+
+@include bp.tablet {
+  .auth-layout {
+    min-height: calc(100vh - var(--navbar-height, 68px));
+    min-height: calc(100dvh - var(--navbar-height, 68px));
+  }
+
+  .auth-panel {
+    align-items: flex-start;
+    padding-top: max(1.5rem, var(--safe-area-inset-top, env(safe-area-inset-top, 0px)));
+    padding-bottom: max(1.5rem, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
+    scroll-padding-bottom: 35dvh;
+  }
+}
+
+@include bp.mobile {
+  .auth-panel { padding-inline: 1rem; }
+  .auth-form { padding: 1.25rem 1rem; }
+  .form-group input { font-size: 16px; }
 }
