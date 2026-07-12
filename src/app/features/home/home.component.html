@@ -68,7 +68,9 @@
         >
           <div class="prop-card__image">
             <img
-              [src]="p.images?.[0]?.url || p.mainImageUrl || '/images/no-image.svg'"
+              [src]="propertyImageUrl(p)"
+              [attr.srcset]="propertyImageSrcSet(p)"
+              sizes="(max-width: 640px) calc(100vw - 2rem), (max-width: 980px) calc(50vw - 2rem), 360px"
               [alt]="p.title || ''"
               loading="lazy"
               appImageFallback="/images/no-image.svg"

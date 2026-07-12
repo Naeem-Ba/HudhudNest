@@ -34,7 +34,7 @@
           </svg>
           {{ 'PROPERTY_LIST.FILTERS' | translate }}
         </h2>
-        <button type="button" class="filter-sidebar__close" (click)="filtersOpen = false" aria-label="إغلاق">✕</button>
+        <button type="button" class="filter-sidebar__close" (click)="closeFilters()" aria-label="إغلاق">✕</button>
       </div>
 
       <form class="filter-form" (ngSubmit)="applyFilters()" novalidate>
@@ -139,14 +139,14 @@
     </aside>
 
     <!-- ── Mobile Overlay ── -->
-    <div class="filter-overlay" [class.filter-overlay--visible]="filtersOpen" (click)="filtersOpen = false" aria-hidden="true"></div>
+    <div class="filter-overlay" [class.filter-overlay--visible]="filtersOpen" (click)="closeFilters()" aria-hidden="true"></div>
 
     <!-- ── Main Content ── -->
     <main class="prop-list-main">
 
       <!-- Mobile Filter Bar -->
       <div class="mobile-filter-bar">
-        <button type="button" class="btn btn--outline btn--sm" (click)="filtersOpen = true">
+        <button type="button" class="btn btn--outline btn--sm" (click)="openFilters()">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path d="M1 4h14M4 8h8M7 12h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
@@ -195,7 +195,9 @@
           <!-- Image -->
           <div class="property-card__image">
             <img
-              [src]="getMainImage(property)"
+              [src]="getResponsiveImage(property)"
+              [attr.srcset]="getResponsiveSrcSet(property)"
+              sizes="(max-width: 640px) calc(100vw - 2rem), (max-width: 980px) calc(50vw - 2rem), 360px"
               [alt]="property.title || ''"
               loading="lazy"
               appImageFallback="/images/no-image.svg"

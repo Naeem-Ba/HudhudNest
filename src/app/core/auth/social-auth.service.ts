@@ -1,5 +1,29 @@
+// =====================================================================
+// [FIX-1 / 🔴 حرج] Google One Tap لا يظهر دائماً (cooldown، حظر كوكيز
+// الطرف الثالث، وضع التصفح الخفي...). الكود القديم كان يستدعي
+// prompt() بدون callback إشعار، فإذا لم تظهر النافذة، لا observer.next
+// ولا observer.error يُستدعيان أبداً — الـ Observable يُعلَّق للأبد
+// و loading تبقى true إلى ما لا نهاية في login.component.ts.
+//
+// الحل المزدوج:
+//   (أ) تمرير callback حقيقي لـ prompt() يتحقق من
+//       isNotDisplayed()/isSkippedMoment()/isDismissedMoment()
+//       ويُطلق observer.error فوراً بدل الصمت.
+//   (ب) شبكة أمان إضافية: timeout صريح على مستوى الـ Observable
+//       نفسه (60 ثانية) يغطي أي حالة لم يُغطّها (أ) — مثل تعليق
+//       شبكي داخل استدعاء الـ Backend نفسه.
+//
+// [FIX-2 / 🟡 متوسط] كل رسائل الخطأ كانت نصوصاً إنجليزية مثبّتة خارج
+// نظام ngx-translate بالكامل (نفس نمط الخطأ المتكرر في هذا المشروع:
+// home.component.html للأرقام، الآن هنا لرسائل الخطأ). تم حقن
+// TranslateService واستبدال كل نص حرفي بمفتاح ترجمة عبر translate.instant().
+// أضف مفاتيح AUTH.ERRORS الجديدة الموضحة في تعليق النهاية إلى
+// ar.json/en.json/de.json.
+// =====================================================================
 import { Injectable } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
+import { timeout } from 'rxjs/operators';
+import { TranslateService } from '@ngx-translate/core';
 
 import { environment } from '../../../environments/environment';
 import { AuthApiService } from './auth-api.service';
@@ -16,7 +40,10 @@ declare global {
             cancel_on_tap_outside?: boolean;
             ux_mode?: 'popup' | 'redirect';
           }) => void;
-          prompt: (callback?: (notification: unknown) => void) => void;
+          /* [FIX-1] النوع الآن يعكس شكل الإشعار الحقيقي بدل unknown */
+          prompt: (
+            callback?: (notification: GoogleOneTapNotification) => void
+          ) => void;
         };
       };
     };
@@ -49,11 +76,24 @@ declare global {
     };
   }
 }
+
+/* [FIX-1] شكل إشعار Google One Tap الفعلي (موثّق في Google Identity Services API) */
+interface GoogleOneTapNotification {
+  isNotDisplayed?: () => boolean;
+  isSkippedMoment?: () => boolean;
+  isDismissedMoment?: () => boolean;
+  getNotDisplayedReason?: () => string;
+  getSkippedReason?: () => string;
+  getDismissedReason?: () => string;
+}
+
 type BrowserCrypto = {
   randomUUID?: () => string;
   getRandomValues?: <T extends ArrayBufferView>(array: T) => T;
 };
 
+/** مهلة أمان قصوى لكامل تدفق تسجيل الدخول الاجتماعي (SDK + Backend) */
+const SOCIAL_LOGIN_TIMEOUT_MS = 60_000;
 
 @Injectable({
   providedIn: 'root'
@@ -62,7 +102,10 @@ export class SocialAuthService {
   private googleScriptPromise?: Promise<void>;
   private appleScriptPromise?: Promise<void>;
 
-  constructor(private readonly authApi: AuthApiService) {}
+  constructor(
+    private readonly authApi: AuthApiService,
+    private readonly translate: TranslateService
+  ) {}
 
   get isGoogleAvailable(): boolean {
     return Boolean(environment.googleClientId?.trim());
@@ -73,18 +116,18 @@ export class SocialAuthService {
   }
 
   loginWithGoogle(): Observable<AuthTokenResponse> {
-    return new Observable<AuthTokenResponse>(observer => {
+    const raw$ = new Observable<AuthTokenResponse>(observer => {
       let backendSubscription: Subscription | undefined;
 
       if (!this.isGoogleAvailable) {
-        observer.error(new Error('Google Client ID is not configured.'));
+        observer.error(new Error(this.t('AUTH.ERRORS.GOOGLE_NOT_CONFIGURED')));
         return undefined;
       }
 
       this.loadGoogleScript()
         .then(() => {
           if (!window.google?.accounts?.id) {
-            throw new Error('Google Identity Services is not available.');
+            throw new Error(this.t('AUTH.ERRORS.GOOGLE_SDK_UNAVAILABLE'));
           }
 
           window.google.accounts.id.initialize({
@@ -95,7 +138,7 @@ export class SocialAuthService {
               const idToken = response.credential;
 
               if (!idToken) {
-                observer.error(new Error('Google did not return an ID token.'));
+                observer.error(new Error(this.t('AUTH.ERRORS.GOOGLE_NO_TOKEN')));
                 return;
               }
 
@@ -109,7 +152,18 @@ export class SocialAuthService {
             }
           });
 
-          window.google.accounts.id.prompt();
+          /* [FIX-1 - أ] callback إشعار حقيقي بدل استدعاء أعمى بلا متابعة */
+          window.google!.accounts.id.prompt(notification => {
+            const notDisplayed = notification?.isNotDisplayed?.() ?? false;
+            const skipped = notification?.isSkippedMoment?.() ?? false;
+            const dismissed = notification?.isDismissedMoment?.() ?? false;
+
+            if (notDisplayed || skipped || dismissed) {
+              observer.error(new Error(this.t('AUTH.ERRORS.GOOGLE_NOT_DISPLAYED')));
+            }
+            /* إذا ظهرت النافذة فعلياً، لا شيء يُفعل هنا — ننتظر
+               callback الخاص بـ initialize() أعلاه ليصل بالـ credential */
+          });
         })
         .catch(error => observer.error(error));
 
@@ -117,27 +171,42 @@ export class SocialAuthService {
         backendSubscription?.unsubscribe();
       };
     });
+
+    /* [FIX-1 - ب] شبكة أمان: حتى لو فشل (أ) لأي سبب غير متوقع (تعليق
+       شبكي حقيقي، أو SDK لا يستدعي أي callback إطلاقاً)، لا يبقى
+       المستخدم بزر "جاري التحميل" معلّق للأبد */
+    return raw$.pipe(
+      timeout({
+        each: SOCIAL_LOGIN_TIMEOUT_MS,
+        with: () => {
+          throw new Error(this.t('AUTH.ERRORS.SOCIAL_TIMEOUT'));
+        }
+      })
+    );
   }
 
   loginWithApple(): Observable<AuthTokenResponse> {
-    return new Observable<AuthTokenResponse>(observer => {
+    const raw$ = new Observable<AuthTokenResponse>(observer => {
       let backendSubscription: Subscription | undefined;
 
       if (!this.isAppleAvailable) {
-        observer.error(new Error('Apple Client ID is not configured.'));
+        observer.error(new Error(this.t('AUTH.ERRORS.APPLE_NOT_CONFIGURED')));
         return undefined;
       }
 
       this.loadAppleScript()
         .then(() => {
           if (!window.AppleID?.auth) {
-            throw new Error('Apple Sign In is not available.');
+            throw new Error(this.t('AUTH.ERRORS.APPLE_SDK_UNAVAILABLE'));
           }
 
           const redirectUri =
             environment.appleRedirectUri?.trim() ||
             `${window.location.origin}/auth/apple/callback`;
 
+          // ⚠️ ملاحظة معلّقة [🟠]: يُولَّد nonce هنا لكنه لا يُرسَل
+          // ضمن الطلب لـ authApi.loginWithApple أدناه. لم يُعدَّل هذا
+          // بعد بانتظار تأكيدك ما إذا كان الـ Backend يتحقق منه.
           window.AppleID.auth.init({
             clientId: environment.appleClientId,
             scope: 'name email',
@@ -156,7 +225,7 @@ export class SocialAuthService {
           const lastName = response.user?.name?.lastName ?? null;
 
           if (!identityToken) {
-            throw new Error('Apple did not return an identity token.');
+            throw new Error(this.t('AUTH.ERRORS.APPLE_NO_TOKEN'));
           }
 
           backendSubscription = this.authApi.loginWithApple({
@@ -178,6 +247,17 @@ export class SocialAuthService {
         backendSubscription?.unsubscribe();
       };
     });
+
+    /* [FIX-1 - ب] نفس شبكة الأمان تُطبَّق على Apple أيضاً — signIn()
+       الخاص بأبل يمكن أن يُرفَض بصمت في بعض حالات popup blocking */
+    return raw$.pipe(
+      timeout({
+        each: SOCIAL_LOGIN_TIMEOUT_MS,
+        with: () => {
+          throw new Error(this.t('AUTH.ERRORS.SOCIAL_TIMEOUT'));
+        }
+      })
+    );
   }
 
   getSocialErrorMessage(error: unknown): string {
@@ -218,23 +298,27 @@ export class SocialAuthService {
       }
     }
 
+    /* [FIX-2] رسائل Error المُنشأة داخل هذه الخدمة أصبحت الآن مترجمة
+       أصلاً عبر this.t(...) عند إنشائها، لذا typedError.message هنا
+       سيكون نصاً مترجَماً فعلياً، لا إنجليزياً مثبّتاً */
     if (typedError.message) {
       return typedError.message;
     }
 
+    /* [FIX-2] الحالات الاحتياطية أدناه كانت نصوصاً إنجليزية مثبّتة — أصبحت مفاتيح ترجمة */
     if (typedError.status === 400) {
-      return 'Social login request was rejected by the server.';
+      return this.t('AUTH.ERRORS.SOCIAL_REQUEST_REJECTED');
     }
 
     if (typedError.status === 401) {
-      return 'Social login token was rejected by the server.';
+      return this.t('AUTH.ERRORS.SOCIAL_TOKEN_REJECTED');
     }
 
     if (typedError.status === 500) {
-      return 'Server error while processing social login.';
+      return this.t('AUTH.ERRORS.SOCIAL_SERVER_ERROR');
     }
 
-    return 'Social login failed. Please try again.';
+    return this.t('AUTH.ERRORS.SOCIAL_GENERIC_FAILED');
   }
 
   private loadGoogleScript(): Promise<void> {
@@ -300,23 +384,29 @@ export class SocialAuthService {
       document.head.appendChild(script);
     });
   }
+
   private createRandomValue(): string {
-  const webCrypto = (globalThis as unknown as { crypto?: BrowserCrypto }).crypto;
+    const webCrypto = (globalThis as unknown as { crypto?: BrowserCrypto }).crypto;
 
-  if (webCrypto?.randomUUID) {
-    return webCrypto.randomUUID();
+    if (webCrypto?.randomUUID) {
+      return webCrypto.randomUUID();
+    }
+
+    if (webCrypto?.getRandomValues) {
+      const array = new Uint32Array(4);
+      webCrypto.getRandomValues(array);
+
+      return Array.from(array)
+        .map(value => value.toString(16).padStart(8, '0'))
+        .join('');
+    }
+
+    return `${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}`;
   }
 
-  if (webCrypto?.getRandomValues) {
-    const array = new Uint32Array(4);
-    webCrypto.getRandomValues(array);
-
-    return Array.from(array)
-      .map(value => value.toString(16).padStart(8, '0'))
-      .join('');
+  /** [FIX-2] اختصار داخلي لقراءة الترجمة الفورية */
+  private t(key: string): string {
+    return this.translate.instant(key);
   }
-
-  return `${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}`;
 }
 
-}

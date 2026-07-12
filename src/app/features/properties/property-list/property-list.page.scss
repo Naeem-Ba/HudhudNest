@@ -1,9 +1,12 @@
+@use '../../../../styles/breakpoints' as bp;
+
 /* ================================================================
    property-list.page.scss — Properties Grid + Sidebar Filters
    ================================================================ */
 
 .prop-list-root {
   min-height: calc(100vh - var(--navbar-height, 68px));
+  min-height: calc(100dvh - var(--navbar-height, 68px));
 }
 
 /* ── Header Bar ── */
@@ -42,7 +45,7 @@
   align-items: start;
   padding-block: 2rem;
 
-  @media (max-width: 900px) {
+  @include bp.tablet {
     grid-template-columns: 1fr;
   }
 }
@@ -56,12 +59,15 @@
   position: sticky;
   top: calc(var(--navbar-height, 68px) + 1rem);
 
-  @media (max-width: 900px) {
+  @include bp.tablet {
     position: fixed;
     inset-block-start: 0;
     inset-inline-start: 0;
     width: min(320px, 85vw);
     height: 100vh;
+    height: 100dvh;
+    padding-top: max(1.25rem, var(--safe-area-inset-top, env(safe-area-inset-top, 0px)));
+    padding-bottom: max(1.25rem, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
     z-index: var(--z-modal, 400);
     border-radius: 0;
     overflow-y: auto;
@@ -76,7 +82,7 @@
 }
 
 :host-context(html[dir="rtl"]) .filter-sidebar {
-  @media (max-width: 900px) {
+  @include bp.tablet {
     inset-inline-start: unset;
     inset-inline-end: 0;
     transform: translateX(105%);
@@ -116,7 +122,7 @@
 
   &:hover { background: var(--gray-100); }
 
-  @media (max-width: 900px) { display: block; }
+  @include bp.tablet { display: block; }
 }
 
 /* ── Filter Form ── */
@@ -230,7 +236,7 @@
   justify-content: space-between;
   margin-bottom: 1.25rem;
 
-  @media (max-width: 900px) { display: flex; }
+  @include bp.tablet { display: flex; }
 }
 
 .filter-badge {
@@ -261,7 +267,7 @@
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 1.25rem;
 
-  @media (max-width: 500px) {
+  @include bp.mobile {
     grid-template-columns: 1fr;
   }
 }
@@ -458,4 +464,26 @@
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
+}
+
+
+@include bp.mobile {
+  .prop-list-header__inner,
+  .mobile-filter-bar {
+    align-items: stretch;
+  }
+
+  .prop-list-header__inner > .btn,
+  .mobile-filter-bar .btn {
+    width: 100%;
+  }
+
+  .range-inputs {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .range-sep { display: none; }
+
+  .properties-grid { grid-template-columns: 1fr; }
 }

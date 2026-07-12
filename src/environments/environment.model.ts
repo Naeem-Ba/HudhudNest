@@ -37,6 +37,14 @@ function clean(value: string | undefined): string | undefined {
   return normalized ? normalized : undefined;
 }
 
+export function readGoogleClientIdFromProcessEnv(): string | undefined {
+  return clean(typeof process !== 'undefined' ? process.env?.GOOGLE_CLIENT_ID : undefined);
+}
+
+export function readAppleClientIdFromProcessEnv(): string | undefined {
+  return clean(typeof process !== 'undefined' ? process.env?.APPLE_CLIENT_ID : undefined);
+}
+
 export function readProcessEnv(key: string): string | undefined {
   if (typeof process === 'undefined') {
     return undefined;

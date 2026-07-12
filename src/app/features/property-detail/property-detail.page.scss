@@ -1,9 +1,12 @@
+@use '../../../styles/breakpoints' as bp;
+
 /* ================================================================
    property-detail.page.scss — Property Detail Page
    ================================================================ */
 
 .detail-root {
   min-height: calc(100vh - var(--navbar-height, 68px));
+  min-height: calc(100dvh - var(--navbar-height, 68px));
 }
 
 .detail-loading {
@@ -23,7 +26,7 @@
     gap: 1.75rem;
     align-items: start;
 
-    @media (max-width: 900px) {
+    @include bp.tablet {
       grid-template-columns: 1fr;
     }
   }
@@ -253,7 +256,7 @@
   gap: 1.5rem;
   align-items: start;
 
-  @media (max-width: 1024px) {
+  @include bp.tablet {
     grid-template-columns: 1fr;
   }
 }
@@ -337,7 +340,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
 
-    @media (max-width: 640px) { grid-template-columns: 1fr; }
+    @include bp.mobile { grid-template-columns: 1fr; }
   }
 }
 
@@ -579,4 +582,14 @@
   background: rgba(0,0,0,.88);
   z-index: calc(var(--z-modal, 400) - 1);
   backdrop-filter: blur(6px);
+}
+
+
+@include bp.mobile {
+  .detail-hero { padding-block: 1rem; }
+  .gallery__window { border-radius: var(--r-md); aspect-ratio: 4 / 3; }
+  .gallery__arrow { width: 44px; height: 44px; }
+  .summary-card { padding: 1rem; }
+  .detail-body { padding-block: 1rem; }
+  .detail-form__grid { grid-template-columns: 1fr; }
 }

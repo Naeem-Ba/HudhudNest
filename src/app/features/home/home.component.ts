@@ -7,6 +7,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { PropertyApiService } from '../../core/api/property-api.service';
 import type { Property } from '../../core/models/property.model';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
+import { UrlService } from '../../core/services/url.service';
 
 @Component({
   selector: 'app-home',
@@ -24,6 +25,9 @@ export class HomeComponent implements OnInit {
 
   private readonly propertyApiService = inject(PropertyApiService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly urlService = inject(UrlService);
+
+  private readonly propertyImageWidths = [320, 480, 640, 800] as const;
 
   properties: Property[] = [];
 
@@ -52,6 +56,26 @@ export class HomeComponent implements OnInit {
           this.properties = [];
         }
       });
+  }
+
+  propertyImageUrl(property: Property, width = 640): string {
+    const source = this.propertyImageSource(property);
+
+    return (
+      this.urlService.buildResponsiveUrl(source, width) ??
+      '/images/no-image.svg'
+    );
+  }
+
+  propertyImageSrcSet(property: Property): string | null {
+    return this.urlService.buildResponsiveSrcSet(
+      this.propertyImageSource(property),
+      this.propertyImageWidths
+    );
+  }
+
+  private propertyImageSource(property: Property): string | undefined {
+    return property.images?.[0]?.url || property.mainImageUrl;
   }
 
   private dateValue(value?: string): number {

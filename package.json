@@ -1,22 +1,31 @@
 {
   "name": "wohnungsmieten",
   "version": "0.0.0",
+  "private": true,
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test",
     "start:local": "ng serve --configuration development",
     "start:staging": "ng serve --configuration staging",
+    "build": "ng build",
     "build:staging": "ng build --configuration staging",
     "build:prod": "ng build --configuration production",
-    "check:env": "node tools/check-environments.mjs",
     "build:ci": "npm run check:env && ng build --configuration production",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "typecheck:strict": "tsc -p tsconfig.strict.json --noEmit",
+    "check:env": "node tools/check-environments.mjs",
     "audit:frontend": "node tools/frontend-audit-guard.mjs",
-    "postmerge:verify": "npm run check:env && npm run audit:frontend && npm run typecheck && npm run build:prod"
+    "postmerge:verify": "npm run check:env && npm run audit:frontend && npm run typecheck && npm run build:prod",
+    "cap:sync": "npx cap sync",
+    "cap:copy": "npx cap copy",
+    "android:sync": "npm run build:prod && npx cap sync android",
+    "android:open": "npx cap open android",
+    "ios:check": "node tools/validate-ios-config.mjs",
+    "ios:setup": "node tools/setup-ios.mjs",
+    "ios:sync": "npm run build:prod && npx cap sync ios",
+    "ios:open": "npx cap open ios"
   },
   "prettier": {
     "printWidth": 100,
@@ -30,7 +39,6 @@
       }
     ]
   },
-  "private": true,
   "dependencies": {
     "@angular/animations": "^20.3.25",
     "@angular/common": "^20.2.0",
@@ -41,8 +49,9 @@
     "@angular/router": "^20.2.0",
     "@angular/service-worker": "^20.3.25",
     "@capacitor/android": "^8.0.0",
-    "@capacitor/cli": "^8.0.0",
+    "@capacitor/app": "^8.1.0",
     "@capacitor/core": "^8.0.0",
+    "@capacitor/ios": "^8.4.1",
     "@microsoft/signalr": "^10.0.0",
     "@ngx-translate/core": "^17.0.0",
     "@ngx-translate/http-loader": "^7.0.0",
@@ -55,6 +64,7 @@
     "@angular/build": "^20.2.2",
     "@angular/cli": "^20.2.2",
     "@angular/compiler-cli": "^20.2.0",
+    "@capacitor/cli": "^8.4.1",
     "@types/jasmine": "~5.1.0",
     "@types/leaflet": "^1.9.21",
     "jasmine-core": "~5.9.0",

@@ -22,6 +22,8 @@ import { Property, PropertyFilterDto } from '../../../core/models/property.model
 import { EmptyStateComponent } from '../../../shared/ui/empty-state.component';
 import { SkeletonCardGridComponent } from '../../../shared/ui/skeleton-card-grid.component';
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
+import { OverlayBackHandlerService } from '../../../core/services/overlay-back-handler.service';
+import { UrlService } from '../../../core/services/url.service';
 
 @Component({
   selector: 'app-property-list',
@@ -43,6 +45,8 @@ export class PropertyListPage implements OnInit {
   private readonly api = inject(PropertyApiService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly overlayBackHandlers = inject(OverlayBackHandlerService);
+  private readonly urlService = inject(UrlService);
 
   readonly properties = signal<Property[]>([]);
   readonly loading = signal(false);
@@ -73,7 +77,21 @@ export class PropertyListPage implements OnInit {
   sortBy = 'CreatedAt';
 
   ngOnInit(): void {
+    const unregister = this.overlayBackHandlers.register(() => {
+      if (!this.filtersOpen) return false;
+      this.closeFilters();
+      return true;
+    });
+    this.destroyRef.onDestroy(unregister);
     this.loadProperties();
+  }
+
+  openFilters(): void {
+    this.filtersOpen = true;
+  }
+
+  closeFilters(): void {
+    this.closeFilters();
   }
 
   loadProperties(): void {
@@ -183,6 +201,14 @@ export class PropertyListPage implements OnInit {
 
   trackById(_: number, property: Property): string {
     return property.id ?? String(_);
+  }
+
+  getResponsiveImage(property: Property, width = 640): string {
+    return this.urlService.buildResponsiveUrl(this.getMainImage(property), width) ?? this.fallbackImage;
+  }
+
+  getResponsiveSrcSet(property: Property): string | null {
+    return this.urlService.buildResponsiveSrcSet(this.getMainImage(property), [320, 480, 640, 800]);
   }
 
   getMainImage(property: Property): string {

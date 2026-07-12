@@ -6,6 +6,7 @@ import { Observable, filter } from 'rxjs';
 import { AuthService } from './core/auth/auth.service';
 import { LanguageService } from './core/services/language.service';
 import { ToastContainerComponent } from './shared/ui/toast-container.component';
+import { NativeBackButtonService } from './core/services/native-back-button.service';
 
 @Component({
   selector: 'app-root',
@@ -24,10 +25,12 @@ export class AppComponent {
   constructor(
     private readonly authService: AuthService,
     private readonly router: Router,
-    private readonly languageService: LanguageService
+    private readonly languageService: LanguageService,
+    nativeBackButton: NativeBackButtonService
   ) {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
     this.languageService.getCurrent();
+    nativeBackButton.initialize();
 
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))

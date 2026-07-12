@@ -1,3 +1,5 @@
+@use '../../../styles/breakpoints' as bp;
+
 .fav-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -92,6 +94,8 @@
   }
 }
 
-@media (max-width: 480px) {
+@include bp.mobile {
   .fav-grid { grid-template-columns: 1fr; }
 }
+
+@include bp.mobile { .fav-card:hover { transform: none; } .fav-remove-btn { width: 44px; height: 44px; } }

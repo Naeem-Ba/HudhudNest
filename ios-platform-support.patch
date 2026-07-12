@@ -1,0 +1,404 @@
+diff --git a/capacitor.config.ts b/capacitor.config.ts
+index b9599da..a06c64b 100644
+--- a/capacitor.config.ts
++++ b/capacitor.config.ts
+@@ -1,14 +1,27 @@
+ import type { CapacitorConfig } from '@capacitor/cli';
+ 
++const allowCleartext = process.env['CAPACITOR_ALLOW_CLEARTEXT'] === 'true';
++
+ const config: CapacitorConfig = {
+   appId: 'com.realestate.app',
+   appName: 'Real Estate World',
+   webDir: 'dist/Wohnungsmieten/browser',
+   server: {
+-    androidScheme: 'https', // أضف هذا السطر ضروري جداً
+-    cleartext: true,
+-    allowNavigation: ['realestateworld.world'],
+-  }
++    androidScheme: 'https',
++    iosScheme: 'capacitor',
++    cleartext: allowCleartext,
++    allowNavigation: ['realestateworld.world', '*.realestateworld.world'],
++  },
++  ios: {
++    contentInset: 'automatic',
++    preferredContentMode: 'mobile',
++    scrollEnabled: true,
++  },
++  plugins: {
++    SystemBars: {
++      insetsHandling: 'css',
++    },
++  },
+ };
+ 
+ export default config;
+diff --git a/docs/IOS-IMPLEMENTATION-PROMPT.md b/docs/IOS-IMPLEMENTATION-PROMPT.md
+new file mode 100644
+index 0000000..e30690b
+--- /dev/null
++++ b/docs/IOS-IMPLEMENTATION-PROMPT.md
+@@ -0,0 +1,5 @@
++# برومبت تنفيذ دعم iOS
++
++أنت مهندس Mobile Principal ومتخصص Angular وCapacitor وiOS وDevOps. حلّل المشروع قبل التعديل، ثم أضف دعم iOS دون كسر Android أو الويب. وحّد إصدارات Capacitor، أضف `@capacitor/ios` و`@capacitor/app`، راجع `capacitor.config.ts`، امنع HTTP غير المشفر في الإنتاج، وأنشئ سكربت إعداد حتمي يعمل على macOS ويتحقق من Xcode وCocoaPods ثم يبني Angular ويضيف iOS ويزامن Plugins ويضبط Info.plist وPrivacy Manifest.
++
++لا تضف أذونات غير مستخدمة. راجع Safe Area والكيبورد والاتجاهات وStatus Bar وHome Indicator. أنشئ وثائق عربية للبناء والاختبار والإصدار واستكشاف الأعطال. افصل بوضوح بين ما تم التحقق منه آلياً وما يتطلب Mac أو جهاز iPhone أو حساب Apple Developer. لا تدّع نجاح Archive أو App Store submission دون دليل. أخرج Git Patch وحزمة merge-ready وقائمة ملفات وتقرير مخاطر وخطوات دمج.
+diff --git a/docs/IOS_BUILD.md b/docs/IOS_BUILD.md
+new file mode 100644
+index 0000000..6d6aa6a
+--- /dev/null
++++ b/docs/IOS_BUILD.md
+@@ -0,0 +1,31 @@
++# بناء تطبيق iOS
++
++## بناء يومي
++
++```bash
++npm install
++npm run build:prod
++npx cap sync ios
++npx cap open ios
++```
++
++في Xcode اختر Simulator أو iPhone فعلي ثم Product > Build.
++
++## بناء جهاز فعلي
++
++- فعّل Developer Mode على iPhone.
++- صِل الجهاز بالـMac ووثّق الثقة.
++- اختر Development Team.
++- تحقق من أن Bundle Identifier فريد.
++- شغّل التطبيق وراجع Console للأخطاء.
++
++## Archive
++
++من Xcode:
++
++1. اختر `Any iOS Device (arm64)`.
++2. Product > Archive.
++3. نفّذ Validate App.
++4. عالج كل أخطاء التوقيع والخصوصية قبل Distribute App.
++
++لا يعتبر نجاح `ng build` دليلاً على نجاح Xcode Archive؛ كلاهما بوابتان منفصلتان.
+diff --git a/docs/IOS_RELEASE.md b/docs/IOS_RELEASE.md
+new file mode 100644
+index 0000000..a5441ae
+--- /dev/null
++++ b/docs/IOS_RELEASE.md
+@@ -0,0 +1,19 @@
++# بوابة إصدار iOS
++
++لا يبدأ النشر قبل نجاح:
++
++- `npm run ios:check`.
++- Angular production build.
++- `npx cap sync ios` دون أخطاء.
++- Xcode Build على جهاز فعلي.
++- Xcode Archive وValidate App.
++- قائمة اختبار iOS الأساسية.
++- مراجعة Privacy Manifest وبيانات App Store Privacy.
++- تأكيد أن جميع الاتصالات HTTPS.
++- تأكيد عدم وجود Secrets داخل `src/environments` أو المشروع الأصلي.
++- App Icons وLaunch Screen النهائية.
++- رقم Version وBuild Number جديدان.
++
++## App Store Connect
++
++أنشئ App Record بمعرف Bundle نفسه، ثم حمّل Archive عبر Organizer. أدخل سياسة الخصوصية، التصنيف العمري، لقطات الشاشة، بيانات الدعم، ووصف استخدام البيانات بما يطابق السلوك الفعلي. ملف Privacy Manifest الفارغ في هذه الحزمة نقطة بداية فقط؛ يجب تحديثه إذا أضيف SDK يجمع بيانات أو يستخدم Required Reason APIs.
+diff --git a/docs/IOS_SETUP.md b/docs/IOS_SETUP.md
+new file mode 100644
+index 0000000..18f91fa
+--- /dev/null
++++ b/docs/IOS_SETUP.md
+@@ -0,0 +1,38 @@
++# إعداد منصة iOS
++
++## المتطلبات
++
++- جهاز macOS حديث.
++- Xcode مثبت ومفتوح مرة واحدة لقبول الرخصة وتنزيل المكونات.
++- Command Line Tools: `xcode-select --install`.
++- CocoaPods: `sudo gem install cocoapods` أو عبر Homebrew.
++- Node وnpm متوافقان مع Angular 20.
++- حساب Apple Developer للبناء على جهاز فعلي أو النشر.
++
++## الإعداد الآلي
++
++من جذر المشروع:
++
++```bash
++npm run ios:check
++npm run ios:setup
++```
++
++ينفذ السكربت:
++
++1. يتحقق من macOS وXcode وCocoaPods.
++2. يثبت الاعتماديات.
++3. يبني Angular بوضع الإنتاج.
++4. ينفذ `npx cap add ios` إذا لم يوجد مجلد `ios/`.
++5. ينفذ `npx cap sync ios`.
++6. يضبط الاسم الظاهر وإدارة Status Bar.
++7. ينسخ `PrivacyInfo.xcprivacy`.
++8. يعيد المزامنة.
++
++ثم افتح المشروع:
++
++```bash
++npm run ios:open
++```
++
++داخل Xcode افتح Target `App` ثم `Signing & Capabilities` واختر Team الصحيح. لا تغيّر Bundle Identifier بعد إصدار التطبيق إلا بقرار مقصود؛ القيمة الحالية هي `com.realestate.app` وينبغي استبدالها بمعرف العلامة النهائي قبل أول نشر.
+diff --git a/docs/IOS_TESTING.md b/docs/IOS_TESTING.md
+new file mode 100644
+index 0000000..ccf0ae0
+--- /dev/null
++++ b/docs/IOS_TESTING.md
+@@ -0,0 +1,22 @@
++# قائمة اختبار iOS
++
++## الأجهزة والعروض
++
++اختبر على جهاز حقيقي ذي notch أو Dynamic Island، ويفضل أيضاً شاشة صغيرة مثل iPhone SE عبر Simulator.
++
++## الفحوص الإلزامية
++
++- Navbar لا يدخل تحت Status Bar أو Dynamic Island.
++- Mobile Drawer يحترم Safe Area أعلى وأسفل.
++- Home Indicator لا يغطي الأزرار الثابتة.
++- Portrait وLandscape لا ينتجان تمريراً أفقياً.
++- فتح الكيبورد لا يخفي الحقل النشط أو أزرار الحفظ.
++- الحقول بحجم خط 16px على الهاتف ولا يحدث Safari auto-zoom.
++- Login/Register، قائمة العقارات، التفاصيل، إضافة عقار، رفع الصور، Profile، Favorites، Notifications.
++- الصور وCloudinary على Wi-Fi وشبكة بطيئة.
++- Offline/عودة الاتصال.
++- Light Mode وDark Mode إن كانا مدعومين.
++- روابط خارجية، الخرائط، ورفع الملفات.
++- العودة من الخلفية واستعادة الجلسة.
++
++وثّق: الموديل، إصدار iOS، نسخة التطبيق أو commit، الاتجاه، النتيجة، ولقطة شاشة أو فيديو للأعطال.
+diff --git a/docs/IOS_TROUBLESHOOTING.md b/docs/IOS_TROUBLESHOOTING.md
+new file mode 100644
+index 0000000..74d25da
+--- /dev/null
++++ b/docs/IOS_TROUBLESHOOTING.md
+@@ -0,0 +1,39 @@
++# استكشاف أعطال iOS
++
++## `ios/` غير موجود
++
++نفّذ على macOS:
++
++```bash
++npm install
++npm run ios:setup
++```
++
++## `pod: command not found`
++
++ثبّت CocoaPods ثم أعد السكربت.
++
++## `No such module Capacitor`
++
++```bash
++npx cap sync ios
++cd ios/App && pod install --repo-update
++```
++
++ثم افتح `App.xcworkspace` وليس `App.xcodeproj`.
++
++## خطأ Signing
++
++اختر Team، تحقق من Bundle Identifier، وأعد إنشاء Provisioning Profile تلقائياً من Xcode.
++
++## شاشة بيضاء
++
++تحقق من نجاح `npm run build:prod` ومن تطابق `webDir` مع مخرجات Angular، ثم `npx cap copy ios` وافحص Safari Web Inspector وXcode Console.
++
++## API لا يعمل
++
++تحقق من HTTPS وشهادة الخادم وCORS. لا تستخدم `NSAllowsArbitraryLoads` كحل عام؛ أصلح TLS أو أضف استثناءً ضيقاً ومؤقتاً فقط عند ضرورة موثقة.
++
++## Safe Area لا تعمل
++
++تحقق من وجود `viewport-fit=cover` ومن CSS `env(safe-area-inset-*)` ومن اختبار جهاز حقيقي، لا DevTools فقط.
+diff --git a/docs/README-IOS-AR.md b/docs/README-IOS-AR.md
+new file mode 100644
+index 0000000..47ed528
+--- /dev/null
++++ b/docs/README-IOS-AR.md
+@@ -0,0 +1,17 @@
++# تقرير تنفيذ دعم iOS
++
++## النتيجة
++
++تمت إضافة طبقة دعم iOS القابلة للدمج: اعتماديات Capacitor، إعداد مشترك أكثر أماناً، سكربت فحص، سكربت إنشاء ومزامنة على macOS، Privacy Manifest ابتدائي، ووثائق الإعداد والبناء والاختبار والإصدار.
++
++## حدود التنفيذ
++
++بيئة إنشاء الحزمة ليست macOS ولا تحتوي Xcode، لذلك لم يتم ادعاء إنشاء Workspace قابل للبناء أو تشغيل CocoaPods أو Archive أو اختبار iPhone. السكربت `npm run ios:setup` ينفذ تلك الخطوات على Mac ويوقف التنفيذ مبكراً إن كانت المتطلبات ناقصة.
++
++## قرارات مهمة
++
++- أضيف `@capacitor/ios` و`@capacitor/app` بإصدار رئيسي 8 لمطابقة Capacitor الحالي.
++- أصبح `cleartext` معطلاً افتراضياً ولا يفعّل إلا عبر `CAPACITOR_ALLOW_CLEARTEXT=true` للتطوير المقصود.
++- لم تضف أذونات Camera/Photos إلى Info.plist لأن المشروع لا يثبت Plugin أصلياً يطلبها؛ إضافة أذونات غير مستخدمة تزيد تدقيق الخصوصية.
++- ملف Privacy Manifest الحالي يعلن عدم التتبع أو الجمع من التطبيق نفسه، لكنه يجب أن يراجع عند إضافة SDKs أو Analytics.
++- Bundle Identifier الحالي عام نسبياً ويجب تثبيت معرف نهائي مملوك للعلامة قبل أول إصدار.
+diff --git a/package.json b/package.json
+index a0214f7..ed6b825 100644
+--- a/package.json
++++ b/package.json
+@@ -16,7 +16,11 @@
+     "typecheck": "tsc -p tsconfig.app.json --noEmit",
+     "typecheck:strict": "tsc -p tsconfig.strict.json --noEmit",
+     "audit:frontend": "node tools/frontend-audit-guard.mjs",
+-    "postmerge:verify": "npm run check:env && npm run audit:frontend && npm run typecheck && npm run build:prod"
++    "postmerge:verify": "npm run check:env && npm run audit:frontend && npm run typecheck && npm run build:prod",
++    "ios:check": "node tools/validate-ios-config.mjs",
++    "ios:setup": "node tools/setup-ios.mjs",
++    "ios:sync": "npm run build:prod && npx cap sync ios",
++    "ios:open": "npx cap open ios"
+   },
+   "prettier": {
+     "printWidth": 100,
+@@ -49,7 +53,9 @@
+     "leaflet": "^1.9.4",
+     "rxjs": "~7.8.0",
+     "tslib": "^2.8.1",
+-    "zone.js": "~0.15.0"
++    "zone.js": "~0.15.0",
++    "@capacitor/app": "^8.0.0",
++    "@capacitor/ios": "^8.0.0"
+   },
+   "devDependencies": {
+     "@angular/build": "^20.2.2",
+diff --git a/resources/ios/PrivacyInfo.xcprivacy b/resources/ios/PrivacyInfo.xcprivacy
+new file mode 100644
+index 0000000..e7d414c
+--- /dev/null
++++ b/resources/ios/PrivacyInfo.xcprivacy
+@@ -0,0 +1,14 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0">
++<dict>
++  <key>NSPrivacyAccessedAPITypes</key>
++  <array/>
++  <key>NSPrivacyCollectedDataTypes</key>
++  <array/>
++  <key>NSPrivacyTracking</key>
++  <false/>
++  <key>NSPrivacyTrackingDomains</key>
++  <array/>
++</dict>
++</plist>
+diff --git a/tools/setup-ios.mjs b/tools/setup-ios.mjs
+new file mode 100644
+index 0000000..df19036
+--- /dev/null
++++ b/tools/setup-ios.mjs
+@@ -0,0 +1,52 @@
++import { execFileSync, spawnSync } from 'node:child_process';
++import fs from 'node:fs';
++import path from 'node:path';
++import process from 'node:process';
++
++const root = process.cwd();
++const run = (command, args, options = {}) => {
++  console.log(`> ${command} ${args.join(' ')}`);
++  execFileSync(command, args, { cwd: root, stdio: 'inherit', ...options });
++};
++
++if (process.platform !== 'darwin') {
++  console.error('iOS native setup requires macOS with Xcode.');
++  console.error('Run "npm run ios:check" here, then execute "npm run ios:setup" on a Mac.');
++  process.exit(2);
++}
++
++for (const command of ['xcodebuild', 'pod']) {
++  const result = spawnSync('which', [command], { encoding: 'utf8' });
++  if (result.status !== 0) {
++    console.error(`Missing required command: ${command}`);
++    process.exit(3);
++  }
++}
++
++run('node', ['tools/validate-ios-config.mjs']);
++run('npm', ['install']);
++run('npm', ['run', 'build:prod']);
++
++const iosDir = path.join(root, 'ios');
++if (!fs.existsSync(iosDir)) run('npx', ['cap', 'add', 'ios']);
++run('npx', ['cap', 'sync', 'ios']);
++
++const plist = path.join(root, 'ios', 'App', 'App', 'Info.plist');
++if (fs.existsSync(plist)) {
++  const plistBuddy = '/usr/libexec/PlistBuddy';
++  const set = (key, type, value) => {
++    const current = spawnSync(plistBuddy, ['-c', `Print :${key}`, plist], { stdio: 'ignore' });
++    const action = current.status === 0 ? 'Set' : 'Add';
++    run(plistBuddy, ['-c', `${action} :${key} ${type} ${value}`, plist]);
++  };
++  set('CFBundleDisplayName', 'string', 'Real Estate World');
++  set('UIViewControllerBasedStatusBarAppearance', 'bool', 'true');
++}
++
++const privacySource = path.join(root, 'resources', 'ios', 'PrivacyInfo.xcprivacy');
++const privacyTarget = path.join(root, 'ios', 'App', 'App', 'PrivacyInfo.xcprivacy');
++if (fs.existsSync(privacySource)) fs.copyFileSync(privacySource, privacyTarget);
++
++run('npx', ['cap', 'sync', 'ios']);
++console.log('\nNative iOS platform generated and synchronized.');
++console.log('Next: npm run ios:open, select a Development Team, then build on a real device.');
+diff --git a/tools/validate-ios-config.mjs b/tools/validate-ios-config.mjs
+new file mode 100644
+index 0000000..9de0a9d
+--- /dev/null
++++ b/tools/validate-ios-config.mjs
+@@ -0,0 +1,43 @@
++import fs from 'node:fs';
++import path from 'node:path';
++import process from 'node:process';
++
++const root = process.cwd();
++const requiredFiles = ['package.json', 'angular.json', 'capacitor.config.ts'];
++const errors = [];
++const warnings = [];
++
++for (const file of requiredFiles) {
++  if (!fs.existsSync(path.join(root, file))) errors.push(`Missing required file: ${file}`);
++}
++
++const pkgPath = path.join(root, 'package.json');
++if (fs.existsSync(pkgPath)) {
++  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
++  const deps = { ...pkg.dependencies, ...pkg.devDependencies };
++  for (const dep of ['@capacitor/core', '@capacitor/cli', '@capacitor/ios']) {
++    if (!deps[dep]) errors.push(`Missing dependency: ${dep}`);
++  }
++  const majors = ['@capacitor/core', '@capacitor/cli', '@capacitor/ios']
++    .map((name) => String(deps[name] ?? '').match(/(\d+)/)?.[1])
++    .filter(Boolean);
++  if (new Set(majors).size > 1) errors.push('Capacitor core/cli/ios major versions do not match.');
++}
++
++const configPath = path.join(root, 'capacitor.config.ts');
++if (fs.existsSync(configPath)) {
++  const config = fs.readFileSync(configPath, 'utf8');
++  if (!/appId\s*:/.test(config)) errors.push('capacitor.config.ts has no appId.');
++  if (!/webDir\s*:/.test(config)) errors.push('capacitor.config.ts has no webDir.');
++  if (/cleartext\s*:\s*true/.test(config)) warnings.push('cleartext is permanently enabled; disable it for production.');
++}
++
++if (!fs.existsSync(path.join(root, 'ios'))) {
++  warnings.push('ios/ is not generated yet. Run npm run ios:setup on macOS.');
++}
++
++console.log('iOS configuration preflight');
++for (const warning of warnings) console.warn(`WARN: ${warning}`);
++for (const error of errors) console.error(`ERROR: ${error}`);
++if (errors.length) process.exit(1);
++console.log('PASS: static iOS configuration checks completed.');

@@ -19,6 +19,7 @@ import { AuthService } from '../core/auth/auth.service';
 import { LanguageService } from '../core/services/language.service';
 import { UrlService } from '../core/services/url.service';
 import { ImageFallbackDirective } from '../shared/directives/image-fallback.directive';
+import { OverlayBackHandlerService } from '../core/services/overlay-back-handler.service';
 
 type AppLang = 'ar' | 'en' | 'de';
 
@@ -43,6 +44,7 @@ export class NavbarComponent implements OnInit {
   private readonly cd = inject(ChangeDetectorRef);
   private readonly urlService = inject(UrlService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly overlayBackHandler = inject(OverlayBackHandlerService);
 
   @ViewChild('accountRef')
   private accountRef?: ElementRef<HTMLElement>;
@@ -71,6 +73,17 @@ export class NavbarComponent implements OnInit {
   hasCustomImage = false;
 
   ngOnInit(): void {
+    const unregisterBackHandler = this.overlayBackHandler.register(() => {
+      if (!this.mobileMenuOpen) {
+        return false;
+      }
+
+      this.closeMobileMenu();
+      return true;
+    });
+
+    this.destroyRef.onDestroy(unregisterBackHandler);
+
     this.lang.currentLang$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(rawLang => {
