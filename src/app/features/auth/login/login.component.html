@@ -278,10 +278,21 @@
             {{ 'AUTH.CREATE_ACCOUNT' | translate }}
           </button>
         </p>
+
+        <p class="auth-switch">
+          <a routerLink="/auth/phone-password-reset" class="auth-switch__btn">
+            {{ 'AUTH.FORGOT_PASSWORD_PHONE' | translate }}
+          </a>
+        </p>
       </form>
 
       <!-- ============ Phone Registration Flow (OTP مرة واحدة → كلمة سر + اسم) ============ -->
       <ng-container *ngIf="showRegister && authMode === 'phone'">
+
+        <p class="auth-subtitle">
+          {{ 'AUTH.PHONE_REGISTER_MOVED_NOTICE' | translate }}
+          <a routerLink="/auth/phone-register">{{ 'AUTH.PHONE_REGISTER_MOVED_LINK' | translate }}</a>
+        </p>
 
         <!-- Step 1: enter phone number -->
         <form

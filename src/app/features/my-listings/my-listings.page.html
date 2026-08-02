@@ -87,6 +87,24 @@
         <!-- Actions -->
         <div class="card-actions">
           <button
+            *ngIf="!p.isPublished"
+            type="button"
+            class="btn btn--publish"
+            [disabled]="publishingId() === p.id"
+            (click)="publish(p.id)"
+          >
+            {{ publishingId() === p.id
+                ? ('COMMON.SAVING' | translate)
+                : ('MY_LISTINGS.PUBLISH' | translate) }}
+          </button>
+          <button
+            type="button"
+            class="btn btn--secondary"
+            (click)="openMessages(p.id)"
+          >
+            💬 {{ 'MY_LISTINGS.MESSAGES' | translate }}
+          </button>
+          <button
             type="button"
             class="btn btn--secondary"
             (click)="edit(p.id)"

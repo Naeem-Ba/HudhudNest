@@ -147,6 +147,8 @@ export class PropertyFormPage implements OnInit {
 
   readonly selectedFiles = signal<File[]>([]);
   readonly previews = signal<string[]>([]);
+  readonly existingImages = signal<{ id?: string; url: string; isMain: boolean }[]>([]);
+  readonly imageActionBusyId = signal<string | null>(null);
   readonly fallbackImage = '/images/no-image.svg';
   readonly allowedTypes = ['image/png', 'image/jpeg', 'image/webp'];
   readonly maxSizeMB = 5;
@@ -236,10 +238,13 @@ export class PropertyFormPage implements OnInit {
             hasParkingSpace: property.hasParkingSpace ?? false
           });
 
-          const urls = (property.images ?? [])
-            .map(image => image.url)
-            .filter((url): url is string => Boolean(url));
-          this.previews.set(urls);
+          // ✅ الصور المحفوظة فعلياً تُعرض وتُدار بشكل منفصل عن معاينات الرفع
+          // الجديدة، لأن لها id على الخادم ويمكن حذفها/تعيينها كغلاف فردياً
+          // (setmain/delete)، بخلاف الملفات المُختارة للتو التي لم تُحفظ بعد.
+          const existing = (property.images ?? [])
+            .filter(image => !!image.url)
+            .map(image => ({ id: image.id, url: image.url, isMain: !!image.isMain }));
+          this.existingImages.set(existing);
         },
         error: () => this.submitError.set('PROPERTY_FORM.LOAD_ERROR')
       });
@@ -284,6 +289,56 @@ export class PropertyFormPage implements OnInit {
   removeImage(index: number): void {
     this.previews.update(prev => prev.filter((_, i) => i !== index));
     this.selectedFiles.update(prev => prev.filter((_, i) => i !== index));
+  }
+
+  /**
+   * إدارة الصور المحفوظة فعلياً على الخادم (وليست معاينات رفع جديدة).
+   * تستخدم PropertyImagesController: PATCH .../setmain و DELETE .../{imageId}
+   * وهما لم يكونا مستخدَمين إطلاقاً في الواجهة قبل هذا التعديل.
+   */
+  setMainImage(imageId: string | undefined): void {
+    if (!imageId || !this.propertyId() || this.imageActionBusyId()) return;
+
+    this.imageActionBusyId.set(imageId);
+
+    this.propertyApi
+      .setMainImage(this.propertyId(), imageId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.existingImages.update(images =>
+            images.map(img => ({ ...img, isMain: img.id === imageId }))
+          );
+          this.imageActionBusyId.set(null);
+        },
+        error: () => {
+          this.showToast(this.translate.instant('PROPERTY_FORM.SET_MAIN_ERROR'), 'error');
+          this.imageActionBusyId.set(null);
+        }
+      });
+  }
+
+  deleteExistingImage(imageId: string | undefined): void {
+    if (!imageId || !this.propertyId() || this.imageActionBusyId()) return;
+
+    const confirmed = confirm(this.translate.instant('PROPERTY_FORM.CONFIRM_DELETE_IMAGE'));
+    if (!confirmed) return;
+
+    this.imageActionBusyId.set(imageId);
+
+    this.propertyApi
+      .deleteImage(this.propertyId(), imageId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.existingImages.update(images => images.filter(img => img.id !== imageId));
+          this.imageActionBusyId.set(null);
+        },
+        error: () => {
+          this.showToast(this.translate.instant('PROPERTY_FORM.DELETE_IMAGE_ERROR'), 'error');
+          this.imageActionBusyId.set(null);
+        }
+      });
   }
 
   setListingType(type: 1 | 2): void {

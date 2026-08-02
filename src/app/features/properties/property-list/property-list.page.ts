@@ -18,12 +18,16 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { PropertyApiService } from '../../../core/api/property-api.service';
+import { FavoritesApiService } from '../../../core/api/favorites-api.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { Property, PropertyFilterDto } from '../../../core/models/property.model';
 import { EmptyStateComponent } from '../../../shared/ui/empty-state.component';
 import { SkeletonCardGridComponent } from '../../../shared/ui/skeleton-card-grid.component';
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
 import { OverlayBackHandlerService } from '../../../core/services/overlay-back-handler.service';
 import { UrlService } from '../../../core/services/url.service';
+import { ToastService } from '../../../shared/services/toast.service';
+import { FavoriteToggleButtonComponent } from '../../../shared/ui/favorite-toggle-button.component';
 
 @Component({
   selector: 'app-property-list',
@@ -36,13 +40,17 @@ import { UrlService } from '../../../core/services/url.service';
     TranslateModule,
     EmptyStateComponent,
     SkeletonCardGridComponent,
-    ImageFallbackDirective
+    ImageFallbackDirective,
+    FavoriteToggleButtonComponent
   ],
   templateUrl: './property-list.page.html',
   styleUrls: ['./property-list.page.scss']
 })
 export class PropertyListPage implements OnInit {
   private readonly api = inject(PropertyApiService);
+  private readonly favoritesApi = inject(FavoritesApiService);
+  private readonly auth = inject(AuthService);
+  private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly overlayBackHandlers = inject(OverlayBackHandlerService);
@@ -68,6 +76,15 @@ export class PropertyListPage implements OnInit {
 
   readonly fallbackImage = '/images/no-image.svg';
 
+  readonly favoritePropertyIds = signal<Set<string>>(new Set());
+
+  // ── Geo-search ("العقارات القريبة مني") ──
+  // يستخدم GET /properties/geo-search الذي كان غير مستغَل إطلاقاً في الواجهة
+  // رغم أن الخادم يوفره بفهرسة PostGIS مخصصة لهذا الغرض.
+  readonly geoModeActive = signal(false);
+  readonly geoLoading = signal(false);
+  radiusKm = 5;
+
   filtersOpen = false;
   searchText = '';
   selectedListingType: '' | 'ForRent' | 'ForSale' = '';
@@ -84,6 +101,91 @@ export class PropertyListPage implements OnInit {
     });
     this.destroyRef.onDestroy(unregister);
     this.loadProperties();
+    this.loadFavoriteIds();
+  }
+
+  private loadFavoriteIds(): void {
+    if (!this.auth.getAccessToken()) return;
+
+    this.favoritesApi
+      .getFavorites()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: favorites => {
+          const ids = favorites.map(f => f.propertyId).filter(Boolean);
+          this.favoritePropertyIds.set(new Set(ids));
+        },
+        error: () => {
+          // فشل تحميل المفضلة ليس خطأً حرجاً لصفحة التصفح — يبقى الزر بحالته الافتراضية.
+        }
+      });
+  }
+
+  isFavorite(property: Property): boolean {
+    return !!property.id && this.favoritePropertyIds().has(property.id);
+  }
+
+  /** يبدّل بين نتائج البحث النصي/الفلاتر العادية والبحث الجغرافي القريب. */
+  toggleGeoMode(): void {
+    if (this.geoModeActive()) {
+      this.geoModeActive.set(false);
+      this.loadProperties();
+      return;
+    }
+
+    if (!('geolocation' in navigator)) {
+      this.toast.error('المتصفح لا يدعم تحديد الموقع.');
+      return;
+    }
+
+    this.geoLoading.set(true);
+
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        this.geoModeActive.set(true);
+        this.geoLoading.set(false);
+        this.searchNearby(position.coords.latitude, position.coords.longitude);
+      },
+      () => {
+        this.geoLoading.set(false);
+        this.toast.error('تعذر الوصول لموقعك الحالي. تأكد من إذن تحديد الموقع.');
+      }
+    );
+  }
+
+  searchNearby(latitude: number, longitude: number): void {
+    this.loading.set(true);
+    this.error.set('');
+
+    this.api
+      .geoSearch(latitude, longitude, this.radiusKm, {
+        page: 1,
+        pageSize: this.pageSize(),
+        listingType: this.selectedListingType || undefined
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: result => {
+          this.properties.set(result.items);
+          this.totalCount.set(result.totalCount);
+          this.currentPage.set(result.page);
+          this.pageSize.set(result.pageSize);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.error.set('PROPERTY_LIST.LOAD_ERROR');
+          this.loading.set(false);
+        }
+      });
+  }
+
+  onRadiusChange(): void {
+    // نحتاج موقعاً جديداً عند تغيير نصف القطر فقط إذا كان وضع القرب مفعّلاً بالفعل.
+    if (!this.geoModeActive() || !('geolocation' in navigator)) return;
+
+    navigator.geolocation.getCurrentPosition(position => {
+      this.searchNearby(position.coords.latitude, position.coords.longitude);
+    });
   }
 
   openFilters(): void {
@@ -91,7 +193,7 @@ export class PropertyListPage implements OnInit {
   }
 
   closeFilters(): void {
-    this.closeFilters();
+    this.filtersOpen = false;
   }
 
   loadProperties(): void {

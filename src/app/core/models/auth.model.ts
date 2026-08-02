@@ -103,6 +103,70 @@ export interface PhoneLoginRequest {
   password: string;
 }
 
+/**
+ * التدفق الموازي الكامل عبر PhonePasswordAuthController (api/auth/phone/...).
+ * الاستجابة الموحّدة لكل الـ 10 نقاط نهاية هي PhoneWorkflowResult من الباك،
+ * لذلك نُعرِّف نوعًا واحدًا يغطيها جميعًا بدل نوع لكل استدعاء.
+ */
+export enum PhoneVerificationState {
+  NotConfigured = 'NotConfigured',
+  Verified = 'Verified',
+  DueSoon = 'DueSoon',
+  GracePeriod = 'GracePeriod',
+  Restricted = 'Restricted'
+}
+
+export interface PhoneWorkflowResponse {
+  succeeded: boolean;
+  errorCode?: string | null;
+  message?: string | null;
+  challengeId?: string | null;
+  accessToken?: string | null;
+  refreshToken?: string | null;
+  accessTokenExpiresAtUtc?: string | null;
+  /** يُستخدم فقط في password-reset/verify → يُمرَّر إلى password-reset/confirm. */
+  confirmationToken?: string | null;
+  verificationState?: PhoneVerificationState | null;
+  dueAtUtc?: string | null;
+  graceEndsAtUtc?: string | null;
+}
+
+/** تحويل دفاعي يقرأ PascalCase وcamelCase معًا (PhoneWorkflowResult من الباك). */
+export function normalizePhoneWorkflowResult(response: unknown): PhoneWorkflowResponse {
+  const value = (response ?? {}) as Record<string, unknown>;
+  const read = (camel: string, pascal: string): unknown => value[camel] ?? value[pascal];
+
+  return {
+    succeeded: Boolean(read('succeeded', 'Succeeded')),
+    errorCode: (read('errorCode', 'ErrorCode') as string) ?? null,
+    message: (read('message', 'Message') as string) ?? null,
+    challengeId: (read('challengeId', 'ChallengeId') as string) ?? null,
+    accessToken: (read('accessToken', 'AccessToken') as string) ?? null,
+    refreshToken: (read('refreshToken', 'RefreshToken') as string) ?? null,
+    accessTokenExpiresAtUtc: (read('accessTokenExpiresAtUtc', 'AccessTokenExpiresAtUtc') as string) ?? null,
+    confirmationToken: (read('confirmationToken', 'ConfirmationToken') as string) ?? null,
+    verificationState: (read('verificationState', 'VerificationState') as PhoneVerificationState) ?? null,
+    dueAtUtc: (read('dueAtUtc', 'DueAtUtc') as string) ?? null,
+    graceEndsAtUtc: (read('graceEndsAtUtc', 'GraceEndsAtUtc') as string) ?? null
+  };
+}
+
+/** أكواد الأخطاء الموثّقة في phone-password-authentication-and-reverification.md */
+export const PHONE_WORKFLOW_ERROR_CODES = {
+  PHONE_ALREADY_REGISTERED: 'PHONE_ALREADY_REGISTERED',
+  PHONE_AUTH_FAILED: 'PHONE_AUTH_FAILED',
+  PHONE_NUMBER_INVALID: 'PHONE_NUMBER_INVALID',
+  PHONE_NUMBER_ALREADY_IN_USE: 'PHONE_NUMBER_ALREADY_IN_USE',
+  OTP_INVALID: 'OTP_INVALID',
+  PASSWORD_POLICY_FAILED: 'PASSWORD_POLICY_FAILED',
+  USER_CREATE_FAILED: 'USER_CREATE_FAILED',
+  ROLE_ASSIGNMENT_FAILED: 'ROLE_ASSIGNMENT_FAILED',
+  PHONE_REVERIFICATION_REQUIRED: 'PHONE_REVERIFICATION_REQUIRED',
+  PHONE_REVERIFICATION_NOT_CONFIGURED: 'PHONE_REVERIFICATION_NOT_CONFIGURED',
+  RECENT_AUTHENTICATION_REQUIRED: 'RECENT_AUTHENTICATION_REQUIRED',
+  PASSWORD_RESET_INVALID: 'PASSWORD_RESET_INVALID'
+} as const;
+
 export function normalizeAuthTokenResponse(response: unknown): AuthTokenResponse {
   const value = response as Partial<AuthTokenResponse> & {
     access_token?: string;

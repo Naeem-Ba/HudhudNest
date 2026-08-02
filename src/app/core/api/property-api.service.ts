@@ -74,6 +74,56 @@ export class PropertyApiService {
     );
   }
 
+  /**
+   * ينشر إعلاناً في وضع مسودة. الخادم يوفر PUBLISH فقط (نشر لمرة واحدة) —
+   * لا يوجد endpoint "unpublish" للتراجع عن النشر (تحقق مباشر من الكود).
+   */
+  publishProperty(id: string): Observable<void> {
+    return this.api.patch<void>(`/properties/${id}/publish`);
+  }
+
+  /**
+   * بحث جغرافي عبر PostGIS. radiusKm محدود إلى 50 كم من طرف الخادم،
+   * ونمرره كما هو هنا دون تكرار التحقق كي لا نخفي أخطاء الخادم الحقيقية.
+   */
+  geoSearch(
+    latitude: number,
+    longitude: number,
+    radiusKm = 5,
+    filter: PropertyFilterDto = {}
+  ): Observable<PagedResult<Property>> {
+    const page = filter.page ?? 1;
+    const pageSize = filter.pageSize ?? 20;
+
+    const query: Record<string, QueryValue> = {
+      ...this.toQuery(filter),
+      latitude,
+      longitude,
+      radiusKm
+    };
+
+    return this.api
+      .get<Property[] | ApiPagedResult<Property>>('/properties/geo-search', query)
+      .pipe(
+        map(response => normalizePagedResult(
+          response,
+          item => this.toProperty(item),
+          page,
+          pageSize
+        ))
+      );
+  }
+
+  /** يعيّن صورة موجودة مسبقاً كصورة رئيسية (غلاف) للعقار. */
+  setMainImage(propertyId: string, imageId: string): Observable<unknown> {
+    return this.api.patch<unknown>(`/properties/${propertyId}/images/${imageId}/setmain`);
+  }
+
+  /** يحذف صورة محفوظة فعلياً من الخادم (وليس فقط من قائمة الرفع المحلية). */
+  deleteImage(propertyId: string, imageId: string): Observable<void> {
+    return this.api.delete<void>(`/properties/${propertyId}/images/${imageId}`);
+  }
+
   private getPropertyCollection(path: string): Observable<Property[]> {
     return this.api
       .get<Property[] | ApiPagedResult<Property>>(path)

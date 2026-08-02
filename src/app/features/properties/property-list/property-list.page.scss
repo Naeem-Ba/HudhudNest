@@ -368,29 +368,52 @@
   }
 }
 
-/* Favorite Button */
-.fav-btn {
+/* ── Geo-search ("بالقرب مني") ── */
+.geo-search-group {
+  padding: 0 0 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+}
+
+.geo-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  justify-content: center;
+  padding: .65rem 1rem;
+  border-radius: var(--r-md, 10px);
+  border: 1px solid var(--primary, #2563eb);
+  background: var(--primary-soft, #eff6ff);
+  color: var(--primary, #2563eb);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+
+  &:disabled { opacity: .6; cursor: default; }
+
+  &--active {
+    background: var(--primary, #2563eb);
+    color: #fff;
+  }
+}
+
+.radius-control {
+  margin-top: .75rem;
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--primary, #2563eb);
+  }
+}
+
+/* Favorite Button — app-favorite-toggle-button يحمل تصميمه الخاص داخلياً؛
+   هذا فقط يتحكم بموضعه فوق صورة البطاقة. */
+.fav-btn-wrapper {
   position: absolute;
   top: .6rem;
   inset-inline-end: .6rem;
-  width: 34px;
-  height: 34px;
-  background: rgba(255,255,255,.9);
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--gray-400);
-  transition: all .15s;
-  backdrop-filter: blur(4px);
-
-  &:hover {
-    color: var(--danger);
-    background: #fff;
-    transform: scale(1.1);
-  }
+  z-index: 2;
 }
 
 /* ── Pagination ── */
