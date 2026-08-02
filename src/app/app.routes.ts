@@ -87,6 +87,32 @@ export const routes: Routes = [
             .then(m => m.NotificationsPage)
       },
       {
+        path: 'visits',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/visits/visits.page')
+            .then(m => m.VisitsPage)
+      },
+      {
+        path: 'reviews',
+        loadComponent: () =>
+          import('./features/reviews/reviews.page')
+            .then(m => m.ReviewsPage)
+      },
+      {
+        path: 'reviews/:propertyId',
+        loadComponent: () =>
+          import('./features/reviews/reviews.page')
+            .then(m => m.ReviewsPage)
+      },
+      {
+        path: 'analytics',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/analytics/analytics.page')
+            .then(m => m.AnalyticsPage)
+      },
+      {
         path: 'offline',
         loadComponent: () =>
           import('./features/offline/offline.page')

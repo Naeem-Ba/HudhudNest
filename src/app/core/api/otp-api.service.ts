@@ -4,6 +4,7 @@ import { BackendApiService } from '../api/backend-api.service';
 import { TokenStorageService } from '../services/token-storage.service';
 import {
   AuthTokenResponse,
+  OtpPurpose,
   SendOtpRequest,
   SendOtpResponse,
   VerifyOtpRequest,
@@ -21,7 +22,7 @@ export class OtpApiService {
     const payload: SendOtpRequest = {
       ...request,
       phoneNumber: request.phoneNumber.trim(),
-      purpose: request.purpose ?? 'PhoneRegistration'
+      purpose: request.purpose ?? OtpPurpose.PhoneRegistration
     };
 
     return this.api.post<SendOtpResponse>('/auth/phone/send-otp', payload);
@@ -32,7 +33,7 @@ export class OtpApiService {
       ...request,
       phoneNumber: request.phoneNumber.trim(),
       code: request.code.trim(),
-      purpose: request.purpose ?? 'PhoneRegistration',
+      purpose: request.purpose ?? OtpPurpose.PhoneRegistration,
       firstName: request.firstName?.trim() || undefined,
       lastName: request.lastName?.trim() || undefined
     };

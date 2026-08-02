@@ -1,7 +1,27 @@
 /* ═══════════════════════════════════════════════════════════
    landing-page.component.scss
    صفحة هبوط PropertyApp – أسلوب: Real Estate SaaS · Mobile-first
+
+   [تعديلات هذه الجولة]
+   1. ترحيل @media (max-width: 900px/640px) المباشرة إلى معيار
+      Phase 0 الموحّد (_breakpoints.scss) عبر @use — 900px→bp.tablet
+      (980px، الأقرب من الثلاثة المعتمدة)، 640px→bp.mobile (بلا تغيير
+      في القيمة نفسها، فقط توحيد المصدر).
+   2. إضافة @include bp.desktop (1280px+) — تحسين جديد للشاشات الكبيرة
+      جداً، غير مستخدَم سابقاً في أي ملف بالمشروع.
+   3. أنيميشن سلس لفتح/إغلاق الأسئلة الشائعة (grid-template-rows
+      0fr→1fr) بدل display:none/block الفجائي.
+   4. سهم واحد يدور فعلياً (transform: rotate) بدل استبدال رمز ▲/▼
+      كنص — كان الـ transition القديم على .faq-chevron معرَّفاً لكن
+      ميتاً (لا شيء يُفعِّله). يتطلب هذا تعديلاً مرافقاً في .html
+      (مرفق في تسليم منفصل).
+
+   ⚠️ لم تُلمَس ازدواجية design tokens (:host { --navy: ...} هنا مقابل
+   نفس المتغيرات المستخدَمة عالمياً في navbar/home) — موثّقة في الرد
+   النصي، بانتظار ملف الثيم العالمي للتأكد قبل أي دمج.
    ═══════════════════════════════════════════════════════════ */
+
+@use '../../../styles/breakpoints' as bp;
 
 /* ─── Design Tokens ─── */
 :host {
@@ -76,6 +96,17 @@
   max-width: 760px;
 }
 
+/* [جديد] الشاشات الكبيرة جداً — لم تكن معالَجة سابقاً بأي مكان بالمشروع */
+@include bp.desktop {
+  .container {
+    max-width: 1320px;
+  }
+
+  .container--narrow {
+    max-width: 860px;
+  }
+}
+
 /* ─── Section Base ─── */
 .section {
   padding-block: var(--space-2xl);
@@ -116,6 +147,13 @@
   color: var(--navy);
   line-height: 1.3;
   margin-bottom: var(--space-sm);
+}
+
+/* [جديد] عناوين أكبر قليلاً على الشاشات الكبيرة جداً فقط */
+@include bp.desktop {
+  .section-title {
+    font-size: clamp(2rem, 2.8vw, 2.9rem);
+  }
 }
 
 .section-title--white { color: var(--white); }
@@ -172,6 +210,13 @@
   max-width: 700px;
 }
 
+/* [جديد] Hero أعرض قليلاً على الشاشات الكبيرة جداً */
+@include bp.desktop {
+  .hero__content {
+    max-width: 820px;
+  }
+}
+
 .hero__badge {
   display: inline-flex;
   align-items: center;
@@ -206,6 +251,13 @@
   color: var(--white);
   line-height: 1.25;
   margin-bottom: var(--space-md);
+}
+
+/* [جديد] عنوان Hero أكبر على الشاشات الكبيرة جداً */
+@include bp.desktop {
+  .hero__title {
+    font-size: clamp(3rem, 3.6vw, 4.2rem);
+  }
 }
 
 .hero__title-accent {
@@ -709,6 +761,7 @@
 
 /* ══════════════════════════════════════════════════
    FAQ
+   [تعديل] أنيميشن سلس بدل display:none/block + سهم يدور فعلياً
    ══════════════════════════════════════════════════ */
 .faq-list {
   display: flex;
@@ -747,22 +800,41 @@
 
 .faq-btn:hover { background: var(--gray-50); }
 
+/* [تعديل] سهم واحد ثابت (SVG) يدور عبر transform بدل استبدال رمز نصي */
 .faq-chevron {
-  font-size: 0.7rem;
-  color: var(--gold);
   flex-shrink: 0;
-  transition: transform .2s;
+  display: inline-flex;
+  color: var(--gold);
+  transition: transform 0.25s ease;
+}
+
+.faq-item--open .faq-chevron {
+  transform: rotate(180deg);
+}
+
+/* [تعديل] أنيميشن ارتفاع سلس عبر grid-template-rows — يعمل مع
+   محتوى ديناميكي الطول (auto) بدون الحاجة لـ JS لقياس الارتفاع */
+.faq-answer-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s ease;
+}
+
+.faq-item--open .faq-answer-wrapper {
+  grid-template-rows: 1fr;
 }
 
 .faq-answer {
-  display: none;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.faq-answer p {
   padding: 0 var(--space-lg) var(--space-lg);
   font-size: 0.92rem;
   color: var(--gray-600);
   line-height: 1.75;
 }
-
-.faq-item--open .faq-answer { display: block; }
 
 /* ══════════════════════════════════════════════════
    FINAL CTA
@@ -840,9 +912,10 @@
 .footer__link:hover { color: var(--gold); }
 
 /* ══════════════════════════════════════════════════
-   RESPONSIVE – Tablet
+   RESPONSIVE — [Phase 0] مُرحَّل لمعيار _breakpoints.scss الموحّد
+   كان: @media (max-width: 900px) → الآن: @include bp.tablet (980px)
    ══════════════════════════════════════════════════ */
-@media (max-width: 900px) {
+@include bp.tablet {
   .problem-solution {
     grid-template-columns: 1fr;
   }
@@ -853,9 +926,10 @@
 }
 
 /* ══════════════════════════════════════════════════
-   RESPONSIVE – Mobile (< 640px)
+   RESPONSIVE — [Phase 0] كان: @media (max-width: 640px)
+   الآن: @include bp.mobile — نفس القيمة 640px، مصدر موحّد فقط
    ══════════════════════════════════════════════════ */
-@media (max-width: 640px) {
+@include bp.mobile {
   :host {
     --space-2xl: 2.5rem;
   }
