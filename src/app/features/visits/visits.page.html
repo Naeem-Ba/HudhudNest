@@ -1,0 +1,44 @@
+<section class="feature-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">{{ 'VISITS.EYEBROW' | translate }}</p>
+      <h1>{{ 'VISITS.TITLE' | translate }}</h1>
+      <p>{{ 'VISITS.SUBTITLE' | translate }}</p>
+    </div>
+    <button type="button" class="btn secondary" (click)="load()" [disabled]="loading()">{{ 'COMMON.REFRESH' | translate }}</button>
+  </header>
+
+  <div class="filters" role="group" [attr.aria-label]="'VISITS.FILTER' | translate">
+    <button *ngFor="let status of statuses" type="button" [class.active]="selectedStatus() === status" (click)="selectStatus(status)">
+      {{ ('VISITS.STATUS.' + status.toUpperCase()) | translate }}
+    </button>
+  </div>
+
+  <div *ngIf="loading()" class="state">{{ 'COMMON.LOADING' | translate }}</div>
+  <div *ngIf="!loading() && error()" class="state error">
+    <p>{{ error() | translate }}</p><button type="button" class="btn" (click)="load()">{{ 'COMMON.RETRY' | translate }}</button>
+  </div>
+  <div *ngIf="!loading() && !error() && filteredVisits().length === 0" class="state">{{ 'VISITS.EMPTY' | translate }}</div>
+
+  <div class="cards" *ngIf="!loading() && !error()">
+    <article class="visit-card" *ngFor="let visit of filteredVisits(); trackBy: trackById">
+      <div class="card-main">
+        <div>
+          <a class="property-link" [routerLink]="['/properties', visit.propertyId]">{{ visit.propertyTitle || ('VISITS.PROPERTY' | translate) }}</a>
+          <p class="date">{{ visit.proposedAt | date:'medium' }}</p>
+        </div>
+        <span class="status" [attr.data-status]="visit.status">{{ ('VISITS.STATUS.' + visit.status.toUpperCase()) | translate }}</span>
+      </div>
+      <dl>
+        <div><dt>{{ 'VISITS.VISITOR' | translate }}</dt><dd>{{ visit.visitorName }}</dd></div>
+        <div><dt>{{ 'VISITS.PHONE' | translate }}</dt><dd><a [href]="'tel:' + visit.visitorPhone">{{ visit.visitorPhone }}</a></dd></div>
+        <div *ngIf="visit.visitorNote"><dt>{{ 'VISITS.NOTE' | translate }}</dt><dd>{{ visit.visitorNote }}</dd></div>
+      </dl>
+      <div class="actions" *ngIf="canManageAsOwner(visit) || canCancel(visit)">
+        <button *ngIf="canManageAsOwner(visit)" type="button" class="btn success" (click)="confirm(visit)" [disabled]="processingId() === visit.id">{{ 'VISITS.CONFIRM' | translate }}</button>
+        <button *ngIf="canManageAsOwner(visit)" type="button" class="btn danger" (click)="decline(visit)" [disabled]="processingId() === visit.id">{{ 'VISITS.DECLINE' | translate }}</button>
+        <button *ngIf="canCancel(visit)" type="button" class="btn secondary" (click)="cancel(visit)" [disabled]="processingId() === visit.id">{{ 'VISITS.CANCEL' | translate }}</button>
+      </div>
+    </article>
+  </div>
+</section>

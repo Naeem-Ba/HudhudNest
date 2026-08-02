@@ -593,3 +593,9 @@
   .detail-body { padding-block: 1rem; }
   .detail-form__grid { grid-template-columns: 1fr; }
 }
+
+/* زر المفضلة داخل شريط إجراءات صفحة التفاصيل */
+.detail-fav-btn {
+  display: inline-flex;
+  align-self: center;
+}

@@ -43,25 +43,48 @@ export interface AppleLoginRequest {
   lastName?: string | null;
 }
 
+export enum OtpPurpose {
+  PhoneRegistration = 'PhoneRegistration',
+  /** @deprecated لم يعد يُستخدم — الدخول أصبح برقم الهاتف + كلمة السر عبر PhoneLoginRequest بدل OTP في كل مرة. */
+  PhoneLogin = 'PhoneLogin',
+  AddPhoneToAccount = 'AddPhoneToAccount',
+  ChangePhone = 'ChangePhone'
+}
+
+/**
+ * ملاحظة توحيد (تم دمج تصريحين مكرَّرين بنفس الاسم كانا يسبّبان
+ * TS2687/TS2717 عند البناء). phoneNumber/code إلزاميان لأن تدفق
+ * الهاتف في LoginComponent يرسلهما دائماً؛ email/firstName/lastName
+ * اختياريان للحفاظ على أي استخدام آخر (OTP عبر البريد أو تسجيل
+ * مستخدم جديد) كان يعتمد على الشكل العام الأقدم.
+ */
 export interface SendOtpRequest {
-  phoneNumber?: string;
+  phoneNumber: string;
   email?: string;
-  purpose?: string;
+  purpose?: OtpPurpose;
   firstName?: string;
   lastName?: string;
 }
 
 export interface SendOtpResponse {
-  message?: string;
+  message: string;
   expiresAt?: string;
-  expiresInSeconds?: number;
+  expiresInSeconds: number;
 }
 
+/**
+ * password أصبح مطلوبًا فعليًا (على مستوى منطق العميل) عندما
+ * purpose = PhoneRegistration، لأن /auth/phone/verify أصبح ينشئ
+ * الحساب مباشرة بكلمة سر في نفس الطلب بدل تدفّق OTP-only السابق.
+ * يبقى اختياريًا في التوقيع لأن AddPhoneToAccount/ChangePhone (خارج
+ * نطاق هذا التغيير) لا يحتاجان كلمة سر.
+ */
 export interface VerifyOtpRequest {
-  phoneNumber?: string;
+  phoneNumber: string;
   email?: string;
   code: string;
-  purpose?: string;
+  password?: string;
+  purpose?: OtpPurpose;
   firstName?: string;
   lastName?: string;
 }
@@ -73,6 +96,76 @@ export interface VerifyOtpResponse {
   refreshToken?: string;
   expiresIn?: number;
 }
+
+/** تسجيل الدخول برقم الهاتف + كلمة السر (بدون OTP) — راجع PhoneAuthApiService. */
+export interface PhoneLoginRequest {
+  phoneNumber: string;
+  password: string;
+}
+
+/**
+ * التدفق الموازي الكامل عبر PhonePasswordAuthController (api/auth/phone/...).
+ * الاستجابة الموحّدة لكل الـ 10 نقاط نهاية هي PhoneWorkflowResult من الباك،
+ * لذلك نُعرِّف نوعًا واحدًا يغطيها جميعًا بدل نوع لكل استدعاء.
+ */
+export enum PhoneVerificationState {
+  NotConfigured = 'NotConfigured',
+  Verified = 'Verified',
+  DueSoon = 'DueSoon',
+  GracePeriod = 'GracePeriod',
+  Restricted = 'Restricted'
+}
+
+export interface PhoneWorkflowResponse {
+  succeeded: boolean;
+  errorCode?: string | null;
+  message?: string | null;
+  challengeId?: string | null;
+  accessToken?: string | null;
+  refreshToken?: string | null;
+  accessTokenExpiresAtUtc?: string | null;
+  /** يُستخدم فقط في password-reset/verify → يُمرَّر إلى password-reset/confirm. */
+  confirmationToken?: string | null;
+  verificationState?: PhoneVerificationState | null;
+  dueAtUtc?: string | null;
+  graceEndsAtUtc?: string | null;
+}
+
+/** تحويل دفاعي يقرأ PascalCase وcamelCase معًا (PhoneWorkflowResult من الباك). */
+export function normalizePhoneWorkflowResult(response: unknown): PhoneWorkflowResponse {
+  const value = (response ?? {}) as Record<string, unknown>;
+  const read = (camel: string, pascal: string): unknown => value[camel] ?? value[pascal];
+
+  return {
+    succeeded: Boolean(read('succeeded', 'Succeeded')),
+    errorCode: (read('errorCode', 'ErrorCode') as string) ?? null,
+    message: (read('message', 'Message') as string) ?? null,
+    challengeId: (read('challengeId', 'ChallengeId') as string) ?? null,
+    accessToken: (read('accessToken', 'AccessToken') as string) ?? null,
+    refreshToken: (read('refreshToken', 'RefreshToken') as string) ?? null,
+    accessTokenExpiresAtUtc: (read('accessTokenExpiresAtUtc', 'AccessTokenExpiresAtUtc') as string) ?? null,
+    confirmationToken: (read('confirmationToken', 'ConfirmationToken') as string) ?? null,
+    verificationState: (read('verificationState', 'VerificationState') as PhoneVerificationState) ?? null,
+    dueAtUtc: (read('dueAtUtc', 'DueAtUtc') as string) ?? null,
+    graceEndsAtUtc: (read('graceEndsAtUtc', 'GraceEndsAtUtc') as string) ?? null
+  };
+}
+
+/** أكواد الأخطاء الموثّقة في phone-password-authentication-and-reverification.md */
+export const PHONE_WORKFLOW_ERROR_CODES = {
+  PHONE_ALREADY_REGISTERED: 'PHONE_ALREADY_REGISTERED',
+  PHONE_AUTH_FAILED: 'PHONE_AUTH_FAILED',
+  PHONE_NUMBER_INVALID: 'PHONE_NUMBER_INVALID',
+  PHONE_NUMBER_ALREADY_IN_USE: 'PHONE_NUMBER_ALREADY_IN_USE',
+  OTP_INVALID: 'OTP_INVALID',
+  PASSWORD_POLICY_FAILED: 'PASSWORD_POLICY_FAILED',
+  USER_CREATE_FAILED: 'USER_CREATE_FAILED',
+  ROLE_ASSIGNMENT_FAILED: 'ROLE_ASSIGNMENT_FAILED',
+  PHONE_REVERIFICATION_REQUIRED: 'PHONE_REVERIFICATION_REQUIRED',
+  PHONE_REVERIFICATION_NOT_CONFIGURED: 'PHONE_REVERIFICATION_NOT_CONFIGURED',
+  RECENT_AUTHENTICATION_REQUIRED: 'RECENT_AUTHENTICATION_REQUIRED',
+  PASSWORD_RESET_INVALID: 'PASSWORD_RESET_INVALID'
+} as const;
 
 export function normalizeAuthTokenResponse(response: unknown): AuthTokenResponse {
   const value = response as Partial<AuthTokenResponse> & {
@@ -87,3 +180,37 @@ export function normalizeAuthTokenResponse(response: unknown): AuthTokenResponse
     expiresIn: value.expiresIn ?? value.expires_in ?? 0
   };
 }
+
+export interface PhoneAuthUser {
+  id: string;
+  phoneNumber: string;
+  email: string | null;
+  displayName: string | null;
+  hasEmail: boolean;
+  hasPassword: boolean;
+  emailVerified: boolean;
+}
+
+export interface PhoneAuthResponse {
+  isNewUser: boolean;
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: string;
+  user: PhoneAuthUser;
+}
+
+/** أكواد خطأ من PhoneAuthController — تُستخدم للتمييز البرمجي، ليس النص الحر */
+export const OTP_ERROR_CODES = {
+  RATE_LIMITED: 'RATE_LIMITED',
+  SMS_FAILED: 'SMS_FAILED',
+  OTP_STORE_FAILED: 'OTP_STORE_FAILED',
+  OTP_NOT_FOUND: 'OTP_NOT_FOUND',
+  OTP_INVALID: 'OTP_INVALID',
+  OTP_WRONG: 'OTP_WRONG',
+  OTP_ALREADY_USED: 'OTP_ALREADY_USED',
+  PROFILE_NAME_REQUIRED: 'PROFILE_NAME_REQUIRED', // غير مستخدَم عمليًا بعد الآن — الاسم إلزامي دائمًا من العميل
+  ROLE_ASSIGNMENT_FAILED: 'ROLE_ASSIGNMENT_FAILED',
+  USER_CREATE_FAILED: 'USER_CREATE_FAILED',
+  PHONE_AUTH_FAILED: 'PHONE_AUTH_FAILED',
+  PHONE_ALREADY_REGISTERED: 'PHONE_ALREADY_REGISTERED' // NEW — يتطلب تعديل الباك المقترح
+} as const;

@@ -308,6 +308,22 @@
               {{ 'PROFILE.MY_ADS' | translate }}
             </a>
 
+
+            <a routerLink="/visits" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+              <span aria-hidden="true">📅</span>
+              {{ 'NAVBAR.VISITS' | translate }}
+            </a>
+
+            <a routerLink="/analytics" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+              <span aria-hidden="true">📊</span>
+              {{ 'NAVBAR.ANALYTICS' | translate }}
+            </a>
+
+            <a routerLink="/reviews" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+              <span aria-hidden="true">⭐</span>
+              {{ 'NAVBAR.REVIEWS' | translate }}
+            </a>
+
             <div class="account__divider"></div>
 
             <button
@@ -457,6 +473,19 @@
           (click)="closeMobileMenu()"
         >
           {{ 'PROFILE.MY_ADS' | translate }}
+        </a>
+
+
+        <a routerLink="/visits" class="mobile-drawer__link" (click)="closeMobileMenu()">
+          {{ 'NAVBAR.VISITS' | translate }}
+        </a>
+
+        <a routerLink="/analytics" class="mobile-drawer__link" (click)="closeMobileMenu()">
+          {{ 'NAVBAR.ANALYTICS' | translate }}
+        </a>
+
+        <a routerLink="/reviews" class="mobile-drawer__link" (click)="closeMobileMenu()">
+          {{ 'NAVBAR.REVIEWS' | translate }}
         </a>
 
         <button

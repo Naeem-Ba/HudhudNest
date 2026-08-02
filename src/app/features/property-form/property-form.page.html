@@ -305,7 +305,35 @@
               </div>
             </div>
 
-            <!-- Preview -->
+            <!-- الصور المحفوظة فعلياً على الخادم (وضع التعديل فقط) -->
+            <div class="existing-images" *ngIf="isEditMode() && existingImages().length > 0">
+              <p class="existing-images__label">{{ 'PROPERTY_FORM.CURRENT_IMAGES' | translate }}</p>
+              <div class="image-previews">
+                <div *ngFor="let img of existingImages()" class="image-preview" [class.image-preview--main]="img.isMain">
+                  <img [src]="img.url" alt="" appImageFallback="/images/no-image.svg" />
+                  <span class="main-badge" *ngIf="img.isMain">{{ 'PROPERTY_FORM.COVER_IMAGE' | translate }}</span>
+                  <div class="image-preview__actions">
+                    <button
+                      type="button"
+                      class="set-main-btn"
+                      *ngIf="!img.isMain"
+                      [disabled]="imageActionBusyId() === img.id"
+                      (click)="setMainImage(img.id)"
+                      [title]="'PROPERTY_FORM.SET_AS_COVER' | translate"
+                    >★</button>
+                    <button
+                      type="button"
+                      class="remove-img-btn"
+                      [disabled]="imageActionBusyId() === img.id"
+                      (click)="deleteExistingImage(img.id)"
+                      aria-label="حذف الصورة"
+                    >×</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Preview (صور جديدة قيد الرفع) -->
             <div class="image-previews" *ngIf="previews().length > 0">
               <div *ngFor="let url of previews(); let i = index" class="image-preview">
                 <img [src]="url" [alt]="'صورة ' + (i+1)" appImageFallback="/images/no-image.svg" />

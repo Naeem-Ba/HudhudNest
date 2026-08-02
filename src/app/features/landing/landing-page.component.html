@@ -1,10 +1,11 @@
 <!-- ════════════════════════════════════════════════════════
      landing-page.component.html
      صفحة هبوط PropertyApp – منصة عقارية رقمية في سوريا
-     ════════════════════════════════════════════════════════ -->
 
-<!-- ═══════════ SEO Meta (يُضاف عبر Angular Meta service أو index.html) ═══════════ -->
-<!-- راجع ملف README لكيفية إضافة meta tags عبر Angular -->
+     [تعديل هذه الجولة] قسم FAQ فقط: سهم SVG واحد يدور بدل استبدال
+     رمز ▲/▼ نصياً، وتغليف الإجابة بـ .faq-answer-wrapper ليعمل
+     أنيميشن الارتفاع السلس المُضاف في .scss. باقي الملف بلا تغيير.
+     ════════════════════════════════════════════════════════ -->
 
 <main class="lp-root" dir="rtl" lang="ar">
 
@@ -519,6 +520,7 @@
 
   <!-- ══════════════════════════════════════════════════════
        القسم 7: الأسئلة الشائعة
+       [تعديل] سهم SVG واحد يدور + تغليف الإجابة لأنيميشن الارتفاع
        ══════════════════════════════════════════════════════ -->
   <section class="section section--white" aria-labelledby="faq-heading">
     <div class="container container--narrow">
@@ -542,18 +544,20 @@
               (click)="toggleFaq(i)"
             >
               {{ faq.q }}
-              <span class="faq-chevron" aria-hidden="true">
-                {{ openFaqIndex() === i ? '▲' : '▼' }}
-              </span>
+              <svg class="faq-chevron" width="14" height="14" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </button>
           </dt>
-          <dd
-            class="faq-answer"
-            [id]="'faq-answer-' + i"
-            [attr.aria-hidden]="openFaqIndex() !== i"
-          >
-            <p>{{ faq.a }}</p>
-          </dd>
+          <div class="faq-answer-wrapper">
+            <dd
+              class="faq-answer"
+              [id]="'faq-answer-' + i"
+              [attr.aria-hidden]="openFaqIndex() !== i"
+            >
+              <p>{{ faq.a }}</p>
+            </dd>
+          </div>
         </div>
       </dl>
     </div>

@@ -373,6 +373,35 @@
   }
 }
 
+/* ── Sub-step heading (e.g. profile-name completion inside OTP form) ── */
+.auth-step-heading {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+
+  &__title {
+    margin: 0;
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--navy, #0f2744);
+  }
+}
+
+/* ── OTP step secondary actions (resend / change number) ── */
+.auth-otp-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: -.25rem;
+
+  .auth-switch__btn:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+    text-decoration: none;
+  }
+}
+
 @include bp.tablet {
   .auth-layout {
     min-height: calc(100vh - var(--navbar-height, 68px));

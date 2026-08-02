@@ -44,6 +44,7 @@ export class MyListingsPage implements OnInit {
   readonly loading = signal(false);
   readonly error = signal('');
   readonly deletingId = signal<string | null>(null);
+  readonly publishingId = signal<string | null>(null);
 
   readonly fallbackImage = '/images/no-image.svg';
   private readonly now = Date.now();
@@ -107,6 +108,39 @@ export class MyListingsPage implements OnInit {
           this.deletingId.set(null);
         }
       });
+  }
+
+  /**
+   * ملاحظة: الخادم يوفر PUBLISH فقط (نشر لمرة واحدة، بلا رجعة عبر الـ API)
+   * لذلك هذا الزر لا يظهر إلا للإعلانات في وضع مسودة، وليس Toggle ثنائي الاتجاه.
+   */
+  publish(id: string | undefined): void {
+    if (!id || this.publishingId()) return;
+
+    this.publishingId.set(id);
+
+    this.api
+      .publishProperty(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.listings.update(prev =>
+            prev.map(p => (p.id === id ? { ...p, isPublished: true, status: 'Available' } : p))
+          );
+          this.toast.show(this.translate.instant('MY_LISTINGS.PUBLISH_SUCCESS'), 'success');
+          this.publishingId.set(null);
+        },
+        error: () => {
+          this.toast.show(this.translate.instant('MY_LISTINGS.PUBLISH_ERROR'), 'error');
+          this.publishingId.set(null);
+        }
+      });
+  }
+
+  openMessages(id: string | undefined): void {
+    if (id) {
+      this.router.navigate(['/messages', id]);
+    }
   }
 
   getMainImage(property: Property): string {

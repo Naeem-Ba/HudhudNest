@@ -1,0 +1,231 @@
+/* ================================================================
+   _auth-flow.scss — Shared design for the phone/password parallel
+   auth flow pages (registration, password reset, reverification,
+   phone change). Reuses the project's existing design tokens
+   (src/styles.scss :root) so it matches the rest of the app exactly.
+   Import with: @use '../../../../styles/auth-flow' as flow;
+   ================================================================ */
+
+@mixin page {
+  min-height: calc(100vh - var(--navbar-height, 68px));
+  min-height: calc(100dvh - var(--navbar-height, 68px));
+  display: grid;
+  place-items: center;
+  background: var(--page-bg);
+  padding: clamp(1.25rem, 4vw, 3rem) 1rem;
+}
+
+@mixin card {
+  width: min(460px, 100%);
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-lg);
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+}
+
+@mixin header {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+  text-align: center;
+
+  h1 {
+    margin: 0;
+    font-size: clamp(1.3rem, 3vw, 1.6rem);
+    font-weight: 800;
+    color: var(--navy);
+  }
+
+  p {
+    margin: 0;
+    color: var(--gray-500);
+    font-size: .88rem;
+    line-height: 1.65;
+  }
+}
+
+/* ── Step indicator (dots + connecting line) ── */
+@mixin steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+
+    &__dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .78rem;
+      font-weight: 800;
+      background: var(--gray-100);
+      color: var(--gray-400);
+      border: 2px solid var(--gray-200);
+      transition: all .2s var(--ease-out);
+    }
+
+    &__line {
+      width: 28px;
+      height: 2px;
+      background: var(--gray-200);
+      transition: background .2s var(--ease-out);
+    }
+
+    &--done .step__dot {
+      background: var(--success);
+      border-color: var(--success);
+      color: #fff;
+    }
+
+    &--active .step__dot {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      box-shadow: 0 0 0 4px var(--primary-soft);
+    }
+
+    &--done + .step__line,
+    &--active + .step__line {
+      background: var(--primary);
+    }
+  }
+}
+
+@mixin form-group {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+
+  label {
+    font-size: .85rem;
+    font-weight: 700;
+    color: var(--gray-700);
+  }
+
+  input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: .75rem .9rem;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    font-size: .95rem;
+    font-family: inherit;
+    background: var(--surface);
+    color: var(--gray-900);
+    transition: border-color .15s, box-shadow .15s;
+
+    &:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px var(--primary-soft);
+    }
+
+    &.otp-input {
+      letter-spacing: .5em;
+      text-align: center;
+      font-weight: 800;
+      font-size: 1.15rem;
+      direction: ltr;
+    }
+  }
+
+  .field-hint {
+    margin: 0;
+    font-size: .76rem;
+    color: var(--gray-400);
+  }
+
+  .field-error {
+    margin: 0;
+    font-size: .78rem;
+    color: var(--danger);
+  }
+}
+
+@mixin primary-btn {
+  width: 100%;
+  border: 0;
+  border-radius: var(--r-md);
+  padding: .85rem 1rem;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 800;
+  font-size: .95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  transition: background .15s, opacity .15s;
+
+  &:hover:not(:disabled) { background: var(--primary-dark); }
+  &:disabled { opacity: .6; cursor: default; }
+}
+
+@mixin ghost-btn {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: .75rem 1rem;
+  background: transparent;
+  color: var(--gray-600);
+  font-weight: 700;
+  font-size: .88rem;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+
+  &:hover:not(:disabled) { background: var(--gray-50); border-color: var(--gray-300); }
+  &:disabled { opacity: .6; cursor: default; }
+}
+
+@mixin alert {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  padding: .75rem .9rem;
+  border-radius: var(--r-md);
+  font-size: .85rem;
+  line-height: 1.6;
+
+  &--error { background: var(--danger-soft); color: var(--danger); }
+  &--success { background: var(--success-soft); color: var(--success); }
+  &--warning { background: var(--warning-soft); color: var(--warning); }
+  &--info { background: var(--primary-soft); color: var(--primary-dark); }
+}
+
+@mixin spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.4);
+  border-top-color: #fff;
+  animation: flow-spin .7s linear infinite;
+}
+
+@keyframes flow-spin {
+  to { transform: rotate(360deg); }
+}
+
+@mixin footer-link {
+  text-align: center;
+  font-size: .85rem;
+  color: var(--gray-500);
+
+  a {
+    color: var(--primary);
+    font-weight: 700;
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; }
+  }
+}

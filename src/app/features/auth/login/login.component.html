@@ -95,9 +95,33 @@
         {{ message }}
       </div>
 
-      <!-- ============ Login Form ============ -->
+      <!-- ============ Auth Mode Tabs (Email / Phone) — تعمل مع الدخول والتسجيل معاً ============ -->
+      <div class="auth-tabs" role="tablist">
+        <button
+          type="button"
+          class="auth-tab"
+          [class.auth-tab--active]="authMode === 'email'"
+          role="tab"
+          [attr.aria-selected]="authMode === 'email'"
+          (click)="switchAuthMode('email')"
+        >
+          {{ 'AUTH.CONTINUE_WITH_EMAIL' | translate }}
+        </button>
+        <button
+          type="button"
+          class="auth-tab"
+          [class.auth-tab--active]="authMode === 'phone'"
+          role="tab"
+          [attr.aria-selected]="authMode === 'phone'"
+          (click)="switchAuthMode('phone')"
+        >
+          {{ 'AUTH.CONTINUE_WITH_PHONE' | translate }}
+        </button>
+      </div>
+
+      <!-- ============ Login Form (email) ============ -->
       <form
-        *ngIf="!showRegister"
+        *ngIf="!showRegister && authMode === 'email'"
         class="auth-form"
         (ngSubmit)="onLogin(loginForm)"
         #loginForm="ngForm"
@@ -182,9 +206,268 @@
         </p>
       </form>
 
-      <!-- ============ Register Form ============ -->
+      <!-- ============ Phone Login Form (رقم + كلمة سر، بدون OTP) ============ -->
       <form
-        *ngIf="showRegister"
+        *ngIf="!showRegister && authMode === 'phone'"
+        class="auth-form"
+        (ngSubmit)="onPhoneLogin(phoneLoginForm)"
+        #phoneLoginForm="ngForm"
+        novalidate
+      >
+        <div class="form-group">
+          <label for="phone-login-number">{{ 'AUTH.PHONE' | translate }} *</label>
+          <input
+            id="phone-login-number"
+            type="tel"
+            [(ngModel)]="phoneLoginNumber"
+            name="phoneLoginNumber"
+            #phoneLoginNumberField="ngModel"
+            required
+            autocomplete="tel"
+            inputmode="tel"
+            [placeholder]="'AUTH.PHONE_PLACEHOLDER' | translate"
+          />
+          <div
+            class="field-error"
+            *ngIf="phoneLoginNumberField.invalid && (phoneLoginNumberField.touched || submitted)"
+          >
+            ⚠️ {{ 'AUTH.ERRORS.PHONE_REQUIRED' | translate }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="phone-login-password">{{ 'AUTH.PASSWORD' | translate }} *</label>
+
+          <div class="password-field">
+            <input
+              id="phone-login-password"
+              [type]="showPhoneLoginPass ? 'text' : 'password'"
+              [(ngModel)]="phoneLoginPassword"
+              name="phoneLoginPassword"
+              #phoneLoginPasswordField="ngModel"
+              required
+              autocomplete="current-password"
+              placeholder="••••••••"
+            />
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="showPhoneLoginPass = !showPhoneLoginPass"
+              [attr.aria-label]="'AUTH.TOGGLE_PASSWORD' | translate"
+            >
+              {{ showPhoneLoginPass ? '🙈' : '👁️' }}
+            </button>
+          </div>
+
+          <div
+            class="field-error"
+            *ngIf="phoneLoginPasswordField.invalid && (phoneLoginPasswordField.touched || submitted)"
+          >
+            ⚠️ {{ 'AUTH.ERRORS.PASSWORD_REQUIRED' | translate }}
+          </div>
+        </div>
+
+        <button type="submit" class="auth-submit" [disabled]="phoneLoginForm.invalid || loading">
+          <span *ngIf="loading">⏳ {{ 'AUTH.LOADING' | translate }}</span>
+          <span *ngIf="!loading">{{ 'AUTH.LOGIN_BUTTON' | translate }}</span>
+        </button>
+
+        <p class="auth-switch">
+          {{ 'AUTH.NO_ACCOUNT' | translate }}
+          <button type="button" class="auth-switch__btn" (click)="toggleRegister()">
+            {{ 'AUTH.CREATE_ACCOUNT' | translate }}
+          </button>
+        </p>
+
+        <p class="auth-switch">
+          <a routerLink="/auth/phone-password-reset" class="auth-switch__btn">
+            {{ 'AUTH.FORGOT_PASSWORD_PHONE' | translate }}
+          </a>
+        </p>
+      </form>
+
+      <!-- ============ Phone Registration Flow (OTP مرة واحدة → كلمة سر + اسم) ============ -->
+      <ng-container *ngIf="showRegister && authMode === 'phone'">
+
+        <p class="auth-subtitle">
+          {{ 'AUTH.PHONE_REGISTER_MOVED_NOTICE' | translate }}
+          <a routerLink="/auth/phone-register">{{ 'AUTH.PHONE_REGISTER_MOVED_LINK' | translate }}</a>
+        </p>
+
+        <!-- Step 1: enter phone number -->
+        <form
+          *ngIf="phoneStep === 'phone'"
+          class="auth-form"
+          (ngSubmit)="onSendPhoneOtp()"
+          #phoneForm="ngForm"
+          novalidate
+        >
+          <p class="auth-subtitle">{{ 'AUTH.PHONE_STEP_SUBTITLE' | translate }}</p>
+
+          <div class="form-group">
+            <label for="phone-number">{{ 'AUTH.PHONE' | translate }} *</label>
+            <input
+              id="phone-number"
+              type="tel"
+              [(ngModel)]="phoneNumber"
+              name="phoneNumber"
+              #phoneNumberField="ngModel"
+              required
+              autocomplete="tel"
+              inputmode="tel"
+              [placeholder]="'AUTH.PHONE_PLACEHOLDER' | translate"
+            />
+          </div>
+
+          <button type="submit" class="auth-submit" [disabled]="phoneForm.invalid || loading">
+            <span *ngIf="loading">⏳ {{ 'AUTH.LOADING' | translate }}</span>
+            <span *ngIf="!loading">{{ 'AUTH.SEND_OTP_BUTTON' | translate }}</span>
+          </button>
+
+          <p class="auth-switch">
+            {{ 'AUTH.HAS_ACCOUNT' | translate }}
+            <button type="button" class="auth-switch__btn" (click)="toggleRegister()">
+              {{ 'AUTH.GO_LOGIN' | translate }}
+            </button>
+          </p>
+        </form>
+
+        <!-- Step 2: OTP + password + name — إنشاء الحساب دفعة واحدة -->
+        <form
+          *ngIf="phoneStep === 'otp'"
+          class="auth-form"
+          (ngSubmit)="onVerifyPhoneOtp()"
+          #otpForm="ngForm"
+          novalidate
+        >
+          <p class="auth-subtitle" aria-live="polite">
+            {{ 'AUTH.PHONE_OTP_STEP_SUBTITLE' | translate }}
+          </p>
+
+          <div class="form-group">
+            <label for="otp-code">{{ 'AUTH.OTP_CODE' | translate }} *</label>
+            <input
+              id="otp-code"
+              type="text"
+              [(ngModel)]="otpCode"
+              name="otpCode"
+              #otpCodeField="ngModel"
+              required
+              maxlength="6"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              placeholder="000000"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="phone-first-name">{{ 'AUTH.FIRST_NAME' | translate }} *</label>
+            <input
+              id="phone-first-name"
+              type="text"
+              [(ngModel)]="phoneFirstName"
+              name="phoneFirstName"
+              #phoneFirstNameField="ngModel"
+              required
+              autocomplete="given-name"
+              [placeholder]="'AUTH.FIRST_NAME_PLACEHOLDER' | translate"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="phone-last-name">{{ 'AUTH.LAST_NAME' | translate }} *</label>
+            <input
+              id="phone-last-name"
+              type="text"
+              [(ngModel)]="phoneLastName"
+              name="phoneLastName"
+              #phoneLastNameField="ngModel"
+              required
+              autocomplete="family-name"
+              [placeholder]="'AUTH.LAST_NAME_PLACEHOLDER' | translate"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="phone-reg-password">{{ 'AUTH.PASSWORD' | translate }} *</label>
+
+            <div class="password-field">
+              <input
+                id="phone-reg-password"
+                [type]="showPhoneRegPass ? 'text' : 'password'"
+                [(ngModel)]="phonePassword"
+                name="phonePassword"
+                #phonePasswordField="ngModel"
+                required
+                minlength="8"
+                autocomplete="new-password"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                (click)="showPhoneRegPass = !showPhoneRegPass"
+                [attr.aria-label]="'AUTH.TOGGLE_PASSWORD' | translate"
+              >
+                {{ showPhoneRegPass ? '🙈' : '👁️' }}
+              </button>
+            </div>
+
+            <div
+              class="field-error"
+              *ngIf="phonePasswordField.invalid && (phonePasswordField.touched || otpSubmitted)"
+            >
+              ⚠️
+              {{
+                phonePasswordField.errors?.['required']
+                  ? ('AUTH.ERRORS.PASSWORD_REQUIRED' | translate)
+                  : ('AUTH.ERRORS.PASSWORD_MIN' | translate)
+              }}
+            </div>
+          </div>
+
+          <div
+            class="field-error"
+            *ngIf="message && otpSubmitted"
+            aria-live="polite"
+          >
+            ⚠️ {{ message }}
+          </div>
+
+          <button type="submit" class="auth-submit" [disabled]="otpForm.invalid || loading">
+            <span *ngIf="loading">⏳ {{ 'AUTH.LOADING' | translate }}</span>
+            <span *ngIf="!loading">{{ 'AUTH.REGISTER_BUTTON' | translate }}</span>
+          </button>
+
+          <div class="auth-otp-actions">
+            <button
+              type="button"
+              class="auth-switch__btn"
+              [disabled]="resendDisabled"
+              (click)="onResendOtp()"
+            >
+              {{
+                resendCooldown > 0
+                  ? ('AUTH.RESEND_OTP_IN' | translate: { seconds: resendCooldown })
+                  : ('AUTH.RESEND_OTP' | translate)
+              }}
+            </button>
+
+            <button
+              type="button"
+              class="auth-switch__btn"
+              [disabled]="loading"
+              (click)="onChangePhoneNumber()"
+            >
+              {{ 'AUTH.CHANGE_PHONE_NUMBER' | translate }}
+            </button>
+          </div>
+        </form>
+      </ng-container>
+
+      <!-- ============ Register Form (email) ============ -->
+      <form
+        *ngIf="showRegister && authMode === 'email'"
         class="auth-form"
         (ngSubmit)="onRegister(regForm)"
         #regForm="ngForm"

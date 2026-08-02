@@ -1,0 +1,108 @@
+<section class="flow-page">
+  <div class="flow-card">
+    <header class="flow-header">
+      <h1>{{ 'AUTH.PHONE_REVERIFY.TITLE' | translate }}</h1>
+      <p>{{ 'AUTH.PHONE_REVERIFY.SUBTITLE' | translate }}</p>
+    </header>
+
+    <!-- Loading status -->
+    <div class="status-loading" *ngIf="loadingStatus()">
+      <span class="spinner spinner--dark"></span>
+      <span>{{ 'AUTH.PHONE_REVERIFY.LOADING_STATUS' | translate }}</span>
+    </div>
+
+    <ng-container *ngIf="!loadingStatus()">
+      <!-- Status card (always shown while on the 'status' step) -->
+      <div class="status-card" *ngIf="step() === 'status'"
+        [class.status-card--verified]="verificationState() === VerificationState.Verified || verificationState() === VerificationState.NotConfigured"
+        [class.status-card--due]="verificationState() === VerificationState.DueSoon"
+        [class.status-card--grace]="verificationState() === VerificationState.GracePeriod"
+        [class.status-card--restricted]="verificationState() === VerificationState.Restricted"
+      >
+        <ng-container [ngSwitch]="verificationState()">
+          <p *ngSwitchCase="VerificationState.NotConfigured">
+            ℹ️ {{ 'AUTH.PHONE_REVERIFY.STATE_NOT_CONFIGURED' | translate }}
+          </p>
+          <p *ngSwitchCase="VerificationState.Verified">
+            ✅ {{ 'AUTH.PHONE_REVERIFY.STATE_VERIFIED' | translate }}
+          </p>
+          <p *ngSwitchCase="VerificationState.DueSoon">
+            ⏰ {{ 'AUTH.PHONE_REVERIFY.STATE_DUE_SOON' | translate }}
+            <span *ngIf="dueAtUtc()">— {{ dueAtUtc() | date:'dd/MM/yyyy' }}</span>
+          </p>
+          <p *ngSwitchCase="VerificationState.GracePeriod">
+            ⚠️ {{ 'AUTH.PHONE_REVERIFY.STATE_GRACE' | translate }}
+            <span *ngIf="graceEndsAtUtc()">— {{ graceEndsAtUtc() | date:'dd/MM/yyyy' }}</span>
+          </p>
+          <p *ngSwitchCase="VerificationState.Restricted">
+            🚫 {{ 'AUTH.PHONE_REVERIFY.STATE_RESTRICTED' | translate }}
+          </p>
+          <p *ngSwitchDefault>{{ 'AUTH.PHONE_REVERIFY.STATE_UNKNOWN' | translate }}</p>
+        </ng-container>
+      </div>
+
+      <p class="alert alert--error" *ngIf="error() && step() === 'status'">⚠️ {{ error() }}</p>
+
+      <button type="button" class="btn-primary" *ngIf="step() === 'status' && needsAction" (click)="startReverification()">
+        {{ 'AUTH.PHONE_REVERIFY.START_BUTTON' | translate }}
+      </button>
+
+      <button type="button" class="btn-ghost" *ngIf="step() === 'status'" (click)="loadStatus()">
+        {{ 'AUTH.PHONE_REVERIFY.REFRESH_STATUS' | translate }}
+      </button>
+
+      <!-- Step: enter phone (confirm identity) -->
+      <form *ngIf="step() === 'phone'" [formGroup]="phoneForm" (ngSubmit)="sendOtp()" novalidate class="flow-form">
+        <p class="phone-confirm">{{ 'AUTH.PHONE_REVERIFY.CONFIRM_HINT' | translate }}</p>
+
+        <div class="form-group">
+          <label for="phoneNumber">{{ 'AUTH.PHONE' | translate }}</label>
+          <input id="phoneNumber" type="tel" formControlName="phoneNumber" placeholder="+963xxxxxxxxx" dir="ltr" autocomplete="tel" />
+          <app-form-error
+            [control]="phoneForm.controls.phoneNumber"
+            [submitted]="submitted()"
+            [messages]="{ pattern: ('AUTH.ERRORS.PHONE_INVALID' | translate) }"
+          ></app-form-error>
+        </div>
+
+        <p class="alert alert--error" *ngIf="error()">⚠️ {{ error() }}</p>
+
+        <button type="submit" class="btn-primary" [disabled]="loading()">
+          <span class="spinner" *ngIf="loading()"></span>
+          {{ loading() ? ('AUTH.SENDING' | translate) : ('AUTH.PHONE_REVERIFY.SEND_OTP' | translate) }}
+        </button>
+      </form>
+
+      <!-- Step: OTP -->
+      <form *ngIf="step() === 'otp'" [formGroup]="otpForm" (ngSubmit)="verifyOtp()" novalidate class="flow-form">
+        <div class="form-group">
+          <label for="code">{{ 'AUTH.OTP_CODE' | translate }}</label>
+          <input id="code" type="text" inputmode="numeric" maxlength="6" class="otp-input" formControlName="code" dir="ltr" />
+          <app-form-error [control]="otpForm.controls.code" [submitted]="submitted()"></app-form-error>
+        </div>
+
+        <p class="alert alert--error" *ngIf="error()">⚠️ {{ error() }}</p>
+
+        <button type="submit" class="btn-primary" [disabled]="loading()">
+          <span class="spinner" *ngIf="loading()"></span>
+          {{ loading() ? ('AUTH.VERIFYING' | translate) : ('AUTH.VERIFY_CODE' | translate) }}
+        </button>
+
+        <button type="button" class="btn-ghost" [disabled]="resendDisabled" (click)="resendOtp()">
+          {{ resendCooldown() > 0
+              ? (('AUTH.RESEND_OTP_IN' | translate) + ' ' + resendCooldown() + 's')
+              : ('AUTH.RESEND_OTP' | translate) }}
+        </button>
+      </form>
+
+      <!-- Done -->
+      <div *ngIf="step() === 'done'" class="flow-form">
+        <p class="alert alert--success">✅ {{ 'AUTH.PHONE_REVERIFY.SUCCESS' | translate }}</p>
+      </div>
+    </ng-container>
+
+    <p class="footer-link">
+      <a routerLink="/profile">{{ 'AUTH.BACK_TO_PROFILE' | translate }}</a>
+    </p>
+  </div>
+</section>

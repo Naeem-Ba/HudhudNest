@@ -87,6 +87,32 @@ export const routes: Routes = [
             .then(m => m.NotificationsPage)
       },
       {
+        path: 'visits',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/visits/visits.page')
+            .then(m => m.VisitsPage)
+      },
+      {
+        path: 'reviews',
+        loadComponent: () =>
+          import('./features/reviews/reviews.page')
+            .then(m => m.ReviewsPage)
+      },
+      {
+        path: 'reviews/:propertyId',
+        loadComponent: () =>
+          import('./features/reviews/reviews.page')
+            .then(m => m.ReviewsPage)
+      },
+      {
+        path: 'analytics',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/analytics/analytics.page')
+            .then(m => m.AnalyticsPage)
+      },
+      {
         path: 'offline',
         loadComponent: () =>
           import('./features/offline/offline.page')
@@ -129,6 +155,22 @@ export const routes: Routes = [
   },
 
   {
+    path: 'admin/users',
+    canActivate: [AdminGuard],
+    loadComponent: () =>
+      import('./admin/users/admin-users.page')
+        .then(m => m.AdminUsersPage)
+  },
+
+  {
+    path: 'messages/:propertyId',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./features/messages/property-messages.page')
+        .then(m => m.PropertyMessagesPage)
+  },
+
+  {
     path: 'language',
     loadComponent: () =>
       import('./language-selector/language-selector.component')
@@ -164,6 +206,32 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/auth/reset-password/reset-password.page')
         .then(m => m.ResetPasswordPage)
+  },
+  {
+    path: 'auth/phone-register',
+    loadComponent: () =>
+      import('./features/auth/phone-register/phone-register.page')
+        .then(m => m.PhoneRegisterPage)
+  },
+  {
+    path: 'auth/phone-password-reset',
+    loadComponent: () =>
+      import('./features/auth/phone-password-reset/phone-password-reset.page')
+        .then(m => m.PhonePasswordResetPage)
+  },
+  {
+    path: 'profile/phone-reverify',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./features/auth/phone-reverify/phone-reverify.page')
+        .then(m => m.PhoneReverifyPage)
+  },
+  {
+    path: 'profile/phone-change',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./features/auth/phone-change/phone-change.page')
+        .then(m => m.PhoneChangePage)
   },
 
   { path: '**', redirectTo: 'home' }
