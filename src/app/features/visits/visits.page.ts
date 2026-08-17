@@ -56,6 +56,16 @@ export class VisitsPage implements OnInit {
     return !!userId && visit.ownerId === userId && visit.status === 'Pending';
   }
 
+  /**
+   * ✅ إضافة: إغلاق دورة حياة الزيارة — يستهلك PUT /api/visits/{id}/complete
+   * الذي كان موجوداً بالباك اند (مالك العقار فقط، ويتحقق من الملكية) دون أي
+   * زر أو دالة بالواجهة. تبقى الزيارة عالقة على "مؤكدة" للأبد بدون هذا الإجراء.
+   */
+  canComplete(visit: VisitDto): boolean {
+    const userId = this.auth.getCurrentUserId();
+    return !!userId && visit.ownerId === userId && visit.status === 'Confirmed';
+  }
+
   canCancel(visit: VisitDto): boolean {
     const userId = this.auth.getCurrentUserId();
     return !!userId && visit.visitorId === userId && ['Pending', 'Confirmed'].includes(visit.status);
@@ -63,6 +73,7 @@ export class VisitsPage implements OnInit {
 
   confirm(visit: VisitDto): void { this.runAction(visit.id, () => this.visitsApi.confirmVisit(visit.id), 'Confirmed'); }
   decline(visit: VisitDto): void { this.runAction(visit.id, () => this.visitsApi.declineVisit(visit.id), 'Declined'); }
+  complete(visit: VisitDto): void { this.runAction(visit.id, () => this.visitsApi.completeVisit(visit.id), 'Completed'); }
   cancel(visit: VisitDto): void { this.runAction(visit.id, () => this.visitsApi.cancelVisit(visit.id), 'Cancelled'); }
 
   trackById(_: number, item: VisitDto): string { return item.id; }

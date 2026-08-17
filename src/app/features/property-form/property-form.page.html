@@ -115,8 +115,13 @@
 
               <div class="form-group">
                 <label for="city">{{ 'wohnung_add.stadt' | translate }} <span class="required">*</span></label>
-                <input id="city" type="text" formControlName="city"
+                <!-- ✅ إضافة: اقتراحات مدن حقيقية من GET /api/lookups/cities بدل الاكتفاء
+                     بحقل نصي حر بدون أي اقتراح (الحقل يبقى نصياً حراً؛ الاقتراح لا يقيّد الإدخال). -->
+                <input id="city" type="text" formControlName="city" list="citySuggestions"
                   [placeholder]="'wohnung_add.city_placeholder' | translate" />
+                <datalist id="citySuggestions">
+                  <option *ngFor="let city of citySuggestions()" [value]="city.name"></option>
+                </datalist>
                 <p class="field-error" *ngIf="hasError(f.city)">{{ 'wohnung_add.validation_city' | translate }}</p>
               </div>
 
@@ -270,6 +275,28 @@
                     <input type="checkbox" formControlName="hasParkingSpace" />
                     <span class="checkbox-box"></span>
                     <span>{{ 'wohnung_add.parkplatz' | translate }}</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- ✅ إضافة: مرافق العقار — تستهلك GET /api/lookups/amenities التي
+                   لم تكن مستخدَمة إطلاقاً، والحقل AmenityIds كان موجوداً في نموذج
+                   البيانات دون أي واجهة اختيار فعلية. -->
+              <div class="form-group form-group--full">
+                <label class="section-sublabel">{{ 'PROPERTY_FORM.AMENITIES' | translate }}</label>
+                <p class="field-hint" *ngIf="amenitiesLoadFailed()">
+                  {{ 'PROPERTY_FORM.AMENITIES_LOAD_ERROR' | translate }}
+                </p>
+                <p class="field-hint" *ngIf="!amenitiesLoadFailed() && amenities().length === 0">
+                  {{ 'PROPERTY_FORM.AMENITIES_EMPTY' | translate }}
+                </p>
+                <div class="checkbox-grid" *ngIf="amenities().length > 0">
+                  <label class="checkbox-item" *ngFor="let amenity of amenities()">
+                    <input type="checkbox"
+                      [checked]="isAmenitySelected(amenity.id)"
+                      (change)="toggleAmenity(amenity.id)" />
+                    <span class="checkbox-box"></span>
+                    <span>{{ amenity.name }}</span>
                   </label>
                 </div>
               </div>

@@ -94,6 +94,15 @@
     "CHANGE_PHONE_NUMBER": "Telefonnummer ändern",
     "PROFILE_NAME_STEP_TITLE": "Vervollständigen Sie Ihre Angaben",
     "PROFILE_NAME_STEP_SUBTITLE": "Dies ist eine neue Telefonnummer — geben Sie Ihren Namen ein, um Ihr Konto zu erstellen.",
+    "VERIFY_EMAIL": {
+      "TITLE": "E-Mail-Bestätigung",
+      "VERIFYING": "Bestätigungslink wird überprüft...",
+      "SUCCESS": "Ihre E-Mail-Adresse wurde erfolgreich bestätigt!",
+      "MISSING_PARAMS": "Der Bestätigungslink ist ungültig oder unvollständig.",
+      "FAILED": "Der Bestätigungslink ist ungültig oder abgelaufen. Fordern Sie einen neuen Link über Ihr Profil an.",
+      "GO_TO_PROFILE": "Zu meinem Profil",
+      "BACK_TO_PROFILE": "Zurück zum Profil"
+    },
     "ERRORS": {
       "FIX_FIELDS": "Bitte korrigieren Sie die Felder vor dem Absenden.",
       "FULL_NAME_REQUIRED": "Der vollständige Name ist erforderlich.",
@@ -332,7 +341,25 @@
     "NEAR_ME": "Immobilien in meiner Nähe",
     "NEAR_ME_ACTIVE": "Umkreissuche beenden",
     "LOCATING": "Standort wird ermittelt...",
-    "RADIUS": "Umkreis"
+    "RADIUS": "Umkreis",
+    "AMENITIES": "Ausstattung",
+    "RESULTS": "Ergebnisse",
+    "FILTERS": "Filter",
+    "SEARCH": "Suche",
+    "SEARCH_PLACEHOLDER": "Nach Titel oder Beschreibung suchen...",
+    "LISTING_TYPE": "Anzeigenart",
+    "ALL": "Alle",
+    "CITY": "Stadt",
+    "CITY_PLACEHOLDER": "Stadt auswählen oder eingeben",
+    "PRICE_RANGE": "Preisspanne",
+    "MIN": "Min.",
+    "MAX": "Max.",
+    "SORT": "Sortierung",
+    "SORT_NEWEST": "Neueste zuerst",
+    "SORT_PRICE_ASC": "Preis: aufsteigend",
+    "SORT_PRICE_DESC": "Preis: absteigend",
+    "APPLY_FILTERS": "Filter anwenden",
+    "RESET": "Zurücksetzen"
   },
   "PROPERTY_DETAIL": {
     "NOT_FOUND_TITLE": "Immobilie nicht gefunden",
@@ -350,7 +377,8 @@
     "FLOOR": "Etage",
     "AVAILABLE_FROM": "Verfügbar ab",
     "CONDITION": "Zustand",
-    "NO_FEATURES": "Keine zusätzlichen Ausstattungsmerkmale."
+    "NO_FEATURES": "Keine zusätzlichen Ausstattungsmerkmale.",
+    "OWNER": "Eigentümer"
   },
   "PROPERTY": {
     "MODE_RENT": "Zu vermieten",
@@ -392,7 +420,11 @@
     "SET_MAIN_SUCCESS": "Titelbild aktualisiert.",
     "DELETE_IMAGE": "Foto löschen",
     "DELETE_IMAGE_CONFIRM": "Dieses Foto löschen? Dies kann nicht rückgängig gemacht werden.",
-    "DELETE_IMAGE_SUCCESS": "Foto gelöscht."
+    "DELETE_IMAGE_SUCCESS": "Foto gelöscht.",
+    "AMENITIES": "Ausstattung",
+    "AMENITIES_LOAD_ERROR": "Ausstattungsmerkmale konnten nicht geladen werden.",
+    "AMENITIES_EMPTY": "Derzeit sind keine Ausstattungsmerkmale verfügbar.",
+    "NOT_AUTHORIZED": "Sie haben keine Berechtigung für diese Immobilie."
   },
   "wohnung_add": {
     "title": "Immobilie hinzufügen",
@@ -511,7 +543,10 @@
     "ROLE_ADDED": "Rolle hinzugefügt.",
     "ROLE_REMOVED": "Rolle entfernt.",
     "ROLE_ERROR": "Die Rolle konnte nicht aktualisiert werden.",
-    "LOAD_ERROR": "Die Benutzer konnten nicht geladen werden."
+    "LOAD_ERROR": "Die Benutzer konnten nicht geladen werden.",
+    "REFRESH_LOOKUPS": "Nachschlage-Cache aktualisieren",
+    "REFRESH_LOOKUPS_SUCCESS": "Der Nachschlage-Cache (Städte/Ausstattung/Kategorien) wurde geleert.",
+    "REFRESH_LOOKUPS_ERROR": "Der Nachschlage-Cache konnte nicht aktualisiert werden."
   },
   "NOTIFICATIONS": {
     "TITLE": "Benachrichtigungen",
@@ -560,6 +595,21 @@
     "SAVE_CHANGES": "Änderungen speichern",
     "DELETE_ACCOUNT": "Konto dauerhaft löschen",
     "MY_ADS": "Meine Anzeigen",
+    "EMAIL_SECTION": {
+      "CONFIRMED": "E-Mail-Adresse bestätigt.",
+      "PENDING": "Ihre E-Mail wartet auf Bestätigung. Prüfen Sie Ihren Posteingang.",
+      "NO_EMAIL_HINT": "Ihrem Konto ist noch keine E-Mail-Adresse zugeordnet. Fügen Sie eine hinzu, um sie für die Passwortwiederherstellung und Benachrichtigungen zu nutzen.",
+      "ADD_BTN": "E-Mail-Adresse hinzufügen",
+      "RESEND_BTN": "Bestätigungslink erneut senden",
+      "INPUT_LABEL": "E-Mail-Adresse",
+      "SEND_BTN": "Bestätigungslink senden",
+      "LINK_SENT": "Ein Bestätigungslink wurde an Ihre E-Mail-Adresse gesendet. Prüfen Sie Ihren Posteingang (auch den Spam-Ordner).",
+      "ERRORS": {
+        "ALREADY_SET": "Sie haben bereits eine bestätigte E-Mail-Adresse.",
+        "TAKEN": "Diese E-Mail-Adresse wird bereits von einem anderen Konto verwendet.",
+        "GENERIC": "Der Bestätigungslink konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
+      }
+    },
     "MESSAGES": {
       "SAVE_SUCCESS": "Die Daten wurden erfolgreich aktualisiert.",
       "SAVE_ERROR": "Die Änderungen konnten nicht gespeichert werden.",
@@ -697,7 +747,8 @@
       "DECLINED": "Abgelehnt",
       "CANCELLED": "Storniert",
       "COMPLETED": "Abgeschlossen"
-    }
+    },
+    "COMPLETE": "Als abgeschlossen markieren"
   },
   "REVIEWS": {
     "EYEBROW": "Nutzermeinungen",

@@ -599,3 +599,39 @@
   display: inline-flex;
   align-self: center;
 }
+
+/* ✅ إضافة: بطاقة معلومات المالك */
+.owner-card__body {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.owner-card__avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--gray-100, #f1f1f1);
+  flex-shrink: 0;
+}
+
+.owner-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+
+.owner-card__name {
+  margin: 0;
+  font-weight: 700;
+  color: var(--navy, inherit);
+}
+
+.owner-card__phone {
+  color: var(--primary);
+  font-size: .9rem;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}

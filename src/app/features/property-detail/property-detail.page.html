@@ -206,6 +206,29 @@
     <!-- ── Body Content ── -->
     <div class="container detail-body">
 
+      <!-- ✅ إضافة: بطاقة معلومات المالك — تستهلك GET /api/users/{id} التي كانت
+           غير مستخدَمة إطلاقاً؛ الصفحة سابقًا كانت تكتفي بمقارنة ownerId داخليًا
+           دون عرض أي معلومة عامة عن المالك (اسم/صورة/هاتف إن كان وسيطًا). -->
+      <div class="detail-card owner-card" *ngIf="!isOwner() && ownerProfile() as owner">
+        <div class="detail-card__header">
+          <h2>{{ 'PROPERTY_DETAIL.OWNER' | translate }}</h2>
+        </div>
+        <div class="owner-card__body">
+          <img
+            class="owner-card__avatar"
+            [src]="owner.profileImageUrl || '/images/default-avatar.svg'"
+            appImageFallback="/images/default-avatar.svg"
+            alt=""
+          />
+          <div class="owner-card__info">
+            <p class="owner-card__name">{{ owner.displayName }}</p>
+            <a *ngIf="owner.phoneNumber" class="owner-card__phone" [href]="'tel:' + owner.phoneNumber">
+              {{ owner.phoneNumber }}
+            </a>
+          </div>
+        </div>
+      </div>
+
       <!-- Message Owner Form -->
       <div class="detail-card" *ngIf="showMessageForm()">
         <div class="detail-card__header">

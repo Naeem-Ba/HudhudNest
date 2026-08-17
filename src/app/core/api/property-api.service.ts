@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { catchError, map, Observable, throwError } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { BackendApiService, QueryValue } from '../api/backend-api.service';
 import { ApiPagedResult, normalizePagedResult, PagedResult, unwrapItems } from '../models/api.model';
 import { Property, PropertyFilterDto } from '../models/property.model';
@@ -36,22 +36,34 @@ export class PropertyApiService {
    * Loads only the authenticated user's own listings.
    * This avoids the unsafe frontend fallback of requesting all properties and
    * filtering them by ownerId on the client.
+   *
+   * ✅ تنظيف: أُزيل fallback كان يتراجع عند 404 إلى GET /properties/my
+   * (مفرد) — هذا المسار غير موجود بالباك اند الحالي إطلاقاً (PropertiesController
+   * يوفّر فقط GET /properties/mine بصيغة الجمع). كود ميت لا يُنفَّذ أبدًا؛
+   * تأكدت من ذلك بفحص PropertiesController.cs مباشرة قبل الحذف.
    */
   getMyProperties(): Observable<Property[]> {
-    return this.getPropertyCollection('/properties/mine').pipe(
-      catchError(error => {
-        if (error?.status === 404) {
-          return this.getPropertyCollection('/properties/my');
-        }
-
-        return throwError(() => error);
-      })
-    );
+    return this.getPropertyCollection('/properties/mine');
   }
 
   getProperty(id: string): Observable<Property> {
     return this.api
       .get<unknown>(`/properties/${id}`)
+      .pipe(map(item => this.toProperty(item)));
+  }
+
+  /**
+   * ✅ إضافة: GET /properties/{id}/manage — نقطة مخصصة لصفحة التعديل، مصممة
+   * لتُرجع العقار للمالك أو الأدمن حتى لو لم يكن منشوراً بعد (Draft)، بينما
+   * getProperty() العام أعلاه يعتمد على GetPublishedByIdWithDetailsAsync
+   * بالباك اند ويرفض أي عقار غير منشور بـ 404 — حتى لصاحبه. كما يتحقق الخادم
+   * من الملكية صراحة هنا (403 لغير المالك/الأدمن) بدل الاعتماد فقط على تحقق
+   * الملكية عند الحفظ. شكل الاستجابة مطابق تماماً لـ getProperty() (نفس
+   * PropertyDto بالباك اند)، لذا toProperty() هنا تعمل دون أي تعديل.
+   */
+  getPropertyForManagement(id: string): Observable<Property> {
+    return this.api
+      .get<unknown>(`/properties/${id}/manage`)
       .pipe(map(item => this.toProperty(item)));
   }
 
@@ -74,9 +86,22 @@ export class PropertyApiService {
     );
   }
 
+  // 📌 قرار معماري موثَّق: الباك اند يوفر أيضاً GET منفصل لجلب صور عقار محدد
+  // (PropertyImagesController.GetAll)، لكن الواجهة لا تستدعيه مباشرة لأن كل
+  // نقاط الاستهلاك الحالية (بطاقة العقار، صفحة التفاصيل، نموذج التعديل) تحصل
+  // على الصور أصلاً ضمن استجابة GetProperty/GetPropertyForManagement (نفس
+  // PropertyDto يتضمن Images/ImageUrls). يستحق إضافة هذه النقطة لاحقاً فقط إذا
+  // ظهرت شاشة تحتاج تحديث الصور دون إعادة تحميل بيانات العقار كاملة.
+
   /**
    * ينشر إعلاناً في وضع مسودة. الخادم يوفر PUBLISH فقط (نشر لمرة واحدة) —
    * لا يوجد endpoint "unpublish" للتراجع عن النشر (تحقق مباشر من الكود).
+   *
+   * 📌 قرار معماري موثَّق: الباك اند (PropertiesController) يقبل هذا المسار
+   * نفسه عبر PATCH و POST معاً (نفس الـ handler بالضبط) — الأرجح أن POST كان
+   * الفعل الأصلي واستُبدل بـ PATCH لاحقاً (الأنسب دلاليًا لعملية "تحديث حالة")
+   * وتُرك POST لتوافقية النسخ القديمة. الواجهة تستخدم PATCH فقط عمدًا، وهذا
+   * ليس نقصًا يحتاج إصلاحًا.
    */
   publishProperty(id: string): Observable<void> {
     return this.api.patch<void>(`/properties/${id}/publish`);

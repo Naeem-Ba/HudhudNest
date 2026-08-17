@@ -20,6 +20,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
 
 import { PropertyApiService } from '../../core/api/property-api.service';
+import { LookupsApiService, LookupAmenity, LookupItem } from '../../core/api/lookups-api.service';
 import { Property } from '../../core/models/property.model';
 import { ToastService } from '../../shared/services/toast.service';
 import { MapPickerComponent } from '../../map-picker/map-picker.component';
@@ -51,7 +52,7 @@ interface PropertySavePayload {
   HasParkingSpace: boolean;
   HeatingType: number;
   AvailableFrom?: string | null;
-  AmenityIds?: string[] | null;
+  AmenityIds?: string[];
 }
 
 const VALID_COUNTRY_CODES = new Set(['DE', 'SY', 'US', 'GB', 'FR', 'AE', 'SA', 'TR', 'EG', 'JO', 'LB']);
@@ -131,6 +132,7 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
 })
 export class PropertyFormPage implements OnInit {
   private readonly propertyApi = inject(PropertyApiService);
+  private readonly lookupsApi = inject(LookupsApiService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly translate = inject(TranslateService);
@@ -152,6 +154,17 @@ export class PropertyFormPage implements OnInit {
   readonly fallbackImage = '/images/no-image.svg';
   readonly allowedTypes = ['image/png', 'image/jpeg', 'image/webp'];
   readonly maxSizeMB = 5;
+
+  /**
+   * ✅ إضافة: قائمة المرافق (GET /api/lookups/amenities) والمدن المقترحة
+   * (GET /api/lookups/cities) — لم تكونا مستخدَمتين إطلاقاً من قبل، وحقل
+   * AmenityIds كان موجوداً في الـ payload دون أي واجهة لاختياره أو حتى
+   * إرساله فعلياً مع الطلب.
+   */
+  readonly amenities = signal<LookupAmenity[]>([]);
+  readonly amenitiesLoadFailed = signal(false);
+  readonly selectedAmenityIds = signal<Set<string>>(new Set());
+  readonly citySuggestions = signal<LookupItem[]>([]);
 
   readonly form = this.fb.group({
     listingType: [1, Validators.required],
@@ -190,6 +203,50 @@ export class PropertyFormPage implements OnInit {
     }
 
     this.bindLanguage();
+    this.loadAmenities();
+    this.loadCitySuggestions();
+  }
+
+  /** GET /api/lookups/amenities — كانت غير مستخدمة إطلاقاً في الواجهة. */
+  private loadAmenities(): void {
+    this.lookupsApi
+      .getAmenities()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: amenities => this.amenities.set(amenities),
+        error: () => this.amenitiesLoadFailed.set(true)
+      });
+  }
+
+  /**
+   * GET /api/lookups/cities — تُستخدم فقط كاقتراحات (datalist) لحقل المدينة
+   * النصي الحالي، دون تقييد المستخدم بقيمة من القائمة (قد يكتب مدينة جديدة
+   * غير موجودة بعد ضمن أي عقار).
+   */
+  private loadCitySuggestions(): void {
+    this.lookupsApi
+      .getCities()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: cities => this.citySuggestions.set(cities),
+        error: () => this.citySuggestions.set([])
+      });
+  }
+
+  isAmenitySelected(amenityId: string): boolean {
+    return this.selectedAmenityIds().has(amenityId);
+  }
+
+  toggleAmenity(amenityId: string): void {
+    this.selectedAmenityIds.update(current => {
+      const next = new Set(current);
+      if (next.has(amenityId)) {
+        next.delete(amenityId);
+      } else {
+        next.add(amenityId);
+      }
+      return next;
+    });
   }
 
   private bindLanguage(): void {
@@ -208,8 +265,13 @@ export class PropertyFormPage implements OnInit {
   }
 
   private loadExistingProperty(id: string): void {
+    // ✅ إصلاح: كانت هذه الدالة تستخدم GET /properties/{id} العام، الذي يرفض
+    // بـ 404 أي عقار غير منشور بعد (Draft) حتى لصاحبه — ما كان يمنع فتح نموذج
+    // التعديل لعقار لم يُنشَر. الآن تستخدم GET /properties/{id}/manage المخصصة
+    // (نفس شكل البيانات تماماً)، والتي تُرجع العقار لصاحبه أو للأدمن بغض النظر
+    // عن حالة النشر، وتتحقق من الملكية صراحة على الخادم (403 لغير المُخوَّل).
     this.propertyApi
-      .getProperty(id)
+      .getPropertyForManagement(id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (property: Property) => {
@@ -245,8 +307,20 @@ export class PropertyFormPage implements OnInit {
             .filter(image => !!image.url)
             .map(image => ({ id: image.id, url: image.url, isMain: !!image.isMain }));
           this.existingImages.set(existing);
+
+          // ✅ إضافة: تعليم المرافق المحفوظة مسبقاً للعقار كمُحدَّدة في واجهة
+          // التعديل (بدلاً من فقدانها لأنه لم تكن هناك واجهة لعرضها أصلاً).
+          const existingAmenityIds = (property.amenities ?? [])
+            .map(amenity => amenity.id)
+            .filter((id): id is string => !!id);
+          this.selectedAmenityIds.set(new Set(existingAmenityIds));
         },
-        error: () => this.submitError.set('PROPERTY_FORM.LOAD_ERROR')
+        // ✅ إضافة: رسالة أوضح عند 403 (محاولة تعديل عقار مستخدم آخر) بدل رسالة
+        // "تعذر التحميل" العامة المضلِّلة.
+        error: (err: { status?: number }) =>
+          this.submitError.set(
+            err?.status === 403 ? 'PROPERTY_FORM.NOT_AUTHORIZED' : 'PROPERTY_FORM.LOAD_ERROR'
+          )
       });
   }
 
@@ -395,7 +469,10 @@ export class PropertyFormPage implements OnInit {
       HasElevator: f.hasElevator ?? false,
       HasParkingSpace: f.hasParkingSpace ?? false,
       HeatingType: f.heatingType ?? 0,
-      AvailableFrom: f.availableFrom ?? null
+      AvailableFrom: f.availableFrom ?? null,
+      // ✅ إصلاح: كان الحقل معرَّفاً في الـ payload لكن لم يُملأ أبداً — المرافق
+      // المختارة من المستخدم لم تكن تُرسَل إلى الباك اند إطلاقاً.
+      AmenityIds: Array.from(this.selectedAmenityIds())
     };
 
     this.isSaving.set(true);

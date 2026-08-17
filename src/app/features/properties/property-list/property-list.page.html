@@ -105,13 +105,18 @@
         <!-- City -->
         <div class="filter-group">
           <label class="filter-label" for="filter-city">{{ 'PROPERTY_LIST.CITY' | translate }}</label>
+          <!-- ✅ إضافة: اقتراحات مدن حقيقية من GET /api/lookups/cities -->
           <input
             id="filter-city"
             type="text"
+            list="propertyListCitySuggestions"
             [(ngModel)]="cityFilter"
             name="city"
             [placeholder]="'PROPERTY_LIST.CITY_PLACEHOLDER' | translate"
           />
+          <datalist id="propertyListCitySuggestions">
+            <option *ngFor="let city of citySuggestions()" [value]="city.name"></option>
+          </datalist>
         </div>
 
         <!-- Price Range -->
@@ -133,6 +138,23 @@
               [placeholder]="'PROPERTY_LIST.MAX' | translate"
               min="0"
             />
+          </div>
+        </div>
+
+        <!-- Amenities -->
+        <!-- ✅ إضافة: يستهلك GET /api/lookups/amenities ويرسل amenityIds ضمن
+             الفلتر — الباك اند يدعم هذا فعلياً عبر PropertyFilterDto.AmenityIds
+             لكن لم تكن هناك أي واجهة لاختيار المرافق عند البحث. -->
+        <div class="filter-group" *ngIf="amenities().length > 0">
+          <label class="filter-label">{{ 'PROPERTY_LIST.AMENITIES' | translate }}</label>
+          <div class="amenity-chips">
+            <button
+              type="button"
+              class="amenity-chip"
+              *ngFor="let amenity of amenities()"
+              [class.amenity-chip--active]="isAmenitySelected(amenity.id)"
+              (click)="toggleAmenityFilter(amenity.id)"
+            >{{ amenity.name }}</button>
           </div>
         </div>
 

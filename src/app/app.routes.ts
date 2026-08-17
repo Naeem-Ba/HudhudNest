@@ -207,6 +207,15 @@ export const routes: Routes = [
       import('./features/auth/reset-password/reset-password.page')
         .then(m => m.ResetPasswordPage)
   },
+  // ✅ إضافة: صفحة تفعيل البريد الإلكتروني الثانوي — تكمل تدفق
+  // PhoneAuthController.AddEmail/VerifyEmail الذي كان بلا واجهة استهلاك.
+  // [AllowAnonymous] بالباك اند لنفس السبب: لا حارس هنا.
+  {
+    path: 'auth/verify-email',
+    loadComponent: () =>
+      import('./features/auth/verify-email/verify-email.page')
+        .then(m => m.VerifyEmailPage)
+  },
   {
     path: 'auth/phone-register',
     loadComponent: () =>
