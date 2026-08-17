@@ -48,6 +48,63 @@
         <input type="email" [value]="user()!.Email" disabled>
       </div>
 
+      <!-- ✅ إضافة: قسم البريد الإلكتروني الثانوي (email/add + email/verify) -->
+      <div class="email-section">
+        <ng-container *ngIf="user()?.Email && user()?.EmailConfirmed">
+          <div class="email-status email-status--confirmed">
+            <span aria-hidden="true">✅</span>
+            {{ 'PROFILE.EMAIL_SECTION.CONFIRMED' | translate }}
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="user()?.Email && !user()?.EmailConfirmed">
+          <div class="email-status email-status--pending">
+            <span aria-hidden="true">⏳</span>
+            {{ 'PROFILE.EMAIL_SECTION.PENDING' | translate }}
+          </div>
+
+          <button type="button" class="btn-email-action" *ngIf="!showEmailForm() && !emailLinkSent()" (click)="showEmailForm.set(true); secondaryEmail = user()!.Email || ''">
+            {{ 'PROFILE.EMAIL_SECTION.RESEND_BTN' | translate }}
+          </button>
+        </ng-container>
+
+        <ng-container *ngIf="!user()?.Email">
+          <p class="email-hint">{{ 'PROFILE.EMAIL_SECTION.NO_EMAIL_HINT' | translate }}</p>
+
+          <button type="button" class="btn-email-action" *ngIf="!showEmailForm() && !emailLinkSent()" (click)="showEmailForm.set(true)">
+            {{ 'PROFILE.EMAIL_SECTION.ADD_BTN' | translate }}
+          </button>
+        </ng-container>
+
+        <div class="email-form" *ngIf="showEmailForm() && !emailLinkSent()">
+          <label>{{ 'PROFILE.EMAIL_SECTION.INPUT_LABEL' | translate }}</label>
+          <input
+            type="email"
+            [(ngModel)]="secondaryEmail"
+            name="secondaryEmail"
+            #secEmail="ngModel"
+            required
+            email
+            [placeholder]="'AUTH.EMAIL_PLACEHOLDER' | translate"
+          >
+          <div class="field-error" *ngIf="emailSubmitted && secEmail.invalid">⚠️ {{ 'VALIDATION.REQUIRED' | translate }}</div>
+
+          <div class="email-form-actions">
+            <button type="button" class="btn-email-send" [disabled]="isSendingEmail()" (click)="addSecondaryEmail()">
+              {{ isSendingEmail() ? ('COMMON.SAVING' | translate) : ('PROFILE.EMAIL_SECTION.SEND_BTN' | translate) }}
+            </button>
+            <button type="button" class="btn-email-cancel" (click)="cancelSecondaryEmail()">
+              {{ 'COMMON.CANCEL' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <div class="email-status email-status--confirmed" *ngIf="emailLinkSent()">
+          <span aria-hidden="true">📩</span>
+          {{ 'PROFILE.EMAIL_SECTION.LINK_SENT' | translate }}
+        </div>
+      </div>
+
       <div class="field">
         <label>
           {{ 'PROFILE.PHONE' | translate }}

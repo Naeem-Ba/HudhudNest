@@ -33,6 +33,7 @@ import { PropertyApiService } from '../../core/api/property-api.service';
 import { ReviewService } from '../../core/api/review.service';
 import { VisitService } from '../../core/api/visit.service';
 import { MessagesApiService } from '../../core/api/messages-api.service';
+import { ProfileService, PublicUserProfile } from '../../core/api/profile.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { Property } from '../../core/models/property.model';
 import { REVIEW_COMMENT_MAX_LENGTH, ReviewDto, validateCreateReview } from '../../core/models/review.model';
@@ -69,6 +70,7 @@ export class PropertyDetailPage implements OnInit {
   private readonly reviewService = inject(ReviewService);
   private readonly visitService  = inject(VisitService);
   private readonly messagesApi   = inject(MessagesApiService);
+  private readonly profileApi    = inject(ProfileService);
   private readonly router        = inject(Router);
   private readonly authService   = inject(AuthService);
   private readonly route         = inject(ActivatedRoute);
@@ -135,6 +137,13 @@ export class PropertyDetailPage implements OnInit {
     this.property()?.ownerId === this.authService.getCurrentUserId()
   );
 
+  /**
+   * ✅ إضافة: يستهلك GET /api/users/{id} — كان غير مستخدَم إطلاقاً، فكانت
+   * الصفحة تكتفي بمقارنة ownerId فقط دون عرض أي معلومات عامة عن المالك.
+   */
+  readonly ownerProfile = signal<PublicUserProfile | null>(null);
+  readonly ownerProfileLoading = signal(false);
+
   readonly fallbackImage = '/images/no-image.svg';
 
   // ── Drag/Swipe state ──────────────────────────────────────────────────
@@ -165,11 +174,34 @@ export class PropertyDetailPage implements OnInit {
           this.property.set(data);
           this.currentIndex.set(0);
           this.loading.set(false);
+          this.loadOwnerProfile(data.ownerId);
         },
         error: () => {
           this.error.set('PROPERTY_DETAIL.LOAD_ERROR');
           this.loading.set(false);
         }
+      });
+  }
+
+  /**
+   * GET /api/users/{id} — لا داعي لجلبها لصاحب الإعلان نفسه (يرى بياناته
+   * أصلاً)، ولا إن كان العقار بلا ownerId لأي سبب.
+   */
+  private loadOwnerProfile(ownerId: string | undefined): void {
+    if (!ownerId || ownerId === this.authService.getCurrentUserId()) {
+      return;
+    }
+
+    this.ownerProfileLoading.set(true);
+    this.profileApi
+      .getPublicProfile(ownerId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: profile => {
+          this.ownerProfile.set(profile);
+          this.ownerProfileLoading.set(false);
+        },
+        error: () => this.ownerProfileLoading.set(false)
       });
   }
 

@@ -19,6 +19,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { PropertyApiService } from '../../../core/api/property-api.service';
 import { FavoritesApiService } from '../../../core/api/favorites-api.service';
+import { LookupsApiService, LookupAmenity, LookupItem } from '../../../core/api/lookups-api.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Property, PropertyFilterDto } from '../../../core/models/property.model';
 import { EmptyStateComponent } from '../../../shared/ui/empty-state.component';
@@ -49,6 +50,7 @@ import { FavoriteToggleButtonComponent } from '../../../shared/ui/favorite-toggl
 export class PropertyListPage implements OnInit {
   private readonly api = inject(PropertyApiService);
   private readonly favoritesApi = inject(FavoritesApiService);
+  private readonly lookupsApi = inject(LookupsApiService);
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
@@ -78,6 +80,21 @@ export class PropertyListPage implements OnInit {
 
   readonly favoritePropertyIds = signal<Set<string>>(new Set());
 
+  /**
+   * ✅ إضافة: اقتراحات مدن حقيقية عبر GET /api/lookups/cities لحقل فلترة
+   * المدينة (كان نصياً حراً بدون أي اقتراح رغم توفر endpoint جاهز لذلك).
+   */
+  readonly citySuggestions = signal<LookupItem[]>([]);
+
+  /**
+   * ✅ إضافة: فلترة حسب المرافق — الباك اند يدعم فعلياً AmenityIds ضمن
+   * PropertyFilterDto (راجع PropertyFilterDto.cs) لكن لم يكن هناك أي واجهة
+   * لاختيار المرافق وإرسالها ضمن البحث. تُجلب من نفس مصدر Lookups المستخدَم
+   * أصلاً في نموذج إضافة/تعديل العقار.
+   */
+  readonly amenities = signal<LookupAmenity[]>([]);
+  selectedAmenityIds: string[] = [];
+
   // ── Geo-search ("العقارات القريبة مني") ──
   // يستخدم GET /properties/geo-search الذي كان غير مستغَل إطلاقاً في الواجهة
   // رغم أن الخادم يوفره بفهرسة PostGIS مخصصة لهذا الغرض.
@@ -102,6 +119,39 @@ export class PropertyListPage implements OnInit {
     this.destroyRef.onDestroy(unregister);
     this.loadProperties();
     this.loadFavoriteIds();
+    this.loadCitySuggestions();
+    this.loadAmenities();
+  }
+
+  private loadCitySuggestions(): void {
+    this.lookupsApi
+      .getCities()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: cities => this.citySuggestions.set(cities),
+        error: () => this.citySuggestions.set([])
+      });
+  }
+
+  /** GET /api/lookups/amenities — لفلتر المرافق في لوحة البحث. */
+  private loadAmenities(): void {
+    this.lookupsApi
+      .getAmenities()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: amenities => this.amenities.set(amenities),
+        error: () => this.amenities.set([])
+      });
+  }
+
+  isAmenitySelected(amenityId: string): boolean {
+    return this.selectedAmenityIds.includes(amenityId);
+  }
+
+  toggleAmenityFilter(amenityId: string): void {
+    this.selectedAmenityIds = this.isAmenitySelected(amenityId)
+      ? this.selectedAmenityIds.filter(id => id !== amenityId)
+      : [...this.selectedAmenityIds, amenityId];
   }
 
   private loadFavoriteIds(): void {
@@ -226,6 +276,7 @@ export class PropertyListPage implements OnInit {
     if (this.cityFilter?.trim()) count++;
     if (this.minPrice !== null && this.minPrice !== undefined) count++;
     if (this.maxPrice !== null && this.maxPrice !== undefined) count++;
+    if (this.selectedAmenityIds.length > 0) count++;
     if (this.sortBy && this.sortBy !== 'CreatedAt') count++;
 
     return count;
@@ -245,6 +296,7 @@ export class PropertyListPage implements OnInit {
       listingType: this.selectedListingType || undefined,
       minPrice: this.minPrice ?? undefined,
       maxPrice: this.maxPrice ?? undefined,
+      amenityIds: this.selectedAmenityIds.length > 0 ? this.selectedAmenityIds : undefined,
       sortBy: sort.sortBy,
       sortDescending: sort.sortDescending
     });
@@ -258,6 +310,7 @@ export class PropertyListPage implements OnInit {
     this.cityFilter = '';
     this.minPrice = null;
     this.maxPrice = null;
+    this.selectedAmenityIds = [];
     this.sortBy = 'CreatedAt';
     this.applyFilters();
   }

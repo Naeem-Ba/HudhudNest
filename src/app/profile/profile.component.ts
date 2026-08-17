@@ -8,6 +8,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { ProfileService, UserProfile } from '../core/api/profile.service';
 import { AuthService } from '../core/auth/auth.service';
+import { PhoneAuthApiService } from '../core/auth/phone-auth-api.service';
 import { UrlService } from '../core/services/url.service';
 import { ToastService } from '../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../shared/ui/loading-spinner.component';
@@ -30,6 +31,7 @@ import { ImageFallbackDirective } from '../shared/directives/image-fallback.dire
 export class ProfileComponent implements OnInit {
   private readonly profileService = inject(ProfileService);
   private readonly authService    = inject(AuthService);
+  private readonly phoneAuth      = inject(PhoneAuthApiService);
   private readonly translate      = inject(TranslateService);
   private readonly urlService     = inject(UrlService);
   private readonly toast          = inject(ToastService);
@@ -42,6 +44,14 @@ export class ProfileComponent implements OnInit {
   errorMsg      = signal('');
   avatarPreview = signal<string | null>(null);
   showPasswordForm = signal(false);
+
+  // ✅ إضافة: تدفق "بريد إلكتروني ثانوي" — email/add + email/verify
+  // (PhoneAuthController كان يوفّر هذين المسارين بلا أي استهلاك من الواجهة).
+  showEmailForm  = signal(false);
+  isSendingEmail = signal(false);
+  emailLinkSent  = signal(false);
+  secondaryEmail = '';
+  emailSubmitted = false;
 
   avatarUploadAvailable = false; // فعّلها عندما يصبح endpoint رفع الصورة جاهزًا في Backend.
 
@@ -188,6 +198,59 @@ export class ProfileComponent implements OnInit {
         this.toast.error(this.translate.instant('PROFILE.MESSAGES.PASS_ERROR'));
       }
     });
+  }
+
+  /**
+   * ✅ إضافة: يرسل بريد التفعيل عبر POST /auth/email/add. لا يُخزَّن البريد
+   * كمُفعَّل مباشرة — الباك اند يُرسل رابط تفعيل والمستخدم يجب أن ينقره
+   * (يفتح صفحة auth/verify-email) قبل أن يظهر EmailConfirmed = true هنا.
+   * لذا بعد النجاح نكتفي برسالة "تحقق من بريدك" ولا نُحدِّث user() محليًا —
+   * القيمة الحقيقية تصل فقط عبر fetchProfile() اللاحق (مثلاً بعد التفعيل
+   * وإعادة فتح الصفحة)، تفاديًا لعرض بريد "مُضاف" وهو فعليًا غير مؤكَّد.
+   */
+  addSecondaryEmail(): void {
+    this.emailSubmitted = true;
+    const email = this.secondaryEmail.trim();
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      this.toast.error(this.translate.instant('VALIDATION.REQUIRED'));
+      return;
+    }
+
+    this.isSendingEmail.set(true);
+
+    this.phoneAuth.addEmail(email).subscribe({
+      next: () => {
+        this.isSendingEmail.set(false);
+        this.emailLinkSent.set(true);
+        this.toast.success(this.translate.instant('PROFILE.EMAIL_SECTION.LINK_SENT'));
+      },
+      error: error => {
+        this.isSendingEmail.set(false);
+        this.toast.error(this.mapAddEmailError(error));
+      }
+    });
+  }
+
+  cancelSecondaryEmail(): void {
+    this.showEmailForm.set(false);
+    this.emailLinkSent.set(false);
+    this.emailSubmitted = false;
+    this.secondaryEmail = '';
+  }
+
+  private mapAddEmailError(error: unknown): string {
+    const code = (error as { error?: { code?: string; Code?: string } })?.error?.code
+      ?? (error as { error?: { code?: string; Code?: string } })?.error?.Code;
+
+    switch (code) {
+      case 'EMAIL_ALREADY_SET':
+        return this.translate.instant('PROFILE.EMAIL_SECTION.ERRORS.ALREADY_SET');
+      case 'EMAIL_TAKEN':
+        return this.translate.instant('PROFILE.EMAIL_SECTION.ERRORS.TAKEN');
+      default:
+        return this.translate.instant('PROFILE.EMAIL_SECTION.ERRORS.GENERIC');
+    }
   }
 
   /**

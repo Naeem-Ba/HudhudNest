@@ -8,6 +8,7 @@
 //   POST   /api/Visits                       ← طلب زيارة جديدة
 //   PUT    /api/Visits/{id}/confirm          ← قبول زيارة
 //   PUT    /api/Visits/{id}/decline          ← رفض زيارة
+//   PUT    /api/Visits/{id}/complete         ← إغلاق دورة حياة الزيارة (مالك العقار فقط)
 //   DELETE /api/Visits/{id}                  ← إلغاء زيارة
 
 import { Injectable } from '@angular/core';
@@ -89,6 +90,16 @@ export class VisitService {
    */
   declineVisit(visitId: string): Observable<void> {
     return this.api.put<void>(`${this.endpoint}/${visitId}/decline`);
+  }
+
+  /**
+   * ✅ إضافة: تمييز زيارة مؤكَّدة (Confirmed) كمكتملة — لمالك العقار فقط.
+   * الباك اند (CompleteVisitCommandHandler) يتحقق من الملكية ويرفض الطلب بـ 403
+   * لغير المالك؛ كانت هذه النقطة موجودة بالباك اند دون أي استدعاء من الواجهة،
+   * ما كان يمنع إغلاق دورة حياة الزيارة (تبقى عالقة على Confirmed للأبد).
+   */
+  completeVisit(visitId: string): Observable<void> {
+    return this.api.put<void>(`${this.endpoint}/${visitId}/complete`);
   }
 
   /**

@@ -94,6 +94,15 @@
     "CHANGE_PHONE_NUMBER": "Change phone number",
     "PROFILE_NAME_STEP_TITLE": "Complete your details",
     "PROFILE_NAME_STEP_SUBTITLE": "This is a new phone number — enter your name to create your account.",
+    "VERIFY_EMAIL": {
+      "TITLE": "Email verification",
+      "VERIFYING": "Verifying your confirmation link...",
+      "SUCCESS": "Your email address has been verified successfully!",
+      "MISSING_PARAMS": "The verification link is invalid or incomplete.",
+      "FAILED": "The verification link is invalid or expired. Request a new one from your profile page.",
+      "GO_TO_PROFILE": "Go to my profile",
+      "BACK_TO_PROFILE": "Back to profile"
+    },
     "ERRORS": {
       "FIX_FIELDS": "Please correct the fields before submitting.",
       "FULL_NAME_REQUIRED": "Full name is required.",
@@ -332,7 +341,25 @@
     "NEAR_ME": "Properties near me",
     "NEAR_ME_ACTIVE": "Cancel nearby search",
     "LOCATING": "Locating you...",
-    "RADIUS": "Radius"
+    "RADIUS": "Radius",
+    "AMENITIES": "Amenities",
+    "RESULTS": "results",
+    "FILTERS": "Filters",
+    "SEARCH": "Search",
+    "SEARCH_PLACEHOLDER": "Search by title or description...",
+    "LISTING_TYPE": "Listing type",
+    "ALL": "All",
+    "CITY": "City",
+    "CITY_PLACEHOLDER": "Choose or type a city name",
+    "PRICE_RANGE": "Price range",
+    "MIN": "Min",
+    "MAX": "Max",
+    "SORT": "Sort by",
+    "SORT_NEWEST": "Newest first",
+    "SORT_PRICE_ASC": "Price: low to high",
+    "SORT_PRICE_DESC": "Price: high to low",
+    "APPLY_FILTERS": "Apply filters",
+    "RESET": "Reset"
   },
   "PROPERTY_DETAIL": {
     "NOT_FOUND_TITLE": "Property not found",
@@ -350,7 +377,8 @@
     "FLOOR": "Floor",
     "AVAILABLE_FROM": "Available from",
     "CONDITION": "Condition",
-    "NO_FEATURES": "No additional features."
+    "NO_FEATURES": "No additional features.",
+    "OWNER": "Owner information"
   },
   "PROPERTY": {
     "MODE_RENT": "For rent",
@@ -392,7 +420,11 @@
     "SET_MAIN_SUCCESS": "Cover photo updated.",
     "DELETE_IMAGE": "Delete photo",
     "DELETE_IMAGE_CONFIRM": "Delete this photo? This cannot be undone.",
-    "DELETE_IMAGE_SUCCESS": "Photo deleted."
+    "DELETE_IMAGE_SUCCESS": "Photo deleted.",
+    "AMENITIES": "Amenities",
+    "AMENITIES_LOAD_ERROR": "Could not load the amenities list from the server.",
+    "AMENITIES_EMPTY": "No amenities are available right now.",
+    "NOT_AUTHORIZED": "You don't have permission to access this property."
   },
   "wohnung_add": {
     "title": "Add property",
@@ -525,7 +557,10 @@
     "ROLE_ADDED": "Role added.",
     "ROLE_REMOVED": "Role removed.",
     "ROLE_ERROR": "Unable to update the role.",
-    "LOAD_ERROR": "Unable to load users."
+    "LOAD_ERROR": "Unable to load users.",
+    "REFRESH_LOOKUPS": "Refresh lookups cache",
+    "REFRESH_LOOKUPS_SUCCESS": "The lookups cache (cities/amenities/categories) was cleared.",
+    "REFRESH_LOOKUPS_ERROR": "Could not refresh the lookups cache."
   },
   "MAP": {
     "APARTMENT_LOCATION": "Location of property {{title}}",
@@ -560,6 +595,21 @@
     "SAVE_CHANGES": "Save changes",
     "DELETE_ACCOUNT": "Delete account permanently",
     "MY_ADS": "My listings",
+    "EMAIL_SECTION": {
+      "CONFIRMED": "Email address verified.",
+      "PENDING": "Your email is awaiting verification. Check your inbox.",
+      "NO_EMAIL_HINT": "No email address is linked to your account yet. Add one to use it for password recovery and notifications.",
+      "ADD_BTN": "Add email address",
+      "RESEND_BTN": "Resend verification link",
+      "INPUT_LABEL": "Email address",
+      "SEND_BTN": "Send verification link",
+      "LINK_SENT": "A verification link has been sent to your email. Check your inbox (and spam folder).",
+      "ERRORS": {
+        "ALREADY_SET": "You already have a verified email address.",
+        "TAKEN": "This email address is already used by another account.",
+        "GENERIC": "Could not send the verification link. Please try again."
+      }
+    },
     "MESSAGES": {
       "SAVE_SUCCESS": "Data updated successfully.",
       "SAVE_ERROR": "Unable to save changes.",
@@ -697,7 +747,8 @@
       "DECLINED": "Declined",
       "CANCELLED": "Cancelled",
       "COMPLETED": "Completed"
-    }
+    },
+    "COMPLETE": "Mark as completed"
   },
   "REVIEWS": {
     "EYEBROW": "User opinions",

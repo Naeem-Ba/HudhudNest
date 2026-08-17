@@ -200,6 +200,31 @@
   input { flex: 1; }
 }
 
+/* ✅ إضافة: فلتر المرافق (Amenities) */
+.amenity-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+}
+
+.amenity-chip {
+  padding: .35rem .75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill, 999px);
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--surface);
+  color: var(--gray-600);
+  transition: all .15s;
+
+  &--active {
+    background: var(--gold-soft, var(--primary));
+    color: var(--navy, var(--primary));
+    border-color: var(--primary);
+  }
+}
+
 .range-sep {
   color: var(--gray-400);
   font-size: .85rem;

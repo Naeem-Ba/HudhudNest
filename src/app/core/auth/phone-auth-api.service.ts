@@ -146,6 +146,40 @@ export class PhoneAuthApiService {
       );
   }
 
+  // ── 6) بريد إلكتروني ثانوي (email/add + email/verify) ───────────────────
+  // ✅ إضافة: PhoneAuthController كان يوفّر هذين المسارين بلا أي استهلاك من
+  // الواجهة. التدفق مختلف عن OTP الهاتف: email/add يتطلب تسجيل دخول (Bearer)
+  // ويُرسل رابط تفعيل بالبريد (وليس كودًا يُكتَب يدويًا)، والمستخدم يفعّله
+  // بالنقر على الرابط الذي يفتح صفحة auth/verify-email التي تستدعي
+  // email/verify تلقائيًا بالـ userId + token من الـ query params.
+
+  /**
+   * POST /auth/email/add — يتطلب تسجيل دخول (BackendApiService يُرفق التوكن
+   * تلقائيًا عبر الـ interceptor). الباك اند يرفض الطلب إن كان لدى الحساب
+   * بريد مفعّل بالفعل (EMAIL_ALREADY_SET) أو إن كان البريد مستخدَمًا من حساب
+   * آخر (EMAIL_TAKEN) — الأخطاء تصل كـ HttpErrorResponse.status === 400 مع
+   * error.code، ونتركها لتُعالَج في المكوّن المستدعي.
+   */
+  addEmail(email: string): Observable<{ message: string }> {
+    return this.api.post<{ message: string }>('/auth/email/add', {
+      email: email.trim().toLowerCase()
+    });
+  }
+
+  /**
+   * POST /auth/email/verify — [AllowAnonymous] عمدًا بالباك اند لأن المستخدم
+   * قد يفتح رابط التفعيل من جهاز/متصفح مختلف عن الذي سجّل الدخول منه، أو من
+   * جلسة منتهية الصلاحية. userId و token يصلان عبر رابط البريد (لا يُكتَبان
+   * يدويًا) — راجع EmailVerificationService.SendVerificationLinkAsync بالباك
+   * اند لصيغة الرابط: {frontend}/auth/verify-email?userId=..&email=..&token=..
+   */
+  verifyEmail(userId: string, token: string): Observable<{ message: string }> {
+    return this.api.post<{ message: string }>('/auth/email/verify', {
+      userId,
+      token
+    });
+  }
+
   // ── Helpers ──────────────────────────────────────────────────────────────
 
   private sendChallenge(path: string, phoneNumber: string): Observable<PhoneWorkflowResponse> {

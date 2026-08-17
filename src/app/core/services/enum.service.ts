@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { firstValueFrom, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { BackendApiService } from '../api/backend-api.service';
+import { LookupsApiService } from '../api/lookups-api.service';
 export interface EnumItem {
   Id: number | string;
   Key: string;
@@ -11,6 +12,7 @@ export interface EnumItem {
 export class EnumService {
   private readonly endpoint = '/enums';
   private readonly cache = new Map<string, EnumItem[]>();
+  private readonly lookups = inject(LookupsApiService);
 
   /**
    * UI still uses the older German group names, while the backend now exposes
@@ -42,7 +44,7 @@ export class EnumService {
     const backendGroup = this.backendGroupByUiGroup[normalized] ?? group;
 
     if (normalized === 'STADT') {
-      this.cache.set(normalized, this.localCities());
+      await this.loadCities();
       return;
     }
 
@@ -114,21 +116,50 @@ export class EnumService {
     return { Id: index, Key: '' };
   }
 
-  private localCities(): EnumItem[] {
+  /**
+   * ✅ إصلاح: كانت قائمة المدن (STADT) مكتوبة يدويًا (13 مدينة ثابتة) بدلاً من
+   * استهلاك GET /api/lookups/cities الموجود فعليًا في الباك اند (LookupsController).
+   * الآن تُجلب ديناميكيًا من الباك اند (وهي مبنية هناك من المدن الموجودة فعليًا
+   * ضمن العقارات الحالية)، مع الاحتفاظ بقائمة احتياطية محلية صغيرة تُستخدم فقط
+   * إذا فشل الطلب أو كانت قاعدة البيانات لا تزال فارغة (مثلاً عند أول تشغيل).
+   */
+  private async loadCities(): Promise<void> {
+    try {
+      const cities = await firstValueFrom(
+        this.lookups.getCities().pipe(
+          catchError(error => {
+            console.warn('Lookups \'cities\' could not be loaded. Falling back to local list.', error);
+            return of([] as { id: string; name: string }[]);
+          })
+        )
+      );
+
+      const items: EnumItem[] = cities.length > 0
+        ? cities.map(city => ({ Id: city.id, Key: city.name }))
+        : this.fallbackCities();
+
+      this.cache.set('STADT', items);
+    } catch {
+      this.cache.set('STADT', this.fallbackCities());
+    }
+  }
+
+  /** يُستخدم فقط كاحتياط عند تعذّر الوصول للباك اند أو عندما تكون قاعدة البيانات فارغة بعد. */
+  private fallbackCities(): EnumItem[] {
     return [
-      { Id: 'Damascus', Key: '\u062F\u0645\u0634\u0642' },
-      { Id: 'Aleppo', Key: '\u062D\u0644\u0628' },
-      { Id: 'Homs', Key: '\u062D\u0645\u0635' },
-      { Id: 'Hama', Key: '\u062D\u0645\u0627\u0629' },
-      { Id: 'Latakia', Key: '\u0627\u0644\u0644\u0627\u0630\u0642\u064A\u0629' },
-      { Id: 'Tartus', Key: '\u0637\u0631\u0637\u0648\u0633' },
-      { Id: 'Idlib', Key: '\u0625\u062F\u0644\u0628' },
-      { Id: 'Daraa', Key: '\u062F\u0631\u0639\u0627' },
-      { Id: 'Dusseldorf', Key: '\u062F\u0648\u0633\u0644\u062F\u0648\u0631\u0641' },
-      { Id: 'Essen', Key: '\u0625\u064A\u0633\u0646' },
-      { Id: 'Dortmund', Key: '\u062F\u0648\u0631\u062A\u0645\u0648\u0646\u062F' },
-      { Id: 'Gelsenkirchen', Key: '\u063A\u064A\u0644\u0633\u0646\u0643\u064A\u0631\u0634\u0646' },
-      { Id: 'Berlin', Key: '\u0628\u0631\u0644\u064A\u0646' }
+      { Id: 'Damascus', Key: 'دمشق' },
+      { Id: 'Aleppo', Key: 'حلب' },
+      { Id: 'Homs', Key: 'حمص' },
+      { Id: 'Hama', Key: 'حماة' },
+      { Id: 'Latakia', Key: 'اللاذقية' },
+      { Id: 'Tartus', Key: 'طرطوس' },
+      { Id: 'Idlib', Key: 'إدلب' },
+      { Id: 'Daraa', Key: 'درعا' },
+      { Id: 'Dusseldorf', Key: 'دوسلدورف' },
+      { Id: 'Essen', Key: 'إيسن' },
+      { Id: 'Dortmund', Key: 'دورتموند' },
+      { Id: 'Gelsenkirchen', Key: 'غيلسنكيرشن' },
+      { Id: 'Berlin', Key: 'برلين' }
     ];
   }
 }

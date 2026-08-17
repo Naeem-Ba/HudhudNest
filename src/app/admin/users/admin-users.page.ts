@@ -15,6 +15,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AdminUserDto, AdminUsersService } from '../../core/api/admin-users.service';
+import { LookupsApiService } from '../../core/api/lookups-api.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
@@ -39,6 +40,20 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
           <option value="">{{ 'ADMIN_USERS.ALL_ROLES' | translate }}</option>
           <option *ngFor="let role of roles()" [value]="role">{{ role }}</option>
         </select>
+
+        <!-- ✅ إضافة: يستهلك POST /api/lookups/refresh (Admin فقط) — كان غير
+             مستخدَم إطلاقاً؛ يفرّغ كاش المدن/المرافق/الفئات فوراً (10 دقائق
+             صلاحية افتراضية) دون انتظار انتهائها من تلقاء نفسه. -->
+        <button
+          type="button"
+          class="btn btn--outline"
+          [disabled]="refreshingLookups()"
+          (click)="refreshLookupsCache()"
+        >
+          {{ refreshingLookups()
+              ? ('COMMON.SAVING' | translate)
+              : ('ADMIN_USERS.REFRESH_LOOKUPS' | translate) }}
+        </button>
       </div>
 
       <app-loading-spinner *ngIf="loading()" [label]="'COMMON.LOADING' | translate"></app-loading-spinner>
@@ -150,6 +165,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 })
 export class AdminUsersPage implements OnInit {
   private readonly adminUsers = inject(AdminUsersService);
+  private readonly lookupsApi = inject(LookupsApiService);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly router = inject(Router);
@@ -161,6 +177,7 @@ export class AdminUsersPage implements OnInit {
   readonly page = signal(1);
   readonly totalPages = signal(1);
   readonly disablingId = signal<string | null>(null);
+  readonly refreshingLookups = signal(false);
 
   roleFilter = '';
   private readonly pageSize = 20;
@@ -260,6 +277,24 @@ export class AdminUsersPage implements OnInit {
         error: () => {
           this.toast.error(this.translate.instant('ADMIN_USERS.DISABLE_ERROR'));
           this.disablingId.set(null);
+        }
+      });
+  }
+
+  refreshLookupsCache(): void {
+    this.refreshingLookups.set(true);
+
+    this.lookupsApi
+      .refresh()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.toast.success(this.translate.instant('ADMIN_USERS.REFRESH_LOOKUPS_SUCCESS'));
+          this.refreshingLookups.set(false);
+        },
+        error: () => {
+          this.toast.error(this.translate.instant('ADMIN_USERS.REFRESH_LOOKUPS_ERROR'));
+          this.refreshingLookups.set(false);
         }
       });
   }
