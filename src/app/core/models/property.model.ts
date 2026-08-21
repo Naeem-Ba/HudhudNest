@@ -54,6 +54,21 @@ export interface Property {
   region?: string;
   countryCode?: string;
   postalCode?: string;
+  // Phase-0, Task 0: structured location + property-type FKs. Optional — old
+  // listings created before this feature have none of these set, and the
+  // free-text city/region fields keep working exactly as before.
+  governorateId?: number | null;
+  districtId?: number | null;
+  // Manual fallback name when districtId has no matching seeded row —
+  // submitted automatically as an admin-reviewed LocationSuggestion.
+  districtText?: string | null;
+  neighborhoodId?: number | null;
+  // Manual fallback name when neighborhoodId has no matching seeded row —
+  // same LocationSuggestion mechanism as districtText.
+  neighborhoodText?: string | null;
+  propertyTypeId?: number | null;
+  // Phase-0, Task 2: price-history + availability confirmation.
+  lastConfirmedAvailableAt?: string | null;
   latitude?: number;
   longitude?: number;
   listingType?: ListingType;
@@ -97,6 +112,11 @@ export interface PropertyFilterDto {
   countryCode?: string;
   city?: string;
   region?: string;         // ✅ مضاف
+  // Phase-0, Task 0: structured location + property-type filters.
+  governorateId?: number;
+  districtId?: number;
+  neighborhoodId?: number;
+  propertyTypeId?: number;
 
   // Type & Status
   listingType?: string | number;
@@ -144,6 +164,14 @@ export interface CreatePropertyDto {
   region?: string | null;
   countryCode: string;
   postalCode?: string | null;
+  // Phase-0, Task 0. Not currently used — see PropertySavePayload in
+  // property-form.page.ts for the interface actually sent on the wire; kept
+  // here in sync anyway since this DTO documents the backend contract.
+  governorateId?: number | null;
+  districtId?: number | null;
+  neighborhoodId?: number | null;
+  neighborhoodText?: string | null;
+  propertyTypeId?: number | null;
   latitude?: number | null;
   longitude?: number | null;
   coldRent?: number | null;
@@ -163,6 +191,19 @@ export interface CreatePropertyDto {
   condition?: number | string;
   availableFrom?: string | null;
   amenityIds?: string[] | null;
+}
+
+// Phase-0, Task 4 — advisory duplicate-listing check (GET /properties/check-duplicate).
+export interface DuplicateCandidate {
+  propertyId: string;
+  title: string;
+  isSameOwner: boolean;
+  matchReason: string;
+}
+
+export interface DuplicateCheckResult {
+  hasPotentialDuplicates: boolean;
+  candidates: DuplicateCandidate[];
 }
 
 // ✅ نموذج صور العقار من الـ API

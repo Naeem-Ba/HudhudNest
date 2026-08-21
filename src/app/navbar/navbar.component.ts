@@ -20,6 +20,8 @@ import { LanguageService } from '../core/services/language.service';
 import { UrlService } from '../core/services/url.service';
 import { ImageFallbackDirective } from '../shared/directives/image-fallback.directive';
 import { OverlayBackHandlerService } from '../core/services/overlay-back-handler.service';
+import { ThemeService } from '../core/services/theme.service';
+import { NotificationsApiService } from '../core/api/notifications-api.service';
 
 type AppLang = 'ar' | 'en' | 'de';
 
@@ -45,6 +47,10 @@ export class NavbarComponent implements OnInit {
   private readonly urlService = inject(UrlService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly overlayBackHandler = inject(OverlayBackHandlerService);
+  readonly themeService = inject(ThemeService);
+  // ✅ إضافة: جرس الإشعارات — العداد جاهز أصلاً بالخدمة (unreadCount signal
+  // محدَّث لحظيًا عبر SignalR)، كان ينقصه فقط رابط بالواجهة يعرضه.
+  readonly notificationsApi = inject(NotificationsApiService);
 
   @ViewChild('accountRef')
   private accountRef?: ElementRef<HTMLElement>;
@@ -126,6 +132,10 @@ export class NavbarComponent implements OnInit {
   @HostListener('document:keydown.escape')
   onEscapeKey(): void {
     this.closeAllMenus();
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggle();
   }
 
   toggleDropdown(event: Event): void {

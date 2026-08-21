@@ -10,15 +10,37 @@
 
 /* ================================================================
    CSS Custom Properties — Design Tokens
+   وضع افتراضي فاتح (Light) — يُطبَّق دومًا ما لم يُفعَّل [data-theme="dark"]
+   على <html> (يتم ذلك تلقائيًا عبر ThemeService حسب اختيار المستخدم
+   أو تفضيل نظام التشغيل عند أول زيارة).
    ================================================================ */
 :root {
-  /* Brand Colors */
+  /* Brand Colors — هوية Aqar Tech / عقار تيك */
   --navy:          #0F2742;
   --navy-80:       rgba(15, 39, 66, .80);
   --navy-600:      #1a3a5c;
   --gold:          #D6A84F;
   --gold-light:    #e8c47a;
+  --gold-dark:     #b5872e;
   --gold-soft:     rgba(214, 168, 79, .12);
+  /* نص ذهبي بتباين كافٍ حسب الوضع: غامق على خلفية فاتحة، فاتح على خلفية داكنة.
+     يُعاد تعريفه بكتلة [data-theme="dark"] أدناه. */
+  --gold-text:     var(--gold-dark);
+
+  /* لوحة معرض الصور — محايدة دافئة (رمادي فحمي دافئ) بدل الأزرق الملاحظ
+     سابقًا (كان var(--navy) وهو أزرق داكن). هذه القيمة ثابتة عمدًا بكلا
+     الوضعين لأن أدوات التنقل بالمعرض (الأسهم/العدّاد) بيضاء اللون ثابتة،
+     ومحايدة دافئة كهذه أكثر راحة للعين من الأزرق البارد عند تصفّح صور
+     عقارات لفترة طويلة، وتُبقي تركيز المستخدم على الصورة نفسها لا الخلفية. */
+  --gallery-canvas: #1b1a18;
+
+  /* شارات "إيجار/بيع" — درجات هادئة مائلة للأخضر-الفيروزي (إيجار) والكهرماني
+     الدافئ (بيع) بدل الأزرق/الأخضر الفاتح القديم، لتمييز بصري أوضح وأهدأ
+     يساعد على اتخاذ القرار بسرعة دون تنافر مع هوية الذهبي/الأسود. */
+  --badge-rent-bg:   rgba(13, 148, 136, .12);
+  --badge-rent-text: #0f766e;
+  --badge-sale-bg:   rgba(180, 83, 9, .14);
+  --badge-sale-text: #9a5313;
 
   /* UI Colors */
   --primary:       #2563eb;
@@ -47,7 +69,7 @@
   --surface:    #ffffff;
   --page-bg:    #f8fafc;
   --border:     #e2e8f0;
-  --border-focus: #2563eb;
+  --border-focus: var(--gold);
 
   /* Typography */
   --font-display: 'Cairo', 'Segoe UI', system-ui, sans-serif;
@@ -104,6 +126,63 @@
   --z-overlay:  300;
   --z-modal:    400;
   --z-toast:    500;
+}
+
+/* ================================================================
+   الوضع الداكن — Aqar Tech Dark Theme
+   أسود فاخر + ذهبي، مطابق للهوية البصرية المرجعية (Luxora/Luxe).
+   كل مكوّن يستخدم var(--surface) / var(--gray-*) / var(--border) —
+   بلا استثناء — يتحوّل تلقائيًا هنا بدون أي تعديل بملفه الخاص.
+   ================================================================ */
+html[data-theme="dark"] {
+  --surface:      #15161a;
+  --page-bg:      #0a0a0c;
+  --border:       #2a2b31;
+  --border-focus: var(--gold);
+
+  --gray-50:    #1c1d22;
+  --gray-100:   #23242a;
+  --gray-200:   #2a2b31;
+  --gray-300:   #383a42;
+  --gray-400:   #6b6d78;
+  --gray-500:   #9497a3;
+  --gray-600:   #b7b9c3;
+  --gray-700:   #d4d6dd;
+  --gray-800:   #eceef2;
+  --gray-900:   #f7f8fa;
+
+  --primary:       var(--gold);
+  --primary-dark:  var(--gold-light);
+  --primary-soft:  rgba(214, 168, 79, .14);
+  --gold-text:     var(--gold-light);
+
+  --success-soft:  rgba(22, 163, 74, .16);
+  --danger-soft:   rgba(220, 38, 38, .16);
+  --warning-soft:  rgba(217, 119, 6, .16);
+
+  /* شارات إيجار/بيع بالوضع الداكن — تشبّع أعلى قليلاً وشفافية أكبر عشان
+     تظل الشارة واضحة فوق الخلفيات الداكنة بدل الباستيل الفاتح اللي كان
+     يبدو غير مناسب (منخفض التباين/غير متناغم) على الخلفية الداكنة. */
+  --badge-rent-bg:   rgba(45, 212, 191, .18);
+  --badge-rent-text: #5eead4;
+  --badge-sale-bg:   rgba(251, 146, 60, .20);
+  --badge-sale-text: #fdba74;
+
+  --shadow-xs: 0 1px 3px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.25);
+  --shadow-sm: 0 2px 10px rgba(0,0,0,.40);
+  --shadow-md: 0 6px 20px rgba(0,0,0,.45);
+  --shadow-lg: 0 10px 34px rgba(0,0,0,.55);
+  --shadow-xl: 0 18px 55px rgba(0,0,0,.60);
+
+  color-scheme: dark;
+}
+
+/* انتقال ناعم عند تبديل الوضع بدل قفزة لونية مفاجئة */
+body,
+.navbar,
+.card,
+.btn {
+  transition: background-color .25s ease, color .25s ease, border-color .25s ease;
 }
 
 /* ================================================================
@@ -429,8 +508,8 @@ textarea.ng-valid.ng-touched {
   letter-spacing: .02em;
   white-space: nowrap;
 
-  &--rent   { background: #dbeafe; color: var(--primary-dark); }
-  &--sale   { background: #dcfce7; color: var(--success); }
+  &--rent   { background: var(--badge-rent-bg); color: var(--badge-rent-text); }
+  &--sale   { background: var(--badge-sale-bg); color: var(--badge-sale-text); }
   &--draft  { background: var(--gray-100); color: var(--gray-500); }
   &--live   { background: var(--success-soft); color: var(--success); }
   &--warning { background: var(--warning-soft); color: var(--warning); }
@@ -479,7 +558,7 @@ textarea.ng-valid.ng-touched {
   h1 {
     font-size: clamp(1.5rem, 3vw, 2rem);
     font-weight: 800;
-    color: var(--navy);
+    color: var(--gray-900);
     margin: 0;
   }
 

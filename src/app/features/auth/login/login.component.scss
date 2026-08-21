@@ -82,7 +82,7 @@
     margin: 0 0 .35rem;
     font-size: 1.5rem;
     font-weight: 800;
-    color: var(--navy, #0f2744);
+    color: var(--gray-900);
   }
 }
 
@@ -132,7 +132,7 @@
 
   &--active {
     background: var(--surface);
-    color: var(--navy);
+    color: var(--gray-900);
     box-shadow: var(--shadow-xs);
   }
 }
@@ -157,6 +157,13 @@
     background: var(--danger-soft);
     color: var(--danger);
     border: 1px solid rgba(220, 38, 38, .2);
+  }
+
+  /* عدّاد المحاولات المتبقية: أخفّ من الخطأ، فهو تحذير وليس فشلاً بذاته. */
+  &--warning {
+    background: rgba(217, 119, 6, .1);
+    color: #b45309;
+    border: 1px solid rgba(217, 119, 6, .25);
   }
 }
 
@@ -201,8 +208,8 @@
 
     &:focus {
       outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, .1);
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-soft);
     }
 
     &::placeholder { color: var(--gray-400); }
@@ -216,7 +223,7 @@
 
 .auth-link {
   font-size: .8rem;
-  color: var(--primary);
+  color: var(--gold-text);
   text-decoration: none;
   font-weight: 500;
 
@@ -265,8 +272,8 @@
   padding: .8rem 1rem;
   border: none;
   border-radius: var(--r-md);
-  background: var(--primary, #2563eb);
-  color: #fff;
+  background: var(--gold);
+  color: var(--navy);
   font-weight: 700;
   font-size: .95rem;
   cursor: pointer;
@@ -277,7 +284,7 @@
   transition: background .15s, opacity .15s;
 
   &:hover:not(:disabled) {
-    background: var(--primary-dark, #1d4ed8);
+    background: var(--gold-light);
   }
 
   &:disabled {
@@ -322,12 +329,16 @@
   }
 
   &--apple {
-    background: var(--gray-900);
+    /* أزرار Apple Sign In يجب أن تبقى سوداء/بيضاء ثابتة حسب إرشادات آبل
+       نفسها، بغض النظر عن ثيم الموقع — لهذا مثبّتة بالقيمة الفعلية وليس
+       بـ var(--gray-900) (اللي كان بيصير قريب من الأبيض بالوضع الغامق
+       ويجعل الزر غير مرئي: خلفية بيضاء تقريبًا مع نص أبيض). */
+    background: #000;
     color: #fff;
-    border-color: var(--gray-900);
+    border-color: #000;
 
     &:hover:not(:disabled) {
-      background: var(--gray-800);
+      background: #1a1a1a;
     }
   }
 
@@ -363,7 +374,7 @@
   &__btn {
     background: none;
     border: none;
-    color: var(--primary);
+    color: var(--gold-text);
     font-weight: 700;
     cursor: pointer;
     font-size: inherit;
@@ -383,7 +394,7 @@
     margin: 0;
     font-size: .95rem;
     font-weight: 700;
-    color: var(--navy, #0f2744);
+    color: var(--gray-900);
   }
 }
 

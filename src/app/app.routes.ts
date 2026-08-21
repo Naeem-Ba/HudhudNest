@@ -80,6 +80,14 @@ export const routes: Routes = [
             .then(m => m.FavoritesPage)
       },
       {
+        // Phase-0, Task 3.
+        path: 'saved-searches',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/saved-searches/saved-searches.page')
+            .then(m => m.SavedSearchesPage)
+      },
+      {
         path: 'notifications',
         canActivate: [AuthGuard],
         loadComponent: () =>
@@ -92,6 +100,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/visits/visits.page')
             .then(m => m.VisitsPage)
+      },
+      {
+        // الصفحة الشخصية العامة لأي حساب (بائع/مستأجر) — صورة، تاريخ الانضمام،
+        // عدد الشقق المُباعة/المؤجَّرة، إعلاناته النشطة، وتقييم متعدد المحاور.
+        path: 'users/:id',
+        loadComponent: () =>
+          import('./features/user-profile/user-profile.page')
+            .then(m => m.UserProfilePage)
       },
       {
         path: 'reviews',
@@ -160,6 +176,17 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./admin/users/admin-users.page')
         .then(m => m.AdminUsersPage)
+  },
+
+  {
+    // Admin moderation queue for user-typed district/neighborhood names —
+    // see LocationSuggestion.cs (backend) / property-form.page.ts (frontend
+    // entry point that creates these).
+    path: 'admin/location-suggestions',
+    canActivate: [AdminGuard],
+    loadComponent: () =>
+      import('./admin/location-suggestions/location-suggestions.page')
+        .then(m => m.AdminLocationSuggestionsPage)
   },
 
   {

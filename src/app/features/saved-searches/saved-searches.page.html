@@ -1,0 +1,67 @@
+<!-- src/app/features/saved-searches/saved-searches.page.html — Phase-0, Task 3 -->
+
+<section class="saved-searches-page">
+
+  <header class="page-header">
+    <div>
+      <h1>{{ 'SAVED_SEARCHES.TITLE' | translate }}</h1>
+      <p>{{ 'SAVED_SEARCHES.SUBTITLE' | translate }}</p>
+    </div>
+    <a class="btn btn--primary" routerLink="/properties">
+      🔍 {{ 'SAVED_SEARCHES.NEW_SEARCH' | translate }}
+    </a>
+  </header>
+
+  <app-loading-spinner *ngIf="loading()" [label]="'COMMON.LOADING' | translate" />
+
+  <div *ngIf="!loading() && error()" class="state-card error-state" role="alert">
+    <span aria-hidden="true">⚠️</span>
+    <p>{{ error() | translate }}</p>
+    <button type="button" (click)="load()">
+      {{ 'COMMON.RETRY' | translate }}
+    </button>
+  </div>
+
+  <app-empty-state
+    *ngIf="!loading() && !error() && searches().length === 0"
+    icon="🔔"
+    [title]="'SAVED_SEARCHES.EMPTY_TITLE' | translate"
+    [message]="'SAVED_SEARCHES.EMPTY_MESSAGE' | translate"
+  />
+
+  <div class="searches-list" *ngIf="!loading() && !error() && searches().length > 0">
+    <article
+      *ngFor="let s of searches(); trackBy: trackById"
+      class="search-card"
+    >
+      <div class="search-card__body">
+        <h2 class="line-clamp-1">{{ s.name || ('SAVED_SEARCHES.UNNAMED' | translate) }}</h2>
+        <p class="search-card__summary">{{ summary(s) }}</p>
+
+        <p class="search-card__matched" *ngIf="s.lastMatchedAt">
+          {{ 'SAVED_SEARCHES.LAST_MATCHED' | translate }}: {{ s.lastMatchedAt | date:'dd/MM/yyyy' }}
+        </p>
+        <p class="search-card__matched" *ngIf="!s.lastMatchedAt">
+          {{ 'SAVED_SEARCHES.NO_MATCHES_YET' | translate }}
+        </p>
+      </div>
+
+      <div class="search-card__actions">
+        <button type="button" class="btn btn--secondary" (click)="runSearch(s)">
+          🔍 {{ 'SAVED_SEARCHES.RUN' | translate }}
+        </button>
+        <button
+          type="button"
+          class="btn btn--danger"
+          [disabled]="deletingId() === s.id"
+          (click)="confirmDelete(s.id)"
+        >
+          {{ deletingId() === s.id
+              ? ('COMMON.DELETING' | translate)
+              : ('COMMON.DELETE' | translate) }}
+        </button>
+      </div>
+    </article>
+  </div>
+
+</section>

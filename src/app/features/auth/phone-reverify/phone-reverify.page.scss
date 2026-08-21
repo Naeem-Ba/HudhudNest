@@ -30,7 +30,7 @@
   text-align: center;
   line-height: 1.7;
 
-  strong { color: var(--navy); }
+  strong { color: var(--gray-900); }
 }
 
 .link-btn {
@@ -39,7 +39,7 @@
   background: none;
   padding: 0;
   margin-inline-start: .35rem;
-  color: var(--primary);
+  color: var(--gold-text);
   font-weight: 700;
   font-size: inherit;
   cursor: pointer;
@@ -62,7 +62,7 @@
 
   .spinner--dark {
     border: 2px solid var(--gray-200);
-    border-top-color: var(--primary);
+    border-top-color: var(--gold);
   }
 }
 

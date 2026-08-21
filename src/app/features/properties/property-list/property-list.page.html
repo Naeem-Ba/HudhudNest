@@ -119,6 +119,42 @@
           </datalist>
         </div>
 
+        <!-- Phase-0, Task 0 follow-up: structured location + property-type filters.
+             Cascading governorate -> district -> neighborhood, same pattern as
+             property-form.page.ts. All optional; the free-text city filter above
+             still works independently of these. -->
+        <div class="filter-group">
+          <label class="filter-label" for="filter-governorate">{{ 'PROPERTY_LIST.GOVERNORATE' | translate }}</label>
+          <select id="filter-governorate" [(ngModel)]="governorateId" name="governorateId" (ngModelChange)="onGovernorateChange()">
+            <option [ngValue]="null">{{ 'PROPERTY_LIST.SELECT_OPTIONAL' | translate }}</option>
+            <option *ngFor="let g of governorates()" [ngValue]="g.id">{{ localizedName(g) }}</option>
+          </select>
+        </div>
+
+        <div class="filter-group" *ngIf="governorateId">
+          <label class="filter-label" for="filter-district">{{ 'PROPERTY_LIST.DISTRICT' | translate }}</label>
+          <select id="filter-district" [(ngModel)]="districtId" name="districtId" (ngModelChange)="onDistrictChange()">
+            <option [ngValue]="null">{{ 'PROPERTY_LIST.SELECT_OPTIONAL' | translate }}</option>
+            <option *ngFor="let d of districts()" [ngValue]="d.id">{{ localizedName(d) }}</option>
+          </select>
+        </div>
+
+        <div class="filter-group" *ngIf="districtId">
+          <label class="filter-label" for="filter-neighborhood">{{ 'PROPERTY_LIST.NEIGHBORHOOD' | translate }}</label>
+          <select id="filter-neighborhood" [(ngModel)]="neighborhoodId" name="neighborhoodId">
+            <option [ngValue]="null">{{ 'PROPERTY_LIST.SELECT_OPTIONAL' | translate }}</option>
+            <option *ngFor="let n of neighborhoods()" [ngValue]="n.id">{{ localizedName(n) }}</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label" for="filter-property-type">{{ 'PROPERTY_LIST.PROPERTY_TYPE' | translate }}</label>
+          <select id="filter-property-type" [(ngModel)]="propertyTypeId" name="propertyTypeId">
+            <option [ngValue]="null">{{ 'PROPERTY_LIST.SELECT_OPTIONAL' | translate }}</option>
+            <option *ngFor="let pt of propertyTypeCatalog()" [ngValue]="pt.id">{{ localizedName(pt) }}</option>
+          </select>
+        </div>
+
         <!-- Price Range -->
         <div class="filter-group">
           <label class="filter-label">{{ 'PROPERTY_LIST.PRICE_RANGE' | translate }}</label>
@@ -175,6 +211,18 @@
           </button>
           <button type="button" class="btn btn--outline btn--full" (click)="resetFilters()">
             {{ 'PROPERTY_LIST.RESET' | translate }}
+          </button>
+          <!-- Phase-0, Task 3 — logged-out users get no save action; the
+               backend derives ownership from the JWT, so there's nothing to
+               save to without one. -->
+          <button
+            type="button"
+            class="btn btn--outline btn--full"
+            *ngIf="isLoggedIn"
+            [disabled]="savingSearch()"
+            (click)="saveCurrentSearch()"
+          >
+            🔔 {{ savingSearch() ? ('COMMON.SAVING' | translate) : ('PROPERTY_LIST.SAVE_SEARCH' | translate) }}
           </button>
         </div>
       </form>

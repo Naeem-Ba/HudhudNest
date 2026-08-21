@@ -18,6 +18,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  HostListener,
   OnInit,
   computed,
   inject,
@@ -44,6 +45,7 @@ import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.compone
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { FavoriteToggleButtonComponent } from '../../shared/ui/favorite-toggle-button.component';
 import { ToastService } from '../../shared/services/toast.service';
+import { OverlayBackHandlerService } from '../../core/services/overlay-back-handler.service';
 
 @Component({
   selector: 'app-property-detail',
@@ -78,6 +80,7 @@ export class PropertyDetailPage implements OnInit {
   private readonly toast         = inject(ToastService);
   private readonly destroyRef    = inject(DestroyRef);
   private readonly fb            = inject(FormBuilder);
+  private readonly overlayBackHandler = inject(OverlayBackHandlerService);
 
   // ── State Signals ─────────────────────────────────────────────────────
   readonly property       = signal<Property | null>(null);
@@ -113,11 +116,43 @@ export class PropertyDetailPage implements OnInit {
   });
 
   // ── Visit Form (Reactive) ─────────────────────────────────────────────
+  // ✅ إصلاح: كان proposedAt حقل واحد <input type="datetime-local"> يجمع
+  // التاريخ والوقت معًا — غير واضح للمستخدم (وترتيب عرض التاريخ يعتمد على
+  // لغة المتصفح، شهر/يوم/سنة عند متصفح إنكليزي). فُصل إلى visitDate
+  // (تاريخ فقط) و visitTime (وقت فقط) بمربعين منفصلين، ويُجمَّعان في
+  // submitVisit() فقط عند الإرسال الفعلي للـ API.
   readonly visitForm = this.fb.group({
-    proposedAt:   ['', Validators.required],
+    visitDate:    ['', Validators.required],
+    visitTime:    ['', Validators.required],
     visitorName:  ['', [Validators.required, Validators.maxLength(150)]],
-    visitorPhone: ['', [Validators.required, Validators.pattern(/^\+[0-9]{7,15}$/)]],
+    visitorPhone: ['+963', [Validators.required, Validators.pattern(/^\+[0-9]{7,15}$/)]],
     visitorNote:  ['', Validators.maxLength(500)]
+  });
+
+  /** أقل تاريخ مسموح باختياره لحقل [min] — اليوم (منعًا لاختيار تاريخ ماضٍ من التقويم نفسه). */
+  readonly minVisitDateAttr = new Date().toISOString().slice(0, 10);
+
+  /**
+   * ✅ إصلاح تفاعلية: FormControl.value ليس Signal، فقراءته مباشرة داخل
+   * computed() لا يُعيد حسابها تلقائيًا عند تغيّر الحقل. لذلك نُزامن القيمة
+   * بإشارة صريحة عبر valueChanges (مسجَّلة في ngOnInit)، ثم نبني المعاينة
+   * فوقها.
+   *
+   * معاينة نصية بصيغة يوم/شهر/سنة صريحة (بغض النظر عن لغة/محرك المتصفح) —
+   * لأن عرض <input type="date"> نفسه يتبع لغة نظام تشغيل المستخدم ولا يمكن
+   * فرض صيغة عرض عليه من الكود، فهذه المعاينة تحت الحقل هي الضمانة الحقيقية
+   * لصيغة يوم/شهر/سنة التي طلبها المستخدم.
+   */
+  readonly visitDateSignal = signal('');
+
+  readonly visitDatePreview = computed(() => {
+    const raw = this.visitDateSignal();
+    if (!raw) return '';
+    const d = new Date(raw + 'T00:00:00');
+    if (isNaN(d.getTime())) return '';
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    return `${dd}/${mm}/${d.getFullYear()}`;
   });
 
   // ── Review Form (Reactive) ────────────────────────────────────────────
@@ -132,10 +167,58 @@ export class PropertyDetailPage implements OnInit {
   messageDraft = '';
   readonly messageMaxLength = 3000;
 
+  /**
+   * ✅ إضافة: اسم المستخدم الحالي لعرضه كسطر توضيحي فوق نموذج مراسلة المالك
+   * ("سيتم الإرسال باسم: ..."). لم يُضَف كحقل نصي قابل للتعديل داخل هذا
+   * النموذج تحديدًا لأن MessagesController لا يقبل اسمًا حرًّا أصلًا — هوية
+   * المُرسِل تُحدَّد من رمز الدخول (senderId) لا من نص يكتبه المستخدم، فأي
+   * حقل "قابل للتعديل" هنا سيكون شكليًا فقط ولن يغيّر شيئًا فعليًا عند
+   * الإرسال. راجع التقرير المرفق مع هذا التعديل لتفاصيل هذا القيد.
+   */
+  // ملاحظة: دالة عادية لا computed() — authService.currentUserSnapshot ليست
+  // Signal (BehaviorSubject عادي)، فقراءتها داخل computed() تُحسَب مرة واحدة
+  // فقط ولا تتجدد لاحقًا. دالة عادية تُستدعى من القالب تُعطي قيمة دقيقة
+  // دائمًا (كلفة الاستدعاء المتكرر مقبولة، الصفحة تستخدم OnPush أصلًا).
+  currentUserDisplayName(): string {
+    return this.authService.currentUserSnapshot?.displayName ?? '';
+  }
+
   readonly isOwner = computed(() =>
     !!this.property()?.ownerId &&
     this.property()?.ownerId === this.authService.getCurrentUserId()
   );
+
+  /**
+   * Phase-0, Task 2 — 30-day staleness banner + "still available?" button.
+   * Staleness is measured from LastConfirmedAvailableAt if the owner has ever
+   * confirmed it, otherwise falls back to UpdatedAt (the property's own last
+   * edit), otherwise CreatedAt. This mirrors the backend's intent: a listing
+   * nobody has touched or confirmed in 30+ days is more likely stale/unavailable.
+   */
+  private static readonly STALE_AFTER_DAYS = 30;
+
+  readonly lastFreshnessSignalAt = computed(() => {
+    const p = this.property();
+    if (!p) return null;
+    return p.lastConfirmedAvailableAt ?? p.updatedAt ?? p.createdAt ?? null;
+  });
+
+  readonly daysSinceFreshnessSignal = computed(() => {
+    const raw = this.lastFreshnessSignalAt();
+    if (!raw) return null;
+
+    const then = new Date(raw).getTime();
+    if (!Number.isFinite(then)) return null;
+
+    return Math.floor((Date.now() - then) / 86_400_000);
+  });
+
+  readonly isStale = computed(() => {
+    const days = this.daysSinceFreshnessSignal();
+    return days !== null && days >= PropertyDetailPage.STALE_AFTER_DAYS;
+  });
+
+  readonly confirmingAvailability = signal(false);
 
   /**
    * ✅ إضافة: يستهلك GET /api/users/{id} — كان غير مستخدَم إطلاقاً، فكانت
@@ -161,6 +244,94 @@ export class PropertyDetailPage implements OnInit {
 
     this.loadProperty(id);
     this.loadReviews(id);
+
+    // ✅ إضافة: زر الرجوع (Android hardware back) يُغلق معرض الصور بدل ما يخرج
+    // من الصفحة كاملةً — نفس النمط المستخدم بقائمة الموبايل بالـ navbar.
+    const unregisterBackHandler = this.overlayBackHandler.register(() => {
+      if (!this.modalOpen()) {
+        return false;
+      }
+
+      this.closeModal();
+      return true;
+    });
+
+    this.destroyRef.onDestroy(unregisterBackHandler);
+
+    // ✅ إصلاح: مزامنة معاينة التاريخ (dd/mm/yyyy) — راجع تعليق visitDateSignal أعلاه.
+    this.visitForm.controls.visitDate.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(value => this.visitDateSignal.set(value ?? ''));
+  }
+
+  /**
+   * ✅ إضافة: تعبئة اسم مقدّم الطلب تلقائيًا من حساب المستخدم المسجَّل دخوله
+   * (قابل للتعديل يدويًا بعدها) — بدل حقل فارغ يُجبر المستخدم على كتابة
+   * اسمه من الصفر في كل مرة رغم أنه مسجَّل دخول أصلاً. لا نستبدل قيمة كتبها
+   * المستخدم مسبقًا (نتحقق أنها لا تزال فارغة أولاً).
+   */
+  private prefillVisitorNameIfEmpty(): void {
+    const nameControl = this.visitForm.controls.visitorName;
+    if (!nameControl.value) {
+      const displayName = this.authService.currentUserSnapshot?.displayName ?? '';
+      if (displayName) {
+        nameControl.setValue(displayName);
+      }
+    }
+  }
+
+  /**
+   * ✅ إصلاح: فتح نموذج طلب الزيارة كان لا يُصاحَب بأي تمرير للصفحة —
+   * على الجوال خصوصًا، النموذج يظهر أسفل الشاشة الحالية دون أن ينتبه
+   * المستخدم لوجوده أصلاً، فيبدو وكأن الزر "لا يعمل".
+   */
+  toggleVisitForm(): void {
+    const opening = !this.showVisitForm();
+    this.showVisitForm.set(opening);
+
+    if (opening) {
+      this.prefillVisitorNameIfEmpty();
+      this.scrollToElement('visit-form-section');
+    }
+  }
+
+  toggleMessageForm(): void {
+    const opening = !this.showMessageForm();
+    this.showMessageForm.set(opening);
+
+    if (opening) {
+      this.scrollToElement('message-form-section');
+    }
+  }
+
+  private scrollToElement(elementId: string): void {
+    // setTimeout(0): الفتح عبر *ngIf يحتاج دورة عرض واحدة على الأقل قبل أن
+    // يظهر العنصر فعليًا في الـ DOM — بدونه scrollIntoView يُنفَّذ قبل وجود
+    // العنصر أصلًا فلا يفعل شيئًا.
+    setTimeout(() => {
+      document.getElementById(elementId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+  }
+
+  // ✅ إضافة: تنقّل بلوحة المفاتيح داخل عارض الصور (Escape / الأسهم) —
+  // يحترم اتجاه RTL مثل بقية دوال التنقّل بالمعرض.
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.modalOpen()) {
+      this.closeModal();
+    }
+  }
+
+  @HostListener('document:keydown.arrowleft')
+  onArrowLeftKey(): void {
+    if (!this.modalOpen()) return;
+    this.isRTL() ? this.next() : this.prev();
+  }
+
+  @HostListener('document:keydown.arrowright')
+  onArrowRightKey(): void {
+    if (!this.modalOpen()) return;
+    this.isRTL() ? this.prev() : this.next();
   }
 
   // ── Data Loading ──────────────────────────────────────────────────────
@@ -258,14 +429,59 @@ export class PropertyDetailPage implements OnInit {
     else if (diff < -60) { this.isRTL() ? this.prev() : this.next(); }
   }
 
+  // ── Availability confirmation (Phase-0, Task 2) ──────────────────────
+  /**
+   * PATCH /properties/{id}/confirm-availability. Owner-only (see isOwner);
+   * updates LastConfirmedAvailableAt locally on success so the staleness
+   * banner disappears immediately without a full reload.
+   */
+  confirmStillAvailable(): void {
+    const property = this.property();
+    if (!property?.id || this.confirmingAvailability()) return;
+
+    this.confirmingAvailability.set(true);
+
+    this.propertyApi
+      .confirmAvailability(property.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.property.update(current =>
+            current ? { ...current, lastConfirmedAvailableAt: new Date().toISOString() } : current
+          );
+          this.toast.success(this.translate.instant('PROPERTY_DETAIL.CONFIRM_AVAILABILITY_SUCCESS'));
+          this.confirmingAvailability.set(false);
+        },
+        error: () => {
+          this.toast.error(this.translate.instant('PROPERTY_DETAIL.CONFIRM_AVAILABILITY_ERROR'));
+          this.confirmingAvailability.set(false);
+        }
+      });
+  }
+
   // ── Visit ─────────────────────────────────────────────────────────────
   submitVisit(): void {
-    if (this.visitForm.invalid || !this.property()) return;
+    // ✅ إصلاح: كان هذا الحارس (visitForm.invalid) يوقف الإرسال بصمت تامة —
+    // لا Toast ولا أي رسالة تشرح للمستخدم لماذا لم يحدث شيء عند الضغط على
+    // "إرسال" (وهذا على الأرجح بالضبط ما وُصِف بأن "الطلب لا يُرسَل"). الآن
+    // نميّز الحقول غير الصالحة (markAllAsTouched تُظهر رسائل الخطأ تحت كل
+    // حقل عبر القالب) ونعرض Toast صريحًا بدل الإرجاع الصامت.
+    if (this.visitForm.invalid) {
+      this.visitForm.markAllAsTouched();
+      this.toast.show(this.translate.instant('VISIT.FORM_INVALID'), 'error');
+      return;
+    }
+
+    if (!this.property()) return;
 
     const raw = this.visitForm.getRawValue();
+    // ✅ إصلاح: دمج حقلي التاريخ والوقت المنفصلين (visitDate + visitTime)
+    // في لحظة إرسال الطلب فقط — الـ API لا يزال يتوقع ISO 8601 واحد.
+    const proposedAt = new Date(`${raw.visitDate}T${raw.visitTime}:00`);
+
     const request: CreateVisitRequest = {
       propertyId:   this.property()!.id,
-      proposedAt:   new Date(raw.proposedAt!).toISOString(),
+      proposedAt:   proposedAt.toISOString(),
       visitorName:  raw.visitorName!.trim(),
       visitorPhone: raw.visitorPhone!.trim(),
       visitorNote:  raw.visitorNote ?? null

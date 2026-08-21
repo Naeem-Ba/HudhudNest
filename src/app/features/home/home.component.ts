@@ -1,6 +1,7 @@
 ﻿import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -8,6 +9,19 @@ import { PropertyApiService } from '../../core/api/property-api.service';
 import type { Property } from '../../core/models/property.model';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { UrlService } from '../../core/services/url.service';
+import {
+  LookupsApiService,
+  LookupItem,
+  PropertyTypeLookup,
+  pickLocalizedName
+} from '../../core/api/lookups-api.service';
+import { LanguageService } from '../../core/services/language.service';
+
+/** خيارات سقف السعر بحقل البحث — تُرسَل كـ maxPrice لصفحة النتائج. */
+interface HeroPriceOption {
+  value: number | null;
+  labelKey: string;
+}
 
 @Component({
   selector: 'app-home',
@@ -15,6 +29,7 @@ import { UrlService } from '../../core/services/url.service';
   imports: [
     CommonModule,
     RouterLink,
+    FormsModule,
     TranslateModule,
     ImageFallbackDirective
   ],
@@ -24,6 +39,9 @@ import { UrlService } from '../../core/services/url.service';
 export class HomeComponent implements OnInit {
 
   private readonly propertyApiService = inject(PropertyApiService);
+  private readonly lookupsApi = inject(LookupsApiService);
+  private readonly langService = inject(LanguageService);
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly urlService = inject(UrlService);
 
@@ -31,7 +49,57 @@ export class HomeComponent implements OnInit {
 
   properties: Property[] = [];
 
+  // ── Hero Search — يطابق تخطيط الموك-اب المرجعي (Location / Type / Price / Rent-Sale) ──
+  cities: LookupItem[] = [];
+  propertyTypes: PropertyTypeLookup[] = [];
+
+  readonly priceOptions: HeroPriceOption[] = [
+    { value: null, labelKey: 'HOME.search.price_any' },
+    { value: 500, labelKey: 'HOME.search.price_500' },
+    { value: 1000, labelKey: 'HOME.search.price_1000' },
+    { value: 2500, labelKey: 'HOME.search.price_2500' },
+    { value: 5000, labelKey: 'HOME.search.price_5000' }
+  ];
+
+  searchCity = '';
+  searchPropertyTypeId: number | null = null;
+  searchListingType: '' | 'ForRent' | 'ForSale' = '';
+  searchMaxPrice: number | null = null;
+
   ngOnInit(): void {
+    this.loadLatestProperties();
+    this.loadHeroLookups();
+  }
+
+  localizedTypeName(item: { nameAr: string; nameEn: string }): string {
+    return pickLocalizedName(item, this.langService.getCurrent());
+  }
+
+  /** يبني رابط البحث بنفس أسماء query params التي تقرأها property-list.page.ts فعليًا. */
+  submitHeroSearch(): void {
+    const queryParams: Record<string, string | number> = {};
+
+    if (this.searchCity) queryParams['city'] = this.searchCity;
+    if (this.searchPropertyTypeId) queryParams['propertyTypeId'] = this.searchPropertyTypeId;
+    if (this.searchListingType) queryParams['listingType'] = this.searchListingType;
+    if (this.searchMaxPrice) queryParams['maxPrice'] = this.searchMaxPrice;
+
+    this.router.navigate(['/wohnungen'], { queryParams });
+  }
+
+  private loadHeroLookups(): void {
+    this.lookupsApi
+      .getCities()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: items => this.cities = items, error: () => this.cities = [] });
+
+    this.lookupsApi
+      .getPropertyTypeCatalog()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: items => this.propertyTypes = items, error: () => this.propertyTypes = [] });
+  }
+
+  private loadLatestProperties(): void {
     this.propertyApiService
       .getProperties()
       .pipe(

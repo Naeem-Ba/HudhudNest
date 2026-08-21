@@ -1,6 +1,6 @@
 <div class="home">
 
-  <!-- ── Hero Search Banner ── -->
+  <!-- ── Hero Search Banner (تخطيط Aqar Tech — مطابق للموك-اب المرجعي) ── -->
   <section class="home-hero">
     <div class="home-hero__bg">
       <div class="home-hero__overlay"></div>
@@ -9,11 +9,61 @@
       <span class="home-hero__eyebrow">🏠 {{ 'HOME.hero_subtitle' | translate }}</span>
       <h1 class="home-hero__title">{{ 'HOME.hero_title' | translate }}</h1>
       <p class="home-hero__desc">{{ 'HOME.hero_desc' | translate }}</p>
+
+      <!-- بطاقة البحث الزجاجية العائمة أسفل الـ hero -->
+      <form class="hero-search" (ngSubmit)="submitHeroSearch()">
+        <div class="hero-search__field">
+          <label>{{ 'HOME.search.location' | translate }}</label>
+          <select [(ngModel)]="searchCity" name="searchCity">
+            <option value="">{{ 'HOME.search.location_any' | translate }}</option>
+            <option *ngFor="let c of cities" [value]="c.name">{{ c.name }}</option>
+          </select>
+        </div>
+
+        <div class="hero-search__divider" aria-hidden="true"></div>
+
+        <div class="hero-search__field">
+          <label>{{ 'HOME.search.type' | translate }}</label>
+          <select [(ngModel)]="searchPropertyTypeId" name="searchPropertyTypeId">
+            <option [ngValue]="null">{{ 'HOME.search.type_any' | translate }}</option>
+            <option *ngFor="let t of propertyTypes" [ngValue]="t.id">{{ localizedTypeName(t) }}</option>
+          </select>
+        </div>
+
+        <div class="hero-search__divider" aria-hidden="true"></div>
+
+        <div class="hero-search__field">
+          <label>{{ 'HOME.search.max_price' | translate }}</label>
+          <select [(ngModel)]="searchMaxPrice" name="searchMaxPrice">
+            <option *ngFor="let p of priceOptions" [ngValue]="p.value">{{ p.labelKey | translate }}</option>
+          </select>
+        </div>
+
+        <div class="hero-search__divider" aria-hidden="true"></div>
+
+        <div class="hero-search__field">
+          <label>{{ 'HOME.search.listing_type' | translate }}</label>
+          <select [(ngModel)]="searchListingType" name="searchListingType">
+            <option value="">{{ 'HOME.search.listing_type_any' | translate }}</option>
+            <option value="ForRent">{{ 'PROPERTY.MODE_RENT' | translate }}</option>
+            <option value="ForSale">{{ 'PROPERTY.MODE_SALE' | translate }}</option>
+          </select>
+        </div>
+
+        <button type="submit" class="hero-search__submit">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          {{ 'HOME.search.submit' | translate }}
+        </button>
+      </form>
+
       <div class="home-hero__actions">
-        <a routerLink="/wohnungen" class="btn btn--gold btn--lg">
+        <a routerLink="/wohnungen" class="btn btn--outline-light btn--sm">
           {{ 'HOME.browse_properties' | translate }}
         </a>
-        <a routerLink="/property-form" class="btn btn--outline-light btn--lg">
+        <a routerLink="/property-form" class="btn btn--outline-light btn--sm">
           {{ 'HOME.list_property' | translate }}
         </a>
       </div>

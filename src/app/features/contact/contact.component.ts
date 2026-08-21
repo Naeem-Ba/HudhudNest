@@ -11,7 +11,7 @@ import { ToastService } from '../../shared/services/toast.service';
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './contact.component.html',
-  styles: []
+  styleUrl: './contact.component.scss'
 })
 export class KontaktComponent {
   model = {

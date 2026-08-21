@@ -20,11 +20,19 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
 
 import { PropertyApiService } from '../../core/api/property-api.service';
-import { LookupsApiService, LookupAmenity, LookupItem } from '../../core/api/lookups-api.service';
-import { Property } from '../../core/models/property.model';
+import {
+  LookupsApiService,
+  LookupAmenity,
+  LookupItem,
+  PropertyTypeLookup,
+  StructuredLocationLookup,
+  pickLocalizedName
+} from '../../core/api/lookups-api.service';
+import { Property, DuplicateCandidate } from '../../core/models/property.model';
 import { ToastService } from '../../shared/services/toast.service';
 import { MapPickerComponent } from '../../map-picker/map-picker.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
+import { LocationComboComponent } from '../../shared/ui/location-combo.component';
 import { LanguageService, LangCode } from '../../core/services/language.service';
 
 interface PropertySavePayload {
@@ -53,6 +61,13 @@ interface PropertySavePayload {
   HeatingType: number;
   AvailableFrom?: string | null;
   AmenityIds?: string[];
+  // Phase-0, Task 0.
+  GovernorateId?: number | null;
+  DistrictId?: number | null;
+  DistrictText?: string | null;
+  NeighborhoodId?: number | null;
+  NeighborhoodText?: string | null;
+  PropertyTypeId?: number | null;
 }
 
 const VALID_COUNTRY_CODES = new Set(['DE', 'SY', 'US', 'GB', 'FR', 'AE', 'SA', 'TR', 'EG', 'JO', 'LB']);
@@ -112,6 +127,15 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
     errors['warmRentBelowColdRent'] = true;
   }
 
+  // District: pick one from the list OR type its name manually (submitted as
+  // an admin-reviewed LocationSuggestion — see districtText's control doc
+  // comment). At least one must be present.
+  const districtId = group.get('districtId')?.value;
+  const districtText = String(group.get('districtText')?.value ?? '').trim();
+  if (!districtId && !districtText) {
+    errors['districtRequired'] = true;
+  }
+
   return Object.keys(errors).length ? errors : null;
 }
 
@@ -125,7 +149,8 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
     TranslateModule,
     RouterLink,
     MapPickerComponent,
-    ImageFallbackDirective
+    ImageFallbackDirective,
+    LocationComboComponent
   ],
   templateUrl: './property-form.page.html',
   styleUrls: ['./property-form.page.scss']
@@ -166,15 +191,59 @@ export class PropertyFormPage implements OnInit {
   readonly selectedAmenityIds = signal<Set<string>>(new Set());
   readonly citySuggestions = signal<LookupItem[]>([]);
 
+  /**
+   * Structured location + property-type dropdowns.
+   * Cascading: governorate -> district -> neighborhood, each list loaded only
+   * once its parent is chosen.
+   *
+   * ✅ تحديث: أصبحت المحافظة والمنطقة ونوع العقار إجبارية بدل النصوص الحرة
+   * (city/region) التي كانت تُعرض سابقاً — تلك الحقول ما زالت موجودة داخلياً
+   * بالنموذج (الباك اند لا يزال يتطلب City) لكنها الآن تُشتق تلقائياً من
+   * القوائم المختارة بدل أن يكتبها المستخدم. الحي وحده يبقى اختيارياً لأن
+   * بيانات الأحياء موثّقة فقط لدمشق وحمص واللاذقية حالياً — عند غيابها يمكن
+   * كتابة اسم الحي يدوياً عبر neighborhoodText.
+   */
+  readonly governorates = signal<StructuredLocationLookup[]>([]);
+  readonly districts = signal<StructuredLocationLookup[]>([]);
+  readonly neighborhoods = signal<StructuredLocationLookup[]>([]);
+  readonly propertyTypeCatalog = signal<PropertyTypeLookup[]>([]);
+  readonly structuredLocationLoadFailed = signal(false);
+
+  /** Phase-0, Task 4 — advisory duplicate-listing check, shown before final submit. */
+  readonly duplicateCandidates = signal<DuplicateCandidate[]>([]);
+  readonly showDuplicateWarning = signal(false);
+  readonly checkingDuplicate = signal(false);
+  /** Set once the user explicitly chooses "submit anyway" from the duplicate warning. */
+  private duplicateCheckAcknowledged = false;
+
   readonly form = this.fb.group({
     listingType: [1, Validators.required],
     title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(200)]],
     description: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(5000)]],
     street: ['', [Validators.required, Validators.maxLength(300)]],
+    // city/region: no longer user-facing (see the class-level doc comment
+    // above governorates()) — kept required internally and auto-derived from
+    // the governorate/district selects in bindCascadingLocationChanges(),
+    // since the backend still stores them as its City/Region free-text
+    // columns for legacy compatibility and search indexing.
     city: ['', [Validators.required, Validators.maxLength(150)]],
     region: [null as string | null, Validators.maxLength(150)],
     postalCode: [null as string | null, Validators.maxLength(20)],
     countryCode: ['SY', [Validators.required, Validators.minLength(2), Validators.maxLength(2)]],
+    // Governorate/PropertyType are strict required dropdowns (full, verified
+    // catalogs). District is required too, but can be satisfied either by
+    // districtId (picked from the list) OR districtText (typed manually when
+    // not listed — enforced by the cross-field 'districtRequired' error in
+    // propertyFormValidator, not a plain Validators.required here).
+    // Neighborhood stays fully optional either way (seed coverage gap — see
+    // the class doc comment). Both *Text fields auto-submit an admin-reviewed
+    // LocationSuggestion — see property.model.ts's doc comments.
+    governorateId: [null as number | null, Validators.required],
+    districtId: [null as number | null],
+    districtText: [null as string | null, Validators.maxLength(150)],
+    neighborhoodId: [null as number | null],
+    neighborhoodText: [null as string | null, Validators.maxLength(150)],
+    propertyTypeId: [null as number | null, Validators.required],
     latitude: [null as number | null, [Validators.min(-90), Validators.max(90)]],
     longitude: [null as number | null, [Validators.min(-180), Validators.max(180)]],
     currencyCode: ['SYP', [Validators.required, Validators.minLength(3), Validators.maxLength(3)]],
@@ -204,7 +273,144 @@ export class PropertyFormPage implements OnInit {
 
     this.bindLanguage();
     this.loadAmenities();
-    this.loadCitySuggestions();
+    this.loadGovernorates();
+    this.loadPropertyTypeCatalog();
+    this.bindCascadingLocationChanges();
+  }
+
+  /** GET /api/lookups/governorates — Phase-0, Task 0 follow-up. */
+  private loadGovernorates(): void {
+    this.lookupsApi
+      .getGovernorates()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: items => this.governorates.set(items),
+        error: () => this.structuredLocationLoadFailed.set(true)
+      });
+  }
+
+  /** GET /api/lookups/property-type-catalog — Phase-0, Task 0 follow-up. */
+  private loadPropertyTypeCatalog(): void {
+    this.lookupsApi
+      .getPropertyTypeCatalog()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: items => this.propertyTypeCatalog.set(items),
+        error: () => this.structuredLocationLoadFailed.set(true)
+      });
+  }
+
+  /**
+   * Cascading dropdowns: choosing a governorate loads its districts and clears
+   * whatever district/neighborhood was previously selected (they'd belong to
+   * the old governorate); choosing a district loads its neighborhoods and
+   * clears the previously-selected neighborhood the same way. Skipped during
+   * the initial patch from loadExistingProperty (see the `emitEvent: false`
+   * there) so editing a property doesn't wipe its own saved selections.
+   */
+  private bindCascadingLocationChanges(): void {
+    this.form.controls.governorateId.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(governorateId => {
+        this.districts.set([]);
+        this.neighborhoods.set([]);
+        this.form.patchValue({ districtId: null, neighborhoodId: null }, { emitEvent: false });
+
+        // ✅ city (required by the backend) is derived from the chosen
+        // governorate's name instead of being typed — see the class doc
+        // comment. Falls back to '' when cleared, which correctly re-fails
+        // Validators.required on city until a governorate is picked again.
+        const governorate = this.governorates().find(g => g.id === governorateId);
+        this.form.patchValue({ city: governorate ? this.localizedName(governorate) : '' });
+
+        if (governorateId) {
+          this.loadDistricts(governorateId);
+        }
+      });
+
+    this.form.controls.districtId.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(districtId => {
+        this.neighborhoods.set([]);
+        this.form.patchValue({ neighborhoodId: null }, { emitEvent: false });
+
+        // ✅ region derived from the chosen district's name, same reasoning
+        // as city above.
+        const district = this.districts().find(d => d.id === districtId);
+        this.form.patchValue({ region: district ? this.localizedName(district) : null });
+
+        if (districtId) {
+          this.loadNeighborhoods(districtId);
+        }
+      });
+
+    // Neighborhood dropdown and manual free-text entry are mutually
+    // exclusive in intent (see Property.NeighborhoodText's backend doc
+    // comment) — picking one clears the other so we never submit a stale
+    // value from whichever the user isn't currently using.
+    this.form.controls.neighborhoodId.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(neighborhoodId => {
+        if (neighborhoodId) {
+          this.form.patchValue({ neighborhoodText: null }, { emitEvent: false });
+        }
+      });
+
+    this.form.controls.neighborhoodText.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(text => {
+        if (text && text.trim() && this.form.controls.neighborhoodId.value) {
+          this.form.patchValue({ neighborhoodId: null }, { emitEvent: false });
+          this.neighborhoods.set([]);
+        }
+      });
+
+    // Same mutual-exclusivity pattern for district: picking from the list
+    // clears any manually-typed name, and typing a name clears the picked
+    // district (and its now-inapplicable neighborhood selection/list, since
+    // there's no real districtId left to load neighborhoods for).
+    this.form.controls.districtId.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(districtId => {
+        if (districtId) {
+          this.form.patchValue({ districtText: null }, { emitEvent: false });
+        }
+      });
+
+    this.form.controls.districtText.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(text => {
+        if (text && text.trim() && this.form.controls.districtId.value) {
+          this.form.patchValue({ districtId: null, neighborhoodId: null }, { emitEvent: false });
+          this.districts.set([]);
+          this.neighborhoods.set([]);
+        }
+      });
+  }
+
+  private loadDistricts(governorateId: number): void {
+    this.lookupsApi
+      .getDistricts(governorateId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: items => this.districts.set(items),
+        error: () => this.districts.set([])
+      });
+  }
+
+  private loadNeighborhoods(districtId: number): void {
+    this.lookupsApi
+      .getNeighborhoods(districtId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: items => this.neighborhoods.set(items),
+        error: () => this.neighborhoods.set([])
+      });
+  }
+
+  /** Localized label for a bilingual lookup item, matching the current UI language. */
+  localizedName(item: { nameAr: string; nameEn: string }): string {
+    return pickLocalizedName(item, this.currentLang());
   }
 
   /** GET /api/lookups/amenities — كانت غير مستخدمة إطلاقاً في الواجهة. */
@@ -297,8 +503,34 @@ export class PropertyFormPage implements OnInit {
             floor: property.floor ?? null,
             hasBalcony: property.hasBalcony ?? false,
             hasElevator: property.hasElevator ?? false,
-            hasParkingSpace: property.hasParkingSpace ?? false
+            hasParkingSpace: property.hasParkingSpace ?? false,
+            propertyTypeId: property.propertyTypeId ?? null
           });
+
+          // Phase-0, Task 0 follow-up: patched with emitEvent:false so the
+          // governorateId/districtId valueChanges cascade above (which clears
+          // child selections on change) doesn't wipe the very values we're
+          // restoring here. District/neighborhood options for the saved
+          // governorate/district are then loaded explicitly below instead.
+          this.form.patchValue({
+            governorateId: property.governorateId ?? null,
+            districtId: property.districtId ?? null,
+            districtText: property.districtText ?? null,
+            neighborhoodId: property.neighborhoodId ?? null,
+            neighborhoodText: property.neighborhoodText ?? null
+          }, { emitEvent: false });
+
+          if (property.governorateId) {
+            this.lookupsApi.getDistricts(property.governorateId)
+              .pipe(takeUntilDestroyed(this.destroyRef))
+              .subscribe({ next: items => this.districts.set(items), error: () => this.districts.set([]) });
+          }
+
+          if (property.districtId) {
+            this.lookupsApi.getNeighborhoods(property.districtId)
+              .pipe(takeUntilDestroyed(this.destroyRef))
+              .subscribe({ next: items => this.neighborhoods.set(items), error: () => this.neighborhoods.set([]) });
+          }
 
           // ✅ الصور المحفوظة فعلياً تُعرض وتُدار بشكل منفصل عن معاينات الرفع
           // الجديدة، لأن لها id على الخادم ويمكن حذفها/تعيينها كغلاف فردياً
@@ -441,6 +673,72 @@ export class PropertyFormPage implements OnInit {
       return;
     }
 
+    // Phase-0, Task 4: advisory duplicate check, create-mode only (editing an
+    // existing listing can't be "a duplicate of itself"). Skipped once the
+    // user has explicitly acknowledged the warning and chosen to proceed.
+    const f = this.form.getRawValue();
+
+    if (!this.isEditMode() && !this.duplicateCheckAcknowledged && f.neighborhoodId) {
+      this.runDuplicateCheckThenSubmit();
+      return;
+    }
+
+    this.proceedWithSubmit();
+  }
+
+  /**
+   * GET /properties/check-duplicate before the real submit. Advisory only —
+   * a failed check (network error, etc.) must never block a legitimate
+   * submission, so any error here just falls through to proceedWithSubmit()
+   * instead of surfacing as a save error.
+   */
+  private runDuplicateCheckThenSubmit(): void {
+    const f = this.form.getRawValue();
+    const price = f.listingType === 2 ? f.purchasePrice : f.coldRent;
+
+    this.checkingDuplicate.set(true);
+
+    this.propertyApi
+      .checkDuplicate({
+        neighborhoodId: f.neighborhoodId ?? null,
+        area: f.area ?? null,
+        price: price ?? null,
+        listingType: f.listingType!
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: result => {
+          this.checkingDuplicate.set(false);
+
+          if (result.hasPotentialDuplicates) {
+            this.duplicateCandidates.set(result.candidates);
+            this.showDuplicateWarning.set(true);
+            return;
+          }
+
+          this.proceedWithSubmit();
+        },
+        error: () => {
+          this.checkingDuplicate.set(false);
+          this.proceedWithSubmit();
+        }
+      });
+  }
+
+  /** "Submit anyway" from the non-blocking duplicate warning dialog. */
+  confirmSubmitDespiteDuplicate(): void {
+    this.duplicateCheckAcknowledged = true;
+    this.showDuplicateWarning.set(false);
+    this.proceedWithSubmit();
+  }
+
+  /** "Go back and review" from the duplicate warning dialog — does not submit. */
+  dismissDuplicateWarning(): void {
+    this.showDuplicateWarning.set(false);
+    this.duplicateCandidates.set([]);
+  }
+
+  private proceedWithSubmit(): void {
     const f = this.form.getRawValue();
     const isRent = f.listingType === 1;
     const isSale = f.listingType === 2;
@@ -472,7 +770,14 @@ export class PropertyFormPage implements OnInit {
       AvailableFrom: f.availableFrom ?? null,
       // ✅ إصلاح: كان الحقل معرَّفاً في الـ payload لكن لم يُملأ أبداً — المرافق
       // المختارة من المستخدم لم تكن تُرسَل إلى الباك اند إطلاقاً.
-      AmenityIds: Array.from(this.selectedAmenityIds())
+      AmenityIds: Array.from(this.selectedAmenityIds()),
+      // Phase-0, Task 0.
+      GovernorateId: f.governorateId ?? null,
+      DistrictId: f.districtId ?? null,
+      DistrictText: f.districtText?.trim() || null,
+      NeighborhoodId: f.neighborhoodId ?? null,
+      NeighborhoodText: f.neighborhoodText?.trim() || null,
+      PropertyTypeId: f.propertyTypeId ?? null
     };
 
     this.isSaving.set(true);
@@ -562,7 +867,10 @@ export class PropertyFormPage implements OnInit {
     if (errors['warmRentBelowColdRent']) return 'PROPERTY_FORM.WARM_RENT_BELOW_COLD_RENT';
     if (errors['invalidCountryCode']) return 'PROPERTY_FORM.INVALID_COUNTRY_CODE';
     if (errors['invalidCurrencyCode']) return 'PROPERTY_FORM.INVALID_CURRENCY_CODE';
+    if (errors['districtRequired']) return 'PROPERTY_FORM.DISTRICT_REQUIRED';
 
+    if (this.f.governorateId.errors?.['required']) return 'PROPERTY_FORM.GOVERNORATE_REQUIRED';
+    if (this.f.propertyTypeId.errors?.['required']) return 'PROPERTY_FORM.PROPERTY_TYPE_REQUIRED';
     if (this.f.area.errors?.['areaGreaterThanTen']) return 'PROPERTY_FORM.AREA_TOO_SMALL';
     if (this.f.coldRent.errors?.['positiveNumber']) return 'PROPERTY_FORM.COLD_RENT_REQUIRED';
     if (this.f.warmRent.errors?.['positiveNumber']) return 'PROPERTY_FORM.WARM_RENT_REQUIRED';

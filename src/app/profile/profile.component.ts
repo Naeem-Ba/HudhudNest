@@ -1,5 +1,5 @@
 // Profile page: handles user data, password changes and account deletion.
-// Avatar upload remains disabled until the backend endpoint is production-ready.
+// ✅ Avatar upload is now live — POST /users/me/avatar (UsersController.UploadAvatar).
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
@@ -53,7 +53,10 @@ export class ProfileComponent implements OnInit {
   secondaryEmail = '';
   emailSubmitted = false;
 
-  avatarUploadAvailable = false; // فعّلها عندما يصبح endpoint رفع الصورة جاهزًا في Backend.
+  // ✅ تفعيل: نقطة رفع الصورة الآن جاهزة بالباك اند (POST /users/me/avatar
+  // عبر UsersController.UploadAvatar + UploadUserAvatarCommandHandler
+  // المخزَّنة عبر Cloudinary — نفس بنية تخزين صور العقارات).
+  avatarUploadAvailable = true;
 
   submitted         = false;
   passwordSubmitted = false;
@@ -158,10 +161,17 @@ export class ProfileComponent implements OnInit {
         this.isUploading.set(false);
         this.toast.success(this.translate.instant('PROFILE.MESSAGES.AVATAR_SUCCESS'));
       },
-      error: () => {
+      error: err => {
         this.isUploading.set(false);
-        this.avatarPreview.set(this.fallbackAvatar);
-        this.toast.error(this.translate.instant('PROFILE.MESSAGES.SAVE_ERROR'));
+        // ✅ نُعيد المعاينة لآخر صورة محفوظة فعليًا بدل الفارغة، والباك اند
+        // يُعيد رسالة عربية واضحة داخل body.message لأخطاء التحقق (نوع/حجم
+        // الصورة) — نعرضها كما هي بدل رسالة عامة، مع fallback مترجم.
+        const savedImageUrl = this.user()?.ImageUrl;
+        this.avatarPreview.set(
+          (savedImageUrl && this.urlService.build(savedImageUrl)) || this.fallbackAvatar
+        );
+        const backendMessage = err?.error?.message as string | undefined;
+        this.toast.error(backendMessage || this.translate.instant('PROFILE.MESSAGES.SAVE_ERROR'));
       }
     });
   }
