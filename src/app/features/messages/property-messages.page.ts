@@ -97,6 +97,15 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
           ← {{ 'MESSAGES.BACK_TO_LIST' | translate }}
         </button>
 
+        <!-- ✅ إضافة: رابط الملف الشخصي العام للطرف الآخر في المحادثة -->
+        <a
+          *ngIf="counterpartProfileId() as pid"
+          class="thread-profile-link"
+          [routerLink]="['/users', pid]"
+        >
+          {{ 'PUBLIC_PROFILE.VIEW_PROFILE_LINK' | translate }}
+        </a>
+
         <app-empty-state
           *ngIf="thread().length === 0"
           icon="💬"
@@ -163,6 +172,8 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 
     .thread { display:flex; flex-direction:column; gap:1rem; }
     .thread-back { align-self:flex-start; background:none;border:0;color:var(--primary);cursor:pointer;font-weight:600;padding:0; }
+    .thread-profile-link { align-self:flex-start; color:var(--gray-600,#6b7280); font-size:.8rem; text-decoration:none; }
+    .thread-profile-link:hover { text-decoration:underline; color:var(--primary); }
     .thread-messages { display:flex; flex-direction:column; gap:.6rem; max-height:55vh; overflow-y:auto; padding:.25rem; }
     .bubble {
       max-width:78%; background:var(--gray-100); border-radius:var(--r-lg); padding:.6rem .9rem;
@@ -219,6 +230,15 @@ export class PropertyMessagesPage implements OnInit {
   readonly conversations = computed<ConversationGroup[]>(() =>
     groupMessagesByCounterpart(this.allMessages(), this.currentUserId)
   );
+
+  // الطرف الآخر بالمحادثة: المالك يراسل الزائر النشط (activeOtherUserId)،
+  // والزائر يراسل مالك العقار (property.ownerId) دائماً.
+  readonly counterpartProfileId = computed<string | null>(() => {
+    if (this.isOwnerView()) {
+      return this.activeOtherUserId();
+    }
+    return this.property()?.ownerId ?? null;
+  });
 
   readonly thread = computed<MessageDto[]>(() => {
     const otherId = this.isOwnerView() ? this.activeOtherUserId() : null;

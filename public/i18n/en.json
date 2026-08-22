@@ -16,7 +16,11 @@
     "PAGE": "Page",
     "PREVIOUS": "Previous",
     "area_unit": "m²",
-    "REFRESH": "Refresh"
+    "REFRESH": "Refresh",
+    "SAVE_CHANGES": "Save changes",
+    "CLICK_TO_ZOOM": "Click to zoom",
+    "MONTH": "month",
+    "CLEAR": "Clear"
   },
   "NAVBAR": {
     "HOME": "Home",
@@ -29,7 +33,11 @@
     "SELECT_LANGUAGE": "Select language",
     "VISITS": "Visits",
     "REVIEWS": "Reviews",
-    "ANALYTICS": "Analytics"
+    "ANALYTICS": "Analytics",
+    "SAVED_SEARCHES": "Saved Searches",
+    "DARK_MODE": "Dark Mode",
+    "LIGHT_MODE": "Light Mode",
+    "NOTIFICATIONS": "Notifications"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -157,7 +165,13 @@
       "PASSWORD_RESET_INVALID": "Your password reset request has expired — please start again.",
       "PASSWORDS_MISMATCH": "Passwords do not match.",
       "STATUS_FAILED": "Could not load your phone verification status.",
-      "PASSWORD_RESET_FAILED": "Could not reset your password."
+      "PASSWORD_RESET_FAILED": "Could not reset your password.",
+      "OTP_REQUIRED": "Verification code is required.",
+      "ACCOUNT_LOCKED": "Too many failed attempts. Your account is locked for {{minutes}} more minute(s).",
+      "LAST_ATTEMPT_BEFORE_LOCKOUT": "Warning: one more failed attempt will lock your account.",
+      "ATTEMPTS_REMAINING": "{{count}} attempts remaining before your account is locked.",
+      "RATE_LIMITED": "Too many login attempts. Please wait a moment and try again.",
+      "ACCOUNT_DISABLED": "This account has been disabled. Please contact support."
     },
     "FIRST_NAME_PLACEHOLDER": "Enter first name",
     "LAST_NAME_PLACEHOLDER": "Enter last name",
@@ -268,7 +282,22 @@
     "be_first": "Add the first property",
     "cta_title": "Do you have a property for sale or rent?",
     "cta_desc": "Create your listing and show your property to people searching for their next home.",
-    "cta_button": "List your property now"
+    "cta_button": "List your property now",
+    "search": {
+      "location": "Location",
+      "location_any": "Any Location",
+      "type": "Property Type",
+      "type_any": "Any Type",
+      "max_price": "Max Price",
+      "price_any": "Any Price",
+      "price_500": "Up to 500",
+      "price_1000": "Up to 1,000",
+      "price_2500": "Up to 2,500",
+      "price_5000": "Up to 5,000",
+      "listing_type": "Rent / Sale",
+      "listing_type_any": "Any",
+      "submit": "Search"
+    }
   },
   "KONTAKT": {
     "title": "Contact us",
@@ -293,7 +322,8 @@
     "error_validation": "Please fill in the required fields correctly.",
     "name_placeholder": "Enter full name",
     "subject_placeholder": "Enter the message subject",
-    "message_placeholder": "Write your message clearly"
+    "message_placeholder": "Write your message clearly",
+    "response_note": "We usually reply within 24 business hours."
   },
   "ADMIN_MSG": {
     "title": "Contact messages",
@@ -359,7 +389,16 @@
     "SORT_PRICE_ASC": "Price: low to high",
     "SORT_PRICE_DESC": "Price: high to low",
     "APPLY_FILTERS": "Apply filters",
-    "RESET": "Reset"
+    "RESET": "Reset",
+    "GOVERNORATE": "Governorate",
+    "DISTRICT": "District",
+    "NEIGHBORHOOD": "Neighborhood",
+    "PROPERTY_TYPE": "Property Type",
+    "SELECT_OPTIONAL": "— Select (optional) —",
+    "SAVE_SEARCH": "Save this search",
+    "SAVE_SEARCH_NAME_PROMPT": "Give this search a name (optional):",
+    "SAVE_SEARCH_SUCCESS": "Search saved. We’ll notify you about new matching properties.",
+    "SAVE_SEARCH_ERROR": "Could not save the search. Make sure you are logged in."
   },
   "PROPERTY_DETAIL": {
     "NOT_FOUND_TITLE": "Property not found",
@@ -378,7 +417,15 @@
     "AVAILABLE_FROM": "Available from",
     "CONDITION": "Condition",
     "NO_FEATURES": "No additional features.",
-    "OWNER": "Owner information"
+    "OWNER": "Owner information",
+    "REGION": "Region",
+    "AMENITIES": "Amenities",
+    "LOCATION_MAP": "Location on map",
+    "NO_MAP": "No map location has been set for this property.",
+    "STALE_BANNER": "The owner hasn't confirmed this listing is available in {{days}} days. It may no longer be available.",
+    "CONFIRM_AVAILABILITY": "Still available?",
+    "CONFIRM_AVAILABILITY_SUCCESS": "Confirmed — this listing is still available.",
+    "CONFIRM_AVAILABILITY_ERROR": "Could not confirm availability. Please try again."
   },
   "PROPERTY": {
     "MODE_RENT": "For rent",
@@ -424,7 +471,42 @@
     "AMENITIES": "Amenities",
     "AMENITIES_LOAD_ERROR": "Could not load the amenities list from the server.",
     "AMENITIES_EMPTY": "No amenities are available right now.",
-    "NOT_AUTHORIZED": "You don't have permission to access this property."
+    "NOT_AUTHORIZED": "You don't have permission to access this property.",
+    "ADDITIONAL_COSTS": "Additional costs",
+    "ADDITIONAL_COSTS_INVALID": "Additional costs must be a positive number.",
+    "AREA_TOO_SMALL": "Area must be greater than 10 m².",
+    "DEPOSIT": "Deposit",
+    "DEPOSIT_INVALID": "Deposit must be a positive number.",
+    "HEATING": "Heating",
+    "INVALID_COUNTRY_CODE": "Invalid country code.",
+    "INVALID_CURRENCY_CODE": "Invalid currency code.",
+    "REGION_PLACEHOLDER": "e.g. Damascus - Al-Mazzeh",
+    "VALIDATION_ERROR": "Please review the required fields.",
+    "WARM_RENT_BELOW_COLD_RENT": "Warm rent cannot be lower than cold rent.",
+    "WARM_RENT_REQUIRED": "Warm rent must be a positive number.",
+    "GOVERNORATE": "Governorate",
+    "DISTRICT": "District",
+    "NEIGHBORHOOD": "Neighborhood",
+    "PROPERTY_TYPE": "Property Type",
+    "SELECT_OPTIONAL": "— Select (optional) —",
+    "NEIGHBORHOOD_HINT": "No neighborhood list is available for this district yet — you can type the neighborhood name manually above.",
+    "CHECKING_DUPLICATE": "Checking for duplicates...",
+    "DUPLICATE_TITLE": "This listing might be a duplicate",
+    "DUPLICATE_DESC": "We found similar listings with roughly the same neighborhood, price and area. You can proceed if yours is genuinely different.",
+    "DUPLICATE_SAME_OWNER": "One of your other listings",
+    "DUPLICATE_REVIEW": "Go back and review",
+    "DUPLICATE_PROCEED": "Submit anyway",
+    "SELECT_PLACEHOLDER": "— Select —",
+    "GOVERNORATE_REQUIRED": "Please select a governorate.",
+    "DISTRICT_REQUIRED": "Please select a district.",
+    "PROPERTY_TYPE_REQUIRED": "Please select a property type.",
+    "NEIGHBORHOOD_MANUAL_PLACEHOLDER": "Or type the neighborhood name manually",
+    "STRUCTURED_LOCATION_LOAD_ERROR": "Could not load the governorate list — please refresh the page.",
+    "DISTRICT_MANUAL_PLACEHOLDER": "Or type the district name manually",
+    "LOCATION_NO_MATCH": "\"{{value}}\" is not in the current list.",
+    "LOCATION_ADD_NEW": "Add \"{{value}}\"",
+    "LOCATION_ADD_CONFIRMED": "\"{{value}}\" will be submitted as a new suggestion when the property is saved, and reviewed by an admin before approval.",
+    "NEIGHBORHOOD_PENDING_DISTRICT_HINT": "Your district is still pending admin review. The neighborhood you enter here will be linked to it automatically once it's approved."
   },
   "wohnung_add": {
     "title": "Add property",
@@ -470,7 +552,35 @@
     "validation_location": "Latitude and longitude must be entered together.",
     "select_location": "Select location",
     "map_instruction": "Select the property's location on the map",
-    "validation_rent_sale": "If the property is offered for both sale and rent, the rent and purchase price must be specified."
+    "validation_rent_sale": "If the property is offered for both sale and rent, the rent and purchase price must be specified.",
+    "basic_info": "Basic information",
+    "basic_info_desc": "Property title and description",
+    "city_placeholder": "Choose or type a city",
+    "desc_placeholder": "Describe the property in detail (size, location, features...)",
+    "details": "Property details",
+    "details_desc": "Rooms, area and features",
+    "etage": "Floor",
+    "features": "Features",
+    "images": "Property images",
+    "images_desc": "Add clear photos to attract interested buyers/renters",
+    "listing_type_desc": "Choose whether the property is for sale or for rent",
+    "location": "Location",
+    "location_desc": "Property address and map location",
+    "location_selected": "Location selected",
+    "map_hint": "Click on the map to pinpoint the property's exact location",
+    "parkplatz": "Parking space",
+    "pricing": "Pricing",
+    "pricing_desc": "Set the appropriate price based on the listing type",
+    "rent_hint": "Steady monthly income",
+    "sale_hint": "One-time sale",
+    "street_placeholder": "Street name and building number",
+    "submit": "Publish property",
+    "subtitle": "Enter your property details step by step",
+    "title_placeholder": "e.g. 3-room apartment with garden view",
+    "upload_click": "Click to upload images",
+    "upload_hint": "PNG, JPG or WebP — up to 5MB per image",
+    "uploading": "Uploading images...",
+    "verfuegbar_ab": "Available from"
   },
   "MY_LISTINGS": {
     "TITLE": "My listings",
@@ -518,7 +628,8 @@
     "DISMISS": "Dismiss notification",
     "MARKING_ALL": "Updating...",
     "MARK_ALL_ERROR": "Could not mark all notifications as read.",
-    "DISMISS_ERROR": "Could not dismiss the notification."
+    "DISMISS_ERROR": "Could not dismiss the notification.",
+    "NEW_TOAST_TITLE": "New notification"
   },
   "MESSAGES": {
     "TITLE": "Messages",
@@ -536,7 +647,8 @@
     "UNKNOWN_USER": "User",
     "SELECT_CONVERSATION_FIRST": "Select a conversation before replying.",
     "ERROR_EMPTY": "You cannot send an empty message.",
-    "ERROR_TOO_LONG": "The message is too long (3000 characters max)."
+    "ERROR_TOO_LONG": "The message is too long (3000 characters max).",
+    "SENDING_AS": "This message will be sent as your account: {{name}}"
   },
   "ADMIN_USERS": {
     "TITLE": "User management",
@@ -626,11 +738,19 @@
       "DELETE_SUCCESS": "The account was deleted.",
       "DELETE_ERROR": "Unable to delete the account.",
       "PASS_LENGTH": "The new password must contain at least 6 characters."
+    },
+    "ABOUT": {
+      "BIO_LABEL": "About me",
+      "BIO_PLACEHOLDER": "Write a short bio about yourself and your work (e.g. your field, experience, the kind of properties you deal with)...",
+      "BIO_HINT": "This bio is shown on your public profile page to any visitor.",
+      "CONTACT_INFO_LABEL": "Address & contact information",
+      "CONTACT_INFO_PLACEHOLDER": "e.g. your address, an extra phone number, a work email...",
+      "CONTACT_INFO_HINT": "This is also shown on your public profile — only write what you're comfortable sharing publicly."
     }
   },
   "VISIT": {
     "REQUEST": "Request a visit",
-    "DATE": "Date and time",
+    "DATE": "Date",
     "NAME": "Name",
     "PHONE": "Phone number",
     "NOTE": "Notes",
@@ -641,7 +761,13 @@
     "TOO_FAR": "Bookings cannot be made more than 90 days in advance.",
     "NAME_REQUIRED": "Name is required.",
     "PHONE_REQUIRED": "Phone number is required.",
-    "INVALID_DATE": "The date is invalid."
+    "INVALID_DATE": "The date is invalid.",
+    "NOTE_PLACEHOLDER": "Add any notes about the visit (optional)",
+    "TIME": "Time",
+    "DATE_REQUIRED": "Date is required.",
+    "TIME_REQUIRED": "Time is required.",
+    "PHONE_INVALID": "Invalid phone number — it must start with + followed by the country code (e.g. +963...).",
+    "FORM_INVALID": "Please fill in all required fields (marked with *) before submitting."
   },
   "REVIEW": {
     "ADD": "Add review",
@@ -655,7 +781,10 @@
     "REVIEWS": "Reviews",
     "ANONYMOUS": "Anonymous user",
     "PROPERTY_REQUIRED": "Property ID is required.",
-    "RATING_RANGE": "The rating must be between 1 and 5."
+    "RATING_RANGE": "The rating must be between 1 and 5.",
+    "COMMENT_PLACEHOLDER": "Share your thoughts about this property...",
+    "EMPTY_TITLE": "No reviews yet",
+    "EMPTY_MESSAGE": "Be the first to review this property."
   },
   "VALIDATION": {
     "REQUIRED": "This field is required.",
@@ -782,5 +911,93 @@
     "RATING": "Average rating",
     "LOAD_ERROR": "Unable to load market analytics.",
     "PROPERTY_ERROR": "Unable to load property statistics."
+  },
+  "HEATING": {
+    "CENTRAL": "Central heating",
+    "FLOOR": "Underfloor heating",
+    "GAS": "Gas heating",
+    "ELECTRIC": "Electric heating",
+    "OIL": "Oil heating",
+    "OTHER": "Other"
+  },
+  "SAVED_SEARCHES": {
+    "TITLE": "Saved Searches",
+    "SUBTITLE": "Save your search criteria and we’ll notify you when a new matching property appears.",
+    "NEW_SEARCH": "New Search",
+    "EMPTY_TITLE": "No saved searches yet",
+    "EMPTY_MESSAGE": "From the properties page, set the filters you want, then click \"Save this search\".",
+    "UNNAMED": "Unnamed search",
+    "LAST_MATCHED": "Last matched",
+    "NO_MATCHES_YET": "No matches found yet",
+    "RUN": "Run search",
+    "CONFIRM_DELETE": "Delete this saved search?",
+    "DELETE_SUCCESS": "Saved search deleted.",
+    "DELETE_ERROR": "Could not delete the saved search.",
+    "LOAD_ERROR": "Could not load saved searches."
+  },
+  "ADMIN_LOCATIONS": {
+    "TITLE": "Location Suggestions",
+    "SUBTITLE": "Manually-typed districts/neighborhoods awaiting your review before joining the official lists.",
+    "EMPTY_TITLE": "No pending suggestions",
+    "EMPTY_MESSAGE": "All suggestions have been reviewed.",
+    "TYPE": "Type",
+    "TYPE_DISTRICT": "District",
+    "TYPE_NEIGHBORHOOD": "Neighborhood",
+    "NAME": "Suggested name",
+    "PARENT": "Under",
+    "SUBMITTED_BY": "Submitted by",
+    "VIEW_LISTING": "View listing",
+    "ACTIONS": "Actions",
+    "APPROVE": "Approve",
+    "REJECT": "Reject",
+    "CONFIRM_APPROVE": "Approve \"{{name}}\" as an official location?",
+    "CONFIRM_REJECT": "Reject the suggestion \"{{name}}\"?",
+    "APPROVED": "Approved — the location was added to the list.",
+    "REJECTED": "Suggestion rejected.",
+    "APPROVE_ERROR": "Could not approve the suggestion.",
+    "REJECT_ERROR": "Could not reject the suggestion.",
+    "LOAD_ERROR": "Could not load pending suggestions."
+  },
+  "PUBLIC_PROFILE": {
+    "LOAD_ERROR": "Could not load this profile.",
+    "MISSING_USER_ID": "User id is missing.",
+    "AGENT_BADGE": "Verified agent",
+    "MEMBER_SINCE": "Member since",
+    "NOT_RATED_YET": "Not rated yet",
+    "RATINGS_COUNT_SUFFIX": "ratings",
+    "SOLD_COUNT": "Sold",
+    "RENTED_COUNT": "Rented",
+    "ACTIVE_LISTINGS_COUNT": "Active listings",
+    "RATING_BREAKDOWN": "Rating breakdown",
+    "RATE_THIS_USER": "Rate this user",
+    "COMMENT_LABEL": "Comment (optional)",
+    "COMMENT_PLACEHOLDER": "Share your experience with this user...",
+    "SUBMIT_RATING": "Submit rating",
+    "RATE_SUCCESS": "Your rating was submitted successfully.",
+    "RATE_ERROR": "Could not submit the rating. Please try again.",
+    "RATE_ALREADY_RATED": "You have already rated this user.",
+    "REVIEWS_TITLE": "Ratings & comments",
+    "NO_RATINGS_TITLE": "No ratings yet",
+    "NO_RATINGS_MESSAGE": "Be the first to rate this user after dealing with them.",
+    "ACTIVE_LISTINGS": "Active listings",
+    "NO_LISTINGS_TITLE": "No active listings",
+    "NO_LISTINGS_MESSAGE": "This user has no published listings right now.",
+    "VIEW_PROFILE_LINK": "View full profile",
+    "CRITERIA": {
+      "CREDIBILITY": "Credibility",
+      "SAFETY": "Safety",
+      "RESPONSE_SPEED": "Response speed",
+      "TRANSPARENCY": "Transparency"
+    },
+    "RATE_CTA": "Rate this user",
+    "ABOUT_TITLE": "About",
+    "CONTACT_INFO_LABEL": "Contact information",
+    "RATE_LOGIN_REQUIRED_TITLE": "Log in to rate",
+    "RATE_LOGIN_REQUIRED_MESSAGE": "You need to log in before you can rate this user.",
+    "RATE_NOT_ELIGIBLE_TITLE": "You can't rate this user yet",
+    "RATE_NOT_ELIGIBLE_MESSAGE": "You need to complete a visit to one of this user's properties, or exchange messages with them, before you can rate them.",
+    "RATE_EDIT_HINT": "You've already rated this user — you can edit your rating below.",
+    "UPDATE_RATING": "Update rating",
+    "RATE_UPDATE_SUCCESS": "Your rating was updated successfully"
   }
 }

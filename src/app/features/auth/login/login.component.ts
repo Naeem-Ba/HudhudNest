@@ -9,10 +9,18 @@ import { SocialAuthService } from '../../../core/auth/social-auth.service';
 import { PhoneAuthApiService } from '../../../core/auth/phone-auth-api.service';
 import { AuthTokenResponse, TokenStorageService } from '../../../core/services/token-storage.service';
 import { AuthService } from '../../../core/auth/auth.service';
-import { OtpApiService } from '../../../core/services/otp-api.service';
-import { OtpPurpose, VerifyOtpRequest } from '../../../core/models/auth.model';
+import { OtpApiService } from '../../../core/api/otp-api.service';
+import {
+  LOGIN_ERROR_CODES,
+  LoginFailure,
+  OtpPurpose,
+  VerifyOtpRequest,
+  lockoutMinutesRemaining,
+  parseLoginFailure
+} from '../../../core/models/auth.model';
 import { ToastService } from '../../../shared/services/toast.service';
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
+import { PasswordStrengthIndicatorComponent } from '../../../shared/ui/password-strength-indicator.component';
 
 interface LoginFormModel {
   Email: string;
@@ -59,7 +67,14 @@ const OTP_CODE_PATTERN = /^\d{6}$/;
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, ImageFallbackDirective],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    TranslateModule,
+    ImageFallbackDirective,
+    PasswordStrengthIndicatorComponent // ✨ جديد: عرض قوة كلمة المرور
+  ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
@@ -78,6 +93,19 @@ export class LoginComponent implements OnDestroy {
 
   showRegister = false;
   message = '';
+
+  // ================= عرض تعليمات كلمة المرور =================
+  /** ✨ عرض مؤشر قوة كلمة المرور عند التسجيل — يظهر عند التركيز على الحقل */
+  showPasswordStrengthReg = false;
+  showPasswordStrengthPhone = false;
+
+  // ================= قفل الحساب بعد محاولات فاشلة =================
+  /** تحذير "تبقّت N محاولة" — يُعرض تحت رسالة الخطأ، فارغ إن لم يرسله الخادم. */
+  loginAttemptWarning = '';
+  /** لحظة فك القفل بصيغة ISO؛ غير null يعني أن نموذج الدخول معطَّل. */
+  lockoutEndsAt: string | null = null;
+  lockoutMinutesLeft = 0;
+  private lockoutTimerHandle: ReturnType<typeof setInterval> | null = null;
   success = false;
   showPass = false;
   showPassReg = false;
@@ -137,9 +165,18 @@ export class LoginComponent implements OnDestroy {
 
   // ================= البريد الإلكتروني =================
 
+  /** true بينما الحساب مقفول — يعطّل زر الدخول. */
+  get isLockedOut(): boolean {
+    return this.lockoutEndsAt !== null && this.lockoutMinutesLeft > 0;
+  }
+
   onLogin(form: NgForm): void {
     this.submitted = true;
     form.control.markAllAsTouched();
+
+    if (this.isLockedOut) {
+      return;
+    }
 
     if (form.invalid || this.loading) {
       this.setError(this.t('AUTH.ERRORS.FIX_FIELDS'));
@@ -156,14 +193,111 @@ export class LoginComponent implements OnDestroy {
 
     this.authApi.login(request).subscribe({
       next: () => {
+        this.clearLockout();
         this.refreshAuthState();
         this.completeLoginSuccess();
       },
-      error: () => {
+      error: error => {
         this.loading = false;
-        this.setError(this.t('AUTH.ERRORS.INVALID_CREDENTIALS'));
+        this.handleLoginFailure(parseLoginFailure(error));
       }
     });
+  }
+
+  /**
+   * يترجم عقد فشل /auth/login إلى حالة واجهة. المصدر الوحيد للتفرّع هو
+   * errorCode (نص ثابت من الباك) وليس نص الرسالة الإنجليزي.
+   */
+  private handleLoginFailure(failure: LoginFailure): void {
+    this.loginAttemptWarning = '';
+
+    switch (failure.errorCode) {
+      case LOGIN_ERROR_CODES.ACCOUNT_LOCKED:
+        this.startLockout(failure);
+        return;
+
+      case LOGIN_ERROR_CODES.RATE_LIMITED:
+        this.setError(this.t('AUTH.ERRORS.RATE_LIMITED'));
+        return;
+
+      case LOGIN_ERROR_CODES.ACCOUNT_DISABLED:
+        this.setError(this.t('AUTH.ERRORS.ACCOUNT_DISABLED'));
+        return;
+
+      case LOGIN_ERROR_CODES.SERVER_ERROR:
+        this.setError(this.t('AUTH.ERRORS.SERVER_ERROR'));
+        return;
+
+      default:
+        // INVALID_CREDENTIALS وأي رمز غير معروف: رسالة عامة موحّدة حتى لا
+        // نكشف إن كان البريد مسجَّلاً أم لا.
+        this.setError(this.t('AUTH.ERRORS.INVALID_CREDENTIALS'));
+        this.showRemainingAttempts(failure);
+    }
+  }
+
+  /**
+   * عدّاد المحاولات المتبقية. يظهر فقط عندما يرسله الخادم — لو غاب الحقل
+   * لا نخمّن رقماً، لأن عدّاداً خاطئاً أسوأ من غيابه.
+   *
+   * ⚠️ تم التصحيح: يظهر فقط إذا كانت هناك محاولات متبقية فعلاً (> 0)
+   */
+  private showRemainingAttempts(failure: LoginFailure): void {
+    const remaining = failure.remainingAttemptsBeforeLockout;
+
+    // لا تظهر إذا لم يرسل الخادم عدداً أو إذا كان الرقم 0 أو أقل
+    if (!remaining || remaining <= 0) {
+      this.loginAttemptWarning = '';
+      return;
+    }
+
+    // عرض الرسالة فقط إذا كانت هناك محاولات متبقية
+    this.loginAttemptWarning =
+      remaining === 1
+        ? this.t('AUTH.ERRORS.LAST_ATTEMPT_BEFORE_LOCKOUT')
+        : this.translate.instant('AUTH.ERRORS.ATTEMPTS_REMAINING', { count: remaining });
+  }
+
+  /** يعطّل النموذج ويشغّل عدّاً تنازلياً حتى لحظة فك القفل. */
+  private startLockout(failure: LoginFailure): void {
+    this.clearLockoutTimer();
+    this.lockoutEndsAt = failure.lockoutEndTimeUtc;
+
+    const tick = (): void => {
+      const minutes = lockoutMinutesRemaining(failure);
+      this.lockoutMinutesLeft = minutes;
+
+      if (minutes <= 0) {
+        this.clearLockout();
+        this.message = '';
+        this.success = false;
+        return;
+      }
+
+      this.message = this.translate.instant('AUTH.ERRORS.ACCOUNT_LOCKED', { minutes });
+      this.success = false;
+    };
+
+    tick();
+    this.toast.error(this.message);
+
+    // بدون طابع زمني مطلق لا يمكن العدّ؛ يبقى النموذج معطّلاً حتى إعادة التحميل.
+    if (this.lockoutEndsAt) {
+      this.lockoutTimerHandle = setInterval(tick, 1000);
+    }
+  }
+
+  private clearLockout(): void {
+    this.clearLockoutTimer();
+    this.lockoutEndsAt = null;
+    this.lockoutMinutesLeft = 0;
+  }
+
+  private clearLockoutTimer(): void {
+    if (this.lockoutTimerHandle) {
+      clearInterval(this.lockoutTimerHandle);
+      this.lockoutTimerHandle = null;
+    }
   }
 
   onGoogleLogin(): void {
@@ -255,6 +389,25 @@ export class LoginComponent implements OnDestroy {
     this.success = false;
     this.submitted = false;
     this.resetPhoneFlow();
+  }
+
+  // ================= عرض تعليمات كلمة المرور =================
+  onRegisterPasswordFocus(): void {
+    this.showPasswordStrengthReg = true;
+  }
+
+  onRegisterPasswordBlur(): void {
+    // أخفِ المؤشر عند مغادرة الحقل (اختياري)
+    // this.showPasswordStrengthReg = false;
+  }
+
+  onPhonePasswordFocus(): void {
+    this.showPasswordStrengthPhone = true;
+  }
+
+  onPhonePasswordBlur(): void {
+    // أخفِ المؤشر عند مغادرة الحقل (اختياري)
+    // this.showPasswordStrengthPhone = false;
   }
 
   // ================= اختيار القناة =================
@@ -553,7 +706,8 @@ export class LoginComponent implements OnDestroy {
     this.loading = false;
     this.success = false;
     this.message = message;
-    this.toast.error(message);
+    // ⚠️ تم إزالة toast.error هنا لتجنب عرض الرسالة مرتين
+    // الرسالة تُعرض مرة واحدة عبر alert في القالب (div.auth-alert)
   }
 
   private isValidEmail(email: string): boolean {
@@ -590,5 +744,6 @@ export class LoginComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     this.clearResendTimer();
+    this.clearLockoutTimer();
   }
 }

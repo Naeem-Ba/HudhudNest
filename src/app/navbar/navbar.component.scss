@@ -112,6 +112,127 @@
 }
 
 /* ================================================================
+   Theme toggle (dark/light)
+   ================================================================ */
+
+.theme-toggle {
+  width: 40px;
+  height: 40px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill, 999px);
+
+  background: var(--surface);
+  color: var(--gold);
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--gold);
+  background: var(--gold-soft);
+  transform: rotate(12deg);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.mobile-theme-toggle {
+  color: var(--gold) !important;
+}
+
+/* ================================================================
+   ✅ إضافة: جرس الإشعارات (Bell) — نفس مقاس/نمط theme-toggle
+   ================================================================ */
+
+.notif-bell {
+  position: relative;
+
+  width: 40px;
+  height: 40px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill, 999px);
+
+  background: var(--surface);
+  color: var(--gray-700, var(--gray-500));
+
+  cursor: pointer;
+  text-decoration: none;
+
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease;
+
+  &:hover,
+  &.navbar__link--active {
+    border-color: var(--gold);
+    background: var(--gold-soft);
+    color: var(--gold-text);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+}
+
+.notif-bell__badge {
+  position: absolute;
+  top: -4px;
+  inset-inline-end: -4px;
+
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 999px;
+  background: var(--danger, #dc2626);
+  color: #fff;
+
+  font-size: .68rem;
+  font-weight: 700;
+  line-height: 1;
+
+  /* ✅ مقاس لمس مريح على الجوال (44px قابل للنقر فعليًا عبر .notif-bell نفسه) */
+  pointer-events: none;
+}
+
+/* نسخة القائمة الجانبية للجوال: الشارة تظهر بجانب النص لا فوق أيقونة */
+.mobile-drawer__link--notif {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.notif-bell__badge--inline {
+  position: static;
+}
+
+/* ================================================================
    Language dropdown
    ================================================================ */
 

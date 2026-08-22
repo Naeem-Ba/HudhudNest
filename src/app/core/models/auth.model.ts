@@ -167,6 +167,105 @@ export const PHONE_WORKFLOW_ERROR_CODES = {
   PASSWORD_RESET_INVALID: 'PASSWORD_RESET_INVALID'
 } as const;
 
+/**
+ * أكواد أخطاء /auth/login — مطابقة حرفياً لـ LoginErrorCodes في الباك
+ * (PropertyApi.Application/Auth/Models/LoginResponseDto.cs). أي تعديل هنا
+ * يجب أن يقابله تعديل هناك، ويحرسه LoginResponseContractTests.
+ */
+export const LOGIN_ERROR_CODES = {
+  INVALID_REQUEST: 'INVALID_REQUEST',
+  INVALID_CREDENTIALS: 'INVALID_CREDENTIALS',
+  ACCOUNT_LOCKED: 'ACCOUNT_LOCKED',
+  RATE_LIMITED: 'RATE_LIMITED',
+  ACCOUNT_DISABLED: 'ACCOUNT_DISABLED',
+  PASSWORD_CHANGE_REQUIRED: 'PASSWORD_CHANGE_REQUIRED',
+  SERVER_ERROR: 'SERVER_ERROR'
+} as const;
+
+export type LoginErrorCode = (typeof LOGIN_ERROR_CODES)[keyof typeof LOGIN_ERROR_CODES];
+
+/**
+ * جسم استجابة /auth/login عند الفشل (401 / 423 / 429 / 403 / 500).
+ * مسار النجاح يبقى AuthTokenResponse عبر normalizeAuthTokenResponse، لأن
+ * حقول التوكن ما زالت في جذر نفس الجسم.
+ */
+export interface LoginFailure {
+  /** رمز HTTP الفعلي من الشبكة — هو المرجع، وليس statusCode داخل الجسم. */
+  status: number;
+  errorCode: LoginErrorCode | null;
+  /** نص من الخادم بالإنجليزية — للتشخيص فقط. لا تعرضه للمستخدم؛ استخدم مفاتيح i18n. */
+  serverMessage: string | null;
+  failedAttemptCount: number | null;
+  remainingAttemptsBeforeLockout: number | null;
+  isAccountLocked: boolean;
+  /**
+   * لحظة فك القفل بصيغة ISO. مُفضَّلة على lockoutMinutesRemaining لأن الأخيرة
+   * تُحسب لحظة التسلسل وتصبح قديمة فوراً.
+   */
+  lockoutEndTimeUtc: string | null;
+  passwordResetUrl: string | null;
+}
+
+/** الدقائق المتبقية حتى فك القفل، محسوبة من الطابع الزمني المطلق. */
+export function lockoutMinutesRemaining(failure: LoginFailure, now: Date = new Date()): number {
+  if (!failure.lockoutEndTimeUtc) {
+    return 0;
+  }
+
+  const unlockAt = new Date(failure.lockoutEndTimeUtc).getTime();
+  if (Number.isNaN(unlockAt)) {
+    return 0;
+  }
+
+  return Math.max(0, Math.ceil((unlockAt - now.getTime()) / 60_000));
+}
+
+function readNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+/**
+ * يقرأ خطأ HttpClient ويستخرج عقد الفشل. دفاعي عمداً: أي حقل مفقود يصبح null
+ * بدل أن يرمي، حتى يبقى تسجيل الدخول قابلاً للاستخدام لو تغيّر الجسم أو جاء
+ * الخطأ من طبقة شبكة (بدون جسم أصلاً).
+ */
+export function parseLoginFailure(error: unknown): LoginFailure {
+  const httpError = (error ?? {}) as { status?: unknown; error?: unknown };
+  const status = readNumber(httpError.status) ?? 0;
+  const body = (httpError.error ?? {}) as Record<string, unknown>;
+
+  const errorCode = typeof body['errorCode'] === 'string' ? body['errorCode'] : null;
+
+  return {
+    status,
+    errorCode: (errorCode as LoginErrorCode | null) ?? inferErrorCodeFromStatus(status),
+    serverMessage: typeof body['message'] === 'string' ? body['message'] : null,
+    failedAttemptCount: readNumber(body['failedAttemptCount']),
+    remainingAttemptsBeforeLockout: readNumber(body['remainingAttemptsBeforeLockout']),
+    isAccountLocked: body['isAccountLocked'] === true || status === 423,
+    lockoutEndTimeUtc:
+      typeof body['lockoutEndTimeUtc'] === 'string' ? body['lockoutEndTimeUtc'] : null,
+    passwordResetUrl:
+      typeof body['passwordResetUrl'] === 'string' ? body['passwordResetUrl'] : null
+  };
+}
+
+/** احتياط لو وصل رد بلا errorCode (وسيط، أو نسخة باك أقدم). */
+function inferErrorCodeFromStatus(status: number): LoginErrorCode | null {
+  switch (status) {
+    case 401:
+      return LOGIN_ERROR_CODES.INVALID_CREDENTIALS;
+    case 423:
+      return LOGIN_ERROR_CODES.ACCOUNT_LOCKED;
+    case 429:
+      return LOGIN_ERROR_CODES.RATE_LIMITED;
+    case 500:
+      return LOGIN_ERROR_CODES.SERVER_ERROR;
+    default:
+      return null;
+  }
+}
+
 export function normalizeAuthTokenResponse(response: unknown): AuthTokenResponse {
   const value = response as Partial<AuthTokenResponse> & {
     access_token?: string;

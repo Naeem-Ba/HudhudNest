@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { BackendApiService, QueryValue } from '../api/backend-api.service';
 import { ApiPagedResult, normalizePagedResult, PagedResult, unwrapItems } from '../models/api.model';
-import { Property, PropertyFilterDto } from '../models/property.model';
+import { DuplicateCheckResult, Property, PropertyFilterDto } from '../models/property.model';
 import { apiToCamelCase } from '../adapters/api-naming.adapter';
 
 @Injectable({ providedIn: 'root' })
@@ -139,6 +139,17 @@ export class PropertyApiService {
       );
   }
 
+  /**
+   * Phase-0, Task 2 — PATCH /properties/{id}/confirm-availability. Owner-only
+   * on the backend (ForbiddenException for anyone else); the frontend also
+   * gates the button behind isOwner (see property-detail.page.ts) so a
+   * non-owner never even sees it, but the server check is what actually
+   * enforces this.
+   */
+  confirmAvailability(id: string): Observable<void> {
+    return this.api.patch<void>(`/properties/${id}/confirm-availability`);
+  }
+
   /** يعيّن صورة موجودة مسبقاً كصورة رئيسية (غلاف) للعقار. */
   setMainImage(propertyId: string, imageId: string): Observable<unknown> {
     return this.api.patch<unknown>(`/properties/${propertyId}/images/${imageId}/setmain`);
@@ -147,6 +158,46 @@ export class PropertyApiService {
   /** يحذف صورة محفوظة فعلياً من الخادم (وليس فقط من قائمة الرفع المحلية). */
   deleteImage(propertyId: string, imageId: string): Observable<void> {
     return this.api.delete<void>(`/properties/${propertyId}/images/${imageId}`);
+  }
+
+  /**
+   * Phase-0, Task 4 — GET /properties/check-duplicate. Advisory only, never
+   * blocks submission; ownerId is derived server-side from the JWT, not sent
+   * here. listingType is the numeric enum value (ForRent=1, ForSale=2), which
+   * matches property-form.page.ts's form.listingType control directly.
+   */
+  checkDuplicate(params: {
+    neighborhoodId: number | null;
+    area: number | null;
+    price: number | null;
+    listingType: number;
+  }): Observable<DuplicateCheckResult> {
+    return this.api
+      .get<unknown>('/properties/check-duplicate', {
+        neighborhoodId: params.neighborhoodId ?? undefined,
+        area: params.area ?? undefined,
+        price: params.price ?? undefined,
+        listingType: params.listingType
+      })
+      .pipe(map(item => this.toDuplicateCheckResult(item)));
+  }
+
+  private toDuplicateCheckResult(item: unknown): DuplicateCheckResult {
+    const result = apiToCamelCase<Record<string, unknown>>(item);
+    const rawCandidates = Array.isArray(result['candidates']) ? result['candidates'] : [];
+
+    return {
+      hasPotentialDuplicates: Boolean(result['hasPotentialDuplicates']),
+      candidates: rawCandidates.map(candidate => {
+        const c = apiToCamelCase<Record<string, unknown>>(candidate);
+        return {
+          propertyId: String(c['propertyId'] ?? ''),
+          title: String(c['title'] ?? ''),
+          isSameOwner: Boolean(c['isSameOwner']),
+          matchReason: String(c['matchReason'] ?? '')
+        };
+      })
+    };
   }
 
   private getPropertyCollection(path: string): Observable<Property[]> {

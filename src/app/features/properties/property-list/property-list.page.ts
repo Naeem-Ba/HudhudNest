@@ -12,15 +12,24 @@ import {
   signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { PropertyApiService } from '../../../core/api/property-api.service';
 import { FavoritesApiService } from '../../../core/api/favorites-api.service';
-import { LookupsApiService, LookupAmenity, LookupItem } from '../../../core/api/lookups-api.service';
+import { SavedSearchApiService } from '../../../core/api/saved-search-api.service';
+import {
+  LookupsApiService,
+  LookupAmenity,
+  LookupItem,
+  PropertyTypeLookup,
+  StructuredLocationLookup,
+  pickLocalizedName
+} from '../../../core/api/lookups-api.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { LanguageService } from '../../../core/services/language.service';
 import { Property, PropertyFilterDto } from '../../../core/models/property.model';
 import { EmptyStateComponent } from '../../../shared/ui/empty-state.component';
 import { SkeletonCardGridComponent } from '../../../shared/ui/skeleton-card-grid.component';
@@ -50,10 +59,14 @@ import { FavoriteToggleButtonComponent } from '../../../shared/ui/favorite-toggl
 export class PropertyListPage implements OnInit {
   private readonly api = inject(PropertyApiService);
   private readonly favoritesApi = inject(FavoritesApiService);
+  private readonly savedSearchApi = inject(SavedSearchApiService);
   private readonly lookupsApi = inject(LookupsApiService);
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
+  private readonly translate = inject(TranslateService);
+  private readonly langService = inject(LanguageService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly overlayBackHandlers = inject(OverlayBackHandlerService);
   private readonly urlService = inject(UrlService);
@@ -95,6 +108,22 @@ export class PropertyListPage implements OnInit {
   readonly amenities = signal<LookupAmenity[]>([]);
   selectedAmenityIds: string[] = [];
 
+  /**
+   * Phase-0, Task 0 follow-up: structured location + property-type filters,
+   * mirroring the same cascading dropdowns added to property-form.page.ts.
+   */
+  readonly governorates = signal<StructuredLocationLookup[]>([]);
+  readonly districts = signal<StructuredLocationLookup[]>([]);
+  readonly neighborhoods = signal<StructuredLocationLookup[]>([]);
+  readonly propertyTypeCatalog = signal<PropertyTypeLookup[]>([]);
+  governorateId: number | null = null;
+  districtId: number | null = null;
+  neighborhoodId: number | null = null;
+  propertyTypeId: number | null = null;
+
+  /** Phase-0, Task 3 — "save this search" button state. */
+  readonly savingSearch = signal(false);
+
   // ── Geo-search ("العقارات القريبة مني") ──
   // يستخدم GET /properties/geo-search الذي كان غير مستغَل إطلاقاً في الواجهة
   // رغم أن الخادم يوفره بفهرسة PostGIS مخصصة لهذا الغرض.
@@ -117,10 +146,100 @@ export class PropertyListPage implements OnInit {
       return true;
     });
     this.destroyRef.onDestroy(unregister);
-    this.loadProperties();
     this.loadFavoriteIds();
     this.loadCitySuggestions();
     this.loadAmenities();
+    this.loadGovernorates();
+    this.loadPropertyTypeCatalog();
+    this.applyFiltersFromQueryParams();
+  }
+
+  /** GET /api/lookups/governorates — Phase-0, Task 0 follow-up. */
+  private loadGovernorates(): void {
+    this.lookupsApi
+      .getGovernorates()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: items => this.governorates.set(items), error: () => this.governorates.set([]) });
+  }
+
+  /** GET /api/lookups/property-type-catalog — Phase-0, Task 0 follow-up. */
+  private loadPropertyTypeCatalog(): void {
+    this.lookupsApi
+      .getPropertyTypeCatalog()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: items => this.propertyTypeCatalog.set(items), error: () => this.propertyTypeCatalog.set([]) });
+  }
+
+  /** Cascading dropdown handler — mirrors property-form.page.ts's bindCascadingLocationChanges. */
+  onGovernorateChange(): void {
+    this.districtId = null;
+    this.neighborhoodId = null;
+    this.districts.set([]);
+    this.neighborhoods.set([]);
+
+    if (this.governorateId) {
+      this.lookupsApi.getDistricts(this.governorateId)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({ next: items => this.districts.set(items), error: () => this.districts.set([]) });
+    }
+  }
+
+  onDistrictChange(): void {
+    this.neighborhoodId = null;
+    this.neighborhoods.set([]);
+
+    if (this.districtId) {
+      this.lookupsApi.getNeighborhoods(this.districtId)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({ next: items => this.neighborhoods.set(items), error: () => this.neighborhoods.set([]) });
+    }
+  }
+
+  /** Localized label for a bilingual lookup item, matching the current UI language. */
+  localizedName(item: { nameAr: string; nameEn: string }): string {
+    return pickLocalizedName(item, this.langService.getCurrent());
+  }
+
+  /**
+   * Phase-0, Task 3 — reads query params set by saved-searches.page.ts's
+   * runSearch() so "run this saved search" deep-links into a pre-filled
+   * filter panel instead of duplicating search logic across pages. A
+   * one-time snapshot read (not a subscription): this page doesn't need to
+   * react to further query-param changes after the initial load.
+   */
+  private applyFiltersFromQueryParams(): void {
+    const params = this.route.snapshot.queryParamMap;
+
+    if (params.keys.length === 0) {
+      this.loadProperties();
+      return;
+    }
+
+    this.cityFilter = params.get('city') ?? '';
+    this.minPrice = params.get('minPrice') ? Number(params.get('minPrice')) : null;
+    this.maxPrice = params.get('maxPrice') ? Number(params.get('maxPrice')) : null;
+    const listingType = params.get('listingType');
+    this.selectedListingType = listingType === 'ForRent' || listingType === 'ForSale' ? listingType : '';
+
+    this.governorateId = params.get('governorateId') ? Number(params.get('governorateId')) : null;
+    this.districtId = params.get('districtId') ? Number(params.get('districtId')) : null;
+    this.neighborhoodId = params.get('neighborhoodId') ? Number(params.get('neighborhoodId')) : null;
+    this.propertyTypeId = params.get('propertyTypeId') ? Number(params.get('propertyTypeId')) : null;
+
+    // Pre-load the cascading dropdown options that match the incoming ids so
+    // the filter panel shows correct labels, not just empty selects.
+    if (this.governorateId) {
+      this.lookupsApi.getDistricts(this.governorateId)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({ next: items => this.districts.set(items), error: () => this.districts.set([]) });
+    }
+    if (this.districtId) {
+      this.lookupsApi.getNeighborhoods(this.districtId)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({ next: items => this.neighborhoods.set(items), error: () => this.neighborhoods.set([]) });
+    }
+
+    this.applyFilters();
   }
 
   private loadCitySuggestions(): void {
@@ -278,6 +397,10 @@ export class PropertyListPage implements OnInit {
     if (this.maxPrice !== null && this.maxPrice !== undefined) count++;
     if (this.selectedAmenityIds.length > 0) count++;
     if (this.sortBy && this.sortBy !== 'CreatedAt') count++;
+    if (this.governorateId) count++;
+    if (this.districtId) count++;
+    if (this.neighborhoodId) count++;
+    if (this.propertyTypeId) count++;
 
     return count;
   }
@@ -298,7 +421,12 @@ export class PropertyListPage implements OnInit {
       maxPrice: this.maxPrice ?? undefined,
       amenityIds: this.selectedAmenityIds.length > 0 ? this.selectedAmenityIds : undefined,
       sortBy: sort.sortBy,
-      sortDescending: sort.sortDescending
+      sortDescending: sort.sortDescending,
+      // Phase-0, Task 0.
+      governorateId: this.governorateId ?? undefined,
+      districtId: this.districtId ?? undefined,
+      neighborhoodId: this.neighborhoodId ?? undefined,
+      propertyTypeId: this.propertyTypeId ?? undefined
     });
 
     this.loadProperties();
@@ -312,7 +440,54 @@ export class PropertyListPage implements OnInit {
     this.maxPrice = null;
     this.selectedAmenityIds = [];
     this.sortBy = 'CreatedAt';
+    this.governorateId = null;
+    this.districtId = null;
+    this.neighborhoodId = null;
+    this.propertyTypeId = null;
+    this.districts.set([]);
+    this.neighborhoods.set([]);
     this.applyFilters();
+  }
+
+  /**
+   * Phase-0, Task 3 — POST /savedsearch from the current filter panel state.
+   * UserId is derived server-side from the JWT; an anonymous user gets a 401,
+   * surfaced here as the generic SAVE_SEARCH_ERROR toast (the button is only
+   * shown when logged in — see the template's *ngIf).
+   */
+  saveCurrentSearch(): void {
+    if (this.savingSearch()) return;
+
+    const name = (prompt(this.translate.instant('PROPERTY_LIST.SAVE_SEARCH_NAME_PROMPT')) ?? '').trim();
+    this.savingSearch.set(true);
+
+    this.savedSearchApi
+      .create({
+        Name: name || null,
+        City: this.cityFilter.trim() || null,
+        GovernorateId: this.governorateId,
+        DistrictId: this.districtId,
+        NeighborhoodId: this.neighborhoodId,
+        PropertyTypeId: this.propertyTypeId,
+        ListingType: this.selectedListingType || null,
+        MinPrice: this.minPrice,
+        MaxPrice: this.maxPrice
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.savingSearch.set(false);
+          this.toast.success(this.translate.instant('PROPERTY_LIST.SAVE_SEARCH_SUCCESS'));
+        },
+        error: () => {
+          this.savingSearch.set(false);
+          this.toast.error(this.translate.instant('PROPERTY_LIST.SAVE_SEARCH_ERROR'));
+        }
+      });
+  }
+
+  get isLoggedIn(): boolean {
+    return !!this.auth.getAccessToken();
   }
 
   goToPage(page: number): void {

@@ -16,7 +16,11 @@
     "PAGE": "Seite",
     "PREVIOUS": "Zurück",
     "area_unit": "m²",
-    "REFRESH": "Aktualisieren"
+    "REFRESH": "Aktualisieren",
+    "SAVE_CHANGES": "Änderungen speichern",
+    "CLICK_TO_ZOOM": "Klicken zum Vergrößern",
+    "MONTH": "Monat",
+    "CLEAR": "Löschen"
   },
   "NAVBAR": {
     "HOME": "Startseite",
@@ -29,7 +33,11 @@
     "SELECT_LANGUAGE": "Sprache auswählen",
     "VISITS": "Besichtigungen",
     "REVIEWS": "Bewertungen",
-    "ANALYTICS": "Analysen"
+    "ANALYTICS": "Analysen",
+    "SAVED_SEARCHES": "Gespeicherte Suchen",
+    "DARK_MODE": "Dunkler Modus",
+    "LIGHT_MODE": "Heller Modus",
+    "NOTIFICATIONS": "Benachrichtigungen"
   },
   "AUTH": {
     "LOGIN_TITLE": "Willkommen",
@@ -157,7 +165,13 @@
       "PASSWORD_RESET_INVALID": "Ihre Anfrage zum Zurücksetzen des Passworts ist abgelaufen — bitte beginnen Sie erneut.",
       "PASSWORDS_MISMATCH": "Die Passwörter stimmen nicht überein.",
       "STATUS_FAILED": "Der Telefon-Bestätigungsstatus konnte nicht geladen werden.",
-      "PASSWORD_RESET_FAILED": "Das Passwort konnte nicht zurückgesetzt werden."
+      "PASSWORD_RESET_FAILED": "Das Passwort konnte nicht zurückgesetzt werden.",
+      "OTP_REQUIRED": "Der Bestätigungscode ist erforderlich.",
+      "ACCOUNT_LOCKED": "Zu viele Fehlversuche. Ihr Konto ist noch {{minutes}} Minute(n) gesperrt.",
+      "LAST_ATTEMPT_BEFORE_LOCKOUT": "Achtung: Ein weiterer Fehlversuch sperrt Ihr Konto.",
+      "ATTEMPTS_REMAINING": "Noch {{count}} Versuche, bevor Ihr Konto gesperrt wird.",
+      "RATE_LIMITED": "Zu viele Anmeldeversuche. Bitte warten Sie einen Moment.",
+      "ACCOUNT_DISABLED": "Dieses Konto wurde deaktiviert. Bitte kontaktieren Sie den Support."
     },
     "FIRST_NAME_PLACEHOLDER": "Vorname eingeben",
     "LAST_NAME_PLACEHOLDER": "Nachname eingeben",
@@ -268,7 +282,22 @@
     "be_first": "Erste Immobilie hinzufügen",
     "cta_title": "Haben Sie eine Immobilie zum Verkauf oder zur Vermietung?",
     "cta_desc": "Erstellen Sie Ihre Anzeige und präsentieren Sie Ihre Immobilie Menschen, die ihr nächstes Zuhause suchen.",
-    "cta_button": "Immobilie jetzt anbieten"
+    "cta_button": "Immobilie jetzt anbieten",
+    "search": {
+      "location": "Standort",
+      "location_any": "Alle Standorte",
+      "type": "Immobilientyp",
+      "type_any": "Alle Typen",
+      "max_price": "Höchstpreis",
+      "price_any": "Beliebiger Preis",
+      "price_500": "Bis 500",
+      "price_1000": "Bis 1.000",
+      "price_2500": "Bis 2.500",
+      "price_5000": "Bis 5.000",
+      "listing_type": "Miete / Kauf",
+      "listing_type_any": "Alle",
+      "submit": "Suchen"
+    }
   },
   "KONTAKT": {
     "title": "Kontakt",
@@ -293,7 +322,8 @@
     "error_validation": "Bitte füllen Sie die erforderlichen Felder korrekt aus.",
     "name_placeholder": "Vollständigen Namen eingeben",
     "subject_placeholder": "Betreff der Nachricht eingeben",
-    "message_placeholder": "Schreiben Sie Ihre Nachricht klar und verständlich"
+    "message_placeholder": "Schreiben Sie Ihre Nachricht klar und verständlich",
+    "response_note": "Wir antworten in der Regel innerhalb von 24 Werktagsstunden."
   },
   "ADMIN_MSG": {
     "title": "Kontaktanfragen",
@@ -359,7 +389,16 @@
     "SORT_PRICE_ASC": "Preis: aufsteigend",
     "SORT_PRICE_DESC": "Preis: absteigend",
     "APPLY_FILTERS": "Filter anwenden",
-    "RESET": "Zurücksetzen"
+    "RESET": "Zurücksetzen",
+    "GOVERNORATE": "Provinz",
+    "DISTRICT": "Bezirk",
+    "NEIGHBORHOOD": "Stadtviertel",
+    "PROPERTY_TYPE": "Immobilientyp",
+    "SELECT_OPTIONAL": "— Auswählen (optional) —",
+    "SAVE_SEARCH": "Diese Suche speichern",
+    "SAVE_SEARCH_NAME_PROMPT": "Geben Sie dieser Suche einen Namen (optional):",
+    "SAVE_SEARCH_SUCCESS": "Suche gespeichert. Wir benachrichtigen Sie über neue passende Immobilien.",
+    "SAVE_SEARCH_ERROR": "Die Suche konnte nicht gespeichert werden. Stellen Sie sicher, dass Sie angemeldet sind."
   },
   "PROPERTY_DETAIL": {
     "NOT_FOUND_TITLE": "Immobilie nicht gefunden",
@@ -378,7 +417,15 @@
     "AVAILABLE_FROM": "Verfügbar ab",
     "CONDITION": "Zustand",
     "NO_FEATURES": "Keine zusätzlichen Ausstattungsmerkmale.",
-    "OWNER": "Eigentümer"
+    "OWNER": "Eigentümer",
+    "REGION": "Region",
+    "AMENITIES": "Ausstattung",
+    "LOCATION_MAP": "Standort auf der Karte",
+    "NO_MAP": "Für diese Immobilie wurde kein Standort auf der Karte festgelegt.",
+    "STALE_BANNER": "Der Eigentümer hat seit {{days}} Tagen nicht bestätigt, dass dieses Inserat verfügbar ist. Es ist möglicherweise nicht mehr verfügbar.",
+    "CONFIRM_AVAILABILITY": "Noch verfügbar?",
+    "CONFIRM_AVAILABILITY_SUCCESS": "Bestätigt — dieses Inserat ist weiterhin verfügbar.",
+    "CONFIRM_AVAILABILITY_ERROR": "Verfügbarkeit konnte nicht bestätigt werden. Bitte versuchen Sie es erneut."
   },
   "PROPERTY": {
     "MODE_RENT": "Zu vermieten",
@@ -424,7 +471,42 @@
     "AMENITIES": "Ausstattung",
     "AMENITIES_LOAD_ERROR": "Ausstattungsmerkmale konnten nicht geladen werden.",
     "AMENITIES_EMPTY": "Derzeit sind keine Ausstattungsmerkmale verfügbar.",
-    "NOT_AUTHORIZED": "Sie haben keine Berechtigung für diese Immobilie."
+    "NOT_AUTHORIZED": "Sie haben keine Berechtigung für diese Immobilie.",
+    "ADDITIONAL_COSTS": "Nebenkosten",
+    "ADDITIONAL_COSTS_INVALID": "Die Nebenkosten müssen eine positive Zahl sein.",
+    "AREA_TOO_SMALL": "Die Fläche muss größer als 10 m² sein.",
+    "DEPOSIT": "Kaution",
+    "DEPOSIT_INVALID": "Die Kaution muss eine positive Zahl sein.",
+    "HEATING": "Heizung",
+    "INVALID_COUNTRY_CODE": "Ungültiger Ländercode.",
+    "INVALID_CURRENCY_CODE": "Ungültiger Währungscode.",
+    "REGION_PLACEHOLDER": "z. B. Damaskus - Al-Mazzeh",
+    "VALIDATION_ERROR": "Bitte überprüfen Sie die erforderlichen Felder.",
+    "WARM_RENT_BELOW_COLD_RENT": "Die Warmmiete darf nicht niedriger als die Kaltmiete sein.",
+    "WARM_RENT_REQUIRED": "Die Warmmiete muss eine positive Zahl sein.",
+    "GOVERNORATE": "Provinz",
+    "DISTRICT": "Bezirk",
+    "NEIGHBORHOOD": "Stadtviertel",
+    "PROPERTY_TYPE": "Immobilientyp",
+    "SELECT_OPTIONAL": "— Auswählen (optional) —",
+    "NEIGHBORHOOD_HINT": "Für diesen Bezirk ist noch keine Stadtviertel-Liste verfügbar — Sie können den Namen oben manuell eingeben.",
+    "CHECKING_DUPLICATE": "Duplikatsprüfung läuft...",
+    "DUPLICATE_TITLE": "Dieses Inserat könnte ein Duplikat sein",
+    "DUPLICATE_DESC": "Wir haben ähnliche Inserate mit ungefähr demselben Stadtviertel, Preis und derselben Fläche gefunden. Sie können fortfahren, wenn Ihres tatsächlich anders ist.",
+    "DUPLICATE_SAME_OWNER": "Eines Ihrer anderen Inserate",
+    "DUPLICATE_REVIEW": "Zurück zur Überprüfung",
+    "DUPLICATE_PROCEED": "Trotzdem veröffentlichen",
+    "SELECT_PLACEHOLDER": "— Auswählen —",
+    "GOVERNORATE_REQUIRED": "Bitte wählen Sie eine Provinz aus.",
+    "DISTRICT_REQUIRED": "Bitte wählen Sie einen Bezirk aus.",
+    "PROPERTY_TYPE_REQUIRED": "Bitte wählen Sie einen Immobilientyp aus.",
+    "NEIGHBORHOOD_MANUAL_PLACEHOLDER": "Oder Stadtviertel manuell eingeben",
+    "STRUCTURED_LOCATION_LOAD_ERROR": "Die Provinzliste konnte nicht geladen werden — bitte Seite aktualisieren.",
+    "DISTRICT_MANUAL_PLACEHOLDER": "Oder Bezirksnamen manuell eingeben",
+    "LOCATION_NO_MATCH": "„{{value}}“ ist nicht in der aktuellen Liste enthalten.",
+    "LOCATION_ADD_NEW": "„{{value}}“ hinzufügen",
+    "LOCATION_ADD_CONFIRMED": "„{{value}}“ wird beim Speichern der Immobilie als neuer Vorschlag gesendet und vom Administrator geprüft.",
+    "NEIGHBORHOOD_PENDING_DISTRICT_HINT": "Ihr Bezirk wartet noch auf die Prüfung durch den Administrator. Der hier eingegebene Stadtteil wird nach der Genehmigung automatisch damit verknüpft."
   },
   "wohnung_add": {
     "title": "Immobilie hinzufügen",
@@ -470,7 +552,35 @@
     "validation_location": "Breiten- und Längengrad müssen gemeinsam eingegeben werden.",
     "select_location": "Standort auswählen",
     "map_instruction": "Wählen Sie den Standort der Immobilie auf der Karte aus",
-    "validation_rent_sale": "Wenn die Immobilie sowohl zum Verkauf als auch zur Vermietung angeboten wird, müssen Miete und Kaufpreis angegeben werden."
+    "validation_rent_sale": "Wenn die Immobilie sowohl zum Verkauf als auch zur Vermietung angeboten wird, müssen Miete und Kaufpreis angegeben werden.",
+    "basic_info": "Grunddaten",
+    "basic_info_desc": "Titel und Beschreibung der Immobilie",
+    "city_placeholder": "Stadt auswählen oder eingeben",
+    "desc_placeholder": "Beschreiben Sie die Immobilie im Detail (Fläche, Lage, Ausstattung ...)",
+    "details": "Immobiliendetails",
+    "details_desc": "Zimmer, Fläche und Ausstattung",
+    "etage": "Etage",
+    "features": "Ausstattungsmerkmale",
+    "images": "Immobilienbilder",
+    "images_desc": "Fügen Sie klare Bilder hinzu, um Interessenten anzuziehen",
+    "listing_type_desc": "Legen Sie fest, ob die Immobilie zum Verkauf oder zur Miete angeboten wird",
+    "location": "Standort",
+    "location_desc": "Adresse der Immobilie und Standort auf der Karte",
+    "location_selected": "Standort ausgewählt",
+    "map_hint": "Klicken Sie auf die Karte, um den genauen Standort der Immobilie festzulegen",
+    "parkplatz": "Stellplatz",
+    "pricing": "Preis",
+    "pricing_desc": "Legen Sie den passenden Preis je nach Anzeigenart fest",
+    "rent_hint": "Regelmäßiges monatliches Einkommen",
+    "sale_hint": "Einmaliger Verkauf",
+    "street_placeholder": "Straßenname und Hausnummer",
+    "submit": "Immobilie veröffentlichen",
+    "subtitle": "Geben Sie die Details Ihrer Immobilie Schritt für Schritt ein",
+    "title_placeholder": "z. B. 3-Zimmer-Wohnung mit Gartenblick",
+    "upload_click": "Klicken Sie, um Bilder hochzuladen",
+    "upload_hint": "PNG, JPG oder WebP — bis zu 5 MB pro Bild",
+    "uploading": "Bilder werden hochgeladen...",
+    "verfuegbar_ab": "Verfügbar ab"
   },
   "MY_LISTINGS": {
     "TITLE": "Meine Anzeigen",
@@ -522,7 +632,8 @@
     "UNKNOWN_USER": "Nutzer",
     "SELECT_CONVERSATION_FIRST": "Wählen Sie zuerst ein Gespräch aus, bevor Sie antworten.",
     "ERROR_EMPTY": "Eine leere Nachricht kann nicht gesendet werden.",
-    "ERROR_TOO_LONG": "Die Nachricht ist zu lang (maximal 3000 Zeichen)."
+    "ERROR_TOO_LONG": "Die Nachricht ist zu lang (maximal 3000 Zeichen).",
+    "SENDING_AS": "Diese Nachricht wird unter Ihrem Konto gesendet: {{name}}"
   },
   "ADMIN_USERS": {
     "TITLE": "Benutzerverwaltung",
@@ -560,7 +671,8 @@
     "DISMISS": "Benachrichtigung verwerfen",
     "MARKING_ALL": "Wird aktualisiert...",
     "MARK_ALL_ERROR": "Benachrichtigungen konnten nicht markiert werden.",
-    "DISMISS_ERROR": "Benachrichtigung konnte nicht verworfen werden."
+    "DISMISS_ERROR": "Benachrichtigung konnte nicht verworfen werden.",
+    "NEW_TOAST_TITLE": "Neue Benachrichtigung"
   },
   "MAP": {
     "APARTMENT_LOCATION": "Standort der Immobilie {{title}}",
@@ -626,11 +738,19 @@
       "DELETE_SUCCESS": "Das Konto wurde gelöscht.",
       "DELETE_ERROR": "Das Konto konnte nicht gelöscht werden.",
       "PASS_LENGTH": "Das neue Passwort muss mindestens 6 Zeichen enthalten."
+    },
+    "ABOUT": {
+      "BIO_LABEL": "Über mich",
+      "BIO_PLACEHOLDER": "Schreibe eine kurze Beschreibung über dich und deine Arbeit (z. B. dein Bereich, Erfahrung, Art der Immobilien)...",
+      "BIO_HINT": "Diese Beschreibung wird auf deinem öffentlichen Profil für jeden Besucher angezeigt.",
+      "CONTACT_INFO_LABEL": "Adresse & Kontaktinformationen",
+      "CONTACT_INFO_PLACEHOLDER": "z. B. deine Adresse, eine zusätzliche Telefonnummer, eine geschäftliche E-Mail...",
+      "CONTACT_INFO_HINT": "Diese Angaben werden ebenfalls auf deinem öffentlichen Profil angezeigt — schreibe nur, was du öffentlich teilen möchtest."
     }
   },
   "VISIT": {
     "REQUEST": "Besichtigung anfragen",
-    "DATE": "Datum und Uhrzeit",
+    "DATE": "Datum",
     "NAME": "Name",
     "PHONE": "Telefonnummer",
     "NOTE": "Notizen",
@@ -641,7 +761,13 @@
     "TOO_FAR": "Eine Buchung ist höchstens 90 Tage im Voraus möglich.",
     "NAME_REQUIRED": "Der Name ist erforderlich.",
     "PHONE_REQUIRED": "Die Telefonnummer ist erforderlich.",
-    "INVALID_DATE": "Das Datum ist ungültig."
+    "INVALID_DATE": "Das Datum ist ungültig.",
+    "NOTE_PLACEHOLDER": "Fügen Sie Anmerkungen zum Besuch hinzu (optional)",
+    "TIME": "Uhrzeit",
+    "DATE_REQUIRED": "Das Datum ist erforderlich.",
+    "TIME_REQUIRED": "Die Uhrzeit ist erforderlich.",
+    "PHONE_INVALID": "Ungültige Telefonnummer — sie muss mit + und der Landesvorwahl beginnen (z. B. +963...).",
+    "FORM_INVALID": "Bitte füllen Sie alle Pflichtfelder (mit * markiert) aus, bevor Sie absenden."
   },
   "REVIEW": {
     "ADD": "Bewertung hinzufügen",
@@ -655,7 +781,10 @@
     "REVIEWS": "Bewertungen",
     "ANONYMOUS": "Anonymer Benutzer",
     "PROPERTY_REQUIRED": "Die Immobilien-ID ist erforderlich.",
-    "RATING_RANGE": "Die Bewertung muss zwischen 1 und 5 liegen."
+    "RATING_RANGE": "Die Bewertung muss zwischen 1 und 5 liegen.",
+    "COMMENT_PLACEHOLDER": "Teilen Sie uns Ihre Meinung zu dieser Immobilie mit...",
+    "EMPTY_TITLE": "Noch keine Bewertungen",
+    "EMPTY_MESSAGE": "Seien Sie der Erste, der diese Immobilie bewertet."
   },
   "VALIDATION": {
     "REQUIRED": "Dieses Feld ist erforderlich.",
@@ -782,5 +911,93 @@
     "RATING": "Durchschnittliche Bewertung",
     "LOAD_ERROR": "Die Marktanalysen konnten nicht geladen werden.",
     "PROPERTY_ERROR": "Die Immobilienstatistiken konnten nicht geladen werden."
+  },
+  "HEATING": {
+    "CENTRAL": "Zentralheizung",
+    "FLOOR": "Fußbodenheizung",
+    "GAS": "Gasheizung",
+    "ELECTRIC": "Elektroheizung",
+    "OIL": "Ölheizung",
+    "OTHER": "Sonstige"
+  },
+  "SAVED_SEARCHES": {
+    "TITLE": "Gespeicherte Suchen",
+    "SUBTITLE": "Speichern Sie Ihre Suchkriterien – wir benachrichtigen Sie, wenn ein passendes Inserat erscheint.",
+    "NEW_SEARCH": "Neue Suche",
+    "EMPTY_TITLE": "Noch keine gespeicherten Suchen",
+    "EMPTY_MESSAGE": "Legen Sie auf der Immobilienseite die gewünschten Filter fest und klicken Sie dann auf \"Diese Suche speichern\".",
+    "UNNAMED": "Unbenannte Suche",
+    "LAST_MATCHED": "Letzter Treffer",
+    "NO_MATCHES_YET": "Noch keine Treffer",
+    "RUN": "Suche ausführen",
+    "CONFIRM_DELETE": "Diese gespeicherte Suche löschen?",
+    "DELETE_SUCCESS": "Gespeicherte Suche gelöscht.",
+    "DELETE_ERROR": "Die gespeicherte Suche konnte nicht gelöscht werden.",
+    "LOAD_ERROR": "Gespeicherte Suchen konnten nicht geladen werden."
+  },
+  "ADMIN_LOCATIONS": {
+    "TITLE": "Standortvorschläge",
+    "SUBTITLE": "Manuell eingegebene Bezirke/Stadtviertel, die auf Ihre Überprüfung warten, bevor sie zu den offiziellen Listen hinzugefügt werden.",
+    "EMPTY_TITLE": "Keine ausstehenden Vorschläge",
+    "EMPTY_MESSAGE": "Alle Vorschläge wurden bereits geprüft.",
+    "TYPE": "Typ",
+    "TYPE_DISTRICT": "Bezirk",
+    "TYPE_NEIGHBORHOOD": "Stadtviertel",
+    "NAME": "Vorgeschlagener Name",
+    "PARENT": "Unter",
+    "SUBMITTED_BY": "Eingereicht von",
+    "VIEW_LISTING": "Inserat ansehen",
+    "ACTIONS": "Aktionen",
+    "APPROVE": "Genehmigen",
+    "REJECT": "Ablehnen",
+    "CONFIRM_APPROVE": "\"{{name}}\" als offiziellen Standort genehmigen?",
+    "CONFIRM_REJECT": "Vorschlag \"{{name}}\" ablehnen?",
+    "APPROVED": "Genehmigt — der Standort wurde zur Liste hinzugefügt.",
+    "REJECTED": "Vorschlag abgelehnt.",
+    "APPROVE_ERROR": "Der Vorschlag konnte nicht genehmigt werden.",
+    "REJECT_ERROR": "Der Vorschlag konnte nicht abgelehnt werden.",
+    "LOAD_ERROR": "Ausstehende Vorschläge konnten nicht geladen werden."
+  },
+  "PUBLIC_PROFILE": {
+    "LOAD_ERROR": "Dieses Profil konnte nicht geladen werden.",
+    "MISSING_USER_ID": "Benutzer-ID fehlt.",
+    "AGENT_BADGE": "Verifizierter Makler",
+    "MEMBER_SINCE": "Mitglied seit",
+    "NOT_RATED_YET": "Noch nicht bewertet",
+    "RATINGS_COUNT_SUFFIX": "Bewertungen",
+    "SOLD_COUNT": "Verkauft",
+    "RENTED_COUNT": "Vermietet",
+    "ACTIVE_LISTINGS_COUNT": "Aktive Anzeigen",
+    "RATING_BREAKDOWN": "Bewertungsdetails",
+    "RATE_THIS_USER": "Diesen Nutzer bewerten",
+    "COMMENT_LABEL": "Kommentar (optional)",
+    "COMMENT_PLACEHOLDER": "Teile deine Erfahrung mit diesem Nutzer...",
+    "SUBMIT_RATING": "Bewertung senden",
+    "RATE_SUCCESS": "Deine Bewertung wurde erfolgreich gesendet.",
+    "RATE_ERROR": "Bewertung konnte nicht gesendet werden. Bitte erneut versuchen.",
+    "RATE_ALREADY_RATED": "Du hast diesen Nutzer bereits bewertet.",
+    "REVIEWS_TITLE": "Bewertungen & Kommentare",
+    "NO_RATINGS_TITLE": "Noch keine Bewertungen",
+    "NO_RATINGS_MESSAGE": "Sei der Erste, der diesen Nutzer nach einem Geschäft bewertet.",
+    "ACTIVE_LISTINGS": "Aktive Anzeigen",
+    "NO_LISTINGS_TITLE": "Keine aktiven Anzeigen",
+    "NO_LISTINGS_MESSAGE": "Dieser Nutzer hat derzeit keine veröffentlichten Anzeigen.",
+    "VIEW_PROFILE_LINK": "Vollständiges Profil ansehen",
+    "CRITERIA": {
+      "CREDIBILITY": "Glaubwürdigkeit",
+      "SAFETY": "Sicherheit",
+      "RESPONSE_SPEED": "Antwortgeschwindigkeit",
+      "TRANSPARENCY": "Transparenz"
+    },
+    "RATE_CTA": "Diesen Nutzer bewerten",
+    "ABOUT_TITLE": "Über mich",
+    "CONTACT_INFO_LABEL": "Kontaktinformationen",
+    "RATE_LOGIN_REQUIRED_TITLE": "Zum Bewerten anmelden",
+    "RATE_LOGIN_REQUIRED_MESSAGE": "Du musst dich anmelden, bevor du diesen Nutzer bewerten kannst.",
+    "RATE_NOT_ELIGIBLE_TITLE": "Du kannst diesen Nutzer noch nicht bewerten",
+    "RATE_NOT_ELIGIBLE_MESSAGE": "Du musst zuerst eine Besichtigung bei einer Immobilie dieses Nutzers abgeschlossen oder mit ihm Nachrichten ausgetauscht haben, bevor du ihn bewerten kannst.",
+    "RATE_EDIT_HINT": "Du hast diesen Nutzer bereits bewertet — du kannst deine Bewertung unten bearbeiten.",
+    "UPDATE_RATING": "Bewertung aktualisieren",
+    "RATE_UPDATE_SUCCESS": "Deine Bewertung wurde erfolgreich aktualisiert"
   }
 }

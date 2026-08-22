@@ -26,7 +26,7 @@
   &__title {
     font-size: clamp(1.3rem, 2.5vw, 1.75rem);
     font-weight: 800;
-    color: var(--navy);
+    color: var(--gray-900);
     margin: 0 0 .2rem;
   }
 
@@ -106,7 +106,7 @@
   gap: .5rem;
   font-size: 1rem;
   font-weight: 700;
-  color: var(--navy);
+  color: var(--gray-900);
   margin: 0;
 }
 
@@ -187,7 +187,7 @@
 
   &--active {
     background: var(--surface);
-    color: var(--primary);
+    color: var(--gold-text);
     box-shadow: var(--shadow-xs);
   }
 }
@@ -219,9 +219,9 @@
   transition: all .15s;
 
   &--active {
-    background: var(--gold-soft, var(--primary));
-    color: var(--navy, var(--primary));
-    border-color: var(--primary);
+    background: var(--gold-soft);
+    color: var(--gold-text);
+    border-color: var(--gold);
   }
 }
 
@@ -270,8 +270,8 @@
   justify-content: center;
   width: 18px;
   height: 18px;
-  background: var(--primary);
-  color: #fff;
+  background: var(--gold);
+  color: #1a1206;
   border-radius: 50%;
   font-size: .65rem;
   font-weight: 700;
@@ -382,7 +382,7 @@
   &__price {
     font-size: 1.05rem;
     font-weight: 800;
-    color: var(--navy);
+    color: var(--gray-900);
 
     small {
       font-size: .72rem;
@@ -408,9 +408,9 @@
   justify-content: center;
   padding: .65rem 1rem;
   border-radius: var(--r-md, 10px);
-  border: 1px solid var(--primary, #2563eb);
-  background: var(--primary-soft, #eff6ff);
-  color: var(--primary, #2563eb);
+  border: 1px solid var(--gold);
+  background: var(--gold-soft);
+  color: var(--gold-text);
   font-weight: 700;
   cursor: pointer;
   transition: background .15s, color .15s;
@@ -418,8 +418,8 @@
   &:disabled { opacity: .6; cursor: default; }
 
   &--active {
-    background: var(--primary, #2563eb);
-    color: #fff;
+    background: var(--gold);
+    color: #1a1206;
   }
 }
 
@@ -428,7 +428,7 @@
 
   input[type="range"] {
     width: 100%;
-    accent-color: var(--primary, #2563eb);
+    accent-color: var(--gold);
   }
 }
 
@@ -465,8 +465,8 @@
     transition: all .15s;
 
     &:hover:not(:disabled) {
-      border-color: var(--primary);
-      color: var(--primary);
+      border-color: var(--gold);
+      color: var(--gold-text);
     }
 
     &:disabled {
@@ -502,9 +502,9 @@
     }
 
     &--active {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: #fff;
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #1a1206;
     }
   }
 }

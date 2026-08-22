@@ -1,0 +1,257 @@
+// =====================================================================
+// ✅ Unit Tests – auth.service.spec.ts
+// تغطية: بناء حالة المستخدم من التوكن (validateSession)، معالجة التوكنات
+// المنتهية/التالفة/المفقودة، login/logout، تحديث المستخدم الحالي.
+//
+// هذه الخدمة تُعتبر "حرجة" لأن أي خلل بها يعطّل تسجيل الدخول بالكامل —
+// كل الصفحات المحمية بـAuthGuard تعتمد على isLoggedIn$/currentUser$ هنا.
+// =====================================================================
+import { TestBed } from '@angular/core/testing';
+
+import { AuthService } from './auth.service';
+import { AuthApiService } from './auth-api.service';
+import { TokenStorageService } from '../services/token-storage.service';
+
+/**
+ * يبني توكن JWT شكليًا صالحًا للاختبار (header.payload.signature)،
+ * كافيًا لتمرير decodeJwt() الخاصة بالخدمة (تتوقع فقط أن الجزء الثاني
+ * base64 صالح يحتوي JSON). التوقيع نفسه غير مُتحقَّق منه بالواجهة
+ * الأمامية أصلًا (التحقق الحقيقي من التوقيع مسؤولية الباك اند)، فقيمته
+ * هنا وهمية بالكامل.
+ */
+function makeJwt(payload: Record<string, unknown>): string {
+  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const body = btoa(JSON.stringify(payload));
+  return `${header}.${body}.fake-signature`;
+}
+
+describe('AuthService', () => {
+  let service: AuthService;
+  let tokenStorage: TokenStorageService;
+  let authApiSpy: jasmine.SpyObj<AuthApiService>;
+
+  beforeEach(() => {
+    authApiSpy = jasmine.createSpyObj('AuthApiService', ['logout']);
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: AuthApiService, useValue: authApiSpy }
+      ]
+    });
+
+    tokenStorage = TestBed.inject(TokenStorageService);
+    tokenStorage.setAccessToken(null);
+  });
+
+  // ────────────── لا يوجد توكن ──────────────
+
+  it('✅ لا يوجد توكن مخزَّن ⇒ حالة مجهول (غير مسجَّل دخول)', () => {
+    // AuthService.constructor يستدعي validateSession() تلقائيًا
+    service = TestBed.inject(AuthService);
+
+    expect(service.currentUserSnapshot).toBeNull();
+    let loggedIn: boolean | undefined;
+    service.isLoggedIn$.subscribe(v => (loggedIn = v));
+    expect(loggedIn).toBeFalse();
+  });
+
+  it('✅ توكن بقيمة نصية "undefined"/"null" يُعامَل كأنه لا يوجد توكن', () => {
+    tokenStorage.setAccessToken('undefined');
+    service = TestBed.inject(AuthService);
+
+    expect(service.currentUserSnapshot).toBeNull();
+  });
+
+  // ────────────── توكن تالف ──────────────
+
+  it('✅ توكن تالف (ليس JWT صالح) ⇒ يُمسح ويصير المستخدم مجهول', () => {
+    tokenStorage.setAccessToken('this-is-not-a-jwt-at-all');
+    service = TestBed.inject(AuthService);
+
+    expect(service.currentUserSnapshot).toBeNull();
+    // ✅ الأهم: التوكن التالف يُمسح من التخزين، لا يبقى عالقًا
+    expect(tokenStorage.getAccessToken()).toBeNull();
+  });
+
+  // ────────────── توكن منتهي الصلاحية ──────────────
+
+  it('✅ توكن منتهي الصلاحية (exp بالماضي) ⇒ يُمسح ويصير المستخدم مجهول', () => {
+    const expiredSecondsAgo = Math.floor(Date.now() / 1000) - 3600; // منذ ساعة
+    const token = makeJwt({
+      sub: 'user-1',
+      email: 'test@example.com',
+      exp: expiredSecondsAgo
+    });
+    tokenStorage.setAccessToken(token);
+
+    service = TestBed.inject(AuthService);
+
+    expect(service.currentUserSnapshot).toBeNull();
+    expect(tokenStorage.getAccessToken()).toBeNull();
+  });
+
+  // ────────────── توكن صالح ──────────────
+
+  it('✅ توكن صالح غير منتهٍ ⇒ يبني حالة المستخدم بشكل صحيح', () => {
+    const expiresInFuture = Math.floor(Date.now() / 1000) + 3600; // خلال ساعة
+    const token = makeJwt({
+      sub: 'user-42',
+      email: 'naeem@example.com',
+      name: 'Naeem',
+      role: 'Admin',
+      exp: expiresInFuture
+    });
+    tokenStorage.setAccessToken(token);
+
+    service = TestBed.inject(AuthService);
+
+    const user = service.currentUserSnapshot;
+    expect(user).not.toBeNull();
+    expect(user?.id).toBe('user-42');
+    expect(user?.Id).toBe('user-42');
+    expect(user?.email).toBe('naeem@example.com');
+    expect(user?.displayName).toBe('Naeem');
+    expect(user?.roles).toEqual(['Admin']);
+
+    let loggedIn: boolean | undefined;
+    service.isLoggedIn$.subscribe(v => (loggedIn = v));
+    expect(loggedIn).toBeTrue();
+  });
+
+  it('✅ التوكن بلا exp ⇒ يُعامَل كصالح (لا انتهاء صلاحية معروف)', () => {
+    const token = makeJwt({ sub: 'user-7', email: 'no-exp@example.com' });
+    tokenStorage.setAccessToken(token);
+
+    service = TestBed.inject(AuthService);
+
+    expect(service.currentUserSnapshot?.id).toBe('user-7');
+  });
+
+  // ────────────── extractRoles: صيغ متعددة ──────────────
+
+  it('✅ roles كمصفوفة تُقرأ كما هي', () => {
+    const token = makeJwt({ sub: 'u1', roles: ['Admin', 'Owner'] });
+    tokenStorage.setAccessToken(token);
+    service = TestBed.inject(AuthService);
+
+    expect(service.currentUserSnapshot?.roles).toEqual(['Admin', 'Owner']);
+  });
+
+  it('✅ role كنص مفرد يتحول لمصفوفة من عنصر واحد', () => {
+    const token = makeJwt({ sub: 'u1', role: 'User' });
+    tokenStorage.setAccessToken(token);
+    service = TestBed.inject(AuthService);
+
+    expect(service.currentUserSnapshot?.roles).toEqual(['User']);
+  });
+
+  it('✅ عدم وجود أي claim للأدوار ⇒ مصفوفة فارغة (وليس خطأ)', () => {
+    const token = makeJwt({ sub: 'u1' });
+    tokenStorage.setAccessToken(token);
+    service = TestBed.inject(AuthService);
+
+    expect(service.currentUserSnapshot?.roles).toEqual([]);
+  });
+
+  // ────────────── isAdmin$ ──────────────
+
+  it('✅ isAdmin$ يكون true فقط إذا roles تحتوي "Admin"', () => {
+    const token = makeJwt({ sub: 'u1', role: 'Admin' });
+    tokenStorage.setAccessToken(token);
+    service = TestBed.inject(AuthService);
+
+    let isAdmin: boolean | undefined;
+    service.isAdmin$.subscribe(v => (isAdmin = v));
+    expect(isAdmin).toBeTrue();
+  });
+
+  it('✅ isAdmin$ يكون false لمستخدم بدور غير Admin', () => {
+    const token = makeJwt({ sub: 'u1', role: 'User' });
+    tokenStorage.setAccessToken(token);
+    service = TestBed.inject(AuthService);
+
+    let isAdmin: boolean | undefined;
+    service.isAdmin$.subscribe(v => (isAdmin = v));
+    expect(isAdmin).toBeFalse();
+  });
+
+  // ────────────── login() ──────────────
+
+  it('✅ login() يقرأ accessToken بأي من الصيغتين (camelCase/PascalCase)', () => {
+    service = TestBed.inject(AuthService);
+    const expiresInFuture = Math.floor(Date.now() / 1000) + 3600;
+    const token = makeJwt({ sub: 'u9', exp: expiresInFuture });
+
+    service.login({ AccessToken: token, RefreshToken: 'r-1' });
+
+    expect(tokenStorage.getAccessToken()).toBe(token);
+    expect(service.currentUserSnapshot?.id).toBe('u9');
+  });
+
+  it('✅ login() باستجابة بلا accessToken ⇒ لا يغيّر حالة تسجيل الدخول', () => {
+    service = TestBed.inject(AuthService);
+    service.login({});
+
+    expect(service.currentUserSnapshot).toBeNull();
+  });
+
+  // ────────────── logout / logoutLocal ──────────────
+
+  it('✅ logoutLocal() يمسح التوكن وحالة المستخدم فورًا (بدون نداء API)', () => {
+    const token = makeJwt({ sub: 'u1', exp: Math.floor(Date.now() / 1000) + 3600 });
+    tokenStorage.setAccessToken(token);
+    service = TestBed.inject(AuthService);
+    expect(service.currentUserSnapshot).not.toBeNull();
+
+    service.logoutLocal();
+
+    expect(service.currentUserSnapshot).toBeNull();
+    expect(tokenStorage.getAccessToken()).toBeNull();
+    expect(authApiSpy.logout).not.toHaveBeenCalled();
+  });
+
+  // ────────────── updateCurrentUser ──────────────
+
+  it('✅ updateCurrentUser(null) يعيد الحالة لمجهول', () => {
+    const token = makeJwt({ sub: 'u1', exp: Math.floor(Date.now() / 1000) + 3600 });
+    tokenStorage.setAccessToken(token);
+    service = TestBed.inject(AuthService);
+
+    service.updateCurrentUser(null);
+
+    expect(service.currentUserSnapshot).toBeNull();
+  });
+
+  it('✅ updateCurrentUser() بتحديث جزئي يحافظ على الحقول غير المُرسَلة', () => {
+    const token = makeJwt({
+      sub: 'u1',
+      email: 'old@example.com',
+      name: 'Old Name',
+      exp: Math.floor(Date.now() / 1000) + 3600
+    });
+    tokenStorage.setAccessToken(token);
+    service = TestBed.inject(AuthService);
+
+    service.updateCurrentUser({ displayName: 'New Name' });
+
+    const user = service.currentUserSnapshot;
+    expect(user?.displayName).toBe('New Name');
+    // ✅ الإيميل ما انبعث بالتحديث الجزئي، لازم يضل محفوظ من الحالة السابقة
+    expect(user?.email).toBe('old@example.com');
+  });
+
+  // ────────────── getCurrentUserId ──────────────
+
+  it('✅ getCurrentUserId() يُرجع null إذا لا يوجد مستخدم حالي', () => {
+    service = TestBed.inject(AuthService);
+    expect(service.getCurrentUserId()).toBeNull();
+  });
+
+  it('✅ getCurrentUserId() يُرجع id المستخدم الحالي', () => {
+    const token = makeJwt({ sub: 'u123', exp: Math.floor(Date.now() / 1000) + 3600 });
+    tokenStorage.setAccessToken(token);
+    service = TestBed.inject(AuthService);
+
+    expect(service.getCurrentUserId()).toBe('u123');
+  });
+});

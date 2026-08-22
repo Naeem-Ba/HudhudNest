@@ -27,7 +27,7 @@
 //   - إصلاح شامل لـ toUpdateRequest
 
 import { Injectable } from '@angular/core';
-import { Observable, map, switchMap, throwError } from 'rxjs';
+import { Observable, map, switchMap } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
 
 export interface UserProfile {
@@ -52,6 +52,13 @@ export interface UserProfile {
    * GET /users/me لكنه لم يكن مُستهلَكًا في الواجهة إطلاقاً.
    */
   EmailConfirmed?: boolean;
+
+  /**
+   * ✅ إضافة: نبذة تعريفية + عنوان/معلومات تواصل تُعرض علنًا بالملف الشخصي
+   * العام (UserDto.Bio / UserDto.ContactInfo بالباك اند).
+   */
+  Bio?: string;
+  ContactInfo?: string;
 }
 
 interface BackendUserProfile {
@@ -97,6 +104,11 @@ interface BackendUserProfile {
 
   emailConfirmed?: boolean;
   EmailConfirmed?: boolean;
+
+  bio?: string;
+  Bio?: string;
+  contactInfo?: string;
+  ContactInfo?: string;
 }
 
 export interface ChangePasswordRequest {
@@ -177,8 +189,24 @@ export class ProfileService {
       })));
   }
 
-  uploadAvatar(_file: File): Observable<{ ImageUrl: string; imageUrl: string }> {
-    return throwError(() => new Error('Avatar upload endpoint is not confirmed in Backend contract yet.'));
+  /**
+   * ✅ تفعيل: POST /users/me/avatar (multipart/form-data) — كان يرمي خطأ ثابتًا
+   * بانتظار جاهزية نقطة الباك اند؛ الآن مفعَّلة فعليًا (UsersController.UploadAvatar).
+   * حقل الفورم اسمه "file" مطابقًا لاسم بارامتر [FromForm] IFormFile? file بالباك اند.
+   * الباك اند يُعيد 200 مع { ImageUrl } (PascalCase — راجع Program.cs:
+   * PropertyNamingPolicy = null)، لذا لا نحتاج apiToCamelCase هنا، فقط قراءة
+   * كلا الاحتمالين (PascalCase/camelCase) كباقي هذا الملف.
+   */
+  uploadAvatar(file: File): Observable<{ ImageUrl: string; imageUrl: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.api
+      .upload<{ ImageUrl?: string; imageUrl?: string }>('/users/me/avatar', formData)
+      .pipe(map(res => {
+        const url = res.ImageUrl ?? res.imageUrl ?? '';
+        return { ImageUrl: url, imageUrl: url };
+      }));
   }
 
   private toLegacyUserProfile(user: BackendUserProfile): UserProfile {
@@ -202,7 +230,10 @@ export class ProfileService {
 
       Role: user.role ?? user.Role,
 
-      EmailConfirmed: user.emailConfirmed ?? user.EmailConfirmed ?? false
+      EmailConfirmed: user.emailConfirmed ?? user.EmailConfirmed ?? false,
+
+      Bio: user.bio ?? user.Bio ?? '',
+      ContactInfo: user.contactInfo ?? user.ContactInfo ?? ''
     };
   }
 
@@ -224,7 +255,12 @@ export class ProfileService {
       firstName:   user.Vorname?.trim()     || undefined,
       lastName:    user.Name?.trim()        || undefined,
       displayName: user.DisplayName?.trim() || undefined,
-      phoneNumber: user.Phone?.trim()       || undefined
+      phoneNumber: user.Phone?.trim()       || undefined,
+      // ✅ إضافة: نُرسل قيمة فارغة صراحةً (وليس undefined) عند مسح الحقل
+      // بالكامل، كي يتوافق مع دلالة "null تعني عدم التغيير" بالباك اند —
+      // إرسال '' (وليس undefined) يُترجَم بالـ Handler إلى مسح الحقل فعليًا.
+      bio:         user.Bio !== undefined ? (user.Bio?.trim() ?? '') : undefined,
+      contactInfo: user.ContactInfo !== undefined ? (user.ContactInfo?.trim() ?? '') : undefined
     };
   }
 }

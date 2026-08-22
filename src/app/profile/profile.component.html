@@ -121,6 +121,36 @@
         <div class="field-error" *ngIf="ph.invalid && (ph.touched || submitted)">⚠️ {{ 'PROFILE.PHONE_REQUIRED_AGENT' | translate }}</div>
       </div>
 
+      <!-- ✅ إضافة: نبذة تعريفية + عنوان/معلومات تواصل — تُعرض علنًا بالملف
+           الشخصي العام (/users/:id) كي يعرّف صاحب الحساب بنفسه وعمله. -->
+      <div class="about-section">
+        <div class="field">
+          <label>{{ 'PROFILE.ABOUT.BIO_LABEL' | translate }}</label>
+          <textarea
+            [ngModel]="user()?.Bio"
+            (ngModelChange)="patchUserField('Bio', $event)"
+            name="bio"
+            rows="4"
+            maxlength="2000"
+            [placeholder]="'PROFILE.ABOUT.BIO_PLACEHOLDER' | translate"
+          ></textarea>
+          <p class="field-hint">{{ 'PROFILE.ABOUT.BIO_HINT' | translate }}</p>
+        </div>
+
+        <div class="field">
+          <label>{{ 'PROFILE.ABOUT.CONTACT_INFO_LABEL' | translate }}</label>
+          <textarea
+            [ngModel]="user()?.ContactInfo"
+            (ngModelChange)="patchUserField('ContactInfo', $event)"
+            name="contactInfo"
+            rows="2"
+            maxlength="500"
+            [placeholder]="'PROFILE.ABOUT.CONTACT_INFO_PLACEHOLDER' | translate"
+          ></textarea>
+          <p class="field-hint">{{ 'PROFILE.ABOUT.CONTACT_INFO_HINT' | translate }}</p>
+        </div>
+      </div>
+
       <div class="agent-section">
         <div class="verified-agent-badge" *ngIf="user()?.IsAgent && user()?.TaxNumber && user()?.Phone">
           <div class="success-icon">✅</div>

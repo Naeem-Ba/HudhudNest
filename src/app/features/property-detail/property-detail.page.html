@@ -96,6 +96,14 @@
 
         <!-- ── Summary Card ── -->
         <div class="summary-card">
+          <!-- Phase-0, Task 2: 30-day staleness banner, visible to every
+               visitor (not just the owner) — a buyer/renter deciding whether
+               to bother contacting the owner needs this signal too. -->
+          <div class="stale-banner" *ngIf="isStale()" role="status">
+            <span aria-hidden="true">⏳</span>
+            {{ 'PROPERTY_DETAIL.STALE_BANNER' | translate: { days: daysSinceFreshnessSignal() } }}
+          </div>
+
           <!-- Badge -->
           <span class="badge"
             [class.badge--rent]="isRentListing()"
@@ -174,8 +182,20 @@
               class="detail-fav-btn"
               [propertyId]="p.id"
             ></app-favorite-toggle-button>
+            <!-- Phase-0, Task 2: owner-only "still available?" confirmation.
+                 Backend also enforces ownership (403 for anyone else) — this
+                 *ngIf is a UX convenience, not the actual security boundary. -->
+            <button type="button" class="btn btn--outline"
+              *ngIf="isOwner()"
+              [disabled]="confirmingAvailability()"
+              (click)="confirmStillAvailable()">
+              <span aria-hidden="true">✅</span>
+              {{ confirmingAvailability()
+                  ? ('COMMON.SAVING' | translate)
+                  : ('PROPERTY_DETAIL.CONFIRM_AVAILABILITY' | translate) }}
+            </button>
             <button type="button" class="btn btn--primary"
-              (click)="showVisitForm.set(!showVisitForm())">
+              (click)="toggleVisitForm()">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <rect x="1" y="2" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/>
                 <path d="M5 1v2M11 1v2M1 6h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -184,7 +204,7 @@
             </button>
             <button type="button" class="btn btn--outline"
               *ngIf="isLoggedIn() && !isOwner()"
-              (click)="showMessageForm.set(!showMessageForm())">
+              (click)="toggleMessageForm()">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <path d="M2 3h12v8H5l-3 3V3z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
               </svg>
@@ -225,18 +245,31 @@
             <a *ngIf="owner.phoneNumber" class="owner-card__phone" [href]="'tel:' + owner.phoneNumber">
               {{ owner.phoneNumber }}
             </a>
+            <!-- ✅ إضافة: رابط الملف الشخصي العام (تقييمات + إعلانات نشطة) -->
+            <a
+              *ngIf="property()?.ownerId"
+              class="owner-card__profile-link"
+              [routerLink]="['/users', property()!.ownerId]"
+            >
+              {{ 'PUBLIC_PROFILE.VIEW_PROFILE_LINK' | translate }}
+            </a>
           </div>
         </div>
       </div>
 
       <!-- Message Owner Form -->
-      <div class="detail-card" *ngIf="showMessageForm()">
+      <div class="detail-card" id="message-form-section" *ngIf="showMessageForm()">
         <div class="detail-card__header">
           <h2>{{ 'MESSAGES.CONTACT_OWNER' | translate }}</h2>
           <button type="button" class="card-close-btn" (click)="showMessageForm.set(false)" aria-label="إغلاق">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
           </button>
         </div>
+        <!-- ✅ إضافة: توضيح هوية المُرسِل — لا يوجد حقل "اسم" قابل للتعديل هنا
+             لأن الباك اند يحدّد هوية المُرسِل من حساب الدخول نفسه، وليس من نص حر. -->
+        <p class="sender-as-hint" *ngIf="currentUserDisplayName()">
+          {{ 'MESSAGES.SENDING_AS' | translate: { name: currentUserDisplayName() } }}
+        </p>
         <form class="detail-form" (ngSubmit)="sendMessage()" novalidate>
           <div class="form-group">
             <label for="messageDraft">{{ 'MESSAGES.PLACEHOLDER' | translate }}</label>
@@ -262,7 +295,7 @@
       </div>
 
       <!-- Visit Request Form -->
-      <div class="detail-card" *ngIf="showVisitForm()">
+      <div class="detail-card" id="visit-form-section" *ngIf="showVisitForm()">
         <div class="detail-card__header">
           <h2>{{ 'VISIT.REQUEST' | translate }}</h2>
           <button type="button" class="card-close-btn" (click)="showVisitForm.set(false)" aria-label="إغلاق">
@@ -271,17 +304,37 @@
         </div>
         <form class="detail-form" [formGroup]="visitForm" (ngSubmit)="submitVisit()" novalidate>
           <div class="detail-form__grid">
+            <!-- ✅ إصلاح: التاريخ والوقت الآن مربّعان منفصلان (بدل datetime-local
+                 الواحد الذي كان يخلط الاثنين، وترتيب عرضه يتبع لغة المتصفح). -->
             <div class="form-group">
-              <label for="proposedAt">{{ 'VISIT.DATE' | translate }} *</label>
-              <input id="proposedAt" type="datetime-local" formControlName="proposedAt" />
+              <label for="visitDate">{{ 'VISIT.DATE' | translate }} *</label>
+              <input id="visitDate" type="date" formControlName="visitDate" [min]="minVisitDateAttr" />
+              <!-- معاينة صريحة يوم/شهر/سنة — لا تعتمد على لغة/محرك المتصفح -->
+              <p class="field-hint" *ngIf="visitDatePreview()">📅 {{ visitDatePreview() }}</p>
+              <p class="field-error" *ngIf="visitForm.controls.visitDate.invalid && visitForm.controls.visitDate.touched">
+                {{ 'VISIT.DATE_REQUIRED' | translate }}
+              </p>
+            </div>
+            <div class="form-group">
+              <label for="visitTime">{{ 'VISIT.TIME' | translate }} *</label>
+              <input id="visitTime" type="time" formControlName="visitTime" />
+              <p class="field-error" *ngIf="visitForm.controls.visitTime.invalid && visitForm.controls.visitTime.touched">
+                {{ 'VISIT.TIME_REQUIRED' | translate }}
+              </p>
             </div>
             <div class="form-group">
               <label for="visitorName">{{ 'VISIT.NAME' | translate }} *</label>
               <input id="visitorName" type="text" formControlName="visitorName" [placeholder]="'VISIT.NAME' | translate" />
+              <p class="field-error" *ngIf="visitForm.controls.visitorName.invalid && visitForm.controls.visitorName.touched">
+                {{ 'VISIT.NAME_REQUIRED' | translate }}
+              </p>
             </div>
             <div class="form-group">
               <label for="visitorPhone">{{ 'VISIT.PHONE' | translate }} *</label>
               <input id="visitorPhone" type="tel" formControlName="visitorPhone" placeholder="+963..." dir="ltr" />
+              <p class="field-error" *ngIf="visitForm.controls.visitorPhone.invalid && visitForm.controls.visitorPhone.touched">
+                {{ 'VISIT.PHONE_INVALID' | translate }}
+              </p>
             </div>
             <div class="form-group">
               <label for="visitorNote">{{ 'VISIT.NOTE' | translate }}</label>
@@ -289,7 +342,7 @@
             </div>
           </div>
           <div class="form-actions">
-            <button type="submit" class="btn btn--primary" [disabled]="visitForm.invalid || savingVisit()">
+            <button type="submit" class="btn btn--primary" [disabled]="savingVisit()">
               <span *ngIf="savingVisit()" class="spinner-ring"></span>
               {{ savingVisit() ? ('COMMON.SAVING' | translate) : ('VISIT.SUBMIT' | translate) }}
             </button>
@@ -297,6 +350,9 @@
               {{ 'COMMON.CANCEL' | translate }}
             </button>
           </div>
+          <!-- ✅ إصلاح: كان الزر يُعطَّل بصمت (visitForm.invalid) بلا أي تفسير —
+               الآن الزر يبقى مفعَّلاً دائمًا (submitVisit() تتحقق وتعرض الأخطاء
+               بوضوح)، فلا يبدو الأمر وكأن "لا شيء يحدث" عند الضغط. -->
         </form>
       </div>
 
@@ -494,11 +550,11 @@
       <img [src]="currentImageUrl()" [alt]="currentImageAlt()" class="lightbox__img" />
     </div>
     <button *ngIf="currentIndex() > 0" class="lightbox__nav lightbox__nav--prev" type="button"
-      (click)="isRTL() ? next() : prev()" [attr.aria-label]="'COMMON.PREVIOUS' | translate">
+      (click)="isRTL() ? next() : prev(); $event.stopPropagation()" [attr.aria-label]="'COMMON.PREVIOUS' | translate">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
     </button>
     <button *ngIf="currentIndex() < images().length - 1" class="lightbox__nav lightbox__nav--next" type="button"
-      (click)="isRTL() ? prev() : next()" [attr.aria-label]="'COMMON.NEXT' | translate">
+      (click)="isRTL() ? prev() : next(); $event.stopPropagation()" [attr.aria-label]="'COMMON.NEXT' | translate">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
     </button>
     <p class="lightbox__counter">{{ currentIndex() + 1 }} / {{ images().length }}</p>

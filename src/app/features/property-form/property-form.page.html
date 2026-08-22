@@ -114,32 +114,93 @@
               </div>
 
               <div class="form-group">
-                <label for="city">{{ 'wohnung_add.stadt' | translate }} <span class="required">*</span></label>
-                <!-- ✅ إضافة: اقتراحات مدن حقيقية من GET /api/lookups/cities بدل الاكتفاء
-                     بحقل نصي حر بدون أي اقتراح (الحقل يبقى نصياً حراً؛ الاقتراح لا يقيّد الإدخال). -->
-                <input id="city" type="text" formControlName="city" list="citySuggestions"
-                  [placeholder]="'wohnung_add.city_placeholder' | translate" />
-                <datalist id="citySuggestions">
-                  <option *ngFor="let city of citySuggestions()" [value]="city.name"></option>
-                </datalist>
-                <p class="field-error" *ngIf="hasError(f.city)">{{ 'wohnung_add.validation_city' | translate }}</p>
-              </div>
-
-              <div class="form-group">
-                <label for="region">{{ 'PROPERTY_FORM.REGION' | translate }}</label>
-                <input id="region" type="text" formControlName="region"
-                  [placeholder]="'PROPERTY_FORM.REGION_PLACEHOLDER' | translate" />
+                <label for="countryCode">{{ 'PROPERTY_FORM.COUNTRY' | translate }}</label>
+                <!-- ✅ تبسيط بناءً على طلب المستخدم: التطبيق يخدم سوريا فقط حالياً،
+                     فتم تثبيت الحقل بدل قائمة اختيار من عدة دول (أو حقل نصي حر
+                     سابقاً) — القيمة محصورة دائماً بـ "SY" عبر الفورم (انظر
+                     countryCode بالـ .ts). يسهل إعادته لقائمة اختيار لاحقاً إذا
+                     دعم التطبيق دولاً إضافية. -->
+                <input id="countryCode" type="text" [value]="currentLang() === 'ar' ? 'سوريا' : 'Syria'" disabled />
               </div>
 
               <div class="form-group">
                 <label for="postalCode">{{ 'wohnung_add.plz' | translate }}</label>
                 <input id="postalCode" type="text" formControlName="postalCode" maxlength="20" />
               </div>
+            </div>
+
+            <!--
+              ✅ تحديث: استُبدلت حقول المدينة/المنطقة النصية الحرة بقوائم اختيار
+              إجبارية (محافظة/منطقة) — كانت تُعرض سابقاً جنباً إلى جنب مع هذه
+              القوائم كحقول إضافية اختيارية، وهذا كان مربكاً (نص حر عشوائي +
+              قوائم فارغة لأن بيانات المحافظات لم تكن مُعبّأة بالباك اند بعد).
+              الآن City/Region يُشتقان تلقائياً من الاختيار (انظر
+              bindCascadingLocationChanges بالـ .ts) ولم يعودا مرئيين هنا.
+            -->
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="governorateId">{{ 'PROPERTY_FORM.GOVERNORATE' | translate }} <span class="required">*</span></label>
+                <select id="governorateId" formControlName="governorateId">
+                  <option [ngValue]="null">{{ 'PROPERTY_FORM.SELECT_PLACEHOLDER' | translate }}</option>
+                  <option *ngFor="let g of governorates()" [ngValue]="g.id">{{ localizedName(g) }}</option>
+                </select>
+                <p class="field-error" *ngIf="hasError(f.governorateId)">{{ 'PROPERTY_FORM.GOVERNORATE_REQUIRED' | translate }}</p>
+                <p class="field-error" *ngIf="structuredLocationLoadFailed() && !governorates().length">
+                  {{ 'PROPERTY_FORM.STRUCTURED_LOCATION_LOAD_ERROR' | translate }}
+                </p>
+              </div>
 
               <div class="form-group">
-                <label for="countryCode">{{ 'PROPERTY_FORM.COUNTRY' | translate }}</label>
-                <input id="countryCode" type="text" formControlName="countryCode" maxlength="2"
-                  placeholder="SY" style="text-transform:uppercase" />
+                <label for="districtId">{{ 'PROPERTY_FORM.DISTRICT' | translate }} <span class="required">*</span></label>
+                <!-- ✅ حقل بحث موحّد (اكتب واختر من الاقتراحات، أو أضف اسمًا
+                     جديدًا غير موجود بالقائمة) بدل select + حقل يدوي منفصلين.
+                     يستخدم districtId/districtText نفسهما — نفس آلية
+                     LocationSuggestion الموجودة أصلًا بالباك اند لم تتغيّر. -->
+                <app-location-combo
+                  id="districtId"
+                  [options]="districts()"
+                  [idControl]="f.districtId"
+                  [textControl]="f.districtText"
+                  [lang]="currentLang()"
+                  [disabled]="!f.governorateId.value"
+                  placeholderKey="PROPERTY_FORM.DISTRICT_MANUAL_PLACEHOLDER"
+                ></app-location-combo>
+                <p class="field-error" *ngIf="form.errors?.['districtRequired'] && (f.districtId.touched || f.districtText.touched)">
+                  {{ 'PROPERTY_FORM.DISTRICT_REQUIRED' | translate }}
+                </p>
+              </div>
+
+              <div class="form-group">
+                <label for="neighborhoodId">{{ 'PROPERTY_FORM.NEIGHBORHOOD' | translate }}</label>
+                <!-- ✅ الحي يبقى مفعّلاً حتى لو المنطقة نفسها لسا اقتراح
+                     (districtText بدون districtId حقيقي بعد) — بدل تعطيله
+                     بالكامل وإجبار المستخدم ينتظر اعتماد المنطقة أولاً قبل
+                     ما يقدر حتى يكتب اسم الحي. الشرط الوحيد: يكون فيه شيء
+                     مُدخَل للمنطقة أصلاً (محدّدة من القائمة أو مكتوبة). -->
+                <app-location-combo
+                  id="neighborhoodId"
+                  [options]="neighborhoods()"
+                  [idControl]="f.neighborhoodId"
+                  [textControl]="f.neighborhoodText"
+                  [lang]="currentLang()"
+                  [disabled]="!f.districtId.value && !f.districtText.value"
+                  placeholderKey="PROPERTY_FORM.NEIGHBORHOOD_MANUAL_PLACEHOLDER"
+                ></app-location-combo>
+                <p class="field-hint" *ngIf="f.districtId.value && !neighborhoods().length">
+                  {{ 'PROPERTY_FORM.NEIGHBORHOOD_HINT' | translate }}
+                </p>
+                <p class="field-hint" *ngIf="!f.districtId.value && f.districtText.value">
+                  {{ 'PROPERTY_FORM.NEIGHBORHOOD_PENDING_DISTRICT_HINT' | translate }}
+                </p>
+              </div>
+
+              <div class="form-group">
+                <label for="propertyTypeId">{{ 'PROPERTY_FORM.PROPERTY_TYPE' | translate }} <span class="required">*</span></label>
+                <select id="propertyTypeId" formControlName="propertyTypeId">
+                  <option [ngValue]="null">{{ 'PROPERTY_FORM.SELECT_PLACEHOLDER' | translate }}</option>
+                  <option *ngFor="let pt of propertyTypeCatalog()" [ngValue]="pt.id">{{ localizedName(pt) }}</option>
+                </select>
+                <p class="field-error" *ngIf="hasError(f.propertyTypeId)">{{ 'PROPERTY_FORM.PROPERTY_TYPE_REQUIRED' | translate }}</p>
               </div>
             </div>
 
@@ -336,8 +397,8 @@
             <div class="existing-images" *ngIf="isEditMode() && existingImages().length > 0">
               <p class="existing-images__label">{{ 'PROPERTY_FORM.CURRENT_IMAGES' | translate }}</p>
               <div class="image-previews">
-                <div *ngFor="let img of existingImages()" class="image-preview" [class.image-preview--main]="img.isMain">
-                  <img [src]="img.url" alt="" appImageFallback="/images/no-image.svg" />
+                <div *ngFor="let img of existingImages(); let i = index" class="image-preview" [class.image-preview--main]="img.isMain">
+                  <img [src]="img.url" [alt]="'صورة ' + (i+1)" appImageFallback="/images/no-image.svg" />
                   <span class="main-badge" *ngIf="img.isMain">{{ 'PROPERTY_FORM.COVER_IMAGE' | translate }}</span>
                   <div class="image-preview__actions">
                     <button
@@ -377,15 +438,46 @@
         <a routerLink="/my-listings" class="btn btn--outline">
           {{ 'COMMON.CANCEL' | translate }}
         </a>
-        <button type="submit" class="btn btn--primary" [disabled]="isSaving() || form.invalid">
-          <span *ngIf="isSaving()" class="spinner-ring"></span>
-          {{ isSaving()
-              ? ('COMMON.SAVING' | translate)
-              : (isEditMode() ? ('COMMON.SAVE_CHANGES' | translate) : ('wohnung_add.submit' | translate)) }}
+        <button type="submit" class="btn btn--primary" [disabled]="isSaving() || checkingDuplicate() || form.invalid">
+          <span *ngIf="isSaving() || checkingDuplicate()" class="spinner-ring"></span>
+          {{ checkingDuplicate()
+              ? ('PROPERTY_FORM.CHECKING_DUPLICATE' | translate)
+              : isSaving()
+                ? ('COMMON.SAVING' | translate)
+                : (isEditMode() ? ('COMMON.SAVE_CHANGES' | translate) : ('wohnung_add.submit' | translate)) }}
         </button>
       </div>
 
     </form>
+
+    <!-- Phase-0, Task 4 — advisory (never blocking) duplicate-listing warning.
+         Shown only in create mode, after check-duplicate finds candidates, and
+         only once per submit attempt until the user explicitly proceeds. -->
+    <div class="modal-overlay" *ngIf="showDuplicateWarning()" (click)="dismissDuplicateWarning()">
+      <div class="modal-dialog" role="alertdialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <h2>{{ 'PROPERTY_FORM.DUPLICATE_TITLE' | translate }}</h2>
+        <p>{{ 'PROPERTY_FORM.DUPLICATE_DESC' | translate }}</p>
+
+        <ul class="duplicate-candidate-list">
+          <li *ngFor="let candidate of duplicateCandidates()">
+            <strong>{{ candidate.title }}</strong>
+            <span class="duplicate-candidate-reason">{{ candidate.matchReason }}</span>
+            <span class="duplicate-candidate-owner" *ngIf="candidate.isSameOwner">
+              {{ 'PROPERTY_FORM.DUPLICATE_SAME_OWNER' | translate }}
+            </span>
+          </li>
+        </ul>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn--outline" (click)="dismissDuplicateWarning()">
+            {{ 'PROPERTY_FORM.DUPLICATE_REVIEW' | translate }}
+          </button>
+          <button type="button" class="btn btn--primary" (click)="confirmSubmitDespiteDuplicate()">
+            {{ 'PROPERTY_FORM.DUPLICATE_PROCEED' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 

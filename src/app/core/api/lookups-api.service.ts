@@ -28,6 +28,40 @@ export interface LookupItem {
   name: string;
 }
 
+/**
+ * Phase-0, Task 0 follow-up: the real, DB-backed structured-location catalog
+ * (Governorate/District/Neighborhood). Distinct from LookupItem above — these
+ * carry numeric ids (matching Property.GovernorateId/DistrictId/NeighborhoodId,
+ * which are `int?` on the backend) and bilingual names, since the backend has
+ * no German name column — see language.service.ts's LangCode ('en'|'ar'|'de');
+ * `de` falls back to `nameEn` (see pickLocalizedName below).
+ */
+export interface StructuredLocationLookup {
+  id: number;
+  nameAr: string;
+  nameEn: string;
+  parentId?: number | null;
+}
+
+/** Phase-0, Task 0 follow-up: the real PropertyType table (id matches Property.PropertyTypeId). */
+export interface PropertyTypeLookup {
+  id: number;
+  code: string;
+  nameAr: string;
+  nameEn: string;
+  category: string;
+  icon?: string | null;
+}
+
+/**
+ * Picks the display name matching the current UI language for a bilingual
+ * lookup item. No German column exists on the backend for these tables, so
+ * 'de' (like any unrecognized code) falls back to English.
+ */
+export function pickLocalizedName(item: { nameAr: string; nameEn: string }, lang: string): string {
+  return lang === 'ar' ? (item.nameAr || item.nameEn) : (item.nameEn || item.nameAr);
+}
+
 @Injectable({ providedIn: 'root' })
 export class LookupsApiService {
   private readonly endpoint = '/lookups';
@@ -60,6 +94,37 @@ export class LookupsApiService {
     return this.api
       .get<unknown[]>(`${this.endpoint}/cities`)
       .pipe(map(response => this.toLookupItems(response)));
+  }
+
+  /** GET /api/lookups/governorates?countryCode= — يفتَرض "SY" افتراضيًا إذا لم يُمرَّر. */
+  getGovernorates(countryCode = 'SY'): Observable<StructuredLocationLookup[]> {
+    return this.api
+      .get<unknown[]>(`${this.endpoint}/governorates`, { countryCode })
+      .pipe(map(response => this.toStructuredLocations(response)));
+  }
+
+  /** GET /api/lookups/districts?governorateId= — governorateId إلزامي. */
+  getDistricts(governorateId: number): Observable<StructuredLocationLookup[]> {
+    return this.api
+      .get<unknown[]>(`${this.endpoint}/districts`, { governorateId })
+      .pipe(map(response => this.toStructuredLocations(response)));
+  }
+
+  /** GET /api/lookups/neighborhoods?districtId= — districtId إلزامي. */
+  getNeighborhoods(districtId: number): Observable<StructuredLocationLookup[]> {
+    return this.api
+      .get<unknown[]>(`${this.endpoint}/neighborhoods`, { districtId })
+      .pipe(map(response => this.toStructuredLocations(response)));
+  }
+
+  /**
+   * GET /api/lookups/property-type-catalog — الجدول الحقيقي (PropertyType)،
+   * مختلف عن getPropertyTypes() أعلاه (كتالوج ثابت غير مرتبط بأي حقل فعلي).
+   */
+  getPropertyTypeCatalog(): Observable<PropertyTypeLookup[]> {
+    return this.api
+      .get<unknown[]>(`${this.endpoint}/property-type-catalog`)
+      .pipe(map(response => this.toPropertyTypes(response)));
   }
 
   /**
@@ -97,5 +162,35 @@ export class LookupsApiService {
         name: String(item['name'] ?? '')
       }))
       .filter(item => !!item.id);
+  }
+
+  private toStructuredLocations(response: unknown): StructuredLocationLookup[] {
+    const list = Array.isArray(response) ? response : [];
+
+    return list
+      .map(item => apiToCamelCase<Record<string, unknown>>(item))
+      .map(item => ({
+        id: Number(item['id']),
+        nameAr: String(item['nameAr'] ?? ''),
+        nameEn: String(item['nameEn'] ?? ''),
+        parentId: item['parentId'] === undefined || item['parentId'] === null ? null : Number(item['parentId'])
+      }))
+      .filter(item => Number.isFinite(item.id));
+  }
+
+  private toPropertyTypes(response: unknown): PropertyTypeLookup[] {
+    const list = Array.isArray(response) ? response : [];
+
+    return list
+      .map(item => apiToCamelCase<Record<string, unknown>>(item))
+      .map(item => ({
+        id: Number(item['id']),
+        code: String(item['code'] ?? ''),
+        nameAr: String(item['nameAr'] ?? ''),
+        nameEn: String(item['nameEn'] ?? ''),
+        category: String(item['category'] ?? ''),
+        icon: item['icon'] === undefined || item['icon'] === null ? null : String(item['icon'])
+      }))
+      .filter(item => Number.isFinite(item.id));
   }
 }

@@ -95,6 +95,17 @@
         {{ message }}
       </div>
 
+      <!-- عدّاد المحاولات المتبقية قبل قفل الحساب — يرسله الخادم مع رد 401 -->
+      <div
+        *ngIf="loginAttemptWarning && !isLockedOut"
+        class="auth-alert auth-alert--warning"
+        role="status"
+        aria-live="polite"
+      >
+        <span aria-hidden="true">⏳</span>
+        {{ loginAttemptWarning }}
+      </div>
+
       <!-- ============ Auth Mode Tabs (Email / Phone) — تعمل مع الدخول والتسجيل معاً ============ -->
       <div class="auth-tabs" role="tablist">
         <button
@@ -193,7 +204,11 @@
           </div>
         </div>
 
-        <button type="submit" class="auth-submit" [disabled]="loginForm.invalid || loading">
+        <button
+          type="submit"
+          class="auth-submit"
+          [disabled]="loginForm.invalid || loading || isLockedOut"
+        >
           <span *ngIf="loading">⏳ {{ 'AUTH.LOADING' | translate }}</span>
           <span *ngIf="!loading">{{ 'AUTH.LOGIN_BUTTON' | translate }}</span>
         </button>
@@ -402,6 +417,8 @@
                 minlength="8"
                 autocomplete="new-password"
                 placeholder="••••••••"
+                (focus)="onPhonePasswordFocus()"
+                (blur)="onPhonePasswordBlur()"
               />
               <button
                 type="button"
@@ -412,6 +429,12 @@
                 {{ showPhoneRegPass ? '🙈' : '👁️' }}
               </button>
             </div>
+
+            <!-- ✨ جديد: عرض تعليمات قوة كلمة المرور -->
+            <app-password-strength-indicator
+              *ngIf="showPasswordStrengthPhone"
+              [password]="phonePassword"
+            ></app-password-strength-indicator>
 
             <div
               class="field-error"
@@ -565,6 +588,8 @@
               minlength="8"
               autocomplete="new-password"
               placeholder="••••••••"
+              (focus)="onRegisterPasswordFocus()"
+              (blur)="onRegisterPasswordBlur()"
             />
             <button
               type="button"
@@ -575,6 +600,12 @@
               {{ showPassReg ? '🙈' : '👁️' }}
             </button>
           </div>
+
+          <!-- ✨ جديد: عرض تعليمات قوة كلمة المرور -->
+          <app-password-strength-indicator
+            *ngIf="showPasswordStrengthReg"
+            [password]="registerData.Password"
+          ></app-password-strength-indicator>
 
           <div
             class="field-error"

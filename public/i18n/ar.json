@@ -16,7 +16,11 @@
     "PAGE": "الصفحة",
     "PREVIOUS": "السابق",
     "area_unit": "م²",
-    "REFRESH": "تحديث"
+    "REFRESH": "تحديث",
+    "SAVE_CHANGES": "حفظ التغييرات",
+    "CLICK_TO_ZOOM": "انقر للتكبير",
+    "MONTH": "شهر",
+    "CLEAR": "مسح"
   },
   "NAVBAR": {
     "HOME": "الرئيسية",
@@ -29,7 +33,11 @@
     "SELECT_LANGUAGE": "اختيار اللغة",
     "VISITS": "الزيارات",
     "REVIEWS": "التقييمات",
-    "ANALYTICS": "التحليلات"
+    "ANALYTICS": "التحليلات",
+    "SAVED_SEARCHES": "عمليات البحث المحفوظة",
+    "DARK_MODE": "الوضع الغامق",
+    "LIGHT_MODE": "الوضع الفاتح",
+    "NOTIFICATIONS": "الإشعارات"
   },
   "AUTH": {
     "LOGIN_TITLE": "أهلاً بك",
@@ -157,7 +165,13 @@
       "PASSWORD_RESET_INVALID": "انتهت صلاحية طلب استعادة كلمة السر، يرجى البدء من جديد.",
       "PASSWORDS_MISMATCH": "كلمتا السر غير متطابقتين.",
       "STATUS_FAILED": "تعذّر تحميل حالة التحقق من الهاتف.",
-      "PASSWORD_RESET_FAILED": "تعذّرت إعادة تعيين كلمة السر."
+      "PASSWORD_RESET_FAILED": "تعذّرت إعادة تعيين كلمة السر.",
+      "OTP_REQUIRED": "رمز التحقق مطلوب.",
+      "ACCOUNT_LOCKED": "محاولات فاشلة كثيرة. حسابك مقفل لمدة {{minutes}} دقيقة أخرى.",
+      "LAST_ATTEMPT_BEFORE_LOCKOUT": "تحذير: محاولة فاشلة واحدة إضافية ستقفل حسابك.",
+      "ATTEMPTS_REMAINING": "تبقّت {{count}} محاولات قبل قفل حسابك.",
+      "RATE_LIMITED": "محاولات دخول كثيرة. انتظر قليلاً ثم أعد المحاولة.",
+      "ACCOUNT_DISABLED": "تم تعطيل هذا الحساب. يُرجى التواصل مع الدعم."
     },
     "FIRST_NAME_PLACEHOLDER": "أدخل الاسم الأول",
     "LAST_NAME_PLACEHOLDER": "أدخل الكنية",
@@ -268,7 +282,22 @@
     "be_first": "أضف أول عقار",
     "cta_title": "لديك عقار للبيع أو الإيجار؟",
     "cta_desc": "أنشئ إعلانك واعرض عقارك أمام الباحثين عن منزلهم القادم.",
-    "cta_button": "أضف عقارك الآن"
+    "cta_button": "أضف عقارك الآن",
+    "search": {
+      "location": "الموقع",
+      "location_any": "كل المواقع",
+      "type": "نوع العقار",
+      "type_any": "كل الأنواع",
+      "max_price": "السعر الأقصى",
+      "price_any": "أي سعر",
+      "price_500": "حتى 500",
+      "price_1000": "حتى 1,000",
+      "price_2500": "حتى 2,500",
+      "price_5000": "حتى 5,000",
+      "listing_type": "إيجار / بيع",
+      "listing_type_any": "الكل",
+      "submit": "بحث"
+    }
   },
   "KONTAKT": {
     "title": "تواصل معنا",
@@ -293,7 +322,8 @@
     "error_validation": "يرجى تعبئة الحقول المطلوبة بشكل صحيح.",
     "name_placeholder": "أدخل الاسم الكامل",
     "subject_placeholder": "أدخل موضوع الرسالة",
-    "message_placeholder": "اكتب رسالتك بوضوح"
+    "message_placeholder": "اكتب رسالتك بوضوح",
+    "response_note": "سنرد عليك عادةً خلال 24 ساعة عمل."
   },
   "ADMIN_MSG": {
     "title": "رسائل التواصل",
@@ -359,7 +389,16 @@
     "SORT_PRICE_ASC": "السعر: من الأقل للأعلى",
     "SORT_PRICE_DESC": "السعر: من الأعلى للأقل",
     "APPLY_FILTERS": "تطبيق الفلاتر",
-    "RESET": "إعادة تعيين"
+    "RESET": "إعادة تعيين",
+    "GOVERNORATE": "المحافظة",
+    "DISTRICT": "المنطقة",
+    "NEIGHBORHOOD": "الحي",
+    "PROPERTY_TYPE": "نوع العقار",
+    "SELECT_OPTIONAL": "— اختر (اختياري) —",
+    "SAVE_SEARCH": "احفظ هذا البحث",
+    "SAVE_SEARCH_NAME_PROMPT": "أعطِ هذا البحث اسماً (اختياري):",
+    "SAVE_SEARCH_SUCCESS": "تم حفظ البحث. سنُعلمك عند ظهور عقار مطابق جديد.",
+    "SAVE_SEARCH_ERROR": "تعذر حفظ البحث. تأكد من تسجيل الدخول."
   },
   "PROPERTY_DETAIL": {
     "NOT_FOUND_TITLE": "العقار غير موجود",
@@ -378,7 +417,15 @@
     "AVAILABLE_FROM": "متاح من",
     "CONDITION": "الحالة",
     "NO_FEATURES": "لا توجد مميزات إضافية.",
-    "OWNER": "معلومات المالك"
+    "OWNER": "معلومات المالك",
+    "REGION": "المنطقة",
+    "AMENITIES": "المرافق",
+    "LOCATION_MAP": "الموقع على الخريطة",
+    "NO_MAP": "لم يتم تحديد موقع هذا العقار على الخريطة.",
+    "STALE_BANNER": "لم يؤكد المالك توفر هذا العقار منذ {{days}} يوماً. قد يكون غير متاح بعد الآن.",
+    "CONFIRM_AVAILABILITY": "ما زال متاحاً؟",
+    "CONFIRM_AVAILABILITY_SUCCESS": "تم تأكيد أن الإعلان لا يزال متاحاً.",
+    "CONFIRM_AVAILABILITY_ERROR": "تعذر تأكيد التوفر. حاول مجدداً."
   },
   "PROPERTY": {
     "MODE_RENT": "للإيجار",
@@ -424,7 +471,42 @@
     "AMENITIES": "المرافق",
     "AMENITIES_LOAD_ERROR": "تعذر تحميل قائمة المرافق من الخادم.",
     "AMENITIES_EMPTY": "لا توجد مرافق متاحة حالياً.",
-    "NOT_AUTHORIZED": "لا تملك صلاحية الوصول لهذا العقار."
+    "NOT_AUTHORIZED": "لا تملك صلاحية الوصول لهذا العقار.",
+    "ADDITIONAL_COSTS": "التكاليف الإضافية",
+    "ADDITIONAL_COSTS_INVALID": "يجب أن تكون التكاليف الإضافية رقماً موجباً.",
+    "AREA_TOO_SMALL": "المساحة يجب أن تكون أكبر من 10 م².",
+    "DEPOSIT": "التأمين",
+    "DEPOSIT_INVALID": "يجب أن يكون التأمين رقماً موجباً.",
+    "HEATING": "التدفئة",
+    "INVALID_COUNTRY_CODE": "رمز الدولة غير صالح.",
+    "INVALID_CURRENCY_CODE": "رمز العملة غير صالح.",
+    "REGION_PLACEHOLDER": "مثال: دمشق - المزة",
+    "VALIDATION_ERROR": "يرجى مراجعة الحقول المطلوبة.",
+    "WARM_RENT_BELOW_COLD_RENT": "الإيجار الشامل يجب ألا يكون أقل من الإيجار الأساسي.",
+    "WARM_RENT_REQUIRED": "الإيجار الشامل يجب أن يكون رقماً موجباً.",
+    "GOVERNORATE": "المحافظة",
+    "DISTRICT": "المنطقة",
+    "NEIGHBORHOOD": "الحي",
+    "PROPERTY_TYPE": "نوع العقار",
+    "SELECT_OPTIONAL": "— اختر (اختياري) —",
+    "NEIGHBORHOOD_HINT": "لا توجد قائمة أحياء جاهزة لهذه المنطقة بعد — يمكنك كتابة اسم الحي يدويًا بالحقل أعلاه.",
+    "CHECKING_DUPLICATE": "جارٍ التحقق من التكرار...",
+    "DUPLICATE_TITLE": "قد يكون هذا الإعلان مكرراً",
+    "DUPLICATE_DESC": "وجدنا إعلانات مشابهة بنفس الحي والسعر والمساحة تقريباً. يمكنك المتابعة إذا كان إعلانك مختلفاً فعلاً.",
+    "DUPLICATE_SAME_OWNER": "من إعلاناتك الأخرى",
+    "DUPLICATE_REVIEW": "رجوع للمراجعة",
+    "DUPLICATE_PROCEED": "متابعة النشر على أي حال",
+    "SELECT_PLACEHOLDER": "— اختر —",
+    "GOVERNORATE_REQUIRED": "يرجى اختيار المحافظة.",
+    "DISTRICT_REQUIRED": "يرجى اختيار المنطقة.",
+    "PROPERTY_TYPE_REQUIRED": "يرجى اختيار نوع العقار.",
+    "NEIGHBORHOOD_MANUAL_PLACEHOLDER": "أو اكتب اسم الحي يدويًا",
+    "STRUCTURED_LOCATION_LOAD_ERROR": "تعذّر تحميل قائمة المحافظات، حاول تحديث الصفحة.",
+    "DISTRICT_MANUAL_PLACEHOLDER": "أو اكتب اسم المنطقة يدويًا",
+    "LOCATION_NO_MATCH": "لا يوجد \"{{value}}\" ضمن القائمة الحالية.",
+    "LOCATION_ADD_NEW": "أضف \"{{value}}\"",
+    "LOCATION_ADD_CONFIRMED": "سيُرسل \"{{value}}\" كاقتراح جديد عند حفظ العقار، وسيراجعه المسؤول قبل اعتماده.",
+    "NEIGHBORHOOD_PENDING_DISTRICT_HINT": "منطقتك لسا بانتظار مراجعة المسؤول. الحي اللي تكتبه هون رح يُربط تلقائيًا بها بعد اعتمادها."
   },
   "wohnung_add": {
     "title": "إضافة عقار",
@@ -470,7 +552,35 @@
     "validation_location": "خط العرض والطول يجب إدخالهما معاً.",
     "select_location": "تحديد الموقع",
     "map_instruction": "حدد موقع العقار على الخريطة",
-    "validation_rent_sale": "في حال العرض للبيع والإيجار معًا، يجب تحديد الإيجار وسعر البيع."
+    "validation_rent_sale": "في حال العرض للبيع والإيجار معًا، يجب تحديد الإيجار وسعر البيع.",
+    "basic_info": "المعلومات الأساسية",
+    "basic_info_desc": "عنوان ووصف العقار",
+    "city_placeholder": "اختر أو اكتب اسم المدينة",
+    "desc_placeholder": "صف العقار بالتفصيل (المساحة، الموقع، المميزات...)",
+    "details": "تفاصيل العقار",
+    "details_desc": "الغرف والمساحة والتجهيزات",
+    "etage": "الطابق",
+    "features": "المميزات",
+    "images": "صور العقار",
+    "images_desc": "أضف صوراً واضحة لجذب المهتمين",
+    "listing_type_desc": "حدد ما إذا كان العقار للبيع أم للإيجار",
+    "location": "الموقع",
+    "location_desc": "عنوان العقار وموقعه على الخريطة",
+    "location_selected": "تم تحديد الموقع",
+    "map_hint": "انقر على الخريطة لتحديد موقع العقار بدقة",
+    "parkplatz": "موقف سيارة",
+    "pricing": "السعر",
+    "pricing_desc": "حدد السعر المناسب حسب نوع الإعلان",
+    "rent_hint": "دخل شهري ثابت",
+    "sale_hint": "بيع لمرة واحدة",
+    "street_placeholder": "اسم الشارع ورقم المبنى",
+    "submit": "نشر العقار",
+    "subtitle": "أدخل تفاصيل عقارك خطوة بخطوة",
+    "title_placeholder": "مثال: شقة 3 غرف مطلة على الحديقة",
+    "upload_click": "انقر لرفع الصور",
+    "upload_hint": "PNG، JPG أو WebP — حتى 5 ميغابايت لكل صورة",
+    "uploading": "جارٍ رفع الصور...",
+    "verfuegbar_ab": "متاح من"
   },
   "MY_LISTINGS": {
     "TITLE": "إعلاناتي",
@@ -518,7 +628,8 @@
     "DISMISS": "تجاهل الإشعار",
     "MARKING_ALL": "جارٍ التحديث...",
     "MARK_ALL_ERROR": "تعذر تعليم كل الإشعارات كمقروءة.",
-    "DISMISS_ERROR": "تعذر تجاهل الإشعار."
+    "DISMISS_ERROR": "تعذر تجاهل الإشعار.",
+    "NEW_TOAST_TITLE": "إشعار جديد"
   },
   "MESSAGES": {
     "TITLE": "الرسائل",
@@ -536,7 +647,8 @@
     "UNKNOWN_USER": "مستخدم",
     "SELECT_CONVERSATION_FIRST": "اختر محادثة أولاً قبل الرد.",
     "ERROR_EMPTY": "لا يمكن إرسال رسالة فارغة.",
-    "ERROR_TOO_LONG": "الرسالة طويلة جداً (الحد الأقصى 3000 حرف)."
+    "ERROR_TOO_LONG": "الرسالة طويلة جداً (الحد الأقصى 3000 حرف).",
+    "SENDING_AS": "سيتم إرسال هذه الرسالة باسم حسابك: {{name}}"
   },
   "ADMIN_USERS": {
     "TITLE": "إدارة المستخدمين",
@@ -626,11 +738,19 @@
       "DELETE_SUCCESS": "تم حذف الحساب.",
       "DELETE_ERROR": "تعذر حذف الحساب.",
       "PASS_LENGTH": "يجب أن تتكون كلمة المرور الجديدة من 6 أحرف على الأقل."
+    },
+    "ABOUT": {
+      "BIO_LABEL": "نبذة عني",
+      "BIO_PLACEHOLDER": "اكتب نبذة عن نفسك وعملك (مثلاً: مجال عملك، خبرتك، نوع العقارات التي تتعامل بها)...",
+      "BIO_HINT": "تظهر هذه النبذة في صفحتك الشخصية العامة لأي زائر.",
+      "CONTACT_INFO_LABEL": "العنوان ومعلومات التواصل",
+      "CONTACT_INFO_PLACEHOLDER": "مثلاً: العنوان، رقم هاتف إضافي، بريد إلكتروني للعمل...",
+      "CONTACT_INFO_HINT": "تظهر هذه المعلومات أيضاً في صفحتك الشخصية العامة — اكتب فقط ما ترغب بمشاركته علناً."
     }
   },
   "VISIT": {
     "REQUEST": "طلب زيارة",
-    "DATE": "التاريخ والوقت",
+    "DATE": "التاريخ",
     "NAME": "الاسم",
     "PHONE": "رقم الهاتف",
     "NOTE": "ملاحظات",
@@ -641,7 +761,13 @@
     "TOO_FAR": "لا يمكن الحجز لأكثر من 90 يوماً مقدماً.",
     "NAME_REQUIRED": "الاسم مطلوب.",
     "PHONE_REQUIRED": "رقم الهاتف مطلوب.",
-    "INVALID_DATE": "التاريخ غير صالح."
+    "INVALID_DATE": "التاريخ غير صالح.",
+    "NOTE_PLACEHOLDER": "أضف أي ملاحظات تخص الزيارة (اختياري)",
+    "TIME": "الوقت",
+    "DATE_REQUIRED": "التاريخ مطلوب.",
+    "TIME_REQUIRED": "الوقت مطلوب.",
+    "PHONE_INVALID": "رقم الهاتف غير صالح — يجب أن يبدأ بـ + متبوعاً برمز الدولة (مثال: +963...).",
+    "FORM_INVALID": "الرجاء تعبئة كل الحقول المطلوبة (المميّزة بعلامة *) قبل الإرسال."
   },
   "REVIEW": {
     "ADD": "إضافة تقييم",
@@ -655,7 +781,10 @@
     "REVIEWS": "تقييمات",
     "ANONYMOUS": "مستخدم مجهول",
     "PROPERTY_REQUIRED": "معرّف العقار مطلوب.",
-    "RATING_RANGE": "التقييم يجب أن يكون بين 1 و5."
+    "RATING_RANGE": "التقييم يجب أن يكون بين 1 و5.",
+    "COMMENT_PLACEHOLDER": "شاركنا رأيك حول هذا العقار...",
+    "EMPTY_TITLE": "لا توجد تقييمات بعد",
+    "EMPTY_MESSAGE": "كن أول من يقيّم هذا العقار."
   },
   "VALIDATION": {
     "REQUIRED": "هذا الحقل مطلوب.",
@@ -782,5 +911,93 @@
     "RATING": "متوسط التقييم",
     "LOAD_ERROR": "تعذر تحميل تحليلات السوق.",
     "PROPERTY_ERROR": "تعذر تحميل إحصاءات العقار."
+  },
+  "HEATING": {
+    "CENTRAL": "تدفئة مركزية",
+    "FLOOR": "تدفئة أرضية",
+    "GAS": "تدفئة غاز",
+    "ELECTRIC": "تدفئة كهربائية",
+    "OIL": "تدفئة نفطية",
+    "OTHER": "أخرى"
+  },
+  "SAVED_SEARCHES": {
+    "TITLE": "عمليات البحث المحفوظة",
+    "SUBTITLE": "احفظ معايير بحثك وسنُعلمك عند ظهور عقار جديد يطابقها.",
+    "NEW_SEARCH": "بحث جديد",
+    "EMPTY_TITLE": "لا توجد عمليات بحث محفوظة بعد",
+    "EMPTY_MESSAGE": "من صفحة العقارات، اضبط الفلاتر التي تريدها ثم اضغط \"احفظ هذا البحث\".",
+    "UNNAMED": "بحث بدون اسم",
+    "LAST_MATCHED": "آخر تطابق",
+    "NO_MATCHES_YET": "لم يُعثر على تطابقات بعد",
+    "RUN": "تشغيل البحث",
+    "CONFIRM_DELETE": "هل تريد حذف هذا البحث المحفوظ؟",
+    "DELETE_SUCCESS": "تم حذف البحث المحفوظ.",
+    "DELETE_ERROR": "تعذر حذف البحث المحفوظ.",
+    "LOAD_ERROR": "تعذر تحميل عمليات البحث المحفوظة."
+  },
+  "ADMIN_LOCATIONS": {
+    "TITLE": "اقتراحات المواقع",
+    "SUBTITLE": "مناطق وأحياء كتبها مستخدمون يدويًا وتنتظر مراجعتك قبل إضافتها للقوائم الرسمية.",
+    "EMPTY_TITLE": "لا توجد اقتراحات معلّقة",
+    "EMPTY_MESSAGE": "كل الاقتراحات تمت مراجعتها حاليًا.",
+    "TYPE": "النوع",
+    "TYPE_DISTRICT": "منطقة",
+    "TYPE_NEIGHBORHOOD": "حي",
+    "NAME": "الاسم المقترح",
+    "PARENT": "ضمن",
+    "SUBMITTED_BY": "أرسله",
+    "VIEW_LISTING": "عرض الإعلان",
+    "ACTIONS": "الإجراءات",
+    "APPROVE": "موافقة",
+    "REJECT": "رفض",
+    "CONFIRM_APPROVE": "هل تريد الموافقة على إضافة \"{{name}}\" كموقع رسمي؟",
+    "CONFIRM_REJECT": "هل تريد رفض اقتراح \"{{name}}\"؟",
+    "APPROVED": "تمت الموافقة وأُضيف الموقع للقائمة.",
+    "REJECTED": "تم رفض الاقتراح.",
+    "APPROVE_ERROR": "تعذّرت الموافقة على الاقتراح.",
+    "REJECT_ERROR": "تعذّر رفض الاقتراح.",
+    "LOAD_ERROR": "تعذّر تحميل الاقتراحات المعلّقة."
+  },
+  "PUBLIC_PROFILE": {
+    "LOAD_ERROR": "تعذر تحميل الملف الشخصي.",
+    "MISSING_USER_ID": "معرّف المستخدم غير موجود.",
+    "AGENT_BADGE": "وسيط موثّق",
+    "MEMBER_SINCE": "عضو منذ",
+    "NOT_RATED_YET": "لم يُقيَّم بعد",
+    "RATINGS_COUNT_SUFFIX": "تقييم",
+    "SOLD_COUNT": "شقق مباعة",
+    "RENTED_COUNT": "شقق مؤجَّرة",
+    "ACTIVE_LISTINGS_COUNT": "إعلانات نشطة",
+    "RATING_BREAKDOWN": "تفصيل التقييم",
+    "RATE_THIS_USER": "قيّم هذا المستخدم",
+    "COMMENT_LABEL": "تعليق (اختياري)",
+    "COMMENT_PLACEHOLDER": "شارك تجربتك مع هذا المستخدم...",
+    "SUBMIT_RATING": "إرسال التقييم",
+    "RATE_SUCCESS": "تم إرسال تقييمك بنجاح.",
+    "RATE_ERROR": "تعذّر إرسال التقييم. حاول مجدداً.",
+    "RATE_ALREADY_RATED": "لقد قمت بتقييم هذا المستخدم مسبقاً.",
+    "REVIEWS_TITLE": "التقييمات والتعليقات",
+    "NO_RATINGS_TITLE": "لا توجد تقييمات بعد",
+    "NO_RATINGS_MESSAGE": "كن أول من يقيّم هذا المستخدم بعد التعامل معه.",
+    "ACTIVE_LISTINGS": "الإعلانات النشطة",
+    "NO_LISTINGS_TITLE": "لا توجد إعلانات نشطة",
+    "NO_LISTINGS_MESSAGE": "لا يوجد لدى هذا المستخدم إعلانات منشورة حالياً.",
+    "VIEW_PROFILE_LINK": "عرض الملف الشخصي الكامل",
+    "CRITERIA": {
+      "CREDIBILITY": "المصداقية",
+      "SAFETY": "الأمان",
+      "RESPONSE_SPEED": "سرعة الرد",
+      "TRANSPARENCY": "الشفافية"
+    },
+    "RATE_CTA": "قيّم هذا المستخدم",
+    "ABOUT_TITLE": "نبذة تعريفية",
+    "CONTACT_INFO_LABEL": "معلومات التواصل",
+    "RATE_LOGIN_REQUIRED_TITLE": "سجّل الدخول لتتمكن من التقييم",
+    "RATE_LOGIN_REQUIRED_MESSAGE": "يجب تسجيل الدخول أولاً قبل أن تتمكن من تقييم هذا المستخدم.",
+    "RATE_NOT_ELIGIBLE_TITLE": "لا يمكنك التقييم بعد",
+    "RATE_NOT_ELIGIBLE_MESSAGE": "يجب إتمام زيارة لأحد عقارات هذا المستخدم أو التواصل معه عبر الرسائل قبل أن تتمكّن من تقييمه.",
+    "RATE_EDIT_HINT": "لقد قيّمت هذا المستخدم من قبل — يمكنك تعديل تقييمك أدناه.",
+    "UPDATE_RATING": "تحديث التقييم",
+    "RATE_UPDATE_SUCCESS": "تم تحديث تقييمك بنجاح"
   }
 }
