@@ -39,6 +39,14 @@
       </a>
 
       <a
+        routerLink="/pricing"
+        routerLinkActive="navbar__link--active"
+        class="navbar__link"
+      >
+        {{ 'NAVBAR.PRICING' | translate }}
+      </a>
+
+      <a
         *ngIf="isLoggedIn$ | async"
         routerLink="/property-form"
         routerLinkActive="navbar__link--active"
@@ -470,6 +478,14 @@
         (click)="closeMobileMenu()"
       >
         {{ 'NAVBAR.WOHNUNGEN' | translate }}
+      </a>
+
+      <a
+        routerLink="/pricing"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ 'NAVBAR.PRICING' | translate }}
       </a>
 
       <a
