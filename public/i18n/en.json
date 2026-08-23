@@ -25,6 +25,7 @@
   "NAVBAR": {
     "HOME": "Home",
     "WOHNUNGEN": "Properties",
+    "PRICING": "Pricing",
     "ADD": "Add property",
     "CONTACT": "Contact us",
     "MESSAGES": "Messages",
@@ -300,6 +301,7 @@
     }
   },
   "KONTAKT": {
+    "PLAN_SUBJECT": "Subscription plan enquiry: {{plan}}",
     "title": "Contact us",
     "subtitle": "Send your message and we will reply as soon as possible.",
     "name": "Full name",
@@ -999,5 +1001,62 @@
     "RATE_EDIT_HINT": "You've already rated this user — you can edit your rating below.",
     "UPDATE_RATING": "Update rating",
     "RATE_UPDATE_SUCCESS": "Your rating was updated successfully"
+  },
+  "PRICING": {
+    "META_TITLE": "Subscription plans for owners and agencies",
+    "META_DESCRIPTION": "Start free by listing your own property, or pick an agency plan: Basic $49, Premium $99, or Elite — higher listing limits, agent and staff accounts, reports and analytics, and featured placement in search results.",
+    "EYEBROW": "Subscription plans",
+    "TITLE": "Choose the plan that fits you",
+    "SUBTITLE": "The free plan is for individuals listing their own property. The agency plans add agent and staff accounts and performance reporting, and you can upgrade or switch at any time.",
+    "RECOMMENDED": "Recommended",
+    "PER_MONTH": "/ month",
+    "FREE_PRICE": "Free",
+    "CONTACT_PRICE": "Contact us",
+    "LOAD_ERROR": "Could not load the subscription plans.",
+    "NOTE_CURRENCY": "The free plan requires no payment. Paid plans are billed monthly in US dollars and exclude tax; online payment is not live yet — use the plan button to reach the sales team and complete your subscription.",
+    "FREE": {
+      "NAME": "Free",
+      "TAGLINE": "For individuals listing their own property for sale or rent — no extras.",
+      "F1": "Publish one active listing for your own property, for sale or rent",
+      "F2": "The listing stays live for three months",
+      "F3": "Automatic alert before it expires",
+      "F4": "Extend for three more months for a single-listing fee",
+      "NOTE": "After the three months the listing drops out of search results, and stays extendable for 30 days before it is deleted.",
+      "CTA": "Post your listing free"
+    },
+    "BASIC": {
+      "NAME": "Basic",
+      "TAGLINE": "Ideal for small agencies and independent agents.",
+      "F1": "Up to 50 property listings",
+      "F2": "One agent account",
+      "F3": "Up to 3 office staff members",
+      "F4": "Basic reports",
+      "F5": "Standard technical support",
+      "CTA": "Choose Basic"
+    },
+    "PREMIUM": {
+      "NAME": "Premium",
+      "TAGLINE": "For fast-growing offices that need advanced tools.",
+      "F1": "Up to 250 property listings",
+      "F2": "3 agent accounts",
+      "F3": "Up to 10 office staff members",
+      "F4": "Basic reports and advanced analytics",
+      "F5": "Featured placement in search results",
+      "CTA": "Choose Premium"
+    },
+    "ELITE": {
+      "NAME": "Elite",
+      "TAGLINE": "Tailored solutions for large agencies and developers.",
+      "F1": "Everything in Premium",
+      "F2": "Direct API access",
+      "F3": "Dedicated account manager",
+      "CTA": "Talk to sales"
+    }
+  },
+  "NOT_AUTHORIZED": {
+    "TITLE": "You are not authorised",
+    "MESSAGE": "This page is limited to accounts with specific permissions. If you believe you should have access, sign in with the right account or contact an administrator.",
+    "BACK_HOME": "Back to home",
+    "SWITCH_ACCOUNT": "Sign in with another account"
   }
 }

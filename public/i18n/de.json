@@ -25,6 +25,7 @@
   "NAVBAR": {
     "HOME": "Startseite",
     "WOHNUNGEN": "Immobilien",
+    "PRICING": "Preise",
     "ADD": "Immobilie hinzufügen",
     "CONTACT": "Kontakt",
     "MESSAGES": "Nachrichten",
@@ -300,6 +301,7 @@
     }
   },
   "KONTAKT": {
+    "PLAN_SUBJECT": "Anfrage zum Abo-Paket: {{plan}}",
     "title": "Kontakt",
     "subtitle": "Senden Sie uns Ihre Nachricht. Wir antworten so schnell wie möglich.",
     "name": "Vollständiger Name",
@@ -999,5 +1001,62 @@
     "RATE_EDIT_HINT": "Du hast diesen Nutzer bereits bewertet — du kannst deine Bewertung unten bearbeiten.",
     "UPDATE_RATING": "Bewertung aktualisieren",
     "RATE_UPDATE_SUCCESS": "Deine Bewertung wurde erfolgreich aktualisiert"
+  },
+  "PRICING": {
+    "META_TITLE": "Abo-Pakete für Eigentümer und Immobilienbüros",
+    "META_DESCRIPTION": "Starte kostenlos mit dem Inserat deiner eigenen Immobilie oder wähle ein Büro-Paket: Basic 49 $, Premium 99 $ oder Elite — höhere Inseratsgrenzen, Makler- und Mitarbeiterkonten, Berichte und Analysen sowie hervorgehobene Platzierung in den Suchergebnissen.",
+    "EYEBROW": "Abo-Pakete",
+    "TITLE": "Wähle das passende Paket",
+    "SUBTITLE": "Das kostenlose Paket ist für Privatpersonen, die ihre eigene Immobilie inserieren. Die Büro-Pakete ergänzen Makler- und Mitarbeiterkonten sowie Leistungsberichte — wechseln oder upgraden kannst du jederzeit.",
+    "RECOMMENDED": "Empfohlen",
+    "PER_MONTH": "/ Monat",
+    "FREE_PRICE": "Kostenlos",
+    "CONTACT_PRICE": "Kontaktiere uns",
+    "LOAD_ERROR": "Die Abo-Pakete konnten nicht geladen werden.",
+    "NOTE_CURRENCY": "Das kostenlose Paket erfordert keine Zahlung. Die bezahlten Pakete werden monatlich in US-Dollar zzgl. Steuern abgerechnet; die Online-Zahlung ist noch nicht aktiv — nutze die Paket-Schaltfläche, um das Vertriebsteam zu erreichen und das Abo abzuschließen.",
+    "FREE": {
+      "NAME": "Kostenlos",
+      "TAGLINE": "Für Privatpersonen, die ihre eigene Immobilie zum Verkauf oder zur Miete inserieren — ohne Zusatzfunktionen.",
+      "F1": "Ein aktives Inserat für die eigene Immobilie zum Verkauf oder zur Miete",
+      "F2": "Das Inserat bleibt drei Monate online",
+      "F3": "Automatische Erinnerung vor Ablauf",
+      "F4": "Verlängerung um drei weitere Monate gegen Einzelinserat-Gebühr",
+      "NOTE": "Nach den drei Monaten erscheint das Inserat nicht mehr in der Suche und bleibt 30 Tage lang verlängerbar, bevor es gelöscht wird.",
+      "CTA": "Inserat kostenlos aufgeben"
+    },
+    "BASIC": {
+      "NAME": "Basic",
+      "TAGLINE": "Ideal für kleine Büros und selbstständige Makler.",
+      "F1": "Bis zu 50 Inserate",
+      "F2": "Ein Makler-Konto",
+      "F3": "Bis zu 3 Büro-Mitarbeitende",
+      "F4": "Basis-Berichte",
+      "F5": "Standard-Support",
+      "CTA": "Basic wählen"
+    },
+    "PREMIUM": {
+      "NAME": "Premium",
+      "TAGLINE": "Für wachsende Büros, die fortgeschrittene Werkzeuge brauchen.",
+      "F1": "Bis zu 250 Inserate",
+      "F2": "3 Makler-Konten",
+      "F3": "Bis zu 10 Büro-Mitarbeitende",
+      "F4": "Basis-Berichte und erweiterte Analysen",
+      "F5": "Hervorgehobene Platzierung in den Suchergebnissen",
+      "CTA": "Premium wählen"
+    },
+    "ELITE": {
+      "NAME": "Elite",
+      "TAGLINE": "Maßgeschneiderte Lösungen für große Agenturen und Bauträger.",
+      "F1": "Alle Premium-Funktionen",
+      "F2": "Direkter API-Zugang",
+      "F3": "Persönlicher Account-Manager",
+      "CTA": "Vertrieb kontaktieren"
+    }
+  },
+  "NOT_AUTHORIZED": {
+    "TITLE": "Kein Zugriff",
+    "MESSAGE": "Diese Seite ist nur für Konten mit bestimmten Berechtigungen zugänglich. Wenn du glaubst, Zugriff haben zu sollen, melde dich mit dem richtigen Konto an oder wende dich an einen Administrator.",
+    "BACK_HOME": "Zurück zur Startseite",
+    "SWITCH_ACCOUNT": "Mit anderem Konto anmelden"
   }
 }

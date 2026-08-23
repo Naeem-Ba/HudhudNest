@@ -133,6 +133,22 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/offline/offline.page')
             .then(m => m.OfflinePage)
+      },
+      {
+        // Public pricing page - Basic / Premium / Elite agency plans.
+        path: 'pricing',
+        loadComponent: () =>
+          import('./features/pricing/pricing.page')
+            .then(m => m.PricingPage)
+      },
+      {
+        // AdminGuard has redirected here since it was written (admin-guard.ts:26)
+        // without this route ever being registered, so the '**' wildcard silently
+        // bounced non-admins to /home. Registering it makes the refusal visible.
+        path: 'not-authorized',
+        loadComponent: () =>
+          import('./features/not-authorized/not-authorized.page')
+            .then(m => m.NotAuthorizedPage)
       }
     ]
   },
