@@ -1,0 +1,71 @@
+/* ================================================================
+   Tailwind entry point — deliberately a separate stylesheet.
+
+   Tailwind runs ALONGSIDE the existing raw SCSS, it does not replace it.
+   The ~25 pages built before this file existed are untouched and keep their
+   `.card` / `.btn` / `.container` classes; only new pages reach for utilities.
+
+   It lives in its own .css file rather than inside styles.scss because Angular
+   compiles Sass BEFORE PostCSS runs: `@import "tailwindcss"` inside a .scss file
+   is intercepted by Sass as a Sass import and fails. Both files are listed in
+   angular.json, and load order puts Tailwind first so app styles win ties.
+   ================================================================ */
+
+@import "tailwindcss";
+
+/* ----------------------------------------------------------------
+   Dark mode.
+
+   The app toggles `html[data-theme="dark"]`, not Tailwind's default
+   `prefers-color-scheme`. Without this, every `dark:` utility would follow the
+   operating system and contradict the navbar's own theme switch on the same page.
+   ---------------------------------------------------------------- */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ----------------------------------------------------------------
+   Aqar Tech tokens, exposed as Tailwind theme values.
+
+   Each one points at the CSS variable styles.scss already defines rather than
+   duplicating its hex. That is the whole reason `bg-surface` works in dark mode
+   without a single `dark:` utility: styles.scss redefines --surface under
+   [data-theme="dark"], and the reference resolves at paint time.
+
+   Duplicating the hex values here would create a second source of truth that
+   silently drifts the first time somebody adjusts a colour in styles.scss.
+   ---------------------------------------------------------------- */
+@theme {
+  --color-navy: var(--navy);
+  --color-navy-600: var(--navy-600);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-gold-dark: var(--gold-dark);
+  --color-gold-soft: var(--gold-soft);
+  --color-gold-text: var(--gold-text);
+
+  --color-surface: var(--surface);
+  --color-page: var(--page-bg);
+  --color-line: var(--border);
+
+  --color-ink-50: var(--gray-50);
+  --color-ink-100: var(--gray-100);
+  --color-ink-200: var(--gray-200);
+  --color-ink-300: var(--gray-300);
+  --color-ink-400: var(--gray-400);
+  --color-ink-500: var(--gray-500);
+  --color-ink-600: var(--gray-600);
+  --color-ink-700: var(--gray-700);
+  --color-ink-800: var(--gray-800);
+  --color-ink-900: var(--gray-900);
+
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-soft: var(--primary-soft);
+
+  --color-success-soft: var(--success-soft);
+  --color-danger-soft: var(--danger-soft);
+
+  /* Same two stacks styles.scss sets on body and headings, so a Tailwind page and
+     an SCSS page render identical type. */
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+}
