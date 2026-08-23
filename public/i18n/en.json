@@ -426,6 +426,8 @@
     "NO_MAP": "No map location has been set for this property.",
     "STALE_BANNER": "The owner hasn't confirmed this listing is available in {{days}} days. It may no longer be available.",
     "CONFIRM_AVAILABILITY": "Still available?",
+    "EXTEND_LISTING": "Extend listing",
+    "FEATURE_LISTING": "Feature listing",
     "CONFIRM_AVAILABILITY_SUCCESS": "Confirmed — this listing is still available.",
     "CONFIRM_AVAILABILITY_ERROR": "Could not confirm availability. Please try again."
   },
@@ -1058,5 +1060,43 @@
     "MESSAGE": "This page is limited to accounts with specific permissions. If you believe you should have access, sign in with the right account or contact an administrator.",
     "BACK_HOME": "Back to home",
     "SWITCH_ACCOUNT": "Sign in with another account"
+  },
+  "CHECKOUT": {
+    "META_TITLE": "Complete your order",
+    "META_DESCRIPTION": "Review your listing fee and record the payment request.",
+    "TITLE": "Complete your order",
+    "SUBTITLE": "Review the details before recording the request. Nothing is charged automatically.",
+    "NO_GATEWAY_TITLE": "Online payment is not live yet",
+    "NO_GATEWAY_BODY": "There is no payment gateway, and this page will never ask for card details. Confirming records an amount owed with a reference number; you then pay by bank transfer and our team confirms it manually.",
+    "EXTENSION": {
+      "TITLE": "Extend the listing",
+      "DESCRIPTION": "Republishes your expired listing with a full new publication period, measured from the day payment is confirmed rather than from the old expiry date."
+    },
+    "FEATURED": {
+      "TITLE": "Feature the listing",
+      "DESCRIPTION": "Lifts your listing in search results for the paid period. If it is already featured, the new period is added to the days you have left rather than replacing them."
+    },
+    "DURATION": "Duration",
+    "DAYS": "{{days}} days",
+    "AMOUNT": "Amount",
+    "USD": "${{amount}}",
+    "GRACE_ENDS": "Recoverable until",
+    "FEATURED_UNTIL": "Featured until",
+    "CONFIRM": "Record the request",
+    "CONFIRM_HINT": "This records an amount you owe and gives you a reference number. Nothing is charged, and your listing does not change until the transfer is confirmed.",
+    "ERROR": "The request could not be recorded. Check that the listing is yours and that its status allows this, then try again.",
+    "RECORDED_TITLE": "Request recorded",
+    "RECORDED_BODY": "The amount is now recorded as outstanding. Your listing has not changed yet; it changes as soon as our team confirms the transfer arrived.",
+    "STATUS_PENDING": "Awaiting payment",
+    "ALREADY_PENDING": "You already had a request for this service on this listing, and this is the same one. You have not been charged twice.",
+    "REFERENCE": "Reference number",
+    "REFERENCE_HINT": "Quote this on your transfer — it is how your payment is matched to your listing.",
+    "COPY": "Copy",
+    "COPIED": "Copied",
+    "STEP_ONE": "Contact us for the bank transfer details.",
+    "STEP_TWO": "Make the transfer, quoting the reference number above.",
+    "STEP_THREE": "Once the money is confirmed, the request is applied to your listing and you get a notification.",
+    "TRANSFER_DETAILS": "Bank account details are sent directly and are not published on this page.",
+    "CONTACT_US": "Contact us to complete the transfer"
   }
 }

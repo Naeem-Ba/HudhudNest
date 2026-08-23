@@ -426,6 +426,8 @@
     "NO_MAP": "Für diese Immobilie wurde kein Standort auf der Karte festgelegt.",
     "STALE_BANNER": "Der Eigentümer hat seit {{days}} Tagen nicht bestätigt, dass dieses Inserat verfügbar ist. Es ist möglicherweise nicht mehr verfügbar.",
     "CONFIRM_AVAILABILITY": "Noch verfügbar?",
+    "EXTEND_LISTING": "Inserat verlängern",
+    "FEATURE_LISTING": "Inserat hervorheben",
     "CONFIRM_AVAILABILITY_SUCCESS": "Bestätigt — dieses Inserat ist weiterhin verfügbar.",
     "CONFIRM_AVAILABILITY_ERROR": "Verfügbarkeit konnte nicht bestätigt werden. Bitte versuchen Sie es erneut."
   },
@@ -1058,5 +1060,43 @@
     "MESSAGE": "Diese Seite ist nur für Konten mit bestimmten Berechtigungen zugänglich. Wenn du glaubst, Zugriff haben zu sollen, melde dich mit dem richtigen Konto an oder wende dich an einen Administrator.",
     "BACK_HOME": "Zurück zur Startseite",
     "SWITCH_ACCOUNT": "Mit anderem Konto anmelden"
+  },
+  "CHECKOUT": {
+    "META_TITLE": "Bestellung abschließen",
+    "META_DESCRIPTION": "Prüfe deine Inseratsgebühr und erfasse die Zahlungsanforderung.",
+    "TITLE": "Bestellung abschließen",
+    "SUBTITLE": "Prüfe die Angaben, bevor die Anforderung erfasst wird. Es wird nichts automatisch abgebucht.",
+    "NO_GATEWAY_TITLE": "Online-Zahlung ist noch nicht aktiv",
+    "NO_GATEWAY_BODY": "Es gibt kein Zahlungs-Gateway, und diese Seite fragt niemals nach Kartendaten. Beim Bestätigen wird ein offener Betrag mit Referenznummer erfasst; du zahlst per Überweisung und unser Team bestätigt sie manuell.",
+    "EXTENSION": {
+      "TITLE": "Inserat verlängern",
+      "DESCRIPTION": "Veröffentlicht dein abgelaufenes Inserat erneut mit einer vollen neuen Laufzeit, gerechnet ab dem Tag der Zahlungsbestätigung und nicht ab dem alten Ablaufdatum."
+    },
+    "FEATURED": {
+      "TITLE": "Inserat hervorheben",
+      "DESCRIPTION": "Hebt dein Inserat für die bezahlte Dauer in den Suchergebnissen hervor. Ist es bereits hervorgehoben, wird die neue Dauer zu den verbleibenden Tagen addiert statt sie zu ersetzen."
+    },
+    "DURATION": "Dauer",
+    "DAYS": "{{days}} Tage",
+    "AMOUNT": "Betrag",
+    "USD": "{{amount}} USD",
+    "GRACE_ENDS": "Wiederherstellbar bis",
+    "FEATURED_UNTIL": "Hervorgehoben bis",
+    "CONFIRM": "Anforderung erfassen",
+    "CONFIRM_HINT": "Dies erfasst einen offenen Betrag und gibt dir eine Referenznummer. Es wird nichts abgebucht, und dein Inserat ändert sich erst nach Bestätigung der Überweisung.",
+    "ERROR": "Die Anforderung konnte nicht erfasst werden. Prüfe, ob das Inserat dir gehört und sein Status dies zulässt, und versuche es erneut.",
+    "RECORDED_TITLE": "Anforderung erfasst",
+    "RECORDED_BODY": "Der Betrag ist jetzt als offen erfasst. Dein Inserat hat sich noch nicht geändert; das geschieht, sobald unser Team den Eingang bestätigt.",
+    "STATUS_PENDING": "Zahlung ausstehend",
+    "ALREADY_PENDING": "Für dieses Inserat gab es bereits eine Anforderung für diesen Dienst — dies ist dieselbe. Dir wurde nichts doppelt berechnet.",
+    "REFERENCE": "Referenznummer",
+    "REFERENCE_HINT": "Gib sie im Verwendungszweck an — darüber wird deine Zahlung deinem Inserat zugeordnet.",
+    "COPY": "Kopieren",
+    "COPIED": "Kopiert",
+    "STEP_ONE": "Kontaktiere uns für die Bankverbindung.",
+    "STEP_TWO": "Führe die Überweisung aus und gib die Referenznummer oben an.",
+    "STEP_THREE": "Nach bestätigtem Zahlungseingang wird die Anforderung auf dein Inserat angewendet und du erhältst eine Benachrichtigung.",
+    "TRANSFER_DETAILS": "Bankdaten werden direkt zugesendet und nicht auf dieser Seite veröffentlicht.",
+    "CONTACT_US": "Kontaktiere uns für die Überweisung"
   }
 }

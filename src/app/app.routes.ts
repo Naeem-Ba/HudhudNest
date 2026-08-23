@@ -149,6 +149,16 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/not-authorized/not-authorized.page')
             .then(m => m.NotAuthorizedPage)
+      },
+      {
+        // One-off listing fees: :kind is 'extension' or 'featured'.
+        // Authenticated because both endpoints behind it are owner-only — an anonymous
+        // visitor reaching this page could only ever be shown a 401.
+        path: 'checkout/:kind/:propertyId',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/checkout/checkout.page')
+            .then(m => m.CheckoutPage)
       }
     ]
   },
