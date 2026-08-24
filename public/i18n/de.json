@@ -92,7 +92,7 @@
     "VERIFY_OTP_BUTTON": "Bestätigen",
     "VERIFY_OTP_SUCCESS": "Der Code wurde erfolgreich bestätigt.",
     "LOGIN_SUCCESS": "Willkommen! Sie haben sich erfolgreich angemeldet.",
-    "REGISTER_SUCCESS": "Das Konto wurde erfolgreich erstellt! Sie können sich jetzt anmelden.",
+    "REGISTER_SUCCESS": "Das Konto wurde erfolgreich erstellt! Wir haben einen Bestätigungslink an Ihre E-Mail-Adresse gesendet. Sie können sich jetzt anmelden.",
     "CONTINUE_WITH_EMAIL": "Mit E-Mail fortfahren",
     "CONTINUE_WITH_PHONE": "Mit Telefonnummer fortfahren",
     "PHONE_STEP_SUBTITLE": "Geben Sie Ihre Telefonnummer mit Ländervorwahl ein. Wir senden Ihnen einen Bestätigungscode per SMS.",
