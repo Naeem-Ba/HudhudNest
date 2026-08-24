@@ -5,15 +5,18 @@
     "strict": false,                             /* اجعلها false مؤقتاً لتجاوز أخطاء any */
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "node",                  /* هذا السطر سيحل أخطاء Cannot find module */
+    "moduleResolution": "bundler",               /* يحل أخطاء Cannot find module، وبديل node10 المهجور */
     "esModuleInterop": true,
     "skipLibCheck": true,
     "experimentalDecorators": true,
     "importHelpers": true,
-    "baseUrl": "./",
+
+    /* بلا baseUrl: منذ TypeScript 5 تُحسَب مسارات paths نسبةً إلى ملف tsconfig نفسه،
+       و baseUrl مهجور ويتوقف عن العمل في TypeScript 7. لا استيراد غير نسبي في src،
+       فإزالته لا تكسر شيئاً. */
     "paths": {
-      "rxjs": ["node_modules/rxjs"],
-      "rxjs/*": ["node_modules/rxjs/*"]
+      "rxjs": ["./node_modules/rxjs"],
+      "rxjs/*": ["./node_modules/rxjs/*"]
     }
   },
   "angularCompilerOptions": {
