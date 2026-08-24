@@ -92,7 +92,7 @@
     "VERIFY_OTP_BUTTON": "Verify",
     "VERIFY_OTP_SUCCESS": "Code verified successfully.",
     "LOGIN_SUCCESS": "Welcome! You have logged in successfully.",
-    "REGISTER_SUCCESS": "Account created successfully! You can now log in.",
+    "REGISTER_SUCCESS": "Account created successfully! We sent a confirmation link to your email. You can now log in.",
     "CONTINUE_WITH_EMAIL": "Continue with email",
     "CONTINUE_WITH_PHONE": "Continue with phone number",
     "PHONE_STEP_SUBTITLE": "Enter your phone number with the country code, and we will send you a verification code by SMS.",
