@@ -98,6 +98,11 @@ export interface Property {
   isPublished?: boolean;
   publishedAt?: string;
   expiresAt?: string;
+  // إعلان مميّز مدفوع. isFeatured هو القيمة الفعّالة وقت الاستجابة لا العمود الخام:
+  // كنس إنهاء التمييز يعمل كل ست ساعات، فبين دورتين قد يبقى العمود true لنافذة انقضت.
+  // featuredUntil هو سجلّ ما دُفِع ثمنه ومتى ينتهي.
+  isFeatured?: boolean;
+  featuredUntil?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }

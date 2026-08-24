@@ -443,7 +443,8 @@
     "WARM_RENT": "Total rent",
     "ADDITIONAL_COSTS": "Additional costs",
     "DEPOSIT": "Deposit",
-    "PURCHASE_PRICE": "Purchase price"
+    "PURCHASE_PRICE": "Purchase price",
+    "FEATURED": "Featured"
   },
   "PROPERTY_FORM": {
     "LOAD_ERROR": "Unable to load property data.",
@@ -604,7 +605,8 @@
     "PUBLISH_ERROR": "Could not publish the property.",
     "MESSAGES": "Messages",
     "PUBLISHING": "Publishing...",
-    "PUBLISH_NEEDS_IMAGE": "Add at least one photo before publishing."
+    "PUBLISH_NEEDS_IMAGE": "Add at least one photo before publishing.",
+    "FEATURED_UNTIL": "Featured until"
   },
   "FAVORITES": {
     "TITLE": "Favorites",

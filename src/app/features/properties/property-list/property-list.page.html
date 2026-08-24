@@ -292,15 +292,23 @@
               loading="lazy"
               appImageFallback="/images/no-image.svg"
             />
-            <span
-              class="badge"
-              [class.badge--rent]="property.listingType === 'ForRent'"
-              [class.badge--sale]="property.listingType === 'ForSale'"
-            >
-              {{ property.listingType === 'ForSale'
-                  ? ('PROPERTY.MODE_SALE' | translate)
-                  : ('PROPERTY.MODE_RENT' | translate) }}
-            </span>
+            <div class="card-badges">
+              <span
+                class="badge"
+                [class.badge--rent]="property.listingType === 'ForRent'"
+                [class.badge--sale]="property.listingType === 'ForSale'"
+              >
+                {{ property.listingType === 'ForSale'
+                    ? ('PROPERTY.MODE_SALE' | translate)
+                    : ('PROPERTY.MODE_RENT' | translate) }}
+              </span>
+              <!-- إعلان مميّز مدفوع. الخادم يرسل القيمة الفعّالة (نافذة منقضية = false)،
+                   فلا مقارنة تواريخ هنا. -->
+              <span class="badge badge--featured" *ngIf="property.isFeatured">
+                <span aria-hidden="true">⭐</span>
+                {{ 'PROPERTY.FEATURED' | translate }}
+              </span>
+            </div>
             <!-- Favorite Button (مربوط الآن بـ FavoritesApiService) -->
             <app-favorite-toggle-button
               class="fav-btn-wrapper"

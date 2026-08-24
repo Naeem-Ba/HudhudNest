@@ -98,6 +98,18 @@
   border-radius: 8px;
 }
 
+/* ملاحظة التمييز المدفوع. رموز التصميم لا ألوان سداسية — على عكس
+   .expiry-warning أعلاه، وهو دَين قائم لا نُضيف إليه. */
+.featured-note {
+  margin: 0;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--badge-featured-text);
+  background: var(--badge-featured-bg);
+  padding: .35rem .6rem;
+  border-radius: 8px;
+}
+
 .created-at {
   font-size: .82rem;
   color: #94a3b8;

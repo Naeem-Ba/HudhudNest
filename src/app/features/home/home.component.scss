@@ -329,10 +329,16 @@
       transition: transform .35s ease;
     }
 
-    .badge {
+    /* غلاف الشارات: البطاقة قد تحمل شارة النوع وشارة التمييز المدفوع معاً. */
+    .card-badges {
       position: absolute;
       top: .75rem;
       inset-inline-start: .75rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: .35rem;
+      z-index: 1;
     }
   }
 

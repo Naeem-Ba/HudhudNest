@@ -73,6 +73,13 @@
           <dd>{{ p.rooms ?? '—' }}</dd>
         </dl>
 
+        <!-- التمييز المدفوع: المالك دفع ثمنه، فيجب أن يرى ما اشتراه ومتى ينتهي.
+             p.isFeatured هي القيمة الفعّالة من الخادم، فلا تظهر بعد انقضاء المدة. -->
+        <p class="featured-note" *ngIf="p.isFeatured">
+          ⭐ {{ 'MY_LISTINGS.FEATURED_UNTIL' | translate }}:
+          {{ p.featuredUntil | date:'dd/MM/yyyy' }}
+        </p>
+
         <!-- Expiry Warning -->
         <p class="expiry-warning" *ngIf="isExpiringSoon(p.expiresAt)">
           ⚠️ {{ 'MY_LISTINGS.EXPIRING_IN' | translate: { days: daysLeft(p.expiresAt) } }}

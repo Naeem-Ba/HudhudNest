@@ -443,7 +443,8 @@
     "WARM_RENT": "Warmmiete",
     "ADDITIONAL_COSTS": "Nebenkosten",
     "DEPOSIT": "Kaution",
-    "PURCHASE_PRICE": "Kaufpreis"
+    "PURCHASE_PRICE": "Kaufpreis",
+    "FEATURED": "Hervorgehoben"
   },
   "PROPERTY_FORM": {
     "LOAD_ERROR": "Die Immobiliendaten konnten nicht geladen werden.",
@@ -604,7 +605,8 @@
     "PUBLISH_ERROR": "Veröffentlichung fehlgeschlagen.",
     "MESSAGES": "Nachrichten",
     "PUBLISHING": "Wird veröffentlicht...",
-    "PUBLISH_NEEDS_IMAGE": "Fügen Sie vor der Veröffentlichung mindestens ein Foto hinzu."
+    "PUBLISH_NEEDS_IMAGE": "Fügen Sie vor der Veröffentlichung mindestens ein Foto hinzu.",
+    "FEATURED_UNTIL": "Hervorgehoben bis"
   },
   "FAVORITES": {
     "TITLE": "Favoriten",

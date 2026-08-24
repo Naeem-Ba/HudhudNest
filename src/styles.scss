@@ -42,6 +42,12 @@
   --badge-sale-bg:   rgba(180, 83, 9, .14);
   --badge-sale-text: #9a5313;
 
+  /* شارة الإعلان المميّز (المدفوع). ذهبي هوية التطبيق نفسه لا لون ثالث جديد:
+     التمييز منتج مدفوع، ويجب أن يُقرأ فوراً كشيء مختلف عن شارتَي الإيجار/البيع
+     الوصفيتين، لا كتصنيف ثالث لنوع العرض. */
+  --badge-featured-bg:   rgba(214, 168, 79, .20);
+  --badge-featured-text: var(--gold-dark);
+
   /* UI Colors */
   --primary:       #2563eb;
   --primary-dark:  #1d4ed8;
@@ -177,6 +183,10 @@ html[data-theme="dark"] {
   --badge-rent-text: #5eead4;
   --badge-sale-bg:   rgba(251, 146, 60, .20);
   --badge-sale-text: #fdba74;
+
+  /* الذهبي على الداكن يحتاج نصاً أفتح لا أغمق — gold-dark يختفي هنا. */
+  --badge-featured-bg:   rgba(214, 168, 79, .24);
+  --badge-featured-text: var(--gold-light);
 
   --shadow-xs: 0 1px 3px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.25);
   --shadow-sm: 0 2px 10px rgba(0,0,0,.40);
@@ -520,6 +530,12 @@ textarea.ng-valid.ng-touched {
 
   &--rent   { background: var(--badge-rent-bg); color: var(--badge-rent-text); }
   &--sale   { background: var(--badge-sale-bg); color: var(--badge-sale-text); }
+  &--featured {
+    background: var(--badge-featured-bg);
+    color: var(--badge-featured-text);
+    /* حدّ خفيف: الشارة تجلس فوق صورة العقار مباشرة، وبعض الصور ذهبية اللون. */
+    box-shadow: inset 0 0 0 1px rgba(181, 135, 46, .35);
+  }
   &--draft  { background: var(--gray-100); color: var(--gray-500); }
   &--live   { background: var(--success-soft); color: var(--success); }
   &--warning { background: var(--warning-soft); color: var(--warning); }
