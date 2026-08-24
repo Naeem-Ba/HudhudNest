@@ -443,7 +443,8 @@
     "WARM_RENT": "الإيجار الشامل",
     "ADDITIONAL_COSTS": "التكاليف الإضافية",
     "DEPOSIT": "التأمين",
-    "PURCHASE_PRICE": "سعر البيع"
+    "PURCHASE_PRICE": "سعر البيع",
+    "FEATURED": "مميّز"
   },
   "PROPERTY_FORM": {
     "LOAD_ERROR": "تعذر تحميل بيانات العقار.",
@@ -604,7 +605,8 @@
     "PUBLISH_ERROR": "تعذر نشر العقار.",
     "MESSAGES": "الرسائل",
     "PUBLISHING": "جارٍ النشر...",
-    "PUBLISH_NEEDS_IMAGE": "أضف صورة واحدة على الأقل قبل النشر."
+    "PUBLISH_NEEDS_IMAGE": "أضف صورة واحدة على الأقل قبل النشر.",
+    "FEATURED_UNTIL": "مميّز حتى"
   },
   "FAVORITES": {
     "TITLE": "المفضلة",

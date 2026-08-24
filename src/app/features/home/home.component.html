@@ -125,13 +125,20 @@
               loading="lazy"
               appImageFallback="/images/no-image.svg"
             />
-            <span class="badge"
-              [class.badge--rent]="p.listingType === 'ForRent'"
-              [class.badge--sale]="p.listingType === 'ForSale'">
-              {{ p.listingType === 'ForSale'
-                  ? ('PROPERTY.MODE_SALE' | translate)
-                  : ('PROPERTY.MODE_RENT' | translate) }}
-            </span>
+            <div class="card-badges">
+              <span class="badge"
+                [class.badge--rent]="p.listingType === 'ForRent'"
+                [class.badge--sale]="p.listingType === 'ForSale'">
+                {{ p.listingType === 'ForSale'
+                    ? ('PROPERTY.MODE_SALE' | translate)
+                    : ('PROPERTY.MODE_RENT' | translate) }}
+              </span>
+              <!-- إعلان مميّز مدفوع — القيمة الفعّالة تأتي من الخادم. -->
+              <span class="badge badge--featured" *ngIf="p.isFeatured">
+                <span aria-hidden="true">⭐</span>
+                {{ 'PROPERTY.FEATURED' | translate }}
+              </span>
+            </div>
           </div>
           <div class="prop-card__body">
             <h3 class="prop-card__title line-clamp-2">{{ p.title || ('PROPERTY_LIST.NO_TITLE' | translate) }}</h3>

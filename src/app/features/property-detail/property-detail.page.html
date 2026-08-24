@@ -104,14 +104,22 @@
             {{ 'PROPERTY_DETAIL.STALE_BANNER' | translate: { days: daysSinceFreshnessSignal() } }}
           </div>
 
-          <!-- Badge -->
-          <span class="badge"
-            [class.badge--rent]="isRentListing()"
-            [class.badge--sale]="isSaleListing()">
-            {{ isSaleListing()
-                ? ('PROPERTY.MODE_SALE' | translate)
-                : ('PROPERTY.MODE_RENT' | translate) }}
-          </span>
+          <!-- Badges -->
+          <div class="summary-card__badges">
+            <span class="badge"
+              [class.badge--rent]="isRentListing()"
+              [class.badge--sale]="isSaleListing()">
+              {{ isSaleListing()
+                  ? ('PROPERTY.MODE_SALE' | translate)
+                  : ('PROPERTY.MODE_RENT' | translate) }}
+            </span>
+            <!-- إعلان مميّز مدفوع. مرئي لكل زائر لا للمالك وحده — التمييز يُشترى
+                 ليراه الباحثون، وشارة يراها المالك فقط ليست المنتج المدفوع. -->
+            <span class="badge badge--featured" *ngIf="p.isFeatured">
+              <span aria-hidden="true">⭐</span>
+              {{ 'PROPERTY.FEATURED' | translate }}
+            </span>
+          </div>
 
           <!-- Title -->
           <h1 class="summary-card__title line-clamp-3">

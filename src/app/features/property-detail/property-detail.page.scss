@@ -158,6 +158,15 @@
   flex-direction: column;
   gap: 1rem;
 
+  /* صفّ الشارات: البطاقة عمود flex، وشارة مفردة كانت تتمدّد على العرض كاملاً.
+     الغلاف يعيدها إلى حجمها الطبيعي ويسمح بشارة ثانية (التمييز المدفوع) بجانبها. */
+  &__badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+  }
+
   &__title {
     font-size: clamp(1.1rem, 2vw, 1.45rem);
     font-weight: 800;
