@@ -172,7 +172,15 @@
       "LAST_ATTEMPT_BEFORE_LOCKOUT": "Achtung: Ein weiterer Fehlversuch sperrt Ihr Konto.",
       "ATTEMPTS_REMAINING": "Noch {{count}} Versuche, bevor Ihr Konto gesperrt wird.",
       "RATE_LIMITED": "Zu viele Anmeldeversuche. Bitte warten Sie einen Moment.",
-      "ACCOUNT_DISABLED": "Dieses Konto wurde deaktiviert. Bitte kontaktieren Sie den Support."
+      "ACCOUNT_DISABLED": "Dieses Konto wurde deaktiviert. Bitte kontaktieren Sie den Support.",
+      "PASSWORD_NO_UPPERCASE": "Das Passwort muss mindestens einen Großbuchstaben (A-Z) enthalten.",
+      "PASSWORD_NO_LOWERCASE": "Das Passwort muss mindestens einen Kleinbuchstaben (a-z) enthalten.",
+      "PASSWORD_NO_DIGIT": "Das Passwort muss mindestens eine Ziffer (0-9) enthalten.",
+      "PASSWORD_NO_SPECIAL": "Das Passwort muss mindestens ein Sonderzeichen enthalten, zum Beispiel ! @ oder #.",
+      "PASSWORD_COMMON_WORD": "Das Passwort basiert auf einem häufig verwendeten Wort. Ziffern oder Sonderzeichen anzuhängen macht es nicht schwerer zu erraten.",
+      "PASSWORD_LONG_RUN": "Das Passwort enthält mehr als vier aufeinanderfolgende oder wiederholte Zeichen.",
+      "PASSWORD_BREACHED": "Dieses Passwort ist in bekannten Datenlecks aufgetaucht. Bitte wählen Sie ein anderes.",
+      "PASSWORD_POLICY_UNMET": "Das Passwort erfüllt die unten aufgeführten Anforderungen nicht."
     },
     "FIRST_NAME_PLACEHOLDER": "Vorname eingeben",
     "LAST_NAME_PLACEHOLDER": "Nachname eingeben",
@@ -229,6 +237,15 @@
       "SAVING": "Wird gespeichert...",
       "CONFIRM_BUTTON": "Telefonwechsel bestätigen",
       "SUCCESS": "Ihre Telefonnummer wurde erfolgreich geändert."
+    },
+    "PASSWORD_RULES": {
+      "PASSWORD_TOO_SHORT": "Mindestens 8 Zeichen",
+      "PASSWORD_NO_UPPERCASE": "Ein Großbuchstabe (A-Z)",
+      "PASSWORD_NO_LOWERCASE": "Ein Kleinbuchstabe (a-z)",
+      "PASSWORD_NO_DIGIT": "Eine Ziffer (0-9)",
+      "PASSWORD_NO_SPECIAL": "Ein Sonderzeichen (! @ # $ %)",
+      "PASSWORD_COMMON_WORD": "Kein häufiges Wort wie «password» oder «qwerty»",
+      "PASSWORD_LONG_RUN": "Höchstens vier aufeinanderfolgende oder wiederholte Zeichen"
     }
   },
   "ERRORS": {

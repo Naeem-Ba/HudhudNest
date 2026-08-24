@@ -5,6 +5,12 @@ import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AuthApiService } from '../../../core/auth/auth-api.service';
+import {
+  getPasswordPolicyViolations,
+  passwordPolicyValidator,
+  PASSWORD_POLICY_RULES
+} from '../../../core/auth/password-policy';
+import { getPasswordRejectionMessages } from '../password-errors';
 import { FormErrorComponent } from '../../../shared/ui/form-error.component';
 import { ToastService } from '../../../shared/services/toast.service';
 
@@ -72,12 +78,22 @@ import { ToastService } from '../../../shared/services/toast.service';
           formControlName="password"
           placeholder="••••••••"
           autocomplete="new-password"
+          (input)="syncPasswordRules()"
         />
         <app-form-error
           [control]="form.controls.password"
           [submitted]="submitted()"
           [messages]="passwordMessages">
         </app-form-error>
+
+        <ul class="password-rules" aria-live="polite">
+          <li
+            *ngFor="let rule of passwordRules"
+            [class.is-met]="isRuleMet(rule)">
+            <span class="mark" aria-hidden="true">{{ isRuleMet(rule) ? '✓' : '•' }}</span>
+            {{ 'AUTH.PASSWORD_RULES.' + rule | translate }}
+          </li>
+        </ul>
 
         <button type="submit" [disabled]="form.invalid || loading()">
           <ng-container *ngIf="loading(); else registerText">
@@ -169,6 +185,34 @@ import { ToastService } from '../../../shared/services/toast.service';
       color: #b00020;
     }
 
+    /* القواعد كانت غير معروفة للمستخدم إطلاقاً: النموذج يفرض 8 أحرف والخادم يفرض ثمانياً
+       من القواعد. عرضها أثناء الكتابة يحوّل الرفض بعد الإرسال إلى إرشاد قبله. */
+    .password-rules {
+      list-style: none;
+      margin: .5rem 0 0;
+      padding: 0;
+      display: grid;
+      gap: .2rem;
+      font-size: var(--text-xs, .75rem);
+      color: var(--gray-500, #64748b);
+    }
+
+    .password-rules li {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+
+    .password-rules .mark {
+      flex: 0 0 auto;
+      width: 1em;
+      text-align: center;
+    }
+
+    .password-rules li.is-met {
+      color: var(--success, #16a34a);
+    }
+
     a {
       color: #2563eb;
       text-decoration: none;
@@ -189,12 +233,33 @@ export class RegisterPage {
   readonly submitted = signal(false);
   readonly error = signal('');
 
+  readonly passwordRules = PASSWORD_POLICY_RULES;
+
+  /**
+   * القواعد غير المستوفاة. تبدأ بالقائمة كاملة لأن حقلاً فارغاً لم يستوفِ شيئاً --
+   * getPasswordPolicyViolations('') يُعيد PASSWORD_REQUIRED وحده، ولو استُخدم كما هو
+   * لظهرت كل القواعد «مستوفاة» قبل أن يكتب المستخدم حرفاً.
+   */
+  private readonly passwordViolations = signal<readonly string[]>(PASSWORD_POLICY_RULES);
+
   readonly form = this.fb.nonNullable.group({
     firstName: ['', [Validators.required, Validators.minLength(2)]],
     lastName: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(8)]]
+
+    // minLength(8) سقط لأن passwordPolicyValidator يغطّي الطول ضمن PASSWORD_TOO_SHORT،
+    // وإبقاؤهما معاً يعني رسالتين لسببٍ واحد.
+    password: ['', [Validators.required, passwordPolicyValidator()]]
   });
+
+  syncPasswordRules(): void {
+    const value = this.form.controls.password.value;
+    this.passwordViolations.set(value ? getPasswordPolicyViolations(value) : PASSWORD_POLICY_RULES);
+  }
+
+  isRuleMet(rule: string): boolean {
+    return !this.passwordViolations().includes(rule);
+  }
 
   get firstNameMessages(): Record<string, string> {
     return {
@@ -213,7 +278,7 @@ export class RegisterPage {
   get passwordMessages(): Record<string, string> {
     return {
       required: this.translate.instant('AUTH.ERRORS.PASSWORD_REQUIRED'),
-      minlength: this.translate.instant('AUTH.ERRORS.PASSWORD_MIN')
+      passwordPolicy: this.translate.instant('AUTH.ERRORS.PASSWORD_POLICY_UNMET')
     };
   }
 
@@ -266,6 +331,14 @@ export class RegisterPage {
       return response.error;
     }
 
+    // كلمة المرور أولاً: هي السبب الوحيد الذي لا يستطيع النموذج توقّعه محلياً (فحص
+    // التسريبات يجري على الخادم)، وهي التي كانت تصل بالإنجليزية.
+    const passwordReasons = getPasswordRejectionMessages(this.translate, error);
+
+    if (passwordReasons.length > 0) {
+      return passwordReasons.join(' ');
+    }
+
     if (typeof response.error === 'object') {
       if (response.error?.message) {
         return response.error.message;
@@ -275,16 +348,18 @@ export class RegisterPage {
         return response.error.detail;
       }
 
-      if (response.error?.title) {
-        return response.error.title;
-      }
-
+      // أخطاء الحقول تسبق title: جسم 422 يحمل title = "Validation Error" دائماً، وفحصه
+      // أولاً كان يحجب السبب الفعلي خلف عنوان عام لا يقول للمستخدم شيئاً.
       if (response.error?.errors) {
         const messages = Object.values(response.error.errors).flat();
 
         if (messages.length > 0) {
           return messages.join(' ');
         }
+      }
+
+      if (response.error?.title) {
+        return response.error.title;
       }
     }
 
