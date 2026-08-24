@@ -172,7 +172,15 @@
       "LAST_ATTEMPT_BEFORE_LOCKOUT": "Warning: one more failed attempt will lock your account.",
       "ATTEMPTS_REMAINING": "{{count}} attempts remaining before your account is locked.",
       "RATE_LIMITED": "Too many login attempts. Please wait a moment and try again.",
-      "ACCOUNT_DISABLED": "This account has been disabled. Please contact support."
+      "ACCOUNT_DISABLED": "This account has been disabled. Please contact support.",
+      "PASSWORD_NO_UPPERCASE": "Password must contain at least one uppercase letter (A-Z).",
+      "PASSWORD_NO_LOWERCASE": "Password must contain at least one lowercase letter (a-z).",
+      "PASSWORD_NO_DIGIT": "Password must contain at least one digit (0-9).",
+      "PASSWORD_NO_SPECIAL": "Password must contain at least one symbol, such as ! @ or #.",
+      "PASSWORD_COMMON_WORD": "This password is based on a commonly used word. Adding digits or symbols to it does not make it harder to guess.",
+      "PASSWORD_LONG_RUN": "Password contains more than four sequential or repeated characters.",
+      "PASSWORD_BREACHED": "This password has appeared in known data breaches. Please choose a different one.",
+      "PASSWORD_POLICY_UNMET": "This password does not meet the requirements listed below."
     },
     "FIRST_NAME_PLACEHOLDER": "Enter first name",
     "LAST_NAME_PLACEHOLDER": "Enter last name",
@@ -229,6 +237,15 @@
       "SAVING": "Saving...",
       "CONFIRM_BUTTON": "Confirm phone change",
       "SUCCESS": "Your phone number was changed successfully."
+    },
+    "PASSWORD_RULES": {
+      "PASSWORD_TOO_SHORT": "At least 8 characters",
+      "PASSWORD_NO_UPPERCASE": "One uppercase letter (A-Z)",
+      "PASSWORD_NO_LOWERCASE": "One lowercase letter (a-z)",
+      "PASSWORD_NO_DIGIT": "One digit (0-9)",
+      "PASSWORD_NO_SPECIAL": "One symbol (! @ # $ %)",
+      "PASSWORD_COMMON_WORD": "Not a common word such as «password» or «qwerty»",
+      "PASSWORD_LONG_RUN": "No more than four sequential or repeated characters"
     }
   },
   "ERRORS": {
