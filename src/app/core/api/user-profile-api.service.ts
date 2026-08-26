@@ -14,7 +14,6 @@ import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
 import { BackendApiService } from './backend-api.service';
-import { apiToCamelCase } from '../adapters/api-naming.adapter';
 import {
   RatingEligibilityDto,
   SubmitUserRatingRequest,
@@ -61,7 +60,7 @@ export class UserProfileApiService {
   }
 
   private toProfile(item: unknown): UserProfileDto {
-    const p = apiToCamelCase<Record<string, unknown>>(item);
+    const p = (item as Record<string, unknown>);
 
     return {
       id: String(p['id'] ?? ''),
@@ -83,7 +82,7 @@ export class UserProfileApiService {
   }
 
   private toRatingSummary(item: unknown): UserRatingSummaryDto {
-    const s = apiToCamelCase<Record<string, unknown>>(item);
+    const s = (item as Record<string, unknown>);
     const rawRatings = Array.isArray(s['ratings']) ? s['ratings'] : [];
 
     return {
@@ -100,7 +99,7 @@ export class UserProfileApiService {
   }
 
   private toEligibility(item: unknown): RatingEligibilityDto {
-    const e = apiToCamelCase<Record<string, unknown>>(item);
+    const e = (item as Record<string, unknown>);
     const rawExisting = e['existingRating'];
 
     return {
@@ -112,7 +111,7 @@ export class UserProfileApiService {
   }
 
   private toRating(item: unknown): UserRatingDto {
-    const r = apiToCamelCase<Record<string, unknown>>(item);
+    const r = (item as Record<string, unknown>);
 
     return {
       id: String(r['id'] ?? ''),

@@ -41,6 +41,8 @@ export interface AppleLoginRequest {
   authorizationCode?: string | null;
   firstName?: string | null;
   lastName?: string | null;
+  /** Raw (unhashed) nonce passed to AppleID.auth.init — see B-16 in RELEASE-BLOCKERS-AR.md. */
+  nonce?: string | null;
 }
 
 export enum OtpPurpose {

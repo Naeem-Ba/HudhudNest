@@ -65,17 +65,23 @@ function clearAndRedirect(tokenStorage: TokenStorageService, router: Router): vo
   }
 }
 
+/**
+ * RELEASE-BLOCKERS-AR.md B-13: no refresh token parameter any more — the refresh_token
+ * cookie carries it, invisibly to this code, as long as the request goes out with
+ * withCredentials: true (it does; see below). This raw HttpClient built on HttpBackend
+ * bypasses every interceptor on purpose (to avoid a refresh loop), which is exactly why it
+ * needs that option set explicitly instead of inheriting it from BackendApiService.
+ */
 function requestNewAccessToken(
   httpBackend: HttpBackend,
   tokenStorage: TokenStorageService,
-  router: Router,
-  refreshToken: string
+  router: Router
 ): Observable<string> {
   if (!refreshRequest$) {
     const directHttp = new HttpClient(httpBackend);
 
     refreshRequest$ = directHttp
-      .post<unknown>(`${environment.apiUrl}/auth/refresh`, { refreshToken })
+      .post<unknown>(`${environment.apiUrl}/auth/refresh`, {}, { withCredentials: true })
       .pipe(
         map(response => normalizeAuthTokenResponse(response)),
         switchMap(tokens => {
@@ -83,8 +89,7 @@ function requestNewAccessToken(
             return throwError(() => new Error('Refresh response did not contain an access token.'));
           }
 
-          // Keep the previous "remember me" storage location when rotating tokens.
-          tokenStorage.storeTokens(tokens, tokenStorage.isRemembered());
+          tokenStorage.storeTokens(tokens);
           return of(tokens.accessToken);
         }),
         catchError(error => {
@@ -126,14 +131,12 @@ export const RefreshAuthInterceptor: HttpInterceptorFn = (req, next) => {
         return throwError(() => error);
       }
 
-      const refreshToken = tokenStorage.getRefreshToken();
-
-      if (!refreshToken) {
-        clearAndRedirect(tokenStorage, router);
-        return throwError(() => error);
-      }
-
-      return requestNewAccessToken(httpBackend, tokenStorage, router, refreshToken).pipe(
+      // RELEASE-BLOCKERS-AR.md B-13: there is no stored refresh token to check any more —
+      // whether the session can be restored is now something only the server can answer, by
+      // whatever the refresh_token cookie currently holds. Always attempt the refresh; a
+      // missing/expired/invalid cookie surfaces as this call failing, handled below exactly
+      // like before.
+      return requestNewAccessToken(httpBackend, tokenStorage, router).pipe(
         switchMap(newAccessToken => next(withBearerToken(req, newAccessToken))),
         catchError(refreshError => throwError(() => refreshError))
       );

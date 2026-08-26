@@ -3,7 +3,6 @@ import { map, Observable } from 'rxjs';
 import { BackendApiService, QueryValue } from '../api/backend-api.service';
 import { ApiPagedResult, normalizePagedResult, PagedResult, unwrapItems } from '../models/api.model';
 import { DuplicateCheckResult, Property, PropertyFilterDto } from '../models/property.model';
-import { apiToCamelCase } from '../adapters/api-naming.adapter';
 
 @Injectable({ providedIn: 'root' })
 export class PropertyApiService {
@@ -183,13 +182,13 @@ export class PropertyApiService {
   }
 
   private toDuplicateCheckResult(item: unknown): DuplicateCheckResult {
-    const result = apiToCamelCase<Record<string, unknown>>(item);
+    const result = (item as Record<string, unknown>);
     const rawCandidates = Array.isArray(result['candidates']) ? result['candidates'] : [];
 
     return {
       hasPotentialDuplicates: Boolean(result['hasPotentialDuplicates']),
       candidates: rawCandidates.map(candidate => {
-        const c = apiToCamelCase<Record<string, unknown>>(candidate);
+        const c = (candidate as Record<string, unknown>);
         return {
           propertyId: String(c['propertyId'] ?? ''),
           title: String(c['title'] ?? ''),
@@ -230,7 +229,7 @@ export class PropertyApiService {
   }
 
   private toProperty(item: unknown): Property {
-    const property = apiToCamelCase<Record<string, unknown>>(item);
+    const property = (item as Record<string, unknown>);
     const images = this.normalizeImages(property);
 
     return {
@@ -248,7 +247,7 @@ export class PropertyApiService {
     const images = Array.isArray(rawImages) ? rawImages : [];
 
     const normalized: NonNullable<Property['images']> = images
-      .map(image => apiToCamelCase<Record<string, unknown>>(image))
+      .map(image => (image as Record<string, unknown>))
       .map(image => ({
         id: image['id'] === undefined || image['id'] === null ? undefined : String(image['id']),
         url: String(image['url'] ?? ''),

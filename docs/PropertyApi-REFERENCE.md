@@ -1,43 +1,64 @@
 # PropertyApi — Architectural Reference Document
 
 > **Purpose:** Living reference for all future development sessions.
-> **Last updated:** 2026-08-24 · Analysis **v6** — rebuilt from direct inspection of the
-> live working repository at `C:\Users\naeem\Source\Repos\PropertyApi` (HEAD **`61bd779`**)
-> together with the Angular source at
-> `C:\Users\naeem\OneDrive\Desktop\Notiz\WohnungsApp\Wohnungsmieten` (HEAD **`c84052a`**).
+> **Last updated:** 2026-08-25 · Analysis **v7** — re-verified against the live working
+> repository at `C:\Users\naeem\Source\Repos\PropertyApi` (HEAD **`293a5c1`**, branch
+> `feat/resend-email-confirmation`) together with the Angular source at
+> `C:\Users\naeem\OneDrive\Desktop\Notiz\WohnungsApp\Wohnungsmieten` (HEAD **`3d81d37`**,
+> branch `feat/register-confirmation-notice`).
+> **v7 is the first revision backed by execution, not only reading:** both repositories were
+> built, all test suites run, and both CI gates reproduced locally. Results in §0.
 > **Decision:** ⚠️ SUITABLE WITH CONDITIONS — see §12.
-> **Companion documents:** `PROJECT-STRUCTURE.md` (the two repositories side by side) and
-> **`BACKEND-ISSUES.md`** (every open defect, with evidence and a fix each). Defect detail
-> lives there now; this file states architecture and points at it.
+> **Companion documents:** `PROJECT-STRUCTURE.md` (the two repositories side by side),
+> **`BACKEND-ISSUES.md`** (every open defect, with evidence and a fix each), and
+> **`RELEASE-BLOCKERS-AR.md`** (what stops a release, in execution order). Defect detail
+> lives there; this file states architecture and points at it.
 
 ---
 
-## 0. Why v6 exists — read this before trusting anything below
+## 0. Why v7 exists — read this before trusting anything below
 
-v5.1 was accurate as of commit `b3d0d0b` plus the listing-lifecycle work. Two commits
-later the tree has moved again, and in ways that invalidate specific v5 claims:
+v6 was accurate as of `61bd779`. Five commits later the tree has moved again, and this time
+the movement is a whole subsystem:
 
-- **A whole new bounded context exists.** `61bd779` added **Agencies**: entity, repository,
-  five endpoints, two Identity roles, a public agency page, and 24 tests. v5 said "Agency /
-  multi-tenant: ❌ not in the domain, requires a design spike first." That row is now wrong
-  in the literal, and only half right in substance — see §10, which explains exactly how
-  much of "multi-tenancy" was built (grouping) and how much was deliberately not (isolation).
-- **The dead featured-placement fields are alive** (updated 2026-08-24). v5 said
-  `Property.IsFeatured` / `FeaturedUntil` had "no code reading or writing them"; v6 as first
-  written found writers but **no readers at all** — money changing hands for nothing visible.
-  Both read paths now exist: featured listings lead the default ordering, and `PropertyDto`
-  carries the effective flag. See §8. **B-1 in `BACKEND-ISSUES.md` is closed** (fix not yet
-  committed).
-- **Counts moved again**, exactly as v5 predicted they would: 23 → **24 controllers**,
-  24 → **26 migrations**.
+- **Email delivery is now a real subsystem** (`32905c5`, `293a5c1`). Registration mints a
+  confirmation token and mails a link; a third provider — **Resend, over HTTP** — sits
+  beside SMTP and console; a new `POST /api/auth/email/resend-confirmation` endpoint exists;
+  and the confirmation URL is now built by a dedicated, startup-validated builder instead of
+  inline code with a hard-coded `localhost` fallback. See **§13**, which is new.
+- **Password rejections carry stable codes** (`80180cf`). `ValidationException` gained an
+  `ErrorCodes` dictionary aligned index-for-index with `Errors`, the middleware emits it on
+  both 422 paths, and the Angular app translates the codes instead of printing the server's
+  English. The old `PasswordValidator.cs` (107 lines, a second source of truth) is deleted.
+- **B-1 is committed**, not merely fixed in a working tree: backend `e3eb255` (PR #66),
+  frontend `dbb589c` (PR #21).
+- **Counts held this time**: still 24 controllers and 26 migrations. What grew is the test
+  suite — 473 → **516** `[Fact]`/`[Theory]` declarations across **8 projects / 111 files**.
 
-**v6 also splits the document.** v5 mixed architecture with a defect list, and the defect
-list kept being the part that went stale. Defects now live in `BACKEND-ISSUES.md`, which is
-built to be re-verified as a unit; this file keeps only a one-line severity roll-up (§11).
+**What execution added that reading could not.** Three findings in this revision came from
+running things, and none of them is visible in a static read:
+
+| Check | Result |
+|---|---|
+| `dotnet build -c Release` | ✅ **0 warnings, 0 errors** |
+| Backend tests (7 projects, Staging Smoke excluded as CI does) | ✅ **588 / 588 pass** |
+| `PropertyApi.StagingSmokeTests` locally | ⚠️ Fails on missing `STAGING_BASE_URL` — **expected**; `ci.yml` excludes it by name |
+| `ng build --configuration production` | ✅ Succeeds · ⚠️ initial bundle **595 kB vs a 500 kB budget**; one dead `@import` at `styles.scss:551` (the fonts already load from `index.html`) |
+| `npm run audit:frontend` | 🔴 **Exit 1** — the required CI gate is red today (**B-17**) |
+| `ng test` | 🔴 **2 of 54 fail** — `AppComponent` spec, missing `provideHttpClient`. Not in CI at all |
+| `npm run typecheck` / `typecheck:strict` | ✅ passes / ⚠️ **22 errors** — strict is deliberately off, tracked as debt |
+
+**The finding that matters most is a contract nobody owns.** The backend builds confirmation
+links as `{base}/auth/verify-email?userId=…&token=…`; the frontend runs on
+`withHashLocation()`, where that route only exists at `{base}/#/auth/verify-email`. Each side
+is internally correct and separately tested — 150 lines of URL-builder tests on one side, a
+page that reads `queryParamMap` on the other — and the link is dead end to end. This is
+**B-14**, and it is the top item in `RELEASE-BLOCKERS-AR.md`. Password reset has carried the
+same defect for longer, plus a wrong path in the shipped default.
 
 **Working rule, unchanged and repeatedly vindicated:** treat this document as accurate only
-as of the commit named above. v4 held about seven weeks. v5 held **one day**. Re-verify
-before planning.
+as of the commits named above. v4 held about seven weeks. v5 held **one day**. v6 held one
+day. Re-verify before planning.
 
 ---
 
@@ -52,7 +73,8 @@ before planning.
 | Target framework | **net8.0** — a `.NET 10` migration *plan* exists (`docs/operations/net10-migration-plan.md`) but is not executed | ✅ |
 | Compiler settings | `Nullable=enable`, `ImplicitUsings=enable`, `EnforceCodeStyleInBuild=true`, **`TreatWarningsAsErrors=false`** | ✅ |
 | Database | PostgreSQL 16 + PostGIS (EF Core 8, Npgsql), Supabase · **26 migrations** | ✅ |
-| Auth | JWT + ASP.NET Identity + hashed Refresh Tokens + Phone OTP | ✅ |
+| Auth | JWT + ASP.NET Identity + hashed Refresh Tokens + Phone OTP + **email address confirmation** | ✅ |
+| Transactional email | **Resend (HTTP API) · SMTP · Console** — selected by `Email:Provider`; Console refused in Production — §13 | ✅ |
 | CSRF | Middleware wired, **disabled by default** (Bearer-only auth) — §4 | ✅ |
 | Real-time | SignalR + Redis backplane (`AddStackExchangeRedis`) | ✅ |
 | Caching / Rate limiting | Redis — mandatory in Production (boot throws if unconfigured) | ✅ |
@@ -60,7 +82,7 @@ before planning.
 | Cloud | Azure (EU) / Render evaluated, DSGVO-relevant | — |
 | Deployment shape | **Multi-instance behind a load balancer** — the performance suite requires traffic on both instances | ✅ |
 | CI/CD | GitHub Actions — build/test + Gitleaks + TruffleHog + Dependabot + coverage gates | ✅ |
-| Tests | 8 projects · 106 test files · **473 `[Fact]`/`[Theory]` cases** | ✅ |
+| Tests | 8 projects · 111 test files · **516 `[Fact]`/`[Theory]` declarations → 588 cases executed** (Staging Smoke excluded, as CI does) | ✅ |
 | **Frontend** | Angular 20.2, standalone, hash routing, Capacitor 8, Tailwind v4 alongside SCSS — **see `FRONTEND-REFERENCE.md`** | ✅ |
 
 ---
@@ -465,7 +487,11 @@ Full evidence, reproduction and fixes: **`BACKEND-ISSUES.md`**.
 
 | ID | Title | Severity |
 |---|---|---|
-| ~~**B-1**~~ | ~~Featured placement is sold but never surfaced~~ | ✅ Closed 2026-08-24 |
+| ~~**B-1**~~ | ~~Featured placement is sold but never surfaced~~ | ✅ Closed and **committed** (`e3eb255` / `dbb589c`) |
+| **B-14** | **Email links are built without `#` while the app routes on hash — every confirmation and reset link is dead** | 🔴 **High — release blocker** |
+| **B-17** | **`audit:frontend`, a required CI step, exits 1 on a sample password in a doc** | 🔴 **High — release blocker** |
+| **B-15** | **`POST /auth/email/resend-confirmation` is fully built; nothing in the UI calls it** | 🟠 Medium-High |
+| **B-16** | **Apple identity tokens are not nonce-bound; the frontend generates a nonce and drops it** | 🟠 Medium (cross-repo) |
 | **B-2** | An agency owner can attach any user without consent | 🟠 Medium-High |
 | **B-3** | Free-tier quota of 1 applies per user, making agencies unusable | 🟠 Medium-High |
 | **B-4** | An agency cannot be edited, deactivated, transferred or deleted | 🟠 Medium |
@@ -488,6 +514,9 @@ Full evidence, reproduction and fixes: **`BACKEND-ISSUES.md`**.
 | OPS-2 | Redis outage not covered as a distinct failure mode | ✅ Resolved — failover runbook + policy + HA doc |
 | Dead `IsFeatured` columns | v5's "no code reads or writes them" | ✅ Resolved — written *and* read; see §8 (B-1) |
 | Two divergent `PropertyDto` mappers | `GetPropertyByIdQueryHandler.MapToDto` trailed `PropertyMapper.ToDto` by seven fields on the public paths | ✅ Resolved — duplicate deleted, one mapper |
+| Two divergent password validators | `PasswordValidator.cs` duplicated `PasswordSecurityService` rules | ✅ Resolved — 107-line duplicate deleted; the service is the only authority (`docs/password-policy.md`) |
+| Server-English password rejections shown to Arabic and German users | Only prose came back from 422 | ✅ Resolved — `ErrorCodes` on both 422 paths, translated client-side (`80180cf`) |
+| Confirmation links silently pointing at `http://localhost:4200` | Neither `Frontend:BaseUrl` nor its alternate existed in any settings file | ✅ Resolved — dedicated builder, present in config, **fails startup in Production** if absent or non-HTTPS. ⚠️ Its *path* is still wrong — B-14 |
 
 ---
 
@@ -501,33 +530,130 @@ SLOs, runbooks, a dated recovery drill, Redis HA, coverage and production gates 
 mature than most projects at this stage; and the two money paths added this week are
 structured so the system cannot deliver a product it was not paid for.
 
-**Why not "Suitable":** two things are live that should not be. The scheduler that expires
-and deletes listings runs on **every** instance of a load-balanced deployment with no
-coordination (B-6). And a user can be attached to a business they never joined, with their
-name shown on its public page (B-2). The third — a paid feature that delivered nothing
-(B-1) — was fixed on 2026-08-24 and is no longer among them.
+**Why not "Suitable":** four things are live that should not be, and v7 moved two of them
+above everything else because they are *shipped-and-broken* rather than *not-yet-built*.
+Every address-confirmation and password-reset link the system sends lands on the wrong URL
+(B-14). The frontend's required CI gate has been red since 2026-08-21 (B-17). The scheduler
+that expires and deletes listings runs on **every** instance of a load-balanced deployment
+with no coordination (B-6). And a user can be attached to a business they never joined, with
+their name shown on its public page (B-2).
+
+**Nothing here is architectural.** The architecture kept its promises through a subsystem
+addition: the email provider is swappable behind one interface, the URL builder is injected
+and startup-validated, the new anonymous endpoint arrived rate-limited and registered in the
+policy test, and the build stayed at zero warnings across 588 passing tests. The failures
+above are all at the seams — between the two repositories, and between a gate and the people
+who read its output.
 
 **The conditions:**
 
 1. ~~Fix rate-limit partitioning~~ ✅ **DONE**.
 2. ~~Confirm patch folders excluded from deployment~~ ✅ **DONE**.
-3. **Make the scheduled jobs single-writer** before the next scale-out (B-6).
-4. ~~**Either surface featured placement or stop selling it** (B-1)~~ ✅ **DONE** — surfaced.
-   It was the one defect here with a legal dimension rather than merely a technical one.
-5. **Add consent to agency membership** (B-2).
-6. **Move the refresh token to an HttpOnly / `SameSite=Strict` / `Secure` cookie** (B-13).
-   Backend accepts the cookie at `/auth/refresh`, `CookieCsrf:Enabled` flips to `true`, and
-   the frontend starts fetching and echoing the CSRF token. All three land together or the
-   app breaks.
-7. **Restrict `GET /api/operational/build-info`** (B-8).
-8. **Re-verify this document at the next significant deployment cycle.** v5 held for one
-   day. Assume days, not weeks.
+3. ~~**Either surface featured placement or stop selling it** (B-1)~~ ✅ **DONE** and
+   committed. It was the one defect with a legal dimension rather than merely a technical one.
+4. **Put the `#` in the email links, and fix `Frontend:PasswordResetUrl` in every
+   environment** (B-14). Then click a real link from a real inbox — this one cannot be
+   closed by a unit test, which is precisely how it got here.
+5. **Turn the frontend CI gate green** (B-17), and add a test step only after the two
+   `AppComponent` specs are repaired.
+6. **Give the user a way to ask for the link again** (B-15). B-14 without B-15 leaves anyone
+   whose mail was lost with no route forward.
+7. **Make the scheduled jobs single-writer** before the next scale-out (B-6).
+8. **Add consent to agency membership** (B-2).
+9. **Bind Apple identity tokens to a nonce** (B-16) — the one missing guarantee of four.
+10. **Move the refresh token to an HttpOnly / `SameSite=Strict` / `Secure` cookie** (B-13).
+    Backend accepts the cookie at `/auth/refresh`, `CookieCsrf:Enabled` flips to `true`, and
+    the frontend starts fetching and echoing the CSRF token. All three land together or the
+    app breaks.
+11. **Restrict `GET /api/operational/build-info`** (B-8).
+12. **Re-verify this document at the next significant deployment cycle.** v5 held one day.
+    v6 held one day. Assume days, not weeks.
 
 ---
 
-*This document reflects direct static inspection of the live PropertyApi repository at
-commit `61bd779` and the live Angular source at `c84052a`, on 2026-08-24. Claims that could
-not be verified in code are marked as such rather than carried forward from prior revisions.
-Frontend detail lives in `FRONTEND-REFERENCE.md`; the repository layout lives in
-`PROJECT-STRUCTURE.md`; open defects live in `BACKEND-ISSUES.md`; the API contract lives in
-`FRONTEND_BACKEND_CONTRACT.md`.*
+## 13. Email delivery and address confirmation (built 2026-08-24/25)
+
+New in v7. The full operational detail lives in the backend repository at
+`docs/architecture/email-confirmation-and-delivery.md`; this section states the shape.
+
+### 13.1 Provider selection
+
+`Email:Provider` chooses the sender at composition time — `Console`, `Smtp` or `Resend` —
+and `AddEmailServices` publishes exactly one implementation under both `IApplicationEmailSender`
+and Identity's `IEmailSender`. Two rules are enforced at startup rather than at send time,
+which is the correct place for both:
+
+- **`Console` is refused in Production.** It only logs. Reaching Production with it selected
+  would mean nobody ever receives a link and nothing says so.
+- **Leaving `Email:Provider` blank preserves the old behaviour** — SMTP in Production,
+  console elsewhere — so an environment that predates this setting is unaffected.
+
+### 13.2 Resend
+
+`ResendEmailSender` posts to `POST {BaseUrl}/emails` with a Bearer key. Three decisions worth
+keeping:
+
+| Decision | Why |
+|---|---|
+| `HttpClient` from `IHttpClientFactory` | `HttpClientLifetimeTests` fails the build on `new HttpClient`; the pooled handler keeps DNS changes visible |
+| API key read **per request**, not on `DefaultRequestHeaders` | a rotated secret takes effect without a restart |
+| No retry policy | the solution carries no Polly, and both callers already treat a failed send as non-fatal |
+
+`ApiKey`, `From`, an HTTPS `BaseUrl` and a 1–120 s timeout are all `ValidateOnStart` when the
+provider is Resend, so a misconfigured deployment fails loudly at boot.
+
+⚠️ **`Email:From` defaults to `no-reply@propertyapi.local`,** a non-routable domain. Resend
+rejects unverified sending domains with a 403, and **both callers swallow send failures**.
+Deploying with the default means zero mail delivered and no visible complaint. This is a
+deployment-checklist item, not a code defect.
+
+### 13.3 The confirmation flow
+
+```
+RegisterCommandHandler
+  └─ commit transaction                     ← account exists first, always
+     └─ SendConfirmationEmailAsync          ← try/catch, never rethrows
+        ├─ GenerateEmailConfirmationTokenAsync(identityId, CancellationToken.None)
+        └─ IEmailVerificationService.SendVerificationLinkAsync
+           ├─ IEmailConfirmationUrlBuilder.Build(identityId, token)
+           ├─ EmailConfirmationTemplate.BuildHtml/BuildText
+           └─ IApplicationEmailSender.SendEmailAsync
+```
+
+Two deliberate choices, both documented in the code and both correct:
+
+- **The send happens after the commit and swallows every failure.** Rethrowing would report a
+  successful sign-up as a failure and send the user back to register against an email that is
+  now taken. Login is not gated on confirmation, so an unconfirmed address is merely
+  unconfirmed.
+- **The request's `CancellationToken` is not threaded through.** A user who closes the tab
+  the instant after submitting has still registered and still needs the link.
+
+`POST /api/auth/email/resend-confirmation` covers the lost-mail case: anonymous by necessity,
+rate-limited under `auth-password-reset`, and returning **the same response** whether the
+address is unknown, already confirmed, or was just sent to — so it cannot enumerate accounts.
+The failure path is swallowed for that same reason: a 500 would answer the question the
+identical responses exist to refuse. **Nothing in the Angular app calls it yet** (B-15).
+
+### 13.4 The URL builder — right instinct, wrong path
+
+`EmailConfirmationUrlBuilder` replaced inline code that read a key existing in no settings
+file and fell back to `http://localhost:4200`, silently, in Production included. It now
+refuses to start in Production without a configured HTTPS `Frontend:BaseUrl`, and it
+deliberately **does not** derive the origin from the request's `Host` header — a proxy
+forwarding an attacker-controlled host would otherwise mint valid tokens pointing at the
+attacker's site. The recipient's address was also dropped from the query string: neither side
+read it, so it was personal data in a URL for no purpose.
+
+All of that is right. **The path it emits is still wrong** — `‎/auth/verify-email` where the
+hash-routed app serves `‎/#/auth/verify-email`. See **B-14**.
+
+---
+
+*This document reflects direct inspection **and execution** of the live PropertyApi repository
+at commit `293a5c1` and the live Angular source at `3d81d37`, on 2026-08-25: both were built,
+all suites run, and both CI gates reproduced locally. Claims that could not be verified are
+marked as such rather than carried forward from prior revisions. Frontend detail lives in
+`FRONTEND-REFERENCE.md`; the repository layout lives in `PROJECT-STRUCTURE.md`; open defects
+live in `BACKEND-ISSUES.md`; release blockers in execution order live in
+`RELEASE-BLOCKERS-AR.md`; the API contract lives in `FRONTEND_BACKEND_CONTRACT.md`.*

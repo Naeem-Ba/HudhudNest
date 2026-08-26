@@ -100,6 +100,10 @@
     "SEND_OTP_BUTTON_SHORT": "Send code",
     "RESEND_OTP": "Resend code",
     "RESEND_OTP_IN": "You can resend after {{seconds}} seconds",
+    "RESEND_CONFIRMATION": {
+      "BUTTON": "Resend confirmation link",
+      "COOLDOWN": "You can resend in {{seconds}}s"
+    },
     "CHANGE_PHONE_NUMBER": "Change phone number",
     "PROFILE_NAME_STEP_TITLE": "Complete your details",
     "PROFILE_NAME_STEP_SUBTITLE": "This is a new phone number — enter your name to create your account.",
@@ -108,7 +112,7 @@
       "VERIFYING": "Verifying your confirmation link...",
       "SUCCESS": "Your email address has been verified successfully!",
       "MISSING_PARAMS": "The verification link is invalid or incomplete.",
-      "FAILED": "The verification link is invalid or expired. Request a new one from your profile page.",
+      "FAILED": "The verification link is invalid or expired. Enter your email below to get a new one.",
       "GO_TO_PROFILE": "Go to my profile",
       "BACK_TO_PROFILE": "Back to profile"
     },

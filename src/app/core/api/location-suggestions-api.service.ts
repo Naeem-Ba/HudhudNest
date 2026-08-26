@@ -6,7 +6,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
-import { apiToCamelCase } from '../adapters/api-naming.adapter';
 import { LocationSuggestion } from '../models/location-suggestion.model';
 
 @Injectable({ providedIn: 'root' })
@@ -27,7 +26,7 @@ export class LocationSuggestionsApiService {
     return this.api
       .post<unknown>(`${this.endpoint}/${id}/approve`, { Notes: notes ?? null })
       .pipe(map(item => {
-        const result = apiToCamelCase<Record<string, unknown>>(item);
+        const result = (item as Record<string, unknown>);
         return { resultingEntityId: Number(result['resultingEntityId'] ?? 0) };
       }));
   }
@@ -41,7 +40,7 @@ export class LocationSuggestionsApiService {
     const list = Array.isArray(response) ? response : [];
 
     return list
-      .map(item => apiToCamelCase<Record<string, unknown>>(item))
+      .map(item => (item as Record<string, unknown>))
       .map(item => ({
         id: String(item['id'] ?? ''),
         type: (item['type'] as 'District' | 'Neighborhood') ?? 'District',

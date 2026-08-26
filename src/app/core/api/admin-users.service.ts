@@ -15,7 +15,6 @@ import { Observable, map } from 'rxjs';
 
 import { BackendApiService } from './backend-api.service';
 import { PagedResult } from '../models/api.model';
-import { apiToCamelCase } from '../adapters/api-naming.adapter';
 
 export interface AdminUserDto {
   id: string;
@@ -90,7 +89,7 @@ export class AdminUsersService {
   }
 
   private toUser(item: unknown): AdminUserDto {
-    const user = apiToCamelCase<Record<string, unknown>>(item);
+    const user = (item as Record<string, unknown>);
 
     return {
       id: String(user['id'] ?? ''),

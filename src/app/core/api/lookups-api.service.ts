@@ -14,7 +14,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
-import { apiToCamelCase } from '../adapters/api-naming.adapter';
 
 export interface LookupAmenity {
   id: string;
@@ -142,7 +141,7 @@ export class LookupsApiService {
     const list = Array.isArray(response) ? response : [];
 
     return list
-      .map(item => apiToCamelCase<Record<string, unknown>>(item))
+      .map(item => (item as Record<string, unknown>))
       .map(item => ({
         id: String(item['id'] ?? ''),
         name: String(item['name'] ?? ''),
@@ -156,7 +155,7 @@ export class LookupsApiService {
     const list = Array.isArray(response) ? response : [];
 
     return list
-      .map(item => apiToCamelCase<Record<string, unknown>>(item))
+      .map(item => (item as Record<string, unknown>))
       .map(item => ({
         id: String(item['id'] ?? ''),
         name: String(item['name'] ?? '')
@@ -168,7 +167,7 @@ export class LookupsApiService {
     const list = Array.isArray(response) ? response : [];
 
     return list
-      .map(item => apiToCamelCase<Record<string, unknown>>(item))
+      .map(item => (item as Record<string, unknown>))
       .map(item => ({
         id: Number(item['id']),
         nameAr: String(item['nameAr'] ?? ''),
@@ -182,7 +181,7 @@ export class LookupsApiService {
     const list = Array.isArray(response) ? response : [];
 
     return list
-      .map(item => apiToCamelCase<Record<string, unknown>>(item))
+      .map(item => (item as Record<string, unknown>))
       .map(item => ({
         id: Number(item['id']),
         code: String(item['code'] ?? ''),

@@ -23,23 +23,24 @@ export function preloadEnums(enumService: EnumService): () => Promise<unknown> {
   return () => enumService.loadAll();
 }
 
+/**
+ * RELEASE-BLOCKERS-AR.md B-13: this used to gate on a refresh token read from storage — now
+ * that nothing is ever stored there, that check would make this a permanent no-op and log
+ * every user out on every page reload. It now always attempts the refresh; the ambient
+ * refresh_token cookie (or its absence, for a genuinely anonymous visitor) decides the
+ * outcome, exactly as tokenStorage.getRefreshToken() used to.
+ */
 export function restoreSession(
   tokenStorage: TokenStorageService,
   httpBackend: HttpBackend,
   authService: AuthService
 ): () => Promise<void> {
   return async () => {
-    const refreshToken = tokenStorage.getRefreshToken();
-
-    if (!refreshToken) {
-      return;
-    }
-
     try {
       const directHttp = new HttpClient(httpBackend);
       const timeoutPromise = new Promise<null>(resolve => window.setTimeout(() => resolve(null), 5000));
       const refreshPromise = firstValueFrom(
-        directHttp.post<unknown>(`${environment.apiUrl}/auth/refresh`, { refreshToken })
+        directHttp.post<unknown>(`${environment.apiUrl}/auth/refresh`, {}, { withCredentials: true })
       );
 
       const result = await Promise.race([refreshPromise, timeoutPromise]);

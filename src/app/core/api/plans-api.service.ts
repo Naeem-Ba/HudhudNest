@@ -9,7 +9,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, map, of } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
-import { apiToCamelCase } from '../adapters/api-naming.adapter';
 import {
   PlanPriceKind,
   PlanTier,
@@ -53,7 +52,7 @@ export class PlansApiService {
     const list = Array.isArray(response) ? response : [];
 
     return list
-      .map(item => apiToCamelCase<Record<string, unknown>>(item))
+      .map(item => (item as Record<string, unknown>))
       .map(item => {
         const tier = this.toTier(item['tier']);
         const noteKey = String(item['noteKey'] ?? '');

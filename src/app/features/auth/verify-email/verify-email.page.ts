@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
+import { AuthApiService } from '../../../core/auth/auth-api.service';
 import { PhoneAuthApiService } from '../../../core/auth/phone-auth-api.service';
 import { ToastService } from '../../../shared/services/toast.service';
 
@@ -23,7 +25,7 @@ type VerifyState = 'verifying' | 'success' | 'error';
 @Component({
   selector: 'app-verify-email-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule],
+  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
   template: `
     <section class="verify-page">
       <div class="verify-card">
@@ -43,6 +45,31 @@ type VerifyState = 'verifying' | 'success' | 'error';
         <div class="state state--error" *ngIf="state() === 'error'">
           <span aria-hidden="true">⚠️</span>
           <p>{{ errorMessage() }}</p>
+
+          <!-- ✅ B-15 (RELEASE-BLOCKERS-AR.md): هذه الصفحة تُفتح من رابط بريد فشل، أي أن
+               المستخدم ليس بالضرورة مسجَّل دخوله -- ومسار resend-confirmation مجهول الهوية
+               عمداً لهذا السبب بالذات. البريد ليس في الرابط (حُذف من الـ URL عمداً في
+               الخلفية)، فيُطلَب هنا يدوياً. -->
+          <div class="resend-form">
+            <label for="resendEmail">{{ 'AUTH.EMAIL' | translate }}</label>
+            <input
+              id="resendEmail"
+              type="email"
+              [ngModel]="resendEmail()"
+              (ngModelChange)="resendEmail.set($event)"
+              [placeholder]="'AUTH.EMAIL_PLACEHOLDER' | translate"
+              autocomplete="email"
+            />
+            <button type="button" [disabled]="resendDisabled" (click)="resendConfirmation()">
+              <ng-container *ngIf="resendCooldown() > 0; else resendReady">
+                {{ 'AUTH.RESEND_CONFIRMATION.COOLDOWN' | translate: { seconds: resendCooldown() } }}
+              </ng-container>
+              <ng-template #resendReady>{{ 'AUTH.RESEND_CONFIRMATION.BUTTON' | translate }}</ng-template>
+            </button>
+            <!-- نصّ الخادم كما هو، بلا تخصيص -- نفس شرط صفحة التسجيل. -->
+            <p class="hint" *ngIf="resendMessage()" aria-live="polite">{{ resendMessage() }}</p>
+          </div>
+
           <a routerLink="/profile" class="btn-secondary">{{ 'AUTH.VERIFY_EMAIL.BACK_TO_PROFILE' | translate }}</a>
         </div>
       </div>
@@ -59,17 +86,31 @@ type VerifyState = 'verifying' | 'success' | 'error';
     .btn-primary,.btn-secondary{display:inline-block;margin-top:.5rem;padding:.75rem 1.5rem;border-radius:10px;text-decoration:none;font-weight:700}
     .btn-primary{background:#1e3a5f;color:#fff}
     .btn-secondary{background:transparent;color:#1e3a5f;border:1px solid #1e3a5f}
+    .resend-form{display:grid;gap:.5rem;text-align:start;width:100%}
+    .resend-form label{font-weight:700;color:#334155;font-size:.85rem}
+    .resend-form input,.resend-form button{width:100%;box-sizing:border-box;padding:.75rem 1rem;border-radius:10px}
+    .resend-form input{border:1px solid #cbd5e1}
+    .resend-form button{border:0;background:#1e3a5f;color:#fff;font-weight:700;cursor:pointer}
+    .resend-form button:disabled{opacity:.6;cursor:not-allowed}
+    .hint{color:#64748b;font-size:.85rem;margin:0}
   `]
 })
 export class VerifyEmailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly phoneAuth = inject(PhoneAuthApiService);
+  private readonly authApi = inject(AuthApiService);
   private readonly translate = inject(TranslateService);
   private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly state = signal<VerifyState>('verifying');
   readonly errorMessage = signal('');
+
+  // ✅ B-15 (RELEASE-BLOCKERS-AR.md): إعادة إرسال رابط التأكيد من هنا مباشرة.
+  readonly resendEmail = signal('');
+  readonly resendMessage = signal('');
+  readonly resendCooldown = signal(0);
+  private resendTimer: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit(): void {
     const params = this.route.snapshot.queryParamMap;
@@ -95,5 +136,41 @@ export class VerifyEmailPage implements OnInit {
           this.errorMessage.set(this.translate.instant('AUTH.VERIFY_EMAIL.FAILED'));
         }
       });
+  }
+
+  get resendDisabled(): boolean {
+    return this.resendCooldown() > 0 || !this.resendEmail().trim();
+  }
+
+  resendConfirmation(): void {
+    if (this.resendDisabled) {
+      return;
+    }
+
+    this.authApi.resendConfirmationEmail(this.resendEmail()).subscribe({
+      // نصّ الخادم كما هو -- نفس شرط صفحة التسجيل: لا تفرقة بين "موجود"/"غير موجود".
+      next: result => this.resendMessage.set(result.message),
+      error: () => this.resendMessage.set(this.translate.instant('AUTH.ERRORS.SERVER_ERROR'))
+    });
+
+    this.startResendCooldown(60);
+  }
+
+  private startResendCooldown(seconds: number): void {
+    this.resendCooldown.set(seconds);
+    this.clearResendTimer();
+    this.resendTimer = setInterval(() => {
+      this.resendCooldown.update(value => Math.max(0, value - 1));
+      if (this.resendCooldown() === 0) {
+        this.clearResendTimer();
+      }
+    }, 1000);
+  }
+
+  private clearResendTimer(): void {
+    if (this.resendTimer) {
+      clearInterval(this.resendTimer);
+      this.resendTimer = null;
+    }
   }
 }

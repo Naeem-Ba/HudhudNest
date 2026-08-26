@@ -3,7 +3,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { BackendApiService } from '../api/backend-api.service';
-import { apiToCamelCase } from '../adapters/api-naming.adapter';
 import {
   CreateReviewRequest,
   PropertyReviewSummaryDto,
@@ -66,7 +65,7 @@ export class ReviewService {
       };
     }
 
-    const s = apiToCamelCase<Record<string, unknown>>(raw);
+    const s = (raw as Record<string, unknown>);
     const rawReviews = Array.isArray(s['reviews']) ? s['reviews'] : [];
     const reviews = rawReviews.map(review => this.toReview(review));
 
@@ -78,7 +77,7 @@ export class ReviewService {
   }
 
   private toReview(raw: unknown): ReviewDto {
-    const r = apiToCamelCase<Record<string, unknown>>(raw);
+    const r = (raw as Record<string, unknown>);
     return {
       id: String(r['id'] ?? ''),
       propertyId: String(r['propertyId'] ?? ''),

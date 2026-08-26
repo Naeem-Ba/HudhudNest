@@ -28,7 +28,7 @@ export interface NotificationDto {
 }
 
 // ✅ نموذج camelCase للاستخدام الداخلي في Angular
-// يُستخدم بعد تحويل الاستجابة عبر apiToCamelCase()
+// الباك اند يُرجع camelCase مباشرة الآن (RELEASE-BLOCKERS-AR.md B-11) — لا تحويل مطلوب
 export interface NotificationItem {
   id: string;
   type?: string;

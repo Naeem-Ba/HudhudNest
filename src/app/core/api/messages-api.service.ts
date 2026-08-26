@@ -17,7 +17,6 @@ import { Observable, map } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
 import { ApiPagedResult, normalizePagedResult, PagedResult } from '../models/api.model';
 import { MessageDto, SendMessageRequest } from '../models/message.model';
-import { apiToCamelCase } from '../adapters/api-naming.adapter';
 
 @Injectable({ providedIn: 'root' })
 export class MessagesApiService {
@@ -55,7 +54,7 @@ export class MessagesApiService {
   }
 
   private toMessage(item: unknown): MessageDto {
-    const message = apiToCamelCase<Record<string, unknown>>(item);
+    const message = (item as Record<string, unknown>);
 
     return {
       id: String(message['id'] ?? ''),

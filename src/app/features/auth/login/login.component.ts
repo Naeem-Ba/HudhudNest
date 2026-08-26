@@ -649,7 +649,7 @@ export class LoginComponent implements OnDestroy {
   // ================= مشتركات =================
 
   private completeSocialLogin(response: AuthTokenResponse): void {
-    this.tokenStorage.storeTokens(response, false);
+    this.tokenStorage.storeTokens(response);
     this.refreshAuthState();
     this.completeLoginSuccess();
   }
