@@ -470,6 +470,8 @@
   "PROPERTY_FORM": {
     "LOAD_ERROR": "Die Immobiliendaten konnten nicht geladen werden.",
     "SAVE_ERROR": "Die Immobilie konnte nicht gespeichert werden.",
+    "CONTACT_NOT_CONFIRMED": "Bestätige deine E-Mail-Adresse oder Telefonnummer, bevor du ein Inserat veröffentlichst.",
+    "PLAN_REQUIRED": "Wähle ein Paket, bevor du ein Inserat veröffentlichst — das kostenlose Paket steht ebenfalls zur Verfügung.",
     "CREATE_SUCCESS": "Die Immobilie wurde erfolgreich hinzugefügt.",
     "UPDATE_SUCCESS": "Die Immobilie wurde erfolgreich aktualisiert.",
     "COLD_RENT_REQUIRED": "Die Kaltmiete ist für Mietobjekte erforderlich.",
@@ -711,6 +713,7 @@
   "PROFILE": {
     "SYNC_DATA": "Daten werden synchronisiert...",
     "FETCH_ERROR": "Die Daten konnten nicht geladen werden. Prüfen Sie die Sitzung.",
+    "REASON_CONFIRM_REQUIRED": "Bestätige hier deine E-Mail-Adresse oder Telefonnummer, bevor du ein Inserat veröffentlichen kannst.",
     "TITLE": "Kontoeinstellungen",
     "SUBTITLE": "Aktualisieren Sie Ihre persönlichen Daten und Ihr Profilbild",
     "UPLOAD_HINT": "Klicken, um das Bild zu ändern",
@@ -1038,6 +1041,7 @@
     "FREE_PRICE": "Kostenlos",
     "CONTACT_PRICE": "Kontaktiere uns",
     "LOAD_ERROR": "Die Abo-Pakete konnten nicht geladen werden.",
+    "REASON_PLAN_REQUIRED": "Wähle unten ein Paket, bevor du ein Inserat veröffentlichen kannst — das kostenlose Paket funktioniert ebenfalls.",
     "NOTE_CURRENCY": "Das kostenlose Paket erfordert keine Zahlung. Die bezahlten Pakete werden monatlich in US-Dollar zzgl. Steuern abgerechnet; die Online-Zahlung ist noch nicht aktiv — nutze die Paket-Schaltfläche, um das Vertriebsteam zu erreichen und das Abo abzuschließen.",
     "FREE": {
       "NAME": "Kostenlos",

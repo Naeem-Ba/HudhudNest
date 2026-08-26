@@ -27,7 +27,7 @@
 //   - إصلاح شامل لـ toUpdateRequest
 
 import { Injectable } from '@angular/core';
-import { Observable, map, switchMap } from 'rxjs';
+import { BehaviorSubject, Observable, map, switchMap, tap } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
 
 export interface UserProfile {
@@ -52,6 +52,21 @@ export interface UserProfile {
    * GET /users/me لكنه لم يكن مُستهلَكًا في الواجهة إطلاقاً.
    */
   EmailConfirmed?: boolean;
+
+  /**
+   * ✅ إضافة: حالة تفعيل رقم الهاتف (UserDto.PhoneConfirmed بالباك اند) — إلى جانب
+   * EmailConfirmed أعلاه، يحدّدان معاً هل يحق للمستخدم نشر إعلان (تأكيد أحدهما كافٍ).
+   */
+  PhoneConfirmed?: boolean;
+
+  /**
+   * ✅ إضافة: الخطة التي اختارها المستخدم صراحةً (UserDto.PlanTier بالباك اند).
+   * null/undefined تعني أن المستخدم لم يختر أي خطة بعد — حالة مختلفة عمداً عن
+   * اعتباره على الخطة المجانية ضمنياً. ينشر إعلاناً فقط بعد اختيار خطة، حتى لو
+   * كانت "free".
+   */
+  PlanTier?: string | null;
+  PlanSelectedAt?: string | null;
 
   /**
    * ✅ إضافة: نبذة تعريفية + عنوان/معلومات تواصل تُعرض علنًا بالملف الشخصي
@@ -105,10 +120,35 @@ interface BackendUserProfile {
   emailConfirmed?: boolean;
   EmailConfirmed?: boolean;
 
+  phoneConfirmed?: boolean;
+  PhoneConfirmed?: boolean;
+
+  planTier?: string | null;
+  PlanTier?: string | null;
+  planSelectedAt?: string | null;
+  PlanSelectedAt?: string | null;
+
   bio?: string;
   Bio?: string;
   contactInfo?: string;
   ContactInfo?: string;
+}
+
+/**
+ * The two gates a brand-new account must clear before it can add/publish a listing —
+ * mirrors CreatePropertyCommandHandler's EnsureContactConfirmedAsync/EnsurePlanSelected
+ * exactly, so the frontend never diverges from what the backend actually enforces. Used
+ * by the navbar's "Add property" visibility and by listing-eligibility.guard.ts.
+ */
+export function isEligibleForListing(profile: UserProfile | null): boolean {
+  if (!profile) {
+    return false;
+  }
+
+  const contactConfirmed = !!(profile.EmailConfirmed || profile.PhoneConfirmed);
+  const planSelected = !!profile.PlanTier;
+
+  return contactConfirmed && planSelected;
 }
 
 export interface ChangePasswordRequest {
@@ -146,12 +186,36 @@ interface BackendUserSummary {
 
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
+  /**
+   * Shared, cached profile stream. getMe() previously fired one independent HTTP call per
+   * caller with no shared state; the navbar's "Add property" gate, the listing-eligibility
+   * guard, and the pricing page all now need to read (and react to changes in)
+   * EmailConfirmed/PhoneConfirmed/PlanTier without each maintaining its own copy or
+   * re-fetching independently. null means "not loaded yet" (or logged out) — callers that
+   * care about the logged-out case should already be gating on AuthService.isLoggedIn$.
+   */
+  private readonly profileSubject = new BehaviorSubject<UserProfile | null>(null);
+  readonly profile$: Observable<UserProfile | null> = this.profileSubject.asObservable();
+
   constructor(private readonly api: BackendApiService) {}
 
   getMe(): Observable<UserProfile> {
     return this.api
       .get<BackendUserProfile>('/users/me')
-      .pipe(map(user => this.toLegacyUserProfile(user)));
+      .pipe(
+        map(user => this.toLegacyUserProfile(user)),
+        tap(profile => this.profileSubject.next(profile))
+      );
+  }
+
+  /**
+   * Re-fetches /users/me and pushes the result into profile$ — call after anything that
+   * changes eligibility-relevant state (confirming email/phone, selecting a plan) so every
+   * subscriber (navbar, guard, pricing page) picks it up immediately instead of only after
+   * their next independent load.
+   */
+  refresh(): Observable<UserProfile> {
+    return this.getMe();
   }
 
   /**
@@ -231,6 +295,10 @@ export class ProfileService {
       Role: user.role ?? user.Role,
 
       EmailConfirmed: user.emailConfirmed ?? user.EmailConfirmed ?? false,
+      PhoneConfirmed: user.phoneConfirmed ?? user.PhoneConfirmed ?? false,
+
+      PlanTier: user.planTier ?? user.PlanTier ?? null,
+      PlanSelectedAt: user.planSelectedAt ?? user.PlanSelectedAt ?? null,
 
       Bio: user.bio ?? user.Bio ?? '',
       ContactInfo: user.contactInfo ?? user.ContactInfo ?? ''

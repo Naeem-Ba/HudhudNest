@@ -799,11 +799,39 @@ export class PropertyFormPage implements OnInit {
             this.onSaveSuccess(savedId);
           }
         },
-        error: () => {
-          this.submitError.set('PROPERTY_FORM.SAVE_ERROR');
+        error: err => {
           this.isSaving.set(false);
+          this.handleSaveError(err);
         }
       });
+  }
+
+  /**
+   * Defense in depth: ListingEligibilityGuard keeps most visitors from ever reaching
+   * this page without a confirmed contact + a selected plan, but the guard reads a
+   * profile fetch that can go stale between navigation and submit (e.g. two tabs, or
+   * an admin revoking a plan mid-session) — CreatePropertyCommandHandler is the actual
+   * source of truth, and these are its two 403 codes (see ForbiddenException.Code).
+   * Anything else — including the pre-existing 409 quota conflict, which was never
+   * specially handled before this method existed — falls through to the generic
+   * message unchanged.
+   */
+  private handleSaveError(err: { status?: number; error?: { code?: string } }): void {
+    const code = err?.error?.code;
+
+    if (err?.status === 403 && code === 'LISTING_CONTACT_NOT_CONFIRMED') {
+      this.submitError.set('PROPERTY_FORM.CONTACT_NOT_CONFIRMED');
+      void this.router.navigate(['/profile'], { queryParams: { reason: 'confirm-required' } });
+      return;
+    }
+
+    if (err?.status === 403 && code === 'LISTING_PLAN_REQUIRED') {
+      this.submitError.set('PROPERTY_FORM.PLAN_REQUIRED');
+      void this.router.navigate(['/pricing'], { queryParams: { reason: 'plan-required' } });
+      return;
+    }
+
+    this.submitError.set('PROPERTY_FORM.SAVE_ERROR');
   }
 
   private uploadImages(propertyId: string): void {

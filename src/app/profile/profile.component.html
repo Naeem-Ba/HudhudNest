@@ -13,6 +13,11 @@
       <p>{{ 'PROFILE.SUBTITLE' | translate }}</p>
     </div>
 
+    <div class="state-info" role="status" *ngIf="showConfirmRequiredBanner()">
+      <span aria-hidden="true">ℹ️</span>
+      {{ 'PROFILE.REASON_CONFIRM_REQUIRED' | translate }}
+    </div>
+
     <div class="avatar-container">
       <div class="img-wrapper" [class.uploading]="isUploading()">
         <img [src]="avatarPreview() || fallbackAvatar" alt="User Avatar" appImageFallback="/images/default-avatar.svg">

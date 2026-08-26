@@ -1,20 +1,15 @@
 // Mirrors saved-search-api.service.ts's shape.
 //
-// Contract-first: GET /api/plans does NOT exist on the backend yet (verified — there
-// is no PlansController, no SubscriptionPlan entity, no migration). getPlans() therefore
-// serves the local catalog today. The response mapper below is already written against
-// the documented contract, so enabling the real endpoint is a one-line swap inside
-// getPlans(). The planned contract lives in FRONTEND_BACKEND_CONTRACT.md.
+// GET /api/plans now exists on the backend (PlansController, seeded from PlansSeed.cs
+// with the exact same tier/key/price data as SUBSCRIPTION_PLANS below — the two are
+// meant to be kept in sync). getPlans() calls it directly. SUBSCRIPTION_PLANS/of(...)
+// stays only as toCta()'s route table (see below) and as a fallback shape reference.
+// The documented contract lives in FRONTEND_BACKEND_CONTRACT.md §11.
 
 import { Injectable } from '@angular/core';
-import { Observable, map, of } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
-import {
-  PlanPriceKind,
-  PlanTier,
-  SUBSCRIPTION_PLANS,
-  SubscriptionPlan
-} from '../models/subscription-plan.model';
+import { PlanPriceKind, PlanTier, SubscriptionPlan } from '../models/subscription-plan.model';
 
 const VALID_TIERS: readonly PlanTier[] = ['free', 'basic', 'premium', 'elite'];
 const VALID_PRICE_KINDS: readonly PlanPriceKind[] = ['free', 'monthly', 'contact'];
@@ -25,27 +20,25 @@ export class PlansApiService {
 
   constructor(private readonly api: BackendApiService) {}
 
-  /**
-   * The public plan catalog.
-   *
-   * Today: served from the local constant so the page is real and testable without
-   * a backend. When PlansController ships, delete the `of(...)` line and uncomment
-   * the request below — toPlans() already handles the PascalCase payload.
-   */
+  /** The public plan catalog, now backend-sourced. */
   getPlans(): Observable<SubscriptionPlan[]> {
-    return of([...SUBSCRIPTION_PLANS]);
-
-    // return this.api.get<unknown[]>(this.endpoint)
-    //   .pipe(map(response => this.toPlans(response)));
+    return this.getPlansFromApi();
   }
 
-  /**
-   * Reserved for the future GET /api/plans response shape. Kept live (and exercised by
-   * getPlansFromApi) rather than commented out so it cannot silently rot.
-   */
   getPlansFromApi(): Observable<SubscriptionPlan[]> {
     return this.api.get<unknown[]>(this.endpoint)
       .pipe(map(response => this.toPlans(response)));
+  }
+
+  /**
+   * Records the caller's explicit plan choice — including "free", which is a real
+   * selection here rather than an implicit default (see UserAccount.PlanId's doc
+   * comment on the backend). POST /api/users/me/plan, not part of the §11 contract
+   * above since it's deliberately a lighter-weight addition: no billing cycle, no
+   * checkout — just "which tier did they pick".
+   */
+  selectPlan(tier: PlanTier): Observable<void> {
+    return this.api.post<void>('/users/me/plan', { tier });
   }
 
   private toPlans(response: unknown): SubscriptionPlan[] {

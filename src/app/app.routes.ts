@@ -2,6 +2,7 @@
 import { LayoutComponent } from './layout/layout';
 import { HomeComponent } from './features/home/home.component';
 import { AuthGuard } from './core/guards/auth-guard';
+import { ListingEligibilityGuard } from './core/guards/listing-eligibility.guard';
 import { AdminMessagesComponent } from './admin/messages/messages.component';
 import { AdminGuard } from './core/guards/admin-guard';
 
@@ -59,8 +60,11 @@ export const routes: Routes = [
             .then(m => m.MyListingsPage)
       },
       {
+        // Create only. ListingEligibilityGuard runs after AuthGuard (so an anonymous
+        // visitor hits the login redirect first) and is NOT applied to the edit route
+        // below — editing an already-owned listing isn't "publishing new".
         path: 'property-form',
-        canActivate: [AuthGuard],
+        canActivate: [AuthGuard, ListingEligibilityGuard],
         loadComponent: () =>
           import('./features/property-form/property-form.page')
             .then(m => m.PropertyFormPage)
