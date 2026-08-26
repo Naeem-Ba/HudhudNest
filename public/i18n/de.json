@@ -100,6 +100,10 @@
     "SEND_OTP_BUTTON_SHORT": "Code senden",
     "RESEND_OTP": "Code erneut senden",
     "RESEND_OTP_IN": "Sie können nach {{seconds}} Sekunden erneut senden",
+    "RESEND_CONFIRMATION": {
+      "BUTTON": "Bestätigungslink erneut senden",
+      "COOLDOWN": "Erneut senden in {{seconds}}s"
+    },
     "CHANGE_PHONE_NUMBER": "Telefonnummer ändern",
     "PROFILE_NAME_STEP_TITLE": "Vervollständigen Sie Ihre Angaben",
     "PROFILE_NAME_STEP_SUBTITLE": "Dies ist eine neue Telefonnummer — geben Sie Ihren Namen ein, um Ihr Konto zu erstellen.",
@@ -108,7 +112,7 @@
       "VERIFYING": "Bestätigungslink wird überprüft...",
       "SUCCESS": "Ihre E-Mail-Adresse wurde erfolgreich bestätigt!",
       "MISSING_PARAMS": "Der Bestätigungslink ist ungültig oder unvollständig.",
-      "FAILED": "Der Bestätigungslink ist ungültig oder abgelaufen. Fordern Sie einen neuen Link über Ihr Profil an.",
+      "FAILED": "Der Bestätigungslink ist ungültig oder abgelaufen. Geben Sie unten Ihre E-Mail-Adresse ein, um einen neuen zu erhalten.",
       "GO_TO_PROFILE": "Zu meinem Profil",
       "BACK_TO_PROFILE": "Zurück zum Profil"
     },

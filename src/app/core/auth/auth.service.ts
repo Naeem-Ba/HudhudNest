@@ -92,14 +92,17 @@ export class AuthService {
     this.loggedIn.next(true);
   }
 
-  /** Stores tokens from login/refresh responses, then rebuilds auth state. */
+  /**
+   * Stores the access token from a login/refresh response, then rebuilds auth state.
+   * RELEASE-BLOCKERS-AR.md B-13: no refresh token to read here any more — it never appears
+   * in the response body, only in the HttpOnly cookie.
+   */
   login(response: unknown): void {
     const res = (response ?? {}) as Record<string, unknown>;
     const accessToken = res['accessToken'] ?? res['AccessToken'] ?? res['token'] ?? res['Token'];
-    const refreshToken = res['refreshToken'] ?? res['RefreshToken'];
 
     if (typeof accessToken === 'string' && accessToken.trim()) {
-      this.tokenStorage.storeTokens({ accessToken, refreshToken: String(refreshToken ?? '') });
+      this.tokenStorage.storeTokens({ accessToken });
     }
 
     this.validateSession();

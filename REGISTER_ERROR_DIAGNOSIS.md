@@ -203,7 +203,7 @@ const data = {
   firstName: "John",
   lastName: "Doe",
   email: "john@example.com",
-  password: "SecurePass123!"
+  password: "MASKED" // ضع كلمة المرور الفعلية هنا عند الاختبار
 };
 
 // تأكد من:

@@ -4,7 +4,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
-import { apiToCamelCase } from '../adapters/api-naming.adapter';
 import { CreateSavedSearchPayload, SavedSearch } from '../models/saved-search.model';
 
 @Injectable({ providedIn: 'root' })
@@ -25,7 +24,7 @@ export class SavedSearchApiService {
     return this.api
       .post<unknown>(this.endpoint, payload)
       .pipe(map(item => {
-        const result = apiToCamelCase<Record<string, unknown>>(item);
+        const result = (item as Record<string, unknown>);
         return { id: String(result['id'] ?? '') };
       }));
   }
@@ -39,7 +38,7 @@ export class SavedSearchApiService {
     const list = Array.isArray(response) ? response : [];
 
     return list
-      .map(item => apiToCamelCase<Record<string, unknown>>(item))
+      .map(item => (item as Record<string, unknown>))
       .map(item => ({
         id: String(item['id'] ?? ''),
         name: (item['name'] as string | null | undefined) ?? null,

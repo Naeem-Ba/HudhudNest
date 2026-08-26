@@ -15,7 +15,6 @@ import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { BackendApiService } from '../api/backend-api.service';
 import { ApiPagedResult, unwrapItems } from '../models/api.model';
-import { apiToCamelCase } from '../adapters/api-naming.adapter';
 import {
   CreateVisitRequest,
   VisitDto,
@@ -110,7 +109,7 @@ export class VisitService {
   }
 
   private toVisit(raw: unknown): VisitDto {
-    const v = apiToCamelCase<Record<string, unknown>>(raw);
+    const v = (raw as Record<string, unknown>);
     return {
       id: String(v['id'] ?? ''),
       propertyId: String(v['propertyId'] ?? ''),

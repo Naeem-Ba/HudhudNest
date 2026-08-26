@@ -7,7 +7,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
-import { apiToCamelCase } from '../adapters/api-naming.adapter';
 import { ListingFeeKind, ListingFeeQuote } from '../models/listing-fee.model';
 
 @Injectable({ providedIn: 'root' })
@@ -33,7 +32,7 @@ export class ListingFeesApiService {
   }
 
   private toQuote(kind: ListingFeeKind, response: unknown): ListingFeeQuote {
-    const item = apiToCamelCase<Record<string, unknown>>(response);
+    const item = (response as Record<string, unknown>);
 
     // The two endpoints return different day fields (ExtensionDays / FeaturedDays) because
     // they sell different things. Normalised to one `days` here so the template does not

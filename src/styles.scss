@@ -5,8 +5,12 @@
 
 @import "leaflet/dist/leaflet.css";
 
-/* ── Google Fonts ── */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Cairo:wght@400;500;600;700;800;900&display=swap');
+/* Google Fonts: NOT imported here (RELEASE-BLOCKERS-AR.md, "dead @import" item) — index.html
+   already loads the same family list via a <link rel="stylesheet">, so this @import was a
+   second, redundant fetch of the same fonts. It also triggered a build warning on its own:
+   once leaflet.css above is inlined, its rules sit ahead of this @import in the final
+   stylesheet, and @import must be first — removing the redundant import removes that warning
+   too. */
 
 /* ================================================================
    CSS Custom Properties — Design Tokens

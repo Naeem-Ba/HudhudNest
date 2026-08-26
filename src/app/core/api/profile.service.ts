@@ -193,9 +193,9 @@ export class ProfileService {
    * ✅ تفعيل: POST /users/me/avatar (multipart/form-data) — كان يرمي خطأ ثابتًا
    * بانتظار جاهزية نقطة الباك اند؛ الآن مفعَّلة فعليًا (UsersController.UploadAvatar).
    * حقل الفورم اسمه "file" مطابقًا لاسم بارامتر [FromForm] IFormFile? file بالباك اند.
-   * الباك اند يُعيد 200 مع { ImageUrl } (PascalCase — راجع Program.cs:
-   * PropertyNamingPolicy = null)، لذا لا نحتاج apiToCamelCase هنا، فقط قراءة
-   * كلا الاحتمالين (PascalCase/camelCase) كباقي هذا الملف.
+   * الباك اند يُعيد الآن { imageUrl } بصيغة camelCase مباشرة (RELEASE-BLOCKERS-AR.md B-11 —
+   * Program.cs: PropertyNamingPolicy = CamelCase). قراءة PascalCase أدناه أُبقيت احتياطاً
+   * فقط، بلا أثر عملي بعد هذا التغيير.
    */
   uploadAvatar(file: File): Observable<{ ImageUrl: string; imageUrl: string }> {
     const formData = new FormData();

@@ -188,13 +188,14 @@ export class PhoneAuthApiService {
       .pipe(map(response => normalizePhoneWorkflowResult(response)));
   }
 
-  /** بعض النقاط (register/change) قد تُصدر زوجًا جديدًا من الرموز — خزّنها إن وُجدت. */
+  /**
+   * بعض النقاط (register/change) قد تُصدر accessToken جديدًا — خزّنه إن وُجد.
+   * RELEASE-BLOCKERS-AR.md B-13: result.refreshToken لم يعد يُقرأ هنا — الخادم يرسله عبر
+   * كعكة HttpOnly فقط الآن، لا في جسم الاستجابة.
+   */
   private storeTokensIfPresent(result: PhoneWorkflowResponse): void {
     if (result.accessToken) {
-      this.tokenStorage.storeTokens({
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken ?? undefined
-      });
+      this.tokenStorage.storeTokens({ accessToken: result.accessToken });
     }
   }
 }

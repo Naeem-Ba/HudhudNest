@@ -26,6 +26,33 @@ import { ToastService } from '../../../shared/services/toast.service';
   ],
   template: `
     <section class="auth-page">
+      <!-- ✅ B-15 (RELEASE-BLOCKERS-AR.md): قبل هذا كانت الرسالة تظهر توستاً عابراً ثم
+           تنتقل الصفحة فوراً لتسجيل الدخول -- فلا مخرج لمن لم يصله الرابط. الآن تبقى
+           الصفحة على حالة "أُرسل" مع زرّ إعادة إرسال فعلي. -->
+      <div class="auth-card" *ngIf="registered(); else registerForm">
+        <h1>{{ 'AUTH.REGISTER_TITLE' | translate }}</h1>
+        <p>{{ 'AUTH.REGISTER_SUCCESS' | translate }}</p>
+
+        <button
+          type="button"
+          [disabled]="resendDisabled"
+          (click)="resendConfirmation()">
+          <ng-container *ngIf="resendCooldown() > 0; else resendReady">
+            {{ 'AUTH.RESEND_CONFIRMATION.COOLDOWN' | translate: { seconds: resendCooldown() } }}
+          </ng-container>
+          <ng-template #resendReady>
+            {{ 'AUTH.RESEND_CONFIRMATION.BUTTON' | translate }}
+          </ng-template>
+        </button>
+
+        <!-- نصّ الخادم كما هو، بلا تخصيص -- شرط التقرير الصريح كي لا تنكسر مقاومة
+             التعداد المبنية في نقطة resend-confirmation. -->
+        <p class="hint" *ngIf="resendMessage()" aria-live="polite">{{ resendMessage() }}</p>
+
+        <a routerLink="/auth/login">{{ 'AUTH.GO_LOGIN' | translate }}</a>
+      </div>
+
+      <ng-template #registerForm>
       <form class="auth-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
         <h1>{{ 'AUTH.REGISTER_TITLE' | translate }}</h1>
         <p>{{ 'AUTH.REGISTER_SUBTITLE' | translate }}</p>
@@ -111,6 +138,7 @@ import { ToastService } from '../../../shared/services/toast.service';
           {{ 'AUTH.GO_LOGIN' | translate }}
         </a>
       </form>
+      </ng-template>
     </section>
   `,
   styles: [`
@@ -185,6 +213,12 @@ import { ToastService } from '../../../shared/services/toast.service';
       color: #b00020;
     }
 
+    .hint {
+      color: #64748b;
+      font-size: var(--text-sm, .85rem);
+      text-align: center;
+    }
+
     /* القواعد كانت غير معروفة للمستخدم إطلاقاً: النموذج يفرض 8 أحرف والخادم يفرض ثمانياً
        من القواعد. عرضها أثناء الكتابة يحوّل الرفض بعد الإرسال إلى إرشاد قبله. */
     .password-rules {
@@ -232,6 +266,13 @@ export class RegisterPage {
   readonly loading = signal(false);
   readonly submitted = signal(false);
   readonly error = signal('');
+
+  // ✅ B-15 (RELEASE-BLOCKERS-AR.md): حالة "أُرسل رابط التأكيد" + إعادة الإرسال.
+  readonly registered = signal(false);
+  readonly registeredEmail = signal('');
+  readonly resendCooldown = signal(0);
+  readonly resendMessage = signal('');
+  private resendTimer: ReturnType<typeof setInterval> | null = null;
 
   readonly passwordRules = PASSWORD_POLICY_RULES;
 
@@ -306,14 +347,52 @@ export class RegisterPage {
     this.auth.register(request).subscribe({
       next: () => {
         this.loading.set(false);
+        this.registeredEmail.set(request.email);
+        this.registered.set(true);
         this.toast.success(this.translate.instant('AUTH.REGISTER_SUCCESS'));
-        void this.router.navigate(['/auth/login']);
       },
       error: error => {
         this.loading.set(false);
         this.error.set(this.getRegisterErrorMessage(error));
       }
     });
+  }
+
+  get resendDisabled(): boolean {
+    return this.resendCooldown() > 0;
+  }
+
+  resendConfirmation(): void {
+    if (this.resendDisabled) {
+      return;
+    }
+
+    this.auth.resendConfirmationEmail(this.registeredEmail()).subscribe({
+      // نصّ الخادم كما هو -- شرط التقرير الصريح، لأنه مصمَّم ليكون نفسه بصرف النظر
+      // عن كون البريد موجوداً أو مؤكَّداً أو أُرسل له للتوّ.
+      next: result => this.resendMessage.set(result.message),
+      error: () => this.resendMessage.set(this.translate.instant('AUTH.ERRORS.SERVER_ERROR'))
+    });
+
+    this.startResendCooldown(60);
+  }
+
+  private startResendCooldown(seconds: number): void {
+    this.resendCooldown.set(seconds);
+    this.clearResendTimer();
+    this.resendTimer = setInterval(() => {
+      this.resendCooldown.update(value => Math.max(0, value - 1));
+      if (this.resendCooldown() === 0) {
+        this.clearResendTimer();
+      }
+    }, 1000);
+  }
+
+  private clearResendTimer(): void {
+    if (this.resendTimer) {
+      clearInterval(this.resendTimer);
+      this.resendTimer = null;
+    }
   }
 
   private getRegisterErrorMessage(error: unknown): string {

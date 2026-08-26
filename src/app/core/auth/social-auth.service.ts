@@ -204,21 +204,25 @@ export class SocialAuthService {
             environment.appleRedirectUri?.trim() ||
             `${window.location.origin}/auth/apple/callback`;
 
-          // ⚠️ ملاحظة معلّقة [🟠]: يُولَّد nonce هنا لكنه لا يُرسَل
-          // ضمن الطلب لـ authApi.loginWithApple أدناه. لم يُعدَّل هذا
-          // بعد بانتظار تأكيدك ما إذا كان الـ Backend يتحقق منه.
+          // ✅ B-16 (RELEASE-BLOCKERS-AR.md): the raw nonce must be captured here, once,
+          // because AppleID.auth.signIn()'s response never echoes it back — the only trace
+          // of it afterwards is the (hashed) "nonce" claim inside the returned identity
+          // token. The same raw value goes to Apple via init() and to our own backend below,
+          // so AppleTokenVerifier can hash it the same way and compare.
+          const nonce = this.createRandomValue();
+
           window.AppleID.auth.init({
             clientId: environment.appleClientId,
             scope: 'name email',
             redirectURI: redirectUri,
             state: this.createRandomValue(),
-            nonce: this.createRandomValue(),
+            nonce,
             usePopup: true
           });
 
-          return window.AppleID.auth.signIn();
+          return window.AppleID.auth.signIn().then(response => ({ response, nonce }));
         })
-        .then(response => {
+        .then(({ response, nonce }) => {
           const identityToken = response.authorization?.id_token;
           const authorizationCode = response.authorization?.code ?? null;
           const firstName = response.user?.name?.firstName ?? null;
@@ -232,7 +236,8 @@ export class SocialAuthService {
             identityToken,
             authorizationCode,
             firstName,
-            lastName
+            lastName,
+            nonce
           }).subscribe({
             next: tokenResponse => {
               observer.next(tokenResponse);
