@@ -470,6 +470,8 @@
   "PROPERTY_FORM": {
     "LOAD_ERROR": "Unable to load property data.",
     "SAVE_ERROR": "Unable to save the property.",
+    "CONTACT_NOT_CONFIRMED": "Confirm your email or phone number before publishing a listing.",
+    "PLAN_REQUIRED": "Choose a plan before publishing a listing — the free plan is available too.",
     "CREATE_SUCCESS": "Property added successfully.",
     "UPDATE_SUCCESS": "Property updated successfully.",
     "COLD_RENT_REQUIRED": "Base rent is required for rental properties.",
@@ -711,6 +713,7 @@
   "PROFILE": {
     "SYNC_DATA": "Synchronizing data...",
     "FETCH_ERROR": "Unable to load data. Check the session.",
+    "REASON_CONFIRM_REQUIRED": "Confirm your email or phone number here before you can publish a listing.",
     "TITLE": "Account settings",
     "SUBTITLE": "Update your personal information and account picture",
     "UPLOAD_HINT": "Click to change the picture",
@@ -1038,6 +1041,7 @@
     "FREE_PRICE": "Free",
     "CONTACT_PRICE": "Contact us",
     "LOAD_ERROR": "Could not load the subscription plans.",
+    "REASON_PLAN_REQUIRED": "Pick a plan below before you can publish a listing — the free plan works too.",
     "NOTE_CURRENCY": "The free plan requires no payment. Paid plans are billed monthly in US dollars and exclude tax; online payment is not live yet — use the plan button to reach the sales team and complete your subscription.",
     "FREE": {
       "NAME": "Free",

@@ -3,7 +3,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { ProfileService, UserProfile } from '../core/api/profile.service';
@@ -36,6 +36,7 @@ export class ProfileComponent implements OnInit {
   private readonly urlService     = inject(UrlService);
   private readonly toast          = inject(ToastService);
   private readonly router         = inject(Router);
+  private readonly route          = inject(ActivatedRoute);
 
   user          = signal<UserProfile | null>(null);
   isLoading     = signal(true);
@@ -67,8 +68,17 @@ export class ProfileComponent implements OnInit {
 
   passwordData = { currentPassword: '', newPassword: '', confirmPassword: '' };
 
+  /** Set when listing-eligibility.guard.ts redirected here with
+   * ?reason=confirm-required — the visitor tried to add a property before confirming
+   * an email or phone number. */
+  showConfirmRequiredBanner = signal(false);
+
   ngOnInit(): void {
     this.fetchProfile();
+
+    this.showConfirmRequiredBanner.set(
+      this.route.snapshot.queryParamMap.get('reason') === 'confirm-required'
+    );
   }
 
   fetchProfile(): void {

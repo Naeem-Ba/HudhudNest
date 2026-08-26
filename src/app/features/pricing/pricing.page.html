@@ -8,6 +8,11 @@
     <p>{{ 'PRICING.SUBTITLE' | translate }}</p>
   </header>
 
+  <div *ngIf="showPlanRequiredBanner()" class="state-card" role="status">
+    <span aria-hidden="true">ℹ️</span>
+    <p>{{ 'PRICING.REASON_PLAN_REQUIRED' | translate }}</p>
+  </div>
+
   <app-loading-spinner *ngIf="loading()" [label]="'COMMON.LOADING' | translate" />
 
   <div *ngIf="!loading() && error()" class="state-card error-state" role="alert">
@@ -62,15 +67,16 @@
         <span>{{ plan.noteKey | translate }}</span>
       </p>
 
-      <a
+      <button
+        type="button"
         class="btn plan-card__cta"
         [class.btn--gold]="plan.isRecommended"
         [class.btn--outline]="!plan.isRecommended"
-        [routerLink]="plan.ctaRoute"
-        [queryParams]="plan.ctaQueryParams"
+        [disabled]="selecting() === plan.tier"
+        (click)="onSelectPlan(plan)"
       >
         {{ plan.ctaKey | translate }}
-      </a>
+      </button>
     </article>
   </div>
 

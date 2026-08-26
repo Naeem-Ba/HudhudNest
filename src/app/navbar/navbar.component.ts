@@ -12,7 +12,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Observable } from 'rxjs';
+import { Observable, combineLatest, map } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { AuthService } from '../core/auth/auth.service';
@@ -22,6 +22,7 @@ import { ImageFallbackDirective } from '../shared/directives/image-fallback.dire
 import { OverlayBackHandlerService } from '../core/services/overlay-back-handler.service';
 import { ThemeService } from '../core/services/theme.service';
 import { NotificationsApiService } from '../core/api/notifications-api.service';
+import { ProfileService, isEligibleForListing } from '../core/api/profile.service';
 
 type AppLang = 'ar' | 'en' | 'de';
 
@@ -51,6 +52,7 @@ export class NavbarComponent implements OnInit {
   // ✅ إضافة: جرس الإشعارات — العداد جاهز أصلاً بالخدمة (unreadCount signal
   // محدَّث لحظيًا عبر SignalR)، كان ينقصه فقط رابط بالواجهة يعرضه.
   readonly notificationsApi = inject(NotificationsApiService);
+  private readonly profileService = inject(ProfileService);
 
   @ViewChild('accountRef')
   private accountRef?: ElementRef<HTMLElement>;
@@ -66,6 +68,18 @@ export class NavbarComponent implements OnInit {
 
   readonly isLoggedIn$: Observable<boolean> = this.auth.isLoggedIn$;
   readonly isAdmin$: Observable<boolean> = this.auth.isAdmin$;
+
+  /**
+   * "Add property" stays hidden for a brand-new account until it has confirmed a way to
+   * be reached AND picked a plan — mirrors CreatePropertyCommandHandler's gates exactly
+   * (isEligibleForListing), so the link never promises something the backend will then
+   * 403 on. Reappears the moment both are satisfied — see listing-eligibility.guard.ts
+   * for the route-level version of the same check.
+   */
+  readonly canAddProperty$: Observable<boolean> = combineLatest([
+    this.isLoggedIn$,
+    this.profileService.profile$
+  ]).pipe(map(([loggedIn, profile]) => loggedIn && isEligibleForListing(profile)));
 
   dropdownOpen = false;
   langMenuOpen = false;
@@ -109,6 +123,12 @@ export class NavbarComponent implements OnInit {
         this.avatarLetter = this.userEmail
           ? this.userEmail.charAt(0).toUpperCase()
           : '?';
+
+        // Populates profile$ (EmailConfirmed/PhoneConfirmed/PlanTier) for canAddProperty$
+        // above. Errors are swallowed here on purpose: a failed profile fetch should not
+        // break the rest of the navbar, and canAddProperty$ simply stays false (link
+        // hidden) until the next successful refresh — the safe default either way.
+        this.profileService.refresh().subscribe({ error: () => undefined });
 
         const imageUrl = this.urlService.buildWithCacheBuster(user.ImageUrl);
 

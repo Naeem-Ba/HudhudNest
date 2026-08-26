@@ -47,7 +47,7 @@
       </a>
 
       <a
-        *ngIf="isLoggedIn$ | async"
+        *ngIf="canAddProperty$ | async"
         routerLink="/property-form"
         routerLinkActive="navbar__link--active"
         class="navbar__link navbar__link--add"
@@ -489,7 +489,7 @@
       </a>
 
       <a
-        *ngIf="isLoggedIn$ | async"
+        *ngIf="canAddProperty$ | async"
         routerLink="/property-form"
         class="mobile-drawer__link mobile-drawer__link--highlight"
         (click)="closeMobileMenu()"
