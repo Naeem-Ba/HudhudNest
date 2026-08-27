@@ -2,12 +2,12 @@
 
 > **الغرض:** خريطة واحدة للمشروع كلّه — أين يعيش كل شيء، ولماذا هناك، وما الحدود التي
 > لا تُعبَر. هذا الملف يجيب عن سؤال «أين أضع هذا الملف؟» قبل أن تكتبه.
-> **آخر تحديث:** 2026-08-25
-> **مصدر التحقّق:** إحصاء مباشر لشجرتَي المصدر — الواجهة عند `3d81d37`، الخلفية عند
-> `293a5c1` — مسنوداً ببناء وتشغيل اختبارات في المستودعين.
+> **آخر تحديث:** 2026-08-26
+> **مصدر التحقّق:** إحصاء مباشر لشجرتَي المصدر — الواجهة عند `730af55`، الخلفية عند
+> `3cadb4b` — مسنوداً بتشغيل فعلي لبناء الخلفية (`dotnet build -c Release`، 0 تحذير) وبوابة
+> `audit:frontend` (تمرّ) في هذه الجلسة.
 > **الوثائق الشقيقة:** `FRONTEND-REFERENCE.md` (تفصيل الواجهة) ·
-> `PropertyApi-REFERENCE.md` (تفصيل الخلفية) · `BACKEND-ISSUES.md` (عيوب الخلفية المفتوحة)
-> · `RELEASE-BLOCKERS-AR.md` (موانع النشر مرتّبةً بترتيب التنفيذ).
+> `PropertyApi-REFERENCE.md` (تفصيل الخلفية) · `BACKEND-ISSUES.md` (عيوب الخلفية المفتوحة).
 
 ---
 
@@ -17,24 +17,20 @@
 C:\Users\naeem\
 ├── OneDrive\Desktop\Notiz\WohnungsApp\Wohnungsmieten\   ← الواجهة  (Angular 20)
 │                                                          فرع افتراضي: main
-│                                                          فرع حالي: feat/register-confirmation-notice
+│                                                          فرع حالي: feat/listing-eligibility-gates
 └── Source\Repos\PropertyApi\                            ← الخلفية  (.NET 8)
                                                            فرع افتراضي: master
-                                                           فرع حالي: feat/resend-email-confirmation
+                                                           فرع حالي: master (HEAD 3cadb4b)
 ```
 
 ⚠️ **الفرعان الافتراضيان مختلفا الاسم** — `main` في الواجهة و`master` في الخلفية.
-أوامر CI وسكربتات المقارنة التي تفترض اسماً واحداً للطرفين ستفشل بصمت.
 
-**لا أحدهما مجلّد فرعي في الآخر، ولا يشتركان في تاريخ Git.** جلسات سابقة استنتجت أن
-الخلفية «غير موجودة» لأنها ليست داخل شجرة عمل Angular — وهذا خطأ: كلاهما على هذا
-الجهاز وكلاهما قابل للفحص. أي مهمة تلمس عقد الاتصال بينهما تتطلب فتح المستودعين معاً،
-وإلا تُكتب ادّعاءات عن طرف لم يُقرأ.
+**لا أحدهما مجلّد فرعي في الآخر، ولا يشتركان في تاريخ Git.** أي مهمة تلمس عقد الاتصال
+بينهما تتطلّب فتح المستودعين معاً.
 
-**لا يوجد مستودع ثالث**: لا حزمة عقود مشتركة، ولا مولّد أنواع، ولا OpenAPI client
-مُولَّد. العقد بين الطرفين **موثَّق يدوياً** في `FRONTEND_BACKEND_CONTRACT.md` ويُطبَّق
-يدوياً في `core/api/`. هذه أرخص طريقة للانحراف الصامت، ولذلك يوجد
-`api-naming.adapter.ts` كنقطة اختناق واحدة (§4.3).
+**لا يوجد مستودع ثالث**: العقد بين الطرفين **موثَّق يدوياً** في
+`FRONTEND_BACKEND_CONTRACT.md` ويُطبَّق يدوياً في `core/api/`. نقطة الاختناق الوحيدة
+لتحويل التسمية هي `api-naming.adapter.ts` (§4.3).
 
 ---
 
@@ -50,7 +46,7 @@ C:\Users\naeem\
 │                          حزمة Angular واحدة                          │
 └──────────────────────────────┬───────────────────────────────────────┘
                                │
-              HTTPS (Bearer)   │   WebSocket (SignalR)
+   HTTPS (Bearer + كوكي refresh_token HttpOnly)   │   WebSocket (SignalR)
                                │
 ┌──────────────────────────────▼───────────────────────────────────────┐
 │  موازِن حِمل  →  عدّة نسخ من PropertyApi (.NET 8)                      │
@@ -70,10 +66,17 @@ C:\Users\naeem\
 * PWA غير مُفعَّلة فعلياً — الإعداد موجود والتسجيل غائب. انظر FRONTEND-REFERENCE §12.
 ```
 
-⚠️ **نقطة معمارية حرجة يجب أن تُقرأ من هذا المخطّط:** «عدّة نسخ» حقيقية — مجموعة
-اختبارات الأداء تشترط وصول الحركة إلى نسختين. Redis يجعل SignalR يعمل عبر النسخ،
-لكن **المهام المجدولة داخل التطبيق لا تملك أي تنسيق بين النسخ**؛ كل نسخة تشغّل كل
-مهمة. هذا البند **B-6** في `BACKEND-ISSUES.md`.
+⚠️ **نقطتان معماريتان يجب أن تُقرآ من هذا المخطّط:**
+
+1. «عدّة نسخ» حقيقية — مجموعة اختبارات الأداء تشترط وصول الحركة إلى نسختين. Redis يجعل
+   SignalR يعمل عبر النسخ، و**أربعاً من خمس مهام مجدولة حقيقية** صارت تستخدم قفلاً
+   استشارياً في PostgreSQL (`BackgroundJobLock`) لمنع السباق بين النسخ — تحسّن جوهري عن
+   المراجعات السابقة. الاستثناء الباقي: `SecurityAlertBackgroundService` (‏`BACKEND-ISSUES.md`
+   **B-6b**).
+2. كوكي `refresh_token` صار `HttpOnly` + `SameSite=None` — لازم لأن الواجهة والخلفية
+   أصلان مختلفان حتى محلياً — لكن هذا فتح اعتباراً أمنياً جديداً موثَّقاً في
+   `BACKEND-ISSUES.md` **B-18**: CSRF ما زالت مطفأة افتراضياً بينما صار كوكي مصادقة
+   حقيقياً يُرسَل عبر المواقع.
 
 ---
 
@@ -90,106 +93,104 @@ PropertyApi              ──►  PropertyApi.Application  ──►  Property
 
 | المشروع | مسؤوليته | ما يُمنَع فيه |
 |---|---|---|
-| **`PropertyApi`** | HTTP فقط: Controllers، Middleware، الأمان، `Program.cs` | لا منطق أعمال، ولا `AppDbContext` (‏3 استثناءات تشخيصية موثّقة) |
+| **`PropertyApi`** | HTTP فقط: Controllers (‏25)، Middleware، الأمان، `Program.cs` | لا منطق أعمال، ولا `AppDbContext` (‏3 استثناءات تشخيصية موثّقة) |
 | **`PropertyApi.Application`** | الأوامر والاستعلامات (MediatR)، DTOs، الواجهات (Interfaces) | **صفر تبعية على البنية التحتية** — لا EF، ولا `Microsoft.Extensions.Options` |
 | **`PropertyApi.Domain`** | الكيانات، الثوابت الأعمالية، قواعد السياسة | **صفر تبعيات خارجية إطلاقاً** |
-| **`PropertyApi.Infrastructure`** | EF Core، Identity، Redis، Cloudinary، Twilio، المهام المجدولة | لا يعرفه أحد إلا `Program.cs` عند التركيب |
+| **`PropertyApi.Infrastructure`** | EF Core، Identity، Redis، Cloudinary، Twilio، المهام المجدولة، الأقفال الاستشارية | لا يعرفه أحد إلا `Program.cs` عند التركيب |
 
-`APIDependencyGuardTests` يفرض هذا الاتجاه في البناء. عكسه ليس خطأ أسلوب — يكسر الاختبار.
+`APIDependencyGuardTests` يفرض هذا الاتجاه في البناء.
 
 ### 3.2 السياقات (Bounded Contexts) — الأسماء نفسها في الطبقات الثلاث
 
 | السياق | Domain | Application | ملاحظات |
 |---|---|---|---|
-| `Listings` | ✅ | ✅ | العقارات، دورة الصلاحية، الرسوم |
-| `Users` | ✅ | ✅ | `UserAccount` (الدومين) منفصل عن `ApplicationUser` (‏Identity) |
-| **`Agencies`** | ✅ | ✅ | **جديد في `61bd779`** — تجميع تنظيمي لا عزل بيانات |
+| `Listings` | ✅ | ✅ | العقارات، دورة الصلاحية، الرسوم، **حصّة المكتب الجديدة (`ListingQuotaPolicy`)** |
+| `Users` | ✅ | ✅ | `UserAccount` (الدومين، ويحمل الآن `PlanId`) منفصل عن `ApplicationUser` (‏Identity) |
+| `Agencies` | ✅ | ✅ | **صار قابلاً للتعديل والتعطيل** هذه الدورة (كان إنشاء فقط) |
+| **`Plans`** | ✅ | ✅ | **جديد** — كتالوج خطط + اختيار صريح، **بلا** فوترة أو ربط بحدّ الإعلانات بعد |
 | `Notifications` | ✅ | ✅ | يُنتَج ويُدفَع عبر SignalR |
 | `Transactions` | ✅ | — | الرسوم؛ لا مجلّد Application خاص، الأوامر تحت `Listings` |
 | `Reviews` · `Search` · `Bookings` · `Auth` · `Lookups` · `Messaging` · `Audit` | ✅ | جزئياً | `Bookings` قائم في الدومين ومحدود الاستخدام |
 | `Common` | ✅ | ✅ | `AuditableEntity`، الاستثناءات، الواجهات المشتركة |
 
 **قاعدة التسمية:** المجلّد نفسه بالاسم نفسه في `Domain` و`Application` و(عند اللزوم)
-`Infrastructure`. ميزة جديدة تعني ثلاثة مجلّدات بالاسم نفسه، لا مجلّداً واحداً في مكان.
+`Infrastructure`. ميزة جديدة (كما `Plans`) تعني ثلاثة مجلّدات بالاسم نفسه.
 
-### 3.3 شكل أمر واحد من طرف إلى طرف
-
-مثال حيّ — تسجيل رسم تمييز إعلان:
+### 3.3 شكل أمر واحد من طرف إلى طرف — مثال محدَّث: إنشاء إعلان
 
 ```
-POST /api/properties/{id}/featured
+POST /api/properties
   │
   ├─ PropertyApi/Controllers/PropertiesController.cs
   │    يقرأ هوية المستخدم من التوكن، لا من الجسم أبداً
-  │    _mediator.Send(new RequestFeaturedListingCommand(id, userId))
   │
-  ├─ Application/Listings/Commands/RequestFeaturedListing/
-  │    ├─ RequestFeaturedListingCommand.cs          سجلّ موضعي (Positional record)
-  │    └─ RequestFeaturedListingCommandHandler.cs   كل التحقق والمنطق هنا
-  │         يستدعي IPropertyRepository · IListingFeeRepository · IUnitOfWork
+  ├─ Application/Listings/Commands/CreateProperty/CreatePropertyCommandHandler.cs
+  │    1. EnsureContactConfirmedAsync()   ← 403 LISTING_CONTACT_NOT_CONFIRMED
+  │    2. EnsurePlanSelected()            ← 403 LISTING_PLAN_REQUIRED
+  │    3. CreateWithQuotaEnforcedAsync()
+  │         ├─ _uow.BeginTransactionAsync()
+  │         ├─ _uow.AcquireAdvisoryLockAsync(ListingQuotaLock.ForAgency|ForOwner)
+  │         ├─ EnsureListingQuotaAvailableAsync()  ← يقرأ IListingQuotaPolicy
+  │         ├─ Property.Create(...) + SetAgency() إن وُجد مكتب
+  │         └─ _uow.CommitTransactionAsync()  (أو Rollback عند أي استثناء)
   │
-  ├─ Domain/Listings/ListingLifecyclePolicy.cs      السعر والمدة — مصدر حقيقة واحد
-  ├─ Domain/Transactions/Entities/Transaction.cs    Transaction.Create(...)
+  ├─ Domain/Listings/ListingLifecyclePolicy.cs      السعر والمدة والحدّ الفردي
+  ├─ Infrastructure/Listings/ListingQuotaPolicy.cs  حدّ المكتب (config-driven، مؤقّت)
   │
-  ├─ Infrastructure/Repositories/ListingFeeRepository.cs
-  │    EF Core → PostgreSQL
-  │
-  └─ 202 Accepted + FeaturedListingQuoteDto
+  └─ 201 Created
 ```
 
-**الأعراف المستخلَصة من هذا المسار وتُطبَّق على كل أمر جديد:**
+**الأعراف المستخلَصة وتُطبَّق على كل أمر جديد يلمس مورداً محدود الكمّية:**
 
-1. **هوية المستخدم من التوكن حصراً.** جسم الطلب لا يحمل `RequestingUserId` إطلاقاً —
-   ولهذا يوجد `CreateAgencyRequest` منفصلاً عن `CreateAgencyCommand`.
-2. **كل التحقق في المعالِج (Handler)، لا في الـ Controller.** الـ Controller يترجم
-   HTTP فقط.
-3. **السجلات الموضعية بالوسائط المسمّاة:** `new MyCommand(PropertyId: x)` لا
-   `new MyCommand { PropertyId = x }`.
-4. **الوصول للبيانات عبر واجهة مستودع** معرَّفة في `Application`، ومنفَّذة في
-   `Infrastructure`. لا `AppDbContext` في معالِج (باستثناء واحد موثّق).
-5. **الثوابت التجارية في `Domain`** لا في `appsettings` — تغييرها تغيير شيفرة، وبالتالي
-   تغيير مُراجَع، وهذا هو المستوى الصحيح لقيمة رآها زبون قبل أن يدفع.
+1. **هوية المستخدم من التوكن حصراً.**
+2. **كل التحقق في المعالِج، لا في الـ Controller.**
+3. **الفحوص الرخيصة قبل فتح المعاملة والقفل الاستشاري** — طلب سيُرفَض على أي حال لا
+   يستحقّ قفلاً.
+4. **قفل استشاري بنطاق معاملة (`pg_advisory_xact_lock`) لأي فحص "اقرأ ثم اكتب"** —
+   `ListingQuotaLock` نمط يُقلَّد، لا حالة خاصة.
+5. **السجلات الموضعية بالوسائط المسمّاة.**
 
 ### 3.4 خريطة `PropertyApi.Infrastructure`
 
 | المجلّد | المحتوى |
 |---|---|
-| `Persistence/` | `AppDbContext` · `Configurations/` (‏Fluent API) · `Seeds/` · `Migrations/` (26) |
-| `Repositories/` | 14 مستودعاً — كلها تنفّذ واجهات معرَّفة في `Application` |
-| `Identity/` | `ApplicationUser` وخدمات Identity — **معزولة خلف واجهات** |
-| `Listings/` | `ListingExpiryHostedService` — كنس الصلاحية والتمييز |
-| `Search/` | `SavedSearchMatchHostedService` |
-| `Auth/Services/` | Console · Twilio · Http SMS (‏ثلاثة تنفيذات لواجهة واحدة) |
-| `Media/` | Cloudinary — **لا يخرج SDK منها إلى أي طبقة أخرى** |
-| `Caching/` · `Hubs/` · `Email/` · `Health/` · `Security/` · `Performance/` | Redis · SignalR · التنبيهات · مدقّق الإقلاع · حماية البيانات · القياس |
+| `Persistence/` | `AppDbContext` · `Configurations/` · `Seeds/` · `Migrations/` (‏29) · **`BackgroundJobLock.cs` / `BackgroundJobLockKeys.cs`** (‏جديد) |
+| `Repositories/` | 14 مستودعاً، منها **`PlanRepository`** (‏جديد) |
+| `Identity/` | `ApplicationUser` وخدمات Identity — معزولة خلف واجهات |
+| `Listings/` | `ListingExpiryHostedService` (‏مقفلة الآن) · **`ListingQuotaPolicy.cs`** (‏جديد) |
+| `Search/` | `SavedSearchMatchHostedService` (‏مقفلة الآن) |
+| `Auth/Services/` | Console · Twilio · Http SMS؛ `OtpCleanupHostedService` و`PhoneVerificationHostedService` (‏مقفلتان الآن) |
+| `Media/` | Cloudinary — لا يخرج SDK منها إلى أي طبقة أخرى |
+| `Caching/` · `Hubs/` · `Email/` · `Health/` · `Security/` · `Performance/` | Redis · SignalR · التنبيهات (‏`SecurityAlertBackgroundService` — **غير مقفلة**، B-6b) · مدقّق الإقلاع · حماية البيانات · القياس |
 
-### 3.5 المهام المجدولة (6) — اقرأ B-6 قبل الاعتماد عليها
+### 3.5 المهام المجدولة (6) — القفل الاستشاري صار القاعدة، لا الاستثناء
 
-| الخدمة | الدور |
-|---|---|
-| `ListingExpiryHostedService` | كل 6 ساعات: تحذير ← انتهاء ← حذف ← إنهاء التمييز |
-| `SavedSearchMatchHostedService` | مطابقة البحوث المحفوظة وإشعار أصحابها |
-| `OtpCleanupHostedService` | تنظيف رموز OTP المنتهية |
-| `PhoneVerificationHostedService` | متابعة تحقّق الهاتف |
-| `SecurityAlertBackgroundService` | إرسال تنبيهات الأمان (طابور، نسخة واحدة مشتركة) |
-| `ProductionStartupValidator` | يتحقّق من إعدادات الإنتاج عند الإقلاع ويُفشل الإقلاع عند النقص |
+| الخدمة | الدور | مقفلة بـ `BackgroundJobLock`؟ |
+|---|---|---|
+| `ListingExpiryHostedService` | كل 6 ساعات: تحذير ← انتهاء ← حذف ← إنهاء التمييز | ✅ |
+| `SavedSearchMatchHostedService` | مطابقة البحوث المحفوظة وإشعار أصحابها | ✅ |
+| `OtpCleanupHostedService` | تنظيف رموز OTP المنتهية | ✅ |
+| `PhoneVerificationHostedService` | متابعة تحقّق الهاتف | ✅ |
+| `SecurityAlertBackgroundService` | إرسال تنبيهات الأمان (طابور) | ❌ — `BACKEND-ISSUES.md` **B-6b** |
+| `ProductionStartupValidator` | يتحقّق من إعدادات الإنتاج عند الإقلاع فقط — ليست مهمّة دورية | لا ينطبق |
 
-⚠️ **لا واحدة منها تملك انتخاب قائد أو قفلاً موزّعاً.** في نشر متعدّد النسخ تعمل كلٌّ
-منها **في كل نسخة**.
-
-### 3.6 اختبارات الخلفية (8 مشاريع · 111 ملفاً · 516 تصريح `[Fact]`/`[Theory]`)
+### 3.6 اختبارات الخلفية (8 مشاريع)
 
 | المشروع | يفرض ماذا |
 |---|---|
-| `Architecture.Tests` | **حرّاس البناء** — اتجاه التبعية، ترتيب الوسطاء، النقاط العامة، حدود المعدّل، Redis |
-| `Application.Tests` | منطق المعالِجات والدومين |
+| `Architecture.Tests` | حرّاس البناء — اتجاه التبعية، ترتيب الوسطاء، النقاط العامة، حدود المعدّل، Redis |
+| `Application.Tests` | منطق المعالِجات والدومين، بما فيها `Agencies`/`Plans`/حصّة الإعلانات الجديدة |
 | `Auth.Tests` | المصادقة والتوكن وOTP |
 | `Integration.Tests` | مسارات كاملة مقابل قاعدة بيانات |
 | `Concurrency.Tests` · `Observability.Tests` · `Performance.Tests` · `StagingSmokeTests` | كلٌّ لبُعده |
 
-> **بوابتان تفشلان البناء وليستا اختيارية:** `PublicEndpointPolicyTests` (كل نقطة
-> مجهولة الهوية يجب أن تكون مُسجَّلة صراحةً) و`APIDependencyGuardTests` (اتجاه التبعية).
-> كلتاهما **قائمة سماح**، لا قاعدة عامة — وهذا حدّها المهم (‏B-7).
+⚠️ **أعداد الحالات (‏516/588 في مراجعات سابقة) محمولة من تشغيل عند `293a5c1`، قبل
+تغييرات هذه الدورة — لم يُعَد تشغيل `dotnet test` الكامل في هذه الجلسة.** `dotnet build
+-c Release` عند `3cadb4b` نُفِّذ فعلياً هنا: **0 تحذير، 0 خطأ**، 59 ثانية.
+
+> **بوابتان تفشلان البناء وليستا اختياريتين:** `PublicEndpointPolicyTests` و
+> `APIDependencyGuardTests`. كلتاهما **قائمة سماح**، لا قاعدة عامة — `BACKEND-ISSUES.md`
+> **B-7**.
 
 ---
 
@@ -201,68 +202,51 @@ POST /api/properties/{id}/featured
 src/app/
 ├── core/        ← لا مكوّنات مرئية إطلاقاً. المنطق والحالة والاتصال بالشبكة.
 ├── shared/      ← مكوّنات عرض بلا حالة، وموجّهات، وخدمات عرضية.
-├── features/    ← 20 ميزة. كل واحدة صفحة مُحمَّلة كسولاً (lazy).
+├── features/    ← ~20 ميزة. كل واحدة صفحة مُحمَّلة كسولاً (lazy).
 └── admin/       ← 4 شاشات إدارية خلف AdminGuard.
     layout/ navbar/ profile/ pipes/ map-picker/ language-selector/
 ```
 
-**القاعدة:** `features/` تعتمد على `core/` و`shared/`. **العكس ممنوع.** ميزة تحتاج شيئاً
-من ميزة أخرى تعني أن ذلك الشيء ينتمي إلى `core/` أو `shared/`.
+**القاعدة:** `features/` تعتمد على `core/` و`shared/`. **العكس ممنوع.**
 
-### 4.2 داخل `core/` — سبعة مجلّدات، لكلٍّ دور واحد
+### 4.2 داخل `core/` — الأدوار المحدَّثة
 
 | المجلّد | العدد | الدور |
 |---|---|---|
-| `api/` | 19 | خدمة لكل مورد. لا منطق عرض، ولا `catchError`. |
-| `models/` | 15 | الأنواع فقط (‏`interface` / `type` / ثوابت). |
-| `services/` | 11 | حالة عرضية: اللغة، السمة، التوكن، SignalR، زر الرجوع. |
-| `interceptors/` | 3 | إرفاق التوكن وتجديده · تحويل الأخطاء. |
-| `guards/` | 2 | `AuthGuard` · `AdminGuard`. |
-| `adapters/` | 1 | `apiToCamelCase` — نقطة الاختناق مع PascalCase. |
-| `auth/` | 1 | `auth.service.ts`. |
+| `api/` | 19 | خدمة لكل مورد، منها `plans-api.service.ts` (‏تستهلك `GET /api/plans` الحقيقية الآن) |
+| `models/` | 15 | الأنواع فقط |
+| `services/` | 11 | حالة عرضية |
+| `interceptors/` | 3 | إرفاق التوكن وتجديده (‏عبر كوكي الآن، لا جسم) · تحويل الأخطاء |
+| `guards/` | **3** (‏كان 2) | `AuthGuard` · `AdminGuard` · **`ListingEligibilityGuard`** (‏جديد — يعكس بوابتَي الخلفية) |
+| `adapters/` | 1 | `apiToCamelCase` |
+| `auth/` | 2 | `auth.service.ts` + `token-storage.service.ts` (‏لم يعد يخزّن توكن التجديد في أي تخزين متصفّح) |
 
-### 4.3 مسار طلب واحد من طرف إلى طرف
+### 4.3 مسار طلب واحد من طرف إلى طرف — مثال محدَّث: إنشاء إعلان محمي بالأهلية
 
 ```
-CheckoutPage (features/checkout)
-   │  inject(ListingFeesApiService)
+PropertyFormPage (features/property-form)
+   │  canActivate: [AuthGuard, ListingEligibilityGuard]
    ▼
-ListingFeesApiService (core/api)
-   │  this.api.post('/properties/{id}/featured', {})
+ListingEligibilityGuard (core/guards)
+   │  ProfileService.getMe() — يجلب الملف طازجاً، لا من ذاكرة مؤقّتة
+   │  isEligibleForListing(profile)? وإلا يوجّه إلى /pricing أو /profile حسب البوابة الناقصة
    ▼
-BackendApiService (core/api)          ← يبني العنوان من environment
+                   ══ عند النجاح فقط ══
    ▼
-RefreshAuthInterceptor (core/interceptors)
-   │  يُرفق Bearer فقط إن كان الطلب موجّهاً لواجهة الخلفية
-   │  عند 401: طلب تجديد واحد مشترك بـ shareReplay
-   ▼
-                        ══ الشبكة ══
-   ▼
-ApiErrorInterceptor  ← يحوّل خطأ HTTP إلى مفتاح رسالة قابل للترجمة
-   ▼
-apiToCamelCase()     ← PascalCase من الخادم ⟶ camelCase في التطبيق
-   ▼
-ListingFeeQuote (core/models)  →  إشارة (signal) في الصفحة
+PropertyApiService.create(...)  →  POST /api/properties
+   │  الخلفية تُعيد فحص الأهلية بنفسها — الحارس تجميلي لتحسين التجربة، لا الحماية الفعلية
 ```
 
-**ثلاثة أعراف مُلزِمة يوضّحها هذا المسار:**
+**عرف مُلزِم جديد يوضّحه هذا المسار:** أي حارس واجهة يعكس قاعدة عمل من الخلفية **يجب أن
+يقول ذلك صراحةً في تعليقه** (كما فعل `ListingEligibilityGuard`) — الخلفية تبقى مصدر
+الحقيقة دائماً، والحارس تحسين تجربة لا بديلاً عن 403.
 
-1. **`apiToCamelCase()` في كل خدمة API.** الخادم يرسل PascalCase (‏`PropertyNamingPolicy = null`)،
-   ونسيان المحوّل يعطي حقولاً `undefined` بلا خطأ ولا تحذير.
-2. **لا `catchError` داخل الخدمة.** الخطأ يصعد إلى الاعتراض المركزي، فتكون رسائل
-   الأخطاء متسقة في التطبيق كلّه بدل أن تُعالَج كلٌّ على هواها.
-3. **الحالة إشارات (‏`signal()`) داخل المكوّن** مع `OnPush`.
-
-### 4.4 نظاما التنسيق — كلاهما مقصود
+### 4.4 نظاما التنسيق — كلاهما مقصود، بلا تغيير هذه الدورة
 
 | النظام | الملف الجذر | يستخدمه |
 |---|---|---|
-| SCSS خام + متغيرات CSS | `src/styles.scss` | كل الصفحات السابقة لـ `c84052a` (~25 صفحة) |
-| Tailwind v4 | `src/tailwind.css` | `checkout` فقط حتى الآن |
-
-**الجسر بينهما:** كتلة `@theme` في `tailwind.css` تُسنِد كل لون في Tailwind إلى متغيّر
-CSS يعرّفه `styles.scss`، فيبقى مصدر الألوان **واحداً** ويعمل الوضع الداكن في النظامين
-بلا أي أداة `dark:`. التفاصيل والمزالق في `FRONTEND-REFERENCE.md §8.5`.
+| SCSS خام + متغيرات CSS | `src/styles.scss` | معظم الصفحات |
+| Tailwind v4 | `src/tailwind.css` | `checkout` فقط حتى هذه المراجعة |
 
 ### 4.5 المحمول
 
@@ -271,10 +255,15 @@ capacitor.config.ts   →  webDir: dist/Wohnungsmieten/browser
 android/              →  مشروع Android Studio مولَّد
 resources/            →  الأيقونات وشاشات البدء
 tools/                →  setup-ios.mjs · validate-ios-config.mjs · check-environments.mjs
-                         · frontend-audit-guard.mjs  ← بوابة ما قبل الالتزام
+                         · frontend-audit-guard.mjs  ← بوابة ما قبل الالتزام، **مؤكَّدة تمرّ فعلياً هذه الجلسة**
 ```
 
-مجلّد `ios/` **يُولَّد عند الطلب** بـ `npm run ios:setup` ولا يُلتزم به.
+مجلّد `ios/` **يُولَّد عند الطلب** بـ `npm run ios:setup` ولا يُلتزَم به.
+
+⚠️ **تصحيح ميزانية الحزمة:** المراجعات حتى v7 كرّرت رقم «500 kB» كحدّ. الحدّ الفعلي في
+`angular.json` هو **`maximumWarning: 650kB` / `maximumError: 1MB`**. القياس الفعلي في
+هذه الجلسة: **596.90 kB خام (‏159.10 kB منقول)** — **داخل** الحدّ، بلا أي تحذير بناء.
+الرقم القديم لم يكن يوماً موجوداً في هذا الملف؛ من كتبه قرأ مصدراً آخر أو افترضه.
 
 ---
 
@@ -282,15 +271,15 @@ tools/                →  setup-ios.mjs · validate-ios-config.mjs · check-env
 
 | الحدّ | ما يفرضه |
 |---|---|
-| `Domain` لا يعرف شيئاً | صفر تبعيات خارجية. أي `using` لمكتبة خارجية فيه خطأ. |
-| `Application` لا يعرف البنية التحتية | لا EF، لا Redis، لا `IOptions`. الواجهات فقط. |
-| الـ Controller لا يفكّر | ترجمة HTTP ↔ MediatR. لا تحقّق ولا منطق. |
+| `Domain` لا يعرف شيئاً | صفر تبعيات خارجية. |
+| `Application` لا يعرف البنية التحتية | لا EF، لا Redis، لا `IOptions` — **باستثناء موثَّق واحد:** `ListingQuotaOptions` تُقرأ عبر `IListingQuotaPolicy` في `Infrastructure`، فتبقى `Application` نظيفة والاستثناء في الطبقة الصحيحة. |
+| الـ Controller لا يفكّر | ترجمة HTTP ↔ MediatR فقط. |
 | `Cloudinary` حبيس `Infrastructure/Media` | SDK لا يظهر في أي طبقة أخرى. |
 | `features/` لا تُستورَد من `features/` | المشترك يصعد إلى `core/` أو `shared/`. |
 | `core/api` لا تعرض نقطة إدارية | ما يمنح امتيازاً مالياً أو إدارياً يبقى خارج شيفرة العميل. |
 | هوية المستخدم من التوكن | لا تُقرأ من جسم الطلب في أي أمر. |
+| فحوصات الأهلية قبل القفل | لا يُستحوَذ قفل استشاري لطلب سيُرفَض بفحص أرخص أولاً. |
 | كل نص مفتاح i18n | في `ar.json` و`en.json` و`de.json` معاً. |
-| كل لون `var(--token)` | في SCSS وفي `@theme` كليهما. |
 
 ---
 
@@ -299,14 +288,15 @@ tools/                →  setup-ios.mjs · validate-ios-config.mjs · check-env
 | ما تبنيه | أين |
 |---|---|
 | نقطة نهاية جديدة | `PropertyApi/Controllers/` + أمر/استعلام في `Application/{Context}/` |
-| قاعدة أعمال أو ثابت تجاري | `Domain/{Context}/` — لا `appsettings` |
+| قاعدة أعمال أو ثابت تجاري ثابت | `Domain/{Context}/` — لا `appsettings` |
+| قيمة تشغيلية قابلة للضبط دون هجرة (كحدّ حصّة مؤقّت) | `IOptions` في `Infrastructure/{Context}/`، خلف واجهة في `Application` — انظر نمط `ListingQuotaPolicy` |
 | استعلام قاعدة بيانات | واجهة في `Application/{Context}/Interfaces/` + تنفيذ في `Infrastructure/Repositories/` |
-| مهمة مجدولة | `Infrastructure/{Context}/` + `AddHostedService` — **واقرأ B-6 أولاً** |
+| مهمة مجدولة | `Infrastructure/{Context}/` + `AddHostedService` **+ `BackgroundJobLock` من أول يوم** |
+| فحص «اقرأ ثم اكتب» على مورد محدود | قفل استشاري بنطاق معاملة — انسخ نمط `ListingQuotaLock`، لا تخترع قفلاً جديداً |
 | صفحة جديدة في التطبيق | `src/app/features/{name}/` + مدخل في `app.routes.ts` |
+| حارس مسار يعكس قاعدة خلفية | `src/app/core/guards/` — وثّق في التعليق أن الخلفية تبقى مصدر الحقيقة |
 | نداء API جديد | `src/app/core/api/{resource}.service.ts` + نوع في `core/models/` |
-| مكوّن عرض مُعاد استخدامه | `src/app/shared/ui/` |
-| حالة عامة عبر التطبيق | `src/app/core/services/` |
-| نص ظاهر للمستخدم | مفتاح في ملفات i18n الثلاثة — **لا نصّ حرفي في قالب** |
+| نص ظاهر للمستخدم | مفتاح في ملفات i18n الثلاثة |
 
 ---
 
@@ -315,24 +305,22 @@ tools/                →  setup-ios.mjs · validate-ios-config.mjs · check-env
 ### الواجهة
 
 ```bash
-npm run typecheck         # فحص الأنواع
-npm run audit:frontend    # بوابة ما قبل الالتزام (mojibake + أنماط غير آمنة)
-npm run build:prod
+npm run typecheck         # فحص الأنواع — يمرّ (مُتحقَّق هذه الجلسة)
+npm run audit:frontend    # بوابة ما قبل الالتزام — تمرّ (مُشغَّلة فعلياً هذه الجلسة)
+npm run build:prod        # 596.90 kB خام — داخل حدّ 650 kB (مُتحقَّق هذه الجلسة)
 npm run postmerge:verify  # البوابة الكاملة
-npm run android:sync
-npm run ios:setup && npm run ios:sync
 ```
 
 ### الخلفية
 
 ```bash
-dotnet build PropertyApi.sln
+dotnet build PropertyApi.sln -c Release   # 0 تحذير، 0 خطأ (مُتحقَّق هذه الجلسة، 59 ثانية)
 dotnet test PropertyApi.sln
 dotnet ef migrations add <Name> --project PropertyApi.Infrastructure --startup-project PropertyApi
 ```
 
-> ⚠️ سكربتات هذا المشروع تعمل على **PowerShell**: لا `&&` ولا `||` ولا إعادة توجيه
-> بأسلوب Unix. استخدم `-and` و`-or` و`$?`.
+> ⚠️ سكربتات هذا المشروع تعمل على **PowerShell**: لا `&&` ولا `||`. استخدم `-and`
+> و`-or` و`$?`.
 
 ---
 
@@ -340,21 +328,20 @@ dotnet ef migrations add <Name> --project PropertyApi.Infrastructure --startup-p
 
 | الملف | الحالة |
 |---|---|
-| `docs/PROJECT-STRUCTURE.md` (هذا) | ✅ 2026-08-24 |
-| `docs/FRONTEND-REFERENCE.md` | ✅ v2 — 2026-08-24 |
-| `docs/PropertyApi-REFERENCE.md` | ✅ v6 — 2026-08-24 |
-| `docs/BACKEND-ISSUES.md` | ✅ 2026-08-24 |
-| `FRONTEND_BACKEND_CONTRACT.md` | ✅ محدَّث |
-| `docs/RESPONSIVE-MANUAL-TEST-MATRIX.md` · `docs/UI-RELEASE-GATE.md` | ✅ ساريان |
-| `PROJECT-REFERENCE.md` (‏`Downloads`, 2026-06-18) | ⚠️ متجاوَز جزئياً |
+| `docs/PROJECT-STRUCTURE.md` (هذا) | ✅ 2026-08-26 |
+| `docs/FRONTEND-REFERENCE.md` | ✅ محدَّث 2026-08-26 |
+| `docs/PropertyApi-REFERENCE.md` | ✅ v8 — 2026-08-26 |
+| `docs/BACKEND-ISSUES.md` | ✅ v3 — 2026-08-26 |
+| `FRONTEND_BACKEND_CONTRACT.md` | ⚠️ لم يُعَد فحصه في هذه الدورة — يحتاج مراجعة مقابل `/plans` الحقيقية الآن |
 | `DATABASE_SCHEMA.md` (‏`Downloads`) · `REGISTER_ERROR_DIAGNOSIS.md` | ❌ **خاطئان** — يصفان SQL Server، وقاعدة البيانات PostgreSQL + PostGIS |
 
-**ثلاث نسخ متطابقة** من `FRONTEND-REFERENCE.md` و`PropertyApi-REFERENCE.md`
-و`PROJECT-STRUCTURE.md` و`BACKEND-ISSUES.md`: في `docs/` (المرجعية، مُدارة مع
-المستودع)، وفي `C:\Users\naeem\Downloads\` (مكتبة المستخدم)، وفي مجلّد ذاكرة الجلسات.
-**تُحدَّث الثلاث معاً** — النسخة المنحرفة هي بالضبط العطل الذي وُجدت هذه الوثائق لعلاجه.
+**نسخ متطابقة في مستودعين:** توجد نسخة من هذا الملف وثلاثة أخرى في
+`C:\Users\naeem\Source\Repos\PropertyApi\docs\` أيضاً (‏مستودع الخلفية) — **تُحدَّث
+معاً**. النسخة المنحرفة هي بالضبط العطل الذي وُجدت هذه الوثائق لعلاجه.
 
 ---
 
-*كُتب من إحصاء مباشر لشجرتَي المصدر في 2026-08-25 (الواجهة `3d81d37`، الخلفية `293a5c1`),
-مسنوداً ببناء وتشغيل اختبارات في المستودعين. الأرقام مقيسة لا منقولة.*
+*كُتب من إحصاء مباشر لشجرتَي المصدر في 2026-08-26 (الواجهة `730af55`، الخلفية `3cadb4b`)،
+مسنوداً ببناء فعلي للخلفية (‏0 تحذير) وتشغيل فعلي لبوابة `audit:frontend` (‏تمرّ) وقياس
+فعلي لحزمة الإنتاج في هذه الجلسة. `dotnet test`/`ng test` الكاملان لم يُعادا تشغيلهما —
+مُعلَّم صراحةً حيث ورد. الأرقام الأخرى مقيسة لا منقولة.*
