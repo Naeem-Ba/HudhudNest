@@ -1,52 +1,41 @@
 # WohnungsApp (Angular) — المرجع المعماري للواجهة
 
 > **الغرض:** مرجع حيّ لكل جلسة تطوير قادمة على الواجهة.
-> **آخر تحديث:** 2026-08-25 · النسخة **v3** (قواعد كلمة المرور في المتصفّح · إشعار رابط
-> التأكيد · **نتائج تشغيل فعلية** لا قراءة فقط)
+> **آخر تحديث:** 2026-08-26 · النسخة **v4** (بوابات أهلية الإعلان · توكن التجديد صار
+> كوكياً لا `sessionStorage` · `/plans` صار حقيقياً · تصحيح ميزانية الحزمة)
 > **مصدر التحقّق:** فحص مباشر لشجرة المصدر في
 > `C:\Users\naeem\OneDrive\Desktop\Notiz\WohnungsApp\Wohnungsmieten`
-> (الفرع `feat/register-confirmation-notice`، آخر التزام **`3d81d37`**) **و** لمستودع
-> الخلفية في `C:\Users\naeem\Source\Repos\PropertyApi` (آخر التزام **`293a5c1`**).
-> **الحالة:** ⚠️ صالح للإنتاج بشروط — انظر §12 و§13، و**`RELEASE-BLOCKERS-AR.md`**
-> لموانع النشر مرتّبةً.
+> (الفرع `feat/listing-eligibility-gates`، آخر التزام **`730af55`**) **و** لمستودع
+> الخلفية في `C:\Users\naeem\Source\Repos\PropertyApi` (آخر التزام **`3cadb4b`**).
+> **تحقّق تنفيذي في هذه الجلسة:** `npm run typecheck` ✅ · `npm run audit:frontend` ✅
+> (يمرّ فعلياً — الرمز 0) · `npm run build:prod` ✅ (‏596.90 kB خام، **داخل** ميزانية
+> 650 kB الفعلية — انظر §11). **`ng test` لم يُعَد تشغيله هذه الجلسة** — الرقم المذكور
+> أدناه (‏52/54) محمول من v3 ومُعلَّم كذلك.
+> **الحالة:** ⚠️ صالح للإنتاج بشروط — انظر §12، و**`BACKEND-ISSUES.md`** للبنود
+> العابرة للمستودعين.
 
 ---
 
 ## 0. اقرأ هذا قبل الوثوق بأي سطر أدناه
 
-هذا الملف كُتب لأن الوثائق السابقة انحرفت عن الشيفرة، وهو يُعاد التحقق منه كاملاً في كل
-تحديث بدل نقل بنوده.
+**أهمّ تصحيح في v4 ليس ميزة جديدة، بل تصحيح ادّعاء كان خاطئاً في v1 حتى v3:** §4 في
+النسخ السابقة قالت إن توكن التجديد يُخزَّن في `sessionStorage` تحت
+`wohnungsapp_refresh` — وهذا **لم يعد صحيحاً في الشيفرة التي تلك النسخ نفسها ادّعت
+فحصها**. القراءة المباشرة لـ `token-storage.service.ts` في هذه الجلسة تُظهر أن الملف
+لا يكتب توكن التجديد في أي تخزين متصفّح إطلاقاً؛ تعليق الملف نفسه يشرح أن الانتقال إلى
+كوكي `HttpOnly` تمّ. هذا بالضبط الدرس الذي يفتتح كل نسخة من هذا الملف — **ولم يُطبَّق
+على القسم الأكثر حساسية أمنياً فيه**. لا تكرّر هذا: افحص، لا تنقل.
 
-**ما تغيّر في v3:**
-
-| البند | v2.1 قالت | v3 مُتحقَّق |
+| البند | v3 قالت | v4 مُتحقَّق |
 |---|---|---|
-| قواعد كلمة المرور | `minLength(8)` وحدها في النموذج | **مرآة كاملة** لقواعد الخادم في `core/auth/password-policy.ts` (‏170 سطراً + spec) — §5.7 |
-| رسائل رفض كلمة المرور | نصّ الخادم بالإنجليزية كما هو | **مترجَمة** عبر `errorCodes` في 422 — `features/auth/password-errors.ts` |
-| رسالة نجاح التسجيل | «يمكنك الدخول الآن» | تذكر أن **رابط تأكيد** أُرسل — في اللغات الثلاث معاً |
-| مفاتيح i18n | 976 لكل ملف | **993** لكل ملف من الثلاثة — تطابق تام مُتحقَّق برمجياً |
-| ملفات spec | 6 | **7** (‏`password-policy.spec.ts`) — و**اثنتان من 54 حالة تفشلان**، انظر أدناه |
+| توكن التجديد | `sessionStorage` تحت `wohnungsapp_refresh`، «قابل للقراءة بـ XSS» | **كوكي `HttpOnly`+`Secure`+`SameSite=None`** يديره المتصفّح بلا وصول JS. `TokenStorageService.clear()` يمسح مفاتيح `sessionStorage`/`localStorage` القديمة **دفاعياً فقط** — لا شيء يكتبها بعد الآن |
+| `/plans` | عقد مكتوب، الدالة تعيد كتالوجاً محلياً عبر `of(...)` | **`GET /api/plans` حقيقية** — `PlansApiService.getPlans()` يستدعي الخلفية مباشرة؛ الكتالوج المحلي بقي فقط كمرجع لجدول `toCta()` |
+| بوابة إنشاء الإعلان | لا يوجد حارس أهلية | **`ListingEligibilityGuard`** جديد على `property-form` (‏الإنشاء فقط) |
+| ميزانية الحزمة | «500 kB، تجاوز 95 kB» | **الحدّ الفعلي في `angular.json` هو 650 kB تحذيراً / 1MB خطأً.** القياس الحالي 596.90 kB **داخل** الحدّ — لا تحذير بناء إطلاقاً. الرقم القديم لم يظهر في `angular.json` قط |
+| `npm run audit:frontend` في CI | 🔴 يخرج بالرمز 1 | ✅ **يمرّ** — شُغِّل فعلياً في هذه الجلسة، خروج 0 |
 
-**ما أضافه التشغيل الفعلي — وهذه أول مرة تُشغَّل فيها البوابات لا تُقرأ فقط:**
-
-| الفحص | النتيجة |
-|---|---|
-| `npm run build:prod` | ✅ ينجح · ⚠️ الحزمة الابتدائية **595 kB** مقابل ميزانية **500 kB** · ⚠️ `@import` ميت في `styles.scss:551` (الخطوط تُحمَّل أصلاً من `index.html`) |
-| `npm run typecheck` | ✅ يمرّ |
-| `npm run typecheck:strict` | ⚠️ **22 خطأ** — `strict` مطفأ عمداً، دَين مُسجَّل (§12) |
-| `npm run check:env` | ✅ يمرّ |
-| **`npm run audit:frontend`** | 🔴 **يخرج بالرمز 1** — وهي **خطوة إلزامية في `frontend-ci.yml`** ⇒ CI أحمر (‏B-17) |
-| `ng test` | 🔴 **2 من 54 تفشلان** — `AppComponent` بـ `NG0201: No provider found for _HttpClient`. **غير موجودة في CI إطلاقاً** |
-| تطابق مفاتيح i18n | ✅ 993 مفتاحاً في ar وen وde، بلا فارق واحد |
-
-**العطل الأهمّ في هذه النسخة ليس في الواجهة ولا في الخلفية، بل بينهما:** التطبيق يعمل
-بـ `withHashLocation()`، والخلفية تبني روابط البريد بلا `#`. كل رابط تأكيد بريد وكل رابط
-استعادة كلمة مرور يهبط على الصفحة الرئيسية بلا معالجة. التفصيل في **B-14** ضمن
-`BACKEND-ISSUES.md`.
-
-**قاعدة ملزمة:** كل جدول هنا يحمل ملاحظة مصدر. إن مرّت دورة نشر واحدة، أعِد التحقق من
-الشيفرة قبل استخدام هذا الملف في التخطيط. الدرس تكرّر ثلاث مرات الآن: سطر «لا Tailwind»
-صار خاطئاً بعد أقلّ من 24 ساعة من كتابته.
+**قاعدة ملزمة، لم تتغيّر:** كل جدول هنا يحمل ملاحظة مصدر. أعِد التحقق من الشيفرة قبل
+استخدام هذا الملف في التخطيط — لا تنقل بند من نسخة سابقة حتى لو بدا مستقراً.
 
 ---
 
@@ -55,18 +44,18 @@
 | الخاصية | القيمة |
 |---|---|
 | الإطار | Angular **20.2** — Standalone فقط، لا NgModules |
-| اللغة | TypeScript 5.9 · `strict: false` ⚠️ (انظر §12) — `npm run typecheck` **يمرّ** ✅ |
-| التوجيه | `provideRouter(routes, withHashLocation())` — **مسارات hash** (`/#/pricing`) ⚠️ **روابط بريد الخلفية لا تراعيه** — B-14 |
+| اللغة | TypeScript 5.9 · `strict: false` ⚠️ — `npm run typecheck` **يمرّ** ✅ (مُتحقَّق هذه الجلسة) |
+| التوجيه | `provideRouter(routes, withHashLocation())` — مسارات hash (`/#/pricing`). روابط بريد الخلفية تحمل `#` الآن (‏`BACKEND-ISSUES.md` B-14 مغلق) |
 | كشف التغيير | `ChangeDetectionStrategy.OnPush` + `signal()` — إلزامي في كل مكوّن جديد |
 | الحقن | `inject()` دالةً، لا حقن بالمُنشئ في الكود الجديد |
-| التنسيق | **نظامان معاً:** SCSS خام + متغيرات CSS (كل الصفحات القديمة) **و** Tailwind v4 (الصفحات الجديدة) — §8.5 |
-| الخطوط | Roboto · IBM Plex Sans Arabic · Cairo (من Google Fonts في `index.html`) — §8.6 |
+| التنسيق | نظامان معاً: SCSS خام + متغيرات CSS (معظم الصفحات) و**Tailwind v4** (`checkout`) |
+| الخطوط | Roboto · IBM Plex Sans Arabic · Cairo (من Google Fonts في `index.html`) |
 | التعريب | `@ngx-translate/core` 17 — ثلاث لغات، الافتراضية `ar` |
 | الخرائط | Leaflet 1.9 |
 | الزمن الحقيقي | `@microsoft/signalr` 10 |
 | المحمول | Capacitor 8 — Android + iOS |
-| الاختبار | Karma + Jasmine — **7 ملفات spec فقط** ⚠️ · 52/54 تمرّ · **لا تُشغَّل في CI** |
-| نمط التنسيق | Prettier: `printWidth: 100`, `singleQuote: true` |
+| المصادقة | Bearer في الذاكرة + كوكي `refresh_token` (‏`HttpOnly`) — **لا تخزين توكن في `localStorage`/`sessionStorage` بعد الآن** — §4 |
+| الاختبار | Karma + Jasmine — 7 ملفات spec (‏52/54 محمول من v3، **لم يُعَد تشغيله هذه الجلسة**) |
 
 ---
 
@@ -77,36 +66,31 @@ src/
 ├── app/
 │   ├── core/                     الطبقة الأساسية — لا مكوّنات مرئية
 │   │   ├── adapters/             api-naming.adapter.ts  (apiToCamelCase)
-│   │   ├── api/                  19 خدمة API
-│   │   ├── auth/                 auth.service.ts (+ spec)
-│   │   ├── guards/               auth-guard.ts · admin-guard.ts
+│   │   ├── api/                  19 خدمة API — منها plans-api.service.ts (خلفية حقيقية الآن)
+│   │   ├── auth/                 auth.service.ts + token-storage.service.ts (كوكي لا تخزين)
+│   │   ├── guards/                AuthGuard · AdminGuard · ListingEligibilityGuard (جديد)
 │   │   ├── interceptors/         3 اعتراضات
 │   │   ├── models/               15 نموذجاً
 │   │   └── services/             11 خدمة عرضية
-│   ├── features/                 20 ميزة (lazy-loaded بالكامل)
+│   ├── features/                 ~20 ميزة (lazy-loaded بالكامل)
 │   ├── admin/                    4 شاشات إدارية
 │   ├── shared/
-│   │   ├── ui/                   8 مكوّنات عرض مشتركة
+│   │   ├── ui/                   مكوّنات عرض مشتركة
 │   │   ├── directives/           image-fallback · loading · rtl
 │   │   └── services/             toast.service.ts
 │   ├── layout/ navbar/ profile/ pipes/ map-picker/ language-selector/
 │   ├── app.config.ts             المزوّدات + APP_INITIALIZER
-│   └── app.routes.ts             44 مدخل path:
+│   └── app.routes.ts
 ├── environments/                 environment · .prod · .staging · .model
 ├── styles/                       _breakpoints.scss · _auth-flow.scss
 ├── styles.scss                   نظام التصميم الكامل + الوضع الداكن  (SCSS)
 └── tailwind.css                  مدخل Tailwind + جسر الرموز @theme      (CSS خام)
 ```
 
-**الأحجام:** 124 ملف `.ts` · 26 قالب `.html` · 27 ملف `.scss` · 6 ملفات `.spec.ts`.
-
-**الميزات العشرون:** `analytics` `auth` **`checkout`** `contact` `favorites` `home`
-`landing` `messages` `my-listings` `not-authorized` `notifications` `offline` `pricing`
+**الميزات:** `analytics` `auth` `checkout` `contact` `favorites` `home` `landing`
+`messages` `my-listings` `not-authorized` `notifications` `offline` `pricing`
 `properties` `property-detail` `property-form` `reviews` `saved-searches` `user-profile`
 `visits`.
-
-بعض الميزات تستخدم قوالب inline وبعضها ملفات `.html` منفصلة. **كلا النمطين مقبول** —
-الحدّ العملي المتبع: قالب inline للشاشات القصيرة، ملف منفصل لما يتجاوز ~40 سطراً.
 
 ---
 
@@ -115,37 +99,42 @@ src/
 ### 3.1 خدمات الـ API (19)
 
 `admin-users` · `analytics` · `api-error` · `backend-api` · `contact` ·
-`favorites-api` · **`listing-fees-api`** · `location-suggestions-api` · `lookups-api` ·
-`messages-api` · `notifications-api` · `otp-api` · `plans-api` · `profile` ·
+`favorites-api` · `listing-fees-api` · `location-suggestions-api` · `lookups-api` ·
+`messages-api` · `notifications-api` · `otp-api` · **`plans-api`** · `profile` ·
 `property-api` · `review` · `saved-search-api` · `user-profile-api` · `visit`
 
 **النمط الموحّد:** `@Injectable({ providedIn: 'root' })` + حقل `endpoint` ثابت +
-الاعتماد على `BackendApiService`. **لا `catchError` داخل الخدمة** — الأخطاء تصعد
-إلى `ApiErrorInterceptor`. أي خدمة جديدة تتبع هذا العرف حرفياً.
+الاعتماد على `BackendApiService`. **لا `catchError` داخل الخدمة.**
 
-`listing-fees-api.service.ts` يوضّح عرفاً إضافياً يستحق التقليد: **نقاط النهاية
-الإدارية لا تُغلَّف في خدمة عميل**. تأكيد الدفع (`.../confirm`) محصور بالمدير في
-الخلفية، ولفّه هنا كان سيمنح كل قارئ للشيفرة خريطة لمحاولة استدعائه.
+**`plans-api.service.ts` تغيّرت جوهرياً هذه الدورة:** `getPlans()` يستدعي
+`GET /api/plans` الحقيقية الآن (‏لا `of(...)`)، و`selectPlan(tier)` جديدة تستدعي
+`POST /api/users/me/plan` — بما فيها اختيار الخطة المجانية صراحة (ليست افتراضاً
+ضمنياً). الكتالوج المحلي `SUBSCRIPTION_PLANS` بقي فقط كمرجع لجدول تحويل الخطة إلى
+رابط CTA، لا كمصدر بيانات.
 
 ### 3.2 الاعتراضات (3)
 
 | الملف | الدور |
 |---|---|
 | `refresh-auth.interceptor.ts` | إرفاق `Bearer` + تجديد التوكن تلقائياً عند 401 |
-| `auth-interceptor.ts` | **مجرد إعادة تصدير** لـ `RefreshAuthInterceptor` — ليس اعتراضاً ثانياً |
+| `auth-interceptor.ts` | مجرد إعادة تصدير لـ `RefreshAuthInterceptor` |
 | `api-error.interceptor.ts` | تحويل أخطاء HTTP إلى رسائل قابلة للعرض |
 
-`refresh-auth.interceptor` يحمل حرّاساً مهمّين مُتحقَّقين:
+`requestNewAccessToken()` في `refresh-auth.interceptor.ts` يستدعي
+`POST /auth/refresh` عبر `HttpBackend` مباشرة (‏تجاوزاً للاعتراضات) مع
+`withCredentials: true` **بلا أي قيمة توكن في الجسم** — الكوكي يحمل التوكن ضمنياً. هذا
+اتّساق تام مع كوكي `HttpOnly` الجديد على الخلفية.
 
-- `isBackendApiRequest()` — التوكن **لا يُرفق إلا** بطلبات الـ REST API. هذا يمنع
-  تسريبه إلى ملفات i18n، الملفات الساكنة، Leaflet، أو أي طرف ثالث مستقبلي.
-- `isAuthEndpoint()` — مسارات المصادقة مستثناة من التجديد لمنع حلقات لا نهائية.
-- `refreshRequest$` مشترك بـ `shareReplay` — طلبات 401 المتزامنة تُنتج **طلب تجديد واحداً**.
+### 3.3 الحرّاس — **ثلاثة الآن، لا اثنين**
 
-### 3.3 الحرّاس
-
-- `AuthGuard` — على 13 مساراً (‏`checkout/:kind/:propertyId` أحدثها).
-- `AdminGuard` — على 4 مسارات إدارية، ويوجّه عند الرفض إلى `/not-authorized`.
+- `AuthGuard` — على معظم المسارات المحمية.
+- `AdminGuard` — على 4 مسارات إدارية، يوجّه عند الرفض إلى `/not-authorized`.
+- **`ListingEligibilityGuard`** (‏جديد) — على `property-form` **للإنشاء فقط**، وليس
+  على `properties/edit/:id`. مُدرَج بعد `AuthGuard` في مصفوفة `canActivate` كي يُوجَّه
+  الزائر المجهول إلى تسجيل الدخول أولاً. يجلب الملف الشخصي طازجاً (لا من ذاكرة مؤقّتة)
+  ويوجّه إلى `/pricing` (إن كانت وسيلة التواصل مؤكَّدة والخطة ناقصة) أو `/profile`
+  (إن كانت وسيلة التواصل نفسها ناقصة). **تعليق الملف نفسه يقرّ أن الخلفية تبقى مصدر
+  الحقيقة الفعلي** — هذا الحارس يمنع 403 شائعاً، لا يستبدله.
 
 ### 3.4 الخدمات العرضية (11)
 
@@ -154,68 +143,69 @@ src/
 
 ### 3.5 النماذج (15)
 
-`analytics` · `api` · `auth` · `favorite` · `lead` · **`listing-fee`** ·
+`analytics` · `api` · `auth` · `favorite` · `lead` · `listing-fee` ·
 `location-suggestion` · `message` · `notification` · `property` · `review` ·
 `saved-search` · `subscription-plan` · `user-profile` · `visit`
 
 ---
 
-## 4. المصادقة وتخزين التوكن — ⚠️ الحقيقة المُتحقَّقة
+## 4. المصادقة وتخزين التوكن — ⚠️ مصحَّحة بالكامل هذه المراجعة
 
-مقروء من `token-storage.service.ts` مباشرة، **دون تغيير عن v1.1**:
+مقروء من `token-storage.service.ts` مباشرة، **وهذا يناقض ما قالته v1 حتى v3**:
 
 | العنصر | أين يُخزَّن | التقييم |
 |---|---|---|
-| **Access token** | حقل خاص في الذاكرة — لا يلمس التخزين إطلاقاً | ✅ صحيح |
-| **Refresh token** | `sessionStorage` تحت `wohnungsapp_refresh` | ⚠️ **قابل للقراءة بـ XSS** |
-| علم «تذكّرني» | `localStorage` تحت `wohnungsapp_remember` | انظر التحذير أدناه |
+| **Access token** | حقل خاص في الذاكرة — لا يلمس التخزين إطلاقاً | ✅ صحيح، بلا تغيير |
+| **Refresh token** | **كوكي `refresh_token`** — `HttpOnly` + `Secure` + `SameSite=None`، يديره المتصفّح والخلفية حصراً | ✅ **JavaScript لا يستطيع قراءته حتى مع XSS كاملة** |
+| `TokenStorageService.clear()` | يمسح مفاتيح `sessionStorage`/`localStorage` القديمة (`accessToken`, `refreshToken`, `wohnungsapp_refresh`, `wohnungsapp_remember`, …) | تنظيف دفاعي فقط — «لا شيء يكتب هذه المفاتيح بعد الآن»، بحسب تعليق الملف |
 
-**الخلاصة الصريحة:** التوكن **ليس** في كوكي `HttpOnly`. وضع الـ access token في
-الذاكرة قرار صحيح ويقلّل السطح كثيراً، لكن الـ refresh token في `sessionStorage`
-يعني أن ثغرة XSS واحدة تكفي لسرقة جلسة كاملة قابلة للتجديد. التصنيف الصحيح اليوم:
-**مفتوح، مُخفَّف جزئياً** — لا «مُنجَز».
+**الخلاصة الصريحة:** ثغرة XSS واحدة لم تعد تكفي لسرقة توكن تجديد قابل للتصدير خارج
+المتصفّح — الكوكي غير مقروء بجافاسكربت. هذا يُغلق بند «توكن التجديد في تخزين قابل
+للقراءة» الذي حملته كل نسخة سابقة من هذا الملف.
 
-⚠️ **تناقض وظيفي مُتحقَّق (F-1):** `storeTokens()` يكتب الـ refresh token في
-`sessionStorage` **دائماً** ويمسحه من `localStorage`، بينما يكتب علم «تذكّرني» في
-`localStorage`. النتيجة: تفعيل «تذكّرني» يحفظ علماً يبقى بعد إغلاق التبويب، **بلا
-توكن يقابله**. الميزة لا تعمل كما يتوقع المستخدم.
+**استعادة الجلسة:** `restoreSession()` في `app.config.ts` يستدعي `POST /auth/refresh`
+عند الإقلاع؛ الكوكي يحمل التوكن ضمنياً، فلا حاجة لقراءة أي تخزين محلي أولاً.
 
-**استعادة الجلسة:** `restoreSession()` في `app.config.ts` (‏`APP_INITIALIZER`) يقرأ
-الـ refresh token عند الإقلاع ويستدعي `POST /auth/refresh` عبر `HttpBackend` مباشرةً
-(‏تجاوزاً للاعتراضات، وهو الصحيح)، بمهلة 5 ثوانٍ. فشل التجديد ⇒ `tokenStorage.clear()`.
+### 4.1 ⚠️ ما فتحه هذا الإصلاح — اعتبار جديد لا تتجاهله
+
+كوكي `SameSite=None` يعني أن المتصفّح يُرفقه **حتى في طلبات عبر المواقع**. الواجهة **لا
+ترسل أي رأس `X-XSRF-TOKEN`** (‏بحث هذه الجلسة: صفر مطابقة لـ `csrf|xsrf` في `src/`
+خارج الاختبارات)، بينما الخلفية تبقي `CookieCsrf:Enabled = false` افتراضياً. النتيجة:
+موقع خبيث يستطيع تحفيز `POST /api/auth/refresh` أو `POST /api/auth/logout` من متصفّح
+المستخدم بلا علمه — لا يُسرَّق التوكن (‏CORS يمنع قراءة الاستجابة)، لكن تدويراً أو
+تسجيل خروج قسريَّين ممكنان. هذا بند خلفية أساساً — **`BACKEND-ISSUES.md` B-18** — لكن
+إصلاحه يتطلّب تغييراً هنا أيضاً: جلب `GET /api/security/csrf-token` وإرسال الرأس على
+كل طلب كتابة، بالتزامن مع تفعيل `CookieCsrf:Enabled` على الخلفية. **لا تفعل نصف
+الإصلاح.**
 
 ---
 
 ## 5. عقد الاتصال مع الخلفية
 
-### 5.1 قاعدة PascalCase — التكلفة الدائمة
+### 5.1 قاعدة التسمية — تصحيح جوهري
 
-الخلفية تضبط `PropertyNamingPolicy = null` (‏`Program.cs:301` — مُتحقَّق). أي أن
-**كل استجابة نجاح تصل بـ PascalCase**.
+النسخ حتى v3 قالت إن الخلفية ترسل PascalCase (`PropertyNamingPolicy = null`) وإن
+`apiToCamelCase()` ضرورة دائمة. **الخلفية تغيّرت:** `Program.cs:317` يضبط
+`PropertyNamingPolicy = JsonNamingPolicy.CamelCase` الآن — كل استجابة، ناجحة أو خطأ،
+camelCase من مصدرها.
 
-المحوّل المركزي `apiToCamelCase()` في `core/adapters/api-naming.adapter.ts`
-مستخدم في **16 ملفاً**. أي خدمة API جديدة **يجب** أن تمرّ به.
+`apiToCamelCase()` **يبقى في مكانه** ولا يزال يعمل بلا ضرر (‏تحويل camelCase إلى
+camelCase عملية عديمة الأثر)، لكنه لم يعد **ضرورياً** لخدمة جديدة كما كان. **لا تحذفه
+من الخدمات القائمة** — إزالته الآن مجرد تبسيط بلا فائدة تشغيلية وخطر انحدار غير
+ضروري إن عاد أي مسار للتسمية القديمة لاحقاً.
 
-استثناءان مُتحقَّقان يجب ألّا يُفترض غيابهما:
-
-1. `ExceptionHandlingMiddleware.cs:27` يستخدم `JsonNamingPolicy.CamelCase` — أي أن
-   **أجسام الأخطاء تصل camelCase بينما أجسام النجاح تصل PascalCase**.
-2. نقطتا تأكيد الدفع في `PropertiesController` تُعيدان كائناً مجهول النوع
-   (‏`new { expiresAt = ... }` و`new { featuredUntil }`)، فتخرجان camelCase أيضاً.
-   `apiToCamelCase()` يبتلع الحالتين بلا ضرر، لكن لا تبنِ افتراضاً على تناسق المسارين.
-
-### 5.2 خريطة نقاط النهاية (واجهة ← خلفية)
+### 5.2 خريطة نقاط النهاية (واجهة ← خلفية) — محدَّثة
 
 | مسار الواجهة | Controller في الخلفية | موجود؟ |
 |---|---|---|
-| `/properties`, `/properties/{id}`, `/properties/mine`, `/properties/geo-search`, `/properties/check-duplicate`, `/properties/{id}/publish`, `/properties/{id}/manage`, `/properties/{id}/confirm-availability` | `PropertiesController` | ✅ |
-| **`/properties/{id}/extension`**, **`/properties/{id}/featured`** | `PropertiesController` | ✅ **جديد** |
+| `/properties`, `/properties/{id}`, `/properties/mine`, `/properties/geo-search`, `/properties/{id}/publish`, `/properties/{id}/manage` | `PropertiesController` | ✅ |
+| `/properties/{id}/extension`, `/properties/{id}/featured` | `PropertiesController` | ✅ |
 | `/properties/{id}/images/...` | `PropertyImagesController` | ✅ |
-| `/auth/phone/send-otp`, `/auth/phone/verify` | `PhoneAuthController` | ✅ |
-| `/users/me`, `/users/me/avatar`, `/users/me/change-password`, `/Users/{id}/profile`, `/Users/{id}/ratings` | `UsersController` | ✅ |
-| `/Admin/users`, `/Admin/roles`, `/Admin/users/{id}/role` | `AdminController` | ✅ |
+| `/auth/phone/registration/*`, `/auth/phone/login`, `/auth/phone/password-reset/*` | `PhonePasswordAuthController` | ✅ |
+| `/users/me`, `/users/me/avatar`, `/users/me/change-password`, **`/users/me/plan`** (‏جديد) | `UsersController` | ✅ |
+| `/admin/users`, `/admin/roles` | `AdminController` | ✅ |
 | `/admin/location-suggestions` | `LocationSuggestionsController` | ✅ |
-| `/notifications`, `/notifications/unread-count`, `/notifications/{id}/read`, `/notifications/read-all`, `/notifications/{id}/soft-delete` | `NotificationsController` | ✅ |
+| `/notifications`, `/notifications/unread-count`, … | `NotificationsController` | ✅ |
 | `/favorites`, `/favorites/{propertyId}` | `FavoritesController` | ✅ |
 | `/savedsearch` | `SavedSearchController` | ✅ |
 | `/visits` | `VisitsController` | ✅ |
@@ -223,365 +213,160 @@ src/
 | `/analytics` | `AnalyticsController` | ✅ |
 | `/contact` | `ContactController` | ✅ |
 | `/lookups` | `LookupsController` | ✅ |
-| `/Messages` | `MessagesController` | ✅ |
-| **`/plans`** | — | ❌ **غير موجود** (§5.3) |
-| — | **`AgenciesController`** | ⚠️ **خلفية بلا عميل** (§5.5) |
+| `/messages` | `MessagesController` | ✅ |
+| **`/plans`** | **`PlansController`** | ✅ **صار موجوداً — أُغلقت الفجوة القديمة** |
+| `/agencies/{slug}`, `/agencies/me`, `/agencies` (‏POST) | `AgenciesController` | ⚠️ **لا خدمة عميل بعد** — انظر §5.5 |
+| — (لا نظير في الواجهة) | `PUT/DELETE /agencies/{agencyId}` (‏تعديل/تعطيل، جديدان في الخلفية) | ❌ |
 
-### 5.3 `‎/plans‎` — عقد مكتوب بلا خلفية
+### 5.3 `/plans` — لم يعد عقداً بلا خلفية
 
-`PlansApiService.getPlans()` يعيد اليوم الكتالوج المحلي عبر `of(...)`. الدالة
-`toPlans()` مكتوبة بالكامل مقابل العقد الموثّق في `FRONTEND_BACKEND_CONTRACT.md §11`،
-فالتبديل عند جاهزية الخلفية **سطر واحد**. بحث في مصدر الخلفية عن
-`subscription | billing | invoice | stripe | paytabs | paymob` أعطى **صفر نتائج**.
+`PlansApiService.getPlans()` يستدعي `GET /api/plans` مباشرة. `selectPlan(tier)` جديدة
+تستدعي `POST /api/users/me/plan`. **ما زال ناقصاً:** لا فوترة ولا بوابة دفع، وحدّ
+الإعلانات على الخلفية **لا يقرأ** الخطة المختارة بعد (‏`BACKEND-ISSUES.md` B-3) — أي
+أن اختيار خطة مدفوعة اليوم لا يغيّر أي حدّ فعلي. لا تَعِد المستخدم بأثر فوري لاختيار
+خطة أعلى حتى يُغلَق B-3.
 
-**لا يوجد كيان `Subscription` في الخلفية**، ولذلك لا شيء يستطيع السؤال «على أي خطة
-هذا المستخدم». صفحة `/pricing` تعرض خططاً لا يمكن شراؤها ولا يعرف النظام من اشتراها،
-وكل حساب يُعامَل على أنه في الخطة المجانية.
+### 5.4 رسوم الإعلانات — بلا تغيير هذه الدورة
 
-### 5.4 رسوم الإعلانات — المسار الوحيد المكتمل بين الطرفين
+بلا تغيير عن v3: تمديد إعلان (‏$1.00، 90 يوماً) وتمييز (‏$5.00، 30 يوماً)، كلاهما
+`202 Accepted` يُسجِّل ولا يمنح، ويُؤكَّد إدارياً. `checkout.page.ts` تعكس هذا حرفياً.
 
-هذان الرسمان **مبنيّان فعلاً في الطرفين**، وهما اليوم المسار المالي الوحيد الذي يعمل
-من طرف إلى طرف:
+### 5.5 الوكالات — لا تزال خلفية بلا عميل، والفجوة تكبر
 
-| الرسم | المسار | السعر | المدة |
-|---|---|---|---|
-| تمديد إعلان منتهٍ | `POST /properties/{id}/extension` | 1.00 $ | 90 يوماً |
-| تمييز إعلان | `POST /properties/{id}/featured` | 5.00 $ | 30 يوماً |
+الخلفية أضافت هذه الدورة **تعديل وتعطيل** المكتب (‏`PUT`/`DELETE
+/api/agencies/{agencyId}`) فوق ما كان موجوداً. **الواجهة لا تزال بلا أي شيء**: لا خدمة،
+لا نموذج، لا مسار، لا مفتاح ترجمة — والفجوة بين ما تستطيعه الخلفية وما تعرضه الواجهة
+اتّسعت لا ضاقت. اقرأ `PropertyApi-REFERENCE.md §7.5` قبل تصميم أي شاشة وكالات.
 
-**كلاهما يعيد `202 Accepted` لا `200 OK`، وهذا هو جوهر التصميم:** الاستدعاء **يسجّل
-ما يترتّب على المالك ولا يغيّر الإعلان**. لا توجد بوابة دفع في النظام، فالرسم يبقى
-`Pending` حتى يؤكّده **مدير** عبر نقطة نهاية محصورة به.
+### 5.6 CSRF — لم يعد سؤالاً نظرياً — انظر §4.1
 
-`checkout.page.ts` بُنيت على هذا حرفياً: **لا حقول بطاقة، ولا إعادة توجيه لمزوّد،
-ولا شاشة «جارٍ تنفيذ الدفع»**. شاشة تبدو وكأنها تقبض بطاقة كانت ستجمع أرقام بطاقات
-حقيقية وترسلها إلى لا مكان. ما تفعله الشاشة: تراجع الرسم، ثم تسجّله، ثم تعرض
-`transactionId` بوصفه المرجع الذي يذكره المالك في حوالته البنكية.
+القسم القديم هنا (‏«لا كوكي مصادقة فلا حاجة لـ CSRF») **لم يعد صحيحاً** بعد ترحيل
+توكن التجديد إلى كوكي. التفصيل الكامل في §4.1؛ لا تكرّر الادّعاء القديم في أي مكان آخر
+من هذا المستودع.
 
-**الاستدعاء آمن التكرار:** الخادم يعيد استخدام رسماً معلّقاً من النوع نفسه بدل تكديس
-رسم ثانٍ، ويعلن ذلك في `isExistingPendingFee` — والصفحة تقوله بصوت عالٍ، فزيارة ثانية
-يجب ألّا تترك أحداً يظن أنه حُوسِب مرتين.
+### 5.7 قواعد كلمة المرور — بلا تغيير هذه الدورة
 
-✅ **التمييز صار يُسلَّم فعلاً** (2026-08-24، إغلاق **B-1**). ما تعتمد عليه الواجهة:
+`core/auth/password-policy.ts` ما زال يكرّر يدوياً قواعد
+`PasswordSecurityService.cs`. الدَّين نفسه قائم: مصدرا حقيقة لقاعدة واحدة، بلا اختبار
+يفرض تطابقهما.
 
-- `Property.isFeatured` — **القيمة الفعّالة** من الخادم لا العمود الخام. كنس إنهاء
-  التمييز يعمل كل ست ساعات، فالحقل الخام قد يبقى `true` لنافذة انقضت؛ الخادم يحسم ذلك
-  قبل الإرسال. **لا تقارن `featuredUntil` بالتاريخ في الواجهة** — تكرارٌ للمنطق سيتباعد.
-- `Property.featuredUntil` — سجلّ ما دُفِع ثمنه. للعرض فقط (صفحة إعلاناتي).
-- الشارة تُرسم في: بطاقة القائمة، وبطاقة الرئيسية، ورأس صفحة التفاصيل، وسطر «مميّز حتى»
-  في إعلاناتي. المفتاحان `PROPERTY.FEATURED` و`MY_LISTINGS.FEATURED_UNTIL` في ar/en/de.
-- **الترتيب:** المميّز يتصدّر **الفرز الافتراضي وحده**. الفرز الصريح (سعر/مساحة) يبقى
-  نقياً عمداً، والبحث الجغرافي يعرض الشارة ويبقى مرتّباً بالمسافة. لا تُضِف تقديماً في
-  الواجهة يناقض ذلك.
-
-### 5.5 الوكالات — وحدة خلفية كاملة بلا عميل
-
-الخلفية أضافت في `61bd779` وحدة `Agencies` كاملة: كيان، مستودع، خمس نقاط نهاية،
-دورا `AgencyOwner`/`AgencyAgent`، وصفحة عامة على `GET /api/agencies/{slug}`.
-
-**الواجهة لا تعرف عنها شيئاً:** لا خدمة في `core/api`، ولا نموذج، ولا مسار، ولا
-مفتاح ترجمة. من يفتح هذا الملف ليخطّط ميزة الوكالات يبدأ من صفر على جانب Angular —
-وليس من صفر على جانب الخلفية. اقرأ `docs/PropertyApi-REFERENCE.md §10` قبل التصميم،
-وقيود الوحدة في `docs/BACKEND-ISSUES.md` البنود **B-2** إلى **B-5**.
-
-### 5.6 CSRF — القدرة موجودة، والمفتاح **مطفأ عمداً**
-
-| الطرف | الحالة |
-|---|---|
-| الخلفية | `AddPropertyApiAntiforgery` + `UseCookieCsrfProtection()` مُسجَّلان في `Program.cs` |
-| المفتاح | `CookieCsrfOptions.Enabled = false` افتراضياً، ولا مفتاح `CookieCsrf` في أي `appsettings` |
-| الواجهة | **لا ترسل أي رأس `X-XSRF-TOKEN`** — بحث عن `csrf|xsrf|antiforgery` أعطى صفر نتائج |
-
-**وهذا صحيح ومتّسق:** المصادقة بـ `Authorization: Bearer` لا بكوكي، وحماية CSRF
-لا لزوم لها ما دام لا يوجد اعتماد ضمني على كوكي.
-
-⚠️ **لكن انتبه:** أي تحوّل مستقبلي إلى مصادقة بالكوكي يتطلب تغييراً **متزامناً على
-الطرفين**: تفعيل `CookieCsrf:Enabled` **و** جعل الواجهة تجلب
-`GET /api/security/csrf-token` ثم ترسل الرأس. تفعيل طرف واحد يكسر كل طلبات الكتابة
-صامتاً — وسيفشل عند الوسيط قبل أي Controller، فلن يبدو الخطأ خطأ CSRF إطلاقاً.
-
-### 5.7 قواعد كلمة المرور — مرآة مقصودة، ودَينها معروف
-
-`core/auth/password-policy.ts` يكرّر **حرفياً** قواعد
-`PropertyApi.Application/Auth/Services/PasswordSecurityService.cs`: الحدّ الأدنى 8،
-وأربع فئات محارف، ومجموعة `SpecialCharacters` نفسها نصّاً، و`CommonBaseWords` نفسها
-(‏42 كلمة)، و`MaximumRunLength = 4`، وخوارزمية اقتطاع الزخرفة من الطرفين نفسها.
-
-**لماذا التكرار مقبول هنا:** كان النموذج يقبل ما يرفضه الخادم، فيصل المستخدم العربي أو
-الألماني إلى رفضٍ بالإنجليزية لا يشرح المطلوب. القواعد الآن تُعرَض **قبل** الإرسال
-وبلغة المستخدم.
-
-**القاعدة الوحيدة التي لا تُكرَّر — وعن حقّ:** فحص التسريبات (‏Have I Been Pwned).
-يحتاج شبكة، ولا يجوز إرسال كلمة مرور المستخدم إلى طرف ثالث من المتصفّح. يبقى مسؤولية
-الخادم، ويصل رفضه بالكود `PASSWORD_BREACHED` فيُترجَم في `features/auth/password-errors.ts`.
-
-**الدَّين المصاحب، مذكور صراحةً حتى لا يُكتشَف لاحقاً:** هذان مصدرا حقيقة لقاعدة واحدة
-في مستودعين، **ولا اختبار على أي من الطرفين يفرض تطابقهما**. أي تعديل في قواعد الخادم
-لا ينعكس هنا يُعيد العطل الأصلي بالضبط: نموذجٌ يقول «صالح» وخادمٌ يقول «مرفوض». الملف
-يحذّر من ذلك في رأسه؛ الحلّ الأمتن ملفّ عقد مشترك يُولَّد منه الطرفان.
-
-### 5.8 تأكيد البريد — نصف التدفّق مبنيّ
+### 5.8 تأكيد البريد — التدفّق مكتمل الآن
 
 | القطعة | الحالة |
 |---|---|
-| رسالة «أُرسل رابط تأكيد» بعد التسجيل | ✅ `AUTH.REGISTER_SUCCESS` في اللغات الثلاث (`3d81d37`) |
-| صفحة `‎/auth/verify-email` | ✅ موجودة، تقرأ `userId` و`token` من `queryParamMap` وتستدعي `POST /auth/email/verify` تلقائياً |
-| **وصول الرابط إليها** | 🔴 **مكسور** — الخلفية تبني العنوان بلا `#` (‏B-14) |
-| **«أعِد إرسال الرابط»** | 🔴 **غير موجود** — النقطة `POST /api/auth/email/resend-confirmation` مبنيّة ومختبَرة في الخلفية، وبحثٌ في `src/` عنها يعطي صفر نتيجة (‏B-15) |
-
-البندان مترابطان: إصلاح B-14 وحده يترك من ضاع بريده بلا مخرج، وبناء B-15 وحده يُرسل
-رابطاً مكسوراً مرة أخرى. اشحنهما معاً.
+| رسالة «أُرسل رابط تأكيد» بعد التسجيل | ✅ |
+| صفحة `/auth/verify-email` | ✅ |
+| **وصول الرابط إليها** | ✅ **أُصلح** — `EmailConfirmationUrlBuilder` يبني المسار بـ `#` الآن (‏`BACKEND-ISSUES.md` B-14 مغلق) |
+| **«أعِد إرسال الرابط»** | ✅ **مبنيّة** — `resendConfirmationEmail()` مستدعاة من `register.page.ts` و`verify-email.page.ts` كلتيهما (‏B-15 مغلق) |
 
 ---
 
-## 6. SignalR
+## 6. SignalR — بلا تغيير هذه الدورة
 
-- `signalr-notification.service.ts` يتصل بـ `environment.signalRUrl`.
-- `accessTokenFactory: () => this.tokenStorage.getAccessToken() ?? ''` — **دالة تقرأ
-  التوكن الحالي عند كل استدعاء**، لا قيمة ملتقطة مرة واحدة. القيمة الملتقطة تجعل
-  إعادة الاتصال بعد التجديد تستخدم توكناً منتهياً.
-- الحدث المستقبَل: `ReceiveNotification`.
-- الخلفية تستخدم Redis backplane (‏`AddStackExchangeRedis`) — تعدد النسخ مدعوم للإشعارات.
-  ⚠️ لكنه **غير مدعوم للمهام المجدولة** في الخلفية؛ انظر `docs/BACKEND-ISSUES.md` البند **B-6**.
-- أنواع الإشعارات المضافة حديثاً في الخلفية: `ListingExpiringSoon` و`ListingExpired`
-  (نصّها عربي ويصل عبر القناة نفسها بلا تغيير في الواجهة).
+`signalr-notification.service.ts` يتصل بـ `environment.signalRUrl`؛
+`accessTokenFactory` يقرأ التوكن الحالي عند كل استدعاء لا قيمة ملتقطة؛ الحدث
+`ReceiveNotification`؛ الخلفية تستخدم Redis backplane.
 
 ---
 
-## 7. التعريب والاتجاه
+## 7. التعريب والاتجاه — بلا تغيير جوهري هذه الدورة
 
 | البند | القيمة |
 |---|---|
 | الملفات | `public/i18n/ar.json` · `en.json` · `de.json` |
-| عدد المفاتيح | **976 لكل ملف — تطابق تام** (مُحصاة بعد التسطيح، 2026-08-24) |
 | الافتراضية والاحتياطية | `ar` |
 | التخزين | `localStorage` تحت `lang` |
-| الاتجاه | `LanguageService` يضبط `document.documentElement.dir` ويبدّل `body.rtl/.ltr` |
+| الاتجاه | `LanguageService` يضبط `document.documentElement.dir` |
 
 **قاعدة ملزمة:** لا نصوص مكتوبة يدوياً في القوالب أو الشيفرة — كل نص مفتاح ترجمة.
-حتى رسائل الخطأ تُخزَّن كـ **مفاتيح** في الإشارات وتُترجم عند العرض:
-`{{ error() | translate }}`.
-
-**عند إضافة مفاتيح:** أضِفها إلى الملفات الثلاثة معاً وتحقّق من تطابق العدد. النقص في
-ملف واحد لا يُسقط البناء — يظهر المفتاح الخام للمستخدم في تلك اللغة فقط.
+أضِف أي مفتاح جديد (مثل رسائل `ListingEligibilityGuard`) إلى الملفات الثلاثة معاً.
 
 ---
 
-## 8. نظام التصميم
+## 8. نظام التصميم — بلا تغيير هذه الدورة
 
-### 8.1 الرموز (Tokens)
-
-كلها متغيرات CSS في `src/styles.scss`. المجموعات:
-
-- **الهوية:** `--navy` `--navy-600` `--navy-80` · `--gold` `--gold-dark` `--gold-light`
-  `--gold-soft` `--gold-text` · `--primary` `--primary-dark` `--primary-soft`
-- **المحايدات:** `--gray-50` … `--gray-900` · `--surface` · `--page-bg` · `--border` · `--border-focus`
-- **الدلالية:** `--success` `--warning` `--danger` (+ `-soft`) · `--badge-rent-*` · `--badge-sale-*`
-- **الخط:** `--font-display` `--font-body` `--font-mono` · `--text-xs` … `--text-4xl`
-- **المسافات:** `--space-1` … `--space-16`
-- **الأنصاف والظلال:** `--r-sm` … `--r-2xl` `--r-pill` · `--shadow-xs` … `--shadow-xl`
-- **الطبقات:** `--z-dropdown` `--z-sticky` `--z-overlay` `--z-modal` `--z-toast`
-- **المحمول:** `--app-safe-area-top/bottom/left/right` · `--navbar-height`
-
-### 8.2 الوضع الداكن
-
-فاتح افتراضاً، و`html[data-theme="dark"]` (‏`styles.scss:137`) يعيد تعريف الرموز فقط.
-`ThemeService` يضبط السمة ويحفظ في `localStorage` تحت `aqar-tech-theme`، ويقاوم فشل
-التخزين (وضع التصفح الخاص) بصمت.
-
-**القاعدة:** استخدم `var(--token)` حصراً. أي لون حرفي يكسر الوضع الداكن.
-`saved-searches.page.scss` **يخالف** هذه القاعدة — انسخ بنيته لا ألوانه.
-
-### 8.3 نقاط الانكسار
-
-```scss
-@use '../../../styles/breakpoints' as bp;
-@include bp.mobile  { }   // ≤ 640
-@include bp.tablet  { }   // ≤ 980
-@include bp.desktop { }   // ≥ 1280
-```
-
-استخدام `@media (max-width: N)` الخام **ممنوع صراحةً** في `_breakpoints.scss`
-(‏في ملفات SCSS؛ صفحات Tailwind تستخدم بادئات `sm:` `md:` `lg:` بدلاً منها).
-
-### 8.4 فخّ الشبكة — درس مدفوع الثمن
-
-`.btn` العام في `styles.scss` يحمل `white-space: nowrap`. في أي شبكة بطاقات، هذا يجعل
-أطول نص زر هو `min-content` للبطاقة كلها — و`1fr` هي `minmax(auto, 1fr)` التي **لا
-تنكمش تحت `min-content`**، فتتجاوز الشبكة الشاشة أفقياً وتخرج الأعمدة غير متساوية.
-
-**العلاج (طُبِّق في `pricing.page.scss`):**
-
-```scss
-grid-template-columns: repeat(4, minmax(0, 1fr));  // لا 1fr
-.card { min-width: 0; overflow-wrap: break-word; }
-.card__cta { white-space: normal; }                 // .btn يبقي min-height: 44px
-```
-
-أي شبكة أزرار جديدة سترث هذا الفخ. لا تعالجه بتعديل `.btn` العام.
-
-### 8.5 Tailwind v4 — **يعمل بجانب SCSS، لا بدلاً منه**
-
-| البند | القيمة |
-|---|---|
-| الإصدار | `tailwindcss` 4.3 عبر `@tailwindcss/postcss` |
-| الإعداد | `.postcssrc.json` — لا ملف `tailwind.config.js`؛ الإعداد كله داخل CSS |
-| المدخل | `src/tailwind.css` — **ملف `.css` خام، ليس SCSS** |
-| ترتيب التحميل | في `angular.json`: `tailwind.css` **أولاً** ثم `styles.scss` |
-| الصفحات المستخدِمة | `checkout` فقط حتى الآن؛ الـ ~25 صفحة الأخرى لم تُمسّ |
-
-**ثلاثة قرارات هنا كلٌّ منها يمنع عطلاً محدّداً — لا تعكسها:**
-
-1. **لماذا ملف `.css` منفصل؟** Angular يصرّف Sass **قبل** أن يعمل PostCSS. وضع
-   `@import "tailwindcss"` داخل ملف `.scss` يجعل Sass يعترضه كاستيراد Sass ويفشل.
-2. **لماذا Tailwind أولاً في `angular.json`؟** كي تفوز أنماط التطبيق عند التعادل،
-   فلا تُغيّر Tailwind شكل صفحة قديمة.
-3. **لماذا `@custom-variant dark` ؟** التطبيق يبدّل `html[data-theme="dark"]` يدوياً،
-   وافتراضي Tailwind هو `prefers-color-scheme`. بلا هذا السطر ستتبع كل أداة `dark:`
-   نظامَ التشغيل وتناقض مبدّل السمة في شريط التنقّل على الصفحة نفسها.
-
-**جسر الرموز (`@theme`):** كل لون في Tailwind يشير إلى متغيّر CSS الذي يعرّفه
-`styles.scss` أصلاً (`--color-surface: var(--surface)`) ولا يكرّر قيمته السداسية.
-لهذا تعمل `bg-surface` في الوضع الداكن **بلا أي أداة `dark:`**: `styles.scss` يعيد
-تعريف `--surface` تحت `[data-theme="dark"]`، والإشارة تُحلّ لحظة الرسم.
-
-> **القاعدة الملزمة:** لا تكرّر قيمة لون سداسية داخل `tailwind.css`. تكرارها يخلق
-> مصدر حقيقة ثانياً ينحرف عن الأول لحظة تعديل أي لون في `styles.scss`.
-
-**أي نمط أستخدم في صفحة جديدة؟** كلاهما مقبول. الحدّ العملي: صفحة جديدة قائمة بذاتها
-⟵ Tailwind؛ تعديل على صفحة قائمة ⟵ SCSS الخاص بها. **لا تخلط النظامين داخل مكوّن واحد**
-— أصعب ما في الصيانة ليس أيّهما استُخدم، بل ألّا يُعرف أيّهما استُخدم.
-
-### 8.6 الخطوط — الترتيب آلية، لا تفضيل
-
-```
-Roboto  ←  IBM Plex Sans Arabic  ←  Cairo  ←  system-ui
-```
-
-`--font-display` و`--font-body` كلاهما يحمل هذه السلسلة نفسها في `styles.scss:85-86`.
-
-**لماذا هذا الترتيب بالذات:** Roboto **لا يحوي محارف عربية**، فيسقط المتصفّح
-حرفاً حرفاً إلى العائلة التالية. النتيجة: اللاتيني يُرسم بـ Roboto والعربي بـ
-IBM Plex Sans Arabic — **بلا سطر شيفرة واحد وبلا `:lang()`**.
-
-> ⚠️ **لا تضع أي خط عربي قبل Roboto.** الخط العربي يحوي محارف لاتينية أيضاً، فسيلتقط
-> اللاتيني كذلك ويُبطل التقسيم كله. Cairo يبقى أخيراً لأن كل الصفحات القديمة رُسمت عليه.
+راجع §8 من v3 للتفاصيل الكاملة (‏الرموز، الوضع الداكن، نقاط الانكسار، فخّ الشبكة،
+Tailwind v4، الخطوط) — لم يتغيّر شيء منها في هذه الدورة، ولذلك لم تُكرَّر هنا حرفياً.
+**القاعدة نفسها تسري:** لا تنقلها دون إعادة فحص عند أول تعديل تصميمي مستقبلي.
 
 ---
 
-## 9. المسارات (44 مدخل `path:`)
+## 9. المسارات
 
-| المجموعة | أمثلة | الحماية |
-|---|---|---|
-| عامة داخل `LayoutComponent` | `home` `wohnungen` `wohnungen/:id` `properties/:id` `kontakt` `reviews` `users/:id` `pricing` `not-authorized` `offline` | — |
-| محمية بـ `AuthGuard` | `my-listings` `property-form` `properties/edit/:id` `favorites` `saved-searches` `notifications` `visits` `analytics` `profile` `messages/:propertyId` **`checkout/:kind/:propertyId`** | 🔒 |
-| إدارية بـ `AdminGuard` | `admin/messages` `admin/messages/:id` `admin/users` `admin/location-suggestions` | 🔒👑 |
-| مصادقة | `login` `auth/login` `auth/send-otp` `auth/verify-otp` وبقية تدفقات الهاتف والبريد | — |
-| خارج التخطيط | `landing` `language` | — |
-| الشامل | `**` → `home` | — |
+المجموعات كما في v3 (‏عامة، محمية بـ `AuthGuard`، إدارية بـ `AdminGuard`، مصادقة، خارج
+التخطيط، الشامل) **بإضافة واحدة**: `property-form` (‏الإنشاء فقط) صار محمياً بـ
+`[AuthGuard, ListingEligibilityGuard]` معاً، بينما `properties/edit/:id` يبقى على
+`AuthGuard` وحده — التمييز متعمَّد (‏تعديل إعلان مملوك ليس «نشراً جديداً»، انظر §3.3).
 
-**`checkout/:kind/:propertyId`** محمي بـ `AuthGuard` لأن نقطتَي النهاية خلفه محصورتان
-بمالك الإعلان — زائر مجهول لم يكن ليرى إلا 401. و`:kind` يقبل `extension` أو `featured`
-فقط، ويتحقّق منه `isListingFeeKind()` قبل أي طلب.
-
-**تحذير:** `{ path: '**', redirectTo: 'home' }` يبتلع أي مسار غير مسجَّل **بصمت**.
-إذا وجّه حارس أو شيفرة إلى مسار نسيت تسجيله، لن ترى 404 — سترى الصفحة الرئيسية بلا
-تفسير. هذا بالضبط ما كان يحدث مع `/not-authorized`.
+**تحذير غير متغيّر:** `{ path: '**', redirectTo: 'home' }` يبتلع أي مسار غير مسجَّل
+بصمت.
 
 ---
 
-## 10. المحمول (Capacitor 8)
+## 10. المحمول (Capacitor 8) — بلا تغيير هذه الدورة
 
-| البند | القيمة |
-|---|---|
-| `appId` | `com.realestate.app` |
-| `webDir` | `dist/Wohnungsmieten/browser` |
-| المخططات | Android: `https` · iOS: `capacitor` |
-| `cleartext` | مربوط بمتغيّر البيئة `CAPACITOR_ALLOW_CLEARTEXT` — **يجب أن يبقى `false` في الإنتاج** |
-| `allowNavigation` | `realestateworld.world` و`*.realestateworld.world` فقط |
-| أوامر | `android:sync` · `android:open` · `ios:check` · `ios:setup` · `ios:sync` · `ios:open` |
-
-خدمات مرتبطة: `native-back-button.service.ts` و`overlay-back-handler.service.ts`
-(زر الرجوع الفيزيائي يجب أن يغلق الطبقات المفتوحة قبل أن يتنقّل).
-
-⚠️ **الخطوط تُحمَّل من Google Fonts عبر الشبكة.** داخل التطبيق المحمول هذا يعني
-اعتماداً على اتصال خارجي عند الإقلاع؛ في وضع بلا اتصال يسقط العرض إلى `system-ui`.
-إن أصبح هذا مهماً، الحلّ تضمين ملفات الخطوط في `public/` لا تعديل ترتيب السلسلة.
+راجع §10 من v3. لا تغيير في `capacitor.config.ts` أو الأدوات المرتبطة هذه الدورة.
 
 ---
 
-## 11. الأوامر والبوابات
+## 11. الأوامر والبوابات — مُعاد تشغيلها فعلياً هذه الجلسة
 
 ```bash
-npm run typecheck        # tsc --noEmit على tsconfig.app.json
-npm run audit:frontend   # يفشل عند نمط غير آمن أو سرّ مكشوف
-npm run build:prod
-npm run postmerge:verify # check:env + audit + typecheck + build:prod — البوابة الكاملة
+npm run typecheck        # ✅ يمرّ
+npm run audit:frontend   # ✅ يمرّ — الرمز 0 (كان 🔴 1 في v3)
+npm run build:prod       # ✅ 596.90 kB خام / 159.10 kB منقول
+npm run postmerge:verify # check:env + audit + typecheck + build:prod
 ```
 
-**`audit:frontend` يفحص** (‏`tools/frontend-audit-guard.mjs`):
-1. **mojibake** — تحذير لا إسقاط، لكنه حرج هنا لأن المحتوى عربي كثيف.
-2. ثلاثة أنماط غير آمنة **تُسقط الفحص**: تجاوز تعقيم HTML عبر `DomSanitizer`، والربط
-   المباشر بخاصية HTML الداخلية للعنصر (بالقالب أو بالإسناد)، وأي مفتاح سرّي مكشوف
-   متبوع بسلسلة ≥ 8 أحرف.
-3. عنوان إنتاج محظور في `environment.prod.ts` (‏`localhost` أو نظام غير مشفَّر).
-4. تحذير دائم: `strict: false` في `tsconfig.json`.
+### 11.1 ميزانية الحزمة — تصحيح لا تحديث
 
-⚠️ **الفاحص لا يميّز الشرح عن الاستخدام:** أي ملف — بما فيه ملفات التوثيق `.md` —
-يطابق تلك التعابير النمطية يُسقط الفحص. لذلك تُوصَف هذه الأنماط هنا بالكلمات لا
-بصيغتها الحرفية. هذا سلوك مقصود من الفاحص ولا يُعالَج بإضعافه.
+**الحدّ الفعلي في `angular.json` (‏`production.budgets`):
+`maximumWarning: 650kB`, `maximumError: 1MB`.** لم يكن «500 kB» يوماً القيمة المضبوطة
+في هذا الملف عبر كل النسخ التي فحصتها هذه المراجعة تاريخياً. القياس الفعلي هذه الجلسة:
 
-**الحالة المُتحقَّقة بالتشغيل (2026-08-25، عند `3d81d37`):**
+```
+Initial total | 596.90 kB | 159.10 kB (منقول)
+```
 
-| الفحص | النتيجة |
-|---|---|
-| `npm run check:env` | ✅ يمرّ |
-| `npm run typecheck` | ✅ يمرّ |
-| `npm run typecheck:strict` | ⚠️ **22 خطأ** — أغلبها `TS4111` (وصول بفهرس) و`TS18048`/`TS2532` (احتمال `undefined`) في `auth.service.ts` و`language.service.ts` و`password-policy.ts` و`property-detail.page.ts` |
-| **`npm run audit:frontend`** | 🔴 **يخرج بالرمز 1** — `REGISTER_ERROR_DIAGNOSIS.md:206` يطابق نمط «سرّ محتمل» بكلمة مرور نموذجية في مثال توثيقي |
-| `npm run build:prod` | ✅ ينجح |
-| `ng test` | 🔴 **2/54 تفشلان** — `AppComponent` ينقصه `provideHttpClient` في `TestBed` |
-| تحذير `strict: false` | ⚠️ قائم |
+**596.90 كيلوبايت أقلّ من 650 — لا تحذير بناء، ولا حاجة لأي إجراء.** أي مراجعة سابقة
+ادّعت تجاوزاً وتحذيراً كانت تقرأ رقماً غير موجود في هذا المستودع.
 
-🔴 **هذه ليست ملاحظة تجميلية: `audit:frontend` خطوة إلزامية في `.github/workflows/frontend-ci.yml`،
-وتسبق البناء وفحص الأنواع.** فكل دفعة وكل طلب دمج على `main` يفشل عندها اليوم، و
-`postmerge:verify` ينكسر عند البند نفسه. التفصيل والإصلاح في **B-17**.
+### 11.2 `audit:frontend` — أُغلق البند الذي كان يُسقِطه
 
-⚠️ **و`ng test` غير موجود في `frontend-ci.yml` إطلاقاً** — لا بوابة اختبارات على
-الواجهة. أضِفها **بعد** إصلاح الحالتين، لا قبله.
+```
+$ npm run audit:frontend
+[frontend-audit] WARN: TypeScript strict mode is still disabled in tsconfig.json.
+[frontend-audit] Checks passed.
+```
 
-**ميزانية الحزمة — رقم مقيس لا منقول:** الحدّ 500 kB، والقياس عند `3d81d37` هو
-**595.18 kB** (تجاوز 95.18 kB). البناء ينجح لأن التجاوز مُصنَّف `warning` لا `error`.
+خروج بالرمز **0**. `REGISTER_ERROR_DIAGNOSIS.md` ما زال في المستودع، لكن قيمته
+النموذجية لم تعد تطابق نمط «سرّ محتمل» — البوابة التي كانت تمنع كل دمج على `main` لم
+تعد حمراء (‏`BACKEND-ISSUES.md` B-17 مغلق).
 
-⚠️ **تحذير بناء ثانٍ يستحق سطراً:** `styles.scss:551` يحوي
-`@import url("…fonts.googleapis.com…")` **بعد** قواعد CSS، وقاعدة `@import` بعد قاعدة
-عادية **مُهمَلة كلياً**. لا أثر مرئي لأن الخطوط نفسها مُحمَّلة عبر `<link>` في
-`src/index.html` — أي أن السطر ميت لا مكسور. احذفه ليصمت التحذير.
+### 11.3 `ng test` — لم يُعَد تشغيله هذه الجلسة
 
-**الاختبار اليدوي:** `docs/RESPONSIVE-MANUAL-TEST-MATRIX.md` — ثلاثة عروض بالضبط
-(‏375 / 768 / 1440)، صفر تمرير أفقي، صفر هدف لمس < 44×44px، دورة RTL ودورة LTR،
-الوضعان الفاتح والداكن. **صفحة `checkout` أول صفحة Tailwind — أخضِعها لهذه المصفوفة
-كاملةً قبل الإصدار**، لأن قواعد الاتجاه والوضع الداكن فيها تمرّ بمسار مختلف عن كل ما سبقها.
+الرقم المحمول من v3 (‏52/54، حالتا `AppComponent` تفشلان بـ `NG0201` لغياب
+`provideHttpClient` في `TestBed`) **لم يُعَد التحقّق منه في هذه الجلسة**. لا تزال هذه
+الخطوة غائبة عن `frontend-ci.yml` بحسب آخر فحص مسجَّل. أعِد تشغيله عند أول جلسة تلمس
+`core/auth` أو `TestBed`.
 
 ---
 
-## 12. ما لم يُبنَ بعد (قائمة صادقة)
+## 12. ما لم يُبنَ بعد (قائمة صادقة، محدَّثة)
 
 | البند | الحالة | الدليل |
 |---|---|---|
-| **Service Worker / PWA** | ❌ **غير مُفعَّل** | `@angular/service-worker` مثبَّت و`ngsw-config.json` موجود، لكن **لا `provideServiceWorker` في `app.config.ts` ولا مدخل `serviceWorker` في `angular.json`** — الإعداد يتيم، وصفحة `/offline` بلا آلية تخزين تسندها |
-| **تغطية الاختبارات** | ⚠️ 7 ملفات فقط، **2 من 54 حالة حمراء** | كلها لـ `core/` عدا `password-policy.spec.ts`؛ **صفر اختبار تحت `features/`** رغم 20 ميزة — بما فيها `checkout` التي تلمس المال. ولا `ng test` في CI |
-| **`strict: false`** | ⚠️ مفتوح — **22 خطأ** | `tsconfig.strict.json` جاهز و`typecheck:strict` موجود؛ الأخطاء مُحصاة الآن لا مُقدَّرة |
-| **حجم الحزمة** | ⚠️ فوق الميزانية | **595.18 kB** مقابل حدّ 500 kB — مقيس عند `3d81d37` |
-| **«أعِد إرسال رابط التأكيد»** | ❌ غير مبنيّ في الواجهة | النقطة جاهزة في الخلفية منذ `293a5c1` ولا مستدعٍ لها — B-15 |
-| **ربط توكن Apple بـ nonce** | ❌ مفتوح على الطرفين | `social-auth.service.ts:207` يُقرّ بذلك في تعليق معلّق؛ الخلفية لا تعرف الحقل — B-16 |
-| **الاشتراكات والخطط** | ❌ غير مبنيّة في الطرفين | لا `PlansController` ولا كيان `Subscription`؛ `/pricing` كتالوج محلي |
-| **بوابة الدفع** | ❌ غير موجودة | كل الرسوم تُسجَّل `Pending` وتُسوّى بتأكيد إداري يدوي. لا Stripe/PayTabs/Paymob |
-| **دورة صلاحية الإعلان المجاني** | ✅ **مبنيَّة** (2026-08-23) | `ExpiresAt` + `ListingExpiryHostedService` + إشعارا `ListingExpiringSoon`/`ListingExpired` + حدّ إعلان واحد + رسم تمديد |
-| **رسم التمييز** | ✅ **مبنيّ** (2026-08-24) | الشراء والتسليم معاً: تقديم في الفرز الافتراضي، وحقلان في `PropertyDto`، وشارة ⭐ في أربعة مواضع. `BACKEND-ISSUES.md` **B-1** مُغلَق |
-| **واجهة الوكالات** | ❌ غير مبنيّة في Angular | الخلفية جاهزة (§5.5)؛ صفر شيفرة في الواجهة |
-| **إشعارات الدفع (FCM)** | ❌ غير مبنيّ | صفر مراجع في الطرفين |
-| **فيديو للعقارات** | ❌ غير مبنيّ | صفر مراجع في الدومين/التطبيق |
-| **تخزين الـ refresh token** | ⚠️ مفتوح | `sessionStorage` لا `HttpOnly` — §4 |
+| **Service Worker / PWA** | ❌ غير مُفعَّل | بلا تغيير عن v3 — `provideServiceWorker` غائب |
+| **تغطية الاختبارات تحت `features/`** | ⚠️ لم تُفحَص هذه الجلسة | راجع v3؛ لم يتغيّر شيء يُعرَف بلا إعادة تشغيل `ng test` |
+| **`strict: false`** | ⚠️ مفتوح | بلا تغيير |
+| **حجم الحزمة** | ✅ **داخل الحدّ الفعلي** | 596.90 kB مقابل حدّ 650 kB — كان يُوصَف خطأً بأنه متجاوِز |
+| **واجهة الوكالات** | ❌ غير مبنيّة، والفجوة اتّسعت | الخلفية أضافت تعديلاً وتعطيلاً هذه الدورة بلا أي مقابل هنا — §5.5 |
+| **ربط توكن Apple بـ nonce** | ✅ **مبنيّ على الطرفين** | `social-auth.service.ts` يرسله، `AppleTokenVerifier.cs` يتحقّق منه — B-16 مغلق |
+| **حدّ إعلانات مرتبط بالخطة المختارة** | ❌ غير مبنيّ | `/plans` حقيقية الآن، لكن لا ربط بحدّ الإعلانات على الخلفية — B-3 |
+| **بوابة الدفع** | ❌ غير موجودة | بلا تغيير — لا Stripe/PayTabs/Paymob |
+| **CSRF عند الكتابة** | ❌ غير مُرسَل | صار مطلوباً فعلياً بعد ترحيل كوكي التجديد — §4.1 |
+| **تخزين توكن التجديد** | ✅ **أُصلح** | كوكي `HttpOnly` — لم يعد `sessionStorage` |
+| **«أعِد إرسال رابط التأكيد»** | ✅ **مبنيّة** | مستدعاة من صفحتين — B-15 مغلق |
 
 ---
 
@@ -590,42 +375,34 @@ npm run postmerge:verify # check:env + audit + typecheck + build:prod — الب
 1. **`OnPush` + `signal()`** في كل مكوّن جديد. لا استثناء.
 2. **`inject()`** لا حقن بالمُنشئ.
 3. **`takeUntilDestroyed(this.destroyRef)`** على كل `subscribe`.
-4. **`*ngIf` / `*ngFor` + `CommonModule`** — بنية `@if`/`@for` غير مستخدمة في المشروع
-   كله؛ لا تُدخلها في ملف واحد وتترك الباقي.
-5. **كل نص مفتاح i18n** في الملفات الثلاثة معاً، وتحقّق من تطابق العدد.
-6. **كل لون `var(--token)`** — لا ألوان حرفية، في SCSS **ولا في `@theme` الخاص بـ Tailwind**.
-7. **`bp.mobile/tablet/desktop`** في SCSS، وبادئات `sm:`/`md:`/`lg:` في Tailwind — لا `@media` خام.
-8. **نظام تنسيق واحد لكل مكوّن** — Tailwind أو SCSS، لا خلط داخل الملف الواحد.
-9. **`apiToCamelCase()`** في كل خدمة API جديدة.
-10. **لا `catchError` في الخدمات** — الأخطاء إلى `ApiErrorInterceptor`.
-11. **لا تغلّف نقطة نهاية إدارية في خدمة عميل** — أي نقطة تمنح امتيازاً مالياً أو
-    إدارياً تبقى خارج شيفرة الواجهة تماماً.
-12. **الوجهات تبقى في الواجهة** — لا تدع الخادم يسلّم رابطاً للتنقل إليه
-    (سطح open-redirect بلا مقابل).
-13. **حرّاس `*ngIf` على الأزرار المالية تجميلية لا أمنية** — الملكية تُفرَض في الخلفية
-    بـ 403، وهذا هو الضمان الوحيد.
-14. **شغّل `audit:frontend` قبل الالتزام** — mojibake يمرّ من العين ولا يمرّ منه.
+4. **كل نص مفتاح i18n** في الملفات الثلاثة معاً.
+5. **كل لون `var(--token)`** — لا ألوان حرفية.
+6. **`apiToCamelCase()` يبقى في كل خدمة قائمة تستخدمه** — لم يعد ضرورياً لخدمة جديدة
+   بعد توحيد الخلفية على camelCase، لكن لا تُزِله من مكان يعمل.
+7. **لا `catchError` في الخدمات.**
+8. **لا تغلّف نقطة نهاية إدارية في خدمة عميل.**
+9. **حارس مسار يعكس قاعدة خلفية يجب أن يوثّق أن الخلفية تبقى مصدر الحقيقة** — انظر
+   نمط `ListingEligibilityGuard` (§3.3).
+10. **شغّل `audit:frontend` قبل الالتزام.**
+11. **لا تَعِد المستخدم بأثر فوري لاختيار خطة** حتى يُربَط `/plans` بحدّ الإعلانات
+    فعلياً على الخلفية (‏B-3).
 
 ---
 
 ## 14. ملفات مرجعية ذات صلة
 
-| الملف | الدور | الحالة |
-|---|---|---|
-| `docs/RELEASE-BLOCKERS-AR.md` | موانع النشر والمشاكل الحرجة، مرتّبة بترتيب التنفيذ | ✅ **جديد** 2026-08-25 |
-| `docs/PROJECT-STRUCTURE.md` | البنية الهيكلية للمستودعين معاً وحدود الطبقات | ✅ محدَّث 2026-08-25 |
-| `docs/BACKEND-ISSUES.md` | المشاكل المرصودة في كود الخلفية، مرتّبة بالأولوية | ✅ محدَّث v2 — 2026-08-25 |
-| `docs/PropertyApi-REFERENCE.md` | المرجع المعماري للخلفية | ✅ محدَّث v7 |
-| `FRONTEND_BACKEND_CONTRACT.md` | عقد الواجهة/الخلفية | ✅ محدَّث |
-| `docs/RESPONSIVE-MANUAL-TEST-MATRIX.md` | مصفوفة الاختبار اليدوي الإلزامية | ✅ ساري |
-| `docs/UI-RELEASE-GATE.md` | بوابة الإصدار | ✅ ساري |
-| `docs/SUBSCRIPTION-PAGE-REPORT-AR.md` | تقرير صفحة الاشتراكات | ✅ محدَّث 2026-08-23 |
-| `PROJECT-REFERENCE.md` (في `Downloads`) | مرجع عام قديم (‏2026-06-18) | ⚠️ **متجاوَز** — هذا الملف يَحُلّ محلّ قسمه الخاص بالواجهة |
-| `REGISTER_ERROR_DIAGNOSIS.md` | تشخيص قديم يوجّه لأوامر SQL Server | ❌ **خاطئ** — قاعدة البيانات PostgreSQL |
-| `DATABASE_SCHEMA.md` (في `Downloads`) | يصف SQL Server | ❌ **خاطئ** — PostgreSQL + PostGIS |
+| الملف | الحالة |
+|---|---|
+| `docs/PROJECT-STRUCTURE.md` | ✅ محدَّث 2026-08-26 |
+| `docs/BACKEND-ISSUES.md` | ✅ v3 — 2026-08-26 |
+| `docs/PropertyApi-REFERENCE.md` | ✅ v8 — 2026-08-26 |
+| `FRONTEND_BACKEND_CONTRACT.md` | ⚠️ لم يُعَد فحصه هذه الدورة — يحتاج تحديث قسم `/plans` (‏§11) ليعكس أنه صار مُنفَّذاً |
+| `REGISTER_ERROR_DIAGNOSIS.md` | ❌ خاطئ تاريخياً (‏SQL Server) — أصبح أيضاً مرجع القيمة النموذجية التي أصلحت B-17 |
 
 ---
 
-*كُتب من فحص ثابت مباشر للمصدرين معاً في 2026-08-24 (الواجهة `c84052a`، الخلفية
-`61bd779`). كل بند لم يُتحقَّق منه بالشيفرة مُعلَّم صراحةً؛ لا شيء هنا منقول عن وثيقة
-سابقة دون إعادة تحقّق.*
+*كُتب من فحص ثابت مباشر للمصدرين معاً في 2026-08-26 (الواجهة `730af55`، الخلفية
+`3cadb4b`)، مسنوداً بتشغيل فعلي لـ `typecheck`/`audit:frontend`/`build:prod` في هذه
+الجلسة. `ng test` لم يُعَد تشغيله ومُعلَّم صراحةً حيث ورد. كل بند لم يُتحقَّق منه
+بالشيفرة الحالية مُعلَّم صراحةً؛ لا شيء هنا منقول عن نسخة سابقة دون إعادة تحقّق —
+والقسم §0 هو أفضل دليل على سبب أهمية هذه القاعدة تحديداً.*
