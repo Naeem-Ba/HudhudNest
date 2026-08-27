@@ -29,13 +29,22 @@ export class EnumService {
     PROPERTYCONDITION: 'PropertyCondition',
     PROPERTYSTATUS: 'PropertyStatus',
     ENERGYEFFICIENCY: 'EnergyEfficiency',
-    HEATINGTYPE: 'HeatingType'
+    HEATINGTYPE: 'HeatingType',
+    // Dynamic listing form (ListingType × PropertyType redesign, Syrian
+    // market) — "OwnershipType" is the product-facing name for the backend's
+    // LegalStatusType, see EnumController's doc comment.
+    OWNERSHIPTYPE: 'OwnershipType',
+    AREAUNIT: 'AreaUnit',
+    FURNISHINGSTATUS: 'FurnishingStatus'
   };
 
   constructor(private readonly api: BackendApiService) {}
 
   async loadAll(): Promise<void> {
-    const groups = ['STADT', 'ZUSTAND', 'STATUS', 'ENERGIEAUSWEISTYP', 'HEIZUNG', 'LISTINGTYPE'];
+    const groups = [
+      'STADT', 'ZUSTAND', 'STATUS', 'ENERGIEAUSWEISTYP', 'HEIZUNG', 'LISTINGTYPE',
+      'OWNERSHIPTYPE', 'AREAUNIT', 'FURNISHINGSTATUS'
+    ];
     await Promise.all(groups.map(group => this.loadGroup(group)));
   }
 

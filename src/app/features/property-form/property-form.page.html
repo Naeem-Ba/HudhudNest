@@ -123,10 +123,10 @@
                 <input id="countryCode" type="text" [value]="currentLang() === 'ar' ? 'سوريا' : 'Syria'" disabled />
               </div>
 
-              <div class="form-group">
-                <label for="postalCode">{{ 'wohnung_add.plz' | translate }}</label>
-                <input id="postalCode" type="text" formControlName="postalCode" maxlength="20" />
-              </div>
+              <!-- Postal Code: hidden for the Syrian-market phase (task §3) —
+                   the control stays in the reactive form (harmless null in the
+                   payload) so nothing breaks if this is re-shown later for
+                   international addressing; it's just not rendered here. -->
             </div>
 
             <!--
@@ -275,7 +275,56 @@
                   <label for="depositSale">{{ 'PROPERTY_FORM.DEPOSIT' | translate }}</label>
                   <input id="depositSale" type="number" formControlName="deposit" min="0" />
                 </div>
+                <div class="form-group form-group--full">
+                  <label for="ownershipType">{{ 'PROPERTY_FORM.OWNERSHIP_TYPE' | translate }} <span class="required">*</span></label>
+                  <select id="ownershipType" formControlName="ownershipType">
+                    <option [ngValue]="null">{{ 'PROPERTY_FORM.SELECT_PLACEHOLDER' | translate }}</option>
+                    <option *ngFor="let option of ownershipTypeOptions" [ngValue]="option.Id">
+                      {{ 'PROPERTY_FORM.OWNERSHIP_' + option.Key | uppercase | translate }}
+                    </option>
+                  </select>
+                  <p class="field-error" *ngIf="form.errors?.['ownershipTypeRequired'] && f.ownershipType.touched">
+                    {{ 'PROPERTY_FORM.OWNERSHIP_TYPE_REQUIRED' | translate }}
+                  </p>
+                </div>
               </ng-container>
+            </div>
+
+            <!-- تفاصيل الإيجار — تُعرض فقط عند اختيار إيجار؛ الإيجار حالياً محدَّد
+                 المدة دائماً (task §5). -->
+            <div class="form-grid-2" *ngIf="isRent">
+              <div class="form-group form-group--full">
+                <label class="section-sublabel">{{ 'PROPERTY_FORM.RENTAL_DETAILS' | translate }}</label>
+              </div>
+              <div class="form-group">
+                <label for="rentalDurationType">{{ 'PROPERTY_FORM.RENTAL_DURATION' | translate }} <span class="required">*</span></label>
+                <select id="rentalDurationType" formControlName="rentalDurationType">
+                  <option [ngValue]="null">{{ 'PROPERTY_FORM.SELECT_PLACEHOLDER' | translate }}</option>
+                  <option [ngValue]="0">{{ 'PROPERTY_FORM.RENTAL_DURATION_SIX_MONTHS' | translate }}</option>
+                  <option [ngValue]="1">{{ 'PROPERTY_FORM.RENTAL_DURATION_ONE_YEAR' | translate }}</option>
+                  <option [ngValue]="2">{{ 'PROPERTY_FORM.RENTAL_DURATION_CUSTOM' | translate }}</option>
+                </select>
+                <p class="field-error" *ngIf="form.errors?.['rentalDurationRequired'] && f.rentalDurationType.touched">
+                  {{ 'PROPERTY_FORM.RENTAL_DURATION_REQUIRED' | translate }}
+                </p>
+              </div>
+              <div class="form-group">
+                <label for="rentalStartDate">{{ 'PROPERTY_FORM.RENTAL_START_DATE' | translate }} <span class="required">*</span></label>
+                <input id="rentalStartDate" type="date" formControlName="rentalStartDate" />
+                <p class="field-error" *ngIf="form.errors?.['rentalStartDateRequired'] && f.rentalStartDate.touched">
+                  {{ 'PROPERTY_FORM.RENTAL_START_DATE_REQUIRED' | translate }}
+                </p>
+              </div>
+              <div class="form-group">
+                <label for="rentalEndDate">{{ 'PROPERTY_FORM.RENTAL_END_DATE' | translate }} <span class="required">*</span></label>
+                <input id="rentalEndDate" type="date" formControlName="rentalEndDate" [attr.disabled]="isCustomRentalDuration ? null : true" />
+                <p class="field-error" *ngIf="form.errors?.['rentalEndDateRequired'] && f.rentalEndDate.touched">
+                  {{ 'PROPERTY_FORM.RENTAL_END_DATE_REQUIRED' | translate }}
+                </p>
+                <p class="field-error" *ngIf="form.errors?.['rentalEndBeforeStart'] && f.rentalEndDate.touched">
+                  {{ 'PROPERTY_FORM.RENTAL_END_BEFORE_START' | translate }}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -290,15 +339,34 @@
           </div>
           <div class="form-section__body">
             <div class="form-grid-2">
-              <div class="form-group">
+              <!-- Rooms/Floor: not applicable to Land (task §8.1) — hidden
+                   rather than just left optional, so the form doesn't ask a
+                   question that has no meaningful answer for a plot of land. -->
+              <div class="form-group" *ngIf="!isLandCategory">
                 <label for="rooms">{{ 'wohnung_add.zimmer' | translate }}</label>
                 <input id="rooms" type="number" formControlName="rooms" min="0" step="0.5" />
               </div>
               <div class="form-group">
                 <label for="area">{{ 'wohnung_add.flaeche' | translate }}</label>
                 <input id="area" type="number" formControlName="area" min="1" />
+                <p class="field-error" *ngIf="hasError(f.area)">
+                  {{ f.area.errors?.['areaGreaterThanTen'] ? ('PROPERTY_FORM.AREA_TOO_SMALL' | translate) : ('VALIDATION.REQUIRED' | translate) }}
+                </p>
+                <p class="field-error" *ngIf="form.errors?.['areaRequiredForLand'] && f.area.touched">
+                  {{ 'PROPERTY_FORM.AREA_REQUIRED_FOR_LAND' | translate }}
+                </p>
               </div>
-              <div class="form-group">
+              <!-- AreaUnit: only shown for Land (task §8.2) — every other
+                   property type is always SquareMeter, submitted silently. -->
+              <div class="form-group" *ngIf="isLandCategory">
+                <label for="areaUnit">{{ 'PROPERTY_FORM.AREA_UNIT' | translate }}</label>
+                <select id="areaUnit" formControlName="areaUnit">
+                  <option *ngFor="let option of areaUnitOptions" [ngValue]="option.Id">
+                    {{ 'PROPERTY_FORM.AREA_UNIT_' + option.Key | uppercase | translate }}
+                  </option>
+                </select>
+              </div>
+              <div class="form-group" *ngIf="!isLandCategory">
                 <label for="floor">{{ 'wohnung_add.etage' | translate }}</label>
                 <input id="floor" type="number" formControlName="floor" />
               </div>
@@ -306,7 +374,7 @@
                 <label for="availableFrom">{{ 'wohnung_add.verfuegbar_ab' | translate }}</label>
                 <input id="availableFrom" type="date" formControlName="availableFrom" />
               </div>
-              <div class="form-group">
+              <div class="form-group" *ngIf="!isLandCategory">
                 <label for="heatingType">{{ 'PROPERTY_FORM.HEATING' | translate }}</label>
                 <select id="heatingType" formControlName="heatingType">
                   <option [value]="1">{{ 'HEATING.CENTRAL' | translate }}</option>
@@ -317,9 +385,18 @@
                   <option [value]="0">{{ 'HEATING.OTHER' | translate }}</option>
                 </select>
               </div>
+              <div class="form-group" *ngIf="!isLandCategory">
+                <label for="furnishingStatus">{{ 'PROPERTY_FORM.FURNISHING_STATUS' | translate }}</label>
+                <select id="furnishingStatus" formControlName="furnishingStatus">
+                  <option [ngValue]="null">{{ 'PROPERTY_FORM.SELECT_PLACEHOLDER' | translate }}</option>
+                  <option *ngFor="let option of furnishingStatusOptions" [ngValue]="option.Id">
+                    {{ 'PROPERTY_FORM.FURNISHING_' + option.Key | uppercase | translate }}
+                  </option>
+                </select>
+              </div>
 
-              <!-- Checkboxes -->
-              <div class="form-group form-group--full">
+              <!-- Checkboxes: not applicable to Land, same reasoning as Rooms/Floor. -->
+              <div class="form-group form-group--full" *ngIf="!isLandCategory">
                 <label class="section-sublabel">{{ 'wohnung_add.features' | translate }}</label>
                 <div class="checkbox-grid">
                   <label class="checkbox-item">
