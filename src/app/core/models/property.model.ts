@@ -82,7 +82,16 @@ export interface Property {
   currencyCode?: string;
   rooms?: number;
   area?: number;
+  // Dynamic listing form (ListingType × PropertyType redesign, Syrian market).
+  // Returned as enum-name strings (e.g. "SquareMeter", "GreenDeed") — see
+  // PropertyDto on the backend. RentalStartDate/RentalEndDate are 'YYYY-MM-DD'.
+  areaUnit?: string;
   floor?: number;
+  rentalStartDate?: string | null;
+  rentalEndDate?: string | null;
+  rentalDurationType?: string | null;
+  legalStatus?: string;
+  furnishingStatus?: string;
   hasBalcony?: boolean;
   hasElevator?: boolean;
   hasParkingSpace?: boolean;
@@ -196,6 +205,13 @@ export interface CreatePropertyDto {
   condition?: number | string;
   availableFrom?: string | null;
   amenityIds?: string[] | null;
+  // Dynamic listing form (ListingType × PropertyType redesign, Syrian market).
+  legalStatus?: number | null;
+  areaUnit: number;
+  rentalStartDate?: string | null;
+  rentalEndDate?: string | null;
+  rentalDurationType?: number | null;
+  furnishingStatus?: number | null;
 }
 
 // Phase-0, Task 4 — advisory duplicate-listing check (GET /properties/check-duplicate).

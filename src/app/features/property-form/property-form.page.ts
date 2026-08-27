@@ -34,6 +34,7 @@ import { MapPickerComponent } from '../../map-picker/map-picker.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { LocationComboComponent } from '../../shared/ui/location-combo.component';
 import { LanguageService, LangCode } from '../../core/services/language.service';
+import { EnumService } from '../../core/services/enum.service';
 
 interface PropertySavePayload {
   Title: string;
@@ -68,7 +69,22 @@ interface PropertySavePayload {
   NeighborhoodId?: number | null;
   NeighborhoodText?: string | null;
   PropertyTypeId?: number | null;
+  // Dynamic listing form (ListingType × PropertyType redesign, Syrian
+  // market) — see CreatePropertyCommand on the backend for the same fields.
+  LegalStatus?: number | null;
+  AreaUnit: number;
+  RentalStartDate?: string | null;
+  RentalEndDate?: string | null;
+  RentalDurationType?: number | null;
+  FurnishingStatus?: number | null;
 }
+
+/** AreaUnit — must match PropertyApi.Domain.Listings.Enums.AreaUnit's ordinals. */
+const AREA_UNIT_SQUARE_METER = 0;
+
+/** RentalDurationType — must match PropertyApi.Domain.Listings.Enums.RentalDurationType's ordinals. */
+const RENTAL_DURATION_SIX_MONTHS = 0;
+const RENTAL_DURATION_ONE_YEAR = 1;
 
 const VALID_COUNTRY_CODES = new Set(['DE', 'SY', 'US', 'GB', 'FR', 'AE', 'SA', 'TR', 'EG', 'JO', 'LB']);
 const VALID_CURRENCY_CODES = new Set(['EUR', 'USD', 'GBP', 'SYP', 'TRY', 'AED', 'SAR', 'EGP', 'JOD', 'LBP']);
@@ -82,6 +98,21 @@ function toNumberOrNull(value: unknown): number | null {
   return Number.isFinite(numberValue) ? numberValue : null;
 }
 
+/**
+ * Adds `months` to a 'YYYY-MM-DD' date-input string, returning the same format.
+ * Deliberately does all arithmetic in UTC via Date.UTC/getUTCFullYear etc.,
+ * never `new Date(dateString)` + local setMonth(): a plain 'YYYY-MM-DD' string
+ * parses as UTC midnight, but the local-time getters/setters (getMonth,
+ * setMonth) read/write the browser's local calendar date — off by a day in
+ * every timezone west of UTC (e.g. '2026-01-01' + 6 months silently becoming
+ * '2026-06-30' for a user west of Greenwich).
+ */
+function addMonthsToDateString(dateString: string, months: number): string {
+  const [year, month, day] = dateString.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1 + months, day));
+  return date.toISOString().slice(0, 10);
+}
+
 function positiveNumber(control: AbstractControl): ValidationErrors | null {
   const value = toNumberOrNull(control.value);
   return value === null || value > 0 ? null : { positiveNumber: true };
@@ -92,9 +123,21 @@ function nonNegativeNumber(control: AbstractControl): ValidationErrors | null {
   return value === null || value >= 0 ? null : { nonNegativeNumber: true };
 }
 
+/**
+ * >10 only makes sense in square meters — a 2-Dunum plot (≈2000 m²) is a
+ * perfectly normal, small-looking number in its own unit. Reads the sibling
+ * areaUnit control via control.parent since this validator sits on `area`
+ * alone — mirrors the same split rule on the backend
+ * (CreatePropertyCommandValidator).
+ */
 function areaGreaterThanTen(control: AbstractControl): ValidationErrors | null {
   const value = toNumberOrNull(control.value);
-  return value === null || value > 10 ? null : { areaGreaterThanTen: true };
+  if (value === null) return null;
+
+  const unit = Number(control.parent?.get('areaUnit')?.value ?? AREA_UNIT_SQUARE_METER);
+  const threshold = unit === AREA_UNIT_SQUARE_METER ? 10 : 0;
+
+  return value > threshold ? null : { areaGreaterThanTen: true };
 }
 
 function propertyFormValidator(group: AbstractControl): ValidationErrors | null {
@@ -165,6 +208,7 @@ export class PropertyFormPage implements OnInit {
   private readonly langService = inject(LanguageService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly fb = inject(FormBuilder);
+  private readonly enumService = inject(EnumService);
 
   readonly isSaving = signal(false);
   readonly isEditMode = signal(false);
@@ -216,6 +260,72 @@ export class PropertyFormPage implements OnInit {
   /** Set once the user explicitly chooses "submit anyway" from the duplicate warning. */
   private duplicateCheckAcknowledged = false;
 
+  /**
+   * Dynamic listing form (ListingType × PropertyType redesign, Syrian market).
+   * Category ('Residential'/'Land'/'Commercial') of the currently selected
+   * propertyTypeId — resolved from propertyTypeCatalog(), which is already
+   * fetched for the property-type <select>. Drives which sections/fields show
+   * (Land hides rooms/floor/features, shows areaUnit) and feeds
+   * conditionalFieldsValidator below. Kept as a signal rather than a computed()
+   * because it also needs to run a one-time side effect (clearing
+   * now-inapplicable field values) the moment a selection turns into Land.
+   */
+  readonly selectedCategory = signal<string | null>(null);
+
+  /** Enum-backed dropdown options, loaded once (EnumService caches app-wide). */
+  readonly ownershipTypeOptions = this.enumService.getList('OwnershipType');
+  readonly areaUnitOptions = this.enumService.getList('AreaUnit');
+  readonly furnishingStatusOptions = this.enumService.getList('FurnishingStatus');
+
+  /**
+   * Cross-field validation for the fields that depend on ListingType/PropertyType
+   * category rather than on a single control — same idea as propertyFormValidator
+   * below, kept as a separate class-bound validator (instead of folding into that
+   * module-level function) purely because it needs `this.selectedCategory()`.
+   * Declared as a field (not a method) so it can be referenced by `form`'s
+   * initializer just below without an explicit .bind(this).
+   */
+  private readonly conditionalFieldsValidator = (group: AbstractControl): ValidationErrors | null => {
+    const listingType = Number(group.get('listingType')?.value);
+    const isRent = listingType === 1;
+    const isSale = listingType === 2;
+    const isLand = this.selectedCategory() === 'Land';
+
+    const errors: ValidationErrors = {};
+
+    if (isSale) {
+      const ownershipType = group.get('ownershipType')?.value;
+      if (ownershipType === null || ownershipType === undefined || ownershipType === '') {
+        errors['ownershipTypeRequired'] = true;
+      }
+    }
+
+    if (isRent) {
+      const start = group.get('rentalStartDate')?.value;
+      const end = group.get('rentalEndDate')?.value;
+      const duration = group.get('rentalDurationType')?.value;
+
+      if (!start) errors['rentalStartDateRequired'] = true;
+      if (!end) errors['rentalEndDateRequired'] = true;
+      if (duration === null || duration === undefined || duration === '') {
+        errors['rentalDurationRequired'] = true;
+      }
+
+      if (start && end && new Date(end) <= new Date(start)) {
+        errors['rentalEndBeforeStart'] = true;
+      }
+    }
+
+    if (isLand) {
+      const area = toNumberOrNull(group.get('area')?.value);
+      if (area === null) {
+        errors['areaRequiredForLand'] = true;
+      }
+    }
+
+    return Object.keys(errors).length ? errors : null;
+  };
+
   readonly form = this.fb.group({
     listingType: [1, Validators.required],
     title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(200)]],
@@ -254,13 +364,25 @@ export class PropertyFormPage implements OnInit {
     additionalCosts: [null as number | null, nonNegativeNumber],
     rooms: [null as number | null, [Validators.min(1), Validators.max(50)]],
     area: [null as number | null, areaGreaterThanTen],
+    areaUnit: [AREA_UNIT_SQUARE_METER, Validators.required],
     floor: [null as number | null, Validators.min(0)],
     availableFrom: [null as string | null],
     heatingType: [0],
     hasBalcony: [false],
     hasElevator: [false],
-    hasParkingSpace: [false]
-  }, { validators: propertyFormValidator });
+    hasParkingSpace: [false],
+    // Dynamic listing form (ListingType × PropertyType redesign, Syrian
+    // market). Required-ness is context-dependent (Sale → ownershipType,
+    // Rent → the three rental fields, Land → area) — enforced by
+    // conditionalFieldsValidator above, not by plain Validators.required
+    // here, the same pattern already used for districtId/districtText.
+    ownershipType: [null as number | null],
+    rentalStartDate: [null as string | null],
+    rentalEndDate: [null as string | null],
+    rentalDurationType: [null as number | null],
+    // Furnished/unfurnished — optional, hidden for Land (see selectedCategory).
+    furnishingStatus: [null as number | null]
+  }, { validators: [propertyFormValidator, this.conditionalFieldsValidator] });
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id') ?? '';
@@ -276,6 +398,8 @@ export class PropertyFormPage implements OnInit {
     this.loadGovernorates();
     this.loadPropertyTypeCatalog();
     this.bindCascadingLocationChanges();
+    this.bindPropertyTypeCategoryTracking();
+    this.bindRentalDurationAutoFill();
   }
 
   /** GET /api/lookups/governorates — Phase-0, Task 0 follow-up. */
@@ -295,9 +419,96 @@ export class PropertyFormPage implements OnInit {
       .getPropertyTypeCatalog()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: items => this.propertyTypeCatalog.set(items),
+        next: items => {
+          this.propertyTypeCatalog.set(items);
+          // Covers the "existing property already loaded before the catalog
+          // did" ordering — recompute now that categories are available.
+          this.updateSelectedCategory(this.form.controls.propertyTypeId.value);
+        },
         error: () => this.structuredLocationLoadFailed.set(true)
       });
+  }
+
+  /**
+   * Tracks which PropertyType.Category ('Residential'/'Land'/'Commercial') is
+   * currently selected, driving conditional rendering/validation. Covers the
+   * "catalog already loaded, user picks/changes a type" ordering — see
+   * loadPropertyTypeCatalog() above for the reverse ordering.
+   */
+  private bindPropertyTypeCategoryTracking(): void {
+    this.form.controls.propertyTypeId.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(propertyTypeId => this.updateSelectedCategory(propertyTypeId));
+  }
+
+  private updateSelectedCategory(propertyTypeId: number | null): void {
+    const match = this.propertyTypeCatalog().find(pt => pt.id === propertyTypeId);
+    const category = match?.category ?? null;
+    const becameLand = category === 'Land' && this.selectedCategory() !== 'Land';
+
+    this.selectedCategory.set(category);
+
+    if (becameLand) {
+      this.clearFieldsNotApplicableToLand();
+    }
+
+    this.form.updateValueAndValidity();
+  }
+
+  /**
+   * §13 of the task brief: switching to a PropertyType whose category is Land
+   * must not leave stale, inapplicable values (e.g. Rooms=3) sitting in the
+   * form ready to be submitted. Mirrors setListingType()'s existing cleanup
+   * of price fields on Rent↔Sale.
+   */
+  private clearFieldsNotApplicableToLand(): void {
+    this.form.patchValue({
+      rooms: null,
+      floor: null,
+      hasBalcony: false,
+      hasElevator: false,
+      hasParkingSpace: false,
+      furnishingStatus: null
+    });
+  }
+
+  /**
+   * Rental duration auto-fill: SixMonths/OneYear compute rentalEndDate from
+   * rentalStartDate (disabled for manual edit in the template — see
+   * isCustomRentalDuration); Custom leaves rentalEndDate fully manual. This is
+   * a frontend UX convenience only — the backend does not enforce that the gap
+   * matches the chosen duration exactly, only that end > start.
+   */
+  private bindRentalDurationAutoFill(): void {
+    const recompute = (): void => {
+      const duration = this.form.controls.rentalDurationType.value;
+      const start = this.form.controls.rentalStartDate.value;
+      if (!start) return;
+
+      if (duration === RENTAL_DURATION_SIX_MONTHS) {
+        this.form.patchValue({ rentalEndDate: addMonthsToDateString(start, 6) }, { emitEvent: false });
+      } else if (duration === RENTAL_DURATION_ONE_YEAR) {
+        this.form.patchValue({ rentalEndDate: addMonthsToDateString(start, 12) }, { emitEvent: false });
+      }
+      // Custom: rentalEndDate stays exactly what the user typed.
+    };
+
+    this.form.controls.rentalDurationType.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(recompute);
+
+    this.form.controls.rentalStartDate.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(recompute);
+  }
+
+  /** True once the user has picked "Custom" duration — enables manual rentalEndDate entry. */
+  get isCustomRentalDuration(): boolean {
+    return this.form.value.rentalDurationType === 2; // RentalDurationType.Custom
+  }
+
+  get isLandCategory(): boolean {
+    return this.selectedCategory() === 'Land';
   }
 
   /**
@@ -413,6 +624,18 @@ export class PropertyFormPage implements OnInit {
     return pickLocalizedName(item, this.currentLang());
   }
 
+  /**
+   * Resolves the numeric enum id the create/update commands expect from the
+   * enum-name STRING a PropertyDto response carries (e.g. "GreenDeed") — via
+   * the same cached /api/enums/{group} list the <select> options come from,
+   * so this never hardcodes an ordinal that could drift from the backend.
+   */
+  private enumIdByKey(group: string, key: string | null | undefined): number | null {
+    if (!key) return null;
+    const match = this.enumService.getList(group).find(item => item.Key === key);
+    return match ? Number(match.Id) : null;
+  }
+
   /** GET /api/lookups/amenities — كانت غير مستخدمة إطلاقاً في الواجهة. */
   private loadAmenities(): void {
     this.lookupsApi
@@ -504,7 +727,18 @@ export class PropertyFormPage implements OnInit {
             hasBalcony: property.hasBalcony ?? false,
             hasElevator: property.hasElevator ?? false,
             hasParkingSpace: property.hasParkingSpace ?? false,
-            propertyTypeId: property.propertyTypeId ?? null
+            propertyTypeId: property.propertyTypeId ?? null,
+            // Dynamic listing form (ListingType × PropertyType redesign).
+            // PropertyDto returns these as enum-name STRINGS (e.g. "GreenDeed"),
+            // while the create/update commands expect the numeric ordinal (same
+            // asymmetry already handled above for listingType) — resolved via
+            // the cached EnumService list rather than hardcoding ordinals here.
+            areaUnit: this.enumIdByKey('AreaUnit', property.areaUnit) ?? AREA_UNIT_SQUARE_METER,
+            rentalStartDate: property.rentalStartDate ?? null,
+            rentalEndDate: property.rentalEndDate ?? null,
+            rentalDurationType: this.enumIdByKey('RentalDurationType', property.rentalDurationType),
+            ownershipType: this.enumIdByKey('OwnershipType', property.legalStatus),
+            furnishingStatus: this.enumIdByKey('FurnishingStatus', property.furnishingStatus)
           });
 
           // Phase-0, Task 0 follow-up: patched with emitEvent:false so the
@@ -651,12 +885,17 @@ export class PropertyFormPage implements OnInit {
     this.form.patchValue({ listingType: type });
 
     if (type === 1) {
-      this.form.patchValue({ purchasePrice: null });
+      // Rent: sale-only fields don't apply.
+      this.form.patchValue({ purchasePrice: null, ownershipType: null });
     } else {
+      // Sale: rent-only fields (including rental term) don't apply.
       this.form.patchValue({
         coldRent: null,
         warmRent: null,
-        additionalCosts: null
+        additionalCosts: null,
+        rentalStartDate: null,
+        rentalEndDate: null,
+        rentalDurationType: null
       });
     }
 
@@ -742,6 +981,11 @@ export class PropertyFormPage implements OnInit {
     const f = this.form.getRawValue();
     const isRent = f.listingType === 1;
     const isSale = f.listingType === 2;
+    // §13 of the task brief: don't send context-inappropriate values, even if
+    // clearFieldsNotApplicableToLand()/setListingType() already cleared them
+    // client-side earlier — this is the last line of defense before the wire,
+    // the backend's own conditional validation is the actual source of truth.
+    const isLand = this.isLandCategory;
 
     const payload: PropertySavePayload = {
       Title: f.title!.trim(),
@@ -760,12 +1004,12 @@ export class PropertyFormPage implements OnInit {
       PurchasePrice: isSale ? (f.purchasePrice ?? null) : null,
       Deposit: f.deposit ?? null,
       AdditionalCosts: isRent ? (f.additionalCosts ?? null) : null,
-      Rooms: f.rooms ?? null,
+      Rooms: isLand ? null : (f.rooms ?? null),
       Area: f.area ?? null,
-      Floor: f.floor ?? null,
-      HasBalcony: f.hasBalcony ?? false,
-      HasElevator: f.hasElevator ?? false,
-      HasParkingSpace: f.hasParkingSpace ?? false,
+      Floor: isLand ? null : (f.floor ?? null),
+      HasBalcony: !isLand && (f.hasBalcony ?? false),
+      HasElevator: !isLand && (f.hasElevator ?? false),
+      HasParkingSpace: !isLand && (f.hasParkingSpace ?? false),
       HeatingType: f.heatingType ?? 0,
       AvailableFrom: f.availableFrom ?? null,
       // ✅ إصلاح: كان الحقل معرَّفاً في الـ payload لكن لم يُملأ أبداً — المرافق
@@ -777,7 +1021,14 @@ export class PropertyFormPage implements OnInit {
       DistrictText: f.districtText?.trim() || null,
       NeighborhoodId: f.neighborhoodId ?? null,
       NeighborhoodText: f.neighborhoodText?.trim() || null,
-      PropertyTypeId: f.propertyTypeId ?? null
+      PropertyTypeId: f.propertyTypeId ?? null,
+      // Dynamic listing form (ListingType × PropertyType redesign, Syrian market).
+      LegalStatus: isSale ? (f.ownershipType ?? null) : null,
+      AreaUnit: f.areaUnit ?? AREA_UNIT_SQUARE_METER,
+      RentalStartDate: isRent ? (f.rentalStartDate ?? null) : null,
+      RentalEndDate: isRent ? (f.rentalEndDate ?? null) : null,
+      RentalDurationType: isRent ? (f.rentalDurationType ?? null) : null,
+      FurnishingStatus: isLand ? null : (f.furnishingStatus ?? null)
     };
 
     this.isSaving.set(true);
@@ -896,6 +1147,14 @@ export class PropertyFormPage implements OnInit {
     if (errors['invalidCountryCode']) return 'PROPERTY_FORM.INVALID_COUNTRY_CODE';
     if (errors['invalidCurrencyCode']) return 'PROPERTY_FORM.INVALID_CURRENCY_CODE';
     if (errors['districtRequired']) return 'PROPERTY_FORM.DISTRICT_REQUIRED';
+
+    // Dynamic listing form (ListingType × PropertyType redesign, Syrian market).
+    if (errors['ownershipTypeRequired']) return 'PROPERTY_FORM.OWNERSHIP_TYPE_REQUIRED';
+    if (errors['rentalEndBeforeStart']) return 'PROPERTY_FORM.RENTAL_END_BEFORE_START';
+    if (errors['rentalStartDateRequired']) return 'PROPERTY_FORM.RENTAL_START_DATE_REQUIRED';
+    if (errors['rentalEndDateRequired']) return 'PROPERTY_FORM.RENTAL_END_DATE_REQUIRED';
+    if (errors['rentalDurationRequired']) return 'PROPERTY_FORM.RENTAL_DURATION_REQUIRED';
+    if (errors['areaRequiredForLand']) return 'PROPERTY_FORM.AREA_REQUIRED_FOR_LAND';
 
     if (this.f.governorateId.errors?.['required']) return 'PROPERTY_FORM.GOVERNORATE_REQUIRED';
     if (this.f.propertyTypeId.errors?.['required']) return 'PROPERTY_FORM.PROPERTY_TYPE_REQUIRED';
