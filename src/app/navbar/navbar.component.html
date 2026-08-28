@@ -361,6 +361,11 @@
               {{ 'NAVBAR.VISITS' | translate }}
             </a>
 
+            <a routerLink="/my-services" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+              <span aria-hidden="true">🛡️</span>
+              {{ 'NAVBAR.MY_SERVICES' | translate }}
+            </a>
+
             <!-- Phase-0, Task 3. -->
             <a routerLink="/saved-searches" class="account__item" role="menuitem" (click)="closeAccountMenu()">
               <span aria-hidden="true">🔔</span>
@@ -547,6 +552,10 @@
 
         <a routerLink="/visits" class="mobile-drawer__link" (click)="closeMobileMenu()">
           {{ 'NAVBAR.VISITS' | translate }}
+        </a>
+
+        <a routerLink="/my-services" class="mobile-drawer__link" (click)="closeMobileMenu()">
+          {{ 'NAVBAR.MY_SERVICES' | translate }}
         </a>
 
         <a routerLink="/saved-searches" class="mobile-drawer__link" (click)="closeMobileMenu()">

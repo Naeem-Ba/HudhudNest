@@ -33,12 +33,15 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PropertyApiService } from '../../core/api/property-api.service';
 import { ReviewService } from '../../core/api/review.service';
 import { VisitService } from '../../core/api/visit.service';
+import { ServiceOfferingService } from '../../core/api/service-offering.service';
+import { ServiceRequestService } from '../../core/api/service-request.service';
 import { MessagesApiService } from '../../core/api/messages-api.service';
 import { ProfileService, PublicUserProfile } from '../../core/api/profile.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { Property } from '../../core/models/property.model';
 import { REVIEW_COMMENT_MAX_LENGTH, ReviewDto, validateCreateReview } from '../../core/models/review.model';
 import { CreateVisitRequest, validateCreateVisit } from '../../core/models/visit.model';
+import { ServiceOfferingDto, validateCreateServiceRequest } from '../../core/models/service.model';
 import { validateMessageContent } from '../../core/models/message.model';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
@@ -71,6 +74,8 @@ export class PropertyDetailPage implements OnInit {
   private readonly propertyApi  = inject(PropertyApiService);
   private readonly reviewService = inject(ReviewService);
   private readonly visitService  = inject(VisitService);
+  private readonly serviceOfferingApi = inject(ServiceOfferingService);
+  private readonly serviceRequestApi  = inject(ServiceRequestService);
   private readonly messagesApi   = inject(MessagesApiService);
   private readonly profileApi    = inject(ProfileService);
   private readonly router        = inject(Router);
@@ -166,6 +171,19 @@ export class PropertyDetailPage implements OnInit {
   readonly savingMessage = signal(false);
   messageDraft = '';
   readonly messageMaxLength = 3000;
+
+  // ── AqarTech Verify request (Services Marketplace vertical slice) ──────
+  // Only the "Verification" category is a live product this session — see
+  // ServiceCategory's remarks in service.model.ts. The offering is fetched
+  // lazily (once) the first time the panel opens, not on every page load,
+  // since most visitors never click it.
+  readonly showServiceForm = signal(false);
+  readonly loadingVerifyOffering = signal(false);
+  readonly verifyOffering = signal<ServiceOfferingDto | null>(null);
+  readonly verifyOfferingUnavailable = signal(false);
+  readonly savingServiceRequest = signal(false);
+  serviceRequestNote = '';
+  readonly serviceRequestNoteMaxLength = 1000;
 
   /**
    * ✅ إضافة: اسم المستخدم الحالي لعرضه كسطر توضيحي فوق نموذج مراسلة المالك
@@ -302,6 +320,37 @@ export class PropertyDetailPage implements OnInit {
     if (opening) {
       this.scrollToElement('message-form-section');
     }
+  }
+
+  toggleServiceForm(): void {
+    const opening = !this.showServiceForm();
+    this.showServiceForm.set(opening);
+
+    if (opening) {
+      this.loadVerifyOfferingIfNeeded();
+      this.scrollToElement('service-form-section');
+    }
+  }
+
+  private loadVerifyOfferingIfNeeded(): void {
+    if (this.verifyOffering() || this.verifyOfferingUnavailable() || this.loadingVerifyOffering()) {
+      return;
+    }
+
+    this.loadingVerifyOffering.set(true);
+    this.serviceOfferingApi.getByCategory('Verification')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: offerings => {
+          this.verifyOffering.set(offerings[0] ?? null);
+          this.verifyOfferingUnavailable.set(offerings.length === 0);
+          this.loadingVerifyOffering.set(false);
+        },
+        error: () => {
+          this.verifyOfferingUnavailable.set(true);
+          this.loadingVerifyOffering.set(false);
+        }
+      });
   }
 
   private scrollToElement(elementId: string): void {
@@ -507,6 +556,41 @@ export class PropertyDetailPage implements OnInit {
         error: () => {
           this.toast.show(this.translate.instant('VISIT.ERROR'), 'error');
           this.savingVisit.set(false);
+        }
+      });
+  }
+
+  // ── AqarTech Verify request ──────────────────────────────────────────
+  submitServiceRequest(): void {
+    const property = this.property();
+    const offering = this.verifyOffering();
+    if (!property || !offering) return;
+
+    const payload = {
+      propertyId: property.id,
+      serviceOfferingId: offering.id,
+      requesterNote: this.serviceRequestNote.trim() || null
+    };
+
+    const validationError = validateCreateServiceRequest(payload);
+    if (validationError) {
+      this.toast.show(this.translate.instant(validationError), 'error');
+      return;
+    }
+
+    this.savingServiceRequest.set(true);
+    this.serviceRequestApi.create(payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.toast.show(this.translate.instant('SERVICE_REQUEST.SUCCESS'), 'success');
+          this.showServiceForm.set(false);
+          this.serviceRequestNote = '';
+          this.savingServiceRequest.set(false);
+        },
+        error: () => {
+          this.toast.show(this.translate.instant('SERVICE_REQUEST.ERROR'), 'error');
+          this.savingServiceRequest.set(false);
         }
       });
   }
