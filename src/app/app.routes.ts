@@ -106,6 +106,17 @@ export const routes: Routes = [
             .then(m => m.VisitsPage)
       },
       {
+        // AqarTech Services Marketplace — "my requests" list. Browsing/creating a
+        // request happens from the property-detail page's CTA, not a separate
+        // /services landing page in this vertical slice (see the session's final
+        // report for what's deferred).
+        path: 'my-services',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/services/my-service-requests.page')
+            .then(m => m.MyServiceRequestsPage)
+      },
+      {
         // الصفحة الشخصية العامة لأي حساب (بائع/مستأجر) — صورة، تاريخ الانضمام،
         // عدد الشقق المُباعة/المؤجَّرة، إعلاناته النشطة، وتقييم متعدد المحاور.
         path: 'users/:id',

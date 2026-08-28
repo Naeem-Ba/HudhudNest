@@ -1,0 +1,71 @@
+<section class="feature-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">{{ 'SERVICE_REQUESTS.EYEBROW' | translate }}</p>
+      <h1>{{ 'SERVICE_REQUESTS.TITLE' | translate }}</h1>
+      <p>{{ 'SERVICE_REQUESTS.SUBTITLE' | translate }}</p>
+    </div>
+    <button type="button" class="btn secondary" (click)="load()" [disabled]="loading()">{{ 'COMMON.REFRESH' | translate }}</button>
+  </header>
+
+  <div class="filters" role="group" [attr.aria-label]="'SERVICE_REQUESTS.FILTER' | translate">
+    <button *ngFor="let status of statuses" type="button" [class.active]="selectedStatus() === status" (click)="selectStatus(status)">
+      {{ ('SERVICE_REQUESTS.STATUS.' + status.toUpperCase()) | translate }}
+    </button>
+  </div>
+
+  <div *ngIf="loading()" class="state">{{ 'COMMON.LOADING' | translate }}</div>
+  <div *ngIf="!loading() && error()" class="state error">
+    <p>{{ error() | translate }}</p><button type="button" class="btn" (click)="load()">{{ 'COMMON.RETRY' | translate }}</button>
+  </div>
+  <div *ngIf="!loading() && !error() && filteredRequests().length === 0" class="state">{{ 'SERVICE_REQUESTS.EMPTY' | translate }}</div>
+
+  <div class="cards" *ngIf="!loading() && !error()">
+    <article class="request-card" *ngFor="let request of filteredRequests(); trackBy: trackById">
+      <div class="card-main">
+        <div>
+          <p class="request-number">{{ request.requestNumber }}</p>
+          <a class="property-link" [routerLink]="['/properties', request.propertyId]">{{ request.propertyTitle }}</a>
+          <p class="date">{{ request.createdAt | date:'medium' }}</p>
+        </div>
+        <span class="status" [attr.data-status]="request.status">{{ ('SERVICE_REQUESTS.STATUS.' + request.status.toUpperCase()) | translate }}</span>
+      </div>
+      <dl>
+        <div><dt>{{ 'SERVICE_REQUESTS.CATEGORY' | translate }}</dt><dd>{{ ('SERVICES.CATEGORY.' + request.category) | translate }}</dd></div>
+        <div><dt>{{ 'SERVICE_REQUESTS.PROVIDER' | translate }}</dt><dd>{{ request.serviceProviderDisplayName }}</dd></div>
+        <div><dt>{{ 'SERVICE_REQUESTS.OFFERING' | translate }}</dt><dd>{{ request.serviceOfferingTitle }}</dd></div>
+        <div *ngIf="request.requesterNote"><dt>{{ 'SERVICE_REQUESTS.NOTE' | translate }}</dt><dd>{{ request.requesterNote }}</dd></div>
+        <div *ngIf="request.scheduledAt"><dt>{{ 'SERVICE_REQUESTS.SCHEDULED_AT' | translate }}</dt><dd>{{ request.scheduledAt | date:'medium' }}</dd></div>
+        <div *ngIf="request.rejectionReason"><dt>{{ 'SERVICE_REQUESTS.REJECTION_REASON' | translate }}</dt><dd>{{ request.rejectionReason }}</dd></div>
+        <div *ngIf="request.cancellationReason"><dt>{{ 'SERVICE_REQUESTS.CANCELLATION_REASON' | translate }}</dt><dd>{{ request.cancellationReason }}</dd></div>
+      </dl>
+
+      <div class="actions" *ngIf="canCancel(request) || canReview(request)">
+        <button *ngIf="canCancel(request)" type="button" class="btn secondary" (click)="cancel(request)" [disabled]="processingId() === request.id">
+          {{ 'SERVICE_REQUESTS.CANCEL' | translate }}
+        </button>
+        <button *ngIf="canReview(request)" type="button" class="btn success" (click)="openReviewForm(request)" [disabled]="processingId() === request.id">
+          {{ 'SERVICE_REQUESTS.ADD_REVIEW' | translate }}
+        </button>
+      </div>
+
+      <form class="review-form" *ngIf="reviewingId() === request.id" (ngSubmit)="submitReview(request)">
+        <label>
+          {{ 'REVIEW.RATING' | translate }}
+          <select [ngModel]="reviewRating()" (ngModelChange)="reviewRating.set($event)" name="rating">
+            <option *ngFor="let n of [1,2,3,4,5]" [value]="n">{{ n }}</option>
+          </select>
+        </label>
+        <label>
+          {{ 'REVIEW.COMMENT' | translate }}
+          <textarea rows="3" [ngModel]="reviewComment()" (ngModelChange)="reviewComment.set($event)" name="comment"
+            [placeholder]="'REVIEW.COMMENT_PLACEHOLDER' | translate"></textarea>
+        </label>
+        <div class="form-actions">
+          <button type="submit" class="btn success" [disabled]="processingId() === request.id">{{ 'REVIEW.SUBMIT' | translate }}</button>
+          <button type="button" class="btn secondary" (click)="closeReviewForm()">{{ 'COMMON.CANCEL' | translate }}</button>
+        </div>
+      </form>
+    </article>
+  </div>
+</section>
