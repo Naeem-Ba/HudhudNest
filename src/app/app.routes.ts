@@ -46,6 +46,51 @@ export const routes: Routes = [
           import('./features/property-detail/property-detail.page')
             .then(m => m.PropertyDetailPage)
       },
+      // Short-Stay Accommodation — backend-first PR's frontend follow-up. MVP: single-unit
+      // booking flow only (see the plan's decision on hotel/multi-room-type UX being deferred).
+      // Static/sub-segments (bookings, manage, manage/new, manage/:id) MUST be declared before
+      // the trailing 'short-stay/:id' catch-all-by-param route below, or the router would try
+      // to match e.g. 'bookings' as a listing id instead.
+      {
+        path: 'short-stay/bookings',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/short-stay/short-stay-bookings/short-stay-bookings.page')
+            .then(m => m.ShortStayBookingsPage)
+      },
+      {
+        path: 'short-stay/manage',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/short-stay/my-short-stay-listings/my-short-stay-listings.page')
+            .then(m => m.MyShortStayListingsPage)
+      },
+      {
+        path: 'short-stay/manage/new',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/short-stay/short-stay-listing-form/short-stay-listing-form.page')
+            .then(m => m.ShortStayListingFormPage)
+      },
+      {
+        path: 'short-stay/manage/:id',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/short-stay/short-stay-listing-form/short-stay-listing-form.page')
+            .then(m => m.ShortStayListingFormPage)
+      },
+      {
+        path: 'short-stay',
+        loadComponent: () =>
+          import('./features/short-stay/short-stay-list/short-stay-list.page')
+            .then(m => m.ShortStayListPage)
+      },
+      {
+        path: 'short-stay/:id',
+        loadComponent: () =>
+          import('./features/short-stay/short-stay-detail/short-stay-detail.page')
+            .then(m => m.ShortStayDetailPage)
+      },
       {
         path: 'kontakt',
         loadComponent: () =>

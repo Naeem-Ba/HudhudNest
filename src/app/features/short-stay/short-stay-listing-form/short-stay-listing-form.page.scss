@@ -1,0 +1,93 @@
+.ssf {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-6, 1.5rem) var(--space-4, 1rem);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+
+  &__section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border, #e5e7eb);
+
+    h2 { font-size: 1.0625rem; margin-bottom: 0.85rem; }
+  }
+
+  &__hint {
+    font-size: 0.8125rem;
+    color: var(--gray-500, #6b7280);
+    margin-bottom: 0.75rem;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 0.85rem;
+
+    label { font-size: 0.8125rem; font-weight: 600; color: var(--gray-700, #374151); }
+
+    input, textarea, select {
+      padding: 0.55rem 0.7rem;
+      border: 1px solid var(--border, #e5e7eb);
+      border-radius: 8px;
+      font: inherit;
+    }
+  }
+
+  &__row {
+    display: flex;
+    gap: 1rem;
+
+    .ssf__field { flex: 1; }
+  }
+
+  &__checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    margin-bottom: 0.6rem;
+  }
+
+  &__amenities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.5rem;
+  }
+
+  &__pricing-rule {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.6rem;
+    flex-wrap: wrap;
+
+    select, input { padding: 0.4rem; border: 1px solid var(--border, #e5e7eb); border-radius: 6px; }
+  }
+
+  &__photos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  &__photo {
+    width: 96px;
+    height: 96px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+  }
+}

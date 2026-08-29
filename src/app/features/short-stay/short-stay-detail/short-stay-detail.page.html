@@ -1,0 +1,151 @@
+<div class="ssd" *ngIf="loading()">
+  <p>{{ 'SHORTSTAY.DETAIL.LOADING' | translate }}</p>
+</div>
+
+<div class="ssd" *ngIf="error()">
+  <p class="ssd__error">{{ error() | translate }}</p>
+</div>
+
+<div class="ssd" *ngIf="!loading() && !error() && listing() as l">
+  <div class="ssd__gallery" *ngIf="l.photoUrls.length > 0">
+    <img
+      *ngFor="let url of l.photoUrls.slice(0, 5)"
+      [src]="url"
+      [appImageFallback]="fallbackImage"
+      [alt]="l.title"
+      class="ssd__gallery-img"
+    />
+  </div>
+
+  <div class="ssd__layout">
+    <div class="ssd__main">
+      <header class="ssd__header">
+        <p class="ssd__type">{{ l.accommodationTypeCode }}</p>
+        <h1>{{ l.title }}</h1>
+        <p class="ssd__meta">
+          {{ l.city || '—' }} ·
+          {{ l.capacity }} {{ 'SHORTSTAY.DETAIL.GUESTS_SHORT' | translate }} ·
+          {{ l.bedrooms }} {{ 'SHORTSTAY.DETAIL.BEDROOMS_SHORT' | translate }} ·
+          {{ l.bathrooms }} {{ 'SHORTSTAY.DETAIL.BATHROOMS_SHORT' | translate }}
+        </p>
+        <a *ngIf="mapsUrl(l) as url" [href]="url" target="_blank" rel="noopener" class="ssd__map-link">
+          {{ 'SHORTSTAY.DETAIL.VIEW_MAP' | translate }}
+          <span *ngIf="l.locationVisibility === 'Approximate'" class="ssd__approx-note">
+            ({{ 'SHORTSTAY.DETAIL.APPROXIMATE_LOCATION' | translate }})
+          </span>
+        </a>
+      </header>
+
+      <section class="ssd__section">
+        <h2>{{ 'SHORTSTAY.DETAIL.DESCRIPTION' | translate }}</h2>
+        <p class="ssd__description">{{ l.description }}</p>
+      </section>
+
+      <section class="ssd__section" *ngIf="listingAmenities().length > 0">
+        <h2>{{ 'SHORTSTAY.DETAIL.AMENITIES' | translate }}</h2>
+        <ul class="ssd__amenities">
+          <li *ngFor="let amenity of listingAmenities()">{{ amenity.name }}</li>
+        </ul>
+      </section>
+
+      <section class="ssd__section">
+        <h2>{{ 'SHORTSTAY.DETAIL.HOUSE_RULES' | translate }}</h2>
+        <ul class="ssd__rules">
+          <li>{{ 'SHORTSTAY.DETAIL.CHECK_IN_TIME' | translate }}: {{ l.checkInTime.slice(0,5) }}</li>
+          <li>{{ 'SHORTSTAY.DETAIL.CHECK_OUT_TIME' | translate }}: {{ l.checkOutTime.slice(0,5) }}</li>
+          <li>{{ (l.allowsSmoking ? 'SHORTSTAY.DETAIL.SMOKING_ALLOWED' : 'SHORTSTAY.DETAIL.SMOKING_NOT_ALLOWED') | translate }}</li>
+          <li>{{ (l.allowsParties ? 'SHORTSTAY.DETAIL.PARTIES_ALLOWED' : 'SHORTSTAY.DETAIL.PARTIES_NOT_ALLOWED') | translate }}</li>
+          <li>{{ (l.allowsPets ? 'SHORTSTAY.DETAIL.PETS_ALLOWED' : 'SHORTSTAY.DETAIL.PETS_NOT_ALLOWED') | translate }}</li>
+          <li *ngIf="l.customRulesText">{{ l.customRulesText }}</li>
+        </ul>
+      </section>
+
+      <section class="ssd__section">
+        <h2>{{ 'SHORTSTAY.DETAIL.CANCELLATION_POLICY' | translate }}</h2>
+        <p>
+          {{ 'SHORTSTAY.DETAIL.FREE_CANCELLATION' | translate:{ days: l.cancellationFreeCancellationDays } }}
+        </p>
+      </section>
+    </div>
+
+    <aside class="ssd__booking" *ngIf="bookableUnit() as unit">
+      <div class="ssd__booking-card" *ngIf="!isOwner(); else ownerNotice">
+        <p class="ssd__price-line">
+          <strong>{{ unit.roomType.basePricePerNight | number:'1.0-2' }}</strong>
+          {{ 'SHORTSTAY.DETAIL.PER_NIGHT' | translate }}
+        </p>
+
+        <app-date-range-picker
+          [checkIn]="checkIn"
+          [checkOut]="checkOut"
+          [blockedRanges]="blockedRanges()"
+          [minNights]="minNights()"
+          (rangeChange)="onRangeChange($event)"
+        />
+
+        <p class="ssd__min-nights" *ngIf="minNights() > 1">
+          {{ 'SHORTSTAY.DETAIL.MIN_NIGHTS' | translate:{ nights: minNights() } }}
+        </p>
+
+        <div class="ssd__guest-fields">
+          <label>
+            {{ 'SHORTSTAY.DETAIL.ADULTS' | translate }}
+            <input type="number" min="1" [(ngModel)]="adults" (ngModelChange)="onGuestsChange()" />
+          </label>
+          <label>
+            {{ 'SHORTSTAY.DETAIL.CHILDREN' | translate }}
+            <input type="number" min="0" [(ngModel)]="children" (ngModelChange)="onGuestsChange()" />
+          </label>
+          <label>
+            {{ 'SHORTSTAY.DETAIL.INFANTS' | translate }}
+            <input type="number" min="0" [(ngModel)]="infants" (ngModelChange)="onGuestsChange()" />
+          </label>
+        </div>
+
+        <label class="ssd__payment-method">
+          {{ 'SHORTSTAY.DETAIL.PAYMENT_METHOD' | translate }}
+          <select [(ngModel)]="paymentMethod">
+            <option value="PayOnArrival">{{ 'SHORTSTAY.DETAIL.PAY_ON_ARRIVAL' | translate }}</option>
+            <option value="PhoneConfirmation">{{ 'SHORTSTAY.DETAIL.PHONE_CONFIRMATION' | translate }}</option>
+            <option value="ChatConfirmation">{{ 'SHORTSTAY.DETAIL.CHAT_CONFIRMATION' | translate }}</option>
+          </select>
+        </label>
+
+        <div class="ssd__pricing" *ngIf="pricingLoading()">{{ 'SHORTSTAY.DETAIL.PRICING_LOADING' | translate }}</div>
+        <p class="ssd__error" *ngIf="pricingError()">{{ pricingError() | translate }}</p>
+
+        <div class="ssd__pricing" *ngIf="pricing() as breakdown">
+          <div class="ssd__pricing-row" *ngFor="let night of breakdown.nights">
+            <span>{{ night.date | date:'d MMM' }}</span>
+            <span>{{ night.price | number:'1.0-2' }}</span>
+          </div>
+          <div class="ssd__pricing-row" *ngIf="breakdown.cleaningFee > 0">
+            <span>{{ 'SHORTSTAY.DETAIL.CLEANING_FEE' | translate }}</span>
+            <span>{{ breakdown.cleaningFee | number:'1.0-2' }}</span>
+          </div>
+          <div class="ssd__pricing-row" *ngIf="breakdown.extraGuestFee > 0">
+            <span>{{ 'SHORTSTAY.DETAIL.EXTRA_GUEST_FEE' | translate }}</span>
+            <span>{{ breakdown.extraGuestFee | number:'1.0-2' }}</span>
+          </div>
+          <div class="ssd__pricing-row ssd__pricing-row--total">
+            <span>{{ 'SHORTSTAY.DETAIL.TOTAL' | translate }}</span>
+            <span>{{ breakdown.totalAmount | number:'1.0-2' }}</span>
+          </div>
+        </div>
+
+        <label class="ssd__house-rules-accept">
+          <input type="checkbox" [(ngModel)]="houseRulesAccepted" />
+          {{ 'SHORTSTAY.DETAIL.ACCEPT_HOUSE_RULES' | translate }}
+        </label>
+
+        <button type="button" class="btn btn--primary btn--full" [disabled]="!canSubmitBooking" (click)="submitBooking()">
+          {{ (l.instantBookingEnabled ? 'SHORTSTAY.DETAIL.BOOK_NOW' : 'SHORTSTAY.DETAIL.REQUEST_TO_BOOK') | translate }}
+        </button>
+      </div>
+
+      <ng-template #ownerNotice>
+        <p class="ssd__owner-notice">{{ 'SHORTSTAY.DETAIL.OWNER_CANNOT_BOOK' | translate }}</p>
+      </ng-template>
+    </aside>
+  </div>
+</div>

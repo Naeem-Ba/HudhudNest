@@ -1,0 +1,48 @@
+<div class="msl">
+  <header class="msl__header">
+    <h1>{{ 'SHORTSTAY.MY_LISTINGS.TITLE' | translate }}</h1>
+    <button type="button" class="btn btn--primary btn--sm" (click)="create()">
+      {{ 'SHORTSTAY.MY_LISTINGS.CREATE' | translate }}
+    </button>
+  </header>
+
+  <p *ngIf="loading()">{{ 'SHORTSTAY.MY_LISTINGS.LOADING' | translate }}</p>
+  <p *ngIf="error()" class="msl__error">{{ error() | translate }}</p>
+
+  <app-empty-state
+    *ngIf="!loading() && !error() && listings().length === 0"
+    icon="🏡"
+    [title]="'SHORTSTAY.MY_LISTINGS.EMPTY_TITLE' | translate"
+    [message]="'SHORTSTAY.MY_LISTINGS.EMPTY_MESSAGE' | translate"
+    [actionLabel]="'SHORTSTAY.MY_LISTINGS.CREATE' | translate"
+    (action)="create()"
+  />
+
+  <ul class="msl__list" *ngIf="!loading() && listings().length > 0">
+    <li class="msl__card" *ngFor="let listing of listings(); trackBy: trackById">
+      <img [src]="listing.mainPhotoUrl || fallbackImage" [appImageFallback]="fallbackImage" class="msl__image" />
+      <div class="msl__body">
+        <h3>{{ listing.title }}</h3>
+        <p class="msl__meta">{{ listing.city || '—' }} · {{ listing.capacity }} {{ 'SHORTSTAY.MY_LISTINGS.GUESTS_SHORT' | translate }}</p>
+        <span class="msl__status" [class.msl__status--published]="listing.isPublished">
+          {{ (listing.isPublished ? 'SHORTSTAY.MY_LISTINGS.PUBLISHED' : 'SHORTSTAY.MY_LISTINGS.DRAFT') | translate }}
+        </span>
+      </div>
+      <div class="msl__actions">
+        <button type="button" class="btn btn--sm btn--outline" (click)="edit(listing.id)">
+          {{ 'SHORTSTAY.MY_LISTINGS.EDIT' | translate }}
+        </button>
+        <button
+          type="button"
+          class="btn btn--sm"
+          [class.btn--primary]="!listing.isPublished"
+          [class.btn--outline]="listing.isPublished"
+          [disabled]="togglingId() === listing.id"
+          (click)="togglePublish(listing)"
+        >
+          {{ (listing.isPublished ? 'SHORTSTAY.MY_LISTINGS.UNPUBLISH' : 'SHORTSTAY.MY_LISTINGS.PUBLISH') | translate }}
+        </button>
+      </div>
+    </li>
+  </ul>
+</div>

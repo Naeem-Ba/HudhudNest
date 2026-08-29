@@ -1,0 +1,121 @@
+.drp {
+  --drp-accent: #ff385c;
+  width: 100%;
+  max-width: 360px;
+  font-size: 0.875rem;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+
+  &__month {
+    font-weight: 600;
+  }
+
+  &__nav {
+    background: none;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  &__weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    color: var(--text-muted, #888);
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+
+  &__day {
+    aspect-ratio: 1;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8125rem;
+
+    &--muted {
+      opacity: 0.35;
+    }
+
+    &--disabled {
+      opacity: 0.25;
+      text-decoration: line-through;
+      cursor: not-allowed;
+    }
+
+    &--today {
+      font-weight: 700;
+      box-shadow: inset 0 0 0 1px var(--drp-accent);
+    }
+
+    &--in-range {
+      background: color-mix(in srgb, var(--drp-accent) 15%, transparent);
+      border-radius: 0;
+    }
+
+    &--start,
+    &--end {
+      background: var(--drp-accent);
+      color: #fff;
+    }
+
+    &--start {
+      border-start-end-radius: 0;
+      border-end-end-radius: 0;
+    }
+
+    &--end {
+      border-start-start-radius: 0;
+      border-end-start-radius: 0;
+    }
+
+    &:not(&--disabled):hover {
+      box-shadow: inset 0 0 0 1px var(--drp-accent);
+    }
+  }
+
+  &__legend {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-muted, #888);
+  }
+
+  &__legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  &__swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    display: inline-block;
+
+    &--blocked {
+      background: repeating-linear-gradient(45deg, #ccc, #ccc 2px, transparent 2px, transparent 4px);
+    }
+
+    &--selected {
+      background: var(--drp-accent);
+    }
+  }
+}
