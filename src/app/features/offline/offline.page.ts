@@ -16,9 +16,9 @@ import { RouterModule } from '@angular/router';
     </section>
   `,
   styles: [`
-    .offline-page{min-height:70vh;display:grid;place-items:center;background:#f7f7f7;padding:2rem}
-    .card{background:#fff;padding:2rem;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.08);text-align:center}
-    a{display:inline-block;margin-top:1rem;color:#1e3a5f;font-weight:700}
+    .offline-page{min-height:70vh;display:grid;place-items:center;background:var(--page-bg);padding:2rem}
+    .card{background:var(--surface);padding:2rem;border-radius:16px;box-shadow:var(--shadow-lg);text-align:center}
+    a{display:inline-block;margin-top:1rem;color:var(--gray-800);font-weight:700}
   `]
 })
 export class OfflinePage {}

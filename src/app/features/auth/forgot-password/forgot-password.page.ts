@@ -32,7 +32,7 @@ import { ToastService } from '../../../shared/services/toast.service';
     </section>
   `,
   styles: [`
-    .auth-page{min-height:70vh;display:grid;place-items:center;background:#f7f7f7;padding:2rem}.auth-card{width:min(450px,100%);background:#fff;padding:2rem;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.08);display:grid;gap:.55rem}h1,p{margin:0}p{line-height:1.7}label{font-weight:700;margin-top:.5rem}input,button{width:100%;box-sizing:border-box;padding:.85rem 1rem;border-radius:10px}input{border:1px solid #cbd5e1}button{margin-top:1rem;border:0;background:#1e3a5f;color:white;font-weight:700;cursor:pointer}button:disabled{opacity:.6;cursor:not-allowed}.error{color:#b00020}.success{color:#137333}
+    .auth-page{min-height:70vh;display:grid;place-items:center;background:var(--page-bg);padding:2rem}.auth-card{width:min(450px,100%);background:var(--surface);padding:2rem;border-radius:16px;box-shadow:var(--shadow-lg);display:grid;gap:.55rem}h1,p{margin:0}p{line-height:1.7}label{font-weight:700;margin-top:.5rem}input,button{width:100%;box-sizing:border-box;padding:.85rem 1rem;border-radius:10px}input{border:1px solid var(--border);background:var(--surface)}button{margin-top:1rem;border:0;background:var(--gray-800);color:white;font-weight:700;cursor:pointer}button:disabled{opacity:.6;cursor:not-allowed}.error{color:var(--danger)}.success{color:var(--success)}
   `]
 })
 export class ForgotPasswordPage {

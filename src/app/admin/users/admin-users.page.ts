@@ -149,7 +149,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
     .role-select { border:1px solid var(--border); border-radius:var(--r-sm); padding:.35rem .5rem; font-size:var(--text-sm); }
     .btn { border-radius:var(--r-sm); padding:.4rem .75rem; font-size:var(--text-sm); cursor:pointer; border:1px solid transparent; }
     .btn--outline { background:var(--surface); border-color:var(--border); color:var(--navy); }
-    .btn--danger { background:var(--danger-soft); color:var(--danger); border-color:#fecaca; }
+    .btn--danger { background:var(--danger-soft); color:var(--danger); border-color:rgba(220,38,38,.2); }
     .btn--danger:disabled { opacity:.6; cursor:not-allowed; }
 
     .pagination { display:flex; justify-content:center; align-items:center; gap:1rem; margin-top:1.25rem; }

@@ -92,6 +92,32 @@ export class VisitService {
   }
 
   /**
+   * ✅ إضافة: اقتراح موعد بديل — للمالك فقط. بدل تأكيد/رفض موعد الزائر كما هو،
+   * يقترح المالك موعدًا مختلفًا؛ الزيارة تنتقل لحالة RescheduleProposed
+   * بانتظار قبول/رفض الزائر (acceptReschedule/declineReschedule أدناه).
+   */
+  proposeAlternate(visitId: string, proposedAt: string, note?: string | null): Observable<void> {
+    return this.api.put<void>(`${this.endpoint}/${visitId}/propose-alternate`, {
+      ProposedAt: proposedAt,
+      Note: note ?? null
+    });
+  }
+
+  /**
+   * ✅ إضافة: قبول الموعد البديل الذي اقترحه المالك — للزائر (صاحب الطلب) فقط.
+   */
+  acceptReschedule(visitId: string): Observable<void> {
+    return this.api.put<void>(`${this.endpoint}/${visitId}/accept-reschedule`);
+  }
+
+  /**
+   * ✅ إضافة: رفض الموعد البديل الذي اقترحه المالك — للزائر (صاحب الطلب) فقط.
+   */
+  declineReschedule(visitId: string): Observable<void> {
+    return this.api.put<void>(`${this.endpoint}/${visitId}/decline-reschedule`);
+  }
+
+  /**
    * ✅ إضافة: تمييز زيارة مؤكَّدة (Confirmed) كمكتملة — لمالك العقار فقط.
    * الباك اند (CompleteVisitCommandHandler) يتحقق من الملكية ويرفض الطلب بـ 403
    * لغير المالك؛ كانت هذه النقطة موجودة بالباك اند دون أي استدعاء من الواجهة،

@@ -34,11 +34,14 @@
         <div><dt>{{ 'VISITS.PHONE' | translate }}</dt><dd><a [href]="'tel:' + visit.visitorPhone">{{ visit.visitorPhone }}</a></dd></div>
         <div *ngIf="visit.visitorNote"><dt>{{ 'VISITS.NOTE' | translate }}</dt><dd>{{ visit.visitorNote }}</dd></div>
       </dl>
-      <div class="actions" *ngIf="canManageAsOwner(visit) || canComplete(visit) || canCancel(visit)">
+      <div class="actions" *ngIf="canManageAsOwner(visit) || canComplete(visit) || canCancel(visit) || canRespondToReschedule(visit)">
         <button *ngIf="canManageAsOwner(visit)" type="button" class="btn success" (click)="confirm(visit)" [disabled]="processingId() === visit.id">{{ 'VISITS.CONFIRM' | translate }}</button>
         <button *ngIf="canManageAsOwner(visit)" type="button" class="btn danger" (click)="decline(visit)" [disabled]="processingId() === visit.id">{{ 'VISITS.DECLINE' | translate }}</button>
         <!-- ✅ إضافة: يستهلك PUT /api/visits/{id}/complete — كانت غير مستخدمة إطلاقاً -->
         <button *ngIf="canComplete(visit)" type="button" class="btn success" (click)="complete(visit)" [disabled]="processingId() === visit.id">{{ 'VISITS.COMPLETE' | translate }}</button>
+        <!-- ✅ إضافة: قبول/رفض الموعد البديل الذي اقترحه المالك -->
+        <button *ngIf="canRespondToReschedule(visit)" type="button" class="btn success" (click)="acceptReschedule(visit)" [disabled]="processingId() === visit.id">{{ 'VISITS.ACCEPT_RESCHEDULE' | translate }}</button>
+        <button *ngIf="canRespondToReschedule(visit)" type="button" class="btn danger" (click)="declineReschedule(visit)" [disabled]="processingId() === visit.id">{{ 'VISITS.DECLINE_RESCHEDULE' | translate }}</button>
         <button *ngIf="canCancel(visit)" type="button" class="btn secondary" (click)="cancel(visit)" [disabled]="processingId() === visit.id">{{ 'VISITS.CANCEL' | translate }}</button>
       </div>
     </article>

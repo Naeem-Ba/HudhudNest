@@ -16,30 +16,31 @@
       ميتاً (لا شيء يُفعِّله). يتطلب هذا تعديلاً مرافقاً في .html
       (مرفق في تسليم منفصل).
 
-   ⚠️ لم تُلمَس ازدواجية design tokens (:host { --navy: ...} هنا مقابل
-   نفس المتغيرات المستخدَمة عالمياً في navbar/home) — موثّقة في الرد
-   النصي، بانتظار ملف الثيم العالمي للتأكد قبل أي دمج.
+   5. [تدقيق الوضع الداكن] كانت هذه الصفحة تُعرِّف --gray-50/100/400/600/800
+      و--error/--error-bg/--success/--success-bg/--green محليًا على :host
+      بقيَم سداسية ثابتة، فتُظلِّل (shadow) نفس أسماء متغيرات الوضع الداكن
+      العالمية (--gray-*) أو تُبقي شارات النجاح/الخطأ فاتحة دومًا — ما كان
+      يجعل هذه الصفحة تبقى فاتحة بالكامل حتى مع تفعيل الوضع الداكن من بقية
+      التطبيق. أُزيلت إعادة التعريف المحلية لهذه الأسماء (فتَرث الآن تلقائيًا
+      من html[data-theme] العالمي)، وأُعيد ربط --error/--error-bg/--success-bg
+      بمكافئاتها العالمية. --navy/--navy-light/--gold/--gold-light/--white
+      تبقى ثابتة عمدًا: تُستخدَم فقط داخل قطاعات الهيرو/CTA ذات التدرّج
+      الملاحي الثابت حيث يجب أن يبقى النص أبيض دومًا (نفس نمط
+      --gallery-canvas في styles.scss العالمي) — وليست خطأ.
    ═══════════════════════════════════════════════════════════ */
 
 @use '../../../styles/breakpoints' as bp;
 
-/* ─── Design Tokens ─── */
+/* ─── Design Tokens (انظر ملاحظة الوضع الداكن أعلى الملف) ─── */
 :host {
   --navy:        #0F2742;
   --navy-light:  #1a3a5c;
   --gold:        #D6A84F;
   --gold-light:  #e8c47a;
-  --green:       #1F9D6A;
   --white:       #FFFFFF;
-  --gray-50:     #F5F7FA;
-  --gray-100:    #EEF1F5;
-  --gray-400:    #9BAAB8;
-  --gray-600:    #5A6B7D;
-  --gray-800:    #2D3E52;
-  --error:       #C0392B;
-  --error-bg:    #FDF2F2;
-  --success:     #1F9D6A;
-  --success-bg:  #EDF9F4;
+  --error:       var(--danger);
+  --error-bg:    var(--danger-soft);
+  --success-bg:  var(--success-soft);
 
   /* Typography */
   --font-display: 'Cairo', 'Amiri', 'Segoe UI', system-ui, sans-serif;
@@ -80,7 +81,7 @@
 .lp-root {
   font-family: var(--font-body);
   color: var(--gray-800);
-  background: var(--white);
+  background: var(--surface);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -113,7 +114,7 @@
 }
 
 .section--light  { background: var(--gray-50); }
-.section--white  { background: var(--white); }
+.section--white  { background: var(--surface); }
 .section--navy   { background: var(--navy); }
 .section--form   { background: var(--gray-50); }
 .section--cta    {
@@ -413,8 +414,8 @@
   margin-bottom: var(--space-md);
 }
 
-.ps-label--problem  { background: #FDE8E8; color: var(--error); }
-.ps-label--solution { background: #DFF5EC; color: var(--green); }
+.ps-label--problem  { background: var(--error-bg); color: var(--error); }
+.ps-label--solution { background: var(--success-bg); color: var(--success); }
 
 .ps-list {
   list-style: none;
@@ -445,13 +446,13 @@
 }
 
 .ps-item--problem .ps-icon {
-  background: #FDE8E8;
+  background: var(--error-bg);
   color: var(--error);
 }
 
 .ps-item--solution .ps-icon {
-  background: #DFF5EC;
-  color: var(--green);
+  background: var(--success-bg);
+  color: var(--success);
 }
 
 .ps-arrow {
@@ -471,8 +472,8 @@
 }
 
 .feature-card {
-  background: var(--white);
-  border: 1px solid var(--gray-100);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--r-lg);
   padding: var(--space-xl) var(--space-lg);
   transition: box-shadow .2s, transform .2s;
@@ -579,8 +580,8 @@
    LEAD FORM
    ══════════════════════════════════════════════════ */
 .lead-form {
-  background: var(--white);
-  border: 1px solid var(--gray-100);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--r-lg);
   padding: var(--space-xl) var(--space-lg);
   box-shadow: var(--shadow-md);
@@ -609,12 +610,12 @@
 .field-textarea {
   width: 100%;
   padding: 0.8rem 1rem;
-  border: 1.5px solid var(--gray-100);
+  border: 1.5px solid var(--border);
   border-radius: var(--r-sm);
   font-family: var(--font-body);
   font-size: 0.95rem;
   color: var(--gray-800);
-  background: var(--white);
+  background: var(--surface);
   transition: border-color .15s, box-shadow .15s;
   appearance: none;
   -webkit-appearance: none;
@@ -675,7 +676,7 @@
 .form-success__icon {
   width: 60px;
   height: 60px;
-  background: var(--green);
+  background: var(--success);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -689,7 +690,7 @@
   font-family: var(--font-display);
   font-size: 1.4rem;
   font-weight: 800;
-  color: var(--green);
+  color: var(--success);
 }
 
 .form-success__msg {
@@ -730,8 +731,8 @@
 }
 
 .trust-card {
-  background: var(--white);
-  border: 1px solid var(--gray-100);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--r-md);
   padding: var(--space-lg);
   transition: box-shadow .2s;

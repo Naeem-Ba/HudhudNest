@@ -691,7 +691,15 @@
     "MARKING_ALL": "جارٍ التحديث...",
     "MARK_ALL_ERROR": "تعذر تعليم كل الإشعارات كمقروءة.",
     "DISMISS_ERROR": "تعذر تجاهل الإشعار.",
-    "NEW_TOAST_TITLE": "إشعار جديد"
+    "NEW_TOAST_TITLE": "إشعار جديد",
+    "CONFIRM_VISIT": "تأكيد الزيارة",
+    "DECLINE_VISIT": "رفض الزيارة",
+    "PROPOSE_ALTERNATE": "اقتراح موعد بديل",
+    "PROPOSE_ALTERNATE_SUBMIT": "إرسال الموعد البديل",
+    "PROPOSE_ALTERNATE_CANCEL": "إلغاء",
+    "ALTERNATE_NOTE_PLACEHOLDER": "ملاحظة اختيارية للزائر...",
+    "ACCEPT_RESCHEDULE": "قبول الموعد الجديد",
+    "DECLINE_RESCHEDULE": "رفض الموعد الجديد"
   },
   "MESSAGES": {
     "TITLE": "الرسائل",
@@ -992,6 +1000,8 @@
     "CONFIRM": "تأكيد",
     "DECLINE": "رفض",
     "CANCEL": "إلغاء",
+    "ACCEPT_RESCHEDULE": "قبول الموعد الجديد",
+    "DECLINE_RESCHEDULE": "رفض الموعد الجديد",
     "ACTION_SUCCESS": "تم تحديث طلب الزيارة.",
     "ACTION_ERROR": "تعذر تنفيذ الإجراء.",
     "STATUS": {
@@ -1000,7 +1010,8 @@
       "CONFIRMED": "مؤكدة",
       "DECLINED": "مرفوضة",
       "CANCELLED": "ملغاة",
-      "COMPLETED": "مكتملة"
+      "COMPLETED": "مكتملة",
+      "RESCHEDULEPROPOSED": "موعد بديل مقترَح"
     },
     "COMPLETE": "تمييز كمكتملة"
   },

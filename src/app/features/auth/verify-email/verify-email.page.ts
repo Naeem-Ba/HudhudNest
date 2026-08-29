@@ -76,23 +76,23 @@ type VerifyState = 'verifying' | 'success' | 'error';
     </section>
   `,
   styles: [`
-    .verify-page{min-height:70vh;display:grid;place-items:center;background:#f7f7f7;padding:2rem}
-    .verify-card{width:min(450px,100%);background:#fff;padding:2.5rem 2rem;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.08);text-align:center;display:grid;gap:1rem}
-    h1{margin:0;font-size:1.3rem}
+    .verify-page{min-height:70vh;display:grid;place-items:center;background:var(--page-bg);padding:2rem}
+    .verify-card{width:min(450px,100%);background:var(--surface);padding:2.5rem 2rem;border-radius:16px;box-shadow:var(--shadow-lg);text-align:center;display:grid;gap:1rem}
+    h1{margin:0;font-size:1.3rem;color:var(--gray-900)}
     .state{display:grid;gap:.75rem;justify-items:center}
     .spinner{font-size:1.8rem}
     .state--success span,.state--error span{font-size:2rem}
-    p{margin:0;color:#334155;line-height:1.6}
+    p{margin:0;color:var(--gray-700);line-height:1.6}
     .btn-primary,.btn-secondary{display:inline-block;margin-top:.5rem;padding:.75rem 1.5rem;border-radius:10px;text-decoration:none;font-weight:700}
-    .btn-primary{background:#1e3a5f;color:#fff}
-    .btn-secondary{background:transparent;color:#1e3a5f;border:1px solid #1e3a5f}
+    .btn-primary{background:var(--gray-800);color:#fff}
+    .btn-secondary{background:transparent;color:var(--gray-800);border:1px solid var(--gray-800)}
     .resend-form{display:grid;gap:.5rem;text-align:start;width:100%}
-    .resend-form label{font-weight:700;color:#334155;font-size:.85rem}
+    .resend-form label{font-weight:700;color:var(--gray-700);font-size:.85rem}
     .resend-form input,.resend-form button{width:100%;box-sizing:border-box;padding:.75rem 1rem;border-radius:10px}
-    .resend-form input{border:1px solid #cbd5e1}
-    .resend-form button{border:0;background:#1e3a5f;color:#fff;font-weight:700;cursor:pointer}
+    .resend-form input{border:1px solid var(--border);background:var(--surface)}
+    .resend-form button{border:0;background:var(--gray-800);color:#fff;font-weight:700;cursor:pointer}
     .resend-form button:disabled{opacity:.6;cursor:not-allowed}
-    .hint{color:#64748b;font-size:.85rem;margin:0}
+    .hint{color:var(--gray-500);font-size:.85rem;margin:0}
   `]
 })
 export class VerifyEmailPage implements OnInit {

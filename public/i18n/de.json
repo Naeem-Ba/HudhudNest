@@ -734,7 +734,15 @@
     "MARKING_ALL": "Wird aktualisiert...",
     "MARK_ALL_ERROR": "Benachrichtigungen konnten nicht markiert werden.",
     "DISMISS_ERROR": "Benachrichtigung konnte nicht verworfen werden.",
-    "NEW_TOAST_TITLE": "Neue Benachrichtigung"
+    "NEW_TOAST_TITLE": "Neue Benachrichtigung",
+    "CONFIRM_VISIT": "Besichtigung bestätigen",
+    "DECLINE_VISIT": "Besichtigung ablehnen",
+    "PROPOSE_ALTERNATE": "Alternativtermin vorschlagen",
+    "PROPOSE_ALTERNATE_SUBMIT": "Alternativtermin senden",
+    "PROPOSE_ALTERNATE_CANCEL": "Abbrechen",
+    "ALTERNATE_NOTE_PLACEHOLDER": "Optionale Notiz für den Besucher...",
+    "ACCEPT_RESCHEDULE": "Neuen Termin annehmen",
+    "DECLINE_RESCHEDULE": "Neuen Termin ablehnen"
   },
   "MAP": {
     "APARTMENT_LOCATION": "Standort der Immobilie {{title}}",
@@ -992,6 +1000,8 @@
     "CONFIRM": "Bestätigen",
     "DECLINE": "Ablehnen",
     "CANCEL": "Stornieren",
+    "ACCEPT_RESCHEDULE": "Neuen Termin annehmen",
+    "DECLINE_RESCHEDULE": "Neuen Termin ablehnen",
     "ACTION_SUCCESS": "Die Besichtigungsanfrage wurde aktualisiert.",
     "ACTION_ERROR": "Die Aktion konnte nicht ausgeführt werden.",
     "STATUS": {
@@ -1000,7 +1010,8 @@
       "CONFIRMED": "Bestätigt",
       "DECLINED": "Abgelehnt",
       "CANCELLED": "Storniert",
-      "COMPLETED": "Abgeschlossen"
+      "COMPLETED": "Abgeschlossen",
+      "RESCHEDULEPROPOSED": "Alternativtermin vorgeschlagen"
     },
     "COMPLETE": "Als abgeschlossen markieren"
   },

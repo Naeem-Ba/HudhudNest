@@ -19,7 +19,7 @@ import { Component, Input } from '@angular/core';
       gap: .75rem;
       width: 100%;
       min-height: 160px;
-      color: #475569;
+      color: var(--gray-600);
       font-weight: 600;
     }
 
@@ -32,8 +32,8 @@ import { Component, Input } from '@angular/core';
     .spinner {
       width: 1.75rem;
       height: 1.75rem;
-      border: 3px solid #dbeafe;
-      border-top-color: #2563eb;
+      border: 3px solid var(--primary-soft);
+      border-top-color: var(--primary);
       border-radius: 50%;
       animation: spin .8s linear infinite;
       flex: 0 0 auto;

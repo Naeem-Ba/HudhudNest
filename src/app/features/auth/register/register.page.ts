@@ -146,16 +146,16 @@ import { ToastService } from '../../../shared/services/toast.service';
       min-height: 70vh;
       display: grid;
       place-items: center;
-      background: #f7f7f7;
+      background: var(--page-bg);
       padding: clamp(1rem, 3vw, 2rem);
     }
 
     .auth-card {
       width: min(460px, 100%);
-      background: #fff;
+      background: var(--surface);
       padding: clamp(1.25rem, 4vw, 2rem);
       border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
+      box-shadow: var(--shadow-lg);
       display: grid;
       gap: .45rem;
     }
@@ -166,7 +166,7 @@ import { ToastService } from '../../../shared/services/toast.service';
     }
 
     p {
-      color: #64748b;
+      color: var(--gray-500);
       line-height: 1.7;
       margin-bottom: .75rem;
     }
@@ -174,7 +174,7 @@ import { ToastService } from '../../../shared/services/toast.service';
     label {
       font-weight: 700;
       margin-top: .55rem;
-      color: #334155;
+      color: var(--gray-700);
     }
 
     input,
@@ -186,19 +186,20 @@ import { ToastService } from '../../../shared/services/toast.service';
     }
 
     input {
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--border);
+      background: var(--surface);
     }
 
     input:focus {
       outline: 0;
-      border-color: #2563eb;
+      border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
     }
 
     button {
       margin-top: 1rem;
       border: 0;
-      background: #1e3a5f;
+      background: var(--gray-800);
       color: white;
       font-weight: 700;
       cursor: pointer;
@@ -210,11 +211,11 @@ import { ToastService } from '../../../shared/services/toast.service';
     }
 
     .error {
-      color: #b00020;
+      color: var(--danger);
     }
 
     .hint {
-      color: #64748b;
+      color: var(--gray-500);
       font-size: var(--text-sm, .85rem);
       text-align: center;
     }
@@ -248,7 +249,7 @@ import { ToastService } from '../../../shared/services/toast.service';
     }
 
     a {
-      color: #2563eb;
+      color: var(--primary);
       text-decoration: none;
       font-weight: 700;
       text-align: center;

@@ -161,8 +161,8 @@
 
   /* عدّاد المحاولات المتبقية: أخفّ من الخطأ، فهو تحذير وليس فشلاً بذاته. */
   &--warning {
-    background: rgba(217, 119, 6, .1);
-    color: #b45309;
+    background: var(--warning-soft);
+    color: var(--warning);
     border: 1px solid rgba(217, 119, 6, .25);
   }
 }

@@ -147,7 +147,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
     .page-header h1 { margin:0;font-size:clamp(1.4rem,2.6vw,1.9rem);color:var(--navy); font-family: var(--font-display); }
     .subtitle { margin:.15rem 0 0;color:var(--gray-500);font-size:var(--text-sm); }
 
-    .state-card.error { display:flex;align-items:center;gap:.75rem;color:var(--danger);background:var(--danger-soft);border:1px solid #fecaca;border-radius:var(--r-lg);padding:1rem; }
+    .state-card.error { display:flex;align-items:center;gap:.75rem;color:var(--danger);background:var(--danger-soft);border:1px solid rgba(220,38,38,.2);border-radius:var(--r-lg);padding:1rem; }
 
     .conversation-list { display:flex; flex-direction:column; gap:.6rem; }
     .conversation-row {
@@ -179,7 +179,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
       max-width:78%; background:var(--gray-100); border-radius:var(--r-lg); padding:.6rem .9rem;
       align-self:flex-start; box-shadow:var(--shadow-xs);
     }
-    .bubble--mine { align-self:flex-end; background:var(--primary-soft); border:1px solid #bfdbfe; }
+    .bubble--mine { align-self:flex-end; background:var(--primary-soft); border:1px solid rgba(37,99,235,.25); }
     .bubble p { margin:0 0 .25rem; color:var(--gray-800); line-height:1.6; white-space:pre-wrap; }
     .bubble time { font-size:var(--text-xs); color:var(--gray-400); }
 
