@@ -6,8 +6,11 @@
 // هذه الخدمة تُعتبر "حرجة" لأن أي خلل بها يعطّل تسجيل الدخول بالكامل —
 // كل الصفحات المحمية بـAuthGuard تعتمد على isLoggedIn$/currentUser$ هنا.
 // =====================================================================
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
+import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
 import { AuthApiService } from './auth-api.service';
 import { TokenStorageService } from '../services/token-storage.service';
@@ -35,6 +38,8 @@ describe('AuthService', () => {
 
     TestBed.configureTestingModule({
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: AuthApiService, useValue: authApiSpy }
       ]
     });
@@ -253,5 +258,68 @@ describe('AuthService', () => {
     service = TestBed.inject(AuthService);
 
     expect(service.getCurrentUserId()).toBe('u123');
+  });
+
+  // ────────────── hydrateProfile — إصلاح: DisplayName/ImageUrl لا يرتدّان لقيم التوكن ──────────────
+  // التوكن نفسه لا يحمل رابط صورة إطلاقاً، ويحمل بحقل "name" اسم المستخدم
+  // (Identity UserName) لا "الاسم المعروض" الفعلي. validateSession() كانت
+  // تبني الحالة من هذه القيم فقط وتتجاهل GET /users/me بالكامل، فيظهر أي
+  // تعديل في صفحة البروفايل وكأنه "لم يُحفَظ" بعد أي إعادة تحميل/تجديد جلسة.
+  describe('hydrateProfile (تصحيح DisplayName/ImageUrl من GET /users/me)', () => {
+    let httpMock: HttpTestingController;
+
+    beforeEach(() => {
+      httpMock = TestBed.inject(HttpTestingController);
+    });
+
+    afterEach(() => httpMock.verify());
+
+    it('✅ يستبدل الاسم المؤقت من التوكن ويضيف رابط الصورة من /users/me', () => {
+      const token = makeJwt({
+        sub: 'u1',
+        email: 'naeem@example.com',
+        name: 'naeem@example.com', // Identity UserName — placeholder فقط
+        exp: Math.floor(Date.now() / 1000) + 3600
+      });
+      tokenStorage.setAccessToken(token);
+      service = TestBed.inject(AuthService);
+
+      // فورًا بعد الحقن: القيمة المؤقتة من التوكن فقط، بلا صورة.
+      expect(service.currentUserSnapshot?.displayName).toBe('naeem@example.com');
+      expect(service.currentUserSnapshot?.ImageUrl).toBeUndefined();
+
+      httpMock.expectOne(`${environment.apiUrl}/users/me`).flush({
+        id: 'u1',
+        displayName: 'نعيم الحقيقي',
+        email: 'naeem@example.com',
+        imageUrl: 'https://cdn.example.com/avatar.png'
+      });
+
+      // ✅ بعد وصول الاستجابة: الاسم الحقيقي المحفوظ + رابط الصورة، بلا ارتداد.
+      expect(service.currentUserSnapshot?.displayName).toBe('نعيم الحقيقي');
+      expect(service.currentUserSnapshot?.ImageUrl).toBe('https://cdn.example.com/avatar.png');
+      // id/email/roles تبقى كما بُنيت من التوكن — لا تُستبدَل بهذا الإثراء.
+      expect(service.currentUserSnapshot?.id).toBe('u1');
+    });
+
+    it('✅ فشل GET /users/me لا يعطّل تسجيل الدخول — يبقى الاسم المؤقت من التوكن', () => {
+      const token = makeJwt({
+        sub: 'u2',
+        email: 'x@example.com',
+        name: 'x@example.com',
+        exp: Math.floor(Date.now() / 1000) + 3600
+      });
+      tokenStorage.setAccessToken(token);
+      service = TestBed.inject(AuthService);
+
+      httpMock
+        .expectOne(`${environment.apiUrl}/users/me`)
+        .flush({ message: 'error' }, { status: 500, statusText: 'Server Error' });
+
+      expect(service.currentUserSnapshot?.displayName).toBe('x@example.com');
+      let loggedIn: boolean | undefined;
+      service.isLoggedIn$.subscribe(v => (loggedIn = v));
+      expect(loggedIn).toBeTrue();
+    });
   });
 });

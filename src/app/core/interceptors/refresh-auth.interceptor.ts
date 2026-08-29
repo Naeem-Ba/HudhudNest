@@ -1,10 +1,20 @@
 import { HttpBackend, HttpClient, HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, finalize, map, Observable, of, shareReplay, switchMap, throwError } from 'rxjs';
+import {
+  catchError,
+  finalize,
+  map,
+  Observable,
+  of,
+  shareReplay,
+  switchMap,
+  throwError
+} from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { normalizeAuthTokenResponse } from '../models/auth.model';
+import { CsrfTokenService } from '../services/csrf-token.service';
 import { TokenStorageService } from '../services/token-storage.service';
 
 let refreshRequest$: Observable<string> | null = null;
@@ -25,8 +35,9 @@ function toAbsoluteUrl(url: string): string {
 /**
  * JWT must only be attached to our REST API. This prevents token leakage to i18n,
  * static files, SignalR URLs, analytics, maps, or any future third-party request.
+ * Exported for reuse by csrf.interceptor.ts, which needs the same API-request check.
  */
-function isBackendApiRequest(url: string): boolean {
+export function isBackendApiRequest(url: string): boolean {
   const apiBaseUrl = toAbsoluteUrl(environment.apiBaseUrl || environment.apiUrl);
   const requestUrl = toAbsoluteUrl(url);
 
@@ -57,8 +68,13 @@ function withBearerToken(req: Parameters<HttpInterceptorFn>[0], token: string) {
   });
 }
 
-function clearAndRedirect(tokenStorage: TokenStorageService, router: Router): void {
+function clearAndRedirect(
+  tokenStorage: TokenStorageService,
+  router: Router,
+  csrfTokenService: CsrfTokenService
+): void {
   tokenStorage.clear();
+  csrfTokenService.clear();
 
   if (router.url !== '/auth/login' && router.url !== '/login') {
     void router.navigateByUrl('/auth/login');
@@ -71,18 +87,31 @@ function clearAndRedirect(tokenStorage: TokenStorageService, router: Router): vo
  * withCredentials: true (it does; see below). This raw HttpClient built on HttpBackend
  * bypasses every interceptor on purpose (to avoid a refresh loop), which is exactly why it
  * needs that option set explicitly instead of inheriting it from BackendApiService.
+ *
+ * RELEASE-BLOCKERS-AR.md B-20: bypassing every interceptor also bypasses CsrfInterceptor —
+ * the ambient refresh_token cookie makes the backend require X-XSRF-TOKEN on this call, so
+ * it is fetched (if not already cached) and attached by hand here.
  */
 function requestNewAccessToken(
   httpBackend: HttpBackend,
   tokenStorage: TokenStorageService,
-  router: Router
+  router: Router,
+  csrfTokenService: CsrfTokenService
 ): Observable<string> {
   if (!refreshRequest$) {
     const directHttp = new HttpClient(httpBackend);
+    const ensureCsrfToken$ = csrfTokenService.getToken()
+      ? of(void 0)
+      : csrfTokenService.fetchToken();
 
-    refreshRequest$ = directHttp
-      .post<unknown>(`${environment.apiUrl}/auth/refresh`, {}, { withCredentials: true })
+    refreshRequest$ = ensureCsrfToken$
       .pipe(
+        switchMap(() =>
+          directHttp.post<unknown>(`${environment.apiUrl}/auth/refresh`, {}, {
+            withCredentials: true,
+            headers: { 'X-XSRF-TOKEN': csrfTokenService.getToken() ?? '' }
+          })
+        ),
         map(response => normalizeAuthTokenResponse(response)),
         switchMap(tokens => {
           if (!tokens.accessToken) {
@@ -94,7 +123,7 @@ function requestNewAccessToken(
         }),
         catchError(error => {
           // All waiting requests receive the same error instead of hanging forever.
-          clearAndRedirect(tokenStorage, router);
+          clearAndRedirect(tokenStorage, router, csrfTokenService);
           return throwError(() => error);
         }),
         finalize(() => {
@@ -111,6 +140,7 @@ export const RefreshAuthInterceptor: HttpInterceptorFn = (req, next) => {
   const tokenStorage = inject(TokenStorageService);
   const router = inject(Router);
   const httpBackend = inject(HttpBackend);
+  const csrfTokenService = inject(CsrfTokenService);
 
   const isApiRequest = isBackendApiRequest(req.url);
   const isAuthRequest = isAuthEndpoint(req.url);
@@ -136,7 +166,7 @@ export const RefreshAuthInterceptor: HttpInterceptorFn = (req, next) => {
       // whatever the refresh_token cookie currently holds. Always attempt the refresh; a
       // missing/expired/invalid cookie surfaces as this call failing, handled below exactly
       // like before.
-      return requestNewAccessToken(httpBackend, tokenStorage, router).pipe(
+      return requestNewAccessToken(httpBackend, tokenStorage, router, csrfTokenService).pipe(
         switchMap(newAccessToken => next(withBearerToken(req, newAccessToken))),
         catchError(refreshError => throwError(() => refreshError))
       );

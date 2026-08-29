@@ -1,7 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, map, Observable, tap } from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, of, tap } from 'rxjs';
 
 import { AuthApiService } from './auth-api.service';
+import { CsrfTokenService } from '../services/csrf-token.service';
+import { ProfileService } from '../api/profile.service';
 import { TokenStorageService } from '../services/token-storage.service';
 export interface AuthenticatedUser {
   id: string;
@@ -21,6 +23,8 @@ export interface AuthenticatedUser {
 export class AuthService {
   private readonly tokenStorage = inject(TokenStorageService);
   private readonly authApi = inject(AuthApiService);
+  private readonly csrfTokenService = inject(CsrfTokenService);
+  private readonly profileService = inject(ProfileService);
 
   private readonly loggedIn = new BehaviorSubject<boolean>(false);
   readonly isLoggedIn$ = this.loggedIn.asObservable();
@@ -77,6 +81,10 @@ export class AuthService {
     const roles = this.extractRoles(payload);
     const id = String(payload.sub ?? payload.nameid ?? payload.userId ?? payload.UserId ?? '');
     const email = String(payload.email ?? '');
+    // ⚠️ "name"/"unique_name" بالتوكن هو Identity UserName (عادةً نفس البريد)،
+    // وليس حقل "الاسم المعروض" (DisplayName) القابل للتعديل من صفحة البروفايل.
+    // هذه قيمة مؤقتة فورية فقط، تُستبدَل بالقيمة الحقيقية بمجرد وصول
+    // hydrateProfile() أدناه — راجع تعليقها لتفاصيل الخلل الذي يُصلحه.
     const displayName = String(payload.name ?? payload.unique_name ?? payload.email ?? '');
 
     this.currentUserSubject.next({
@@ -90,6 +98,39 @@ export class AuthService {
       Roles: roles
     });
     this.loggedIn.next(true);
+
+    this.hydrateProfile();
+  }
+
+  /**
+   * ✅ إصلاح: DisplayName وصورة البروفايل (ImageUrl) هما حقلا عمل يُعدَّلان من
+   * صفحة البروفايل، لكن validateSession() أعلاه تبنيهما فقط من claims التوكن —
+   * الذي لا يحمل رابط صورة إطلاقاً، ويحمل لـ"الاسم" قيمة Identity UserName لا
+   * DisplayName الفعلي. النتيجة: حفظ الصورة/الاسم المعروض من صفحة البروفايل
+   * كان يظهر فورًا (لأن ProfileComponent.syncAuthStateFromProfile تستدعي
+   * updateCurrentUser() مباشرة)، لكنه يرتدّ للقيم القديمة فور أي إعادة تحميل
+   * للصفحة أو تجديد جلسة، لأن validateSession() تُعاد من الصفر من التوكن فقط
+   * في كل مرة. نجلب هنا القيم الصحيحة من GET /users/me (نفس نداء
+   * ProfileComponent.fetchProfile) وندمجها في الحالة المشتركة كي يستفيد كل
+   * مستهلكي currentUser$ (شريط التنقل مثلاً) لا صفحة البروفايل وحدها.
+   * فشل الجلب متسامَح معه بالكامل — إثراء اختياري لا يجب أن يعطّل تسجيل الدخول.
+   */
+  private hydrateProfile(): void {
+    this.profileService
+      .getMe()
+      .pipe(catchError(() => of(null)))
+      .subscribe(profile => {
+        if (!profile) {
+          return;
+        }
+
+        this.updateCurrentUser({
+          DisplayName: profile.DisplayName,
+          displayName: profile.DisplayName,
+          ImageUrl: profile.ImageUrl ?? null,
+          imageUrl: profile.ImageUrl ?? null
+        });
+      });
   }
 
   /**
@@ -163,6 +204,9 @@ export class AuthService {
 
   private clearSession(): void {
     this.tokenStorage.clear();
+    // RELEASE-BLOCKERS-AR.md B-20: prevent a stale CSRF token from a previous session
+    // being reused after logout.
+    this.csrfTokenService.clear();
     this.setAnonymousState();
   }
 

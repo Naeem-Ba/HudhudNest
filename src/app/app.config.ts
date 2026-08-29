@@ -9,8 +9,10 @@ import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { routes } from './app.routes';
 import { ApiErrorInterceptor } from './core/interceptors/api-error.interceptor';
 import { AuthInterceptor } from './core/interceptors/auth-interceptor';
+import { CsrfInterceptor } from './core/interceptors/csrf.interceptor';
 import { AuthService } from './core/auth/auth.service';
 import { normalizeAuthTokenResponse } from './core/models/auth.model';
+import { CsrfTokenService } from './core/services/csrf-token.service';
 import { EnumService } from './core/services/enum.service';
 import { TokenStorageService } from './core/services/token-storage.service';
 import { environment } from '../environments/environment';
@@ -33,14 +35,26 @@ export function preloadEnums(enumService: EnumService): () => Promise<unknown> {
 export function restoreSession(
   tokenStorage: TokenStorageService,
   httpBackend: HttpBackend,
-  authService: AuthService
+  authService: AuthService,
+  csrfTokenService: CsrfTokenService
 ): () => Promise<void> {
   return async () => {
     try {
+      // RELEASE-BLOCKERS-AR.md B-20: this refresh call bypasses every interceptor on
+      // purpose (see the comment below), which means it also bypasses CsrfInterceptor —
+      // the ambient refresh_token cookie makes the backend require X-XSRF-TOKEN here, so
+      // it must be fetched and attached manually. A failed fetch (e.g. a genuinely
+      // anonymous visitor with no session) is tolerated: the refresh below then fails on
+      // its own terms exactly as before, via the existing catch block.
+      await firstValueFrom(csrfTokenService.fetchToken());
+
       const directHttp = new HttpClient(httpBackend);
       const timeoutPromise = new Promise<null>(resolve => window.setTimeout(() => resolve(null), 5000));
       const refreshPromise = firstValueFrom(
-        directHttp.post<unknown>(`${environment.apiUrl}/auth/refresh`, {}, { withCredentials: true })
+        directHttp.post<unknown>(`${environment.apiUrl}/auth/refresh`, {}, {
+          withCredentials: true,
+          headers: { 'X-XSRF-TOKEN': csrfTokenService.getToken() ?? '' }
+        })
       );
 
       const result = await Promise.race([refreshPromise, timeoutPromise]);
@@ -56,6 +70,7 @@ export function restoreSession(
       }
     } catch {
       tokenStorage.clear();
+      csrfTokenService.clear();
     }
   };
 }
@@ -63,7 +78,7 @@ export function restoreSession(
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes, withHashLocation()),
-    provideHttpClient(withInterceptors([AuthInterceptor, ApiErrorInterceptor])),
+    provideHttpClient(withInterceptors([CsrfInterceptor, AuthInterceptor, ApiErrorInterceptor])),
     {
       provide: APP_INITIALIZER,
       useFactory: preloadEnums,
@@ -73,7 +88,7 @@ export const appConfig: ApplicationConfig = {
     {
       provide: APP_INITIALIZER,
       useFactory: restoreSession,
-      deps: [TokenStorageService, HttpBackend, AuthService],
+      deps: [TokenStorageService, HttpBackend, AuthService, CsrfTokenService],
       multi: true
     },
     importProvidersFrom(
