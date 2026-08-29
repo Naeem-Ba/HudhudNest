@@ -53,11 +53,13 @@ export class ContactService {
   getMessages(): Observable<ContactMessageDto[]> {
     return this.api
       .get<ContactMessageDto[] | ApiPagedResult<ContactMessageDto>>(this.endpoint)
-      .pipe(map(response => unwrapItems(response)));
+      .pipe(map(response => unwrapItems(response).map(item => this.normalizeMessage(item))));
   }
 
   getMessageById(id: string): Observable<ContactMessageDto> {
-    return this.api.get<ContactMessageDto>(`${this.endpoint}/${id}`);
+    return this.api
+      .get<ContactMessageDto>(`${this.endpoint}/${id}`)
+      .pipe(map(item => this.normalizeMessage(item)));
   }
 
   markAsRead(id: string): Observable<void> {
@@ -74,6 +76,52 @@ export class ContactService {
       email: String(payload.email ?? payload.Email ?? '').trim(),
       subject: String(payload.subject ?? payload.Subject ?? '').trim(),
       message: String(payload.message ?? payload.Message ?? '').trim()
+    };
+  }
+
+  /**
+   * ✅ إصلاح: الخادم يُسلسِل كل الحقول بصيغة camelCase (JsonNamingPolicy.CamelCase
+   * في Program.cs)، وحقل نص الرسالة في ContactMessageDto اسمه الحقيقي "body" وليس
+   * "message"، وتاريخ الإرسال اسمه "createdAt" وليس "sentAt". صفحتا القائمة
+   * والتفاصيل (messages.component.html, message-details.component.html) تقرآن
+   * حصراً msg.Name / msg.Email / msg.Subject / msg.Message / msg.SentAt بصيغة
+   * PascalCase — فكانت تظهر فارغة دائماً: لا الاسم ولا العنوان ولا نص الرسالة نفسه
+   * موجودون بهذا الاسم/الحالة في استجابة الخادم الفعلية. نطبّع هنا الشكل القادم من
+   * الخادم إلى الحقلين معاً (PascalCase وcamelCase) بالأسماء الصحيحة، كي تعمل
+   * القوالب الحالية دون تعديلها.
+   */
+  private normalizeMessage(raw: ContactMessageDto): ContactMessageDto {
+    const source = (raw ?? {}) as Record<string, unknown>;
+
+    const id = String(source['Id'] ?? source['id'] ?? '');
+    const name = String(source['Name'] ?? source['name'] ?? '');
+    const email = String(source['Email'] ?? source['email'] ?? '');
+    const subject = String(source['Subject'] ?? source['subject'] ?? '');
+    const message = String(
+      source['Message'] ?? source['message'] ?? source['Body'] ?? source['body'] ?? ''
+    );
+    const isRead = Boolean(source['IsRead'] ?? source['isRead'] ?? false);
+    const sentAt = String(
+      source['SentAt'] ?? source['sentAt'] ?? source['CreatedAt'] ?? source['createdAt'] ?? ''
+    );
+
+    return {
+      Id: id,
+      id,
+      Name: name,
+      name,
+      Email: email,
+      email,
+      Subject: subject,
+      subject,
+      Message: message,
+      message,
+      IsRead: isRead,
+      isRead,
+      CreatedAt: sentAt,
+      createdAt: sentAt,
+      SentAt: sentAt,
+      sentAt
     };
   }
 }
