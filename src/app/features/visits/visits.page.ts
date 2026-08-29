@@ -29,7 +29,8 @@ export class VisitsPage implements OnInit {
   readonly error = signal('');
   readonly selectedStatus = signal<VisitStatus | 'All'>('All');
   readonly processingId = signal<string | null>(null);
-  readonly statuses: Array<VisitStatus | 'All'> = ['All', 'Pending', 'Confirmed', 'Declined', 'Cancelled', 'Completed'];
+  readonly statuses: Array<VisitStatus | 'All'> =
+    ['All', 'Pending', 'RescheduleProposed', 'Confirmed', 'Declined', 'Cancelled', 'Completed'];
 
   readonly filteredVisits = computed(() => {
     const status = this.selectedStatus();
@@ -68,13 +69,26 @@ export class VisitsPage implements OnInit {
 
   canCancel(visit: VisitDto): boolean {
     const userId = this.auth.getCurrentUserId();
-    return !!userId && visit.visitorId === userId && ['Pending', 'Confirmed'].includes(visit.status);
+    // ✅ إصلاح: RescheduleProposed مضافة — الزائر ما زال يملك حق الإلغاء وهو
+    // ينتظر ردّه على موعد بديل اقترحه المالك (مطابق لـ VisitRequest.Cancel بالباك اند).
+    return !!userId && visit.visitorId === userId &&
+      ['Pending', 'Confirmed', 'RescheduleProposed'].includes(visit.status);
+  }
+
+  /**
+   * ✅ إضافة: قبول/رفض الموعد البديل الذي اقترحه المالك — للزائر (صاحب الطلب) فقط.
+   */
+  canRespondToReschedule(visit: VisitDto): boolean {
+    const userId = this.auth.getCurrentUserId();
+    return !!userId && visit.visitorId === userId && visit.status === 'RescheduleProposed';
   }
 
   confirm(visit: VisitDto): void { this.runAction(visit.id, () => this.visitsApi.confirmVisit(visit.id), 'Confirmed'); }
   decline(visit: VisitDto): void { this.runAction(visit.id, () => this.visitsApi.declineVisit(visit.id), 'Declined'); }
   complete(visit: VisitDto): void { this.runAction(visit.id, () => this.visitsApi.completeVisit(visit.id), 'Completed'); }
   cancel(visit: VisitDto): void { this.runAction(visit.id, () => this.visitsApi.cancelVisit(visit.id), 'Cancelled'); }
+  acceptReschedule(visit: VisitDto): void { this.runAction(visit.id, () => this.visitsApi.acceptReschedule(visit.id), 'Confirmed'); }
+  declineReschedule(visit: VisitDto): void { this.runAction(visit.id, () => this.visitsApi.declineReschedule(visit.id), 'Declined'); }
 
   trackById(_: number, item: VisitDto): string { return item.id; }
 

@@ -71,15 +71,15 @@ import { PasswordValidatorService, PasswordRequirements } from '../../core/servi
     .password-strength-container {
       margin-top: 12px;
       padding: 12px;
-      background: var(--bg-secondary, #f9f9f9);
+      background: var(--gray-100);
       border-radius: 6px;
-      border: 1px solid var(--border-color, #e0e0e0);
+      border: 1px solid var(--border);
     }
 
     .strength-bar-wrapper {
       width: 100%;
       height: 6px;
-      background: var(--bg-light, #e0e0e0);
+      background: var(--gray-200);
       border-radius: 3px;
       overflow: hidden;
       margin-bottom: 8px;
@@ -102,7 +102,7 @@ import { PasswordValidatorService, PasswordRequirements } from '../../core/servi
     }
 
     .strength-bar.good {
-      background: var(--info, #17a2b8);
+      background: var(--info);
       width: 75%;
     }
 
@@ -128,7 +128,7 @@ import { PasswordValidatorService, PasswordRequirements } from '../../core/servi
     }
 
     .strength-label.good {
-      color: var(--info, #17a2b8);
+      color: var(--info);
     }
 
     .strength-label.strong {
@@ -147,7 +147,7 @@ import { PasswordValidatorService, PasswordRequirements } from '../../core/servi
       align-items: center;
       gap: 8px;
       font-size: 12px;
-      color: var(--text-muted, #666);
+      color: var(--gray-500);
       transition: color 0.2s ease;
     }
 
@@ -171,7 +171,7 @@ import { PasswordValidatorService, PasswordRequirements } from '../../core/servi
     }
 
     .requirement:not(.met) .requirement-icon {
-      color: var(--text-muted, #999);
+      color: var(--gray-400);
     }
 
     .error-messages {
@@ -179,7 +179,7 @@ import { PasswordValidatorService, PasswordRequirements } from '../../core/servi
       flex-direction: column;
       gap: 6px;
       padding-top: 8px;
-      border-top: 1px solid var(--border-color, #e0e0e0);
+      border-top: 1px solid var(--border);
     }
 
     .error-item {

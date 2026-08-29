@@ -143,7 +143,7 @@ interface FavoritePropertyNested {
     .page { padding: clamp(1rem, 3vw, 2rem); }
     .page-header { margin-bottom: 1rem; }
     .page-header h1 { margin: 0 0 .35rem; font-size: clamp(1.6rem, 3vw, 2.2rem); }
-    .page-header p { margin: 0; color: #64748b; line-height: 1.7; }
+    .page-header p { margin: 0; color: var(--gray-500); line-height: 1.7; }
 
     .favorites-grid {
       display: grid;
@@ -151,23 +151,23 @@ interface FavoritePropertyNested {
       gap: 1rem;
     }
     .card, .state-card {
-      background: #fff;
+      background: var(--surface);
       border-radius: 16px;
-      box-shadow: 0 12px 30px rgba(15,23,42,.08);
-      border: 1px solid #e2e8f0;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border);
       overflow: hidden;
     }
     .thumb {
       width: 100%;
       aspect-ratio: 16/10;
       object-fit: cover;
-      background: #f1f5f9;
+      background: var(--gray-100);
     }
     .card-body { display: grid; gap: .55rem; padding: 1rem; }
-    h2, p { margin: 0; }
-    p { color: #64748b; line-height: 1.6; }
-    strong { color: #0f766e; overflow-wrap: anywhere; }
-    a { width: fit-content; color: #2563eb; font-weight: 700; text-decoration: none; }
+    h2, p { margin: 0; color: var(--gray-800); }
+    p { color: var(--gray-500); line-height: 1.6; }
+    strong { color: var(--badge-rent-text); overflow-wrap: anywhere; }
+    a { width: fit-content; color: var(--primary); font-weight: 700; text-decoration: none; }
     a:hover { text-decoration: underline; }
 
     .state-card {
@@ -175,14 +175,14 @@ interface FavoritePropertyNested {
       align-items: center;
       gap: .75rem;
       padding: 1rem;
-      color: #b91c1c;
-      background: #fff7f7;
-      border-color: #fecaca;
+      color: var(--danger);
+      background: var(--danger-soft);
+      border-color: rgba(220,38,38,.2);
     }
     .state-card p { flex: 1; color: inherit; }
     .state-card button {
       border: 0;
-      background: #dc2626;
+      background: var(--danger);
       color: #fff;
       border-radius: 10px;
       padding: .6rem .9rem;

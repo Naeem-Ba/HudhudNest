@@ -2,19 +2,24 @@
 
 > **الغرض:** قائمة واحدة، مرتّبة بالأولوية، لكل عيب مرصود في كود الخلفية — بدليله من
 > الشيفرة، وأثره الفعلي، وإصلاح مقترح محدَّد.
-> **آخر تحديث:** 2026-08-26 · المراجعة **v3** — إعادة تحقّق كاملة بعد أن أضافت جلسة
-> تطوير واحدة (فرع `feat/listing-eligibility-gates`، دُمج بـ [PR #78](../../../pull/78)
-> و[PR #79](../../../pull/79)) نظام خطط حقيقياً، وحصّة إعلانات على مستوى المكتب، وقفلاً
-> استشارياً للمهام المجدولة، وتزامناً تفاؤلياً على `Property`، وكوكي `HttpOnly` لتوكن
-> التجديد — وأغلقت بذلك **عشرة** من سبعة عشر بنداً كانت مفتوحة في v2.
+> **آخر تحديث:** 2026-08-27 · المراجعة **v4** — إعادة تحقّق كاملة من الصفر (لا نقل عن
+> v3) بعد أن أضافت خمس عمليات دمج على `master` (PR **#80**–**#83**، ثم **#85**) نظام
+> دعوات مكاتب حقيقياً، وربط حصّة الإعلانات بالخطة المختارة فعلياً، ونقل ملكية/شعار
+> المكتب، وتزامناً تفاؤلياً كاملاً، وقفلاً استشارياً مُقيَّماً لا مُطبَّقاً تلقائياً،
+> وتفعيل CSRF فعلياً — وأغلقت بذلك **جميع الثمانية بنود** التي كانت مفتوحة في v3.
+> **لكن هذه المراجعة تفتح بنداً جديداً واحداً، وهو الأخطر في هذا الملف حتى الآن.**
 > **مصدر التحقّق:** فحص ثابت مباشر لمستودع `C:\Users\naeem\Source\Repos\PropertyApi`
-> عند الالتزام **`3cadb4b`** (الفرع `master`)، ولمستودع Angular عند **`730af55`**
+> عند الالتزام **`a151424`** (الفرع `master`)، ولمستودع Angular عند **`e64daeb`**
 > (الفرع `feat/listing-eligibility-gates`) حيث كان البند يخصّ الطرفين.
-> **تحقّق تنفيذي مصاحب (هذه الجلسة):** `dotnet build PropertyApi.sln -c Release` — بناء
-> ناجح، **0 تحذير، 0 خطأ** (59 ثانية). `npm run audit:frontend` — **يمرّ** (‏B-17 مغلق
-> فعلياً، لا نظرياً فقط). لم يُشغَّل `dotnet test`/`ng test` الكاملان في هذه الجلسة؛
-> أرقام تشغيلهما أدناه محمولة من مراجعة v2 (‏2026-08-25) وتحتاج إعادة تنفيذ — مُعلَّمة
-> صراحةً حيث وردت.
+> **تحقّق تنفيذي مصاحب (هذه الجلسة، لا محمول):**
+> `dotnet build PropertyApi.sln -c Release` — **0 تحذير، 0 خطأ** (35 ثانية).
+> `dotnet test` على خمسة مشاريع لا تحتاج قاعدة بيانات حيّة —
+> **Architecture 108/108 · Application 278/278 · Auth 280/280 · Observability 9/9 ·
+> Concurrency 4/4 — الكل ناجح، صفر فشل.**
+> `npm run typecheck` ✅ · `npm run audit:frontend` ✅ (يمرّ، الرمز 0) ·
+> `npm run build:prod` ✅ (‏597.55 kB خام — داخل حدّ 650 kB). `Integration.Tests`،
+> `Performance.Tests`، و`StagingSmokeTests` تحتاج Postgres/بيئة staging حيّة غير
+> متوفّرة في هذه الجلسة — لم تُشغَّل، ومُعلَّمة صراحةً حيث وردت.
 > **الوثائق الشقيقة:** `PropertyApi-REFERENCE.md` (المعمارية) · `PROJECT-STRUCTURE.md`
 > (البنية) · `FRONTEND-REFERENCE.md` (الواجهة).
 
@@ -22,11 +27,12 @@
 
 ## 0. كيف يُقرأ هذا الملف
 
-**كل بند هنا مقروء من الشيفرة عند `3cadb4b`/`730af55`، لا مستنتَج ولا منقول عن مراجعة
+**كل بند هنا مقروء من الشيفرة عند `a151424`/`e64daeb`، لا مستنتَج ولا منقول عن مراجعة
 سابقة بلا إعادة تحقّق.** كل بند أُغلق في هذه المراجعة يحمل الدليل الذي أغلقه — سطر
-الشيفرة الذي يثبت الإصلاح، لا مجرد رسالة الالتزام. ما لم يمكن التحقق منه بالفحص الثابت
-(سلوك تحت حمل حقيقي، أرقام أداء، بيئة إنتاج فعلية) مُعلَّم صراحةً بـ «يحتاج تحقّقاً
-تشغيلياً».
+الشيفرة أو نتيجة اختبار فعلية شُغِّلت هذه الجلسة، لا مجرد رسالة الالتزام. البند
+الجديد الوحيد (‏B-20) اكتُشف بقراءة ثلاث طبقات شيفرة منفصلة معاً — وسيط CSRF في
+الخلفية، ومُعترِضَي التوكن في الواجهة، وتهيئة `HttpClient` في `app.config.ts` — لا من
+تشغيل حيّ، فهو مُعلَّم **Confirmed بنيوياً، Likely تشغيلياً** بدقّة في قسمه.
 
 **مقياس الشدّة**
 
@@ -37,421 +43,446 @@
 | 🟡 منخفض | إزعاج، أو كشف معلومات محدود، أو عدم اتساق يُربك المتكاملين |
 | 🟢 معلومة | لا ضرر مباشر، لكنه يستحق أن يُعرَف قبل البناء فوقه |
 
-**جدول الأولويات — البنود المفتوحة فقط**
+**جدول الأولويات — البند المفتوح الوحيد**
 
 | المعرّف | العنوان | الشدّة | الحالة | الملف الرئيسي |
 |---|---|---|---|---|
-| **B-2** | مالك المكتب يضمّ أي مستخدم بلا موافقته (التعداد الداخلي فقط؛ العرض العلني أُصلح) | 🟠 | Open (مخفَّف جزئياً) | `AddAgencyMemberCommandHandler.cs` |
-| **B-3** | حصّة الإعلانات لا مصدر لها إلا ثابت في الدومين — لا كيان خطط يحكمها | 🟠 | Open (مخفَّف — أصبحت على مستوى المكتب) | `CreatePropertyCommandHandler.cs` |
-| **B-4b** | نقل ملكية المكتب ورفع الشعار غير مُعرَّضين عبر أي endpoint | 🟠 | Open (نصف الإصلاح وصل) | `AgenciesController.cs` |
-| **B-7** | بوابة الحماية العامة لا تزال قائمة سماح، لا قاعدة معكوسة | 🟠 | Open (المثال المحدَّد الوحيد المعروف أُصلح) | `RateLimitingGuardTests.cs` |
-| **B-18** | 🆕 كوكي التجديد صار `SameSite=None` مع CSRF مطفأة افتراضياً | 🟠 | Open — جديد هذه المراجعة | `RefreshTokenCookie.cs` · `CookieCsrfOptions.cs` |
-| **B-6b** | لا قفل على `SecurityAlertBackgroundService` (الخمسة الأخرى مقفلة الآن) | 🟡 | Open (مخفَّف بمعظمه) | `SecurityAlertBackgroundService.cs` |
-| **B-9b** | التزامن التفاؤلي على `Property` فقط — `Transaction`/`UserAccount` بلا حماية | 🟡 | Open (مخفَّف جزئياً) | `Persistence/Configurations/` |
-| **B-19** | 🆕 تعليقات XML موثَّقة وشرح داخلي في 3 ملفات تحوّلت إلى `?????` حرفية (تلف ترميز لا رجعة فيه) | 🟢 | Open — جديد هذه المراجعة | `PhoneAuthController.cs` وملفّان في `Domain` |
-| B-8 | `build-info` — تحقّق تشغيلي متبقٍّ فقط | 🟢 | ✅ الكود مُصلَح، يحتاج تأكيد سرّ الإنتاج | `OperationalController.cs` |
+| **B-20** | 🆕 الواجهة لا ترسل رأس CSRF إطلاقاً — والخلفية تفرضه فعلياً الآن؛ تجديد الجلسة وتسجيل الخروج **يفشلان** لأي متصفّح حقيقي | 🔴 عالٍ | **Open — جديد هذه المراجعة** | `CookieCsrfProtectionMiddleware.cs` · `refresh-auth.interceptor.ts` · `app.config.ts` |
 
-**بنود أُغلقت في هذه المراجعة (تفصيلها في §2)**
+**كل بند آخر كان مفتوحاً في v3 أُغلق في هذه المراجعة — تفصيله في §2.**
 
 | المعرّف | العنوان | كيف أُغلق |
 |---|---|---|
-| ~~B-1~~ | التمييز المدفوع يُباع ولا يُسلَّم | ✅ أُغلق ومُلتزَم من v2 |
-| ~~B-4a~~ | المكتب غير قابل للتعديل/التعطيل | ✅ `UpdateAgencyCommand` + `DeactivateAgencyCommand` مبنيّان ومُعرَّضان |
-| ~~B-5~~ | `Property.AgencyId` يُكتَب ولا يُقرَأ | ✅ `PropertyFilterDto.AgencyId` + `PropertyDto.AgencyId` |
-| ~~B-6a~~ | ست مهام مجدولة بلا تنسيق | ✅ قفل استشاري (`BackgroundJobLock`) على 4 من 5 مهام دورية فعلية |
-| ~~B-10~~ | فحص حصّة الإعلانات سباق قراءة-ثم-كتابة | ✅ معاملة + قفل استشاري بالمالك/المكتب |
-| ~~B-11~~ | تسمية JSON غير متسقة (Pascal/camel) | ✅ `PropertyNamingPolicy = CamelCase` عالمياً الآن |
-| ~~B-12~~ | معرّف غير صالح يعطي 400 والمجهول 404 | ✅ كلاهما 404 الآن |
-| ~~B-13~~ | توكن التجديد في `sessionStorage` | ✅ كوكي `HttpOnly`+`Secure`+`SameSite=None` على الطرفين — **لكن انظر B-18** |
-| ~~B-14~~ | روابط البريد بلا `#` | ✅ `ConfirmationPath = "#/auth/verify-email"`، والافتراضي مُصحَّح أيضاً |
-| ~~B-15~~ | «أعِد إرسال التأكيد» بلا واجهة | ✅ مستدعاة من `register.page.ts` و`verify-email.page.ts` |
-| ~~B-16~~ | توكن Apple بلا nonce | ✅ الواجهة ترسله، الخلفية تتحقّق منه وترفض عند الغياب/الاختلاف |
-| ~~B-17~~ | بوابة `audit:frontend` حمراء | ✅ **مُشغَّلة فعلياً في هذه الجلسة: تمرّ** |
+| ~~B-2~~ | مالك المكتب يضمّ أي مستخدم بلا موافقته | ✅ استُبدلت الإضافة المباشرة بنظام دعوات كامل (`AgencyInvitation`) |
+| ~~B-3~~ | حصّة الإعلانات لا مصدر لها إلا ثابت | ✅ `IListingQuotaPolicy` يقرأ `Plan.ListingLimit` عبر `UserAccount.PlanId` الآن |
+| ~~B-4b~~ | نقل ملكية المكتب ورفع الشعار بلا endpoint | ✅ `TransferAgencyOwnershipCommand` + `SetAgencyLogoCommand` مُعرَّضان |
+| ~~B-6b~~ | لا قفل على `SecurityAlertBackgroundService` | ✅ **قرار مُتعمَّد، لا إصلاح ناقص** — استُبعد بعد تحقيق، ومُثبَّت باختبار |
+| ~~B-7~~ | بوابة الحماية العامة قائمة سماح | ✅ استُبدلت باختبار انعكاسي؛ ~15 نقطة كانت بلا حدّ معدّل أُصلحت |
+| ~~B-9b~~ | التزامن التفاؤلي على `Property` فقط | ✅ `Transaction` و`UserAccount` يحملان `xmin` الآن أيضاً |
+| ~~B-18~~ | كوكي التجديد `SameSite=None` مع CSRF مطفأة | ✅ **بنطاقه الأصلي** — `Enabled=true` + ثلاث علل بنيوية أُصلحت وأُثبتت باختبارات تكامل حقيقية. **لكن انظر B-20: هذا الإغلاق كشف عطلاً وظيفياً لم يكن ظاهراً من قبل** |
+| ~~B-19~~ | تلف ترميز `?????` في تعليقات ثلاثة ملفات | ✅ أُعيدت كتابتها — صفر مطابقة للنمط في الملفات الثلاثة |
 
 ---
 
-## 1. ما تغيّر منذ v2 — القراءة السريعة
+## 1. ما تغيّر منذ v3 — القراءة السريعة
 
-مراجعة v2 (‏2026-08-25) وثّقت 17 بنداً. جلسة تطوير واحدة لاحقة — التزامان
-(`c9345de`، `51c9e30` على الخلفية؛ `eec9f32`، `730af55` على الواجهة) — أغلقت الأغلبية.
-الدرس المتكرر لكل مراجعة سابقة يصحّ هنا حرفياً: **لا تفترض أن بنداً ما زال مفتوحاً لأن
-مراجعة سابقة قالت ذلك.** أعِد الفحص.
+مراجعة v3 (‏2026-08-26، عند `3cadb4b`) وثّقت 8 بنود مفتوحة. خمس عمليات دمج لاحقة على
+`master` — **[PR #80](../../../pull/80)** (‏B-2)، **[PR #81](../../../pull/81)** (‏B-3)،
+**[PR #82](../../../pull/82)** (‏B-4b)، **[PR #83](../../../pull/83)** (‏B-9b/B-7/B-18/B-19
+معاً)، و**[PR #85](../../../pull/85)** (‏إعادة هيكلة `Program.cs` بلا تغيير سلوكي) —
+أغلقت **كل بند كان مفتوحاً**. هذا إنجاز حقيقي: `dotnet build` نظيف، و670 حالة اختبار
+عبر خمسة مشاريع سريعة نجحت جميعها في هذه الجلسة نفسها، لا محمولة من رسالة التزام.
 
-**الإضافة المعمارية الجوهرية التي غيّرت الصورة:** نظام **خطط** حقيقي —
-`Plan` (‏`Domain/Plans/Entities/Plan.cs`)، `GET /api/plans`، و`POST /api/users/me/plan`
-لتسجيل اختيار المستخدم صراحةً (**بما فيها** الخطة المجانية — الاختيار الصريح مطلوب،
-لا افتراض ضمني). هذا **ليس** كيان `Subscription` كاملاً: لا فوترة، لا بوابة دفع، ولا
-ربط لحدّ الإعلانات بالخطة المختارة فعلياً — الحدّ ما زال ثابتاً في
-`ListingLifecyclePolicy`/`ListingQuotaOptions` (‏§B-3 أدناه). لكنه يغلق الفجوة التي
-كانت تجعل `/plans` "عقداً بلا خلفية" في المراجعة السابقة.
-
-**بوابتان جديدتان على إنشاء أي إعلان، على كل حساب وكل دور بلا استثناء:**
-
-1. تأكيد وسيلة تواصل واحدة على الأقل (بريد أو هاتف) — `403 LISTING_CONTACT_NOT_CONFIRMED`.
-2. اختيار خطة، ولو المجانية — `403 LISTING_PLAN_REQUIRED`.
-
-كلتاهما مُطبَّقتان في `CreatePropertyCommandHandler` **قبل** فتح المعاملة والقفل
-الاستشاري (فحوصات رخيصة أولاً)، ومُطابَقتان بحارس واجهة موازٍ
-(`ListingEligibilityGuard`) لا يُستبدَل بهما — الخلفية تبقى مصدر الحقيقة.
+**لكن الإغلاق الأخير — B-18 — كشف عن عطل لم تخترعه هذه المراجعة، بل فتحه الإصلاح
+نفسه:** تفعيل `CookieCsrf:Enabled=true` (‏وهو صحيح معمارياً ومُختبَر تكاملياً بخمسة
+سيناريوهات في `CookieCsrfProtectionIntegrationTests.cs`) **يفترض أن طرفاً ما يرسل رأس
+`X-XSRF-TOKEN`.** لا أحد يرسله. الواجهة الحيّة (‏`e64daeb`) لا تحتوي أي إشارة لـ
+`csrf`/`xsrf` في `src/` — بحث حرفي عبر كامل الشجرة يعطي صفر نتائج — و`appsettings.json`
+الأساسي (‏قاعدة الإنتاج، لا ملف تطوير) يحمل `CookieCsrf:Enabled=true` فعلياً. **هذا يعني
+أن كل مستخدم حقيقي، على النشر الحالي لكلا المستودعين، سيفشل تجديد جلسته بعد 30 دقيقة
+(‏مدة صلاحية توكن الوصول) ويُسجَّل خروجه قسراً.** التفصيل الكامل في §B-20.
 
 ---
 
 ## 2. البنود المغلقة — الدليل
 
-### ~~B-4a~~ · ✅ تعديل/تعطيل المكتب
+### ~~B-2~~ · ✅ الإضافة المباشرة استُبدلت بنظام دعوات كامل
 
-`PUT /api/agencies/{agencyId}` (‏`[Authorize(Roles = AgencyOwner)]`) و
-`DELETE /api/agencies/{agencyId}` يستدعيان `UpdateAgencyCommandHandler` و
-`DeactivateAgencyCommandHandler` الجديدين. **لكن انظر B-4b:** `TransferOwnership()` و
-`SetLogo()` ما زالتا بلا أي `Controller`/`Command` يستدعيهما — بحثٌ عن استدعاء أي منهما
-خارج اختبارات الوحدة يعطي صفر نتائج. الإصلاح نصفه فقط وصل.
+**الموقع:** `Application/Agencies/Commands/CreateAgencyInvitation/*` ·
+`AcceptAgencyInvitation/*` · `DeclineAgencyInvitation/*` ·
+`Domain/Agencies/AgencyInvitationLock.cs` · هجرة `20260827091539_AddAgencyInvitations`
 
-### ~~B-5~~ · ✅ `Property.AgencyId` صار مقروءاً
+**ما تغيّر (‏PR #80، الالتزام `9de5a3e`):** `AddAgencyMemberCommandHandler` — الذي كان
+يُلحق أي مستخدم بمكتب بلا موافقته — **حُذف بالكامل** (‏`122-` سطراً). محلّه كيان
+`AgencyInvitation` بحالات `Pending`/`Accepted`/`Declined`/`Expired`، على نمط
+`VisitRequest` القائم:
 
-`PropertyFilterDto.AgencyId` (‏`Properties/DTOs/PropertyFilterDto.cs:57`) يُطبَّق في
-`PropertyRepository.cs:321-322` (`query.Where(p => p.AgencyId == filter.AgencyId)`)،
-و`PropertyDto.AgencyId` (‏`Listings/DTOs/PropertyDto.cs:70`) يُصدَّر في كل استجابة.
-صفحة «إعلانات هذا المكتب» ممكنة الآن من طرف الخلفية؛ لم يُتحقَّق من وجود واجهة تستهلكها
-(انظر `FRONTEND-REFERENCE.md`).
+- `POST /api/agencies/{agencyId}/invitations` — ينشئ دعوة `Pending` فقط، لا يلمس
+  `UserAccount.AgencyId` إطلاقاً، ويُشعِر المدعوّ عبر `INotificationService`/SignalR.
+- `POST /api/agencies/invitations/{invitationId}/accept` — المسار الوحيد الذي يستدعي
+  `JoinAgency`، وفقط للمستخدم المدعوّ نفسه.
+- `POST /api/agencies/invitations/{invitationId}/decline` — ينهي الدعوة بلا عضوية.
+- `GET /api/agencies/invitations/mine` — الدعوات المعلَّقة للمستخدم الحالي.
+- `DELETE /api/agencies/{agencyId}/members/{memberUserId}` — إزالة عضو قائم (‏موجودة،
+  منفصلة عن تدفّق الدعوة).
 
-### ~~B-6a~~ · ✅ قفل استشاري على أربع من خمس مهام دورية
+**التزامن مُغطّى:** دعوات مكرَّرة، قبول مزدوج، سباق قبول/رفض، قبول بعد الانتهاء، انضمام
+لمكتب آخر أثناء التدفّق — كلّها مقفلة بقفل استشاري (`AgencyInvitationLock`، نفس نمط
+حصّة الإعلانات) ومدعومة بفهرس فريد جزئي على `(AgencyId, TargetUserId) WHERE Pending`
+على مستوى قاعدة البيانات. 20 اختبار جديد (`AgencyInvitationTests`) يغطّي التفويض،
+انتقالات الحالة، والتزامن.
 
-`Persistence/BackgroundJobLock.cs` + `BackgroundJobLockKeys.cs` جديدان، ومُستخدَمان في:
+**ما بقي كما هو:** تخفيف 2026-08-26 في `GetAgencyBySlugQueryHandler` (‏عرض المالك فقط
+علنياً) لم يُلمَس — ولم يعد ضرورياً حتى للعضوية الداخلية الآن، لأن الإضافة نفسها صارت
+تتطلّب موافقة.
 
-| المهمة | مقفلة؟ |
-|---|---|
-| `ListingExpiryHostedService` | ✅ |
-| `SavedSearchMatchHostedService` | ✅ |
-| `OtpCleanupHostedService` | ✅ |
-| `PhoneVerificationHostedService` | ✅ |
-| `SecurityAlertBackgroundService` | ❌ — انظر **B-6b** |
-
-`ProductionStartupValidator` ليست مهمّة دورية (‏تعمل مرّة واحدة عند الإقلاع)، فلم تكن
-جزءاً حقيقياً من المشكلة الأصلية رغم إدراجها في عدّ v2 السداسي.
-
-### ~~B-10~~ · ✅ حصّة الإعلانات لم تعد سباقاً
-
-`CreatePropertyCommandHandler.CreateWithQuotaEnforcedAsync` يفتح معاملة، يستحوذ قفلاً
-استشارياً بمفتاح `ListingQuotaLock.ForAgency(id)` أو `.ForOwner(ownerId)` (‏المكتب إن
-وُجد، وإلا المالك الفرد)، **ثم** يتحقّق من الحصّة، فيُنشئ، فيلتزم. القفل بنطاق المعاملة
-فيتحرّر تلقائياً عند الالتزام أو التراجع.
-
-### ~~B-11~~ · ✅ تسمية JSON موحَّدة
-
-`Program.cs:317`: `options.JsonSerializerOptions.PropertyNamingPolicy =
-JsonNamingPolicy.CamelCase;` — لم تعد `null`. كل استجابة، ناجحة أو خطأ، camelCase الآن.
-الحالتان الشاذّتان القديمتان (‏`ConfirmExtensionPayment`/`ConfirmFeaturedPayment`
-بنوعين مجهولين) أصبحتا متّسقتين تلقائياً مع البقية بهذا التغيير، لا لأن أحداً بدّل
-النوعين المجهولين بـ DTO — تحقّق لاحقاً إن أُريد تصليب العقد بأنواع مسمّاة.
-
-### ~~B-12~~ · ✅ 400/404 موحَّدان
-
-`GetAgencyBySlugQueryHandler.cs:46-49`: `catch (DomainException) { throw new
-NotFoundException(...); }` — معرّف مُشوَّه ومعرّف مجهول يُجيبان 404 كلاهما الآن.
-
-### ~~B-13~~ · ✅ (بشرط) — انظر B-18
-
-`RefreshTokenCookie.cs` (‏خلفية) يضبط `HttpOnly=true, Secure=true,
-SameSite=SameSiteMode.None, Path=/api/auth`، ويُستدعى من كل مسار تسجيل دخول
-(‏`AuthController.Login/Refresh/Logout/SocialLogin`، `PhonePasswordAuthController`).
-الواجهة (‏`token-storage.service.ts`) لم تعد تكتب توكن التجديد في أي تخزين متصفّح —
-حقل الذاكرة للـ access token فقط، وتعليق الشيفرة نفسه يقرّ بإغلاق B-13 صراحةً.
-**لكن** هذا الانتقال فتح بنداً جديداً بديلاً — **B-18**.
-
-### ~~B-14~~ · ✅ روابط البريد تحمل `#` الآن
-
-`EmailConfirmationUrlBuilder.cs:21`: `private const string ConfirmationPath =
-"#/auth/verify-email";`. `PasswordResetUrlBuilder.cs:9`: الافتراضي أصبح
-`https://…/#/auth/reset-password`. `.env.example:28-29` مُصحَّح بالمثل.
-
-### ~~B-15~~ · ✅ «أعِد الإرسال» مستدعاة
-
-`auth-api.service.ts:72-75` يُعرِّف `resendConfirmationEmail()`، ويُستدعى من
-`register.page.ts:365-372` و`verify-email.page.ts:145-153` كلاهما.
-
-### ~~B-16~~ · ✅ nonce Apple مربوط على الطرفين
-
-الواجهة (`social-auth.service.ts:207-240`) تولّد nonce، تمرّره لـ `AppleID.auth.init`،
-**وترسله الآن** ضمن جسم `loginWithApple`. الخلفية
-(`AppleTokenVerifier.cs:41,92-103`) تقرأ مطالبة `nonce`، تقارنها بهاش SHA-256 لِما
-أرسلته الواجهة، وترفض عند الغياب أو الاختلاف.
-
-### ~~B-17~~ · ✅ مؤكَّد بالتشغيل الفعلي في هذه الجلسة
-
-```
-$ npm run audit:frontend
-[frontend-audit] WARN: TypeScript strict mode is still disabled …
-[frontend-audit] Checks passed.
-```
-خروج بالرمز 0. `REGISTER_ERROR_DIAGNOSIS.md` ما زال موجوداً في المستودع لكن قيمته
-النموذجية لم تعد تطابق نمط «سرّ محتمل».
+**التقييم:** ✅ أُغلق بالكامل — لا مجرد تخفيف. الفجوة الأصلية (‏لا دعوة، لا قبول، لا
+إشعار) معالَجة من جذرها.
 
 ---
 
-## B-2 · 🟠 مالك المكتب يضمّ أي مستخدم بلا موافقته — مخفَّف جزئياً
+### ~~B-3~~ · ✅ حصّة الإعلانات تُقرَأ من الخطة المختارة فعلياً الآن
 
-**الموقع:** `Application/Agencies/Commands/AddAgencyMember/AddAgencyMemberCommandHandler.cs`
-· `Application/Agencies/Queries/GetAgencyBySlug/GetAgencyBySlugQueryHandler.cs:56-68`
+**الموقع:** `Application/Listings/Interfaces/IListingQuotaPolicy.cs` ·
+`Infrastructure/Listings/ListingQuotaPolicy.cs` · `Domain/Plans/Entities/Plan.cs` ·
+هجرة `20260827091846_AddPlanListingLimit`
 
-**ما زال قائماً:** `AddAgencyMemberCommandHandler` يتحقّق من كل شيء إلا موافقة الهدف —
-لا دعوة، لا قبول، لا إشعار. التعليق في الشيفرة نفسه يقرّ بذلك: *"there is no invitation
-entity and no accept/decline flow… an invitation flow is the honest next step"*.
+**ما تغيّر (‏PR #81، الالتزام `dc4b19e`):** `Plan.ListingLimit` (‏عمود جديد، قابل
+لأن يكون `null` بمعنى «بلا حدّ») صار **مصدر الحقيقة الوحيد**، محلّ ثابتَين كانا
+متنافسين: `Listings:Quota:AgencyActiveListingLimit` (‏50 لكل مكتب بلا تمييز) و
+`ListingLifecyclePolicy.FreeTierActiveListingLimit` (‏1 لكل فرد بلا تمييز، **حتى** مشتركي
+Premium/Elite). كلا الثابتين **حُذف**؛ `ListingQuotaOptions.cs` نفسه حُذف من المستودع.
 
-**ما أُصلح جزئياً (‏2026-08-26):** الجزء الذي كان **لا رجعة فيه** — نشر اسم الهدف
-وصورته على الصفحة العامة قبل موافقته — أُغلق. `GetAgencyBySlugQueryHandler` يُصدِّر
-الآن **المالك فقط** إلى القائمة العلنية (`publicMembers = members.Where(m => m.Id ==
-agency.OwnerUserId)`)؛ التعليق المرافق يسمّي هذا صراحةً «تخفيفاً مؤقتاً لِـ B-2».
-الإضافة الداخلية (‏`AgencyId`، الدور، إسناد الإعلانات المستقبلية) لا تزال تحدث بلا
-موافقة — العضو المُضاف يكتشف الأمر عند فتح `GET /api/agencies/me`، لا قبله.
+`IListingQuotaPolicy.GetActiveListingLimitAsync(UserAccount)` يحلّ الحدّ عبر
+`UserAccount.PlanId → Plan.ListingLimit` لكل من الفرد والمكتب. **دلالة المكتب مُحفوظة
+ومُوضَّحة:** الحدّ المشترك للمكتب يأتي من خطة **مالك** المكتب، لا خطة أيّ عضو ينشئ
+الإعلان الآن — `Agency` لا تحمل `PlanId` خاصاً بها بتصميم مقصود، فلا يستطيع عضو تضخيم
+الحصّة المشتركة أو تقليصها باختيار خطته الشخصية. خطة مفقودة أو غير صالحة (‏لا خطة
+مختارة، خطة غير موجودة، مالك مكتب بلا خطة، مكتب غير موجود) **يفشل مغلَقاً** بخطأ واضح —
+لا حصّة غير محدودة عرضية أبداً.
 
-**الإصلاح المتبقّي:** حوّل الإضافة إلى دعوة (`AgencyInvitation` بحالة `Pending` +
-`accept`/`decline` + إشعار SignalR) كما أوصت v2. الآن أرخص تقنياً لأن `INotificationService`
-واسع الاستخدام في الميزات الجديدة.
+الهجرة تُضيف العمود **وتملأ** الصفوف المزروعة سابقاً (‏`free=1, basic=50, premium=250`،
+`elite` يبقى بلا حدّ) كي لا تُقرَأ قاعدة بيانات مُهاجَرة مسبقاً على أنها كلّها بلا حدّ.
+`GET /api/plans` يُصدِّر `listingLimit` الآن، فلا يمكن لصفحة `/pricing` وفرض الخلفية أن
+ينحرفا.
 
-**الأولوية:** Medium — الضرر الأخطر (‏تعداد شخص علناً بلا رضاه) أُزيل؛ ما تبقّى مخاطرة
-صلاحيات داخلية لا كشف بيانات شخصية.
+**الاختبار:** 248 Application، 280 Auth، 90 Architecture، + 8 اختبارات جديدة
+`ListingQuotaPolicyTests` (‏تكامل بلا حاجة لقاعدة بيانات) — كلّها خضراء وقت الالتزام.
+**مُعاد التحقّق هذه الجلسة أيضاً:** 278/278 Application، 108/108 Architecture.
 
----
-
-## B-3 · 🟠 حصّة الإعلانات — مخفَّفة على مستوى المكتب، لا مصدر حقيقة بعد
-
-**الموقع:** `Application/Listings/Commands/CreateProperty/CreatePropertyCommandHandler.cs:254-`
-· `Infrastructure/Listings/ListingQuotaPolicy.cs` · `Infrastructure/Listings/ListingQuotaOptions.cs`
-· `appsettings.json` (`Listings:Quota:AgencyActiveListingLimit = 50`)
-
-**ما تغيّر:** الحصّة لم تعد مقيسة بالفرد وحده. `EnsureListingQuotaAvailableAsync` يقرأ
-`ownerAccount?.AgencyId`؛ إن انتمى المالك لمكتب، تُحسَب الإعلانات النشطة **للمكتب
-كلّه** مقابل `IListingQuotaPolicy.AgencyActiveListingLimit` (‏50، قابل للضبط)؛ وإلا
-يبقى حدّ الفرد `FreeTierActiveListingLimit = 1` من `ListingLifecyclePolicy`.
-
-**ما زال ناقصاً — بإقرار التعليق في الشيفرة نفسه:**
-*"There is no Subscription entity in this domain yet… this is an interim,
-config-driven mitigation, not the real fix — the real fix is a Subscription entity,
-deliberately deferred as a product decision."* نظام `Plan` الجديد (‏§1 أعلاه) **يُسجِّل**
-اختيار المستخدم لكنه **لا يُقرَأ** في هذا الفحص أصلاً — حدّ الـ 50 للمكتب وحدّ الـ 1
-للفرد كلاهما ثابت لا علاقة له بـ `UserAccount.PlanId`. مستخدم اختار خطة "Premium"
-مدفوعة (‏افتراضاً) لا يحصل على حدّ إعلانات أعلى — لا آلية تربط الاثنين.
-
-**الأثر الفعلي:** مكتب بعشرة وكلاء صار يستطيع نشر 50 إعلاناً بدل 10 — تحسّن حقيقي — لكن
-لا فرق بين مكتب اشترى خطة "Elite" ومكتب لم يشترِ شيئاً؛ كلاهما يرى الحدّ 50 نفسه.
-`/pricing` في الواجهة يعرض خططاً بأسعار مختلفة، ولا شيء في الخلفية يمنح مشتري الخطة
-الأغلى حصّة أكبر.
-
-**الإصلاح:** اجعل `IListingQuotaPolicy.AgencyActiveListingLimit` يقرأ
-`Plan.ListingLimit` عبر `UserAccount.PlanId` بدل ثابت `appsettings`، لكل من الفرد
-والمكتب. البنية (`Plan` entity، `GetPlansQuery`) موجودة الآن؛ الناقص فقط سلك القراءة في
-هذا الفحص تحديداً.
-
-**الأولوية:** Medium-High — لم يعد يمنع استخدام الميزة، لكنه يُفرِغ صفحة `/pricing` من
-قيمتها الوظيفية: الدفع لخطة أعلى لا يشتري شيئاً ملموساً بعد.
+**التقييم:** ✅ أُغلق فعلياً — الفجوة التي وصفتها v3 (‏«اختيار خطة مدفوعة لا يغيّر أي
+حدّ فعلي») لم تعد قائمة. الوصف الآن يطابق السلوك.
 
 ---
 
-## B-4b · 🟠 نقل ملكية المكتب ورفع الشعار — لا يزالان بلا endpoint
+### ~~B-4b~~ · ✅ نقل الملكية ورفع الشعار مُعرَّضان الآن
 
-**الموقع:** `Controllers/AgenciesController.cs` · `Domain/Agencies/Entities/Agency.cs`
+**الموقع:** `Application/Agencies/Commands/TransferAgencyOwnership/*` ·
+`SetAgencyLogo/*` · `Controllers/AgenciesController.cs:167,198`
 
-**الدليل:** `Agency.TransferOwnership()` و`Agency.SetLogo()` موجودتان ومُختبَرتان على
-مستوى الدومين، لكن بحثاً عن استدعائهما خارج اختبارات الوحدة يعطي صفر نتائج. الخمس
-نقاط المتوفّرة اليوم على `AgenciesController` هي: قراءة بالمعرّف، قراءة الخاص بي،
-إنشاء، **تعديل** (‏جديد)، **تعطيل** (‏جديد)، إضافة عضو، إزالة عضو — لا نقل ملكية ولا
-شعار.
+**ما تغيّر (‏PR #82، الالتزام `c3b3a29`):**
 
-**الأثر:** الحقلان `LogoUrl`/`LogoPublicId` مُهيَّآن في `Agency` ولا طريقة لملئهما. مالك
-يريد ترك المنصّة يستطيع الآن **تعطيل** مكتبه (‏`Deactivate` الجديدة) لكن لا يستطيع نقل
-ملكيته لشريك — مخرجه الوحيد إخفاء المكتب لا استمراره تحت يد أخرى.
+- `POST /api/agencies/{agencyId}/transfer-ownership` — `[Authorize(Roles=AgencyOwner)]`
+  + مقارنة صريحة لـ `OwnerUserId`، لا اعتماد على `AgencyId` وحده. **المالك الجديد يجب
+  أن يكون عضواً في المكتب نفسه أصلاً** (‏`UserAccount.AgencyId == AgencyId`) —
+  العضوية تُمنَح فقط بقبول دعوة (‏B-2)، فهذا الشرط يعيد استخدام ضمان الموافقة نفسه بدل
+  السماح لنقل الملكية بمنحها لشخص لم يوافق على الانضمام أصلاً. تبديل الأدوار
+  (‏`AgencyOwner` عن القديم + `AgencyAgent`؛ `AgencyOwner` للجديد) يتبع الالتزام
+  ويُسجَّل لا يُرمى عند الفشل — نفس ترتيب `CreateAgencyCommandHandler`.
+- `POST /api/agencies/{agencyId}/logo` — نفس شكل رفع صورة المستخدم (`IFormFile` →
+  `IMediaStorageService`/Cloudinary)، نفس التحقق من النوع/الحجم/التوقيع، ونفس ترتيب
+  «احذف القديم بعد التزام الجديد».
 
-**الإصلاح:** أمران رفيعان (`TransferAgencyOwnershipCommand`، `SetAgencyLogoCommand`) +
-نقطتا `Controller`. البنية جاهزة بالكامل على مستوى الدومين والمستودع.
-
-**الأولوية:** Medium — أقل إلحاحاً من نصف B-4 الذي أُغلق، لأن التعطيل يوفّر مخرجاً ولو
-غير مثالي.
-
----
-
-## B-6b · 🟡 `SecurityAlertBackgroundService` بلا قفل استشاري
-
-**الموقع:** `Infrastructure/Email/SecurityAlertBackgroundService.cs`
-
-**الدليل:** بحث عن `BackgroundJobLock` في هذا الملف: صفر نتائج، بينما الأربع الأخرى
-(‏§2 أعلاه) تستخدمه جميعاً.
-
-**التقدير الصادق:** أثره أقلّ من بقية الخمسة لأنه — بحسب تسمية الملف ووصف v2 له —
-مستهلك طابور (‏queue consumer)، لا كاسحاً يعمل على مجموعة صفوف عبر مسح دوري؛ استهلاك
-طابور متكرر من نسختين عادة أقل ضرراً من كسح مزدوج لنفس الصفوف (‏قد يعني إشعار أمان
-مكرّراً على الأكثر، لا كتابة متضاربة). **يحتاج تحقّقاً تشغيلياً** لتأكيد هذا الافتراض
-من محتوى الملف نفسه قبل تصنيفه نهائياً بلا خطر.
-
-**الإصلاح:** طبّق نفس نمط `BackgroundJobLock` المستخدَم في الأربعة الأخرى، للاتساق ولو
-كان الخطر أدنى.
-
-**الأولوية:** Low.
+**التقييم:** ✅ أُغلق بالكامل — لم يعد نصف إصلاح. `Agency.TransferOwnership()` و
+`Agency.SetLogo()` لهما مستدعيان إنتاجيان الآن، لا اختبارات وحدة فقط.
 
 ---
 
-## B-9b · 🟡 التزامن التفاؤلي على `Property` فقط
+### ~~B-6b~~ · ✅ قرار مُتعمَّد ومُثبَّت — ليس إصلاحاً ناقصاً
 
-**الموقع:** `Infrastructure/Persistence/Configurations/PropertyConfiguration.cs` ·
-هجرة `20260826073614_AddPropertyXminConcurrencyToken`
+**الموقع:** `Infrastructure/Email/SecurityAlertBackgroundService.cs` ·
+`tests/PropertyApi.Architecture.Tests/BackgroundJobs/BackgroundJobLockExclusionTests.cs`
+(‏جديد)
 
-**ما تغيّر:** `Property` يحمل الآن رمز `xmin` كتزامن تفاؤلي — البند الأخطر (‏كنس
-مؤتمت يكتب على الصفوف نفسها التي يحرّرها البشر) أُغلق لهذا الكيان تحديداً.
+**ما تغيّر (‏PR #83، الالتزام `467f23c`):** بدل تطبيق `BackgroundJobLock` كالأربعة
+الأخرى، **حُقِّق في الخدمة أولاً**: هي مستهلكة طابور داخل العملية (`in-process Channel`)
+تُغذّى فقط من طلبات النسخة نفسها — لا كاسحة قاعدة بيانات دورية تتنافس مع نسخ أخرى على
+الصفوف نفسها. تعليق `BackgroundJobLockKeys.cs` كان يوثّق هذا الاستثناء كمتعمَّد أصلاً؛
+هذه المراجعة تضيف اختباراً (`BackgroundJobLockExclusionTests.cs`) يُثبِّت القرار كي لا
+يُنقَض أو يُنتَهَك بصمت بخدمة مستضافة جديدة تُخطئ الافتراض.
 
-**ما زال ناقصاً:** بحث عن `IsRowVersion`/`xmin` في بقية `Persistence/Configurations/`:
-صفر نتائج لغير `Property`. `Transaction` (‏تأكيد الرسوم من مديرَين محتمَلين في اللحظة
-نفسها — يُحمَى اليوم بترتيب الالتزام لا برمز تزامن) و`UserAccount` بلا حماية.
-
-**الإصلاح:** كرّر النمط نفسه (`builder.Property<uint>("xmin").HasColumnType("xid")
-.IsRowVersion()`) على `Transaction` و`UserAccount` على الأقل، ثم تأكّد أن
-`ExceptionHandlingMiddleware` يترجم `DbUpdateConcurrencyException` إلى `409` — لم
-يُتحقَّق من وجود هذه الترجمة في هذه المراجعة.
-
-**الأولوية:** Low-Medium.
+**التقييم:** ✅ أُغلق — **ليس لأن قفلاً أُضيف، بل لأن القرار الصحيح تحقَّق منه أحد
+وثبَّته باختبار.** التقدير الصادق في v3 («يحتاج تحقّقاً تشغيلياً لتأكيد هذا الافتراض
+من محتوى الملف نفسه») تحقّق الآن فعلياً.
 
 ---
 
-## B-7 · 🟠 بوابة الحماية العامة لا تزال قائمة سماح
+### ~~B-7~~ · ✅ اختبار انعكاسي محلّ قائمة السماح
 
-**الموقع:** `tests/PropertyApi.Architecture.Tests/Api/RateLimitingGuardTests.cs` ·
-`PublicEndpointPolicyTests.cs`
+**الموقع:** `tests/PropertyApi.Architecture.Tests/Api/RateLimitingGuardTests.cs`
 
-**ما تغيّر:** المثال المحدَّد الذي رصدته v2 (‏`GET /api/agencies/{slug}` بلا حدّ معدّل)
-أُصلح: `[EnableRateLimiting("agencies-public")]` مضافة الآن، والتعليق فوقها يستشهد بهذا
-البند حرفياً.
+**ما تغيّر (‏PR #83):** استُبدل `RateLimitingGuardTests` القديم (‏نقاط مسمّاة واحدة
+واحدة) باختبار (`Every_AllowAnonymous_Endpoint_Should_Have_RateLimiting`) يمسح **كل**
+إجراء يحمل `[AllowAnonymous]` عبر Reflection (‏نفس آلية حلّ `PublicEndpointPolicyTests`،
+شاملة سمات مستوى الـController) ويفرض أن كلاً منها يحمل `[EnableRateLimiting]` أو
+استثناءً موثَّقاً صراحةً في `ExemptFromRateLimiting`.
 
-**ما لم يتغيّر:** `RateLimitingGuardTests` ما زال يفحص نقاطاً **مسمّاة واحدة واحدة**، لا
-قاعدة معكوسة من نوع «كل إجراء يحمل `[AllowAnonymous]` يجب أن يحمل أيضاً
-`[EnableRateLimiting]` أو يكون في قائمة استثناء صغيرة ومُبرَّرة». أي نقطة مجهولة الهوية
-جديدة تُضاف غداً تمرّ ببناء نظيف طالما سُجِّلت في `PublicEndpointPolicyTests` — بلا أي
-ضمان أن يتذكّر أحد إضافة سياسة حدّ معها.
+**الأثر الفعلي لتطبيق القاعدة:** كشف **~15 نقطة نهاية مجهولة الهوية بلا أي حدّ معدّل
+إطلاقاً** (‏Amenities، Enum، Lookups، Plans، `Analytics.market`،
+`Properties.GetById`، `PropertyImages.GetAll`،
+`Reviews.GetPropertyReviews`، `Users.GetProfile`/`GetRatings`،
+`Csrf.GetCsrfToken`، طرف OTP الهاتفي القديم 410). أُصلحت جميعها بسياسة مشتركة جديدة
+`public-read` (‏120/دقيقة، نفس وتيرة `public-search`/`agencies-public`) + سياسة
+`auth-password-reset` على `PhoneAuthController.VerifyEmail` (‏حسّاسية تحقّق توكن).
+ثلاث نقاط تشغيلية مُقيَّدة فعلياً (`ObservabilitySynthetic.Execute`،
+`Operational.BuildInfo`، `StagingTestSupport.*`) استثناءات صريحة ومُبرَّرة في الاختبار
+الجديد.
 
-**الإصلاح:** اختبار بالانعكاس، كما أوصت v2 — امسح كل الإجراءات الحاملة
-`[AllowAnonymous]` عبر Reflection وأكّد أن كلاً منها يحمل `[EnableRateLimiting]`.
-
-**الأولوية:** Medium — النمط المعماري لم يتغيّر، فقط المثال الملموس الوحيد المعروف.
-
----
-
-## B-18 · 🟠 جديد — كوكي التجديد `SameSite=None` مع CSRF مطفأة افتراضياً
-
-**الموقع:** `PropertyApi/Security/Auth/RefreshTokenCookie.cs:31` ·
-`PropertyApi/Security/Csrf/CookieCsrfOptions.cs:11` (`Enabled = false` افتراضياً) ·
-`PropertyApi/Controllers/AuthController.cs` (`Refresh`، `Logout`)
-
-**كيف نشأ هذا البند:** إغلاق B-13 (‏نقل توكن التجديد إلى كوكي) غيّر افتراضاً كان
-صحيحاً في v2 — «لا كوكي مصادقة، فلا حاجة لـ CSRF» — لم يعد صحيحاً حرفياً. الكوكي الآن
-مصدر حقيقة يقرأه `POST /api/auth/refresh` (‏وتمسحه `POST /api/auth/logout`)، وهما
-طلبا كتابة (‏POST) يقرآن حالة موثوقة من كوكي **مُرسَل تلقائياً عبر المواقع** بحكم
-`SameSite=None` (‏شرط تقني ضروري لأن الواجهة والخلفية أصلين مختلفين حتى في التطوير
-المحلي — موثَّق في تعليق `RefreshTokenCookie.cs` نفسه).
-
-**الدليل — الشرط الذي تصفه وثيقة `CookieCsrfProtectionMiddleware` نفسها (من مراجعة
-سابقة) لتفعيل الحماية: `Enabled` **و** طريقة غير آمنة **و** كوكي مصادقة موجود.** الشرط
-الثالث تحقّق الآن فعلياً — كوكي `refresh_token` موجود على كل متصفّح مسجَّل دخوله — لكن
-`Enabled` ما زالت `false` افتراضياً، ولا مفتاح `CookieCsrf` في `appsettings.json`
-الأساسي (‏موجود فقط في `appsettings.Development.example.json`).
-
-**الأثر العملي — محدود لكنه حقيقي:** موقع خبيث يستطيع تقديم نموذج (`<form>`) خفي يستهدف
-`POST /api/auth/refresh` أو `POST /api/auth/logout`؛ المتصفّح يُرفق كوكي
-`SameSite=None` تلقائياً بلا حاجة لقراءة الاستجابة (‏تقديم نموذج ليس خاضعاً لسياسة
-CORS كما يخضع لها `fetch`/`XHR`). **سرقة التوكن نفسها غير ممكنة** — CORS المُقيَّد على
-أصول مُدرَجة صراحةً يمنع موقعاً خبيثاً من *قراءة* جسم الاستجابة JSON. لكن **فرض تجديد
-أو تسجيل خروج قسري** ممكن دون علم المستخدم: الأول يُدوِّر توكن التجديد الحالي (‏قد يُبطل
-جلسة الجهاز الآخر إن كانت آلية الدوران تكشف إعادة استخدام)، والثاني يمسح الجلسة.
-
-**التقدير الصادق:** ليس سرقة جلسة، وأثره على الأرجح إزعاج أو حرمان خدمة مؤقّت لا
-اختراق حساب. لكنه انحراف مباشر عن الافتراض الذي بُني عليه قرار «CSRF مطفأة بأمان»،
-والفجوة السطحية بين الحالتين — «كوكي بلا CSRF» صحيح إلى «كوكي بلا CSRF» خطأ — بالضبط
-ما حذّرت منه v2 نفسها في وصفها لِـ B-13: *"تفعيل طرف واحد يكسر كل طلبات الكتابة"*،
-لكنها لم تُشر إلى أن عدم تفعيل أي طرف بعد نقل الكوكي يفتح هذا السطح تحديداً.
-
-**الإصلاح:** نفّذ الخطوات الثلاث التي وصفتها v2 لِـ B-13 أصلاً، معاً لا منفردة:
-`CookieCsrf:Enabled = true`، والواجهة تجلب `GET /api/security/csrf-token` وتُرسل
-`X-XSRF-TOKEN` على كل طلب كتابة. البنية الثلاث جاهزة في الخلفية منذ ما قبل هذه
-المراجعة (‏`AddPropertyApiAntiforgery` + `UseCookieCsrfProtection()` + `CsrfController`)؛
-الناقص تفعيلها وسلك الواجهة.
-
-**الأولوية:** Medium — لا يُستغَلّ بلا شرط، لكنه يستحق الحسم قبل أي إعلان "جاهز
-للإنتاج".
-
-**درجة الثقة:** Confirmed بنيوياً من الشيفرة الثابتة (شرط التفعيل الثلاثي موثَّق في
-كود الوسيط نفسه من مراجعات سابقة، والحالة الحالية لكل شرط تحقّقت هنا). الأثر العملي
-(‏هل يُستغَلّ فعلاً، وهل آلية دوران التوكن تُبطل جلسات أخرى عند تجديد قسري) **Likely،
-يحتاج تحقّقاً تشغيلياً**.
+**التقييم:** ✅ أُغلق — لم يعد المثال المحدَّد الوحيد المعروف (‏`agencies-public`) هو ما
+أُصلح؛ **النمط المعماري نفسه** أُصلح بقاعدة معكوسة تفشل البناء تلقائياً على أي نقطة
+جديدة تُنسى.
 
 ---
 
-## B-19 · 🟢 جديد — تلف ترميز لا رجعة فيه في تعليقات ثلاثة ملفات
+### ~~B-9b~~ · ✅ `Transaction` و`UserAccount` يحملان `xmin` الآن
 
-**الموقع:** `PropertyApi/Controllers/PhoneAuthController.cs` (‏أسطر 16-24، 69، 81، 109،
-169) · `PropertyApi.Domain/Auth/Entities/OtpCode.cs` · `PropertyApi.Domain/Common/Interfaces/IHasDomainEvents.cs`
+**الموقع:** `Infrastructure/Persistence/Configurations/TransactionConfiguration.cs:29-32` ·
+`UserAccountConfiguration.cs:30-33` ·
+هجرة `20260827120052_AddTransactionAndUserAccountXminConcurrencyToken`
 
-**الدليل:** فحص البايتات الخام لهذه الملفات يُظهر أن تعليقات XML وشروحاً كانت عربية
-أصلاً استُبدلت بعلامات استفهام حرفية (‏البايت `0x3F` — `?` ASCII حقيقي، لا حرف Unicode
-تالف قابل للاسترجاع مثل `U+FFFD`). هذا **ليس** خطأ عرض في محرّر أو طرفية — القيمة
-مفقودة نهائياً من مصدر الملف نفسه:
+**ما تغيّر (‏PR #83):** نفس نمط `Property` (`builder.Property<uint>("xmin")
+.HasColumnType("xid").IsRowVersion()`) طُبِّق على الكيانين الباقيين. `Transaction`
+يحمي سباق تأكيد الدفع من مديرَين محتمَلين في اللحظة نفسها
+(`ConfirmFeaturedListingPaymentCommandHandler`/`ConfirmListingExtensionPaymentCommandHandler`)؛
+`UserAccount` يحمي كتابات متزامنة عبر معالِجات الملف الشخصي/الخطة/عضوية المكتب.
+الهجرة **لا تُغيِّر المخطَّط فعلياً** — `xmin` عمود نظام Postgres موجود دائماً؛ الهجرة
+تُخبر EF Core باستخدامه فقط، تماماً كهجرة `Property` السابقة.
 
-```
-/// ???????? ??? ??? ?????? ?????? ?????? ??????????
-```
+`DbUpdateConcurrencyException → 409` كان مُوصَّلاً في `ExceptionHandlingMiddleware.cs:126`
+من قبل لأجل `Property`؛ يغطّي الكيانين الجديدين تلقائياً بلا أي تغيير إضافي — **تحقَّق
+منه هذه المراجعة فعلياً** (‏كان بنداً معلَّقاً في v3).
 
-**الأثر:** الشيفرة التي تُنفَّذ سليمة تماماً (‏الرسائل الفعلية المُرسَلة للمستخدم عربية
-صحيحة، مثل `"غير مصرّح."` في السطر نفسه من الملف) — التلف محصور في **تعليقات التوثيق
-الداخلي فقط**، فلا أثر وظيفي. لكنه يفقد أي مطوّر عربي شرح النية الأصلية خلف نقاط
-النهاية المذكورة في ذلك التعليق تحديداً (‏تدفّق الهاتف/OTP/البريد الثانوي).
+اختبارا تكامل جديدان (`TransactionConcurrencyTests`، `UserAccountConcurrencyTests`)
+يُقلِّدان نمط `PropertyConcurrencyTests` القائم — يحتاجان Postgres حيّاً، لم يُشغَّلا
+هذه الجلسة (‏غير متوفّر)؛ مُعلَّم صراحةً.
 
-**الإصلاح:** لا يوجد إصلاح تلقائي — النص الأصلي غير قابل للاسترجاع من الملف نفسه.
-أعِد كتابة التعليقات المتضرّرة بالعربية أو الإنجليزية من فهم السلوك الفعلي للكود
-المجاور (‏وهو واضح بما يكفي لإعادة الكتابة). أضِف فحصاً في `dotnet format`/محرّر خطّاف
-ما قبل الالتزام يرفض حفظ ملف `.cs` يحوي تسلسل `????` متتالياً — النمط نفسه الذي يفحصه
-`frontend-audit-guard.mjs` على الواجهة (‏mojibake) غير موجود على الخلفية إطلاقاً.
-
-**الأولوية:** Low — لا خطر وظيفي أو أمني، لكنه دَين توثيقي دائم ما لم يُصلَح الآن.
+**التقييم:** ✅ أُغلق — البند الثالث والأخير من قائمة الكيانات المكشوفة لسباق
+قراءة-ثم-كتابة أُغلق.
 
 ---
 
-## 3. ما فُحص ووُجد سليماً (حتى لا يُعاد فحصه)
+### ~~B-18~~ · ✅ بنطاقه الأصلي — لكن انظر B-20 فوراً
+
+**الموقع:** `PropertyApi/Security/Csrf/CookieCsrfOptions.cs` ·
+`CookieCsrfProtectionMiddleware.cs` · `CsrfExtensions.cs` · `Controllers/CsrfController.cs` ·
+`appsettings.json:19-23` (‏`Enabled: true` الآن) ·
+`tests/PropertyApi.Integration.Tests/Auth/CookieCsrfProtectionIntegrationTests.cs` (‏جديد)
+
+**ما تغيّر (‏PR #83):** `CookieCsrf:Enabled=true` في `appsettings.json` (‏قاعدة
+الإنتاج) و`appsettings.Development.example.json` — تبقى `appsettings.Testing.json`
+مُطفَأة عمداً كي لا تحمل بقية مجموعة الاختبارات توكناً على كل طلب كتابة. **ثلاث علل
+بنيوية اكتُشفت تجريبياً عبر `CookieCsrfProtectionIntegrationTests` (‏فشلت كلّها قبل
+الإصلاح، نجحت جميعها بعده):**
+
+1. `CookieCsrfOptions.AuthenticationCookieName` كان افتراضه اسم كوكي ASP.NET Identity —
+   الذي لا يضبطه هذا التطبيق (‏JWT-bearer) أبداً — فكان فحص `hasAuthCookie` دائماً
+   `false` بصمت حتى مع `Enabled=true`. صار الافتراض `RefreshTokenCookie.Name`.
+2. كانت كوكي antiforgery نفسها `SameSite=Strict`، والمتصفّح الحقيقي يُسقِطها على طلبات
+   عبر الأصول التي تخدمها هذه الـAPI فعلياً — صارت `SameSite=None`، تطابق
+   `RefreshTokenCookie`.
+3. `CsrfController.GetCsrfToken` كان يستدعي `GetAndStoreTokens()` فقط ويعيد 204،
+   معتمداً على كوكي antiforgery الداخلية — التي تحمل *توكن الكوكي*، لا *توكن الطلب* الذي
+   يتوقّعه `ValidateRequestAsync` في الرأس. صار يكتب `tokens.RequestToken` صراحةً في
+   كوكي منفصلة قابلة للقراءة بجافاسكربت (`XSRF-TOKEN`) — نفس اصطلاح Angular
+   الموثَّق من Microsoft.
+
+**خمسة سيناريوهات تكامل حقيقية تُثبت المنطق البنيوي سليم:** طلب بلا كوكي مصادقة لا
+يُحجَب؛ طلب بكوكي مصادقة وبلا رأس CSRF يُرفَض 403؛ رأس مزوَّر يُرفَض 403؛ مهاجم عبر
+المواقع لا يملك طريقة لتوليد الرأس الصحيح فيُرفَض؛ **وتدفّق صحيح كامل** (‏`GET
+csrf-token` أولاً، ثم إرسال الرأس المستخرَج) **يعبر** بوابة CSRF فعلياً.
+
+**التقييم — دقيق ومهم:** ✅ **الشيفرة البنيوية في الخلفية صحيحة ومُختبَرة بالكامل.**
+لكن السيناريو الخامس (‏التدفّق الصحيح) يتطلّب أن **عميلاً ما** ينفّذ خطوتيه فعلياً —
+والفحص المباشر لمستودع الواجهة الحيّ في §B-20 يُظهر أن لا شيء ينفّذهما. **إغلاق B-18
+هو بالضبط ما فتح B-20** — النمط نفسه الذي حذّر منه v7 لِـ B-13 («تفعيل طرف واحد يكسر كل
+طلبات الكتابة») تكرَّر هنا حرفياً، مرّة أخرى.
+
+---
+
+### ~~B-19~~ · ✅ التعليقات التالفة أُعيدت كتابتها
+
+**الموقع:** `PropertyApi/Controllers/PhoneAuthController.cs` ·
+`PropertyApi.Domain/Auth/Entities/OtpCode.cs` ·
+`PropertyApi.Domain/Common/Interfaces/IHasDomainEvents.cs`
+
+**الدليل:** بحث عن نمط `?????` (‏خمس علامات استفهام متتالية أو أكثر) في الملفات الثلاثة
+عند `a151424`: **صفر مطابقة** في كل ملف — مُعاد فحصه حرفياً هذه الجلسة، لا منقولاً.
+
+**التقييم:** ✅ أُغلق. لا فحص آلي جديد أُضيف لمنع تكرار مشكلة الترميز مستقبلاً (‏كانت
+موصى بها في v3) — إن أُريد إغلاق هذه الفجوة الوقائية أيضاً فهي تستحق فحصاً منفصلاً في
+`dotnet format` أو خطّاف ما قبل الالتزام، لكنها ليست جزءاً مما فتحته v3 كبند مفتوح.
+
+---
+
+## B-20 · 🔴 جديد — الواجهة لا ترسل رأس CSRF؛ تجديد الجلسة وتسجيل الخروج يفشلان لأي متصفّح حقيقي
+
+**الموقع (‏ثلاث طبقات، مستودعان):**
+`PropertyApi/Security/Csrf/CookieCsrfProtectionMiddleware.cs:49-58` (‏الخلفية) ·
+`PropertyApi/appsettings.json:19-23` (‏`Enabled: true`) ·
+`src/app/core/interceptors/refresh-auth.interceptor.ts:80-108` (‏الواجهة) ·
+`src/app/app.config.ts:33-61` (‏الواجهة، `restoreSession`)
+
+### كيف نشأ هذا البند
+
+إغلاق B-18 فعّل `CookieCsrf:Enabled=true` في قاعدة `appsettings.json` — **ملف الإنتاج
+نفسه، لا ملف تطوير منفصل.** منطق التفعيل في `CookieCsrfProtectionMiddleware.cs:49-58`
+دقيق: أي طلب غير آمن (‏POST/PUT/PATCH/DELETE) **يحمل كوكي `refresh_token` بالفعل**
+(‏أي: أي مستخدم مسجَّل دخوله) **يجب** أن يمرّ `_antiforgery.ValidateRequestAsync(context)`
+— بصرف النظر عن كون النقطة `[AllowAnonymous]` أم لا. `AuthController.Refresh` و
+`AuthController.Logout` (‏`AuthController.cs:240,277`) **لا يحملان**
+`[IgnoreAntiforgeryToken]` — تحقَّق منه هذه المراجعة بالبحث المباشر في الملف، صفر
+مطابقة.
+
+### الدليل — ثلاث طبقات مستقلة، كلّ واحدة تكفي وحدها لتأكيد العطل
+
+**1. الواجهة لا تجلب التوكن ولا ترسله إطلاقاً.** بحث حرفي حسّاس لحالة الأحرف عن
+`csrf|xsrf` عبر كامل `src/` في مستودع الواجهة الحيّ (‏`e64daeb`)، خارج ملفات
+`.spec.ts`: **صفر نتائج.** لا استدعاء لـ `GET /api/security/csrf-token`، ولا قراءة
+لكوكي `XSRF-TOKEN`، ولا رأس `X-XSRF-TOKEN` في أي مكان.
+
+**2. حتى لو فُعِّلت آلية Angular التلقائية، الكوكي غير قابلة للقراءة من أصل الواجهة.**
+`CsrfController.GetCsrfToken` (‏`CsrfController.cs:33-49`) يكتب كوكي `XSRF-TOKEN` **بلا
+أي `Domain` صريح** — فتُقيَّد افتراضياً بأصل الخلفية فقط. `app.config.ts` يستخدم
+`provideHttpClient(withInterceptors([...]))` **بلا** `withXsrfConfiguration` — فآلية
+Angular الافتراضية، إن كانت نشطة، تقرأ `document.cookie` من صفحة الواجهة نفسها، وهذا
+الأصل **مختلف عن أصل الخلفية** (‏`Cors:AllowedOrigins` في `.env.example` يُثبت هذا:
+`https://localhost:4200` مقابل الخلفية على منفذ مختلف — الوثائق الشقيقة تصف هذا صراحة
+بأنه «أصلان مختلفان حتى محلياً»). كوكي بلا `Domain` مشترك لا تراها جافاسكربت الواجهة
+مهما فعلت.
+
+**3. حتى لو قُرئت الكوكي، مسارا التجديد الفعليَّين يتجاوزان كل مُعترِضات Angular
+عمداً.** كلّ من `refresh-auth.interceptor.ts`'s `requestNewAccessToken()` (‏السطر 81:
+`const directHttp = new HttpClient(httpBackend)`) و`app.config.ts`'s `restoreSession()`
+(‏السطر 40: نفس النمط) يبنيان عميل HTTP خاماً فوق `HttpBackend` مباشرة — **تجاوزاً
+متعمَّداً لكل سلسلة المُعترِضات** (‏التعليق في الملف نفسه يقرّ: *"bypasses every
+interceptor on purpose"*، لتفادي حلقة تجديد لا نهائية). حتى معترِض CSRF المدمَج في
+Angular، لو كان مفعَّلاً أصلاً، **لن يُستدعى على هذين المسارين بالذات** — وهما بالضبط
+مساري `POST /api/auth/refresh` اللذين تفرض عليهما الخلفية الآن CSRF.
+
+### اختبار الخلفية نفسه يوثّق التدفّق المطلوب — ولا أحد ينفّذه
+
+`CookieCsrfProtectionIntegrationTests.cs` (‏§B-18) يحتوي سيناريو
+`Refresh_WithAuthCookie_AndValidCsrfToken_PassesCsrfGate` الذي يُحاكي يدوياً **بالضبط**
+ما يجب أن يفعله عميل حقيقي: `GET /api/security/csrf-token` أولاً، ثم إرسال قيمة كوكي
+`XSRF-TOKEN` كرأس `X-XSRF-TOKEN` على `POST /api/auth/refresh`. هذا التدفّق **موثَّق
+ومُختبَر من طرف الخلفية**، لكن لا شيء في الواجهة الحيّة اليوم ينفّذه.
+
+### الأثر الفعلي — لا افتراضي
+
+مستخدم حقيقي مسجَّل دخوله، على النشر الحالي لكلا المستودعين معاً:
+
+1. توكن الوصول صالح 30 دقيقة (`Jwt:AccessTokenMinutes = 30`، `appsettings.json:13`).
+2. عند انتهائه، أي طلب API يعيد 401؛ `RefreshAuthInterceptor` يعترضه ويستدعي
+   `requestNewAccessToken()`.
+3. ذلك الطلب `POST /auth/refresh` يحمل كوكي `refresh_token` (‏ضمنياً، عبر
+   `withCredentials: true`) لكن **بلا** رأس `X-XSRF-TOKEN`.
+4. `CookieCsrfProtectionMiddleware` يرى `hasAuthCookie = true` فيفرض
+   `ValidateRequestAsync` — الذي يفشل حتماً بلا الرأس، ويُرجِع (‏بحسب اختبار التكامل)
+   **403 مع `CSRF_VALIDATION_FAILED`**.
+5. `catchError` في المُعترِض يعامل أي فشل في التجديد كفشل نهائي: `clearAndRedirect()`
+   يمسح التخزين المحلي ويوجِّه المستخدم قسراً إلى `/auth/login`.
+
+**النتيجة:** كل مستخدم يُسجَّل خروجه قسراً كل 30 دقيقة تقريباً، بصرف النظر عن نشاطه.
+`POST /auth/logout` الصريح يفشل بالمثل من ناحية استجابة الخادم (‏وإن كان مسح الحالة
+المحلية في الواجهة يُتمّم تسجيل الخروج ظاهرياً بغضّ النظر عن استجابة الخادم). **هذا
+ليس ثغرة أمنية تُستغَلّ — العكس تماماً: الحماية تعمل كما صُمِّمت، ضد الجميع، بلا
+تمييز بين طلب مشروع وهجوم.**
+
+### لماذا لم تُكتشَف قبل هذه المراجعة
+
+`appsettings.Testing.json` يُطفئ `CookieCsrf` عمداً (‏§B-18) — فمجموعة اختبارات CI لا
+تُشغِّل الواجهة الحقيقية مقابل هذا المسار إطلاقاً. اختبارات التكامل تُحاكي عميلاً
+صحيحاً يدوياً؛ لا شيء يُشغِّل الواجهة الفعلية مقابل خلفية بـ`CookieCsrf:Enabled=true`
+في نفس الجلسة. الفجوة بين «الخلفية مُختبَرة» و«الطرفان يعملان معاً» هي بالضبط ما فاته
+الفحص الآلي.
+
+### الإصلاح
+
+خطوتان، على الطرفين، **معاً لا منفردتين** (‏نفس الدرس المتكرر من B-13/B-18):
+
+1. **الواجهة:** إمّا فعِّل آلية Angular المدمَجة صراحةً
+   (`provideHttpClient(withXsrfConfiguration({ cookieName: 'XSRF-TOKEN', headerName:
+   'X-XSRF-TOKEN' }))`) **و** استدعِ `GET /api/security/csrf-token` مرّة عند الإقلاع
+   (‏أو قبل أوّل طلب كتابة) **و** أضِف الرأس يدوياً في `requestNewAccessToken()`/
+   `restoreSession()` تحديداً — لأن كلاهما يتجاوز سلسلة المُعترِضات بتصميم مقصود
+   (‏النقطة 3 أعلاه)، فآلية Angular التلقائية وحدها لا تكفي لهذين المسارين مهما
+   فُعِّلت.
+2. **الخلفية (‏إن لم يكن للفريق سيطرة فورية على نشر الواجهة):** فكِّر في `Domain`
+   صريحة على كوكي `XSRF-TOKEN` تشمل أصل الواجهة إن كانا يتشاركان نطاقاً أعلى مشتركاً —
+   لكن هذا لا يحلّ النقطة 3 (‏تجاوز المُعترِضات) بمفرده؛ **الإصلاح الحقيقي يبقى في
+   الواجهة.**
+
+**بديل أضيق إن كان الإصلاح الكامل غير ممكن فوراً:** أعِد `CookieCsrf:Enabled` إلى
+`false` في `appsettings.json` حتى تنشر الواجهة إصلاحها، ووثِّق أن B-18 معلَّق تنفيذياً
+لا مغلَقاً — إبقاء `Enabled=true` بلا عميل يرسل التوكن يُعطِّل تجديد الجلسة للجميع بلا
+أي فائدة أمنية مقابلة يمكن تحصيلها اليوم (‏لا أحد يستطيع استغلال الثغرة الأصلية على أي
+حال بما أن التجديد نفسه معطَّل).
+
+**الأولوية:** 🔴 **الأعلى في هذا الملف حالياً.** كل بند آخر مفتوح سابقاً كان يمنع
+ميزة أو يفتح سطحاً محدوداً؛ هذا يكسر استمرارية الجلسة **لكل مستخدم، على كل نشر حالي
+لكلا المستودعين معاً.**
+
+**درجة الثقة:** **Confirmed بنيوياً** من قراءة مباشرة لثلاث طبقات شيفرة مستقلة في
+مستودعين مختلفين (‏الوسيط في الخلفية، المُعترِضات وتهيئة `HttpClient` في الواجهة)
+تتّفق جميعها على نفس النتيجة، مدعومة بسيناريو اختبار تكامل في الخلفية يُثبت شكل
+الفشل بالضبط (`403`/`CSRF_VALIDATION_FAILED`) لغياب الرأس تحديداً. **الأثر الفعلي على
+مستخدمين حقيقيين في بيئة منشورة فعلاً** مُصنَّف **Likely** — يحتاج تأكيداً تشغيلياً
+(‏محاولة تسجيل دخول حقيقية على نشر staging/production فعلي وانتظار 30 دقيقة) لأن هذه
+الجلسة لم تصل إلى بيئة حيّة كهذه؛ لكن المنطق البنيوي المؤدّي إليه لا يحتمل تفسيراً
+آخر بناءً على الشيفرة المقروءة.
+
+---
+
+## 3. ملاحظة مرتبطة، ليست بنداً في هذا الملف — تنسيق نشر عبر المستودعين
+
+هذه المراجعة رصدت أيضاً أن الواجهة الحيّة (`e64daeb`، الالتزام الأحدث فيها) تضيف حقول
+نموذج إعلان ديناميكية (`OwnershipType`، `AreaUnit`، `FurnishingStatus`) تعتمد على
+مجموعات Enum **غير موجودة في `EnumController.EnumMap` على `master` الحالي** (‏تحقَّق
+منه مباشرة: لا `AreaUnit` ولا `OwnershipType` في القائمة الثابتة). الشيفرة المقابلة
+لها موجودة على فرع خلفية منفصل **غير مدموج بعد** (`claude/session-37b499`، الالتزام
+`405e23e`، *"feat: dynamic listing rules by ListingType x PropertyType"*).
+`enum.service.ts` يتعامل مع هذا بأمان (‏`catchError` يعيد قائمة فارغة، لا يُسقِط
+الإقلاع) لكن حقلي «الوضع القانوني» (‏للبيع) و«وحدة المساحة» (‏للأراضي) في نموذج
+الإعلان **سيظهران بلا خيارات على `master` الحالي** حتى يُدمَج ذلك الفرع. **هذا ليس
+عيباً في كود الخلفية الحالي** (`master` سليم ومتّسق مع نفسه) — إنه فجوة تنسيق نشر بين
+مستودعين، مذكورة هنا للسياق فقط؛ التفصيل الكامل في `FRONTEND-REFERENCE.md` و
+`PROJECT-STRUCTURE.md`.
+
+---
+
+## 4. ما فُحص ووُجد سليماً (حتى لا يُعاد فحصه)
 
 | البند | النتيجة |
 |---|---|
-| `TODO` / `FIXME` / `HACK` في شيفرة الإنتاج | **صفر** (مُعاد فحصه هذه المراجعة) |
+| `TODO` / `FIXME` / `HACK` في شيفرة الإنتاج | **صفر** (مُعاد فحصه هذه المراجعة، أربعة مجلّدات المصدر كاملة) |
 | `async void` | **صفر** (مُعاد فحصه) |
-| `.Result` / `.Wait()` | **صفر** استخدام حقيقي (المطابقات كلها دالة اسمها `Result` في `IdentityAdapterMapping`) |
-| `dotnet build -c Release` عند `3cadb4b` | ✅ **0 تحذير، 0 خطأ** — مُشغَّل فعلياً هذه الجلسة |
-| `npm run audit:frontend` عند `730af55` | ✅ **يمرّ** — مُشغَّل فعلياً هذه الجلسة |
-| اتجاه تبعية الطبقات | ✅ مفروض بـ `APIDependencyGuardTests` |
+| `.Result` / `.Wait()` | **صفر** استخدام حقيقي |
+| `dotnet build -c Release` عند `a151424` | ✅ **0 تحذير، 0 خطأ** — مُشغَّل فعلياً هذه الجلسة (35 ثانية) |
+| `dotnet test` — Architecture/Application/Auth/Observability/Concurrency | ✅ **108/108 · 278/278 · 280/280 · 9/9 · 4/4** — مُشغَّلة فعلياً هذه الجلسة، صفر فشل |
+| `npm run typecheck` / `audit:frontend` / `build:prod` عند `e64daeb` | ✅ **الثلاثة تمرّ** — مُشغَّلة فعلياً هذه الجلسة (‏الحزمة 597.55 kB، داخل حدّ 650 kB) |
+| مطابقة `?????` (‏تلف الترميز) في الملفات الثلاثة السابقة (‏B-19) | **صفر** — مُعاد فحصه |
+| اتجاه تبعية الطبقات | ✅ مفروض بـ `APIDependencyGuardTests` (‏ضمن 108/108) |
 | CQRS في متحكّمات الأعمال | ✅ ثلاثة استثناءات تشخيصية موثّقة فقط (`Operational`، `StagingTestSupport`، `ObservabilitySynthetic`) |
-| الحذف الناعم | ✅ `HasQueryFilter(e => !e.IsDeleted)` عامّ، و`Remove()` محوَّل |
-| فصل «تسجيل الرسم» عن «منح المنتج» (‏Extension/Featured) | ✅ الإصلاح الوحيد الذي منح المنتج يبقى محصوراً بالمدير |
-| المستقبِل الرمزي `Transaction.ReceiverId = Guid.Empty` | ✅ للمنصّة، موثَّق، ويجب استثناؤه من أي تجميع بالمستخدمين |
-| هويّة الكاتب من المُنشئ لا من الجسم | ✅ `CreateAgencyRequest` منفصل عن `CreateAgencyCommand` كمثال |
-| ثوابت تجارية في `Domain` لا `appsettings` | ✅ `ListingLifecyclePolicy` |
-| كتابات Identity خارج معاملة `IUnitOfWork` | ✅ نمط مقصود وموثَّق: التزام أولاً، منح الدور بعده مع تسجيل خطأ لا رمي |
+| الحذف الناعم | ✅ `HasQueryFilter(e => !e.IsDeleted)` عامّ |
+| `DbUpdateConcurrencyException → 409` | ✅ مُوصَّل في `ExceptionHandlingMiddleware.cs:126`، يغطّي `Property`/`Transaction`/`UserAccount` الثلاثة الآن |
+| `AuthController.Refresh`/`Logout` بلا `[IgnoreAntiforgeryToken]` | ✅ تحقَّق منه — بند دليل B-20، لا خطأ بحدّ ذاته |
 
 ---
 
-## 4. ملخّص تنفيذي — ماذا أفعل الأسبوع القادم
+## 5. ملخّص تنفيذي — ماذا أفعل الأسبوع القادم
 
-1. **B-18** — فعّل `CookieCsrf:Enabled` + اجلب/أرسل رأس CSRF من الواجهة. الآن أن كوكي
-   التجديد حيّ فعلاً على أصل مختلف، هذا البند الأمني الوحيد المتبقّي على درجة "High
-   احتمالاً منخفض التأثير" الذي لم يكن موجوداً قبل جلسة التطوير الأخيرة.
-2. **B-7** — حوّل حارس حدّ المعدّل من قائمة سماح إلى قاعدة بالانعكاس. رخيص، ويمنع تكرار
-   النمط الذي أنتج ثغرة `agencies-public` أصلاً.
-3. **B-3** — اربط حدّ الإعلانات بـ `Plan.ListingLimit` بدل الثابت. هذا يُفعِّل القيمة
-   الفعلية لصفحة `/pricing` التي بُنيت بالفعل على الطرفين.
-4. **B-2 / B-4b** — أكمل دورة الوكالات: دعوة بدل إضافة مباشرة، ونقل ملكية/شعار.
-5. **B-6b / B-9b** — عمّم القفل الاستشاري والتزامن التفاؤلي على ما تبقّى (`SecurityAlertBackgroundService`، `Transaction`، `UserAccount`) — تغييرات صغيرة، اتساق لا ميزة جديدة.
-6. **B-19** — أعِد كتابة التعليقات التالفة الثلاثة، وأضِف فحص mojibake للخلفية.
+1. **B-20 — الآن، قبل أي شيء آخر.** إمّا أصلح الواجهة (‏جلب/إرسال رأس CSRF على مساري
+   التجديد اللذين يتجاوزان المُعترِضات تحديداً) أو أعِد `CookieCsrf:Enabled=false`
+   مؤقّتاً في `appsettings.json` حتى يجهز الإصلاح الكامل. لا تترك الوضع الحالي —
+   المستخدمون يُسجَّل خروجهم كل 30 دقيقة على أي نشر حيّ لكلا المستودعين معاً.
+2. **نسِّق دمج `claude/session-37b499`** (‏قواعد الإعلان الديناميكية) مع الواجهة التي
+   تعتمد عليه بالفعل — أو أزِل الحقول الثلاثة الجديدة من الواجهة مؤقّتاً حتى يُدمَج،
+   لتفادي حقول بلا خيارات في نموذج الإعلان.
+3. **شغِّل `dotnet test` الكامل و`ng test` مقابل قاعدة بيانات/بيئة حيّة** —
+   `Integration.Tests`، `Performance.Tests`، `StagingSmokeTests` لم تُشغَّل في أي
+   مراجعة حديثة لغياب البنية التحتية، وهي بالضبط ما كان سيُظهر B-20 تشغيلياً لو
+   شمِلت سيناريو واجهة↔خلفية حقيقياً متصلَين معاً.
+4. **أضِف فحص mojibake آلياً** (‏موصى به في v3 لِـ B-19، لم يُنفَّذ بعد) لمنع تكراره.
 
-**تحقّق تشغيلي لم يُنجَز في هذه المراجعة ويستحق الأولوية قبل أي إعلان جاهزية:**
-تشغيل `dotnet test` الكامل (‏588 حالة في آخر تشغيل مسجَّل، عند التزام أقدم) و`ng test`
-عند `3cadb4b`/`730af55` تحديداً؛ قياس فعلي لحزمة الواجهة الابتدائية بعد التغييرات
-الأخيرة؛ نقرة فعلية على رابط تأكيد بريد من صندوق وارد حقيقي للتحقّق النهائي من B-14.
+**تحقّق تشغيلي لم يُنجَز في هذه المراجعة ويستحق الأولوية القصوى:** تسجيل دخول حقيقي
+على بيئة منشورة فعلياً (‏staging أو إنتاج) لكلا المستودعين بحالتيهما الحاليتين معاً،
+والانتظار حتى انتهاء توكن الوصول (‏30 دقيقة) لمشاهدة B-20 يتحقَّق أو يُنفى تشغيلياً
+بشكل قاطع.
 
 ---
 
-*كُتب من فحص ثابت مباشر عند `3cadb4b` (الخلفية) و`730af55` (الواجهة) في 2026-08-26،
-مسنوداً ببناء فعلي للخلفية (‏0 تحذير) وتشغيل فعلي لبوابة `audit:frontend` (‏تمرّ) في هذه
-الجلسة. كل بند مغلق يحمل دليل إغلاقه من الشيفرة الحالية، لا من رسالة الالتزام وحدها.
-ما احتاج تحقّقاً تشغيلياً كاملاً (‏`dotnet test`/`ng test`/قياس حزمة/نقرة بريد حقيقية)
-مُعلَّم صراحةً ولم يُدَّعَ. أعِد التحقق قبل التخطيط.*
+*كُتب من فحص ثابت مباشر عند `a151424` (الخلفية) و`e64daeb` (الواجهة) في 2026-08-27، لا
+منقول عن أي مراجعة سابقة بلا إعادة تحقّق. كل بند مغلق يحمل دليل إغلاقه من الشيفرة
+الحالية أو نتيجة اختبار شُغِّلت فعلياً هذه الجلسة. B-20 اكتُشف بقراءة شيفرة عبر
+مستودعين، لا بتشغيل حيّ — درجة ثقته مُعلَّمة بدقّة في قسمه، ولم يُدَّعَ تحقّق تشغيلي
+لم يحدث. أعِد التحقق قبل التخطيط — القاعدة نفسها التي أثبتت قيمتها في كل مراجعة سابقة.*

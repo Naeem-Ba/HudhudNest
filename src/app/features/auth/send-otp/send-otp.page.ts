@@ -81,15 +81,15 @@ const PHONE_PATTERN = /^\+[1-9]\d{7,14}$/;
       min-height: 70vh;
       display: grid;
       place-items: center;
-      background: #f7f7f7;
+      background: var(--page-bg);
       padding: 2rem;
     }
     .auth-card {
       width: min(450px, 100%);
-      background: #fff;
+      background: var(--surface);
       padding: 2rem;
       border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.08);
+      box-shadow: var(--shadow-lg);
       display: grid;
       gap: .55rem;
     }
@@ -101,23 +101,23 @@ const PHONE_PATTERN = /^\+[1-9]\d{7,14}$/;
       padding: .85rem 1rem;
       border-radius: 10px;
     }
-    input { border: 1px solid #cbd5e1; font-size: 1rem; }
-    input:focus { outline: 2px solid #2563eb; border-color: #2563eb; }
+    input { border: 1px solid var(--border); background: var(--surface); font-size: 1rem; }
+    input:focus { outline: 2px solid var(--primary); border-color: var(--primary); }
     button {
       margin-top: 1rem;
       border: 0;
-      background: #1e3a5f;
+      background: var(--gray-800);
       color: white;
       font-weight: 700;
       cursor: pointer;
       font-size: 1rem;
     }
     button:disabled { opacity: .6; cursor: not-allowed; }
-    .hint { color: #64748b; font-size: .8rem; }
-    .error { color: #b00020; }
-    .success { color: #137333; }
+    .hint { color: var(--gray-500); font-size: .8rem; }
+    .error { color: var(--danger); }
+    .success { color: var(--success); }
     .back-link { text-align: center; }
-    .back-link a { color: #2563eb; }
+    .back-link a { color: var(--primary); }
   `]
 })
 export class SendOtpPage {

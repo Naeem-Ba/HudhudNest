@@ -11,7 +11,8 @@ export type VisitStatus =
   | 'Confirmed'
   | 'Declined'
   | 'Cancelled'
-  | 'Completed';
+  | 'Completed'
+  | 'RescheduleProposed';
 
 // نموذج الزيارة الكامل (ما يرجعه الـ Backend)
 export interface VisitDto {

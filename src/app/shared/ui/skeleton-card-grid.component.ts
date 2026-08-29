@@ -24,15 +24,16 @@ import { Component, Input } from '@angular/core';
     }
 
     .skeleton-card {
-      background: #fff;
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: 16px;
       padding: 1rem;
-      box-shadow: 0 10px 24px rgba(15, 23, 42, .06);
+      box-shadow: var(--shadow-xs);
       overflow: hidden;
     }
 
     .skeleton {
-      background: linear-gradient(90deg, #e2e8f0 25%, #f8fafc 37%, #e2e8f0 63%);
+      background: linear-gradient(90deg, var(--gray-200) 25%, var(--gray-100) 37%, var(--gray-200) 63%);
       background-size: 400% 100%;
       animation: shimmer 1.2s ease-in-out infinite;
       border-radius: 10px;

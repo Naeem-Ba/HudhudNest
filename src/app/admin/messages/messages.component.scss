@@ -22,20 +22,21 @@
 
   th, td {
     padding: 12px;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid var(--border);
+    color: var(--gray-800);
   }
 
   th {
-    background: #f5f5f5;
+    background: var(--gray-100);
     text-align: left;
   }
 
   tr:hover {
-    background: #fafafa;
+    background: var(--gray-50);
   }
    .unread {
-    font-weight: bold; 
-    background-color: #f9f9f9;
+    font-weight: bold;
+    background-color: var(--gray-100);
   }
 }
 

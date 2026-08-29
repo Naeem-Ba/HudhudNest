@@ -691,7 +691,15 @@
     "MARKING_ALL": "Updating...",
     "MARK_ALL_ERROR": "Could not mark all notifications as read.",
     "DISMISS_ERROR": "Could not dismiss the notification.",
-    "NEW_TOAST_TITLE": "New notification"
+    "NEW_TOAST_TITLE": "New notification",
+    "CONFIRM_VISIT": "Confirm visit",
+    "DECLINE_VISIT": "Decline visit",
+    "PROPOSE_ALTERNATE": "Propose alternate time",
+    "PROPOSE_ALTERNATE_SUBMIT": "Send alternate time",
+    "PROPOSE_ALTERNATE_CANCEL": "Cancel",
+    "ALTERNATE_NOTE_PLACEHOLDER": "Optional note for the visitor...",
+    "ACCEPT_RESCHEDULE": "Accept new time",
+    "DECLINE_RESCHEDULE": "Decline new time"
   },
   "MESSAGES": {
     "TITLE": "Messages",
@@ -992,6 +1000,8 @@
     "CONFIRM": "Confirm",
     "DECLINE": "Decline",
     "CANCEL": "Cancel",
+    "ACCEPT_RESCHEDULE": "Accept new time",
+    "DECLINE_RESCHEDULE": "Decline new time",
     "ACTION_SUCCESS": "The visit request was updated.",
     "ACTION_ERROR": "Unable to perform the action.",
     "STATUS": {
@@ -1000,7 +1010,8 @@
       "CONFIRMED": "Confirmed",
       "DECLINED": "Declined",
       "CANCELLED": "Cancelled",
-      "COMPLETED": "Completed"
+      "COMPLETED": "Completed",
+      "RESCHEDULEPROPOSED": "Alternate time proposed"
     },
     "COMPLETE": "Mark as completed"
   },
