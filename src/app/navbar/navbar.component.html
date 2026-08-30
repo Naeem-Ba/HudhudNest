@@ -454,7 +454,7 @@
         (click)="toggleMobileMenu($event)"
         [attr.aria-expanded]="mobileMenuOpen"
         aria-controls="mobile-navigation-drawer"
-        aria-label="فتح القائمة"
+        [attr.aria-label]="(mobileMenuOpen ? 'NAVBAR.CLOSE_MENU' : 'NAVBAR.OPEN_MENU') | translate"
       >
         <span
           class="mobile-toggle__bar"

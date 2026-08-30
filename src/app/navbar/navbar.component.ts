@@ -12,7 +12,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { NavigationStart, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Observable, combineLatest, filter, map } from 'rxjs';
+import { Observable, combineLatest, debounceTime, filter, fromEvent, map } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { AuthService } from '../core/auth/auth.service';
@@ -42,6 +42,10 @@ type AppLang = 'ar' | 'en' | 'de';
   styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent implements OnInit {
+  /** يطابق $bp-tablet في _breakpoints.scss — نقطة الكسر التي يختفي عندها
+   *  .mobile-toggle ويظهر .navbar__nav الثابت (navbar.component.scss). */
+  private static readonly DESKTOP_BREAKPOINT_PX = 980;
+
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly lang = inject(LanguageService);
@@ -127,6 +131,19 @@ export class NavbarComponent implements OnInit {
     this.destroyRef.onDestroy(() => {
       this.scrollLock.forceUnlockIfHeldBy(this.mobileMenuOpen);
     });
+
+    // Edge case: تدوير جهاز قابل للطي (أو تكبير نافذة على لابتوب) أثناء فتح
+    // الـ Drawer قد يعبر بالعرض فوق نقطة الكسر فيتحوّل .navbar__nav من
+    // Overlay إلى شريط ثابت مرئي — لو بقي القفل قائمًا هنا فسيمنع تمرير
+    // الصفحة فعليًا رغم عدم وجود Overlay يبرر ذلك. debounceTime لتفادي
+    // إغلاق/فتح متكرر أثناء السحب المستمر لحواف نافذة المتصفح.
+    fromEvent(window, 'resize')
+      .pipe(debounceTime(150), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (this.mobileMenuOpen && window.innerWidth > NavbarComponent.DESKTOP_BREAKPOINT_PX) {
+          this.closeMobileMenu();
+        }
+      });
 
     this.lang.currentLang$
       .pipe(takeUntilDestroyed(this.destroyRef))

@@ -42,7 +42,9 @@
     "NOTIFICATIONS": "الإشعارات",
     "SHORT_STAY": "الإقامة القصيرة",
     "SHORT_STAY_BOOKINGS": "حجوزات الإقامة القصيرة",
-    "SHORT_STAY_LISTINGS": "إعلانات الإقامة القصيرة"
+    "SHORT_STAY_LISTINGS": "إعلانات الإقامة القصيرة",
+    "OPEN_MENU": "فتح القائمة",
+    "CLOSE_MENU": "إغلاق القائمة"
   },
   "AUTH": {
     "LOGIN_TITLE": "أهلاً بك",

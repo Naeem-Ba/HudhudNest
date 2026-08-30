@@ -42,7 +42,9 @@
     "NOTIFICATIONS": "Benachrichtigungen",
     "SHORT_STAY": "Kurzaufenthalte",
     "SHORT_STAY_BOOKINGS": "Kurzaufenthalt-Buchungen",
-    "SHORT_STAY_LISTINGS": "Kurzaufenthalt-Anzeigen"
+    "SHORT_STAY_LISTINGS": "Kurzaufenthalt-Anzeigen",
+    "OPEN_MENU": "Menü öffnen",
+    "CLOSE_MENU": "Menü schließen"
   },
   "AUTH": {
     "LOGIN_TITLE": "Willkommen",

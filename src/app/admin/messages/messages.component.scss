@@ -15,8 +15,18 @@
   font-size: 18px;
 }
 
+// 5 أعمدة (اسم/بريد/رسالة/تاريخ/حالة) لا تنضغط بأمان دون 480px تقريبًا —
+// بدل إخفاء الفائض على مستوى الصفحة (Phase 13: overflow-x:hidden على body
+// ليس إصلاحًا)، يُسمح للجدول بالتمرير أفقيًا ضمن حاويته الخاصة فقط.
+.messages-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .messages-table {
   width: 100%;
+  min-width: 640px;
   border-collapse: collapse;
   margin-top: 20px;
 
@@ -28,7 +38,7 @@
 
   th {
     background: var(--gray-100);
-    text-align: left;
+    text-align: start;
   }
 
   tr:hover {

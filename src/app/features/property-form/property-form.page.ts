@@ -35,6 +35,7 @@ import { ImageFallbackDirective } from '../../shared/directives/image-fallback.d
 import { LocationComboComponent } from '../../shared/ui/location-combo.component';
 import { LanguageService, LangCode } from '../../core/services/language.service';
 import { EnumService } from '../../core/services/enum.service';
+import { ScrollLockService } from '../../core/services/scroll-lock.service';
 
 interface PropertySavePayload {
   Title: string;
@@ -209,6 +210,7 @@ export class PropertyFormPage implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly fb = inject(FormBuilder);
   private readonly enumService = inject(EnumService);
+  private readonly scrollLock = inject(ScrollLockService);
 
   readonly isSaving = signal(false);
   readonly isEditMode = signal(false);
@@ -400,6 +402,12 @@ export class PropertyFormPage implements OnInit {
     this.bindCascadingLocationChanges();
     this.bindPropertyTypeCategoryTracking();
     this.bindRentalDurationAutoFill();
+
+    // شبكة أمان: لو انهدم المكوّن وكان تحذير التكرار مفتوحًا (تنقّل بعيدًا
+    // أثناء ظهور الـ Dialog)، لا يجب أن يبقى قفل التمرير عالقًا على التطبيق.
+    this.destroyRef.onDestroy(() => {
+      this.scrollLock.forceUnlockIfHeldBy(this.showDuplicateWarning());
+    });
   }
 
   /** GET /api/lookups/governorates — Phase-0, Task 0 follow-up. */
@@ -951,7 +959,7 @@ export class PropertyFormPage implements OnInit {
 
           if (result.hasPotentialDuplicates) {
             this.duplicateCandidates.set(result.candidates);
-            this.showDuplicateWarning.set(true);
+            this.setShowDuplicateWarning(true);
             return;
           }
 
@@ -967,14 +975,34 @@ export class PropertyFormPage implements OnInit {
   /** "Submit anyway" from the non-blocking duplicate warning dialog. */
   confirmSubmitDespiteDuplicate(): void {
     this.duplicateCheckAcknowledged = true;
-    this.showDuplicateWarning.set(false);
+    this.setShowDuplicateWarning(false);
     this.proceedWithSubmit();
   }
 
   /** "Go back and review" from the duplicate warning dialog — does not submit. */
   dismissDuplicateWarning(): void {
-    this.showDuplicateWarning.set(false);
+    this.setShowDuplicateWarning(false);
     this.duplicateCandidates.set([]);
+  }
+
+  /**
+   * `.modal-overlay`/`.modal-dialog` (property-form.page.scss) is a
+   * position:fixed full-screen overlay, same as the mobile nav drawer and
+   * the other overlays — needs the same scroll lock so the page underneath
+   * doesn't stay scrollable while this advisory dialog is up.
+   */
+  private setShowDuplicateWarning(open: boolean): void {
+    if (this.showDuplicateWarning() === open) {
+      return;
+    }
+
+    this.showDuplicateWarning.set(open);
+
+    if (open) {
+      this.scrollLock.lock();
+    } else {
+      this.scrollLock.unlock();
+    }
   }
 
   private proceedWithSubmit(): void {
