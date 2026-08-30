@@ -1,0 +1,36 @@
+<div class="drp">
+  <div class="drp__header">
+    <button type="button" class="drp__nav" (click)="prevMonth()" [attr.aria-label]="'DATE_RANGE.PREV_MONTH' | translate">‹</button>
+    <span class="drp__month">{{ viewMonth() | date:'MMMM yyyy' }}</span>
+    <button type="button" class="drp__nav" (click)="nextMonth()" [attr.aria-label]="'DATE_RANGE.NEXT_MONTH' | translate">›</button>
+  </div>
+
+  <div class="drp__weekdays">
+    <span *ngFor="let key of weekdayKeys">{{ 'DATE_RANGE.WEEKDAY.' + key | translate }}</span>
+  </div>
+
+  <div class="drp__grid">
+    <ng-container *ngFor="let week of weeks">
+      <button
+        type="button"
+        *ngFor="let cell of week; trackBy: trackByIso"
+        class="drp__day"
+        [class.drp__day--muted]="!cell.inCurrentMonth"
+        [class.drp__day--disabled]="cell.isPast || cell.isBlocked"
+        [class.drp__day--today]="cell.isToday"
+        [class.drp__day--in-range]="isInRange(cell)"
+        [class.drp__day--start]="isRangeEdge(cell) === 'start'"
+        [class.drp__day--end]="isRangeEdge(cell) === 'end'"
+        [disabled]="cell.isPast || cell.isBlocked"
+        (click)="selectDay(cell)"
+      >
+        {{ cell.date.getDate() }}
+      </button>
+    </ng-container>
+  </div>
+
+  <div class="drp__legend">
+    <span class="drp__legend-item"><i class="drp__swatch drp__swatch--blocked"></i>{{ 'DATE_RANGE.LEGEND_BLOCKED' | translate }}</span>
+    <span class="drp__legend-item"><i class="drp__swatch drp__swatch--selected"></i>{{ 'DATE_RANGE.LEGEND_SELECTED' | translate }}</span>
+  </div>
+</div>

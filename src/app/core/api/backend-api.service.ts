@@ -32,8 +32,11 @@ export class BackendApiService {
     return this.http.patch<T>(this.url(path), body ?? {}, { withCredentials: true });
   }
 
-  delete<T>(path: string): Observable<T> {
-    return this.http.delete<T>(this.url(path), { withCredentials: true });
+  // `body` is optional because most DELETE endpoints in this app take none — Angular's
+  // HttpClient supports a DELETE body via the `body` request option (used by e.g.
+  // ShortStayBookingsController.Cancel, which accepts an optional cancellation note).
+  delete<T>(path: string, body?: unknown): Observable<T> {
+    return this.http.delete<T>(this.url(path), { body, withCredentials: true });
   }
 
   upload<T>(path: string, formData: FormData): Observable<T> {

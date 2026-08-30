@@ -39,6 +39,14 @@
       </a>
 
       <a
+        routerLink="/short-stay"
+        routerLinkActive="navbar__link--active"
+        class="navbar__link"
+      >
+        {{ 'NAVBAR.SHORT_STAY' | translate }}
+      </a>
+
+      <a
         routerLink="/pricing"
         routerLinkActive="navbar__link--active"
         class="navbar__link"
@@ -361,6 +369,16 @@
               {{ 'NAVBAR.VISITS' | translate }}
             </a>
 
+            <a routerLink="/short-stay/bookings" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+              <span aria-hidden="true">🏖️</span>
+              {{ 'NAVBAR.SHORT_STAY_BOOKINGS' | translate }}
+            </a>
+
+            <a routerLink="/short-stay/manage" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+              <span aria-hidden="true">🏡</span>
+              {{ 'NAVBAR.SHORT_STAY_LISTINGS' | translate }}
+            </a>
+
             <a routerLink="/my-services" class="account__item" role="menuitem" (click)="closeAccountMenu()">
               <span aria-hidden="true">🛡️</span>
               {{ 'NAVBAR.MY_SERVICES' | translate }}
@@ -486,6 +504,14 @@
       </a>
 
       <a
+        routerLink="/short-stay"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ 'NAVBAR.SHORT_STAY' | translate }}
+      </a>
+
+      <a
         routerLink="/pricing"
         class="mobile-drawer__link"
         (click)="closeMobileMenu()"
@@ -552,6 +578,14 @@
 
         <a routerLink="/visits" class="mobile-drawer__link" (click)="closeMobileMenu()">
           {{ 'NAVBAR.VISITS' | translate }}
+        </a>
+
+        <a routerLink="/short-stay/bookings" class="mobile-drawer__link" (click)="closeMobileMenu()">
+          {{ 'NAVBAR.SHORT_STAY_BOOKINGS' | translate }}
+        </a>
+
+        <a routerLink="/short-stay/manage" class="mobile-drawer__link" (click)="closeMobileMenu()">
+          {{ 'NAVBAR.SHORT_STAY_LISTINGS' | translate }}
         </a>
 
         <a routerLink="/my-services" class="mobile-drawer__link" (click)="closeMobileMenu()">
