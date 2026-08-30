@@ -10,26 +10,28 @@
     لا توجد رسائل حتى الآن.
   </div>
 
-  <table *ngIf="messages.length > 0" class="messages-table">
-    <thead>
-      <tr>
-        <th>{{ 'ADMIN_MSG.table.name' | translate }}</th>
-        <th>{{ 'ADMIN_MSG.table.email' | translate }}</th>
-        <th>{{ 'ADMIN_MSG.table.message' | translate }}</th>
-        <th>{{ 'ADMIN_MSG.table.date' | translate }}</th>
-        <th>{{ 'ADMIN_MSG.table.status' | translate }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let msg of messages" [routerLink]="['/admin/messages', msg.Id]" class="clickable-row" role="link">
-        <td>{{ msg.Name }}</td>
-        <td>{{ msg.Email }}</td>
-        <td>{{ msg.Message }}</td>
-        <td>{{ msg.SentAt | date:'medium' }}</td>
-        <td>{{ msg.IsRead ? ('ADMIN_MSG.status.read' | translate) : ('ADMIN_MSG.status.unread' | translate) }}</td>
-      </tr>
-    </tbody>
-  </table>
+  <div *ngIf="messages.length > 0" class="messages-table-wrapper">
+    <table class="messages-table">
+      <thead>
+        <tr>
+          <th>{{ 'ADMIN_MSG.table.name' | translate }}</th>
+          <th>{{ 'ADMIN_MSG.table.email' | translate }}</th>
+          <th>{{ 'ADMIN_MSG.table.message' | translate }}</th>
+          <th>{{ 'ADMIN_MSG.table.date' | translate }}</th>
+          <th>{{ 'ADMIN_MSG.table.status' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let msg of messages" [routerLink]="['/admin/messages', msg.Id]" class="clickable-row" role="link">
+          <td>{{ msg.Name }}</td>
+          <td>{{ msg.Email }}</td>
+          <td>{{ msg.Message }}</td>
+          <td>{{ msg.SentAt | date:'medium' }}</td>
+          <td>{{ msg.IsRead ? ('ADMIN_MSG.status.read' | translate) : ('ADMIN_MSG.status.unread' | translate) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
     <div class="actions">
     <button class="back-btn" (click)="goBack()">{{ 'COMMON.BACK' | translate }}</button>
   </div>

@@ -748,6 +748,20 @@ textarea.ng-valid.ng-touched {
 
 /* Phase 3 responsive baseline */
 html { overflow-x: clip; }
+
+/* ScrollLockService (core/services/scroll-lock.service.ts) — يمنع الصفحة
+   الخلفية من التمرير أثناء فتح Mobile Drawer/Modal. body يُثبَّت بـ
+   position:fixed (لا overflow:hidden وحده) لأن هذا وحده ما يمنع فعليًا
+   التمرير اللمسي خلف عنصر fixed على iOS Safari/WKWebView. */
+html.scroll-locked {
+  overflow: hidden;
+}
+
+html.scroll-locked body {
+  position: fixed;
+  inset-inline: 0;
+  overflow: hidden;
+}
 body { min-width: 320px; }
 img, video, canvas, svg { max-width: 100%; }
 button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }

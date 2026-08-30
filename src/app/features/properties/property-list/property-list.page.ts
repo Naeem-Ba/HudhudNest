@@ -16,6 +16,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { debounceTime, fromEvent } from 'rxjs';
 
 import { PropertyApiService } from '../../../core/api/property-api.service';
 import { FavoritesApiService } from '../../../core/api/favorites-api.service';
@@ -35,6 +36,7 @@ import { EmptyStateComponent } from '../../../shared/ui/empty-state.component';
 import { SkeletonCardGridComponent } from '../../../shared/ui/skeleton-card-grid.component';
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
 import { OverlayBackHandlerService } from '../../../core/services/overlay-back-handler.service';
+import { ScrollLockService } from '../../../core/services/scroll-lock.service';
 import { UrlService } from '../../../core/services/url.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { FavoriteToggleButtonComponent } from '../../../shared/ui/favorite-toggle-button.component';
@@ -57,6 +59,10 @@ import { FavoriteToggleButtonComponent } from '../../../shared/ui/favorite-toggl
   styleUrls: ['./property-list.page.scss']
 })
 export class PropertyListPage implements OnInit {
+  /** يطابق $bp-tablet في _breakpoints.scss — نقطة الكسر التي يتحوّل عندها
+   *  .filter-sidebar من Overlay كامل الشاشة إلى شريط جانبي ثابت (property-list.page.scss). */
+  private static readonly DESKTOP_BREAKPOINT_PX = 980;
+
   private readonly api = inject(PropertyApiService);
   private readonly favoritesApi = inject(FavoritesApiService);
   private readonly savedSearchApi = inject(SavedSearchApiService);
@@ -69,6 +75,7 @@ export class PropertyListPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly overlayBackHandlers = inject(OverlayBackHandlerService);
+  private readonly scrollLock = inject(ScrollLockService);
   private readonly urlService = inject(UrlService);
 
   readonly properties = signal<Property[]>([]);
@@ -146,6 +153,27 @@ export class PropertyListPage implements OnInit {
       return true;
     });
     this.destroyRef.onDestroy(unregister);
+
+    // نفس منطق الـ Drawer الرئيسي بالـ Navbar: قفل تمرير الصفحة الخلفية
+    // أثناء فتح فلاتر الجوال (Overlay كامل الشاشة عبر @include bp.tablet)،
+    // ورفعه بأمان لو انهدم المكوّن (تغيير route) والفلاتر ما زالت مفتوحة.
+    this.destroyRef.onDestroy(() => {
+      this.scrollLock.forceUnlockIfHeldBy(this.filtersOpen);
+    });
+
+    // Edge case: تدوير جهاز قابل للطي (أو تكبير نافذة) أثناء فتح فلاتر
+    // الجوال قد يعبر بالعرض فوق نقطة الكسر، فيتحوّل .filter-sidebar من
+    // Overlay إلى شريط جانبي ثابت مرئي دائمًا — القفل حينها يمنع تمرير
+    // الصفحة بلا مبرر. debounceTime لتفادي تبديل الحالة أثناء السحب
+    // المستمر لحواف نافذة المتصفح.
+    fromEvent(window, 'resize')
+      .pipe(debounceTime(150), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (this.filtersOpen && window.innerWidth > PropertyListPage.DESKTOP_BREAKPOINT_PX) {
+          this.closeFilters();
+        }
+      });
+
     this.loadFavoriteIds();
     this.loadCitySuggestions();
     this.loadAmenities();
@@ -358,11 +386,26 @@ export class PropertyListPage implements OnInit {
   }
 
   openFilters(): void {
-    this.filtersOpen = true;
+    this.setFiltersOpen(true);
   }
 
   closeFilters(): void {
-    this.filtersOpen = false;
+    this.setFiltersOpen(false);
+  }
+
+  /** نقطة وحيدة تُزامن `filtersOpen` مع قفل تمرير الصفحة — نفس السبب الموثّق بـ NavbarComponent.setMobileMenuOpen. */
+  private setFiltersOpen(open: boolean): void {
+    if (this.filtersOpen === open) {
+      return;
+    }
+
+    this.filtersOpen = open;
+
+    if (open) {
+      this.scrollLock.lock();
+    } else {
+      this.scrollLock.unlock();
+    }
   }
 
   loadProperties(): void {
@@ -406,7 +449,7 @@ export class PropertyListPage implements OnInit {
   }
 
   applyFilters(): void {
-    this.filtersOpen = false;
+    this.setFiltersOpen(false);
 
     const sort = this.mapSort();
     const city = this.cityFilter.trim();

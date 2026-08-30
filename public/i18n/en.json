@@ -42,7 +42,9 @@
     "NOTIFICATIONS": "Notifications",
     "SHORT_STAY": "Short Stays",
     "SHORT_STAY_BOOKINGS": "Short-Stay Bookings",
-    "SHORT_STAY_LISTINGS": "Short-Stay Listings"
+    "SHORT_STAY_LISTINGS": "Short-Stay Listings",
+    "OPEN_MENU": "Open menu",
+    "CLOSE_MENU": "Close menu"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",

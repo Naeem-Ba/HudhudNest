@@ -10,9 +10,9 @@ import {
   inject
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { NavigationStart, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Observable, combineLatest, map } from 'rxjs';
+import { Observable, combineLatest, debounceTime, filter, fromEvent, map } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { AuthService } from '../core/auth/auth.service';
@@ -20,6 +20,7 @@ import { LanguageService } from '../core/services/language.service';
 import { UrlService } from '../core/services/url.service';
 import { ImageFallbackDirective } from '../shared/directives/image-fallback.directive';
 import { OverlayBackHandlerService } from '../core/services/overlay-back-handler.service';
+import { ScrollLockService } from '../core/services/scroll-lock.service';
 import { ThemeService } from '../core/services/theme.service';
 import { NotificationsApiService } from '../core/api/notifications-api.service';
 import { ProfileService, isEligibleForListing } from '../core/api/profile.service';
@@ -41,6 +42,10 @@ type AppLang = 'ar' | 'en' | 'de';
   styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent implements OnInit {
+  /** يطابق $bp-tablet في _breakpoints.scss — نقطة الكسر التي يختفي عندها
+   *  .mobile-toggle ويظهر .navbar__nav الثابت (navbar.component.scss). */
+  private static readonly DESKTOP_BREAKPOINT_PX = 980;
+
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly lang = inject(LanguageService);
@@ -48,6 +53,7 @@ export class NavbarComponent implements OnInit {
   private readonly urlService = inject(UrlService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly overlayBackHandler = inject(OverlayBackHandlerService);
+  private readonly scrollLock = inject(ScrollLockService);
   readonly themeService = inject(ThemeService);
   // ✅ إضافة: جرس الإشعارات — العداد جاهز أصلاً بالخدمة (unreadCount signal
   // محدَّث لحظيًا عبر SignalR)، كان ينقصه فقط رابط بالواجهة يعرضه.
@@ -103,6 +109,41 @@ export class NavbarComponent implements OnInit {
     });
 
     this.destroyRef.onDestroy(unregisterBackHandler);
+
+    // شبكة أمان: أي تنقّل (بما فيه إعادة توجيه من Guard، أو زر رجوع
+    // المتصفح) يغلق الـ Drawer ويرفع قفل التمرير، حتى لو لم يمرّ عبر رابط
+    // داخل القائمة نفسها (كل روابط الـ Drawer تستدعي closeMobileMenu()
+    // أصلاً — هذا يغطي الحالات التي لا تمر من هناك).
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationStart => event instanceof NavigationStart),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(() => {
+        if (this.mobileMenuOpen) {
+          this.closeMobileMenu();
+        }
+      });
+
+    // شبكة أمان أخيرة: لو انهدم المكوّن (نادر جدًا — الـ Navbar جزء من
+    // App Shell الدائم) وكان الـ Drawer مفتوحًا، لا يجب أن يبقى قفل
+    // التمرير عالقًا على التطبيق بأكمله.
+    this.destroyRef.onDestroy(() => {
+      this.scrollLock.forceUnlockIfHeldBy(this.mobileMenuOpen);
+    });
+
+    // Edge case: تدوير جهاز قابل للطي (أو تكبير نافذة على لابتوب) أثناء فتح
+    // الـ Drawer قد يعبر بالعرض فوق نقطة الكسر فيتحوّل .navbar__nav من
+    // Overlay إلى شريط ثابت مرئي — لو بقي القفل قائمًا هنا فسيمنع تمرير
+    // الصفحة فعليًا رغم عدم وجود Overlay يبرر ذلك. debounceTime لتفادي
+    // إغلاق/فتح متكرر أثناء السحب المستمر لحواف نافذة المتصفح.
+    fromEvent(window, 'resize')
+      .pipe(debounceTime(150), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (this.mobileMenuOpen && window.innerWidth > NavbarComponent.DESKTOP_BREAKPOINT_PX) {
+          this.closeMobileMenu();
+        }
+      });
 
     this.lang.currentLang$
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -174,16 +215,15 @@ export class NavbarComponent implements OnInit {
 
   toggleMobileMenu(event: Event): void {
     event.stopPropagation();
-    this.mobileMenuOpen = !this.mobileMenuOpen;
     this.dropdownOpen = false;
     this.langMenuOpen = false;
-    this.cd.markForCheck();
+    this.setMobileMenuOpen(!this.mobileMenuOpen);
   }
 
   changeLang(lang: AppLang): void {
     this.langMenuOpen = false;
     this.dropdownOpen = false;
-    this.mobileMenuOpen = false;
+    this.setMobileMenuOpen(false);
 
     this.applyLang(lang);
     this.lang.use(lang);
@@ -197,7 +237,28 @@ export class NavbarComponent implements OnInit {
   }
 
   closeMobileMenu(): void {
-    this.mobileMenuOpen = false;
+    this.setMobileMenuOpen(false);
+  }
+
+  /**
+   * نقطة وحيدة تُحدِّث `mobileMenuOpen` وتقفل/تفكّ قفل تمرير الصفحة الخلفية
+   * معًا — أي كود آخر يغيّر `mobileMenuOpen` مباشرة سيُفلت القفل عن التزامنه
+   * مع حالة الـ Drawer الفعلية (Phase 15: لا تُغيّر حالة scroll lock من أكثر
+   * من مكان). idempotent: استدعاؤها بنفس القيمة الحالية لا يزيد/ينقص العداد.
+   */
+  private setMobileMenuOpen(open: boolean): void {
+    if (this.mobileMenuOpen === open) {
+      return;
+    }
+
+    this.mobileMenuOpen = open;
+
+    if (open) {
+      this.scrollLock.lock();
+    } else {
+      this.scrollLock.unlock();
+    }
+
     this.cd.markForCheck();
   }
 
@@ -270,7 +331,7 @@ export class NavbarComponent implements OnInit {
       this.mobileToggleRef?.nativeElement.contains(target) ?? false;
 
     if (!insideDrawer && !insideToggle) {
-      this.mobileMenuOpen = false;
+      this.setMobileMenuOpen(false);
     }
 
     this.cd.markForCheck();
@@ -279,8 +340,7 @@ export class NavbarComponent implements OnInit {
   private closeAllMenus(): void {
     this.dropdownOpen = false;
     this.langMenuOpen = false;
-    this.mobileMenuOpen = false;
-    this.cd.markForCheck();
+    this.setMobileMenuOpen(false);
   }
 
   private resetUserUI(): void {
