@@ -49,6 +49,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { FavoriteToggleButtonComponent } from '../../shared/ui/favorite-toggle-button.component';
 import { ToastService } from '../../shared/services/toast.service';
 import { OverlayBackHandlerService } from '../../core/services/overlay-back-handler.service';
+import { ScrollLockService } from '../../core/services/scroll-lock.service';
 
 @Component({
   selector: 'app-property-detail',
@@ -86,6 +87,7 @@ export class PropertyDetailPage implements OnInit {
   private readonly destroyRef    = inject(DestroyRef);
   private readonly fb            = inject(FormBuilder);
   private readonly overlayBackHandler = inject(OverlayBackHandlerService);
+  private readonly scrollLock = inject(ScrollLockService);
 
   // ── State Signals ─────────────────────────────────────────────────────
   readonly property       = signal<Property | null>(null);
@@ -276,6 +278,12 @@ export class PropertyDetailPage implements OnInit {
 
     this.destroyRef.onDestroy(unregisterBackHandler);
 
+    // نفس منطق قفل التمرير المستخدم بـ Drawer الـ navbar وفلاتر قائمة
+    // العقارات: المعرض Overlay كامل الشاشة، فلا يجب أن تتمرّر الصفحة خلفه.
+    this.destroyRef.onDestroy(() => {
+      this.scrollLock.forceUnlockIfHeldBy(this.modalOpen());
+    });
+
     // ✅ إصلاح: مزامنة معاينة التاريخ (dd/mm/yyyy) — راجع تعليق visitDateSignal أعلاه.
     this.visitForm.controls.visitDate.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -453,11 +461,17 @@ export class PropertyDetailPage implements OnInit {
   }
 
   openModal(): void {
-    if (this.hasImages()) this.modalOpen.set(true);
+    if (!this.hasImages()) return;
+
+    this.modalOpen.set(true);
+    this.scrollLock.lock();
   }
 
   closeModal(): void {
+    if (!this.modalOpen()) return;
+
     this.modalOpen.set(false);
+    this.scrollLock.unlock();
   }
 
   onDragStart(event: MouseEvent | TouchEvent): void {

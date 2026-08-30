@@ -35,6 +35,7 @@ import { EmptyStateComponent } from '../../../shared/ui/empty-state.component';
 import { SkeletonCardGridComponent } from '../../../shared/ui/skeleton-card-grid.component';
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
 import { OverlayBackHandlerService } from '../../../core/services/overlay-back-handler.service';
+import { ScrollLockService } from '../../../core/services/scroll-lock.service';
 import { UrlService } from '../../../core/services/url.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { FavoriteToggleButtonComponent } from '../../../shared/ui/favorite-toggle-button.component';
@@ -69,6 +70,7 @@ export class PropertyListPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly overlayBackHandlers = inject(OverlayBackHandlerService);
+  private readonly scrollLock = inject(ScrollLockService);
   private readonly urlService = inject(UrlService);
 
   readonly properties = signal<Property[]>([]);
@@ -146,6 +148,14 @@ export class PropertyListPage implements OnInit {
       return true;
     });
     this.destroyRef.onDestroy(unregister);
+
+    // نفس منطق الـ Drawer الرئيسي بالـ Navbar: قفل تمرير الصفحة الخلفية
+    // أثناء فتح فلاتر الجوال (Overlay كامل الشاشة عبر @include bp.tablet)،
+    // ورفعه بأمان لو انهدم المكوّن (تغيير route) والفلاتر ما زالت مفتوحة.
+    this.destroyRef.onDestroy(() => {
+      this.scrollLock.forceUnlockIfHeldBy(this.filtersOpen);
+    });
+
     this.loadFavoriteIds();
     this.loadCitySuggestions();
     this.loadAmenities();
@@ -358,11 +368,26 @@ export class PropertyListPage implements OnInit {
   }
 
   openFilters(): void {
-    this.filtersOpen = true;
+    this.setFiltersOpen(true);
   }
 
   closeFilters(): void {
-    this.filtersOpen = false;
+    this.setFiltersOpen(false);
+  }
+
+  /** نقطة وحيدة تُزامن `filtersOpen` مع قفل تمرير الصفحة — نفس السبب الموثّق بـ NavbarComponent.setMobileMenuOpen. */
+  private setFiltersOpen(open: boolean): void {
+    if (this.filtersOpen === open) {
+      return;
+    }
+
+    this.filtersOpen = open;
+
+    if (open) {
+      this.scrollLock.lock();
+    } else {
+      this.scrollLock.unlock();
+    }
   }
 
   loadProperties(): void {
@@ -406,7 +431,7 @@ export class PropertyListPage implements OnInit {
   }
 
   applyFilters(): void {
-    this.filtersOpen = false;
+    this.setFiltersOpen(false);
 
     const sort = this.mapSort();
     const city = this.cityFilter.trim();
