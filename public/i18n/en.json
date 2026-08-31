@@ -151,6 +151,8 @@
       "GOOGLE_SDK_UNAVAILABLE": "Unable to load the Google login service.",
       "GOOGLE_NO_TOKEN": "Google did not return a valid login token.",
       "GOOGLE_NOT_DISPLAYED": "The Google login window did not appear. Try again or use email.",
+      "GOOGLE_SIGNIN_CANCELED": "Google sign-in was canceled.",
+      "GOOGLE_NO_ACCOUNT": "No Google account is available on this device.",
       "APPLE_NOT_CONFIGURED": "Apple login is not configured.",
       "APPLE_SDK_UNAVAILABLE": "Unable to load the Apple login service.",
       "APPLE_NO_TOKEN": "Apple did not return a valid login token.",

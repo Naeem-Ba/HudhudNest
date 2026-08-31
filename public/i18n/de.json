@@ -151,6 +151,8 @@
       "GOOGLE_SDK_UNAVAILABLE": "Der Google-Anmeldedienst konnte nicht geladen werden.",
       "GOOGLE_NO_TOKEN": "Google hat kein gültiges Anmeldetoken zurückgegeben.",
       "GOOGLE_NOT_DISPLAYED": "Das Google-Anmeldefenster wurde nicht angezeigt. Versuchen Sie es erneut oder verwenden Sie die E-Mail-Anmeldung.",
+      "GOOGLE_SIGNIN_CANCELED": "Die Google-Anmeldung wurde abgebrochen.",
+      "GOOGLE_NO_ACCOUNT": "Auf diesem Gerät ist kein Google-Konto verfügbar.",
       "APPLE_NOT_CONFIGURED": "Die Anmeldung mit Apple ist nicht konfiguriert.",
       "APPLE_SDK_UNAVAILABLE": "Der Apple-Anmeldedienst konnte nicht geladen werden.",
       "APPLE_NO_TOKEN": "Apple hat kein gültiges Anmeldetoken zurückgegeben.",
