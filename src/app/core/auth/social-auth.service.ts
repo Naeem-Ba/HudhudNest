@@ -1,17 +1,20 @@
 // =====================================================================
-// [FIX-1 / 🔴 حرج] Google One Tap لا يظهر دائماً (cooldown، حظر كوكيز
-// الطرف الثالث، وضع التصفح الخفي...). الكود القديم كان يستدعي
-// prompt() بدون callback إشعار، فإذا لم تظهر النافذة، لا observer.next
-// ولا observer.error يُستدعيان أبداً — الـ Observable يُعلَّق للأبد
-// و loading تبقى true إلى ما لا نهاية في login.component.ts.
+// [FIX-1 / 🔴 حرج، تاريخي — استُبدلت آلية (أ) لاحقاً بـ BUG-21 أدناه]
+// Google One Tap لا يظهر دائماً (cooldown، حظر كوكيز الطرف الثالث، وضع
+// التصفح الخفي...). الكود القديم كان يستدعي prompt() بدون callback
+// إشعار، فإذا لم تظهر النافذة، لا observer.next ولا observer.error
+// يُستدعيان أبداً — الـ Observable يُعلَّق للأبد و loading تبقى true
+// إلى ما لا نهاية في login.component.ts.
 //
-// الحل المزدوج:
-//   (أ) تمرير callback حقيقي لـ prompt() يتحقق من
-//       isNotDisplayed()/isSkippedMoment()/isDismissedMoment()
-//       ويُطلق observer.error فوراً بدل الصمت.
-//   (ب) شبكة أمان إضافية: timeout صريح على مستوى الـ Observable
-//       نفسه (60 ثانية) يغطي أي حالة لم يُغطّها (أ) — مثل تعليق
-//       شبكي داخل استدعاء الـ Backend نفسه.
+// الحل المزدوج وقتها:
+//   (أ) [مُستبدَل بالكامل بـ BUG-21] تمرير callback إشعار حقيقي لـ
+//       prompt() يتحقق من isNotDisplayed()/isSkippedMoment()/
+//       isDismissedMoment() ويُطلق observer.error فوراً بدل الصمت —
+//       هذا عالج التعليق الصامت، لكن prompt() نفسه تبيّن لاحقاً (BUG-21)
+//       أنه غير موثوق بنيوياً كآلية استجابة وحيدة لنقرة زر صريحة.
+//   (ب) [لا يزال سارياً] شبكة أمان إضافية: timeout صريح على مستوى
+//       الـ Observable نفسه (60 ثانية) يغطي أي حالة غير متوقعة — مثل
+//       تعليق شبكي داخل استدعاء الـ Backend نفسه.
 //
 // [FIX-2 / 🟡 متوسط] كل رسائل الخطأ كانت نصوصاً إنجليزية مثبّتة خارج
 // نظام ngx-translate بالكامل (نفس نمط الخطأ المتكرر في هذا المشروع:
@@ -19,6 +22,33 @@
 // TranslateService واستبدال كل نص حرفي بمفتاح ترجمة عبر translate.instant().
 // أضف مفاتيح AUTH.ERRORS الجديدة الموضحة في تعليق النهاية إلى
 // ar.json/en.json/de.json.
+//
+// [BUG-21 / 🔴 حرج، 2026-08-31] استبدال prompt() (One Tap) بزر
+// renderButton() مخفي + نقرة برمجية — التشخيص الفعلي (استُنسخ حياً على
+// realestateworld.world، لا افتراضاً):
+//   - Chrome (v151+) يُصدر تحذيراً صريحاً في الـ console: "one of the
+//     Google One Tap prompt UI status methods... may stop functioning
+//     when FedCM becomes mandatory".
+//   - استدعاء prompt() فعلياً أعاد notification بـ isSkippedMoment=true
+//     وgetSkippedReason()='unknown_reason' — أو عَلَّق حتى مهلة 60 ثانية
+//     بلا أي notification إطلاقاً — وسجّل الـ console أخطاء FedCM حقيقية:
+//     "NotAllowedError: Only one navigator.credentials.get request may
+//     be outstanding at one time" و"AbortError: signal is aborted
+//     without reason".
+//   - توثيق Google الرسمي (developers.google.com/identity/gsi/web/guides
+//     /display-button) يقول صراحة: prompt() هو "a second alternative"
+//     للـ One Tap التلقائي، وليس مُصمَّماً كآلية الاستجابة الوحيدة لنقرة
+//     زر صريحة — renderButton() هو المسار الموثوق.
+//
+// الحل: زر Google حقيقي (renderButton) يُنشَأ ويُهيَّأ خارج الشاشة
+// (position:fixed أعلى اليسار السالب) بمجرد إنشاء هذه الخدمة (تحميل
+// مسبق يقضي على فجوة تحميل السكربت غير المتزامنة قبل أي نقرة حقيقية)،
+// وزر الواجهة المخصَّص (نفس الشكل الحالي، لا تغيير بصري) يستدعي click()
+// على الزر المخفي **ضمن نفس دورة معالجة نقرة المستخدم الحقيقية
+// المتزامنة** بدل انتظار prompt(). تحقّق فعلي حي: نقرة موثوقة حقيقية
+// (لا اختبار برمجي بحت) على زر مخصَّص أطلقت click() على الزر المخفي
+// وأعادت credential (JWT ID token حقيقي) عبر نفس callback الموجود أصلاً
+// في initialize() — بلا أي تغيير على شكل الاستجابة أو عقد الـ Backend.
 // =====================================================================
 import { Injectable } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
@@ -40,9 +70,11 @@ declare global {
             cancel_on_tap_outside?: boolean;
             ux_mode?: 'popup' | 'redirect';
           }) => void;
-          /* [FIX-1] النوع الآن يعكس شكل الإشعار الحقيقي بدل unknown */
-          prompt: (
-            callback?: (notification: GoogleOneTapNotification) => void
+          /* [BUG-21] الزر الموثوق الحقيقي — يُنشأ مخفياً، النقرة عليه
+             تُطلَق برمجياً من داخل معالج نقرة المستخدم الحقيقية */
+          renderButton: (
+            parent: HTMLElement,
+            options?: { type?: 'standard' | 'icon'; theme?: string; size?: string }
           ) => void;
         };
       };
@@ -77,16 +109,6 @@ declare global {
   }
 }
 
-/* [FIX-1] شكل إشعار Google One Tap الفعلي (موثّق في Google Identity Services API) */
-interface GoogleOneTapNotification {
-  isNotDisplayed?: () => boolean;
-  isSkippedMoment?: () => boolean;
-  isDismissedMoment?: () => boolean;
-  getNotDisplayedReason?: () => string;
-  getSkippedReason?: () => string;
-  getDismissedReason?: () => string;
-}
-
 type BrowserCrypto = {
   randomUUID?: () => string;
   getRandomValues?: <T extends ArrayBufferView>(array: T) => T;
@@ -102,10 +124,30 @@ export class SocialAuthService {
   private googleScriptPromise?: Promise<void>;
   private appleScriptPromise?: Promise<void>;
 
+  /* [BUG-21] حالة الزر المخفي — تُهيَّأ مرة واحدة فقط لكل جلسة صفحة */
+  private googleButtonPromise?: Promise<HTMLElement>;
+  private googleInitialized = false;
+  /* المستدعي (observer) النشط حالياً — initialize() يُستدعى مرة واحدة
+     فقط، فكل نقرة تُسجِّل نفسها هنا قبل استدعاء click() على الزر المخفي */
+  private activeGoogleCredentialHandler?: (idToken: string | undefined) => void;
+
   constructor(
     private readonly authApi: AuthApiService,
     private readonly translate: TranslateService
-  ) {}
+  ) {
+    /* [BUG-21] تحميل مسبق استباقي: يبدأ تحميل سكربت GSI وتجهيز الزر
+       المخفي فور إنشاء الخدمة (عادة عند فتح صفحة الدخول)، بدل الانتظار
+       حتى أول نقرة. الهدف: بحلول لحظة نقرة المستخدم الحقيقية، يكون كل
+       شيء جاهزاً بالفعل فتُنفَّذ click() ضمن microtask متزامنة مع النقرة
+       (لا فجوة شبكية بعد النقرة) — هذا بالضبط ما أثبت الاختبار الحي أنه
+       يحافظ على "user activation" اللازم لعمل الزر المخفي بشكل موثوق. */
+    if (this.isGoogleAvailable) {
+      void this.ensureGoogleButtonReady().catch(() => {
+        /* فشل التحميل المسبق ليس خطأً يستحق الإزعاج الآن — سيُعاد
+           المحاولة (وتُبلَّغ كخطأ حقيقي) عند أول نقرة فعلية */
+      });
+    }
+  }
 
   get isGoogleAvailable(): boolean {
     return Boolean(environment.googleClientId?.trim());
@@ -124,56 +166,42 @@ export class SocialAuthService {
         return undefined;
       }
 
-      this.loadGoogleScript()
-        .then(() => {
-          if (!window.google?.accounts?.id) {
-            throw new Error(this.t('AUTH.ERRORS.GOOGLE_SDK_UNAVAILABLE'));
-          }
+      /* [BUG-21] هذا الاستدعاء يُسجَّل كمعالج الاعتماد النشط الوحيد —
+         initialize() نفسه يُستدعى مرة واحدة فقط (انظر ensureGoogleButtonReady)
+         ويوجّه كل credential يصل لأحدث معالج مسجَّل هنا */
+      this.activeGoogleCredentialHandler = idToken => {
+        if (!idToken) {
+          observer.error(new Error(this.t('AUTH.ERRORS.GOOGLE_NO_TOKEN')));
+          return;
+        }
 
-          window.google.accounts.id.initialize({
-            client_id: environment.googleClientId,
-            ux_mode: 'popup',
-            cancel_on_tap_outside: true,
-            callback: response => {
-              const idToken = response.credential;
+        backendSubscription = this.authApi.loginWithGoogle({ idToken }).subscribe({
+          next: tokenResponse => {
+            observer.next(tokenResponse);
+            observer.complete();
+          },
+          error: error => observer.error(error)
+        });
+      };
 
-              if (!idToken) {
-                observer.error(new Error(this.t('AUTH.ERRORS.GOOGLE_NO_TOKEN')));
-                return;
-              }
-
-              backendSubscription = this.authApi.loginWithGoogle({ idToken }).subscribe({
-                next: tokenResponse => {
-                  observer.next(tokenResponse);
-                  observer.complete();
-                },
-                error: error => observer.error(error)
-              });
-            }
-          });
-
-          /* [FIX-1 - أ] callback إشعار حقيقي بدل استدعاء أعمى بلا متابعة */
-          window.google!.accounts.id.prompt(notification => {
-            const notDisplayed = notification?.isNotDisplayed?.() ?? false;
-            const skipped = notification?.isSkippedMoment?.() ?? false;
-            const dismissed = notification?.isDismissedMoment?.() ?? false;
-
-            if (notDisplayed || skipped || dismissed) {
-              observer.error(new Error(this.t('AUTH.ERRORS.GOOGLE_NOT_DISPLAYED')));
-            }
-            /* إذا ظهرت النافذة فعلياً، لا شيء يُفعل هنا — ننتظر
-               callback الخاص بـ initialize() أعلاه ليصل بالـ credential */
-          });
+      this.ensureGoogleButtonReady()
+        .then(buttonEl => {
+          /* [BUG-21] النقرة البرمجية هنا تقع ضمن سلسلة .then() متزامنة
+             (microtask) بدل استدعاء fetch/script.onload جديد — إن كان
+             الزر مُجهَّزاً مسبقاً (الحالة الشائعة، بفضل التحميل الاستباقي
+             في المُنشئ)، تُنفَّذ هذه دون أي فجوة شبكية بعد نقرة المستخدم */
+          buttonEl.click();
         })
         .catch(error => observer.error(error));
 
       return () => {
         backendSubscription?.unsubscribe();
+        this.activeGoogleCredentialHandler = undefined;
       };
     });
 
-    /* [FIX-1 - ب] شبكة أمان: حتى لو فشل (أ) لأي سبب غير متوقع (تعليق
-       شبكي حقيقي، أو SDK لا يستدعي أي callback إطلاقاً)، لا يبقى
+    /* [FIX-1 - ب] شبكة أمان: حتى لو فشل ما سبق لأي سبب غير متوقع (تعليق
+       شبكي حقيقي، أو الزر المخفي لا يستدعي أي callback إطلاقاً)، لا يبقى
        المستخدم بزر "جاري التحميل" معلّق للأبد */
     return raw$.pipe(
       timeout({
@@ -183,6 +211,75 @@ export class SocialAuthService {
         }
       })
     );
+  }
+
+  /**
+   * [BUG-21] يجهّز زر Google الحقيقي (renderButton) خارج الشاشة، مرة
+   * واحدة لكل جلسة صفحة، ويُعيد العنصر القابل للنقر بداخله. مُخزَّن
+   * (cached) عبر googleButtonPromise حتى لا يُعاد التهيئة (initialize()
+   * يُصدر تحذيراً من Google نفسها إن استُدعي أكثر من مرة).
+   */
+  private ensureGoogleButtonReady(): Promise<HTMLElement> {
+    if (this.googleButtonPromise) {
+      return this.googleButtonPromise;
+    }
+
+    this.googleButtonPromise = this.loadGoogleScript().then(() => {
+      if (!window.google?.accounts?.id) {
+        throw new Error(this.t('AUTH.ERRORS.GOOGLE_SDK_UNAVAILABLE'));
+      }
+
+      if (!this.googleInitialized) {
+        window.google.accounts.id.initialize({
+          client_id: environment.googleClientId,
+          ux_mode: 'popup',
+          callback: response => {
+            this.activeGoogleCredentialHandler?.(response.credential);
+          }
+        });
+        this.googleInitialized = true;
+      }
+
+      const container = document.createElement('div');
+      container.id = 'google-signin-hidden-button';
+      container.style.position = 'fixed';
+      container.style.top = '-9999px';
+      container.style.left = '-9999px';
+      document.body.appendChild(container);
+
+      window.google.accounts.id.renderButton(container, { type: 'standard' });
+
+      return this.waitForClickableElement(container);
+    });
+
+    return this.googleButtonPromise;
+  }
+
+  /** [BUG-21] renderButton() يُنشئ iframe داخلياً بعد لحظات — ننتظره بحد أقصى معقول بدل الفشل الفوري */
+  private waitForClickableElement(container: HTMLElement): Promise<HTMLElement> {
+    return new Promise((resolve, reject) => {
+      const deadline = Date.now() + 8000;
+
+      const poll = (): void => {
+        const clickable =
+          container.querySelector<HTMLElement>('div[role="button"]') ??
+          container.querySelector<HTMLElement>('iframe');
+
+        if (clickable) {
+          resolve(clickable);
+          return;
+        }
+
+        if (Date.now() > deadline) {
+          reject(new Error(this.t('AUTH.ERRORS.GOOGLE_SDK_UNAVAILABLE')));
+          return;
+        }
+
+        setTimeout(poll, 150);
+      };
+
+      poll();
+    });
   }
 
   loginWithApple(): Observable<AuthTokenResponse> {
