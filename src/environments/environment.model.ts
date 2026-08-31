@@ -26,11 +26,15 @@ export interface AppEnvironment {
   appleRedirectUri: string;
 }
 
-declare const process:
-  | {
-      env?: Record<string, string | undefined>;
-    }
-  | undefined;
+// BUG-20: `process` does not exist in the browser bundle produced by
+// @angular/build:application — there is no --define/env-injection wiring in
+// this project's angular.json, so reading `process.env.X` here always
+// evaluated to undefined in every real deployment. Fixed by reading from
+// env.generated.ts instead, which tools/generate-env.mjs writes with real,
+// literal values BEFORE `ng build` runs (see package.json build:* scripts).
+// That file is git-ignored and regenerated on every build; a fresh checkout
+// with no env vars set produces empty strings here, same as before.
+import { generatedEnv } from './env.generated';
 
 function clean(value: string | undefined): string | undefined {
   const normalized = value?.trim();
@@ -38,19 +42,15 @@ function clean(value: string | undefined): string | undefined {
 }
 
 export function readGoogleClientIdFromProcessEnv(): string | undefined {
-  return clean(typeof process !== 'undefined' ? process.env?.GOOGLE_CLIENT_ID : undefined);
+  return clean(generatedEnv.GOOGLE_CLIENT_ID);
 }
 
 export function readAppleClientIdFromProcessEnv(): string | undefined {
-  return clean(typeof process !== 'undefined' ? process.env?.APPLE_CLIENT_ID : undefined);
+  return clean(generatedEnv.APPLE_CLIENT_ID);
 }
 
-export function readProcessEnv(key: string): string | undefined {
-  if (typeof process === 'undefined') {
-    return undefined;
-  }
-
-  return clean(process.env?.[key]);
+export function readProcessEnv(key: keyof typeof generatedEnv): string | undefined {
+  return clean(generatedEnv[key]);
 }
 
 export function readApiUrlFromProcessEnv(): string | undefined {
@@ -58,11 +58,11 @@ export function readApiUrlFromProcessEnv(): string | undefined {
 }
 
 export function readBaseUrlFromProcessEnv(): string | undefined {
-  return readProcessEnv('BASE_URL') ?? readProcessEnv('API_ORIGIN');
+  return readProcessEnv('BASE_URL');
 }
 
 export function readSignalRUrlFromProcessEnv(): string | undefined {
-  return readProcessEnv('SIGNALR_URL') ?? readProcessEnv('NOTIFICATION_HUB_URL');
+  return readProcessEnv('SIGNALR_URL');
 }
 
 export function withoutTrailingSlash(value: string): string {
