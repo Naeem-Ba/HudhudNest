@@ -36,6 +36,24 @@ if (!fs.existsSync(path.join(root, 'ios'))) {
   warnings.push('ios/ is not generated yet. Run npm run ios:setup on macOS.');
 }
 
+// `npx cap sync ios` regenerates this file and, on a Windows host, writes Windows-style
+// backslash paths into its local SPM `.package(path: ...)` entries -- Swift Package
+// Manager on macOS/Xcode cannot resolve those. tools/fix-ios-spm-paths.mjs corrects
+// this and is wired into `npm run ios:sync` / `ios:setup`, but this check exists so a
+// sync run outside those scripts (e.g. a bare `npx cap sync ios`) is still caught
+// before it reaches Xcode.
+const spmManifestPath = path.join(root, 'ios', 'App', 'CapApp-SPM', 'Package.swift');
+if (fs.existsSync(spmManifestPath)) {
+  const spmManifest = fs.readFileSync(spmManifestPath, 'utf8');
+  const backslashPathMatch = spmManifest.match(/path:\s*"[^"]*\\[^"]*"/);
+  if (backslashPathMatch) {
+    errors.push(
+      `ios/App/CapApp-SPM/Package.swift has a Windows-style backslash path (${backslashPathMatch[0]}); ` +
+      'run "node tools/fix-ios-spm-paths.mjs" before opening the project in Xcode.'
+    );
+  }
+}
+
 console.log('iOS configuration preflight');
 for (const warning of warnings) console.warn(`WARN: ${warning}`);
 for (const error of errors) console.error(`ERROR: ${error}`);
