@@ -43,3 +43,81 @@ jobs:
 
       - name: Build production
         run: npm run build:prod
+
+  # BLK-04: يبني ويوقّع Android App Bundle باستخدام مفتاح الإنتاج الحقيقي
+  # المخزَّن في GitHub Secrets (لا يُنشأ أو يُخزَّن هنا). يعمل فقط عند وجود
+  # السر RELEASE_STORE_PASSWORD (منعًا لفشل الفروع/الشوك التي لا تملك الأسرار)،
+  # ويقتصر على الدفعات إلى main تفاديًا لبناء/توقيع غير ضروري على كل PR.
+  #
+  # ⚠️ لم يُختبَر تشغيل هذه المهمة فعليًا بعد — حساب GitHub الحالي معطَّل بسبب
+  # مشكلة فوترة (BUG-18) توقف كل CI. يجب التحقق منها بعد حل تلك المشكلة قبل
+  # اعتبار BLK-04 "مغلقًا بالكامل" بدليل حي.
+  android-release:
+    name: Android — Build Signed Release AAB
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production web assets
+        run: npm run build:prod
+
+      - name: Sync Capacitor Android
+        run: npx cap sync android
+
+      - name: Set up JDK 21
+        if: env.RELEASE_STORE_PASSWORD != ''
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+        env:
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+
+      - name: Decode release keystore
+        if: env.RELEASE_STORE_PASSWORD != ''
+        env:
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_STORE_FILE_BASE64: ${{ secrets.RELEASE_STORE_FILE_BASE64 }}
+        run: |
+          mkdir -p android/keystore
+          echo "$RELEASE_STORE_FILE_BASE64" | base64 -d > android/keystore/aqar-tech-release.keystore
+
+      - name: Build signed release AAB
+        if: env.RELEASE_STORE_PASSWORD != ''
+        env:
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          RELEASE_STORE_FILE: keystore/aqar-tech-release.keystore
+        working-directory: android
+        run: ./gradlew bundleRelease --console=plain
+
+      - name: Upload signed AAB
+        if: env.RELEASE_STORE_PASSWORD != ''
+        env:
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: aqar-tech-release-aab
+          path: android/app/build/outputs/bundle/release/*.aab
+          retention-days: 14
+
+      - name: Skip (secrets not configured yet)
+        if: env.RELEASE_STORE_PASSWORD == ''
+        env:
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+        run: echo "RELEASE_STORE_PASSWORD غير مضبوط في GitHub Secrets بعد — راجع android/RELEASE_SIGNING.md."

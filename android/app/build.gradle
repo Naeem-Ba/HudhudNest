@@ -1,5 +1,19 @@
 apply plugin: 'com.android.application'
 
+// BLK-04: خصائص توقيع الإصدار (release signing). تُقرأ من ملف محلي غير متتبَّع
+// (keystore/release-signing.local.properties، أنشأه أمر `keytool` — انظر
+// android/RELEASE_SIGNING.md) إن وُجد على جهاز المطوّر، وإلا من متغيرات بيئة
+// (RELEASE_STORE_FILE/RELEASE_STORE_PASSWORD/RELEASE_KEY_ALIAS/RELEASE_KEY_PASSWORD)
+// التي يوفّرها CI عبر GitHub Secrets. لا سر واحد هنا مكتوب مباشرة في الكود.
+def releaseSigningProps = new Properties()
+def releaseSigningFile = rootProject.file('keystore/release-signing.local.properties')
+def hasLocalSigningFile = releaseSigningFile.exists()
+if (hasLocalSigningFile) {
+    releaseSigningFile.withInputStream { releaseSigningProps.load(it) }
+}
+def hasEnvSigning = System.getenv('RELEASE_STORE_PASSWORD') != null
+def hasReleaseSigning = hasLocalSigningFile || hasEnvSigning
+
 android {
     namespace = "com.realestate.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +21,9 @@ android {
         applicationId "com.realestate.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        // BLK-04: أول ترقية فعلية منذ إنشاء المشروع (كانت 1 / "1.0" دائمًا).
+        versionCode 2
+        versionName "1.1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,10 +31,25 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (hasReleaseSigning) {
+            release {
+                storeFile hasLocalSigningFile ? rootProject.file(releaseSigningProps['storeFile']) : file(System.getenv('RELEASE_STORE_FILE'))
+                storePassword hasLocalSigningFile ? releaseSigningProps['storePassword'] : System.getenv('RELEASE_STORE_PASSWORD')
+                keyAlias hasLocalSigningFile ? releaseSigningProps['keyAlias'] : System.getenv('RELEASE_KEY_ALIAS')
+                keyPassword hasLocalSigningFile ? releaseSigningProps['keyPassword'] : System.getenv('RELEASE_KEY_PASSWORD')
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // إن لم يوجد أي مصدر توقيع (لا ملف محلي ولا أسرار CI)، يبقى البناء
+            // بلا توقيع كما كان سابقًا بدلًا من فشل البناء بغموض.
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }
