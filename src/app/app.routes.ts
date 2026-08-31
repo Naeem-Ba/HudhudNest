@@ -202,6 +202,20 @@ export const routes: Routes = [
             .then(m => m.PricingPage)
       },
       {
+        // BUG-17: صفحتا سياسة الخصوصية وشروط الاستخدام — مطلوبتان لإكمال شاشة
+        // موافقة Google OAuth (aqar-tech) وأي مراجعة مستقبلية من Apple.
+        path: 'privacy-policy',
+        loadComponent: () =>
+          import('./features/legal/privacy-policy.page')
+            .then(m => m.PrivacyPolicyPage)
+      },
+      {
+        path: 'terms-of-service',
+        loadComponent: () =>
+          import('./features/legal/terms-of-service.page')
+            .then(m => m.TermsOfServicePage)
+      },
+      {
         // AdminGuard has redirected here since it was written (admin-guard.ts:26)
         // without this route ever being registered, so the '**' wildcard silently
         // bounced non-admins to /home. Registering it makes the refusal visible.

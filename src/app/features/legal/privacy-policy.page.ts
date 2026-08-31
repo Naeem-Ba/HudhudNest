@@ -1,0 +1,141 @@
+// صفحة سياسة الخصوصية — مطلوبة لإكمال شاشة موافقة Google OAuth (BUG-17) ولأي
+// مراجعة مستقبلية من Google/Apple لتسجيل الدخول الاجتماعي.
+//
+// هذه مسودة أولى وصفية تعكس ما يجمعه التطبيق فعليًا (الحسابات، الإعلانات
+// العقارية، تسجيل الدخول عبر Google/Apple، ملفات تعريف الارتباط الخاصة بجلسة
+// المصادقة). هي ليست استشارة قانونية — يُنصح بمراجعتها من محامٍ مختص قبل
+// الاعتماد عليها نهائيًا في الإنتاج، خصوصًا فيما يخص القانون الحاكم والاختصاص
+// القضائي (متروك عمدًا عامًا هنا لعدم وجود قرار من المالك بشأن ذلك).
+//
+// Static content, not routed through ngx-translate — legal text is kept as a
+// single canonical version rather than machine-merged into the UI i18n keys.
+
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { RouterModule } from '@angular/router';
+
+@Component({
+  selector: 'app-privacy-policy',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterModule],
+  template: `
+    <section class="legal">
+      <div class="legal__card">
+        <h1>سياسة الخصوصية — عقاراتك (aqar-tech)</h1>
+        <p class="legal__updated">آخر تحديث: 31 أغسطس 2026</p>
+
+        <h2>1. من نحن</h2>
+        <p>
+          "عقاراتك" (aqar-tech) هي منصة رقمية لعرض وإدارة الإعلانات العقارية
+          (بيع، إيجار، إقامة قصيرة الأمد). هذه السياسة توضح البيانات التي
+          نجمعها من مستخدمي التطبيق والموقع، وكيف نستخدمها ونحميها.
+        </p>
+
+        <h2>2. البيانات التي نجمعها</h2>
+        <ul>
+          <li>بيانات الحساب: الاسم، رقم الهاتف، البريد الإلكتروني، كلمة المرور المشفّرة.</li>
+          <li>
+            بيانات تسجيل الدخول عبر طرف ثالث (Google / Apple): الاسم، البريد
+            الإلكتروني، وصورة الحساب العامة، إن اخترت تسجيل الدخول بهذه
+            الطريقة.
+          </li>
+          <li>بيانات الإعلانات العقارية: الصور، الموقع الجغرافي، السعر، الوصف، وبيانات التواصل التي تختار نشرها.</li>
+          <li>بيانات الاستخدام التقنية: نوع الجهاز، نظام التشغيل، وسجلات الأخطاء لأغراض تحسين الأداء.</li>
+          <li>ملف تعريف ارتباط (cookie) واحد ضروري لجلسة الدخول (HttpOnly، لا يُقرأ من جافاسكربت)، لا نستخدم ملفات تعريف ارتباط إعلانية.</li>
+        </ul>
+
+        <h2>3. كيف نستخدم بياناتك</h2>
+        <ul>
+          <li>لإنشاء حسابك وتوثيق هويتك عند تسجيل الدخول.</li>
+          <li>لعرض إعلاناتك العقارية للمستخدمين الآخرين وربطك بهم.</li>
+          <li>لإرسال إشعارات تخص حسابك (رسائل، طلبات زيارة، تحديثات الاشتراك).</li>
+          <li>لتحسين أداء التطبيق واكتشاف الأعطال وإصلاحها.</li>
+        </ul>
+
+        <h2>4. مشاركة البيانات مع أطراف ثالثة</h2>
+        <p>لا نبيع بياناتك لأي طرف ثالث. نشارك بيانات محدودة فقط مع:</p>
+        <ul>
+          <li>مزوّدي تسجيل الدخول (Google، Apple) — للتحقق من هويتك عند اختيارك هذه الطريقة فقط.</li>
+          <li>مزوّد الاستضافة السحابية الذي يشغّل خوادمنا وقواعد بياناتنا.</li>
+          <li>الجهات القانونية عند وجود التزام قانوني صريح يفرض ذلك.</li>
+        </ul>
+
+        <h2>5. حقوقك</h2>
+        <p>
+          يمكنك في أي وقت طلب الاطلاع على بياناتك، تصحيحها، أو حذف حسابك
+          نهائيًا عبر التواصل معنا على البريد أدناه.
+        </p>
+
+        <h2>6. خصوصية الأطفال</h2>
+        <p>لا يستهدف هذا التطبيق مستخدمين دون سن 18 عامًا، ولا نجمع بياناتهم عن قصد.</p>
+
+        <h2>7. التغييرات على هذه السياسة</h2>
+        <p>قد نحدّث هذه السياسة من وقت لآخر. سيظهر تاريخ آخر تحديث في أعلى الصفحة.</p>
+
+        <h2>8. تواصل معنا</h2>
+        <p>لأي استفسار يخص خصوصية بياناتك: <a href="mailto:naeem.bazzazeh@gmail.com">naeem.bazzazeh@gmail.com</a></p>
+
+        <a class="legal__back" routerLink="/home">العودة إلى الرئيسية</a>
+      </div>
+    </section>
+  `,
+  styles: [`
+    .legal {
+      min-height: 60vh;
+      display: flex;
+      justify-content: center;
+      padding: clamp(1rem, 3vw, 2.5rem);
+    }
+
+    .legal__card {
+      width: min(760px, 100%);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-sm);
+      padding: var(--space-8) var(--space-6);
+      line-height: 1.9;
+    }
+
+    .legal__card h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.3rem, 3vw, 1.75rem);
+      font-weight: 800;
+      color: var(--gray-900);
+      margin: 0 0 var(--space-2);
+    }
+
+    .legal__updated {
+      color: var(--gray-500);
+      font-size: var(--text-sm);
+      margin: 0 0 var(--space-6);
+    }
+
+    .legal__card h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin: var(--space-6) 0 var(--space-2);
+    }
+
+    .legal__card p,
+    .legal__card li {
+      color: var(--gray-600);
+      font-size: var(--text-sm);
+    }
+
+    .legal__card ul {
+      padding-inline-start: var(--space-6);
+      margin: 0 0 var(--space-2);
+    }
+
+    .legal__back {
+      display: inline-block;
+      margin-top: var(--space-8);
+      color: var(--primary);
+      font-weight: 600;
+      text-decoration: none;
+    }
+  `]
+})
+export class PrivacyPolicyPage {}
