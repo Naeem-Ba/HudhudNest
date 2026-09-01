@@ -65,6 +65,9 @@ export class PlansApiService {
           ...(noteKey ? { noteKey } : {}),
           isRecommended: item['isRecommended'] === true,
           ctaKey: String(item['ctaKey'] ?? ''),
+          listingLimit: item['listingLimit'] === null || item['listingLimit'] === undefined
+            ? null
+            : Number(item['listingLimit']),
           ...this.toCta(tier)
         };
       })
