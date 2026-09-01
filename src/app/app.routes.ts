@@ -277,6 +277,22 @@ export const routes: Routes = [
       import('./admin/users/admin-users.page')
         .then(m => m.AdminUsersPage)
   },
+  {
+    // تفاصيل مستخدم واحد — الأدوار، الخطة والاشتراك (تفعيل/تمديد/إلغاء إداري).
+    path: 'admin/users/:id',
+    canActivate: [AdminGuard],
+    loadComponent: () =>
+      import('./admin/user-detail/admin-user-detail.page')
+        .then(m => m.AdminUserDetailPage)
+  },
+  {
+    // "مساحة المستخدم" — كل إعلاناته، مع تمييز/تمديد إداري (يعمل حتى على الخطة المجانية).
+    path: 'admin/users/:id/properties',
+    canActivate: [AdminGuard],
+    loadComponent: () =>
+      import('./admin/user-properties/admin-user-properties.page')
+        .then(m => m.AdminUserPropertiesPage)
+  },
 
   {
     // Admin moderation queue for user-typed district/neighborhood names —

@@ -44,6 +44,12 @@ export interface SubscriptionPlan {
    */
   ctaRoute: string;
   ctaQueryParams: Record<string, string>;
+  /**
+   * Max simultaneously-active listings this plan allows (Plan.ListingLimit on the
+   * backend). Null means unlimited. Admin dashboard: shown on the plan-select modal and
+   * on a user's plan card so an admin never sees a number the backend doesn't enforce.
+   */
+  listingLimit?: number | null;
 }
 
 /**

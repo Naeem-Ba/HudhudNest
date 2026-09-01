@@ -1,7 +1,8 @@
 <div class="admin-container">
 
   <h2>📩 رسائل التواصل</h2>
-  <a routerLink="/admin/users" class="admin-nav-link">👤 إدارة المستخدمين</a>
+  <!-- إدارة المستخدمين لم تعد رابطاً فرعياً هنا — أصبحت قسماً مستقلاً في التنقّل
+       الرئيسي (navbar.component.html: NAVBAR.ADMIN_USERS) يؤدي إلى /admin/users. -->
   <a routerLink="/admin/location-suggestions" class="admin-nav-link">📍 اقتراحات المواقع</a>
 
   <div *ngIf="loading" class="loading">جارٍ التحميل...</div>

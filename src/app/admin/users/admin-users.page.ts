@@ -1,10 +1,10 @@
 // =============================================================
 // src/app/admin/users/admin-users.page.ts
 //
-// لوحة إدارة المستخدمين — تكمّل admin/messages الموجودة أصلاً.
-// تغطي كل نقاط AdminController: عرض المستخدمين، عرض الأدوار المتاحة،
-// تعيين/إضافة/إزالة دور، وتعطيل حساب (وليس حذفاً نهائياً — الخادم ينفّذ
-// Soft-disable عبر DisableUserAsync رغم أن الفعل HTTP هو DELETE).
+// لوحة إدارة المستخدمين — قسم مستقل بالكامل في تنقّل المدير (انظر navbar.component.html
+// و app.routes.ts)، لم يعد جزءاً من صفحة الرسائل. تغطي: البحث والفلاتر، جدول موجز
+// (الخطة/الحالة/عدد الإعلانات)، إدارة الأدوار وتعطيل الحساب (كما كانت)، والانتقال إلى
+// صفحة تفاصيل المستخدم (admin-user-detail.page.ts) لإدارة الخطة والإعلانات.
 // =============================================================
 
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
@@ -12,10 +12,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AdminUserDto, AdminUsersService } from '../../core/api/admin-users.service';
 import { LookupsApiService } from '../../core/api/lookups-api.service';
+import { PlansApiService } from '../../core/api/plans-api.service';
+import { SubscriptionPlan } from '../../core/models/subscription-plan.model';
 import { ToastService } from '../../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
@@ -32,18 +35,36 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
           <h1>{{ 'ADMIN_USERS.TITLE' | translate }}</h1>
           <p>{{ 'ADMIN_USERS.SUBTITLE' | translate }}</p>
         </div>
-        <button type="button" class="link-btn" (click)="goBack()">{{ 'COMMON.BACK' | translate }}</button>
       </header>
 
       <div class="filters">
+        <input
+          type="search"
+          class="search-input"
+          [placeholder]="'ADMIN_USERS.SEARCH_PLACEHOLDER' | translate"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearchChange($event)"
+        />
+
         <select [(ngModel)]="roleFilter" (change)="load()">
           <option value="">{{ 'ADMIN_USERS.ALL_ROLES' | translate }}</option>
           <option *ngFor="let role of roles()" [value]="role">{{ role }}</option>
         </select>
 
+        <select [(ngModel)]="planFilter" (change)="load()">
+          <option value="">{{ 'ADMIN_USERS.ALL_PLANS' | translate }}</option>
+          <option *ngFor="let plan of plans()" [value]="plan.tier">{{ plan.nameKey | translate }}</option>
+        </select>
+
+        <select [(ngModel)]="accountStatusFilter" (change)="load()">
+          <option value="">{{ 'ADMIN_USERS.ALL_STATUSES' | translate }}</option>
+          <option value="Active">{{ 'ADMIN_USERS.STATUS_ACTIVE' | translate }}</option>
+          <option value="Disabled">{{ 'ADMIN_USERS.STATUS_DISABLED' | translate }}</option>
+        </select>
+
         <!-- ✅ إضافة: يستهلك POST /api/lookups/refresh (Admin فقط) — كان غير
              مستخدَم إطلاقاً؛ يفرّغ كاش المدن/المرافق/الفئات فوراً (10 دقائق
-             صلاحية افتراضية) دون انتظار انتهائها من تلقاء نفسه. -->
+             صلاحية افتراضية) دون انتظار انتهائها من تلقاء نفسها. -->
         <button
           type="button"
           class="btn btn--outline"
@@ -68,39 +89,47 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
       <div class="users-table" *ngIf="!loading() && users().length > 0">
         <div class="row row--head">
           <span>{{ 'ADMIN_USERS.NAME' | translate }}</span>
-          <span>{{ 'ADMIN_USERS.EMAIL' | translate }}</span>
-          <span>{{ 'ADMIN_USERS.ROLES' | translate }}</span>
+          <span>{{ 'ADMIN_USERS.CONTACT' | translate }}</span>
+          <span>{{ 'ADMIN_USERS.PLAN' | translate }}</span>
+          <span>{{ 'ADMIN_USERS.ADS' | translate }}</span>
+          <span>{{ 'ADMIN_USERS.STATUS' | translate }}</span>
           <span>{{ 'ADMIN_USERS.ACTIONS' | translate }}</span>
         </div>
 
         <div class="row" *ngFor="let user of users(); trackBy: trackById">
           <span data-label="Name">
             {{ user.displayName || (user.firstName + ' ' + user.lastName) || '—' }}
+            <code class="user-id">{{ user.id }}</code>
           </span>
-          <span data-label="Email" class="muted">{{ user.email || '—' }}</span>
-          <span data-label="Roles" class="roles">
-            <span class="role-chip" *ngFor="let role of user.roles">
-              {{ role }}
-              <button
-                type="button"
-                class="role-chip__remove"
-                *ngIf="user.roles.length > 1"
-                (click)="removeRole(user, role)"
-                [attr.aria-label]="'ADMIN_USERS.REMOVE_ROLE' | translate"
-              >×</button>
+          <span data-label="Contact" class="muted">
+            <div>{{ user.email || '—' }}</div>
+            <div *ngIf="user.phoneNumber">{{ user.phoneNumber }}</div>
+          </span>
+          <span data-label="Plan">
+            <span class="plan-chip" [class]="'plan-chip--' + user.planStatus.toLowerCase()">
+              {{ user.planTier ? (planNameKey(user.planTier) | translate) : ('ADMIN_USERS.NO_PLAN' | translate) }}
             </span>
-            <span *ngIf="user.roles.length === 0" class="muted">—</span>
+            <div class="plan-meta" *ngIf="user.planTier">
+              {{ ('ADMIN_USERS.PLAN_STATUS.' + user.planStatus) | translate }}
+              <span *ngIf="user.planExpiresAt"> · {{ user.planExpiresAt | date:'mediumDate' }}</span>
+            </div>
+          </span>
+          <span data-label="Ads" class="ads-counts">
+            {{ 'ADMIN_USERS.ADS_SUMMARY' | translate:{ total: user.totalListings, active: user.activeListings, featured: user.featuredListings } }}
+          </span>
+          <span data-label="Status">
+            <span class="status-chip" [class.status-chip--disabled]="user.accountStatus === 'Disabled'">
+              {{ ('ADMIN_USERS.STATUS_' + user.accountStatus.toUpperCase()) | translate }}
+            </span>
           </span>
           <span data-label="Actions" class="actions">
-            <select #roleSelect class="role-select">
-              <option *ngFor="let role of roles()" [value]="role">{{ role }}</option>
-            </select>
-            <button type="button" class="btn btn--outline" (click)="assignRole(user, roleSelect.value)">
-              {{ 'ADMIN_USERS.ADD_ROLE' | translate }}
+            <button type="button" class="btn btn--primary" (click)="openDetails(user)">
+              {{ 'ADMIN_USERS.VIEW_DETAILS' | translate }}
             </button>
             <button
               type="button"
               class="btn btn--danger"
+              *ngIf="user.accountStatus !== 'Disabled'"
               [disabled]="disablingId() === user.id"
               (click)="confirmDisable(user)"
             >
@@ -124,39 +153,51 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
     .page-header { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap; }
     .page-header h1 { margin:0 0 .3rem; color:var(--navy); font-family:var(--font-display); font-size:clamp(1.5rem,2.6vw,2rem); }
     .page-header p { margin:0; color:var(--gray-500); }
-    .link-btn { background:none; border:0; color:var(--primary); cursor:pointer; font-weight:600; }
 
-    .filters { margin-bottom:1rem; }
-    .filters select { border:1px solid var(--border); border-radius:var(--r-md); padding:.5rem .8rem; background:var(--surface); }
+    .filters { display:flex; flex-wrap:wrap; gap:.6rem; margin-bottom:1rem; }
+    .filters select, .search-input {
+      border:1px solid var(--border); border-radius:var(--r-md); padding:.5rem .8rem; background:var(--surface);
+    }
+    .search-input { flex: 1 1 220px; min-width: 180px; }
 
     .users-table { display:flex; flex-direction:column; gap:.5rem; }
     .row {
-      display:grid; grid-template-columns: 1.2fr 1.6fr 1.6fr 2fr; gap:1rem; align-items:center;
+      display:grid; grid-template-columns: 1.3fr 1.5fr 1.4fr 1.1fr .9fr 1.8fr; gap:1rem; align-items:center;
       background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md);
       padding:.85rem 1rem;
     }
     .row--head { background:transparent; border:0; color:var(--gray-500); font-size:var(--text-sm); font-weight:600; padding:0 1rem; }
-    .muted { color:var(--gray-400); }
+    .muted { color:var(--gray-400); font-size: var(--text-sm); }
+    .user-id { display:block; font-size: .7rem; color: var(--gray-400); margin-top: .15rem; }
 
-    .roles { display:flex; flex-wrap:wrap; gap:.35rem; }
-    .role-chip {
-      display:inline-flex; align-items:center; gap:.3rem; background:var(--gold-soft); color:var(--navy);
+    .plan-chip {
+      display:inline-flex; align-items:center; background:var(--gold-soft); color:var(--navy);
       border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600;
     }
-    .role-chip__remove { border:0; background:none; cursor:pointer; color:var(--danger); font-size:1rem; line-height:1; padding:0; }
+    .plan-chip--expired, .plan-chip--cancelled { background: var(--danger-soft); color: var(--danger); }
+    .plan-chip--noplan { background: var(--gray-100); color: var(--gray-500); }
+    .plan-meta { font-size: .72rem; color: var(--gray-500); margin-top:.2rem; }
+
+    .ads-counts { font-size: var(--text-sm); color: var(--gray-700); }
+
+    .status-chip {
+      display:inline-flex; align-items:center; background: var(--success-soft, #dcfce7); color: var(--success, #16a34a);
+      border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600;
+    }
+    .status-chip--disabled { background: var(--danger-soft); color: var(--danger); }
 
     .actions { display:flex; gap:.4rem; align-items:center; flex-wrap:wrap; }
-    .role-select { border:1px solid var(--border); border-radius:var(--r-sm); padding:.35rem .5rem; font-size:var(--text-sm); }
-    .btn { border-radius:var(--r-sm); padding:.4rem .75rem; font-size:var(--text-sm); cursor:pointer; border:1px solid transparent; }
+    .btn { border-radius:var(--r-sm); padding:.4rem .75rem; font-size:var(--text-sm); cursor:pointer; border:1px solid transparent; font-weight:600; }
     .btn--outline { background:var(--surface); border-color:var(--border); color:var(--navy); }
+    .btn--primary { background: var(--primary); color: #fff; }
     .btn--danger { background:var(--danger-soft); color:var(--danger); border-color:rgba(220,38,38,.2); }
-    .btn--danger:disabled { opacity:.6; cursor:not-allowed; }
+    .btn:disabled { opacity:.6; cursor:not-allowed; }
 
     .pagination { display:flex; justify-content:center; align-items:center; gap:1rem; margin-top:1.25rem; }
     .pagination button { border:1px solid var(--border); background:var(--surface); border-radius:var(--r-sm); width:34px; height:34px; cursor:pointer; }
     .pagination button:disabled { opacity:.4; cursor:not-allowed; }
 
-    @media (max-width: 820px) {
+    @media (max-width: 980px) {
       .row { grid-template-columns: 1fr; }
       .row--head { display:none; }
       .row span[data-label]::before { content: attr(data-label) ": "; font-weight:700; color:var(--gray-500); }
@@ -166,6 +207,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 export class AdminUsersPage implements OnInit {
   private readonly adminUsers = inject(AdminUsersService);
   private readonly lookupsApi = inject(LookupsApiService);
+  private readonly plansApi = inject(PlansApiService);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly router = inject(Router);
@@ -173,6 +215,7 @@ export class AdminUsersPage implements OnInit {
 
   readonly users = signal<AdminUserDto[]>([]);
   readonly roles = signal<string[]>([]);
+  readonly plans = signal<SubscriptionPlan[]>([]);
   readonly loading = signal(true);
   readonly page = signal(1);
   readonly totalPages = signal(1);
@@ -180,7 +223,12 @@ export class AdminUsersPage implements OnInit {
   readonly refreshingLookups = signal(false);
 
   roleFilter = '';
+  planFilter = '';
+  accountStatusFilter = '';
+  searchTerm = '';
+
   private readonly pageSize = 20;
+  private readonly searchChanges = new Subject<string>();
 
   ngOnInit(): void {
     this.adminUsers
@@ -191,14 +239,42 @@ export class AdminUsersPage implements OnInit {
         error: () => this.roles.set([])
       });
 
+    this.plansApi
+      .getPlans()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: plans => this.plans.set(plans ?? []),
+        error: () => this.plans.set([])
+      });
+
+    this.searchChanges
+      .pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.page.set(1);
+        this.load();
+      });
+
     this.load();
+  }
+
+  onSearchChange(value: string): void {
+    this.searchChanges.next(value);
+  }
+
+  planNameKey(tier: string): string {
+    return this.plans().find(p => p.tier === tier)?.nameKey ?? tier;
   }
 
   load(): void {
     this.loading.set(true);
 
     this.adminUsers
-      .getUsers(this.page(), this.pageSize, this.roleFilter || undefined)
+      .getUsers(this.page(), this.pageSize, {
+        role: this.roleFilter || undefined,
+        search: this.searchTerm || undefined,
+        planTier: this.planFilter || undefined,
+        accountStatus: this.accountStatusFilter || undefined
+      })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: result => {
@@ -218,36 +294,8 @@ export class AdminUsersPage implements OnInit {
     this.load();
   }
 
-  assignRole(user: AdminUserDto, role: string): void {
-    if (!role || user.roles.includes(role)) return;
-
-    this.adminUsers
-      .assignRole(user.id, role)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.users.update(items =>
-            items.map(u => (u.id === user.id ? { ...u, roles: [...u.roles, role] } : u))
-          );
-          this.toast.success(this.translate.instant('ADMIN_USERS.ROLE_ADDED'));
-        },
-        error: () => this.toast.error(this.translate.instant('ADMIN_USERS.ROLE_ERROR'))
-      });
-  }
-
-  removeRole(user: AdminUserDto, role: string): void {
-    this.adminUsers
-      .removeRole(user.id, role)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.users.update(items =>
-            items.map(u => (u.id === user.id ? { ...u, roles: u.roles.filter(r => r !== role) } : u))
-          );
-          this.toast.success(this.translate.instant('ADMIN_USERS.ROLE_REMOVED'));
-        },
-        error: () => this.toast.error(this.translate.instant('ADMIN_USERS.ROLE_ERROR'))
-      });
+  openDetails(user: AdminUserDto): void {
+    this.router.navigate(['/admin/users', user.id]);
   }
 
   confirmDisable(user: AdminUserDto): void {
@@ -270,7 +318,9 @@ export class AdminUsersPage implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          this.users.update(items => items.filter(u => u.id !== userId));
+          this.users.update(items =>
+            items.map(u => (u.id === userId ? { ...u, accountStatus: 'Disabled' as const } : u))
+          );
           this.toast.success(this.translate.instant('ADMIN_USERS.DISABLED'));
           this.disablingId.set(null);
         },
@@ -297,10 +347,6 @@ export class AdminUsersPage implements OnInit {
           this.refreshingLookups.set(false);
         }
       });
-  }
-
-  goBack(): void {
-    this.router.navigate(['/admin/messages']);
   }
 
   trackById(_: number, user: AdminUserDto): string {
