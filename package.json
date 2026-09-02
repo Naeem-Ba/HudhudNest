@@ -27,7 +27,7 @@
     "android:open": "npx cap open android",
     "ios:check": "node tools/validate-ios-config.mjs",
     "ios:setup": "node tools/setup-ios.mjs",
-    "ios:sync": "npm run build:prod && npx cap sync ios",
+    "ios:sync": "npm run build:prod && npx cap sync ios && node tools/fix-ios-spm-paths.mjs",
     "ios:open": "npx cap open ios"
   },
   "prettier": {
