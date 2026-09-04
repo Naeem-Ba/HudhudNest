@@ -185,3 +185,119 @@ export interface InvestmentCalculatorResult {
   optimistic: InvestmentCalculatorScenario;
   disclaimer: string;
 }
+
+// ── Admin (Phase 2) — backend: PropertyApi.Controllers.AdminInvestmentsController,
+// [Authorize(Roles = "Admin")] on every action. ─────────────────────────────────
+
+/** Every state a project can be in — the public list/detail only ever return Published. */
+export interface AdminInvestmentProjectListItem {
+  id: string;
+  title: string;
+  status: InvestmentProjectStatus;
+  projectType: InvestmentProjectType;
+  ownerUserId: string;
+  targetAmount: number;
+  raisedAmount: number;
+  createdAt: string;
+  publishedAt: string | null;
+}
+
+export interface AdminInvestmentProjectFilter {
+  search?: string;
+  status?: InvestmentProjectStatus;
+  projectType?: InvestmentProjectType;
+  page?: number;
+  pageSize?: number;
+}
+
+/** Same shape as the public InvestmentProjectDetails — admin's GetProjectReview returns it
+ * regardless of Status (the public endpoint 404s on anything but Published). */
+export type AdminInvestmentProjectDetails = InvestmentProjectDetails;
+
+export interface InvestmentProjectPublishReadiness {
+  hasTitleAndDescription: boolean;
+  hasFinancials: boolean;
+  hasRiskAssessment: boolean;
+  hasRequiredDocuments: boolean;
+  isReady: boolean;
+}
+
+export interface InvestmentProjectReview {
+  project: AdminInvestmentProjectDetails;
+  rejectionReason: string | null;
+  financials: InvestmentFinancialSummary | null;
+  risk: InvestmentRisk | null;
+  publicDocumentCount: number;
+  readiness: InvestmentProjectPublishReadiness;
+}
+
+export interface AdminInvestmentDocument extends InvestmentDocument {
+  isPublic: boolean;
+}
+
+/** Explicit workflow actions on InvestmentProject — never a raw status assignment. Matches the
+ * backend's own state machine one-for-one (PropertyApi.Domain.Investments.Entities.InvestmentProject). */
+export type InvestmentWorkflowAction =
+  | 'submit-review'
+  | 'approve'
+  | 'reject'
+  | 'schedule'
+  | 'publish'
+  | 'suspend'
+  | 'close';
+
+export interface CreateInvestmentProjectRequest {
+  propertyId: string;
+  title: string;
+  description: string;
+  projectType: InvestmentProjectType;
+  currency: string;
+}
+
+export interface UpdateInvestmentProjectRequest {
+  title: string;
+  shortDescription: string | null;
+  description: string;
+  projectType: InvestmentProjectType;
+  targetAmount: number;
+  minimumInvestment: number;
+  maximumInvestment: number | null;
+  currency: string;
+  investmentTermMonths: number;
+  expectedReturnMin: number;
+  expectedReturnMax: number;
+  startDate: string | null;
+  endDate: string | null;
+  raisedAmount: number;
+}
+
+export interface SetInvestmentFinancialsRequest {
+  purchasePrice: number;
+  renovationCost: number;
+  constructionCost: number;
+  taxes: number;
+  notaryCost: number;
+  brokerCost: number;
+  financingCost: number;
+  operatingCost: number;
+  contingencyReserve: number;
+  expectedRevenue: number;
+  expectedProfit: number;
+}
+
+export interface SetInvestmentRiskRequest {
+  riskLevel: InvestmentRiskLevel;
+  marketRisk: InvestmentRiskLevel;
+  liquidityRisk: InvestmentRiskLevel;
+  projectRisk: InvestmentRiskLevel;
+  financingRisk: InvestmentRiskLevel;
+  developerRisk: InvestmentRiskLevel;
+  riskScore: number;
+  riskSummary: string;
+}
+
+export interface AddInvestmentUpdateRequest {
+  title: string;
+  content: string;
+  updateType: InvestmentUpdateType;
+}

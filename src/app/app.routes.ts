@@ -327,6 +327,32 @@ export const routes: Routes = [
         .then(m => m.AdminLocationSuggestionsPage)
   },
 
+  // Admin Investment Portal (Phase 2) — backend: AdminInvestmentsController,
+  // [Authorize(Roles = "Admin")] on every action; AdminGuard here is a UX
+  // convenience, the server remains the real boundary. 'new' is registered
+  // before ':id' so it is never swallowed by the id-matching route.
+  {
+    path: 'admin/investments',
+    canActivate: [AdminGuard],
+    loadComponent: () =>
+      import('./features/investments/admin/admin-investment-list/admin-investment-list.page')
+        .then(m => m.AdminInvestmentListPage)
+  },
+  {
+    path: 'admin/investments/new',
+    canActivate: [AdminGuard],
+    loadComponent: () =>
+      import('./features/investments/admin/admin-investment-form/admin-investment-form.page')
+        .then(m => m.AdminInvestmentFormPage)
+  },
+  {
+    path: 'admin/investments/:id',
+    canActivate: [AdminGuard],
+    loadComponent: () =>
+      import('./features/investments/admin/admin-investment-detail/admin-investment-detail.page')
+        .then(m => m.AdminInvestmentDetailPage)
+  },
+
   {
     path: 'messages/:propertyId',
     canActivate: [AuthGuard],

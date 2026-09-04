@@ -113,6 +113,15 @@
       >
         {{ 'NAVBAR.ADMIN_USERS' | translate }}
       </a>
+
+      <a
+        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
+        routerLink="/admin/investments"
+        routerLinkActive="navbar__link--active"
+        class="navbar__link"
+      >
+        {{ 'NAVBAR.ADMIN_INVESTMENTS' | translate }}
+      </a>
     </nav>
 
     <!-- Actions -->
@@ -584,6 +593,15 @@
         (click)="closeMobileMenu()"
       >
         {{ 'NAVBAR.ADMIN_USERS' | translate }}
+      </a>
+
+      <a
+        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
+        routerLink="/admin/investments"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ 'NAVBAR.ADMIN_INVESTMENTS' | translate }}
       </a>
 
       <!-- Mobile User Section -->
