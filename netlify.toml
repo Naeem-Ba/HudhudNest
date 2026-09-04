@@ -1,0 +1,21 @@
+## إعدادات بناء Netlify الخاصة بهذا المشروع.
+#
+# لماذا هذا الملف ضروري: قبل إضافته، كانت لوحة Netlify تُشغّل "npm run build"
+# (إعداد production الافتراضي في angular.json) لكل الفروع بلا استثناء — بما فيها
+# فرع staging نفسه. النتيجة: نشر staging كان في الواقع بناء production كاملاً
+# (يقرأ environment.prod.ts) منشورًا فقط تحت نطاق Netlify الخاص بـ staging، وليس
+# بناء staging حقيقيًا (الذي يقرأ environment.staging.ts). هذا الملف يعيد أمر
+# البناء لفرع staging تحديدًا إلى "npm run build:staging" دون التأثير على أي فرع
+# آخر — القسم العلوي [build] يبقى هو الافتراضي لكل سياق لم يُذكر صراحةً (بما فيها
+# production)، ويطابق تمامًا القيم المضبوطة سلفًا في لوحة Netlify (Build & deploy).
+
+[build]
+  command = "npm run build"
+  publish = "dist/Wohnungsmieten/browser"
+  functions = "netlify/functions"
+
+# اسم الفرع "staging" هنا يطابق حرفياً اسم الفرع في GitHub — Netlify يدعم
+# [context.<اسم-فرع>] لتخصيص فرع بعينه، بالإضافة إلى السياقات المحجوزة
+# (production / deploy-preview / branch-deploy).
+[context.staging]
+  command = "npm run build:staging"
