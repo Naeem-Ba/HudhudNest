@@ -1550,7 +1550,7 @@
       "INDUSTRIAL": "صناعي",
       "LAND": "أرض",
       "RENOVATION": "ترميم",
-      "NEW_CONSTRUCTION": "بناء جديد"
+      "NEWCONSTRUCTION": "بناء جديد"
     },
     "STATUS": {
       "DRAFT": "مسودة",
@@ -1569,7 +1569,7 @@
       "LOW": "منخفض",
       "MEDIUM": "متوسط",
       "HIGH": "مرتفع",
-      "VERY_HIGH": "مرتفع جدًا",
+      "VERYHIGH": "مرتفع جدًا",
       "MARKET": "مخاطر السوق",
       "LIQUIDITY": "مخاطر السيولة",
       "PROJECT": "مخاطر المشروع",
@@ -1632,6 +1632,13 @@
     "UPDATES": {
       "TITLE": "تحديثات المشروع"
     },
+    "UPDATE_TYPE": {
+      "GENERAL": "عام",
+      "CONSTRUCTIONSTARTED": "بدء البناء",
+      "RENOVATIONPROGRESS": "تقدم التجديد",
+      "MILESTONE": "إنجاز تمويلي",
+      "FINANCIALUPDATE": "تحديث مالي"
+    },
     "CALCULATOR": {
       "TITLE": "حاسبة الاستثمار",
       "AMOUNT": "المبلغ",
@@ -1648,6 +1655,114 @@
       "LOAD_ERROR": "تعذر تحميل قائمة المتابعة.",
       "EMPTY_TITLE": "قائمة المتابعة فارغة",
       "EMPTY_MESSAGE": "ستظهر هنا المشاريع التي تحفظها."
+    }
+  },
+  "ADMIN_INVESTMENTS": {
+    "LIST": {
+      "TITLE": "بوابة الاستثمار — الإدارة",
+      "SUBTITLE": "إدارة المشاريع الاستثمارية عبر كل مراحلها: المسودة، المراجعة، النشر، وما بعده.",
+      "NEW_PROJECT": "مشروع جديد",
+      "SEARCH_PLACEHOLDER": "ابحث بالعنوان",
+      "ALL_STATUSES": "كل الحالات",
+      "ALL_TYPES": "كل الأنواع",
+      "COL_TITLE": "العنوان",
+      "COL_TYPE": "النوع",
+      "COL_STATUS": "الحالة",
+      "COL_FUNDING": "التمويل (المجمّع / المستهدف)",
+      "COL_CREATED": "تاريخ الإنشاء",
+      "COL_ACTIONS": "الإجراءات",
+      "VIEW": "عرض",
+      "LOAD_ERROR": "تعذر تحميل المشاريع الاستثمارية.",
+      "EMPTY_TITLE": "لا توجد مشاريع استثمارية بعد",
+      "EMPTY_MESSAGE": "أنشئ أول مشروع استثماري للبدء."
+    },
+    "FORM": {
+      "CREATE_TITLE": "مشروع استثماري جديد",
+      "CREATE_SUBTITLE": "ابدأ بالعقار والعنوان والوصف والنوع. تُضاف بقية التفاصيل (البيانات المالية، المخاطر، الجدولة) في صفحة المشروع بعد الإنشاء.",
+      "PROPERTY_ID": "معرّف العقار",
+      "LOOKUP": "بحث",
+      "PROPERTY_NOT_FOUND": "لم يُعثر على عقار منشور بهذا المعرّف.",
+      "TITLE_FIELD": "العنوان",
+      "SHORT_DESCRIPTION": "وصف مختصر",
+      "DESCRIPTION": "الوصف",
+      "PROJECT_TYPE": "نوع المشروع",
+      "CURRENCY": "العملة (رمز ISO، مثل USD)",
+      "TARGET_AMOUNT": "المبلغ المستهدف",
+      "RAISED_AMOUNT": "المبلغ المجمّع (للعلم فقط)",
+      "MINIMUM_INVESTMENT": "الحد الأدنى للاستثمار",
+      "MAXIMUM_INVESTMENT": "الحد الأقصى للاستثمار",
+      "TERM_MONTHS": "المدة (بالأشهر)",
+      "EXPECTED_RETURN_MIN": "العائد المتوقع، الأدنى %",
+      "EXPECTED_RETURN_MAX": "العائد المتوقع، الأعلى %",
+      "START_DATE": "تاريخ البدء",
+      "END_DATE": "تاريخ الانتهاء",
+      "CREATE_SUBMIT": "إنشاء المشروع",
+      "CREATE_SUCCESS": "أُنشئ المشروع الاستثماري كمسودة.",
+      "CREATE_ERROR": "تعذر إنشاء المشروع الاستثماري."
+    },
+    "WORKFLOW": {
+      "ACTION_SUBMIT_REVIEW": "إرسال للمراجعة",
+      "ACTION_APPROVE": "اعتماد",
+      "ACTION_REJECT": "رفض",
+      "ACTION_SCHEDULE": "جدولة النشر",
+      "ACTION_PUBLISH": "نشر",
+      "ACTION_SUSPEND": "تعليق",
+      "ACTION_CLOSE": "إغلاق"
+    },
+    "FINANCIALS": {
+      "NOTARY_COST": "تكلفة التوثيق",
+      "BROKER_COST": "تكلفة الوساطة",
+      "FINANCING_COST": "تكلفة التمويل",
+      "OPERATING_COST": "تكلفة التشغيل",
+      "CONTINGENCY_RESERVE": "احتياطي الطوارئ",
+      "CALCULATED": "محسوب تلقائيًا",
+      "NON_GUARANTEED": "غير مضمون، إرشادي فقط"
+    },
+    "RISK": {
+      "SCORE": "درجة المخاطر",
+      "SUMMARY": "ملخص المخاطر"
+    },
+    "DETAIL": {
+      "BACK_TO_LIST": "← العودة إلى القائمة",
+      "LOAD_ERROR": "تعذر تحميل هذا المشروع.",
+      "SAVED": "تم الحفظ.",
+      "SAVE_ERROR": "تعذر حفظ التغييرات.",
+      "WORKFLOW_TITLE": "سير العمل",
+      "WORKFLOW_ERROR": "تعذر إتمام هذا الإجراء.",
+      "NO_ACTIONS": "لا توجد إجراءات إضافية متاحة من الحالة الحالية.",
+      "READINESS_TITLE_DESC": "العنوان والوصف",
+      "READINESS_FINANCIALS": "البيانات المالية",
+      "READINESS_RISK": "تقييم المخاطر",
+      "READINESS_DOCUMENTS": "المستندات العامة المطلوبة (خطة المشروع، البيان المالي)",
+      "REJECTION_REASON": "سبب الرفض",
+      "CONFIRM_ACTION_INTRO": "الحالة الحالية: {{status}}. هل تؤكد هذا الإجراء؟",
+      "REJECT_REASON_LABEL": "السبب (يُعرض لمالك المشروع)",
+      "SCHEDULE_AT_LABEL": "موعد النشر المجدول (اختياري)",
+      "SCHEDULE_HINT": "اتركه فارغًا للسماح بالنشر فور الوصول إلى حالة \"مجدول\".",
+      "OVERVIEW_TITLE": "نظرة عامة",
+      "NON_GUARANTEED_NOTE": "العائد المتوقع إرشادي فقط — وليس ضمانًا بأي حال.",
+      "FINANCIALS_TITLE": "البيانات المالية",
+      "FINANCIALS_NOTE": "تُحسب التكلفة الإجمالية للمشروع تلقائيًا من الحقول أدناه. الإيراد/الربح المتوقعان تقديرات غير مضمونة.",
+      "RISK_TITLE": "تقييم المخاطر",
+      "DOCUMENTS_TITLE": "المستندات",
+      "MAKE_PUBLIC": "جعله عامًا عند النشر",
+      "UPLOAD": "رفع",
+      "DOCUMENT_UPLOADED": "تم رفع المستند.",
+      "UPLOAD_ERROR": "تعذر رفع المستند.",
+      "NO_DOCUMENTS": "لا توجد مستندات بعد.",
+      "PUBLIC": "عام",
+      "PRIVATE": "خاص",
+      "PUBLISH": "نشر",
+      "UNPUBLISH": "إلغاء النشر",
+      "VISIBILITY_ERROR": "تعذر تحديث ظهور المستند.",
+      "CONFIRM_DELETE_DOCUMENT": "حذف المستند \"{{name}}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+      "DELETE_ERROR": "تعذر حذف المستند.",
+      "UPDATES_TITLE": "تحديثات المشروع",
+      "UPDATE_TYPE": "نوع التحديث",
+      "UPDATE_CONTENT": "المحتوى",
+      "ADD_UPDATE": "إضافة تحديث",
+      "UPDATE_ADDED": "تم نشر التحديث.",
+      "CONFIRM_DELETE": "هل أنت متأكد؟"
     }
   }
 }

@@ -47,6 +47,7 @@
     "SHORT_STAY_LISTINGS": "Short-Stay Listings",
     "INVESTMENTS": "Investments",
     "INVESTMENT_WATCHLIST": "Investment Watchlist",
+    "ADMIN_INVESTMENTS": "Investment Portal (Admin)",
     "OPEN_MENU": "Open menu",
     "CLOSE_MENU": "Close menu"
   },
@@ -1550,7 +1551,7 @@
       "INDUSTRIAL": "Industrial",
       "LAND": "Land",
       "RENOVATION": "Renovation",
-      "NEW_CONSTRUCTION": "New construction"
+      "NEWCONSTRUCTION": "New construction"
     },
     "STATUS": {
       "DRAFT": "Draft",
@@ -1569,7 +1570,7 @@
       "LOW": "Low",
       "MEDIUM": "Medium",
       "HIGH": "High",
-      "VERY_HIGH": "Very high",
+      "VERYHIGH": "Very high",
       "MARKET": "Market risk",
       "LIQUIDITY": "Liquidity risk",
       "PROJECT": "Project risk",
@@ -1632,6 +1633,13 @@
     "UPDATES": {
       "TITLE": "Project Updates"
     },
+    "UPDATE_TYPE": {
+      "GENERAL": "General",
+      "CONSTRUCTIONSTARTED": "Construction started",
+      "RENOVATIONPROGRESS": "Renovation progress",
+      "MILESTONE": "Funding milestone",
+      "FINANCIALUPDATE": "Financial update"
+    },
     "CALCULATOR": {
       "TITLE": "Investment Calculator",
       "AMOUNT": "Amount",
@@ -1648,6 +1656,114 @@
       "LOAD_ERROR": "Could not load your watchlist.",
       "EMPTY_TITLE": "Your watchlist is empty",
       "EMPTY_MESSAGE": "Projects you save will appear here."
+    }
+  },
+  "ADMIN_INVESTMENTS": {
+    "LIST": {
+      "TITLE": "Investment Portal — Admin",
+      "SUBTITLE": "Manage investment projects across every stage: draft, review, publish, and beyond.",
+      "NEW_PROJECT": "New project",
+      "SEARCH_PLACEHOLDER": "Search by title",
+      "ALL_STATUSES": "All statuses",
+      "ALL_TYPES": "All types",
+      "COL_TITLE": "Title",
+      "COL_TYPE": "Type",
+      "COL_STATUS": "Status",
+      "COL_FUNDING": "Funding (raised / target)",
+      "COL_CREATED": "Created",
+      "COL_ACTIONS": "Actions",
+      "VIEW": "View",
+      "LOAD_ERROR": "Could not load investment projects.",
+      "EMPTY_TITLE": "No investment projects yet",
+      "EMPTY_MESSAGE": "Create the first investment project to get started."
+    },
+    "FORM": {
+      "CREATE_TITLE": "New Investment Project",
+      "CREATE_SUBTITLE": "Start with the property, title, description, and type. Every other detail (financials, risk, schedule) is added on the project page after creation.",
+      "PROPERTY_ID": "Property ID",
+      "LOOKUP": "Look up",
+      "PROPERTY_NOT_FOUND": "No published property found with this ID.",
+      "TITLE_FIELD": "Title",
+      "SHORT_DESCRIPTION": "Short description",
+      "DESCRIPTION": "Description",
+      "PROJECT_TYPE": "Project type",
+      "CURRENCY": "Currency (ISO code, e.g. USD)",
+      "TARGET_AMOUNT": "Target amount",
+      "RAISED_AMOUNT": "Raised amount (informational)",
+      "MINIMUM_INVESTMENT": "Minimum investment",
+      "MAXIMUM_INVESTMENT": "Maximum investment",
+      "TERM_MONTHS": "Term (months)",
+      "EXPECTED_RETURN_MIN": "Expected return, min %",
+      "EXPECTED_RETURN_MAX": "Expected return, max %",
+      "START_DATE": "Start date",
+      "END_DATE": "End date",
+      "CREATE_SUBMIT": "Create project",
+      "CREATE_SUCCESS": "Investment project created as a Draft.",
+      "CREATE_ERROR": "Could not create the investment project."
+    },
+    "WORKFLOW": {
+      "ACTION_SUBMIT_REVIEW": "Submit for review",
+      "ACTION_APPROVE": "Approve",
+      "ACTION_REJECT": "Reject",
+      "ACTION_SCHEDULE": "Schedule for publishing",
+      "ACTION_PUBLISH": "Publish",
+      "ACTION_SUSPEND": "Suspend",
+      "ACTION_CLOSE": "Close"
+    },
+    "FINANCIALS": {
+      "NOTARY_COST": "Notary cost",
+      "BROKER_COST": "Broker cost",
+      "FINANCING_COST": "Financing cost",
+      "OPERATING_COST": "Operating cost",
+      "CONTINGENCY_RESERVE": "Contingency reserve",
+      "CALCULATED": "Calculated",
+      "NON_GUARANTEED": "Non-guaranteed, indicative"
+    },
+    "RISK": {
+      "SCORE": "Risk score",
+      "SUMMARY": "Risk summary"
+    },
+    "DETAIL": {
+      "BACK_TO_LIST": "← Back to list",
+      "LOAD_ERROR": "Could not load this project.",
+      "SAVED": "Saved.",
+      "SAVE_ERROR": "Could not save changes.",
+      "WORKFLOW_TITLE": "Workflow",
+      "WORKFLOW_ERROR": "Could not complete this action.",
+      "NO_ACTIONS": "No further workflow actions are available from the current status.",
+      "READINESS_TITLE_DESC": "Title and description",
+      "READINESS_FINANCIALS": "Financials",
+      "READINESS_RISK": "Risk assessment",
+      "READINESS_DOCUMENTS": "Required public documents (project plan, financial statement)",
+      "REJECTION_REASON": "Rejection reason",
+      "CONFIRM_ACTION_INTRO": "Current status: {{status}}. Confirm this action?",
+      "REJECT_REASON_LABEL": "Reason (shown to the project owner)",
+      "SCHEDULE_AT_LABEL": "Scheduled publish date/time (optional)",
+      "SCHEDULE_HINT": "Leave empty to allow publishing immediately once Scheduled.",
+      "OVERVIEW_TITLE": "Overview",
+      "NON_GUARANTEED_NOTE": "Expected return is indicative only — never a guarantee.",
+      "FINANCIALS_TITLE": "Financials",
+      "FINANCIALS_NOTE": "Total project cost is calculated automatically from the fields below. Expected revenue/profit are non-guaranteed estimates.",
+      "RISK_TITLE": "Risk Assessment",
+      "DOCUMENTS_TITLE": "Documents",
+      "MAKE_PUBLIC": "Make public on publication",
+      "UPLOAD": "Upload",
+      "DOCUMENT_UPLOADED": "Document uploaded.",
+      "UPLOAD_ERROR": "Could not upload the document.",
+      "NO_DOCUMENTS": "No documents yet.",
+      "PUBLIC": "Public",
+      "PRIVATE": "Private",
+      "PUBLISH": "Publish",
+      "UNPUBLISH": "Unpublish",
+      "VISIBILITY_ERROR": "Could not update document visibility.",
+      "CONFIRM_DELETE_DOCUMENT": "Delete document \"{{name}}\"? This cannot be undone.",
+      "DELETE_ERROR": "Could not delete the document.",
+      "UPDATES_TITLE": "Project Updates",
+      "UPDATE_TYPE": "Update type",
+      "UPDATE_CONTENT": "Content",
+      "ADD_UPDATE": "Add update",
+      "UPDATE_ADDED": "Update published.",
+      "CONFIRM_DELETE": "Are you sure?"
     }
   }
 }

@@ -1550,7 +1550,7 @@
       "INDUSTRIAL": "Industrie",
       "LAND": "Grundstück",
       "RENOVATION": "Renovierung",
-      "NEW_CONSTRUCTION": "Neubau"
+      "NEWCONSTRUCTION": "Neubau"
     },
     "STATUS": {
       "DRAFT": "Entwurf",
@@ -1569,7 +1569,7 @@
       "LOW": "Niedrig",
       "MEDIUM": "Mittel",
       "HIGH": "Hoch",
-      "VERY_HIGH": "Sehr hoch",
+      "VERYHIGH": "Sehr hoch",
       "MARKET": "Marktrisiko",
       "LIQUIDITY": "Liquiditätsrisiko",
       "PROJECT": "Projektrisiko",
@@ -1632,6 +1632,13 @@
     "UPDATES": {
       "TITLE": "Projekt-Updates"
     },
+    "UPDATE_TYPE": {
+      "GENERAL": "Allgemein",
+      "CONSTRUCTIONSTARTED": "Bau begonnen",
+      "RENOVATIONPROGRESS": "Renovierungsfortschritt",
+      "MILESTONE": "Finanzierungsmeilenstein",
+      "FINANCIALUPDATE": "Finanz-Update"
+    },
     "CALCULATOR": {
       "TITLE": "Investitionsrechner",
       "AMOUNT": "Betrag",
@@ -1648,6 +1655,114 @@
       "LOAD_ERROR": "Merkliste konnte nicht geladen werden.",
       "EMPTY_TITLE": "Ihre Merkliste ist leer",
       "EMPTY_MESSAGE": "Gespeicherte Projekte werden hier angezeigt."
+    }
+  },
+  "ADMIN_INVESTMENTS": {
+    "LIST": {
+      "TITLE": "Investment-Portal — Verwaltung",
+      "SUBTITLE": "Investitionsprojekte über alle Phasen verwalten: Entwurf, Prüfung, Veröffentlichung und darüber hinaus.",
+      "NEW_PROJECT": "Neues Projekt",
+      "SEARCH_PLACEHOLDER": "Nach Titel suchen",
+      "ALL_STATUSES": "Alle Status",
+      "ALL_TYPES": "Alle Typen",
+      "COL_TITLE": "Titel",
+      "COL_TYPE": "Typ",
+      "COL_STATUS": "Status",
+      "COL_FUNDING": "Finanzierung (gesammelt / Ziel)",
+      "COL_CREATED": "Erstellt",
+      "COL_ACTIONS": "Aktionen",
+      "VIEW": "Anzeigen",
+      "LOAD_ERROR": "Investitionsprojekte konnten nicht geladen werden.",
+      "EMPTY_TITLE": "Noch keine Investitionsprojekte",
+      "EMPTY_MESSAGE": "Erstellen Sie das erste Investitionsprojekt, um zu beginnen."
+    },
+    "FORM": {
+      "CREATE_TITLE": "Neues Investitionsprojekt",
+      "CREATE_SUBTITLE": "Beginnen Sie mit Immobilie, Titel, Beschreibung und Typ. Alle weiteren Details (Finanzen, Risiko, Zeitplan) werden nach der Erstellung auf der Projektseite hinzugefügt.",
+      "PROPERTY_ID": "Immobilien-ID",
+      "LOOKUP": "Nachschlagen",
+      "PROPERTY_NOT_FOUND": "Keine veröffentlichte Immobilie mit dieser ID gefunden.",
+      "TITLE_FIELD": "Titel",
+      "SHORT_DESCRIPTION": "Kurzbeschreibung",
+      "DESCRIPTION": "Beschreibung",
+      "PROJECT_TYPE": "Projekttyp",
+      "CURRENCY": "Währung (ISO-Code, z. B. USD)",
+      "TARGET_AMOUNT": "Zielbetrag",
+      "RAISED_AMOUNT": "Gesammelter Betrag (informativ)",
+      "MINIMUM_INVESTMENT": "Mindestinvestition",
+      "MAXIMUM_INVESTMENT": "Höchstinvestition",
+      "TERM_MONTHS": "Laufzeit (Monate)",
+      "EXPECTED_RETURN_MIN": "Erwartete Rendite, min. %",
+      "EXPECTED_RETURN_MAX": "Erwartete Rendite, max. %",
+      "START_DATE": "Startdatum",
+      "END_DATE": "Enddatum",
+      "CREATE_SUBMIT": "Projekt erstellen",
+      "CREATE_SUCCESS": "Investitionsprojekt als Entwurf erstellt.",
+      "CREATE_ERROR": "Investitionsprojekt konnte nicht erstellt werden."
+    },
+    "WORKFLOW": {
+      "ACTION_SUBMIT_REVIEW": "Zur Prüfung einreichen",
+      "ACTION_APPROVE": "Genehmigen",
+      "ACTION_REJECT": "Ablehnen",
+      "ACTION_SCHEDULE": "Veröffentlichung planen",
+      "ACTION_PUBLISH": "Veröffentlichen",
+      "ACTION_SUSPEND": "Aussetzen",
+      "ACTION_CLOSE": "Schließen"
+    },
+    "FINANCIALS": {
+      "NOTARY_COST": "Notarkosten",
+      "BROKER_COST": "Maklerkosten",
+      "FINANCING_COST": "Finanzierungskosten",
+      "OPERATING_COST": "Betriebskosten",
+      "CONTINGENCY_RESERVE": "Rücklage für Unvorhergesehenes",
+      "CALCULATED": "Berechnet",
+      "NON_GUARANTEED": "Nicht garantiert, indikativ"
+    },
+    "RISK": {
+      "SCORE": "Risikowert",
+      "SUMMARY": "Risikozusammenfassung"
+    },
+    "DETAIL": {
+      "BACK_TO_LIST": "← Zurück zur Liste",
+      "LOAD_ERROR": "Dieses Projekt konnte nicht geladen werden.",
+      "SAVED": "Gespeichert.",
+      "SAVE_ERROR": "Änderungen konnten nicht gespeichert werden.",
+      "WORKFLOW_TITLE": "Workflow",
+      "WORKFLOW_ERROR": "Diese Aktion konnte nicht abgeschlossen werden.",
+      "NO_ACTIONS": "Vom aktuellen Status aus sind keine weiteren Workflow-Aktionen verfügbar.",
+      "READINESS_TITLE_DESC": "Titel und Beschreibung",
+      "READINESS_FINANCIALS": "Finanzen",
+      "READINESS_RISK": "Risikobewertung",
+      "READINESS_DOCUMENTS": "Erforderliche öffentliche Dokumente (Projektplan, Finanzbericht)",
+      "REJECTION_REASON": "Ablehnungsgrund",
+      "CONFIRM_ACTION_INTRO": "Aktueller Status: {{status}}. Diese Aktion bestätigen?",
+      "REJECT_REASON_LABEL": "Grund (dem Projektinhaber angezeigt)",
+      "SCHEDULE_AT_LABEL": "Geplanter Veröffentlichungszeitpunkt (optional)",
+      "SCHEDULE_HINT": "Leer lassen, um sofortige Veröffentlichung nach Erreichen von \"Geplant\" zu erlauben.",
+      "OVERVIEW_TITLE": "Übersicht",
+      "NON_GUARANTEED_NOTE": "Die erwartete Rendite ist rein indikativ — niemals eine Garantie.",
+      "FINANCIALS_TITLE": "Finanzen",
+      "FINANCIALS_NOTE": "Die Gesamtprojektkosten werden automatisch aus den untenstehenden Feldern berechnet. Erwarteter Umsatz/Gewinn sind nicht garantierte Schätzungen.",
+      "RISK_TITLE": "Risikobewertung",
+      "DOCUMENTS_TITLE": "Dokumente",
+      "MAKE_PUBLIC": "Bei Veröffentlichung öffentlich machen",
+      "UPLOAD": "Hochladen",
+      "DOCUMENT_UPLOADED": "Dokument hochgeladen.",
+      "UPLOAD_ERROR": "Dokument konnte nicht hochgeladen werden.",
+      "NO_DOCUMENTS": "Noch keine Dokumente.",
+      "PUBLIC": "Öffentlich",
+      "PRIVATE": "Privat",
+      "PUBLISH": "Veröffentlichen",
+      "UNPUBLISH": "Zurückziehen",
+      "VISIBILITY_ERROR": "Sichtbarkeit des Dokuments konnte nicht geändert werden.",
+      "CONFIRM_DELETE_DOCUMENT": "Dokument \"{{name}}\" löschen? Dies kann nicht rückgängig gemacht werden.",
+      "DELETE_ERROR": "Dokument konnte nicht gelöscht werden.",
+      "UPDATES_TITLE": "Projekt-Updates",
+      "UPDATE_TYPE": "Update-Typ",
+      "UPDATE_CONTENT": "Inhalt",
+      "ADD_UPDATE": "Update hinzufügen",
+      "UPDATE_ADDED": "Update veröffentlicht.",
+      "CONFIRM_DELETE": "Sind Sie sicher?"
     }
   }
 }
