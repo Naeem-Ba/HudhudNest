@@ -21,6 +21,16 @@ export class ToastService {
       return;
     }
 
+    // على الهاتف تحديدًا، عدّة أخطاء متزامنة (مثل فشل عدة طلبات API دفعة واحدة)
+    // كانت تكدّس نفس الرسالة كتنبيه منفصل لكل طلب فاشل، لتغطي كامل الشاشة.
+    // تجاهل رسالة مكرّرة لا تزال معروضة بدل تكديسها.
+    const alreadyShown = this.messages().some(
+      item => item.message === trimmedMessage && item.type === type
+    );
+    if (alreadyShown) {
+      return;
+    }
+
     const id = Date.now() + Math.floor(Math.random() * 1000);
     const toast: ToastMessage = { id, message: trimmedMessage, type, title };
 
