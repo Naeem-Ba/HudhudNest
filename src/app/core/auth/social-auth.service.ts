@@ -51,13 +51,28 @@
 // في initialize() — بلا أي تغيير على شكل الاستجابة أو عقد الـ Backend.
 // =====================================================================
 import { Injectable } from '@angular/core';
-import { Observable, Subscription } from 'rxjs';
+import { Observable, Subscriber, Subscription } from 'rxjs';
 import { timeout } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
+import { Capacitor } from '@capacitor/core';
+import { GoogleSignIn, ErrorCode as GoogleNativeErrorCode } from '@capawesome/capacitor-google-sign-in';
+import { SignInWithApple } from '@capacitor-community/apple-sign-in';
 
 import { environment } from '../../../environments/environment';
 import { AuthApiService } from './auth-api.service';
 import { AuthTokenResponse } from '../models/auth.model';
+
+// =====================================================================
+// [BUG-17] المسار الأصلي (native) — Google تحظر صراحةً تدفقات OAuth
+// الخاصة بها (SDK الويب أعلاه، ux_mode: 'popup') داخل WKWebView/WebView
+// مضمّن، لذا لا يعمل هذا الكود إطلاقاً داخل تطبيق Capacitor (iOS/Android).
+// الحل: عند Capacitor.isNativePlatform()، نستدعي مكوّناً أصلياً حقيقياً
+// (@capawesome/capacitor-google-sign-in، @capacitor-community/apple-sign-in)
+// بدل SDK الويب، ثم نمرّر idToken/identityToken الناتج لنفس
+// authApi.loginWithGoogle()/loginWithApple() الموجودين أصلاً — الباك اند
+// لا يتغيّر، فهو يتحقق من التوكن بصرف النظر عن مصدره. مسار الويب أعلاه
+// (وكل منطق [FIX-1]/[FIX-2]) بقي كما هو تماماً، بلا حذف أو تعديل.
+// =====================================================================
 
 declare global {
   interface Window {
@@ -164,6 +179,19 @@ export class SocialAuthService {
       if (!this.isGoogleAvailable) {
         observer.error(new Error(this.t('AUTH.ERRORS.GOOGLE_NOT_CONFIGURED')));
         return undefined;
+      }
+
+      /* [BUG-17] مسار أصلي بديل بالكامل عن مسار الويب أدناه (بما فيه زر
+         BUG-21 المخفي) — انظر تعليق الرأس. يُعيَّن backendSubscription عبر
+         callback لأن الفرع الأصلي غير متزامن (Promise) بينما مسار الويب
+         أدناه يستخدم إغلاقاً (closure) مباشراً على نفس المتغيّر. نفس نمط
+         الفرع المبكر في loginWithApple() أدناه بالضبط. */
+      if (Capacitor.isNativePlatform()) {
+        this.loginWithGoogleNative(observer, sub => {
+          backendSubscription = sub;
+        });
+
+        return () => backendSubscription?.unsubscribe();
       }
 
       /* [BUG-21] هذا الاستدعاء يُسجَّل كمعالج الاعتماد النشط الوحيد —
@@ -289,6 +317,17 @@ export class SocialAuthService {
       if (!this.isAppleAvailable) {
         observer.error(new Error(this.t('AUTH.ERRORS.APPLE_NOT_CONFIGURED')));
         return undefined;
+      }
+
+      /* [BUG-17] مسار أصلي — انظر تعليق رأس الملف. Apple تفرض فعلياً
+         "Sign in with Apple" الأصلي (ASAuthorizationAppleIDProvider) لأي
+         زر دخول داخل تطبيق iOS، بصرف النظر عن WebView. */
+      if (Capacitor.isNativePlatform()) {
+        this.loginWithAppleNative(observer, sub => {
+          backendSubscription = sub;
+        });
+
+        return () => backendSubscription?.unsubscribe();
       }
 
       this.loadAppleScript()
@@ -421,6 +460,101 @@ export class SocialAuthService {
     }
 
     return this.t('AUTH.ERRORS.SOCIAL_GENERIC_FAILED');
+  }
+
+  /* [BUG-17] مسار Google الأصلي. لا نافذة منبثقة، لا SDK ويب — استدعاء
+     مباشر لمكوّن Capacitor أصلي حقيقي (Credential Manager على Android،
+     Google Sign-In SDK على iOS). يتطلب "web client ID" (وليس Android/iOS
+     Client ID) حتى على الأجهزة الأصلية — انظر environment.googleClientId. */
+  private loginWithGoogleNative(
+    observer: Subscriber<AuthTokenResponse>,
+    setBackendSubscription: (sub: Subscription) => void
+  ): void {
+    GoogleSignIn.initialize({ clientId: environment.googleClientId })
+      .then(() => GoogleSignIn.signIn())
+      .then(result => {
+        if (!result.idToken) {
+          observer.error(new Error(this.t('AUTH.ERRORS.GOOGLE_NO_TOKEN')));
+          return;
+        }
+
+        const sub = this.authApi.loginWithGoogle({ idToken: result.idToken }).subscribe({
+          next: tokenResponse => {
+            observer.next(tokenResponse);
+            observer.complete();
+          },
+          error: error => observer.error(error)
+        });
+
+        setBackendSubscription(sub);
+      })
+      .catch((error: unknown) => {
+        observer.error(new Error(this.mapGoogleNativeError(error)));
+      });
+  }
+
+  /** [BUG-17] يترجم ErrorCode المكتوب لمكوّن Google الأصلي إلى مفتاح ترجمة */
+  private mapGoogleNativeError(error: unknown): string {
+    const code = (error as { code?: string } | undefined)?.code;
+
+    if (code === GoogleNativeErrorCode.SignInCanceled) {
+      return this.t('AUTH.ERRORS.GOOGLE_SIGNIN_CANCELED');
+    }
+
+    if (code === GoogleNativeErrorCode.NoCredentialAvailable) {
+      return this.t('AUTH.ERRORS.GOOGLE_NO_ACCOUNT');
+    }
+
+    return this.t('AUTH.ERRORS.GOOGLE_SDK_UNAVAILABLE');
+  }
+
+  /* [BUG-17] مسار Apple الأصلي — ASAuthorizationAppleIDProvider عبر
+     الإضافة. نفس منطق nonce/B-16 الموجود في المسار الويب أعلاه بالضبط:
+     القيمة الخام تُلتقط مرة واحدة هنا وتُرسَل للباك اند ليقارنها بعد تجزئتها،
+     لأن authorize() لا يُعيد الـ nonce الخام أبداً في استجابته. */
+  private loginWithAppleNative(
+    observer: Subscriber<AuthTokenResponse>,
+    setBackendSubscription: (sub: Subscription) => void
+  ): void {
+    const redirectUri =
+      environment.appleRedirectUri?.trim() ||
+      `${window.location.origin}/auth/apple/callback`;
+    const nonce = this.createRandomValue();
+
+    SignInWithApple.authorize({
+      clientId: environment.appleClientId,
+      redirectURI: redirectUri,
+      scopes: 'name email',
+      state: this.createRandomValue(),
+      nonce
+    })
+      .then(({ response }) => {
+        const identityToken = response.identityToken;
+
+        if (!identityToken) {
+          observer.error(new Error(this.t('AUTH.ERRORS.APPLE_NO_TOKEN')));
+          return;
+        }
+
+        const sub = this.authApi.loginWithApple({
+          identityToken,
+          authorizationCode: response.authorizationCode ?? null,
+          firstName: response.givenName ?? null,
+          lastName: response.familyName ?? null,
+          nonce
+        }).subscribe({
+          next: tokenResponse => {
+            observer.next(tokenResponse);
+            observer.complete();
+          },
+          error: error => observer.error(error)
+        });
+
+        setBackendSubscription(sub);
+      })
+      .catch(() => {
+        observer.error(new Error(this.t('AUTH.ERRORS.APPLE_SDK_UNAVAILABLE')));
+      });
   }
 
   private loadGoogleScript(): Promise<void> {

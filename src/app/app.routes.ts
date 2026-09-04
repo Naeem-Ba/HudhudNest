@@ -91,6 +91,28 @@ export const routes: Routes = [
           import('./features/short-stay/short-stay-detail/short-stay-detail.page')
             .then(m => m.ShortStayDetailPage)
       },
+      // Investment Discovery Portal (Phase 1) — discovery/analysis + watchlist + Expression of
+      // Interest only, no payment/investment flow. 'watchlist' must be declared before the
+      // trailing 'investments/:id' catch-all-by-param route, same reasoning as short-stay above.
+      {
+        path: 'investments/watchlist',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/investments/investment-watchlist/investment-watchlist.page')
+            .then(m => m.InvestmentWatchlistPage)
+      },
+      {
+        path: 'investments',
+        loadComponent: () =>
+          import('./features/investments/investment-list/investment-list.page')
+            .then(m => m.InvestmentListPage)
+      },
+      {
+        path: 'investments/:id',
+        loadComponent: () =>
+          import('./features/investments/investment-details/investment-details.page')
+            .then(m => m.InvestmentDetailsPage)
+      },
       {
         path: 'kontakt',
         loadComponent: () =>
@@ -303,6 +325,32 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./admin/location-suggestions/location-suggestions.page')
         .then(m => m.AdminLocationSuggestionsPage)
+  },
+
+  // Admin Investment Portal (Phase 2) — backend: AdminInvestmentsController,
+  // [Authorize(Roles = "Admin")] on every action; AdminGuard here is a UX
+  // convenience, the server remains the real boundary. 'new' is registered
+  // before ':id' so it is never swallowed by the id-matching route.
+  {
+    path: 'admin/investments',
+    canActivate: [AdminGuard],
+    loadComponent: () =>
+      import('./features/investments/admin/admin-investment-list/admin-investment-list.page')
+        .then(m => m.AdminInvestmentListPage)
+  },
+  {
+    path: 'admin/investments/new',
+    canActivate: [AdminGuard],
+    loadComponent: () =>
+      import('./features/investments/admin/admin-investment-form/admin-investment-form.page')
+        .then(m => m.AdminInvestmentFormPage)
+  },
+  {
+    path: 'admin/investments/:id',
+    canActivate: [AdminGuard],
+    loadComponent: () =>
+      import('./features/investments/admin/admin-investment-detail/admin-investment-detail.page')
+        .then(m => m.AdminInvestmentDetailPage)
   },
 
   {

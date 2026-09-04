@@ -1,0 +1,394 @@
+<section class="page" *ngIf="!loading(); else loadingTpl">
+  <header class="page-header">
+    <div>
+      <h1>{{ review()?.project?.title }}</h1>
+      <span class="status-chip" [class]="'status-chip--' + currentStatus().toLowerCase()">
+        {{ ('INVESTMENTS.STATUS.' + currentStatus().toUpperCase()) | translate }}
+      </span>
+    </div>
+    <a routerLink="/admin/investments" class="btn btn--outline">
+      {{ 'ADMIN_INVESTMENTS.DETAIL.BACK_TO_LIST' | translate }}
+    </a>
+  </header>
+
+  <!-- ── Workflow ─────────────────────────────────────────── -->
+  <section class="card">
+    <h2>{{ 'ADMIN_INVESTMENTS.DETAIL.WORKFLOW_TITLE' | translate }}</h2>
+
+    <ul class="readiness" *ngIf="review()?.readiness as readiness">
+      <li [class.readiness--ok]="readiness.hasTitleAndDescription" [class.readiness--missing]="!readiness.hasTitleAndDescription">
+        {{ 'ADMIN_INVESTMENTS.DETAIL.READINESS_TITLE_DESC' | translate }}
+      </li>
+      <li [class.readiness--ok]="readiness.hasFinancials" [class.readiness--missing]="!readiness.hasFinancials">
+        {{ 'ADMIN_INVESTMENTS.DETAIL.READINESS_FINANCIALS' | translate }}
+      </li>
+      <li [class.readiness--ok]="readiness.hasRiskAssessment" [class.readiness--missing]="!readiness.hasRiskAssessment">
+        {{ 'ADMIN_INVESTMENTS.DETAIL.READINESS_RISK' | translate }}
+      </li>
+      <li [class.readiness--ok]="readiness.hasRequiredDocuments" [class.readiness--missing]="!readiness.hasRequiredDocuments">
+        {{ 'ADMIN_INVESTMENTS.DETAIL.READINESS_DOCUMENTS' | translate }}
+      </li>
+    </ul>
+
+    <p class="rejection-reason" *ngIf="review()?.rejectionReason">
+      {{ 'ADMIN_INVESTMENTS.DETAIL.REJECTION_REASON' | translate }}: {{ review()?.rejectionReason }}
+    </p>
+
+    <div class="workflow-actions">
+      <button
+        type="button"
+        *ngFor="let action of availableActions()"
+        class="btn"
+        [class.btn--danger]="action === 'reject' || action === 'suspend' || action === 'close'"
+        [class.btn--primary]="action !== 'reject' && action !== 'suspend' && action !== 'close'"
+        (click)="requestAction(action)"
+      >
+        {{ actionLabelKey(action) | translate }}
+      </button>
+      <p class="no-actions" *ngIf="availableActions().length === 0">
+        {{ 'ADMIN_INVESTMENTS.DETAIL.NO_ACTIONS' | translate }}
+      </p>
+    </div>
+  </section>
+
+  <!-- ── Overview / edit ──────────────────────────────────── -->
+  <section class="card">
+    <h2>{{ 'ADMIN_INVESTMENTS.DETAIL.OVERVIEW_TITLE' | translate }}</h2>
+
+    <form class="form" [formGroup]="overviewForm" (ngSubmit)="saveOverview()">
+      <div class="field">
+        <label for="ov-title">{{ 'ADMIN_INVESTMENTS.FORM.TITLE_FIELD' | translate }}</label>
+        <input id="ov-title" type="text" formControlName="title" maxlength="200" />
+        <app-form-error [control]="overviewForm.controls.title" [submitted]="overviewSubmitted()"></app-form-error>
+      </div>
+
+      <div class="field">
+        <label for="ov-short">{{ 'ADMIN_INVESTMENTS.FORM.SHORT_DESCRIPTION' | translate }}</label>
+        <input id="ov-short" type="text" formControlName="shortDescription" maxlength="300" />
+        <app-form-error [control]="overviewForm.controls.shortDescription" [submitted]="overviewSubmitted()"></app-form-error>
+      </div>
+
+      <div class="field">
+        <label for="ov-desc">{{ 'ADMIN_INVESTMENTS.FORM.DESCRIPTION' | translate }}</label>
+        <textarea id="ov-desc" rows="5" formControlName="description" maxlength="8000"></textarea>
+        <app-form-error [control]="overviewForm.controls.description" [submitted]="overviewSubmitted()"></app-form-error>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="ov-type">{{ 'ADMIN_INVESTMENTS.FORM.PROJECT_TYPE' | translate }}</label>
+          <select id="ov-type" formControlName="projectType">
+            <option *ngFor="let type of projectTypes" [value]="type">
+              {{ ('INVESTMENTS.PROJECT_TYPE.' + type.toUpperCase()) | translate }}
+            </option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="ov-currency">{{ 'ADMIN_INVESTMENTS.FORM.CURRENCY' | translate }}</label>
+          <input id="ov-currency" type="text" formControlName="currency" maxlength="3" />
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="ov-target">{{ 'ADMIN_INVESTMENTS.FORM.TARGET_AMOUNT' | translate }}</label>
+          <input id="ov-target" type="number" step="0.01" formControlName="targetAmount" />
+          <app-form-error [control]="overviewForm.controls.targetAmount" [submitted]="overviewSubmitted()"></app-form-error>
+        </div>
+        <div class="field">
+          <label for="ov-raised">{{ 'ADMIN_INVESTMENTS.FORM.RAISED_AMOUNT' | translate }}</label>
+          <input id="ov-raised" type="number" step="0.01" formControlName="raisedAmount" />
+          <app-form-error [control]="overviewForm.controls.raisedAmount" [submitted]="overviewSubmitted()"></app-form-error>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="ov-min">{{ 'ADMIN_INVESTMENTS.FORM.MINIMUM_INVESTMENT' | translate }}</label>
+          <input id="ov-min" type="number" step="0.01" formControlName="minimumInvestment" />
+          <app-form-error [control]="overviewForm.controls.minimumInvestment" [submitted]="overviewSubmitted()"></app-form-error>
+        </div>
+        <div class="field">
+          <label for="ov-max">{{ 'ADMIN_INVESTMENTS.FORM.MAXIMUM_INVESTMENT' | translate }}</label>
+          <input id="ov-max" type="number" step="0.01" formControlName="maximumInvestment" />
+          <app-form-error [control]="overviewForm.controls.maximumInvestment" [submitted]="overviewSubmitted()"></app-form-error>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="ov-term">{{ 'ADMIN_INVESTMENTS.FORM.TERM_MONTHS' | translate }}</label>
+          <input id="ov-term" type="number" formControlName="investmentTermMonths" />
+        </div>
+        <div class="field">
+          <label for="ov-ret-min">{{ 'ADMIN_INVESTMENTS.FORM.EXPECTED_RETURN_MIN' | translate }}</label>
+          <input id="ov-ret-min" type="number" step="0.01" formControlName="expectedReturnMin" />
+        </div>
+        <div class="field">
+          <label for="ov-ret-max">{{ 'ADMIN_INVESTMENTS.FORM.EXPECTED_RETURN_MAX' | translate }}</label>
+          <input id="ov-ret-max" type="number" step="0.01" formControlName="expectedReturnMax" />
+        </div>
+      </div>
+      <p class="non-guaranteed-note">{{ 'ADMIN_INVESTMENTS.DETAIL.NON_GUARANTEED_NOTE' | translate }}</p>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="ov-start">{{ 'ADMIN_INVESTMENTS.FORM.START_DATE' | translate }}</label>
+          <input id="ov-start" type="date" formControlName="startDate" />
+        </div>
+        <div class="field">
+          <label for="ov-end">{{ 'ADMIN_INVESTMENTS.FORM.END_DATE' | translate }}</label>
+          <input id="ov-end" type="date" formControlName="endDate" />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn--primary" [disabled]="savingOverview()">
+          {{ savingOverview() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ── Financials ───────────────────────────────────────── -->
+  <section class="card">
+    <h2>{{ 'ADMIN_INVESTMENTS.DETAIL.FINANCIALS_TITLE' | translate }}</h2>
+    <p class="section-note">{{ 'ADMIN_INVESTMENTS.DETAIL.FINANCIALS_NOTE' | translate }}</p>
+
+    <form class="form" [formGroup]="financialsForm" (ngSubmit)="saveFinancials()">
+      <div class="field-grid">
+        <div class="field">
+          <label for="fin-purchase">{{ 'INVESTMENTS.FINANCIALS.PURCHASE_PRICE' | translate }}</label>
+          <input id="fin-purchase" type="number" step="0.01" formControlName="purchasePrice" />
+        </div>
+        <div class="field">
+          <label for="fin-reno">{{ 'INVESTMENTS.FINANCIALS.RENOVATION' | translate }}</label>
+          <input id="fin-reno" type="number" step="0.01" formControlName="renovationCost" />
+        </div>
+        <div class="field">
+          <label for="fin-const">{{ 'INVESTMENTS.FINANCIALS.CONSTRUCTION' | translate }}</label>
+          <input id="fin-const" type="number" step="0.01" formControlName="constructionCost" />
+        </div>
+        <div class="field">
+          <label for="fin-tax">{{ 'INVESTMENTS.FINANCIALS.TAXES' | translate }}</label>
+          <input id="fin-tax" type="number" step="0.01" formControlName="taxes" />
+        </div>
+        <div class="field">
+          <label for="fin-notary">{{ 'ADMIN_INVESTMENTS.FINANCIALS.NOTARY_COST' | translate }}</label>
+          <input id="fin-notary" type="number" step="0.01" formControlName="notaryCost" />
+        </div>
+        <div class="field">
+          <label for="fin-broker">{{ 'ADMIN_INVESTMENTS.FINANCIALS.BROKER_COST' | translate }}</label>
+          <input id="fin-broker" type="number" step="0.01" formControlName="brokerCost" />
+        </div>
+        <div class="field">
+          <label for="fin-financing">{{ 'ADMIN_INVESTMENTS.FINANCIALS.FINANCING_COST' | translate }}</label>
+          <input id="fin-financing" type="number" step="0.01" formControlName="financingCost" />
+        </div>
+        <div class="field">
+          <label for="fin-op">{{ 'ADMIN_INVESTMENTS.FINANCIALS.OPERATING_COST' | translate }}</label>
+          <input id="fin-op" type="number" step="0.01" formControlName="operatingCost" />
+        </div>
+        <div class="field">
+          <label for="fin-reserve">{{ 'ADMIN_INVESTMENTS.FINANCIALS.CONTINGENCY_RESERVE' | translate }}</label>
+          <input id="fin-reserve" type="number" step="0.01" formControlName="contingencyReserve" />
+        </div>
+      </div>
+
+      <div class="calculated-total">
+        {{ 'INVESTMENTS.FINANCIALS.TOTAL_COST' | translate }}:
+        <strong>{{ totalProjectCost() | number:'1.0-2' }}</strong>
+        <span class="calculated-badge">{{ 'ADMIN_INVESTMENTS.FINANCIALS.CALCULATED' | translate }}</span>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="fin-revenue">{{ 'INVESTMENTS.FINANCIALS.EXPECTED_REVENUE' | translate }}</label>
+          <input id="fin-revenue" type="number" step="0.01" formControlName="expectedRevenue" />
+          <span class="expected-badge">{{ 'ADMIN_INVESTMENTS.FINANCIALS.NON_GUARANTEED' | translate }}</span>
+        </div>
+        <div class="field">
+          <label for="fin-profit">{{ 'INVESTMENTS.FINANCIALS.EXPECTED_PROFIT' | translate }}</label>
+          <input id="fin-profit" type="number" step="0.01" formControlName="expectedProfit" />
+          <span class="expected-badge">{{ 'ADMIN_INVESTMENTS.FINANCIALS.NON_GUARANTEED' | translate }}</span>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn--primary" [disabled]="savingFinancials()">
+          {{ savingFinancials() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ── Risk ─────────────────────────────────────────────── -->
+  <section class="card">
+    <h2>{{ 'ADMIN_INVESTMENTS.DETAIL.RISK_TITLE' | translate }}</h2>
+
+    <form class="form" [formGroup]="riskForm" (ngSubmit)="saveRisk()">
+      <div class="field-grid">
+        <div class="field">
+          <label for="risk-overall">{{ 'INVESTMENTS.RISK.OVERALL' | translate }}</label>
+          <select id="risk-overall" formControlName="riskLevel">
+            <option *ngFor="let level of riskLevels" [value]="level">{{ ('INVESTMENTS.RISK.' + level.toUpperCase()) | translate }}</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="risk-market">{{ 'INVESTMENTS.RISK.MARKET' | translate }}</label>
+          <select id="risk-market" formControlName="marketRisk">
+            <option *ngFor="let level of riskLevels" [value]="level">{{ ('INVESTMENTS.RISK.' + level.toUpperCase()) | translate }}</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="risk-liquidity">{{ 'INVESTMENTS.RISK.LIQUIDITY' | translate }}</label>
+          <select id="risk-liquidity" formControlName="liquidityRisk">
+            <option *ngFor="let level of riskLevels" [value]="level">{{ ('INVESTMENTS.RISK.' + level.toUpperCase()) | translate }}</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="risk-project">{{ 'INVESTMENTS.RISK.PROJECT' | translate }}</label>
+          <select id="risk-project" formControlName="projectRisk">
+            <option *ngFor="let level of riskLevels" [value]="level">{{ ('INVESTMENTS.RISK.' + level.toUpperCase()) | translate }}</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="risk-financing">{{ 'INVESTMENTS.RISK.FINANCING' | translate }}</label>
+          <select id="risk-financing" formControlName="financingRisk">
+            <option *ngFor="let level of riskLevels" [value]="level">{{ ('INVESTMENTS.RISK.' + level.toUpperCase()) | translate }}</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="risk-developer">{{ 'INVESTMENTS.RISK.DEVELOPER' | translate }}</label>
+          <select id="risk-developer" formControlName="developerRisk">
+            <option *ngFor="let level of riskLevels" [value]="level">{{ ('INVESTMENTS.RISK.' + level.toUpperCase()) | translate }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="risk-score">{{ 'ADMIN_INVESTMENTS.RISK.SCORE' | translate }} (0-100)</label>
+        <input id="risk-score" type="number" min="0" max="100" formControlName="riskScore" />
+      </div>
+
+      <div class="field">
+        <label for="risk-summary">{{ 'ADMIN_INVESTMENTS.RISK.SUMMARY' | translate }}</label>
+        <textarea id="risk-summary" rows="4" formControlName="riskSummary" maxlength="2000"></textarea>
+        <app-form-error [control]="riskForm.controls.riskSummary" [submitted]="riskSubmitted()"></app-form-error>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn--primary" [disabled]="savingRisk()">
+          {{ savingRisk() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ── Documents ────────────────────────────────────────── -->
+  <section class="card">
+    <h2>{{ 'ADMIN_INVESTMENTS.DETAIL.DOCUMENTS_TITLE' | translate }}</h2>
+
+    <div class="upload-row">
+      <input type="file" (change)="onFileSelected($event)" accept=".pdf,.png,.jpg,.jpeg" />
+      <select [(ngModel)]="selectedDocumentType" [ngModelOptions]="{standalone: true}">
+        <option *ngFor="let type of documentTypes" [value]="type">{{ ('INVESTMENTS.DOCUMENT_TYPE.' + type.toUpperCase()) | translate }}</option>
+      </select>
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="documentIsPublic" [ngModelOptions]="{standalone: true}" />
+        {{ 'ADMIN_INVESTMENTS.DETAIL.MAKE_PUBLIC' | translate }}
+      </label>
+      <button type="button" class="btn btn--primary" [disabled]="!selectedFile || uploadingDocument()" (click)="uploadDocument()">
+        {{ uploadingDocument() ? ('COMMON.SAVING' | translate) : ('ADMIN_INVESTMENTS.DETAIL.UPLOAD' | translate) }}
+      </button>
+    </div>
+
+    <ul class="document-list" *ngIf="documents().length > 0">
+      <li *ngFor="let doc of documents(); trackBy: trackByDocId">
+        <span class="doc-name">{{ doc.fileName }}</span>
+        <span class="doc-type">{{ ('INVESTMENTS.DOCUMENT_TYPE.' + doc.documentType.toUpperCase()) | translate }}</span>
+        <span class="visibility-chip" [class.visibility-chip--public]="doc.isPublic">
+          {{ (doc.isPublic ? 'ADMIN_INVESTMENTS.DETAIL.PUBLIC' : 'ADMIN_INVESTMENTS.DETAIL.PRIVATE') | translate }}
+        </span>
+        <button
+          type="button"
+          class="btn btn--outline btn--small"
+          [disabled]="togglingDocumentId() === doc.id"
+          (click)="toggleDocumentVisibility(doc)"
+        >
+          {{ (doc.isPublic ? 'ADMIN_INVESTMENTS.DETAIL.UNPUBLISH' : 'ADMIN_INVESTMENTS.DETAIL.PUBLISH') | translate }}
+        </button>
+        <button
+          type="button"
+          class="btn btn--danger btn--small"
+          [disabled]="deletingDocumentId() === doc.id"
+          (click)="deleteDocument(doc)"
+        >
+          {{ 'COMMON.DELETE' | translate }}
+        </button>
+      </li>
+    </ul>
+    <p class="empty-note" *ngIf="documents().length === 0">{{ 'ADMIN_INVESTMENTS.DETAIL.NO_DOCUMENTS' | translate }}</p>
+  </section>
+
+  <!-- ── Updates ──────────────────────────────────────────── -->
+  <section class="card">
+    <h2>{{ 'ADMIN_INVESTMENTS.DETAIL.UPDATES_TITLE' | translate }}</h2>
+
+    <form class="form" [formGroup]="updateForm" (ngSubmit)="addUpdate()">
+      <div class="field-row">
+        <div class="field">
+          <label for="upd-title">{{ 'ADMIN_INVESTMENTS.FORM.TITLE_FIELD' | translate }}</label>
+          <input id="upd-title" type="text" formControlName="title" maxlength="200" />
+        </div>
+        <div class="field">
+          <label for="upd-type">{{ 'ADMIN_INVESTMENTS.DETAIL.UPDATE_TYPE' | translate }}</label>
+          <select id="upd-type" formControlName="updateType">
+            <option *ngFor="let type of updateTypes" [value]="type">{{ ('INVESTMENTS.UPDATE_TYPE.' + type.toUpperCase()) | translate }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="upd-content">{{ 'ADMIN_INVESTMENTS.DETAIL.UPDATE_CONTENT' | translate }}</label>
+        <textarea id="upd-content" rows="3" formControlName="content" maxlength="4000"></textarea>
+        <app-form-error [control]="updateForm.controls.content" [submitted]="updateSubmitted()"></app-form-error>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn--primary" [disabled]="savingUpdate()">
+          {{ savingUpdate() ? ('COMMON.SAVING' | translate) : ('ADMIN_INVESTMENTS.DETAIL.ADD_UPDATE' | translate) }}
+        </button>
+      </div>
+    </form>
+  </section>
+</section>
+
+<ng-template #loadingTpl>
+  <app-loading-spinner [label]="'COMMON.LOADING' | translate"></app-loading-spinner>
+</ng-template>
+
+<!-- Workflow confirmation — every irreversible action names the current state, the requested
+     action, and its consequence before anything is sent (Phase 2 §13). -->
+<app-confirm-modal
+  [open]="!!pendingAction()"
+  [title]="(pendingAction() ? actionLabelKey(pendingAction()!.action) : '') | translate"
+  [danger]="!!pendingAction()?.danger"
+  [loading]="workflowBusy()"
+  [confirmDisabled]="pendingAction()?.action === 'reject' && !rejectReason.trim()"
+  (confirmed)="confirmAction()"
+  (cancelled)="cancelAction()"
+>
+  <p>
+    {{ 'ADMIN_INVESTMENTS.DETAIL.CONFIRM_ACTION_INTRO' | translate:{ status: (('INVESTMENTS.STATUS.' + currentStatus().toUpperCase()) | translate) } }}
+  </p>
+
+  <div class="field" *ngIf="pendingAction()?.action === 'reject'">
+    <label for="reject-reason">{{ 'ADMIN_INVESTMENTS.DETAIL.REJECT_REASON_LABEL' | translate }}</label>
+    <textarea id="reject-reason" rows="3" [(ngModel)]="rejectReason" [ngModelOptions]="{standalone: true}"></textarea>
+  </div>
+
+  <div class="field" *ngIf="pendingAction()?.action === 'schedule'">
+    <label for="schedule-at">{{ 'ADMIN_INVESTMENTS.DETAIL.SCHEDULE_AT_LABEL' | translate }}</label>
+    <input id="schedule-at" type="datetime-local" [(ngModel)]="scheduledPublishAt" [ngModelOptions]="{standalone: true}" />
+    <p class="field-hint">{{ 'ADMIN_INVESTMENTS.DETAIL.SCHEDULE_HINT' | translate }}</p>
+  </div>
+</app-confirm-modal>

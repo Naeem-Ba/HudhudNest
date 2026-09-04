@@ -47,6 +47,14 @@
       </a>
 
       <a
+        routerLink="/investments"
+        routerLinkActive="navbar__link--active"
+        class="navbar__link"
+      >
+        {{ 'NAVBAR.INVESTMENTS' | translate }}
+      </a>
+
+      <a
         routerLink="/pricing"
         routerLinkActive="navbar__link--active"
         class="navbar__link"
@@ -104,6 +112,15 @@
         class="navbar__link"
       >
         {{ 'NAVBAR.ADMIN_USERS' | translate }}
+      </a>
+
+      <a
+        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
+        routerLink="/admin/investments"
+        routerLinkActive="navbar__link--active"
+        class="navbar__link"
+      >
+        {{ 'NAVBAR.ADMIN_INVESTMENTS' | translate }}
       </a>
     </nav>
 
@@ -399,6 +416,11 @@
               {{ 'NAVBAR.SAVED_SEARCHES' | translate }}
             </a>
 
+            <a routerLink="/investments/watchlist" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+              <span aria-hidden="true">📈</span>
+              {{ 'NAVBAR.INVESTMENT_WATCHLIST' | translate }}
+            </a>
+
             <a routerLink="/analytics" class="account__item" role="menuitem" (click)="closeAccountMenu()">
               <span aria-hidden="true">📊</span>
               {{ 'NAVBAR.ANALYTICS' | translate }}
@@ -521,6 +543,14 @@
       </a>
 
       <a
+        routerLink="/investments"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ 'NAVBAR.INVESTMENTS' | translate }}
+      </a>
+
+      <a
         routerLink="/pricing"
         class="mobile-drawer__link"
         (click)="closeMobileMenu()"
@@ -563,6 +593,15 @@
         (click)="closeMobileMenu()"
       >
         {{ 'NAVBAR.ADMIN_USERS' | translate }}
+      </a>
+
+      <a
+        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
+        routerLink="/admin/investments"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ 'NAVBAR.ADMIN_INVESTMENTS' | translate }}
       </a>
 
       <!-- Mobile User Section -->
@@ -612,6 +651,10 @@
 
         <a routerLink="/saved-searches" class="mobile-drawer__link" (click)="closeMobileMenu()">
           {{ 'NAVBAR.SAVED_SEARCHES' | translate }}
+        </a>
+
+        <a routerLink="/investments/watchlist" class="mobile-drawer__link" (click)="closeMobileMenu()">
+          {{ 'NAVBAR.INVESTMENT_WATCHLIST' | translate }}
         </a>
 
         <a routerLink="/analytics" class="mobile-drawer__link" (click)="closeMobileMenu()">
