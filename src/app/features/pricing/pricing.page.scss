@@ -67,10 +67,16 @@
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-sm);
-  transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out);
+  cursor: pointer;
+  transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out), border-color .2s var(--ease-out);
 
   &:hover {
     box-shadow: var(--shadow-md);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
   }
 
   /* The recommended tier is lifted and gold-trimmed. On tablet and below the grid

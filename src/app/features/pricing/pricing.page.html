@@ -27,9 +27,15 @@
     <article
       *ngFor="let plan of plans(); trackBy: trackByTier"
       class="plan-card"
-      [class.plan-card--featured]="plan.isRecommended"
+      role="button"
+      tabindex="0"
+      [attr.aria-pressed]="selectedTier() === plan.tier"
+      [class.plan-card--featured]="selectedTier() === plan.tier"
+      (click)="selectCard(plan)"
+      (keydown.enter)="selectCard(plan)"
+      (keydown.space)="selectCard(plan); $event.preventDefault()"
     >
-      <span class="plan-card__flag" *ngIf="plan.isRecommended" aria-hidden="true"></span>
+      <span class="plan-card__flag" *ngIf="selectedTier() === plan.tier" aria-hidden="true"></span>
 
       <span class="badge plan-card__badge" *ngIf="plan.isRecommended">
         {{ 'PRICING.RECOMMENDED' | translate }}
@@ -70,10 +76,10 @@
       <button
         type="button"
         class="btn plan-card__cta"
-        [class.btn--gold]="plan.isRecommended"
-        [class.btn--outline]="!plan.isRecommended"
+        [class.btn--gold]="selectedTier() === plan.tier"
+        [class.btn--outline]="selectedTier() !== plan.tier"
         [disabled]="selecting() === plan.tier"
-        (click)="onSelectPlan(plan)"
+        (click)="onSelectPlan(plan); $event.stopPropagation()"
       >
         {{ plan.ctaKey | translate }}
       </button>

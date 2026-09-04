@@ -276,6 +276,7 @@
         <article
           *ngFor="let property of properties(); trackBy: trackById"
           class="property-card"
+          [class.property-card--featured]="property.isFeatured"
           (click)="goToDetails(property.id)"
           (keydown.enter)="goToDetails(property.id)"
           role="button"

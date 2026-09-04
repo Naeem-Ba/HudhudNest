@@ -4,6 +4,22 @@ import { BackendApiService, QueryValue } from '../api/backend-api.service';
 import { ApiPagedResult, normalizePagedResult, PagedResult, unwrapItems } from '../models/api.model';
 import { DuplicateCheckResult, Property, PropertyFilterDto } from '../models/property.model';
 
+/**
+ * Mirrors PropertyApi.Application.Listings.DTOs.ListingExtensionQuoteDto exactly
+ * (camelCase — Program.cs sets JsonNamingPolicy.CamelCase). A quote, not a receipt:
+ * the listing is not extended until an admin confirms the fee (see
+ * PropertyApiService.requestListingExtension's doc comment).
+ */
+export interface ListingExtensionQuote {
+  transactionId: string;
+  propertyId: string;
+  amountUsd: number;
+  extensionDays: number;
+  expiresAt: string | null;
+  graceEndsAt: string | null;
+  isExistingPendingFee: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PropertyApiService {
   constructor(private readonly api: BackendApiService) {}
@@ -147,6 +163,19 @@ export class PropertyApiService {
    */
   confirmAvailability(id: string): Observable<void> {
     return this.api.patch<void>(`/properties/${id}/confirm-availability`);
+  }
+
+  /**
+   * POST /properties/{id}/extension — PropertiesController.RequestExtension. Records a
+   * pending fee for extending ONE expired-or-nearly-expired listing by one publication
+   * period; does NOT extend the listing itself (no payment gateway exists yet — an admin
+   * settles the fee via the admin dashboard, which is what actually applies the
+   * extension). Idempotent on the backend: calling this again while a fee is still
+   * pending returns the SAME transaction instead of stacking a second charge — see
+   * ListingExtensionQuote.isExistingPendingFee.
+   */
+  requestListingExtension(propertyId: string): Observable<ListingExtensionQuote> {
+    return this.api.post<ListingExtensionQuote>(`/properties/${propertyId}/extension`, {});
   }
 
   /** يعيّن صورة موجودة مسبقاً كصورة رئيسية (غلاف) للعقار. */

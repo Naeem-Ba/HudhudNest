@@ -94,6 +94,17 @@
         <!-- Actions -->
         <div class="card-actions">
           <button
+            *ngIf="canExtend(p)"
+            type="button"
+            class="btn btn--gold"
+            [disabled]="extendingId() === p.id"
+            (click)="extend(p.id)"
+          >
+            {{ extendingId() === p.id
+                ? ('COMMON.SAVING' | translate)
+                : ('MY_LISTINGS.EXTEND' | translate) }}
+          </button>
+          <button
             *ngIf="!p.isPublished"
             type="button"
             class="btn btn--publish"

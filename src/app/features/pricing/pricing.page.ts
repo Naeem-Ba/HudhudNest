@@ -21,7 +21,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { catchError, of, switchMap } from 'rxjs';
+import { switchMap } from 'rxjs';
 
 import { PlansApiService } from '../../core/api/plans-api.service';
 import { ProfileService } from '../../core/api/profile.service';
@@ -29,6 +29,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { MetaService } from '../../core/services/meta.service';
 import { SubscriptionPlan } from '../../core/models/subscription-plan.model';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-pricing',
@@ -46,6 +47,7 @@ export class PricingPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly meta = inject(MetaService);
   private readonly translate = inject(TranslateService);
+  private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly plans = signal<SubscriptionPlan[]>([]);
@@ -55,6 +57,16 @@ export class PricingPage implements OnInit {
   /** Tier currently being selected, if any — disables that card's button so a double
    * click can't fire two POSTs while the first is still in flight. */
   readonly selecting = signal<string | null>(null);
+
+  /**
+   * ✅ إصلاح: التمييز الذهبي كان مربوطًا بـ plan.isRecommended (علم ثابت من
+   * الخادم)، فيظهر دائمًا على الخطة "الموصى بها" بصرف النظر عمّا يضغطه
+   * المستخدم فعليًا. الآن التمييز الذهبي يتبع هذه الإشارة — الخطة التي
+   * ضغطها المستخدم (بطاقة أو زر) — ولا شيء محدد افتراضيًا عند فتح الصفحة.
+   * وسم "موصى بها" (plan-card__badge) يبقى مربوطًا بـ isRecommended كوسم
+   * معلوماتي بحت، منفصل عن لون التحديد.
+   */
+  readonly selectedTier = signal<string | null>(null);
 
   /** Set when listing-eligibility.guard.ts redirected here with ?reason=plan-required —
    * i.e. the visitor already confirmed their contact info but still needs to pick a
@@ -80,6 +92,7 @@ export class PricingPage implements OnInit {
         next: data => {
           this.plans.set(data ?? []);
           this.loading.set(false);
+          this.resumeAutoSelectAfterLogin();
         },
         error: () => {
           this.error.set('PRICING.LOAD_ERROR');
@@ -88,8 +101,33 @@ export class PricingPage implements OnInit {
       });
   }
 
+  /**
+   * ✅ إضافة: يُكمل اختيار الخطة تلقائيًا بعد جولة تسجيل الدخول التي بدأها
+   * onSelectPlan أدناه (?autoSelect=<tier>) — بدل أن يضطر المستخدم لضغط
+   * "أضف إعلانك مجاناً" مرة ثانية بعد الدخول. لا يُشغَّل إلا إذا كان مسجَّل
+   * الدخول فعليًا الآن (احتراز: رابط autoSelect قديم/معاد استخدامه لا يجب أن
+   * يُطلق شيئًا لزائر ما زال مجهولاً).
+   */
+  private resumeAutoSelectAfterLogin(): void {
+    const tier = this.route.snapshot.queryParamMap.get('autoSelect');
+    if (!tier || !this.auth.getAccessToken()) {
+      return;
+    }
+
+    const plan = this.plans().find(p => p.tier === tier);
+    if (plan) {
+      this.onSelectPlan(plan);
+    }
+  }
+
   trackByTier(_: number, plan: SubscriptionPlan): string {
     return plan.tier;
+  }
+
+  /** Card click / keyboard activation: only moves the gold highlight, does not submit
+   * anything — mirrors a plain radio-style pick before the CTA button confirms it. */
+  selectCard(plan: SubscriptionPlan): void {
+    this.selectedTier.set(plan.tier);
   }
 
   /**
@@ -98,19 +136,43 @@ export class PricingPage implements OnInit {
    * to ctaRoute, exactly as before (free → property-form, paid → the contact form —
    * still no payment gateway, see FRONTEND_BACKEND_CONTRACT.md §11.1).
    *
-   * An anonymous visitor is sent straight to ctaRoute without calling the [Authorize]
-   * selection endpoint: AuthGuard on that route redirects them to login first, exactly
-   * as the plain routerLink did before this method existed. They land back on
-   * ctaRoute logged in but still without a plan selected — property-form's
-   * ListingEligibilityGuard then bounces them back here to pick one for real, so
-   * nothing is silently skipped, just deferred one extra round trip.
+   * An anonymous visitor choosing a paid tier (ctaRoute '/kontakt', no auth required) is
+   * sent straight there, unchanged. An anonymous visitor choosing the free tier
+   * (ctaRoute '/property-form', behind AuthGuard) is routed through login ourselves —
+   * see resumeAutoSelectAfterLogin() above — so the choice survives the round trip and
+   * they land on property-form already selected, instead of AuthGuard bouncing them to
+   * login with a plain returnUrl and losing the selection until they pick again.
+   *
+   * ✅ إصلاح: كانت الأخطاء هنا تُبتلع بالكامل (catchError(() => of(null))) والمستخدم
+   * يُرسَل لـ ctaRoute حتى لو فشل حفظ الاختيار فعليًا في الخادم — فيصل لصفحة
+   * "إضافة إعلان" بلا خطة محفوظة فعلًا، أو يظنّ أن اختياره نجح دون أي رسالة. الآن:
+   * نجاح ⇐ رسالة نجاح واضحة (خاصة بالخطة المجانية) ثم الانتقال؛ فشل ⇐ رسالة خطأ
+   * والبقاء في /pricing كي يعيد المحاولة، بدل الانتقال إلى حالة غير مؤكَّدة.
    */
   onSelectPlan(plan: SubscriptionPlan): void {
+    // The CTA button is itself a selection control — clicking it must move the gold
+    // highlight to this plan (and only this plan) before submitting it, so the visual
+    // state and the plan actually sent to the backend can never disagree.
+    this.selectedTier.set(plan.tier);
+
     const destination = () =>
       void this.router.navigate([plan.ctaRoute], { queryParams: plan.ctaQueryParams });
 
     if (!this.auth.getAccessToken()) {
+      if (plan.ctaRoute === '/property-form') {
+        void this.router.navigate(['/auth/login'], {
+          queryParams: { returnUrl: `/pricing?autoSelect=${plan.tier}` }
+        });
+        return;
+      }
+
       destination();
+      return;
+    }
+
+    // Prevents a repeat click/tap on ANY card from firing a second POST while the
+    // first selection is still in flight — not just a repeat click on the same card.
+    if (this.selecting()) {
       return;
     }
 
@@ -121,15 +183,26 @@ export class PricingPage implements OnInit {
         // Keep the shared profile$ (navbar, guard) in sync immediately rather than
         // waiting for their next independent load.
         switchMap(() => this.profileService.refresh()),
-        // Non-fatal: even if the POST failed, don't strand the visitor on /pricing —
-        // send them on and let the destination route's own gate (which reads the
-        // real, authoritative state) decide.
-        catchError(() => of(null)),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe(() => {
-        this.selecting.set(null);
-        destination();
+      .subscribe({
+        next: () => {
+          this.selecting.set(null);
+          this.toast.success(
+            this.translate.instant(
+              plan.tier === 'free'
+                ? 'PRICING.MESSAGES.FREE_SELECTED_SUCCESS'
+                : 'PRICING.MESSAGES.PLAN_SELECTED_SUCCESS'
+            )
+          );
+          destination();
+        },
+        error: () => {
+          this.selecting.set(null);
+          this.toast.error(this.translate.instant('PRICING.MESSAGES.SELECT_ERROR'));
+          // Stay on /pricing — a failed save must not send the visitor on to a route
+          // that assumes a plan was actually recorded.
+        }
       });
   }
 

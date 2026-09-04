@@ -313,6 +313,19 @@
     outline: none;
   }
 
+  /* إعلان مميّز مدفوع — إطار ذهبي واضح على البطاقة نفسها، لا يتعدّى الشارة
+     (badge--featured في styles.scss) فقط. مقصور على هذه البطاقة وحدها فلا
+     يغيّر تخطيط الشبكة أو حجم البطاقات الأخرى — border يبقى ضمن حدود
+     الصندوق (border-box هو الوضع الافتراضي هنا) فلا يزاح المحتوى. */
+  &--featured {
+    border: 2px solid var(--gold);
+    box-shadow: 0 0 0 1px rgba(181, 135, 46, .25);
+
+    &:hover, &:focus-within {
+      border-color: var(--gold);
+    }
+  }
+
   &__image {
     position: relative;
     aspect-ratio: 16 / 10;
