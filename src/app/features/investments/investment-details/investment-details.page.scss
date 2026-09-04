@@ -1,3 +1,5 @@
+@use '../../../../styles/breakpoints' as bp;
+
 .invd {
   max-width: 1100px;
   margin: 0 auto;
@@ -239,7 +241,7 @@
   .btn--block { width: 100%; }
   .btn--active { background: var(--primary, #2563eb); color: #fff; }
 
-  @media (min-width: 900px) {
+  @include bp.secondary-layout {
     &__layout { grid-template-columns: 2fr 1fr; align-items: start; }
   }
 }

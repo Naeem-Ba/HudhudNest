@@ -1,5 +1,7 @@
 /* src/app/features/my-listings/my-listings.page.scss */
 
+@use '../../../styles/breakpoints' as bp;
+
 .my-listings-page {
   width: min(1180px, 100%);
   margin-inline: auto;
@@ -27,8 +29,8 @@
   grid-template-columns: 1fr;
   gap: 1.25rem;
 
-  @media (min-width: 640px) { grid-template-columns: repeat(2, 1fr); }
-  @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); }
+  @include bp.min(640px) { grid-template-columns: repeat(2, 1fr); }
+  @include bp.min(1024px) { grid-template-columns: repeat(3, 1fr); }
 }
 
 /* ── Card ─────────────────────────────────────────────────── */
@@ -121,7 +123,7 @@
   gap: .5rem;
   margin-top: .25rem;
 
-  @media (max-width: 420px) { flex-direction: column; }
+  @include bp.small-mobile { flex-direction: column; }
 }
 
 /* ── Buttons ─────────────────────────────────────────────── */
