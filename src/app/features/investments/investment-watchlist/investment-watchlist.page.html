@@ -1,0 +1,45 @@
+<section class="invw">
+  <header class="invw__header">
+    <h1>{{ 'INVESTMENTS.WATCHLIST.TITLE' | translate }}</h1>
+    <p>{{ 'INVESTMENTS.WATCHLIST.SUBTITLE' | translate }}</p>
+  </header>
+
+  <app-loading-spinner *ngIf="loading()" [label]="'COMMON.LOADING' | translate" />
+
+  <div class="invw__error" *ngIf="!loading() && error()" role="alert">
+    <span aria-hidden="true">⚠️</span>
+    <p>{{ error() | translate }}</p>
+    <button type="button" (click)="load()">{{ 'COMMON.RETRY' | translate }}</button>
+  </div>
+
+  <app-empty-state
+    *ngIf="!loading() && !error() && items().length === 0"
+    icon="📈"
+    [title]="'INVESTMENTS.WATCHLIST.EMPTY_TITLE' | translate"
+    [message]="'INVESTMENTS.WATCHLIST.EMPTY_MESSAGE' | translate"
+  />
+
+  <div class="invw__grid" *ngIf="!loading() && items().length > 0">
+    <article class="invw__card" *ngFor="let item of items(); trackBy: trackById" (click)="goToDetails(item.investmentProjectId)">
+      <img
+        [src]="item.project.propertyMainImageUrl || fallbackImage"
+        [appImageFallback]="fallbackImage"
+        [alt]="item.project.title"
+        class="invw__thumb"
+      />
+      <div class="invw__body">
+        <h2 class="invw__title">{{ item.project.title }}</h2>
+        <p class="invw__meta">📍 {{ item.project.propertyCity }}</p>
+        <strong>{{ formatAmount(item.project.minimumInvestment, item.project.currency) }} {{ 'INVESTMENTS.DETAILS.MINIMUM' | translate }}</strong>
+        <button
+          type="button"
+          class="invw__remove"
+          [disabled]="removingId() === item.investmentProjectId"
+          (click)="remove(item, $event)"
+        >
+          {{ 'INVESTMENTS.DETAILS.WATCHLIST_REMOVE' | translate }}
+        </button>
+      </div>
+    </article>
+  </div>
+</section>

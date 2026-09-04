@@ -1,0 +1,214 @@
+<div class="invd">
+  <app-loading-spinner *ngIf="loading()" [label]="'COMMON.LOADING' | translate" />
+
+  <div class="invd__error" *ngIf="!loading() && error()" role="alert">
+    <p>{{ error() | translate }}</p>
+  </div>
+
+  <ng-container *ngIf="!loading() && !error() && project() as p">
+    <!-- Hero -->
+    <section class="invd__hero">
+      <img
+        [src]="p.propertyMainImageUrl || fallbackImage"
+        [appImageFallback]="fallbackImage"
+        [alt]="p.title"
+        class="invd__hero-image"
+      />
+      <div class="invd__hero-overlay">
+        <span class="invd__status-badge" [class]="'invd__status-badge--' + p.status">
+          {{ ('INVESTMENTS.STATUS.' + p.status.toUpperCase()) | translate }}
+        </span>
+        <h1>{{ p.title }}</h1>
+        <p>📍 {{ p.propertyCity }}<span *ngIf="p.propertyCountryCode">, {{ p.propertyCountryCode }}</span></p>
+      </div>
+    </section>
+
+    <div class="invd__layout">
+      <div class="invd__main">
+        <!-- Funding -->
+        <section class="invd__card">
+          <h2>{{ 'INVESTMENTS.DETAILS.FUNDING' | translate }}</h2>
+          <div class="invd__progress-bar">
+            <div class="invd__progress-fill" [style.width.%]="p.fundingProgressPercent"></div>
+          </div>
+          <div class="invd__funding-grid">
+            <div>
+              <span class="invd__stat-label">{{ 'INVESTMENTS.DETAILS.TARGET' | translate }}</span>
+              <strong>{{ formatAmount(p.targetAmount, p.currency) }}</strong>
+            </div>
+            <div>
+              <span class="invd__stat-label">{{ 'INVESTMENTS.DETAILS.RAISED' | translate }}</span>
+              <strong>{{ formatAmount(p.raisedAmount, p.currency) }}</strong>
+            </div>
+            <div>
+              <span class="invd__stat-label">{{ 'INVESTMENTS.DETAILS.REMAINING' | translate }}</span>
+              <strong>{{ formatAmount(p.remainingAmount, p.currency) }}</strong>
+            </div>
+            <div>
+              <span class="invd__stat-label">{{ 'INVESTMENTS.DETAILS.PROGRESS' | translate }}</span>
+              <strong>{{ p.fundingProgressPercent | number:'1.0-0' }}%</strong>
+            </div>
+          </div>
+        </section>
+
+        <!-- Description -->
+        <section class="invd__card">
+          <h2>{{ 'INVESTMENTS.DETAILS.ABOUT' | translate }}</h2>
+          <p class="invd__description">{{ p.description }}</p>
+        </section>
+
+        <!-- Financial Overview -->
+        <section class="invd__card" *ngIf="financials() as f">
+          <h2>{{ 'INVESTMENTS.DETAILS.FINANCIAL_OVERVIEW' | translate }}</h2>
+          <dl class="invd__financial-grid">
+            <div *ngIf="f.propertyEstimatedValue">
+              <dt>{{ 'INVESTMENTS.FINANCIALS.PROPERTY_VALUE' | translate }}</dt>
+              <dd>{{ formatAmount(f.propertyEstimatedValue, p.currency) }}</dd>
+            </div>
+            <div><dt>{{ 'INVESTMENTS.FINANCIALS.PURCHASE_PRICE' | translate }}</dt><dd>{{ formatAmount(f.purchasePrice, p.currency) }}</dd></div>
+            <div><dt>{{ 'INVESTMENTS.FINANCIALS.RENOVATION' | translate }}</dt><dd>{{ formatAmount(f.renovationCost, p.currency) }}</dd></div>
+            <div><dt>{{ 'INVESTMENTS.FINANCIALS.CONSTRUCTION' | translate }}</dt><dd>{{ formatAmount(f.constructionCost, p.currency) }}</dd></div>
+            <div><dt>{{ 'INVESTMENTS.FINANCIALS.TAXES' | translate }}</dt><dd>{{ formatAmount(f.taxes, p.currency) }}</dd></div>
+            <div><dt>{{ 'INVESTMENTS.FINANCIALS.OTHER_COSTS' | translate }}</dt><dd>{{ formatAmount(f.notaryCost + f.brokerCost + f.financingCost + f.operatingCost + f.contingencyReserve, p.currency) }}</dd></div>
+            <div class="invd__financial-total"><dt>{{ 'INVESTMENTS.FINANCIALS.TOTAL_COST' | translate }}</dt><dd>{{ formatAmount(f.totalProjectCost, p.currency) }}</dd></div>
+            <div><dt>{{ 'INVESTMENTS.FINANCIALS.EXPECTED_REVENUE' | translate }}</dt><dd>{{ formatAmount(f.expectedRevenue, p.currency) }}</dd></div>
+            <div class="invd__financial-total"><dt>{{ 'INVESTMENTS.FINANCIALS.EXPECTED_PROFIT' | translate }}</dt><dd>{{ formatAmount(f.expectedProfit, p.currency) }}</dd></div>
+          </dl>
+        </section>
+
+        <!-- Investment Parameters -->
+        <section class="invd__card">
+          <h2>{{ 'INVESTMENTS.DETAILS.PARAMETERS' | translate }}</h2>
+          <dl class="invd__financial-grid">
+            <div><dt>{{ 'INVESTMENTS.DETAILS.MINIMUM' | translate }}</dt><dd>{{ formatAmount(p.minimumInvestment, p.currency) }}</dd></div>
+            <div *ngIf="p.maximumInvestment"><dt>{{ 'INVESTMENTS.DETAILS.MAXIMUM' | translate }}</dt><dd>{{ formatAmount(p.maximumInvestment, p.currency) }}</dd></div>
+            <div><dt>{{ 'INVESTMENTS.DETAILS.EXPECTED_RETURN' | translate }}</dt><dd>{{ p.expectedReturnMin }}–{{ p.expectedReturnMax }}%</dd></div>
+            <div><dt>{{ 'INVESTMENTS.DETAILS.TERM' | translate }}</dt><dd>{{ p.investmentTermMonths }} {{ 'INVESTMENTS.DETAILS.MONTHS' | translate }}</dd></div>
+            <div><dt>{{ 'INVESTMENTS.DETAILS.CURRENCY' | translate }}</dt><dd>{{ p.currency }}</dd></div>
+          </dl>
+        </section>
+
+        <!-- Risk -->
+        <section class="invd__card" *ngIf="risk() as r">
+          <h2>{{ 'INVESTMENTS.RISK.TITLE' | translate }}</h2>
+          <p class="invd__risk-overall">
+            {{ 'INVESTMENTS.RISK.OVERALL' | translate }}:
+            <span class="invd__risk-pill" [class]="'invd__risk-pill--' + r.riskLevel">
+              {{ ('INVESTMENTS.RISK.' + r.riskLevel.toUpperCase()) | translate }}
+            </span>
+          </p>
+          <dl class="invd__financial-grid">
+            <div><dt>{{ 'INVESTMENTS.RISK.MARKET' | translate }}</dt><dd>{{ ('INVESTMENTS.RISK.' + r.marketRisk.toUpperCase()) | translate }}</dd></div>
+            <div><dt>{{ 'INVESTMENTS.RISK.LIQUIDITY' | translate }}</dt><dd>{{ ('INVESTMENTS.RISK.' + r.liquidityRisk.toUpperCase()) | translate }}</dd></div>
+            <div><dt>{{ 'INVESTMENTS.RISK.PROJECT' | translate }}</dt><dd>{{ ('INVESTMENTS.RISK.' + r.projectRisk.toUpperCase()) | translate }}</dd></div>
+            <div><dt>{{ 'INVESTMENTS.RISK.FINANCING' | translate }}</dt><dd>{{ ('INVESTMENTS.RISK.' + r.financingRisk.toUpperCase()) | translate }}</dd></div>
+            <div><dt>{{ 'INVESTMENTS.RISK.DEVELOPER' | translate }}</dt><dd>{{ ('INVESTMENTS.RISK.' + r.developerRisk.toUpperCase()) | translate }}</dd></div>
+          </dl>
+          <p class="invd__risk-summary">{{ r.riskSummary }}</p>
+          <p class="invd__disclaimer">⚠️ {{ 'INVESTMENTS.RISK.DISCLAIMER' | translate }}</p>
+        </section>
+
+        <!-- Documents -->
+        <section class="invd__card" *ngIf="documents().length > 0">
+          <h2>{{ 'INVESTMENTS.DOCUMENTS.TITLE' | translate }}</h2>
+          <ul class="invd__doc-list">
+            <li *ngFor="let doc of documents(); trackBy: trackDocumentById">
+              <a [href]="doc.url" target="_blank" rel="noopener noreferrer">
+                📄 {{ doc.fileName }}
+                <span class="invd__doc-type">{{ ('INVESTMENTS.DOCUMENT_TYPE.' + doc.documentType.toUpperCase()) | translate }}</span>
+              </a>
+            </li>
+          </ul>
+        </section>
+
+        <!-- Updates -->
+        <section class="invd__card" *ngIf="updates().length > 0">
+          <h2>{{ 'INVESTMENTS.UPDATES.TITLE' | translate }}</h2>
+          <ol class="invd__timeline">
+            <li *ngFor="let update of updates(); trackBy: trackUpdateById">
+              <span class="invd__timeline-date">{{ update.publishedAt | date:'d MMM y' }}</span>
+              <h3>{{ update.title }}</h3>
+              <p>{{ update.content }}</p>
+            </li>
+          </ol>
+        </section>
+
+        <!-- Calculator -->
+        <section class="invd__card">
+          <h2>{{ 'INVESTMENTS.CALCULATOR.TITLE' | translate }}</h2>
+          <form class="invd__calculator-form" (ngSubmit)="runCalculator()">
+            <div class="invd__field">
+              <label>{{ 'INVESTMENTS.CALCULATOR.AMOUNT' | translate }}</label>
+              <input type="number" [min]="p.minimumInvestment" [(ngModel)]="calculatorAmount" name="amount" required />
+            </div>
+            <div class="invd__field">
+              <label>{{ 'INVESTMENTS.CALCULATOR.TERM_MONTHS' | translate }}</label>
+              <input type="number" min="1" [(ngModel)]="calculatorTermMonths" name="term" />
+            </div>
+            <button type="submit" class="btn btn--primary btn--sm" [disabled]="calculatorLoading()">
+              {{ 'INVESTMENTS.CALCULATOR.CALCULATE' | translate }}
+            </button>
+          </form>
+
+          <p *ngIf="calculatorError()" class="invd__error-text">{{ calculatorError() | translate }}</p>
+
+          <div class="invd__calculator-results" *ngIf="calculatorResult() as result">
+            <div class="invd__scenario">
+              <h4>{{ 'INVESTMENTS.CALCULATOR.CONSERVATIVE' | translate }}</h4>
+              <strong>{{ formatAmount(result.conservative.estimatedTotal, result.currency) }}</strong>
+              <span>+{{ formatAmount(result.conservative.estimatedReturnAmount, result.currency) }}</span>
+            </div>
+            <div class="invd__scenario invd__scenario--base">
+              <h4>{{ 'INVESTMENTS.CALCULATOR.BASE' | translate }}</h4>
+              <strong>{{ formatAmount(result.base.estimatedTotal, result.currency) }}</strong>
+              <span>+{{ formatAmount(result.base.estimatedReturnAmount, result.currency) }}</span>
+            </div>
+            <div class="invd__scenario">
+              <h4>{{ 'INVESTMENTS.CALCULATOR.OPTIMISTIC' | translate }}</h4>
+              <strong>{{ formatAmount(result.optimistic.estimatedTotal, result.currency) }}</strong>
+              <span>+{{ formatAmount(result.optimistic.estimatedReturnAmount, result.currency) }}</span>
+            </div>
+            <p class="invd__disclaimer invd__disclaimer--full">⚠️ {{ result.disclaimer }}</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- Actions sidebar -->
+      <aside class="invd__sidebar">
+        <div class="invd__card invd__actions">
+          <button
+            type="button"
+            class="btn btn--outline btn--block"
+            [class.btn--active]="isWatchlisted()"
+            [disabled]="watchlistBusy()"
+            (click)="toggleWatchlist()"
+          >
+            {{ (isWatchlisted() ? 'INVESTMENTS.DETAILS.WATCHLIST_REMOVE' : 'INVESTMENTS.DETAILS.WATCHLIST_ADD') | translate }}
+          </button>
+
+          <button
+            *ngIf="!isInterested"
+            type="button"
+            class="btn btn--primary btn--block"
+            [disabled]="interestBusy() || p.status !== 'Published'"
+            (click)="expressInterest()"
+          >
+            {{ 'INVESTMENTS.DETAILS.EXPRESS_INTEREST' | translate }}
+          </button>
+
+          <button
+            *ngIf="isInterested"
+            type="button"
+            class="btn btn--outline btn--block"
+            [disabled]="interestBusy()"
+            (click)="withdrawInterest()"
+          >
+            {{ 'INVESTMENTS.DETAILS.WITHDRAW_INTEREST' | translate }}
+          </button>
+
+          <p class="invd__disclaimer">{{ 'INVESTMENTS.DETAILS.INTEREST_DISCLAIMER' | translate }}</p>
+        </div>
+      </aside>
+    </div>
+  </ng-container>
+</div>

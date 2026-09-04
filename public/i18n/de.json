@@ -45,6 +45,8 @@
     "SHORT_STAY": "Kurzaufenthalte",
     "SHORT_STAY_BOOKINGS": "Kurzaufenthalt-Buchungen",
     "SHORT_STAY_LISTINGS": "Kurzaufenthalt-Anzeigen",
+    "INVESTMENTS": "Investitionen",
+    "INVESTMENT_WATCHLIST": "Investment-Merkliste",
     "OPEN_MENU": "Menü öffnen",
     "CLOSE_MENU": "Menü schließen"
   },
@@ -1523,6 +1525,129 @@
       "LOAD_ERROR": "Anzeige konnte nicht geladen werden.",
       "PUBLISH_TOGGLE_SUCCESS": "Veröffentlichungsstatus aktualisiert.",
       "PUBLISH_TOGGLE_ERROR": "Status konnte nicht aktualisiert werden."
+    }
+  },
+  "INVESTMENTS": {
+    "LIST": {
+      "EYEBROW": "Investitionsentdeckung",
+      "TITLE": "Investitionsprojekte",
+      "SUBTITLE": "Entdecken und analysieren Sie Immobilien-Investitionsmöglichkeiten. Keine Zahlung, keine Verpflichtung — nur Information.",
+      "SEARCH": "Suche",
+      "SEARCH_PLACEHOLDER": "Projekttitel oder Beschreibung",
+      "PROJECT_TYPE": "Projektart",
+      "SEARCH_ACTION": "Suchen",
+      "RESET": "Zurücksetzen",
+      "MIN_RETURN": "Min. erwartete Rendite %",
+      "MAX_TERM": "Max. Laufzeit (Monate)",
+      "LOAD_ERROR": "Investitionsprojekte konnten nicht geladen werden.",
+      "EMPTY_TITLE": "Keine Investitionsprojekte gefunden",
+      "EMPTY_MESSAGE": "Passen Sie Ihre Filter an oder schauen Sie später wieder vorbei."
+    },
+    "PROJECT_TYPE": {
+      "RESIDENTIAL": "Wohnimmobilie",
+      "COMMERCIAL": "Gewerbeimmobilie",
+      "MIXED": "Gemischt genutzt",
+      "INDUSTRIAL": "Industrie",
+      "LAND": "Grundstück",
+      "RENOVATION": "Renovierung",
+      "NEW_CONSTRUCTION": "Neubau"
+    },
+    "STATUS": {
+      "DRAFT": "Entwurf",
+      "UNDERREVIEW": "In Prüfung",
+      "APPROVED": "Genehmigt",
+      "SCHEDULED": "Geplant",
+      "PUBLISHED": "Offen für Interesse",
+      "CLOSED": "Geschlossen",
+      "REJECTED": "Abgelehnt",
+      "SUSPENDED": "Ausgesetzt"
+    },
+    "RISK": {
+      "LABEL": "Risikostufe",
+      "TITLE": "Risikoanalyse",
+      "OVERALL": "Gesamtrisiko",
+      "LOW": "Niedrig",
+      "MEDIUM": "Mittel",
+      "HIGH": "Hoch",
+      "VERY_HIGH": "Sehr hoch",
+      "MARKET": "Marktrisiko",
+      "LIQUIDITY": "Liquiditätsrisiko",
+      "PROJECT": "Projektrisiko",
+      "FINANCING": "Finanzierungsrisiko",
+      "DEVELOPER": "Entwicklerrisiko",
+      "DISCLAIMER": "Die Risikostufe ist nur indikativ. Sie ist keine Garantie, und das Kapital kann je nach Projektverlauf teilweise oder vollständig verloren gehen."
+    },
+    "DETAILS": {
+      "NOT_FOUND": "Investitionsprojekt nicht gefunden.",
+      "LOAD_ERROR": "Dieses Investitionsprojekt konnte nicht geladen werden.",
+      "FUNDING": "Finanzierung",
+      "TARGET": "Zielbetrag",
+      "RAISED": "Eingesammelt",
+      "REMAINING": "Verbleibend",
+      "PROGRESS": "Fortschritt",
+      "ABOUT": "Über dieses Projekt",
+      "FINANCIAL_OVERVIEW": "Finanzübersicht",
+      "PARAMETERS": "Investitionsparameter",
+      "MINIMUM": "Mindestinvestition",
+      "MAXIMUM": "Maximalinvestition",
+      "EXPECTED_RETURN": "Erwartete Rendite",
+      "TERM": "Investitionslaufzeit",
+      "MONTHS": "Monate",
+      "CURRENCY": "Währung",
+      "WATCHLIST_ADD": "Zur Merkliste hinzufügen",
+      "WATCHLIST_REMOVE": "Von Merkliste entfernen",
+      "WATCHLIST_ADDED": "Zur Merkliste hinzugefügt.",
+      "WATCHLIST_REMOVED": "Von der Merkliste entfernt.",
+      "WATCHLIST_ERROR": "Merkliste konnte nicht aktualisiert werden.",
+      "EXPRESS_INTEREST": "Ich habe Interesse an einer Investition",
+      "WITHDRAW_INTEREST": "Interesse zurückziehen",
+      "INTEREST_REGISTERED": "Interesse erfolgreich registriert. Unser Team kann Sie kontaktieren — dies ist keine Zahlung oder Verpflichtung.",
+      "INTEREST_WITHDRAWN": "Ihr Interesse wurde zurückgezogen.",
+      "INTEREST_ERROR": "Interesse konnte nicht aktualisiert werden.",
+      "INTEREST_DISCLAIMER": "Die Registrierung von Interesse erstellt keine Zahlung, Verpflichtung oder Investition. Sie teilt unserem Team lediglich mit, dass Sie mehr erfahren möchten."
+    },
+    "FINANCIALS": {
+      "PROPERTY_VALUE": "Immobilienwert",
+      "PURCHASE_PRICE": "Kaufpreis",
+      "RENOVATION": "Renovierungskosten",
+      "CONSTRUCTION": "Baukosten",
+      "TAXES": "Steuern",
+      "OTHER_COSTS": "Weitere Kosten (Notar, Makler, Finanzierung, Betrieb, Rücklage)",
+      "TOTAL_COST": "Gesamtprojektkosten",
+      "EXPECTED_REVENUE": "Erwarteter Umsatz",
+      "EXPECTED_PROFIT": "Erwarteter Gewinn"
+    },
+    "DOCUMENTS": {
+      "TITLE": "Dokumente"
+    },
+    "DOCUMENT_TYPE": {
+      "PROJECTPLAN": "Projektplan",
+      "FINANCIALSTATEMENT": "Finanzbericht",
+      "VALUATION": "Bewertung",
+      "LEGALDOCUMENT": "Rechtsdokument",
+      "PERMIT": "Genehmigung",
+      "PROSPECTUS": "Prospekt",
+      "OTHER": "Sonstiges"
+    },
+    "UPDATES": {
+      "TITLE": "Projekt-Updates"
+    },
+    "CALCULATOR": {
+      "TITLE": "Investitionsrechner",
+      "AMOUNT": "Betrag",
+      "TERM_MONTHS": "Laufzeit (Monate)",
+      "CALCULATE": "Berechnen",
+      "CONSERVATIVE": "Konservativ",
+      "BASE": "Basis",
+      "OPTIMISTIC": "Optimistisch",
+      "ERROR": "Schätzung konnte nicht berechnet werden."
+    },
+    "WATCHLIST": {
+      "TITLE": "Meine Investment-Merkliste",
+      "SUBTITLE": "Investitionsprojekte, die Sie im Auge behalten.",
+      "LOAD_ERROR": "Merkliste konnte nicht geladen werden.",
+      "EMPTY_TITLE": "Ihre Merkliste ist leer",
+      "EMPTY_MESSAGE": "Gespeicherte Projekte werden hier angezeigt."
     }
   }
 }

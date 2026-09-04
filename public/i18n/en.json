@@ -45,6 +45,8 @@
     "SHORT_STAY": "Short Stays",
     "SHORT_STAY_BOOKINGS": "Short-Stay Bookings",
     "SHORT_STAY_LISTINGS": "Short-Stay Listings",
+    "INVESTMENTS": "Investments",
+    "INVESTMENT_WATCHLIST": "Investment Watchlist",
     "OPEN_MENU": "Open menu",
     "CLOSE_MENU": "Close menu"
   },
@@ -1523,6 +1525,129 @@
       "LOAD_ERROR": "Could not load the listing.",
       "PUBLISH_TOGGLE_SUCCESS": "Publish status updated.",
       "PUBLISH_TOGGLE_ERROR": "Could not update publish status."
+    }
+  },
+  "INVESTMENTS": {
+    "LIST": {
+      "EYEBROW": "Investment Discovery",
+      "TITLE": "Investment Projects",
+      "SUBTITLE": "Browse and analyze real-estate investment opportunities. No payment or commitment — discovery only.",
+      "SEARCH": "Search",
+      "SEARCH_PLACEHOLDER": "Project title or description",
+      "PROJECT_TYPE": "Project type",
+      "SEARCH_ACTION": "Search",
+      "RESET": "Reset",
+      "MIN_RETURN": "Min. expected return %",
+      "MAX_TERM": "Max. term (months)",
+      "LOAD_ERROR": "Could not load investment projects.",
+      "EMPTY_TITLE": "No investment projects found",
+      "EMPTY_MESSAGE": "Try adjusting your filters or check back later."
+    },
+    "PROJECT_TYPE": {
+      "RESIDENTIAL": "Residential",
+      "COMMERCIAL": "Commercial",
+      "MIXED": "Mixed-use",
+      "INDUSTRIAL": "Industrial",
+      "LAND": "Land",
+      "RENOVATION": "Renovation",
+      "NEW_CONSTRUCTION": "New construction"
+    },
+    "STATUS": {
+      "DRAFT": "Draft",
+      "UNDERREVIEW": "Under review",
+      "APPROVED": "Approved",
+      "SCHEDULED": "Scheduled",
+      "PUBLISHED": "Open for interest",
+      "CLOSED": "Closed",
+      "REJECTED": "Rejected",
+      "SUSPENDED": "Suspended"
+    },
+    "RISK": {
+      "LABEL": "Risk level",
+      "TITLE": "Risk Analysis",
+      "OVERALL": "Overall risk",
+      "LOW": "Low",
+      "MEDIUM": "Medium",
+      "HIGH": "High",
+      "VERY_HIGH": "Very high",
+      "MARKET": "Market risk",
+      "LIQUIDITY": "Liquidity risk",
+      "PROJECT": "Project risk",
+      "FINANCING": "Financing risk",
+      "DEVELOPER": "Developer risk",
+      "DISCLAIMER": "Risk level is indicative only. It is not a guarantee, and capital may be partially or fully lost depending on how the project performs."
+    },
+    "DETAILS": {
+      "NOT_FOUND": "Investment project not found.",
+      "LOAD_ERROR": "Could not load this investment project.",
+      "FUNDING": "Funding",
+      "TARGET": "Target amount",
+      "RAISED": "Raised",
+      "REMAINING": "Remaining",
+      "PROGRESS": "Progress",
+      "ABOUT": "About this project",
+      "FINANCIAL_OVERVIEW": "Financial Overview",
+      "PARAMETERS": "Investment Parameters",
+      "MINIMUM": "Minimum investment",
+      "MAXIMUM": "Maximum investment",
+      "EXPECTED_RETURN": "Expected return",
+      "TERM": "Investment term",
+      "MONTHS": "months",
+      "CURRENCY": "Currency",
+      "WATCHLIST_ADD": "Add to watchlist",
+      "WATCHLIST_REMOVE": "Remove from watchlist",
+      "WATCHLIST_ADDED": "Added to your watchlist.",
+      "WATCHLIST_REMOVED": "Removed from your watchlist.",
+      "WATCHLIST_ERROR": "Could not update your watchlist.",
+      "EXPRESS_INTEREST": "I'm interested in investing",
+      "WITHDRAW_INTEREST": "Withdraw my interest",
+      "INTEREST_REGISTERED": "Interest registered successfully. Our team may reach out to you — this is not a payment or commitment.",
+      "INTEREST_WITHDRAWN": "Your interest has been withdrawn.",
+      "INTEREST_ERROR": "Could not update your interest.",
+      "INTEREST_DISCLAIMER": "Registering interest does not create a payment, commitment, or investment. It only lets our team know you'd like to learn more."
+    },
+    "FINANCIALS": {
+      "PROPERTY_VALUE": "Property value",
+      "PURCHASE_PRICE": "Purchase price",
+      "RENOVATION": "Renovation cost",
+      "CONSTRUCTION": "Construction cost",
+      "TAXES": "Taxes",
+      "OTHER_COSTS": "Other costs (notary, broker, financing, operating, reserve)",
+      "TOTAL_COST": "Total project cost",
+      "EXPECTED_REVENUE": "Expected revenue",
+      "EXPECTED_PROFIT": "Expected profit"
+    },
+    "DOCUMENTS": {
+      "TITLE": "Documents"
+    },
+    "DOCUMENT_TYPE": {
+      "PROJECTPLAN": "Project plan",
+      "FINANCIALSTATEMENT": "Financial statement",
+      "VALUATION": "Valuation",
+      "LEGALDOCUMENT": "Legal document",
+      "PERMIT": "Permit",
+      "PROSPECTUS": "Prospectus",
+      "OTHER": "Other"
+    },
+    "UPDATES": {
+      "TITLE": "Project Updates"
+    },
+    "CALCULATOR": {
+      "TITLE": "Investment Calculator",
+      "AMOUNT": "Amount",
+      "TERM_MONTHS": "Term (months)",
+      "CALCULATE": "Calculate",
+      "CONSERVATIVE": "Conservative",
+      "BASE": "Base",
+      "OPTIMISTIC": "Optimistic",
+      "ERROR": "Could not calculate an estimate."
+    },
+    "WATCHLIST": {
+      "TITLE": "My Investment Watchlist",
+      "SUBTITLE": "Investment projects you're keeping an eye on.",
+      "LOAD_ERROR": "Could not load your watchlist.",
+      "EMPTY_TITLE": "Your watchlist is empty",
+      "EMPTY_MESSAGE": "Projects you save will appear here."
     }
   }
 }

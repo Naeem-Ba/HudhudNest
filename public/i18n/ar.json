@@ -45,6 +45,8 @@
     "SHORT_STAY": "الإقامة القصيرة",
     "SHORT_STAY_BOOKINGS": "حجوزات الإقامة القصيرة",
     "SHORT_STAY_LISTINGS": "إعلانات الإقامة القصيرة",
+    "INVESTMENTS": "الاستثمار",
+    "INVESTMENT_WATCHLIST": "قائمة متابعة الاستثمار",
     "OPEN_MENU": "فتح القائمة",
     "CLOSE_MENU": "إغلاق القائمة"
   },
@@ -1523,6 +1525,129 @@
       "LOAD_ERROR": "تعذر تحميل الإعلان.",
       "PUBLISH_TOGGLE_SUCCESS": "تم تحديث حالة النشر.",
       "PUBLISH_TOGGLE_ERROR": "تعذر تحديث حالة النشر."
+    }
+  },
+  "INVESTMENTS": {
+    "LIST": {
+      "EYEBROW": "اكتشاف الاستثمار",
+      "TITLE": "المشاريع الاستثمارية",
+      "SUBTITLE": "تصفّح وحلّل فرص الاستثمار العقاري. لا دفع ولا التزام — اكتشاف فقط.",
+      "SEARCH": "بحث",
+      "SEARCH_PLACEHOLDER": "عنوان المشروع أو وصفه",
+      "PROJECT_TYPE": "نوع المشروع",
+      "SEARCH_ACTION": "بحث",
+      "RESET": "إعادة تعيين",
+      "MIN_RETURN": "الحد الأدنى للعائد المتوقع %",
+      "MAX_TERM": "الحد الأقصى للمدة (بالأشهر)",
+      "LOAD_ERROR": "تعذر تحميل المشاريع الاستثمارية.",
+      "EMPTY_TITLE": "لا توجد مشاريع استثمارية",
+      "EMPTY_MESSAGE": "جرّب تعديل معايير البحث أو عد لاحقًا."
+    },
+    "PROJECT_TYPE": {
+      "RESIDENTIAL": "سكني",
+      "COMMERCIAL": "تجاري",
+      "MIXED": "متعدد الاستخدامات",
+      "INDUSTRIAL": "صناعي",
+      "LAND": "أرض",
+      "RENOVATION": "ترميم",
+      "NEW_CONSTRUCTION": "بناء جديد"
+    },
+    "STATUS": {
+      "DRAFT": "مسودة",
+      "UNDERREVIEW": "قيد المراجعة",
+      "APPROVED": "معتمد",
+      "SCHEDULED": "مجدول",
+      "PUBLISHED": "مفتوح للاهتمام",
+      "CLOSED": "مغلق",
+      "REJECTED": "مرفوض",
+      "SUSPENDED": "معلَّق"
+    },
+    "RISK": {
+      "LABEL": "مستوى المخاطر",
+      "TITLE": "تحليل المخاطر",
+      "OVERALL": "المخاطر الإجمالية",
+      "LOW": "منخفض",
+      "MEDIUM": "متوسط",
+      "HIGH": "مرتفع",
+      "VERY_HIGH": "مرتفع جدًا",
+      "MARKET": "مخاطر السوق",
+      "LIQUIDITY": "مخاطر السيولة",
+      "PROJECT": "مخاطر المشروع",
+      "FINANCING": "مخاطر التمويل",
+      "DEVELOPER": "مخاطر المطوّر",
+      "DISCLAIMER": "مستوى المخاطر تقديري فقط. وهو ليس ضمانًا، وقد يتعرض رأس المال لخسارة جزئية أو كاملة حسب أداء المشروع."
+    },
+    "DETAILS": {
+      "NOT_FOUND": "المشروع الاستثماري غير موجود.",
+      "LOAD_ERROR": "تعذر تحميل هذا المشروع الاستثماري.",
+      "FUNDING": "التمويل",
+      "TARGET": "المبلغ المستهدف",
+      "RAISED": "المبلغ المجمّع",
+      "REMAINING": "المتبقي",
+      "PROGRESS": "نسبة الإنجاز",
+      "ABOUT": "عن هذا المشروع",
+      "FINANCIAL_OVERVIEW": "النظرة المالية العامة",
+      "PARAMETERS": "معايير الاستثمار",
+      "MINIMUM": "الحد الأدنى للاستثمار",
+      "MAXIMUM": "الحد الأقصى للاستثمار",
+      "EXPECTED_RETURN": "العائد المتوقع",
+      "TERM": "مدة الاستثمار",
+      "MONTHS": "أشهر",
+      "CURRENCY": "العملة",
+      "WATCHLIST_ADD": "إضافة إلى قائمة المتابعة",
+      "WATCHLIST_REMOVE": "إزالة من قائمة المتابعة",
+      "WATCHLIST_ADDED": "أُضيف إلى قائمة المتابعة.",
+      "WATCHLIST_REMOVED": "أُزيل من قائمة المتابعة.",
+      "WATCHLIST_ERROR": "تعذر تحديث قائمة المتابعة.",
+      "EXPRESS_INTEREST": "أرغب بالاستثمار",
+      "WITHDRAW_INTEREST": "سحب الاهتمام",
+      "INTEREST_REGISTERED": "تم تسجيل اهتمامك بنجاح. قد يتواصل معك فريقنا — هذا ليس دفعًا أو التزامًا.",
+      "INTEREST_WITHDRAWN": "تم سحب اهتمامك.",
+      "INTEREST_ERROR": "تعذر تحديث حالة الاهتمام.",
+      "INTEREST_DISCLAIMER": "تسجيل الاهتمام لا ينشئ أي دفع أو التزام أو استثمار. هو فقط إعلام فريقنا برغبتك في معرفة المزيد."
+    },
+    "FINANCIALS": {
+      "PROPERTY_VALUE": "قيمة العقار",
+      "PURCHASE_PRICE": "سعر الشراء",
+      "RENOVATION": "تكلفة الترميم",
+      "CONSTRUCTION": "تكلفة البناء",
+      "TAXES": "الضرائب",
+      "OTHER_COSTS": "تكاليف أخرى (كاتب العدل، الوسيط، التمويل، التشغيل، الاحتياطي)",
+      "TOTAL_COST": "إجمالي تكلفة المشروع",
+      "EXPECTED_REVENUE": "الإيراد المتوقع",
+      "EXPECTED_PROFIT": "الربح المتوقع"
+    },
+    "DOCUMENTS": {
+      "TITLE": "المستندات"
+    },
+    "DOCUMENT_TYPE": {
+      "PROJECTPLAN": "خطة المشروع",
+      "FINANCIALSTATEMENT": "البيان المالي",
+      "VALUATION": "التقييم",
+      "LEGALDOCUMENT": "مستند قانوني",
+      "PERMIT": "ترخيص",
+      "PROSPECTUS": "نشرة الاكتتاب",
+      "OTHER": "أخرى"
+    },
+    "UPDATES": {
+      "TITLE": "تحديثات المشروع"
+    },
+    "CALCULATOR": {
+      "TITLE": "حاسبة الاستثمار",
+      "AMOUNT": "المبلغ",
+      "TERM_MONTHS": "المدة (بالأشهر)",
+      "CALCULATE": "احسب",
+      "CONSERVATIVE": "متحفظ",
+      "BASE": "أساسي",
+      "OPTIMISTIC": "متفائل",
+      "ERROR": "تعذر حساب التقدير."
+    },
+    "WATCHLIST": {
+      "TITLE": "قائمة متابعة استثماراتي",
+      "SUBTITLE": "المشاريع الاستثمارية التي تتابعها.",
+      "LOAD_ERROR": "تعذر تحميل قائمة المتابعة.",
+      "EMPTY_TITLE": "قائمة المتابعة فارغة",
+      "EMPTY_MESSAGE": "ستظهر هنا المشاريع التي تحفظها."
     }
   }
 }
