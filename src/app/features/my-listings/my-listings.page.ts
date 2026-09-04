@@ -45,6 +45,7 @@ export class MyListingsPage implements OnInit {
   readonly error = signal('');
   readonly deletingId = signal<string | null>(null);
   readonly publishingId = signal<string | null>(null);
+  readonly extendingId = signal<string | null>(null);
 
   readonly fallbackImage = '/images/no-image.svg';
   private readonly now = Date.now();
@@ -137,6 +138,54 @@ export class MyListingsPage implements OnInit {
       });
   }
 
+  /**
+   * ✅ إضافة: زر "تمديد الإعلان" الذي يظهر عند اقتراب الانتهاء أو بعده — الطلب فعلياً
+   * إلى PropertiesController.RequestExtension (كان موجودًا بالباك اند بلا أي واجهة
+   * تستهلكه). لا يُمدَّد الإعلان هنا مباشرة (لا توجد بوابة دفع): الاستجابة عرض سعر
+   * (رسوم + رقم مرجع) يُحوَّل لاحقًا لتحويل بنكي يؤكّده مسؤول — تمامًا كما في
+   * checkout.page.ts لرسوم الإعلان الأخرى. الطلب مكرَّر آمن: نفس رقم المرجع يعود إن
+   * كانت هناك رسوم معلَّقة أصلاً بدل إنشاء رسوم مضاعفة (IsExistingPendingFee بالباك
+   * اند)، والإعلان نفسه لا يُلمَس ولا يُكرَّر — فقط ExpiresAt يُمدَّد لاحقًا بعد التأكيد.
+   */
+  canExtend(property: Property): boolean {
+    return property.status === 'Expired' || this.isExpiringSoon(property.expiresAt);
+  }
+
+  extend(id: string | undefined): void {
+    if (!id || this.extendingId()) {
+      return;
+    }
+
+    this.extendingId.set(id);
+
+    this.api
+      .requestListingExtension(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: quote => {
+          this.extendingId.set(null);
+          const messageKey = quote.isExistingPendingFee
+            ? 'MY_LISTINGS.EXTEND_ALREADY_PENDING'
+            : 'MY_LISTINGS.EXTEND_SUCCESS';
+          this.toast.show(
+            this.translate.instant(messageKey, {
+              amount: quote.amountUsd,
+              reference: quote.transactionId
+            }),
+            'success'
+          );
+        },
+        error: err => {
+          this.extendingId.set(null);
+          const backendMessage = err?.error?.message as string | undefined;
+          this.toast.show(
+            backendMessage || this.translate.instant('MY_LISTINGS.EXTEND_ERROR'),
+            'error'
+          );
+        }
+      });
+  }
+
   openMessages(id: string | undefined): void {
     if (id) {
       this.router.navigate(['/messages', id]);
@@ -190,9 +239,14 @@ export class MyListingsPage implements OnInit {
     return Math.ceil((expiry - this.now) / 86_400_000);
   }
 
+  /**
+   * ✅ إصلاح: كان الحد 7 أيام هنا بينما نافذة التنبيه الفعلية بالخادم
+   * (ListingLifecyclePolicy.ExpiryWarningLeadTime) هي 5 أيام — فكانت هذه اللافتة
+   * تظهر أحيانًا قبل أن يصل أي إشعار فعلي، ما يوحي بتناقض. الرقمان الآن متطابقان.
+   */
   isExpiringSoon(expiresAt: string | undefined | null): boolean {
     const days = this.daysLeft(expiresAt);
-    return days !== null && days > 0 && days <= 7;
+    return days !== null && days > 0 && days <= 5;
   }
 
   trackById(index: number, property: Property): string {

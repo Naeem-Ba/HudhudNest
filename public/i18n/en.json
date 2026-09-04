@@ -667,6 +667,10 @@
     "DELETE_SUCCESS": "Property deleted successfully.",
     "DELETE_ERROR": "Unable to delete the property.",
     "EXPIRING_IN": "Expires in {{days}} days",
+    "EXTEND": "Extend listing",
+    "EXTEND_SUCCESS": "Extension request recorded — fee ${{amount}}. Reference: {{reference}}. Complete the bank transfer with this reference; the extension applies once an admin confirms it.",
+    "EXTEND_ALREADY_PENDING": "You already have a pending extension request for this listing. Reference: {{reference}}.",
+    "EXTEND_ERROR": "Could not record the extension request. Please try again.",
     "CREATED_AT": "Date added",
     "PUBLISH": "Publish listing",
     "PUBLISH_SUCCESS": "Property published successfully.",
@@ -1247,14 +1251,19 @@
     "LOAD_ERROR": "Could not load the subscription plans.",
     "REASON_PLAN_REQUIRED": "Pick a plan below before you can publish a listing — the free plan works too.",
     "NOTE_CURRENCY": "The free plan requires no payment. Paid plans are billed monthly in US dollars and exclude tax; online payment is not live yet — use the plan button to reach the sales team and complete your subscription.",
+    "MESSAGES": {
+      "FREE_SELECTED_SUCCESS": "The free plan is selected — you can add your listing now.",
+      "PLAN_SELECTED_SUCCESS": "Plan selected successfully.",
+      "SELECT_ERROR": "Could not save your plan selection. Please try again."
+    },
     "FREE": {
       "NAME": "Free",
       "TAGLINE": "For individuals listing their own property for sale or rent — no extras.",
       "F1": "Publish one active listing for your own property, for sale or rent",
-      "F2": "The listing stays live for three months",
-      "F3": "Automatic alert before it expires",
-      "F4": "Extend for three more months for a single-listing fee",
-      "NOTE": "After the three months the listing drops out of search results, and stays extendable for 30 days before it is deleted.",
+      "F2": "The listing stays live for one month",
+      "F3": "Automatic alert five days before it expires",
+      "F4": "Extend for one more month for a single-listing fee",
+      "NOTE": "After the month ends the listing drops out of search results, and stays extendable for 30 days before it is deleted.",
       "CTA": "Post your listing free"
     },
     "BASIC": {

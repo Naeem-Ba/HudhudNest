@@ -666,6 +666,10 @@
     "DELETE_SUCCESS": "Die Immobilie wurde erfolgreich gelöscht.",
     "DELETE_ERROR": "Die Immobilie konnte nicht gelöscht werden.",
     "EXPIRING_IN": "Läuft in {{days}} Tagen ab",
+    "EXTEND": "Inserat verlängern",
+    "EXTEND_SUCCESS": "Verlängerungsanfrage gespeichert — Gebühr {{amount}} $. Referenz: {{reference}}. Schließe die Überweisung mit dieser Referenz ab; die Verlängerung gilt, sobald ein Admin sie bestätigt.",
+    "EXTEND_ALREADY_PENDING": "Für dieses Inserat liegt bereits eine offene Verlängerungsanfrage vor. Referenz: {{reference}}.",
+    "EXTEND_ERROR": "Die Verlängerungsanfrage konnte nicht gespeichert werden. Bitte versuche es erneut.",
     "CREATED_AT": "Hinzugefügt am",
     "PUBLISH": "Inserat veröffentlichen",
     "PUBLISH_SUCCESS": "Immobilie erfolgreich veröffentlicht.",
@@ -1246,14 +1250,19 @@
     "LOAD_ERROR": "Die Abo-Pakete konnten nicht geladen werden.",
     "REASON_PLAN_REQUIRED": "Wähle unten ein Paket, bevor du ein Inserat veröffentlichen kannst — das kostenlose Paket funktioniert ebenfalls.",
     "NOTE_CURRENCY": "Das kostenlose Paket erfordert keine Zahlung. Die bezahlten Pakete werden monatlich in US-Dollar zzgl. Steuern abgerechnet; die Online-Zahlung ist noch nicht aktiv — nutze die Paket-Schaltfläche, um das Vertriebsteam zu erreichen und das Abo abzuschließen.",
+    "MESSAGES": {
+      "FREE_SELECTED_SUCCESS": "Das kostenlose Paket ist ausgewählt — du kannst jetzt dein Inserat hinzufügen.",
+      "PLAN_SELECTED_SUCCESS": "Paket erfolgreich ausgewählt.",
+      "SELECT_ERROR": "Die Paketauswahl konnte nicht gespeichert werden. Bitte versuche es erneut."
+    },
     "FREE": {
       "NAME": "Kostenlos",
       "TAGLINE": "Für Privatpersonen, die ihre eigene Immobilie zum Verkauf oder zur Miete inserieren — ohne Zusatzfunktionen.",
       "F1": "Ein aktives Inserat für die eigene Immobilie zum Verkauf oder zur Miete",
-      "F2": "Das Inserat bleibt drei Monate online",
-      "F3": "Automatische Erinnerung vor Ablauf",
-      "F4": "Verlängerung um drei weitere Monate gegen Einzelinserat-Gebühr",
-      "NOTE": "Nach den drei Monaten erscheint das Inserat nicht mehr in der Suche und bleibt 30 Tage lang verlängerbar, bevor es gelöscht wird.",
+      "F2": "Das Inserat bleibt einen Monat online",
+      "F3": "Automatische Erinnerung fünf Tage vor Ablauf",
+      "F4": "Verlängerung um einen weiteren Monat gegen Einzelinserat-Gebühr",
+      "NOTE": "Nach dem Monat erscheint das Inserat nicht mehr in der Suche und bleibt 30 Tage lang verlängerbar, bevor es gelöscht wird.",
       "CTA": "Inserat kostenlos aufgeben"
     },
     "BASIC": {
