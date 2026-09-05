@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["start"],
       "port": 4200
+    },
+    {
+      "name": "wohnungsmieten-staging",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start:staging"],
+      "port": 4200
     }
   ]
 }

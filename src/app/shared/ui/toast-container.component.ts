@@ -39,6 +39,11 @@ import { ToastMessage, ToastService } from '../services/toast.service';
       display: grid;
       gap: .75rem;
       width: min(420px, calc(100vw - 2rem));
+      /* عدّة تنبيهات متزامنة (مثل فشل طلبات API متعددة) لا يجب أن تغطي
+         الشاشة كاملة على الهاتف — الحزمة تصبح قابلة للتمرير بدل ذلك. */
+      max-height: calc(100dvh - 2rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
       pointer-events: none;
     }
 

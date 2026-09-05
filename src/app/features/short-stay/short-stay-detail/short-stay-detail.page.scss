@@ -1,3 +1,5 @@
+@use '../../../../styles/breakpoints' as bp;
+
 .ssd {
   max-width: 1100px;
   margin: 0 auto;
@@ -32,7 +34,7 @@
     gap: 2rem;
     align-items: start;
 
-    @media (max-width: 860px) {
+    @include bp.max(860px) {
       grid-template-columns: 1fr;
     }
   }

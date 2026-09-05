@@ -1,4 +1,5 @@
 @use '../../../styles/auth-flow' as flow;
+@use '../../../styles/breakpoints' as bp;
 
 /* إعادة استخدام نفس نمط الحقول/الزر/السبينر الموحّد بصفحات auth
    (login/phone-*) بدل اختراع نمط محلي جديد — يضمن اتساق بصري كامل. */
@@ -48,7 +49,7 @@
   align-items: flex-start;
 }
 
-@media (min-width: 900px) {
+@include bp.secondary-layout {
   .contact-grid {
     grid-template-columns: minmax(0, 1fr) 320px;
   }
@@ -74,7 +75,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 1.1rem;
 
-  @media (max-width: 560px) {
+  @include bp.max(560px) {
     grid-template-columns: 1fr;
   }
 }
@@ -91,7 +92,7 @@
   padding-inline: 2rem;
   align-self: flex-start;
 
-  @media (max-width: 560px) {
+  @include bp.max(560px) {
     width: 100%;
     align-self: stretch;
   }
