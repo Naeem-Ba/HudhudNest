@@ -85,7 +85,17 @@
   @include bp.tablet {
     inset-inline-start: unset;
     inset-inline-end: 0;
-    transform: translateX(105%);
+
+    // Mobile UX audit (Phase 7) — BLOCKER: under dir="rtl", inset-inline-end
+    // resolves to physical `left: 0` (same as the mobile-drawer panel in
+    // navbar.component.scss, confirmed live), so the closed-state transform
+    // must move the panel further left (negative X) to clear the viewport.
+    // The previous `translateX(105%)` pushed it right *from that left:0
+    // anchor*, landing it back on top of the property list instead of off
+    // -screen — real horizontal overflow on every mobile RTL load of this
+    // P0 screen, only hidden from view by the global `overflow-x: clip`
+    // safety net in styles.scss (which clips, not fixes, the root cause).
+    transform: translateX(-105%);
 
     &.filter-sidebar--open {
       transform: translateX(0);

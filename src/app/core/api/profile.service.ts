@@ -74,6 +74,14 @@ export interface UserProfile {
    */
   Bio?: string;
   ContactInfo?: string;
+
+  /**
+   * ✅ إضافة: هل لدى هذا الحساب كلمة مرور (UserDto.HasPassword بالباك اند)؟ false لحساب
+   * تسجيل الدخول الاجتماعي فقط (Google/Apple بلا كلمة مرور إطلاقاً). يحدّد ما إذا كانت
+   * شاشة "إعادة المصادقة" قبل حذف الحساب تطلب كلمة المرور أم لا — راجع
+   * profile.component.ts: onDeleteAccount/confirmDeleteAccount.
+   */
+  HasPassword?: boolean;
 }
 
 interface BackendUserProfile {
@@ -132,6 +140,9 @@ interface BackendUserProfile {
   Bio?: string;
   contactInfo?: string;
   ContactInfo?: string;
+
+  hasPassword?: boolean;
+  HasPassword?: boolean;
 }
 
 /**
@@ -219,6 +230,16 @@ export class ProfileService {
   }
 
   /**
+   * Clears the cached profile (back to "not loaded"). Called from AuthService.clearSession()
+   * on every logout path — including the one account deletion runs (logoutLocal()) — so a
+   * stale profile (name, email, avatar) from the just-ended session never leaks into a
+   * component that reads profile$ after logout/deletion but before a full page reload.
+   */
+  clearCache(): void {
+    this.profileSubject.next(null);
+  }
+
+  /**
    * ✅ FIX: إصلاح مزدوج
    *
    * 1. put<void> لأن Backend يُعيد 204 NoContent — لا يوجد body لقراءته.
@@ -236,8 +257,18 @@ export class ProfileService {
     return this.api.post<void>('/users/me/change-password', data);
   }
 
-  deleteAccount(): Observable<void> {
-    return this.api.delete<void>('/users/me');
+  /**
+   * DELETE /api/Users/me — server-side account deletion (Phase 5). currentPassword is
+   * required only for a password-based account (UserProfile.HasPassword); left undefined
+   * for a social-login-only account, which has no password to submit. See
+   * DeleteUserCommandHandler for the exact server-side error codes this can surface
+   * (CURRENT_PASSWORD_REQUIRED / INVALID_CURRENT_PASSWORD / ACCOUNT_LOCKED).
+   */
+  deleteAccount(currentPassword?: string): Observable<void> {
+    return this.api.delete<void>(
+      '/users/me',
+      currentPassword ? { currentPassword } : {}
+    );
   }
 
   /** GET /api/users/{id} — ملف تعريف عام (مثلاً لعرض بيانات مالك عقار). */
@@ -301,7 +332,9 @@ export class ProfileService {
       PlanSelectedAt: user.planSelectedAt ?? user.PlanSelectedAt ?? null,
 
       Bio: user.bio ?? user.Bio ?? '',
-      ContactInfo: user.contactInfo ?? user.ContactInfo ?? ''
+      ContactInfo: user.contactInfo ?? user.ContactInfo ?? '',
+
+      HasPassword: user.hasPassword ?? user.HasPassword ?? false
     };
   }
 

@@ -449,6 +449,11 @@
             </div>
           </div>
 
+          <app-consent-checkbox
+            [checked]="privacyConsentAccepted"
+            (checkedChange)="privacyConsentAccepted = $event">
+          </app-consent-checkbox>
+
           <div
             class="field-error"
             *ngIf="message && otpSubmitted"
@@ -457,7 +462,7 @@
             ⚠️ {{ message }}
           </div>
 
-          <button type="submit" class="auth-submit" [disabled]="otpForm.invalid || loading">
+          <button type="submit" class="auth-submit" [disabled]="otpForm.invalid || loading || !privacyConsentAccepted">
             <span *ngIf="loading">⏳ {{ 'AUTH.LOADING' | translate }}</span>
             <span *ngIf="!loading">{{ 'AUTH.REGISTER_BUTTON' | translate }}</span>
           </button>
@@ -620,7 +625,12 @@
           </div>
         </div>
 
-        <button type="submit" class="auth-submit" [disabled]="regForm.invalid || loading">
+        <app-consent-checkbox
+          [checked]="privacyConsentAccepted"
+          (checkedChange)="privacyConsentAccepted = $event">
+        </app-consent-checkbox>
+
+        <button type="submit" class="auth-submit" [disabled]="regForm.invalid || loading || !privacyConsentAccepted">
           <span *ngIf="loading">⏳ {{ 'AUTH.LOADING' | translate }}</span>
           <span *ngIf="!loading">{{ 'AUTH.REGISTER_BUTTON' | translate }}</span>
         </button>

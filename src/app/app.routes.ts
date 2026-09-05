@@ -238,6 +238,15 @@ export const routes: Routes = [
             .then(m => m.TermsOfServicePage)
       },
       {
+        // Phase 5 (Account Deletion) — public, no AuthGuard: Google Play/Apple App
+        // Store both require a web path to account deletion reachable without
+        // installing the app. See account-deletion.page.ts's doc comment.
+        path: 'account-deletion',
+        loadComponent: () =>
+          import('./features/legal/account-deletion.page')
+            .then(m => m.AccountDeletionPage)
+      },
+      {
         // AdminGuard has redirected here since it was written (admin-guard.ts:26)
         // without this route ever being registered, so the '**' wildcard silently
         // bounced non-admins to /home. Registering it makes the refusal visible.

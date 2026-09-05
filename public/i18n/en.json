@@ -919,6 +919,37 @@
       "CONTACT_INFO_LABEL": "Address & contact information",
       "CONTACT_INFO_PLACEHOLDER": "e.g. your address, an extra phone number, a work email...",
       "CONTACT_INFO_HINT": "This is also shown on your public profile — only write what you're comfortable sharing publicly."
+    },
+    "DANGER_ZONE": {
+      "TITLE": "Danger Zone",
+      "HINT": "Permanently delete your account and all your personal data. This action cannot be undone once completed."
+    },
+    "DELETE_MODAL": {
+      "TITLE": "Permanently Delete Account",
+      "INTRO": "You are about to permanently delete your aqar-tech account. This action cannot be undone once completed.",
+      "WILL_DELETE_TITLE": "Will be deleted/hidden immediately:",
+      "WILL_DELETE_1": "Your name, profile picture, bio, and contact information",
+      "WILL_DELETE_2": "Your registered email and phone number, and any linked Google/Apple sign-in — you will not be able to sign in to this account with them again",
+      "WILL_DELETE_3": "Every active session on every device — you will be signed out everywhere immediately",
+      "WILL_RETAIN_TITLE": "Will be retained (without your personal data):",
+      "WILL_RETAIN_1": "Listings, messages, and reviews you previously published stay visible to others, but attributed to \"Deleted User\" instead of your real name",
+      "WILL_RETAIN_2": "Limited internal security records (to prevent abuse), containing none of your personal data after deletion",
+      "BUSINESS_NOTE": "Note: this does not delete or automatically unpublish your listings. If you want to unpublish a listing before deleting your account, go back and do that first from \"My Listings\".",
+      "CONTINUE_BTN": "Continue",
+      "CANCEL_BTN": "Cancel",
+      "BACK_BTN": "Back",
+      "PASSWORD_LABEL": "Enter your current password to confirm",
+      "PASSWORD_PLACEHOLDER": "Password",
+      "TYPE_TO_CONFIRM": "Type {{ keyword }} below to confirm",
+      "FINAL_WARNING": "As soon as you press the delete button below, your account will be deleted immediately and this cannot be undone.",
+      "CONFIRM_BTN": "Permanently delete my account",
+      "ERRORS": {
+        "CURRENT_PASSWORD_REQUIRED": "You must enter your current password.",
+        "INVALID_CURRENT_PASSWORD": "Your current password is incorrect.",
+        "ACCOUNT_LOCKED": "Your account is temporarily locked after repeated attempts. Try again later.",
+        "CONFIRM_TEXT_MISMATCH": "Please type DELETE exactly to confirm.",
+        "GENERIC": "Could not delete your account. Please try again later."
+      }
     }
   },
   "VISIT": {
