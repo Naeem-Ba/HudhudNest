@@ -7,8 +7,11 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { PhoneAuthApiService } from '../../../core/auth/phone-auth-api.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { ConsentApiService } from '../../../core/api/consent-api.service';
+import { PRIVACY_POLICY_VERSION } from '../../../core/models/consent-versions';
 import { ToastService } from '../../../shared/services/toast.service';
 import { FormErrorComponent } from '../../../shared/ui/form-error.component';
+import { ConsentCheckboxComponent } from '../../../shared/components/consent-checkbox/consent-checkbox.component';
 import { getPhoneWorkflowErrorMessage, PHONE_E164_PATTERN } from '../phone-auth-errors';
 
 type Step = 'phone' | 'details';
@@ -21,7 +24,14 @@ type Step = 'phone' | 'details';
 @Component({
   selector: 'app-phone-register-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslateModule, FormErrorComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    TranslateModule,
+    FormErrorComponent,
+    ConsentCheckboxComponent
+  ],
   templateUrl: './phone-register.page.html',
   styleUrls: ['./phone-register.page.scss']
 })
@@ -33,12 +43,17 @@ export class PhoneRegisterPage {
   private readonly route = inject(ActivatedRoute);
   private readonly translate = inject(TranslateService);
   private readonly toast = inject(ToastService);
+  private readonly consentApi = inject(ConsentApiService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly step = signal<Step>('phone');
   readonly loading = signal(false);
   readonly submitted = signal(false);
   readonly error = signal('');
+
+  // مربّع الموافقة على سياسة الخصوصية وشروط الاستخدام — غير محدَّد افتراضياً،
+  // ومطلوب فعلياً، انظر docs/privacy/privacy-gaps.md (P1).
+  readonly privacyConsentAccepted = signal(false);
   readonly resendCooldown = signal(0);
   private resendTimer: ReturnType<typeof setInterval> | null = null;
   private challengeId = '';
@@ -127,6 +142,12 @@ export class PhoneRegisterPage {
       return;
     }
 
+    // دفاع إضافي: زر الإرسال معطَّل بدون الموافقة أصلاً، لكن Enter داخل حقل النموذج
+    // قد يُطلق (ngSubmit) في بعض المتصفحات حتى مع تعطيل الزر.
+    if (!this.privacyConsentAccepted()) {
+      return;
+    }
+
     this.loading.set(true);
     this.error.set('');
 
@@ -148,6 +169,13 @@ export class PhoneRegisterPage {
           this.authService.restoreSession();
           this.authService.validateSession();
           this.toast.success(this.translate.instant('AUTH.REGISTER_SUCCESS'));
+
+          // بخلاف التسجيل بالبريد، تسجيل الدخول بالهاتف يُصدر رمز وصول فوراً — لذلك
+          // نسجّل الموافقة الآن عبر النقطة العامة الموثَّقة بدل تمريرها ضمن نموذج
+          // التسجيل نفسه. فشل هذا النداء لا يوقف تسجيل الدخول (best-effort).
+          this.consentApi.record('PrivacyPolicy', PRIVACY_POLICY_VERSION).subscribe({
+            error: () => { /* غير حرج — انظر التعليق أعلاه. */ }
+          });
 
           const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
           void this.router.navigateByUrl(returnUrl);

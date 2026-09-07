@@ -8,6 +8,11 @@ export interface RegisterRequest {
   lastName: string;
   email: string;
   password: string;
+  // اختيارية إضافياً فقط — انظر docs/privacy/privacy-gaps.md (P1) في مستودع الـ backend.
+  // تُرسَل فقط عندما يضع المستخدم فعلاً علامة على مربّع الموافقة غير المحدَّد مسبقاً.
+  privacyPolicyAccepted?: boolean;
+  privacyPolicyVersion?: string;
+  consentSource?: string;
 }
 
 export interface RegisterResponse {

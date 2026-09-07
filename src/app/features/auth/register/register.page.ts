@@ -5,6 +5,8 @@ import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AuthApiService } from '../../../core/auth/auth-api.service';
+import { ConsentApiService } from '../../../core/api/consent-api.service';
+import { PRIVACY_POLICY_VERSION } from '../../../core/models/consent-versions';
 import {
   getPasswordPolicyViolations,
   passwordPolicyValidator,
@@ -12,6 +14,7 @@ import {
 } from '../../../core/auth/password-policy';
 import { getPasswordRejectionMessages } from '../password-errors';
 import { FormErrorComponent } from '../../../shared/ui/form-error.component';
+import { ConsentCheckboxComponent } from '../../../shared/components/consent-checkbox/consent-checkbox.component';
 import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
@@ -22,7 +25,8 @@ import { ToastService } from '../../../shared/services/toast.service';
     ReactiveFormsModule,
     RouterModule,
     TranslateModule,
-    FormErrorComponent
+    FormErrorComponent,
+    ConsentCheckboxComponent
   ],
   template: `
     <section class="auth-page">
@@ -122,7 +126,12 @@ import { ToastService } from '../../../shared/services/toast.service';
           </li>
         </ul>
 
-        <button type="submit" [disabled]="form.invalid || loading()">
+        <app-consent-checkbox
+          [checked]="privacyConsentAccepted()"
+          (checkedChange)="privacyConsentAccepted.set($event)">
+        </app-consent-checkbox>
+
+        <button type="submit" [disabled]="form.invalid || !privacyConsentAccepted() || loading()">
           <ng-container *ngIf="loading(); else registerText">
             ⏳ {{ 'AUTH.LOADING' | translate }}
           </ng-container>
@@ -268,6 +277,10 @@ export class RegisterPage {
   readonly submitted = signal(false);
   readonly error = signal('');
 
+  // مربّع الموافقة على سياسة الخصوصية وشروط الاستخدام — غير محدَّد افتراضياً،
+  // ومطلوب فعلياً (الزر معطَّل بدونه)، انظر docs/privacy/privacy-gaps.md (P1).
+  readonly privacyConsentAccepted = signal(false);
+
   // ✅ B-15 (RELEASE-BLOCKERS-AR.md): حالة "أُرسل رابط التأكيد" + إعادة الإرسال.
   readonly registered = signal(false);
   readonly registeredEmail = signal('');
@@ -333,6 +346,13 @@ export class RegisterPage {
       return;
     }
 
+    // دفاع إضافي: زر الإرسال معطَّل بدون الموافقة أصلاً، لكن Enter داخل حقل النموذج
+    // قد يُطلق (ngSubmit) في بعض المتصفحات حتى مع تعطيل الزر.
+    if (!this.privacyConsentAccepted()) {
+      this.error.set(this.translate.instant('AUTH.ERRORS.FIX_FIELDS'));
+      return;
+    }
+
     this.loading.set(true);
     this.error.set('');
 
@@ -342,7 +362,10 @@ export class RegisterPage {
       firstName: raw.firstName.trim(),
       lastName: raw.lastName.trim(),
       email: raw.email.trim().toLowerCase(),
-      password: raw.password
+      password: raw.password,
+      privacyPolicyAccepted: this.privacyConsentAccepted(),
+      privacyPolicyVersion: PRIVACY_POLICY_VERSION,
+      consentSource: ConsentApiService.currentSource()
     };
 
     this.auth.register(request).subscribe({

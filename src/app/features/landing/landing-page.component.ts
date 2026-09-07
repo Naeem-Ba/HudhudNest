@@ -14,6 +14,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import {
   AbstractControl,
   FormBuilder,
@@ -37,7 +38,7 @@ function phoneValidator(ctrl: AbstractControl): ValidationErrors | null {
   selector:        'app-landing-page',
   standalone:      true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports:         [CommonModule, ReactiveFormsModule],
+  imports:         [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl:     './landing-page.component.html',
   styleUrls:       ['./landing-page.component.scss'],
 })

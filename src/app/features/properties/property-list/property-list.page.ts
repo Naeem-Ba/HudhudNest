@@ -335,6 +335,10 @@ export class PropertyListPage implements OnInit {
       return;
     }
 
+    // توضيح سبب طلب إذن الموقع قبل ظهور نافذة المتصفح/النظام مباشرة — المستخدم لم يكن
+    // يرَ أي تفسير قبل هذا التعديل، فقط أيقونة زر ثم طلب الإذن مباشرة.
+    this.toast.info('سنستخدم موقعك الحالي فقط لعرض العقارات القريبة منك.');
+
     this.geoLoading.set(true);
 
     navigator.geolocation.getCurrentPosition(

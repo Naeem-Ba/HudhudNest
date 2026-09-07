@@ -207,6 +207,11 @@ export class AuthService {
     // RELEASE-BLOCKERS-AR.md B-20: prevent a stale CSRF token from a previous session
     // being reused after logout.
     this.csrfTokenService.clear();
+    // Account deletion (Phase 5) and plain logout both end up here: without this, the
+    // just-ended session's name/email/avatar stays in ProfileService's shared profile$
+    // BehaviorSubject in memory and could still render to a component that reads it before
+    // the next full page reload.
+    this.profileService.clearCache();
     this.setAnonymousState();
   }
 

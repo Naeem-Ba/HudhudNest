@@ -630,6 +630,16 @@
   cursor: pointer;
 }
 
+/* Mobile UX audit (Phase 7): chevron icon was hardcoded to the LTR side only,
+   so on this app's default RTL (Arabic) locale it sat on the wrong side of a
+   right-aligned select — same pattern already fixed for the equivalent control
+   in property-form.page.scss, mirrored here. */
+:host-context(html[dir="rtl"]) .field-select {
+  background-position: right 0.9rem center;
+  padding-left: 1rem;
+  padding-right: 2.5rem;
+}
+
 .field-textarea { min-height: 90px; resize: vertical; }
 
 .field-input:focus,

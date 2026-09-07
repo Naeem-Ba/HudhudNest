@@ -13,6 +13,7 @@ import { UrlService } from '../core/services/url.service';
 import { ToastService } from '../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../shared/ui/loading-spinner.component';
 import { ImageFallbackDirective } from '../shared/directives/image-fallback.directive';
+import { ConfirmModalComponent } from '../shared/ui/confirm-modal.component';
 
 @Component({
   selector: 'app-profile',
@@ -23,7 +24,8 @@ import { ImageFallbackDirective } from '../shared/directives/image-fallback.dire
     FormsModule,
     TranslateModule,
     LoadingSpinnerComponent,
-    ImageFallbackDirective
+    ImageFallbackDirective,
+    ConfirmModalComponent
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
@@ -72,6 +74,24 @@ export class ProfileComponent implements OnInit {
    * ?reason=confirm-required — the visitor tried to add a property before confirming
    * an email or phone number. */
   showConfirmRequiredBanner = signal(false);
+
+  // ── Account deletion (Phase 5) ──────────────────────────────────────────
+  // Two-step flow inside the shared ConfirmModalComponent: 'warning' explains what is
+  // deleted/retained (no server call yet), 'confirm' collects re-authentication + the
+  // typed keyword and actually calls DELETE /api/Users/me. Never a single-click action —
+  // see DELETE_ACCOUNT_KEYWORD below.
+  showDeleteModal = signal(false);
+  deleteStep = signal<'warning' | 'confirm'>('warning');
+  isDeletingAccount = signal(false);
+  deleteError = signal('');
+  deletePassword = '';
+  deleteConfirmText = '';
+  deleteSubmitted = false;
+
+  /** Literal keyword the user must type — kept in Latin script regardless of UI language
+   * (same convention as GitHub's "type the repository name to confirm"), so the check
+   * never depends on translating/comparing localized text. */
+  readonly deleteConfirmKeyword = 'DELETE';
 
   ngOnInit(): void {
     this.fetchProfile();
@@ -273,23 +293,94 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  /**
-   */
-  onDeleteAccount(): void {
-    if (!confirm(this.translate.instant('PROFILE.MESSAGES.DELETE_CONFIRM'))) return;
+  /** Opens the deletion modal on its first ("what will happen") step — never the naive
+   * confirm() this replaced. Danger Zone button in the template is the only entry point. */
+  openDeleteModal(): void {
+    this.deleteStep.set('warning');
+    this.deleteError.set('');
+    this.deletePassword = '';
+    this.deleteConfirmText = '';
+    this.deleteSubmitted = false;
+    this.showDeleteModal.set(true);
+  }
 
-    this.profileService.deleteAccount().subscribe({
+  cancelDeleteModal(): void {
+    if (this.isDeletingAccount()) return; // never dismissible mid-request
+    this.showDeleteModal.set(false);
+  }
+
+  /** Step 1 -> Step 2. Nothing is sent to the server yet — this only reveals the
+   * re-authentication + typed-confirmation step. */
+  proceedToDeleteConfirmStep(): void {
+    this.deleteStep.set('confirm');
+  }
+
+  backToDeleteWarningStep(): void {
+    this.deleteStep.set('warning');
+  }
+
+  /** True once the typed keyword matches and (for a password-based account) a password
+   * was entered — gates the modal's confirm button, but the server re-validates both
+   * independently regardless of what the client thinks it checked. */
+  canConfirmAccountDeletion(): boolean {
+    const keywordMatches =
+      this.deleteConfirmText.trim().toUpperCase() === this.deleteConfirmKeyword;
+    const passwordOk = !this.user()?.HasPassword || !!this.deletePassword;
+    return keywordMatches && passwordOk;
+  }
+
+  confirmDeleteAccount(): void {
+    this.deleteSubmitted = true;
+    this.deleteError.set('');
+
+    if (!this.canConfirmAccountDeletion()) {
+      this.deleteError.set(
+        this.deleteConfirmText.trim().toUpperCase() !== this.deleteConfirmKeyword
+          ? this.translate.instant('PROFILE.DELETE_MODAL.ERRORS.CONFIRM_TEXT_MISMATCH')
+          : this.translate.instant('PROFILE.DELETE_MODAL.ERRORS.CURRENT_PASSWORD_REQUIRED')
+      );
+      return;
+    }
+
+    this.isDeletingAccount.set(true);
+
+    this.profileService.deleteAccount(this.deletePassword || undefined).subscribe({
       next: () => {
+        this.isDeletingAccount.set(false);
+        this.showDeleteModal.set(false);
+
+        // Clears tokens/CSRF/cached profile (see AuthService.clearSession) — the account
+        // is already gone server-side at this point, this is purely local cleanup.
         this.authService.logoutLocal();
 
         this.toast.success(this.translate.instant('PROFILE.MESSAGES.DELETE_SUCCESS'));
 
         this.router.navigateByUrl('/auth/login');
       },
-      error: () => {
-        this.toast.error(this.translate.instant('PROFILE.MESSAGES.DELETE_ERROR'));
+      error: err => {
+        this.isDeletingAccount.set(false);
+        this.deleteError.set(this.mapDeleteAccountError(err));
       }
     });
+  }
+
+  /** Maps the stable error codes DeleteUserCommandHandler returns (see its Fail(...) calls)
+   * to a localized message. Falls back to a generic message for anything unrecognized —
+   * never shows a raw exception/stack trace to the user (§26/§40 of the spec). */
+  private mapDeleteAccountError(error: unknown): string {
+    const errors = (error as { error?: { errors?: string[] } })?.error?.errors ?? [];
+
+    if (errors.includes('CURRENT_PASSWORD_REQUIRED')) {
+      return this.translate.instant('PROFILE.DELETE_MODAL.ERRORS.CURRENT_PASSWORD_REQUIRED');
+    }
+    if (errors.includes('INVALID_CURRENT_PASSWORD')) {
+      return this.translate.instant('PROFILE.DELETE_MODAL.ERRORS.INVALID_CURRENT_PASSWORD');
+    }
+    if (errors.includes('ACCOUNT_LOCKED')) {
+      return this.translate.instant('PROFILE.DELETE_MODAL.ERRORS.ACCOUNT_LOCKED');
+    }
+
+    return this.translate.instant('PROFILE.DELETE_MODAL.ERRORS.GENERIC');
   }
 
   patchUserField(field: keyof UserProfile, value: UserProfile[keyof UserProfile]): void {

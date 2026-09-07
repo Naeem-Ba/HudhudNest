@@ -10,6 +10,9 @@ import { PhoneAuthApiService } from '../../../core/auth/phone-auth-api.service';
 import { AuthTokenResponse, TokenStorageService } from '../../../core/services/token-storage.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { OtpApiService } from '../../../core/api/otp-api.service';
+import { ConsentApiService } from '../../../core/api/consent-api.service';
+import { PRIVACY_POLICY_VERSION } from '../../../core/models/consent-versions';
+import { ConsentCheckboxComponent } from '../../../shared/components/consent-checkbox/consent-checkbox.component';
 import {
   LOGIN_ERROR_CODES,
   LoginFailure,
@@ -73,7 +76,8 @@ const OTP_CODE_PATTERN = /^\d{6}$/;
     RouterLink,
     TranslateModule,
     ImageFallbackDirective,
-    PasswordStrengthIndicatorComponent // ✨ جديد: عرض قوة كلمة المرور
+    PasswordStrengthIndicatorComponent, // ✨ جديد: عرض قوة كلمة المرور
+    ConsentCheckboxComponent
   ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
@@ -138,6 +142,10 @@ export class LoginComponent implements OnDestroy {
   resendCooldown = 0;
   private resendTimerHandle: ReturnType<typeof setInterval> | null = null;
 
+  // مربّع الموافقة على سياسة الخصوصية وشروط الاستخدام — مشترك بين تبويبي التسجيل
+  // (بريد/هاتف)، غير محدَّد افتراضياً، ومطلوب فعلياً. انظر docs/privacy/privacy-gaps.md (P1).
+  privacyConsentAccepted = false;
+
   constructor(
     private readonly authApi: AuthApiService,
     private readonly authState: AuthService,
@@ -145,6 +153,7 @@ export class LoginComponent implements OnDestroy {
     private readonly phoneAuthApi: PhoneAuthApiService,
     private readonly tokenStorage: TokenStorageService,
     private readonly otpApi: OtpApiService,
+    private readonly consentApi: ConsentApiService,
     private readonly router: Router,
     private readonly route: ActivatedRoute,
     private readonly translate: TranslateService,
@@ -358,7 +367,22 @@ export class LoginComponent implements OnDestroy {
       return;
     }
 
-    this.authApi.register({ firstName, lastName, email, password }).subscribe({
+    // زر الإرسال معطَّل بدون الموافقة أصلاً (انظر القالب) — هذا دفاع إضافي فقط.
+    if (!this.privacyConsentAccepted) {
+      this.loading = false;
+      this.setError(this.t('AUTH.ERRORS.FIX_FIELDS'));
+      return;
+    }
+
+    this.authApi.register({
+      firstName,
+      lastName,
+      email,
+      password,
+      privacyPolicyAccepted: this.privacyConsentAccepted,
+      privacyPolicyVersion: PRIVACY_POLICY_VERSION,
+      consentSource: ConsentApiService.currentSource()
+    }).subscribe({
       next: () => {
         this.loading = false;
         this.success = true;
@@ -366,6 +390,7 @@ export class LoginComponent implements OnDestroy {
         this.toast.success(this.message);
         this.showRegister = false;
         this.submitted = false;
+        this.privacyConsentAccepted = false;
 
         this.loginData.Email = email;
         this.loginData.Password = '';
@@ -388,6 +413,7 @@ export class LoginComponent implements OnDestroy {
     this.message = '';
     this.success = false;
     this.submitted = false;
+    this.privacyConsentAccepted = false;
     this.resetPhoneFlow();
   }
 
@@ -540,6 +566,12 @@ export class LoginComponent implements OnDestroy {
       return;
     }
 
+    // زر الإرسال معطَّل بدون الموافقة أصلاً (انظر القالب) — هذا دفاع إضافي فقط.
+    if (!this.privacyConsentAccepted) {
+      this.setError(this.t('AUTH.ERRORS.FIX_FIELDS'));
+      return;
+    }
+
     if (this.loading) {
       return;
     }
@@ -564,6 +596,14 @@ export class LoginComponent implements OnDestroy {
       next: () => {
         this.clearResendTimer();
         this.refreshAuthState();
+
+        // بخلاف التسجيل بالبريد، هذا المسار يُنشئ جلسة مُصادَق عليها فوراً —
+        // نسجّل الموافقة الآن عبر النقطة العامة الموثَّقة. فشل هذا النداء
+        // غير حرج ولا يوقف إتمام تسجيل الدخول (best-effort).
+        this.consentApi.record('PrivacyPolicy', PRIVACY_POLICY_VERSION).subscribe({
+          error: () => { /* غير حرج — انظر التعليق أعلاه. */ }
+        });
+
         this.completeLoginSuccess();
       },
       error: error => {

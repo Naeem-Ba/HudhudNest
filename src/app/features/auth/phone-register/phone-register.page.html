@@ -83,9 +83,14 @@
         ></app-form-error>
       </div>
 
+      <app-consent-checkbox
+        [checked]="privacyConsentAccepted()"
+        (checkedChange)="privacyConsentAccepted.set($event)">
+      </app-consent-checkbox>
+
       <p class="alert alert--error" *ngIf="error()">⚠️ {{ error() }}</p>
 
-      <button type="submit" class="btn-primary" [disabled]="loading()">
+      <button type="submit" class="btn-primary" [disabled]="loading() || !privacyConsentAccepted()">
         <span class="spinner" *ngIf="loading()"></span>
         {{ loading() ? ('AUTH.PHONE_REGISTER.CREATING' | translate) : ('AUTH.PHONE_REGISTER.CREATE_ACCOUNT' | translate) }}
       </button>

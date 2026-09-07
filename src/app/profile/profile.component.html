@@ -223,7 +223,83 @@
       <button class="btn-save" [disabled]="isSaving() || profileForm.invalid || hasAgentValidationError(user())" (click)="onSaveProfile(profileForm)">
         {{ isSaving() ? ('COMMON.SAVING' | translate) : ('PROFILE.SAVE_CHANGES' | translate) }}
       </button>
-      <button class="btn-delete" type="button" (click)="onDeleteAccount()">{{ 'PROFILE.DELETE_ACCOUNT' | translate }}</button>
+    </div>
+
+    <!-- Danger Zone — deliberately separated from Save above by its own bordered section,
+         never adjacent to it, so it cannot be tapped by mistake reaching for Save (§24). -->
+    <div class="danger-zone">
+      <h3 class="danger-zone__title">{{ 'PROFILE.DANGER_ZONE.TITLE' | translate }}</h3>
+      <p class="danger-zone__hint">{{ 'PROFILE.DANGER_ZONE.HINT' | translate }}</p>
+      <button class="btn-delete" type="button" (click)="openDeleteModal()">
+        {{ 'PROFILE.DELETE_ACCOUNT' | translate }}
+      </button>
     </div>
   </div>
+
+  <!-- Account deletion modal: 'warning' step explains consequences (no request sent yet),
+       'confirm' step re-authenticates + requires typing the keyword before the real
+       DELETE /api/Users/me call fires. -->
+  <app-confirm-modal
+    [open]="showDeleteModal()"
+    [title]="'PROFILE.DELETE_MODAL.TITLE' | translate"
+    [danger]="true"
+    [loading]="isDeletingAccount()"
+    [closeOnBackdrop]="deleteStep() === 'warning'"
+    [confirmLabel]="deleteStep() === 'warning'
+      ? ('PROFILE.DELETE_MODAL.CONTINUE_BTN' | translate)
+      : ('PROFILE.DELETE_MODAL.CONFIRM_BTN' | translate)"
+    [cancelLabel]="deleteStep() === 'warning'
+      ? ('PROFILE.DELETE_MODAL.CANCEL_BTN' | translate)
+      : ('PROFILE.DELETE_MODAL.BACK_BTN' | translate)"
+    [confirmDisabled]="deleteStep() === 'confirm' && !canConfirmAccountDeletion()"
+    (confirmed)="deleteStep() === 'warning' ? proceedToDeleteConfirmStep() : confirmDeleteAccount()"
+    (cancelled)="deleteStep() === 'warning' ? cancelDeleteModal() : backToDeleteWarningStep()"
+  >
+    <ng-container *ngIf="deleteStep() === 'warning'">
+      <p class="delete-modal__intro">{{ 'PROFILE.DELETE_MODAL.INTRO' | translate }}</p>
+
+      <p class="delete-modal__section-title">{{ 'PROFILE.DELETE_MODAL.WILL_DELETE_TITLE' | translate }}</p>
+      <ul class="delete-modal__list delete-modal__list--delete">
+        <li>{{ 'PROFILE.DELETE_MODAL.WILL_DELETE_1' | translate }}</li>
+        <li>{{ 'PROFILE.DELETE_MODAL.WILL_DELETE_2' | translate }}</li>
+        <li>{{ 'PROFILE.DELETE_MODAL.WILL_DELETE_3' | translate }}</li>
+      </ul>
+
+      <p class="delete-modal__section-title">{{ 'PROFILE.DELETE_MODAL.WILL_RETAIN_TITLE' | translate }}</p>
+      <ul class="delete-modal__list delete-modal__list--retain">
+        <li>{{ 'PROFILE.DELETE_MODAL.WILL_RETAIN_1' | translate }}</li>
+        <li>{{ 'PROFILE.DELETE_MODAL.WILL_RETAIN_2' | translate }}</li>
+      </ul>
+
+      <p class="delete-modal__note">{{ 'PROFILE.DELETE_MODAL.BUSINESS_NOTE' | translate }}</p>
+    </ng-container>
+
+    <ng-container *ngIf="deleteStep() === 'confirm'">
+      <p class="delete-modal__final-warning">{{ 'PROFILE.DELETE_MODAL.FINAL_WARNING' | translate }}</p>
+
+      <div class="field" *ngIf="user()?.HasPassword">
+        <label>{{ 'PROFILE.DELETE_MODAL.PASSWORD_LABEL' | translate }}</label>
+        <input
+          type="password"
+          [(ngModel)]="deletePassword"
+          name="deletePassword"
+          autocomplete="current-password"
+          [placeholder]="'PROFILE.DELETE_MODAL.PASSWORD_PLACEHOLDER' | translate"
+        >
+      </div>
+
+      <div class="field">
+        <label>{{ 'PROFILE.DELETE_MODAL.TYPE_TO_CONFIRM' | translate: { keyword: deleteConfirmKeyword } }}</label>
+        <input
+          type="text"
+          [(ngModel)]="deleteConfirmText"
+          name="deleteConfirmText"
+          autocomplete="off"
+          [placeholder]="deleteConfirmKeyword"
+        >
+      </div>
+
+      <div class="field-error" *ngIf="deleteSubmitted && deleteError()">⚠️ {{ deleteError() }}</div>
+    </ng-container>
+  </app-confirm-modal>
 </div>

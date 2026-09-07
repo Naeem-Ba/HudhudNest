@@ -918,6 +918,37 @@
       "CONTACT_INFO_LABEL": "Adresse & Kontaktinformationen",
       "CONTACT_INFO_PLACEHOLDER": "z. B. deine Adresse, eine zusätzliche Telefonnummer, eine geschäftliche E-Mail...",
       "CONTACT_INFO_HINT": "Diese Angaben werden ebenfalls auf deinem öffentlichen Profil angezeigt — schreibe nur, was du öffentlich teilen möchtest."
+    },
+    "DANGER_ZONE": {
+      "TITLE": "Gefahrenzone",
+      "HINT": "Löscht dein Konto und alle deine persönlichen Daten endgültig. Diese Aktion kann nach Abschluss nicht rückgängig gemacht werden."
+    },
+    "DELETE_MODAL": {
+      "TITLE": "Konto endgültig löschen",
+      "INTRO": "Du bist dabei, dein aqar-tech-Konto endgültig zu löschen. Diese Aktion kann nach Abschluss nicht rückgängig gemacht werden.",
+      "WILL_DELETE_TITLE": "Wird sofort gelöscht/ausgeblendet:",
+      "WILL_DELETE_1": "Dein Name, Profilbild, Beschreibung und Kontaktinformationen",
+      "WILL_DELETE_2": "Deine registrierte E-Mail-Adresse und Telefonnummer sowie jede verknüpfte Google-/Apple-Anmeldung — du kannst dich damit nicht mehr bei diesem Konto anmelden",
+      "WILL_DELETE_3": "Alle aktiven Sitzungen auf allen Geräten — du wirst sofort überall abgemeldet",
+      "WILL_RETAIN_TITLE": "Bleibt erhalten (ohne deine persönlichen Daten):",
+      "WILL_RETAIN_1": "Von dir veröffentlichte Anzeigen, Nachrichten und Bewertungen bleiben für andere sichtbar, jedoch mit \"Gelöschter Nutzer\" statt deinem echten Namen gekennzeichnet",
+      "WILL_RETAIN_2": "Begrenzte interne Sicherheitsprotokolle (zur Missbrauchsprävention), die nach der Löschung keine deiner persönlichen Daten mehr enthalten",
+      "BUSINESS_NOTE": "Hinweis: Dies löscht deine veröffentlichten Anzeigen nicht und deaktiviert sie nicht automatisch. Wenn du eine Anzeige vor der Kontolöschung deaktivieren möchtest, tue dies zuerst unter \"Meine Anzeigen\".",
+      "CONTINUE_BTN": "Weiter",
+      "CANCEL_BTN": "Abbrechen",
+      "BACK_BTN": "Zurück",
+      "PASSWORD_LABEL": "Gib dein aktuelles Passwort zur Bestätigung ein",
+      "PASSWORD_PLACEHOLDER": "Passwort",
+      "TYPE_TO_CONFIRM": "Gib {{ keyword }} unten ein, um zu bestätigen",
+      "FINAL_WARNING": "Sobald du unten auf Löschen klickst, wird dein Konto sofort gelöscht — das kann nicht rückgängig gemacht werden.",
+      "CONFIRM_BTN": "Mein Konto endgültig löschen",
+      "ERRORS": {
+        "CURRENT_PASSWORD_REQUIRED": "Du musst dein aktuelles Passwort eingeben.",
+        "INVALID_CURRENT_PASSWORD": "Dein aktuelles Passwort ist falsch.",
+        "ACCOUNT_LOCKED": "Dein Konto ist nach wiederholten Versuchen vorübergehend gesperrt. Versuche es später erneut.",
+        "CONFIRM_TEXT_MISMATCH": "Bitte gib genau DELETE ein, um zu bestätigen.",
+        "GENERIC": "Dein Konto konnte nicht gelöscht werden. Bitte versuche es später erneut."
+      }
     }
   },
   "VISIT": {

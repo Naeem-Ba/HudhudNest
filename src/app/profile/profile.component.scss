@@ -405,11 +405,71 @@
 
 .btn-delete {
   background: transparent;
+  border: 1px solid var(--danger);
   color: var(--danger);
   font-size: 0.9rem;
-  text-decoration: underline;
+  padding: 0.65rem 1.1rem;
 
-  &:hover { color: var(--danger); opacity: .85; }
+  &:hover { background: var(--danger); color: #fff; }
+}
+
+// Danger Zone — deliberately its own bordered/tinted section, separated from the
+// Save/password/avatar actions above by margin + a visible red border, so the delete
+// button can never be reached by a slip of the thumb on mobile (§24 of the spec).
+.danger-zone {
+  margin-top: 2.5rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(220, 38, 38, .3);
+  border-radius: 12px;
+  background: var(--danger-soft, rgba(220, 38, 38, .05));
+}
+
+.danger-zone__title {
+  margin: 0 0 0.35rem;
+  color: var(--danger);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.danger-zone__hint {
+  margin: 0 0 1rem;
+  color: var(--gray-600);
+  font-size: var(--text-sm, 0.85rem);
+}
+
+// Content projected into <app-confirm-modal> for the account-deletion flow.
+.delete-modal__intro,
+.delete-modal__note,
+.delete-modal__final-warning {
+  margin: 0 0 0.9rem;
+  line-height: 1.7;
+}
+
+.delete-modal__final-warning {
+  font-weight: 700;
+  color: var(--danger);
+}
+
+.delete-modal__section-title {
+  margin: 0.9rem 0 0.35rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.delete-modal__list {
+  margin: 0 0 0.5rem;
+  padding-inline-start: 1.25rem;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.delete-modal__list--delete li { color: var(--danger); }
+.delete-modal__list--retain li { color: var(--gray-600); }
+
+.delete-modal__note {
+  font-size: 0.85rem;
+  color: var(--gray-500);
+  font-style: italic;
 }
 
 .verified-agent-badge {
