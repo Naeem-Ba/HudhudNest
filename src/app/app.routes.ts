@@ -362,6 +362,17 @@ export const routes: Routes = [
         .then(m => m.AdminInvestmentDetailPage)
   },
 
+  // لوحة تحكم التسويق: العروض ("أول 100 مكتب")، العملاء المحتملون، ونتائج
+  // استبيان الاستعداد للدفع من صفحة الهبوط. LeadsController/OffersController/
+  // SurveysController — [Authorize(Roles = "Admin")] على كل نقطة إدارية.
+  {
+    path: 'admin/marketing',
+    canActivate: [AdminGuard],
+    loadComponent: () =>
+      import('./admin/marketing/admin-marketing.page')
+        .then(m => m.AdminMarketingPage)
+  },
+
   {
     path: 'messages/:propertyId',
     canActivate: [AuthGuard],

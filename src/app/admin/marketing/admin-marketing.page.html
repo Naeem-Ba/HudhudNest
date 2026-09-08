@@ -1,0 +1,395 @@
+<section class="page" dir="rtl">
+  <header class="page-header">
+    <div>
+      <h1>لوحة تحكم التسويق</h1>
+      <p>العروض، العملاء المحتملون، نتائج استبيان الاستعداد للدفع، ومعدلات التحويل من صفحة الهبوط.</p>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button type="button" role="tab" class="tab" [class.tab--active]="activeTab() === 'offers'" (click)="selectTab('offers')">
+      العروض
+    </button>
+    <button type="button" role="tab" class="tab" [class.tab--active]="activeTab() === 'leads'" (click)="selectTab('leads')">
+      العملاء المحتملون
+    </button>
+    <button type="button" role="tab" class="tab" [class.tab--active]="activeTab() === 'surveys'" (click)="selectTab('surveys')">
+      الاستبيان
+    </button>
+    <button type="button" role="tab" class="tab" [class.tab--active]="activeTab() === 'analytics'" (click)="selectTab('analytics')">
+      التحويل
+    </button>
+  </nav>
+
+  <!-- ══════════════════ تبويب العروض ══════════════════ -->
+  <div *ngIf="activeTab() === 'offers'" class="tab-panel">
+    <div class="panel-toolbar">
+      <button type="button" class="btn btn--primary" (click)="openCreateOfferForm()">
+        + عرض جديد
+      </button>
+    </div>
+
+    <!-- نموذج إنشاء/تعديل عرض -->
+    <form *ngIf="showOfferForm()" class="offer-form" [formGroup]="offerForm" (ngSubmit)="saveOffer()">
+      <h3>{{ editingOfferId() ? 'تعديل العرض' : 'عرض جديد' }}</h3>
+
+      <div class="form-grid">
+        <label class="field">
+          <span>اسم العرض *</span>
+          <input type="text" formControlName="name" maxlength="150" placeholder="مثال: أول 100 مكتب عقاري" />
+        </label>
+
+        <label class="field field--wide">
+          <span>الوصف</span>
+          <textarea formControlName="description" maxlength="1000" rows="2"></textarea>
+        </label>
+
+        <label class="field">
+          <span>نوع الخصم *</span>
+          <select formControlName="discountType">
+            <option value="Percentage">نسبة مئوية</option>
+            <option value="FixedAmountUsd">مبلغ ثابت ($)</option>
+            <option value="FreeMonths">أشهر مجانية</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>قيمة الخصم *</span>
+          <input type="number" formControlName="discountValue" min="0.01" step="0.01" />
+        </label>
+
+        <label class="field">
+          <span>الباقة المستهدفة (اختياري)</span>
+          <input type="text" formControlName="targetPlanTier" placeholder="basic / premium / elite" />
+        </label>
+
+        <label class="field">
+          <span>الحد الأقصى للمستفيدين (اختياري)</span>
+          <input type="number" formControlName="maxRedemptions" min="1" placeholder="100" />
+        </label>
+
+        <label class="field">
+          <span>تاريخ البدء *</span>
+          <input type="datetime-local" formControlName="startsAtUtc" />
+        </label>
+
+        <label class="field">
+          <span>تاريخ الانتهاء (اختياري)</span>
+          <input type="datetime-local" formControlName="endsAtUtc" />
+        </label>
+
+        <label class="field field--wide">
+          <span>الشروط (اختياري)</span>
+          <textarea formControlName="terms" maxlength="2000" rows="2"></textarea>
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn--primary" [disabled]="savingOffer()">
+          {{ savingOffer() ? 'جارٍ الحفظ...' : 'حفظ' }}
+        </button>
+        <button type="button" class="btn btn--outline" (click)="closeOfferForm()">إلغاء</button>
+      </div>
+
+      <p class="form-hint" *ngIf="!editingOfferId()">
+        العرض الجديد يُنشأ كمسودة ولا يظهر في صفحة الهبوط حتى تضغط "تفعيل".
+      </p>
+    </form>
+
+    <app-loading-spinner *ngIf="offersLoading()" label="جارٍ التحميل..."></app-loading-spinner>
+
+    <app-empty-state
+      *ngIf="!offersLoading() && offers().length === 0"
+      icon="🎁"
+      title="لا توجد عروض بعد"
+      message="أنشئ أول عرض تسويقي، مثل 'أول 100 مكتب عقاري'."
+    ></app-empty-state>
+
+    <div class="offers-grid" *ngIf="!offersLoading() && offers().length > 0">
+      <article class="offer-tile" *ngFor="let offer of offers()">
+        <div class="offer-tile__head">
+          <h3>{{ offer.name }}</h3>
+          <span class="status-chip" [class]="'status-chip--' + offer.status.toLowerCase()">
+            {{ offerStatusLabel(offer.status) }}
+          </span>
+        </div>
+
+        <p class="offer-tile__discount">{{ discountTypeLabel(offer.discountType) }} — {{ formatDiscount(offer) }}</p>
+        <p *ngIf="offer.description" class="offer-tile__desc">{{ offer.description }}</p>
+
+        <div class="offer-tile__meta">
+          <span *ngIf="offer.maxRedemptions !== null">
+            {{ offer.redeemedCount }} / {{ offer.maxRedemptions }} مستفيد
+          </span>
+          <span *ngIf="offer.maxRedemptions === null">{{ offer.redeemedCount }} مستفيد (بلا حد أقصى)</span>
+          <span *ngIf="offer.endsAtUtc">ينتهي: {{ offer.endsAtUtc | date:'mediumDate' }}</span>
+          <span *ngIf="offer.targetPlanTier">الباقة: {{ offer.targetPlanTier }}</span>
+        </div>
+
+        <div class="offer-tile__actions">
+          <button type="button" class="btn btn--outline btn--sm" (click)="openEditOfferForm(offer)">
+            تعديل
+          </button>
+          <button
+            *ngIf="offer.status === 'Draft' || offer.status === 'Paused'"
+            type="button"
+            class="btn btn--success btn--sm"
+            [disabled]="settingStatusId() === offer.id"
+            (click)="changeOfferStatus(offer, 'Active')"
+          >
+            تفعيل
+          </button>
+          <button
+            *ngIf="offer.status === 'Active'"
+            type="button"
+            class="btn btn--outline btn--sm"
+            [disabled]="settingStatusId() === offer.id"
+            (click)="changeOfferStatus(offer, 'Paused')"
+          >
+            إيقاف مؤقت
+          </button>
+          <button
+            *ngIf="offer.status === 'Active' || offer.status === 'Paused'"
+            type="button"
+            class="btn btn--danger btn--sm"
+            [disabled]="settingStatusId() === offer.id"
+            (click)="changeOfferStatus(offer, 'Ended')"
+          >
+            إنهاء
+          </button>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <!-- ══════════════════ تبويب العملاء المحتملون ══════════════════ -->
+  <div *ngIf="activeTab() === 'leads'" class="tab-panel">
+    <div class="panel-toolbar filters">
+      <select [(ngModel)]="leadSourceFilter" (change)="applyLeadFilters()">
+        <option value="">كل المصادر</option>
+        <option value="landing-page">صفحة الهبوط</option>
+      </select>
+
+      <select [(ngModel)]="leadUserTypeFilter" (change)="applyLeadFilters()">
+        <option value="">كل الأنواع</option>
+        <option value="renter">باحث عن إيجار</option>
+        <option value="buyer">باحث عن شراء</option>
+        <option value="owner">صاحب عقار</option>
+        <option value="agency">مكتب عقاري</option>
+        <option value="investor">مستثمر / مغترب</option>
+      </select>
+
+      <button type="button" class="btn btn--outline" (click)="exportLeadsCsv()">
+        تصدير CSV (الصفحة الحالية)
+      </button>
+    </div>
+
+    <app-loading-spinner *ngIf="leadsLoading()" label="جارٍ التحميل..."></app-loading-spinner>
+
+    <app-empty-state
+      *ngIf="!leadsLoading() && leads().length === 0"
+      icon="📋"
+      title="لا يوجد عملاء محتملون"
+      message="لا توجد نتائج مطابقة للفلاتر الحالية."
+    ></app-empty-state>
+
+    <div class="leads-table" *ngIf="!leadsLoading() && leads().length > 0">
+      <div class="row row--head">
+        <span>الاسم</span>
+        <span>الهاتف / المدينة</span>
+        <span>النوع</span>
+        <span>العرض</span>
+        <span>الحالة</span>
+        <span>التاريخ</span>
+      </div>
+
+      <div class="row" *ngFor="let lead of leads()">
+        <span data-label="الاسم">{{ lead.fullName }}</span>
+        <span data-label="الهاتف / المدينة" class="muted">
+          <div dir="ltr" class="ltr-inline">{{ lead.phone }}</div>
+          <div>{{ lead.city }}</div>
+        </span>
+        <span data-label="النوع">{{ userTypeLabel(lead.userType) }}</span>
+        <span data-label="العرض">{{ lead.offerName || '—' }}</span>
+        <span data-label="الحالة">
+          <span class="status-chip">{{ lead.status }}</span>
+        </span>
+        <span data-label="التاريخ" class="muted">{{ lead.createdAt | date:'short' }}</span>
+      </div>
+    </div>
+
+    <div class="pagination" *ngIf="!leadsLoading() && leadsTotalPages() > 1">
+      <button type="button" [disabled]="leadsPage() <= 1" (click)="goToLeadsPage(leadsPage() - 1)">‹</button>
+      <span>{{ leadsPage() }} / {{ leadsTotalPages() }}</span>
+      <button type="button" [disabled]="leadsPage() >= leadsTotalPages()" (click)="goToLeadsPage(leadsPage() + 1)">›</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════ تبويب الاستبيان ══════════════════ -->
+  <div *ngIf="activeTab() === 'surveys'" class="tab-panel">
+    <app-loading-spinner *ngIf="surveysLoading()" label="جارٍ التحميل..."></app-loading-spinner>
+
+    <ng-container *ngIf="!surveysLoading()">
+      <div class="stats-grid" *ngIf="surveyStats() as stats">
+        <div class="stat-card">
+          <span class="stat-card__value">{{ stats.totalResponses }}</span>
+          <span class="stat-card__label">إجمالي الردود</span>
+        </div>
+        <div class="stat-card" *ngIf="stats.averageExpectedMonthlyPriceUsd !== null">
+          <span class="stat-card__value">{{ stats.averageExpectedMonthlyPriceUsd | number:'1.0-2' }}$</span>
+          <span class="stat-card__label">متوسط السعر الشهري المتوقع</span>
+        </div>
+        <div class="stat-card" *ngIf="stats.averageExpectedPerListingPriceUsd !== null">
+          <span class="stat-card__value">{{ stats.averageExpectedPerListingPriceUsd | number:'1.0-2' }}$</span>
+          <span class="stat-card__label">متوسط سعر الإعلان المتوقع</span>
+        </div>
+        <div class="stat-card" *ngIf="stats.averageAcceptableCommissionPercent !== null">
+          <span class="stat-card__value">{{ stats.averageAcceptableCommissionPercent | number:'1.0-2' }}%</span>
+          <span class="stat-card__label">متوسط العمولة المقبولة</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__value">{{ stats.trialWantedCount }}</span>
+          <span class="stat-card__label">يريدون تجربة قبل الدفع</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__value">{{ stats.usesSimilarToolCount }}</span>
+          <span class="stat-card__label">يستخدمون أداة مشابهة حاليًا</span>
+        </div>
+      </div>
+
+      <div class="breakdown-grid" *ngIf="surveyStats() as stats">
+        <div class="breakdown-card">
+          <h3>الاستعداد للدفع</h3>
+          <div class="breakdown-row" *ngFor="let entry of breakdownEntries(stats.willingnessBreakdown)">
+            <span>{{ willingnessLabel(entry.key) }}</span>
+            <strong>{{ entry.count }}</strong>
+          </div>
+          <p *ngIf="breakdownEntries(stats.willingnessBreakdown).length === 0" class="muted">لا بيانات بعد.</p>
+        </div>
+
+        <div class="breakdown-card">
+          <h3>نموذج الدفع المفضّل</h3>
+          <div class="breakdown-row" *ngFor="let entry of breakdownEntries(stats.paymentModelBreakdown)">
+            <span>{{ paymentModelLabel(entry.key) }}</span>
+            <strong>{{ entry.count }}</strong>
+          </div>
+          <p *ngIf="breakdownEntries(stats.paymentModelBreakdown).length === 0" class="muted">لا بيانات بعد.</p>
+        </div>
+      </div>
+
+      <h3 class="section-subtitle">الردود التفصيلية</h3>
+
+      <app-empty-state
+        *ngIf="surveyResponses().length === 0"
+        icon="📝"
+        title="لا توجد ردود بعد"
+      ></app-empty-state>
+
+      <div class="surveys-table" *ngIf="surveyResponses().length > 0">
+        <div class="row row--head">
+          <span>الاستعداد للدفع</span>
+          <span>النموذج المفضّل</span>
+          <span>أهم ميزة</span>
+          <span>أكبر مشكلة</span>
+          <span>التاريخ</span>
+        </div>
+        <div class="row" *ngFor="let response of surveyResponses()">
+          <span data-label="الاستعداد للدفع">
+            {{ response.willingnessToPay ? willingnessLabel(response.willingnessToPay) : '—' }}
+          </span>
+          <span data-label="النموذج المفضّل">
+            {{ response.preferredPaymentModel ? paymentModelLabel(response.preferredPaymentModel) : '—' }}
+          </span>
+          <span data-label="أهم ميزة" class="muted">{{ response.mostImportantFeature || '—' }}</span>
+          <span data-label="أكبر مشكلة" class="muted">{{ response.biggestProblem || '—' }}</span>
+          <span data-label="التاريخ" class="muted">{{ response.createdAt | date:'short' }}</span>
+        </div>
+      </div>
+
+      <div class="pagination" *ngIf="surveysTotalPages() > 1">
+        <button type="button" [disabled]="surveysPage() <= 1" (click)="goToSurveysPage(surveysPage() - 1)">‹</button>
+        <span>{{ surveysPage() }} / {{ surveysTotalPages() }}</span>
+        <button type="button" [disabled]="surveysPage() >= surveysTotalPages()" (click)="goToSurveysPage(surveysPage() + 1)">›</button>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- ══════════════════ تبويب التحويل (Analytics) ══════════════════ -->
+  <div *ngIf="activeTab() === 'analytics'" class="tab-panel">
+    <div class="panel-toolbar filters">
+      <label class="date-field">
+        <span>من</span>
+        <input type="date" [(ngModel)]="analyticsFromDate" />
+      </label>
+      <label class="date-field">
+        <span>إلى</span>
+        <input type="date" [(ngModel)]="analyticsToDate" />
+      </label>
+      <button type="button" class="btn btn--primary btn--sm" (click)="applyAnalyticsRange()">تطبيق</button>
+      <button
+        type="button"
+        class="btn btn--outline btn--sm"
+        (click)="analyticsFromDate = ''; analyticsToDate = ''; applyAnalyticsRange()"
+      >
+        آخر 30 يومًا (افتراضي)
+      </button>
+    </div>
+
+    <app-loading-spinner *ngIf="analyticsLoading()" label="جارٍ التحميل..."></app-loading-spinner>
+
+    <ng-container *ngIf="!analyticsLoading() && analyticsSummary() as summary">
+      <p class="range-note">
+        الفترة المعروضة: {{ summary.fromUtc | date:'mediumDate' }} — {{ summary.toUtc | date:'mediumDate' }}
+      </p>
+
+      <app-empty-state
+        *ngIf="eventCount(summary, 'PageView') === 0 && eventCount(summary, 'FormComplete') === 0"
+        icon="📈"
+        title="لا توجد أحداث مسجَّلة في هذه الفترة"
+        message="أحداث التحويل تُسجَّل تلقائيًا من صفحة الهبوط (مشاهدة، ضغط زر، بدء/إتمام نموذج، ...)."
+      ></app-empty-state>
+
+      <div class="stats-grid">
+        <div class="stat-card" *ngFor="let entry of orderedEventCounts(summary)">
+          <span class="stat-card__value">{{ entry.count }}</span>
+          <span class="stat-card__label">{{ eventTypeLabel(entry.key) }}</span>
+        </div>
+      </div>
+
+      <div class="breakdown-grid">
+        <div class="breakdown-card">
+          <h3>معدلات التحويل</h3>
+
+          <!-- ملاحظة: نفحص "!== null" صراحةً بدل *ngIf="fn() as rate" — معدّل
+               حقيقي يساوي 0% قيمة صالحة ("لا يوجد تحويل إطلاقًا")، وليس
+               غيابًا للبيانات، فيجب ألا تختفي الصفوف عند صفر تمامًا. -->
+          <div class="breakdown-row" *ngIf="conversionRate(summary, 'PageView', 'FormStart') !== null">
+            <span>من المشاهدة إلى بدء التسجيل</span>
+            <strong>{{ conversionRate(summary, 'PageView', 'FormStart') | number:'1.0-1' }}%</strong>
+          </div>
+          <div class="breakdown-row" *ngIf="conversionRate(summary, 'FormStart', 'FormComplete') !== null">
+            <span>من بدء التسجيل إلى إتمامه</span>
+            <strong>{{ conversionRate(summary, 'FormStart', 'FormComplete') | number:'1.0-1' }}%</strong>
+          </div>
+          <div class="breakdown-row" *ngIf="conversionRate(summary, 'PageView', 'FormComplete') !== null">
+            <span>من المشاهدة إلى إتمام التسجيل (الإجمالي)</span>
+            <strong>{{ conversionRate(summary, 'PageView', 'FormComplete') | number:'1.0-1' }}%</strong>
+          </div>
+          <div class="breakdown-row" *ngIf="conversionRate(summary, 'SurveyStart', 'SurveySubmit') !== null">
+            <span>من بدء الاستبيان إلى إتمامه</span>
+            <strong>{{ conversionRate(summary, 'SurveyStart', 'SurveySubmit') | number:'1.0-1' }}%</strong>
+          </div>
+
+          <p
+            class="muted"
+            *ngIf="conversionRate(summary, 'PageView', 'FormStart') === null &&
+                   conversionRate(summary, 'FormStart', 'FormComplete') === null &&
+                   conversionRate(summary, 'SurveyStart', 'SurveySubmit') === null"
+          >
+            لا توجد بيانات كافية لحساب معدلات التحويل في هذه الفترة.
+          </p>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</section>

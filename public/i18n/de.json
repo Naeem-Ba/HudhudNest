@@ -31,6 +31,7 @@
     "CONTACT": "Kontakt",
     "MESSAGES": "Nachrichten",
     "ADMIN_USERS": "Benutzerverwaltung",
+    "ADMIN_MARKETING": "Marketing-Dashboard",
     "LOGIN": "Anmelden",
     "LOGOUT": "Abmelden",
     "SELECT_LANGUAGE": "Sprache auswählen",
@@ -1803,6 +1804,225 @@
       "ADD_UPDATE": "Update hinzufügen",
       "UPDATE_ADDED": "Update veröffentlicht.",
       "CONFIRM_DELETE": "Sind Sie sicher?"
+    }
+  },
+  "LANDING": {
+    "HERO": {
+      "ARIA": "Startseite",
+      "BADGE": "Beta — Start in Syrien in Kürze",
+      "TITLE_MAIN": "Jedes Zuhause hat eine Geschichte.",
+      "TITLE_ACCENT": "Beginnen wir deine in Syrien.",
+      "TAGLINE_1": "Eine kleine Plattform mit großem Herz, die Familien hilft, ein Zuhause zu finden — echte Fotos und direkter Kontakt, ohne doppelte oder gefälschte Anzeigen.",
+      "TAGLINE_2": "Eine Plattform, die Immobilienanzeigen in Syrien zu einem einheitlichen Verzeichnis bündelt: echte Fotos, präzise Daten und eine einzige verlässliche Quelle statt Dutzender verstreuter Facebook- und WhatsApp-Gruppen.",
+      "TAGLINE_3": "Präzise Filter, vergleichbare Preise und live aktualisierte Ergebnisse aus allen syrischen Städten — kein zufälliges Durchscrollen verstreuter Beiträge mehr.",
+      "CTA_PRIMARY": "Warteliste beitreten",
+      "CTA_PRIMARY_ARIA": "Der PropertyApp-Warteliste beitreten",
+      "CTA_GHOST": "Bald eigene Immobilie anbieten",
+      "CTA_GHOST_ARIA": "Ihre Immobilie auf PropertyApp anbieten",
+      "STATS_ARIA": "Kurzübersicht",
+      "STAT_CITIES_VALUE": "5+",
+      "STAT_CITIES_LABEL": "syrische Städte",
+      "STAT_FREE_VALUE": "Kostenlos",
+      "STAT_FREE_LABEL": "zum Start",
+      "STAT_MVP_VALUE": "MVP",
+      "STAT_MVP_LABEL": "in Kürze"
+    },
+    "OFFER": {
+      "EYEBROW": "Sonderangebot für Immobilienbüros",
+      "PROGRESS_ARIA": "{{count}} von {{max}} beigetreten",
+      "PROGRESS_LABEL": "{{count}} von {{max}} Büros sind bereits beigetreten",
+      "CTA": "Büro jetzt registrieren",
+      "CTA_ARIA": "Ihr Immobilienbüro für dieses Angebot registrieren"
+    },
+    "PROBLEM_SOLUTION": {
+      "EYEBROW": "Warum PropertyApp?",
+      "TITLE": "Immobiliensuche in Syrien ist noch immer mühsam",
+      "DESC": "Wir hören täglich dieselben Beschwerden. PropertyApp will sie Schritt für Schritt lösen.",
+      "PROBLEM_LABEL": "Aktuelle Situation",
+      "PROBLEM_ITEMS": {
+        "ITEM_1": "Suche in unübersichtlichen, verstreuten Facebook- und WhatsApp-Gruppen",
+        "ITEM_2": "Schwer zu erkennen, ob eine Anzeige echt oder doppelt ist",
+        "ITEM_3": "Den meisten Anzeigen fehlen Fotos und grundlegende Informationen",
+        "ITEM_4": "Preise und Lagen lassen sich kaum an einem Ort vergleichen",
+        "ITEM_5": "Wenig Vertrauen zwischen Suchenden und Eigentümer oder Büro"
+      },
+      "SOLUTION_LABEL": "Mit PropertyApp",
+      "SOLUTION_ITEMS": {
+        "ITEM_1": "Eine Plattform bündelt Syriens Immobilienangebote — organisiert und durchsuchbar",
+        "ITEM_2": "Klare Fotos und einheitliche Basisinformationen bei jeder Anzeige",
+        "ITEM_3": "Filter nach Stadt, Viertel, Preis, Typ und Zweck",
+        "ITEM_4": "Direkter Kontakt zum Eigentümer oder Immobilienbüro",
+        "ITEM_5": "Schrittweise Verifizierung für weniger Zufall und mehr Transparenz"
+      }
+    },
+    "FEATURES": {
+      "EYEBROW": "Was uns auszeichnet",
+      "TITLE": "Alles, was Sie brauchen, an einem Ort",
+      "ITEMS": {
+        "SEARCH": {
+          "TITLE": "Einfachere Suche",
+          "DESC": "Filtern nach Stadt, Viertel, Preis, Immobilientyp und Zweck — Kauf oder Miete — in Sekunden."
+        },
+        "INFO": {
+          "TITLE": "Klarere Informationen",
+          "DESC": "Fotos, ausführliche Beschreibung, ungefähre Lage, Fläche, Etagen und übersichtliche Kontaktdaten — alles an seinem Platz."
+        },
+        "CONTACT": {
+          "TITLE": "Direkter Kontakt",
+          "DESC": "Kontaktieren Sie Eigentümer oder Immobilienbüro direkt, ohne komplizierte Schritte oder unnötige Mittelsmänner."
+        },
+        "SCALE": {
+          "TITLE": "Für Wachstum gebaut",
+          "DESC": "Wir starten in Syrien für Großstädte und im Ausland lebende Syrer, mit einem Design, das die Expansion in arabische und globale Märkte unterstützt."
+        }
+      }
+    },
+    "HOW": {
+      "EYEBROW": "In wenigen einfachen Schritten",
+      "TITLE": "Wie funktioniert PropertyApp?",
+      "ARIA": "Schritte zur Nutzung der Plattform",
+      "STEPS": {
+        "STEP_1": {
+          "TITLE": "Immobilientyp oder Stadt wählen",
+          "DESC": "Entscheiden Sie, ob Sie mieten oder kaufen möchten, und wählen Sie dann Ihre bevorzugte Stadt oder Region."
+        },
+        "STEP_2": {
+          "TITLE": "Organisierte Angebote durchsuchen",
+          "DESC": "Entdecken Sie Immobilien mit klaren Fotos, Preisen und Informationen und vergleichen Sie Optionen mühelos."
+        },
+        "STEP_3": {
+          "TITLE": "Kontakt aufnehmen oder Warteliste beitreten",
+          "DESC": "Kontaktieren Sie den Anzeigenersteller direkt, oder treten Sie jetzt der Warteliste bei, um als Erste:r über den Start informiert zu werden."
+        }
+      }
+    },
+    "FORM": {
+      "EYEBROW": "Warteliste",
+      "TITLE": "Seien Sie unter den ersten Nutzer:innen von PropertyApp",
+      "DESC": "Registrieren Sie jetzt Ihr Interesse — wir melden uns, sobald die Plattform in Ihrer Region startet.",
+      "ARIA": "Anmeldeformular für die Warteliste",
+      "SUCCESS": {
+        "OFFER_TITLE": "Sie sind für das Angebot registriert!",
+        "OFFER_MSG": "Großartig! Wir haben Ihnen einen Platz im Angebot \"erste 100 Büros\" reserviert. Wir melden uns bald mit den Details.",
+        "NO_OFFER_TITLE": "Registrierung erfolgreich",
+        "NO_OFFER_MSG": "Leider war das begrenzte Angebot bereits ausgeschöpft, bevor Ihre Anmeldung einging — Ihr Interesse wurde aber erfolgreich registriert, und wir melden uns beim Start der Plattform.",
+        "PLAIN_TITLE": "Registrierung erfolgreich!",
+        "PLAIN_MSG": "Danke — Ihr Interesse wurde erfolgreich registriert. Wir senden Ihnen Updates, sobald PropertyApp startet.",
+        "RESET_BTN": "Eine weitere Person registrieren"
+      },
+      "FULLNAME_LABEL": "Vollständiger Name",
+      "FULLNAME_PLACEHOLDER": "z. B. Ahmad Mohammad",
+      "PHONE_LABEL": "Telefon- oder WhatsApp-Nummer",
+      "PHONE_PLACEHOLDER": "z. B. 0933123456 oder +963933123456",
+      "PHONE_HINT": "Eine WhatsApp-Nummer funktioniert auch",
+      "USERTYPE_LABEL": "Ich bin…",
+      "USERTYPE_PLACEHOLDER": "Wählen Sie, was auf Sie zutrifft",
+      "USER_TYPES": {
+        "RENTER": "Auf der Suche nach einer Mietwohnung",
+        "BUYER": "Auf der Suche nach einer Immobilie zum Kauf",
+        "OWNER": "Ich möchte eine Immobilie inserieren",
+        "AGENCY": "Immobilienbüro",
+        "INVESTOR": "Investor:in / Auslandssyrer:in"
+      },
+      "CITY_LABEL": "Stadt oder Region",
+      "CITY_PLACEHOLDER": "Wählen Sie Ihre Stadt oder Region",
+      "CITIES": {
+        "DAMASCUS": "Damaskus",
+        "ALEPPO": "Aleppo",
+        "HOMS": "Homs",
+        "HAMA": "Hama",
+        "LATAKIA": "Latakia",
+        "TARTUS": "Tartus",
+        "SWEIDA": "As-Suwaida",
+        "DARAA": "Daraa",
+        "QUNEITRA": "Quneitra",
+        "DEIR_EZZOR": "Deir ez-Zor",
+        "RAQQA": "Raqqa",
+        "HASAKA": "Al-Hasaka",
+        "IDLIB": "Idlib",
+        "DAMASCUS_COUNTRYSIDE": "Rif Dimaschq",
+        "OTHER": "Andere Region"
+      },
+      "NOTES_LABEL": "Zusätzliche Anmerkungen",
+      "NOTES_OPTIONAL": "optional",
+      "NOTES_PLACEHOLDER": "z. B. Ich suche eine 2-Zimmer-Wohnung in Mazzeh für maximal 200 US-Dollar",
+      "REQUIRED_ARIA": "Pflichtfeld",
+      "SUBMIT_ARIA": "Wartelisten-Anmeldung absenden",
+      "SUBMIT_LOADING": "Wird registriert…",
+      "SUBMIT_TEXT": "Jetzt der Warteliste beitreten",
+      "PRIVACY_NOTE": "Wir geben Ihre Daten nicht an Dritte weiter und senden keine unerwünschten Nachrichten.",
+      "ERRORS": {
+        "REQUIRED": "Dieses Feld ist erforderlich.",
+        "MINLENGTH": "Zu kurz (mindestens {{min}} Zeichen).",
+        "MAXLENGTH": "Die maximale Länge wurde überschritten.",
+        "PHONE": "Ungültige Telefonnummer. Beispiel: 0933123456 oder +963933123456",
+        "GENERIC": "Ungültiger Wert."
+      }
+    },
+    "TRUST": {
+      "EYEBROW": "Volle Transparenz",
+      "TITLE": "Wir bauen Vertrauen Schritt für Schritt auf",
+      "DESC": "Wir befinden uns in der ersten MVP-Phase. Hier sehen Sie, wozu wir uns verpflichten und was noch in Arbeit ist.",
+      "ITEMS": {
+        "PHOTOS": {
+          "TITLE": "Echte Fotos erforderlich",
+          "DESC": "Wir ermutigen Eigentümer, echte Fotos der Immobilie hochzuladen, und akzeptieren keine gefälschten oder geliehenen Bilder."
+        },
+        "CONTACT": {
+          "TITLE": "Klare Kontaktdaten",
+          "DESC": "Jede Anzeige muss korrekte Kontaktdaten enthalten. Wir sind hier, um Sie mit der anderen Seite zu verbinden."
+        },
+        "CAUTION": {
+          "TITLE": "Nicht zahlen vor der Prüfung",
+          "DESC": "Wir empfehlen immer, die Immobilie persönlich zu besichtigen und Dokumente zu prüfen, bevor Sie etwas bezahlen. Die Plattform erleichtert den Kontakt — sie garantiert nicht den Abschluss."
+        },
+        "IMPROVING": {
+          "TITLE": "Stetige Verbesserung",
+          "DESC": "Die Verifizierung von Anzeigen wird sich schrittweise verbessern. Wir sind offen damit, dass wir uns noch in einer frühen Phase befinden."
+        }
+      }
+    },
+    "FAQ": {
+      "EYEBROW": "Fragen",
+      "TITLE": "Häufig gestellte Fragen",
+      "ITEMS": {
+        "LAUNCH": {
+          "Q": "Wann startet die Plattform?",
+          "A": "Wir befinden uns aktuell im Aufbau des MVP. Mitglieder der Warteliste erhalten als Erste eine Einladung zum Start."
+        },
+        "FREE": {
+          "Q": "Ist der Dienst zu Beginn kostenlos?",
+          "A": "Ja — wir planen, den Dienst in der ersten Phase für Suchende und Eigentümer kostenlos anzubieten, mit der Möglichkeit späterer Premium-Pläne."
+        },
+        "OWNER": {
+          "Q": "Können sich Eigentümer schon jetzt registrieren?",
+          "A": "Auf jeden Fall. Registrieren Sie Ihr Interesse über das Formular und wählen Sie \"Ich möchte eine Immobilie inserieren\" — wir melden uns, sobald das Inserieren möglich ist."
+        },
+        "AGENCY": {
+          "Q": "Können Immobilienbüros ihre Angebote hinzufügen?",
+          "A": "Ja, wir freuen uns über Immobilienbüros. Wählen Sie im Formular \"Immobilienbüro\" — wir melden uns mit Details zur Partnerschaft."
+        },
+        "VERIFIED": {
+          "Q": "Sind die Immobilien verifiziert und sicher?",
+          "A": "Wir arbeiten an klareren Informationen und weniger zufälligen Anzeigen. Die Plattform befindet sich noch in der Entwicklung, und die Verifizierung wird sich schrittweise verbessern. Wie bei jedem Immobiliengeschäft empfehlen wir immer eine persönliche Prüfung vor jeder Entscheidung."
+        },
+        "SYRIA_ONLY": {
+          "Q": "Ist die Plattform nur für Syrien gedacht?",
+          "A": "Wir starten in Syrien, aber das Design unterstützt eine spätere Erweiterung in arabische und globale Märkte — insbesondere um Auslandssyrer:innen überall zu erreichen."
+        }
+      }
+    },
+    "FINAL_CTA": {
+      "TITLE": "Seien Sie unter den ersten Nutzer:innen von PropertyApp",
+      "DESC": "Helfen Sie uns, eine besser organisierte Immobilienerfahrung in Syrien aufzubauen. Ihre Stimme prägt die kommende Plattform mit.",
+      "BTN": "Jetzt der Warteliste beitreten",
+      "BTN_ARIA": "Der PropertyApp-Warteliste beitreten"
+    },
+    "FOOTER": {
+      "TAGLINE": "Eine digitale Immobilienplattform · Syrien zuerst",
+      "RIGHTS": "Alle Rechte vorbehalten",
+      "PRIVACY": "Datenschutzerklärung",
+      "TERMS": "Nutzungsbedingungen"
     }
   }
 }
