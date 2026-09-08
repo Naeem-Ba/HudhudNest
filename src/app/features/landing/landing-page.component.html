@@ -1,25 +1,28 @@
 <!-- ════════════════════════════════════════════════════════
      landing-page.component.html
-     صفحة هبوط PropertyApp – منصة عقارية رقمية في سوريا
+     صفحة هبوط PropertyApp – هوية "دفتر العائلة" · عربي/إنكليزي/ألماني
 
-     [تعديل هذه الجولة] قسم FAQ فقط: سهم SVG واحد يدور بدل استبدال
-     رمز ▲/▼ نصياً، وتغليف الإجابة بـ .faq-answer-wrapper ليعمل
-     أنيميشن الارتفاع السلس المُضاف في .scss. باقي الملف بلا تغيير.
+     [هذه الجولة] كل نص صار مفتاح ترجمة (translate pipe) تحت LANDING في
+     public/i18n/{ar,de,en}.json — لا نص عربي ثابت بعد الآن. dir/lang لم
+     يعودا ثابتين على <main>: يرثان من html[dir]/html[lang] العالميين
+     اللذين يضبطهما LanguageService عند تبديل اللغة. عنوان الـ Hero صار
+     ثابتًا ("كل بيت قصة. لنبدأ قصتك في سوريا") والشعار الفرعي يتبدّل بين
+     3 صيغ (hero__tagline، منطق التدوير في .ts).
      ════════════════════════════════════════════════════════ -->
 
-<main class="lp-root" dir="rtl" lang="ar">
+<main class="lp-root">
 
   <!-- ══════════════════════════════════════════════════════
        القسم 1: Hero Section
        ══════════════════════════════════════════════════════ -->
-  <section class="hero" aria-label="الصفحة الرئيسية">
+  <section class="hero" [attr.aria-label]="'LANDING.HERO.ARIA' | translate">
+    <!-- لا توجد لقطة حقيقية من التطبيق متاحة بعد لهذه الحملة — بدل صورة
+         شكلية توحي بمحتوى غير موجود، الخلفية تدرّج هندسي مصمَّم بالكامل
+         بألوان الهوية بلا أي طلب صورة خارجي. -->
     <div class="hero__bg" aria-hidden="true">
-      <img
-        src="/assets/images/landing/hero-property.jpg"
-        alt=""
-        class="hero__bg-img"
-        fetchpriority="high"
-      />
+      <div class="hero__glow hero__glow--gold"></div>
+      <div class="hero__glow hero__glow--navy"></div>
+      <div class="hero__grid"></div>
       <div class="hero__overlay"></div>
     </div>
 
@@ -27,20 +30,36 @@
       <!-- شارة الثقة -->
       <div class="hero__badge">
         <span class="badge-dot"></span>
-        نسخة تجريبية قيد الإطلاق في سوريا
+        {{ 'LANDING.HERO.BADGE' | translate }}
       </div>
 
       <!-- العنوان الرئيسي -->
       <h1 class="hero__title">
-        عقارك القادم في سوريا<br>
-        <span class="hero__title-accent">أوضح، أسرع، وأكثر تنظيمًا.</span>
+        {{ 'LANDING.HERO.TITLE_MAIN' | translate }}<br>
+        <span class="hero__title-accent">{{ 'LANDING.HERO.TITLE_ACCENT' | translate }}</span>
       </h1>
 
-      <!-- العنوان الفرعي -->
-      <p class="hero__subtitle">
-        منصة رقمية تساعدك على البحث عن شقق وعقارات للبيع أو الإيجار،
-        مع معلومات منظمة، صور واضحة، وتواصل مباشر مع المالك أو المكتب العقاري.
-      </p>
+      <!-- الشعار الفرعي المتبدّل: 3 صيغ تدور تلقائيًا (taglineIndex في .ts)،
+           تتوقف تمامًا إن فضّل المستخدم تقليل الحركة. النسخة المقروءة
+           لقارئ الشاشة ثابتة (الصيغة الأولى) لتفادي إعلانات متكررة. -->
+      <div class="hero__tagline">
+        <p
+          class="hero__subtitle hero__tagline-item"
+          [class.is-active]="taglineIndex() === 0"
+          aria-hidden="true"
+        >{{ 'LANDING.HERO.TAGLINE_1' | translate }}</p>
+        <p
+          class="hero__subtitle hero__tagline-item"
+          [class.is-active]="taglineIndex() === 1"
+          aria-hidden="true"
+        >{{ 'LANDING.HERO.TAGLINE_2' | translate }}</p>
+        <p
+          class="hero__subtitle hero__tagline-item"
+          [class.is-active]="taglineIndex() === 2"
+          aria-hidden="true"
+        >{{ 'LANDING.HERO.TAGLINE_3' | translate }}</p>
+        <p class="lp-sr-only">{{ 'LANDING.HERO.TAGLINE_1' | translate }}</p>
+      </div>
 
       <!-- أزرار CTA -->
       <div class="hero__ctas">
@@ -48,36 +67,90 @@
           type="button"
           class="btn btn--primary"
           (click)="scrollToForm()"
-          aria-label="انضم إلى قائمة انتظار PropertyApp"
+          [attr.aria-label]="'LANDING.HERO.CTA_PRIMARY_ARIA' | translate"
         >
-          انضم لقائمة الانتظار
+          {{ 'LANDING.HERO.CTA_PRIMARY' | translate }}
         </button>
         <button
           type="button"
           class="btn btn--ghost"
           (click)="scrollToForm()"
-          aria-label="أعلن عن عقارك على PropertyApp"
+          [attr.aria-label]="'LANDING.HERO.CTA_GHOST_ARIA' | translate"
         >
-          اعرض عقارك قريبًا
+          {{ 'LANDING.HERO.CTA_GHOST' | translate }}
         </button>
       </div>
 
       <!-- إحصائيات صغيرة تبني الثقة -->
-      <div class="hero__stats" aria-label="إحصائيات سريعة">
+      <div class="hero__stats" [attr.aria-label]="'LANDING.HERO.STATS_ARIA' | translate">
         <div class="hero__stat">
-          <strong>٥+</strong>
-          <span>مدن سورية</span>
+          <strong>{{ 'LANDING.HERO.STAT_CITIES_VALUE' | translate }}</strong>
+          <span>{{ 'LANDING.HERO.STAT_CITIES_LABEL' | translate }}</span>
         </div>
         <div class="hero__stat-divider" aria-hidden="true"></div>
         <div class="hero__stat">
-          <strong>مجاني</strong>
-          <span>في البداية</span>
+          <strong>{{ 'LANDING.HERO.STAT_FREE_VALUE' | translate }}</strong>
+          <span>{{ 'LANDING.HERO.STAT_FREE_LABEL' | translate }}</span>
         </div>
         <div class="hero__stat-divider" aria-hidden="true"></div>
         <div class="hero__stat">
-          <strong>MVP</strong>
-          <span>قريباً</span>
+          <strong>{{ 'LANDING.HERO.STAT_MVP_VALUE' | translate }}</strong>
+          <span>{{ 'LANDING.HERO.STAT_MVP_LABEL' | translate }}</span>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       قسم عرض الانضمام المبكر — "أول 100 مكتب عقاري"
+       مبني بالكامل على GET /api/offers/active (activeOffer signal).
+       لا نص أو رقم ثابت هنا: يختفي القسم كليًا إن لم يوجد عرض نشط.
+       ══════════════════════════════════════════════════════ -->
+  <section
+    *ngIf="activeOffer() as offer"
+    class="section section--offer"
+    aria-labelledby="offer-heading"
+  >
+    <div class="container container--narrow">
+      <div class="offer-card">
+        <div class="offer-card__badge">{{ offerDiscountText(offer) }}</div>
+
+        <p class="section-eyebrow section-eyebrow--gold">{{ 'LANDING.OFFER.EYEBROW' | translate }}</p>
+        <h2 id="offer-heading" class="section-title section-title--white">
+          {{ offer.name }}
+        </h2>
+        <p *ngIf="offer.description" class="offer-card__desc">
+          {{ offer.description }}
+        </p>
+
+        <!-- عدّاد حقيقي فقط إن كان للعرض حد أقصى فعلي — لا عدّاد وهمي -->
+        <div
+          *ngIf="offer.maxRedemptions as max"
+          class="offer-progress"
+          role="status"
+          [attr.aria-label]="offerProgressAriaLabel(offer, max)"
+        >
+          <div class="offer-progress__track">
+            <div
+              class="offer-progress__fill"
+              [style.width.%]="(offer.redeemedCount / max) * 100"
+            ></div>
+          </div>
+          <span class="offer-progress__label">
+            {{ offerProgressLabel(offer, max) }}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          class="btn btn--gold offer-card__cta"
+          (click)="scrollToFormForOffer()"
+          [attr.aria-label]="'LANDING.OFFER.CTA_ARIA' | translate"
+        >
+          {{ 'LANDING.OFFER.CTA' | translate }}
+        </button>
+
+        <p *ngIf="offer.terms" class="offer-card__terms">{{ offer.terms }}</p>
       </div>
     </div>
   </section>
@@ -88,39 +161,23 @@
   <section class="section section--light" aria-labelledby="problem-heading">
     <div class="container">
       <div class="section-header">
-        <p class="section-eyebrow">لماذا PropertyApp؟</p>
+        <p class="section-eyebrow">{{ 'LANDING.PROBLEM_SOLUTION.EYEBROW' | translate }}</p>
         <h2 id="problem-heading" class="section-title">
-          البحث عن عقار في سوريا لا يزال مُرهقًا
+          {{ 'LANDING.PROBLEM_SOLUTION.TITLE' | translate }}
         </h2>
         <p class="section-desc">
-          نسمع نفس الشكاوى يومياً. PropertyApp يهدف إلى معالجتها تدريجياً.
+          {{ 'LANDING.PROBLEM_SOLUTION.DESC' | translate }}
         </p>
       </div>
 
       <div class="problem-solution">
         <!-- المشكلة -->
         <div class="problem-col">
-          <div class="ps-label ps-label--problem">الوضع الحالي</div>
+          <div class="ps-label ps-label--problem">{{ 'LANDING.PROBLEM_SOLUTION.PROBLEM_LABEL' | translate }}</div>
           <ul class="ps-list" role="list">
-            <li class="ps-item ps-item--problem">
+            <li class="ps-item ps-item--problem" *ngFor="let i of psItemIndices">
               <span class="ps-icon" aria-hidden="true">✕</span>
-              <span>البحث في مجموعات فيسبوك وواتساب عشوائي وغير منظم</span>
-            </li>
-            <li class="ps-item ps-item--problem">
-              <span class="ps-icon" aria-hidden="true">✕</span>
-              <span>صعوبة معرفة ما إذا كان الإعلان حقيقياً أو مكرراً</span>
-            </li>
-            <li class="ps-item ps-item--problem">
-              <span class="ps-icon" aria-hidden="true">✕</span>
-              <span>نقص الصور والمعلومات الأساسية في معظم الإعلانات</span>
-            </li>
-            <li class="ps-item ps-item--problem">
-              <span class="ps-icon" aria-hidden="true">✕</span>
-              <span>صعوبة مقارنة الأسعار والمناطق في مكان واحد</span>
-            </li>
-            <li class="ps-item ps-item--problem">
-              <span class="ps-icon" aria-hidden="true">✕</span>
-              <span>ضعف الثقة بين الباحث والمالك أو المكتب العقاري</span>
+              <span>{{ 'LANDING.PROBLEM_SOLUTION.PROBLEM_ITEMS.ITEM_' + i | translate }}</span>
             </li>
           </ul>
         </div>
@@ -128,33 +185,17 @@
         <!-- الفاصل -->
         <div class="ps-arrow" aria-hidden="true">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <path d="M6 16h20M20 10l6 6-6 6" stroke="#D6A84F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6 16h20M20 10l6 6-6 6" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
 
         <!-- الحل -->
         <div class="solution-col">
-          <div class="ps-label ps-label--solution">مع PropertyApp</div>
+          <div class="ps-label ps-label--solution">{{ 'LANDING.PROBLEM_SOLUTION.SOLUTION_LABEL' | translate }}</div>
           <ul class="ps-list" role="list">
-            <li class="ps-item ps-item--solution">
+            <li class="ps-item ps-item--solution" *ngFor="let i of psItemIndices">
               <span class="ps-icon" aria-hidden="true">✓</span>
-              <span>منصة واحدة تجمع عقارات سوريا بطريقة منظمة وقابلة للبحث</span>
-            </li>
-            <li class="ps-item ps-item--solution">
-              <span class="ps-icon" aria-hidden="true">✓</span>
-              <span>صور واضحة ومعلومات أساسية موحدة لكل إعلان</span>
-            </li>
-            <li class="ps-item ps-item--solution">
-              <span class="ps-icon" aria-hidden="true">✓</span>
-              <span>تصفية حسب المدينة، المنطقة، السعر، النوع، والهدف</span>
-            </li>
-            <li class="ps-item ps-item--solution">
-              <span class="ps-icon" aria-hidden="true">✓</span>
-              <span>تواصل مباشر مع المالك أو المكتب العقاري</span>
-            </li>
-            <li class="ps-item ps-item--solution">
-              <span class="ps-icon" aria-hidden="true">✓</span>
-              <span>آليات تحقق تدريجية لتقليل العشوائية وزيادة الشفافية</span>
+              <span>{{ 'LANDING.PROBLEM_SOLUTION.SOLUTION_ITEMS.ITEM_' + i | translate }}</span>
             </li>
           </ul>
         </div>
@@ -168,9 +209,9 @@
   <section class="section section--white" aria-labelledby="features-heading">
     <div class="container">
       <div class="section-header">
-        <p class="section-eyebrow">ما يميّزنا</p>
+        <p class="section-eyebrow">{{ 'LANDING.FEATURES.EYEBROW' | translate }}</p>
         <h2 id="features-heading" class="section-title">
-          كل ما تحتاجه في مكان واحد
+          {{ 'LANDING.FEATURES.TITLE' | translate }}
         </h2>
       </div>
 
@@ -178,53 +219,53 @@
         <article class="feature-card" role="listitem">
           <div class="feature-icon" aria-hidden="true">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <circle cx="12" cy="12" r="8" stroke="#0F2742" stroke-width="2"/>
-              <path d="M18 18l5 5" stroke="#D6A84F" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="12" cy="12" r="8" stroke="var(--gray-900)" stroke-width="2"/>
+              <path d="M18 18l5 5" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round"/>
             </svg>
           </div>
-          <h3 class="feature-title">بحث أسهل</h3>
+          <h3 class="feature-title">{{ 'LANDING.FEATURES.ITEMS.SEARCH.TITLE' | translate }}</h3>
           <p class="feature-desc">
-            فلترة حسب المدينة، المنطقة، السعر، نوع العقار، والهدف — بيع أو إيجار — في ثوانٍ.
+            {{ 'LANDING.FEATURES.ITEMS.SEARCH.DESC' | translate }}
           </p>
         </article>
 
         <article class="feature-card" role="listitem">
           <div class="feature-icon" aria-hidden="true">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <rect x="3" y="3" width="22" height="22" rx="4" stroke="#0F2742" stroke-width="2"/>
-              <path d="M7 17l4-5 4 4 4-6" stroke="#D6A84F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="3" y="3" width="22" height="22" rx="4" stroke="var(--gray-900)" stroke-width="2"/>
+              <path d="M7 17l4-5 4 4 4-6" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
-          <h3 class="feature-title">معلومات أوضح</h3>
+          <h3 class="feature-title">{{ 'LANDING.FEATURES.ITEMS.INFO.TITLE' | translate }}</h3>
           <p class="feature-desc">
-            صور، وصف تفصيلي، موقع تقريبي، مساحة، أدوار، وبيانات تواصل منظمة — كل شيء في مكانه.
+            {{ 'LANDING.FEATURES.ITEMS.INFO.DESC' | translate }}
           </p>
         </article>
 
         <article class="feature-card" role="listitem">
           <div class="feature-icon" aria-hidden="true">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <path d="M5 6h18M5 10h14M5 14h10" stroke="#0F2742" stroke-width="2" stroke-linecap="round"/>
-              <circle cx="20" cy="19" r="5" fill="#1F9D6A" opacity=".15" stroke="#1F9D6A" stroke-width="1.5"/>
-              <path d="M18 19l1.5 1.5L22 17" stroke="#1F9D6A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M5 6h18M5 10h14M5 14h10" stroke="var(--gray-900)" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="20" cy="19" r="5" fill="var(--success)" opacity=".15" stroke="var(--success)" stroke-width="1.5"/>
+              <path d="M18 19l1.5 1.5L22 17" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
-          <h3 class="feature-title">تواصل مباشر</h3>
+          <h3 class="feature-title">{{ 'LANDING.FEATURES.ITEMS.CONTACT.TITLE' | translate }}</h3>
           <p class="feature-desc">
-            تواصل مع المالك أو المكتب العقاري مباشرةً دون خطوات معقدة أو وسطاء غير ضروريين.
+            {{ 'LANDING.FEATURES.ITEMS.CONTACT.DESC' | translate }}
           </p>
         </article>
 
         <article class="feature-card" role="listitem">
           <div class="feature-icon" aria-hidden="true">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <circle cx="14" cy="14" r="11" stroke="#0F2742" stroke-width="2"/>
-              <path d="M9 14l3 3 7-7" stroke="#D6A84F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="14" cy="14" r="11" stroke="var(--gray-900)" stroke-width="2"/>
+              <path d="M9 14l3 3 7-7" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
-          <h3 class="feature-title">تغطية قابلة للتوسع</h3>
+          <h3 class="feature-title">{{ 'LANDING.FEATURES.ITEMS.SCALE.TITLE' | translate }}</h3>
           <p class="feature-desc">
-            نبدأ من سوريا بخدمة المدن الكبرى والمغتربين، مع تصميم يدعم التوسع لأسواق عربية وعالمية.
+            {{ 'LANDING.FEATURES.ITEMS.SCALE.DESC' | translate }}
           </p>
         </article>
       </div>
@@ -237,37 +278,37 @@
   <section class="section section--navy" aria-labelledby="how-heading">
     <div class="container">
       <div class="section-header section-header--light">
-        <p class="section-eyebrow section-eyebrow--gold">بخطوات بسيطة</p>
+        <p class="section-eyebrow section-eyebrow--gold">{{ 'LANDING.HOW.EYEBROW' | translate }}</p>
         <h2 id="how-heading" class="section-title section-title--white">
-          كيف يعمل PropertyApp؟
+          {{ 'LANDING.HOW.TITLE' | translate }}
         </h2>
       </div>
 
-      <ol class="steps-list" aria-label="خطوات استخدام المنصة">
+      <ol class="steps-list" [attr.aria-label]="'LANDING.HOW.ARIA' | translate">
         <li class="step-item">
           <div class="step-number" aria-hidden="true">١</div>
           <div class="step-body">
-            <h3 class="step-title">اختر نوع العقار أو المدينة</h3>
+            <h3 class="step-title">{{ 'LANDING.HOW.STEPS.STEP_1.TITLE' | translate }}</h3>
             <p class="step-desc">
-              حدّد ما إذا كنت تبحث عن إيجار أو شراء، ثم اختر مدينتك أو منطقتك المفضلة.
+              {{ 'LANDING.HOW.STEPS.STEP_1.DESC' | translate }}
             </p>
           </div>
         </li>
         <li class="step-item">
           <div class="step-number" aria-hidden="true">٢</div>
           <div class="step-body">
-            <h3 class="step-title">تصفّح العروض المنظمة</h3>
+            <h3 class="step-title">{{ 'LANDING.HOW.STEPS.STEP_2.TITLE' | translate }}</h3>
             <p class="step-desc">
-              اطّلع على عقارات بصور وأسعار ومعلومات واضحة، وقارن الخيارات بسهولة.
+              {{ 'LANDING.HOW.STEPS.STEP_2.DESC' | translate }}
             </p>
           </div>
         </li>
         <li class="step-item">
           <div class="step-number" aria-hidden="true">٣</div>
           <div class="step-body">
-            <h3 class="step-title">تواصل أو انضم للقائمة</h3>
+            <h3 class="step-title">{{ 'LANDING.HOW.STEPS.STEP_3.TITLE' | translate }}</h3>
             <p class="step-desc">
-              تواصل مباشرةً مع صاحب الإعلان، أو سجّل الآن في قائمة الانتظار وكن أول من يُخطَر عند الإطلاق.
+              {{ 'LANDING.HOW.STEPS.STEP_3.DESC' | translate }}
             </p>
           </div>
         </li>
@@ -285,12 +326,12 @@
   >
     <div class="container container--narrow">
       <div class="section-header">
-        <p class="section-eyebrow">قائمة الانتظار</p>
+        <p class="section-eyebrow">{{ 'LANDING.FORM.EYEBROW' | translate }}</p>
         <h2 id="form-heading" class="section-title">
-          كن من أوائل مستخدمي PropertyApp
+          {{ 'LANDING.FORM.TITLE' | translate }}
         </h2>
         <p class="section-desc">
-          سجّل اهتمامك الآن ونتواصل معك عند إطلاق المنصة في منطقتك.
+          {{ 'LANDING.FORM.DESC' | translate }}
         </p>
       </div>
 
@@ -302,13 +343,30 @@
         aria-live="polite"
       >
         <div class="form-success__icon" aria-hidden="true">✓</div>
-        <h3 class="form-success__title">تم التسجيل بنجاح!</h3>
-        <p class="form-success__msg">
-          شكرًا لك، تم تسجيل اهتمامك بنجاح.
-          سنرسل لك التحديثات عند إطلاق PropertyApp.
-        </p>
+
+        <ng-container *ngIf="offerAppliedOnSuccess() === true; else successNoOffer">
+          <h3 class="form-success__title">{{ 'LANDING.FORM.SUCCESS.OFFER_TITLE' | translate }}</h3>
+          <p class="form-success__msg">
+            {{ 'LANDING.FORM.SUCCESS.OFFER_MSG' | translate }}
+          </p>
+        </ng-container>
+        <ng-template #successNoOffer>
+          <ng-container *ngIf="offerAppliedOnSuccess() === false; else successPlain">
+            <h3 class="form-success__title">{{ 'LANDING.FORM.SUCCESS.NO_OFFER_TITLE' | translate }}</h3>
+            <p class="form-success__msg">
+              {{ 'LANDING.FORM.SUCCESS.NO_OFFER_MSG' | translate }}
+            </p>
+          </ng-container>
+        </ng-template>
+        <ng-template #successPlain>
+          <h3 class="form-success__title">{{ 'LANDING.FORM.SUCCESS.PLAIN_TITLE' | translate }}</h3>
+          <p class="form-success__msg">
+            {{ 'LANDING.FORM.SUCCESS.PLAIN_MSG' | translate }}
+          </p>
+        </ng-template>
+
         <button type="button" class="btn btn--outline-navy" (click)="resetForm()">
-          تسجيل شخص آخر
+          {{ 'LANDING.FORM.SUCCESS.RESET_BTN' | translate }}
         </button>
       </div>
 
@@ -319,12 +377,13 @@
         [formGroup]="form"
         (ngSubmit)="submitForm()"
         novalidate
-        aria-label="نموذج الانضمام لقائمة الانتظار"
+        [attr.aria-label]="'LANDING.FORM.ARIA' | translate"
       >
         <!-- الاسم الكامل -->
         <div class="field-group">
           <label class="field-label" for="fullName">
-            الاسم الكامل <span class="required" aria-label="مطلوب">*</span>
+            {{ 'LANDING.FORM.FULLNAME_LABEL' | translate }}
+            <span class="required" [attr.aria-label]="'LANDING.FORM.REQUIRED_ARIA' | translate">*</span>
           </label>
           <input
             id="fullName"
@@ -332,7 +391,7 @@
             class="field-input"
             [class.field-input--error]="isFieldInvalid('fullName')"
             formControlName="fullName"
-            placeholder="مثال: أحمد محمد"
+            [placeholder]="'LANDING.FORM.FULLNAME_PLACEHOLDER' | translate"
             autocomplete="name"
             maxlength="60"
             aria-describedby="fullName-error"
@@ -348,7 +407,8 @@
         <!-- رقم الهاتف -->
         <div class="field-group">
           <label class="field-label" for="phone">
-            رقم الهاتف أو واتساب <span class="required" aria-label="مطلوب">*</span>
+            {{ 'LANDING.FORM.PHONE_LABEL' | translate }}
+            <span class="required" [attr.aria-label]="'LANDING.FORM.REQUIRED_ARIA' | translate">*</span>
           </label>
           <input
             id="phone"
@@ -356,13 +416,13 @@
             class="field-input"
             [class.field-input--error]="isFieldInvalid('phoneOrWhatsapp')"
             formControlName="phoneOrWhatsapp"
-            placeholder="مثال: 0933123456 أو +963933123456"
+            [placeholder]="'LANDING.FORM.PHONE_PLACEHOLDER' | translate"
             autocomplete="tel"
             inputmode="tel"
             dir="ltr"
             aria-describedby="phone-error phone-hint"
           />
-          <p id="phone-hint" class="field-hint">يمكن إدخال رقم واتساب</p>
+          <p id="phone-hint" class="field-hint">{{ 'LANDING.FORM.PHONE_HINT' | translate }}</p>
           <p
             *ngIf="isFieldInvalid('phoneOrWhatsapp')"
             id="phone-error"
@@ -374,7 +434,8 @@
         <!-- نوع المستخدم -->
         <div class="field-group">
           <label class="field-label" for="userType">
-            أنا… <span class="required" aria-label="مطلوب">*</span>
+            {{ 'LANDING.FORM.USERTYPE_LABEL' | translate }}
+            <span class="required" [attr.aria-label]="'LANDING.FORM.REQUIRED_ARIA' | translate">*</span>
           </label>
           <select
             id="userType"
@@ -383,11 +444,11 @@
             formControlName="userType"
             aria-describedby="userType-error"
           >
-            <option value="" disabled selected>اختر ما ينطبق عليك</option>
+            <option value="" disabled selected>{{ 'LANDING.FORM.USERTYPE_PLACEHOLDER' | translate }}</option>
             <option
               *ngFor="let opt of userTypeOptions"
-              [value]="opt[0]"
-            >{{ opt[1] }}</option>
+              [value]="opt.value"
+            >{{ opt.labelKey | translate }}</option>
           </select>
           <p
             *ngIf="isFieldInvalid('userType')"
@@ -400,7 +461,8 @@
         <!-- المدينة -->
         <div class="field-group">
           <label class="field-label" for="city">
-            المدينة أو المنطقة <span class="required" aria-label="مطلوب">*</span>
+            {{ 'LANDING.FORM.CITY_LABEL' | translate }}
+            <span class="required" [attr.aria-label]="'LANDING.FORM.REQUIRED_ARIA' | translate">*</span>
           </label>
           <select
             id="city"
@@ -409,8 +471,8 @@
             formControlName="city"
             aria-describedby="city-error"
           >
-            <option value="" disabled selected>اختر مدينتك أو منطقتك</option>
-            <option *ngFor="let c of cities" [value]="c">{{ c }}</option>
+            <option value="" disabled selected>{{ 'LANDING.FORM.CITY_PLACEHOLDER' | translate }}</option>
+            <option *ngFor="let c of cityOptions" [value]="c.value">{{ c.labelKey | translate }}</option>
           </select>
           <p
             *ngIf="isFieldInvalid('city')"
@@ -423,14 +485,14 @@
         <!-- ملاحظات (اختياري) -->
         <div class="field-group">
           <label class="field-label" for="notes">
-            ملاحظات إضافية
-            <span class="field-optional">(اختياري)</span>
+            {{ 'LANDING.FORM.NOTES_LABEL' | translate }}
+            <span class="field-optional">({{ 'LANDING.FORM.NOTES_OPTIONAL' | translate }})</span>
           </label>
           <textarea
             id="notes"
             class="field-textarea"
             formControlName="notes"
-            placeholder="مثال: أبحث عن شقة من غرفتين في منطقة المزة بسعر لا يتجاوز 200 دولار"
+            [placeholder]="'LANDING.FORM.NOTES_PLACEHOLDER' | translate"
             rows="3"
             maxlength="300"
             aria-describedby="notes-error"
@@ -460,19 +522,19 @@
           class="btn btn--primary btn--full"
           [disabled]="formState() === 'loading'"
           [attr.aria-busy]="formState() === 'loading'"
-          aria-label="إرسال بيانات الانضمام لقائمة الانتظار"
+          [attr.aria-label]="'LANDING.FORM.SUBMIT_ARIA' | translate"
         >
           <ng-container *ngIf="formState() === 'loading'; else submitText">
             <span class="spinner" aria-hidden="true"></span>
-            جارٍ التسجيل…
+            {{ 'LANDING.FORM.SUBMIT_LOADING' | translate }}
           </ng-container>
           <ng-template #submitText>
-            انضم الآن لقائمة الانتظار
+            {{ 'LANDING.FORM.SUBMIT_TEXT' | translate }}
           </ng-template>
         </button>
 
         <p class="form-privacy">
-          لن نشارك بياناتك مع أطراف ثالثة ولن نرسل رسائل غير مرغوب فيها.
+          {{ 'LANDING.FORM.PRIVACY_NOTE' | translate }}
         </p>
       </form>
     </div>
@@ -484,35 +546,35 @@
   <section class="section section--light" aria-labelledby="trust-heading">
     <div class="container">
       <div class="section-header">
-        <p class="section-eyebrow">شفافية كاملة</p>
+        <p class="section-eyebrow">{{ 'LANDING.TRUST.EYEBROW' | translate }}</p>
         <h2 id="trust-heading" class="section-title">
-          نبني الثقة خطوة بخطوة
+          {{ 'LANDING.TRUST.TITLE' | translate }}
         </h2>
         <p class="section-desc">
-          نحن في مرحلة MVP الأولى. إليك ما نلتزم به، وما هو قيد التطوير.
+          {{ 'LANDING.TRUST.DESC' | translate }}
         </p>
       </div>
 
       <div class="trust-grid" role="list">
         <div class="trust-card" role="listitem">
           <div class="trust-icon" aria-hidden="true">📸</div>
-          <h3 class="trust-title">صور حقيقية مطلوبة</h3>
-          <p class="trust-desc">نشجّع أصحاب العقارات على رفع صور فعلية للعقار، ولا نقبل صور وهمية أو مستعارة.</p>
+          <h3 class="trust-title">{{ 'LANDING.TRUST.ITEMS.PHOTOS.TITLE' | translate }}</h3>
+          <p class="trust-desc">{{ 'LANDING.TRUST.ITEMS.PHOTOS.DESC' | translate }}</p>
         </div>
         <div class="trust-card" role="listitem">
           <div class="trust-icon" aria-hidden="true">📞</div>
-          <h3 class="trust-title">معلومات تواصل واضحة</h3>
-          <p class="trust-desc">كل إعلان يجب أن يحتوي معلومات تواصل صحيحة. نحن هنا للربط بينك وبين الطرف الآخر.</p>
+          <h3 class="trust-title">{{ 'LANDING.TRUST.ITEMS.CONTACT.TITLE' | translate }}</h3>
+          <p class="trust-desc">{{ 'LANDING.TRUST.ITEMS.CONTACT.DESC' | translate }}</p>
         </div>
         <div class="trust-card" role="listitem">
           <div class="trust-icon" aria-hidden="true">⚠️</div>
-          <h3 class="trust-title">لا تدفع قبل التحقق</h3>
-          <p class="trust-desc">ننصح دائماً بزيارة العقار شخصياً والتحقق من الوثائق قبل دفع أي مبالغ. المنصة تُيسّر التواصل ولا تضمن الصفقة.</p>
+          <h3 class="trust-title">{{ 'LANDING.TRUST.ITEMS.CAUTION.TITLE' | translate }}</h3>
+          <p class="trust-desc">{{ 'LANDING.TRUST.ITEMS.CAUTION.DESC' | translate }}</p>
         </div>
         <div class="trust-card" role="listitem">
           <div class="trust-icon" aria-hidden="true">🔧</div>
-          <h3 class="trust-title">التحسين مستمر</h3>
-          <p class="trust-desc">آليات التحقق من الإعلانات ستتحسن تدريجياً. نحن صادقون بشأن كوننا في مرحلة البداية.</p>
+          <h3 class="trust-title">{{ 'LANDING.TRUST.ITEMS.IMPROVING.TITLE' | translate }}</h3>
+          <p class="trust-desc">{{ 'LANDING.TRUST.ITEMS.IMPROVING.DESC' | translate }}</p>
         </div>
       </div>
     </div>
@@ -520,18 +582,17 @@
 
   <!-- ══════════════════════════════════════════════════════
        القسم 7: الأسئلة الشائعة
-       [تعديل] سهم SVG واحد يدور + تغليف الإجابة لأنيميشن الارتفاع
        ══════════════════════════════════════════════════════ -->
   <section class="section section--white" aria-labelledby="faq-heading">
     <div class="container container--narrow">
       <div class="section-header">
-        <p class="section-eyebrow">استفسارات</p>
-        <h2 id="faq-heading" class="section-title">أسئلة شائعة</h2>
+        <p class="section-eyebrow">{{ 'LANDING.FAQ.EYEBROW' | translate }}</p>
+        <h2 id="faq-heading" class="section-title">{{ 'LANDING.FAQ.TITLE' | translate }}</h2>
       </div>
 
       <dl class="faq-list">
         <div
-          *ngFor="let faq of faqs; let i = index"
+          *ngFor="let key of faqKeys; let i = index"
           class="faq-item"
           [class.faq-item--open]="openFaqIndex() === i"
         >
@@ -543,7 +604,7 @@
               [attr.aria-controls]="'faq-answer-' + i"
               (click)="toggleFaq(i)"
             >
-              {{ faq.q }}
+              {{ 'LANDING.FAQ.ITEMS.' + key + '.Q' | translate }}
               <svg class="faq-chevron" width="14" height="14" viewBox="0 0 12 12" fill="none" aria-hidden="true">
                 <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
@@ -555,7 +616,7 @@
               [id]="'faq-answer-' + i"
               [attr.aria-hidden]="openFaqIndex() !== i"
             >
-              <p>{{ faq.a }}</p>
+              <p>{{ 'LANDING.FAQ.ITEMS.' + key + '.A' | translate }}</p>
             </dd>
           </div>
         </div>
@@ -569,19 +630,18 @@
   <section class="section section--cta" aria-labelledby="final-cta-heading">
     <div class="container container--narrow">
       <h2 id="final-cta-heading" class="final-cta__title">
-        كن من أوائل مستخدمي PropertyApp
+        {{ 'LANDING.FINAL_CTA.TITLE' | translate }}
       </h2>
       <p class="final-cta__desc">
-        ساعدنا في بناء تجربة عقارية أكثر تنظيمًا في سوريا.
-        صوتك ورأيك سيشكّلان شكل المنصة القادمة.
+        {{ 'LANDING.FINAL_CTA.DESC' | translate }}
       </p>
       <button
         type="button"
         class="btn btn--gold"
         (click)="scrollToForm()"
-        aria-label="الانضمام لقائمة انتظار PropertyApp"
+        [attr.aria-label]="'LANDING.FINAL_CTA.BTN_ARIA' | translate"
       >
-        انضم الآن لقائمة الانتظار
+        {{ 'LANDING.FINAL_CTA.BTN' | translate }}
       </button>
     </div>
   </section>
@@ -593,13 +653,13 @@
     <div class="container footer__inner">
       <div class="footer__brand">
         <span class="footer__logo">PropertyApp</span>
-        <p class="footer__tagline">منصة عقارية رقمية · سوريا أولاً</p>
+        <p class="footer__tagline">{{ 'LANDING.FOOTER.TAGLINE' | translate }}</p>
       </div>
       <p class="footer__copy">
-        &copy; {{ currentYear }} PropertyApp · جميع الحقوق محفوظة ·
-        <a routerLink="/privacy-policy" class="footer__link">سياسة الخصوصية</a>
+        &copy; {{ currentYear }} PropertyApp · {{ 'LANDING.FOOTER.RIGHTS' | translate }} ·
+        <a routerLink="/privacy-policy" class="footer__link">{{ 'LANDING.FOOTER.PRIVACY' | translate }}</a>
         ·
-        <a routerLink="/terms-of-service" class="footer__link">شروط الاستخدام</a>
+        <a routerLink="/terms-of-service" class="footer__link">{{ 'LANDING.FOOTER.TERMS' | translate }}</a>
       </p>
     </div>
   </footer>

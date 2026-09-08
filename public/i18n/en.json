@@ -48,6 +48,7 @@
     "INVESTMENTS": "Investments",
     "INVESTMENT_WATCHLIST": "Investment Watchlist",
     "ADMIN_INVESTMENTS": "Investment Portal (Admin)",
+    "ADMIN_MARKETING": "Marketing Dashboard",
     "OPEN_MENU": "Open menu",
     "CLOSE_MENU": "Close menu"
   },
@@ -1804,6 +1805,225 @@
       "ADD_UPDATE": "Add update",
       "UPDATE_ADDED": "Update published.",
       "CONFIRM_DELETE": "Are you sure?"
+    }
+  },
+  "LANDING": {
+    "HERO": {
+      "ARIA": "Homepage",
+      "BADGE": "Beta — launching soon in Syria",
+      "TITLE_MAIN": "Every home has a story.",
+      "TITLE_ACCENT": "Let's start yours in Syria.",
+      "TAGLINE_1": "A small platform with a big heart, helping families find a home — real photos and direct contact, no duplicate or fake listings.",
+      "TAGLINE_2": "A platform that organizes Syria's real-estate listings into one unified record: real photos, accurate data, a single source of truth instead of dozens of scattered Facebook and WhatsApp groups.",
+      "TAGLINE_3": "Precise filters, comparable prices, and results updated live from every Syrian city — no more scrolling through scattered posts at random.",
+      "CTA_PRIMARY": "Join the waitlist",
+      "CTA_PRIMARY_ARIA": "Join the PropertyApp waitlist",
+      "CTA_GHOST": "List your property soon",
+      "CTA_GHOST_ARIA": "List your property on PropertyApp",
+      "STATS_ARIA": "Quick stats",
+      "STAT_CITIES_VALUE": "5+",
+      "STAT_CITIES_LABEL": "Syrian cities",
+      "STAT_FREE_VALUE": "Free",
+      "STAT_FREE_LABEL": "at launch",
+      "STAT_MVP_VALUE": "MVP",
+      "STAT_MVP_LABEL": "coming soon"
+    },
+    "OFFER": {
+      "EYEBROW": "Special offer for real-estate offices",
+      "PROGRESS_ARIA": "{{count}} of {{max}} joined so far",
+      "PROGRESS_LABEL": "{{count}} of {{max}} offices have joined so far",
+      "CTA": "Register your office now",
+      "CTA_ARIA": "Register your real-estate office for this offer"
+    },
+    "PROBLEM_SOLUTION": {
+      "EYEBROW": "Why PropertyApp?",
+      "TITLE": "Finding a property in Syria is still exhausting",
+      "DESC": "We hear the same complaints every day. PropertyApp aims to fix them, step by step.",
+      "PROBLEM_LABEL": "Right now",
+      "PROBLEM_ITEMS": {
+        "ITEM_1": "Searching scattered, disorganized Facebook and WhatsApp groups",
+        "ITEM_2": "Hard to tell if a listing is real or a duplicate",
+        "ITEM_3": "Most listings are missing photos and basic information",
+        "ITEM_4": "Hard to compare prices and areas in one place",
+        "ITEM_5": "Weak trust between the seeker and the owner or agency"
+      },
+      "SOLUTION_LABEL": "With PropertyApp",
+      "SOLUTION_ITEMS": {
+        "ITEM_1": "One platform that brings together Syria's listings, organized and searchable",
+        "ITEM_2": "Clear photos and consistent basic information on every listing",
+        "ITEM_3": "Filter by city, area, price, type, and purpose",
+        "ITEM_4": "Direct contact with the owner or real-estate office",
+        "ITEM_5": "Gradual verification to reduce noise and increase transparency"
+      }
+    },
+    "FEATURES": {
+      "EYEBROW": "What sets us apart",
+      "TITLE": "Everything you need in one place",
+      "ITEMS": {
+        "SEARCH": {
+          "TITLE": "Easier search",
+          "DESC": "Filter by city, area, price, property type, and purpose — for sale or rent — in seconds."
+        },
+        "INFO": {
+          "TITLE": "Clearer information",
+          "DESC": "Photos, a detailed description, approximate location, size, floors, and organized contact details — everything in its place."
+        },
+        "CONTACT": {
+          "TITLE": "Direct contact",
+          "DESC": "Reach the owner or real-estate office directly, with no complicated steps or unnecessary middlemen."
+        },
+        "SCALE": {
+          "TITLE": "Built to grow",
+          "DESC": "We're starting in Syria, serving major cities and expats, with a design built to expand into Arab and global markets."
+        }
+      }
+    },
+    "HOW": {
+      "EYEBROW": "In a few simple steps",
+      "TITLE": "How does PropertyApp work?",
+      "ARIA": "Steps to use the platform",
+      "STEPS": {
+        "STEP_1": {
+          "TITLE": "Choose a property type or city",
+          "DESC": "Decide whether you're looking to rent or buy, then choose your preferred city or area."
+        },
+        "STEP_2": {
+          "TITLE": "Browse organized listings",
+          "DESC": "Explore properties with clear photos, prices, and information, and compare options easily."
+        },
+        "STEP_3": {
+          "TITLE": "Contact or join the waitlist",
+          "DESC": "Reach out directly to the listing owner, or join the waitlist now to be the first notified at launch."
+        }
+      }
+    },
+    "FORM": {
+      "EYEBROW": "Waitlist",
+      "TITLE": "Be one of the first PropertyApp users",
+      "DESC": "Register your interest now and we'll reach out when the platform launches in your area.",
+      "ARIA": "Waitlist signup form",
+      "SUCCESS": {
+        "OFFER_TITLE": "You're registered for the offer!",
+        "OFFER_MSG": "Great! We've reserved you a spot in the \"first 100 offices\" offer. We'll follow up soon with the details.",
+        "NO_OFFER_TITLE": "Registration successful",
+        "NO_OFFER_MSG": "Unfortunately the limited offer filled up before your registration arrived, but your interest has been registered — we'll reach out when the platform launches.",
+        "PLAIN_TITLE": "Registration successful!",
+        "PLAIN_MSG": "Thank you — your interest has been registered. We'll send you updates when PropertyApp launches.",
+        "RESET_BTN": "Register someone else"
+      },
+      "FULLNAME_LABEL": "Full name",
+      "FULLNAME_PLACEHOLDER": "e.g. Ahmad Mohammad",
+      "PHONE_LABEL": "Phone or WhatsApp number",
+      "PHONE_PLACEHOLDER": "e.g. 0933123456 or +963933123456",
+      "PHONE_HINT": "A WhatsApp number works too",
+      "USERTYPE_LABEL": "I am…",
+      "USERTYPE_PLACEHOLDER": "Choose what applies to you",
+      "USER_TYPES": {
+        "RENTER": "Looking to rent",
+        "BUYER": "Looking to buy",
+        "OWNER": "I want to list a property",
+        "AGENCY": "Real-estate office",
+        "INVESTOR": "Investor / expat"
+      },
+      "CITY_LABEL": "City or area",
+      "CITY_PLACEHOLDER": "Choose your city or area",
+      "CITIES": {
+        "DAMASCUS": "Damascus",
+        "ALEPPO": "Aleppo",
+        "HOMS": "Homs",
+        "HAMA": "Hama",
+        "LATAKIA": "Latakia",
+        "TARTUS": "Tartus",
+        "SWEIDA": "As-Sweida",
+        "DARAA": "Daraa",
+        "QUNEITRA": "Quneitra",
+        "DEIR_EZZOR": "Deir ez-Zor",
+        "RAQQA": "Raqqa",
+        "HASAKA": "Al-Hasakah",
+        "IDLIB": "Idlib",
+        "DAMASCUS_COUNTRYSIDE": "Rif Dimashq",
+        "OTHER": "Other area"
+      },
+      "NOTES_LABEL": "Additional notes",
+      "NOTES_OPTIONAL": "optional",
+      "NOTES_PLACEHOLDER": "e.g. Looking for a 2-bedroom apartment in Mazzeh under $200",
+      "REQUIRED_ARIA": "required",
+      "SUBMIT_ARIA": "Submit waitlist signup",
+      "SUBMIT_LOADING": "Registering…",
+      "SUBMIT_TEXT": "Join the waitlist now",
+      "PRIVACY_NOTE": "We won't share your data with third parties or send unsolicited messages.",
+      "ERRORS": {
+        "REQUIRED": "This field is required.",
+        "MINLENGTH": "Too short (minimum {{min}} characters).",
+        "MAXLENGTH": "You've exceeded the maximum length.",
+        "PHONE": "Invalid phone number. Example: 0933123456 or +963933123456",
+        "GENERIC": "Invalid value."
+      }
+    },
+    "TRUST": {
+      "EYEBROW": "Full transparency",
+      "TITLE": "We're building trust step by step",
+      "DESC": "We're in our first MVP stage. Here's what we commit to, and what's still in progress.",
+      "ITEMS": {
+        "PHOTOS": {
+          "TITLE": "Real photos required",
+          "DESC": "We encourage property owners to upload real photos of the property, and don't accept fake or borrowed images."
+        },
+        "CONTACT": {
+          "TITLE": "Clear contact details",
+          "DESC": "Every listing must include accurate contact information. We're here to connect you with the other side."
+        },
+        "CAUTION": {
+          "TITLE": "Don't pay before verifying",
+          "DESC": "We always recommend visiting the property in person and verifying documents before paying anything. The platform facilitates contact — it doesn't guarantee the deal."
+        },
+        "IMPROVING": {
+          "TITLE": "Always improving",
+          "DESC": "Listing verification will keep improving over time. We're upfront about being in an early stage."
+        }
+      }
+    },
+    "FAQ": {
+      "EYEBROW": "Questions",
+      "TITLE": "Frequently asked questions",
+      "ITEMS": {
+        "LAUNCH": {
+          "Q": "When will the platform launch?",
+          "A": "We're currently building the MVP. Waitlist members will be the first to receive a launch invite."
+        },
+        "FREE": {
+          "Q": "Is the service free at first?",
+          "A": "Yes — we plan for the service to be free in its first stage for both seekers and property owners, with the possibility of premium plans later."
+        },
+        "OWNER": {
+          "Q": "Can property owners register now?",
+          "A": "Absolutely. Register your interest through the form and choose \"I want to list a property\" — we'll reach out once listing opens."
+        },
+        "AGENCY": {
+          "Q": "Can real-estate offices add their listings?",
+          "A": "Yes, we welcome real-estate offices. Choose \"Real-estate office\" in the form and we'll follow up with partnership details."
+        },
+        "VERIFIED": {
+          "Q": "Are the listings verified and safe?",
+          "A": "We're working on clearer information and fewer random listings. The platform is still in development, and verification will keep improving. As with any real-estate deal, we always recommend verifying in person before deciding."
+        },
+        "SYRIA_ONLY": {
+          "Q": "Is the platform only for Syria?",
+          "A": "We're starting in Syria, but the design supports expanding into Arab and global markets later, especially to serve Syrian expats everywhere."
+        }
+      }
+    },
+    "FINAL_CTA": {
+      "TITLE": "Be one of the first PropertyApp users",
+      "DESC": "Help us build a more organized real-estate experience in Syria. Your voice will help shape the platform to come.",
+      "BTN": "Join the waitlist now",
+      "BTN_ARIA": "Join the PropertyApp waitlist"
+    },
+    "FOOTER": {
+      "TAGLINE": "A digital real-estate platform · Syria first",
+      "RIGHTS": "All rights reserved",
+      "PRIVACY": "Privacy Policy",
+      "TERMS": "Terms of Service"
     }
   }
 }
