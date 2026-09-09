@@ -514,6 +514,33 @@
     </div>
   </div>
 
+  <!--
+    Mobile Overlay — must be a sibling of .mobile-drawer INSIDE this same
+    <header>, not a sibling of <header> itself (as it was before this fix).
+    Root cause: `.navbar` (this <header>) is `position: sticky`, which per
+    spec unconditionally creates a new stacking context for its descendants
+    (independent of z-index, same rule as `position: fixed`). .mobile-drawer
+    lives inside that context, so its `z-index: 1200` only ever competed
+    against other children of <header> — never against a sibling of
+    <header> itself. With the overlay previously placed AFTER </header> at
+    the host root, it was compared to <header> as a whole (z-index 1150 vs
+    1000) and won, painting on top of literally everything inside the
+    drawer and swallowing every touch/click meant for the drawer's links —
+    confirmed live via elementFromPoint() landing on .mobile-overlay at the
+    coordinates of a drawer link. Moving the overlay in here puts both
+    elements in the SAME stacking context (the header's), where
+    .mobile-drawer's 1200 correctly outranks .mobile-overlay's 1150.
+    position: fixed's containing block is unaffected by this move (no
+    transform/filter/perspective/contain on any ancestor), so this is a
+    pure stacking-context fix with no visual/layout side effects.
+  -->
+  <div
+    class="mobile-overlay"
+    [class.mobile-overlay--visible]="mobileMenuOpen"
+    (click)="closeMobileMenu()"
+    aria-hidden="true"
+  ></div>
+
   <!-- Mobile Drawer -->
   <div
     #mobileDrawerRef
@@ -754,11 +781,3 @@
     </nav>
   </div>
 </header>
-
-<!-- Mobile Overlay -->
-<div
-  class="mobile-overlay"
-  [class.mobile-overlay--visible]="mobileMenuOpen"
-  (click)="closeMobileMenu()"
-  aria-hidden="true"
-></div>

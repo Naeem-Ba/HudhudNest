@@ -1,6 +1,7 @@
 {
   "COMMON": {
     "SAVE": "Speichern",
+    "CLOSE": "Schließen",
     "BACK": "Zurück",
     "LOADING": "Wird geladen...",
     "PLEASE_SELECT": "Bitte auswählen",
@@ -464,6 +465,24 @@
     "FEATURE_LISTING": "Inserat hervorheben",
     "CONFIRM_AVAILABILITY_SUCCESS": "Bestätigt — dieses Inserat ist weiterhin verfügbar.",
     "CONFIRM_AVAILABILITY_ERROR": "Verfügbarkeit konnte nicht bestätigt werden. Bitte versuchen Sie es erneut."
+  },
+  "SHARE": {
+    "BUTTON_LABEL": "Teilen",
+    "BUTTON_ARIA": "Dieses Inserat teilen",
+    "SHEET_TITLE": "Inserat teilen",
+    "SHEET_HINT": "Wähle eine Freigabeoption",
+    "NATIVE": "Über Gerät teilen",
+    "FACEBOOK": "Facebook",
+    "WHATSAPP": "WhatsApp",
+    "TELEGRAM": "Telegram",
+    "INSTAGRAM": "Instagram",
+    "COPY_LINK": "Link kopieren",
+    "COPY_LINK_SUCCESS": "Link des Inserats kopiert",
+    "COPY_LINK_ERROR": "Der Link konnte nicht kopiert werden. Bitte versuchen Sie es erneut.",
+    "NATIVE_NOT_SUPPORTED": "Ihr Browser unterstützt kein direktes Teilen — versuchen Sie eine andere Option.",
+    "ERROR_POPUP_BLOCKED": "Das Freigabefenster konnte nicht geöffnet werden. Prüfen Sie die Pop-up-Blocker-Einstellungen Ihres Browsers.",
+    "ERROR_NOT_SHAREABLE": "Dieses Inserat kann nicht mehr geteilt werden.",
+    "ERROR_GENERIC": "Teilen fehlgeschlagen. Bitte versuchen Sie es erneut."
   },
   "PROPERTY": {
     "MODE_RENT": "Zu vermieten",

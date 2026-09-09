@@ -12,6 +12,7 @@ import { NativeBackButtonService } from './core/services/native-back-button.serv
 import { ThemeService } from './core/services/theme.service';
 import { NotificationsApiService } from './core/api/notifications-api.service';
 import { ToastService } from './shared/services/toast.service';
+import { AttributionContextService } from './core/sharing/attribution-context.service';
 
 @Component({
   selector: 'app-root',
@@ -31,6 +32,7 @@ export class AppComponent {
   private readonly notificationsApi = inject(NotificationsApiService);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
+  private readonly attributionContext = inject(AttributionContextService);
 
   constructor(
     private readonly authService: AuthService,
@@ -48,6 +50,15 @@ export class AppComponent {
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe(event => {
         this.showAddButton = event.urlAfterRedirects.startsWith('/wohnungen');
+
+        // ✅ UTM / Attribution (Phase 2): capture happens here — the app root — for EVERY
+        // route, not inside PropertyDetailPage or any other feature page. A shared property
+        // link is only the most common landing page; wiring capture to the router instead of
+        // to one page means it keeps working if/when other pages start being shared too, and
+        // keeps this entirely out of any single feature component (same separation-of-concerns
+        // rule Phase 1 applied to the share button itself). See AttributionContextService.
+        this.attributionContext.captureFromUrl(window.location.href);
+        this.attributionContext.stripUtmParamsFromVisibleUrl();
       });
 
     // ✅ إصلاح جذري: خدمة الإشعارات اللحظية (SignalR) والـ Toast والعداد كانت

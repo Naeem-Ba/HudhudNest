@@ -1,6 +1,7 @@
 {
   "COMMON": {
     "SAVE": "حفظ",
+    "CLOSE": "إغلاق",
     "BACK": "رجوع",
     "LOADING": "جارٍ التحميل...",
     "PLEASE_SELECT": "يرجى الاختيار",
@@ -464,6 +465,24 @@
     "FEATURE_LISTING": "تمييز الإعلان",
     "CONFIRM_AVAILABILITY_SUCCESS": "تم تأكيد أن الإعلان لا يزال متاحاً.",
     "CONFIRM_AVAILABILITY_ERROR": "تعذر تأكيد التوفر. حاول مجدداً."
+  },
+  "SHARE": {
+    "BUTTON_LABEL": "مشاركة",
+    "BUTTON_ARIA": "مشاركة هذا الإعلان",
+    "SHEET_TITLE": "مشاركة الإعلان",
+    "SHEET_HINT": "اختر طريقة المشاركة",
+    "NATIVE": "مشاركة الجهاز",
+    "FACEBOOK": "Facebook",
+    "WHATSAPP": "WhatsApp",
+    "TELEGRAM": "Telegram",
+    "INSTAGRAM": "Instagram",
+    "COPY_LINK": "نسخ الرابط",
+    "COPY_LINK_SUCCESS": "تم نسخ رابط الإعلان",
+    "COPY_LINK_ERROR": "تعذر نسخ الرابط. حاول مرة أخرى.",
+    "NATIVE_NOT_SUPPORTED": "متصفحك لا يدعم المشاركة المباشرة — جرّب أحد الخيارات الأخرى.",
+    "ERROR_POPUP_BLOCKED": "تعذر فتح نافذة المشاركة. تحقق من إعدادات حظر النوافذ المنبثقة في متصفحك.",
+    "ERROR_NOT_SHAREABLE": "لم يعد هذا الإعلان متاحاً للمشاركة.",
+    "ERROR_GENERIC": "تعذرت المشاركة. حاول مرة أخرى."
   },
   "PROPERTY": {
     "MODE_RENT": "للإيجار",

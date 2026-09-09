@@ -190,6 +190,9 @@
               class="detail-fav-btn"
               [propertyId]="p.id"
             ></app-favorite-toggle-button>
+            <!-- Social Sharing & Distribution — hides itself when the property has no usable
+                 share channel (e.g. not public); see PropertyShareButtonComponent. -->
+            <app-property-share-button [property]="p"></app-property-share-button>
             <!-- Phase-0, Task 2: owner-only "still available?" confirmation.
                  Backend also enforces ownership (403 for anyone else) — this
                  *ngIf is a UX convenience, not the actual security boundary. -->
@@ -273,7 +276,7 @@
           />
           <div class="owner-card__info">
             <p class="owner-card__name">{{ owner.displayName }}</p>
-            <a *ngIf="owner.phoneNumber" class="owner-card__phone" [href]="'tel:' + owner.phoneNumber">
+            <a *ngIf="owner.phoneNumber" class="owner-card__phone" [href]="'tel:' + owner.phoneNumber" (click)="onOwnerPhoneClick()">
               {{ owner.phoneNumber }}
             </a>
             <!-- ✅ إضافة: رابط الملف الشخصي العام (تقييمات + إعلانات نشطة) -->

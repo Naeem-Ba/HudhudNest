@@ -37,7 +37,8 @@ const values = {
   APPLE_REDIRECT_URI: readEnv('APPLE_REDIRECT_URI'),
   API_URL: readEnv('API_URL'),
   BASE_URL: readEnv('BASE_URL', 'API_ORIGIN'),
-  SIGNALR_URL: readEnv('SIGNALR_URL', 'NOTIFICATION_HUB_URL')
+  SIGNALR_URL: readEnv('SIGNALR_URL', 'NOTIFICATION_HUB_URL'),
+  SITE_URL: readEnv('SITE_URL')
 };
 
 function escape(value) {

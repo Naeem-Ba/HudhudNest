@@ -1,6 +1,7 @@
 {
   "COMMON": {
     "SAVE": "Save",
+    "CLOSE": "Close",
     "BACK": "Back",
     "LOADING": "Loading...",
     "PLEASE_SELECT": "Please select",
@@ -465,6 +466,24 @@
     "FEATURE_LISTING": "Feature listing",
     "CONFIRM_AVAILABILITY_SUCCESS": "Confirmed — this listing is still available.",
     "CONFIRM_AVAILABILITY_ERROR": "Could not confirm availability. Please try again."
+  },
+  "SHARE": {
+    "BUTTON_LABEL": "Share",
+    "BUTTON_ARIA": "Share this listing",
+    "SHEET_TITLE": "Share listing",
+    "SHEET_HINT": "Choose how to share",
+    "NATIVE": "Share via device",
+    "FACEBOOK": "Facebook",
+    "WHATSAPP": "WhatsApp",
+    "TELEGRAM": "Telegram",
+    "INSTAGRAM": "Instagram",
+    "COPY_LINK": "Copy link",
+    "COPY_LINK_SUCCESS": "Listing link copied",
+    "COPY_LINK_ERROR": "Could not copy the link. Please try again.",
+    "NATIVE_NOT_SUPPORTED": "Your browser doesn't support direct sharing — try another option.",
+    "ERROR_POPUP_BLOCKED": "Could not open the share window. Check your browser's pop-up blocker settings.",
+    "ERROR_NOT_SHAREABLE": "This listing is no longer available to share.",
+    "ERROR_GENERIC": "Couldn't share. Please try again."
   },
   "PROPERTY": {
     "MODE_RENT": "For rent",
