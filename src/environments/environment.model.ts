@@ -16,6 +16,18 @@ export interface AppEnvironment {
   /** SignalR notification hub URL. */
   signalRUrl: string;
 
+  /**
+   * Public, canonical origin of THIS Angular app (no trailing slash), used to build shareable
+   * property links (Social Sharing & Distribution feature — see PropertyShareUrlService).
+   * Deliberately separate from baseUrl/apiBaseUrl above, which point at the .NET backend, a
+   * different origin entirely in staging/production (see frontend-repo-location memory).
+   * Never falls back to a hardcoded default here: local dev has no public origin to point a
+   * shared link at, so PropertyShareUrlService falls back to window.location.origin itself
+   * (reflecting whatever the developer is actually running on) rather than this being empty
+   * silently becoming "https://realestateworld.world" in a context where that would be wrong.
+   */
+  siteUrl: string;
+
   /** Google OAuth Client ID. Empty value disables Google login button. */
   googleClientId: string;
 
@@ -65,6 +77,10 @@ export function readSignalRUrlFromProcessEnv(): string | undefined {
   return readProcessEnv('SIGNALR_URL');
 }
 
+export function readSiteUrlFromProcessEnv(): string | undefined {
+  return readProcessEnv('SITE_URL');
+}
+
 export function withoutTrailingSlash(value: string): string {
   return value.trim().replace(/\/+$/, '');
 }
@@ -84,6 +100,7 @@ export function createAppEnvironment(config: {
   apiBaseUrl: string;
   baseUrl?: string;
   signalRUrl?: string;
+  siteUrl?: string;
   googleClientId?: string;
   appleClientId?: string;
   appleRedirectUri?: string;
@@ -91,11 +108,13 @@ export function createAppEnvironment(config: {
   const apiBaseUrl = normalizeApiBaseUrl(config.apiBaseUrl);
   const baseUrl = withoutTrailingSlash(config.baseUrl ?? backendOriginFromApiBaseUrl(apiBaseUrl));
   const signalRUrl = withoutTrailingSlash(config.signalRUrl ?? `${baseUrl}/notificationHub`);
+  const siteUrl = config.siteUrl ? withoutTrailingSlash(config.siteUrl) : '';
 
   return {
     production: config.production,
     environmentName: config.environmentName,
     baseUrl,
+    siteUrl,
     apiBaseUrl,
     apiUrl: apiBaseUrl,
     signalRUrl,

@@ -47,9 +47,12 @@ import { ImageFallbackDirective } from '../../shared/directives/image-fallback.d
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { FavoriteToggleButtonComponent } from '../../shared/ui/favorite-toggle-button.component';
+import { PropertyShareButtonComponent } from '../../shared/ui/property-share-button.component';
 import { ToastService } from '../../shared/services/toast.service';
 import { OverlayBackHandlerService } from '../../core/services/overlay-back-handler.service';
 import { ScrollLockService } from '../../core/services/scroll-lock.service';
+import { PropertyMetaService } from '../../core/sharing/property-meta.service';
+import { PropertyAttributionTrackingService } from '../../core/sharing/property-attribution-tracking.service';
 
 @Component({
   selector: 'app-property-detail',
@@ -64,7 +67,8 @@ import { ScrollLockService } from '../../core/services/scroll-lock.service';
     ImageFallbackDirective,
     LoadingSpinnerComponent,
     EmptyStateComponent,
-    FavoriteToggleButtonComponent
+    FavoriteToggleButtonComponent,
+    PropertyShareButtonComponent
   ],
   templateUrl: './property-detail.page.html',
   styleUrls: ['./property-detail.page.scss']
@@ -88,6 +92,8 @@ export class PropertyDetailPage implements OnInit {
   private readonly fb            = inject(FormBuilder);
   private readonly overlayBackHandler = inject(OverlayBackHandlerService);
   private readonly scrollLock = inject(ScrollLockService);
+  private readonly propertyMeta = inject(PropertyMetaService);
+  private readonly attributionTracking = inject(PropertyAttributionTrackingService);
 
   // ── State Signals ─────────────────────────────────────────────────────
   readonly property       = signal<Property | null>(null);
@@ -403,6 +409,14 @@ export class PropertyDetailPage implements OnInit {
           this.currentIndex.set(0);
           this.loading.set(false);
           this.loadOwnerProfile(data.ownerId);
+          // Social Sharing & Distribution (section 6) — dynamic <title>/OG/Twitter/canonical
+          // tags for this specific listing. See PropertyMetaService's doc comment for why this
+          // alone does not yet cover crawlers that don't execute JavaScript.
+          this.propertyMeta.applyTo(data);
+          // UTM / Attribution (Phase 2) — a real page view, never fired merely because the
+          // Share button was tapped. Deduplicated per property per page session internally
+          // (see PropertyAttributionTrackingService.trackView).
+          this.attributionTracking.trackView(data.id);
         },
         error: () => {
           this.error.set('PROPERTY_DETAIL.LOAD_ERROR');
@@ -566,6 +580,9 @@ export class PropertyDetailPage implements OnInit {
           this.showVisitForm.set(false);
           this.visitForm.reset();
           this.savingVisit.set(false);
+          // UTM / Attribution (Phase 2) — the closest equivalent this product has to a "Lead"
+          // (property_lead_created in the feature spec); see PropertyAttributionTrackingService.
+          this.attributionTracking.trackLead(request.propertyId);
         },
         error: () => {
           this.toast.show(this.translate.instant('VISIT.ERROR'), 'error');
@@ -631,12 +648,24 @@ export class PropertyDetailPage implements OnInit {
           this.showMessageForm.set(false);
           this.messageDraft = '';
           this.savingMessage.set(false);
+          // UTM / Attribution (Phase 2) — "contact" half of the Facebook → Property → Visit →
+          // Contact funnel (section 13).
+          this.attributionTracking.trackMessageSent(property.id);
         },
         error: () => {
           this.toast.show(this.translate.instant('MESSAGES.SEND_ERROR'), 'error');
           this.savingMessage.set(false);
         }
       });
+  }
+
+  // ── UTM / Attribution (Phase 2): the owner's `tel:` link is a plain anchor — this only
+  // records that it was tapped, it never intercepts/prevents the actual `tel:` navigation. ──
+  onOwnerPhoneClick(): void {
+    const property = this.property();
+    if (property?.id) {
+      this.attributionTracking.trackPhoneClick(property.id);
+    }
   }
 
   // ── Review ────────────────────────────────────────────────────────────

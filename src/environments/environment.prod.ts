@@ -4,10 +4,16 @@ import {
   readApiUrlFromProcessEnv,
   readBaseUrlFromProcessEnv,
   readProcessEnv,
-  readSignalRUrlFromProcessEnv
+  readSignalRUrlFromProcessEnv,
+  readSiteUrlFromProcessEnv
 } from './environment.model';
 
 const apiBaseUrl = readApiUrlFromProcessEnv() || 'https://wohnungen-api.onrender.com/api';
+
+// عقار تيك / Real Estate World — النطاق العام الحقيقي (raiseNavigation في
+// capacitor.config.ts يستخدم نفس النطاق). هذا هو النطاق الذي تُبنى عليه روابط
+// المشاركة العامة (canonical) — راجع PropertyShareUrlService.
+const siteUrl = readSiteUrlFromProcessEnv() || 'https://realestateworld.world';
 
 // يجب أن يطابق نطاق appleRedirectUri أحد الأنماط المدرجة ضمن
 // server.allowNavigation في capacitor.config.ts، وإلا فسيرفض الغلاف
@@ -23,6 +29,7 @@ export const environment: AppEnvironment = createAppEnvironment({
   apiBaseUrl,
   baseUrl: readBaseUrlFromProcessEnv(),
   signalRUrl: readSignalRUrlFromProcessEnv(),
+  siteUrl,
   googleClientId: readProcessEnv('GOOGLE_CLIENT_ID') ?? '',
   appleClientId: readProcessEnv('APPLE_CLIENT_ID') ?? '',
   appleRedirectUri,
