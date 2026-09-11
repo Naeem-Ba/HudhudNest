@@ -9,6 +9,18 @@
     </a>
   </header>
 
+  <!-- Quota summary: "X of Y" across every listing type that shares the plan quota
+       (Property + Short-Stay — see ActiveListingCounter on the backend). -->
+  <div class="quota-summary" *ngIf="!loading() && planListingLimit() !== undefined" role="status">
+    <span class="quota-summary__icon" aria-hidden="true">📊</span>
+    <ng-container *ngIf="planListingLimit() !== null; else unlimitedQuota">
+      {{ 'MY_LISTINGS.QUOTA_USED' | translate: { used: totalActiveListings(), limit: planListingLimit() } }}
+    </ng-container>
+    <ng-template #unlimitedQuota>
+      {{ 'MY_LISTINGS.QUOTA_UNLIMITED' | translate: { used: totalActiveListings() } }}
+    </ng-template>
+  </div>
+
   <!-- Skeleton -->
   <app-skeleton-card-grid *ngIf="loading()" [count]="4" />
 

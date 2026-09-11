@@ -82,7 +82,7 @@
               #msgCtrl="ngModel"
               required
               minlength="10"
-              [placeholder]="'KONTAKT.message_placeholder' | translate"
+              [placeholder]="messagePlaceholderKey | translate"
             ></textarea>
             <p class="field-error" *ngIf="msgCtrl.invalid && (msgCtrl.touched || submitted)">
               ⚠️ {{ msgCtrl.errors?.['required'] ? ('VALIDATION.REQUIRED' | translate) : ('KONTAKT.msgCtrl' | translate) }}

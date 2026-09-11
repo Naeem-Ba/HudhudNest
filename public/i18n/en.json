@@ -339,6 +339,8 @@
   },
   "KONTAKT": {
     "PLAN_SUBJECT": "Subscription plan enquiry: {{plan}}",
+    "SERVICE_PROVIDER_SUBJECT": "Request to join as a service provider",
+    "SERVICE_PROVIDER_MESSAGE_PLACEHOLDER": "Tell us about your business: business name, service type (moving, cleaning, photography...), a phone number, and your service area. Our team will reach out to review and activate your account.",
     "title": "Contact us",
     "subtitle": "Send your message and we will reply as soon as possible.",
     "name": "Full name",
@@ -679,6 +681,8 @@
   "MY_LISTINGS": {
     "TITLE": "My listings",
     "ADD_NEW": "Add new property",
+    "QUOTA_USED": "You have {{used}} of {{limit}} listings allowed on your plan",
+    "QUOTA_UNLIMITED": "You have {{used}} listings — your plan allows an unlimited number",
     "EMPTY_TITLE": "No listings",
     "EMPTY_MESSAGE": "You have not added any properties yet.",
     "LOAD_ERROR": "Unable to load your listings.",
@@ -1011,6 +1015,11 @@
     "EYEBROW": "AqarTech Services",
     "TITLE": "My Service Requests",
     "SUBTITLE": "Track the status of the services you requested on your properties.",
+    "BECOME_PROVIDER": {
+      "TITLE": "Do you offer a real-estate service?",
+      "SUBTITLE": "Join as a service provider (moving, cleaning, photography...) and list your services in the marketplace.",
+      "CTA": "Apply now"
+    },
     "FILTER": "Filter by status",
     "EMPTY": "No service requests yet.",
     "LOAD_ERROR": "Could not load service requests.",

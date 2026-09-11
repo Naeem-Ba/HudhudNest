@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { take } from 'rxjs';
 
 import { ContactService } from '../../core/api/contact.service';
+import { ProfileService } from '../../core/api/profile.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { PlanTier } from '../../core/models/subscription-plan.model';
 
@@ -31,8 +33,19 @@ export class KontaktComponent implements OnInit {
   success = false;
   submitted = false;
 
+  /**
+   * ✅ إضافة: بوابة "اطلب أن تصبح مزوّد خدمة" — الباك اند يُبقي إنشاء ServiceProvider
+   * (ServiceProvidersController.Create) صلاحية Admin فقط عمداً (تسجيل موثَّق لا ذاتي)،
+   * فلا يوجد ولا ينبغي أن يوجد Endpoint لإنشاء ذاتي. بدل بناء تدفّق موافقة/رفض جديد
+   * بالكامل، هذا يعيد استخدام نموذج التواصل الموجود فعلاً (ContactController، الذي
+   * تراجعه الإدارة أصلاً عبر GET /api/contact) بنفس آلية Subject Prefill المستخدمة
+   * أعلاه لروابط /pricing?plan=. لا حقول قاعدة بيانات جديدة، لا Endpoint جديد.
+   */
+  messagePlaceholderKey = 'KONTAKT.message_placeholder';
+
   constructor(
     private readonly contactService: ContactService,
+    private readonly profileService: ProfileService,
     private readonly translate: TranslateService,
     private readonly toast: ToastService,
     private readonly route: ActivatedRoute
@@ -45,6 +58,25 @@ export class KontaktComponent implements OnInit {
    * contact route is the real end of the subscription flow today.
    */
   ngOnInit(): void {
+    const intent = this.route.snapshot.queryParamMap.get('intent');
+    if (intent === 'service-provider') {
+      this.model.Subject = this.translate.instant('KONTAKT.SERVICE_PROVIDER_SUBJECT');
+      this.messagePlaceholderKey = 'KONTAKT.SERVICE_PROVIDER_MESSAGE_PLACEHOLDER';
+
+      // Best-effort prefill for an already logged-in visitor — profile$ is a cached,
+      // BehaviorSubject-backed stream (already populated on login), so take(1) reads
+      // whatever is there right now without triggering its own HTTP call.
+      this.profileService.profile$.pipe(take(1)).subscribe(profile => {
+        if (!profile) {
+          return;
+        }
+        this.model.Email = profile.Email ?? this.model.Email;
+        this.model.Name = profile.DisplayName || profile.Name || this.model.Name;
+      });
+
+      return;
+    }
+
     const raw = (this.route.snapshot.queryParamMap.get('plan') ?? '').toLowerCase();
     if (!PLAN_TIERS.includes(raw as PlanTier)) {
       return;

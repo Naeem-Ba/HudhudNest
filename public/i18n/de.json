@@ -338,6 +338,8 @@
   },
   "KONTAKT": {
     "PLAN_SUBJECT": "Anfrage zum Abo-Paket: {{plan}}",
+    "SERVICE_PROVIDER_SUBJECT": "Anfrage zur Aufnahme als Dienstleister",
+    "SERVICE_PROVIDER_MESSAGE_PLACEHOLDER": "Erzähl uns von deinem Geschäft: Firmenname, Art der Dienstleistung (Umzug, Reinigung, Fotografie ...), eine Telefonnummer und dein Einsatzgebiet. Unser Team meldet sich zur Prüfung und Freischaltung bei dir.",
     "title": "Kontakt",
     "subtitle": "Senden Sie uns Ihre Nachricht. Wir antworten so schnell wie möglich.",
     "name": "Vollständiger Name",
@@ -678,6 +680,8 @@
   "MY_LISTINGS": {
     "TITLE": "Meine Anzeigen",
     "ADD_NEW": "Neue Immobilie hinzufügen",
+    "QUOTA_USED": "Du hast {{used}} von {{limit}} Anzeigen, die dein Paket erlaubt",
+    "QUOTA_UNLIMITED": "Du hast {{used}} Anzeigen — dein Paket erlaubt eine unbegrenzte Anzahl",
     "EMPTY_TITLE": "Keine Anzeigen",
     "EMPTY_MESSAGE": "Sie haben noch keine Immobilien hinzugefügt.",
     "LOAD_ERROR": "Ihre Anzeigen konnten nicht geladen werden.",
@@ -1010,6 +1014,11 @@
     "EYEBROW": "AqarTech Services",
     "TITLE": "Meine Serviceanfragen",
     "SUBTITLE": "Verfolgen Sie den Status der von Ihnen angefragten Services für Ihre Immobilien.",
+    "BECOME_PROVIDER": {
+      "TITLE": "Bietest du eine Immobilien-Dienstleistung an?",
+      "SUBTITLE": "Werde Dienstleister (Umzug, Reinigung, Fotografie ...) und biete deine Services im Marktplatz an.",
+      "CTA": "Jetzt bewerben"
+    },
     "FILTER": "Nach Status filtern",
     "EMPTY": "Noch keine Serviceanfragen.",
     "LOAD_ERROR": "Serviceanfragen konnten nicht geladen werden.",

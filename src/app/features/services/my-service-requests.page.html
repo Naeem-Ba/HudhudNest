@@ -8,6 +8,18 @@
     <button type="button" class="btn secondary" (click)="load()" [disabled]="loading()">{{ 'COMMON.REFRESH' | translate }}</button>
   </header>
 
+  <!-- ✅ إضافة: بوابة "اطلب أن تصبح مزوّد خدمة" — يعيد استخدام نموذج التواصل الموجود
+       أصلاً (ContactController)، وليس إنشاءً ذاتياً مباشراً؛ الإدارة تراجع الطلب ثم
+       تُفعّله يدوياً عبر ServiceProvidersController.Create. -->
+  <a routerLink="/kontakt" [queryParams]="{ intent: 'service-provider' }" class="become-provider-banner">
+    <span aria-hidden="true">🛠️</span>
+    <span class="become-provider-banner__text">
+      <strong>{{ 'SERVICE_REQUESTS.BECOME_PROVIDER.TITLE' | translate }}</strong>
+      <span>{{ 'SERVICE_REQUESTS.BECOME_PROVIDER.SUBTITLE' | translate }}</span>
+    </span>
+    <span class="become-provider-banner__cta">{{ 'SERVICE_REQUESTS.BECOME_PROVIDER.CTA' | translate }} ←</span>
+  </a>
+
   <div class="filters" role="group" [attr.aria-label]="'SERVICE_REQUESTS.FILTER' | translate">
     <button *ngFor="let status of statuses" type="button" [class.active]="selectedStatus() === status" (click)="selectStatus(status)">
       {{ ('SERVICE_REQUESTS.STATUS.' + status.toUpperCase()) | translate }}

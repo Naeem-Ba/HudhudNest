@@ -14,6 +14,8 @@ import {
 
 import { environment } from '../../../environments/environment';
 import { normalizeAuthTokenResponse } from '../models/auth.model';
+import { AdminGuard } from '../guards/admin-guard';
+import { AuthGuard } from '../guards/auth-guard';
 import { CsrfTokenService } from '../services/csrf-token.service';
 import { TokenStorageService } from '../services/token-storage.service';
 
@@ -68,6 +70,41 @@ function withBearerToken(req: Parameters<HttpInterceptorFn>[0], token: string) {
   });
 }
 
+/**
+ * True when the route the user is CURRENTLY looking at (not the route the failed request
+ * happened to belong to — a background call from a public page counts as "not required")
+ * is itself gated by AuthGuard/AdminGuard. Walks the whole activated-route chain, not just
+ * the leaf, since a guard can sit on a parent route and apply to every child.
+ */
+function currentRouteRequiresAuth(router: Router): boolean {
+  let route = router.routerState.snapshot.root;
+
+  while (route) {
+    const guards = route.routeConfig?.canActivate ?? [];
+    if (guards.includes(AuthGuard) || guards.includes(AdminGuard)) {
+      return true;
+    }
+
+    if (!route.firstChild) {
+      break;
+    }
+    route = route.firstChild;
+  }
+
+  return false;
+}
+
+/**
+ * Bug fix: this used to force-navigate to /auth/login on ANY 401 a refresh could not fix —
+ * even one from a background call made incidentally on a PUBLIC page (e.g. loading favorite
+ * ids while an anonymous visitor, or one with a stale/expired token, browses /short-stay or
+ * /properties/:id). A public page must never be interrupted by a login redirect just because
+ * some unrelated authenticated call in the background failed. The token/CSRF cache is still
+ * always cleared — an invalid token must not keep being sent — but the redirect itself is now
+ * conditional on the CURRENT route actually requiring a session (see
+ * currentRouteRequiresAuth), matching what AuthGuard/AdminGuard would have done had the user
+ * navigated there fresh with no token at all.
+ */
 function clearAndRedirect(
   tokenStorage: TokenStorageService,
   router: Router,
@@ -76,7 +113,11 @@ function clearAndRedirect(
   tokenStorage.clear();
   csrfTokenService.clear();
 
-  if (router.url !== '/auth/login' && router.url !== '/login') {
+  if (
+    currentRouteRequiresAuth(router) &&
+    router.url !== '/auth/login' &&
+    router.url !== '/login'
+  ) {
     void router.navigateByUrl('/auth/login');
   }
 }

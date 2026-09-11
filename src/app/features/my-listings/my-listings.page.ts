@@ -3,6 +3,7 @@ import {
   Component,
   DestroyRef,
   OnInit,
+  computed,
   inject,
   signal
 } from '@angular/core';
@@ -10,8 +11,12 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { filter, take } from 'rxjs';
 
 import { PropertyApiService } from '../../core/api/property-api.service';
+import { ShortStayListingApiService } from '../../core/api/short-stay-listing-api.service';
+import { ProfileService } from '../../core/api/profile.service';
+import { PlansApiService } from '../../core/api/plans-api.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { Property } from '../../core/models/property.model';
 import { SkeletonCardGridComponent } from '../../shared/ui/skeleton-card-grid.component';
@@ -35,6 +40,9 @@ import { ImageFallbackDirective } from '../../shared/directives/image-fallback.d
 })
 export class MyListingsPage implements OnInit {
   private readonly api = inject(PropertyApiService);
+  private readonly shortStayApi = inject(ShortStayListingApiService);
+  private readonly profile = inject(ProfileService);
+  private readonly plansApi = inject(PlansApiService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
@@ -50,8 +58,56 @@ export class MyListingsPage implements OnInit {
   readonly fallbackImage = '/images/no-image.svg';
   private readonly now = Date.now();
 
+  /**
+   * ✅ إضافة: مؤشر "X من Y إعلان" — كان مفقوداً بالكامل من واجهة المستخدم العادي (فقط
+   * لوحة الأدمن كانت تعرض listingLimit). يطابق منطق الباك اند الموحَّد
+   * (ActiveListingCounter: Property + ShortStayListing، الحالة Expired مستثناة فقط —
+   * راجع CountActiveListingsByOwnerAsync) حتى لو كانت هذه الصفحة تعرض عقارات البيع/
+   * الإيجار فقط؛ إعلانات الإقامة القصيرة تُدار من صفحتها الخاصة لكنها تُحتسب هنا لأنها
+   * تستهلك من نفس الحصة.
+   */
+  readonly planListingLimit = signal<number | null | undefined>(undefined); // undefined = loading, null = unlimited
+  readonly shortStayActiveCount = signal(0);
+  readonly activePropertiesCount = computed(
+    () => this.listings().filter(p => p.status !== 'Expired').length
+  );
+  readonly totalActiveListings = computed(
+    () => this.activePropertiesCount() + this.shortStayActiveCount()
+  );
+
   ngOnInit(): void {
     this.loadMyListings();
+    this.loadQuotaUsage();
+  }
+
+  private loadQuotaUsage(): void {
+    this.shortStayApi
+      .getMine()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: items => this.shortStayActiveCount.set(items?.length ?? 0),
+        // Best-effort: the widget just shows one fewer number if this fails.
+        error: () => this.shortStayActiveCount.set(0)
+      });
+
+    this.profile.profile$
+      .pipe(
+        filter((p): p is NonNullable<typeof p> => !!p?.PlanTier),
+        take(1),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(profile => {
+        this.plansApi
+          .getPlans()
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: plans => {
+              const plan = plans.find(p => p.tier === profile.PlanTier);
+              this.planListingLimit.set(plan ? plan.listingLimit : null);
+            },
+            error: () => this.planListingLimit.set(null)
+          });
+      });
   }
 
   loadMyListings(): void {
