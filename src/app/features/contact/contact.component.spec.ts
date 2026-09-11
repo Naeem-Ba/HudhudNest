@@ -8,7 +8,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject } from 'rxjs';
 
 import { KontaktComponent } from './contact.component';
@@ -38,6 +38,24 @@ describe('KontaktComponent — query-param prefills', () => {
     fixture.detectChanges();
     return fixture.componentInstance;
   }
+
+  it('✅ عند تبديل اللغة: يُعاد ملء العنوان التلقائي بالترجمة الجديدة دون المساس بتعديل المستخدم', () => {
+    const component = build({ intent: 'service-provider' });
+    const translate = TestBed.inject(TranslateService);
+    translate.setTranslation('ar', { KONTAKT: { SERVICE_PROVIDER_SUBJECT: 'طلب بالعربية' } });
+    translate.setTranslation('en', { KONTAKT: { SERVICE_PROVIDER_SUBJECT: 'English request' } });
+    translate.setTranslation('de', { KONTAKT: { SERVICE_PROVIDER_SUBJECT: 'Deutsche Anfrage' } });
+    translate.use('ar');
+
+    const originalSubject = component.model.Subject;
+    translate.use('en');
+    expect(component.model.Subject).not.toBe(originalSubject); // re-translated, not frozen
+
+    // A subject the visitor edited by hand must never be silently overwritten again.
+    component.model.Subject = 'كتبته أنا بنفسي';
+    translate.use('de');
+    expect(component.model.Subject).toBe('كتبته أنا بنفسي');
+  });
 
   it('✅ "?intent=service-provider": يملأ العنوان تلقائياً ويغيّر نص التلميح', () => {
     const component = build({ intent: 'service-provider' });

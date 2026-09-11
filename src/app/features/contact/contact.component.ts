@@ -1,7 +1,8 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { take } from 'rxjs';
 
@@ -43,6 +44,13 @@ export class KontaktComponent implements OnInit {
    */
   messagePlaceholderKey = 'KONTAKT.message_placeholder';
 
+  private readonly destroyRef = inject(DestroyRef);
+
+  /** Tracks whatever this component itself last wrote into model.Subject, so a language
+   * switch can refresh a still-untouched prefill without ever overwriting text the visitor
+   * typed themselves. */
+  private lastAutoSubject: string | null = null;
+
   constructor(
     private readonly contactService: ContactService,
     private readonly profileService: ProfileService,
@@ -52,15 +60,26 @@ export class KontaktComponent implements OnInit {
   ) {}
 
   /**
-   * The /pricing CTAs link here as /kontakt?plan=<tier>. Prefill the subject so the
-   * chosen plan is not lost on the way over — without it the user lands on an empty
-   * form and has to restate why they came. Payment is not wired up yet, so this
-   * contact route is the real end of the subscription flow today.
+   * The /pricing CTAs link here as /kontakt?plan=<tier>, and the "become a provider" CTAs
+   * as /kontakt?intent=service-provider. Prefill the subject so the reason the visitor came
+   * is not lost on the way over. Re-applied on every language switch (onLangChange) — a
+   * translate.instant() snapshot taken once in ngOnInit would otherwise freeze the prefilled
+   * Subject in whatever language was active on load, even after the visitor switches to
+   * Arabic/English/German, while everything else on the page (including this same field's
+   * placeholder) updates immediately.
    */
   ngOnInit(): void {
+    this.applyQueryParamPrefill();
+
+    this.translate.onLangChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.applyQueryParamPrefill());
+  }
+
+  private applyQueryParamPrefill(): void {
     const intent = this.route.snapshot.queryParamMap.get('intent');
     if (intent === 'service-provider') {
-      this.model.Subject = this.translate.instant('KONTAKT.SERVICE_PROVIDER_SUBJECT');
+      this.setAutoSubject(this.translate.instant('KONTAKT.SERVICE_PROVIDER_SUBJECT'));
       this.messagePlaceholderKey = 'KONTAKT.SERVICE_PROVIDER_MESSAGE_PLACEHOLDER';
 
       // Best-effort prefill for an already logged-in visitor — profile$ is a cached,
@@ -84,10 +103,19 @@ export class KontaktComponent implements OnInit {
 
     const planKey = 'PRICING.' + raw.toUpperCase() + '.NAME';
     this.translate.get([planKey, 'KONTAKT.PLAN_SUBJECT']).subscribe(values => {
-      this.model.Subject = this.translate.instant('KONTAKT.PLAN_SUBJECT', {
-        plan: values[planKey]
-      });
+      this.setAutoSubject(
+        this.translate.instant('KONTAKT.PLAN_SUBJECT', { plan: values[planKey] })
+      );
     });
+  }
+
+  /** Only overwrites model.Subject when it still holds our own last auto-fill (untouched by
+   * the visitor) or is empty — never clobbers something the visitor actually typed. */
+  private setAutoSubject(value: string): void {
+    if (this.model.Subject === '' || this.model.Subject === this.lastAutoSubject) {
+      this.model.Subject = value;
+    }
+    this.lastAutoSubject = value;
   }
 
   onSubmit(form: NgForm): void {
