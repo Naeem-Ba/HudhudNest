@@ -208,11 +208,45 @@ export class ShortStayListingFormPage implements OnInit {
         this.toast.show(this.translate.instant('SHORTSTAY.FORM.CREATE_SUCCESS'), 'success');
         this.router.navigate(['/short-stay/manage', created.id]);
       },
-      error: () => {
+      error: err => {
         this.saving.set(false);
-        this.toast.show(this.translate.instant('SHORTSTAY.FORM.SAVE_ERROR'), 'error');
+        this.handleCreateError(err);
       }
     });
+  }
+
+  /**
+   * Defense in depth, same shape as PropertyFormPage.handleSaveError: the backend now
+   * enforces the same contact-confirmation / plan-selection gates for Short-Stay listings
+   * that it always enforced for Sale/Rent (see CreateShortStayListingCommandHandler), plus
+   * the same plan-quota 409 conflict — Short-Stay listings now count against the same
+   * shared quota. Reuses PROPERTY_FORM's translation keys/messages rather than duplicating
+   * them under SHORTSTAY.FORM — the backend message and the situation are identical.
+   */
+  private handleCreateError(err: { status?: number; error?: { code?: string; message?: string } }): void {
+    const code = err?.error?.code;
+
+    if (err?.status === 403 && code === 'LISTING_CONTACT_NOT_CONFIRMED') {
+      this.toast.show(this.translate.instant('PROPERTY_FORM.CONTACT_NOT_CONFIRMED'), 'error');
+      void this.router.navigate(['/profile'], { queryParams: { reason: 'confirm-required' } });
+      return;
+    }
+
+    if (err?.status === 403 && code === 'LISTING_PLAN_REQUIRED') {
+      this.toast.show(this.translate.instant('PROPERTY_FORM.PLAN_REQUIRED'), 'error');
+      void this.router.navigate(['/pricing'], { queryParams: { reason: 'plan-required' } });
+      return;
+    }
+
+    if (err?.status === 409 && err?.error?.message) {
+      // The backend's quota-conflict message is already a complete, translated Arabic
+      // sentence with the owner's exact numbers (see EnsureListingQuotaAvailableAsync) —
+      // there is no generic client-side equivalent worth writing instead.
+      this.toast.show(err.error.message, 'error');
+      return;
+    }
+
+    this.toast.show(this.translate.instant('SHORTSTAY.FORM.SAVE_ERROR'), 'error');
   }
 
   saveChanges(): void {

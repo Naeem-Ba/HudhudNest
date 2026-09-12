@@ -398,6 +398,10 @@
               {{ 'PROFILE.MY_ADS' | translate }}
             </a>
 
+            <a routerLink="/favorites" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+              <span aria-hidden="true">❤️</span>
+              {{ 'NAVBAR.FAVORITES' | translate }}
+            </a>
 
             <a routerLink="/visits" class="account__item" role="menuitem" (click)="closeAccountMenu()">
               <span aria-hidden="true">📅</span>
@@ -669,6 +673,9 @@
           {{ 'PROFILE.MY_ADS' | translate }}
         </a>
 
+        <a routerLink="/favorites" class="mobile-drawer__link" (click)="closeMobileMenu()">
+          {{ 'NAVBAR.FAVORITES' | translate }}
+        </a>
 
         <!-- ✅ إضافة: نفس جرس الإشعارات بنسخة القائمة الجانبية للجوال -->
         <a routerLink="/notifications" class="mobile-drawer__link mobile-drawer__link--notif" (click)="closeMobileMenu()">
