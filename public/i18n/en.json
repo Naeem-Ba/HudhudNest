@@ -1082,8 +1082,39 @@
     "EMPTY_TITLE": "No reviews yet",
     "EMPTY_MESSAGE": "Be the first to review this property."
   },
+  "AGENCY_FORM": {
+    "CREATE_TITLE": "Register your agency",
+    "EDIT_TITLE": "Edit agency",
+    "SUBTITLE": "Your agency profile is shown on its public page and attached to the listings your team publishes.",
+    "BASIC_INFO": "Basic information",
+    "BASIC_INFO_DESC": "The name and contact details shown on your agency's public page.",
+    "NAME": "Agency name",
+    "NAME_PLACEHOLDER": "e.g. Sham Realty",
+    "SLUG": "Public URL",
+    "SLUG_PLACEHOLDER": "e.g. sham-realty",
+    "SLUG_LOCKED_HINT": "The public URL cannot be changed after the agency is created.",
+    "COUNTRY": "Country",
+    "LICENSE_NUMBER": "Licence number",
+    "LICENSE_NUMBER_PLACEHOLDER": "As issued by the registry (optional)",
+    "CONTACT_EMAIL": "Contact email",
+    "CONTACT_PHONE": "Contact phone",
+    "DESCRIPTION": "Description",
+    "LOCATION": "Location",
+    "LOCATION_DESC": "Governorate, district and neighborhood — all optional, but a governorate helps clients and future matching find your agency.",
+    "CITY_LEGACY": "City (free text)",
+    "CITY_LEGACY_PLACEHOLDER": "e.g. Damascus",
+    "GOVERNORATE": "Governorate",
+    "DISTRICT": "District",
+    "NEIGHBORHOOD": "Neighborhood",
+    "NO_DISTRICTS_HINT": "No listed districts for this governorate yet.",
+    "NO_NEIGHBORHOODS_HINT": "No listed neighborhoods for this district yet.",
+    "CREATE_SUCCESS": "Agency created successfully.",
+    "UPDATE_SUCCESS": "Agency updated successfully.",
+    "SAVE_ERROR": "Could not save the agency. Please try again."
+  },
   "VALIDATION": {
     "REQUIRED": "This field is required.",
+    "EMAIL": "Enter a valid email address.",
     "FIX_FIELDS": "Please correct the specified fields.",
     "IMAGE_TYPE": "Unsupported image type. Use PNG, JPG, or WebP.",
     "IMAGE_SIZE": "The image is too large. The maximum size is 5 MB."
@@ -2053,6 +2084,61 @@
       "RIGHTS": "All rights reserved",
       "PRIVACY": "Privacy Policy",
       "TERMS": "Terms of Service"
+    }
+  },
+  "VALUATION": {
+    "EYEBROW": "Property Valuation",
+    "TITLE": "What is your property worth?",
+    "SUBTITLE": "Get a quick estimate based on similar listings, or let us send your request to real-estate offices in your area.",
+    "GOVERNORATE": "Governorate",
+    "DISTRICT": "District",
+    "NEIGHBORHOOD": "Neighborhood",
+    "PROPERTY_TYPE": "Property type",
+    "REQUEST_TYPE": "Request type",
+    "REQUEST_TYPES": {
+      "ForSale": "Sale",
+      "ForRent": "Rent",
+      "ForRentAndSale": "Sale or rent"
+    },
+    "AREA": "Area (m²)",
+    "AREA_PLACEHOLDER": "e.g. 120",
+    "ROOMS": "Rooms",
+    "SELECT_PLACEHOLDER": "Select...",
+    "SUBMIT": "Get my valuation",
+    "SUBMITTING": "Submitting...",
+    "LOOKUP_ERROR": "Could not load the list of governorates.",
+    "SUBMIT_ERROR": "Could not submit your valuation request. Please try again.",
+    "STATUS_ERROR": "Could not check the request status.",
+    "MIN_PRICE": "Min price",
+    "MAX_PRICE": "Max price",
+    "AVERAGE_PRICE": "Average price",
+    "MEDIAN_PRICE": "Median",
+    "FAST_PATH": {
+      "COMPLETE_TITLE": "Valuation complete",
+      "COMPLETE_BODY": "Enough similar listings were found to provide a reliable estimate."
+    },
+    "OFFICE_PATH": {
+      "SENT_TO": "Your request was sent to {{count}} real-estate office(s) in your area for a precise estimate.",
+      "NEIGHBORING_GOVERNORATE_DISCLOSURE": "Not enough offices were available in your governorate, so the search was expanded to include offices from neighboring governorates.",
+      "INSUFFICIENT_COVERAGE": "We could not find at least 3 real-estate offices in your area. You may receive estimates from fewer offices.",
+      "EXPIRES_AT": "You'll hear back within 24 hours, by {{date}} at the latest.",
+      "CHECK_STATUS": "Check for responses",
+      "NO_ESTIMATES_YET": "No estimates yet. Please check back later."
+    },
+    "NEW_REQUEST": "New valuation request",
+    "STATUS": {
+      "PENDING": "Pending",
+      "MATCHEDFROMLISTINGS": "Estimated from similar listings",
+      "AWAITINGOFFICERESPONSES": "Awaiting office responses",
+      "COMPLETED": "Completed",
+      "EXPIRED": "Expired"
+    },
+    "ERRORS": {
+      "GOVERNORATE_REQUIRED": "Please select a governorate.",
+      "REQUEST_TYPE_REQUIRED": "Please select a request type.",
+      "NEIGHBORHOOD_NEEDS_DISTRICT": "A neighborhood cannot be selected without a district.",
+      "AREA_INVALID": "Area must be greater than zero.",
+      "ROOMS_INVALID": "Invalid number of rooms."
     }
   }
 }

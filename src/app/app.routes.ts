@@ -120,11 +120,30 @@ export const routes: Routes = [
             .then(m => m.KontaktComponent)
       },
       {
+        // Valuation module (Stage 7) — anonymous by design, same reasoning as kontakt above:
+        // ValuationInquiry.RequesterId is nullable for a guest visitor on the backend, so this
+        // route carries no AuthGuard.
+        path: 'valuation',
+        loadComponent: () =>
+          import('./features/valuation-request/valuation-request.page')
+            .then(m => m.ValuationRequestPage)
+      },
+      {
         path: 'my-listings',
         canActivate: [AuthGuard],
         loadComponent: () =>
           import('./features/my-listings/my-listings.page')
             .then(m => m.MyListingsPage)
+      },
+      {
+        // مكتبي العقاري — إنشاء أو تعديل (نفس الصفحة تخدم الحالتين، انظر
+        // agency-form.page.ts's doc comment). أول route لـ AgenciesController
+        // في الفرونت‌إند بأكمله.
+        path: 'my-agency',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/agency-form/agency-form.page')
+            .then(m => m.AgencyFormPage)
       },
       {
         // Create only. ListingEligibilityGuard runs after AuthGuard (so an anonymous

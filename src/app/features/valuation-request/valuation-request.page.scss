@@ -1,0 +1,166 @@
+@use '../../../styles/auth-flow' as flow;
+
+/* إعادة استخدام نفس نمط الحقول/الزر/التنبيهات/السبينر الموحّد بصفحات
+   auth/kontakt بدل اختراع نمط محلي جديد. */
+.form-group { @include flow.form-group; }
+.valuation-submit, .valuation-refresh { @include flow.primary-btn; width: auto; }
+.valuation-restart { @include flow.ghost-btn; width: auto; }
+.spinner { @include flow.spinner; }
+.alert { margin-block-end: 1rem; @include flow.alert; }
+
+.valuation-page {
+  padding-block: clamp(1.5rem, 4vw, 3rem);
+}
+
+.container {
+  width: min(760px, 100%);
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+.page-header {
+  text-align: center;
+  margin-block-end: 1.5rem;
+
+  .eyebrow {
+    display: inline-block;
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--gold-text);
+    margin-block-end: .4rem;
+  }
+
+  h1 {
+    margin: 0 0 .4rem;
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
+    font-weight: 800;
+    color: var(--gray-900);
+  }
+
+  p {
+    margin: 0;
+    color: var(--gray-500);
+  }
+}
+
+.valuation-card {
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-lg);
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-block-end: 1rem;
+}
+
+.form-group select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: .75rem .9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: .95rem;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--gray-900);
+
+  &:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+  }
+}
+
+.valuation-submit {
+  margin-block-start: .5rem;
+}
+
+.valuation-result {
+  display: flex;
+  flex-direction: column;
+}
+
+.price-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 1.25rem;
+  margin-block-end: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+
+  &__row {
+    display: flex;
+    justify-content: space-between;
+    font-size: .92rem;
+    color: var(--gray-700);
+
+    &--highlight {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--gold-text);
+    }
+  }
+
+  &__source {
+    margin: .5rem 0 0;
+    font-size: .78rem;
+    color: var(--gray-400);
+  }
+
+  &__disclaimer {
+    margin: 0;
+    font-size: .76rem;
+    color: var(--gray-400);
+    font-style: italic;
+  }
+}
+
+.office-path {
+  display: flex;
+  flex-direction: column;
+}
+
+.expiry-note {
+  font-size: .82rem;
+  color: var(--gray-500);
+  margin: 0 0 1rem;
+}
+
+.estimates {
+  margin-block-start: 1rem;
+  border-top: 1px dashed var(--border);
+  padding-block-start: 1rem;
+
+  &__status {
+    font-weight: 700;
+    color: var(--gray-700);
+  }
+
+  &__empty {
+    color: var(--gray-400);
+    font-size: .88rem;
+  }
+}
+
+.estimate-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: .5rem;
+  border-bottom: 1px solid var(--border);
+  font-size: .9rem;
+
+  strong {
+    color: var(--gold-text);
+  }
+}
+
+.valuation-restart {
+  margin-block-start: 1.5rem;
+  align-self: center;
+}
