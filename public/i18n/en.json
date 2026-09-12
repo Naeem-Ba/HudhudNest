@@ -2085,5 +2085,60 @@
       "PRIVACY": "Privacy Policy",
       "TERMS": "Terms of Service"
     }
+  },
+  "VALUATION": {
+    "EYEBROW": "Property Valuation",
+    "TITLE": "What is your property worth?",
+    "SUBTITLE": "Get a quick estimate based on similar listings, or let us send your request to real-estate offices in your area.",
+    "GOVERNORATE": "Governorate",
+    "DISTRICT": "District",
+    "NEIGHBORHOOD": "Neighborhood",
+    "PROPERTY_TYPE": "Property type",
+    "REQUEST_TYPE": "Request type",
+    "REQUEST_TYPES": {
+      "ForSale": "Sale",
+      "ForRent": "Rent",
+      "ForRentAndSale": "Sale or rent"
+    },
+    "AREA": "Area (m²)",
+    "AREA_PLACEHOLDER": "e.g. 120",
+    "ROOMS": "Rooms",
+    "SELECT_PLACEHOLDER": "Select...",
+    "SUBMIT": "Get my valuation",
+    "SUBMITTING": "Submitting...",
+    "LOOKUP_ERROR": "Could not load the list of governorates.",
+    "SUBMIT_ERROR": "Could not submit your valuation request. Please try again.",
+    "STATUS_ERROR": "Could not check the request status.",
+    "MIN_PRICE": "Min price",
+    "MAX_PRICE": "Max price",
+    "AVERAGE_PRICE": "Average price",
+    "MEDIAN_PRICE": "Median",
+    "FAST_PATH": {
+      "COMPLETE_TITLE": "Valuation complete",
+      "COMPLETE_BODY": "Enough similar listings were found to provide a reliable estimate."
+    },
+    "OFFICE_PATH": {
+      "SENT_TO": "Your request was sent to {{count}} real-estate office(s) in your area for a precise estimate.",
+      "NEIGHBORING_GOVERNORATE_DISCLOSURE": "Not enough offices were available in your governorate, so the search was expanded to include offices from neighboring governorates.",
+      "INSUFFICIENT_COVERAGE": "We could not find at least 3 real-estate offices in your area. You may receive estimates from fewer offices.",
+      "EXPIRES_AT": "You'll hear back within 24 hours, by {{date}} at the latest.",
+      "CHECK_STATUS": "Check for responses",
+      "NO_ESTIMATES_YET": "No estimates yet. Please check back later."
+    },
+    "NEW_REQUEST": "New valuation request",
+    "STATUS": {
+      "PENDING": "Pending",
+      "MATCHEDFROMLISTINGS": "Estimated from similar listings",
+      "AWAITINGOFFICERESPONSES": "Awaiting office responses",
+      "COMPLETED": "Completed",
+      "EXPIRED": "Expired"
+    },
+    "ERRORS": {
+      "GOVERNORATE_REQUIRED": "Please select a governorate.",
+      "REQUEST_TYPE_REQUIRED": "Please select a request type.",
+      "NEIGHBORHOOD_NEEDS_DISTRICT": "A neighborhood cannot be selected without a district.",
+      "AREA_INVALID": "Area must be greater than zero.",
+      "ROOMS_INVALID": "Invalid number of rooms."
+    }
   }
 }

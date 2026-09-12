@@ -2084,5 +2084,60 @@
       "PRIVACY": "Datenschutzerklärung",
       "TERMS": "Nutzungsbedingungen"
     }
+  },
+  "VALUATION": {
+    "EYEBROW": "Immobilienbewertung",
+    "TITLE": "Was ist Ihre Immobilie wert?",
+    "SUBTITLE": "Erhalten Sie eine schnelle Schätzung basierend auf ähnlichen Anzeigen, oder lassen Sie uns Ihre Anfrage an Immobilienbüros in Ihrer Nähe senden.",
+    "GOVERNORATE": "Gouvernement",
+    "DISTRICT": "Bezirk",
+    "NEIGHBORHOOD": "Viertel",
+    "PROPERTY_TYPE": "Immobilientyp",
+    "REQUEST_TYPE": "Anfrageart",
+    "REQUEST_TYPES": {
+      "ForSale": "Verkauf",
+      "ForRent": "Miete",
+      "ForRentAndSale": "Verkauf oder Miete"
+    },
+    "AREA": "Fläche (m²)",
+    "AREA_PLACEHOLDER": "z. B. 120",
+    "ROOMS": "Zimmer",
+    "SELECT_PLACEHOLDER": "Auswählen...",
+    "SUBMIT": "Bewertung erhalten",
+    "SUBMITTING": "Wird gesendet...",
+    "LOOKUP_ERROR": "Die Liste der Gouvernements konnte nicht geladen werden.",
+    "SUBMIT_ERROR": "Ihre Bewertungsanfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+    "STATUS_ERROR": "Der Anfragestatus konnte nicht geprüft werden.",
+    "MIN_PRICE": "Mindestpreis",
+    "MAX_PRICE": "Höchstpreis",
+    "AVERAGE_PRICE": "Durchschnittspreis",
+    "MEDIAN_PRICE": "Median",
+    "FAST_PATH": {
+      "COMPLETE_TITLE": "Bewertung abgeschlossen",
+      "COMPLETE_BODY": "Es wurden genügend ähnliche Anzeigen gefunden, um eine verlässliche Schätzung zu liefern."
+    },
+    "OFFICE_PATH": {
+      "SENT_TO": "Ihre Anfrage wurde an {{count}} Immobilienbüro(s) in Ihrer Nähe für eine genaue Schätzung gesendet.",
+      "NEIGHBORING_GOVERNORATE_DISCLOSURE": "Da nicht genügend Büros in Ihrem Gouvernement verfügbar waren, wurde die Suche auf Büros aus benachbarten Gouvernements ausgeweitet.",
+      "INSUFFICIENT_COVERAGE": "Wir konnten nicht mindestens 3 Immobilienbüros in Ihrer Nähe finden. Möglicherweise erhalten Sie Schätzungen von weniger Büros.",
+      "EXPIRES_AT": "Sie erhalten innerhalb von 24 Stunden eine Antwort, spätestens bis {{date}}.",
+      "CHECK_STATUS": "Antworten prüfen",
+      "NO_ESTIMATES_YET": "Noch keine Schätzungen. Bitte später erneut prüfen."
+    },
+    "NEW_REQUEST": "Neue Bewertungsanfrage",
+    "STATUS": {
+      "PENDING": "Ausstehend",
+      "MATCHEDFROMLISTINGS": "Aus ähnlichen Anzeigen geschätzt",
+      "AWAITINGOFFICERESPONSES": "Wartet auf Büroantworten",
+      "COMPLETED": "Abgeschlossen",
+      "EXPIRED": "Abgelaufen"
+    },
+    "ERRORS": {
+      "GOVERNORATE_REQUIRED": "Bitte wählen Sie ein Gouvernement aus.",
+      "REQUEST_TYPE_REQUIRED": "Bitte wählen Sie eine Anfrageart aus.",
+      "NEIGHBORHOOD_NEEDS_DISTRICT": "Ein Viertel kann nicht ohne Bezirk ausgewählt werden.",
+      "AREA_INVALID": "Die Fläche muss größer als null sein.",
+      "ROOMS_INVALID": "Ungültige Zimmeranzahl."
+    }
   }
 }
