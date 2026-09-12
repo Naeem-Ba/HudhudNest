@@ -120,6 +120,15 @@ export const routes: Routes = [
             .then(m => m.KontaktComponent)
       },
       {
+        // Valuation module (Stage 7) — anonymous by design, same reasoning as kontakt above:
+        // ValuationInquiry.RequesterId is nullable for a guest visitor on the backend, so this
+        // route carries no AuthGuard.
+        path: 'valuation',
+        loadComponent: () =>
+          import('./features/valuation-request/valuation-request.page')
+            .then(m => m.ValuationRequestPage)
+      },
+      {
         path: 'my-listings',
         canActivate: [AuthGuard],
         loadComponent: () =>

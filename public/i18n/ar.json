@@ -2084,5 +2084,60 @@
       "PRIVACY": "سياسة الخصوصية",
       "TERMS": "شروط الاستخدام"
     }
+  },
+  "VALUATION": {
+    "EYEBROW": "تقييم عقاري",
+    "TITLE": "كم تساوي عقارك؟",
+    "SUBTITLE": "احصل على تقدير سريع لسعر عقارك بناءً على إعلانات مشابهة، أو دَعنا نرسل طلبك لمكاتب عقارية في منطقتك.",
+    "GOVERNORATE": "المحافظة",
+    "DISTRICT": "المنطقة",
+    "NEIGHBORHOOD": "الحي",
+    "PROPERTY_TYPE": "نوع العقار",
+    "REQUEST_TYPE": "نوع الطلب",
+    "REQUEST_TYPES": {
+      "ForSale": "بيع",
+      "ForRent": "إيجار",
+      "ForRentAndSale": "بيع أو إيجار"
+    },
+    "AREA": "المساحة (م²)",
+    "AREA_PLACEHOLDER": "مثال: 120",
+    "ROOMS": "عدد الغرف",
+    "SELECT_PLACEHOLDER": "اختر...",
+    "SUBMIT": "احصل على التقييم",
+    "SUBMITTING": "جارٍ الإرسال...",
+    "LOOKUP_ERROR": "تعذّر تحميل قائمة المحافظات.",
+    "SUBMIT_ERROR": "تعذّر إرسال طلب التقييم. حاول مرة أخرى.",
+    "STATUS_ERROR": "تعذّر التحقق من حالة الطلب.",
+    "MIN_PRICE": "أقل سعر",
+    "MAX_PRICE": "أعلى سعر",
+    "AVERAGE_PRICE": "متوسط السعر",
+    "MEDIAN_PRICE": "الوسيط",
+    "FAST_PATH": {
+      "COMPLETE_TITLE": "اكتمل التقييم",
+      "COMPLETE_BODY": "تم إيجاد عدد كافٍ من الإعلانات المشابهة لتقديم تقدير موثوق."
+    },
+    "OFFICE_PATH": {
+      "SENT_TO": "تم إرسال طلبك إلى {{count}} مكتب عقاري في منطقتك لتقديم تقدير دقيق.",
+      "NEIGHBORING_GOVERNORATE_DISCLOSURE": "لعدم توفر عدد كافٍ من المكاتب العقارية في محافظتك، تم توسيع نطاق البحث ليشمل مكاتب من محافظات مجاورة.",
+      "INSUFFICIENT_COVERAGE": "لم نتمكن من إيجاد 3 مكاتب عقارية على الأقل في منطقتك. قد تصلك تقديرات من عدد أقل من المكاتب.",
+      "EXPIRES_AT": "سيصلك الرد خلال 24 ساعة، بحد أقصى حتى {{date}}.",
+      "CHECK_STATUS": "تحقق من الردود",
+      "NO_ESTIMATES_YET": "لم تصل أي تقديرات بعد. حاول التحقق لاحقًا."
+    },
+    "NEW_REQUEST": "طلب تقييم جديد",
+    "STATUS": {
+      "PENDING": "قيد الانتظار",
+      "MATCHEDFROMLISTINGS": "تم التقدير من إعلانات مشابهة",
+      "AWAITINGOFFICERESPONSES": "بانتظار ردود المكاتب",
+      "COMPLETED": "مكتمل",
+      "EXPIRED": "منتهي الصلاحية"
+    },
+    "ERRORS": {
+      "GOVERNORATE_REQUIRED": "يرجى اختيار المحافظة.",
+      "REQUEST_TYPE_REQUIRED": "يرجى اختيار نوع الطلب.",
+      "NEIGHBORHOOD_NEEDS_DISTRICT": "لا يمكن اختيار حي بلا منطقة.",
+      "AREA_INVALID": "المساحة يجب أن تكون أكبر من صفر.",
+      "ROOMS_INVALID": "عدد الغرف غير صالح."
+    }
   }
 }
