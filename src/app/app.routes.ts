@@ -127,6 +127,16 @@ export const routes: Routes = [
             .then(m => m.MyListingsPage)
       },
       {
+        // مكتبي العقاري — إنشاء أو تعديل (نفس الصفحة تخدم الحالتين، انظر
+        // agency-form.page.ts's doc comment). أول route لـ AgenciesController
+        // في الفرونت‌إند بأكمله.
+        path: 'my-agency',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/agency-form/agency-form.page')
+            .then(m => m.AgencyFormPage)
+      },
+      {
         // Create only. ListingEligibilityGuard runs after AuthGuard (so an anonymous
         // visitor hits the login redirect first) and is NOT applied to the edit route
         // below — editing an already-owned listing isn't "publishing new".
