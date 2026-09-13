@@ -88,25 +88,25 @@ const ALL_TYPES: InvestmentProjectType[] = [
         </div>
 
         <div class="row" *ngFor="let project of projects(); trackBy: trackById">
-          <span data-label="Title">
+          <span [attr.data-label]="'ADMIN_INVESTMENTS.LIST.COL_TITLE' | translate">
             {{ project.title }}
             <code class="project-id">{{ project.id }}</code>
           </span>
-          <span data-label="Type" class="muted">
+          <span [attr.data-label]="'ADMIN_INVESTMENTS.LIST.COL_TYPE' | translate" class="muted">
             {{ ('INVESTMENTS.PROJECT_TYPE.' + project.projectType.toUpperCase()) | translate }}
           </span>
-          <span data-label="Status">
+          <span [attr.data-label]="'ADMIN_INVESTMENTS.LIST.COL_STATUS' | translate">
             <span class="status-chip" [class]="'status-chip--' + project.status.toLowerCase()">
               {{ ('INVESTMENTS.STATUS.' + project.status.toUpperCase()) | translate }}
             </span>
           </span>
-          <span data-label="Funding" class="muted">
+          <span [attr.data-label]="'ADMIN_INVESTMENTS.LIST.COL_FUNDING' | translate" class="muted">
             {{ formatAmount(project.raisedAmount) }} / {{ formatAmount(project.targetAmount) }}
           </span>
-          <span data-label="Created" class="muted">
+          <span [attr.data-label]="'ADMIN_INVESTMENTS.LIST.COL_CREATED' | translate" class="muted">
             {{ project.createdAt | date:'mediumDate' }}
           </span>
-          <span data-label="Actions" class="actions">
+          <span [attr.data-label]="'ADMIN_INVESTMENTS.LIST.COL_ACTIONS' | translate" class="actions">
             <button type="button" class="btn btn--outline" (click)="openDetails(project)">
               {{ 'ADMIN_INVESTMENTS.LIST.VIEW' | translate }}
             </button>
@@ -129,7 +129,9 @@ const ALL_TYPES: InvestmentProjectType[] = [
 
     .filters { display:flex; flex-wrap:wrap; gap:.6rem; margin-bottom:1rem; }
     .filters select, .search-input {
-      border:1px solid var(--border); border-radius:var(--r-md); padding:.5rem .8rem; background:var(--surface);
+      /* 16px صريح — بدون هذا كانت ترث خط المتصفح الافتراضي لعناصر النموذج (أقل من
+         16px)، فيُشغّل تكبير iOS Safari التلقائي عند التركيز على حقل البحث. */
+      border:1px solid var(--border); border-radius:var(--r-md); padding:.5rem .8rem; background:var(--surface); font-size:16px;
     }
     .search-input { flex: 1 1 220px; min-width: 180px; }
 

@@ -55,20 +55,20 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
         </div>
 
         <div class="row" *ngFor="let s of suggestions(); trackBy: trackById">
-          <span data-label="Type">
+          <span [attr.data-label]="'ADMIN_LOCATIONS.TYPE' | translate">
             <span class="type-chip" [class.type-chip--district]="s.type === 'District'">
               {{ (s.type === 'District' ? 'ADMIN_LOCATIONS.TYPE_DISTRICT' : 'ADMIN_LOCATIONS.TYPE_NEIGHBORHOOD') | translate }}
             </span>
           </span>
-          <span data-label="Name"><strong>{{ s.name }}</strong></span>
-          <span data-label="Parent" class="muted">{{ s.parentName }}</span>
-          <span data-label="SubmittedBy" class="muted">
+          <span [attr.data-label]="'ADMIN_LOCATIONS.NAME' | translate"><strong>{{ s.name }}</strong></span>
+          <span [attr.data-label]="'ADMIN_LOCATIONS.PARENT' | translate" class="muted">{{ s.parentName }}</span>
+          <span [attr.data-label]="'ADMIN_LOCATIONS.SUBMITTED_BY' | translate" class="muted">
             {{ s.submittedByUserName || s.submittedByUserId }}
             <a *ngIf="s.propertyId" [routerLink]="['/properties', s.propertyId]" class="property-link">
               {{ 'ADMIN_LOCATIONS.VIEW_LISTING' | translate }}
             </a>
           </span>
-          <span data-label="Actions" class="actions">
+          <span [attr.data-label]="'ADMIN_LOCATIONS.ACTIONS' | translate" class="actions">
             <button
               type="button"
               class="btn btn--primary"

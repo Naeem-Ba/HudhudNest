@@ -97,15 +97,15 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
         </div>
 
         <div class="row" *ngFor="let user of users(); trackBy: trackById">
-          <span data-label="Name">
+          <span [attr.data-label]="'ADMIN_USERS.NAME' | translate">
             {{ user.displayName || (user.firstName + ' ' + user.lastName) || '—' }}
             <code class="user-id">{{ user.id }}</code>
           </span>
-          <span data-label="Contact" class="muted">
+          <span [attr.data-label]="'ADMIN_USERS.CONTACT' | translate" class="muted">
             <div>{{ user.email || '—' }}</div>
             <div *ngIf="user.phoneNumber">{{ user.phoneNumber }}</div>
           </span>
-          <span data-label="Plan">
+          <span [attr.data-label]="'ADMIN_USERS.PLAN' | translate">
             <span class="plan-chip" [class]="'plan-chip--' + user.planStatus.toLowerCase()">
               {{ user.planTier ? (planNameKey(user.planTier) | translate) : ('ADMIN_USERS.NO_PLAN' | translate) }}
             </span>
@@ -114,15 +114,15 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
               <span *ngIf="user.planExpiresAt"> · {{ user.planExpiresAt | date:'mediumDate' }}</span>
             </div>
           </span>
-          <span data-label="Ads" class="ads-counts">
+          <span [attr.data-label]="'ADMIN_USERS.ADS' | translate" class="ads-counts">
             {{ 'ADMIN_USERS.ADS_SUMMARY' | translate:{ total: user.totalListings, active: user.activeListings, featured: user.featuredListings } }}
           </span>
-          <span data-label="Status">
+          <span [attr.data-label]="'ADMIN_USERS.STATUS' | translate">
             <span class="status-chip" [class.status-chip--disabled]="user.accountStatus === 'Disabled'">
               {{ ('ADMIN_USERS.STATUS_' + user.accountStatus.toUpperCase()) | translate }}
             </span>
           </span>
-          <span data-label="Actions" class="actions">
+          <span [attr.data-label]="'ADMIN_USERS.ACTIONS' | translate" class="actions">
             <button type="button" class="btn btn--primary" (click)="openDetails(user)">
               {{ 'ADMIN_USERS.VIEW_DETAILS' | translate }}
             </button>
@@ -156,7 +156,9 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 
     .filters { display:flex; flex-wrap:wrap; gap:.6rem; margin-bottom:1rem; }
     .filters select, .search-input {
-      border:1px solid var(--border); border-radius:var(--r-md); padding:.5rem .8rem; background:var(--surface);
+      /* 16px صريح — خط input[type=search] الافتراضي بالمتصفح أقل من 16px، ما يُشغّل
+         تكبير iOS Safari التلقائي عند التركيز (مؤكَّد حيّاً). */
+      border:1px solid var(--border); border-radius:var(--r-md); padding:.5rem .8rem; background:var(--surface); font-size:16px;
     }
     .search-input { flex: 1 1 220px; min-width: 180px; }
 

@@ -105,7 +105,8 @@ input, select, textarea {
   border: 1px solid var(--border);
   border-radius: var(--r-md);
   padding: .55rem .75rem;
-  font-size: .88rem;
+  // 16px صريح — أقل من 16px يُشغّل تكبير iOS Safari التلقائي عند التركيز.
+  font-size: 16px;
   background: var(--surface);
   font-family: inherit;
 }

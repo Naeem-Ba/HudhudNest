@@ -34,7 +34,7 @@
 .filters select { border: 1px solid var(--border); border-radius: var(--r-md); padding: .5rem .8rem; background: var(--surface); }
 
 .date-field { display: flex; align-items: center; gap: .4rem; font-size: .85rem; color: var(--gray-600); }
-.date-field input { border: 1px solid var(--border); border-radius: var(--r-md); padding: .4rem .6rem; background: var(--surface); font: inherit; }
+.date-field input { border: 1px solid var(--border); border-radius: var(--r-md); padding: .4rem .6rem; background: var(--surface); font: inherit; font-size: 16px; }
 
 .range-note { font-size: .82rem; color: var(--gray-500); margin: 0; }
 
@@ -60,7 +60,7 @@
 .field { display: flex; flex-direction: column; gap: .3rem; font-size: .85rem; color: var(--gray-600); }
 .field--wide { grid-column: 1 / -1; }
 .field input, .field select, .field textarea {
-  border: 1px solid var(--border); border-radius: var(--r-sm); padding: .5rem .7rem; background: var(--surface); font: inherit;
+  border: 1px solid var(--border); border-radius: var(--r-sm); padding: .5rem .7rem; background: var(--surface); font: inherit; font-size: 16px;
 }
 .form-actions { display: flex; gap: .6rem; margin-top: 1rem; }
 .form-hint { font-size: .78rem; color: var(--gray-500); margin-top: .6rem; }
