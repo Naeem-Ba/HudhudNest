@@ -1,0 +1,60 @@
+@startuml Deployment
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName "Segoe UI"
+title مخطط النشر (Deployment Diagram) — واجهة Wohnungsmieten
+
+node "متصفّح المستخدم" as Browser
+node "جهاز Android" as AndroidDevice
+node "جهاز iOS" as IosDevice
+
+cloud "Netlify\n(استضافة ثابتة Static Hosting)" {
+  [حزمة Angular المبنية\n(ng build --configuration production)] as WebBundle
+  [Edge Function\nsocial-crawler-meta.mjs\n(تصيير HTML لبرامج الزحف)] as EdgeFn
+}
+
+node "GitHub Actions\n(frontend-ci.yml)" as CI {
+  [Job: build\naudit → check:env → typecheck\n→ test:ci → build:prod] as JobBuild
+  [Job: android-release\n(مشروط بسرّ RELEASE_STORE_PASSWORD\n— لم يُختبَر تشغيله فعلياً بعد)] as JobAndroid
+  [Job: ios-build\n(macos-15، Xcode 16.4، محاكي\nغير موقَّع — لا نشر فعلي)] as JobIos
+}
+
+artifact "AAB موقَّع\n(Android App Bundle)" as AAB
+artifact "بناء محاكي iOS\n(غير موقَّع، للتحقق فقط)" as IosSim
+
+node "Google Play\n(نشر يدوي خارج CI)" as PlayStore
+node "App Store\n(أرشفة/توقيع يدوي عبر Xcode\ndocs/IOS_RELEASE.md)" as AppStore
+
+node "PropertyApi\n(Render — مستودع/بنية تحتية منفصلة)" as Backend
+
+Browser --> WebBundle : HTTPS
+AndroidDevice --> AAB : تثبيت (بعد نشر يدوي إلى Play Store)
+IosDevice --> AppStore : تثبيت (بعد أرشفة/توقيع يدوي)
+
+JobBuild --> WebBundle : ينتج
+JobAndroid --> AAB : ينتج (مشروط)
+JobIos --> IosSim : ينتج (تحقق فقط، لا يُنشَر)
+
+AAB --> PlayStore : رفع يدوي (خارج نطاق CI الموثَّق هنا)
+IosSim ..> AppStore : لا مسار آلي — خطوة منفصلة تماماً في Xcode
+
+WebBundle --> Backend : HTTPS/JSON + SignalR
+AAB --> Backend : HTTPS/JSON + SignalR (نفس الحزمة المبنية)
+IosSim --> Backend : HTTPS/JSON + SignalR (نفس الحزمة المبنية)
+
+note right of EdgeFn
+  لا SSR كامل (Angular Universal) — دالة حافة
+  واحدة تُصيّر Meta Tags/HTML مبسَّط فقط لبرامج
+  زحف وسائل التواصل الاجتماعي.
+end note
+
+note bottom of Backend
+  "Not verified from source code": لم يُعثَر على
+  netlify.toml في شجرة هذا الفرع — إعداد أوامر
+  البناء الفعلي على Netlify (لكل بيئة) قد يكون
+  مُدارًا من لوحة تحكم Netlify مباشرة (انظر §4.4
+  وR4 في الوثيقة).
+end note
+
+@enduml

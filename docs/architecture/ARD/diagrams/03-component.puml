@@ -1,0 +1,81 @@
+@startuml Components
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName "Segoe UI"
+skinparam componentStyle rectangle
+title مخطط المكوّنات (Component Diagram) — واجهة Wohnungsmieten (src/app)
+
+package "app.config.ts / app.routes.ts (الإقلاع والتوجيه)" as Bootstrap {
+  [APP_INITIALIZER\npreloadEnums + restoreSession] as Init
+  [provideRouter\nwithHashLocation()] as Router
+}
+
+package "core/ (لا مكوّنات مرئية)" as Core {
+  [api/\n(30 خدمة HTTP:\nproperty, valuation, investment,\nagencies, admin-*, ...)] as ApiServices
+  [auth/\nauth.service · auth-api.service ·\nsocial-auth.service · phone-auth-api ·\npassword-policy] as AuthCore
+  [guards/\nAuthGuard · AdminGuard ·\nListingEligibilityGuard] as Guards
+  [interceptors/\nCsrfInterceptor → AuthInterceptor\n→ ApiErrorInterceptor] as Interceptors
+  [services/\n(14: token-storage, csrf-token,\nenum, language, meta, signalr-\nnotification, theme, url, ...)] as CoreServices
+  [models/\n(21 نموذج TypeScript)] as Models
+}
+
+package "features/ (~24 ميزة، loadComponent كسول)" as Features {
+  [auth/*] as FAuth
+  [properties, property-detail,\nproperty-form, checkout] as FListings
+  [agency-form] as FAgency
+  [valuation-request] as FValuation
+  [investments/*] as FInvestments
+  [short-stay/*] as FShortStay
+  [services, visits, reviews,\nmessages, favorites,\nsaved-searches, notifications] as FInteraction
+  [legal/*\n(privacy, terms, account-deletion)] as FLegal
+  [pricing, analytics] as FProduct
+}
+
+package "admin/ (7 شاشات)" as Admin {
+  [users, user-detail,\nuser-properties, messages,\nmessage-details, location-\nsuggestions, marketing] as AdminPages
+}
+
+package "shared/ · layout/ · navbar/ · profile/ · pipes/ · map-picker/ · language-selector/" as Shared {
+  [shared/ui, directives,\nservices/toast,\ncomponents/consent-checkbox] as SharedUi
+}
+
+node "PropertyApi\n(.NET 8 — مستودع منفصل)" as Backend
+node "Google Identity /\nCapacitor Google & Apple Sign-In" as IdentityProviders
+node "SignalR Hub\n(notificationHub، عبر signalr-notification.service)" as SignalRHub
+
+Init --> AuthCore
+Init --> CoreServices : preloadEnums → EnumService
+Router --> Features
+Router --> Admin
+
+Features --> ApiServices
+Admin --> ApiServices
+FAuth --> AuthCore
+Guards --> AuthCore
+
+ApiServices --> Interceptors : كل طلب HTTP يمرّ عبرها
+Interceptors --> Backend
+AuthCore --> Backend
+CoreServices --> Backend
+
+AuthCore --> IdentityProviders
+CoreServices --> SignalRHub
+SignalRHub --> Backend : Redis backplane (من جهة الخلفية)
+
+Features --> Models
+Admin --> Models
+ApiServices --> Models
+
+Features --> SharedUi
+Admin --> SharedUi
+
+note bottom of Interceptors
+  الترتيب الفعلي في app.config.ts:
+  CsrfInterceptor → AuthInterceptor → ApiErrorInterceptor
+  (withInterceptors([...])). مساران يتجاوزان هذه
+  السلسلة عمداً (restoreSession، requestNewAccessToken)
+  ويُرفقان CSRF يدوياً — انظر ADR-002.
+end note
+
+@enduml
