@@ -1,42 +1,108 @@
 workflows:
-  ios-build:
-    name: iOS Build - Capacitor
+  # -------------------------------------------------------------------------
+  # 1) فحص سريع بدون توقيع (Simulator SDK) — لاختبار أن خط الأنابيب يعمل
+  #    قبل ما يتوفر عندك مفتاح App Store Connect API / شهادات التوقيع.
+  # -------------------------------------------------------------------------
+  ios-build-unsigned:
+    name: iOS Build Check (unsigned, simulator SDK)
+    max_build_duration: 30
     instance_type: mac_mini_m2
-    max_build_duration: 60
-
     environment:
-      node: 22
-
+      vars:
+        XCODE_PROJECT: "ios/App/App.xcodeproj"
+        XCODE_SCHEME: "App"
+      node: 22.19.0
+      xcode: 16.4
+    triggering:
+      events:
+        - pull_request
+      branch_patterns:
+        - pattern: "*"
+          include: true
     scripts:
-      - name: Install dependencies
-        script: |
-          npm ci
-
-      - name: Build Angular
-        script: |
-          npm run build
-
-      - name: Sync Capacitor iOS
-        script: |
-          npx cap sync ios
-
-      - name: Install CocoaPods dependencies
-        script: |
-          cd ios/App
-          pod install
-
-      - name: Build iOS
+      - name: Install npm dependencies
+        script: npm ci
+      - name: Validate iOS config (capacitor.config.ts + capacitor deps)
+        script: npm run ios:check
+      - name: Build Angular (prod) + cap sync ios + fix SPM paths
+        script: npm run ios:sync
+      - name: xcodebuild (simulator SDK, no signing)
         script: |
           xcodebuild \
-            -workspace ios/App/App.xcworkspace \
-            -scheme App \
-            -configuration Release \
-            -sdk iphoneos \
-            -destination 'generic/platform=iOS' \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -sdk iphonesimulator \
+            -configuration Debug \
             CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
             build
-
     artifacts:
-      - ios/App/build/**/*.app
       - /tmp/xcodebuild_logs/*.log
+
+  # -------------------------------------------------------------------------
+  # 2) بناء موقّع + رفع تلقائي إلى TestFlight
+  #    يتطلب مسبقًا (تُضاف من واجهة Codemagic، وليست هنا):
+  #      - Team > Integrations > App Store Connect: مفتاح API باسم
+  #        "codemagic_asc_api_key" (غيّر الاسم أدناه إذا استخدمت اسمًا آخر)
+  #      - توقيع تلقائي: فعّل "Automatic code signing" في نفس التكامل
+  #        (Codemagic يجلب الشهادة والـ provisioning profile تلقائيًا عبر API)
+  #      - Environment variable group باسم "frontend_env" فيه:
+  #        API_URL, BASE_URL (أو API_ORIGIN), SIGNALR_URL (أو
+  #        NOTIFICATION_HUB_URL), GOOGLE_CLIENT_ID, APPLE_CLIENT_ID,
+  #        APPLE_REDIRECT_URI, SITE_URL
+  #      - مخطط (scheme) "App" مشترك (Shared) في Xcode ومضاف لِلـ git —
+  #        راجع الملاحظة المهمة في الرد قبل هذا الملف.
+  # -------------------------------------------------------------------------
+  ios-release:
+    name: iOS Release (App Store / TestFlight)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: codemagic_asc_api_key
+    environment:
+      groups:
+        - frontend_env
+      vars:
+        XCODE_PROJECT: "ios/App/App.xcodeproj"
+        XCODE_SCHEME: "App"
+        BUNDLE_ID: "com.realestate.app"
+      node: 22.19.0
+      xcode: 16.4
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+    scripts:
+      - name: Install npm dependencies
+        script: npm ci
+      - name: Validate iOS config
+        script: npm run ios:check
+      - name: Build Angular (prod) + cap sync ios + fix SPM paths
+        script: npm run ios:sync
+      - name: Set up automatic code signing
+        script: |
+          xcode-project use-profiles
+
+      # اختياري: رفع رقم البناء تلقائيًا. يعمل فقط إذا كان
+      # "Versioning System" في Xcode (Target > Build Settings) مضبوطًا
+      # على "Apple Generic" — وإلا احذف هذه الخطوة أو اضبط الإصدار يدويًا.
+      # - name: Bump build number from App Store Connect
+      #   script: |
+      #     cd "$CM_BUILD_DIR/ios/App"
+      #     LATEST=$(app-store-connect get-latest-app-store-build-number "$BUNDLE_ID")
+      #     agvtool new-version -all $((LATEST + 1))
+
+      - name: Build signed ipa
+        script: |
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        # submit_to_app_store: false   # فعّلها لاحقًا عند الجاهزية لمراجعة App Store الفعلية
