@@ -1,4 +1,10 @@
-// Run with: node --test netlify/edge-functions/social-crawler-meta.test.mjs
+// Run with: node --test netlify/edge-functions/lib/social-crawler-meta.test.mjs
+//
+// Lives in lib/ (not alongside social-crawler-meta.mjs) so Netlify's directory-based edge
+// function auto-discovery — which only scans the top level of netlify/edge-functions/, not
+// subdirectories — never picks this up as a deployable function. It was previously a sibling
+// of social-crawler-meta.mjs and got auto-bundled as one, failing every build with "Default
+// export ... must be a function" since a test file has no such export.
 //
 // This exercises the actual edge function entrypoint (not just the pure lib) under plain
 // Node, by stubbing the one Netlify/Deno-specific global it uses (`Netlify.env.get`) — every
@@ -10,7 +16,7 @@
 // `netlify dev` / deploy-preview check.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import handler from './social-crawler-meta.mjs';
+import handler from '../social-crawler-meta.mjs';
 
 function withFetchStub(impl, fn) {
   const original = globalThis.fetch;

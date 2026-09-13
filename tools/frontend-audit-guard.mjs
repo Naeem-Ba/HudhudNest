@@ -5,9 +5,15 @@ const root = process.cwd();
 const textExtensions = new Set(['.ts', '.html', '.scss', '.css', '.json', '.mjs', '.md', '.webmanifest']);
 const ignoredDirs = new Set(['node_modules', 'dist', '.angular', 'coverage', 'android', 'ios', '.git']);
 const mojibakePattern = /(?:\u00d8|\u00d9|\u00c3|\u00c2|\u00e2|\u00f0\u0178|\ufffd)/;
+// Code-shape patterns (bypassSecurityTrustHtml, innerHTML) only make sense as an actual
+// usage inside source files. Docs (.md) legitimately *describe* these patterns in prose
+// (e.g. this very audit guard's own documentation) and would otherwise false-positive.
+// The secret pattern has no `extensions` restriction: a leaked credential is a real risk
+// regardless of which text file it ends up in, docs included.
+const codeExtensions = new Set(['.ts', '.html']);
 const unsafePatterns = [
-  { name: 'bypassSecurityTrustHtml', regex: /bypassSecurityTrustHtml\s*\(/ },
-  { name: 'direct innerHTML usage', regex: /\[innerHTML\]|\.innerHTML\s*=/ },
+  { name: 'bypassSecurityTrustHtml', regex: /bypassSecurityTrustHtml\s*\(/, extensions: codeExtensions },
+  { name: 'direct innerHTML usage', regex: /\[innerHTML\]|\.innerHTML\s*=/, extensions: codeExtensions },
   { name: 'possible frontend secret', regex: /(api[_-]?key|client[_-]?secret|password)\s*[:=]\s*['\"][^'\"]{8,}/i }
 ];
 
@@ -63,6 +69,9 @@ function walk(dir) {
     }
 
     for (const pattern of unsafePatterns) {
+      if (pattern.extensions && !pattern.extensions.has(extensionOf(entry))) {
+        continue;
+      }
       if (pattern.regex.test(content)) {
         fail(`${displayPath} matches unsafe pattern: ${pattern.name}`);
       }
