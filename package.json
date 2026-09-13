@@ -14,7 +14,7 @@
     "watch": "npm run generate:env && ng build --watch --configuration development",
     "test": "npm run generate:env && ng test",
     "test:ci": "npm run generate:env && ng test --watch=false --browsers=ChromeHeadless",
-    "test:edge-functions": "node --test netlify/edge-functions/lib/social-crawler.test.mjs netlify/edge-functions/social-crawler-meta.test.mjs",
+    "test:edge-functions": "node --test netlify/edge-functions/lib/social-crawler.test.mjs netlify/edge-functions/lib/social-crawler-meta.test.mjs",
     "typecheck": "npm run generate:env && tsc -p tsconfig.app.json --noEmit",
     "typecheck:strict": "npm run generate:env && tsc -p tsconfig.strict.json --noEmit",
     "generate:env": "node tools/generate-env.mjs",

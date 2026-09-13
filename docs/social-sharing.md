@@ -120,8 +120,10 @@ real:
 - `netlify/edge-functions/social-crawler-meta.mjs`'s actual handler — run under plain Node with
   only the one Netlify-specific global (`Netlify.env.get`) stubbed; everything else
   (`Request`/`Response`/`URL`/`fetch`) is standard Fetch API, so this genuinely exercises the
-  real file. `node --test netlify/edge-functions/social-crawler-meta.test.mjs` (5 tests, all
-  passing). Combined: `npm run test:edge-functions`.
+  real file. `node --test netlify/edge-functions/lib/social-crawler-meta.test.mjs` (5 tests, all
+  passing) — lives in `lib/` (moved 2026-09-13) so Netlify's directory-based edge function
+  auto-discovery, which scans only the top level of `netlify/edge-functions/`, doesn't try to
+  bundle this test file as a deployable function. Combined: `npm run test:edge-functions`.
 
 Before relying on this in production, confirm it against the real Netlify edge runtime with
 `netlify dev` (or a deploy preview) — e.g. `curl -A "facebookexternalhit/1.1"
