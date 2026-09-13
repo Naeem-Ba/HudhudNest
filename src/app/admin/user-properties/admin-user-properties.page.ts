@@ -200,7 +200,9 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | null;
     .modal-form { display:flex; flex-direction:column; gap:.8rem; }
     .modal-form label { display:flex; flex-direction:column; gap:.35rem; font-size: var(--text-sm); font-weight:600; color: var(--navy); }
     .modal-form input, .modal-form textarea {
-      border:1px solid var(--border); border-radius:var(--r-sm); padding:.5rem .6rem; font: inherit;
+      /* 16px صريح — أقل من ذلك يُشغّل تكبير iOS Safari التلقائي عند التركيز، انظر نفس
+         الإصلاح في admin-user-detail.page.ts. */
+      border:1px solid var(--border); border-radius:var(--r-sm); padding:.5rem .6rem; font: inherit; font-size: 16px;
     }
     .preset-row { display:flex; gap:.4rem; flex-wrap:wrap; }
     .preset-chip {

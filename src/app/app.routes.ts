@@ -5,6 +5,7 @@ import { AuthGuard } from './core/guards/auth-guard';
 import { ListingEligibilityGuard } from './core/guards/listing-eligibility.guard';
 import { AdminMessagesComponent } from './admin/messages/messages.component';
 import { AdminGuard } from './core/guards/admin-guard';
+import { ProviderGuard } from './core/guards/provider-guard';
 
 export const routes: Routes = [
   {
@@ -201,6 +202,30 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/services/my-service-requests.page')
             .then(m => m.MyServiceRequestsPage)
+      },
+      // لوحة تحكم مزوّد الخدمة — الصندوق الوارد + تفاصيل الطلب + الملف الشخصي. ProviderGuard
+      // (لا AuthGuard وحده) لأن الوصول هنا يتطلب ملف ServiceProvider فعلياً، لا مجرد تسجيل
+      // دخول فقط.
+      {
+        path: 'provider/requests',
+        canActivate: [ProviderGuard],
+        loadComponent: () =>
+          import('./features/provider/provider-inbox.page')
+            .then(m => m.ProviderInboxPage)
+      },
+      {
+        path: 'provider/requests/:id',
+        canActivate: [ProviderGuard],
+        loadComponent: () =>
+          import('./features/provider/provider-request-detail.page')
+            .then(m => m.ProviderRequestDetailPage)
+      },
+      {
+        path: 'provider/profile',
+        canActivate: [ProviderGuard],
+        loadComponent: () =>
+          import('./features/provider/provider-profile.page')
+            .then(m => m.ProviderProfilePage)
       },
       {
         // الصفحة الشخصية العامة لأي حساب (بائع/مستأجر) — صورة، تاريخ الانضمام،

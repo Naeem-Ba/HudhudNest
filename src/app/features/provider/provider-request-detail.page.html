@@ -1,0 +1,129 @@
+<section class="feature-page">
+  <a routerLink="/provider/requests" class="back-link">→ {{ 'PROVIDER.DETAIL.BACK' | translate }}</a>
+
+  <div *ngIf="loading()" class="state">{{ 'COMMON.LOADING' | translate }}</div>
+  <div *ngIf="!loading() && error()" class="state error">
+    <p>{{ error() | translate }}</p><button type="button" class="btn" (click)="load()">{{ 'COMMON.RETRY' | translate }}</button>
+  </div>
+
+  <ng-container *ngIf="!loading() && !error() && request() as r">
+    <header class="page-header">
+      <div>
+        <p class="request-number">{{ r.requestNumber }}</p>
+        <h1>{{ r.propertyTitle }}</h1>
+      </div>
+      <span class="status" [attr.data-status]="r.status">{{ ('SERVICE_REQUESTS.STATUS.' + r.status.toUpperCase()) | translate }}</span>
+    </header>
+
+    <section class="panel">
+      <h2>{{ 'PROVIDER.DETAIL.SUMMARY' | translate }}</h2>
+      <dl>
+        <div><dt>{{ 'SERVICE_REQUESTS.CATEGORY' | translate }}</dt><dd>{{ ('SERVICES.CATEGORY.' + r.category) | translate }}</dd></div>
+        <div><dt>{{ 'SERVICE_REQUESTS.OFFERING' | translate }}</dt><dd>{{ r.serviceOfferingTitle }}</dd></div>
+        <div><dt>{{ 'PROVIDER.INBOX.REQUESTER' | translate }}</dt><dd>{{ r.requesterName }}</dd></div>
+        <div><dt>{{ 'PROVIDER.DETAIL.SUBMITTED_AT' | translate }}</dt><dd>{{ r.createdAt | date:'medium' }}</dd></div>
+        <div *ngIf="r.requesterNote"><dt>{{ 'PROVIDER.DETAIL.REQUESTER_NOTE' | translate }}</dt><dd>{{ r.requesterNote }}</dd></div>
+        <div *ngIf="r.providerNote"><dt>{{ 'PROVIDER.DETAIL.PROVIDER_NOTE' | translate }}</dt><dd>{{ r.providerNote }}</dd></div>
+        <div *ngIf="r.quotedPrice != null"><dt>{{ 'PROVIDER.DETAIL.QUOTED_PRICE' | translate }}</dt><dd>{{ r.quotedPrice }}</dd></div>
+        <div *ngIf="r.scheduledAt"><dt>{{ 'SERVICE_REQUESTS.SCHEDULED_AT' | translate }}</dt><dd>{{ r.scheduledAt | date:'medium' }}</dd></div>
+        <div *ngIf="r.finalPrice != null"><dt>{{ 'PROVIDER.DETAIL.FINAL_PRICE' | translate }}</dt><dd>{{ r.finalPrice }}</dd></div>
+        <div *ngIf="r.rejectionReason"><dt>{{ 'SERVICE_REQUESTS.REJECTION_REASON' | translate }}</dt><dd>{{ r.rejectionReason }}</dd></div>
+        <div *ngIf="r.cancellationReason"><dt>{{ 'SERVICE_REQUESTS.CANCELLATION_REASON' | translate }}</dt><dd>{{ r.cancellationReason }}</dd></div>
+        <a class="property-link" [routerLink]="['/properties', r.propertyId]">{{ 'PROVIDER.DETAIL.VIEW_PROPERTY' | translate }} →</a>
+      </dl>
+    </section>
+
+    <!-- لوحة الإجراء — زر/نموذج واحد بارز يطابق nextProviderAction() لحالة الطلب الحالية -->
+    <section class="panel action-panel" *ngIf="action() !== 'None'">
+      <h2>{{ 'PROVIDER.DETAIL.ACTION' | translate }}</h2>
+
+      <ng-container *ngIf="action() === 'AcceptOrReject'">
+        <div class="actions" *ngIf="!openForm()">
+          <button type="button" class="btn success" (click)="openAcceptForm()">{{ 'PROVIDER.DETAIL.ACCEPT' | translate }}</button>
+          <button type="button" class="btn danger" (click)="openRejectForm()">{{ 'PROVIDER.DETAIL.REJECT' | translate }}</button>
+        </div>
+
+        <form class="inline-form" *ngIf="openForm() === 'accept'" (ngSubmit)="submitAccept()">
+          <label>
+            {{ 'PROVIDER.DETAIL.QUOTED_PRICE' | translate }} ({{ 'PROVIDER.DETAIL.OPTIONAL' | translate }})
+            <input type="number" min="0" step="0.01" [ngModel]="quotedPrice()" (ngModelChange)="quotedPrice.set($event)" name="quotedPrice" />
+          </label>
+          <label>
+            {{ 'PROVIDER.DETAIL.PROVIDER_NOTE' | translate }} ({{ 'PROVIDER.DETAIL.OPTIONAL' | translate }})
+            <textarea rows="3" [ngModel]="providerNote()" (ngModelChange)="providerNote.set($event)" name="providerNote"></textarea>
+          </label>
+          <div class="form-actions">
+            <button type="submit" class="btn success" [disabled]="submitting()">{{ 'PROVIDER.DETAIL.CONFIRM_ACCEPT' | translate }}</button>
+            <button type="button" class="btn secondary" (click)="closeForm()">{{ 'COMMON.CANCEL' | translate }}</button>
+          </div>
+        </form>
+
+        <form class="inline-form" *ngIf="openForm() === 'reject'" (ngSubmit)="submitReject()">
+          <label>
+            {{ 'PROVIDER.DETAIL.REJECT_REASON' | translate }}
+            <textarea rows="3" required [ngModel]="rejectReason()" (ngModelChange)="rejectReason.set($event)" name="rejectReason"></textarea>
+          </label>
+          <div class="form-actions">
+            <button type="submit" class="btn danger" [disabled]="submitting() || !rejectReason().trim()">{{ 'PROVIDER.DETAIL.CONFIRM_REJECT' | translate }}</button>
+            <button type="button" class="btn secondary" (click)="closeForm()">{{ 'COMMON.CANCEL' | translate }}</button>
+          </div>
+        </form>
+      </ng-container>
+
+      <form class="inline-form" *ngIf="action() === 'Schedule'" (ngSubmit)="submitSchedule()">
+        <label>
+          {{ 'PROVIDER.DETAIL.SCHEDULE_AT' | translate }}
+          <input type="datetime-local" required [ngModel]="scheduledAt()" (ngModelChange)="scheduledAt.set($event)" name="scheduledAt" />
+        </label>
+        <div class="form-actions">
+          <button type="submit" class="btn success" [disabled]="submitting() || !scheduledAt()">{{ 'PROVIDER.DETAIL.CONFIRM_SCHEDULE' | translate }}</button>
+        </div>
+      </form>
+
+      <div class="actions" *ngIf="action() === 'Start'">
+        <button type="button" class="btn success" (click)="submitStart()" [disabled]="submitting()">{{ 'PROVIDER.DETAIL.CONFIRM_START' | translate }}</button>
+      </div>
+
+      <form class="inline-form" *ngIf="action() === 'Complete'" (ngSubmit)="submitComplete()">
+        <label>
+          {{ 'PROVIDER.DETAIL.FINAL_PRICE' | translate }} ({{ 'PROVIDER.DETAIL.OPTIONAL' | translate }})
+          <input type="number" min="0" step="0.01" [ngModel]="finalPrice()" (ngModelChange)="finalPrice.set($event)" name="finalPrice" />
+        </label>
+        <div class="form-actions">
+          <button type="submit" class="btn success" [disabled]="submitting()">{{ 'PROVIDER.DETAIL.CONFIRM_COMPLETE' | translate }}</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>{{ 'PROVIDER.DETAIL.DOCUMENTS' | translate }}</h2>
+      <ul class="documents" *ngIf="documents().length > 0">
+        <li *ngFor="let doc of documents(); trackBy: trackByDocId">
+          <a [href]="doc.fileUrl" target="_blank" rel="noopener">{{ doc.fileName }}</a>
+          <span class="doc-date">{{ doc.createdAt | date:'short' }}</span>
+        </li>
+      </ul>
+      <p *ngIf="documents().length === 0" class="empty-hint">{{ 'PROVIDER.DETAIL.NO_DOCUMENTS' | translate }}</p>
+
+      <label class="upload-btn">
+        <input type="file" (change)="onFileSelected($event)" [disabled]="uploading()" hidden />
+        <span>{{ uploading() ? ('PROVIDER.DETAIL.UPLOADING' | translate) : ('PROVIDER.DETAIL.UPLOAD' | translate) }}</span>
+      </label>
+      <p class="error-hint" *ngIf="uploadError()">{{ uploadError() | translate }}</p>
+    </section>
+
+    <section class="panel">
+      <h2>{{ 'PROVIDER.DETAIL.HISTORY' | translate }}</h2>
+      <ol class="timeline">
+        <li *ngFor="let item of history(); trackBy: trackByHistoryId">
+          <span class="timeline-dot" [attr.data-status]="item.toStatus"></span>
+          <div>
+            <p class="timeline-status">{{ ('SERVICE_REQUESTS.STATUS.' + item.toStatus.toUpperCase()) | translate }}</p>
+            <p class="timeline-date">{{ item.createdAt | date:'medium' }}</p>
+            <p class="timeline-note" *ngIf="item.note">{{ item.note }}</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+  </ng-container>
+</section>

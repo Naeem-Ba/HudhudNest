@@ -4,6 +4,7 @@ import { BehaviorSubject, catchError, map, Observable, of, tap } from 'rxjs';
 import { AuthApiService } from './auth-api.service';
 import { CsrfTokenService } from '../services/csrf-token.service';
 import { ProfileService } from '../api/profile.service';
+import { ServiceProviderService } from '../api/service-provider.service';
 import { TokenStorageService } from '../services/token-storage.service';
 export interface AuthenticatedUser {
   id: string;
@@ -25,6 +26,7 @@ export class AuthService {
   private readonly authApi = inject(AuthApiService);
   private readonly csrfTokenService = inject(CsrfTokenService);
   private readonly profileService = inject(ProfileService);
+  private readonly serviceProviderService = inject(ServiceProviderService);
 
   private readonly loggedIn = new BehaviorSubject<boolean>(false);
   readonly isLoggedIn$ = this.loggedIn.asObservable();
@@ -212,6 +214,9 @@ export class AuthService {
     // BehaviorSubject in memory and could still render to a component that reads it before
     // the next full page reload.
     this.profileService.clearCache();
+    // نفس السبب بالضبط — لا نريد لحالة "مزوّد خدمة" من الجلسة المنتهية أن تُصوَّر لحساب
+    // مختلف قد يسجّل دخوله بعدها في نفس تبويب المتصفح قبل إعادة تحميل كاملة للصفحة.
+    this.serviceProviderService.clearCache();
     this.setAnonymousState();
   }
 

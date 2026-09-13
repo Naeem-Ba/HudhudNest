@@ -111,8 +111,10 @@ const PROJECT_TYPES: InvestmentProjectType[] = [
 
     label { font-size:.85rem; font-weight:600; color:var(--gray-700); }
     input, select, textarea {
+      /* 16px (لا .9rem) — أقل من 16px يُشغّل تكبير iOS Safari التلقائي عند التركيز،
+         مؤكَّد حيّاً على نموذج إنشاء مشروع استثماري بمحاكي هاتف 360px. */
       border:1px solid var(--border); border-radius:var(--r-md); padding:.6rem .8rem;
-      font-size:.9rem; background:var(--surface); font-family: inherit;
+      font-size:16px; background:var(--surface); font-family: inherit;
     }
     textarea { resize: vertical; }
 

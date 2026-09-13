@@ -320,7 +320,10 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | null;
     .modal-form { display:flex; flex-direction:column; gap:.8rem; }
     .modal-form label { display:flex; flex-direction:column; gap:.35rem; font-size: var(--text-sm); font-weight:600; color: var(--navy); }
     .modal-form select, .modal-form input, .modal-form textarea {
-      border:1px solid var(--border); border-radius:var(--r-sm); padding:.5rem .6rem; font: inherit;
+      /* font-size مضبوط صراحة بـ 16px (لا inherit من .modal-form label الأصغر) — أقل من
+         16px يُشغّل تكبير iOS Safari التلقائي عند تركيز أي حقل إدخال، مؤكَّد حيّاً على
+         محاكي iPhone (375px) بهذه النافذة تحديداً. */
+      border:1px solid var(--border); border-radius:var(--r-sm); padding:.5rem .6rem; font: inherit; font-size: 16px;
     }
     .preset-row { display:flex; gap:.4rem; flex-wrap:wrap; }
     .preset-chip {

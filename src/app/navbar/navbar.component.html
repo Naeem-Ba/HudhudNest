@@ -423,6 +423,12 @@
               {{ 'NAVBAR.MY_SERVICES' | translate }}
             </a>
 
+            <!-- تظهر فقط لحساب لديه ملف ServiceProvider فعلي — انظر isProvider$ أعلاه. -->
+            <a *ngIf="isProvider$ | async" routerLink="/provider/requests" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+              <span aria-hidden="true">🧰</span>
+              {{ 'NAVBAR.PROVIDER_INBOX' | translate }}
+            </a>
+
             <!-- Phase-0, Task 3. -->
             <a routerLink="/saved-searches" class="account__item" role="menuitem" (click)="closeAccountMenu()">
               <span aria-hidden="true">🔔</span>
@@ -699,6 +705,10 @@
 
         <a routerLink="/my-services" class="mobile-drawer__link" (click)="closeMobileMenu()">
           {{ 'NAVBAR.MY_SERVICES' | translate }}
+        </a>
+
+        <a *ngIf="isProvider$ | async" routerLink="/provider/requests" class="mobile-drawer__link" (click)="closeMobileMenu()">
+          {{ 'NAVBAR.PROVIDER_INBOX' | translate }}
         </a>
 
         <a routerLink="/saved-searches" class="mobile-drawer__link" (click)="closeMobileMenu()">

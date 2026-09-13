@@ -1,21 +1,34 @@
 // src/app/core/api/service-request.service.ts
 //
-// AqarTech Services Marketplace — the requester-facing lifecycle.
+// AqarTech Services Marketplace — requester-facing lifecycle AND the provider-facing
+// lifecycle (added alongside the provider dashboard — see provider-inbox.page.ts /
+// provider-request-detail.page.ts).
 // Endpoints:
-//   POST   /api/ServiceRequests                    ← إنشاء طلب خدمة جديد
-//   GET    /api/ServiceRequests/mine?status=...     ← طلباتي
-//   GET    /api/ServiceRequests/{id}                ← تفاصيل طلب
-//   GET    /api/ServiceRequests/{id}/history         ← سجل تغيّر الحالة
-//   PUT    /api/ServiceRequests/{id}/cancel          ← إلغاء طلب
-//   POST   /api/ServiceRequests/{id}/review          ← تقييم خدمة مكتملة
+//   POST   /api/ServiceRequests                      ← إنشاء طلب خدمة جديد
+//   GET    /api/ServiceRequests/mine?status=...       ← طلباتي (كطالب خدمة)
+//   GET    /api/ServiceRequests/provider-inbox        ← الطلبات الواردة (كمزوّد خدمة)
+//   GET    /api/ServiceRequests/{id}                  ← تفاصيل طلب
+//   GET    /api/ServiceRequests/{id}/history           ← سجل تغيّر الحالة
+//   GET    /api/ServiceRequests/{id}/documents          ← مستندات الطلب
+//   POST   /api/ServiceRequests/{id}/documents          ← رفع مستند
+//   PUT    /api/ServiceRequests/{id}/accept             ← قبول (مزوّد الخدمة)
+//   PUT    /api/ServiceRequests/{id}/reject             ← رفض (مزوّد الخدمة)
+//   PUT    /api/ServiceRequests/{id}/schedule           ← جدولة موعد (مزوّد الخدمة)
+//   PUT    /api/ServiceRequests/{id}/start              ← بدء التنفيذ (مزوّد الخدمة)
+//   PUT    /api/ServiceRequests/{id}/complete           ← إتمام الطلب (مزوّد الخدمة)
+//   PUT    /api/ServiceRequests/{id}/cancel             ← إلغاء طلب
+//   POST   /api/ServiceRequests/{id}/review             ← تقييم خدمة مكتملة
 
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
 import { ApiPagedResult, unwrapItems } from '../models/api.model';
 import {
+  AcceptServiceRequestPayload,
   AddServiceReviewPayload,
+  CompleteServiceRequestPayload,
   CreateServiceRequestPayload,
+  ServiceRequestDocumentDto,
   ServiceRequestDto,
   ServiceRequestStatus,
   ServiceRequestStatusHistoryDto,
@@ -68,6 +81,84 @@ export class ServiceRequestService {
   addReview(id: string, payload: AddServiceReviewPayload): Observable<ServiceReviewDto> {
     const body = { Rating: payload.rating, Comment: payload.comment ?? null };
     return this.api.post<unknown>(`${this.endpoint}/${id}/review`, body).pipe(map(response => this.toReview(response)));
+  }
+
+  // -------------------------------------------------------------------------
+  // Provider side — ActorUserId is resolved to a ServiceProvider server-side on
+  // every one of these (ServiceRequestsController), so no providerId is passed
+  // from here.
+  // -------------------------------------------------------------------------
+
+  getProviderInbox(status?: ServiceRequestStatus): Observable<ServiceRequestDto[]> {
+    const query: Record<string, string | undefined> = {};
+    if (status) query['status'] = status;
+
+    return this.api
+      .get<ServiceRequestDto[] | ApiPagedResult<ServiceRequestDto>>(`${this.endpoint}/provider-inbox`, query)
+      .pipe(map(response => unwrapItems(response).map(item => this.toRequest(item))));
+  }
+
+  getDocuments(id: string): Observable<ServiceRequestDocumentDto[]> {
+    return this.api
+      .get<ServiceRequestDocumentDto[] | ApiPagedResult<ServiceRequestDocumentDto>>(`${this.endpoint}/${id}/documents`)
+      .pipe(map(response => unwrapItems(response).map(item => this.toDocument(item))));
+  }
+
+  uploadDocument(id: string, file: File): Observable<ServiceRequestDocumentDto> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.api
+      .upload<unknown>(`${this.endpoint}/${id}/documents`, formData)
+      .pipe(map(response => this.toDocument(response)));
+  }
+
+  accept(id: string, payload: AcceptServiceRequestPayload): Observable<ServiceRequestDto> {
+    const body = {
+      QuotedPrice: payload.quotedPrice ?? null,
+      QuotedPriceCurrencyId: payload.quotedPriceCurrencyId ?? null,
+      ProviderNote: payload.providerNote?.trim() || null
+    };
+
+    return this.api.put<unknown>(`${this.endpoint}/${id}/accept`, body).pipe(map(response => this.toRequest(response)));
+  }
+
+  reject(id: string, reason: string): Observable<ServiceRequestDto> {
+    return this.api
+      .put<unknown>(`${this.endpoint}/${id}/reject`, { Reason: reason.trim() })
+      .pipe(map(response => this.toRequest(response)));
+  }
+
+  schedule(id: string, scheduledAtIso: string): Observable<ServiceRequestDto> {
+    return this.api
+      .put<unknown>(`${this.endpoint}/${id}/schedule`, { ScheduledAt: scheduledAtIso })
+      .pipe(map(response => this.toRequest(response)));
+  }
+
+  start(id: string): Observable<ServiceRequestDto> {
+    return this.api.put<unknown>(`${this.endpoint}/${id}/start`, {}).pipe(map(response => this.toRequest(response)));
+  }
+
+  complete(id: string, payload: CompleteServiceRequestPayload): Observable<ServiceRequestDto> {
+    const body = {
+      FinalPrice: payload.finalPrice ?? null,
+      FinalPriceCurrencyId: payload.finalPriceCurrencyId ?? null
+    };
+
+    return this.api.put<unknown>(`${this.endpoint}/${id}/complete`, body).pipe(map(response => this.toRequest(response)));
+  }
+
+  private toDocument(raw: unknown): ServiceRequestDocumentDto {
+    const d = raw as Record<string, unknown>;
+    return {
+      id: String(d['id'] ?? ''),
+      serviceRequestId: String(d['serviceRequestId'] ?? ''),
+      fileUrl: String(d['fileUrl'] ?? ''),
+      fileType: String(d['fileType'] ?? ''),
+      fileName: String(d['fileName'] ?? ''),
+      uploadedByUserId: String(d['uploadedByUserId'] ?? ''),
+      createdAt: String(d['createdAt'] ?? '')
+    };
   }
 
   private toRequest(raw: unknown): ServiceRequestDto {

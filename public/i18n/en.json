@@ -52,7 +52,8 @@
     "ADMIN_INVESTMENTS": "Investment Portal (Admin)",
     "ADMIN_MARKETING": "Marketing Dashboard",
     "OPEN_MENU": "Open menu",
-    "CLOSE_MENU": "Close menu"
+    "CLOSE_MENU": "Close menu",
+    "PROVIDER_INBOX": "Incoming Service Requests"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -2139,6 +2140,72 @@
       "NEIGHBORHOOD_NEEDS_DISTRICT": "A neighborhood cannot be selected without a district.",
       "AREA_INVALID": "Area must be greater than zero.",
       "ROOMS_INVALID": "Invalid number of rooms."
+    }
+  },
+  "PROVIDER": {
+    "INBOX": {
+      "EYEBROW": "Service Provider",
+      "TITLE": "Incoming Requests",
+      "SUBTITLE": "Review and manage the service requests sent to you, right from your phone.",
+      "PROFILE_LINK": "My Provider Profile",
+      "PENDING_COUNT": "{{count}} request(s) awaiting your response",
+      "EMPTY": "No requests in this filter yet.",
+      "LOAD_ERROR": "Could not load your incoming requests.",
+      "REQUESTER": "Requester"
+    },
+    "DETAIL": {
+      "BACK": "Incoming Requests",
+      "NOT_FOUND": "Request not found.",
+      "LOAD_ERROR": "Could not load the request details.",
+      "SUMMARY": "Request Summary",
+      "SUBMITTED_AT": "Submitted At",
+      "REQUESTER_NOTE": "Requester's Note",
+      "PROVIDER_NOTE": "Your Note",
+      "QUOTED_PRICE": "Quoted Price",
+      "FINAL_PRICE": "Final Price",
+      "VIEW_PROPERTY": "View Property",
+      "ACTION": "Action Needed",
+      "ACCEPT": "Accept Request",
+      "REJECT": "Reject Request",
+      "OPTIONAL": "optional",
+      "CONFIRM_ACCEPT": "Confirm Accept",
+      "REJECT_REASON": "Reason for rejection",
+      "CONFIRM_REJECT": "Confirm Reject",
+      "SCHEDULE_AT": "Scheduled Date/Time",
+      "CONFIRM_SCHEDULE": "Confirm Schedule",
+      "CONFIRM_START": "Start Now",
+      "CONFIRM_COMPLETE": "Confirm Completion",
+      "DOCUMENTS": "Documents",
+      "NO_DOCUMENTS": "No documents uploaded yet.",
+      "UPLOAD": "Upload Document",
+      "UPLOADING": "Uploading...",
+      "DOCUMENT_TOO_LARGE": "File is larger than the 5 MB limit.",
+      "UPLOAD_ERROR": "Could not upload the document.",
+      "HISTORY": "Status History",
+      "ACCEPT_SUCCESS": "Request accepted.",
+      "REJECT_SUCCESS": "Request rejected.",
+      "SCHEDULE_SUCCESS": "Schedule confirmed.",
+      "START_SUCCESS": "Work started.",
+      "COMPLETE_SUCCESS": "Request completed."
+    },
+    "PROFILE": {
+      "BACK": "Incoming Requests",
+      "TITLE": "My Provider Profile",
+      "LOAD_ERROR": "Could not load your profile.",
+      "DISPLAY_NAME": "Display Name",
+      "BIO": "Bio",
+      "CONTACT_EMAIL": "Contact Email",
+      "CONTACT_PHONE": "Contact Phone",
+      "SAVE_SUCCESS": "Changes saved.",
+      "SAVE_ERROR": "Could not save your changes.",
+      "REVIEW_COUNT": "{{count}} review(s)",
+      "VERIFICATION": {
+        "NONE": "Not verified",
+        "ACCOUNTVERIFIED": "Account verified",
+        "IDENTITYVERIFIED": "Identity verified",
+        "BUSINESSVERIFIED": "Business verified",
+        "SERVICEVERIFIED": "Service verified"
+      }
     }
   }
 }

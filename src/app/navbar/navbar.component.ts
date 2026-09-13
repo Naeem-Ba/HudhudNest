@@ -24,6 +24,7 @@ import { ScrollLockService } from '../core/services/scroll-lock.service';
 import { ThemeService } from '../core/services/theme.service';
 import { NotificationsApiService } from '../core/api/notifications-api.service';
 import { ProfileService, isEligibleForListing } from '../core/api/profile.service';
+import { ServiceProviderService } from '../core/api/service-provider.service';
 
 type AppLang = 'ar' | 'en' | 'de';
 
@@ -59,6 +60,7 @@ export class NavbarComponent implements OnInit {
   // محدَّث لحظيًا عبر SignalR)، كان ينقصه فقط رابط بالواجهة يعرضه.
   readonly notificationsApi = inject(NotificationsApiService);
   private readonly profileService = inject(ProfileService);
+  private readonly serviceProviderService = inject(ServiceProviderService);
 
   @ViewChild('accountRef')
   private accountRef?: ElementRef<HTMLElement>;
@@ -86,6 +88,17 @@ export class NavbarComponent implements OnInit {
     this.isLoggedIn$,
     this.profileService.profile$
   ]).pipe(map(([loggedIn, profile]) => loggedIn && isEligibleForListing(profile)));
+
+  /**
+   * "لوحة مزوّد الخدمة" — تظهر فقط لحساب لديه ملف ServiceProvider فعلي (ليس دور Identity؛
+   * انظر provider-guard.ts لنفس التفرقة). myProvider$ يبدأ undefined (لم يُحمَّل بعد)
+   * فيُقرأ كـ false هنا حتى يصل refresh() أدناه (مستدعى من نفس مكان profileService.refresh()
+   * في الاشتراك على currentUser$ تحت).
+   */
+  readonly isProvider$: Observable<boolean> = combineLatest([
+    this.isLoggedIn$,
+    this.serviceProviderService.myProvider$
+  ]).pipe(map(([loggedIn, provider]) => loggedIn && !!provider));
 
   dropdownOpen = false;
   langMenuOpen = false;
@@ -170,6 +183,11 @@ export class NavbarComponent implements OnInit {
         // break the rest of the navbar, and canAddProperty$ simply stays false (link
         // hidden) until the next successful refresh — the safe default either way.
         this.profileService.refresh().subscribe({ error: () => undefined });
+
+        // نفس المنطق لـ isProvider$ أعلاه — 204 لغير المزوّدين طبيعي وليس خطأً (انظر
+        // ServiceProviderService.getMine)، فلا حاجة لأي معالجة هنا غير الكتم البسيط لخطأ
+        // شبكة فعلي محتمل.
+        this.serviceProviderService.refresh().subscribe({ error: () => undefined });
 
         const imageUrl = this.urlService.buildWithCacheBuster(user.ImageUrl);
 

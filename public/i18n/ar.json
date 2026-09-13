@@ -32,6 +32,7 @@
     "CONTACT": "تواصل معنا",
     "MESSAGES": "الرسائل",
     "ADMIN_USERS": "إدارة المستخدمين",
+    "ADMIN_INVESTMENTS": "بوابة الاستثمار (إدارة)",
     "ADMIN_MARKETING": "لوحة التسويق",
     "LOGIN": "تسجيل الدخول",
     "LOGOUT": "تسجيل الخروج",
@@ -51,7 +52,8 @@
     "INVESTMENTS": "الاستثمار",
     "INVESTMENT_WATCHLIST": "قائمة متابعة الاستثمار",
     "OPEN_MENU": "فتح القائمة",
-    "CLOSE_MENU": "إغلاق القائمة"
+    "CLOSE_MENU": "إغلاق القائمة",
+    "PROVIDER_INBOX": "طلبات الخدمة الواردة"
   },
   "AUTH": {
     "LOGIN_TITLE": "أهلاً بك",
@@ -2138,6 +2140,72 @@
       "NEIGHBORHOOD_NEEDS_DISTRICT": "لا يمكن اختيار حي بلا منطقة.",
       "AREA_INVALID": "المساحة يجب أن تكون أكبر من صفر.",
       "ROOMS_INVALID": "عدد الغرف غير صالح."
+    }
+  },
+  "PROVIDER": {
+    "INBOX": {
+      "EYEBROW": "مزوّد الخدمة",
+      "TITLE": "الطلبات الواردة",
+      "SUBTITLE": "اطّلع على طلبات الخدمة الموجّهة إليك وأدرها من هاتفك.",
+      "PROFILE_LINK": "ملفي كمزوّد خدمة",
+      "PENDING_COUNT": "{{count}} طلب بانتظار ردّك",
+      "EMPTY": "لا توجد طلبات ضمن هذا التصنيف حالياً.",
+      "LOAD_ERROR": "تعذّر تحميل الطلبات الواردة.",
+      "REQUESTER": "الطالب"
+    },
+    "DETAIL": {
+      "BACK": "الطلبات الواردة",
+      "NOT_FOUND": "الطلب غير موجود.",
+      "LOAD_ERROR": "تعذّر تحميل تفاصيل الطلب.",
+      "SUMMARY": "ملخّص الطلب",
+      "SUBMITTED_AT": "تاريخ الطلب",
+      "REQUESTER_NOTE": "ملاحظة الطالب",
+      "PROVIDER_NOTE": "ملاحظتك",
+      "QUOTED_PRICE": "السعر المعروض",
+      "FINAL_PRICE": "السعر النهائي",
+      "VIEW_PROPERTY": "عرض العقار",
+      "ACTION": "الإجراء المطلوب",
+      "ACCEPT": "قبول الطلب",
+      "REJECT": "رفض الطلب",
+      "OPTIONAL": "اختياري",
+      "CONFIRM_ACCEPT": "تأكيد القبول",
+      "REJECT_REASON": "سبب الرفض",
+      "CONFIRM_REJECT": "تأكيد الرفض",
+      "SCHEDULE_AT": "موعد التنفيذ",
+      "CONFIRM_SCHEDULE": "تأكيد الجدولة",
+      "CONFIRM_START": "بدء التنفيذ الآن",
+      "CONFIRM_COMPLETE": "تأكيد الإتمام",
+      "DOCUMENTS": "المستندات",
+      "NO_DOCUMENTS": "لا توجد مستندات مرفوعة بعد.",
+      "UPLOAD": "رفع مستند",
+      "UPLOADING": "جارٍ الرفع...",
+      "DOCUMENT_TOO_LARGE": "حجم الملف أكبر من الحد المسموح (5 ميغابايت).",
+      "UPLOAD_ERROR": "تعذّر رفع المستند.",
+      "HISTORY": "سجل الحالة",
+      "ACCEPT_SUCCESS": "تم قبول الطلب.",
+      "REJECT_SUCCESS": "تم رفض الطلب.",
+      "SCHEDULE_SUCCESS": "تم تحديد الموعد.",
+      "START_SUCCESS": "تم بدء التنفيذ.",
+      "COMPLETE_SUCCESS": "تم إتمام الطلب."
+    },
+    "PROFILE": {
+      "BACK": "الطلبات الواردة",
+      "TITLE": "ملفي كمزوّد خدمة",
+      "LOAD_ERROR": "تعذّر تحميل الملف الشخصي.",
+      "DISPLAY_NAME": "الاسم المعروض",
+      "BIO": "نبذة تعريفية",
+      "CONTACT_EMAIL": "بريد إلكتروني للتواصل",
+      "CONTACT_PHONE": "رقم هاتف للتواصل",
+      "SAVE_SUCCESS": "تم حفظ التعديلات.",
+      "SAVE_ERROR": "تعذّر حفظ التعديلات.",
+      "REVIEW_COUNT": "{{count}} تقييم",
+      "VERIFICATION": {
+        "NONE": "غير موثّق",
+        "ACCOUNTVERIFIED": "حساب موثّق",
+        "IDENTITYVERIFIED": "هوية موثّقة",
+        "BUSINESSVERIFIED": "نشاط تجاري موثّق",
+        "SERVICEVERIFIED": "خدمة موثّقة"
+      }
     }
   }
 }

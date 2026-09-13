@@ -130,3 +130,77 @@ export const CANCELLABLE_STATUSES: ServiceRequestStatus[] = [
 export function canReview(request: ServiceRequestDto, currentUserId: string | null): boolean {
   return !!currentUserId && request.requesterId === currentUserId && request.status === 'Completed';
 }
+
+// ---------------------------------------------------------------------------
+// Provider side — matches ServiceProvidersController / ServiceRequestsController's
+// provider-inbox + accept/reject/schedule/start/complete lifecycle. See
+// provider-inbox.page.ts / provider-request-detail.page.ts, the frontend entry
+// points that consume these.
+// ---------------------------------------------------------------------------
+
+export interface ServiceProviderDto {
+  id: string;
+  userId: string;
+  agencyId?: string | null;
+  displayName: string;
+  bio?: string | null;
+  logoUrl?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  verificationLevel: ServiceProviderVerificationLevel;
+  isActive: boolean;
+  averageRating?: number | null;
+  reviewCount: number;
+  createdAt: string;
+}
+
+export interface UpdateServiceProviderProfilePayload {
+  displayName: string;
+  bio?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+}
+
+export interface ServiceRequestDocumentDto {
+  id: string;
+  serviceRequestId: string;
+  fileUrl: string;
+  fileType: string;
+  fileName: string;
+  uploadedByUserId: string;
+  createdAt: string;
+}
+
+export interface AcceptServiceRequestPayload {
+  quotedPrice?: number | null;
+  quotedPriceCurrencyId?: number | null;
+  providerNote?: string | null;
+}
+
+export interface CompleteServiceRequestPayload {
+  finalPrice?: number | null;
+  finalPriceCurrencyId?: number | null;
+}
+
+/** Mirrors ServiceRequest's state machine — which single provider action (if any) applies
+ * to a request's current status. 'None' covers terminal/non-actionable states (Completed,
+ * Reviewed, Rejected, Cancelled).
+ *
+ * ✅ تصحيح (وُجد بتدقيق حيّ): 'Submitted' كانت هنا خطأً بدل 'UnderReview'. الباك اند
+ * (ServiceRequestStatus.cs) يوثّق صراحة أن كل طلب يُنشأ مباشرة بحالة UnderReview —
+ * "Submitted" لحظية فقط داخل ServiceRequest.Create ولا تُخزَّن أبداً كحالة فعلية
+ * يراها مزوّد الخدمة. AcceptServiceRequestCommandHandler/RejectServiceRequestCommandHandler
+ * يتطلبان EnsureStatus(UnderReview) تحديداً — القبول/الرفض من 'Submitted' يفشل بـ409
+ * دائماً في الواقع، لأن أي طلب حقيقي لا يصل بهذه الحالة إطلاقاً. */
+export type ProviderAction = 'AcceptOrReject' | 'Schedule' | 'Start' | 'Complete' | 'None';
+
+export function nextProviderAction(status: ServiceRequestStatus): ProviderAction {
+  switch (status) {
+    case 'Submitted': // نظرياً غير قابل للحدوث فعلياً (انظر التعليق أعلاه) — يُعامَل بنفس UnderReview احتياطاً.
+    case 'UnderReview': return 'AcceptOrReject';
+    case 'Accepted': return 'Schedule';
+    case 'Scheduled': return 'Start';
+    case 'InProgress': return 'Complete';
+    default: return 'None';
+  }
+}

@@ -32,6 +32,7 @@
     "CONTACT": "Kontakt",
     "MESSAGES": "Nachrichten",
     "ADMIN_USERS": "Benutzerverwaltung",
+    "ADMIN_INVESTMENTS": "Investmentportal (Admin)",
     "ADMIN_MARKETING": "Marketing-Dashboard",
     "LOGIN": "Anmelden",
     "LOGOUT": "Abmelden",
@@ -51,7 +52,8 @@
     "INVESTMENTS": "Investitionen",
     "INVESTMENT_WATCHLIST": "Investment-Merkliste",
     "OPEN_MENU": "Menü öffnen",
-    "CLOSE_MENU": "Menü schließen"
+    "CLOSE_MENU": "Menü schließen",
+    "PROVIDER_INBOX": "Eingehende Serviceanfragen"
   },
   "AUTH": {
     "LOGIN_TITLE": "Willkommen",
@@ -2138,6 +2140,72 @@
       "NEIGHBORHOOD_NEEDS_DISTRICT": "Ein Viertel kann nicht ohne Bezirk ausgewählt werden.",
       "AREA_INVALID": "Die Fläche muss größer als null sein.",
       "ROOMS_INVALID": "Ungültige Zimmeranzahl."
+    }
+  },
+  "PROVIDER": {
+    "INBOX": {
+      "EYEBROW": "Dienstleister",
+      "TITLE": "Eingehende Anfragen",
+      "SUBTITLE": "Sieh dir die an dich gerichteten Serviceanfragen an und verwalte sie direkt vom Handy aus.",
+      "PROFILE_LINK": "Mein Dienstleisterprofil",
+      "PENDING_COUNT": "{{count}} Anfrage(n) warten auf deine Antwort",
+      "EMPTY": "Noch keine Anfragen in diesem Filter.",
+      "LOAD_ERROR": "Eingehende Anfragen konnten nicht geladen werden.",
+      "REQUESTER": "Anfragende(r)"
+    },
+    "DETAIL": {
+      "BACK": "Eingehende Anfragen",
+      "NOT_FOUND": "Anfrage nicht gefunden.",
+      "LOAD_ERROR": "Details der Anfrage konnten nicht geladen werden.",
+      "SUMMARY": "Zusammenfassung",
+      "SUBMITTED_AT": "Eingereicht am",
+      "REQUESTER_NOTE": "Notiz des Anfragenden",
+      "PROVIDER_NOTE": "Deine Notiz",
+      "QUOTED_PRICE": "Angebotener Preis",
+      "FINAL_PRICE": "Endpreis",
+      "VIEW_PROPERTY": "Immobilie ansehen",
+      "ACTION": "Nächster Schritt",
+      "ACCEPT": "Anfrage annehmen",
+      "REJECT": "Anfrage ablehnen",
+      "OPTIONAL": "optional",
+      "CONFIRM_ACCEPT": "Annahme bestätigen",
+      "REJECT_REASON": "Ablehnungsgrund",
+      "CONFIRM_REJECT": "Ablehnung bestätigen",
+      "SCHEDULE_AT": "Geplanter Termin",
+      "CONFIRM_SCHEDULE": "Termin bestätigen",
+      "CONFIRM_START": "Jetzt starten",
+      "CONFIRM_COMPLETE": "Abschluss bestätigen",
+      "DOCUMENTS": "Dokumente",
+      "NO_DOCUMENTS": "Noch keine Dokumente hochgeladen.",
+      "UPLOAD": "Dokument hochladen",
+      "UPLOADING": "Wird hochgeladen...",
+      "DOCUMENT_TOO_LARGE": "Datei überschreitet das Limit von 5 MB.",
+      "UPLOAD_ERROR": "Dokument konnte nicht hochgeladen werden.",
+      "HISTORY": "Statusverlauf",
+      "ACCEPT_SUCCESS": "Anfrage angenommen.",
+      "REJECT_SUCCESS": "Anfrage abgelehnt.",
+      "SCHEDULE_SUCCESS": "Termin bestätigt.",
+      "START_SUCCESS": "Arbeit gestartet.",
+      "COMPLETE_SUCCESS": "Anfrage abgeschlossen."
+    },
+    "PROFILE": {
+      "BACK": "Eingehende Anfragen",
+      "TITLE": "Mein Dienstleisterprofil",
+      "LOAD_ERROR": "Profil konnte nicht geladen werden.",
+      "DISPLAY_NAME": "Anzeigename",
+      "BIO": "Kurzbeschreibung",
+      "CONTACT_EMAIL": "Kontakt-E-Mail",
+      "CONTACT_PHONE": "Kontakttelefon",
+      "SAVE_SUCCESS": "Änderungen gespeichert.",
+      "SAVE_ERROR": "Änderungen konnten nicht gespeichert werden.",
+      "REVIEW_COUNT": "{{count}} Bewertung(en)",
+      "VERIFICATION": {
+        "NONE": "Nicht verifiziert",
+        "ACCOUNTVERIFIED": "Konto verifiziert",
+        "IDENTITYVERIFIED": "Identität verifiziert",
+        "BUSINESSVERIFIED": "Unternehmen verifiziert",
+        "SERVICEVERIFIED": "Service verifiziert"
+      }
     }
   }
 }

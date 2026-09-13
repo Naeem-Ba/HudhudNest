@@ -106,7 +106,9 @@ import { LangCode } from '../../core/services/language.service';
       padding-inline-end: 2rem;
       border: 1.5px solid var(--border);
       border-radius: var(--r-md);
-      font-size: .92rem;
+      // 16px صريح — أقل من 16px يُشغّل تكبير iOS Safari التلقائي عند التركيز. مكوّن
+      // مشترك يظهر بأكثر من نموذج (property-form وغيره)، فالإصلاح هنا يعمّهم كلهم.
+      font-size: 16px;
       font-family: inherit;
       background: var(--surface);
       color: var(--gray-900);

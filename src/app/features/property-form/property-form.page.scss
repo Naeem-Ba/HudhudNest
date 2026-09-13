@@ -194,7 +194,9 @@
     padding: .72rem .9rem;
     border: 1.5px solid var(--border);
     border-radius: var(--r-md);
-    font-size: .92rem;
+    // 16px صريح (لا .92rem) — أقل من 16px يُشغّل تكبير iOS Safari التلقائي عند
+    // التركيز، مؤكَّد حيّاً. هذا أهم نموذج بالتطبيق (نشر/تعديل إعلان عقاري).
+    font-size: 16px;
     background: var(--surface);
     color: var(--gray-800);
     transition: border-color .15s, box-shadow .15s;
@@ -265,6 +267,10 @@
   font-weight: 500;
   color: var(--gray-700);
   user-select: none;
+  // المربّع المرئي 20px فقط، وبلا هذا الحشو تصبح منطقة اللمس الفعلية بارتفاع
+  // محتواها (~21px) — أصغر بكثير من حد اللمس المريح على الهاتف (44px). الحشو
+  // العمودي يوسّع منطقة اللمس بلا تغيير الحجم المرئي للمربّع نفسه.
+  padding-block: .75rem;
 
   input[type="checkbox"] { display: none; }
 

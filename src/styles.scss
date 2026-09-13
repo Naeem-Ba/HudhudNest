@@ -480,6 +480,11 @@ input[type="password"],
 input[type="tel"],
 input[type="number"],
 input[type="date"],
+// ✅ إضافة: input[type="search"] كان الوحيد المفقود من هذه القائمة — أي حقل بحث
+// (.search-input بلوحة المشرف/قائمة العقارات) كان يقع خارج هذا الـ reset فيرث خط
+// المتصفح الافتراضي لـ input[type=search] (أقل من 16px)، ما يُشغّل تكبير iOS
+// Safari التلقائي عند التركيز عليه — مؤكَّد حيّاً على أكثر من صفحة.
+input[type="search"],
 select,
 textarea {
   width: 100%;
