@@ -39,6 +39,9 @@ export function restoreSession(
   csrfTokenService: CsrfTokenService
 ): () => Promise<void> {
   return async () => {
+    // authStatus$ 'sessionRefreshing' أثناء هذا الاستدعاء بدل 'anonymous' المؤقتة —
+    // راجع تعليق AuthStatus في auth.service.ts.
+    authService.beginSessionRefresh();
     try {
       // RELEASE-BLOCKERS-AR.md B-20: this refresh call bypasses every interceptor on
       // purpose (see the comment below), which means it also bypasses CsrfInterceptor —
@@ -71,6 +74,8 @@ export function restoreSession(
     } catch {
       tokenStorage.clear();
       csrfTokenService.clear();
+    } finally {
+      authService.endSessionRefresh();
     }
   };
 }

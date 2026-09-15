@@ -322,4 +322,58 @@ describe('AuthService', () => {
       expect(loggedIn).toBeTrue();
     });
   });
+
+  // ────────────── authStatus$ / sessionExpired$ ──────────────
+  // إضافية فوق isLoggedIn$/currentUser$ الحاليين (لا تُغيّرهما) — راجع تعليق
+  // AuthStatus في auth.service.ts لسبب وجودها.
+  describe('authStatus$ و sessionExpired$', () => {
+    it('✅ بلا توكن: authStatus$ يبدأ بـ anonymous', () => {
+      service = TestBed.inject(AuthService);
+
+      let status: string | undefined;
+      service.authStatus$.subscribe(v => (status = v));
+
+      expect(status).toBe('anonymous');
+    });
+
+    it('✅ beginSessionRefresh يجعل authStatus$ يصير sessionRefreshing حتى مع توكن صالح', () => {
+      const token = makeJwt({ sub: 'u3', email: 'r@example.com', exp: Math.floor(Date.now() / 1000) + 3600 });
+      tokenStorage.setAccessToken(token);
+      service = TestBed.inject(AuthService);
+      TestBed.inject(HttpTestingController).match(`${environment.apiUrl}/users/me`)
+        .forEach(r => r.flush({}, { status: 500, statusText: 'Server Error' }));
+
+      let status: string | undefined;
+      service.authStatus$.subscribe(v => (status = v));
+      expect(status).toBe('authenticated');
+
+      service.beginSessionRefresh();
+      expect(status).toBe('sessionRefreshing');
+
+      service.endSessionRefresh();
+      expect(status).toBe('authenticated');
+    });
+
+    it('✅ notifySessionExpired يطلق sessionExpired$ مرة واحدة ويعيد authStatus$ إلى anonymous', () => {
+      const token = makeJwt({ sub: 'u4', email: 'e@example.com', exp: Math.floor(Date.now() / 1000) + 3600 });
+      tokenStorage.setAccessToken(token);
+      service = TestBed.inject(AuthService);
+      TestBed.inject(HttpTestingController).match(`${environment.apiUrl}/users/me`)
+        .forEach(r => r.flush({}, { status: 500, statusText: 'Server Error' }));
+
+      let expiredCount = 0;
+      service.sessionExpired$.subscribe(() => expiredCount++);
+      service.beginSessionRefresh();
+
+      service.notifySessionExpired();
+
+      expect(expiredCount).toBe(1);
+      let status: string | undefined;
+      service.authStatus$.subscribe(v => (status = v));
+      // notifySessionExpired لا يُنهي الجلسة بنفسها (ذاك عمل clearAndRedirect/logout)،
+      // فقط توقف علم "جارٍ التجديد" وتُطلق الحدث — الحالة المستقرة تعتمد على
+      // isLoggedIn$ كما هي.
+      expect(status).toBe('authenticated');
+    });
+  });
 });

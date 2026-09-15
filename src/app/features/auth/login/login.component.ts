@@ -16,6 +16,7 @@ import { ConsentCheckboxComponent } from '../../../shared/components/consent-che
 import {
   LOGIN_ERROR_CODES,
   LoginFailure,
+  OTP_ERROR_CODES,
   OtpPurpose,
   VerifyOtpRequest,
   lockoutMinutesRemaining,
@@ -41,7 +42,10 @@ type AuthMode = 'email' | 'phone';
 type PhoneStep = 'phone' | 'otp';
 
 /**
- * أكواد الأخطاء القادمة من PhoneAuthController.
+ * أكواد الأخطاء القادمة من PhoneAuthController — مصدرها الموحَّد الآن
+ * OTP_ERROR_CODES في core/models/auth.model.ts (كان هناك تصريح محلي
+ * مكرَّر هنا يمكن أن ينحرف عن ذاك التصريح دون أن يُلاحَظ).
+ *
  * ملاحظة توثيقية: ErrorResponse هو DTO مسمّى وليس كائناً مجهولاً، لذا
  * وفق اتفاقية التسمية الموثّقة في PROJECT-REFERENCE.md (قسم 7)، من
  * المتوقع أن يُسلسَل بصيغة PascalCase ("Code"/"Message") وليس camelCase،
@@ -49,20 +53,6 @@ type PhoneStep = 'phone' | 'otp';
  * getOtpErrorCode() أدناه يقرأ كلا الشكلين دفاعياً حتى يتم تأكيد
  * الشكل الفعلي من الشبكة.
  */
-const OTP_ERROR_CODES = {
-  RATE_LIMITED: 'RATE_LIMITED',
-  SMS_FAILED: 'SMS_FAILED',
-  OTP_STORE_FAILED: 'OTP_STORE_FAILED',
-  OTP_NOT_FOUND: 'OTP_NOT_FOUND',
-  OTP_INVALID: 'OTP_INVALID',
-  OTP_WRONG: 'OTP_WRONG',
-  OTP_ALREADY_USED: 'OTP_ALREADY_USED',
-  ROLE_ASSIGNMENT_FAILED: 'ROLE_ASSIGNMENT_FAILED',
-  USER_CREATE_FAILED: 'USER_CREATE_FAILED',
-  PHONE_AUTH_FAILED: 'PHONE_AUTH_FAILED',
-  // NEW — يتطلب endpoint /auth/phone/verify المُعاد تصميمه (راجع phone-auth-backend-design.md)
-  PHONE_ALREADY_REGISTERED: 'PHONE_ALREADY_REGISTERED'
-} as const;
 
 const PHONE_E164_PATTERN = /^\+[1-9]\d{7,14}$/;
 const OTP_CODE_PATTERN = /^\d{6}$/;
@@ -219,6 +209,15 @@ export class LoginComponent implements OnDestroy {
    */
   private handleLoginFailure(failure: LoginFailure): void {
     this.loginAttemptWarning = '';
+
+    // status 0 يعني أن الطلب لم يصل إلى الخادم إطلاقاً (انقطاع اتصال، CORS،
+    // أو الخادم متوقف) — لا علاقة له ببيانات الدخول، فيجب عدم خلطه برسالة
+    // "بيانات الدخول غير صحيحة" التي يوحي بها inferErrorCodeFromStatus حين
+    // لا يجد حالة مطابقة لـ 0 ويترك errorCode كـ null.
+    if (failure.status === 0) {
+      this.setError(this.t('AUTH.ERRORS.NETWORK_ERROR'));
+      return;
+    }
 
     switch (failure.errorCode) {
       case LOGIN_ERROR_CODES.ACCOUNT_LOCKED:

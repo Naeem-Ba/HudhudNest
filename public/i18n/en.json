@@ -154,6 +154,7 @@
       "LAST_NAME_MIN": "Last name must contain at least two characters",
       "EMAIL_ALREADY_EXISTS": "This email address is already registered",
       "SERVER_ERROR": "A server error occurred. Try again later",
+      "NETWORK_ERROR": "Could not reach the server. Check your internet connection and try again.",
       "GOOGLE_NOT_CONFIGURED": "Google login is not configured.",
       "GOOGLE_SDK_UNAVAILABLE": "Unable to load the Google login service.",
       "GOOGLE_NO_TOKEN": "Google did not return a valid login token.",

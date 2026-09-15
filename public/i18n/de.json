@@ -154,6 +154,7 @@
       "LAST_NAME_MIN": "Der Nachname muss mindestens zwei Zeichen enthalten",
       "EMAIL_ALREADY_EXISTS": "Diese E-Mail-Adresse ist bereits registriert",
       "SERVER_ERROR": "Ein Serverfehler ist aufgetreten. Versuchen Sie es später erneut",
+      "NETWORK_ERROR": "Der Server ist nicht erreichbar. Überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
       "GOOGLE_NOT_CONFIGURED": "Die Anmeldung mit Google ist nicht konfiguriert.",
       "GOOGLE_SDK_UNAVAILABLE": "Der Google-Anmeldedienst konnte nicht geladen werden.",
       "GOOGLE_NO_TOKEN": "Google hat kein gültiges Anmeldetoken zurückgegeben.",

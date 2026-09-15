@@ -1,11 +1,25 @@
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, catchError, map, Observable, of, tap } from 'rxjs';
+import { BehaviorSubject, catchError, combineLatest, map, Observable, of, Subject, tap } from 'rxjs';
 
 import { AuthApiService } from './auth-api.service';
 import { CsrfTokenService } from '../services/csrf-token.service';
 import { ProfileService } from '../api/profile.service';
 import { ServiceProviderService } from '../api/service-provider.service';
 import { TokenStorageService } from '../services/token-storage.service';
+
+/**
+ * حالات الجلسة الصريحة — إضافية فوق isLoggedIn$/currentUser$ الحاليين، وليست
+ * بديلاً عنهما (كل المستهلكين الحاليين — الـ guards، navbar، إلخ — يستمرون
+ * بلا أي تغيير). الهدف: تمييز "لا تزال الجلسة تُستعاد/تُجدَّد" و"جلسة انتهت
+ * فعلاً" عن boolean واحد لا يفرّق بين "مجهول تأكيدياً" و"جارٍ التحقق"،
+ * تماماً كما وُثِّق في قسم "التفريق بين حالات Authentication" من خطة
+ * المرحلة الأولى. sessionExpired ليست حالة مستقرة — هي حدث لحظي (Subject)
+ * يُطلَق فقط عند انتهاء جلسة كانت موجودة فعلاً على صفحة تتطلّب تسجيل دخول
+ * (راجع notifySessionExpired ومستدعيها في refresh-auth.interceptor.ts)،
+ * ثم تستقر الحالة على 'anonymous' كالمعتاد.
+ */
+export type AuthStatus = 'anonymous' | 'authenticated' | 'sessionRefreshing';
+
 export interface AuthenticatedUser {
   id: string;
   Id: string;
@@ -36,6 +50,25 @@ export class AuthService {
 
   readonly isAdmin$ = this.currentUser$.pipe(
     map(user => user?.roles?.includes('Admin') ?? false)
+  );
+
+  /** انظر تعليق AuthStatus أعلاه. true فقط أثناء عملية /auth/refresh فعلية. */
+  private readonly refreshingSession = new BehaviorSubject<boolean>(false);
+
+  /** حدث لحظي (وليس حالة مستقرة) — راجع تعليق AuthStatus. */
+  private readonly sessionExpiredEvent = new Subject<void>();
+  readonly sessionExpired$ = this.sessionExpiredEvent.asObservable();
+
+  readonly authStatus$: Observable<AuthStatus> = combineLatest([
+    this.isLoggedIn$,
+    this.refreshingSession.asObservable()
+  ]).pipe(
+    map(([loggedIn, refreshing]) => {
+      if (refreshing) {
+        return 'sessionRefreshing';
+      }
+      return loggedIn ? 'authenticated' : 'anonymous';
+    })
   );
 
   constructor() {
@@ -202,6 +235,31 @@ export class AuthService {
 
   getAccessToken(): string | null {
     return this.tokenStorage.getAccessToken();
+  }
+
+  /**
+   * يُستدعى من app.config.ts (restoreSession عند إقلاع التطبيق) ومن
+   * refresh-auth.interceptor.ts (قبل محاولة /auth/refresh) كي يعكس authStatus$
+   * الحالة الفعلية 'sessionRefreshing' بدل أن يظهر المستخدم 'anonymous' مؤقتاً
+   * أثناء عملية شبكة لا تزال جارية فعلاً.
+   */
+  beginSessionRefresh(): void {
+    this.refreshingSession.next(true);
+  }
+
+  /** يُستدعى دائماً بعد انتهاء محاولة التجديد (نجاحاً أو فشلاً) — راجع beginSessionRefresh. */
+  endSessionRefresh(): void {
+    this.refreshingSession.next(false);
+  }
+
+  /**
+   * يُطلَق فقط عند انتهاء جلسة كانت قائمة فعلاً على صفحة تتطلّب تسجيل دخول —
+   * وليس لكل 401 عابر. راجع currentRouteRequiresAuth في refresh-auth.interceptor.ts،
+   * وهو المستدعي الوحيد لهذه الدالة.
+   */
+  notifySessionExpired(): void {
+    this.refreshingSession.next(false);
+    this.sessionExpiredEvent.next();
   }
 
   private clearSession(): void {

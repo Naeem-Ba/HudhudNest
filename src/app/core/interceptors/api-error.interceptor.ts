@@ -18,9 +18,11 @@
 // ═══════════════════════════════════════════════════════════════
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { ToastService } from '../../shared/services/toast.service';
 import { environment } from '../../../environments/environment';
+import { currentRouteRequiresAuth } from './refresh-auth.interceptor';
 
 function extractBackendMessage(error: HttpErrorResponse): string | null {
   const body = error.error;
@@ -95,15 +97,43 @@ function shouldShowToast(reqUrl: string): boolean {
   return reqUrl.includes('/api/') || reqUrl.endsWith('/api');
 }
 
+/**
+ * Logging out is always treated as succeeding locally regardless of what the backend
+ * call does — AuthApiService.logout() swallows any error from POST /auth/logout and
+ * clears the session either way (see its catchError + finalize). So the visitor who
+ * just clicked "logout" must never see an error toast for that request: whatever the
+ * backend answered, they ARE logged out, and a "session expired"/generic error toast
+ * right after an intentional logout reads as if something went wrong when nothing did.
+ */
+function isLogoutRequest(reqUrl: string): boolean {
+  return reqUrl.includes('/auth/logout');
+}
+
+/**
+ * A 401 is only actually "your session ended" when the page the visitor is looking at
+ * requires one. A background call that 401s while browsing a PUBLIC page (e.g. an
+ * anonymous favorite-status check) is expected and must not show a "session expired"
+ * toast — RefreshAuthInterceptor already applies the same currentRouteRequiresAuth
+ * check before redirecting for the same reason (see its clearAndRedirect doc comment).
+ */
+function shouldShowUnauthorizedToast(status: number, router: Router): boolean {
+  return status !== 401 || currentRouteRequiresAuth(router);
+}
+
 export const ApiErrorInterceptor: HttpInterceptorFn = (req, next) => {
   const toast = inject(ToastService);
+  const router = inject(Router);
 
   return next(req).pipe(
     catchError((error: unknown) => {
       if (error instanceof HttpErrorResponse) {
         const friendlyMessage = getFriendlyApiErrorMessage(error);
 
-        if (shouldShowToast(req.url)) {
+        if (
+          shouldShowToast(req.url) &&
+          !isLogoutRequest(req.url) &&
+          shouldShowUnauthorizedToast(error.status, router)
+        ) {
           toast.error(friendlyMessage, 'خطأ');
         }
 

@@ -16,6 +16,7 @@ import { environment } from '../../../environments/environment';
 import { normalizeAuthTokenResponse } from '../models/auth.model';
 import { AdminGuard } from '../guards/admin-guard';
 import { AuthGuard } from '../guards/auth-guard';
+import { AuthService } from '../auth/auth.service';
 import { CsrfTokenService } from '../services/csrf-token.service';
 import { TokenStorageService } from '../services/token-storage.service';
 
@@ -76,7 +77,7 @@ function withBearerToken(req: Parameters<HttpInterceptorFn>[0], token: string) {
  * is itself gated by AuthGuard/AdminGuard. Walks the whole activated-route chain, not just
  * the leaf, since a guard can sit on a parent route and apply to every child.
  */
-function currentRouteRequiresAuth(router: Router): boolean {
+export function currentRouteRequiresAuth(router: Router): boolean {
   let route = router.routerState.snapshot.root;
 
   while (route) {
@@ -108,7 +109,8 @@ function currentRouteRequiresAuth(router: Router): boolean {
 function clearAndRedirect(
   tokenStorage: TokenStorageService,
   router: Router,
-  csrfTokenService: CsrfTokenService
+  csrfTokenService: CsrfTokenService,
+  authService: AuthService
 ): void {
   tokenStorage.clear();
   csrfTokenService.clear();
@@ -118,6 +120,10 @@ function clearAndRedirect(
     router.url !== '/auth/login' &&
     router.url !== '/login'
   ) {
+    // A real expiry: the visitor was on a route that needed a session and the refresh
+    // could not restore one — distinct from a background 401 on a public page, which
+    // never reaches this branch. See AuthService.notifySessionExpired's doc comment.
+    authService.notifySessionExpired();
     void router.navigateByUrl('/auth/login');
   }
 }
@@ -137,9 +143,12 @@ function requestNewAccessToken(
   httpBackend: HttpBackend,
   tokenStorage: TokenStorageService,
   router: Router,
-  csrfTokenService: CsrfTokenService
+  csrfTokenService: CsrfTokenService,
+  authService: AuthService
 ): Observable<string> {
   if (!refreshRequest$) {
+    authService.beginSessionRefresh();
+
     const directHttp = new HttpClient(httpBackend);
     const ensureCsrfToken$ = csrfTokenService.getToken()
       ? of(void 0)
@@ -164,11 +173,12 @@ function requestNewAccessToken(
         }),
         catchError(error => {
           // All waiting requests receive the same error instead of hanging forever.
-          clearAndRedirect(tokenStorage, router, csrfTokenService);
+          clearAndRedirect(tokenStorage, router, csrfTokenService, authService);
           return throwError(() => error);
         }),
         finalize(() => {
           refreshRequest$ = null;
+          authService.endSessionRefresh();
         }),
         shareReplay({ bufferSize: 1, refCount: false })
       );
@@ -182,6 +192,7 @@ export const RefreshAuthInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const httpBackend = inject(HttpBackend);
   const csrfTokenService = inject(CsrfTokenService);
+  const authService = inject(AuthService);
 
   const isApiRequest = isBackendApiRequest(req.url);
   const isAuthRequest = isAuthEndpoint(req.url);
@@ -207,7 +218,7 @@ export const RefreshAuthInterceptor: HttpInterceptorFn = (req, next) => {
       // whatever the refresh_token cookie currently holds. Always attempt the refresh; a
       // missing/expired/invalid cookie surfaces as this call failing, handled below exactly
       // like before.
-      return requestNewAccessToken(httpBackend, tokenStorage, router, csrfTokenService).pipe(
+      return requestNewAccessToken(httpBackend, tokenStorage, router, csrfTokenService, authService).pipe(
         switchMap(newAccessToken => next(withBearerToken(req, newAccessToken))),
         catchError(refreshError => throwError(() => refreshError))
       );
