@@ -443,6 +443,12 @@
     "SAVE_SEARCH_SUCCESS": "Suche gespeichert. Wir benachrichtigen Sie über neue passende Immobilien.",
     "SAVE_SEARCH_ERROR": "Die Suche konnte nicht gespeichert werden. Stellen Sie sicher, dass Sie angemeldet sind."
   },
+  "PAGINATION": {
+    "NAV_LABEL": "Seitennavigation",
+    "PREVIOUS": "Vorherige Seite",
+    "NEXT": "Nächste Seite",
+    "PAGE": "Seite"
+  },
   "PROPERTY_DETAIL": {
     "NOT_FOUND_TITLE": "Immobilie nicht gefunden",
     "NOT_FOUND_MESSAGE": "Die Immobilie wurde möglicherweise gelöscht oder der Link ist falsch.",

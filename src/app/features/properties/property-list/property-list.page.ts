@@ -12,11 +12,11 @@ import {
   signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { debounceTime, fromEvent } from 'rxjs';
+import { catchError, debounceTime, EMPTY, fromEvent, switchMap, tap } from 'rxjs';
 
 import { PropertyApiService } from '../../../core/api/property-api.service';
 import { FavoritesApiService } from '../../../core/api/favorites-api.service';
@@ -31,6 +31,7 @@ import {
 } from '../../../core/api/lookups-api.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { LanguageService } from '../../../core/services/language.service';
+import { PagedResult } from '../../../core/models/api.model';
 import { Property, PropertyFilterDto } from '../../../core/models/property.model';
 import { EmptyStateComponent } from '../../../shared/ui/empty-state.component';
 import { SkeletonCardGridComponent } from '../../../shared/ui/skeleton-card-grid.component';
@@ -88,13 +89,6 @@ export class PropertyListPage implements OnInit {
   readonly totalPages = computed(() => Math.ceil(this.totalCount() / this.pageSize()) || 1);
   readonly hasNext = computed(() => this.currentPage() < this.totalPages());
   readonly hasPrevious = computed(() => this.currentPage() > 1);
-
-  readonly filter = signal<PropertyFilterDto>({
-    page: 1,
-    pageSize: 20,
-    sortBy: 'CreatedAt',
-    sortDescending: true
-  });
 
   readonly fallbackImage = '/images/no-image.svg';
 
@@ -179,7 +173,32 @@ export class PropertyListPage implements OnInit {
     this.loadAmenities();
     this.loadGovernorates();
     this.loadPropertyTypeCatalog();
-    this.applyFiltersFromQueryParams();
+
+    // Phase 3: the URL is the single source of truth for search/filter/pagination
+    // state — this subscription (not a one-time snapshot read) drives every load:
+    // initial page load, a deep link (home hero search / saved search), a filter
+    // panel "apply", a page change, Reset, and browser back/forward navigation all
+    // funnel through here as a query-param change. switchMap cancels an in-flight
+    // request if a newer one starts before it resolves (race-condition guard).
+    this.route.queryParamMap
+      .pipe(
+        tap(params => {
+          this.applyParamsToState(params);
+          this.loading.set(true);
+          this.error.set('');
+        }),
+        switchMap(() =>
+          this.api.getPropertiesPaged(this.buildFilterFromState(this.currentPage())).pipe(
+            catchError(() => {
+              this.error.set('PROPERTY_LIST.LOAD_ERROR');
+              this.loading.set(false);
+              return EMPTY;
+            })
+          )
+        ),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(result => this.applyResult(result));
   }
 
   /** GET /api/lookups/governorates — Phase-0, Task 0 follow-up. */
@@ -229,30 +248,30 @@ export class PropertyListPage implements OnInit {
   }
 
   /**
-   * Phase-0, Task 3 — reads query params set by saved-searches.page.ts's
-   * runSearch() so "run this saved search" deep-links into a pre-filled
-   * filter panel instead of duplicating search logic across pages. A
-   * one-time snapshot read (not a subscription): this page doesn't need to
-   * react to further query-param changes after the initial load.
+   * Phase 3 — the URL is the single source of truth for search/filter/pagination
+   * state. Called on every queryParamMap emission (initial load, a deep link from
+   * the home hero search / saved-searches's runSearch(), an in-page filter apply,
+   * a page change, Reset, or browser back/forward) to sync the filter-panel's UI
+   * fields and pagination signals from the current URL before the matching
+   * request is fired.
    */
-  private applyFiltersFromQueryParams(): void {
-    const params = this.route.snapshot.queryParamMap;
-
-    if (params.keys.length === 0) {
-      this.loadProperties();
-      return;
-    }
-
+  private applyParamsToState(params: ParamMap): void {
+    this.searchText = params.get('search') ?? '';
     this.cityFilter = params.get('city') ?? '';
     this.minPrice = params.get('minPrice') ? Number(params.get('minPrice')) : null;
     this.maxPrice = params.get('maxPrice') ? Number(params.get('maxPrice')) : null;
     const listingType = params.get('listingType');
     this.selectedListingType = listingType === 'ForRent' || listingType === 'ForSale' ? listingType : '';
+    this.selectedAmenityIds = params.getAll('amenityIds');
+    this.sortBy = params.get('sort') ?? 'CreatedAt';
 
     this.governorateId = params.get('governorateId') ? Number(params.get('governorateId')) : null;
     this.districtId = params.get('districtId') ? Number(params.get('districtId')) : null;
     this.neighborhoodId = params.get('neighborhoodId') ? Number(params.get('neighborhoodId')) : null;
     this.propertyTypeId = params.get('propertyTypeId') ? Number(params.get('propertyTypeId')) : null;
+
+    this.currentPage.set(params.get('page') ? Number(params.get('page')) : 1);
+    this.pageSize.set(params.get('pageSize') ? Number(params.get('pageSize')) : 20);
 
     // Pre-load the cascading dropdown options that match the incoming ids so
     // the filter panel shows correct labels, not just empty selects.
@@ -266,8 +285,55 @@ export class PropertyListPage implements OnInit {
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({ next: items => this.neighborhoods.set(items), error: () => this.neighborhoods.set([]) });
     }
+  }
 
-    this.applyFilters();
+  /** Builds the request DTO sent to the API from the filter panel's current UI-bound state. */
+  private buildFilterFromState(page: number): PropertyFilterDto {
+    const sort = this.mapSort();
+
+    return {
+      page,
+      pageSize: this.pageSize(),
+      searchTerm: this.searchText.trim() || undefined,
+      city: this.cityFilter.trim() || undefined,
+      listingType: this.selectedListingType || undefined,
+      minPrice: this.minPrice ?? undefined,
+      maxPrice: this.maxPrice ?? undefined,
+      amenityIds: this.selectedAmenityIds.length > 0 ? this.selectedAmenityIds : undefined,
+      sortBy: sort.sortBy,
+      sortDescending: sort.sortDescending,
+      governorateId: this.governorateId ?? undefined,
+      districtId: this.districtId ?? undefined,
+      neighborhoodId: this.neighborhoodId ?? undefined,
+      propertyTypeId: this.propertyTypeId ?? undefined
+    };
+  }
+
+  /**
+   * Pushes the filter panel's current UI-bound state into the URL as query
+   * params (replacing, not merging — an omitted/null param is dropped rather
+   * than left dangling from a previous filter). The queryParamMap subscription
+   * in ngOnInit reacts to the resulting navigation and performs the actual
+   * fetch, so this is the one place that turns a user action into a request.
+   */
+  private navigateWithCurrentState(page: number): void {
+    const queryParams: Record<string, string | number | string[] | null> = {
+      search: this.searchText.trim() || null,
+      city: this.cityFilter.trim() || null,
+      listingType: this.selectedListingType || null,
+      minPrice: this.minPrice ?? null,
+      maxPrice: this.maxPrice ?? null,
+      amenityIds: this.selectedAmenityIds.length > 0 ? this.selectedAmenityIds : null,
+      sort: this.sortBy && this.sortBy !== 'CreatedAt' ? this.sortBy : null,
+      governorateId: this.governorateId ?? null,
+      districtId: this.districtId ?? null,
+      neighborhoodId: this.neighborhoodId ?? null,
+      propertyTypeId: this.propertyTypeId ?? null,
+      page: page > 1 ? page : null,
+      pageSize: this.pageSize() !== 20 ? this.pageSize() : null
+    };
+
+    this.router.navigate([], { relativeTo: this.route, queryParams });
   }
 
   private loadCitySuggestions(): void {
@@ -412,26 +478,35 @@ export class PropertyListPage implements OnInit {
     }
   }
 
+  /**
+   * Re-fetches with the current (already-applied) filter/page state without
+   * going through the URL — used by the error state's Retry button and by
+   * toggleGeoMode() when switching back from geo-search results, neither of
+   * which represents a new filter/page the user should be able to navigate
+   * back to.
+   */
   loadProperties(): void {
     this.loading.set(true);
     this.error.set('');
 
     this.api
-      .getPropertiesPaged(this.filter())
+      .getPropertiesPaged(this.buildFilterFromState(this.currentPage()))
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: result => {
-          this.properties.set(result.items);
-          this.totalCount.set(result.totalCount);
-          this.currentPage.set(result.page);
-          this.pageSize.set(result.pageSize);
-          this.loading.set(false);
-        },
+        next: result => this.applyResult(result),
         error: () => {
           this.error.set('PROPERTY_LIST.LOAD_ERROR');
           this.loading.set(false);
         }
       });
+  }
+
+  private applyResult(result: PagedResult<Property>): void {
+    this.properties.set(result.items);
+    this.totalCount.set(result.totalCount);
+    this.currentPage.set(result.page);
+    this.pageSize.set(result.pageSize);
+    this.loading.set(false);
   }
 
   get activeFiltersCount(): number {
@@ -454,29 +529,10 @@ export class PropertyListPage implements OnInit {
 
   applyFilters(): void {
     this.setFiltersOpen(false);
-
-    const sort = this.mapSort();
-    const city = this.cityFilter.trim();
-
-    this.currentPage.set(1);
-    this.filter.set({
-      page: 1,
-      pageSize: this.pageSize(),
-      city: city || undefined,
-      listingType: this.selectedListingType || undefined,
-      minPrice: this.minPrice ?? undefined,
-      maxPrice: this.maxPrice ?? undefined,
-      amenityIds: this.selectedAmenityIds.length > 0 ? this.selectedAmenityIds : undefined,
-      sortBy: sort.sortBy,
-      sortDescending: sort.sortDescending,
-      // Phase-0, Task 0.
-      governorateId: this.governorateId ?? undefined,
-      districtId: this.districtId ?? undefined,
-      neighborhoodId: this.neighborhoodId ?? undefined,
-      propertyTypeId: this.propertyTypeId ?? undefined
-    });
-
-    this.loadProperties();
+    // A new/changed search or filter always returns to page 1 — the previous
+    // page from a different result set is otherwise very likely to come back
+    // empty and read as a spurious "no results" error.
+    this.navigateWithCurrentState(1);
   }
 
   resetFilters(): void {
@@ -493,7 +549,10 @@ export class PropertyListPage implements OnInit {
     this.propertyTypeId = null;
     this.districts.set([]);
     this.neighborhoods.set([]);
-    this.applyFilters();
+    this.setFiltersOpen(false);
+    // Clears the URL entirely (not just component state) so a refresh or a
+    // shared link after Reset doesn't resurrect the filters that were just cleared.
+    this.router.navigate([], { relativeTo: this.route, queryParams: {} });
   }
 
   /**
@@ -539,9 +598,9 @@ export class PropertyListPage implements OnInit {
 
   goToPage(page: number): void {
     const safePage = Math.max(1, Math.min(Number(page) || 1, this.totalPages()));
-    this.currentPage.set(safePage);
-    this.filter.update(filter => ({ ...filter, page: safePage, pageSize: this.pageSize() }));
-    this.loadProperties();
+    // Reuses the currently-applied filters (unchanged instance fields) and only
+    // overrides the page, so pagination never loses the active search/filters.
+    this.navigateWithCurrentState(safePage);
   }
 
   pageNumbers(): number[] {
