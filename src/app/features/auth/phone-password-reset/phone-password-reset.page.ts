@@ -227,7 +227,7 @@ export class PhonePasswordResetPage {
   }
 
   private setError(message: string): void {
+    // toast.error() removed on purpose — see phone-change.page.ts's setError comment.
     this.error.set(message);
-    this.toast.error(message);
   }
 }

@@ -12,6 +12,7 @@ import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 
 import { environment } from '../../../environments/environment';
 import { AuthGuard } from '../guards/auth-guard';
@@ -37,6 +38,7 @@ describe('ApiErrorInterceptor — 401 toast only when the CURRENT route requires
 
   beforeEach(() => {
     TestBed.configureTestingModule({
+      imports: [TranslateModule.forRoot()],
       providers: [
         provideRouter([
           { path: 'short-stay', component: DummyComponent }, // public

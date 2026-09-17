@@ -14,6 +14,7 @@ import { provideRouter, Router } from '@angular/router';
 
 import { environment } from '../../../environments/environment';
 import { AuthGuard } from '../guards/auth-guard';
+import { AuthService } from '../auth/auth.service';
 import { TokenStorageService } from '../services/token-storage.service';
 import { RefreshAuthInterceptor } from './refresh-auth.interceptor';
 
@@ -54,7 +55,9 @@ describe('RefreshAuthInterceptor — redirect only when the CURRENT route requir
   afterEach(() => httpMock.verify());
 
   /** Drives the interceptor to the point where a refresh has already failed. */
-  function triggerUnrecoverable401(): void {
+  function triggerUnrecoverable401(
+    refreshFailureBody: Record<string, unknown> = { message: 'refresh token invalid' }
+  ): void {
     http.get(`${environment.apiUrl}/favorites`).subscribe({ next: () => {}, error: () => {} });
 
     httpMock.expectOne(`${environment.apiUrl}/favorites`)
@@ -64,7 +67,7 @@ describe('RefreshAuthInterceptor — redirect only when the CURRENT route requir
     csrfReq.forEach(r => r.flush({ csrfToken: 'csrf' }));
 
     httpMock.expectOne(`${environment.apiUrl}/auth/refresh`)
-      .flush({ message: 'refresh token invalid' }, { status: 401, statusText: 'Unauthorized' });
+      .flush(refreshFailureBody, { status: 401, statusText: 'Unauthorized' });
   }
 
   it('✅ على صفحة عامة: لا يُعاد التوجيه إلى /auth/login عند فشل التجديد', fakeAsync(() => {
@@ -100,5 +103,51 @@ describe('RefreshAuthInterceptor — redirect only when the CURRENT route requir
 
     expect(tokenStorage.getAccessToken()).toBeNull();
     expect(router.url).toBe('/auth/login');
+  }));
+
+  // ✅ إصلاح: AuthController.cs يُرفق الآن errorCode مع فشل /auth/refresh
+  // (RefreshTokenCommand.cs). notifySessionExpired() تستقبله الآن لتُميّز
+  // "أُلغيت كل الجلسات لأسباب أمنية" (REFRESH_TOKEN_REUSE_DETECTED) عن أي
+  // انتهاء جلسة عادي آخر — بدل حدث واحد بلا سبب كان بلا أي مشترك أصلاً.
+  it('✅ REFRESH_TOKEN_REUSE_DETECTED يُطلِق sessionExpired$ بسبب "revoked"', fakeAsync(() => {
+    const authService = TestBed.inject(AuthService);
+    const reasons: Array<'expired' | 'revoked'> = [];
+    authService.sessionExpired$.subscribe(reason => reasons.push(reason));
+
+    tokenStorage.setAccessToken(fakeJwt(3600));
+    router.navigateByUrl('/my-listings');
+    tick();
+
+    httpMock.match(`${environment.apiUrl}/users/me`).forEach(r =>
+      r.flush({ DisplayName: 'Test', ImageUrl: null }));
+
+    triggerUnrecoverable401({
+      message: 'Refresh token reuse detected. All active sessions were revoked.',
+      errorCode: 'REFRESH_TOKEN_REUSE_DETECTED'
+    });
+    tick();
+
+    expect(reasons).toEqual(['revoked']);
+  }));
+
+  it('✅ REFRESH_TOKEN_EXPIRED (أو أي كود آخر) يُطلِق sessionExpired$ بسبب "expired"', fakeAsync(() => {
+    const authService = TestBed.inject(AuthService);
+    const reasons: Array<'expired' | 'revoked'> = [];
+    authService.sessionExpired$.subscribe(reason => reasons.push(reason));
+
+    tokenStorage.setAccessToken(fakeJwt(3600));
+    router.navigateByUrl('/my-listings');
+    tick();
+
+    httpMock.match(`${environment.apiUrl}/users/me`).forEach(r =>
+      r.flush({ DisplayName: 'Test', ImageUrl: null }));
+
+    triggerUnrecoverable401({
+      message: 'Invalid or expired refresh token.',
+      errorCode: 'REFRESH_TOKEN_EXPIRED'
+    });
+    tick();
+
+    expect(reasons).toEqual(['expired']);
   }));
 });
