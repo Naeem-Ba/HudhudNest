@@ -6,11 +6,14 @@
 //
 // تغطية: نجاح الدخول، بيانات خاطئة (رسالة عامة موحّدة)، خطأ شبكة (status 0 —
 // يجب ألا يُخلط برسالة "بيانات خاطئة")، قفل الحساب، Rate limiting، دخول
-// الهاتف، وتفريع أخطاء OTP عبر OTP_ERROR_CODES الموحَّد في auth.model.ts.
-// =====================================================================
+// الهاتف.
+//
+// ملاحظة: تدفّق تسجيل الحساب بالهاتف عبر OTP (onSendPhoneOtp/onVerifyPhoneOtp)
+// أُزيل من هذا المكوّن — كان يستدعي /auth/phone/send-otp و/auth/phone/verify،
+// وهما 410 Gone الآن في الباك (راجع PhoneAuthController.cs)؛ الصفحة البديلة
+// /auth/phone-register هي المسار الحي الوحيد اليوم.
 import { of, throwError } from 'rxjs';
 import { LoginComponent } from './login.component';
-import { OTP_ERROR_CODES } from '../../../core/models/auth.model';
 
 function fakeForm(invalid = false): any {
   return { control: { markAllAsTouched: jasmine.createSpy('markAllAsTouched') }, invalid };
@@ -33,8 +36,6 @@ describe('LoginComponent', () => {
   let socialAuth: jasmine.SpyObj<any>;
   let phoneAuthApi: jasmine.SpyObj<any>;
   let tokenStorage: jasmine.SpyObj<any>;
-  let otpApi: jasmine.SpyObj<any>;
-  let consentApi: jasmine.SpyObj<any>;
   let router: jasmine.SpyObj<any>;
   let route: any;
   let translate: jasmine.SpyObj<any>;
@@ -49,8 +50,6 @@ describe('LoginComponent', () => {
     });
     phoneAuthApi = jasmine.createSpyObj('PhoneAuthApiService', ['login']);
     tokenStorage = jasmine.createSpyObj('TokenStorageService', ['storeTokens']);
-    otpApi = jasmine.createSpyObj('OtpApiService', ['sendOtp', 'verifyOtp']);
-    consentApi = jasmine.createSpyObj('ConsentApiService', ['record']);
     router = jasmine.createSpyObj('Router', ['navigateByUrl']);
     router.navigateByUrl.and.returnValue(Promise.resolve(true));
     route = { snapshot: { queryParamMap: { get: () => null } } };
@@ -65,8 +64,6 @@ describe('LoginComponent', () => {
       socialAuth,
       phoneAuthApi,
       tokenStorage,
-      otpApi,
-      consentApi,
       router,
       route,
       translate,
@@ -137,6 +134,34 @@ describe('LoginComponent', () => {
     });
   });
 
+  describe('onRegister — رفض كلمة سر مخترَقة (PASSWORD_BREACHED)', () => {
+    it('✅ يُترجَم عبر getPasswordRejectionMessages بدل عرض نص الخادم الإنجليزي الخام', () => {
+      // 422 بشكل ValidationException الموثَّق في docs/password-policy.md:
+      // errors/errorCodes متوازيان فهرساً بفهرس تحت مفتاح "Password".
+      authApi.register.and.returnValue(throwError(() => ({
+        status: 422,
+        error: {
+          errors: { Password: ['This password has been exposed in known data breaches.'] },
+          errorCodes: { Password: ['PASSWORD_BREACHED'] }
+        }
+      })));
+
+      component.registerData = {
+        FirstName: 'Ali',
+        LastName: 'Hasan',
+        Email: 'ali@example.com',
+        Password: FAKE_TEST_CREDENTIAL
+      };
+      component.privacyConsentAccepted = true;
+
+      component.onRegister(fakeForm());
+
+      // translate.instant يُعيد المفتاح نفسه في هذا الاختبار — يكفي للتأكد من أن
+      // المسار مرّ عبر ترجمة الكود، لا عبر نص الخادم الخام أو الرسالة العامة.
+      expect(component.message).toBe('AUTH.ERRORS.PASSWORD_BREACHED');
+    });
+  });
+
   describe('onPhoneLogin — رقم الهاتف', () => {
     it('✅ رقم/كلمة سر خاطئة تعطي نفس الرسالة العامة (بلا كشف عن وجود الحساب)', () => {
       phoneAuthApi.login.and.returnValue(throwError(() => httpError(401)));
@@ -156,34 +181,6 @@ describe('LoginComponent', () => {
 
       expect(phoneAuthApi.login).not.toHaveBeenCalled();
       expect(component.message).toBe('AUTH.ERRORS.PHONE_INVALID');
-    });
-  });
-
-  describe('تفريع أخطاء OTP — يعتمد الآن على OTP_ERROR_CODES الموحَّد من auth.model.ts', () => {
-    it('✅ OTP_WRONG يعطي مفتاح الرسالة الصحيح', () => {
-      otpApi.sendOtp.and.returnValue(of({ message: 'sent', expiresInSeconds: 300 }));
-      component.phoneNumber = '+963911234567';
-      component.onSendPhoneOtp();
-
-      otpApi.verifyOtp.and.returnValue(throwError(() => ({ error: { code: OTP_ERROR_CODES.OTP_WRONG } })));
-      component.otpCode = '123456';
-      component.phoneFirstName = 'Ali';
-      component.phoneLastName = 'Hasan';
-      component.phonePassword = FAKE_TEST_CREDENTIAL;
-      component.privacyConsentAccepted = true;
-
-      component.onVerifyPhoneOtp();
-
-      expect(component.message).toBe('AUTH.ERRORS.OTP_WRONG');
-    });
-
-    it('✅ RATE_LIMITED عند إرسال OTP يعطي رسالة تحديد المعدّل الخاصة بالـOTP', () => {
-      otpApi.sendOtp.and.returnValue(throwError(() => ({ error: { code: OTP_ERROR_CODES.RATE_LIMITED } })));
-      component.phoneNumber = '+963911234567';
-
-      component.onSendPhoneOtp();
-
-      expect(component.message).toBe('AUTH.ERRORS.OTP_RATE_LIMITED');
     });
   });
 });

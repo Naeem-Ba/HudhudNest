@@ -191,7 +191,10 @@ export class PhoneChangePage {
   }
 
   private setError(message: string): void {
+    // toast.error() removed on purpose — the inline error() signal below is already
+    // rendered in the template, and ApiErrorInterceptor no longer auto-toasts /auth/
+    // requests either (see its isAuthFlowRequest), so this was showing the same
+    // message twice for every failure on this page.
     this.error.set(message);
-    this.toast.error(message);
   }
 }

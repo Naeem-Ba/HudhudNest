@@ -433,18 +433,6 @@ export const routes: Routes = [
   },
 
   {
-    path: 'auth/send-otp',
-    loadComponent: () =>
-      import('./features/auth/send-otp/send-otp.page')
-        .then(m => m.SendOtpPage)
-  },
-  {
-    path: 'auth/verify-otp',
-    loadComponent: () =>
-      import('./features/auth/verify-otp/verify-otp.page')
-        .then(m => m.VerifyOtpPage)
-  },
-  {
     path: 'auth/register',
     loadComponent: () =>
       import('./features/auth/register/register.page')

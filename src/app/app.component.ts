@@ -96,5 +96,17 @@ export class AppComponent {
           this.translate.instant('NOTIFICATIONS.NEW_TOAST_TITLE')
         );
       });
+
+    // ✅ إصلاح: notifySessionExpired() كانت تُطلَق فعلياً عند انتهاء جلسة حقيقية
+    // (راجع تعليقها في auth.service.ts) لكن لم يكن يشترك بـ sessionExpired$ أي
+    // شيء في التطبيق كله — فكان المستخدم يُعاد توجيهه لصفحة الدخول بصمت تام،
+    // بلا أي رسالة تشرح السبب. هذا هو المكان الصحيح للاشتراك: مكوّن الجذر،
+    // موجود طوال عمر التطبيق بغض النظر عن الصفحة الحالية.
+    this.authService.sessionExpired$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(reason => {
+        const key = reason === 'revoked' ? 'AUTH.ERRORS.SESSION_REVOKED' : 'AUTH.ERRORS.SESSION_EXPIRED';
+        this.toast.info(this.translate.instant(key));
+      });
   }
 }
