@@ -95,9 +95,9 @@ export class SavedSearchesPage implements OnInit {
 
   /**
    * Re-runs a saved search's criteria on the property-list page by encoding
-   * it as the same query-string shape property-list.page.ts already reads
-   * on init (see applyFiltersFromQueryParams there) — reuses one filter
-   * pipeline instead of duplicating search logic here.
+   * it as the same query-string shape property-list.page.ts reads from its
+   * queryParamMap subscription (see applyParamsToState there) — reuses one
+   * filter pipeline instead of duplicating search logic here.
    */
   runSearch(search: SavedSearch): void {
     const queryParams: Record<string, string> = {};

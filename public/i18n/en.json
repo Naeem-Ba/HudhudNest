@@ -461,6 +461,12 @@
     "SAVE_SEARCH_SUCCESS": "Search saved. We’ll notify you about new matching properties.",
     "SAVE_SEARCH_ERROR": "Could not save the search. Make sure you are logged in."
   },
+  "PAGINATION": {
+    "NAV_LABEL": "Page navigation",
+    "PREVIOUS": "Previous page",
+    "NEXT": "Next page",
+    "PAGE": "Page"
+  },
   "PROPERTY_DETAIL": {
     "NOT_FOUND_TITLE": "Property not found",
     "NOT_FOUND_MESSAGE": "The property may have been deleted or the link is incorrect.",

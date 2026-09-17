@@ -26,7 +26,7 @@
   <div class="container prop-list-layout">
 
     <!-- ── Filters Sidebar ── -->
-    <aside class="filter-sidebar" [class.filter-sidebar--open]="filtersOpen" aria-label="فلاتر البحث">
+    <aside class="filter-sidebar" [class.filter-sidebar--open]="filtersOpen" [attr.aria-label]="'PROPERTY_LIST.FILTERS' | translate">
       <div class="filter-sidebar__header">
         <h2 class="filter-sidebar__title">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
@@ -348,14 +348,14 @@
       <nav
         class="pagination"
         *ngIf="!loading() && totalPages() > 1"
-        aria-label="التنقل بين الصفحات"
+        [attr.aria-label]="'PAGINATION.NAV_LABEL' | translate"
       >
         <button
           type="button"
           class="pagination__btn"
           [disabled]="!hasPrevious()"
           (click)="goToPage(currentPage() - 1)"
-          aria-label="الصفحة السابقة"
+          [attr.aria-label]="'PAGINATION.PREVIOUS' | translate"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path d="M10 4l-4 4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -368,6 +368,8 @@
             type="button"
             class="pagination__page"
             [class.pagination__page--active]="page === currentPage()"
+            [attr.aria-label]="('PAGINATION.PAGE' | translate) + ' ' + page"
+            [attr.aria-current]="page === currentPage() ? 'page' : null"
             (click)="goToPage(page)"
           >{{ page }}</button>
         </div>
@@ -377,7 +379,7 @@
           class="pagination__btn"
           [disabled]="!hasNext()"
           (click)="goToPage(currentPage() + 1)"
-          aria-label="الصفحة التالية"
+          [attr.aria-label]="'PAGINATION.NEXT' | translate"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>

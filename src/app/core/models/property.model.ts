@@ -122,6 +122,9 @@ export interface PropertyFilterDto {
   page?: number;
   pageSize?: number;
 
+  // Free-text keyword search — matched against Title/Description on the backend (Phase 3).
+  searchTerm?: string;
+
   // Location
   countryCode?: string;
   city?: string;
