@@ -55,8 +55,13 @@ export class AuthService {
   /** انظر تعليق AuthStatus أعلاه. true فقط أثناء عملية /auth/refresh فعلية. */
   private readonly refreshingSession = new BehaviorSubject<boolean>(false);
 
-  /** حدث لحظي (وليس حالة مستقرة) — راجع تعليق AuthStatus. */
-  private readonly sessionExpiredEvent = new Subject<void>();
+  /**
+   * حدث لحظي (وليس حالة مستقرة) — راجع تعليق AuthStatus. 'revoked' يعني تم
+   * كشف إعادة استخدام refresh token (كل الجلسات أُلغيت لأسباب أمنية)؛
+   * 'expired' يغطي كل حالة انتهاء أخرى (بما فيها تعارض تجديد متزامن نادر).
+   * AppComponent هو المشترك الوحيد حالياً — يعرض رسالة toast مترجَمة مطابقة.
+   */
+  private readonly sessionExpiredEvent = new Subject<'expired' | 'revoked'>();
   readonly sessionExpired$ = this.sessionExpiredEvent.asObservable();
 
   readonly authStatus$: Observable<AuthStatus> = combineLatest([
@@ -257,9 +262,9 @@ export class AuthService {
    * وليس لكل 401 عابر. راجع currentRouteRequiresAuth في refresh-auth.interceptor.ts،
    * وهو المستدعي الوحيد لهذه الدالة.
    */
-  notifySessionExpired(): void {
+  notifySessionExpired(reason: 'expired' | 'revoked' = 'expired'): void {
     this.refreshingSession.next(false);
-    this.sessionExpiredEvent.next();
+    this.sessionExpiredEvent.next(reason);
   }
 
   private clearSession(): void {

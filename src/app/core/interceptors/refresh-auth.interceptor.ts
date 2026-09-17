@@ -106,11 +106,29 @@ export function currentRouteRequiresAuth(router: Router): boolean {
  * currentRouteRequiresAuth), matching what AuthGuard/AdminGuard would have done had the user
  * navigated there fresh with no token at all.
  */
+/** Backend code for RefreshTokenCommand's reuse-detection branch — see RefreshTokenCommand.cs. */
+const REUSE_DETECTED_CODE = 'REFRESH_TOKEN_REUSE_DETECTED';
+
+/**
+ * Reads the /auth/refresh failure's errorCode (AuthController.cs now includes it on the 401
+ * body) so the UI can tell "all sessions revoked for security" apart from an ordinary expiry
+ * instead of showing one undifferentiated message for both.
+ */
+function readRefreshErrorCode(error: unknown): string | null {
+  if (!(error instanceof HttpErrorResponse)) {
+    return null;
+  }
+
+  const body = error.error as { errorCode?: unknown } | null | undefined;
+  return typeof body?.errorCode === 'string' ? body.errorCode : null;
+}
+
 function clearAndRedirect(
   tokenStorage: TokenStorageService,
   router: Router,
   csrfTokenService: CsrfTokenService,
-  authService: AuthService
+  authService: AuthService,
+  refreshError: unknown
 ): void {
   tokenStorage.clear();
   csrfTokenService.clear();
@@ -123,7 +141,8 @@ function clearAndRedirect(
     // A real expiry: the visitor was on a route that needed a session and the refresh
     // could not restore one — distinct from a background 401 on a public page, which
     // never reaches this branch. See AuthService.notifySessionExpired's doc comment.
-    authService.notifySessionExpired();
+    const reason = readRefreshErrorCode(refreshError) === REUSE_DETECTED_CODE ? 'revoked' : 'expired';
+    authService.notifySessionExpired(reason);
     void router.navigateByUrl('/auth/login');
   }
 }
@@ -173,7 +192,7 @@ function requestNewAccessToken(
         }),
         catchError(error => {
           // All waiting requests receive the same error instead of hanging forever.
-          clearAndRedirect(tokenStorage, router, csrfTokenService, authService);
+          clearAndRedirect(tokenStorage, router, csrfTokenService, authService, error);
           return throwError(() => error);
         }),
         finalize(() => {
