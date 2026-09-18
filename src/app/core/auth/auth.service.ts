@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, catchError, combineLatest, map, Observable, of, Subject, tap } from 'rxjs';
+import { BehaviorSubject, catchError, combineLatest, map, Observable, of, Subject, tap, throwError } from 'rxjs';
 
 import { AuthApiService } from './auth-api.service';
 import { CsrfTokenService } from '../services/csrf-token.service';
@@ -196,10 +196,23 @@ export class AuthService {
   /**
    * Performs a real logout: backend refresh-token invalidation + local cleanup.
    * Callers subscribe because this is an HTTP operation.
+   *
+   * Phase 1 (Authentication & Session) fix: local cleanup used to run only in the success
+   * path (tap), so a failed API call (e.g. an access token that had just expired — POST
+   * /auth/logout requires [Authorize] and is deliberately excluded from the auto-refresh
+   * interceptor to avoid a refresh-then-logout loop) left the in-memory token/profile/CSRF
+   * state untouched even though the caller (navbar) navigates away regardless of outcome,
+   * as if logout had silently no-op'd for anything still reading that state client-side
+   * before the next full reload. Local state now always clears, matching what the user
+   * asked for regardless of whether the server call itself succeeded.
    */
   logout(): Observable<void> {
     return this.authApi.logout().pipe(
-      tap(() => this.clearSession())
+      tap(() => this.clearSession()),
+      catchError(error => {
+        this.clearSession();
+        return throwError(() => error);
+      })
     );
   }
 
