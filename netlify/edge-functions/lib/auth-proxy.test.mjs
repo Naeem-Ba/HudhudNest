@@ -6,7 +6,8 @@ import {
   shouldProxyPath,
   buildTargetUrl,
   pickForwardableRequestHeaders,
-  buildProxiedResponseHeaders
+  buildProxiedResponseHeaders,
+  fetchWithTimeout
 } from './auth-proxy.mjs';
 
 test('shouldProxyPath matches /api/security/csrf-token exactly', () => {
@@ -108,4 +109,40 @@ test('buildProxiedResponseHeaders on a response with no cookies sets none', () =
   const result = buildProxiedResponseHeaders(backendHeaders);
 
   assert.equal(result.getSetCookie().length, 0);
+});
+
+test('fetchWithTimeout resolves normally when the backend responds well within the budget', async () => {
+  const fakeFetch = async (url, options) => {
+    assert.equal(url, 'https://example.test/x');
+    assert.equal(options.signal instanceof AbortSignal, true);
+    return new Response('ok', { status: 200 });
+  };
+
+  const response = await fetchWithTimeout(fakeFetch, 'https://example.test/x', {}, 1000);
+  assert.equal(response.status, 200);
+});
+
+test('fetchWithTimeout aborts and rejects once the backend exceeds the budget, instead of hanging', async () => {
+  // Regression guard for the 2026-09-18 Google Sign-In incident: a slow (not just
+  // unreachable) backend response must not be allowed to hang past this function's own
+  // budget, or the platform ends up killing the whole edge function ungracefully instead.
+  const neverSettlingFetch = (url, options) =>
+    new Promise((_resolve, reject) => {
+      options.signal.addEventListener('abort', () => reject(new Error('aborted')));
+    });
+
+  await assert.rejects(
+    () => fetchWithTimeout(neverSettlingFetch, 'https://example.test/slow', {}, 20)
+  );
+});
+
+test('fetchWithTimeout propagates the fetch implementation\'s own rejection unchanged', async () => {
+  const failingFetch = async () => {
+    throw new TypeError('network error');
+  };
+
+  await assert.rejects(
+    () => fetchWithTimeout(failingFetch, 'https://example.test/x', {}, 1000),
+    TypeError
+  );
 });

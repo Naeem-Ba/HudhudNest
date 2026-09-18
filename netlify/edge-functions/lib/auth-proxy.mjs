@@ -46,6 +46,38 @@ export function buildTargetUrl(pathname, search, apiBaseUrl) {
   return `${origin}${pathname}${search || ''}`;
 }
 
+/**
+ * Production incident (2026-09-18): a real Google Sign-In POST through this proxy came back
+ * as a bare platform 500 (no backend headers relayed at all -- confirmed the request never
+ * completed, not that the backend answered with an error) instead of this function's own
+ * clean 502 JSON. The backend-side cause is a cold Google-certificate-cache network fetch with
+ * no bounded timeout (see PropertyApi.Infrastructure/Auth/GoogleTokenVerifier.cs); from here,
+ * a plain `fetch(targetUrl, ...)` with no timeout at all has the exact same shape of risk for
+ * ANY slow backend response, regardless of cause -- Netlify's own platform-level function
+ * timeout eventually kills it ungracefully, bypassing the catch block below entirely. Bounding
+ * the wait from this side too means a slow backend degrades the same predictable way an
+ * unreachable one already does.
+ */
+export const BACKEND_FETCH_TIMEOUT_MS = 20_000;
+
+/**
+ * Runs `fetchImpl(url, options)` with an AbortSignal that fires after `timeoutMs`, so a slow
+ * (not just unreachable) backend response still resolves/rejects within a bounded time instead
+ * of hanging until the platform's own timeout kills the whole function ungracefully.
+ * `fetchImpl` is injected (not a bare `fetch` call) so this is unit-testable with a fake, slow
+ * implementation under plain Node — no real network or timers-heavy sleeping required.
+ */
+export async function fetchWithTimeout(fetchImpl, url, options, timeoutMs) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetchImpl(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 /** Allowlist, not a blocklist: only forward what these specific endpoints actually need.
  *  Deliberately excludes Host/Content-Length/Connection (the runtime recomputes these
  *  correctly for the new outgoing request; forwarding stale values would corrupt it). */
