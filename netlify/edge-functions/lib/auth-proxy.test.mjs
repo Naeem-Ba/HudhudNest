@@ -1,0 +1,111 @@
+// Run with: node --test netlify/edge-functions/lib
+// Plain Node's built-in test runner — same convention as social-crawler.test.mjs.
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  shouldProxyPath,
+  buildTargetUrl,
+  pickForwardableRequestHeaders,
+  buildProxiedResponseHeaders
+} from './auth-proxy.mjs';
+
+test('shouldProxyPath matches /api/security/csrf-token exactly', () => {
+  assert.equal(shouldProxyPath('/api/security/csrf-token'), true);
+  assert.equal(shouldProxyPath('/api/security/csrf-token/'), false);
+  assert.equal(shouldProxyPath('/api/security/other'), false);
+});
+
+test('shouldProxyPath matches /api/auth and every /api/auth/* sub-path', () => {
+  assert.equal(shouldProxyPath('/api/auth'), true);
+  assert.equal(shouldProxyPath('/api/auth/login'), true);
+  assert.equal(shouldProxyPath('/api/auth/refresh'), true);
+  assert.equal(shouldProxyPath('/api/auth/logout'), true);
+  // Multi-segment sub-paths — this is the exact class of endpoint the declarative
+  // `[[redirects]]` splat also had to match (phone/social/OTP auth flows).
+  assert.equal(shouldProxyPath('/api/auth/phone/registration/verify'), true);
+  assert.equal(shouldProxyPath('/api/auth/social/google'), true);
+});
+
+test('shouldProxyPath rejects unrelated paths', () => {
+  assert.equal(shouldProxyPath('/api/properties'), false);
+  assert.equal(shouldProxyPath('/api/authors'), false); // must not match on a bare prefix
+  assert.equal(shouldProxyPath('/'), false);
+});
+
+test('buildTargetUrl strips the apiBaseUrl\'s trailing /api and appends the full incoming path', () => {
+  assert.equal(
+    buildTargetUrl('/api/auth/login', '', 'https://wohnungen-api.onrender.com/api'),
+    'https://wohnungen-api.onrender.com/api/auth/login'
+  );
+});
+
+test('buildTargetUrl preserves the query string', () => {
+  assert.equal(
+    buildTargetUrl('/api/security/csrf-token', '?x=1', 'https://wohnungen-api.onrender.com/api'),
+    'https://wohnungen-api.onrender.com/api/security/csrf-token?x=1'
+  );
+});
+
+test('buildTargetUrl tolerates a trailing slash on apiBaseUrl', () => {
+  assert.equal(
+    buildTargetUrl('/api/auth/refresh', '', 'https://wohnungen-api.onrender.com/api/'),
+    'https://wohnungen-api.onrender.com/api/auth/refresh'
+  );
+});
+
+test('pickForwardableRequestHeaders copies only the allowlisted headers', () => {
+  const incoming = new Headers({
+    cookie: 'refresh_token=abc',
+    'content-type': 'application/json',
+    'x-xsrf-token': 'token-value',
+    'x-forwarded-for': '1.2.3.4', // must NOT be forwarded
+    host: 'realestateworld.world' // must NOT be forwarded
+  });
+
+  const forwarded = pickForwardableRequestHeaders(incoming);
+
+  assert.equal(forwarded.get('cookie'), 'refresh_token=abc');
+  assert.equal(forwarded.get('content-type'), 'application/json');
+  assert.equal(forwarded.get('x-xsrf-token'), 'token-value');
+  assert.equal(forwarded.get('x-forwarded-for'), null);
+  assert.equal(forwarded.get('host'), null);
+});
+
+test('buildProxiedResponseHeaders drops content-encoding/content-length/transfer-encoding', () => {
+  const backendHeaders = new Headers({
+    'content-type': 'application/json',
+    'content-encoding': 'br',
+    'content-length': '123',
+    'transfer-encoding': 'chunked'
+  });
+
+  const result = buildProxiedResponseHeaders(backendHeaders);
+
+  assert.equal(result.get('content-type'), 'application/json');
+  assert.equal(result.get('content-encoding'), null);
+  assert.equal(result.get('content-length'), null);
+  assert.equal(result.get('transfer-encoding'), null);
+});
+
+test('buildProxiedResponseHeaders relays EVERY Set-Cookie header individually via getSetCookie(), not merged', () => {
+  // This is the exact bug this whole file exists to avoid: a plain Headers.get('set-cookie')
+  // joins multiple cookies into one comma-separated string, corrupting each cookie's own
+  // Expires date (which itself contains a comma) and losing the second cookie entirely.
+  const backendHeaders = new Headers();
+  backendHeaders.append('set-cookie', 'refresh_token=abc; Path=/api/auth; Secure; SameSite=None; Partitioned');
+  backendHeaders.append('set-cookie', 'XSRF-TOKEN=xyz; Secure; SameSite=None; Partitioned');
+
+  const result = buildProxiedResponseHeaders(backendHeaders);
+  const relayedCookies = result.getSetCookie();
+
+  assert.equal(relayedCookies.length, 2);
+  assert.ok(relayedCookies.some(c => c.startsWith('refresh_token=abc')));
+  assert.ok(relayedCookies.some(c => c.startsWith('XSRF-TOKEN=xyz')));
+});
+
+test('buildProxiedResponseHeaders on a response with no cookies sets none', () => {
+  const backendHeaders = new Headers({ 'content-type': 'application/json' });
+  const result = buildProxiedResponseHeaders(backendHeaders);
+
+  assert.equal(result.getSetCookie().length, 0);
+});

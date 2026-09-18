@@ -1,17 +1,18 @@
-# Production incident (2026-09-18): the two [[redirects]] rules added to netlify.toml for the
-# same-origin auth proxy (see its own history/comments, and auth-api-base-url.ts) never took
-# effect — confirmed live (POST /api/auth/login and /api/auth/refresh both 404'd on every
-# browser, breaking login entirely). Root cause: Netlify processes this _redirects file BEFORE
-# netlify.toml, and the catch-all rule below matched every path first, including /api/auth/*.
-# For GET this returned this app's own index.html (200 — indistinguishable from "working" at a
-# glance); for POST, Netlify does not serve a static-file rewrite target, so it fell through to
-# a genuine 404 instead. Moving the two specific rules here, ahead of the catch-all, is what
-# actually works — this exact file's own priority over netlify.toml is what proved the bug in
-# the first place, so it's also the mechanism used to fix it. See netlify.toml for why only the
-# production backend is targeted (staging is intentionally excluded for now).
-/api/auth/*               https://wohnungen-api.onrender.com/api/auth/:splat               200!
-/api/security/csrf-token  https://wohnungen-api.onrender.com/api/security/csrf-token       200!
-
+# Production incident (2026-09-18) — history, so nobody re-adds a redirect rule here without
+# reading this first. The same-origin auth proxy (Safari third-party-cookie fix; see
+# netlify/edge-functions/auth-proxy.mjs) went through three attempts:
+#   1. netlify.toml [[redirects]] with an (invalid) `context = "..."` field — silently
+#      discarded entirely, total login outage on every browser.
+#   2. The two rules moved to THIS file, ahead of the catch-all below (this file is processed
+#      before netlify.toml, which is why attempt 1's rules never had a chance either way) —
+#      fixed the 404s, but Netlify's declarative redirect/rewrite engine does not reliably
+#      relay Set-Cookie headers back to the client, so refresh_token/CSRF cookies still never
+#      reached the browser. Confirmed against Netlify's own support forum/docs.
+#   3. netlify/edge-functions/auth-proxy.mjs — full programmatic control over the Response,
+#      including Headers.getSetCookie() to relay cookies correctly. This is the one that
+#      actually works, and it runs BEFORE this file's rules are even considered (Edge
+#      Functions execute first in Netlify's request chain), so it does not need a rule here.
+#
 # Original rule — SPA fallback. Only a safety net: this app uses Angular's hash-based routing
 # (withHashLocation() in app.config.ts), so every real in-app route is a #/... fragment the
 # server never sees; this exists only for a stray non-hash URL (an old bookmark, a search

@@ -21,15 +21,19 @@
   command = "npm run build:staging"
 
 ## Production incident (2026-09-18) — the same-origin auth proxy (Safari third-party-cookie
-## fix; see auth-api-base-url.ts) is NOT configured here. Two attempts were made and both
-## failed live before the real cause was found:
-##   1. `context = "production"` on a [[redirects]] rule — not valid Netlify syntax for a
+## fix; see src/app/core/auth/auth-api-base-url.ts) is NOT configured here, and was never
+## configured in public/_redirects either, after three attempts:
+##   1. `context = "production"` on a [[redirects]] rule here — not valid Netlify syntax for a
 ##      per-rule field, so those rules were silently discarded entirely.
-##   2. Plain unscoped [[redirects]] here (this file) — still didn't work, because Netlify
-##      processes public/_redirects BEFORE netlify.toml, and that file's own catch-all
+##   2. Plain unscoped [[redirects]] here — still didn't work, because Netlify processes
+##      public/_redirects BEFORE netlify.toml, and that file's own catch-all
 ##      (`/* -> /index.html 200`) matched every /api/auth/* request first.
-## Both failures manifested as POST /api/auth/login and /api/auth/refresh returning 404 on
-## every browser — a total login outage, strictly worse than the Safari-only bug being fixed.
-## The two proxy rules now live in public/_redirects instead, ordered ahead of its catch-all —
-## see that file's own comment for the full story. Do not re-add them here without first
-## removing/reordering public/_redirects, or history will repeat.
+##   3. The two rules moved into public/_redirects, ahead of its catch-all — fixed the routing,
+##      but Netlify's declarative redirect/rewrite engine does not reliably relay Set-Cookie
+##      headers back to the client, so the cookies this whole fix exists for still never
+##      reached the browser.
+## The actual, working fix is netlify/edge-functions/auth-proxy.mjs — full programmatic
+## control over the Response, including correctly relaying every individual Set-Cookie header.
+## It runs before both this file and public/_redirects are even considered. Do not add
+## [[redirects]] or _redirects rules for /api/auth/*//api/security/csrf-token as an "easier"
+## alternative — that is exactly how the first three attempts failed.
