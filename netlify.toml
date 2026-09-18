@@ -20,29 +20,16 @@
 [context.staging]
   command = "npm run build:staging"
 
-## Production incident (2026-09-18), correction of a mistake in the previous version of this
-## file: `context = "production"` on a [[redirects]] rule is NOT valid Netlify syntax for
-## scoping an individual redirect (there is no such per-rule field). Netlify silently ignored
-## all four rules that had it — proven live: a GET to a made-up path
-## (/api/this-path-does-not-exist-at-all) returned 200 + this app's own index.html, which is
-## Netlify's unrelated default SPA fallback, not any rule in this file. The practical effect
-## was total login/refresh/CSRF outage on every browser (POST /api/auth/login and
-## /api/auth/refresh both 404'd), which is strictly worse than the Safari-only bug these rules
-## were meant to fix. Fixed by using plain, unscoped [[redirects]] below instead — Netlify's
-## real, unambiguous syntax for "always apply this rule" — and, since that means this now
-## necessarily also applies to the `staging` context (no verified working way to give staging
-## rules a genuinely different target was available at the time of this fix), staging is
-## deliberately excluded from src/app/core/auth/auth-api-base-url.ts's relative-path behavior
-## for now, so it keeps calling its own backend directly exactly as before (unfixed for
-## Safari there specifically, but not broken) instead of hitting these production-only rules.
-[[redirects]]
-  from = "/api/auth/*"
-  to = "https://wohnungen-api.onrender.com/api/auth/:splat"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/api/security/csrf-token"
-  to = "https://wohnungen-api.onrender.com/api/security/csrf-token"
-  status = 200
-  force = true
+## Production incident (2026-09-18) — the same-origin auth proxy (Safari third-party-cookie
+## fix; see auth-api-base-url.ts) is NOT configured here. Two attempts were made and both
+## failed live before the real cause was found:
+##   1. `context = "production"` on a [[redirects]] rule — not valid Netlify syntax for a
+##      per-rule field, so those rules were silently discarded entirely.
+##   2. Plain unscoped [[redirects]] here (this file) — still didn't work, because Netlify
+##      processes public/_redirects BEFORE netlify.toml, and that file's own catch-all
+##      (`/* -> /index.html 200`) matched every /api/auth/* request first.
+## Both failures manifested as POST /api/auth/login and /api/auth/refresh returning 404 on
+## every browser — a total login outage, strictly worse than the Safari-only bug being fixed.
+## The two proxy rules now live in public/_redirects instead, ordered ahead of its catch-all —
+## see that file's own comment for the full story. Do not re-add them here without first
+## removing/reordering public/_redirects, or history will repeat.
