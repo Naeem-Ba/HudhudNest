@@ -67,3 +67,9 @@ PropertyApi-review-fixes-powershell-patch.zip
 angular_frontend_merge_kit*.zip
 angular_frontend_hotfix_v5*.zip
 .env
+
+# Playwright
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
