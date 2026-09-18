@@ -17,6 +17,7 @@ import { normalizeAuthTokenResponse } from '../models/auth.model';
 import { AdminGuard } from '../guards/admin-guard';
 import { AuthGuard } from '../guards/auth-guard';
 import { AuthService } from '../auth/auth.service';
+import { resolveAuthApiBaseUrl } from '../auth/auth-api-base-url';
 import { CsrfTokenService } from '../services/csrf-token.service';
 import { TokenStorageService } from '../services/token-storage.service';
 
@@ -39,12 +40,23 @@ function toAbsoluteUrl(url: string): string {
  * JWT must only be attached to our REST API. This prevents token leakage to i18n,
  * static files, SignalR URLs, analytics, maps, or any future third-party request.
  * Exported for reuse by csrf.interceptor.ts, which needs the same API-request check.
+ *
+ * Also matches the same-origin-proxied auth base (see auth-api-base-url.ts): on the deployed
+ * web app, /auth/* calls resolve to a relative /api/... path instead of the real apiBaseUrl, so
+ * an authenticated /auth/* call that ISN'T in isAuthEndpoint's list below (e.g.
+ * /auth/phone/change/verify, /auth/email/add — both [Authorize]-protected) would otherwise be
+ * missed here, losing both its Bearer token and its CSRF header (csrf.interceptor.ts reuses
+ * this same check) even though the backend still requires both.
  */
 export function isBackendApiRequest(url: string): boolean {
-  const apiBaseUrl = toAbsoluteUrl(environment.apiBaseUrl || environment.apiUrl);
   const requestUrl = toAbsoluteUrl(url);
+  const apiBaseUrl = toAbsoluteUrl(environment.apiBaseUrl || environment.apiUrl);
+  const authBaseUrl = toAbsoluteUrl(resolveAuthApiBaseUrl(environment));
 
-  return requestUrl === apiBaseUrl || requestUrl.startsWith(`${apiBaseUrl}/`);
+  return (
+    requestUrl === apiBaseUrl || requestUrl.startsWith(`${apiBaseUrl}/`) ||
+    requestUrl === authBaseUrl || requestUrl.startsWith(`${authBaseUrl}/`)
+  );
 }
 
 /** Auth endpoints must not trigger refresh loops or receive stale Authorization headers. */
@@ -174,10 +186,13 @@ function requestNewAccessToken(
       ? of(void 0)
       : csrfTokenService.fetchToken();
 
+    // Same-origin on the deployed web app — see auth-api-base-url.ts's doc comment (Safari
+    // drops this cookie outright as third-party otherwise; stays absolute for local dev and
+    // the native Capacitor app, neither of which has this problem or a proxy for it).
     refreshRequest$ = ensureCsrfToken$
       .pipe(
         switchMap(() =>
-          directHttp.post<unknown>(`${environment.apiUrl}/auth/refresh`, {}, {
+          directHttp.post<unknown>(`${resolveAuthApiBaseUrl(environment)}/auth/refresh`, {}, {
             withCredentials: true,
             headers: { 'X-XSRF-TOKEN': csrfTokenService.getToken() ?? '' }
           })

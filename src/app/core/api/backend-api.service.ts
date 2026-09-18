@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { resolveAuthApiBaseUrl } from '../auth/auth-api-base-url';
 
 export type QueryScalar = string | number | boolean;
 export type QueryValue = QueryScalar | readonly QueryScalar[] | null | undefined;
@@ -9,6 +10,14 @@ export type QueryValue = QueryScalar | readonly QueryScalar[] | null | undefined
 @Injectable({ providedIn: 'root' })
 export class BackendApiService {
   private readonly baseUrl = this.normalizeBaseUrl(environment.apiBaseUrl || environment.apiUrl);
+
+  // See auth-api-base-url.ts's doc comment: every /auth/* call (AuthApiService,
+  // PhoneAuthApiService — login/refresh/logout/register/social/phone OTP, all of which set or
+  // depend on the refresh_token cookie) must be same-origin on the deployed web app, or Safari
+  // drops the cookie outright. Scoped to just this prefix, not this.baseUrl itself, because
+  // every other endpoint (property/photo uploads especially) has no reason to be proxied
+  // through Netlify and no cookie-persistence problem to fix.
+  private readonly authBaseUrl = this.normalizeBaseUrl(resolveAuthApiBaseUrl(environment));
 
   constructor(private readonly http: HttpClient) {}
 
@@ -52,7 +61,12 @@ export class BackendApiService {
       return path;
     }
 
-    return `${this.baseUrl}${path.startsWith('/') ? path : '/' + path}`;
+    const normalizedPath = path.startsWith('/') ? path : '/' + path;
+    const base = normalizedPath.startsWith('/auth/') || normalizedPath === '/auth'
+      ? this.authBaseUrl
+      : this.baseUrl;
+
+    return `${base}${normalizedPath}`;
   }
 
   private normalizeBaseUrl(value: string): string {

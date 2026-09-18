@@ -19,3 +19,51 @@
 # (production / deploy-preview / branch-deploy).
 [context.staging]
   command = "npm run build:staging"
+
+## Production incident (2026-09): refresh_token and the CSRF cookies are third-party cookies
+## whenever the SPA (this Netlify site) calls the backend directly at its own onrender.com
+## origin — a different registrable domain. Chrome/Edge needed the Partitioned (CHIPS) cookie
+## attribute (fixed backend-side, PropertyApi PR #151), but Safari has no CHIPS exception and
+## drops third-party cookies unconditionally regardless of any cookie attribute — confirmed on
+## a real iPhone/Safari session.
+##
+## The only fix that works on every browser is to stop these specific calls from being
+## cross-site at all. These two redirects proxy them through THIS site's own origin instead:
+## status = 200 means Netlify's edge fetches the real backend server-side and relays its
+## response back under this domain, so the browser sees a same-origin response and stores/sends
+## the cookie normally. src/app/core/auth/auth-api-base-url.ts is what makes the Angular app
+## actually call the relative /api/auth/... and /api/security/csrf-token paths below on the
+## deployed web app (never on local dev, never inside the native Capacitor app — see its own
+## doc comment for why).
+##
+## Scoped to exactly these two path prefixes, not the whole /api/* surface: every other
+## endpoint (property/photo uploads especially) has no cookie-persistence problem to fix, and
+## routing large uploads through this proxy would risk hitting Netlify's own body-size limits
+## for no reason.
+[[redirects]]
+  from = "/api/auth/*"
+  to = "https://wohnungen-api.onrender.com/api/auth/:splat"
+  status = 200
+  force = true
+  context = "production"
+
+[[redirects]]
+  from = "/api/security/csrf-token"
+  to = "https://wohnungen-api.onrender.com/api/security/csrf-token"
+  status = 200
+  force = true
+  context = "production"
+
+[[redirects]]
+  from = "/api/auth/*"
+  to = "https://propertyapi-staging-api.onrender.com/api/auth/:splat"
+  status = 200
+  force = true
+  context = "staging"
+
+[[redirects]]
+  from = "/api/security/csrf-token"
+  to = "https://propertyapi-staging-api.onrender.com/api/security/csrf-token"
+  status = 200
+  force = true
+  context = "staging"
