@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { catchError, map, Observable, of } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
+import { resolveAuthApiBaseUrl } from '../auth/auth-api-base-url';
 
 interface CsrfTokenResponse {
   csrfToken?: string | null;
@@ -26,6 +27,15 @@ interface CsrfTokenResponse {
  * hands it out to CsrfInterceptor (the normal interceptor chain) and to the two call sites
  * that deliberately bypass that chain (requestNewAccessToken in refresh-auth.interceptor.ts,
  * restoreSession in app.config.ts).
+ *
+ * Production incident (2026-09): the JSON-body workaround above solved reading the token, but
+ * the underlying cookies this call sets (the antiforgery-internal cookie and the visible
+ * XSRF-TOKEN cookie) are still third-party cookies on the same cross-site call this comment
+ * already describes — Chrome/Edge needed the Partitioned attribute (CsrfExtensions.cs,
+ * CsrfController.cs), and Safari has no equivalent exception at all. See
+ * auth-api-base-url.ts: this call now goes through the same same-origin-proxied path as
+ * /auth/refresh on the deployed web app, so the browser never treats these cookies as
+ * cross-site in the first place.
  */
 @Injectable({ providedIn: 'root' })
 export class CsrfTokenService {
@@ -42,7 +52,7 @@ export class CsrfTokenService {
     const directHttp = new HttpClient(this.httpBackend);
 
     return directHttp
-      .get<CsrfTokenResponse>(`${environment.apiUrl}/security/csrf-token`, { withCredentials: true })
+      .get<CsrfTokenResponse>(`${resolveAuthApiBaseUrl(environment)}/security/csrf-token`, { withCredentials: true })
       .pipe(
         map(response => {
           this.token = response?.csrfToken ?? null;

@@ -13,6 +13,7 @@ import { CsrfInterceptor } from './core/interceptors/csrf.interceptor';
 import { readRefreshErrorCode, REUSE_DETECTED_CODE } from './core/interceptors/refresh-auth.interceptor';
 import { AuthService } from './core/auth/auth.service';
 import { normalizeAuthTokenResponse } from './core/models/auth.model';
+import { resolveAuthApiBaseUrl } from './core/auth/auth-api-base-url';
 import { CsrfTokenService } from './core/services/csrf-token.service';
 import { EnumService } from './core/services/enum.service';
 import { TokenStorageService } from './core/services/token-storage.service';
@@ -83,9 +84,12 @@ export function restoreSession(
       await firstValueFrom(csrfTokenService.fetchToken());
 
       const directHttp = new HttpClient(httpBackend);
+      // Same-origin on the deployed web app — see auth-api-base-url.ts's doc comment (Safari
+      // drops this cookie outright as third-party otherwise; stays absolute for local dev and
+      // the native Capacitor app, neither of which has this problem or a proxy for it).
       const attemptRefresh = () =>
         firstValueFrom(
-          directHttp.post<unknown>(`${environment.apiUrl}/auth/refresh`, {}, {
+          directHttp.post<unknown>(`${resolveAuthApiBaseUrl(environment)}/auth/refresh`, {}, {
             withCredentials: true,
             headers: { 'X-XSRF-TOKEN': csrfTokenService.getToken() ?? '' }
           }).pipe(timeout(REFRESH_TIMEOUT_MS))
