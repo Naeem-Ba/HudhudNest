@@ -107,14 +107,15 @@ export function currentRouteRequiresAuth(router: Router): boolean {
  * navigated there fresh with no token at all.
  */
 /** Backend code for RefreshTokenCommand's reuse-detection branch — see RefreshTokenCommand.cs. */
-const REUSE_DETECTED_CODE = 'REFRESH_TOKEN_REUSE_DETECTED';
+export const REUSE_DETECTED_CODE = 'REFRESH_TOKEN_REUSE_DETECTED';
 
 /**
  * Reads the /auth/refresh failure's errorCode (AuthController.cs now includes it on the 401
  * body) so the UI can tell "all sessions revoked for security" apart from an ordinary expiry
- * instead of showing one undifferentiated message for both.
+ * instead of showing one undifferentiated message for both. Exported for app.config.ts's
+ * restoreSession(), which needs the exact same guest-vs-expired distinction at app boot.
  */
-function readRefreshErrorCode(error: unknown): string | null {
+export function readRefreshErrorCode(error: unknown): string | null {
   if (!(error instanceof HttpErrorResponse)) {
     return null;
   }

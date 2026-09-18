@@ -9,6 +9,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { of, throwError } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
@@ -213,6 +214,40 @@ describe('AuthService', () => {
     expect(service.currentUserSnapshot).toBeNull();
     expect(tokenStorage.getAccessToken()).toBeNull();
     expect(authApiSpy.logout).not.toHaveBeenCalled();
+  });
+
+  // ────────────── logout() — Phase 1: يمسح الحالة المحلية حتى عند فشل نداء API ──────────────
+  // كان clearSession() يُستدعى فقط ضمن tap (مسار النجاح)، فبقيت الحالة المحلية (التوكن،
+  // كاش البروفايل) عالقة إن فشل POST /auth/logout — رغم أن navbar.component.ts يتنقّل بعيداً
+  // بغضّ النظر عن النتيجة، فيبدو الأمر للمستخدم كتسجيل خروج ناجح بينما الحالة لم تُمسح فعلاً.
+  describe('logout()', () => {
+    it('✅ عند نجاح نداء API: يمسح التوكن وحالة المستخدم', () => {
+      const token = makeJwt({ sub: 'u1', exp: Math.floor(Date.now() / 1000) + 3600 });
+      tokenStorage.setAccessToken(token);
+      authApiSpy.logout.and.returnValue(of(undefined));
+      service = TestBed.inject(AuthService);
+
+      service.logout().subscribe();
+
+      expect(service.currentUserSnapshot).toBeNull();
+      expect(tokenStorage.getAccessToken()).toBeNull();
+    });
+
+    it('✅ عند فشل نداء API: يمسح التوكن وحالة المستخدم محلياً رغم ذلك، ويُعيد بثّ الخطأ', () => {
+      const token = makeJwt({ sub: 'u1', exp: Math.floor(Date.now() / 1000) + 3600 });
+      tokenStorage.setAccessToken(token);
+      authApiSpy.logout.and.returnValue(throwError(() => new Error('network down')));
+      service = TestBed.inject(AuthService);
+      expect(service.currentUserSnapshot).not.toBeNull();
+
+      let receivedError: unknown;
+      service.logout().subscribe({ error: err => (receivedError = err) });
+
+      // ✅ الأهم: الحالة المحلية تُمسح حتى مع فشل الـ API — لا تبقى جلسة "شبه منتهية" عالقة.
+      expect(service.currentUserSnapshot).toBeNull();
+      expect(tokenStorage.getAccessToken()).toBeNull();
+      expect(receivedError).toBeTruthy();
+    });
   });
 
   // ────────────── updateCurrentUser ──────────────
