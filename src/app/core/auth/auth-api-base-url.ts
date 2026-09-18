@@ -25,9 +25,16 @@ import { AppEnvironment } from '../../../environments/environment.model';
  *   production build locally and runs it from a `capacitor://`/`https://localhost` WebView
  *   origin, not from realestateworld.world — there is no Netlify in front of it to proxy a
  *   relative path, so this must keep calling the real backend directly, exactly as before.
+ * - Staging (`environmentName === 'staging'`), for now: netlify.toml's own doc comment
+ *   explains why — its [[redirects]] rules are currently unscoped (a `context` field on an
+ *   individual rule is not valid Netlify syntax, which is exactly the bug this file's own
+ *   incident history records) and only point at the production backend. Routing staging's
+ *   calls through a relative path here would send them to production's backend instead of
+ *   staging's own. Staging keeps calling its own backend directly — unfixed for Safari there
+ *   specifically, but not broken — until context-scoped redirects are verified and added.
  */
 export function resolveAuthApiBaseUrl(env: AppEnvironment): string {
-  if (env.environmentName === 'local' || Capacitor.isNativePlatform()) {
+  if (env.environmentName !== 'production' || Capacitor.isNativePlatform()) {
     return env.apiBaseUrl;
   }
 

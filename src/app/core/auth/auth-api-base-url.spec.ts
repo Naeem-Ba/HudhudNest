@@ -35,18 +35,23 @@ describe('resolveAuthApiBaseUrl', () => {
     expect(resolveAuthApiBaseUrl(env)).toBe('https://localhost:7136/api');
   });
 
-  it('✅ على الويب المنشور (staging/production) وبمتصفح عادي: يعيد مساراً نسبياً same-origin', () => {
+  it('✅ على الويب المنشور (production) وبمتصفح عادي: يعيد مساراً نسبياً same-origin', () => {
     spyOn(Capacitor, 'isNativePlatform').and.returnValue(false);
     const env = fakeEnv({ environmentName: 'production' });
 
     expect(resolveAuthApiBaseUrl(env)).toBe('/api');
   });
 
-  it('✅ staging أيضاً same-origin — نفس منطق production بالضبط', () => {
+  // ✅ إصلاح حادثة 2026-09-18: netlify.toml's [[redirects]] الحالية بلا context محدَّد (بعد
+  // تصحيح خطأ context="..." غير الصالح الذي كان يُعطِّلها بالكامل) — تشير فقط إلى الخلفية
+  // الحقيقية (production). توجيه استدعاءات staging عبر مسار نسبي هنا سيرسلها خطأً إلى
+  // خلفية production بدل خلفية staging الخاصة بها. لذا تبقى staging على الاتصال المباشر
+  // المطلق كما كانت — غير مُصلَحة لـSafari هناك تحديداً، لكن غير معطوبة.
+  it('✅ staging تبقى على العنوان الكامل المطلق (غير same-origin) — توجيهات Netlify الحالية للـproduction فقط', () => {
     spyOn(Capacitor, 'isNativePlatform').and.returnValue(false);
     const env = fakeEnv({ environmentName: 'staging', apiBaseUrl: 'https://propertyapi-staging-api.onrender.com/api' });
 
-    expect(resolveAuthApiBaseUrl(env)).toBe('/api');
+    expect(resolveAuthApiBaseUrl(env)).toBe('https://propertyapi-staging-api.onrender.com/api');
   });
 
   it('✅ داخل تطبيق Capacitor الأصلي (حتى وإن كان environmentName=production): يبقى العنوان الكامل المطلق — لا Netlify أمامه ليُوسِّط الطلب', () => {
