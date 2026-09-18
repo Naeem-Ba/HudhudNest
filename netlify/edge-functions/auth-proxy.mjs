@@ -34,7 +34,7 @@
 // assume it works just because it deployed without errors, the same as the two before it.
 // =============================================================
 
-import { shouldProxyPath, buildTargetUrl, pickForwardableRequestHeaders, buildProxiedResponseHeaders } from './lib/auth-proxy.mjs';
+import { shouldProxyPath, buildTargetUrl, pickForwardableRequestHeaders, buildProxiedResponseHeaders, fetchWithTimeout, BACKEND_FETCH_TIMEOUT_MS } from './lib/auth-proxy.mjs';
 
 const DEFAULT_API_BASE_URL = 'https://wohnungen-api.onrender.com/api';
 
@@ -50,11 +50,16 @@ export default async (request, context) => {
   const isBodylessMethod = request.method === 'GET' || request.method === 'HEAD';
 
   try {
-    const backendResponse = await fetch(targetUrl, {
-      method: request.method,
-      headers: pickForwardableRequestHeaders(request.headers),
-      body: isBodylessMethod ? undefined : await request.text()
-    });
+    const backendResponse = await fetchWithTimeout(
+      fetch,
+      targetUrl,
+      {
+        method: request.method,
+        headers: pickForwardableRequestHeaders(request.headers),
+        body: isBodylessMethod ? undefined : await request.text()
+      },
+      BACKEND_FETCH_TIMEOUT_MS
+    );
 
     return new Response(backendResponse.body, {
       status: backendResponse.status,
@@ -62,7 +67,8 @@ export default async (request, context) => {
       headers: buildProxiedResponseHeaders(backendResponse.headers)
     });
   } catch {
-    // Backend unreachable/network failure — the frontend already has its own retry/timeout
+    // Backend unreachable/slow/network failure (including this function's own
+    // BACKEND_FETCH_TIMEOUT_MS abort) — the frontend already has its own retry/timeout
     // handling for exactly this (see app.config.ts's restoreSession); surface a plain 502
     // rather than leaking an error page, so it fails the same documented way a direct
     // cross-origin network error would have.
