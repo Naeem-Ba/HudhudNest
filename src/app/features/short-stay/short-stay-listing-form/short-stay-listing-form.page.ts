@@ -74,6 +74,22 @@ export class ShortStayListingFormPage implements OnInit {
   longitude = 0;
   city = '';
   locationVisibility: LocationVisibility = 'Exact';
+
+  // Security audit finding (2026-09-18): this form has no UI to edit these five fields yet
+  // (governorate/district/neighborhood and pool details — "MVP form", see loadForEdit's
+  // comment history). They used to be hardcoded to `null` on every save regardless of the
+  // loaded listing's actual values, which is a real clear on this backend's full-replace PUT
+  // contract (not a harmless omission) — any listing with pool data or a non-default location
+  // breakdown had it silently wiped on the very next edit. Now captured on load and echoed
+  // back unchanged on save, exactly like every other read-only-for-now field in this form.
+  governorateId: number | null = null;
+  districtId: number | null = null;
+  neighborhoodId: number | null = null;
+  poolType: 'Private' | 'Shared' | null = null;
+  poolLocation: 'Indoor' | 'Outdoor' | null = null;
+  poolIsSeasonal: boolean | null = null;
+  poolIsHeated: boolean | null = null;
+
   cleaningFee = 0;
   extraGuestFee = 0;
   extraBedFee = 0;
@@ -137,6 +153,13 @@ export class ShortStayListingFormPage implements OnInit {
     this.longitude = listing.longitude ?? 0;
     this.city = listing.city ?? '';
     this.locationVisibility = listing.locationVisibility;
+    this.governorateId = listing.governorateId;
+    this.districtId = listing.districtId;
+    this.neighborhoodId = listing.neighborhoodId;
+    this.poolType = listing.poolType;
+    this.poolLocation = listing.poolLocation;
+    this.poolIsSeasonal = listing.poolIsSeasonal;
+    this.poolIsHeated = listing.poolIsHeated;
     this.cleaningFee = listing.cleaningFee;
     this.extraGuestFee = listing.extraGuestFee;
     this.extraBedFee = listing.extraBedFee;
@@ -149,7 +172,7 @@ export class ShortStayListingFormPage implements OnInit {
     this.cancellationFreeCancellationDays = listing.cancellationFreeCancellationDays;
     this.cancellationDepositRefundable = listing.cancellationDepositRefundable;
     this.cancellationCustomTermsText = listing.cancellationCustomTermsText ?? '';
-    this.depositPercentage = null;
+    this.depositPercentage = listing.depositPercentage;
     this.selectedAmenityIds.set(new Set(listing.amenityIds));
 
     const roomType = listing.roomTypes[0];
@@ -255,8 +278,14 @@ export class ShortStayListingFormPage implements OnInit {
 
     this.saving.set(true);
 
-    // ملاحظة: المحافظة/المنطقة/الحي وحقول المسبح غير مُحرَّرة في نموذج MVP هذا —
-    // تُرسَل null فلا تتغيَّر القيمة الحالية إن وُجدت (الباك اند يقبلها اختيارية).
+    // Security audit fix (2026-09-18): this used to hardcode governorateId/districtId/
+    // neighborhoodId/poolType/poolLocation/poolIsSeasonal/poolIsHeated/depositPercentage to
+    // `null` on every save, on the mistaken assumption that the backend's PUT treats a null
+    // field as "leave unchanged". It does not -- this is a full-replace PUT (see
+    // UpdateShortStayListingCommandHandler), so `null` here IS an explicit clear, and every
+    // save was silently wiping any existing value in these fields. None of them have edit UI
+    // in this MVP form yet, so they're captured on load (applyListingToForm) and echoed back
+    // unchanged here instead, exactly like every other read-only-for-now field already is.
     const update$ = this.api.update(id, {
       title: this.title,
       description: this.description,
@@ -270,15 +299,15 @@ export class ShortStayListingFormPage implements OnInit {
       requestBookingEnabled: this.requestBookingEnabled,
       latitude: this.latitude,
       longitude: this.longitude,
-      governorateId: null,
-      districtId: null,
-      neighborhoodId: null,
+      governorateId: this.governorateId,
+      districtId: this.districtId,
+      neighborhoodId: this.neighborhoodId,
       city: this.city || null,
       locationVisibility: this.locationVisibility,
-      poolType: null,
-      poolLocation: null,
-      poolIsSeasonal: null,
-      poolIsHeated: null,
+      poolType: this.poolType,
+      poolLocation: this.poolLocation,
+      poolIsSeasonal: this.poolIsSeasonal,
+      poolIsHeated: this.poolIsHeated,
       cleaningFee: this.cleaningFee,
       extraGuestFee: this.extraGuestFee,
       extraBedFee: this.extraBedFee,
