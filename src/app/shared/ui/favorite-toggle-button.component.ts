@@ -18,6 +18,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { FavoritesApiService } from '../../core/api/favorites-api.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -27,7 +28,7 @@ import { ToastService } from '../services/toast.service';
   selector: 'app-favorite-toggle-button',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   template: `
     <button
       type="button"
@@ -36,7 +37,7 @@ import { ToastService } from '../services/toast.service';
       [disabled]="busy()"
       (click)="toggle($event)"
       [attr.aria-pressed]="isFavorite()"
-      [attr.aria-label]="isFavorite() ? 'إزالة من المفضلة' : 'أضف للمفضلة'"
+      [attr.aria-label]="(isFavorite() ? 'FAVORITE_TOGGLE.REMOVE' : 'FAVORITE_TOGGLE.ADD') | translate"
     >
       <svg width="18" height="18" viewBox="0 0 18 18" [attr.fill]="isFavorite() ? 'currentColor' : 'none'">
         <path d="M9 15.5S2 11 2 6.5a4 4 0 018-1.36A4 4 0 0118 6.5c0 4.5-7 9-9 9z" stroke="currentColor" stroke-width="1.5"/>
@@ -45,14 +46,15 @@ import { ToastService } from '../services/toast.service';
   `,
   styles: [`
     .fav-btn {
-      width: 36px; height: 36px; border-radius: var(--r-pill, 9999px);
-      border: none; background: rgba(255,255,255,.92); color: var(--gray-500, #64748b);
+      width: var(--icon-btn-size, 36px); height: var(--icon-btn-size, 36px); border-radius: var(--r-pill, 9999px);
+      border: 1px solid var(--border, transparent); padding: 0; flex: none; background: rgba(255,255,255,.92); color: var(--gray-500, #64748b);
       display: grid; place-items: center; cursor: pointer;
       box-shadow: var(--shadow-sm, 0 2px 8px rgba(15,23,42,.08));
       transition: color .15s, transform .1s;
     }
     .fav-btn:active { transform: scale(.92); }
     .fav-btn--active { color: var(--danger, #dc2626); }
+    .fav-btn:focus-visible { outline: 2px solid var(--navy, #0f2742); outline-offset: 2px; }
     .fav-btn:disabled { opacity: .6; cursor: default; }
   `]
 })
@@ -61,6 +63,7 @@ export class FavoriteToggleButtonComponent implements OnChanges {
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
+  private readonly translate = inject(TranslateService);
 
   @Input({ required: true }) propertyId!: string;
   @Input() initialFavorite = false;
@@ -78,7 +81,7 @@ export class FavoriteToggleButtonComponent implements OnChanges {
     event.preventDefault();
 
     if (!this.auth.getAccessToken()) {
-      this.toast.info('سجّل الدخول أولاً لإضافة عقارات إلى المفضلة.');
+      this.toast.info(this.translate.instant('FAVORITE_TOGGLE.LOGIN_REQUIRED'));
       this.router.navigate(['/auth/login']);
       return;
     }
@@ -99,7 +102,7 @@ export class FavoriteToggleButtonComponent implements OnChanges {
         this.busy.set(false);
       },
       error: () => {
-        this.toast.error('تعذر تحديث المفضلة، حاول مرة أخرى.');
+        this.toast.error(this.translate.instant('FAVORITE_TOGGLE.ERROR'));
         this.busy.set(false);
       }
     });

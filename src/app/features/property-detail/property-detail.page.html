@@ -12,7 +12,7 @@
   <div *ngIf="!loading() && error()" class="state-card error-state container" role="alert">
     <span aria-hidden="true">⚠️</span>
     <p>{{ error() | translate }}</p>
-    <button type="button" class="btn btn--outline btn--sm" (click)="ngOnInit()">
+    <button type="button" class="btn btn--outline btn--sm" (click)="retry()">
       {{ 'COMMON.RETRY' | translate }}
     </button>
   </div>

@@ -25,6 +25,8 @@ import {
   signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -260,16 +262,12 @@ export class PropertyDetailPage implements OnInit {
   private isDragging = false;
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id') ?? '';
-
-    if (!id) {
-      this.error.set('PROPERTY_DETAIL.NO_ID');
-      this.loading.set(false);
-      return;
-    }
-
-    this.loadProperty(id);
-    this.loadReviews(id);
+    // paramMap (not a one-time snapshot): this component instance is reused by the router when
+    // only :id changes (Back/Forward between two listings, an in-app link to another one), so
+    // a snapshot read would keep showing the previous listing — or its error state.
+    this.route.paramMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => this.loadForId(params.get('id') ?? ''));
 
     // ✅ إضافة: زر الرجوع (Android hardware back) يُغلق معرض الصور بدل ما يخرج
     // من الصفحة كاملةً — نفس النمط المستخدم بقائمة الموبايل بالـ navbar.
@@ -398,9 +396,39 @@ export class PropertyDetailPage implements OnInit {
   }
 
   // ── Data Loading ──────────────────────────────────────────────────────
+  private currentId = '';
+  private propertySub?: Subscription;
+  private reviewsSub?: Subscription;
+
+  /** Retry button — re-runs only the data load (ngOnInit must not run twice: it registers handlers). */
+  retry(): void {
+    this.loadForId(this.currentId);
+  }
+
+  private loadForId(id: string): void {
+    this.currentId = id;
+    this.propertySub?.unsubscribe();
+    this.reviewsSub?.unsubscribe();
+
+    // Clear the previous listing's state so nothing stale shows while (or after failing) to load.
+    this.property.set(null);
+    this.reviews.set([]);
+    this.error.set('');
+    this.currentIndex.set(0);
+
+    if (!id) {
+      this.error.set('PROPERTY_DETAIL.NO_ID');
+      this.loading.set(false);
+      return;
+    }
+
+    this.loadProperty(id);
+    this.loadReviews(id);
+  }
+
   private loadProperty(id: string): void {
     this.loading.set(true);
-    this.propertyApi
+    this.propertySub = this.propertyApi
       .getProperty(id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -418,8 +446,14 @@ export class PropertyDetailPage implements OnInit {
           // (see PropertyAttributionTrackingService.trackView).
           this.attributionTracking.trackView(data.id);
         },
-        error: () => {
-          this.error.set('PROPERTY_DETAIL.LOAD_ERROR');
+        error: (err: unknown) => {
+          // A definitive 404 means the listing doesn't exist / isn't public: show the "not
+          // found" state (error stays empty), not a retryable load failure.
+          if (err instanceof HttpErrorResponse && err.status === 404) {
+            this.property.set(null);
+          } else {
+            this.error.set('PROPERTY_DETAIL.LOAD_ERROR');
+          }
           this.loading.set(false);
         }
       });
@@ -449,7 +483,7 @@ export class PropertyDetailPage implements OnInit {
 
   private loadReviews(propertyId: string): void {
     this.loadingReviews.set(true);
-    this.reviewService
+    this.reviewsSub = this.reviewService
       .getPropertyReviews(propertyId, 1, 20)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({

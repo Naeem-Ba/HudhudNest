@@ -424,6 +424,9 @@
     "SUBTITLE": "Browse all published properties",
     "EMPTY_TITLE": "No properties",
     "EMPTY_MESSAGE": "No properties have been added yet.",
+    "EMPTY_FILTERED_TITLE": "No matching properties",
+    "EMPTY_FILTERED_MESSAGE": "No properties match your search or filters. Try changing or clearing them.",
+    "CLEAR_FILTERS": "Clear filters",
     "LOAD_ERROR": "Unable to load properties. Try again.",
     "NO_TITLE": "Untitled",
     "IMAGE_ALT": "Property image",
@@ -730,6 +733,12 @@
     "PUBLISHING": "Publishing...",
     "PUBLISH_NEEDS_IMAGE": "Add at least one photo before publishing.",
     "FEATURED_UNTIL": "Featured until"
+  },
+  "FAVORITE_TOGGLE": {
+    "ADD": "Add to favorites",
+    "REMOVE": "Remove from favorites",
+    "LOGIN_REQUIRED": "Sign in first to add properties to your favorites.",
+    "ERROR": "Could not update favorites. Please try again."
   },
   "FAVORITES": {
     "TITLE": "Favorites",
