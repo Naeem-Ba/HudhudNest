@@ -9,3 +9,8 @@
 *.ps1 text eol=crlf
 *.yml text eol=lf
 *.yaml text eol=lf
+
+# Gradle wrapper: the shell script must stay LF (a CRLF shebang line breaks it on Linux
+# runners) and gradlew.bat must stay CRLF. The executable bit is tracked in the git index.
+android/gradlew text eol=lf
+android/gradlew.bat text eol=crlf

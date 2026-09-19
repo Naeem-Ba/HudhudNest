@@ -55,49 +55,107 @@ jobs:
   android-release:
     name: Android — Build Signed Release AAB
     needs: build
-    runs-on: ubuntu-latest
+    # مثبَّت على ubuntu-24.04 (لا ubuntu-latest): هذه المهمة تعتمد على Android SDK/JDK
+    # المثبَّتين مسبقًا في صورة الـ runner، و ubuntu-latest سينتقل إلى Ubuntu 26.04 ابتداءً
+    # من 2026-10-19 (https://github.com/actions/runner-images/issues/14748). نرحّل عمدًا
+    # بعد اختبار منفصل على ubuntu-26.04، لا بصمت.
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # push إلى main، أو تشغيل يدوي (workflow_dispatch) للتحقق من التوقيع على فرع قبل الدمج.
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
+      # فحص الأسرار الأربعة معًا قبل أي عمل مكلف. لا تُطبَع القيم أبدًا — فقط أسماء
+      # الأسرار الناقصة. كلها غائبة = تخطٍّ مقصود (كالسابق)؛ بعضها غائب = فشل صريح لأنه
+      # إعداد ناقص (كان يُنتج keystore فارغًا وalias فارغًا ثم يفشل بلا تفسير).
+      - name: Validate signing secrets
+        id: signing
+        env:
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          RELEASE_STORE_FILE_BASE64: ${{ secrets.RELEASE_STORE_FILE_BASE64 }}
+        run: |
+          missing=()
+          [ -n "$RELEASE_STORE_PASSWORD" ]    || missing+=(RELEASE_STORE_PASSWORD)
+          [ -n "$RELEASE_KEY_ALIAS" ]         || missing+=(RELEASE_KEY_ALIAS)
+          [ -n "$RELEASE_KEY_PASSWORD" ]      || missing+=(RELEASE_KEY_PASSWORD)
+          [ -n "$RELEASE_STORE_FILE_BASE64" ] || missing+=(RELEASE_STORE_FILE_BASE64)
+          if [ "${#missing[@]}" -eq 4 ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Release signing secrets are not configured; skipping signed AAB build. See android/RELEASE_SIGNING.md."
+          elif [ "${#missing[@]}" -gt 0 ]; then
+            echo "::error::Incomplete release signing configuration. Missing GitHub secrets: ${missing[*]}. See android/RELEASE_SIGNING.md."
+            exit 1
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # git يجب أن يخزّن gradlew بوضع 100755 (git ls-files --stage). كان 100644 فيفشل
+      # `./gradlew` بـ "Permission denied" (exit 126).
+      - name: Verify Gradle wrapper is executable
+        if: steps.signing.outputs.enabled == 'true'
+        run: |
+          if [ ! -x android/gradlew ]; then
+            echo "::error::android/gradlew is not executable. Fix with: git update-index --chmod=+x android/gradlew"
+            exit 1
+          fi
+
       - name: Setup Node.js
+        if: steps.signing.outputs.enabled == 'true'
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
+        if: steps.signing.outputs.enabled == 'true'
         run: npm ci
 
       - name: Build production web assets
+        if: steps.signing.outputs.enabled == 'true'
         run: npm run build:prod
 
       - name: Sync Capacitor Android
+        if: steps.signing.outputs.enabled == 'true'
         run: npx cap sync android
 
+      # JDK 21 مطلوب: Capacitor 8 يضبط sourceCompatibility = VERSION_21
+      # (android/app/capacitor.build.gradle)، وGradle 8.14.3 / AGP 8.13.0 يدعمانه.
       - name: Set up JDK 21
-        if: env.RELEASE_STORE_PASSWORD != ''
-        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        if: steps.signing.outputs.enabled == 'true'
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: 'temurin'
           java-version: '21'
-        env:
-          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          cache: 'gradle'
 
       - name: Decode release keystore
-        if: env.RELEASE_STORE_PASSWORD != ''
+        if: steps.signing.outputs.enabled == 'true'
         env:
           RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_STORE_FILE_BASE64: ${{ secrets.RELEASE_STORE_FILE_BASE64 }}
         run: |
           mkdir -p android/keystore
-          echo "$RELEASE_STORE_FILE_BASE64" | base64 -d > android/keystore/aqar-tech-release.keystore
+          printf '%s' "$RELEASE_STORE_FILE_BASE64" | base64 -d > android/keystore/aqar-tech-release.keystore
+          chmod 600 android/keystore/aqar-tech-release.keystore
+          if [ ! -s android/keystore/aqar-tech-release.keystore ]; then
+            echo "::error::Decoded keystore is empty; RELEASE_STORE_FILE_BASE64 is not valid Base64 of the .keystore file."
+            exit 1
+          fi
+          # يتحقق من كلمة المرور والـ alias دون طباعة أي سر (-storepass:env يقرأ من البيئة).
+          if ! keytool -list -keystore android/keystore/aqar-tech-release.keystore \
+                 -storepass:env RELEASE_STORE_PASSWORD -alias "$RELEASE_KEY_ALIAS" > /dev/null 2>&1; then
+            echo "::error::Keystore could not be opened or alias not found. Check RELEASE_STORE_PASSWORD, RELEASE_KEY_ALIAS and RELEASE_STORE_FILE_BASE64."
+            exit 1
+          fi
 
       - name: Build signed release AAB
-        if: env.RELEASE_STORE_PASSWORD != ''
+        if: steps.signing.outputs.enabled == 'true'
         env:
           RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
@@ -106,21 +164,15 @@ jobs:
         working-directory: android
         run: ./gradlew bundleRelease --console=plain
 
+      # v6 يعمل على Node 24 (v4/v5 على Node 20 الذي تُزال دعمه نهائيًا من الـ runners في 2026-09-23).
       - name: Upload signed AAB
-        if: env.RELEASE_STORE_PASSWORD != ''
-        env:
-          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: steps.signing.outputs.enabled == 'true'
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: aqar-tech-release-aab
           path: android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
           retention-days: 14
-
-      - name: Skip (secrets not configured yet)
-        if: env.RELEASE_STORE_PASSWORD == ''
-        env:
-          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
-        run: echo "RELEASE_STORE_PASSWORD غير مضبوط في GitHub Secrets بعد — راجع android/RELEASE_SIGNING.md."
 
   ios-build:
     name: iOS Unsigned Simulator Build
