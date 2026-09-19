@@ -13,7 +13,8 @@ permissions:
 jobs:
   build:
     name: Audit + Build Angular Production
-    runs-on: ubuntu-latest
+    # مثبَّت صراحةً (بدل ubuntu-latest) لنفس سبب مهمة Android أدناه؛ يُتحقَّق منه بتشغيل هذا الـ PR.
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
 
     steps:
@@ -55,11 +56,10 @@ jobs:
   android-release:
     name: Android — Build Signed Release AAB
     needs: build
-    # مثبَّت على ubuntu-24.04 (لا ubuntu-latest): هذه المهمة تعتمد على Android SDK/JDK
-    # المثبَّتين مسبقًا في صورة الـ runner، و ubuntu-latest سينتقل إلى Ubuntu 26.04 ابتداءً
-    # من 2026-10-19 (https://github.com/actions/runner-images/issues/14748). نرحّل عمدًا
-    # بعد اختبار منفصل على ubuntu-26.04، لا بصمت.
-    runs-on: ubuntu-24.04
+    # مثبَّت صراحةً على ubuntu-26.04 بدل ubuntu-latest (الذي ينتقل إليه بين 2026-10-19 و2026-11-19،
+    # https://github.com/actions/runner-images/issues/14748) كي لا يتغيّر البناء بصمت. اختُبر
+    # توقيع AAB كاملًا على ubuntu-26.04 بنجاح (run 35427580310).
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     # push إلى main، أو تشغيل يدوي (workflow_dispatch) للتحقق من التوقيع على فرع قبل الدمج.
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
