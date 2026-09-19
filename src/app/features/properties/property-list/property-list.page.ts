@@ -219,6 +219,10 @@ export class PropertyListPage implements OnInit {
 
   /** Cascading dropdown handler — mirrors property-form.page.ts's bindCascadingLocationChanges. */
   onGovernorateChange(): void {
+    // The free-text city is a second, unrelated way to name the same place — keeping a city
+    // typed for the previous governorate would send a contradictory combination that can only
+    // return nothing.
+    this.cityFilter = '';
     this.districtId = null;
     this.neighborhoodId = null;
     this.districts.set([]);
@@ -529,6 +533,9 @@ export class PropertyListPage implements OnInit {
 
   applyFilters(): void {
     this.setFiltersOpen(false);
+    // Applying filters runs the normal (URL-driven) search, so a previously active "near me"
+    // result set must not stay flagged as active while it is no longer what is shown.
+    this.geoModeActive.set(false);
     // A new/changed search or filter always returns to page 1 — the previous
     // page from a different result set is otherwise very likely to come back
     // empty and read as a spurious "no results" error.
@@ -549,6 +556,7 @@ export class PropertyListPage implements OnInit {
     this.propertyTypeId = null;
     this.districts.set([]);
     this.neighborhoods.set([]);
+    this.geoModeActive.set(false);
     this.setFiltersOpen(false);
     // Clears the URL entirely (not just component state) so a refresh or a
     // shared link after Reset doesn't resurrect the filters that were just cleared.

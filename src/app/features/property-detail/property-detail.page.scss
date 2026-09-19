@@ -637,6 +637,11 @@
   align-self: center;
 }
 
+/* Favorite + Share share one circular size here (44px touch target). */
+.summary-card__actions {
+  --icon-btn-size: 44px;
+}
+
 /* ✅ إضافة: بطاقة معلومات المالك */
 .owner-card__body {
   display: flex;

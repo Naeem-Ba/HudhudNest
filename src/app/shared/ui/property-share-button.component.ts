@@ -47,7 +47,7 @@ const PLATFORM_ICON: Record<SharePlatform, string> = {
   template: `
     <button
       type="button"
-      class="btn btn--outline share-trigger"
+      class="share-trigger"
       *ngIf="visible()"
       [disabled]="busy()"
       (click)="open()"
@@ -55,8 +55,9 @@ const PLATFORM_ICON: Record<SharePlatform, string> = {
       [attr.aria-expanded]="sheetOpen()"
       [attr.aria-label]="'SHARE.BUTTON_ARIA' | translate"
     >
-      <span aria-hidden="true">↗</span>
-      {{ 'SHARE.BUTTON_LABEL' | translate }}
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+        <path d="M9 11.5V2.5M9 2.5L5.75 5.75M9 2.5l3.25 3.25M4 9.5v4a1.5 1.5 0 001.5 1.5h7a1.5 1.5 0 001.5-1.5v-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
     </button>
 
     <div
@@ -103,7 +104,20 @@ const PLATFORM_ICON: Record<SharePlatform, string> = {
     </div>
   `,
   styles: [`
-    .share-trigger { }
+    /* Same circular icon-button footprint as FavoriteToggleButtonComponent (.fav-btn). */
+    .share-trigger {
+      width: var(--icon-btn-size, 44px); height: var(--icon-btn-size, 44px);
+      border-radius: var(--r-pill, 9999px); padding: 0; flex: none;
+      border: 1px solid var(--border, transparent);
+      background: var(--surface, rgba(255,255,255,.92)); color: var(--gray-500, #64748b);
+      display: grid; place-items: center; cursor: pointer;
+      box-shadow: var(--shadow-sm, 0 2px 8px rgba(15,23,42,.08));
+      transition: color .15s, transform .1s;
+    }
+    .share-trigger:hover:not(:disabled) { color: var(--navy, #0f2742); }
+    .share-trigger:active:not(:disabled) { transform: scale(.92); }
+    .share-trigger:focus-visible { outline: 2px solid var(--navy, #0f2742); outline-offset: 2px; }
+    .share-trigger:disabled { opacity: .6; cursor: default; }
 
     .share-backdrop {
       position: fixed; inset: 0; background: rgba(15, 23, 42, .5);

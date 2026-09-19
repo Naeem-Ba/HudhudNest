@@ -264,8 +264,10 @@
       <app-empty-state
         *ngIf="!loading() && !error() && properties().length === 0"
         icon="🏠"
-        [title]="'PROPERTY_LIST.EMPTY_TITLE' | translate"
-        [message]="'PROPERTY_LIST.EMPTY_MESSAGE' | translate"
+        [title]="(activeFiltersCount > 0 ? 'PROPERTY_LIST.EMPTY_FILTERED_TITLE' : 'PROPERTY_LIST.EMPTY_TITLE') | translate"
+        [message]="(activeFiltersCount > 0 ? 'PROPERTY_LIST.EMPTY_FILTERED_MESSAGE' : 'PROPERTY_LIST.EMPTY_MESSAGE') | translate"
+        [actionLabel]="activeFiltersCount > 0 ? ('PROPERTY_LIST.CLEAR_FILTERS' | translate) : ''"
+        (action)="resetFilters()"
       />
 
       <!-- Properties Grid -->

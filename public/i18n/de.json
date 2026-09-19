@@ -424,6 +424,9 @@
     "SUBTITLE": "Alle veröffentlichten Immobilien durchsuchen",
     "EMPTY_TITLE": "Keine Immobilien",
     "EMPTY_MESSAGE": "Es wurden noch keine Immobilien hinzugefügt.",
+    "EMPTY_FILTERED_TITLE": "Keine passenden Immobilien",
+    "EMPTY_FILTERED_MESSAGE": "Keine Immobilien entsprechen Ihrer Suche oder Ihren Filtern. Ändern oder löschen Sie diese.",
+    "CLEAR_FILTERS": "Filter löschen",
     "LOAD_ERROR": "Die Immobilien konnten nicht geladen werden. Versuchen Sie es erneut.",
     "NO_TITLE": "Ohne Titel",
     "IMAGE_ALT": "Immobilienbild",
@@ -730,6 +733,12 @@
     "PUBLISHING": "Wird veröffentlicht...",
     "PUBLISH_NEEDS_IMAGE": "Fügen Sie vor der Veröffentlichung mindestens ein Foto hinzu.",
     "FEATURED_UNTIL": "Hervorgehoben bis"
+  },
+  "FAVORITE_TOGGLE": {
+    "ADD": "Zu Favoriten hinzufügen",
+    "REMOVE": "Aus Favoriten entfernen",
+    "LOGIN_REQUIRED": "Melden Sie sich zuerst an, um Immobilien zu Favoriten hinzuzufügen.",
+    "ERROR": "Favoriten konnten nicht aktualisiert werden. Bitte erneut versuchen."
   },
   "FAVORITES": {
     "TITLE": "Favoriten",
