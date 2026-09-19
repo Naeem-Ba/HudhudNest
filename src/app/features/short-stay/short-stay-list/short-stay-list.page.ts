@@ -147,10 +147,10 @@ export class ShortStayListPage implements OnInit {
     if (listing.fromPricePerNight === null) return '—';
     try {
       return new Intl.NumberFormat('ar', {
-        style: 'currency', currency: 'SYP', maximumFractionDigits: 0
+        style: 'currency', currency: listing.currencyCode, maximumFractionDigits: 0
       }).format(listing.fromPricePerNight);
     } catch {
-      return `${listing.fromPricePerNight.toLocaleString('ar')}`;
+      return `${listing.fromPricePerNight.toLocaleString('ar')} ${listing.currencyCode}`;
     }
   }
 }

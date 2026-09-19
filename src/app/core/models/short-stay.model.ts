@@ -35,6 +35,13 @@ export interface AccommodationTypeDto {
   sortOrder: number;
 }
 
+/** Same currencies the sale/rent property form offers; the backend validates the full ISO allowlist. */
+export const SHORT_STAY_CURRENCIES: ReadonlyArray<{ code: string; label: string }> = [
+  { code: 'SYP', label: 'ل.س — الليرة السورية' },
+  { code: 'USD', label: '$ — الدولار الأمريكي' },
+  { code: 'EUR', label: '€ — اليورو' }
+];
+
 export interface AccommodationUnitDto {
   id: string;
   label: string;
@@ -77,6 +84,8 @@ export interface ShortStayListingSummary {
   bedrooms: number;
   bathrooms: number;
   fromPricePerNight: number | null;
+  /** ISO 4217 code `fromPricePerNight` (and every other price on the listing) is quoted in. */
+  currencyCode: string;
   city: string | null;
   latitude: number | null;
   longitude: number | null;
@@ -92,6 +101,8 @@ export interface ShortStayListing {
   propertyId: string | null;
   accommodationTypeId: number;
   accommodationTypeCode: string;
+  /** ISO 4217 code; fixed at creation. All prices on this listing are per night in this currency. */
+  currencyCode: string;
   title: string;
   description: string;
   capacity: number;
@@ -177,6 +188,7 @@ export interface BookingDto {
   unitId: string;
   shortStayListingId: string;
   listingTitle: string;
+  currencyCode: string;
   guestId: string;
   checkIn: string;
   checkOut: string;
@@ -219,6 +231,7 @@ export interface CreateShortStayListingRequest {
   latitude: number;
   longitude: number;
   defaultBasePricePerNight: number;
+  currencyCode: string;
   propertyId?: string | null;
 }
 

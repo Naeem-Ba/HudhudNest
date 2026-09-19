@@ -14,6 +14,7 @@ import {
   AccommodationTypeDto,
   LocationVisibility,
   PricingRuleDto,
+  SHORT_STAY_CURRENCIES,
   ShortStayListing
 } from '../../../core/models/short-stay.model';
 
@@ -58,6 +59,8 @@ export class ShortStayListingFormPage implements OnInit {
   // ── حقول الإنشاء (وضع "جديد" فقط) ──
   accommodationTypeId: number | null = null;
   defaultBasePricePerNight = 0;
+  currencyCode = 'SYP';
+  readonly currencies = SHORT_STAY_CURRENCIES;
 
   // ── حقول التعديل (كلا الوضعين بعد الإنشاء) ──
   title = '';
@@ -118,7 +121,11 @@ export class ShortStayListingFormPage implements OnInit {
       this.loadForEdit(id);
     } else {
       this.api.getAccommodationTypes().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-        next: types => this.accommodationTypes.set(types), error: () => this.accommodationTypes.set([])
+        next: types => this.accommodationTypes.set(types),
+        error: () => {
+          this.accommodationTypes.set([]);
+          this.toast.show(this.translate.instant('SHORTSTAY.FORM.TYPES_LOAD_ERROR'), 'error');
+        }
       });
     }
   }
@@ -139,6 +146,7 @@ export class ShortStayListingFormPage implements OnInit {
   }
 
   private applyListingToForm(listing: ShortStayListing): void {
+    this.currencyCode = listing.currencyCode;
     this.title = listing.title;
     this.description = listing.description;
     this.capacity = listing.capacity;
@@ -184,6 +192,10 @@ export class ShortStayListingFormPage implements OnInit {
     );
   }
 
+  typeLabel(type: AccommodationTypeDto): string {
+    return this.translate.currentLang === 'ar' ? type.nameAr : (type.nameEn || type.nameAr);
+  }
+
   toggleAmenity(id: string): void {
     this.selectedAmenityIds.update(set => {
       const next = new Set(set);
@@ -212,6 +224,11 @@ export class ShortStayListingFormPage implements OnInit {
       return;
     }
 
+    if (!(this.defaultBasePricePerNight > 0)) {
+      this.toast.show(this.translate.instant('SHORTSTAY.FORM.PRICE_REQUIRED'), 'error');
+      return;
+    }
+
     this.saving.set(true);
     this.api.create({
       accommodationTypeId: this.accommodationTypeId,
@@ -224,7 +241,8 @@ export class ShortStayListingFormPage implements OnInit {
       checkOutTime: this.checkOutTime,
       latitude: this.latitude,
       longitude: this.longitude,
-      defaultBasePricePerNight: this.defaultBasePricePerNight
+      defaultBasePricePerNight: this.defaultBasePricePerNight,
+      currencyCode: this.currencyCode
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: created => {
         this.saving.set(false);
