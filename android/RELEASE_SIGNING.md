@@ -84,12 +84,42 @@ keystore من نوع PKCS12 (النوع الافتراضي منذ JDK 9+، وه�
 الأسرار الأربعة المذكورة في القسم أعلاه مضبوطاً على GitHub قبل هذه الحادثة
 (`gh secret list` أعاد قائمة فارغة) — أي أن مهمة `android-release` في CI
 كانت تبني AAB **بلا توقيع** طوال الوقت منذ BLK-04 (بتصميم الـ workflow نفسه،
-الذي يتخطى خطوات التوقيع بأمان إن غاب `RELEASE_STORE_PASSWORD`). `RELEASE_KEY_ALIAS`
-و`RELEASE_STORE_FILE_BASE64` لا يزالان غير مضبوطين — رفعهما (وخصوصاً رفع
-محتوى الـ keystore نفسه كـ Base64) قرار منفصل متروك لك، وليس جزءاً من إصلاح
-هذه الحادثة.
+الذي يتخطى خطوات التوقيع بأمان إن غاب `RELEASE_STORE_PASSWORD`). `RELEASE_KEY_ALIAS` و`RELEASE_STORE_FILE_BASE64` كانا غير مضبوطين حينها، وقد رُفعا لاحقًا (2026-09-19) — انظر القسم التالي.
 
 **نسخة احتياطية إضافية موصى بها:** بما أن هذا "المفتاح لا يمكن استبداله"
 (انظر أعلاه)، احفظ نسخة عن `aqar-tech-release.keystore` بكلمة المرور
 *الجديدة* في مدير كلمات مرور/تخزين مشفّر خارج هذا القرص فوراً، وتوقف عن
 استخدام أي نسخة/أرشيف قديم يحتوي كلمة المرور المكشوفة.
+
+## مهمة CI: Android — Build Signed Release AAB (2026-09-19)
+
+المهمة `android-release` في `.github/workflows/frontend-ci.yml` تعمل على الدفعات إلى `main`
+وعلى `workflow_dispatch` (للتحقق على فرع قبل الدمج: `gh workflow run frontend-ci.yml --ref <branch>`).
+
+**الأسرار الأربعة المطلوبة** (كلها مضبوطة الآن على `Naeem-Ba/Wohnungsmieten`): `RELEASE_STORE_PASSWORD`،
+`RELEASE_KEY_PASSWORD`، `RELEASE_KEY_ALIAS` (= `aqar-tech`)، `RELEASE_STORE_FILE_BASE64`. خطوة
+`Validate signing secrets` تتخطى المهمة إن غابت كلها، وتفشل بأسماء الناقص إن غاب بعضها. رفعها (PowerShell،
+بمسار كامل لأن .NET يحلّ المسارات النسبية من `C:Users<user>`):
+
+```powershell
+gh secret set RELEASE_KEY_ALIAS --repo Naeem-Ba/Wohnungsmieten --body "aqar-tech"
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("<المسار الكامل>androidkeystoreaqar-tech-release.keystore")) | gh secret set RELEASE_STORE_FILE_BASE64 --repo Naeem-Ba/Wohnungsmieten
+```
+
+**أعطال أُصلحت (PR #70/#71)** — للرجوع إن تكرر أي منها:
+- `exit code 126 / ./gradlew: Permission denied`: `android/gradlew` كان بوضع git `100644`. الآن `100755`
+  (`git update-index --chmod=+x android/gradlew`)، و`.gitattributes` يثبّت `gradlew` على LF.
+- `Keystore file .../android/app/keystore/... not found`: `RELEASE_STORE_FILE` كان يُحلّ بـ `file()` (نسبةً إلى
+  `android/app`)؛ صار `rootProject.file()` (نسبةً إلى `android/`) كفرع الملف المحلي.
+- `setup-java@v4` و`upload-artifact@v4` على Node 20 (تُزال من الـ runners في 2026-09-23): صارا
+  `setup-java@v5.7.0` و`upload-artifact@v6.0.0` (مثبَّتان بـ SHA).
+- `ubuntu-latest` ينتقل إلى 26.04 (2026-10-19): `build` و`android-release` مثبَّتان على `ubuntu-26.04` بعد
+  اختبار ناجح.
+
+**التحقق:** AAB الناتج في CI مُوقَّع بشهادة `CN=aqar-tech`؛ بصمة SHA-256 مطابقة لبصمة الـ keystore المحلي
+(`7D:30:B4:CB:E7:24:2F:C5:CC:50:2A:FA:B5:87:C7:67:38:3B:3D:0D:4E:D8:7A:6F:B4:F4:8E:2B:9C:64:F7:50`)،
+وSHA-1 `66:14:AC:70:8C:6B:07:AA:DF:CF:1C:E4:8E:8B:B5:E5:DA:2C:E2:2E`. (الطريقة:
+`jarsigner -verify -certs app-release.aab` و`keytool -printcert -jarfile app-release.aab`.)
+
+**احتفظ دائمًا** بنسخة من `aqar-tech-release.keystore` و`release-signing.local.properties` في مدير كلمات مرور
+خارج هذا القرص؛ المفتاح لا يُستبدل.
