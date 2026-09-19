@@ -59,7 +59,7 @@ jobs:
     # المثبَّتين مسبقًا في صورة الـ runner، و ubuntu-latest سينتقل إلى Ubuntu 26.04 ابتداءً
     # من 2026-10-19 (https://github.com/actions/runner-images/issues/14748). نرحّل عمدًا
     # بعد اختبار منفصل على ubuntu-26.04، لا بصمت.
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     # push إلى main، أو تشغيل يدوي (workflow_dispatch) للتحقق من التوقيع على فرع قبل الدمج.
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
