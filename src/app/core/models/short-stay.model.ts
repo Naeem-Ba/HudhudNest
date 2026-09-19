@@ -106,6 +106,9 @@ export interface ShortStayListing {
   // isn't authorized to see the exact point — never re-derive/round these on the client.
   latitude: number | null;
   longitude: number | null;
+  governorateId: number | null;
+  districtId: number | null;
+  neighborhoodId: number | null;
   city: string | null;
   locationVisibility: LocationVisibility;
   poolType: 'Private' | 'Shared' | null;
@@ -124,6 +127,10 @@ export interface ShortStayListing {
   cancellationFreeCancellationDays: number;
   cancellationDepositRefundable: boolean;
   cancellationCustomTermsText: string | null;
+  // Security audit finding (2026-09-18): the backend used to omit this from the GET response
+  // entirely, so the edit form had no way to read it back and echo it unchanged on save --
+  // see UpdateShortStayListingCommandHandler's doc comment on the same finding.
+  depositPercentage: number | null;
   isPublished: boolean;
   publishedAt: string | null;
   roomTypes: RoomTypeDto[];
