@@ -34,7 +34,7 @@ android {
     signingConfigs {
         if (hasReleaseSigning) {
             release {
-                storeFile hasLocalSigningFile ? rootProject.file(releaseSigningProps['storeFile']) : file(System.getenv('RELEASE_STORE_FILE'))
+                storeFile hasLocalSigningFile ? rootProject.file(releaseSigningProps['storeFile']) : rootProject.file(System.getenv('RELEASE_STORE_FILE'))
                 storePassword hasLocalSigningFile ? releaseSigningProps['storePassword'] : System.getenv('RELEASE_STORE_PASSWORD')
                 keyAlias hasLocalSigningFile ? releaseSigningProps['keyAlias'] : System.getenv('RELEASE_KEY_ALIAS')
                 keyPassword hasLocalSigningFile ? releaseSigningProps['keyPassword'] : System.getenv('RELEASE_KEY_PASSWORD')
