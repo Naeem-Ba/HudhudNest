@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { PhotoGuideSheetComponent } from '../../../shared/ui/photo-guide/photo-guide-sheet.component';
 import { forkJoin } from 'rxjs';
 
 import { ShortStayListingApiService } from '../../../core/api/short-stay-listing-api.service';
@@ -39,7 +40,7 @@ type PricingRuleForm = {
 @Component({
   selector: 'app-short-stay-listing-form-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule],
+  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, PhotoGuideSheetComponent],
   templateUrl: './short-stay-listing-form.page.html',
   styleUrls: ['./short-stay-listing-form.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -64,6 +65,8 @@ export class ShortStayListingFormPage implements OnInit {
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly uploadingPhotos = signal(false);
+  /** Photography guide (UX only): closing or reading it changes nothing in the form. */
+  readonly photoGuideOpen = signal(false);
   /** Photos picked on the create form; uploaded right after the listing exists (the API needs its id). */
   readonly pendingPhotos = signal<PendingPhoto[]>([]);
   readonly maxPhotosPerRequest = PHOTO_MAX_PER_REQUEST;

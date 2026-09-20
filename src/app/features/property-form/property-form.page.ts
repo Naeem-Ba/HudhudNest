@@ -36,6 +36,8 @@ import { LocationComboComponent } from '../../shared/ui/location-combo.component
 import { LanguageService, LangCode } from '../../core/services/language.service';
 import { EnumItem, EnumService } from '../../core/services/enum.service';
 import { ScrollLockService } from '../../core/services/scroll-lock.service';
+import { PhotoGuideSheetComponent } from '../../shared/ui/photo-guide/photo-guide-sheet.component';
+import { PhotoGuideKind, photoGuideKindForListingType } from '../../shared/ui/photo-guide/photo-guide.data';
 
 interface PropertySavePayload {
   Title: string;
@@ -194,7 +196,8 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
     RouterLink,
     MapPickerComponent,
     ImageFallbackDirective,
-    LocationComboComponent
+    LocationComboComponent,
+    PhotoGuideSheetComponent
   ],
   templateUrl: './property-form.page.html',
   styleUrls: ['./property-form.page.scss']
@@ -213,6 +216,8 @@ export class PropertyFormPage implements OnInit {
   private readonly scrollLock = inject(ScrollLockService);
 
   readonly isSaving = signal(false);
+  /** Photography guide (UX only): never part of the form value nor of the upload flow. */
+  readonly photoGuideOpen = signal(false);
   readonly isEditMode = signal(false);
   readonly propertyId = signal('');
   readonly currentLang = signal<LangCode>('ar');
@@ -909,6 +914,11 @@ export class PropertyFormPage implements OnInit {
           this.imageActionBusyId.set(null);
         }
       });
+  }
+
+  /** Rent (1) / sale (2) decides which shots the photography guide leads with. */
+  get photoGuideKind(): PhotoGuideKind {
+    return photoGuideKindForListingType(this.form.get('listingType')?.value);
   }
 
   setListingType(type: 1 | 2): void {

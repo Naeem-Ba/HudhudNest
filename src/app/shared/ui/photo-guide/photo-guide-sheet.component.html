@@ -1,0 +1,99 @@
+@if (open()) {
+  <div class="pg__backdrop" (click)="onBackdropClick($event)">
+    <div
+      #dialog
+      class="pg"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="pg-title"
+      tabindex="-1"
+      (keydown)="onKeydown($event)"
+    >
+      <header class="pg__header">
+        <div>
+          <h2 id="pg-title" class="pg__title">{{ 'PHOTO_GUIDE.TITLE' | translate }}</h2>
+          <p class="pg__subtitle">{{ 'PHOTO_GUIDE.SUBTITLE' | translate }}</p>
+        </div>
+        <button type="button" class="pg__close" (click)="close()" [attr.aria-label]="'PHOTO_GUIDE.CLOSE' | translate">
+          <span aria-hidden="true">×</span>
+        </button>
+      </header>
+
+      <ol class="pg__steps" [attr.aria-label]="'PHOTO_GUIDE.PROGRESS' | translate">
+        @for (shot of shots(); track shot; let i = $index) {
+          <li>
+            <button
+              type="button"
+              class="pg__dot"
+              [class.pg__dot--active]="index() === i"
+              [class.pg__dot--done]="index() > i"
+              [attr.aria-current]="index() === i ? 'step' : null"
+              [attr.aria-label]="('PHOTO_GUIDE.STEPS.' + shot + '.TITLE') | translate"
+              (click)="goTo(i)"
+            >{{ i + 1 }}</button>
+          </li>
+        }
+        <li>
+          <button
+            type="button"
+            class="pg__dot pg__dot--final"
+            [class.pg__dot--active]="isFinal()"
+            [attr.aria-current]="isFinal() ? 'step' : null"
+            [attr.aria-label]="'PHOTO_GUIDE.READY_TITLE' | translate"
+            (click)="goTo(shots().length)"
+          ><span aria-hidden="true">✓</span></button>
+        </li>
+      </ol>
+
+      <div class="pg__body">
+        @if (currentShot(); as shot) {
+          <p class="pg__count">{{ 'PHOTO_GUIDE.STEP_OF' | translate: { n: index() + 1, total: shots().length } }}</p>
+          @if (index() === 0) {
+            <p class="pg__intro">{{ 'PHOTO_GUIDE.INTRO.' + kind() | translate }}</p>
+          }
+          <figure class="pg__figure">
+            <div class="pg__frame">
+              <img [src]="images[shot]" alt="" loading="lazy" />
+              <span class="pg__grid" aria-hidden="true"></span>
+            </div>
+            <figcaption class="pg__caption">{{ ('PHOTO_GUIDE.STEPS.' + shot + '.TITLE') | translate }}</figcaption>
+          </figure>
+          <dl class="pg__facts">
+            <div><dt>{{ 'PHOTO_GUIDE.WHAT' | translate }}</dt><dd>{{ ('PHOTO_GUIDE.STEPS.' + shot + '.WHAT') | translate }}</dd></div>
+            <div><dt>{{ 'PHOTO_GUIDE.WHY' | translate }}</dt><dd>{{ ('PHOTO_GUIDE.STEPS.' + shot + '.WHY') | translate }}</dd></div>
+            <div><dt>{{ 'PHOTO_GUIDE.HOW' | translate }}</dt><dd>{{ ('PHOTO_GUIDE.STEPS.' + shot + '.HOW') | translate }}</dd></div>
+          </dl>
+        } @else {
+          <h3 class="pg__ready">{{ 'PHOTO_GUIDE.READY_TITLE' | translate }}</h3>
+          <p class="pg__intro">{{ 'PHOTO_GUIDE.ENCOURAGE' | translate }}</p>
+          <ul class="pg__tips">
+            @for (tip of tipKeys; track tip) {
+              <li>{{ ('PHOTO_GUIDE.TIPS.' + tip) | translate }}</li>
+            }
+            <li class="pg__tips-kind">{{ 'PHOTO_GUIDE.KIND_TIP.' + kind() | translate }}</li>
+          </ul>
+        }
+      </div>
+
+      <footer class="pg__footer">
+        @if (index() > 0) {
+          <button type="button" class="pg__btn pg__btn--ghost" (click)="prev()">
+            <span class="pg__arrow" aria-hidden="true">←</span>{{ 'PHOTO_GUIDE.PREV' | translate }}
+          </button>
+        } @else {
+          <button type="button" class="pg__btn pg__btn--ghost" (click)="close()">{{ 'PHOTO_GUIDE.SKIP' | translate }}</button>
+        }
+
+        @if (isFinal()) {
+          <button type="button" class="pg__btn pg__btn--primary" (click)="start.emit()">
+            {{ 'PHOTO_GUIDE.START' | translate }}
+          </button>
+        } @else {
+          <button type="button" class="pg__btn pg__btn--primary" (click)="next()">
+            {{ 'PHOTO_GUIDE.NEXT' | translate }}<span class="pg__arrow pg__arrow--next" aria-hidden="true">→</span>
+          </button>
+        }
+      </footer>
+    </div>
+  </div>
+}
