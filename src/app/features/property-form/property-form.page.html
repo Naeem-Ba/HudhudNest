@@ -279,10 +279,11 @@
                   <label for="ownershipType">{{ 'PROPERTY_FORM.OWNERSHIP_TYPE' | translate }} <span class="required">*</span></label>
                   <select id="ownershipType" formControlName="ownershipType">
                     <option [ngValue]="null">{{ 'PROPERTY_FORM.SELECT_PLACEHOLDER' | translate }}</option>
-                    <option *ngFor="let option of ownershipTypeOptions" [ngValue]="option.Id">
+                    <option *ngFor="let option of ownershipTypeOptions()" [ngValue]="option.Id">
                       {{ 'PROPERTY_FORM.OWNERSHIP_' + option.Key | uppercase | translate }}
                     </option>
                   </select>
+                  <p class="field-hint" *ngIf="enumOptionsLoadFailed()">{{ 'PROPERTY_FORM.OPTIONS_LOAD_FAILED' | translate }}</p>
                   <p class="field-error" *ngIf="form.errors?.['ownershipTypeRequired'] && f.ownershipType.touched">
                     {{ 'PROPERTY_FORM.OWNERSHIP_TYPE_REQUIRED' | translate }}
                   </p>
@@ -361,7 +362,7 @@
               <div class="form-group" *ngIf="isLandCategory">
                 <label for="areaUnit">{{ 'PROPERTY_FORM.AREA_UNIT' | translate }}</label>
                 <select id="areaUnit" formControlName="areaUnit">
-                  <option *ngFor="let option of areaUnitOptions" [ngValue]="option.Id">
+                  <option *ngFor="let option of areaUnitOptions()" [ngValue]="option.Id">
                     {{ 'PROPERTY_FORM.AREA_UNIT_' + option.Key | uppercase | translate }}
                   </option>
                 </select>
@@ -389,10 +390,11 @@
                 <label for="furnishingStatus">{{ 'PROPERTY_FORM.FURNISHING_STATUS' | translate }}</label>
                 <select id="furnishingStatus" formControlName="furnishingStatus">
                   <option [ngValue]="null">{{ 'PROPERTY_FORM.SELECT_PLACEHOLDER' | translate }}</option>
-                  <option *ngFor="let option of furnishingStatusOptions" [ngValue]="option.Id">
+                  <option *ngFor="let option of furnishingStatusOptions()" [ngValue]="option.Id">
                     {{ 'PROPERTY_FORM.FURNISHING_' + option.Key | uppercase | translate }}
                   </option>
                 </select>
+                <p class="field-hint" *ngIf="enumOptionsLoadFailed()">{{ 'PROPERTY_FORM.OPTIONS_LOAD_FAILED' | translate }}</p>
               </div>
 
               <!-- Checkboxes: not applicable to Land, same reasoning as Rooms/Floor. -->

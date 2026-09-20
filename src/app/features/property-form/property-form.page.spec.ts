@@ -66,7 +66,8 @@ describe('PropertyFormPage', () => {
     lookupsApiSpy.getAmenities.and.returnValue(of([]));
     lookupsApiSpy.getCities.and.returnValue(of([]));
 
-    enumServiceSpy = jasmine.createSpyObj('EnumService', ['getList', 'getKey', 'loadAll']);
+    enumServiceSpy = jasmine.createSpyObj('EnumService', ['getList', 'getKey', 'loadAll', 'ensureLoaded']);
+    enumServiceSpy.ensureLoaded.and.returnValue(Promise.resolve());
     enumServiceSpy.getList.and.callFake((group: string) => {
       if (group === 'OwnershipType') return OWNERSHIP_TYPE_OPTIONS;
       if (group === 'AreaUnit') return AREA_UNIT_OPTIONS;

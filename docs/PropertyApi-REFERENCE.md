@@ -532,12 +532,10 @@ not.
 1. **Fix B-20 or revert `CookieCsrf:Enabled` to `false`, before anything else.** This is
    not a "nice to have" — it is a live session-breaking regression on any deployment of
    the current state of both repositories.
-2. **Coordinate the merge of `claude/session-37b499`** (dynamic listing-rule validation)
-   with the frontend that already depends on it — the live Angular tree currently ships
-   form fields (`OwnershipType`, `AreaUnit`) whose backend enum groups don't exist on
-   `master` yet, degrading gracefully but leaving Sale/Land listing creation impaired
-   until that branch merges. Not a `BACKEND-ISSUES.md` item (the backend code itself is
-   internally consistent) but a real cross-repository release-sequencing gap.
+2. ~~Coordinate the merge of `claude/session-37b499`~~ **Resolved** — `405e23e` is on `master`;
+   `GET /api/enums/OwnershipType|FurnishingStatus|AreaUnit|RentalDurationType` return 200
+   (verified locally and on production 2026-09-20). The empty dropdowns seen since were a
+   frontend caching defect (a failed startup enum fetch was cached as empty), fixed in `EnumService`.
 3. **Run the full `dotnet test`/`ng test` suites against live infrastructure** at the
    current commits — this document's fast-project numbers (679/679) are real and
    re-verified this session, but `Integration.Tests`, `Performance.Tests`, and
