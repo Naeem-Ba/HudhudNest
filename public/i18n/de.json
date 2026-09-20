@@ -610,6 +610,7 @@
     "RENTAL_END_BEFORE_START": "Das Mietende muss nach dem Mietbeginn liegen.",
     "OWNERSHIP_TYPE": "Eigentumsart",
     "OWNERSHIP_TYPE_REQUIRED": "Für Verkaufsangebote ist eine Eigentumsart erforderlich.",
+    "OPTIONS_LOAD_FAILED": "Die Optionen konnten nicht geladen werden. Seite neu laden und erneut versuchen.",
     "OWNERSHIP_GREENDEED": "Grüner Tabu (Eigentumsurkunde)",
     "OWNERSHIP_YOUTHHOUSING": "Jugendwohnung",
     "OWNERSHIP_SHARES": "Anteile",

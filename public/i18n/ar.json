@@ -610,6 +610,7 @@
     "RENTAL_END_BEFORE_START": "يجب أن يكون تاريخ نهاية الإيجار بعد تاريخ البداية.",
     "OWNERSHIP_TYPE": "نوع الملكية",
     "OWNERSHIP_TYPE_REQUIRED": "نوع الملكية مطلوب لإعلانات البيع.",
+    "OPTIONS_LOAD_FAILED": "تعذّر تحميل الخيارات. حدّث الصفحة وحاول مجدداً.",
     "OWNERSHIP_GREENDEED": "طابو أخضر",
     "OWNERSHIP_YOUTHHOUSING": "سكن شبابي",
     "OWNERSHIP_SHARES": "أسهم عقارية",

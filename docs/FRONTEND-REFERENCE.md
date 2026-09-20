@@ -141,10 +141,12 @@ src/
 `enum` · `language` · `lead` · `meta` · `native-back-button` · `overlay-back-handler` ·
 `password-validator` · `signalr-notification` · `theme` · **`token-storage`** · `url`
 
-**`enum.service.ts` تغيّرت هذه الدورة (‏§5.9):** أُضيفت `OWNERSHIPTYPE`، `AREAUNIT`،
-`FURNISHINGSTATUS` إلى `backendGroupByUiGroup` وقائمة `loadAll()` — الآن 9 مجموعات
-تُحمَّل مسبقاً بدل 6. كل مجموعة تفشل بأمان إلى قائمة فارغة عبر `catchError` — لا تُسقِط
-الإقلاع.
+**`enum.service.ts`:** 10 مجموعات تُحمَّل مسبقاً عند الإقلاع (تشمل `OWNERSHIPTYPE`، `AREAUNIT`،
+`FURNISHINGSTATUS`، `RENTALDURATIONTYPE`). فشل الجلب **لا يُخزَّن** كقائمة فارغة (كان يجعل
+فشلاً عابراً دائماً حتى إعادة تحميل الصفحة)؛ بدلاً من ذلك تُعيد `ensureLoaded(groups)` جلب
+المجموعات الناقصة فقط (مع منع الطلبات المتزامنة المكرَّرة). `PropertyFormPage` تستدعيها في
+`ngOnInit`، وتعرض القوائم كـ signals، وتُظهر تلميح `PROPERTY_FORM.OPTIONS_LOAD_FAILED` إن بقيت
+فارغة؛ وضع التعديل ينتظرها قبل تعيين `ownershipType`/`furnishingStatus` كي لا يُمحى الحقل عند الحفظ.
 
 ### 3.5 النماذج (15)
 
@@ -317,13 +319,10 @@ JsonNamingPolicy.CamelCase`). `apiToCamelCase()` يبقى في مكانه في �
   فقط، يطابق نمط إخفاء المدينة/المنطقة الموجود مسبقاً.
 - ~30 مفتاح ترجمة جديد `PROPERTY_FORM.*` في الملفات الثلاثة، بلا نصوص حرفية.
 
-**⚠️ اعتماد خلفي غير مكتمل — انظر أيضاً `BACKEND-ISSUES.md` §3:** مجموعات
-`OwnershipType`/`AreaUnit`/`FurnishingStatus` **غير موجودة في `EnumController` على
-`master` الخلفية الحالي** — موجودة فقط على فرع خلفية منفصل غير مدموج
-(`claude/session-37b499`). `enum.service.ts` يتعامل مع هذا بأمان (‏قائمة فارغة، لا
-انهيار)، لكن حقلي «الوضع القانوني» و«وحدة المساحة» **يظهران بلا خيارات على `master`
-الحالي**، فتُعطَّل عملياً إمكانية إنشاء إعلانات بيع أو أرض جديدة عبر هذا النموذج حتى
-يُدمَج ذلك الفرع. **تحقّق من هذا قبل اختبار أي تدفّق إنشاء إعلان بيع/أرض.**
+**✅ التبعية الخلفية مُغلقة (2026-09-20):** مجموعات `OwnershipType`/`AreaUnit`/`FurnishingStatus`
+موجودة الآن في `EnumController` على `master` الخلفية (الالتزام `405e23e`) — تحقّق فعلي:
+`GET /api/enums/OwnershipType` و`/FurnishingStatus` تُرجعان 200 محلياً وعلى النشر. القوائم كانت
+تبقى فارغة طوال الجلسة عند فشل جلب الـ Enums مرة واحدة عند الإقلاع (انظر §3.4)؛ أُصلح ذلك.
 
 ---
 

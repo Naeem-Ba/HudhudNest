@@ -34,7 +34,7 @@ import { MapPickerComponent } from '../../map-picker/map-picker.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { LocationComboComponent } from '../../shared/ui/location-combo.component';
 import { LanguageService, LangCode } from '../../core/services/language.service';
-import { EnumService } from '../../core/services/enum.service';
+import { EnumItem, EnumService } from '../../core/services/enum.service';
 import { ScrollLockService } from '../../core/services/scroll-lock.service';
 
 interface PropertySavePayload {
@@ -275,9 +275,11 @@ export class PropertyFormPage implements OnInit {
   readonly selectedCategory = signal<string | null>(null);
 
   /** Enum-backed dropdown options, loaded once (EnumService caches app-wide). */
-  readonly ownershipTypeOptions = this.enumService.getList('OwnershipType');
-  readonly areaUnitOptions = this.enumService.getList('AreaUnit');
-  readonly furnishingStatusOptions = this.enumService.getList('FurnishingStatus');
+  readonly ownershipTypeOptions = signal<EnumItem[]>(this.enumService.getList('OwnershipType'));
+  readonly areaUnitOptions = signal<EnumItem[]>(this.enumService.getList('AreaUnit'));
+  readonly furnishingStatusOptions = signal<EnumItem[]>(this.enumService.getList('FurnishingStatus'));
+  /** True when the enum-backed dropdowns could not be loaded even after a retry. */
+  readonly enumOptionsLoadFailed = signal(false);
 
   /**
    * Cross-field validation for the fields that depend on ListingType/PropertyType
@@ -392,7 +394,14 @@ export class PropertyFormPage implements OnInit {
     if (id) {
       this.isEditMode.set(true);
       this.propertyId.set(id);
-      this.loadExistingProperty(id);
+    }
+
+    // Enum options are (re)loaded here rather than trusted from the startup preload; edit
+    // mode waits for them so enumIdByKey can map the saved ownership/furnishing/area unit
+    // (otherwise an edit-then-save would send null and clear those values).
+    const enumsReady = this.loadEnumOptions();
+    if (id) {
+      void enumsReady.then(() => this.loadExistingProperty(id));
     }
 
     this.bindLanguage();
@@ -638,6 +647,19 @@ export class PropertyFormPage implements OnInit {
    * the same cached /api/enums/{group} list the <select> options come from,
    * so this never hardcodes an ordinal that could drift from the backend.
    */
+  private async loadEnumOptions(): Promise<void> {
+    await this.enumService.ensureLoaded([
+      'OwnershipType', 'AreaUnit', 'FurnishingStatus', 'RentalDurationType'
+    ]);
+
+    this.ownershipTypeOptions.set(this.enumService.getList('OwnershipType'));
+    this.areaUnitOptions.set(this.enumService.getList('AreaUnit'));
+    this.furnishingStatusOptions.set(this.enumService.getList('FurnishingStatus'));
+    this.enumOptionsLoadFailed.set(
+      this.ownershipTypeOptions().length === 0 || this.furnishingStatusOptions().length === 0
+    );
+  }
+
   private enumIdByKey(group: string, key: string | null | undefined): number | null {
     if (!key) return null;
     const match = this.enumService.getList(group).find(item => item.Key === key);

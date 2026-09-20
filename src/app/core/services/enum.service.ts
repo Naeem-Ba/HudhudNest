@@ -12,6 +12,7 @@ export interface EnumItem {
 export class EnumService {
   private readonly endpoint = '/enums';
   private readonly cache = new Map<string, EnumItem[]>();
+  private readonly inflight = new Map<string, Promise<void>>();
   private readonly lookups = inject(LookupsApiService);
 
   /**
@@ -35,7 +36,8 @@ export class EnumService {
     // LegalStatusType, see EnumController's doc comment.
     OWNERSHIPTYPE: 'OwnershipType',
     AREAUNIT: 'AreaUnit',
-    FURNISHINGSTATUS: 'FurnishingStatus'
+    FURNISHINGSTATUS: 'FurnishingStatus',
+    RENTALDURATIONTYPE: 'RentalDurationType'
   };
 
   constructor(private readonly api: BackendApiService) {}
@@ -43,12 +45,37 @@ export class EnumService {
   async loadAll(): Promise<void> {
     const groups = [
       'STADT', 'ZUSTAND', 'STATUS', 'ENERGIEAUSWEISTYP', 'HEIZUNG', 'LISTINGTYPE',
-      'OWNERSHIPTYPE', 'AREAUNIT', 'FURNISHINGSTATUS'
+      'OWNERSHIPTYPE', 'AREAUNIT', 'FURNISHINGSTATUS', 'RENTALDURATIONTYPE'
     ];
     await Promise.all(groups.map(group => this.loadGroup(group)));
   }
 
-  private async loadGroup(group: string): Promise<void> {
+  /**
+   * Loads (or re-loads) only the groups that have no usable list yet. A group whose
+   * startup fetch failed is deliberately NOT cached (see loadGroup), so screens whose
+   * required dropdowns depend on an enum — e.g. the property form's OwnershipType /
+   * FurnishingStatus — call this instead of trusting the one-shot APP_INITIALIZER
+   * preload, which used to leave them empty until a full page reload.
+   */
+  async ensureLoaded(groups: string[]): Promise<void> {
+    await Promise.all(
+      groups
+        .filter(group => this.getList(group).length === 0)
+        .map(group => this.loadGroup(group))
+    );
+  }
+
+  private loadGroup(group: string): Promise<void> {
+    const key = group.toUpperCase();
+    const pending = this.inflight.get(key);
+    if (pending) return pending;
+
+    const request = this.fetchGroup(group).finally(() => this.inflight.delete(key));
+    this.inflight.set(key, request);
+    return request;
+  }
+
+  private async fetchGroup(group: string): Promise<void> {
     const normalized = group.toUpperCase();
     const backendGroup = this.backendGroupByUiGroup[normalized] ?? group;
 
@@ -62,21 +89,21 @@ export class EnumService {
       return;
     }
 
-    try {
-      const data = await firstValueFrom(
-        this.api.get<unknown>(`${this.endpoint}/${backendGroup}`).pipe(
-          map(response => this.normalize(response)),
-          catchError(error => {
-            console.warn(`Enum '${backendGroup}' could not be loaded. Using empty list.`, error);
-            return of([] as EnumItem[]);
-          })
-        )
-      );
+    // A failed request must not be cached as an empty list: that made a single
+    // transient failure (cold API start, network blip) permanent for the session.
+    const data = await firstValueFrom(
+      this.api.get<unknown>(`${this.endpoint}/${backendGroup}`).pipe(
+        map(response => this.normalize(response)),
+        catchError(error => {
+          console.warn(`Enum '${backendGroup}' could not be loaded; it will be retried on next use.`, error);
+          return of(null);
+        })
+      )
+    );
 
+    if (data) {
       this.cache.set(normalized, data);
       this.cache.set(backendGroup.toUpperCase(), data);
-    } catch {
-      this.cache.set(normalized, []);
     }
   }
 

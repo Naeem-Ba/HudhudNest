@@ -610,6 +610,7 @@
     "RENTAL_END_BEFORE_START": "Rental end date must be after the start date.",
     "OWNERSHIP_TYPE": "Ownership Type",
     "OWNERSHIP_TYPE_REQUIRED": "Ownership type is required for sale listings.",
+    "OPTIONS_LOAD_FAILED": "Could not load the options. Refresh the page and try again.",
     "OWNERSHIP_GREENDEED": "Green Deed (Tabu)",
     "OWNERSHIP_YOUTHHOUSING": "Youth Housing",
     "OWNERSHIP_SHARES": "Shares",
