@@ -179,6 +179,9 @@
     <section class="ssf__section" *ngIf="!isEditMode">
       <h2>{{ 'SHORTSTAY.FORM.PHOTOS' | translate }}</h2>
       <p class="ssf__hint">{{ 'SHORTSTAY.FORM.PHOTOS_HINT' | translate:{ max: maxPhotosPerRequest } }}</p>
+      <button type="button" class="ssf__guide-link" (click)="photoGuideOpen.set(true)">
+        <span aria-hidden="true">📷</span> {{ 'PHOTO_GUIDE.OPEN' | translate }}
+      </button>
       <div class="ssf__photos" *ngIf="pendingPhotos().length > 0">
         <figure class="ssf__photo-pending" *ngFor="let photo of pendingPhotos(); let i = index">
           <img [src]="photo.previewUrl" class="ssf__photo" alt="" />
@@ -187,17 +190,30 @@
           </button>
         </figure>
       </div>
-      <input type="file" accept="image/png,image/jpeg,image/webp" multiple
+      <input #createPhotoInput type="file" accept="image/png,image/jpeg,image/webp" multiple
              (change)="onPendingPhotosSelected($event)" [disabled]="saving()" />
+      <app-photo-guide-sheet
+        [open]="photoGuideOpen() && !isEditMode"
+        kind="shortStay"
+        (closed)="photoGuideOpen.set(false)"
+        (start)="photoGuideOpen.set(false); createPhotoInput.click()" />
       <p *ngIf="uploadingPhotos()">{{ 'SHORTSTAY.FORM.PHOTOS_UPLOADING' | translate }}</p>
     </section>
 
     <section class="ssf__section" *ngIf="isEditMode && listing() as l">
       <h2>{{ 'SHORTSTAY.FORM.PHOTOS' | translate }}</h2>
+      <button type="button" class="ssf__guide-link" (click)="photoGuideOpen.set(true)">
+        <span aria-hidden="true">📷</span> {{ 'PHOTO_GUIDE.OPEN' | translate }}
+      </button>
       <div class="ssf__photos">
         <img *ngFor="let url of l.photoUrls" [src]="url" class="ssf__photo" />
       </div>
-      <input type="file" accept="image/png,image/jpeg,image/webp" multiple (change)="onPhotosSelected($event)" [disabled]="uploadingPhotos()" />
+      <input #editPhotoInput type="file" accept="image/png,image/jpeg,image/webp" multiple (change)="onPhotosSelected($event)" [disabled]="uploadingPhotos()" />
+      <app-photo-guide-sheet
+        [open]="photoGuideOpen() && isEditMode"
+        kind="shortStay"
+        (closed)="photoGuideOpen.set(false)"
+        (start)="photoGuideOpen.set(false); editPhotoInput.click()" />
       <p *ngIf="uploadingPhotos()">{{ 'SHORTSTAY.FORM.PHOTOS_UPLOADING' | translate }}</p>
     </section>
 

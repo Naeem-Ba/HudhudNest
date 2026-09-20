@@ -1492,6 +1492,94 @@
     "LEGEND_BLOCKED": "Booked",
     "LEGEND_SELECTED": "Selected"
   },
+  "PHOTO_GUIDE": {
+    "OPEN": "How do I take professional photos?",
+    "OPEN_HINT": "A quick 30-second guide",
+    "TITLE": "How to take better photos",
+    "SUBTITLE": "Quick guide — 30 seconds",
+    "CLOSE": "Close the guide",
+    "PROGRESS": "Guide steps",
+    "STEP_OF": "Shot {{n}} of {{total}}",
+    "WHAT": "What to shoot",
+    "WHY": "Why",
+    "HOW": "How",
+    "NEXT": "Next",
+    "PREV": "Back",
+    "SKIP": "Skip",
+    "START": "Start adding photos",
+    "READY_TITLE": "Ready? Let’s get the best photo first",
+    "ENCOURAGE": "A clear photo helps people stop at your listing. Here are the key tips before you start:",
+    "INTRO": {
+      "sale": "For sale: show the size, condition and finish as they really are — buyers compare many listings.",
+      "rent": "For rent: focus on the rooms, kitchen, bathroom and condition — the first things a tenant asks about.",
+      "shortStay": "For short stays: guests decide from the photos, so show the bed, kitchen, bathroom and comforts."
+    },
+    "KIND_TIP": {
+      "sale": "Photograph any visible flaw honestly; being open avoids surprises at the viewing.",
+      "rent": "Show the fittings that are included (water heater, kitchen, wardrobes) so tenants know what they get.",
+      "shortStay": "Show the comforts you mention in the listing: air conditioning, kitchen, balcony…"
+    },
+    "TIPS": {
+      "LIGHT": "Use natural light: open the curtains and windows.",
+      "TIDY": "Tidy up first: remove personal items and clutter.",
+      "STEADY": "Hold the phone horizontally and steady — rest your elbows if you can.",
+      "HONEST": "Show the real space; avoid misleading angles.",
+      "DETAILS": "Capture the important details instead of repeating the same shot.",
+      "LENS": "Wipe your phone lens before you start.",
+      "SHARP": "Avoid dark or blurry photos; retake the shot if needed.",
+      "FRESH": "Use recent photos only; if the property changed, update them."
+    },
+    "STEPS": {
+      "FACADE": {
+        "TITLE": "Building front",
+        "WHAT": "The whole building from the street, including the entrance.",
+        "WHY": "It is the first photo people see and hints at the building and the area.",
+        "HOW": "Stand across the street in daylight with the sun behind you, phone horizontal at chest height."
+      },
+      "LIVING": {
+        "TITLE": "Living room",
+        "WHAT": "The room from a corner so the most floor space shows.",
+        "WHY": "People want to picture themselves in it and know its real size.",
+        "HOW": "Stand in a corner, open the curtains and tidy loose items first."
+      },
+      "BEDROOM": {
+        "TITLE": "Bedroom",
+        "WHAT": "The bed, wardrobe and window in one shot.",
+        "WHY": "It shows how much space there really is and how light gets in.",
+        "HOW": "Shoot from the door or a corner, make the bed and use daylight."
+      },
+      "KITCHEN": {
+        "TITLE": "Kitchen",
+        "WHAT": "The cabinets, sink and cooker area.",
+        "WHY": "The kitchen is one of the things people ask about most.",
+        "HOW": "Clear the counters, clean the sink and shoot from a corner to show it all."
+      },
+      "BATHROOM": {
+        "TITLE": "Bathroom",
+        "WHAT": "The whole bathroom: basin, shower and tiles.",
+        "WHY": "Cleanliness here builds a lot of trust.",
+        "HOW": "Close the toilet lid, hide personal items and wipe the mirror so you are not reflected."
+      },
+      "BALCONY": {
+        "TITLE": "Balcony and view",
+        "WHAT": "The balcony and what you can see from it: street, mountain or neighbourhood.",
+        "WHY": "A view is a real advantage and deserves to be seen.",
+        "HOW": "Shoot in daylight with a straight horizon; don’t pinch-zoom — walk closer or back."
+      },
+      "COURTYARD": {
+        "TITLE": "Garden, courtyard or roof",
+        "WHAT": "The open space as it is, with its best feature.",
+        "WHY": "Outdoor space is rare and sets a property apart.",
+        "HOW": "Take one wide shot showing the boundaries and one close shot of the best detail, like a fountain or tree."
+      },
+      "ENTRANCE": {
+        "TITLE": "Entrance",
+        "WHAT": "The door and the entrance of the building or flat.",
+        "WHY": "Guests want to know where they will walk in and that it is tidy and safe.",
+        "HOW": "Shoot the door straight on in daylight and avoid showing neighbours’ names or numbers."
+      }
+    }
+  },
   "SHORTSTAY": {
     "LIST": {
       "EYEBROW": "Discover",

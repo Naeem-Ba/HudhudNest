@@ -1492,6 +1492,94 @@
     "LEGEND_BLOCKED": "Belegt",
     "LEGEND_SELECTED": "Ausgewählt"
   },
+  "PHOTO_GUIDE": {
+    "OPEN": "Wie mache ich professionelle Fotos?",
+    "OPEN_HINT": "Eine kurze 30-Sekunden-Anleitung",
+    "TITLE": "So gelingen bessere Fotos",
+    "SUBTITLE": "Kurzanleitung — 30 Sekunden",
+    "CLOSE": "Anleitung schließen",
+    "PROGRESS": "Schritte der Anleitung",
+    "STEP_OF": "Foto {{n}} von {{total}}",
+    "WHAT": "Was fotografieren?",
+    "WHY": "Warum?",
+    "HOW": "Wie?",
+    "NEXT": "Weiter",
+    "PREV": "Zurück",
+    "SKIP": "Überspringen",
+    "START": "Fotos hinzufügen",
+    "READY_TITLE": "Bereit? Beginnen wir mit dem besten Foto",
+    "ENCOURAGE": "Ein klares Foto sorgt dafür, dass man bei Ihrer Anzeige stehen bleibt. Die wichtigsten Tipps vorab:",
+    "INTRO": {
+      "sale": "Zum Verkauf: Zeigen Sie Größe, Zustand und Ausstattung so, wie sie sind — Käufer vergleichen viele Anzeigen.",
+      "rent": "Zur Miete: Konzentrieren Sie sich auf Zimmer, Küche, Bad und Zustand — danach fragen Mieter zuerst.",
+      "shortStay": "Für Kurzaufenthalte: Gäste entscheiden anhand der Fotos, zeigen Sie also Bett, Küche, Bad und Komfort."
+    },
+    "KIND_TIP": {
+      "sale": "Fotografieren Sie sichtbare Mängel ehrlich; Offenheit vermeidet Überraschungen bei der Besichtigung.",
+      "rent": "Zeigen Sie die enthaltene Ausstattung (Warmwasserbereiter, Küche, Schränke), damit Mieter wissen, was sie bekommen.",
+      "shortStay": "Zeigen Sie den Komfort aus Ihrer Anzeige: Klimaanlage, Küche, Balkon …"
+    },
+    "TIPS": {
+      "LIGHT": "Nutzen Sie natürliches Licht: Vorhänge und Fenster öffnen.",
+      "TIDY": "Räumen Sie vorher auf: persönliche Dinge und Unordnung entfernen.",
+      "STEADY": "Halten Sie das Handy quer und ruhig — stützen Sie die Ellbogen ab.",
+      "HONEST": "Zeigen Sie den echten Raum; vermeiden Sie irreführende Winkel.",
+      "DETAILS": "Fotografieren Sie wichtige Details, statt dasselbe Motiv zu wiederholen.",
+      "LENS": "Wischen Sie die Handylinse vor dem Start ab.",
+      "SHARP": "Vermeiden Sie dunkle oder verwackelte Fotos; wiederholen Sie die Aufnahme.",
+      "FRESH": "Verwenden Sie nur aktuelle Fotos; hat sich das Objekt verändert, aktualisieren Sie sie."
+    },
+    "STEPS": {
+      "FACADE": {
+        "TITLE": "Gebäudefront",
+        "WHAT": "Das ganze Gebäude von der Straße, inklusive Eingang.",
+        "WHY": "Es ist das erste Foto, das man sieht, und vermittelt einen Eindruck von Haus und Umgebung.",
+        "HOW": "Stellen Sie sich bei Tageslicht gegenüber auf, die Sonne im Rücken, das Handy quer auf Brusthöhe."
+      },
+      "LIVING": {
+        "TITLE": "Wohnzimmer",
+        "WHAT": "Der Raum aus einer Ecke, damit möglichst viel Fläche zu sehen ist.",
+        "WHY": "Man möchte sich darin vorstellen und die echte Größe kennen.",
+        "HOW": "Stellen Sie sich in eine Ecke, öffnen Sie die Vorhänge und räumen Sie Lose weg."
+      },
+      "BEDROOM": {
+        "TITLE": "Schlafzimmer",
+        "WHAT": "Bett, Schrank und Fenster in einem Bild.",
+        "WHY": "Es zeigt, wie viel Platz wirklich da ist und wie das Licht hereinkommt.",
+        "HOW": "Fotografieren Sie von der Tür oder aus einer Ecke, machen Sie das Bett und nutzen Sie Tageslicht."
+      },
+      "KITCHEN": {
+        "TITLE": "Küche",
+        "WHAT": "Schränke, Spüle und Kochstelle.",
+        "WHY": "Nach der Küche wird besonders oft gefragt.",
+        "HOW": "Räumen Sie die Arbeitsflächen frei, reinigen Sie die Spüle und fotografieren Sie aus einer Ecke."
+      },
+      "BATHROOM": {
+        "TITLE": "Badezimmer",
+        "WHAT": "Das ganze Bad: Waschbecken, Dusche und Fliesen.",
+        "WHY": "Sauberkeit schafft hier viel Vertrauen.",
+        "HOW": "Klappen Sie den WC-Deckel zu, verstecken Sie persönliche Dinge und wischen Sie den Spiegel, damit Sie sich nicht spiegeln."
+      },
+      "BALCONY": {
+        "TITLE": "Balkon und Aussicht",
+        "WHAT": "Der Balkon und was man sieht: Straße, Berg oder Viertel.",
+        "WHY": "Eine Aussicht ist ein echter Vorteil und sollte gezeigt werden.",
+        "HOW": "Fotografieren Sie bei Tageslicht mit geradem Horizont; nicht zoomen — lieber näher herangehen."
+      },
+      "COURTYARD": {
+        "TITLE": "Garten, Innenhof oder Dach",
+        "WHAT": "Die Freifläche, wie sie ist, mit ihrem schönsten Detail.",
+        "WHY": "Außenflächen sind selten und heben ein Objekt hervor.",
+        "HOW": "Machen Sie eine Weitwinkelaufnahme der Grenzen und eine Nahaufnahme, etwa vom Brunnen oder Baum."
+      },
+      "ENTRANCE": {
+        "TITLE": "Eingang",
+        "WHAT": "Die Tür und der Eingang des Hauses oder der Wohnung.",
+        "WHY": "Gäste wollen wissen, wo sie hineingehen und dass es gepflegt und sicher ist.",
+        "HOW": "Fotografieren Sie die Tür frontal bei Tageslicht und zeigen Sie keine Namen oder Nummern von Nachbarn."
+      }
+    }
+  },
   "SHORTSTAY": {
     "LIST": {
       "EYEBROW": "Entdecken",

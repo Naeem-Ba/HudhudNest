@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-hidden="true">
+  <rect width="640" height="480" fill="#ece4d6"/>
+  <rect y="370" width="640" height="110" fill="#b99a70"/>
+  <path d="M0 370H640" stroke="#98794f" stroke-width="3"/>
+  <rect x="440" y="90" width="150" height="190" fill="#dff0f7" stroke="#8a6f4d" stroke-width="8"/>
+  <path d="M515 90V280M440 185H590" stroke="#8a6f4d" stroke-width="4"/>
+  <path d="M430 80h30v210h-30zM570 80h30v210h-30z" fill="#e6d3b3"/>
+  <rect x="70" y="150" width="330" height="140" rx="16" fill="#7a5233"/>
+  <rect x="86" y="166" width="298" height="110" rx="10" fill="#8d6240"/>
+  <rect x="50" y="270" width="370" height="110" rx="14" fill="#f4efe6"/>
+  <rect x="50" y="330" width="370" height="60" rx="10" fill="#2f6f73"/>
+  <path d="M50 330H420" stroke="#d6a84f" stroke-width="6"/>
+  <rect x="90" y="248" width="120" height="50" rx="16" fill="#fff"/><rect x="250" y="248" width="120" height="50" rx="16" fill="#fff"/>
+  <rect x="440" y="330" width="90" height="70" rx="6" fill="#6e4a2e"/><rect x="470" y="352" width="30" height="8" rx="3" fill="#d6a84f"/>
+  <path d="M485 330V300" stroke="#b5872e" stroke-width="5"/><path d="M462 300h46l-8-38h-30z" fill="#f2d99a"/>
+  <polygon points="440,280 590,280 620,440 400,440" fill="#fff7d6" opacity=".3"/>
+</svg>

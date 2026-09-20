@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-hidden="true">
+  <rect width="640" height="480" fill="#efe6d3"/>
+  <rect y="360" width="640" height="120" fill="#c8b48f"/>
+  <path d="M0 360H640" stroke="#a48f68" stroke-width="3"/>
+  <path d="M420 360V150a80 80 0 0 1 160 0V360z" fill="#dff0f7" stroke="#8a6f4d" stroke-width="8"/>
+  <path d="M500 70V360M420 210H580" stroke="#8a6f4d" stroke-width="4"/>
+  <polygon points="420,360 580,360 640,480 300,480" fill="#fff7d6" opacity=".38"/>
+  <path d="M396 60H430V360H396z" fill="#b5613a" opacity=".85"/><path d="M570 60H604V360H570z" fill="#b5613a" opacity=".85"/>
+  <rect x="40" y="290" width="330" height="70" rx="10" fill="#2f6f73"/>
+  <rect x="40" y="235" width="330" height="70" rx="12" fill="#3a8388"/>
+  <g fill="#d6a84f" opacity=".9"><circle cx="90" cy="300" r="5"/><circle cx="160" cy="300" r="5"/><circle cx="230" cy="300" r="5"/><circle cx="300" cy="300" r="5"/></g>
+  <rect x="70" y="255" width="60" height="50" rx="8" fill="#d6a84f"/><rect x="290" y="255" width="60" height="50" rx="8" fill="#b5613a"/>
+  <ellipse cx="220" cy="410" rx="90" ry="20" fill="#b5872e"/><ellipse cx="220" cy="404" rx="90" ry="18" fill="#d6a84f"/>
+  <path d="M200 420l-12 40M240 420l12 40" stroke="#8a6f2e" stroke-width="6"/>
+  <path d="M90 440H420l24 30H70z" fill="#8b2f2f" opacity=".85"/>
+  <path d="M60 180V130a30 30 0 0 1 60 0V180z" fill="#d9c9a3" stroke="#b7a37a" stroke-width="4"/>
+  <rect x="78" y="146" width="24" height="34" rx="6" fill="#2f6f73"/>
+</svg>
