@@ -218,9 +218,35 @@ export class ShortStayListingFormPage implements OnInit {
     this.pricingRules.update(rules => rules.filter((_, i) => i !== index));
   }
 
+  /**
+   * Cleared number inputs bind as null, which the API rejects at model binding with an
+   * opaque 400 — so the common mistakes are caught here with the exact field named.
+   */
+  private firstInvalidFieldKey(includeFees: boolean): string | null {
+    const isNum = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
+
+    if (!this.title?.trim()) return 'SHORTSTAY.FORM.ERR_TITLE';
+    if (!this.description?.trim()) return 'SHORTSTAY.FORM.ERR_DESCRIPTION';
+    if (!isNum(this.capacity) || this.capacity < 1) return 'SHORTSTAY.FORM.ERR_CAPACITY';
+    if (!isNum(this.bedrooms) || this.bedrooms < 0) return 'SHORTSTAY.FORM.ERR_BEDROOMS';
+    if (!isNum(this.bathrooms) || this.bathrooms < 0) return 'SHORTSTAY.FORM.ERR_BATHROOMS';
+    if (!this.checkInTime || !this.checkOutTime) return 'SHORTSTAY.FORM.ERR_TIMES';
+    if (!isNum(this.latitude) || !isNum(this.longitude)) return 'SHORTSTAY.FORM.ERR_LOCATION';
+    if (includeFees && [this.cleaningFee, this.extraGuestFee, this.extraBedFee].some(fee => !isNum(fee) || fee < 0)) {
+      return 'SHORTSTAY.FORM.ERR_FEES';
+    }
+    return null;
+  }
+
   createListing(): void {
     if (!this.accommodationTypeId) {
       this.toast.show(this.translate.instant('SHORTSTAY.FORM.SELECT_TYPE'), 'error');
+      return;
+    }
+
+    const invalidKey = this.firstInvalidFieldKey(false);
+    if (invalidKey) {
+      this.toast.show(this.translate.instant(invalidKey), 'error');
       return;
     }
 
@@ -287,12 +313,22 @@ export class ShortStayListingFormPage implements OnInit {
       return;
     }
 
+    // 400/422: ApiErrorInterceptor has already toasted the server's actual reason (which field
+    // and why) — a second generic "save failed" toast would only bury it.
+    if (err?.status === 400 || err?.status === 422) return;
+
     this.toast.show(this.translate.instant('SHORTSTAY.FORM.SAVE_ERROR'), 'error');
   }
 
   saveChanges(): void {
     const id = this.listingId();
     if (!id) return;
+
+    const invalidKey = this.firstInvalidFieldKey(true);
+    if (invalidKey) {
+      this.toast.show(this.translate.instant(invalidKey), 'error');
+      return;
+    }
 
     this.saving.set(true);
 
@@ -356,8 +392,9 @@ export class ShortStayListingFormPage implements OnInit {
           this.toast.show(this.translate.instant('SHORTSTAY.FORM.SAVE_SUCCESS'), 'success');
           this.loadForEdit(id);
         },
-        error: () => {
+        error: (err: { status?: number }) => {
           this.saving.set(false);
+          if (err?.status === 400 || err?.status === 422) return; // reason already shown by the interceptor
           this.toast.show(this.translate.instant('SHORTSTAY.FORM.SAVE_ERROR'), 'error');
         }
       });
