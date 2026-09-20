@@ -176,6 +176,22 @@
       <button type="button" class="btn btn--sm btn--outline" (click)="addPricingRule()">{{ 'SHORTSTAY.FORM.ADD_RULE' | translate }}</button>
     </section>
 
+    <section class="ssf__section" *ngIf="!isEditMode">
+      <h2>{{ 'SHORTSTAY.FORM.PHOTOS' | translate }}</h2>
+      <p class="ssf__hint">{{ 'SHORTSTAY.FORM.PHOTOS_HINT' | translate:{ max: maxPhotosPerRequest } }}</p>
+      <div class="ssf__photos" *ngIf="pendingPhotos().length > 0">
+        <figure class="ssf__photo-pending" *ngFor="let photo of pendingPhotos(); let i = index">
+          <img [src]="photo.previewUrl" class="ssf__photo" alt="" />
+          <button type="button" class="btn btn--sm btn--danger" (click)="removePendingPhoto(i)" [disabled]="saving()">
+            {{ 'SHORTSTAY.FORM.REMOVE' | translate }}
+          </button>
+        </figure>
+      </div>
+      <input type="file" accept="image/png,image/jpeg,image/webp" multiple
+             (change)="onPendingPhotosSelected($event)" [disabled]="saving()" />
+      <p *ngIf="uploadingPhotos()">{{ 'SHORTSTAY.FORM.PHOTOS_UPLOADING' | translate }}</p>
+    </section>
+
     <section class="ssf__section" *ngIf="isEditMode && listing() as l">
       <h2>{{ 'SHORTSTAY.FORM.PHOTOS' | translate }}</h2>
       <div class="ssf__photos">

@@ -91,3 +91,11 @@
     margin-top: 1.5rem;
   }
 }
+
+.ssf__photo-pending {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 0 8px 8px 0;
+}
