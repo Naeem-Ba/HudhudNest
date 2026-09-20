@@ -18,6 +18,16 @@ import {
   ShortStayListing
 } from '../../../core/models/short-stay.model';
 
+/** Same limits the backend enforces in AddShortStayListingPhotosCommandHandler. */
+const PHOTO_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const PHOTO_MAX_BYTES = 5 * 1024 * 1024;
+const PHOTO_MAX_PER_REQUEST = 10;
+
+interface PendingPhoto {
+  file: File;
+  previewUrl: string;
+}
+
 type PricingRuleForm = {
   ruleType: PricingRuleDto['ruleType'];
   dayOfWeek: number | null;
@@ -54,6 +64,9 @@ export class ShortStayListingFormPage implements OnInit {
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly uploadingPhotos = signal(false);
+  /** Photos picked on the create form; uploaded right after the listing exists (the API needs its id). */
+  readonly pendingPhotos = signal<PendingPhoto[]>([]);
+  readonly maxPhotosPerRequest = PHOTO_MAX_PER_REQUEST;
   readonly togglingPublish = signal(false);
 
   // ── حقول الإنشاء (وضع "جديد" فقط) ──
@@ -110,6 +123,8 @@ export class ShortStayListingFormPage implements OnInit {
   get isEditMode(): boolean { return !!this.listingId(); }
 
   ngOnInit(): void {
+    this.destroyRef.onDestroy(() => this.pendingPhotos().forEach(p => URL.revokeObjectURL(p.previewUrl)));
+
     const id = this.route.snapshot.paramMap.get('id');
     this.listingId.set(id);
 
@@ -270,16 +285,73 @@ export class ShortStayListingFormPage implements OnInit {
       defaultBasePricePerNight: this.defaultBasePricePerNight,
       currencyCode: this.currencyCode
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: created => {
-        this.saving.set(false);
-        this.toast.show(this.translate.instant('SHORTSTAY.FORM.CREATE_SUCCESS'), 'success');
-        this.router.navigate(['/short-stay/manage', created.id]);
-      },
+      next: created => this.uploadPendingPhotosThenOpen(created.id),
       error: err => {
         this.saving.set(false);
         this.handleCreateError(err);
       }
     });
+  }
+
+  /**
+   * The listing already exists at this point, so a failed upload must never look like a failed
+   * create (a retry would create a duplicate and burn plan quota): the user lands on the manage
+   * page either way, where photos can be added again.
+   */
+  private uploadPendingPhotosThenOpen(listingId: string): void {
+    const files = this.pendingPhotos().map(p => p.file);
+    const open = (): void => {
+      this.saving.set(false);
+      this.uploadingPhotos.set(false);
+      void this.router.navigate(['/short-stay/manage', listingId]);
+    };
+
+    if (files.length === 0) {
+      this.toast.show(this.translate.instant('SHORTSTAY.FORM.CREATE_SUCCESS'), 'success');
+      open();
+      return;
+    }
+
+    this.uploadingPhotos.set(true);
+    this.api.uploadPhotos(listingId, files).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.toast.show(this.translate.instant('SHORTSTAY.FORM.CREATE_SUCCESS'), 'success');
+        open();
+      },
+      error: () => {
+        this.toast.show(this.translate.instant('SHORTSTAY.FORM.CREATED_PHOTOS_FAILED'), 'error');
+        open();
+      }
+    });
+  }
+
+  onPendingPhotosSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const accepted: PendingPhoto[] = [];
+    let room = PHOTO_MAX_PER_REQUEST - this.pendingPhotos().length;
+
+    for (const file of Array.from(input.files ?? [])) {
+      if (!PHOTO_ALLOWED_TYPES.includes(file.type)) {
+        this.toast.show(this.translate.instant('SHORTSTAY.FORM.PHOTO_INVALID_TYPE', { name: file.name }), 'error');
+      } else if (file.size > PHOTO_MAX_BYTES) {
+        this.toast.show(this.translate.instant('SHORTSTAY.FORM.PHOTO_TOO_LARGE', { name: file.name }), 'error');
+      } else if (room <= 0) {
+        this.toast.show(this.translate.instant('SHORTSTAY.FORM.PHOTO_LIMIT', { max: PHOTO_MAX_PER_REQUEST }), 'error');
+        break;
+      } else {
+        accepted.push({ file, previewUrl: URL.createObjectURL(file) });
+        room--;
+      }
+    }
+
+    this.pendingPhotos.update(list => [...list, ...accepted]);
+    input.value = '';
+  }
+
+  removePendingPhoto(index: number): void {
+    const removed = this.pendingPhotos()[index];
+    if (removed) URL.revokeObjectURL(removed.previewUrl);
+    this.pendingPhotos.update(list => list.filter((_, i) => i !== index));
   }
 
   /**
