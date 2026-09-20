@@ -25,7 +25,62 @@ import { ToastService } from '../../shared/services/toast.service';
 import { environment } from '../../../environments/environment';
 import { currentRouteRequiresAuth } from './refresh-auth.interceptor';
 
-function extractBackendMessage(error: HttpErrorResponse): string | null {
+const MAX_FIELD_MESSAGES = 3;
+
+/** "$.defaultBasePricePerNight" / "DefaultBasePricePerNight" -> "Default base price per night". */
+function humanizeFieldName(key: string): string {
+  const name = key.replace(/^\$\.?/, '').split('.').pop() ?? '';
+  const words = name.replace(/\[\d+\]/g, '').replace(/([a-z0-9])([A-Z])/g, '$1 $2').trim().toLowerCase();
+  return words ? words.charAt(0).toUpperCase() + words.slice(1) : '';
+}
+
+/**
+ * ASP.NET's automatic model-binding errors (400 application/problem+json) are English,
+ * technical sentences ("The JSON value could not be converted to System.Int32. Path: $.capacity
+ * | LineNumber: 0 ..."). Those are rewritten into a short, translated "field X is
+ * required/invalid"; app-level FluentValidation messages (422) are already user-facing and pass through.
+ */
+function describeFieldError(field: string, message: string, translate: TranslateService): string {
+  const label = humanizeFieldName(field);
+
+  if (/field is required/i.test(message)) {
+    return label ? translate.instant('API_ERRORS.FIELD_REQUIRED', { field: label }) : translate.instant('API_ERRORS.BAD_REQUEST');
+  }
+
+  if (/could not be converted|is not valid|is invalid|json|Path:\s*\$/i.test(message)) {
+    return label ? translate.instant('API_ERRORS.FIELD_INVALID', { field: label }) : translate.instant('API_ERRORS.BAD_REQUEST');
+  }
+
+  return message;
+}
+
+/** Flattens ProblemDetails / ValidationError `errors` (a field -> messages map, or a list). */
+function extractValidationMessages(errors: unknown, translate: TranslateService): string[] {
+  const messages: string[] = [];
+
+  const add = (field: string, value: unknown): void => {
+    if (typeof value === 'string' && value.trim()) {
+      messages.push(describeFieldError(field, value.trim(), translate));
+    } else if (Array.isArray(value)) {
+      value.forEach(item => add(field, item));
+    }
+  };
+
+  if (Array.isArray(errors)) {
+    errors.forEach(item => add('', item));
+  } else if (errors && typeof errors === 'object') {
+    Object.entries(errors as Record<string, unknown>).forEach(([field, value]) => add(field, value));
+  }
+
+  return [...new Set(messages)].slice(0, MAX_FIELD_MESSAGES);
+}
+
+/**
+ * Order matters: a domain `message` is already the whole story; the field-level validation
+ * reasons come next; the generic `title` ("Validation Error", "One or more validation errors
+ * occurred.") is only a last resort — it used to win and hid the actual reason.
+ */
+function extractBackendMessage(error: HttpErrorResponse, translate: TranslateService): string | null {
   const body = error.error;
 
   if (!body) {
@@ -36,20 +91,18 @@ function extractBackendMessage(error: HttpErrorResponse): string | null {
     return body.trim() || null;
   }
 
-  const directMessage = body.message ?? body.Message ?? body.title ?? body.Title ?? body.detail ?? body.Detail;
-  if (directMessage) {
-    return String(directMessage);
+  const message = body.message ?? body.Message;
+  if (message) {
+    return String(message);
   }
 
-  const validationErrors = body.errors ?? body.Errors;
-  if (validationErrors && typeof validationErrors === 'object') {
-    const messages = Object.values(validationErrors).flat().filter(Boolean);
-    if (messages.length > 0) {
-      return (messages as string[]).join(' ');
-    }
+  const fieldMessages = extractValidationMessages(body.errors ?? body.Errors, translate);
+  if (fieldMessages.length > 0) {
+    return fieldMessages.join(' ');
   }
 
-  return null;
+  const generic = body.detail ?? body.Detail ?? body.title ?? body.Title;
+  return generic ? String(generic) : null;
 }
 
 /**
@@ -59,7 +112,7 @@ function extractBackendMessage(error: HttpErrorResponse): string | null {
  * من public/i18n/{en,de,ar}.json عبر مفاتيح API_ERRORS.* الجديدة.
  */
 export function getFriendlyApiErrorMessage(error: HttpErrorResponse, translate: TranslateService): string {
-  const backendMessage = extractBackendMessage(error);
+  const backendMessage = extractBackendMessage(error, translate);
 
   if (backendMessage) {
     return backendMessage;

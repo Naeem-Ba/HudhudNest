@@ -9,7 +9,9 @@
     "CONFLICT": "Es besteht ein Konflikt mit den aktuellen Daten. Aktualisieren Sie die Seite und versuchen Sie es erneut.",
     "RATE_LIMITED": "Zu viele Anfragen. Bitte warten Sie einen Moment und versuchen Sie es erneut.",
     "SERVER": "Ein Serverfehler ist aufgetreten. Bitte versuchen Sie es später erneut.",
-    "UNKNOWN": "Ein unerwarteter Fehler ist aufgetreten."
+    "UNKNOWN": "Ein unerwarteter Fehler ist aufgetreten.",
+    "FIELD_REQUIRED": "Das Feld „{{field}}“ ist erforderlich.",
+    "FIELD_INVALID": "Das Feld „{{field}}“ ist leer oder ungültig."
   },
   "COMMON": {
     "SAVE": "Speichern",
@@ -1620,6 +1622,14 @@
       "CURRENCY_FIXED_HINT": "Die Währung kann nach dem Erstellen nicht geändert werden; alle Preise gelten pro Nacht in dieser Währung.",
       "TYPES_LOAD_ERROR": "Unterkunftsarten konnten nicht geladen werden. Bitte später erneut versuchen.",
       "PRICE_REQUIRED": "Geben Sie einen Preis pro Nacht größer als null ein.",
+      "ERR_TITLE": "Geben Sie einen Titel ein.",
+      "ERR_DESCRIPTION": "Geben Sie eine Beschreibung ein.",
+      "ERR_CAPACITY": "Geben Sie die Gästezahl an (mindestens 1).",
+      "ERR_BEDROOMS": "Geben Sie die Zahl der Schlafzimmer an (0 oder mehr).",
+      "ERR_BATHROOMS": "Geben Sie die Zahl der Badezimmer an (0 oder mehr).",
+      "ERR_TIMES": "Legen Sie Check-in- und Check-out-Zeit fest.",
+      "ERR_LOCATION": "Geben Sie Breiten- und Längengrad als gültige Zahlen ein.",
+      "ERR_FEES": "Gebühren müssen Zahlen von mindestens 0 sein.",
       "LOCATION": "Standort",
       "LATITUDE": "Breitengrad",
       "LONGITUDE": "Längengrad",

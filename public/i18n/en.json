@@ -9,7 +9,9 @@
     "CONFLICT": "There's a conflict with the current data. Refresh the page and try again.",
     "RATE_LIMITED": "Too many requests. Please wait a moment and try again.",
     "SERVER": "A server error occurred. Please try again later.",
-    "UNKNOWN": "An unexpected error occurred."
+    "UNKNOWN": "An unexpected error occurred.",
+    "FIELD_REQUIRED": "The field “{{field}}” is required.",
+    "FIELD_INVALID": "The field “{{field}}” is empty or invalid."
   },
   "COMMON": {
     "SAVE": "Save",
@@ -1620,6 +1622,14 @@
       "CURRENCY_FIXED_HINT": "The currency cannot be changed after the listing is created; every price is per night in this currency.",
       "TYPES_LOAD_ERROR": "Could not load accommodation types. Please try again.",
       "PRICE_REQUIRED": "Enter a price per night greater than zero.",
+      "ERR_TITLE": "Enter a listing title.",
+      "ERR_DESCRIPTION": "Enter a listing description.",
+      "ERR_CAPACITY": "Enter the number of guests (at least 1).",
+      "ERR_BEDROOMS": "Enter the number of bedrooms (0 or more).",
+      "ERR_BATHROOMS": "Enter the number of bathrooms (0 or more).",
+      "ERR_TIMES": "Set both the check-in and check-out time.",
+      "ERR_LOCATION": "Enter the latitude and longitude as valid numbers.",
+      "ERR_FEES": "Fees must be numbers of at least 0.",
       "LOCATION": "Location",
       "LATITUDE": "Latitude",
       "LONGITUDE": "Longitude",
