@@ -990,7 +990,7 @@
     },
     "DELETE_MODAL": {
       "TITLE": "Permanently Delete Account",
-      "INTRO": "You are about to permanently delete your aqar-tech account. This action cannot be undone once completed.",
+      "INTRO": "You are about to permanently delete your HudhudNest account. This action cannot be undone once completed.",
       "WILL_DELETE_TITLE": "Will be deleted/hidden immediately:",
       "WILL_DELETE_1": "Your name, profile picture, bio, and contact information",
       "WILL_DELETE_2": "Your registered email and phone number, and any linked Google/Apple sign-in — you will not be able to sign in to this account with them again",
@@ -1038,7 +1038,7 @@
     "FORM_INVALID": "Please fill in all required fields (marked with *) before submitting."
   },
   "SERVICE_REQUEST": {
-    "CTA": "Request AqarTech Verify",
+    "CTA": "Request HudhudNest Verify",
     "PROVIDER": "Service provider",
     "NOTE": "Notes for the provider",
     "NOTE_PLACEHOLDER": "Add any details that help the provider (optional)",
@@ -1051,7 +1051,7 @@
     "NOTE_TOO_LONG": "Notes are too long (max 1000 characters)."
   },
   "SERVICE_REQUESTS": {
-    "EYEBROW": "AqarTech Services",
+    "EYEBROW": "HudhudNest Services",
     "TITLE": "My Service Requests",
     "SUBTITLE": "Track the status of the services you requested on your properties.",
     "BECOME_PROVIDER": {
@@ -1089,11 +1089,11 @@
   },
   "SERVICES": {
     "CATEGORY": {
-      "Verification": "Verification (AqarTech Verify)",
-      "Valuation": "Valuation (AqarTech Valuation)",
-      "Inspection": "Inspection (AqarTech Inspect)",
-      "Photography": "Photography (AqarTech Media)",
-      "PropertyManagement": "Remote Property Management (AqarTech Care)",
+      "Verification": "Verification (HudhudNest Verify)",
+      "Valuation": "Valuation (HudhudNest Valuation)",
+      "Inspection": "Inspection (HudhudNest Inspect)",
+      "Photography": "Photography (HudhudNest Media)",
+      "PropertyManagement": "Remote Property Management (HudhudNest Care)",
       "Legal": "Legal consultation",
       "Engineering": "Engineering consultation",
       "Maintenance": "Maintenance",

@@ -990,7 +990,7 @@
     },
     "DELETE_MODAL": {
       "TITLE": "حذف الحساب نهائياً",
-      "INTRO": "أنت على وشك حذف حسابك في عقاراتك (aqar-tech) نهائياً. هذا إجراء لا يمكن التراجع عنه بعد إتمامه.",
+      "INTRO": "أنت على وشك حذف حسابك في هدهد نيست (HudhudNest) نهائياً. هذا إجراء لا يمكن التراجع عنه بعد إتمامه.",
       "WILL_DELETE_TITLE": "سيُحذف/يُخفى فوراً:",
       "WILL_DELETE_1": "اسمك، صورتك الشخصية، نبذتك التعريفية، ومعلومات التواصل الخاصة بك",
       "WILL_DELETE_2": "بريدك الإلكتروني ورقم هاتفك المسجَّلان، وربط حسابات جوجل/آبل إن وُجد — لن تتمكن من الدخول بها إلى هذا الحساب مجدداً",
@@ -1038,7 +1038,7 @@
     "FORM_INVALID": "الرجاء تعبئة كل الحقول المطلوبة (المميّزة بعلامة *) قبل الإرسال."
   },
   "SERVICE_REQUEST": {
-    "CTA": "طلب توثيق AqarTech Verify",
+    "CTA": "طلب توثيق HudhudNest Verify",
     "PROVIDER": "مزوّد الخدمة",
     "NOTE": "ملاحظات لمزوّد الخدمة",
     "NOTE_PLACEHOLDER": "أضف أي تفاصيل تساعد مزوّد الخدمة (اختياري)",
@@ -1051,7 +1051,7 @@
     "NOTE_TOO_LONG": "الملاحظات طويلة جداً (الحد الأقصى 1000 حرف)."
   },
   "SERVICE_REQUESTS": {
-    "EYEBROW": "AqarTech Services",
+    "EYEBROW": "HudhudNest Services",
     "TITLE": "طلبات الخدمات الخاصة بي",
     "SUBTITLE": "تابع حالة طلبات الخدمات التي قدّمتها على عقاراتك.",
     "BECOME_PROVIDER": {
@@ -1089,11 +1089,11 @@
   },
   "SERVICES": {
     "CATEGORY": {
-      "Verification": "توثيق (AqarTech Verify)",
-      "Valuation": "تقييم سعري (AqarTech Valuation)",
-      "Inspection": "معاينة فنية (AqarTech Inspect)",
-      "Photography": "تصوير احترافي (AqarTech Media)",
-      "PropertyManagement": "إدارة أملاك عن بُعد (AqarTech Care)",
+      "Verification": "توثيق (HudhudNest Verify)",
+      "Valuation": "تقييم سعري (HudhudNest Valuation)",
+      "Inspection": "معاينة فنية (HudhudNest Inspect)",
+      "Photography": "تصوير احترافي (HudhudNest Media)",
+      "PropertyManagement": "إدارة أملاك عن بُعد (HudhudNest Care)",
       "Legal": "استشارات قانونية",
       "Engineering": "استشارات هندسية",
       "Maintenance": "صيانة",

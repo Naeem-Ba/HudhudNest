@@ -1,6 +1,6 @@
 // src/app/core/api/service-request.service.ts
 //
-// AqarTech Services Marketplace — requester-facing lifecycle AND the provider-facing
+// HudhudNest Services Marketplace — requester-facing lifecycle AND the provider-facing
 // lifecycle (added alongside the provider dashboard — see provider-inbox.page.ts /
 // provider-request-detail.page.ts).
 // Endpoints:

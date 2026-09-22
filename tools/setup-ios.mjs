@@ -58,7 +58,7 @@ if (fs.existsSync(plist)) {
   // this repo's committed ios/ scaffold (see docs/IOS_SETUP.md); these two Sets are
   // kept as a defensive no-op in case a future `cap add ios` regenerates the file
   // without them, not because they are currently missing.
-  set('CFBundleDisplayName', 'string', 'Real Estate World');
+  set('CFBundleDisplayName', 'string', 'HudhudNest');
   set('UIViewControllerBasedStatusBarAppearance', 'bool', 'true');
 }
 

@@ -193,7 +193,7 @@ export const routes: Routes = [
             .then(m => m.VisitsPage)
       },
       {
-        // AqarTech Services Marketplace — "my requests" list. Browsing/creating a
+        // HudhudNest Services Marketplace — "my requests" list. Browsing/creating a
         // request happens from the property-detail page's CTA, not a separate
         // /services landing page in this vertical slice (see the session's final
         // report for what's deferred).

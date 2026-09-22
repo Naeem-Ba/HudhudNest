@@ -26,7 +26,7 @@ import { RouterModule } from '@angular/router';
   template: `
     <section class="legal">
       <div class="legal__card">
-        <h1>حذف الحساب — عقاراتك (aqar-tech)</h1>
+        <h1>حذف الحساب — هدهد نيست (HudhudNest)</h1>
         <p class="legal__updated">آخر تحديث: 5 سبتمبر 2026</p>
 
         <p>

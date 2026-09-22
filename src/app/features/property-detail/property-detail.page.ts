@@ -184,7 +184,7 @@ export class PropertyDetailPage implements OnInit {
   messageDraft = '';
   readonly messageMaxLength = 3000;
 
-  // ── AqarTech Verify request (Services Marketplace vertical slice) ──────
+  // ── HudhudNest Verify request (Services Marketplace vertical slice) ──────
   // Only the "Verification" category is a live product this session — see
   // ServiceCategory's remarks in service.model.ts. The offering is fetched
   // lazily (once) the first time the panel opens, not on every page load,
@@ -649,7 +649,7 @@ export class PropertyDetailPage implements OnInit {
       });
   }
 
-  // ── AqarTech Verify request ──────────────────────────────────────────
+  // ── HudhudNest Verify request ──────────────────────────────────────────
   submitServiceRequest(): void {
     const property = this.property();
     const offering = this.verifyOffering();

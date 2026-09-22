@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "Wohnungsmieten": {
+    "HudhudNest": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -97,13 +97,13 @@
           },
           "configurations": {
             "production": {
-              "buildTarget": "Wohnungsmieten:build:production"
+              "buildTarget": "HudhudNest:build:production"
             },
             "development": {
-              "buildTarget": "Wohnungsmieten:build:development"
+              "buildTarget": "HudhudNest:build:development"
             },
             "staging": {
-              "buildTarget": "Wohnungsmieten:build:staging"
+              "buildTarget": "HudhudNest:build:staging"
             }
           },
           "defaultConfiguration": "development"

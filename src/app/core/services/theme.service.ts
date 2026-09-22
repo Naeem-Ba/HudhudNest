@@ -2,7 +2,9 @@ import { Injectable, signal } from '@angular/core';
 
 export type AppTheme = 'light' | 'dark';
 
-const STORAGE_KEY = 'aqar-tech-theme';
+const STORAGE_KEY = 'hudhudnest-theme';
+/** المفتاح القديم من علامة AqarTech قبل إعادة التسمية — يُقرأ مرة واحدة فقط للترحيل. */
+const LEGACY_STORAGE_KEY = 'aqar-tech-theme';
 
 /**
  * ThemeService — يتحكم بالوضع الداكن/الفاتح لكامل التطبيق.
@@ -41,7 +43,7 @@ export class ThemeService {
 
   private resolveInitialTheme(): AppTheme {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(STORAGE_KEY) ?? this.migrateLegacyTheme();
 
       if (saved === 'dark' || saved === 'light') {
         return saved;
@@ -55,5 +57,23 @@ export class ThemeService {
       window.matchMedia?.('(prefers-color-scheme: dark)').matches;
 
     return prefersDark ? 'dark' : 'light';
+  }
+
+  /**
+   * ترحيل لمرة واحدة من مفتاح AqarTech القديم (LEGACY_STORAGE_KEY) بعد إعادة تسمية
+   * العلامة إلى HudhudNest — يحافظ على تفضيل الوضع الداكن/الفاتح للمستخدمين الحاليين
+   * بدل إعادتهم فجأة لتفضيل النظام الافتراضي.
+   */
+  private migrateLegacyTheme(): string | null {
+    try {
+      const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (legacy) {
+        localStorage.setItem(STORAGE_KEY, legacy);
+        localStorage.removeItem(LEGACY_STORAGE_KEY);
+      }
+      return legacy;
+    } catch {
+      return null;
+    }
   }
 }

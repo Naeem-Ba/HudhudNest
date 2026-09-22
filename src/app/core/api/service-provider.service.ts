@@ -1,6 +1,6 @@
 // src/app/core/api/service-provider.service.ts
 //
-// AqarTech Services Marketplace — the provider's own profile.
+// HudhudNest Services Marketplace — the provider's own profile.
 // Endpoints:
 //   GET  /api/ServiceProviders/me   ← 204 NoContent إن لم يكن الحساب مزوّد خدمة بعد
 //   PUT  /api/ServiceProviders/me   ← تحديث الاسم/النبذة/معلومات التواصل

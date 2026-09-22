@@ -4,9 +4,11 @@ const allowCleartext =
   process.env['CAPACITOR_ALLOW_CLEARTEXT'] === 'true';
 
 const config: CapacitorConfig = {
+  // ⚠️ appId متروك عمداً كما هو (com.realestate.app) — هوية تطبيق/توقيع حية على متاجر
+  // التطبيقات، تغييرها يكسر مسار تحديثات المستخدمين الحاليين. راجع تقرير إعادة التسمية.
   appId: 'com.realestate.app',
-  appName: 'Real Estate World',
-  webDir: 'dist/Wohnungsmieten/browser',
+  appName: 'HudhudNest',
+  webDir: 'dist/HudhudNest/browser',
 
   server: {
     androidScheme: 'https',

@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>Real Estate World</string>
+        <string>HudhudNest</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -67,10 +67,10 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Real Estate World uses your location to show listings near you on the map and to sort search results by distance.</string>
+	<string>HudhudNest uses your location to show listings near you on the map and to sort search results by distance.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Real Estate World needs camera access so you can take photos to attach to a property listing.</string>
+	<string>HudhudNest needs camera access so you can take photos to attach to a property listing.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Real Estate World needs access to your photo library so you can attach existing photos to a property listing.</string>
+	<string>HudhudNest needs access to your photo library so you can attach existing photos to a property listing.</string>
 </dict>
 </plist>

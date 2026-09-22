@@ -2,13 +2,13 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "wohnungsmieten-dev",
+      "name": "hudhudnest-dev",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["start"],
       "port": 4200
     },
     {
-      "name": "wohnungsmieten-staging",
+      "name": "hudhudnest-staging",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "start:staging"],
       "port": 4200
