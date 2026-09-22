@@ -185,6 +185,14 @@
     flex-wrap: wrap;
   }
 
+  /* ✅ إضافة: معرف الإعلان — نص صغير مكتوم تحت العنوان/الموقع مباشرة */
+  &__listing-id {
+    font-size: .78rem;
+    color: var(--gray-500);
+    margin: 0;
+    word-break: break-all;
+  }
+
   &__price {
     display: flex;
     flex-direction: column;
@@ -668,6 +676,13 @@
   margin: 0;
   font-weight: 700;
   color: var(--gray-900);
+}
+
+a.owner-card__name--link {
+  display: block;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; color: var(--primary); }
 }
 
 .owner-card__phone {
