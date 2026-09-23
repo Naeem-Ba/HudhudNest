@@ -41,7 +41,7 @@
         </ng-container>
       </div>
 
-      <p class="alert alert--error" *ngIf="error() && step() === 'status'">⚠️ {{ error() }}</p>
+      <p class="alert alert--error" role="alert" *ngIf="error() && step() === 'status'">⚠️ {{ error() }}</p>
 
       <button type="button" class="btn-primary" *ngIf="step() === 'status' && needsAction" (click)="startReverification()">
         {{ 'AUTH.PHONE_REVERIFY.START_BUTTON' | translate }}
@@ -65,7 +65,7 @@
           ></app-form-error>
         </div>
 
-        <p class="alert alert--error" *ngIf="error()">⚠️ {{ error() }}</p>
+        <p class="alert alert--error" role="alert" *ngIf="error()">⚠️ {{ error() }}</p>
 
         <button type="submit" class="btn-primary" [disabled]="loading()">
           <span class="spinner" *ngIf="loading()"></span>
@@ -77,11 +77,11 @@
       <form *ngIf="step() === 'otp'" [formGroup]="otpForm" (ngSubmit)="verifyOtp()" novalidate class="flow-form">
         <div class="form-group">
           <label for="code">{{ 'AUTH.OTP_CODE' | translate }}</label>
-          <input id="code" type="text" inputmode="numeric" maxlength="6" class="otp-input" formControlName="code" dir="ltr" />
+          <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="otp-input" formControlName="code" dir="ltr" />
           <app-form-error [control]="otpForm.controls.code" [submitted]="submitted()"></app-form-error>
         </div>
 
-        <p class="alert alert--error" *ngIf="error()">⚠️ {{ error() }}</p>
+        <p class="alert alert--error" role="alert" *ngIf="error()">⚠️ {{ error() }}</p>
 
         <button type="submit" class="btn-primary" [disabled]="loading()">
           <span class="spinner" *ngIf="loading()"></span>
@@ -97,7 +97,7 @@
 
       <!-- Done -->
       <div *ngIf="step() === 'done'" class="flow-form">
-        <p class="alert alert--success">✅ {{ 'AUTH.PHONE_REVERIFY.SUCCESS' | translate }}</p>
+        <p class="alert alert--success" role="status">✅ {{ 'AUTH.PHONE_REVERIFY.SUCCESS' | translate }}</p>
       </div>
     </ng-container>
 
