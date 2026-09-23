@@ -266,6 +266,27 @@
   &:hover { background: var(--primary-soft); }
 }
 
+// رابطا تغيير رقم الدخول والتحقق منه: بدون هذا التنسيق كانا نصّين ملتصقين لا يبدوان كرابطين.
+.phone-security {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+
+  label { width: 100%; }
+
+  a {
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    border-radius: 10px;
+    padding: .5rem .9rem;
+    font-weight: 700;
+    font-size: .85rem;
+    text-decoration: none;
+
+    &:hover { background: var(--primary-soft); }
+  }
+}
+
 .email-form {
   display: flex;
   flex-direction: column;

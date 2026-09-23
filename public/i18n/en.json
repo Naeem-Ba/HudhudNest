@@ -205,7 +205,7 @@
       "PASSWORD_POLICY_FAILED": "This password doesn't meet the requirements: at least 8 characters, with an uppercase letter (A-Z), a lowercase letter (a-z) and a digit (0-9).",
       "PHONE_REVERIFICATION_REQUIRED": "Re-verifying your phone number is required to continue.",
       "PHONE_REVERIFICATION_NOT_CONFIGURED": "No phone number is set up for re-verification.",
-      "RECENT_AUTHENTICATION_REQUIRED": "A recent login is required to complete this action.",
+      "RECENT_AUTHENTICATION_REQUIRED": "The current password is incorrect, or the account is temporarily locked after too many attempts. Check it and try again.",
       "PASSWORD_RESET_INVALID": "Your password reset request has expired — please start again.",
       "PASSWORD_RESET_EXPIRED": "This reset code has expired. Request a new one.",
       "PASSWORD_RESET_ALREADY_USED": "This reset code has already been used.",
