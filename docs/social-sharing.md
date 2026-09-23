@@ -71,7 +71,7 @@ If a `slug`/`publicId` field is added later, `PropertyShareUrlService.getPropert
 the one function that needs to change — nothing else.
 
 The site origin comes from `environment.siteUrl` (production:
-`https://realestateworld.world`, staging: `https://staging--bizorealestateworld.netlify.app`),
+`https://realestateworld.world`, staging: `https://staging--hudhudnest.netlify.app`),
 configurable via a `SITE_URL` build-time env var exactly like `API_URL`/`BASE_URL` already are
 (see `tools/generate-env.mjs`). Local dev has no public domain, so it deliberately falls back to
 `window.location.origin` at runtime rather than a hardcoded default.
