@@ -171,6 +171,15 @@ function shouldShowUnauthorizedToast(status: number, router: Router): boolean {
   return status !== 401 || currentRouteRequiresAuth(router);
 }
 
+/** The API answers every unsafe request from a phone-restricted account with this 403 code. */
+export const PHONE_REVERIFICATION_REQUIRED_CODE = 'PHONE_REVERIFICATION_REQUIRED';
+const PHONE_REVERIFY_ROUTE = '/profile/phone-reverify';
+
+function isPhoneReverificationRequired(error: HttpErrorResponse): boolean {
+  const body = error.error as { code?: string; Code?: string } | null;
+  return error.status === 403 && (body?.code ?? body?.Code) === PHONE_REVERIFICATION_REQUIRED_CODE;
+}
+
 export const ApiErrorInterceptor: HttpInterceptorFn = (req, next) => {
   const toast = inject(ToastService);
   const router = inject(Router);
@@ -179,6 +188,17 @@ export const ApiErrorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: unknown) => {
       if (error instanceof HttpErrorResponse) {
+        if (isPhoneReverificationRequired(error)) {
+          // A restricted account can only recover through the re-verification page, so take the
+          // person there instead of leaving them with an unexplained failing action. The API's own
+          // message is English, hence the translated one.
+          toast.error(translate.instant('AUTH.ERRORS.PHONE_REVERIFICATION_REQUIRED'), translate.instant('API_ERRORS.TITLE'));
+          if (!router.url.startsWith(PHONE_REVERIFY_ROUTE)) {
+            void router.navigateByUrl(PHONE_REVERIFY_ROUTE);
+          }
+          return throwError(() => error);
+        }
+
         const friendlyMessage = getFriendlyApiErrorMessage(error, translate);
 
         if (

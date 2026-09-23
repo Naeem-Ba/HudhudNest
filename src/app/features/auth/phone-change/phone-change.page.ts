@@ -9,7 +9,8 @@ import { PhoneAuthApiService } from '../../../core/auth/phone-auth-api.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { FormErrorComponent } from '../../../shared/ui/form-error.component';
-import { getPhoneWorkflowErrorMessage, PHONE_E164_PATTERN } from '../phone-auth-errors';
+import { getPhoneWorkflowErrorMessage } from '../phone-auth-errors';
+import { phoneNumberValidator } from '../../../core/auth/phone-number';
 
 type Step = 'phone' | 'verify' | 'done';
 
@@ -43,7 +44,7 @@ export class PhoneChangePage {
   private challengeId = '';
 
   readonly phoneForm = this.fb.nonNullable.group({
-    phoneNumber: ['', [Validators.required, Validators.pattern(PHONE_E164_PATTERN)]]
+    phoneNumber: ['', [Validators.required, phoneNumberValidator]]
   });
 
   readonly verifyForm = this.fb.nonNullable.group({
