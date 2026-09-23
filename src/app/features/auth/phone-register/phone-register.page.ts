@@ -12,7 +12,8 @@ import { PRIVACY_POLICY_VERSION } from '../../../core/models/consent-versions';
 import { ToastService } from '../../../shared/services/toast.service';
 import { FormErrorComponent } from '../../../shared/ui/form-error.component';
 import { ConsentCheckboxComponent } from '../../../shared/components/consent-checkbox/consent-checkbox.component';
-import { getPhoneWorkflowErrorMessage, PHONE_E164_PATTERN } from '../phone-auth-errors';
+import { getPhoneWorkflowErrorMessage } from '../phone-auth-errors';
+import { phoneNumberValidator } from '../../../core/auth/phone-number';
 
 type Step = 'phone' | 'details';
 
@@ -59,7 +60,7 @@ export class PhoneRegisterPage {
   private challengeId = '';
 
   readonly phoneForm = this.fb.nonNullable.group({
-    phoneNumber: ['', [Validators.required, Validators.pattern(PHONE_E164_PATTERN)]]
+    phoneNumber: ['', [Validators.required, phoneNumberValidator]]
   });
 
   readonly detailsForm = this.fb.nonNullable.group({

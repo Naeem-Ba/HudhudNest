@@ -7,6 +7,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthApiService } from '../../../core/auth/auth-api.service';
 import { SocialAuthService } from '../../../core/auth/social-auth.service';
 import { PhoneAuthApiService } from '../../../core/auth/phone-auth-api.service';
+import { PHONE_E164_PATTERN, normalizePhoneInput } from '../../../core/auth/phone-number';
+import { getPhoneLoginErrorMessage } from '../phone-auth-errors';
 import { AuthTokenResponse, TokenStorageService } from '../../../core/services/token-storage.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ConsentApiService } from '../../../core/api/consent-api.service';
@@ -37,7 +39,6 @@ interface RegisterFormModel {
 
 type AuthMode = 'email' | 'phone';
 
-const PHONE_E164_PATTERN = /^\+[1-9]\d{7,14}$/;
 
 @Component({
   selector: 'app-login',
@@ -409,7 +410,7 @@ export class LoginComponent implements OnDestroy {
     this.submitted = true;
     form.control.markAllAsTouched();
 
-    const phone = this.phoneLoginNumber.trim();
+    const phone = normalizePhoneInput(this.phoneLoginNumber);
 
     if (!PHONE_E164_PATTERN.test(phone)) {
       this.setError(this.t('AUTH.ERRORS.PHONE_INVALID'));
@@ -433,12 +434,12 @@ export class LoginComponent implements OnDestroy {
         this.refreshAuthState();
         this.completeLoginSuccess();
       },
-      error: () => {
+      error: err => {
         this.loading = false;
-        // رسالة عامة موحّدة مع تسجيل الدخول بالبريد — لا نكشف إن كان
-        // الرقم مسجَّلاً أم لا (نفس مبدأ حماية تعداد البريد الإلكتروني
-        // الموثّق للـForgotPassword، مطبَّق هنا على الهاتف).
-        this.setError(this.t('AUTH.ERRORS.INVALID_CREDENTIALS'));
+        // رقم/كلمة سر خاطئة وحساب مقفل ورقم غير مسجَّل كلها 400 PHONE_AUTH_FAILED بنص واحد (لا كشف
+        // عن وجود الحساب)؛ أما تجاوز المعدّل وانقطاع الشبكة وخطأ الخادم والحساب غير المتاح فتُعرض
+        // كما هي كي لا تُقرأ كأن كلمة السر خاطئة.
+        this.setError(getPhoneLoginErrorMessage(this.translate, err));
       }
     });
   }

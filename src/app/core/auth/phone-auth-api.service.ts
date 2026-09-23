@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, map, tap } from 'rxjs';
 import { BackendApiService } from '../api/backend-api.service';
 import { TokenStorageService } from '../services/token-storage.service';
+import { normalizePhoneInput } from './phone-number';
 import {
   AuthTokenResponse,
   PhoneLoginRequest,
@@ -61,7 +62,7 @@ export class PhoneAuthApiService {
 
   login(request: PhoneLoginRequest): Observable<AuthTokenResponse> {
     const payload: PhoneLoginRequest = {
-      phoneNumber: request.phoneNumber.trim(),
+      phoneNumber: normalizePhoneInput(request.phoneNumber),
       password: request.password
     };
 
@@ -93,7 +94,7 @@ export class PhoneAuthApiService {
   }): Observable<PhoneWorkflowResponse> {
     return this.api
       .post<unknown>('/auth/phone/password-reset/confirm', {
-        phoneNumber: request.phoneNumber.trim(),
+        phoneNumber: normalizePhoneInput(request.phoneNumber),
         confirmationToken: request.confirmationToken,
         newPassword: request.newPassword
       })
@@ -184,7 +185,7 @@ export class PhoneAuthApiService {
 
   private sendChallenge(path: string, phoneNumber: string): Observable<PhoneWorkflowResponse> {
     return this.api
-      .post<unknown>(path, { phoneNumber: phoneNumber.trim() })
+      .post<unknown>(path, { phoneNumber: normalizePhoneInput(phoneNumber) })
       .pipe(map(response => normalizePhoneWorkflowResult(response)));
   }
 

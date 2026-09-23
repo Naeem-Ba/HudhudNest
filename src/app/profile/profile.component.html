@@ -126,6 +126,13 @@
         <div class="field-error" *ngIf="ph.invalid && (ph.touched || submitted)">⚠️ {{ 'PROFILE.PHONE_REQUIRED_AGENT' | translate }}</div>
       </div>
 
+      <!-- رقم تسجيل الدخول (منفصل عن رقم التواصل أعلاه): كانت صفحتا تغييره والتحقق منه بلا أي رابط. -->
+      <div class="field phone-security">
+        <label>{{ 'PROFILE.PHONE_SECURITY.TITLE' | translate }}</label>
+        <a routerLink="/profile/phone-change">{{ 'PROFILE.PHONE_SECURITY.CHANGE' | translate }}</a>
+        <a routerLink="/profile/phone-reverify">{{ 'PROFILE.PHONE_SECURITY.VERIFY' | translate }}</a>
+      </div>
+
       <!-- ✅ إضافة: نبذة تعريفية + عنوان/معلومات تواصل — تُعرض علنًا بالملف
            الشخصي العام (/users/:id) كي يعرّف صاحب الحساب بنفسه وعمله. -->
       <div class="about-section">
