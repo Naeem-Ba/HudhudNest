@@ -1,0 +1,72 @@
+.page { padding: clamp(1rem, 3vw, 2rem); }
+
+.page-header { margin-bottom: 1.25rem; }
+.page-header h1 { margin: 0 0 .3rem; color: var(--navy); font-family: var(--font-display); font-size: clamp(1.5rem, 2.6vw, 2rem); }
+.page-header p { margin: 0; color: var(--gray-500); }
+
+.panel-toolbar { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.filters { display: flex; gap: .5rem; }
+.filters select { border: 1px solid var(--border); border-radius: var(--r-md); padding: .5rem .8rem; background: var(--surface); font: inherit; }
+
+/* ─── Buttons ─── */
+.btn { border-radius: var(--r-sm); padding: .5rem .9rem; font-size: var(--text-sm, .9rem); cursor: pointer; border: 1px solid transparent; font-weight: 600; }
+.btn--sm { padding: .35rem .7rem; font-size: .8rem; }
+.btn--primary { background: var(--navy); color: #fff; }
+.btn--outline { background: var(--surface); border-color: var(--border); color: var(--navy); }
+.btn--success { background: var(--success-soft, #dcfce7); color: var(--success, #16a34a); }
+.btn--danger { background: var(--danger-soft); color: var(--danger); }
+.btn:disabled { opacity: .6; cursor: not-allowed; }
+
+/* ─── Release form ─── */
+.release-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg, 16px);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.release-form h3 { margin: 0 0 1rem; color: var(--navy); }
+
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+.field { display: flex; flex-direction: column; gap: .3rem; font-size: .85rem; color: var(--gray-600); }
+.field--wide { grid-column: 1 / -1; }
+.field--checkbox { flex-direction: row; align-items: center; gap: .5rem; }
+.field input, .field select, .field textarea {
+  border: 1px solid var(--border); border-radius: var(--r-sm); padding: .5rem .7rem; background: var(--surface); font: inherit; font-size: 16px;
+}
+.field-error { color: var(--danger); font-size: .78rem; }
+.form-actions { display: flex; gap: .6rem; margin-top: 1rem; }
+
+/* ─── Releases list (same responsive row-grid pattern as admin-marketing's
+   leads/surveys tables — collapses to a labeled card per row under 980px) ─── */
+.releases-table { display: flex; flex-direction: column; gap: .5rem; }
+.row {
+  display: grid;
+  grid-template-columns: .8fr .8fr 1fr .8fr 1fr 1.7fr;
+  gap: 1rem;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: .85rem 1rem;
+}
+.row--head { background: transparent; border: 0; color: var(--gray-500); font-size: .8rem; font-weight: 600; padding: 0 1rem; }
+.row__actions { display: flex; flex-wrap: wrap; gap: .4rem; }
+.ltr-inline { direction: ltr; text-align: right; }
+
+.status-chip {
+  display: inline-flex; align-items: center; background: var(--gray-100); color: var(--gray-600);
+  border-radius: var(--r-pill); padding: .15rem .6rem; font-size: .72rem; font-weight: 600; white-space: nowrap;
+}
+.status-chip--active { background: var(--success-soft, #dcfce7); color: var(--success, #16a34a); }
+.status-chip--draft { background: var(--gray-100); color: var(--gray-500); }
+
+.pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1rem; }
+.pagination button { border: 1px solid var(--border); background: var(--surface); border-radius: var(--r-sm); width: 34px; height: 34px; cursor: pointer; }
+.pagination button:disabled { opacity: .4; cursor: not-allowed; }
+
+@media (max-width: 980px) {
+  .row { grid-template-columns: 1fr; }
+  .row--head { display: none; }
+  .row span[data-label]::before { content: attr(data-label) ": "; font-weight: 700; color: var(--gray-500); }
+}

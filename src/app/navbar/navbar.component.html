@@ -131,6 +131,15 @@
       >
         {{ 'NAVBAR.ADMIN_MARKETING' | translate }}
       </a>
+
+      <a
+        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
+        routerLink="/admin/app-updates"
+        routerLinkActive="navbar__link--active"
+        class="navbar__link"
+      >
+        {{ 'NAVBAR.ADMIN_APP_UPDATES' | translate }}
+      </a>
     </nav>
 
     <!-- Actions -->
@@ -657,6 +666,15 @@
         (click)="closeMobileMenu()"
       >
         {{ 'NAVBAR.ADMIN_MARKETING' | translate }}
+      </a>
+
+      <a
+        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
+        routerLink="/admin/app-updates"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ 'NAVBAR.ADMIN_APP_UPDATES' | translate }}
       </a>
 
       <!-- Mobile User Section -->
