@@ -3,7 +3,7 @@ import { Component, DestroyRef, inject } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { Observable, filter } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AuthService } from './core/auth/auth.service';
 import { LanguageService } from './core/services/language.service';
@@ -11,22 +11,54 @@ import { ToastContainerComponent } from './shared/ui/toast-container.component';
 import { NativeBackButtonService } from './core/services/native-back-button.service';
 import { ThemeService } from './core/services/theme.service';
 import { NotificationsApiService } from './core/api/notifications-api.service';
+import { AppUpdateService } from './core/api/app-update.service';
 import { ToastService } from './shared/services/toast.service';
 import { AttributionContextService } from './core/sharing/attribution-context.service';
+import { ConfirmModalComponent } from './shared/ui/confirm-modal.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, ToastContainerComponent],
+  imports: [RouterOutlet, CommonModule, ToastContainerComponent, ConfirmModalComponent, TranslateModule],
   template: `
     <router-outlet></router-outlet>
     <app-toast-container></app-toast-container>
+
+    <!-- App Update Management: تحديث اختياري — قابل للتجاهل، مرة واحدة لكل إقلاع تطبيق. -->
+    <app-confirm-modal
+      [open]="appUpdate.optionalUpdate() !== null"
+      [closeOnBackdrop]="true"
+      [title]="'APP_UPDATE.OPTIONAL_TITLE' | translate"
+      [confirmLabel]="'APP_UPDATE.UPDATE_NOW' | translate"
+      [cancelLabel]="'APP_UPDATE.LATER' | translate"
+      (confirmed)="onUpdateNow(appUpdate.optionalUpdate()?.storeUrl)"
+      (cancelled)="appUpdate.dismissOptionalUpdate()"
+    >
+      {{ appUpdate.optionalUpdate()?.releaseNotes || ('APP_UPDATE.OPTIONAL_BODY' | translate) }}
+    </app-confirm-modal>
+
+    <!-- تحديث إجباري — بلا زر إلغاء وبلا إغلاق بالنقر على الخلفية (hideCancel +
+         closeOnBackdrop=false)؛ إذا لم يكن رابط المتجر مضبوطاً بعد يبقى زر "تحديث الآن"
+         معطّلاً بدل أن يفعل لا شيء بصمت. -->
+    <app-confirm-modal
+      [open]="appUpdate.mandatoryUpdate() !== null"
+      [closeOnBackdrop]="false"
+      [hideCancel]="true"
+      [confirmDisabled]="!appUpdate.mandatoryUpdate()?.storeUrl"
+      [title]="'APP_UPDATE.MANDATORY_TITLE' | translate"
+      [confirmLabel]="'APP_UPDATE.UPDATE_NOW' | translate"
+      (confirmed)="onUpdateNow(appUpdate.mandatoryUpdate()?.storeUrl)"
+    >
+      {{ 'APP_UPDATE.MANDATORY_BODY' | translate }}
+    </app-confirm-modal>
   `,
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
   readonly isLoggedIn$: Observable<boolean>;
   showAddButton = false;
+
+  protected readonly appUpdate = inject(AppUpdateService);
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly notificationsApi = inject(NotificationsApiService);
@@ -44,6 +76,7 @@ export class AppComponent {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
     this.languageService.getCurrent();
     nativeBackButton.initialize();
+    this.appUpdate.initialize();
     void themeService; // يُطبَّق الوضع الداكن/الفاتح فور إنشاء الخدمة (constructor)
 
     this.router.events
@@ -108,5 +141,9 @@ export class AppComponent {
         const key = reason === 'revoked' ? 'AUTH.ERRORS.SESSION_REVOKED' : 'AUTH.ERRORS.SESSION_EXPIRED';
         this.toast.info(this.translate.instant(key));
       });
+  }
+
+  protected onUpdateNow(storeUrl: string | null | undefined): void {
+    void this.appUpdate.openStore(storeUrl);
   }
 }

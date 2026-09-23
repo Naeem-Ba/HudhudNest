@@ -2256,5 +2256,13 @@
         "SERVICEVERIFIED": "Service verifiziert"
       }
     }
+  },
+  "APP_UPDATE": {
+    "OPTIONAL_TITLE": "Ein neues Update ist verfügbar",
+    "OPTIONAL_BODY": "Die neue Version enthält Verbesserungen und Fehlerbehebungen.",
+    "MANDATORY_TITLE": "App-Update erforderlich",
+    "MANDATORY_BODY": "Diese App-Version wird nicht mehr unterstützt. Bitte aktualisieren Sie, um fortzufahren.",
+    "UPDATE_NOW": "Jetzt aktualisieren",
+    "LATER": "Später"
   }
 }
