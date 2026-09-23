@@ -36,7 +36,7 @@
 
 import { shouldProxyPath, buildTargetUrl, pickForwardableRequestHeaders, buildProxiedResponseHeaders, fetchWithTimeout, BACKEND_FETCH_TIMEOUT_MS } from './lib/auth-proxy.mjs';
 
-const DEFAULT_API_BASE_URL = 'https://wohnungen-api.onrender.com/api';
+const DEFAULT_API_BASE_URL = 'https://propertyapi-api.onrender.com/api';
 
 export default async (request, context) => {
   const url = new URL(request.url);

@@ -8,7 +8,7 @@ import {
   readSiteUrlFromProcessEnv
 } from './environment.model';
 
-const apiBaseUrl = readApiUrlFromProcessEnv() || 'https://wohnungen-api.onrender.com/api';
+const apiBaseUrl = readApiUrlFromProcessEnv() || 'https://propertyapi-api.onrender.com/api';
 
 // هدهد نيست (HudhudNest) — النطاق العام الحقيقي لا يزال realestateworld.world حتى إشعار
 // آخر (لم يُعَد تسجيله بعد إعادة التسمية)؛ raiseNavigation في

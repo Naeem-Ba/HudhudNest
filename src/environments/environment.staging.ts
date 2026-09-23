@@ -9,7 +9,7 @@ import {
 } from './environment.model';
 
 // Security audit finding (2026-09-18): this used to fall back to the PRODUCTION backend
-// (`wohnungen-api.onrender.com`, the same default environment.prod.ts uses) whenever API_URL
+// (`propertyapi-api.onrender.com`, the same default environment.prod.ts uses) whenever API_URL
 // wasn't injected at build time. That's not a harmless config gap -- a Staging bundle silently
 // talking to the real Production API means any write a tester performs (bookings, listing
 // edits, account changes) lands in real user data with no visual difference from a correctly

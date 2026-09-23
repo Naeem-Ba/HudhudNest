@@ -15,10 +15,10 @@ function fakeEnv(overrides: Partial<AppEnvironment>): AppEnvironment {
   return {
     production: false,
     environmentName: 'production',
-    baseUrl: 'https://wohnungen-api.onrender.com',
-    apiBaseUrl: 'https://wohnungen-api.onrender.com/api',
-    apiUrl: 'https://wohnungen-api.onrender.com/api',
-    signalRUrl: 'https://wohnungen-api.onrender.com/notificationHub',
+    baseUrl: 'https://propertyapi-api.onrender.com',
+    apiBaseUrl: 'https://propertyapi-api.onrender.com/api',
+    apiUrl: 'https://propertyapi-api.onrender.com/api',
+    signalRUrl: 'https://propertyapi-api.onrender.com/notificationHub',
     siteUrl: 'https://realestateworld.world',
     googleClientId: '',
     appleClientId: '',
@@ -58,6 +58,6 @@ describe('resolveAuthApiBaseUrl', () => {
     spyOn(Capacitor, 'isNativePlatform').and.returnValue(true);
     const env = fakeEnv({ environmentName: 'production' });
 
-    expect(resolveAuthApiBaseUrl(env)).toBe('https://wohnungen-api.onrender.com/api');
+    expect(resolveAuthApiBaseUrl(env)).toBe('https://propertyapi-api.onrender.com/api');
   });
 });
