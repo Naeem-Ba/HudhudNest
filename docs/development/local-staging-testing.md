@@ -17,7 +17,7 @@ CORS policy only allows the deployed Production frontend origin, so a request fr
 looks like a Staging misconfiguration.
 
 The real deployed Staging site
-(`https://staging--bizorealestateworld.netlify.app`) does not have this problem: Netlify sets
+(`https://staging--hudhudnest.netlify.app`) does not have this problem: Netlify sets
 `API_URL` for that branch deploy via a per-branch environment variable override (see
 `netlify.toml` and the Netlify dashboard's branch-scoped env vars), so its build always points
 at the real Staging backend (`https://propertyapi-staging-api.onrender.com/api`).
