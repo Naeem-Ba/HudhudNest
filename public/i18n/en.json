@@ -2256,5 +2256,13 @@
         "SERVICEVERIFIED": "Service verified"
       }
     }
+  },
+  "APP_UPDATE": {
+    "OPTIONAL_TITLE": "A new update is available",
+    "OPTIONAL_BODY": "The new version includes improvements and fixes.",
+    "MANDATORY_TITLE": "App update required",
+    "MANDATORY_BODY": "This version of the app is no longer supported. Please update to continue.",
+    "UPDATE_NOW": "Update now",
+    "LATER": "Later"
   }
 }
