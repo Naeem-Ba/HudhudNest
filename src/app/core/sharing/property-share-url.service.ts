@@ -49,7 +49,7 @@ export class PropertyShareUrlService {
 
   /**
    * Builds the canonical public URL for a property, e.g.
-   * "https://realestateworld.world/properties/{id}".
+   * "https://hudhudnest.com/properties/{id}".
    *
    * Returns null when the property isn't shareable (see canShare) instead of ever returning a
    * partial/best-effort link — callers (SocialShareService, MetaService, the share button) must

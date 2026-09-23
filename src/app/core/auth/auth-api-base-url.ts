@@ -4,7 +4,7 @@ import { AppEnvironment } from '../../../environments/environment.model';
 /**
  * Production incident (2026-09): refresh_token (and the CSRF cookies backing
  * CookieCsrfProtectionMiddleware) are third-party cookies whenever the deployed web app
- * (realestateworld.world / the Netlify staging subdomain) calls the backend directly at its
+ * (hudhudnest.com / the Netlify staging subdomain) calls the backend directly at its
  * own onrender.com origin — a different registrable domain. Chrome/Edge were fixed with the
  * Partitioned (CHIPS) cookie attribute (RefreshTokenCookie.cs), but Safari has no CHIPS
  * exception and drops third-party cookies unconditionally regardless of any cookie attribute
@@ -23,7 +23,7 @@ import { AppEnvironment } from '../../../environments/environment.model';
  *   path to resolve against.
  * - The native Capacitor app (`Capacitor.isNativePlatform()`): it bundles this exact same
  *   production build locally and runs it from a `capacitor://`/`https://localhost` WebView
- *   origin, not from realestateworld.world — there is no Netlify in front of it to proxy a
+ *   origin, not from hudhudnest.com — there is no Netlify in front of it to proxy a
  *   relative path, so this must keep calling the real backend directly, exactly as before.
  * - Staging (`environmentName === 'staging'`), for now: netlify.toml's own doc comment
  *   explains why — its [[redirects]] rules are currently unscoped (a `context` field on an

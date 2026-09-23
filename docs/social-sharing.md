@@ -57,7 +57,7 @@ renders whatever that list contains.
 
 `PropertyShareUrlService.getPropertyPublicUrl(property)` is the **only** place in the whole
 frontend that builds a property's public URL
-(`https://realestateworld.world/properties/{id}`). Every provider, `PropertyMetaService`, and the
+(`https://hudhudnest.com/properties/{id}`). Every provider, `PropertyMetaService`, and the
 Netlify Edge Function all either call it directly or receive its output — none of them build or
 repeat that URL themselves. It returns `null` (never a best-effort/partial URL) for a property
 that isn't public right now, and every caller treats `null` as "hide/disable sharing", not as
@@ -71,7 +71,7 @@ If a `slug`/`publicId` field is added later, `PropertyShareUrlService.getPropert
 the one function that needs to change — nothing else.
 
 The site origin comes from `environment.siteUrl` (production:
-`https://realestateworld.world`, staging: `https://staging--bizorealestateworld.netlify.app`),
+`https://hudhudnest.com`, staging: `https://staging--hudhudnest.netlify.app`),
 configurable via a `SITE_URL` build-time env var exactly like `API_URL`/`BASE_URL` already are
 (see `tools/generate-env.mjs`). Local dev has no public domain, so it deliberately falls back to
 `window.location.origin` at runtime rather than a hardcoded default.

@@ -13,7 +13,7 @@ export default defineConfig({
   workers: 1,
   reporter: [['list']],
   use: {
-    baseURL: process.env.E2E_BASE_URL || 'https://staging--bizorealestateworld.netlify.app',
+    baseURL: process.env.E2E_BASE_URL || 'https://staging--hudhudnest.netlify.app',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     // Only relevant when E2E_BASE_URL points at a local `ng serve` (self-signed dev cert);

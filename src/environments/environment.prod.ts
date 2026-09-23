@@ -13,15 +13,15 @@ const apiBaseUrl = readApiUrlFromProcessEnv() || 'https://wohnungen-api.onrender
 // عقار تيك / Real Estate World — النطاق العام الحقيقي (raiseNavigation في
 // capacitor.config.ts يستخدم نفس النطاق). هذا هو النطاق الذي تُبنى عليه روابط
 // المشاركة العامة (canonical) — راجع PropertyShareUrlService.
-const siteUrl = readSiteUrlFromProcessEnv() || 'https://realestateworld.world';
+const siteUrl = readSiteUrlFromProcessEnv() || 'https://hudhudnest.com';
 
 // يجب أن يطابق نطاق appleRedirectUri أحد الأنماط المدرجة ضمن
 // server.allowNavigation في capacitor.config.ts، وإلا فسيرفض الغلاف
 // الأصلي (Android/iOS WebView) التنقل إلى صفحة الرجوع بعد مصادقة Apple.
-// النطاق الحالي المدرج هناك هو realestateworld.world (وليس أي نطاق نتليفاي
+// النطاق الحالي المدرج هناك هو hudhudnest.com (وليس أي نطاق نتليفاي
 // سابق)، لذلك هو الافتراضي الصحيح هنا.
 const appleRedirectUri =
-  readProcessEnv('APPLE_REDIRECT_URI') || 'https://realestateworld.world/auth/apple/callback';
+  readProcessEnv('APPLE_REDIRECT_URI') || 'https://hudhudnest.com/auth/apple/callback';
 
 export const environment: AppEnvironment = createAppEnvironment({
   production: true,

@@ -18,8 +18,8 @@ const config: CapacitorConfig = {
     cleartext: allowCleartext,
 
     allowNavigation: [
-      'realestateworld.world',
-      '*.realestateworld.world',
+      'hudhudnest.com',
+      '*.hudhudnest.com',
     ],
   },
 
