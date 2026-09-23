@@ -17,7 +17,7 @@ interface CsrfTokenResponse {
  *
  * Angular's built-in withXsrfConfiguration (reading XSRF-TOKEN via document.cookie) cannot
  * fix this: in deployed environments the SPA and the API sit on hostnames that share no
- * registrable domain (e.g. realestateworld.world vs. onrender.com), so document.cookie on
+ * registrable domain (e.g. hudhudnest.com vs. onrender.com), so document.cookie on
  * the SPA's origin can never see a cookie set by the API's origin, no matter what Domain
  * attribute is or isn't set on it. Only local dev (both on `localhost`, different ports)
  * would work that way — which is exactly why this bug was never caught locally.

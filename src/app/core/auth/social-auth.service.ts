@@ -25,7 +25,7 @@
 //
 // [BUG-21 / 🔴 حرج، 2026-08-31] استبدال prompt() (One Tap) بزر
 // renderButton() مخفي + نقرة برمجية — التشخيص الفعلي (استُنسخ حياً على
-// realestateworld.world، لا افتراضاً):
+// hudhudnest.com، لا افتراضاً):
 //   - Chrome (v151+) يُصدر تحذيراً صريحاً في الـ console: "one of the
 //     Google One Tap prompt UI status methods... may stop functioning
 //     when FedCM becomes mandatory".
