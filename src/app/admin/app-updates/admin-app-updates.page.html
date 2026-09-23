@@ -1,0 +1,206 @@
+<section class="page" dir="rtl">
+  <header class="page-header">
+    <div>
+      <h1>إدارة إصدارات التطبيق</h1>
+      <p>الإصدار الحالي والحد الأدنى المدعوم لكل منصة — يحدّدان متى يظهر تحديث اختياري أو إجباري للمستخدمين.</p>
+    </div>
+  </header>
+
+  <div class="panel-toolbar">
+    <button type="button" class="btn btn--primary" (click)="openCreateForm()">
+      + إصدار جديد
+    </button>
+
+    <div class="filters">
+      <select [(ngModel)]="platformFilter" (ngModelChange)="applyFilters()">
+        <option value="">كل المنصات</option>
+        <option *ngFor="let platform of platforms" [value]="platform">{{ platformLabel(platform) }}</option>
+      </select>
+
+      <select [(ngModel)]="enabledFilter" (ngModelChange)="applyFilters()">
+        <option value="">كل الحالات</option>
+        <option value="true">مُفعَّل فقط</option>
+        <option value="false">معطَّل فقط</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- نموذج إنشاء/تعديل إصدار -->
+  <form *ngIf="showForm()" class="release-form" [formGroup]="form" (ngSubmit)="save()">
+    <h3>{{ editingId() ? 'تعديل الإصدار' : 'إصدار جديد' }}</h3>
+
+    <div class="form-grid">
+      <label class="field">
+        <span>المنصة *</span>
+        <select formControlName="platform">
+          <option *ngFor="let platform of platforms" [value]="platform">{{ platformLabel(platform) }}</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>رقم الإصدار (major.minor.patch) *</span>
+        <input type="text" formControlName="version" placeholder="1.4.0" />
+        <small class="field-error" *ngIf="form.controls.version.touched && form.controls.version.errors?.['required']">
+          رقم الإصدار مطلوب.
+        </small>
+        <small class="field-error" *ngIf="form.controls.version.touched && form.controls.version.errors?.['versionFormat']">
+          الصيغة يجب أن تكون major.minor.patch، مثل 1.4.0.
+        </small>
+      </label>
+
+      <label class="field">
+        <span>الحد الأدنى للإصدار المدعوم *</span>
+        <input type="text" formControlName="minimumSupportedVersion" placeholder="1.2.0" />
+        <small class="field-error" *ngIf="form.controls.minimumSupportedVersion.touched && form.controls.minimumSupportedVersion.errors?.['required']">
+          الحد الأدنى للإصدار مطلوب.
+        </small>
+        <small class="field-error" *ngIf="form.controls.minimumSupportedVersion.touched && form.controls.minimumSupportedVersion.errors?.['versionFormat']">
+          الصيغة يجب أن تكون major.minor.patch، مثل 1.2.0.
+        </small>
+        <small class="field-error" *ngIf="form.touched && form.errors?.['minimumAboveVersion']">
+          الحد الأدنى للإصدار المدعوم لا يمكن أن يكون أحدث من رقم الإصدار نفسه.
+        </small>
+      </label>
+
+      <label class="field">
+        <span>تاريخ الإصدار *</span>
+        <input type="date" formControlName="releaseDate" />
+      </label>
+
+      <label class="field field--wide">
+        <span>رابط المتجر (اختياري — يبقى فارغاً حتى يُنشر التطبيق فعلياً)</span>
+        <input type="url" formControlName="storeUrl" placeholder="https://play.google.com/store/apps/details?id=..." />
+        <small class="field-error" *ngIf="form.controls.storeUrl.touched && form.controls.storeUrl.errors?.['storeUrl']">
+          يجب أن يكون رابطاً صحيحاً من نوع http أو https.
+        </small>
+      </label>
+
+      <label class="field field--wide">
+        <span>ملاحظات الإصدار (عربي)</span>
+        <textarea formControlName="releaseNotesAr" rows="2" maxlength="4000"></textarea>
+      </label>
+
+      <label class="field field--wide">
+        <span>Release notes (English)</span>
+        <textarea formControlName="releaseNotesEn" rows="2" maxlength="4000"></textarea>
+      </label>
+
+      <label class="field field--wide">
+        <span>Release Notes (Deutsch)</span>
+        <textarea formControlName="releaseNotesDe" rows="2" maxlength="4000"></textarea>
+      </label>
+
+      <label class="field field--checkbox" *ngIf="!editingId()">
+        <input type="checkbox" formControlName="isEnabled" />
+        <span>تفعيل هذا الإصدار فور الإنشاء</span>
+      </label>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn--primary" [disabled]="saving()">
+        {{ saving() ? 'جارٍ الحفظ...' : 'حفظ' }}
+      </button>
+      <button type="button" class="btn btn--outline" (click)="closeForm()">إلغاء</button>
+    </div>
+  </form>
+
+  <app-loading-spinner *ngIf="loading()" label="جارٍ التحميل..."></app-loading-spinner>
+
+  <app-empty-state
+    *ngIf="!loading() && releases().length === 0"
+    icon="📦"
+    title="لا توجد إصدارات بعد"
+    message="أنشئ أول إصدار لمنصة Android أو iOS أو Web."
+  ></app-empty-state>
+
+  <div class="releases-table" *ngIf="!loading() && releases().length > 0">
+    <div class="row row--head">
+      <span>المنصة</span>
+      <span>الإصدار</span>
+      <span>الحد الأدنى المدعوم</span>
+      <span>الحالة</span>
+      <span>تاريخ الإصدار</span>
+      <span>إجراءات</span>
+    </div>
+
+    <div class="row" *ngFor="let release of releases()">
+      <span data-label="المنصة">{{ platformLabel(release.platform) }}</span>
+      <span data-label="الإصدار" class="ltr-inline">{{ release.version }}</span>
+      <span data-label="الحد الأدنى المدعوم" class="ltr-inline">{{ release.minimumSupportedVersion }}</span>
+      <span data-label="الحالة">
+        <span class="status-chip" [class.status-chip--active]="release.isEnabled" [class.status-chip--draft]="!release.isEnabled">
+          {{ release.isEnabled ? 'مُفعَّل' : 'معطَّل' }}
+        </span>
+      </span>
+      <span data-label="تاريخ الإصدار">{{ release.releaseDate | date:'mediumDate' }}</span>
+      <span data-label="إجراءات" class="row__actions">
+        <button type="button" class="btn btn--outline btn--sm" (click)="openEditForm(release)">
+          تعديل
+        </button>
+        <button
+          *ngIf="!release.isEnabled"
+          type="button"
+          class="btn btn--success btn--sm"
+          [disabled]="actionInFlightId() === release.id"
+          (click)="requestEnable(release)"
+        >
+          تفعيل
+        </button>
+        <button
+          *ngIf="release.isEnabled"
+          type="button"
+          class="btn btn--outline btn--sm"
+          [disabled]="actionInFlightId() === release.id"
+          (click)="disable(release)"
+        >
+          تعطيل
+        </button>
+        <button
+          type="button"
+          class="btn btn--danger btn--sm"
+          [disabled]="actionInFlightId() === release.id"
+          (click)="requestDelete(release)"
+        >
+          حذف
+        </button>
+      </span>
+    </div>
+  </div>
+
+  <div class="pagination" *ngIf="!loading() && totalPages() > 1">
+    <button type="button" [disabled]="page() <= 1" (click)="goToPage(page() - 1)">‹</button>
+    <span>{{ page() }} / {{ totalPages() }}</span>
+    <button type="button" [disabled]="page() >= totalPages()" (click)="goToPage(page() + 1)">›</button>
+  </div>
+
+  <!-- تأكيد التفعيل: أي إصدار يُفعَّل قد يجبر مستخدمين حاليين على التحديث فوراً. -->
+  <app-confirm-modal
+    [open]="enablingRelease() !== null"
+    title="تأكيد تفعيل الإصدار"
+    confirmLabel="تفعيل"
+    cancelLabel="إلغاء"
+    (confirmed)="confirmEnable()"
+    (cancelled)="cancelEnable()"
+  >
+    <p *ngIf="enablingRelease() as release">
+      سيصبح هذا الإصدار ({{ release.version }}) هو الإصدار الحالي لمنصة {{ platformLabel(release.platform) }}.
+      أي مستخدم على إصدار أقل من <strong class="ltr-inline">{{ release.minimumSupportedVersion }}</strong>
+      سيُطلب منه التحديث فوراً للمتابعة. هل أنت متأكد؟
+    </p>
+  </app-confirm-modal>
+
+  <!-- تأكيد الحذف (ناعم — لا يُحذف السجل فعلياً، فقط يُخفى). -->
+  <app-confirm-modal
+    [open]="deletingRelease() !== null"
+    title="تأكيد حذف الإصدار"
+    confirmLabel="حذف"
+    [danger]="true"
+    cancelLabel="إلغاء"
+    (confirmed)="confirmDelete()"
+    (cancelled)="cancelDelete()"
+  >
+    <p *ngIf="deletingRelease() as release">
+      هل أنت متأكد من حذف إصدار {{ release.version }} لمنصة {{ platformLabel(release.platform) }}؟
+    </p>
+  </app-confirm-modal>
+</section>

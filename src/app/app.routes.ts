@@ -417,6 +417,16 @@ export const routes: Routes = [
         .then(m => m.AdminMarketingPage)
   },
 
+  // App Update Management (Phase 3 — admin dashboard): إدارة إصدارات التطبيق لكل
+  // منصة. AdminAppReleasesController — [Authorize(Roles = "Admin")] على كل نقطة.
+  {
+    path: 'admin/app-updates',
+    canActivate: [AdminGuard],
+    loadComponent: () =>
+      import('./admin/app-updates/admin-app-updates.page')
+        .then(m => m.AdminAppUpdatesPage)
+  },
+
   {
     path: 'messages/:propertyId',
     canActivate: [AuthGuard],
