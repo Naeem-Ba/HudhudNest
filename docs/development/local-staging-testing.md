@@ -11,7 +11,7 @@ exactly like a Staging CORS bug but isn't one.
 environment variable (via `tools/generate-env.mjs`, which runs automatically before every
 `ng serve`/`ng build` as `npm run generate:env`). If `API_URL` isn't set in your shell when
 you run `start:staging`, the fallback baked into `environment.staging.ts` is
-`https://propertyapi-api.onrender.com/api` — the real **Production** API, not Staging. Production's
+`https://wohnungen-api.onrender.com/api` — the real **Production** API, not Staging. Production's
 CORS policy only allows the deployed Production frontend origin, so a request from
 `http://localhost:4200` is correctly blocked, and the browser console shows a CORS error that
 looks like a Staging misconfiguration.

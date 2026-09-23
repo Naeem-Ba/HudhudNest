@@ -35,22 +35,22 @@ test('shouldProxyPath rejects unrelated paths', () => {
 
 test('buildTargetUrl strips the apiBaseUrl\'s trailing /api and appends the full incoming path', () => {
   assert.equal(
-    buildTargetUrl('/api/auth/login', '', 'https://propertyapi-api.onrender.com/api'),
-    'https://propertyapi-api.onrender.com/api/auth/login'
+    buildTargetUrl('/api/auth/login', '', 'https://wohnungen-api.onrender.com/api'),
+    'https://wohnungen-api.onrender.com/api/auth/login'
   );
 });
 
 test('buildTargetUrl preserves the query string', () => {
   assert.equal(
-    buildTargetUrl('/api/security/csrf-token', '?x=1', 'https://propertyapi-api.onrender.com/api'),
-    'https://propertyapi-api.onrender.com/api/security/csrf-token?x=1'
+    buildTargetUrl('/api/security/csrf-token', '?x=1', 'https://wohnungen-api.onrender.com/api'),
+    'https://wohnungen-api.onrender.com/api/security/csrf-token?x=1'
   );
 });
 
 test('buildTargetUrl tolerates a trailing slash on apiBaseUrl', () => {
   assert.equal(
-    buildTargetUrl('/api/auth/refresh', '', 'https://propertyapi-api.onrender.com/api/'),
-    'https://propertyapi-api.onrender.com/api/auth/refresh'
+    buildTargetUrl('/api/auth/refresh', '', 'https://wohnungen-api.onrender.com/api/'),
+    'https://wohnungen-api.onrender.com/api/auth/refresh'
   );
 });
 
