@@ -59,6 +59,8 @@
         <app-form-error [control]="detailsForm.controls.code" [submitted]="submitted()"></app-form-error>
       </div>
 
+      <p class="field-hint no-code-hint">{{ 'AUTH.PHONE_NO_CODE_HINT' | translate }}</p>
+
       <div class="form-row">
         <div class="form-group">
           <label for="firstName">{{ 'AUTH.FIRST_NAME' | translate }}</label>

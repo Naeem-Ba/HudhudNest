@@ -8,6 +8,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { ProfileService, UserProfile } from '../core/api/profile.service';
 import { AuthService } from '../core/auth/auth.service';
+import { RouterLink } from '@angular/router';
 import { PhoneAuthApiService } from '../core/auth/phone-auth-api.service';
 import { UrlService } from '../core/services/url.service';
 import { ToastService } from '../shared/services/toast.service';
@@ -23,6 +24,7 @@ import { ConfirmModalComponent } from '../shared/ui/confirm-modal.component';
     CommonModule,
     FormsModule,
     TranslateModule,
+    RouterLink,
     LoadingSpinnerComponent,
     ImageFallbackDirective,
     ConfirmModalComponent

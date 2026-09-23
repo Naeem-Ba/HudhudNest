@@ -164,17 +164,49 @@ describe('LoginComponent', () => {
 
   describe('onPhoneLogin — رقم الهاتف', () => {
     it('✅ رقم/كلمة سر خاطئة تعطي نفس الرسالة العامة (بلا كشف عن وجود الحساب)', () => {
-      phoneAuthApi.login.and.returnValue(throwError(() => httpError(401)));
+      phoneAuthApi.login.and.returnValue(throwError(() => httpError(400, { code: 'PHONE_AUTH_FAILED' })));
       component.phoneLoginNumber = '+963911234567';
       component.phoneLoginPassword = 'badpw';
 
       component.onPhoneLogin(fakeForm());
 
-      expect(component.message).toBe('AUTH.ERRORS.INVALID_CREDENTIALS');
+      // نص خاص بالهاتف (لا يذكر البريد الإلكتروني) وموحّد لكل حالات 400 PHONE_AUTH_FAILED.
+      expect(component.message).toBe('AUTH.ERRORS.PHONE_INVALID_CREDENTIALS');
+    });
+
+    it('✅ تجاوز المعدّل وانقطاع الشبكة وخطأ الخادم والحساب غير المتاح لا تُعرض كأن كلمة السر خاطئة', () => {
+      const cases: [any, string][] = [
+        [httpError(429), 'AUTH.ERRORS.RATE_LIMITED'],
+        [httpError(0), 'AUTH.ERRORS.NETWORK_ERROR'],
+        [httpError(500), 'AUTH.ERRORS.SERVER_ERROR'],
+        [httpError(403), 'API_ERRORS.FORBIDDEN'],
+        [httpError(400, { code: 'ACCOUNT_UNAVAILABLE' }), 'AUTH.ERRORS.ACCOUNT_UNAVAILABLE']
+      ];
+
+      for (const [error, expected] of cases) {
+        phoneAuthApi.login.and.returnValue(throwError(() => error));
+        component.phoneLoginNumber = '+963911234567';
+        component.phoneLoginPassword = FAKE_TEST_CREDENTIAL;
+        component.loading = false;
+
+        component.onPhoneLogin(fakeForm());
+
+        expect(component.message).withContext(String(error.status)).toBe(expected);
+      }
+    });
+
+    it('✅ الصيغة المحلية 09xxxxxxxx تُحوَّل إلى +9639xxxxxxxx قبل الإرسال', () => {
+      phoneAuthApi.login.and.returnValue(throwError(() => httpError(400, { code: 'PHONE_AUTH_FAILED' })));
+      component.phoneLoginNumber = '0911 234 567';
+      component.phoneLoginPassword = FAKE_TEST_CREDENTIAL;
+
+      component.onPhoneLogin(fakeForm());
+
+      expect(phoneAuthApi.login).toHaveBeenCalledWith({ phoneNumber: '+963911234567', password: FAKE_TEST_CREDENTIAL });
     });
 
     it('✅ رقم هاتف بصيغة غير صحيحة يُرفض قبل إرسال أي طلب', () => {
-      component.phoneLoginNumber = '0911234567'; // لا يبدأ بـ +
+      component.phoneLoginNumber = '12345'; // لا يمكن تحويله إلى E.164
       component.phoneLoginPassword = FAKE_TEST_CREDENTIAL;
 
       component.onPhoneLogin(fakeForm());

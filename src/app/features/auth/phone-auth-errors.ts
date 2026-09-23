@@ -1,7 +1,6 @@
 import { TranslateService } from '@ngx-translate/core';
 
-/** نفس النمط المستخدم في LoginComponent للتحقق من رقم الهاتف بصيغة E.164. */
-export const PHONE_E164_PATTERN = /^\+[1-9]\d{7,14}$/;
+export { PHONE_E164_PATTERN } from '../../core/auth/phone-number';
 
 /**
  * تعيين أكواد الأخطاء الموثّقة في
@@ -11,6 +10,7 @@ export const PHONE_E164_PATTERN = /^\+[1-9]\d{7,14}$/;
 const ERROR_CODE_TO_KEY: Record<string, string> = {
   PHONE_ALREADY_REGISTERED: 'AUTH.ERRORS.PHONE_ALREADY_REGISTERED',
   PHONE_AUTH_FAILED: 'AUTH.ERRORS.PHONE_AUTH_FAILED',
+  ACCOUNT_UNAVAILABLE: 'AUTH.ERRORS.ACCOUNT_UNAVAILABLE',
   PHONE_NUMBER_INVALID: 'AUTH.ERRORS.PHONE_INVALID',
   PHONE_NUMBER_ALREADY_IN_USE: 'AUTH.ERRORS.PHONE_ALREADY_REGISTERED',
   PASSWORD_POLICY_FAILED: 'AUTH.ERRORS.PASSWORD_POLICY_FAILED',
@@ -60,4 +60,33 @@ export function getPhoneWorkflowErrorMessage(
   const backendMessage = response?.error?.message ?? response?.error?.Message;
 
   return backendMessage || translate.instant(fallbackKey);
+}
+
+/**
+ * Message for a failed phone + password login. Lockout and unknown numbers must stay
+ * indistinguishable from a wrong password (all arrive as a 400 PHONE_AUTH_FAILED), but a rate
+ * limit, a network failure, a server error or a blocked account are different situations the
+ * person can act on, so they no longer read as "incorrect credentials".
+ */
+export function getPhoneLoginErrorMessage(translate: TranslateService, error: unknown): string {
+  const response = error as { status?: number; error?: { code?: string; Code?: string } } | undefined;
+  const status = response?.status;
+  const code = response?.error?.code ?? response?.error?.Code;
+
+  if (status === 0) {
+    return translate.instant('AUTH.ERRORS.NETWORK_ERROR');
+  }
+  if (status === 429) {
+    return translate.instant('AUTH.ERRORS.RATE_LIMITED');
+  }
+  if (typeof status === 'number' && status >= 500) {
+    return translate.instant('AUTH.ERRORS.SERVER_ERROR');
+  }
+  if (code === 'ACCOUNT_UNAVAILABLE') {
+    return translate.instant(ERROR_CODE_TO_KEY['ACCOUNT_UNAVAILABLE']);
+  }
+  if (status === 403) {
+    return translate.instant('API_ERRORS.FORBIDDEN');
+  }
+  return translate.instant('AUTH.ERRORS.PHONE_INVALID_CREDENTIALS');
 }
