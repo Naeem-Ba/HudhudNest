@@ -85,6 +85,9 @@ plugins: { SystemBars: { insetsHandling: 'css' } }
 - `cleartext` defaults to `false` and is only enabled via an explicit
   `CAPACITOR_ALLOW_CLEARTEXT=true` env var for local dev — correct, no plaintext HTTP in
   production builds. **Not changed.**
+  _Correction 2026-09-24:_ the Capacitor setting was right, but the Android
+  `network_security_config.xml` still allowed HTTP to `nimobizo-001-site1.itempurl.com` (a legacy
+  domain the app never uses). Removed; the file now sets `base-config cleartextTrafficPermitted="false"`.
 - `SystemBars.insetsHandling: 'css'` — read the actual Capacitor 8.5.0 Android plugin
   source (`node_modules/@capacitor/android/.../SystemBars.java`) rather than trusting the
   config alone. It: listens for `WindowInsetsCompat`, injects `--safe-area-inset-{top,
