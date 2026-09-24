@@ -21,6 +21,8 @@ const ERROR_CODE_TO_KEY: Record<string, string> = {
   PHONE_REVERIFICATION_NOT_CONFIGURED: 'AUTH.ERRORS.PHONE_REVERIFICATION_NOT_CONFIGURED',
   RECENT_AUTHENTICATION_REQUIRED: 'AUTH.ERRORS.RECENT_AUTHENTICATION_REQUIRED',
   RATE_LIMITED: 'AUTH.ERRORS.OTP_RATE_LIMITED',
+  // The SMS provider refused or did not answer in time (send-otp); fell back to a generic message before.
+  SMS_FAILED: 'AUTH.ERRORS.OTP_SMS_FAILED',
 
   // Verify-time OTP outcomes (registration / reverification / phone-number-change) — the
   // backend used to collapse wrong/expired/already-used/too-many-attempts into one generic
@@ -53,8 +55,9 @@ export function getPhoneWorkflowErrorMessage(
   fallbackKey: string,
   httpError?: unknown
 ): string {
-  if (errorCode && ERROR_CODE_TO_KEY[errorCode]) {
-    return translate.instant(ERROR_CODE_TO_KEY[errorCode]);
+  const key = errorCode ? ERROR_CODE_TO_KEY[errorCode] : undefined;
+  if (key) {
+    return translate.instant(key);
   }
 
   const response = httpError as { error?: { message?: string; Message?: string } } | undefined;
@@ -84,7 +87,7 @@ export function getPhoneLoginErrorMessage(translate: TranslateService, error: un
     return translate.instant('AUTH.ERRORS.SERVER_ERROR');
   }
   if (code === 'ACCOUNT_UNAVAILABLE') {
-    return translate.instant(ERROR_CODE_TO_KEY['ACCOUNT_UNAVAILABLE']);
+    return translate.instant('AUTH.ERRORS.ACCOUNT_UNAVAILABLE');
   }
   if (status === 403) {
     return translate.instant('API_ERRORS.FORBIDDEN');

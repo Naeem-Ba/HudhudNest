@@ -189,7 +189,7 @@ export class NavbarComponent implements OnInit {
         // شبكة فعلي محتمل.
         this.serviceProviderService.refresh().subscribe({ error: () => undefined });
 
-        const imageUrl = this.urlService.buildWithCacheBuster(user.ImageUrl);
+        const imageUrl = this.urlService.buildWithCacheBuster(user.ImageUrl ?? undefined);
 
         if (imageUrl) {
           this.profileImageUrl = imageUrl;

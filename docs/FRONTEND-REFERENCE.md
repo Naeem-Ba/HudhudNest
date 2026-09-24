@@ -379,6 +379,8 @@ phone-register, phone-password-reset, phone-reverify, phone-change)، `property-
 ```bash
 npm run typecheck        # ✅ يمرّ
 npm run audit:frontend   # ✅ يمرّ — الرمز 0
+npm run typecheck:strict # ✅ يمرّ (مفروض في CI منذ 2026-09-24)
+npm run check:i18n       # ✅ مفاتيح الترجمة المستعملة كلها موجودة وar/en/de متطابقة
 npm run build:prod       # ✅ 597.55 kB خام / 159.44 kB منقول
 npm run postmerge:verify # check:env + audit + typecheck + build:prod
 ```
@@ -420,7 +422,7 @@ $ npm run audit:frontend
 | **🔴 تجديد الجلسة عبر CSRF** | ❌ **مكسور فعلياً** | §4.1 — يفشل لكل مستخدم كل ~30 دقيقة على أي نشر حالي |
 | **Service Worker / PWA** | ❌ غير مُفعَّل رغم وجود التبعية | `@angular/service-worker` في `package.json`، `provideServiceWorker` غائب من `app.config.ts` |
 | **تغطية الاختبارات تحت `features/`** | ⚠️ لم تُفحَص هذه الجلسة | `ng test` لم يُعَد تشغيله |
-| **`strict: false`** | ⚠️ مفتوح | بلا تغيير |
+| **`strict: false`** | 🟡 جزئيًا | `tsconfig.json` ما زال `strict: false`، لكن `typecheck:strict` يمرّ بلا أخطاء ومفروض في CI منذ 2026-09-24 |
 | **حجم الحزمة** | ✅ داخل الحدّ الفعلي | 597.55 kB مقابل حدّ 650 kB |
 | **واجهة الوكالات** | ❌ غير مبنيّة، والفجوة اتّسعت أكثر | نقل ملكية + شعار + دعوات — كلّها جديدة في الخلفية بلا أي مقابل هنا |
 | **حدّ إعلانات مرتبط بالخطة المختارة** | ✅ **الخلفية أنجزته** | الواجهة لا تحتاج تغييراً لتستفيد — `/plans` تُصدِّر `listingLimit` الآن |

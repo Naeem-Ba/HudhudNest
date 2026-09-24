@@ -41,8 +41,14 @@ jobs:
       - name: Environment validation
         run: npm run check:env
 
+      - name: Translation keys
+        run: npm run check:i18n
+
       - name: TypeScript check
         run: npm run typecheck
+
+      - name: TypeScript strict check
+        run: npm run typecheck:strict
 
       - name: Unit tests
         run: npm run test:ci

@@ -119,13 +119,13 @@ export class AuthService {
     }
 
     const roles = this.extractRoles(payload);
-    const id = String(payload.sub ?? payload.nameid ?? payload.userId ?? payload.UserId ?? '');
-    const email = String(payload.email ?? '');
+    const id = String(payload['sub'] ?? payload['nameid'] ?? payload['userId'] ?? payload['UserId'] ?? '');
+    const email = String(payload['email'] ?? '');
     // ⚠️ "name"/"unique_name" بالتوكن هو Identity UserName (عادةً نفس البريد)،
     // وليس حقل "الاسم المعروض" (DisplayName) القابل للتعديل من صفحة البروفايل.
     // هذه قيمة مؤقتة فورية فقط، تُستبدَل بالقيمة الحقيقية بمجرد وصول
     // hydrateProfile() أدناه — راجع تعليقها لتفاصيل الخلل الذي يُصلحه.
-    const displayName = String(payload.name ?? payload.unique_name ?? payload.email ?? '');
+    const displayName = String(payload['name'] ?? payload['unique_name'] ?? payload['email'] ?? '');
 
     this.currentUserSubject.next({
       id,

@@ -41,8 +41,8 @@ const VERSION_PATTERN = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 /** مقارنة رقمية (major.minor.patch)، أبداً كسلسلة نصية — "1.10.0" يجب أن يأتي بعد
  * "1.9.9" رغم أن '1' &lt; '9' أبجدياً. نفس القاعدة المطبَّقة في AppVersion على الباك-إند. */
 export function compareVersions(a: string, b: string): number {
-  const [aMajor, aMinor, aPatch] = a.split('.').map(Number);
-  const [bMajor, bMinor, bPatch] = b.split('.').map(Number);
+  const [aMajor = 0, aMinor = 0, aPatch = 0] = a.split('.').map(Number);
+  const [bMajor = 0, bMinor = 0, bPatch = 0] = b.split('.').map(Number);
   if (aMajor !== bMajor) return aMajor - bMajor;
   if (aMinor !== bMinor) return aMinor - bMinor;
   return aPatch - bPatch;
