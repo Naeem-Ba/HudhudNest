@@ -453,11 +453,14 @@
             </div>
           </div>
           <div class="form-section__body">
+            <button type="button" class="photo-guide-link" (click)="photoGuideOpen.set(true)">
+              <span aria-hidden="true">📷</span> {{ 'PHOTO_GUIDE.OPEN' | translate }}
+            </button>
             <div class="image-upload-zone"
               (dragover)="$event.preventDefault()"
               (drop)="$event.preventDefault()">
               <label class="image-upload-label">
-                <input type="file" multiple accept="image/jpeg,image/png,image/webp"
+                <input #photoInput type="file" multiple accept="image/jpeg,image/png,image/webp"
                   (change)="onFileSelected($event)" hidden />
                 <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
                   <rect x="1" y="1" width="38" height="38" rx="8" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"/>
@@ -471,6 +474,12 @@
                 <p>{{ 'wohnung_add.uploading' | translate }}</p>
               </div>
             </div>
+
+            <app-photo-guide-sheet
+              [open]="photoGuideOpen()"
+              [kind]="photoGuideKind"
+              (closed)="photoGuideOpen.set(false)"
+              (start)="photoGuideOpen.set(false); photoInput.click()" />
 
             <!-- الصور المحفوظة فعلياً على الخادم (وضع التعديل فقط) -->
             <div class="existing-images" *ngIf="isEditMode() && existingImages().length > 0">

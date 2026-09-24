@@ -605,3 +605,22 @@
   gap: .75rem;
   flex-wrap: wrap;
 }
+
+// Photography guide entry point: a light text link, not a permanent block in the form.
+.photo-guide-link {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-bottom: 8px;
+  padding: 0 4px;
+  background: none;
+  border: 0;
+  color: var(--gold-dark);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
