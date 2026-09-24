@@ -12,7 +12,9 @@
 
 import { Injectable, NgZone, signal } from '@angular/core';
 import { Observable, Subject, map } from 'rxjs';
-import * as signalR from '@microsoft/signalr';
+// Types only: the SignalR client (~55 kB) is loaded on the first connect(), which only happens for a
+// signed-in user, instead of being part of every visitor's initial bundle.
+import type * as signalR from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
 import { BackendApiService } from './backend-api.service';
 import { TokenStorageService } from '../services/token-storage.service';
@@ -22,6 +24,8 @@ import { NotificationItem, toNotificationItem } from '../models/notification.mod
 @Injectable({ providedIn: 'root' })
 export class NotificationsApiService {
   private hub?: signalR.HubConnection;
+  /** Set while the client library loads, so a second connect() in that window does not build a second hub. */
+  private connecting = false;
   private readonly realtimeSubject = new Subject<NotificationItem>();
 
   readonly realtime$ = this.realtimeSubject.asObservable();
@@ -84,10 +88,28 @@ export class NotificationsApiService {
   // ── SignalR ───────────────────────────────────────────────────────────────
 
   connect(): void {
-    if (this.hub) {
+    if (this.hub || this.connecting) {
       return;
     }
 
+    this.connecting = true;
+    this.connectionState.set('connecting');
+    import('@microsoft/signalr')
+      .then(signalR => {
+        this.connecting = false;
+        // disconnect() may have run while the library was loading.
+        if (this.connectionState() === 'connecting') {
+          this.startHub(signalR);
+        }
+      })
+      .catch(error => {
+        this.connecting = false;
+        this.zone.run(() => this.connectionState.set('error'));
+        console.warn('SignalR client failed to load', error);
+      });
+  }
+
+  private startHub(signalR: typeof import('@microsoft/signalr')): void {
     const hubUrl =
       environment.signalRUrl ||
       `${(environment.baseUrl || environment.apiUrl.replace(/\/api\/?$/, '')).replace(/\/$/, '')}/notificationHub`;
@@ -129,8 +151,6 @@ export class NotificationsApiService {
       this.hub = undefined;
     });
 
-    this.connectionState.set('connecting');
-
     this.hub.start()
       .then(() => this.zone.run(() => this.connectionState.set('connected')))
       .catch(error => {
@@ -143,7 +163,8 @@ export class NotificationsApiService {
   // ✅ إضافة: إعلام الـ Backend بقراءة إشعار عبر SignalR (مواصفات قسم 7.3)
   // الـ Backend يرد بإرسال "UnreadCountChanged" للعميل
   async invokeMarkRead(notificationId: string): Promise<void> {
-    if (this.hub?.state === signalR.HubConnectionState.Connected) {
+    // HubConnectionState is a string enum; comparing to its value keeps the library out of this path.
+    if (this.hub?.state === ('Connected' as signalR.HubConnectionState)) {
       await this.hub.invoke('MarkNotificationRead', notificationId);
     } else {
       // Fallback: HTTP إذا لم يكن SignalR متصلاً

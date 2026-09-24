@@ -381,13 +381,15 @@ npm run typecheck        # ✅ يمرّ
 npm run audit:frontend   # ✅ يمرّ — الرمز 0
 npm run typecheck:strict # ✅ يمرّ (مفروض في CI منذ 2026-09-24)
 npm run check:i18n       # ✅ مفاتيح الترجمة المستعملة كلها موجودة وar/en/de متطابقة
-npm run build:prod       # ✅ 597.55 kB خام / 159.44 kB منقول
+npm run build:prod       # ✅ 579.62 kB خام / 156.31 kB منقول (2026-09-24)
 npm run postmerge:verify # check:env + audit + typecheck + build:prod
 ```
 
 ### 11.1 ميزانية الحزمة — لا تحذير، زيادة طفيفة متوقَّعة
 
-**الحدّ الفعلي في `angular.json`: `maximumWarning: 650kB`, `maximumError: 1MB`.**
+**الحدّ الفعلي في `angular.json` (منذ 2026-09-24): `maximumWarning: 600kB`, `maximumError: 700kB`.** آخر قياس 2026-09-24: **579.62 kB خام / 156.31 kB منقول** (SignalR يُحمَّل كسولًا).
+
+_القياس التاريخي أدناه محفوظ للسياق:_
 القياس الفعلي هذه الجلسة:
 
 ```
