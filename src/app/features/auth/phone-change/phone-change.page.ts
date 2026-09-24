@@ -11,6 +11,10 @@ import { ToastService } from '../../../shared/services/toast.service';
 import { FormErrorComponent } from '../../../shared/ui/form-error.component';
 import { getPhoneWorkflowErrorMessage } from '../phone-auth-errors';
 import { phoneNumberValidator } from '../../../core/auth/phone-number';
+import { OtpChannelState } from '../../../core/auth/otp-channel-state';
+import { OtpChannel } from '../../../core/models/auth.model';
+import { OtpChannelFallbackComponent } from '../../../shared/components/otp-channel-picker/otp-channel-fallback.component';
+import { OtpChannelPickerComponent } from '../../../shared/components/otp-channel-picker/otp-channel-picker.component';
 
 type Step = 'phone' | 'verify' | 'done';
 
@@ -22,7 +26,7 @@ type Step = 'phone' | 'verify' | 'done';
 @Component({
   selector: 'app-phone-change-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslateModule, FormErrorComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslateModule, FormErrorComponent, OtpChannelPickerComponent, OtpChannelFallbackComponent],
   templateUrl: './phone-change.page.html',
   styleUrls: ['./phone-change.page.scss']
 })
@@ -42,6 +46,8 @@ export class PhoneChangePage {
   readonly resendCooldown = signal(0);
   private resendTimer: ReturnType<typeof setInterval> | null = null;
   private challengeId = '';
+  readonly channels = new OtpChannelState(this.phoneAuth, this.destroyRef);
+  readonly sentChannel = signal<OtpChannel>('Sms');
 
   readonly phoneForm = this.fb.nonNullable.group({
     phoneNumber: ['', [Validators.required, phoneNumberValidator]]
@@ -51,6 +57,10 @@ export class PhoneChangePage {
     code: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
     currentPassword: ['', [Validators.required]]
   });
+
+  constructor() {
+    this.channels.watch(this.phoneForm.controls.phoneNumber);
+  }
 
   get maskedPhone(): string {
     const phone = this.phoneForm.controls.phoneNumber.value;
@@ -73,7 +83,7 @@ export class PhoneChangePage {
     this.error.set('');
 
     this.phoneAuth
-      .sendPhoneChangeOtp(this.phoneForm.controls.phoneNumber.value.trim())
+      .sendPhoneChangeOtp(this.phoneForm.controls.phoneNumber.value.trim(), this.channels.selected())
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: result => {
@@ -85,6 +95,7 @@ export class PhoneChangePage {
           }
 
           this.challengeId = result.challengeId;
+          this.sentChannel.set(result.channel ?? this.channels.selected());
           this.step.set('verify');
           this.submitted.set(false);
           this.toast.success(this.translate.instant('AUTH.SEND_OTP_SUCCESS'));
@@ -101,6 +112,15 @@ export class PhoneChangePage {
     if (this.resendDisabled) {
       return;
     }
+    this.sendOtp();
+  }
+
+  /** "لم يصلك الرمز؟" — يبدأ المستخدم الإرسال عبر وسيلة أخرى؛ الحدّ في الباك مشترك بين الوسائل. */
+  resendVia(channel: OtpChannel): void {
+    if (this.loading()) {
+      return;
+    }
+    this.channels.select(channel);
     this.sendOtp();
   }
 
@@ -129,7 +149,7 @@ export class PhoneChangePage {
     const { code, currentPassword } = this.verifyForm.getRawValue();
 
     this.phoneAuth
-      .verifyPhoneChange({ challengeId: this.challengeId, code, currentPassword })
+      .verifyPhoneChange({ challengeId: this.challengeId, code, currentPassword, channel: this.sentChannel() })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: result => {

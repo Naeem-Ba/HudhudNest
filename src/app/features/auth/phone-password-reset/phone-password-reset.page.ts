@@ -10,6 +10,10 @@ import { ToastService } from '../../../shared/services/toast.service';
 import { FormErrorComponent } from '../../../shared/ui/form-error.component';
 import { getPhoneWorkflowErrorMessage } from '../phone-auth-errors';
 import { phoneNumberValidator } from '../../../core/auth/phone-number';
+import { OtpChannelState } from '../../../core/auth/otp-channel-state';
+import { OtpChannel } from '../../../core/models/auth.model';
+import { OtpChannelFallbackComponent } from '../../../shared/components/otp-channel-picker/otp-channel-fallback.component';
+import { OtpChannelPickerComponent } from '../../../shared/components/otp-channel-picker/otp-channel-picker.component';
 
 type Step = 'phone' | 'otp' | 'newPassword' | 'done';
 
@@ -21,7 +25,7 @@ type Step = 'phone' | 'otp' | 'newPassword' | 'done';
 @Component({
   selector: 'app-phone-password-reset-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslateModule, FormErrorComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslateModule, FormErrorComponent, OtpChannelPickerComponent, OtpChannelFallbackComponent],
   templateUrl: './phone-password-reset.page.html',
   styleUrls: ['./phone-password-reset.page.scss']
 })
@@ -40,6 +44,8 @@ export class PhonePasswordResetPage {
   readonly resendCooldown = signal(0);
   private resendTimer: ReturnType<typeof setInterval> | null = null;
   private challengeId = '';
+  readonly channels = new OtpChannelState(this.phoneAuth, this.destroyRef);
+  readonly sentChannel = signal<OtpChannel>('Sms');
   private confirmationToken = '';
 
   readonly phoneForm = this.fb.nonNullable.group({
@@ -54,6 +60,10 @@ export class PhonePasswordResetPage {
     newPassword: ['', [Validators.required, Validators.minLength(8)]],
     confirmPassword: ['', [Validators.required]]
   });
+
+  constructor() {
+    this.channels.watch(this.phoneForm.controls.phoneNumber);
+  }
 
   get maskedPhone(): string {
     const phone = this.phoneForm.controls.phoneNumber.value;
@@ -81,7 +91,7 @@ export class PhonePasswordResetPage {
     this.error.set('');
 
     this.phoneAuth
-      .sendPasswordResetOtp(this.phoneForm.controls.phoneNumber.value.trim())
+      .sendPasswordResetOtp(this.phoneForm.controls.phoneNumber.value.trim(), this.channels.selected())
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: result => {
@@ -93,6 +103,7 @@ export class PhonePasswordResetPage {
           }
 
           this.challengeId = result.challengeId;
+          this.sentChannel.set(result.channel ?? this.channels.selected());
           this.step.set('otp');
           this.submitted.set(false);
           this.toast.success(this.translate.instant('AUTH.SEND_OTP_SUCCESS'));
@@ -109,6 +120,15 @@ export class PhonePasswordResetPage {
     if (this.resendDisabled) {
       return;
     }
+    this.sendOtp();
+  }
+
+  /** "لم يصلك الرمز؟" — يبدأ المستخدم الإرسال عبر وسيلة أخرى؛ الحدّ في الباك مشترك بين الوسائل. */
+  resendVia(channel: OtpChannel): void {
+    if (this.loading()) {
+      return;
+    }
+    this.channels.select(channel);
     this.sendOtp();
   }
 
@@ -135,7 +155,7 @@ export class PhonePasswordResetPage {
     this.error.set('');
 
     this.phoneAuth
-      .verifyPasswordReset(this.challengeId, this.otpForm.controls.code.value)
+      .verifyPasswordReset(this.challengeId, this.otpForm.controls.code.value, this.sentChannel())
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: result => {

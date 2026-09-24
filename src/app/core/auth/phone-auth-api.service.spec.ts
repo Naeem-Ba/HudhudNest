@@ -112,4 +112,67 @@ describe('PhoneAuthApiService', () => {
     expect(change.request.body).toEqual({ challengeId: 'c2', code: '222222', currentPassword: TEST_CREDENTIAL });
     change.flush({ succeeded: true });
   });
+
+  // ── multi-channel OTP ────────────────────────────────────────────────────
+
+  it('getOtpChannels posts the normalized number (or null) and maps the answer', () => {
+    let result: unknown;
+    service.getOtpChannels('0933 123 456').subscribe(value => (result = value));
+    const req = httpMock.expectOne(`${base}/auth/phone/channels`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ phoneNumber: '+963933123456' });
+    req.flush({
+      channels: [
+        { channel: 'Sms', available: true, recommended: false, reason: null, unavailableCountryCodes: [] },
+        { channel: 'WhatsApp', available: false, recommended: false, reason: 'COUNTRY_NOT_SUPPORTED', unavailableCountryCodes: ['+963'] }
+      ]
+    });
+    expect((result as { channel: string }[]).map(o => o.channel)).toEqual(['Sms', 'WhatsApp']);
+
+    service.getOtpChannels().subscribe();
+    const bare = httpMock.expectOne(`${base}/auth/phone/channels`);
+    expect(bare.request.body).toEqual({ phoneNumber: null });
+    bare.flush({ channels: [] });
+  });
+
+  it('a send without a channel keeps the old body (server default = SMS); with one it names it', () => {
+    service.sendRegistrationOtp('+963933123456').subscribe();
+    const legacy = httpMock.expectOne(`${base}/auth/phone/registration/send-otp`);
+    expect(legacy.request.body).toEqual({ phoneNumber: '+963933123456' });
+    legacy.flush({ succeeded: true, challengeId: 'c1' });
+
+    const calls: [() => void, string][] = [
+      [() => service.sendRegistrationOtp('+963933123456', 'Telegram').subscribe(), '/auth/phone/registration/send-otp'],
+      [() => service.sendPasswordResetOtp('+963933123456', 'Telegram').subscribe(), '/auth/phone/password-reset/send-otp'],
+      [() => service.sendReverificationOtp('+963933123456', 'Telegram').subscribe(), '/auth/phone/reverification/send-otp'],
+      [() => service.sendPhoneChangeOtp('+963933123456', 'Telegram').subscribe(), '/auth/phone/change/send-otp']
+    ];
+    for (const [call, path] of calls) {
+      call();
+      const req = httpMock.expectOne(`${base}${path}`);
+      expect(req.request.body).toEqual({ phoneNumber: '+963933123456', channel: 'Telegram' });
+      req.flush({ succeeded: true, challengeId: 'c1', channel: 'Telegram' });
+    }
+  });
+
+  it('every verify names the channel of the challenge when given one, and echoes the send channel back', () => {
+    let sent: unknown;
+    service.sendRegistrationOtp('+963933123456', 'WhatsApp').subscribe(value => (sent = value));
+    httpMock.expectOne(`${base}/auth/phone/registration/send-otp`).flush({ succeeded: true, challengeId: 'c1', channel: 'WhatsApp' });
+    expect((sent as { channel: string }).channel).toBe('WhatsApp');
+
+    service.register({ challengeId: 'c1', code: '123456', password: TEST_CREDENTIAL, firstName: 'A', lastName: 'B', channel: 'Telegram' }).subscribe();
+    const register = httpMock.expectOne(`${base}/auth/phone/registration/verify`);
+    expect(register.request.body.channel).toBe('Telegram');
+    register.flush({ succeeded: true });
+
+    service.verifyPasswordReset('c1', '123456', 'Telegram').subscribe();
+    expect(httpMock.expectOne(`${base}/auth/phone/password-reset/verify`).request.body).toEqual({ challengeId: 'c1', code: '123456', channel: 'Telegram' });
+
+    service.verifyReverification('c1', '123456', 'Sms').subscribe();
+    expect(httpMock.expectOne(`${base}/auth/phone/reverification/verify`).request.body).toEqual({ challengeId: 'c1', code: '123456', channel: 'Sms' });
+
+    service.verifyPhoneChange({ challengeId: 'c1', code: '123456', currentPassword: TEST_CREDENTIAL, channel: 'Telegram' }).subscribe();
+    expect(httpMock.expectOne(`${base}/auth/phone/change/verify`).request.body.channel).toBe('Telegram');
+  });
 });

@@ -1,0 +1,41 @@
+<fieldset class="otp-channels" [disabled]="disabled">
+  <legend class="otp-channels__legend">{{ 'AUTH.CHANNELS.TITLE' | translate }}</legend>
+
+  <label
+    class="otp-channel"
+    *ngFor="let option of options; trackBy: trackByChannel"
+    [class.otp-channel--selected]="option.available && selected === option.channel"
+    [class.otp-channel--unavailable]="!option.available"
+  >
+    <input
+      class="otp-channel__input"
+      type="radio"
+      name="otpChannel"
+      [value]="option.channel"
+      [checked]="option.available && selected === option.channel"
+      [disabled]="!option.available || disabled"
+      [attr.aria-describedby]="'otp-channel-desc-' + option.channel"
+      (change)="pick(option)"
+    />
+    <span class="otp-channel__body">
+      <span class="otp-channel__name">
+        {{ 'AUTH.CHANNELS.NAMES.' + option.channel | translate }}
+        <span class="otp-channel__badge" *ngIf="option.recommended && option.available">
+          {{ 'AUTH.CHANNELS.RECOMMENDED' | translate }}
+        </span>
+      </span>
+      <span class="otp-channel__desc" [id]="'otp-channel-desc-' + option.channel">
+        {{ 'AUTH.CHANNELS.DESCRIPTIONS.' + option.channel | translate }}
+      </span>
+      <span class="otp-channel__note otp-channel__note--warn" *ngIf="!option.available">
+        {{ 'AUTH.CHANNELS.NOT_IN_YOUR_COUNTRY' | translate }}
+      </span>
+      <span class="otp-channel__note" *ngIf="option.unavailableCountryCodes.length">
+        {{ 'AUTH.CHANNELS.NOT_AVAILABLE_IN' | translate }}
+        <ng-container *ngFor="let code of option.unavailableCountryCodes; let last = last">
+          <bdi>{{ isKnownCountry(code) ? (countryKey(code) | translate) : code }}</bdi>{{ last ? '' : ('AUTH.CHANNELS.LIST_SEPARATOR' | translate) }}
+        </ng-container>
+      </span>
+    </span>
+  </label>
+</fieldset>

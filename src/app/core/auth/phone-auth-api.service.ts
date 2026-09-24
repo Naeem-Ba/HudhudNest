@@ -5,9 +5,12 @@ import { TokenStorageService } from '../services/token-storage.service';
 import { normalizePhoneInput } from './phone-number';
 import {
   AuthTokenResponse,
+  OtpChannel,
+  OtpChannelOption,
   PhoneLoginRequest,
   PhoneWorkflowResponse,
   normalizeAuthTokenResponse,
+  normalizeOtpChannels,
   normalizePhoneWorkflowResult
 } from '../models/auth.model';
 
@@ -25,11 +28,23 @@ export class PhoneAuthApiService {
     private readonly tokenStorage: TokenStorageService
   ) {}
 
+  /**
+   * POST /auth/phone/channels — وسائل إيصال الرمز (SMS / Telegram / WhatsApp) المتاحة لهذا الرقم،
+   * مع سبب عدم التوفر وقائمة الدول التي لا تعمل فيها كل وسيلة. الرقم اختياري؛ بدونه (أو برقم غير صالح)
+   * يعيد الباك الصورة الخالية من الدولة. الإجابة لا تكشف إن كان للرقم حساب أو حساب Telegram.
+   */
+  getOtpChannels(phoneNumber?: string): Observable<OtpChannelOption[]> {
+    const phone = phoneNumber ? normalizePhoneInput(phoneNumber) : null;
+    return this.api
+      .post<unknown>('/auth/phone/channels', { phoneNumber: phone })
+      .pipe(map(response => normalizeOtpChannels(response)));
+  }
+
   // ── 1) تسجيل حساب جديد بالهاتف + كلمة السر ─────────────────────────────
 
   /** POST /auth/phone/registration/send-otp — استجابة عامة دائمًا (لا تكشف إن كان الرقم مسجّلاً). */
-  sendRegistrationOtp(phoneNumber: string): Observable<PhoneWorkflowResponse> {
-    return this.sendChallenge('/auth/phone/registration/send-otp', phoneNumber);
+  sendRegistrationOtp(phoneNumber: string, channel?: OtpChannel): Observable<PhoneWorkflowResponse> {
+    return this.sendChallenge('/auth/phone/registration/send-otp', phoneNumber, channel);
   }
 
   /**
@@ -43,6 +58,7 @@ export class PhoneAuthApiService {
     password: string;
     firstName: string;
     lastName: string;
+    channel?: OtpChannel;
   }): Observable<PhoneWorkflowResponse> {
     return this.api
       .post<unknown>('/auth/phone/registration/verify', {
@@ -50,7 +66,8 @@ export class PhoneAuthApiService {
         code: request.code.trim(),
         password: request.password,
         firstName: request.firstName.trim(),
-        lastName: request.lastName.trim()
+        lastName: request.lastName.trim(),
+        ...channelField(request.channel)
       })
       .pipe(
         map(response => normalizePhoneWorkflowResult(response)),
@@ -75,14 +92,14 @@ export class PhoneAuthApiService {
   // ── 3) استعادة كلمة السر عبر الهاتف (ثلاث خطوات) ────────────────────────
 
   /** POST /auth/phone/password-reset/send-otp — استجابة عامة دائمًا. */
-  sendPasswordResetOtp(phoneNumber: string): Observable<PhoneWorkflowResponse> {
-    return this.sendChallenge('/auth/phone/password-reset/send-otp', phoneNumber);
+  sendPasswordResetOtp(phoneNumber: string, channel?: OtpChannel): Observable<PhoneWorkflowResponse> {
+    return this.sendChallenge('/auth/phone/password-reset/send-otp', phoneNumber, channel);
   }
 
   /** POST /auth/phone/password-reset/verify — يبادل رمز الـ OTP برمز تأكيد (ConfirmationToken). */
-  verifyPasswordReset(challengeId: string, code: string): Observable<PhoneWorkflowResponse> {
+  verifyPasswordReset(challengeId: string, code: string, channel?: OtpChannel): Observable<PhoneWorkflowResponse> {
     return this.api
-      .post<unknown>('/auth/phone/password-reset/verify', { challengeId, code: code.trim() })
+      .post<unknown>('/auth/phone/password-reset/verify', { challengeId, code: code.trim(), ...channelField(channel) })
       .pipe(map(response => normalizePhoneWorkflowResult(response)));
   }
 
@@ -111,22 +128,22 @@ export class PhoneAuthApiService {
   }
 
   /** POST /auth/phone/reverification/send-otp — يُرسَل إلى الرقم المسجَّل على الحساب. */
-  sendReverificationOtp(phoneNumber: string): Observable<PhoneWorkflowResponse> {
-    return this.sendChallenge('/auth/phone/reverification/send-otp', phoneNumber);
+  sendReverificationOtp(phoneNumber: string, channel?: OtpChannel): Observable<PhoneWorkflowResponse> {
+    return this.sendChallenge('/auth/phone/reverification/send-otp', phoneNumber, channel);
   }
 
   /** POST /auth/phone/reverification/verify — يعيد الحالة إلى Verified. */
-  verifyReverification(challengeId: string, code: string): Observable<PhoneWorkflowResponse> {
+  verifyReverification(challengeId: string, code: string, channel?: OtpChannel): Observable<PhoneWorkflowResponse> {
     return this.api
-      .post<unknown>('/auth/phone/reverification/verify', { challengeId, code: code.trim() })
+      .post<unknown>('/auth/phone/reverification/verify', { challengeId, code: code.trim(), ...channelField(channel) })
       .pipe(map(response => normalizePhoneWorkflowResult(response)));
   }
 
   // ── 5) تغيير رقم الهاتف من داخل البروفايل (يتطلب تسجيل دخول + كلمة السر) ─
 
   /** POST /auth/phone/change/send-otp — يُرسَل إلى الرقم الجديد قبل اعتماده. */
-  sendPhoneChangeOtp(newPhoneNumber: string): Observable<PhoneWorkflowResponse> {
-    return this.sendChallenge('/auth/phone/change/send-otp', newPhoneNumber);
+  sendPhoneChangeOtp(newPhoneNumber: string, channel?: OtpChannel): Observable<PhoneWorkflowResponse> {
+    return this.sendChallenge('/auth/phone/change/send-otp', newPhoneNumber, channel);
   }
 
   /** POST /auth/phone/change/verify — يتطلب كلمة السر الحالية ويُبطل الجلسات النشطة. */
@@ -134,12 +151,14 @@ export class PhoneAuthApiService {
     challengeId: string;
     code: string;
     currentPassword: string;
+    channel?: OtpChannel;
   }): Observable<PhoneWorkflowResponse> {
     return this.api
       .post<unknown>('/auth/phone/change/verify', {
         challengeId: request.challengeId,
         code: request.code.trim(),
-        currentPassword: request.currentPassword
+        currentPassword: request.currentPassword,
+        ...channelField(request.channel)
       })
       .pipe(
         map(response => normalizePhoneWorkflowResult(response)),
@@ -183,9 +202,9 @@ export class PhoneAuthApiService {
 
   // ── Helpers ──────────────────────────────────────────────────────────────
 
-  private sendChallenge(path: string, phoneNumber: string): Observable<PhoneWorkflowResponse> {
+  private sendChallenge(path: string, phoneNumber: string, channel?: OtpChannel): Observable<PhoneWorkflowResponse> {
     return this.api
-      .post<unknown>(path, { phoneNumber: normalizePhoneInput(phoneNumber) })
+      .post<unknown>(path, { phoneNumber: normalizePhoneInput(phoneNumber), ...channelField(channel) })
       .pipe(map(response => normalizePhoneWorkflowResult(response)));
   }
 
@@ -199,4 +218,9 @@ export class PhoneAuthApiService {
       this.tokenStorage.storeTokens({ accessToken: result.accessToken });
     }
   }
+}
+
+/** القناة تُرسَل فقط عند اختيارها صراحةً، فيبقى الطلب القديم (بلا channel) = SMS كما كان. */
+function channelField(channel: OtpChannel | undefined): { channel?: OtpChannel } {
+  return channel ? { channel } : {};
 }
