@@ -11,6 +11,10 @@ import { ToastService } from '../../../shared/services/toast.service';
 import { FormErrorComponent } from '../../../shared/ui/form-error.component';
 import { getPhoneWorkflowErrorMessage } from '../phone-auth-errors';
 import { phoneNumberValidator } from '../../../core/auth/phone-number';
+import { OtpChannelState } from '../../../core/auth/otp-channel-state';
+import { OtpChannel } from '../../../core/models/auth.model';
+import { OtpChannelFallbackComponent } from '../../../shared/components/otp-channel-picker/otp-channel-fallback.component';
+import { OtpChannelPickerComponent } from '../../../shared/components/otp-channel-picker/otp-channel-picker.component';
 
 type Step = 'status' | 'phone' | 'otp' | 'done';
 
@@ -22,7 +26,7 @@ type Step = 'status' | 'phone' | 'otp' | 'done';
 @Component({
   selector: 'app-phone-reverify-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslateModule, FormErrorComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslateModule, FormErrorComponent, OtpChannelPickerComponent, OtpChannelFallbackComponent],
   templateUrl: './phone-reverify.page.html',
   styleUrls: ['./phone-reverify.page.scss']
 })
@@ -43,6 +47,8 @@ export class PhoneReverifyPage implements OnInit {
   readonly resendCooldown = signal(0);
   private resendTimer: ReturnType<typeof setInterval> | null = null;
   private challengeId = '';
+  readonly channels = new OtpChannelState(this.phoneAuth, this.destroyRef);
+  readonly sentChannel = signal<OtpChannel>('Sms');
 
   readonly verificationState = signal<PhoneVerificationState | null>(null);
   readonly dueAtUtc = signal<string | null>(null);
@@ -55,6 +61,10 @@ export class PhoneReverifyPage implements OnInit {
   readonly otpForm = this.fb.nonNullable.group({
     code: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]]
   });
+
+  constructor() {
+    this.channels.watch(this.phoneForm.controls.phoneNumber);
+  }
 
   ngOnInit(): void {
     this.loadStatus();
@@ -117,7 +127,7 @@ export class PhoneReverifyPage implements OnInit {
     this.error.set('');
 
     this.phoneAuth
-      .sendReverificationOtp(this.phoneForm.controls.phoneNumber.value.trim())
+      .sendReverificationOtp(this.phoneForm.controls.phoneNumber.value.trim(), this.channels.selected())
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: result => {
@@ -129,6 +139,7 @@ export class PhoneReverifyPage implements OnInit {
           }
 
           this.challengeId = result.challengeId;
+          this.sentChannel.set(result.channel ?? this.channels.selected());
           this.step.set('otp');
           this.submitted.set(false);
           this.toast.success(this.translate.instant('AUTH.SEND_OTP_SUCCESS'));
@@ -148,6 +159,15 @@ export class PhoneReverifyPage implements OnInit {
     this.sendOtp();
   }
 
+  /** "لم يصلك الرمز؟" — يبدأ المستخدم الإرسال عبر وسيلة أخرى؛ الحدّ في الباك مشترك بين الوسائل. */
+  resendVia(channel: OtpChannel): void {
+    if (this.loading()) {
+      return;
+    }
+    this.channels.select(channel);
+    this.sendOtp();
+  }
+
   verifyOtp(): void {
     this.submitted.set(true);
 
@@ -160,7 +180,7 @@ export class PhoneReverifyPage implements OnInit {
     this.error.set('');
 
     this.phoneAuth
-      .verifyReverification(this.challengeId, this.otpForm.controls.code.value)
+      .verifyReverification(this.challengeId, this.otpForm.controls.code.value, this.sentChannel())
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: result => {

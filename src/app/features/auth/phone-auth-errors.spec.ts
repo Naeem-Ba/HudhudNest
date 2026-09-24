@@ -43,6 +43,12 @@ describe('phone-auth-errors', () => {
         .toBe('AUTH.ERRORS.PHONE_COUNTRY_NOT_SUPPORTED');
     });
 
+    it('reports an unavailable channel or a failed channel provider with its own message, never the raw provider error', () => {
+      expect(getPhoneWorkflowErrorMessage(translate, 'OTP_CHANNEL_UNAVAILABLE', 'FALLBACK')).toBe('AUTH.ERRORS.OTP_CHANNEL_UNAVAILABLE');
+      expect(getPhoneWorkflowErrorMessage(translate, 'OTP_PROVIDER_UNAVAILABLE', 'FALLBACK', { error: { message: 'gateway said ACCESS_TOKEN_INVALID' } }))
+        .toBe('AUTH.ERRORS.OTP_PROVIDER_UNAVAILABLE');
+    });
+
     it('falls back to the server message, then to the fallback key', () => {
       expect(getPhoneWorkflowErrorMessage(translate, 'UNKNOWN', 'FALLBACK', { error: { message: 'server says' } })).toBe('server says');
       expect(getPhoneWorkflowErrorMessage(translate, undefined, 'FALLBACK')).toBe('FALLBACK');

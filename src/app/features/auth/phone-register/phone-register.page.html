@@ -35,6 +35,14 @@
         ></app-form-error>
       </div>
 
+        <app-otp-channel-picker
+          *ngIf="channels.showPicker()"
+          [options]="channels.options()"
+          [selected]="channels.selected()"
+          [disabled]="loading()"
+          (selectedChange)="channels.select($event)"
+        ></app-otp-channel-picker>
+
       <p class="alert alert--error" role="alert" *ngIf="error()">⚠️ {{ error() }}</p>
 
       <button type="submit" class="btn-primary" [disabled]="loading()">
@@ -96,6 +104,14 @@
         <span class="spinner" *ngIf="loading()"></span>
         {{ loading() ? ('AUTH.PHONE_REGISTER.CREATING' | translate) : ('AUTH.PHONE_REGISTER.CREATE_ACCOUNT' | translate) }}
       </button>
+
+        <app-otp-channel-fallback
+          *ngIf="channels.showPicker()"
+          [sent]="sentChannel()"
+          [alternatives]="channels.alternativesTo(sentChannel())"
+          [disabled]="loading()"
+          (pick)="resendVia($event)"
+        ></app-otp-channel-fallback>
 
       <button type="button" class="btn-ghost" [disabled]="resendDisabled" (click)="resendOtp()">
         {{ resendCooldown() > 0

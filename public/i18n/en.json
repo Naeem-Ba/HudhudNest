@@ -193,6 +193,8 @@
       "APPLE_LOGIN": "Continue with Apple",
       "OTP_RATE_LIMITED": "You requested too many codes. Wait one hour and try again.",
       "OTP_SMS_FAILED": "Failed to send the SMS. Check the phone number or try again later.",
+      "OTP_CHANNEL_UNAVAILABLE": "This method is not available right now. Choose another one.",
+      "OTP_PROVIDER_UNAVAILABLE": "The code could not be sent this way right now. Try another method or try again later.",
       "OTP_STORE_FAILED": "The message was sent, but an error occurred while saving the code. Request a new code.",
       "OTP_NOT_FOUND": "No valid verification code was found. Request a new code.",
       "OTP_INVALID": "The code is invalid or has expired.",
@@ -240,6 +242,33 @@
     "FORGOT_PASSWORD_PHONE": "Forgot your password?",
     "PHONE_REGISTER_MOVED_NOTICE": "Phone registration now lives on its own page —",
     "PHONE_REGISTER_MOVED_LINK": "go there",
+    "CHANNELS": {
+      "TITLE": "Choose how to receive your verification code",
+      "RECOMMENDED": "Recommended",
+      "NAMES": {
+        "Sms": "Text message (SMS)",
+        "Telegram": "Telegram",
+        "WhatsApp": "WhatsApp"
+      },
+      "DESCRIPTIONS": {
+        "Sms": "Receive the code as a text message on your phone",
+        "Telegram": "Receive the code in the Telegram app",
+        "WhatsApp": "Receive the code in the WhatsApp app"
+      },
+      "NOT_IN_YOUR_COUNTRY": "This service is not available in your country.",
+      "NOT_AVAILABLE_IN": "Not available in:",
+      "LIST_SEPARATOR": ", ",
+      "COUNTRIES": {
+        "963": "Syria",
+        "53": "Cuba",
+        "98": "Iran",
+        "850": "North Korea"
+      },
+      "SENT_VIA": "The code was sent via {{channel}}. It is valid for 5 minutes.",
+      "NO_CODE": "Didn't receive the code?",
+      "SEND_VIA": "Send via {{channel}}"
+    },
+
     "PHONE_REGISTER": {
       "TITLE": "Create an account with your phone",
       "SUBTITLE": "Enter your phone number to receive a one-time code.",

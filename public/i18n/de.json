@@ -193,6 +193,8 @@
       "APPLE_LOGIN": "Mit Apple fortfahren",
       "OTP_RATE_LIMITED": "Sie haben zu viele Codes angefordert. Warten Sie eine Stunde und versuchen Sie es erneut.",
       "OTP_SMS_FAILED": "Die SMS konnte nicht gesendet werden. Prüfen Sie die Telefonnummer oder versuchen Sie es später erneut.",
+      "OTP_CHANNEL_UNAVAILABLE": "Diese Methode ist derzeit nicht verfügbar. Wählen Sie eine andere.",
+      "OTP_PROVIDER_UNAVAILABLE": "Der Code konnte auf diesem Weg gerade nicht gesendet werden. Versuchen Sie eine andere Methode oder es später erneut.",
       "OTP_STORE_FAILED": "Die Nachricht wurde gesendet, aber beim Speichern des Codes ist ein Fehler aufgetreten. Fordern Sie einen neuen Code an.",
       "OTP_NOT_FOUND": "Es wurde kein gültiger Bestätigungscode gefunden. Fordern Sie einen neuen Code an.",
       "OTP_INVALID": "Der Code ist ungültig oder abgelaufen.",
@@ -240,6 +242,33 @@
     "FORGOT_PASSWORD_PHONE": "Passwort vergessen?",
     "PHONE_REGISTER_MOVED_NOTICE": "Die Telefonregistrierung hat jetzt eine eigene Seite —",
     "PHONE_REGISTER_MOVED_LINK": "dorthin wechseln",
+    "CHANNELS": {
+      "TITLE": "Wählen Sie, wie Sie den Bestätigungscode erhalten möchten",
+      "RECOMMENDED": "Empfohlen",
+      "NAMES": {
+        "Sms": "SMS",
+        "Telegram": "Telegram",
+        "WhatsApp": "WhatsApp"
+      },
+      "DESCRIPTIONS": {
+        "Sms": "Code als SMS auf Ihr Telefon erhalten",
+        "Telegram": "Code in der Telegram-App erhalten",
+        "WhatsApp": "Code in der WhatsApp-App erhalten"
+      },
+      "NOT_IN_YOUR_COUNTRY": "Dieser Dienst ist in Ihrem Land nicht verfügbar.",
+      "NOT_AVAILABLE_IN": "Nicht verfügbar in:",
+      "LIST_SEPARATOR": ", ",
+      "COUNTRIES": {
+        "963": "Syrien",
+        "53": "Kuba",
+        "98": "Iran",
+        "850": "Nordkorea"
+      },
+      "SENT_VIA": "Der Code wurde per {{channel}} gesendet und ist 5 Minuten gültig.",
+      "NO_CODE": "Code nicht erhalten?",
+      "SEND_VIA": "Per {{channel}} senden"
+    },
+
     "PHONE_REGISTER": {
       "TITLE": "Konto mit Telefonnummer erstellen",
       "SUBTITLE": "Geben Sie Ihre Telefonnummer ein, um einen einmaligen Code zu erhalten.",
