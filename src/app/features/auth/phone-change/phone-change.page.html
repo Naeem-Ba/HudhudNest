@@ -28,7 +28,7 @@
       </div>
 
       <p class="alert alert--warning">⚠️ {{ 'AUTH.PHONE_CHANGE.SESSIONS_WARNING' | translate }}</p>
-      <p class="alert alert--error" *ngIf="error()">⚠️ {{ error() }}</p>
+      <p class="alert alert--error" role="alert" *ngIf="error()">⚠️ {{ error() }}</p>
 
       <button type="submit" class="btn-primary" [disabled]="loading()">
         <span class="spinner" *ngIf="loading()"></span>
@@ -48,7 +48,7 @@
 
       <div class="form-group">
         <label for="code">{{ 'AUTH.OTP_CODE' | translate }}</label>
-        <input id="code" type="text" inputmode="numeric" maxlength="6" class="otp-input" formControlName="code" dir="ltr" />
+        <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="otp-input" formControlName="code" dir="ltr" />
         <app-form-error [control]="verifyForm.controls.code" [submitted]="submitted()"></app-form-error>
       </div>
 
@@ -58,7 +58,7 @@
         <app-form-error [control]="verifyForm.controls.currentPassword" [submitted]="submitted()"></app-form-error>
       </div>
 
-      <p class="alert alert--error" *ngIf="error()">⚠️ {{ error() }}</p>
+      <p class="alert alert--error" role="alert" *ngIf="error()">⚠️ {{ error() }}</p>
 
       <button type="submit" class="btn-primary" [disabled]="loading()">
         <span class="spinner" *ngIf="loading()"></span>
@@ -74,7 +74,7 @@
 
     <!-- Done -->
     <div *ngIf="step() === 'done'" class="flow-form">
-      <p class="alert alert--success">✅ {{ 'AUTH.PHONE_CHANGE.SUCCESS' | translate }}</p>
+      <p class="alert alert--success" role="status">✅ {{ 'AUTH.PHONE_CHANGE.SUCCESS' | translate }}</p>
       <button type="button" class="btn-primary" (click)="goToProfile()">
         {{ 'AUTH.BACK_TO_PROFILE' | translate }}
       </button>

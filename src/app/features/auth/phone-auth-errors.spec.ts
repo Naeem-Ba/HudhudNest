@@ -38,6 +38,11 @@ describe('phone-auth-errors', () => {
       expect(getPhoneWorkflowErrorMessage(translate, 'OTP_WRONG', 'FALLBACK')).toBe('AUTH.ERRORS.OTP_WRONG');
     });
 
+    it('explains a number refused for its country (SmsProvider:AllowedCountryCodes) instead of a generic failure', () => {
+      expect(getPhoneWorkflowErrorMessage(translate, 'PHONE_COUNTRY_NOT_SUPPORTED', 'FALLBACK'))
+        .toBe('AUTH.ERRORS.PHONE_COUNTRY_NOT_SUPPORTED');
+    });
+
     it('falls back to the server message, then to the fallback key', () => {
       expect(getPhoneWorkflowErrorMessage(translate, 'UNKNOWN', 'FALLBACK', { error: { message: 'server says' } })).toBe('server says');
       expect(getPhoneWorkflowErrorMessage(translate, undefined, 'FALLBACK')).toBe('FALLBACK');
