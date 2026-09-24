@@ -247,6 +247,7 @@ JsonNamingPolicy.CamelCase`). `apiToCamelCase()` يبقى في مكانه في �
 | `/properties/{id}/extension`, `/properties/{id}/featured` | `PropertiesController` | ✅ |
 | `/properties/{id}/images/...` | `PropertyImagesController` | ✅ |
 | `/auth/phone/registration/*`, `/auth/phone/login`, `/auth/phone/password-reset/*` | `PhonePasswordAuthController` | ✅ |
+| `/auth/phone/channels` | `PhonePasswordAuthController` | ✅ اختيار وسيلة إيصال رمز التحقق (SMS / Telegram / WhatsApp): `OtpChannelState` + `app-otp-channel-picker` + `app-otp-channel-fallback` في صفحات الهاتف الأربع. الوسائل وتوفرها حسب الدولة تأتي من الباك؛ لا منطق دول في التطبيق. لا تظهر واجهة الاختيار إن كانت SMS وحدها متاحة. |
 | `/users/me`, `/users/me/avatar`, `/users/me/change-password`, `/users/me/plan` | `UsersController` | ✅ |
 | `/admin/users`, `/admin/roles` | `AdminController` | ✅ |
 | `/admin/location-suggestions` | `LocationSuggestionsController` | ✅ |
