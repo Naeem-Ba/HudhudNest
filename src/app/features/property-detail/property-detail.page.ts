@@ -523,18 +523,21 @@ export class PropertyDetailPage implements OnInit {
   }
 
   onDragStart(event: MouseEvent | TouchEvent): void {
+    // A touch event can arrive with an empty list (e.g. a cancelled multi-touch); ignore it
+    // instead of throwing on touches[0].
+    const startX = 'touches' in event ? event.touches[0]?.clientX : event.pageX;
+    if (startX === undefined) return;
     this.isDragging = true;
-    this.startX = 'touches' in event
-      ? event.touches[0].clientX
-      : event.pageX;
+    this.startX = startX;
   }
 
   onDragEnd(event: MouseEvent | TouchEvent): void {
     if (!this.isDragging) return;
     this.isDragging = false;
     const endX = 'changedTouches' in event
-      ? event.changedTouches[0].clientX
+      ? event.changedTouches[0]?.clientX
       : (event as MouseEvent).pageX;
+    if (endX === undefined) return;
     const diff = endX - this.startX;
     if (diff > 60)       { this.isRTL() ? this.next() : this.prev(); }
     else if (diff < -60) { this.isRTL() ? this.prev() : this.next(); }

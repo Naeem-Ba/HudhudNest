@@ -16,7 +16,7 @@ import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
-import { PropertyFormPage } from './property-form.page';
+import { PropertyFormPage, addMonthsToDateString } from './property-form.page';
 import { PropertyApiService } from '../../core/api/property-api.service';
 import { LookupsApiService, PropertyTypeLookup } from '../../core/api/lookups-api.service';
 import { EnumService, EnumItem } from '../../core/services/enum.service';
@@ -292,5 +292,18 @@ describe('PropertyFormPage', () => {
 
       expect(component.form.errors).toBeNull();
     });
+  });
+});
+
+describe('addMonthsToDateString', () => {
+  it('adds months in UTC', () => {
+    expect(addMonthsToDateString('2026-01-01', 6)).toBe('2026-07-01');
+    expect(addMonthsToDateString('2026-08-31', 12)).toBe('2027-08-31');
+  });
+
+  it('returns null instead of throwing for an incomplete or malformed date', () => {
+    expect(addMonthsToDateString('2026-01', 6)).toBeNull();
+    expect(addMonthsToDateString('not-a-date', 6)).toBeNull();
+    expect(addMonthsToDateString('', 12)).toBeNull();
   });
 });

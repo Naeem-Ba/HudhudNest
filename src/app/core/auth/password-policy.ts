@@ -56,11 +56,11 @@ function trimDecoration(value: string): string {
   let start = 0;
   let end = value.length;
 
-  while (start < end && DECORATION_CHARACTERS.has(value[start])) {
+  while (start < end && DECORATION_CHARACTERS.has(value.charAt(start))) {
     start++;
   }
 
-  while (end > start && DECORATION_CHARACTERS.has(value[end - 1])) {
+  while (end > start && DECORATION_CHARACTERS.has(value.charAt(end - 1))) {
     end--;
   }
 

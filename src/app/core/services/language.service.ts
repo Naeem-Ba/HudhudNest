@@ -31,7 +31,7 @@ export class LanguageService {
 
   use(lang: LangCode): void {
     const normalizedLang = this.isSupported(lang) ? lang : 'ar';
-    const language = this.languages.find(item => item.code === normalizedLang) ?? this.languages[0];
+    const dir = this.languages.find(item => item.code === normalizedLang)?.dir ?? 'rtl';
 
     this.currentLang = normalizedLang;
     this.langSubject.next(normalizedLang);
@@ -39,10 +39,10 @@ export class LanguageService {
     this.translate.use(normalizedLang);
     localStorage.setItem('lang', normalizedLang);
 
-    document.documentElement.dir = language.dir;
+    document.documentElement.dir = dir;
     document.documentElement.lang = normalizedLang;
-    document.body.classList.toggle('rtl', language.dir === 'rtl');
-    document.body.classList.toggle('ltr', language.dir === 'ltr');
+    document.body.classList.toggle('rtl', dir === 'rtl');
+    document.body.classList.toggle('ltr', dir === 'ltr');
   }
 
   getCurrent(): LangCode {

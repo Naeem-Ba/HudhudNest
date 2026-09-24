@@ -1123,6 +1123,7 @@
     "ANONYMOUS": "Anonymous user",
     "PROPERTY_REQUIRED": "Property ID is required.",
     "RATING_RANGE": "The rating must be between 1 and 5.",
+    "COMMENT_TOO_LONG": "The comment is too long (maximum 1000 characters).",
     "COMMENT_PLACEHOLDER": "Share your thoughts about this property...",
     "EMPTY_TITLE": "No reviews yet",
     "EMPTY_MESSAGE": "Be the first to review this property."
