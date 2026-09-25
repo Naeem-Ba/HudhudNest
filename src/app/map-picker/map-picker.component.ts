@@ -13,6 +13,21 @@ import {
 import * as L from 'leaflet';
 import { LangCode } from '../core/services/language.service';
 
+/**
+ * Basemap tiles. CARTO's free "light_all" tiles now answer every request with an
+ * "API KEY REQUIRED" image, so the picker showed that text instead of a map. OpenStreetMap's
+ * standard layer needs no key and labels places in their local language (Arabic in Syria).
+ * Its tile usage policy (https://operations.osmfoundation.org/policies/tiles/) is meant for light
+ * traffic; if the app outgrows it, switch this one constant to a keyed provider.
+ */
+export const MAP_TILE_LAYER = {
+  url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+  options: {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }
+} as const;
+
 @Component({
   selector: 'app-map-picker',
   standalone: true,
@@ -72,16 +87,9 @@ export class MapPickerComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.map.removeLayer(this.tileLayer);
     }
 
-    this.tileLayer = L.tileLayer(this.getTileUrl(), {
-      attribution: '© OpenStreetMap contributors'
-    });
+    this.tileLayer = L.tileLayer(MAP_TILE_LAYER.url, { ...MAP_TILE_LAYER.options });
 
     this.tileLayer.addTo(this.map);
-  }
-
-  private getTileUrl(): string {
-    // خرائط تدعم العربية بشكل أفضل
-    return 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png';
   }
 
   /** Mirrors the parent-controlled `marker` input onto the map without echoing it back. */
