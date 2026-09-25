@@ -16,7 +16,7 @@
 
   <p *ngIf="loading()">{{ 'SHORTSTAY.FORM.LOADING' | translate }}</p>
 
-  <form *ngIf="!loading()" class="ssf__form" (ngSubmit)="isEditMode ? saveChanges() : createListing()">
+  <form *ngIf="!loading()" class="ssf__form" novalidate [class.ssf__form--submitted]="submitAttempted()" (ngSubmit)="isEditMode ? saveChanges() : createListing()">
 
     <section class="ssf__section" *ngIf="!isEditMode">
       <h2>{{ 'SHORTSTAY.FORM.TYPE' | translate }}</h2>
@@ -53,13 +53,17 @@
       <div class="ssf__row">
         <div class="ssf__field">
           <label>{{ 'SHORTSTAY.FORM.CHECK_IN_TIME' | translate }}</label>
-          <input type="time" [(ngModel)]="checkInTime" name="checkInTime" required />
+          <input type="time" step="60" [(ngModel)]="checkInTime" name="checkInTime" required />
         </div>
         <div class="ssf__field">
           <label>{{ 'SHORTSTAY.FORM.CHECK_OUT_TIME' | translate }}</label>
-          <input type="time" [(ngModel)]="checkOutTime" name="checkOutTime" required />
+          <input type="time" step="60" [(ngModel)]="checkOutTime" name="checkOutTime" required />
         </div>
       </div>
+      <p class="ssf__hint">{{ 'SHORTSTAY.FORM.TIMES_HINT' | translate }}</p>
+      <p class="ssf__error" role="alert" *ngIf="submitAttempted() && (!checkInTime || !checkOutTime)">
+        {{ 'SHORTSTAY.FORM.ERR_TIMES' | translate }}
+      </p>
       <div class="ssf__field" *ngIf="!isEditMode">
         <label>{{ 'SHORTSTAY.FORM.CURRENCY' | translate }}</label>
         <select [(ngModel)]="currencyCode" name="currencyCode" required>
@@ -120,6 +124,10 @@
           <input type="number" min="0" [(ngModel)]="extraGuestFee" name="extraGuestFee" />
         </div>
         <div class="ssf__field">
+          <label>{{ 'SHORTSTAY.FORM.EXTRA_BED_FEE' | translate }}</label>
+          <input type="number" min="0" [(ngModel)]="extraBedFee" name="extraBedFee" />
+        </div>
+        <div class="ssf__field">
           <label>{{ 'SHORTSTAY.FORM.DEPOSIT_PERCENTAGE' | translate }}</label>
           <input type="number" min="0" max="100" [(ngModel)]="depositPercentage" name="depositPercentage" />
         </div>
@@ -131,6 +139,25 @@
       <label class="ssf__checkbox"><input type="checkbox" [(ngModel)]="allowsSmoking" name="allowsSmoking" /> {{ 'SHORTSTAY.FORM.ALLOWS_SMOKING' | translate }}</label>
       <label class="ssf__checkbox"><input type="checkbox" [(ngModel)]="allowsParties" name="allowsParties" /> {{ 'SHORTSTAY.FORM.ALLOWS_PARTIES' | translate }}</label>
       <label class="ssf__checkbox"><input type="checkbox" [(ngModel)]="allowsPets" name="allowsPets" /> {{ 'SHORTSTAY.FORM.ALLOWS_PETS' | translate }}</label>
+      <div class="ssf__row">
+        <div class="ssf__field">
+          <label>{{ 'SHORTSTAY.FORM.QUIET_HOURS_START' | translate }}</label>
+          <input type="time" step="60" [(ngModel)]="quietHoursStart" name="quietHoursStart" />
+        </div>
+        <div class="ssf__field">
+          <label>{{ 'SHORTSTAY.FORM.QUIET_HOURS_END' | translate }}</label>
+          <input type="time" step="60" [(ngModel)]="quietHoursEnd" name="quietHoursEnd" />
+        </div>
+      </div>
+      <p class="ssf__hint">
+        {{ 'SHORTSTAY.FORM.QUIET_HOURS_HINT' | translate }}
+        <button type="button" class="ssf__link" *ngIf="quietHoursStart || quietHoursEnd" (click)="clearQuietHours()">
+          {{ 'SHORTSTAY.FORM.QUIET_HOURS_CLEAR' | translate }}
+        </button>
+      </p>
+      <p class="ssf__error" role="alert" *ngIf="submitAttempted() && !quietHoursStart !== !quietHoursEnd">
+        {{ 'SHORTSTAY.FORM.ERR_QUIET_HOURS' | translate }}
+      </p>
       <div class="ssf__field">
         <label>{{ 'SHORTSTAY.FORM.CUSTOM_RULES' | translate }}</label>
         <textarea [(ngModel)]="customRulesText" name="customRulesText" rows="2"></textarea>
