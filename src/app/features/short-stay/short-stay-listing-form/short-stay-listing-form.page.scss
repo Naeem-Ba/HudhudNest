@@ -116,3 +116,33 @@
   text-underline-offset: 3px;
   cursor: pointer;
 }
+
+/* Shown only after the first submit, so a fresh form is not covered in red. */
+.ssf__form--submitted {
+  input.ng-invalid,
+  select.ng-invalid,
+  textarea.ng-invalid {
+    border-color: var(--danger, #dc2626);
+    box-shadow: 0 0 0 1px var(--danger, #dc2626);
+  }
+}
+
+.ssf__error {
+  margin: -0.35rem 0 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--danger, #dc2626);
+}
+
+.ssf__link {
+  background: none;
+  border: 0;
+  padding: 0 4px;
+  min-height: 32px;
+  color: var(--gold-dark);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}

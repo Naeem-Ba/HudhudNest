@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -29,6 +29,17 @@ interface PendingPhoto {
   previewUrl: string;
 }
 
+/**
+ * `<input type="time">` yields "HH:mm" (or "" once cleared). The API's TimeOnly contract is
+ * "HH:mm:ss", so a short value is padded and an empty one becomes null — sending "" or a
+ * seconds-less value used to fail model binding with "The Check in time field is empty or invalid".
+ */
+export function toApiTime(value: string | null | undefined): string | null {
+  const v = (value ?? '').trim();
+  if (!v) return null;
+  return /^\d{2}:\d{2}$/.test(v) ? `${v}:00` : v;
+}
+
 type PricingRuleForm = {
   ruleType: PricingRuleDto['ruleType'];
   dayOfWeek: number | null;
@@ -54,6 +65,10 @@ export class ShortStayListingFormPage implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  /** Flips on the first submit so required-but-empty fields get highlighted, not just toasted. */
+  readonly submitAttempted = signal(false);
 
   readonly listingId = signal<string | null>(null);
   readonly listing = signal<ShortStayListing | null>(null);
@@ -249,6 +264,7 @@ export class ShortStayListingFormPage implements OnInit {
     if (!isNum(this.bedrooms) || this.bedrooms < 0) return 'SHORTSTAY.FORM.ERR_BEDROOMS';
     if (!isNum(this.bathrooms) || this.bathrooms < 0) return 'SHORTSTAY.FORM.ERR_BATHROOMS';
     if (!this.checkInTime || !this.checkOutTime) return 'SHORTSTAY.FORM.ERR_TIMES';
+    if (includeFees && !this.quietHoursStart !== !this.quietHoursEnd) return 'SHORTSTAY.FORM.ERR_QUIET_HOURS';
     if (!isNum(this.latitude) || !isNum(this.longitude)) return 'SHORTSTAY.FORM.ERR_LOCATION';
     if (includeFees && [this.cleaningFee, this.extraGuestFee, this.extraBedFee].some(fee => !isNum(fee) || fee < 0)) {
       return 'SHORTSTAY.FORM.ERR_FEES';
@@ -256,20 +272,38 @@ export class ShortStayListingFormPage implements OnInit {
     return null;
   }
 
+  /** Toast the reason and move the user to the first offending field (highlighted via submitAttempted). */
+  private rejectSubmit(messageKey: string): void {
+    this.toast.show(this.translate.instant(messageKey), 'error');
+    const target = this.host.nativeElement.querySelector<HTMLElement>(
+      'input.ng-invalid, select.ng-invalid, textarea.ng-invalid'
+    );
+    target?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+    target?.focus?.({ preventScroll: true });
+  }
+
+  /** Not every browser lets users clear an optional time input, so offer an explicit reset. */
+  clearQuietHours(): void {
+    this.quietHoursStart = null;
+    this.quietHoursEnd = null;
+  }
+
   createListing(): void {
+    this.submitAttempted.set(true);
+
     if (!this.accommodationTypeId) {
-      this.toast.show(this.translate.instant('SHORTSTAY.FORM.SELECT_TYPE'), 'error');
+      this.rejectSubmit('SHORTSTAY.FORM.SELECT_TYPE');
       return;
     }
 
     const invalidKey = this.firstInvalidFieldKey(false);
     if (invalidKey) {
-      this.toast.show(this.translate.instant(invalidKey), 'error');
+      this.rejectSubmit(invalidKey);
       return;
     }
 
     if (!(this.defaultBasePricePerNight > 0)) {
-      this.toast.show(this.translate.instant('SHORTSTAY.FORM.PRICE_REQUIRED'), 'error');
+      this.rejectSubmit('SHORTSTAY.FORM.PRICE_REQUIRED');
       return;
     }
 
@@ -281,8 +315,8 @@ export class ShortStayListingFormPage implements OnInit {
       capacity: this.capacity,
       bedrooms: this.bedrooms,
       bathrooms: this.bathrooms,
-      checkInTime: this.checkInTime,
-      checkOutTime: this.checkOutTime,
+      checkInTime: toApiTime(this.checkInTime)!,
+      checkOutTime: toApiTime(this.checkOutTime)!,
       latitude: this.latitude,
       longitude: this.longitude,
       defaultBasePricePerNight: this.defaultBasePricePerNight,
@@ -399,9 +433,10 @@ export class ShortStayListingFormPage implements OnInit {
     const id = this.listingId();
     if (!id) return;
 
+    this.submitAttempted.set(true);
     const invalidKey = this.firstInvalidFieldKey(true);
     if (invalidKey) {
-      this.toast.show(this.translate.instant(invalidKey), 'error');
+      this.rejectSubmit(invalidKey);
       return;
     }
 
@@ -421,8 +456,8 @@ export class ShortStayListingFormPage implements OnInit {
       capacity: this.capacity,
       bedrooms: this.bedrooms,
       bathrooms: this.bathrooms,
-      checkInTime: this.checkInTime,
-      checkOutTime: this.checkOutTime,
+      checkInTime: toApiTime(this.checkInTime)!,
+      checkOutTime: toApiTime(this.checkOutTime)!,
       selfCheckInEnabled: this.selfCheckInEnabled,
       instantBookingEnabled: this.instantBookingEnabled,
       requestBookingEnabled: this.requestBookingEnabled,
@@ -443,8 +478,8 @@ export class ShortStayListingFormPage implements OnInit {
       allowsSmoking: this.allowsSmoking,
       allowsParties: this.allowsParties,
       allowsPets: this.allowsPets,
-      quietHoursStart: this.quietHoursStart,
-      quietHoursEnd: this.quietHoursEnd,
+      quietHoursStart: toApiTime(this.quietHoursStart),
+      quietHoursEnd: toApiTime(this.quietHoursEnd),
       customRulesText: this.customRulesText || null,
       cancellationFreeCancellationDays: this.cancellationFreeCancellationDays,
       cancellationDepositRefundable: this.cancellationDepositRefundable,

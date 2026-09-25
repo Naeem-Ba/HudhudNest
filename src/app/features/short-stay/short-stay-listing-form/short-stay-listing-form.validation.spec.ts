@@ -3,7 +3,7 @@ import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angul
 import { TranslateModule } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 
-import { ShortStayListingFormPage } from './short-stay-listing-form.page';
+import { ShortStayListingFormPage, toApiTime } from './short-stay-listing-form.page';
 import { ShortStayListingApiService } from '../../../core/api/short-stay-listing-api.service';
 import { LookupsApiService } from '../../../core/api/lookups-api.service';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -46,6 +46,22 @@ describe('ShortStayListingFormPage — local validation before POST', () => {
 
     expect(api.create).toHaveBeenCalledWith(jasmine.objectContaining({ currencyCode: 'USD', defaultBasePricePerNight: 50 }));
     expect(toast.show).not.toHaveBeenCalledWith(jasmine.anything(), 'error');
+  });
+
+  it('sends check-in/out as HH:mm:ss — the API rejects the bare HH:mm a time input produces', () => {
+    page.checkInTime = '14:00';
+    page.checkOutTime = '11:30';
+    page.createListing();
+
+    expect(api.create).toHaveBeenCalledWith(jasmine.objectContaining({ checkInTime: '14:00:00', checkOutTime: '11:30:00' }));
+  });
+
+  it('marks the form as submitted and highlights instead of posting when a time is cleared', () => {
+    page.checkOutTime = '';
+    page.createListing();
+
+    expect(page.submitAttempted()).toBeTrue();
+    expect(api.create).not.toHaveBeenCalled();
   });
 
   const cases: Array<[string, () => void, string]> = [
@@ -154,5 +170,82 @@ describe('ShortStayListingFormPage — photos picked on the create form', () => 
 
     page.removePendingPhoto(0);
     expect(page.pendingPhotos().length).toBe(9);
+  });
+});
+
+describe('toApiTime', () => {
+  it('pads HH:mm, keeps HH:mm:ss and maps empty to null', () => {
+    expect(toApiTime('14:00')).toBe('14:00:00');
+    expect(toApiTime('09:05:30')).toBe('09:05:30');
+    expect(toApiTime('')).toBeNull();
+    expect(toApiTime('  ')).toBeNull();
+    expect(toApiTime(null)).toBeNull();
+    expect(toApiTime(undefined)).toBeNull();
+  });
+});
+
+describe('ShortStayListingFormPage — edit mode times', () => {
+  let page: ShortStayListingFormPage;
+  let api: jasmine.SpyObj<ShortStayListingApiService>;
+  let toast: jasmine.SpyObj<ToastService>;
+
+  beforeEach(() => {
+    api = jasmine.createSpyObj('ShortStayListingApiService', ['getById', 'update', 'setAmenities', 'setPricingRules']);
+    api.getById.and.returnValue(of({
+      id: 'l1', currencyCode: 'SYP', title: 't', description: 'd', capacity: 2, bedrooms: 1, bathrooms: 1,
+      checkInTime: '14:00:00', checkOutTime: '11:00:00', selfCheckInEnabled: false, instantBookingEnabled: true,
+      requestBookingEnabled: false, latitude: 1, longitude: 2, city: null, locationVisibility: 'Exact',
+      governorateId: null, districtId: null, neighborhoodId: null, poolType: null, poolLocation: null,
+      poolIsSeasonal: null, poolIsHeated: null, cleaningFee: 0, extraGuestFee: 0, extraBedFee: 0,
+      allowsSmoking: false, allowsParties: false, allowsPets: false, quietHoursStart: null, quietHoursEnd: null,
+      customRulesText: null, cancellationFreeCancellationDays: 3, cancellationDepositRefundable: true,
+      cancellationCustomTermsText: null, depositPercentage: null, amenityIds: [], roomTypes: [], photoUrls: [],
+      isPublished: false
+    } as never));
+    api.update.and.returnValue(of({} as never));
+    api.setAmenities.and.returnValue(of(undefined as never));
+    toast = jasmine.createSpyObj('ToastService', ['show']);
+
+    TestBed.configureTestingModule({
+      imports: [ShortStayListingFormPage, TranslateModule.forRoot()],
+      providers: [
+        provideRouter([]),
+        { provide: ShortStayListingApiService, useValue: api },
+        { provide: LookupsApiService, useValue: { getAmenities: () => of([]) } },
+        { provide: AuthService, useValue: {} },
+        { provide: ToastService, useValue: toast },
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ id: 'l1' }) } } }
+      ]
+    });
+
+    page = TestBed.createComponent(ShortStayListingFormPage).componentInstance;
+    page.ngOnInit();
+  });
+
+  it('round-trips saved times as HH:mm:ss and sends empty quiet hours as null (never "")', () => {
+    page.saveChanges();
+
+    expect(api.update).toHaveBeenCalledWith('l1', jasmine.objectContaining({
+      checkInTime: '14:00:00', checkOutTime: '11:00:00', quietHoursStart: null, quietHoursEnd: null
+    }));
+  });
+
+  it('sends quiet hours as HH:mm:ss when both are set', () => {
+    page.quietHoursStart = '22:00';
+    page.quietHoursEnd = '07:00';
+    page.saveChanges();
+
+    expect(api.update).toHaveBeenCalledWith('l1', jasmine.objectContaining({
+      quietHoursStart: '22:00:00', quietHoursEnd: '07:00:00'
+    }));
+  });
+
+  it('blocks a half-filled quiet-hours pair and says why', () => {
+    page.quietHoursStart = '22:00';
+    page.quietHoursEnd = '';
+    page.saveChanges();
+
+    expect(api.update).not.toHaveBeenCalled();
+    expect(toast.show).toHaveBeenCalledWith('SHORTSTAY.FORM.ERR_QUIET_HOURS', 'error');
   });
 });
