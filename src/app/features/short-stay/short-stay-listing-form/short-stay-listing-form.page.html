@@ -80,28 +80,62 @@
       </p>
     </section>
 
-    <section class="ssf__section" *ngIf="isEditMode">
+    <section class="ssf__section ssf__location">
       <h2>{{ 'SHORTSTAY.FORM.LOCATION' | translate }}</h2>
+      <p class="ssf__hint">{{ 'SHORTSTAY.FORM.LOCATION_HINT' | translate }}</p>
+      <p class="ssf__error" role="alert" *ngIf="locationLoadFailed()">{{ 'SHORTSTAY.FORM.LOCATION_LOAD_ERROR' | translate }}</p>
+
+      <div class="ssf__field">
+        <label>{{ 'SHORTSTAY.FORM.GOVERNORATE' | translate }} <span class="ssf__required" aria-hidden="true">*</span></label>
+        <select [ngModel]="governorateId" (ngModelChange)="onGovernorateChange($event)" name="governorateId" required>
+          <option [ngValue]="null" disabled>{{ 'SHORTSTAY.FORM.SELECT_GOVERNORATE' | translate }}</option>
+          <option *ngFor="let g of governorates()" [ngValue]="g.id">{{ locationLabel(g) }}</option>
+        </select>
+      </div>
       <div class="ssf__row">
         <div class="ssf__field">
-          <label>{{ 'SHORTSTAY.FORM.LATITUDE' | translate }}</label>
-          <input type="number" step="0.000001" [(ngModel)]="latitude" name="latitude" />
+          <label>{{ 'SHORTSTAY.FORM.DISTRICT' | translate }}</label>
+          <select [ngModel]="districtId" (ngModelChange)="onDistrictChange($event)" name="districtId" [disabled]="!governorateId">
+            <option [ngValue]="null">{{ 'SHORTSTAY.FORM.OPTIONAL_SELECT' | translate }}</option>
+            <option *ngFor="let d of districts()" [ngValue]="d.id">{{ locationLabel(d) }}</option>
+          </select>
         </div>
         <div class="ssf__field">
-          <label>{{ 'SHORTSTAY.FORM.LONGITUDE' | translate }}</label>
-          <input type="number" step="0.000001" [(ngModel)]="longitude" name="longitude" />
+          <label>{{ 'SHORTSTAY.FORM.NEIGHBORHOOD' | translate }}</label>
+          <select [(ngModel)]="neighborhoodId" name="neighborhoodId" [disabled]="!districtId">
+            <option [ngValue]="null">{{ 'SHORTSTAY.FORM.OPTIONAL_SELECT' | translate }}</option>
+            <option *ngFor="let n of neighborhoods()" [ngValue]="n.id">{{ locationLabel(n) }}</option>
+          </select>
         </div>
       </div>
-      <div class="ssf__field">
-        <label>{{ 'SHORTSTAY.FORM.CITY' | translate }}</label>
-        <input type="text" [(ngModel)]="city" name="city" />
+
+      <div class="ssf__map">
+        <p class="ssf__map-label">{{ 'SHORTSTAY.FORM.MAP_HINT' | translate }}</p>
+        <app-map-picker [lang]="mapLang" [marker]="pin()" (locationChange)="onMapPinSelected($event)"></app-map-picker>
+        <div class="ssf__map-actions">
+          <button type="button" class="btn btn--sm btn--outline" [disabled]="locating()" (click)="useMyLocation()">
+            <span aria-hidden="true">📍</span>
+            {{ (locating() ? 'SHORTSTAY.FORM.LOCATING' : 'SHORTSTAY.FORM.USE_MY_LOCATION') | translate }}
+          </button>
+          <span class="ssf__pin-status" *ngIf="pin() as p">
+            ✓ {{ 'SHORTSTAY.FORM.PIN_SELECTED' | translate }}: {{ p.lat | number:'1.4-4' }}, {{ p.lng | number:'1.4-4' }}
+          </span>
+        </div>
+        <p class="ssf__error ssf__location-error" role="alert" *ngIf="submitAttempted() && !governorateId">
+          {{ 'SHORTSTAY.FORM.ERR_GOVERNORATE' | translate }}
+        </p>
+        <p class="ssf__error ssf__location-error" role="alert" *ngIf="submitAttempted() && !pin()">
+          {{ 'SHORTSTAY.FORM.ERR_PIN' | translate }}
+        </p>
       </div>
+
       <div class="ssf__field">
         <label>{{ 'SHORTSTAY.FORM.LOCATION_VISIBILITY' | translate }}</label>
         <select [(ngModel)]="locationVisibility" name="locationVisibility">
           <option value="Exact">{{ 'SHORTSTAY.FORM.EXACT' | translate }}</option>
           <option value="Approximate">{{ 'SHORTSTAY.FORM.APPROXIMATE' | translate }}</option>
         </select>
+        <p class="ssf__hint">{{ (locationVisibility === 'Exact' ? 'SHORTSTAY.FORM.VISIBILITY_EXACT_HINT' : 'SHORTSTAY.FORM.VISIBILITY_APPROX_HINT') | translate }}</p>
       </div>
     </section>
 

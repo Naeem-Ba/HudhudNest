@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -8,7 +8,10 @@ import { PhotoGuideSheetComponent } from '../../../shared/ui/photo-guide/photo-g
 import { forkJoin } from 'rxjs';
 
 import { ShortStayListingApiService } from '../../../core/api/short-stay-listing-api.service';
-import { LookupsApiService, LookupAmenity } from '../../../core/api/lookups-api.service';
+import { LookupsApiService, LookupAmenity, StructuredLocationLookup, pickLocalizedName } from '../../../core/api/lookups-api.service';
+import { MapPickerComponent } from '../../../map-picker/map-picker.component';
+import { CITY_MAPS } from '../../../map-picker/city-map.config';
+import { LangCode } from '../../../core/services/language.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import {
@@ -40,6 +43,24 @@ export function toApiTime(value: string | null | undefined): string | null {
   return /^\d{2}:\d{2}$/.test(v) ? `${v}:00` : v;
 }
 
+/**
+ * Best-effort: finds the bundled city map (centre + zoom) for a governorate by its English name so
+ * choosing "Aleppo" pans the picker there. Ignores case, punctuation and doubled letters
+ * ("Lattakia" / "Latakia", "Deir ez-Zor" / "DEIR_EZZOR"); returns null when nothing matches.
+ */
+export function cityMapFor(nameEn: string): { lat: number; lng: number; zoom: number } | null {
+  const collapse = (value: string): string =>
+    value.toUpperCase().replace(/[^A-Z]/g, '').replace(/(.)\1+/g, '$1');
+  const wanted = collapse(nameEn ?? '');
+  if (!wanted) return null;
+
+  const hit = CITY_MAPS.find(c => {
+    const key = collapse(c.nameKey);
+    return key === wanted || key.includes(wanted) || wanted.includes(key);
+  });
+  return hit ? { lat: hit.lat, lng: hit.lng, zoom: hit.zoom } : null;
+}
+
 type PricingRuleForm = {
   ruleType: PricingRuleDto['ruleType'];
   dayOfWeek: number | null;
@@ -51,7 +72,7 @@ type PricingRuleForm = {
 @Component({
   selector: 'app-short-stay-listing-form-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, PhotoGuideSheetComponent],
+  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, PhotoGuideSheetComponent, MapPickerComponent],
   templateUrl: './short-stay-listing-form.page.html',
   styleUrls: ['./short-stay-listing-form.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -87,6 +108,16 @@ export class ShortStayListingFormPage implements OnInit {
   readonly maxPhotosPerRequest = PHOTO_MAX_PER_REQUEST;
   readonly togglingPublish = signal(false);
 
+  // ── الموقع: المحافظة ← المنطقة ← الحي + نقطة على الخريطة ──
+  readonly governorates = signal<StructuredLocationLookup[]>([]);
+  readonly districts = signal<StructuredLocationLookup[]>([]);
+  readonly neighborhoods = signal<StructuredLocationLookup[]>([]);
+  readonly locationLoadFailed = signal(false);
+  /** The map's pin. Single source of truth: latitude/longitude below always mirror it. */
+  readonly pin = signal<{ lat: number; lng: number } | null>(null);
+  readonly locating = signal(false);
+  @ViewChild(MapPickerComponent) private mapPicker?: MapPickerComponent;
+
   // ── حقول الإنشاء (وضع "جديد" فقط) ──
   accommodationTypeId: number | null = null;
   defaultBasePricePerNight = 0;
@@ -104,8 +135,8 @@ export class ShortStayListingFormPage implements OnInit {
   selfCheckInEnabled = false;
   instantBookingEnabled = true;
   requestBookingEnabled = false;
-  latitude = 0;
-  longitude = 0;
+  latitude: number | null = null;
+  longitude: number | null = null;
   city = '';
   locationVisibility: LocationVisibility = 'Exact';
 
@@ -150,6 +181,14 @@ export class ShortStayListingFormPage implements OnInit {
       next: items => this.amenityCatalog.set(items), error: () => this.amenityCatalog.set([])
     });
 
+    this.lookupsApi.getGovernorates().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: items => this.governorates.set(items),
+      error: () => {
+        this.governorates.set([]);
+        this.locationLoadFailed.set(true);
+      }
+    });
+
     if (id) {
       this.loadForEdit(id);
     } else {
@@ -190,13 +229,14 @@ export class ShortStayListingFormPage implements OnInit {
     this.selfCheckInEnabled = listing.selfCheckInEnabled;
     this.instantBookingEnabled = listing.instantBookingEnabled;
     this.requestBookingEnabled = listing.requestBookingEnabled;
-    this.latitude = listing.latitude ?? 0;
-    this.longitude = listing.longitude ?? 0;
+    this.setPin(listing.latitude, listing.longitude);
     this.city = listing.city ?? '';
     this.locationVisibility = listing.locationVisibility;
     this.governorateId = listing.governorateId;
     this.districtId = listing.districtId;
     this.neighborhoodId = listing.neighborhoodId;
+    if (listing.governorateId) this.loadDistricts(listing.governorateId);
+    if (listing.districtId) this.loadNeighborhoods(listing.districtId);
     this.poolType = listing.poolType;
     this.poolLocation = listing.poolLocation;
     this.poolIsSeasonal = listing.poolIsSeasonal;
@@ -222,6 +262,94 @@ export class ShortStayListingFormPage implements OnInit {
         ruleType: r.ruleType, dayOfWeek: r.dayOfWeek,
         dateRangeStart: r.dateRangeStart, dateRangeEnd: r.dateRangeEnd, pricePerNight: r.pricePerNight
       }))
+    );
+  }
+
+  private get lang(): LangCode {
+    return (this.translate.currentLang === 'ar' ? 'ar' : this.translate.currentLang === 'de' ? 'de' : 'en') as LangCode;
+  }
+
+  locationLabel(item: StructuredLocationLookup): string {
+    return pickLocalizedName(item, this.lang);
+  }
+
+  get mapLang(): LangCode {
+    return this.lang;
+  }
+
+  private loadDistricts(governorateId: number): void {
+    this.lookupsApi.getDistricts(governorateId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: items => this.districts.set(items),
+      error: () => {
+        this.districts.set([]);
+        this.locationLoadFailed.set(true);
+      }
+    });
+  }
+
+  private loadNeighborhoods(districtId: number): void {
+    this.lookupsApi.getNeighborhoods(districtId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: items => this.neighborhoods.set(items),
+      error: () => {
+        this.neighborhoods.set([]);
+        this.locationLoadFailed.set(true);
+      }
+    });
+  }
+
+  onGovernorateChange(id: number | null): void {
+    this.governorateId = id;
+    this.districtId = null;
+    this.neighborhoodId = null;
+    this.districts.set([]);
+    this.neighborhoods.set([]);
+    if (!id) return;
+
+    this.loadDistricts(id);
+
+    // Only steer the map before the host has placed a pin — never move it out from under one.
+    const governorate = this.governorates().find(g => g.id === id);
+    const city = governorate ? cityMapFor(governorate.nameEn) : null;
+    if (city && !this.pin()) this.mapPicker?.updateCenter(city.lat, city.lng, city.zoom);
+  }
+
+  onDistrictChange(id: number | null): void {
+    this.districtId = id;
+    this.neighborhoodId = null;
+    this.neighborhoods.set([]);
+    if (id) this.loadNeighborhoods(id);
+  }
+
+  setPin(lat: number | null, lng: number | null): void {
+    const valid = typeof lat === 'number' && typeof lng === 'number' && Number.isFinite(lat) && Number.isFinite(lng);
+    this.latitude = valid ? lat : null;
+    this.longitude = valid ? lng : null;
+    this.pin.set(valid ? { lat: lat as number, lng: lng as number } : null);
+  }
+
+  onMapPinSelected(location: { lat: number; lng: number }): void {
+    this.setPin(location.lat, location.lng);
+  }
+
+  /** "Use my location": a GPS fix becomes the pin; every failure says what to do next. */
+  useMyLocation(): void {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      this.toast.show(this.translate.instant('SHORTSTAY.FORM.GPS_UNSUPPORTED'), 'error');
+      return;
+    }
+
+    this.locating.set(true);
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        this.locating.set(false);
+        this.setPin(position.coords.latitude, position.coords.longitude);
+      },
+      error => {
+        this.locating.set(false);
+        const key = error.code === 1 ? 'SHORTSTAY.FORM.GPS_DENIED' : 'SHORTSTAY.FORM.GPS_FAILED';
+        this.toast.show(this.translate.instant(key), 'error');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
     );
   }
 
@@ -265,7 +393,8 @@ export class ShortStayListingFormPage implements OnInit {
     if (!isNum(this.bathrooms) || this.bathrooms < 0) return 'SHORTSTAY.FORM.ERR_BATHROOMS';
     if (!this.checkInTime || !this.checkOutTime) return 'SHORTSTAY.FORM.ERR_TIMES';
     if (includeFees && !this.quietHoursStart !== !this.quietHoursEnd) return 'SHORTSTAY.FORM.ERR_QUIET_HOURS';
-    if (!isNum(this.latitude) || !isNum(this.longitude)) return 'SHORTSTAY.FORM.ERR_LOCATION';
+    if (!this.governorateId) return 'SHORTSTAY.FORM.ERR_GOVERNORATE';
+    if (!isNum(this.latitude) || !isNum(this.longitude)) return 'SHORTSTAY.FORM.ERR_PIN';
     if (includeFees && [this.cleaningFee, this.extraGuestFee, this.extraBedFee].some(fee => !isNum(fee) || fee < 0)) {
       return 'SHORTSTAY.FORM.ERR_FEES';
     }
@@ -275,8 +404,12 @@ export class ShortStayListingFormPage implements OnInit {
   /** Toast the reason and move the user to the first offending field (highlighted via submitAttempted). */
   private rejectSubmit(messageKey: string): void {
     this.toast.show(this.translate.instant(messageKey), 'error');
+    // A missing pin has no invalid <input> to focus — the inline error only renders after this
+    // tick — so point at the map itself.
     const target = this.host.nativeElement.querySelector<HTMLElement>(
-      'input.ng-invalid, select.ng-invalid, textarea.ng-invalid'
+      messageKey === 'SHORTSTAY.FORM.ERR_PIN'
+        ? '.ssf__map'
+        : 'input.ng-invalid, select.ng-invalid, textarea.ng-invalid'
     );
     target?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
     target?.focus?.({ preventScroll: true });
@@ -319,6 +452,10 @@ export class ShortStayListingFormPage implements OnInit {
       checkOutTime: toApiTime(this.checkOutTime)!,
       latitude: this.latitude,
       longitude: this.longitude,
+      governorateId: this.governorateId,
+      districtId: this.districtId,
+      neighborhoodId: this.neighborhoodId,
+      locationVisibility: this.locationVisibility,
       defaultBasePricePerNight: this.defaultBasePricePerNight,
       currencyCode: this.currencyCode
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -534,6 +671,14 @@ export class ShortStayListingFormPage implements OnInit {
     const id = this.listingId();
     const current = this.listing();
     if (!id || !current) return;
+
+    // The API refuses to publish without a city and a pin; say so in the user's language and
+    // take them to the fix instead of a generic failure.
+    if (!current.isPublished && (!current.city || current.latitude === null || current.longitude === null)) {
+      this.toast.show(this.translate.instant('SHORTSTAY.FORM.PUBLISH_NEEDS_LOCATION'), 'error');
+      this.host.nativeElement.querySelector('.ssf__location')?.scrollIntoView?.({ block: 'start', behavior: 'smooth' });
+      return;
+    }
 
     this.togglingPublish.set(true);
     const action$ = current.isPublished ? this.api.unpublish(id) : this.api.publish(id);

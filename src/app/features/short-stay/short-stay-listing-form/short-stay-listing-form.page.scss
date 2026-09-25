@@ -146,3 +146,34 @@
   text-underline-offset: 3px;
   cursor: pointer;
 }
+
+.ssf__required { color: var(--danger, #dc2626); }
+
+.ssf__map {
+  margin-bottom: 1rem;
+  /* Shorter than the default 400px so the form keeps scrolling on a phone. */
+  --map-picker-height: 300px;
+}
+
+.ssf__map-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--gray-700, #374151);
+  margin-bottom: 0.5rem;
+}
+
+.ssf__map-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.6rem;
+}
+
+.ssf__pin-status {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--success, #15803d);
+}
+
+.ssf__map .ssf__error { margin-top: 0.5rem; }

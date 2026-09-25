@@ -228,8 +228,13 @@ export interface CreateShortStayListingRequest {
   bathrooms: number;
   checkInTime: string; // "HH:mm"
   checkOutTime: string;
-  latitude: number;
-  longitude: number;
+  /** Null until the host pins the listing; the API never stores a fake 0,0. */
+  latitude: number | null;
+  longitude: number | null;
+  governorateId?: number | null;
+  districtId?: number | null;
+  neighborhoodId?: number | null;
+  locationVisibility?: LocationVisibility;
   defaultBasePricePerNight: number;
   currencyCode: string;
   propertyId?: string | null;
@@ -246,8 +251,8 @@ export interface UpdateShortStayListingRequest {
   selfCheckInEnabled: boolean;
   instantBookingEnabled: boolean;
   requestBookingEnabled: boolean;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
   governorateId: number | null;
   districtId: number | null;
   neighborhoodId: number | null;
