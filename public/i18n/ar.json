@@ -69,7 +69,14 @@
     "OPEN_MENU": "فتح القائمة",
     "CLOSE_MENU": "إغلاق القائمة",
     "PROVIDER_INBOX": "طلبات الخدمة الواردة",
-    "MY_MESSAGES": "رسائلي"
+    "MY_MESSAGES": "رسائلي",
+    "MANAGEMENT": "الإدارة",
+    "ADMIN_TOOLS": "أدوات المشرف",
+    "ADMIN_LOCATION_SUGGESTIONS": "اقتراحات المواقع",
+    "PROFILE_PHOTO": "الصورة الشخصية",
+    "SIGNED_IN_WITH_EMAIL": "تم تسجيل الدخول بالبريد الإلكتروني:",
+    "SIGNED_IN_WITH_PHONE": "تم تسجيل الدخول برقم الهاتف:",
+    "CURRENT_SECTION": "(القسم الحالي)"
   },
   "AUTH": {
     "LOGIN_TITLE": "أهلاً بك",

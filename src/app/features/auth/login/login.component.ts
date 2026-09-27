@@ -11,6 +11,7 @@ import { PHONE_E164_PATTERN, normalizePhoneInput } from '../../../core/auth/phon
 import { getPhoneLoginErrorMessage } from '../phone-auth-errors';
 import { AuthTokenResponse, TokenStorageService } from '../../../core/services/token-storage.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { LoginMethod } from '../../../core/auth/login-identifier';
 import { ConsentApiService } from '../../../core/api/consent-api.service';
 import { PRIVACY_POLICY_VERSION } from '../../../core/models/consent-versions';
 import { ConsentCheckboxComponent } from '../../../shared/components/consent-checkbox/consent-checkbox.component';
@@ -151,7 +152,7 @@ export class LoginComponent implements OnDestroy {
     this.authApi.login(request).subscribe({
       next: () => {
         this.clearLockout();
-        this.refreshAuthState();
+        this.refreshAuthState('email');
         this.completeLoginSuccess();
       },
       error: error => {
@@ -431,7 +432,7 @@ export class LoginComponent implements OnDestroy {
 
     this.phoneAuthApi.login({ phoneNumber: phone, password: this.phoneLoginPassword }).subscribe({
       next: () => {
-        this.refreshAuthState();
+        this.refreshAuthState('phone');
         this.completeLoginSuccess();
       },
       error: err => {
@@ -452,7 +453,7 @@ export class LoginComponent implements OnDestroy {
 
   private completeSocialLogin(response: AuthTokenResponse): void {
     this.tokenStorage.storeTokens(response);
-    this.refreshAuthState();
+    this.refreshAuthState('email');
     this.completeLoginSuccess();
   }
 
@@ -466,12 +467,16 @@ export class LoginComponent implements OnDestroy {
     void this.router.navigateByUrl(returnUrl);
   }
 
-  private refreshAuthState(): void {
+  /** Google/Apple sign in with the account's e-mail, so they count as 'email'. */
+  private refreshAuthState(method: LoginMethod): void {
     const authState = this.authState as unknown as {
+      rememberLoginMethod?: (method: LoginMethod) => void;
       restoreSession?: () => void;
       validateSession?: () => void;
     };
 
+    // Before validateSession(): the navbar reads the method on the first user emission.
+    authState.rememberLoginMethod?.(method);
     authState.restoreSession?.();
     authState.validateSession?.();
   }

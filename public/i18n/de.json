@@ -69,7 +69,14 @@
     "OPEN_MENU": "Menü öffnen",
     "CLOSE_MENU": "Menü schließen",
     "PROVIDER_INBOX": "Eingehende Serviceanfragen",
-    "MY_MESSAGES": "Meine Nachrichten"
+    "MY_MESSAGES": "Meine Nachrichten",
+    "MANAGEMENT": "Verwaltung",
+    "ADMIN_TOOLS": "Admin-Werkzeuge",
+    "ADMIN_LOCATION_SUGGESTIONS": "Standortvorschläge",
+    "PROFILE_PHOTO": "Profilbild",
+    "SIGNED_IN_WITH_EMAIL": "Angemeldet mit E-Mail:",
+    "SIGNED_IN_WITH_PHONE": "Angemeldet mit Telefonnummer:",
+    "CURRENT_SECTION": "(aktueller Bereich)"
   },
   "AUTH": {
     "LOGIN_TITLE": "Willkommen",

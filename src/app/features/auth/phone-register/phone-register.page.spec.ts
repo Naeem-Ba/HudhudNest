@@ -79,7 +79,7 @@ describe('PhoneRegisterPage (multi-channel OTP)', () => {
       providers: [
         provideRouter([{ path: 'home', children: [] }]),
         { provide: PhoneAuthApiService, useValue: api },
-        { provide: AuthService, useValue: jasmine.createSpyObj<AuthService>('AuthService', ['restoreSession', 'validateSession']) },
+        { provide: AuthService, useValue: jasmine.createSpyObj<AuthService>('AuthService', ['rememberLoginMethod', 'restoreSession', 'validateSession']) },
         { provide: ConsentApiService, useValue: jasmine.createSpyObj<ConsentApiService>('ConsentApiService', { record: of(undefined) }) }
       ]
     });

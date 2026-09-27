@@ -189,6 +189,8 @@ export class PhoneRegisterPage {
           }
 
           this.clearResendTimer();
+          // A phone registration signs straight in with that number.
+          this.authService.rememberLoginMethod('phone');
           this.authService.restoreSession();
           this.authService.validateSession();
           this.toast.success(this.translate.instant('AUTH.REGISTER_SUCCESS'));

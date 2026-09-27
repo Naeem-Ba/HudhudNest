@@ -10,12 +10,13 @@ import {
   inject
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NavigationStart, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { NavigationEnd, NavigationStart, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Observable, combineLatest, debounceTime, filter, fromEvent, map } from 'rxjs';
+import { Observable, combineLatest, debounceTime, distinctUntilChanged, filter, fromEvent, map } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { AuthService } from '../core/auth/auth.service';
+import { AuthService, AuthenticatedUser } from '../core/auth/auth.service';
+import { LoginIdentifier, resolveLoginIdentifier } from '../core/auth/login-identifier';
 import { LanguageService } from '../core/services/language.service';
 import { UrlService } from '../core/services/url.service';
 import { ImageFallbackDirective } from '../shared/directives/image-fallback.directive';
@@ -23,10 +24,35 @@ import { OverlayBackHandlerService } from '../core/services/overlay-back-handler
 import { ScrollLockService } from '../core/services/scroll-lock.service';
 import { ThemeService } from '../core/services/theme.service';
 import { NotificationsApiService } from '../core/api/notifications-api.service';
-import { ProfileService, isEligibleForListing } from '../core/api/profile.service';
+import { ProfileService, UserProfile, isEligibleForListing } from '../core/api/profile.service';
 import { ServiceProviderService } from '../core/api/service-provider.service';
 
 type AppLang = 'ar' | 'en' | 'de';
+
+/**
+ * pending — signed in, profile not loaded yet: a neutral circle instead of a letter
+ *           that the real photo would replace a moment later (no "?" flash).
+ * image   — the account's profile photo.
+ * initial — no photo (or it failed to load): first letter of the name / e-mail.
+ * generic — no photo and nothing to take a letter from (phone-only account without a
+ *           name): the existing default-avatar illustration, never a "?".
+ */
+type AvatarState = 'pending' | 'image' | 'initial' | 'generic';
+
+/**
+ * Routes that belong to the "Administration" group of the account menu / drawer — used to
+ * open the group automatically (and mark it) whenever the current URL is one of its tools,
+ * including deep links and back/forward. Prefix match, so /admin/users/:id or
+ * /properties/edit/:id (edited from "My listings") count too.
+ */
+const MANAGEMENT_ROUTE_PREFIXES = [
+  '/my-listings',
+  '/properties/edit',
+  '/short-stay/manage',
+  '/provider',
+  '/analytics',
+  '/admin'
+];
 
 @Component({
   selector: 'app-navbar',
@@ -92,8 +118,8 @@ export class NavbarComponent implements OnInit {
   /**
    * "لوحة مزوّد الخدمة" — تظهر فقط لحساب لديه ملف ServiceProvider فعلي (ليس دور Identity؛
    * انظر provider-guard.ts لنفس التفرقة). myProvider$ يبدأ undefined (لم يُحمَّل بعد)
-   * فيُقرأ كـ false هنا حتى يصل refresh() أدناه (مستدعى من نفس مكان profileService.refresh()
-   * في الاشتراك على currentUser$ تحت).
+   * فيُقرأ كـ false هنا حتى يصل refresh() أدناه (مستدعى مرة واحدة لكل حساب مسجَّل دخوله
+   * في ngOnInit).
    */
   readonly isProvider$: Observable<boolean> = combineLatest([
     this.isLoggedIn$,
@@ -106,10 +132,19 @@ export class NavbarComponent implements OnInit {
 
   currentLang: AppLang = 'ar';
 
-  avatarLetter = '?';
-  userEmail = '';
-  profileImageUrl = '/images/default-avatar.svg';
-  hasCustomImage = false;
+  avatarState: AvatarState = 'pending';
+  avatarInitial = '';
+  loginIdentifier: LoginIdentifier | null = null;
+  profileImageUrl = '';
+
+  /** The "Administration" group — shared by the account menu and the mobile drawer. */
+  managementOpen = false;
+  /** Current URL is one of the group's tools (drives auto-open and the group marker). */
+  managementRouteActive = false;
+
+  /** Raw (un-busted) URL behind profileImageUrl, and whether that exact URL failed. */
+  private rawImageUrl: string | null = null;
+  private imageFailed = false;
 
   ngOnInit(): void {
     const unregisterBackHandler = this.overlayBackHandler.register(() => {
@@ -164,42 +199,49 @@ export class NavbarComponent implements OnInit {
         this.applyLang(this.normalizeLang(rawLang));
       });
 
-    this.auth.currentUser$
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(event => this.syncManagementWithRoute(event.urlAfterRedirects));
+    this.syncManagementWithRoute(this.router.url);
+
+    // Avatar + login identifier. AuthService.validateSession() already fetches
+    // GET /users/me (hydrateProfile → profile$) on sign-in, reload and every guarded
+    // navigation; the navbar used to fire its own profileService.refresh() on top of that
+    // for every currentUser$ emission — two extra /users/me per page load and per guarded
+    // navigation. It now only reads the shared state.
+    combineLatest([
+      this.auth.currentUser$,
+      this.profileService.profile$,
+      this.profileService.loadFailed$
+    ])
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(user => {
+      .subscribe(([user, profile, profileFailed]) => {
         if (!user) {
           this.resetUserUI();
-          this.cd.markForCheck();
-          return;
-        }
-
-        this.userEmail = user.Email ?? user.email ?? '';
-        this.avatarLetter = this.userEmail
-          ? this.userEmail.charAt(0).toUpperCase()
-          : '?';
-
-        // Populates profile$ (EmailConfirmed/PhoneConfirmed/PlanTier) for canAddProperty$
-        // above. Errors are swallowed here on purpose: a failed profile fetch should not
-        // break the rest of the navbar, and canAddProperty$ simply stays false (link
-        // hidden) until the next successful refresh — the safe default either way.
-        this.profileService.refresh().subscribe({ error: () => undefined });
-
-        // نفس المنطق لـ isProvider$ أعلاه — 204 لغير المزوّدين طبيعي وليس خطأً (انظر
-        // ServiceProviderService.getMine)، فلا حاجة لأي معالجة هنا غير الكتم البسيط لخطأ
-        // شبكة فعلي محتمل.
-        this.serviceProviderService.refresh().subscribe({ error: () => undefined });
-
-        const imageUrl = this.urlService.buildWithCacheBuster(user.ImageUrl ?? undefined);
-
-        if (imageUrl) {
-          this.profileImageUrl = imageUrl;
-          this.hasCustomImage = true;
         } else {
-          this.profileImageUrl = '/images/default-avatar.svg';
-          this.hasCustomImage = false;
+          this.applyUserUI(user, profile, profileFailed);
         }
 
         this.cd.markForCheck();
+      });
+
+    // isProvider$ — once per signed-in account, not on every currentUser$ emission
+    // (refresh() resets myProvider$ to "unknown" first, so re-running it on each
+    // navigation also made the provider link blink out and back).
+    // 204 for non-providers is normal, not an error (see ServiceProviderService.getMine);
+    // a real network failure just leaves the link hidden.
+    this.auth.currentUser$
+      .pipe(
+        map(user => user?.id || null),
+        distinctUntilChanged(),
+        filter((id): id is string => !!id),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(() => {
+        this.serviceProviderService.refresh().subscribe({ error: () => undefined });
       });
   }
 
@@ -289,10 +331,77 @@ export class NavbarComponent implements OnInit {
     });
   }
 
+  /** The photo URL exists but does not load (deleted, blocked, offline): stop using it. */
   useFallbackImage(): void {
-    this.profileImageUrl = '/images/default-avatar.svg';
-    this.hasCustomImage = false;
+    if (this.avatarState !== 'image') {
+      return;
+    }
+
+    this.imageFailed = true;
+    this.avatarState = this.avatarInitial ? 'initial' : 'generic';
     this.cd.markForCheck();
+  }
+
+  /** Opens/closes the group in place — no navigation, and the menu itself stays open. */
+  toggleManagement(event: Event): void {
+    event.stopPropagation();
+    this.managementOpen = !this.managementOpen;
+    this.cd.markForCheck();
+  }
+
+  private syncManagementWithRoute(url: string): void {
+    const path = url.split(/[?#]/)[0] ?? '';
+    this.managementRouteActive = MANAGEMENT_ROUTE_PREFIXES.some(
+      prefix => path === prefix || path.startsWith(`${prefix}/`)
+    );
+
+    // Open (never force-close): the active tool must be visible when the menu is opened,
+    // but a group the user opened by hand stays open while they move elsewhere.
+    if (this.managementRouteActive) {
+      this.managementOpen = true;
+    }
+
+    this.cd.markForCheck();
+  }
+
+  private applyUserUI(
+    user: AuthenticatedUser,
+    profile: UserProfile | null,
+    profileFailed: boolean
+  ): void {
+    this.loginIdentifier = resolveLoginIdentifier(
+      this.auth.loginMethod,
+      profile?.Email || user.email,
+      profile?.Phone
+    );
+
+    const name = (profile?.DisplayName ?? '').trim();
+    const initialSource = name && /\p{L}/u.test(name.charAt(0))
+      ? name
+      : (this.loginIdentifier?.kind === 'email' ? this.loginIdentifier.value : '');
+    this.avatarInitial = initialSource ? initialSource.charAt(0).toUpperCase() : '';
+
+    // currentUser carries the freshest photo (hydrateProfile merges it in, and the
+    // profile page pushes a new upload straight into it); profile$ covers the moment
+    // before that merge. undefined = not known yet, ''/null = the account has none.
+    const known = user.ImageUrl !== undefined || user.imageUrl !== undefined || !!profile;
+    const raw = (user.ImageUrl ?? user.imageUrl ?? profile?.ImageUrl ?? '').trim() || null;
+
+    if (raw !== this.rawImageUrl) {
+      this.rawImageUrl = raw;
+      this.imageFailed = false;
+      // Busted once per distinct URL, not on every emission (which re-downloaded the
+      // same photo each time currentUser$ emitted).
+      this.profileImageUrl = this.urlService.buildWithCacheBuster(raw ?? undefined) ?? '';
+    }
+
+    if (this.profileImageUrl && !this.imageFailed) {
+      this.avatarState = 'image';
+    } else if (!known && !profileFailed) {
+      this.avatarState = 'pending';
+    } else {
+      this.avatarState = this.avatarInitial ? 'initial' : 'generic';
+    }
   }
 
   private normalizeLang(raw: string | null | undefined): AppLang {
@@ -362,9 +471,11 @@ export class NavbarComponent implements OnInit {
   }
 
   private resetUserUI(): void {
-    this.userEmail = '';
-    this.avatarLetter = '?';
-    this.profileImageUrl = '/images/default-avatar.svg';
-    this.hasCustomImage = false;
+    this.avatarState = 'pending';
+    this.avatarInitial = '';
+    this.loginIdentifier = null;
+    this.profileImageUrl = '';
+    this.rawImageUrl = null;
+    this.imageFailed = false;
   }
 }
