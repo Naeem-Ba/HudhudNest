@@ -96,59 +96,6 @@
         {{ 'NAVBAR.CONTACT' | translate }}
       </a>
 
-      <a
-        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
-        routerLink="/admin/messages"
-        routerLinkActive="navbar__link--active"
-        class="navbar__link"
-      >
-        {{ 'NAVBAR.MESSAGES' | translate }}
-      </a>
-
-      <a
-        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
-        routerLink="/admin/users"
-        routerLinkActive="navbar__link--active"
-        class="navbar__link"
-      >
-        {{ 'NAVBAR.ADMIN_USERS' | translate }}
-      </a>
-
-      <a
-        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
-        routerLink="/admin/investments"
-        routerLinkActive="navbar__link--active"
-        class="navbar__link"
-      >
-        {{ 'NAVBAR.ADMIN_INVESTMENTS' | translate }}
-      </a>
-
-      <a
-        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
-        routerLink="/admin/marketing"
-        routerLinkActive="navbar__link--active"
-        class="navbar__link"
-      >
-        {{ 'NAVBAR.ADMIN_MARKETING' | translate }}
-      </a>
-
-      <a
-        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
-        routerLink="/admin/app-updates"
-        routerLinkActive="navbar__link--active"
-        class="navbar__link"
-      >
-        {{ 'NAVBAR.ADMIN_APP_UPDATES' | translate }}
-      </a>
-
-      <a
-        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
-        routerLink="/admin/social-distribution"
-        routerLinkActive="navbar__link--active"
-        class="navbar__link"
-      >
-        {{ 'NAVBAR.ADMIN_SOCIAL_DISTRIBUTION' | translate }}
-      </a>
     </nav>
 
     <!-- Actions -->
@@ -305,21 +252,7 @@
             aria-haspopup="menu"
             aria-label="قائمة المستخدم"
           >
-            <img
-              *ngIf="hasCustomImage"
-              class="account__avatar"
-              [src]="profileImageUrl"
-              alt=""
-              appImageFallback="/images/default-avatar.svg"
-              (error)="useFallbackImage()"
-            />
-
-            <span
-              *ngIf="!hasCustomImage"
-              class="account__avatar account__avatar--letter"
-            >
-              {{ avatarLetter }}
-            </span>
+            <ng-container *ngTemplateOutlet="avatarTpl; context: { $implicit: 'sm' }"></ng-container>
 
             <svg
               class="account__chevron"
@@ -346,15 +279,20 @@
             aria-label="خيارات الحساب"
           >
             <div class="account__user-info">
-              <span
-                class="account__avatar account__avatar--lg account__avatar--letter"
-                aria-hidden="true"
-              >
-                {{ avatarLetter }}
-              </span>
+              <ng-container *ngTemplateOutlet="avatarTpl; context: { $implicit: 'lg' }"></ng-container>
 
               <div class="account__user-copy">
-                <p class="account__email">{{ userEmail }}</p>
+                <p
+                  *ngIf="loginIdentifier as identifier"
+                  class="account__email"
+                  [attr.dir]="identifier.kind === 'phone' ? 'ltr' : null"
+                  [title]="identifier.value"
+                >
+                  <span class="navbar-sr-only">
+                    {{ (identifier.kind === 'phone' ? 'NAVBAR.SIGNED_IN_WITH_PHONE' : 'NAVBAR.SIGNED_IN_WITH_EMAIL') | translate }}
+                  </span>
+                  {{ identifier.value }}
+                </p>
               </div>
             </div>
 
@@ -362,6 +300,8 @@
 
             <a
               routerLink="/profile"
+              routerLinkActive="account__item--active"
+              ariaCurrentWhenActive="page"
               class="account__item"
               role="menuitem"
               (click)="closeAccountMenu()"
@@ -392,86 +332,53 @@
               {{ 'PROFILE.TITLE' | translate }}
             </a>
 
-            <a
-              routerLink="/my-listings"
-              class="account__item"
-              role="menuitem"
-              (click)="closeAccountMenu()"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M2 4h12M2 8h9M2 12h6"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                />
-              </svg>
-
-              {{ 'PROFILE.MY_ADS' | translate }}
-            </a>
-
-            <a routerLink="/favorites" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+            <a routerLink="/favorites" routerLinkActive="account__item--active" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
               <span aria-hidden="true">❤️</span>
               {{ 'NAVBAR.FAVORITES' | translate }}
             </a>
 
-            <a routerLink="/messages" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+            <a routerLink="/messages" routerLinkActive="account__item--active" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
               <span aria-hidden="true">💬</span>
               {{ 'NAVBAR.MY_MESSAGES' | translate }}
             </a>
 
-            <a routerLink="/visits" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+            <a routerLink="/visits" routerLinkActive="account__item--active" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
               <span aria-hidden="true">📅</span>
               {{ 'NAVBAR.VISITS' | translate }}
             </a>
 
-            <a routerLink="/short-stay/bookings" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+            <a routerLink="/short-stay/bookings" routerLinkActive="account__item--active" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
               <span aria-hidden="true">🏖️</span>
               {{ 'NAVBAR.SHORT_STAY_BOOKINGS' | translate }}
             </a>
 
-            <a routerLink="/short-stay/manage" class="account__item" role="menuitem" (click)="closeAccountMenu()">
-              <span aria-hidden="true">🏡</span>
-              {{ 'NAVBAR.SHORT_STAY_LISTINGS' | translate }}
-            </a>
-
-            <a routerLink="/my-services" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+            <a routerLink="/my-services" routerLinkActive="account__item--active" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
               <span aria-hidden="true">🛡️</span>
               {{ 'NAVBAR.MY_SERVICES' | translate }}
             </a>
 
-            <!-- تظهر فقط لحساب لديه ملف ServiceProvider فعلي — انظر isProvider$ أعلاه. -->
-            <a *ngIf="isProvider$ | async" routerLink="/provider/requests" class="account__item" role="menuitem" (click)="closeAccountMenu()">
-              <span aria-hidden="true">🧰</span>
-              {{ 'NAVBAR.PROVIDER_INBOX' | translate }}
-            </a>
-
             <!-- Phase-0, Task 3. -->
-            <a routerLink="/saved-searches" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+            <a routerLink="/saved-searches" routerLinkActive="account__item--active" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
               <span aria-hidden="true">🔔</span>
               {{ 'NAVBAR.SAVED_SEARCHES' | translate }}
             </a>
 
-            <a routerLink="/investments/watchlist" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+            <a routerLink="/investments/watchlist" routerLinkActive="account__item--active" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
               <span aria-hidden="true">📈</span>
               {{ 'NAVBAR.INVESTMENT_WATCHLIST' | translate }}
             </a>
 
-            <a routerLink="/analytics" class="account__item" role="menuitem" (click)="closeAccountMenu()">
-              <span aria-hidden="true">📊</span>
-              {{ 'NAVBAR.ANALYTICS' | translate }}
-            </a>
-
-            <a routerLink="/reviews" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+            <a routerLink="/reviews" routerLinkActive="account__item--active" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
               <span aria-hidden="true">⭐</span>
               {{ 'NAVBAR.REVIEWS' | translate }}
             </a>
+
+            <div class="account__divider"></div>
+
+            <!-- "الإدارة": every tool that manages the account's own listings/services, plus
+                 the admin pages for Admin accounts. Opens/closes in place (no navigation) and
+                 opens by itself on any of its routes — see syncManagementWithRoute(). -->
+            <ng-container *ngTemplateOutlet="managementTpl; context: { $implicit: 'account' }"></ng-container>
 
             <div class="account__divider"></div>
 
@@ -646,131 +553,77 @@
         {{ 'NAVBAR.CONTACT' | translate }}
       </a>
 
-      <a
-        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
-        routerLink="/admin/messages"
-        class="mobile-drawer__link"
-        (click)="closeMobileMenu()"
-      >
-        {{ 'NAVBAR.MESSAGES' | translate }}
-      </a>
-
-      <a
-        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
-        routerLink="/admin/users"
-        class="mobile-drawer__link"
-        (click)="closeMobileMenu()"
-      >
-        {{ 'NAVBAR.ADMIN_USERS' | translate }}
-      </a>
-
-      <a
-        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
-        routerLink="/admin/investments"
-        class="mobile-drawer__link"
-        (click)="closeMobileMenu()"
-      >
-        {{ 'NAVBAR.ADMIN_INVESTMENTS' | translate }}
-      </a>
-
-      <a
-        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
-        routerLink="/admin/marketing"
-        class="mobile-drawer__link"
-        (click)="closeMobileMenu()"
-      >
-        {{ 'NAVBAR.ADMIN_MARKETING' | translate }}
-      </a>
-
-      <a
-        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
-        routerLink="/admin/app-updates"
-        class="mobile-drawer__link"
-        (click)="closeMobileMenu()"
-      >
-        {{ 'NAVBAR.ADMIN_APP_UPDATES' | translate }}
-      </a>
-
-      <a
-        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
-        routerLink="/admin/social-distribution"
-        class="mobile-drawer__link"
-        (click)="closeMobileMenu()"
-      >
-        {{ 'NAVBAR.ADMIN_SOCIAL_DISTRIBUTION' | translate }}
-      </a>
-
       <!-- Mobile User Section -->
       <ng-container *ngIf="isLoggedIn$ | async; else mobileLoginBtn">
         <div class="mobile-drawer__divider"></div>
 
+        <!-- Same avatar + sign-in identifier as the desktop account menu. -->
+        <div class="mobile-drawer__user">
+          <ng-container *ngTemplateOutlet="avatarTpl; context: { $implicit: 'lg' }"></ng-container>
+
+          <p
+            *ngIf="loginIdentifier as identifier"
+            class="mobile-drawer__identifier"
+            [attr.dir]="identifier.kind === 'phone' ? 'ltr' : null"
+          >
+            <span class="navbar-sr-only">
+              {{ (identifier.kind === 'phone' ? 'NAVBAR.SIGNED_IN_WITH_PHONE' : 'NAVBAR.SIGNED_IN_WITH_EMAIL') | translate }}
+            </span>
+            {{ identifier.value }}
+          </p>
+        </div>
+
         <a
           routerLink="/profile"
+          routerLinkActive="mobile-drawer__link--active"
+          ariaCurrentWhenActive="page"
           class="mobile-drawer__link"
           (click)="closeMobileMenu()"
         >
           {{ 'PROFILE.TITLE' | translate }}
         </a>
 
-        <a
-          routerLink="/my-listings"
-          class="mobile-drawer__link"
-          (click)="closeMobileMenu()"
-        >
-          {{ 'PROFILE.MY_ADS' | translate }}
-        </a>
-
-        <a routerLink="/favorites" class="mobile-drawer__link" (click)="closeMobileMenu()">
+        <a routerLink="/favorites" routerLinkActive="mobile-drawer__link--active" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
           {{ 'NAVBAR.FAVORITES' | translate }}
         </a>
 
         <!-- ✅ إضافة: نفس جرس الإشعارات بنسخة القائمة الجانبية للجوال -->
-        <a routerLink="/notifications" class="mobile-drawer__link mobile-drawer__link--notif" (click)="closeMobileMenu()">
+        <a routerLink="/notifications" routerLinkActive="mobile-drawer__link--active" ariaCurrentWhenActive="page" class="mobile-drawer__link mobile-drawer__link--notif" (click)="closeMobileMenu()">
           <span>{{ 'NAVBAR.NOTIFICATIONS' | translate }}</span>
           <span class="notif-bell__badge notif-bell__badge--inline" *ngIf="notificationsApi.unreadCount() > 0">
             {{ notificationsApi.unreadCount() > 9 ? '9+' : notificationsApi.unreadCount() }}
           </span>
         </a>
 
-        <a routerLink="/messages" class="mobile-drawer__link" (click)="closeMobileMenu()">
+        <a routerLink="/messages" routerLinkActive="mobile-drawer__link--active" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
           {{ 'NAVBAR.MY_MESSAGES' | translate }}
         </a>
 
-        <a routerLink="/visits" class="mobile-drawer__link" (click)="closeMobileMenu()">
+        <a routerLink="/visits" routerLinkActive="mobile-drawer__link--active" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
           {{ 'NAVBAR.VISITS' | translate }}
         </a>
 
-        <a routerLink="/short-stay/bookings" class="mobile-drawer__link" (click)="closeMobileMenu()">
+        <a routerLink="/short-stay/bookings" routerLinkActive="mobile-drawer__link--active" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
           {{ 'NAVBAR.SHORT_STAY_BOOKINGS' | translate }}
         </a>
 
-        <a routerLink="/short-stay/manage" class="mobile-drawer__link" (click)="closeMobileMenu()">
-          {{ 'NAVBAR.SHORT_STAY_LISTINGS' | translate }}
-        </a>
-
-        <a routerLink="/my-services" class="mobile-drawer__link" (click)="closeMobileMenu()">
+        <a routerLink="/my-services" routerLinkActive="mobile-drawer__link--active" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
           {{ 'NAVBAR.MY_SERVICES' | translate }}
         </a>
 
-        <a *ngIf="isProvider$ | async" routerLink="/provider/requests" class="mobile-drawer__link" (click)="closeMobileMenu()">
-          {{ 'NAVBAR.PROVIDER_INBOX' | translate }}
-        </a>
-
-        <a routerLink="/saved-searches" class="mobile-drawer__link" (click)="closeMobileMenu()">
+        <a routerLink="/saved-searches" routerLinkActive="mobile-drawer__link--active" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
           {{ 'NAVBAR.SAVED_SEARCHES' | translate }}
         </a>
 
-        <a routerLink="/investments/watchlist" class="mobile-drawer__link" (click)="closeMobileMenu()">
+        <a routerLink="/investments/watchlist" routerLinkActive="mobile-drawer__link--active" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
           {{ 'NAVBAR.INVESTMENT_WATCHLIST' | translate }}
         </a>
 
-        <a routerLink="/analytics" class="mobile-drawer__link" (click)="closeMobileMenu()">
-          {{ 'NAVBAR.ANALYTICS' | translate }}
-        </a>
-
-        <a routerLink="/reviews" class="mobile-drawer__link" (click)="closeMobileMenu()">
+        <a routerLink="/reviews" routerLinkActive="mobile-drawer__link--active" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
           {{ 'NAVBAR.REVIEWS' | translate }}
         </a>
+
+        <ng-container *ngTemplateOutlet="managementTpl; context: { $implicit: 'drawer' }"></ng-container>
 
         <button
           type="button"
@@ -842,4 +695,134 @@
       </div>
     </nav>
   </div>
+
+  <!--
+    Avatar used by the trigger, the account menu header and the drawer header.
+    See AvatarState in navbar.component.ts for what each state means — none of them
+    renders a "?".
+  -->
+  <ng-template #avatarTpl let-size>
+    <img
+      *ngIf="avatarState === 'image'"
+      class="account__avatar"
+      [class.account__avatar--lg]="size === 'lg'"
+      [src]="profileImageUrl"
+      [attr.alt]="size === 'lg' ? ('NAVBAR.PROFILE_PHOTO' | translate) : ''"
+      (error)="useFallbackImage()"
+    />
+
+    <span
+      *ngIf="avatarState === 'initial'"
+      class="account__avatar account__avatar--letter"
+      [class.account__avatar--lg]="size === 'lg'"
+      aria-hidden="true"
+    >{{ avatarInitial }}</span>
+
+    <img
+      *ngIf="avatarState === 'generic'"
+      class="account__avatar account__avatar--generic"
+      [class.account__avatar--lg]="size === 'lg'"
+      src="/images/default-avatar.svg"
+      alt=""
+    />
+
+    <span
+      *ngIf="avatarState === 'pending'"
+      class="account__avatar account__avatar--pending"
+      [class.account__avatar--lg]="size === 'lg'"
+      aria-hidden="true"
+    ></span>
+  </ng-template>
+
+  <!--
+    "الإدارة" group. variant 'account' = desktop account menu, 'drawer' = mobile drawer;
+    both share managementOpen, so the group keeps its state across the two. Admin links
+    are shown only to Admin accounts (AdminGuard + [Authorize(Roles = Admin)] on the API
+    still enforce it); the provider inbox only to accounts with a ServiceProvider profile
+    (ProviderGuard).
+  -->
+  <ng-template #managementTpl let-variant>
+    <button
+      type="button"
+      [class]="variant === 'account' ? 'account__item account__group-toggle' : 'mobile-drawer__link mobile-drawer__group-toggle'"
+      [class.group-toggle--current]="managementRouteActive"
+      [attr.role]="variant === 'account' ? 'menuitem' : null"
+      [attr.aria-expanded]="managementOpen"
+      [attr.aria-controls]="variant + '-management-group'"
+      (click)="toggleManagement($event)"
+    >
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5" />
+        <rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5" />
+        <rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5" />
+        <rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5" />
+      </svg>
+
+      <span class="group-toggle__label">{{ 'NAVBAR.MANAGEMENT' | translate }}</span>
+
+      <span *ngIf="managementRouteActive" class="group-toggle__current-dot" aria-hidden="true"></span>
+      <span *ngIf="managementRouteActive" class="navbar-sr-only">{{ 'NAVBAR.CURRENT_SECTION' | translate }}</span>
+
+      <svg class="group-toggle__chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+      </svg>
+    </button>
+
+    <div
+      [id]="variant + '-management-group'"
+      class="nav-group"
+      [class.nav-group--drawer]="variant === 'drawer'"
+      role="group"
+      [attr.aria-label]="'NAVBAR.MANAGEMENT' | translate"
+      [hidden]="!managementOpen"
+    >
+      <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/my-listings', label: 'PROFILE.MY_ADS', icon: '📋' }"></ng-container>
+      <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/short-stay/manage', label: 'NAVBAR.SHORT_STAY_LISTINGS', icon: '🏡' }"></ng-container>
+
+      <ng-container *ngIf="isProvider$ | async">
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/provider/requests', label: 'NAVBAR.PROVIDER_INBOX', icon: '🧰' }"></ng-container>
+      </ng-container>
+
+      <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/analytics', label: 'NAVBAR.ANALYTICS', icon: '📊' }"></ng-container>
+
+      <ng-container *ngIf="isAdmin$ | async">
+        <p class="nav-group__label">{{ 'NAVBAR.ADMIN_TOOLS' | translate }}</p>
+
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/messages', label: 'NAVBAR.MESSAGES', icon: '✉️' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/users', label: 'NAVBAR.ADMIN_USERS', icon: '👥' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/investments', label: 'NAVBAR.ADMIN_INVESTMENTS', icon: '💼' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/location-suggestions', label: 'NAVBAR.ADMIN_LOCATION_SUGGESTIONS', icon: '📍' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/marketing', label: 'NAVBAR.ADMIN_MARKETING', icon: '📣' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/app-updates', label: 'NAVBAR.ADMIN_APP_UPDATES', icon: '📲' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/social-distribution', label: 'NAVBAR.ADMIN_SOCIAL_DISTRIBUTION', icon: '📡' }"></ng-container>
+      </ng-container>
+    </div>
+  </ng-template>
+
+  <ng-template #managementLinkTpl let-variant let-link="link" let-label="label" let-icon="icon">
+    <a
+      *ngIf="variant === 'account'; else drawerLink"
+      [routerLink]="link"
+      routerLinkActive="account__item--active"
+      ariaCurrentWhenActive="page"
+      class="account__item nav-group__item"
+      role="menuitem"
+      (click)="closeAccountMenu()"
+    >
+      <span aria-hidden="true">{{ icon }}</span>
+      {{ label | translate }}
+    </a>
+
+    <ng-template #drawerLink>
+      <a
+        [routerLink]="link"
+        routerLinkActive="mobile-drawer__link--active"
+        ariaCurrentWhenActive="page"
+        class="mobile-drawer__link nav-group__item"
+        (click)="closeMobileMenu()"
+      >
+        {{ label | translate }}
+      </a>
+    </ng-template>
+  </ng-template>
 </header>

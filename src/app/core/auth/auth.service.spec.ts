@@ -374,6 +374,84 @@ describe('AuthService', () => {
       service.isLoggedIn$.subscribe(v => (loggedIn = v));
       expect(loggedIn).toBeTrue();
     });
+
+    // AuthGuard يستدعي validateSession() في كل تنقّل محمي؛ كانت تُعيد بناء المستخدم من
+    // التوكن وحده فتختفي الصورة (وتظهر الحروف مكانها) حتى يصل /users/me التالي.
+    it('✅ validateSession() لنفس المستخدم يُبقي الصورة والاسم المعروض حتى يصل الجلب الجديد', () => {
+      const token = makeJwt({
+        sub: 'u5',
+        email: 'img@example.com',
+        name: 'img@example.com',
+        exp: Math.floor(Date.now() / 1000) + 3600
+      });
+      tokenStorage.setAccessToken(token);
+      service = TestBed.inject(AuthService);
+
+      httpMock.expectOne(`${environment.apiUrl}/users/me`).flush({
+        id: 'u5',
+        displayName: 'صاحب الصورة',
+        imageUrl: 'https://cdn.example.com/u5.png'
+      });
+
+      const seen: (string | null | undefined)[] = [];
+      service.currentUser$.subscribe(u => seen.push(u?.ImageUrl));
+
+      service.validateSession(); // ما يفعله AuthGuard عند كل تنقّل
+
+      // لا توجد لحظة بلا صورة قبل وصول الجلب الجديد.
+      expect(seen.every(url => url === 'https://cdn.example.com/u5.png')).toBeTrue();
+      expect(service.currentUserSnapshot?.displayName).toBe('صاحب الصورة');
+
+      httpMock.expectOne(`${environment.apiUrl}/users/me`).flush({
+        id: 'u5',
+        displayName: 'صاحب الصورة',
+        imageUrl: 'https://cdn.example.com/u5-new.png'
+      });
+      expect(service.currentUserSnapshot?.ImageUrl).toBe('https://cdn.example.com/u5-new.png');
+    });
+
+    it('✅ مستخدم مختلف في نفس التبويب لا يرث صورة/اسم المستخدم السابق', () => {
+      tokenStorage.setAccessToken(makeJwt({ sub: 'a1', email: 'a@example.com', exp: Math.floor(Date.now() / 1000) + 3600 }));
+      service = TestBed.inject(AuthService);
+      httpMock.expectOne(`${environment.apiUrl}/users/me`).flush({ id: 'a1', displayName: 'A', imageUrl: 'https://cdn.example.com/a.png' });
+
+      tokenStorage.setAccessToken(makeJwt({ sub: 'b2', email: 'b@example.com', exp: Math.floor(Date.now() / 1000) + 3600 }));
+      service.validateSession();
+
+      expect(service.currentUserSnapshot?.id).toBe('b2');
+      expect(service.currentUserSnapshot?.ImageUrl).toBeUndefined();
+      expect(service.currentUserSnapshot?.displayName).toBe('b@example.com');
+      httpMock.expectOne(`${environment.apiUrl}/users/me`).flush({ id: 'b2', displayName: 'B' });
+    });
+  });
+
+  // ────────────── طريقة تسجيل الدخول (بريد/هاتف) لعرض المعرّف الصحيح في القائمة ──────────────
+  describe('rememberLoginMethod / loginMethod', () => {
+    afterEach(() => localStorage.removeItem('auth.loginMethod'));
+
+    it('✅ تُحفَظ الطريقة وتبقى بعد إعادة بناء الخدمة (إعادة تحميل الصفحة)', () => {
+      service = TestBed.inject(AuthService);
+      service.rememberLoginMethod('phone');
+
+      expect(service.loginMethod).toBe('phone');
+      expect(localStorage.getItem('auth.loginMethod')).toBe('phone');
+    });
+
+    it('✅ قيمة غير معروفة في التخزين تُعامَل كغير محدَّدة', () => {
+      localStorage.setItem('auth.loginMethod', 'fax');
+      service = TestBed.inject(AuthService);
+
+      expect(service.loginMethod).toBeNull();
+    });
+
+    it('✅ تسجيل الخروج يمسح الطريقة المحفوظة', () => {
+      service = TestBed.inject(AuthService);
+      service.rememberLoginMethod('email');
+
+      service.logoutLocal();
+
+      expect(service.loginMethod).toBeNull();
+    });
   });
 
   // ────────────── authStatus$ / sessionExpired$ ──────────────
