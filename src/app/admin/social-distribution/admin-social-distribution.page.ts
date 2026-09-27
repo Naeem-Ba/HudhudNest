@@ -308,12 +308,13 @@ export class AdminSocialDistributionPage implements OnInit {
   }
 
   openCreateAccountForm(): void {
-    if (this.channels().length === 0) {
+    const firstChannel = this.channels()[0];
+    if (!firstChannel) {
       this.toast.show('أنشئ قناة أولاً قبل إضافة حساب.', 'warning');
       return;
     }
     this.accountForm.reset({
-      socialChannelId: this.channels()[0].id,
+      socialChannelId: firstChannel.id,
       displayName: '',
       externalAccountId: '',
       accountType: 'Page',
