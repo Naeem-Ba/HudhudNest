@@ -140,6 +140,15 @@
       >
         {{ 'NAVBAR.ADMIN_APP_UPDATES' | translate }}
       </a>
+
+      <a
+        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
+        routerLink="/admin/social-distribution"
+        routerLinkActive="navbar__link--active"
+        class="navbar__link"
+      >
+        {{ 'NAVBAR.ADMIN_SOCIAL_DISTRIBUTION' | translate }}
+      </a>
     </nav>
 
     <!-- Actions -->
@@ -680,6 +689,15 @@
         (click)="closeMobileMenu()"
       >
         {{ 'NAVBAR.ADMIN_APP_UPDATES' | translate }}
+      </a>
+
+      <a
+        *ngIf="(isLoggedIn$ | async) && (isAdmin$ | async)"
+        routerLink="/admin/social-distribution"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ 'NAVBAR.ADMIN_SOCIAL_DISTRIBUTION' | translate }}
       </a>
 
       <!-- Mobile User Section -->
