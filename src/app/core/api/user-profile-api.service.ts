@@ -4,7 +4,8 @@
 // يغلّف نقاط الملف الشخصي العام على UsersController:
 //   GET  /api/Users/{id}/profile
 //   GET  /api/Users/{id}/ratings?page=&pageSize=
-//   POST /api/Users/{id}/ratings   { credibility, safety, responseSpeed, transparency, comment }
+//   POST /api/Users/{id}/ratings   { credibility, safety, responseSpeed, transparency,
+//                                    informationAccuracy, conduct, comment }
 //
 // جميعها [AllowAnonymous] بالباك اند عدا POST (يتطلب تسجيل دخول) —
 // راجع UsersController.cs.
@@ -51,6 +52,8 @@ export class UserProfileApiService {
       Safety: request.safety,
       ResponseSpeed: request.responseSpeed,
       Transparency: request.transparency,
+      InformationAccuracy: request.informationAccuracy,
+      Conduct: request.conduct,
       Comment: request.comment?.trim() || null
     };
 
@@ -76,6 +79,8 @@ export class UserProfileApiService {
       averageSafety: Number(p['averageSafety'] ?? 0),
       averageResponseSpeed: Number(p['averageResponseSpeed'] ?? 0),
       averageTransparency: Number(p['averageTransparency'] ?? 0),
+      averageInformationAccuracy: this.toNullableNumber(p['averageInformationAccuracy']),
+      averageConduct: this.toNullableNumber(p['averageConduct']),
       averageOverall: Number(p['averageOverall'] ?? 0),
       ratingsCount: Number(p['ratingsCount'] ?? 0)
     };
@@ -90,6 +95,8 @@ export class UserProfileApiService {
       averageSafety: Number(s['averageSafety'] ?? 0),
       averageResponseSpeed: Number(s['averageResponseSpeed'] ?? 0),
       averageTransparency: Number(s['averageTransparency'] ?? 0),
+      averageInformationAccuracy: this.toNullableNumber(s['averageInformationAccuracy']),
+      averageConduct: this.toNullableNumber(s['averageConduct']),
       averageOverall: Number(s['averageOverall'] ?? 0),
       totalCount: Number(s['totalCount'] ?? 0),
       page: Number(s['page'] ?? 1),
@@ -110,6 +117,10 @@ export class UserProfileApiService {
     };
   }
 
+  private toNullableNumber(value: unknown): number | null {
+    return value === null || value === undefined ? null : Number(value);
+  }
+
   private toRating(item: unknown): UserRatingDto {
     const r = (item as Record<string, unknown>);
 
@@ -123,6 +134,8 @@ export class UserProfileApiService {
       safety: Number(r['safety'] ?? 0),
       responseSpeed: Number(r['responseSpeed'] ?? 0),
       transparency: Number(r['transparency'] ?? 0),
+      informationAccuracy: this.toNullableNumber(r['informationAccuracy']),
+      conduct: this.toNullableNumber(r['conduct']),
       overallScore: Number(r['overallScore'] ?? 0),
       comment: (r['comment'] as string) ?? null,
       createdAt: String(r['createdAt'] ?? '')

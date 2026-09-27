@@ -800,6 +800,25 @@
   }
 }
 
+/* Very small phones (320px): logged-in actions (theme, bell, account, menu ≈ 196px)
+   + the fixed-size logo (120px) + gaps were ~28px wider than the screen, pushing
+   every page sideways. Let the logo shrink (object-fit: contain keeps its ratio)
+   and tighten the action gap instead of hiding anything. */
+@include bp.small-mobile {
+  .navbar__brand {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  .navbar__logo {
+    max-width: 100%;
+  }
+
+  .navbar__actions {
+    gap: 0.35rem;
+  }
+}
+
 /* ================================================================
    Accessibility
    [ليست نقطة كسر عرض — تبقى @media أصلية كما هي، خارج نطاق Phase 0]

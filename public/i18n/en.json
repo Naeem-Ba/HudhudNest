@@ -68,7 +68,8 @@
     "ADMIN_APP_UPDATES": "App Releases",
     "OPEN_MENU": "Open menu",
     "CLOSE_MENU": "Close menu",
-    "PROVIDER_INBOX": "Incoming Service Requests"
+    "PROVIDER_INBOX": "Incoming Service Requests",
+    "MY_MESSAGES": "My messages"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -832,7 +833,24 @@
     "SELECT_CONVERSATION_FIRST": "Select a conversation before replying.",
     "ERROR_EMPTY": "You cannot send an empty message.",
     "ERROR_TOO_LONG": "The message is too long (3000 characters max).",
-    "SENDING_AS": "This message will be sent as your account: {{name}}"
+    "SENDING_AS": "This message will be sent as your account: {{name}}",
+    "INBOX_TITLE": "My messages",
+    "INBOX_SUBTITLE": "Your questions to property owners, and inquiries about your own listings.",
+    "INBOX_EMPTY_TITLE": "No conversations yet",
+    "INBOX_EMPTY_MESSAGE": "When you message a property owner, or someone messages you about your listing, the conversation will appear here.",
+    "LOAD_MORE": "Show more",
+    "ROLE_INQUIRY": "Inquiry on your listing",
+    "ROLE_OWNER": "Property owner",
+    "UNKNOWN_PROPERTY": "Listing unavailable",
+    "YOU_PREFIX": "You:",
+    "UNREAD_ARIA": "{{count}} unread messages",
+    "CONVERSATION_WITH": "Conversation with {{name}}",
+    "OLDER_HIDDEN": "Showing the latest 50 messages of this conversation.",
+    "RATE_PROMPT": "How was your experience with this owner?",
+    "RATE_OWNER": "Rate the owner",
+    "OPEN_CONVERSATION": "View conversation",
+    "SEND_SUCCESS_DETAIL": "Your message was sent to the owner. You will find the conversation and their reply in “My messages”.",
+    "SEND_ANOTHER": "Send another message"
   },
   "ADMIN_USERS": {
     "TITLE": "User management",
@@ -1155,7 +1173,9 @@
     "COMMENT_TOO_LONG": "The comment is too long (maximum 1000 characters).",
     "COMMENT_PLACEHOLDER": "Share your thoughts about this property...",
     "EMPTY_TITLE": "No reviews yet",
-    "EMPTY_MESSAGE": "Be the first to review this property."
+    "EMPTY_MESSAGE": "Be the first to review this property.",
+    "ADD_PROPERTY": "Review the property",
+    "PROPERTY_HINT": "Property reviews are available after a completed visit. To rate the owner after messaging them:"
   },
   "AGENCY_FORM": {
     "CREATE_TITLE": "Register your agency",
@@ -1392,7 +1412,9 @@
       "CREDIBILITY": "Credibility",
       "SAFETY": "Safety",
       "RESPONSE_SPEED": "Response speed",
-      "TRANSPARENCY": "Transparency"
+      "TRANSPARENCY": "Transparency",
+      "INFORMATION_ACCURACY": "Accuracy of information",
+      "CONDUCT": "Conduct"
     },
     "RATE_CTA": "Rate this user",
     "ABOUT_TITLE": "About",
@@ -1403,7 +1425,17 @@
     "RATE_NOT_ELIGIBLE_MESSAGE": "You need to complete a visit to one of this user's properties, or exchange messages with them, before you can rate them.",
     "RATE_EDIT_HINT": "You've already rated this user — you can edit your rating below.",
     "UPDATE_RATING": "Update rating",
-    "RATE_UPDATE_SUCCESS": "Your rating was updated successfully"
+    "RATE_UPDATE_SUCCESS": "Your rating was updated successfully",
+    "RATE_QUESTION": "How was your experience with this owner?",
+    "RATE_ALL_CRITERIA_REQUIRED": "Choose a star rating for every criterion before submitting.",
+    "CRITERIA_HINT": {
+      "CREDIBILITY": "Did they keep their word?",
+      "INFORMATION_ACCURACY": "Did the listing, photos and price match reality?",
+      "CONDUCT": "Respectful and courteous",
+      "RESPONSE_SPEED": "How quickly they answered",
+      "TRANSPARENCY": "Clear about terms and costs",
+      "SAFETY": "Did you feel safe and able to trust them?"
+    }
   },
   "PRICING": {
     "META_TITLE": "Subscription plans for owners and agencies",

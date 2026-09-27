@@ -3,8 +3,8 @@
 //
 // الصفحة الشخصية العامة لأي حساب: صورة + تاريخ الانضمام + عدد
 // الشقق المُباعة/المؤجَّرة عبر المنصة + إعلاناته النشطة + تقييم من
-// مستخدمين آخرين عبر أربعة محاور (المصداقية/الأمان/سرعة الرد/الشفافية)
-// مع متوسط عام أعلى الصفحة.
+// مستخدمين آخرين عبر عدة محاور (راجع RATING_CRITERIA) مع متوسط عام أعلى
+// الصفحة. كل المتوسطات تُحسب في الخادم من التقييمات المخزَّنة.
 //
 // نمط الملف الواحد (قالب+أنماط ضمن .ts) هو نفس النمط المستخدم فعلاً
 // بهذا المشروع لصفحات الميزات متوسطة الحجم (property-messages.page.ts).
@@ -12,7 +12,7 @@
 
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -25,12 +25,19 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { Property } from '../../core/models/property.model';
 import {
+  RATING_COMMENT_MAX_LENGTH,
   RATING_CRITERIA,
   RatingEligibilityDto,
   UserProfileDto,
   UserRatingSummaryDto,
   starsFor
 } from '../../core/models/user-profile.model';
+
+/** تعليق اختياري — لكن إن كُتب فلا يكون مسافات فقط. */
+function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
+  const value = (control.value ?? '') as string;
+  return value.length > 0 && value.trim().length === 0 ? { blank: true } : null;
+}
 
 @Component({
   selector: 'app-user-profile-page',
@@ -127,13 +134,16 @@ import {
             <h2>{{ 'PUBLIC_PROFILE.RATING_BREAKDOWN' | translate }}</h2>
           </div>
           <div class="rating-breakdown">
-            <div class="rating-breakdown__row" *ngFor="let c of criteria">
-              <span class="rating-breakdown__label">{{ c.labelKey | translate }}</span>
-              <div class="rating-breakdown__bar">
-                <div class="rating-breakdown__bar-fill" [style.width.%]="(criterionAverage(p, c.key) / 5) * 100"></div>
+            <ng-container *ngFor="let c of criteria">
+              <!-- محور لم يُقيِّمه أحد بعد (null) يُخفى بدل عرضه كـ 0/5 مضلِّل -->
+              <div class="rating-breakdown__row" *ngIf="criterionAverage(p, c.key) as avg">
+                <span class="rating-breakdown__label">{{ c.labelKey | translate }}</span>
+                <div class="rating-breakdown__bar">
+                  <div class="rating-breakdown__bar-fill" [style.width.%]="(avg / 5) * 100"></div>
+                </div>
+                <span class="rating-breakdown__value">{{ avg }}/5</span>
               </div>
-              <span class="rating-breakdown__value">{{ criterionAverage(p, c.key) }}/5</span>
-            </div>
+            </ng-container>
           </div>
         </div>
 
@@ -170,30 +180,44 @@ import {
               (ngSubmit)="submitRating()"
               class="rating-form"
             >
+              <p class="rating-form__question">{{ 'PUBLIC_PROFILE.RATE_QUESTION' | translate }}</p>
+
               <p class="rating-form__edit-hint" *ngIf="isEditingRating()">
                 ✏️ {{ 'PUBLIC_PROFILE.RATE_EDIT_HINT' | translate }}
               </p>
 
-              <div class="rating-form__criterion" *ngFor="let c of criteria">
-                <label>{{ c.labelKey | translate }}</label>
-                <div class="star-input">
+              <div class="rating-form__criterion" *ngFor="let c of criteria"
+                [class.rating-form__criterion--missing]="ratingForm.controls[c.key].invalid && ratingForm.controls[c.key].touched">
+                <div class="rating-form__criterion-text">
+                  <span class="rating-form__criterion-label" [id]="'crit-' + c.key">{{ c.labelKey | translate }}</span>
+                  <span class="rating-form__criterion-hint">{{ c.hintKey | translate }}</span>
+                </div>
+                <div class="star-input" role="radiogroup" [attr.aria-labelledby]="'crit-' + c.key">
                   <button
                     type="button"
+                    role="radio"
                     *ngFor="let n of [1,2,3,4,5]"
+                    [attr.aria-checked]="ratingForm.controls[c.key].value === n"
+                    [attr.aria-label]="n + ' / 5'"
                     [class.star-input__btn--filled]="ratingForm.controls[c.key].value >= n"
-                    (click)="ratingForm.controls[c.key].setValue(n)"
+                    (click)="setCriterion(c.key, n)"
                   >★</button>
                 </div>
               </div>
+
+              <p class="rating-form__error" *ngIf="showMissingCriteria()" role="alert">
+                {{ 'PUBLIC_PROFILE.RATE_ALL_CRITERIA_REQUIRED' | translate }}
+              </p>
 
               <label class="rating-form__comment-label" for="ratingComment">{{ 'PUBLIC_PROFILE.COMMENT_LABEL' | translate }}</label>
               <textarea
                 id="ratingComment"
                 formControlName="comment"
                 rows="3"
-                [maxlength]="1000"
+                [maxlength]="commentMaxLength"
                 [placeholder]="'PUBLIC_PROFILE.COMMENT_PLACEHOLDER' | translate"
               ></textarea>
+              <span class="rating-form__counter">{{ ratingForm.controls.comment.value.length }}/{{ commentMaxLength }}</span>
 
               <button type="submit" class="btn btn--primary" [disabled]="submittingRating()">
                 <span *ngIf="submittingRating()" class="spinner-ring"></span>
@@ -335,7 +359,15 @@ import {
     .rating-breakdown__value { flex: 0 0 40px; text-align: end; font-size: .8rem; color: var(--gray-500); }
 
     .rating-form { display: flex; flex-direction: column; gap: 1rem; }
-    .rating-form__criterion { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .rating-form__question { margin: 0 0 .75rem; font-weight: 700; color: var(--gray-800); }
+    .rating-form__criterion { display: flex; align-items: center; justify-content: space-between; gap: .35rem 1rem; flex-wrap: wrap;
+      padding: .45rem .5rem; border-radius: 8px; border: 1px solid transparent; }
+    .rating-form__criterion--missing { border-color: rgba(220,38,38,.35); background: var(--danger-soft); }
+    .rating-form__criterion-text { display: flex; flex-direction: column; min-width: 0; flex: 1 1 12rem; }
+    .rating-form__criterion-label { font-weight: 600; color: var(--gray-800); }
+    .rating-form__criterion-hint { font-size: .75rem; color: var(--gray-500); }
+    .rating-form__error { margin: .25rem 0 0; color: var(--danger); font-size: .85rem; }
+    .rating-form__counter { align-self: flex-end; font-size: .72rem; color: var(--gray-400); }
     .star-input { display: flex; gap: .25rem; }
     .star-input button {
       background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--gray-300); line-height: 1; padding: 0;
@@ -388,13 +420,21 @@ export class UserProfilePage implements OnInit {
 
   readonly submittingRating = signal(false);
 
+  readonly commentMaxLength = RATING_COMMENT_MAX_LENGTH;
+
+  // كل محور يبدأ بلا اختيار (0) ويجب أن يختاره المستخدم بنفسه — كانت كلها تبدأ
+  // بـ 5 نجوم فيُرسَل تقييم "ممتاز" لمحاور لم يلمسها المستخدم إطلاقًا.
   readonly ratingForm = this.fb.group({
-    credibility: this.fb.control(5, { nonNullable: true, validators: [Validators.min(1), Validators.max(5)] }),
-    safety: this.fb.control(5, { nonNullable: true, validators: [Validators.min(1), Validators.max(5)] }),
-    responseSpeed: this.fb.control(5, { nonNullable: true, validators: [Validators.min(1), Validators.max(5)] }),
-    transparency: this.fb.control(5, { nonNullable: true, validators: [Validators.min(1), Validators.max(5)] }),
-    comment: this.fb.control('')
+    credibility: this.fb.control(0, { nonNullable: true, validators: [Validators.min(1), Validators.max(5)] }),
+    informationAccuracy: this.fb.control(0, { nonNullable: true, validators: [Validators.min(1), Validators.max(5)] }),
+    conduct: this.fb.control(0, { nonNullable: true, validators: [Validators.min(1), Validators.max(5)] }),
+    responseSpeed: this.fb.control(0, { nonNullable: true, validators: [Validators.min(1), Validators.max(5)] }),
+    transparency: this.fb.control(0, { nonNullable: true, validators: [Validators.min(1), Validators.max(5)] }),
+    safety: this.fb.control(0, { nonNullable: true, validators: [Validators.min(1), Validators.max(5)] }),
+    comment: this.fb.control('', { nonNullable: true, validators: [Validators.maxLength(RATING_COMMENT_MAX_LENGTH), notBlankIfPresent] })
   });
+
+  readonly submitAttempted = signal(false);
 
   // ✅ إعادة تصميم: canRate القديمة كانت تفحص فقط "مستخدم مختلف عن نفسي"،
   // بلا أي شرط زيارة/مراسلة. الآن isOwnProfile تتحكم فقط بإظهار/إخفاء
@@ -429,6 +469,25 @@ export class UserProfilePage implements OnInit {
     if (this.isLoggedIn() && !this.isOwnProfile()) {
       this.loadEligibility();
     }
+  }
+
+  /**
+   * وصول من رابط "قيّم المالك" (/users/:id#rate-user). القسم لا يُرسم إلا بعد تحميل
+   * الملف الشخصي (loading) — وقد تصل الأهلية قبله — فننتظر ظهوره لفترة قصيرة بدل
+   * محاولة واحدة قد تسبق الرسم فلا يحدث التمرير.
+   */
+  private scrollToRateSectionIfRequested(attempt = 0): void {
+    if (this.route.snapshot.fragment !== 'rate-user' || attempt > 30) {
+      return;
+    }
+
+    setTimeout(() => {
+      if (document.getElementById('rate-user') && !this.loading()) {
+        this.scrollToRateSection();
+      } else {
+        this.scrollToRateSectionIfRequested(attempt + 1);
+      }
+    }, 100);
   }
 
   private loadProfile(): void {
@@ -493,13 +552,17 @@ export class UserProfilePage implements OnInit {
         next: eligibility => {
           this.eligibility.set(eligibility);
           this.eligibilityLoading.set(false);
+          this.scrollToRateSectionIfRequested();
 
           // ✅ إذا سبق للمستخدم الحالي تقييم هذا الحساب، نُعبِّئ النموذج
           // بقيمه الحالية تلقائيًا كي يعدِّلها بدل البدء من صفر.
           const existing = eligibility.existingRating;
           if (existing) {
+            // المحوران الأحدث قد يكونان null في تقييم قديم → يبقيان 0 فيختارهما المستخدم.
             this.ratingForm.patchValue({
               credibility: existing.credibility,
+              informationAccuracy: existing.informationAccuracy ?? 0,
+              conduct: existing.conduct ?? 0,
               safety: existing.safety,
               responseSpeed: existing.responseSpeed,
               transparency: existing.transparency,
@@ -507,8 +570,21 @@ export class UserProfilePage implements OnInit {
             });
           }
         },
-        error: () => this.eligibilityLoading.set(false)
+        error: () => {
+          this.eligibilityLoading.set(false);
+          this.scrollToRateSectionIfRequested();
+        }
       });
+  }
+
+  setCriterion(key: string, value: number): void {
+    const control = this.ratingForm.get(key);
+    control?.setValue(value);
+    control?.markAsTouched();
+  }
+
+  showMissingCriteria(): boolean {
+    return this.submitAttempted() && RATING_CRITERIA.some(c => this.ratingForm.controls[c.key].invalid);
   }
 
   scrollToRateSection(): void {
@@ -516,6 +592,8 @@ export class UserProfilePage implements OnInit {
   }
 
   submitRating(): void {
+    this.submitAttempted.set(true);
+
     if (this.ratingForm.invalid) {
       this.ratingForm.markAllAsTouched();
       return;
@@ -530,6 +608,8 @@ export class UserProfilePage implements OnInit {
         safety: raw.safety,
         responseSpeed: raw.responseSpeed,
         transparency: raw.transparency,
+        informationAccuracy: raw.informationAccuracy,
+        conduct: raw.conduct,
         comment: raw.comment?.trim() || null
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -540,6 +620,7 @@ export class UserProfilePage implements OnInit {
             this.translate.instant(wasEditing ? 'PUBLIC_PROFILE.RATE_UPDATE_SUCCESS' : 'PUBLIC_PROFILE.RATE_SUCCESS')
           );
           this.submittingRating.set(false);
+          this.submitAttempted.set(false);
           // إعادة تحميل الملخص والتفصيل والأهلية كي يظهر التقييم الجديد/المُعدَّل ومتوسطه فوراً
           this.loadProfile();
           this.loadRatings();
@@ -560,13 +641,16 @@ export class UserProfilePage implements OnInit {
     return starsFor(score);
   }
 
-  criterionAverage(profile: UserProfileDto, key: string): number {
+  /** null = لا بيانات لهذا المحور بعد (يُخفى الصف). */
+  criterionAverage(profile: UserProfileDto, key: string): number | null {
     switch (key) {
       case 'credibility': return profile.averageCredibility;
       case 'safety': return profile.averageSafety;
       case 'responseSpeed': return profile.averageResponseSpeed;
       case 'transparency': return profile.averageTransparency;
-      default: return 0;
+      case 'informationAccuracy': return profile.averageInformationAccuracy;
+      case 'conduct': return profile.averageConduct;
+      default: return null;
     }
   }
 

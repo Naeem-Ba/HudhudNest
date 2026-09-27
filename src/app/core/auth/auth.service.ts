@@ -34,6 +34,11 @@ export interface AuthenticatedUser {
   [key: string]: unknown;
 }
 
+// Full-URI claim names as emitted by PropertyApi (System.Security.Claims.ClaimTypes).
+const CLAIM_NAME_IDENTIFIER = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier';
+const CLAIM_EMAIL = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress';
+const CLAIM_NAME = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name';
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly tokenStorage = inject(TokenStorageService);
@@ -119,13 +124,23 @@ export class AuthService {
     }
 
     const roles = this.extractRoles(payload);
-    const id = String(payload['sub'] ?? payload['nameid'] ?? payload['userId'] ?? payload['UserId'] ?? '');
-    const email = String(payload['email'] ?? '');
+    // PropertyApi's TokenService writes ClaimTypes.* as their full URI names
+    // (…/claims/nameidentifier, …/emailaddress, …/name) — exactly like the role
+    // claim extractRoles() already accepts. Reading only the short names left the
+    // id empty for every signed-in user, so ownership checks in the UI (isOwner,
+    // the owner's messages view, "my message" bubbles, own-profile) never matched.
+    const id = String(
+      payload['sub'] ?? payload['nameid'] ?? payload[CLAIM_NAME_IDENTIFIER] ??
+      payload['userId'] ?? payload['UserId'] ?? ''
+    );
+    const email = String(payload['email'] ?? payload[CLAIM_EMAIL] ?? '');
     // ⚠️ "name"/"unique_name" بالتوكن هو Identity UserName (عادةً نفس البريد)،
     // وليس حقل "الاسم المعروض" (DisplayName) القابل للتعديل من صفحة البروفايل.
     // هذه قيمة مؤقتة فورية فقط، تُستبدَل بالقيمة الحقيقية بمجرد وصول
     // hydrateProfile() أدناه — راجع تعليقها لتفاصيل الخلل الذي يُصلحه.
-    const displayName = String(payload['name'] ?? payload['unique_name'] ?? payload['email'] ?? '');
+    const displayName = String(
+      payload['name'] ?? payload['unique_name'] ?? payload[CLAIM_NAME] ?? email
+    );
 
     this.currentUserSubject.next({
       id,

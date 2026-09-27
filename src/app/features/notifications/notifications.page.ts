@@ -100,6 +100,12 @@ import { VisitService } from '../../core/api/visit.service';
               {{ 'AUTH.PHONE_VERIFY_NOW' | translate }}
             </a>
 
+            <!-- رسالة جديدة → فتح المحادثة الخاصة بهذا العقار مباشرة -->
+            <a *ngIf="notification.type === 'NewMessage' && notification.propertyId" class="phone-verify-link"
+              [routerLink]="['/messages', notification.propertyId]">
+              {{ 'MESSAGES.OPEN_CONVERSATION' | translate }}
+            </a>
+
             <!-- ✅ إضافة: تأكيد/رفض/اقتراح موعد بديل — للمعلن، على إشعار "طلب زيارة جديد" -->
             <div class="visit-actions" *ngIf="notification.type === 'VisitRequested' && notification.relatedEntityId">
               <div class="visit-actions__row">

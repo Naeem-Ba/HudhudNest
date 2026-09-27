@@ -412,6 +412,11 @@
               {{ 'NAVBAR.FAVORITES' | translate }}
             </a>
 
+            <a routerLink="/messages" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+              <span aria-hidden="true">💬</span>
+              {{ 'NAVBAR.MY_MESSAGES' | translate }}
+            </a>
+
             <a routerLink="/visits" class="account__item" role="menuitem" (click)="closeAccountMenu()">
               <span aria-hidden="true">📅</span>
               {{ 'NAVBAR.VISITS' | translate }}
@@ -707,6 +712,10 @@
           <span class="notif-bell__badge notif-bell__badge--inline" *ngIf="notificationsApi.unreadCount() > 0">
             {{ notificationsApi.unreadCount() > 9 ? '9+' : notificationsApi.unreadCount() }}
           </span>
+        </a>
+
+        <a routerLink="/messages" class="mobile-drawer__link" (click)="closeMobileMenu()">
+          {{ 'NAVBAR.MY_MESSAGES' | translate }}
         </a>
 
         <a routerLink="/visits" class="mobile-drawer__link" (click)="closeMobileMenu()">
