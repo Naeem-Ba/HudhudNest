@@ -431,6 +431,17 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./admin/app-updates/admin-app-updates.page')
             .then(m => m.AdminAppUpdatesPage)
+      },
+
+      // إدارة النشر التلقائي على وسائل التواصل الاجتماعي — نطاق تشغيلي أساسي (قنوات،
+      // حسابات + ربط/فصل بيانات الاعتماد، ملخص لوحة التحكم، منشورات للعرض فقط).
+      // SocialDistributionController — [Authorize(Roles = "Admin")] على كل نقطة.
+      {
+        path: 'admin/social-distribution',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/social-distribution/admin-social-distribution.page')
+            .then(m => m.AdminSocialDistributionPage)
       }
     ]
   },

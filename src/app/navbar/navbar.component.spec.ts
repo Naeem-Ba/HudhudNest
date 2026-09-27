@@ -218,7 +218,8 @@ describe('NavbarComponent (Phase 6)', () => {
     const hrefs = Array.from(el().querySelectorAll('#account-management-group a')).map(a => a.getAttribute('href'));
     expect(hrefs).toEqual(jasmine.arrayContaining([
       '/admin/messages', '/admin/users', '/admin/investments',
-      '/admin/location-suggestions', '/admin/marketing', '/admin/app-updates'
+      '/admin/location-suggestions', '/admin/marketing', '/admin/app-updates',
+      '/admin/social-distribution'
     ]));
   });
 
