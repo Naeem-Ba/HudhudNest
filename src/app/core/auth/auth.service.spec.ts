@@ -124,6 +124,24 @@ describe('AuthService', () => {
     expect(loggedIn).toBeTrue();
   });
 
+  it('✅ توكن PropertyApi الفعلي (أسماء claims بصيغة URI الكاملة) ⇒ يُقرأ المعرّف والبريد', () => {
+    // نفس شكل التوكن الذي يصدره TokenService في الباك اند (ClaimTypes.*).
+    const token = makeJwt({
+      'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier': '3fe4a0b1-2121-43d6-90df-2d8bf15a2c65',
+      'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress': 'renter@example.com',
+      'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name': 'renter@example.com',
+      'http://schemas.microsoft.com/ws/2008/06/identity/claims/role': 'User',
+      exp: Math.floor(Date.now() / 1000) + 3600
+    });
+    tokenStorage.setAccessToken(token);
+
+    service = TestBed.inject(AuthService);
+
+    expect(service.getCurrentUserId()).toBe('3fe4a0b1-2121-43d6-90df-2d8bf15a2c65');
+    expect(service.currentUserSnapshot?.email).toBe('renter@example.com');
+    expect(service.currentUserSnapshot?.roles).toEqual(['User']);
+  });
+
   it('✅ التوكن بلا exp ⇒ يُعامَل كصالح (لا انتهاء صلاحية معروف)', () => {
     const token = makeJwt({ sub: 'user-7', email: 'no-exp@example.com' });
     tokenStorage.setAccessToken(token);

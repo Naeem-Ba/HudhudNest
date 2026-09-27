@@ -24,6 +24,11 @@ export class UrlService {
   /**
    * Builds an optimized Cloudinary delivery URL for a target display width.
    * Non-Cloudinary URLs are returned unchanged after normal URL resolution.
+   *
+   * c_limit (not c_fill): scales the stored original DOWN to at most `width`,
+   * preserving its aspect ratio, and never upscales a smaller photo (c_fill with
+   * only a width upscaled small uploads, which made them look soft/"compressed").
+   * The display box, not the delivered file, decides any cropping (object-fit).
    */
   buildResponsiveUrl(path: string | null | undefined, width: number): string | null {
     const url = this.build(path ?? undefined);
@@ -40,7 +45,7 @@ export class UrlService {
       return url;
     }
 
-    const transformations = `f_auto,q_auto,w_${normalizedWidth},c_fill`;
+    const transformations = `f_auto,q_auto,w_${normalizedWidth},c_limit`;
 
     return url.replace(
       this.cloudinaryUploadSegment,

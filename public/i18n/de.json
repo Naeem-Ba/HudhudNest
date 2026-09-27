@@ -68,7 +68,8 @@
     "INVESTMENT_WATCHLIST": "Investment-Merkliste",
     "OPEN_MENU": "Menü öffnen",
     "CLOSE_MENU": "Menü schließen",
-    "PROVIDER_INBOX": "Eingehende Serviceanfragen"
+    "PROVIDER_INBOX": "Eingehende Serviceanfragen",
+    "MY_MESSAGES": "Meine Nachrichten"
   },
   "AUTH": {
     "LOGIN_TITLE": "Willkommen",
@@ -809,7 +810,24 @@
     "SELECT_CONVERSATION_FIRST": "Wählen Sie zuerst ein Gespräch aus, bevor Sie antworten.",
     "ERROR_EMPTY": "Eine leere Nachricht kann nicht gesendet werden.",
     "ERROR_TOO_LONG": "Die Nachricht ist zu lang (maximal 3000 Zeichen).",
-    "SENDING_AS": "Diese Nachricht wird unter Ihrem Konto gesendet: {{name}}"
+    "SENDING_AS": "Diese Nachricht wird unter Ihrem Konto gesendet: {{name}}",
+    "INBOX_TITLE": "Meine Nachrichten",
+    "INBOX_SUBTITLE": "Deine Anfragen an Eigentümer und Anfragen zu deinen eigenen Inseraten.",
+    "INBOX_EMPTY_TITLE": "Noch keine Unterhaltungen",
+    "INBOX_EMPTY_MESSAGE": "Wenn du einem Eigentümer schreibst oder dir jemand zu deinem Inserat schreibt, erscheint die Unterhaltung hier.",
+    "LOAD_MORE": "Mehr anzeigen",
+    "ROLE_INQUIRY": "Anfrage zu deinem Inserat",
+    "ROLE_OWNER": "Eigentümer",
+    "UNKNOWN_PROPERTY": "Inserat nicht verfügbar",
+    "YOU_PREFIX": "Du:",
+    "UNREAD_ARIA": "{{count}} ungelesene Nachrichten",
+    "CONVERSATION_WITH": "Unterhaltung mit {{name}}",
+    "OLDER_HIDDEN": "Es werden die letzten 50 Nachrichten dieser Unterhaltung angezeigt.",
+    "RATE_PROMPT": "Wie war deine Erfahrung mit diesem Eigentümer?",
+    "RATE_OWNER": "Eigentümer bewerten",
+    "OPEN_CONVERSATION": "Unterhaltung anzeigen",
+    "SEND_SUCCESS_DETAIL": "Deine Nachricht wurde an den Eigentümer gesendet. Die Unterhaltung und seine Antwort findest du unter „Meine Nachrichten“.",
+    "SEND_ANOTHER": "Weitere Nachricht senden"
   },
   "ADMIN_USERS": {
     "TITLE": "Benutzerverwaltung",
@@ -1155,7 +1173,9 @@
     "COMMENT_TOO_LONG": "Der Kommentar ist zu lang (maximal 1000 Zeichen).",
     "COMMENT_PLACEHOLDER": "Teilen Sie uns Ihre Meinung zu dieser Immobilie mit...",
     "EMPTY_TITLE": "Noch keine Bewertungen",
-    "EMPTY_MESSAGE": "Seien Sie der Erste, der diese Immobilie bewertet."
+    "EMPTY_MESSAGE": "Seien Sie der Erste, der diese Immobilie bewertet.",
+    "ADD_PROPERTY": "Immobilie bewerten",
+    "PROPERTY_HINT": "Immobilienbewertungen sind nach einer abgeschlossenen Besichtigung möglich. Um den Eigentümer nach dem Nachrichtenaustausch zu bewerten:"
   },
   "AGENCY_FORM": {
     "CREATE_TITLE": "Immobilienbüro registrieren",
@@ -1392,7 +1412,9 @@
       "CREDIBILITY": "Glaubwürdigkeit",
       "SAFETY": "Sicherheit",
       "RESPONSE_SPEED": "Antwortgeschwindigkeit",
-      "TRANSPARENCY": "Transparenz"
+      "TRANSPARENCY": "Transparenz",
+      "INFORMATION_ACCURACY": "Richtigkeit der Angaben",
+      "CONDUCT": "Umgang"
     },
     "RATE_CTA": "Diesen Nutzer bewerten",
     "ABOUT_TITLE": "Über mich",
@@ -1403,7 +1425,17 @@
     "RATE_NOT_ELIGIBLE_MESSAGE": "Du musst zuerst eine Besichtigung bei einer Immobilie dieses Nutzers abgeschlossen oder mit ihm Nachrichten ausgetauscht haben, bevor du ihn bewerten kannst.",
     "RATE_EDIT_HINT": "Du hast diesen Nutzer bereits bewertet — du kannst deine Bewertung unten bearbeiten.",
     "UPDATE_RATING": "Bewertung aktualisieren",
-    "RATE_UPDATE_SUCCESS": "Deine Bewertung wurde erfolgreich aktualisiert"
+    "RATE_UPDATE_SUCCESS": "Deine Bewertung wurde erfolgreich aktualisiert",
+    "RATE_QUESTION": "Wie war deine Erfahrung mit diesem Eigentümer?",
+    "RATE_ALL_CRITERIA_REQUIRED": "Bitte vergib für jedes Kriterium Sterne, bevor du absendest.",
+    "CRITERIA_HINT": {
+      "CREDIBILITY": "Hat er Wort gehalten?",
+      "INFORMATION_ACCURACY": "Stimmten Inserat, Fotos und Preis mit der Realität überein?",
+      "CONDUCT": "Respektvoll und höflich",
+      "RESPONSE_SPEED": "Wie schnell geantwortet wurde",
+      "TRANSPARENCY": "Klar zu Bedingungen und Kosten",
+      "SAFETY": "Hast du dich sicher gefühlt und vertrauen können?"
+    }
   },
   "PRICING": {
     "META_TITLE": "Abo-Pakete für Eigentümer und Immobilienbüros",

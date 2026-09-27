@@ -192,6 +192,24 @@ export const routes: Routes = [
           import('./features/visits/visits.page')
             .then(m => m.VisitsPage)
       },
+      // المراسلة داخل الـ Layout كي تبقى شريط التنقل ظاهرًا (كانت صفحة المحادثة خارجه
+      // فلا يستطيع المستخدم الخروج منها إلا بزر الرجوع).
+      // صندوق الوارد: كل محادثات المستخدم عبر كل العقارات (GET /api/Messages/conversations).
+      {
+        path: 'messages',
+        pathMatch: 'full',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/messages/messages-inbox.page')
+            .then(m => m.MessagesInboxPage)
+      },
+      {
+        path: 'messages/:propertyId',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/messages/property-messages.page')
+            .then(m => m.PropertyMessagesPage)
+      },
       {
         // AqarTech Services Marketplace — "my requests" list. Browsing/creating a
         // request happens from the property-detail page's CTA, not a separate
@@ -425,14 +443,6 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./admin/app-updates/admin-app-updates.page')
         .then(m => m.AdminAppUpdatesPage)
-  },
-
-  {
-    path: 'messages/:propertyId',
-    canActivate: [AuthGuard],
-    loadComponent: () =>
-      import('./features/messages/property-messages.page')
-        .then(m => m.PropertyMessagesPage)
   },
 
   {
