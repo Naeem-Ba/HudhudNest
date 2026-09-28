@@ -13,21 +13,37 @@
       <!-- بطاقة البحث الزجاجية العائمة أسفل الـ hero -->
       <form class="hero-search" (ngSubmit)="submitHeroSearch()">
         <div class="hero-search__field">
-          <label>{{ 'HOME.search.location' | translate }}</label>
-          <select [(ngModel)]="searchCity" name="searchCity">
-            <option value="">{{ 'HOME.search.location_any' | translate }}</option>
-            <option *ngFor="let c of cities" [value]="c.name">{{ c.name }}</option>
-          </select>
+          <label for="heroSearchCity">{{ 'HOME.search.location' | translate }}</label>
+          <input
+            id="heroSearchCity"
+            type="text"
+            [(ngModel)]="searchCity"
+            name="searchCity"
+            list="heroCitySuggestions"
+            autocomplete="off"
+            [placeholder]="'HOME.search.location_any' | translate"
+          />
+          <datalist id="heroCitySuggestions">
+            <option *ngFor="let c of cities" [value]="c.name"></option>
+          </datalist>
         </div>
 
         <div class="hero-search__divider" aria-hidden="true"></div>
 
         <div class="hero-search__field">
-          <label>{{ 'HOME.search.type' | translate }}</label>
-          <select [(ngModel)]="searchPropertyTypeId" name="searchPropertyTypeId">
-            <option [ngValue]="null">{{ 'HOME.search.type_any' | translate }}</option>
-            <option *ngFor="let t of propertyTypes" [ngValue]="t.id">{{ localizedTypeName(t) }}</option>
-          </select>
+          <label for="heroSearchType">{{ 'HOME.search.type' | translate }}</label>
+          <input
+            id="heroSearchType"
+            type="text"
+            [(ngModel)]="searchPropertyTypeText"
+            name="searchPropertyTypeText"
+            list="heroPropertyTypeSuggestions"
+            autocomplete="off"
+            [placeholder]="'HOME.search.type_any' | translate"
+          />
+          <datalist id="heroPropertyTypeSuggestions">
+            <option *ngFor="let t of propertyTypes" [value]="localizedTypeName(t)"></option>
+          </datalist>
         </div>
 
         <div class="hero-search__divider" aria-hidden="true"></div>

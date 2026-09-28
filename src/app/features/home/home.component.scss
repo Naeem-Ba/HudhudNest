@@ -130,7 +130,8 @@
       margin: 0;
     }
 
-    select {
+    select,
+    input[type='text'] {
       border: none;
       background: transparent;
       padding: 0;
@@ -139,6 +140,7 @@
       font-weight: 600;
       font-size: .92rem;
       cursor: pointer;
+      width: 100%;
 
       &:focus {
         outline: none;
@@ -148,6 +150,16 @@
       option {
         color: var(--gray-900);
         background: var(--surface);
+      }
+    }
+
+    input[type='text'] {
+      cursor: text;
+
+      &::placeholder {
+        color: var(--gray-500);
+        font-weight: 600;
+        opacity: .55;
       }
     }
   }
