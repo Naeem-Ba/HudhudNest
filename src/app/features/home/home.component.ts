@@ -62,7 +62,7 @@ export class HomeComponent implements OnInit {
   ];
 
   searchCity = '';
-  searchPropertyTypeId: number | null = null;
+  searchPropertyTypeText = '';
   searchListingType: '' | 'ForRent' | 'ForSale' = '';
   searchMaxPrice: number | null = null;
 
@@ -80,11 +80,30 @@ export class HomeComponent implements OnInit {
     const queryParams: Record<string, string | number> = {};
 
     if (this.searchCity) queryParams['city'] = this.searchCity;
-    if (this.searchPropertyTypeId) queryParams['propertyTypeId'] = this.searchPropertyTypeId;
+
+    const propertyTypeId = this.resolvePropertyTypeId(this.searchPropertyTypeText);
+    if (propertyTypeId) queryParams['propertyTypeId'] = propertyTypeId;
+
     if (this.searchListingType) queryParams['listingType'] = this.searchListingType;
     if (this.searchMaxPrice) queryParams['maxPrice'] = this.searchMaxPrice;
 
     this.router.navigate(['/wohnungen'], { queryParams });
+  }
+
+  /**
+   * يحوّل النص المكتوب في حقل "نوع العقار" (datalist حرّ) إلى الـ id الذي يتوقعه
+   * الباك اند — مطابقة غير حسّاسة لحالة الأحرف مع الاسم المُترجَم الحالي، حتى لا
+   * يُرسَل propertyTypeId خاطئ لو كتب المستخدم نصًا لا يطابق أي خيار فعليًا.
+   */
+  private resolvePropertyTypeId(text: string): number | null {
+    const trimmed = text.trim().toLowerCase();
+    if (!trimmed) return null;
+
+    const match = this.propertyTypes.find(
+      t => this.localizedTypeName(t).trim().toLowerCase() === trimmed
+    );
+
+    return match?.id ?? null;
   }
 
   private loadHeroLookups(): void {
