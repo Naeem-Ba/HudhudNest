@@ -60,6 +60,7 @@ import { SignInWithApple } from '@capacitor-community/apple-sign-in';
 
 import { environment } from '../../../environments/environment';
 import { AuthApiService } from './auth-api.service';
+import { isGoogleSignInUnsupportedOrigin } from './google-signin-origin';
 import { AuthTokenResponse } from '../models/auth.model';
 
 // =====================================================================
@@ -165,7 +166,10 @@ export class SocialAuthService {
   }
 
   get isGoogleAvailable(): boolean {
-    return Boolean(environment.googleClientId?.trim());
+    return (
+      Boolean(environment.googleClientId?.trim()) &&
+      !isGoogleSignInUnsupportedOrigin(typeof window === 'undefined' ? null : window.location.hostname)
+    );
   }
 
   get isAppleAvailable(): boolean {
