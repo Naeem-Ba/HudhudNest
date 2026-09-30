@@ -95,6 +95,18 @@ describe('LoginComponent', () => {
       expect(component.message).toBe('AUTH.ERRORS.INVALID_CREDENTIALS');
     });
 
+    it('✅ 401 بلا عدّاد من الخادم لا يعرض أي تحذير محاولات متبقية (لا رقم مُخمَّن)', () => {
+      authApi.login.and.returnValue(throwError(() =>
+        httpError(401, { errorCode: 'INVALID_CREDENTIALS', failedAttemptCount: null, remainingAttemptsBeforeLockout: null })
+      ));
+      component.loginData = { Email: 'user@example.com', Password: 'wrong' };
+
+      component.onLogin(fakeForm());
+
+      expect(component.message).toBe('AUTH.ERRORS.INVALID_CREDENTIALS');
+      expect(component.loginAttemptWarning).toBe('');
+    });
+
     it('✅ خطأ شبكة (status 0) يعطي رسالة NETWORK_ERROR مختلفة عن بيانات الدخول الخاطئة', () => {
       authApi.login.and.returnValue(throwError(() => httpError(0)));
       component.loginData = { Email: 'user@example.com', Password: FAKE_TEST_CREDENTIAL };
