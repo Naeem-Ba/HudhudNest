@@ -124,6 +124,24 @@ describe('AuthService', () => {
     expect(loggedIn).toBeTrue();
   });
 
+  it('✅ توكن PropertyApi الفعلي (أسماء claims بصيغة URI الكاملة) ⇒ يُقرأ المعرّف والبريد', () => {
+    // نفس شكل التوكن الذي يصدره TokenService في الباك اند (ClaimTypes.*).
+    const token = makeJwt({
+      'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier': '3fe4a0b1-2121-43d6-90df-2d8bf15a2c65',
+      'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress': 'renter@example.com',
+      'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name': 'renter@example.com',
+      'http://schemas.microsoft.com/ws/2008/06/identity/claims/role': 'User',
+      exp: Math.floor(Date.now() / 1000) + 3600
+    });
+    tokenStorage.setAccessToken(token);
+
+    service = TestBed.inject(AuthService);
+
+    expect(service.getCurrentUserId()).toBe('3fe4a0b1-2121-43d6-90df-2d8bf15a2c65');
+    expect(service.currentUserSnapshot?.email).toBe('renter@example.com');
+    expect(service.currentUserSnapshot?.roles).toEqual(['User']);
+  });
+
   it('✅ التوكن بلا exp ⇒ يُعامَل كصالح (لا انتهاء صلاحية معروف)', () => {
     const token = makeJwt({ sub: 'user-7', email: 'no-exp@example.com' });
     tokenStorage.setAccessToken(token);
@@ -355,6 +373,84 @@ describe('AuthService', () => {
       let loggedIn: boolean | undefined;
       service.isLoggedIn$.subscribe(v => (loggedIn = v));
       expect(loggedIn).toBeTrue();
+    });
+
+    // AuthGuard يستدعي validateSession() في كل تنقّل محمي؛ كانت تُعيد بناء المستخدم من
+    // التوكن وحده فتختفي الصورة (وتظهر الحروف مكانها) حتى يصل /users/me التالي.
+    it('✅ validateSession() لنفس المستخدم يُبقي الصورة والاسم المعروض حتى يصل الجلب الجديد', () => {
+      const token = makeJwt({
+        sub: 'u5',
+        email: 'img@example.com',
+        name: 'img@example.com',
+        exp: Math.floor(Date.now() / 1000) + 3600
+      });
+      tokenStorage.setAccessToken(token);
+      service = TestBed.inject(AuthService);
+
+      httpMock.expectOne(`${environment.apiUrl}/users/me`).flush({
+        id: 'u5',
+        displayName: 'صاحب الصورة',
+        imageUrl: 'https://cdn.example.com/u5.png'
+      });
+
+      const seen: (string | null | undefined)[] = [];
+      service.currentUser$.subscribe(u => seen.push(u?.ImageUrl));
+
+      service.validateSession(); // ما يفعله AuthGuard عند كل تنقّل
+
+      // لا توجد لحظة بلا صورة قبل وصول الجلب الجديد.
+      expect(seen.every(url => url === 'https://cdn.example.com/u5.png')).toBeTrue();
+      expect(service.currentUserSnapshot?.displayName).toBe('صاحب الصورة');
+
+      httpMock.expectOne(`${environment.apiUrl}/users/me`).flush({
+        id: 'u5',
+        displayName: 'صاحب الصورة',
+        imageUrl: 'https://cdn.example.com/u5-new.png'
+      });
+      expect(service.currentUserSnapshot?.ImageUrl).toBe('https://cdn.example.com/u5-new.png');
+    });
+
+    it('✅ مستخدم مختلف في نفس التبويب لا يرث صورة/اسم المستخدم السابق', () => {
+      tokenStorage.setAccessToken(makeJwt({ sub: 'a1', email: 'a@example.com', exp: Math.floor(Date.now() / 1000) + 3600 }));
+      service = TestBed.inject(AuthService);
+      httpMock.expectOne(`${environment.apiUrl}/users/me`).flush({ id: 'a1', displayName: 'A', imageUrl: 'https://cdn.example.com/a.png' });
+
+      tokenStorage.setAccessToken(makeJwt({ sub: 'b2', email: 'b@example.com', exp: Math.floor(Date.now() / 1000) + 3600 }));
+      service.validateSession();
+
+      expect(service.currentUserSnapshot?.id).toBe('b2');
+      expect(service.currentUserSnapshot?.ImageUrl).toBeUndefined();
+      expect(service.currentUserSnapshot?.displayName).toBe('b@example.com');
+      httpMock.expectOne(`${environment.apiUrl}/users/me`).flush({ id: 'b2', displayName: 'B' });
+    });
+  });
+
+  // ────────────── طريقة تسجيل الدخول (بريد/هاتف) لعرض المعرّف الصحيح في القائمة ──────────────
+  describe('rememberLoginMethod / loginMethod', () => {
+    afterEach(() => localStorage.removeItem('auth.loginMethod'));
+
+    it('✅ تُحفَظ الطريقة وتبقى بعد إعادة بناء الخدمة (إعادة تحميل الصفحة)', () => {
+      service = TestBed.inject(AuthService);
+      service.rememberLoginMethod('phone');
+
+      expect(service.loginMethod).toBe('phone');
+      expect(localStorage.getItem('auth.loginMethod')).toBe('phone');
+    });
+
+    it('✅ قيمة غير معروفة في التخزين تُعامَل كغير محدَّدة', () => {
+      localStorage.setItem('auth.loginMethod', 'fax');
+      service = TestBed.inject(AuthService);
+
+      expect(service.loginMethod).toBeNull();
+    });
+
+    it('✅ تسجيل الخروج يمسح الطريقة المحفوظة', () => {
+      service = TestBed.inject(AuthService);
+      service.rememberLoginMethod('email');
+
+      service.logoutLocal();
+
+      expect(service.loginMethod).toBeNull();
     });
   });
 

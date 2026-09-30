@@ -48,6 +48,8 @@
     "ADMIN_USERS": "Benutzerverwaltung",
     "ADMIN_INVESTMENTS": "Investmentportal (Admin)",
     "ADMIN_MARKETING": "Marketing-Dashboard",
+    "ADMIN_APP_UPDATES": "App-Versionen",
+    "ADMIN_SOCIAL_DISTRIBUTION": "Social-Media-Verteilung",
     "LOGIN": "Anmelden",
     "LOGOUT": "Abmelden",
     "SELECT_LANGUAGE": "Sprache auswählen",
@@ -67,7 +69,15 @@
     "INVESTMENT_WATCHLIST": "Investment-Merkliste",
     "OPEN_MENU": "Menü öffnen",
     "CLOSE_MENU": "Menü schließen",
-    "PROVIDER_INBOX": "Eingehende Serviceanfragen"
+    "PROVIDER_INBOX": "Eingehende Serviceanfragen",
+    "MY_MESSAGES": "Meine Nachrichten",
+    "MANAGEMENT": "Verwaltung",
+    "ADMIN_TOOLS": "Admin-Werkzeuge",
+    "ADMIN_LOCATION_SUGGESTIONS": "Standortvorschläge",
+    "PROFILE_PHOTO": "Profilbild",
+    "SIGNED_IN_WITH_EMAIL": "Angemeldet mit E-Mail:",
+    "SIGNED_IN_WITH_PHONE": "Angemeldet mit Telefonnummer:",
+    "CURRENT_SECTION": "(aktueller Bereich)"
   },
   "AUTH": {
     "LOGIN_TITLE": "Willkommen",
@@ -116,6 +126,8 @@
     "SEND_OTP_TITLE": "Bestätigungscode senden",
     "SEND_OTP_BUTTON": "Code senden",
     "SEND_OTP_SUCCESS": "Der Bestätigungscode wurde gesendet.",
+    "PHONE_NO_CODE_HINT": "Kein Code erhalten? Hat diese Nummer bereits ein Konto, wird kein Code gesendet – melden Sie sich an oder setzen Sie Ihr Passwort zurück.",
+    "PHONE_VERIFY_NOW": "Meine Telefonnummer bestätigen",
     "VERIFY_OTP_TITLE": "Bestätigungscode bestätigen",
     "OTP_CODE": "Bestätigungscode",
     "VERIFY_OTP_BUTTON": "Bestätigen",
@@ -155,8 +167,11 @@
       "PASSWORD_MIN": "Das Passwort muss mindestens 8 Zeichen enthalten.",
       "PASSWORD_MISMATCH": "Passwort und Bestätigung stimmen nicht überein.",
       "PHONE_REQUIRED": "Die Telefonnummer ist erforderlich.",
+      "PHONE_COUNTRY_NOT_SUPPORTED": "Telefonnummern aus diesem Land werden noch nicht unterstützt. Bitte verwenden Sie eine Nummer aus einem unterstützten Land.",
       "PHONE_INVALID": "Das Format der Telefonnummer ist ungültig. Verwenden Sie das internationale Format, zum Beispiel: +963911234567",
       "INVALID_CREDENTIALS": "Die E-Mail-Adresse oder das Passwort ist falsch.",
+      "PHONE_INVALID_CREDENTIALS": "Telefonnummer oder Passwort ist falsch.",
+      "ACCOUNT_UNAVAILABLE": "Dieses Konto ist nicht verfügbar. Wenden Sie sich an den Support, falls das ein Irrtum ist.",
       "REGISTER_FAILED": "Das Konto konnte nicht erstellt werden. Überprüfen Sie die Angaben.",
       "FORGOT_FAILED": "Der Link zum Zurücksetzen konnte nicht gesendet werden.",
       "RESET_FAILED": "Das Passwort konnte nicht aktualisiert werden.",
@@ -187,6 +202,8 @@
       "APPLE_LOGIN": "Mit Apple fortfahren",
       "OTP_RATE_LIMITED": "Sie haben zu viele Codes angefordert. Warten Sie eine Stunde und versuchen Sie es erneut.",
       "OTP_SMS_FAILED": "Die SMS konnte nicht gesendet werden. Prüfen Sie die Telefonnummer oder versuchen Sie es später erneut.",
+      "OTP_CHANNEL_UNAVAILABLE": "Diese Methode ist derzeit nicht verfügbar. Wählen Sie eine andere.",
+      "OTP_PROVIDER_UNAVAILABLE": "Der Code konnte auf diesem Weg gerade nicht gesendet werden. Versuchen Sie eine andere Methode oder es später erneut.",
       "OTP_STORE_FAILED": "Die Nachricht wurde gesendet, aber beim Speichern des Codes ist ein Fehler aufgetreten. Fordern Sie einen neuen Code an.",
       "OTP_NOT_FOUND": "Es wurde kein gültiger Bestätigungscode gefunden. Fordern Sie einen neuen Code an.",
       "OTP_INVALID": "Der Code ist ungültig oder abgelaufen.",
@@ -197,10 +214,10 @@
       "PROFILE_NAME_REQUIRED": "Dies ist eine neue Nummer — geben Sie Ihren Namen ein, um das Konto zu erstellen.",
       "PHONE_AUTH_FAILED": "Die Anmeldung mit der Telefonnummer konnte nicht abgeschlossen werden. Versuchen Sie es erneut.",
       "PHONE_ALREADY_REGISTERED": "Diese Telefonnummer ist bereits registriert. Versuchen Sie sich stattdessen anzumelden.",
-      "PASSWORD_POLICY_FAILED": "Dieses Passwort erfüllt nicht die Sicherheitsanforderungen.",
+      "PASSWORD_POLICY_FAILED": "Dieses Passwort erfüllt die Anforderungen nicht: mindestens 8 Zeichen, mit Großbuchstabe (A-Z), Kleinbuchstabe (a-z) und Ziffer (0-9).",
       "PHONE_REVERIFICATION_REQUIRED": "Eine erneute Bestätigung Ihrer Telefonnummer ist erforderlich.",
       "PHONE_REVERIFICATION_NOT_CONFIGURED": "Für die erneute Bestätigung ist keine Telefonnummer eingerichtet.",
-      "RECENT_AUTHENTICATION_REQUIRED": "Eine kürzliche Anmeldung ist erforderlich, um diese Aktion abzuschließen.",
+      "RECENT_AUTHENTICATION_REQUIRED": "Das aktuelle Passwort ist falsch oder das Konto ist nach zu vielen Versuchen vorübergehend gesperrt. Bitte prüfen Sie es und versuchen Sie es erneut.",
       "PASSWORD_RESET_INVALID": "Ihre Anfrage zum Zurücksetzen des Passworts ist abgelaufen — bitte beginnen Sie erneut.",
       "PASSWORD_RESET_EXPIRED": "Dieser Rücksetzcode ist abgelaufen. Fordern Sie einen neuen an.",
       "PASSWORD_RESET_ALREADY_USED": "Dieser Rücksetzcode wurde bereits verwendet.",
@@ -226,7 +243,7 @@
     },
     "FIRST_NAME_PLACEHOLDER": "Vorname eingeben",
     "LAST_NAME_PLACEHOLDER": "Nachname eingeben",
-    "PASSWORD_MIN_HINT": "Mindestens 8 Zeichen.",
+    "PASSWORD_MIN_HINT": "Mindestens 8 Zeichen, mit Großbuchstabe (A-Z), Kleinbuchstabe (a-z) und Ziffer (0-9).",
     "VERIFYING": "Wird überprüft...",
     "VERIFY_CODE": "Code bestätigen",
     "ALREADY_HAVE_ACCOUNT": "Sie haben bereits ein Konto?",
@@ -234,6 +251,33 @@
     "FORGOT_PASSWORD_PHONE": "Passwort vergessen?",
     "PHONE_REGISTER_MOVED_NOTICE": "Die Telefonregistrierung hat jetzt eine eigene Seite —",
     "PHONE_REGISTER_MOVED_LINK": "dorthin wechseln",
+    "CHANNELS": {
+      "TITLE": "Wählen Sie, wie Sie den Bestätigungscode erhalten möchten",
+      "RECOMMENDED": "Empfohlen",
+      "NAMES": {
+        "Sms": "SMS",
+        "Telegram": "Telegram",
+        "WhatsApp": "WhatsApp"
+      },
+      "DESCRIPTIONS": {
+        "Sms": "Code als SMS auf Ihr Telefon erhalten",
+        "Telegram": "Code in der Telegram-App erhalten",
+        "WhatsApp": "Code in der WhatsApp-App erhalten"
+      },
+      "NOT_IN_YOUR_COUNTRY": "Dieser Dienst ist in Ihrem Land nicht verfügbar.",
+      "NOT_AVAILABLE_IN": "Nicht verfügbar in:",
+      "LIST_SEPARATOR": ", ",
+      "COUNTRIES": {
+        "963": "Syrien",
+        "53": "Kuba",
+        "98": "Iran",
+        "850": "Nordkorea"
+      },
+      "SENT_VIA": "Der Code wurde per {{channel}} gesendet und ist 5 Minuten gültig.",
+      "NO_CODE": "Code nicht erhalten?",
+      "SEND_VIA": "Per {{channel}} senden"
+    },
+
     "PHONE_REGISTER": {
       "TITLE": "Konto mit Telefonnummer erstellen",
       "SUBTITLE": "Geben Sie Ihre Telefonnummer ein, um einen einmaligen Code zu erhalten.",
@@ -775,7 +819,24 @@
     "SELECT_CONVERSATION_FIRST": "Wählen Sie zuerst ein Gespräch aus, bevor Sie antworten.",
     "ERROR_EMPTY": "Eine leere Nachricht kann nicht gesendet werden.",
     "ERROR_TOO_LONG": "Die Nachricht ist zu lang (maximal 3000 Zeichen).",
-    "SENDING_AS": "Diese Nachricht wird unter Ihrem Konto gesendet: {{name}}"
+    "SENDING_AS": "Diese Nachricht wird unter Ihrem Konto gesendet: {{name}}",
+    "INBOX_TITLE": "Meine Nachrichten",
+    "INBOX_SUBTITLE": "Deine Anfragen an Eigentümer und Anfragen zu deinen eigenen Inseraten.",
+    "INBOX_EMPTY_TITLE": "Noch keine Unterhaltungen",
+    "INBOX_EMPTY_MESSAGE": "Wenn du einem Eigentümer schreibst oder dir jemand zu deinem Inserat schreibt, erscheint die Unterhaltung hier.",
+    "LOAD_MORE": "Mehr anzeigen",
+    "ROLE_INQUIRY": "Anfrage zu deinem Inserat",
+    "ROLE_OWNER": "Eigentümer",
+    "UNKNOWN_PROPERTY": "Inserat nicht verfügbar",
+    "YOU_PREFIX": "Du:",
+    "UNREAD_ARIA": "{{count}} ungelesene Nachrichten",
+    "CONVERSATION_WITH": "Unterhaltung mit {{name}}",
+    "OLDER_HIDDEN": "Es werden die letzten 50 Nachrichten dieser Unterhaltung angezeigt.",
+    "RATE_PROMPT": "Wie war deine Erfahrung mit diesem Eigentümer?",
+    "RATE_OWNER": "Eigentümer bewerten",
+    "OPEN_CONVERSATION": "Unterhaltung anzeigen",
+    "SEND_SUCCESS_DETAIL": "Deine Nachricht wurde an den Eigentümer gesendet. Die Unterhaltung und seine Antwort findest du unter „Meine Nachrichten“.",
+    "SEND_ANOTHER": "Weitere Nachricht senden"
   },
   "ADMIN_USERS": {
     "TITLE": "Benutzerverwaltung",
@@ -929,6 +990,7 @@
     "DISPLAY_NAME": "Anzeigename",
     "EMAIL_LOCKED": "E-Mail-Adresse (nicht änderbar)",
     "PHONE": "Telefonnummer",
+    "PHONE_SECURITY": { "TITLE": "Telefonnummer für die Anmeldung", "CHANGE": "Anmelde-Telefonnummer ändern", "VERIFY": "Meine Telefonnummer bestätigen" },
     "PHONE_REQUIRED_AGENT": "* Für Immobilienmakler erforderlich",
     "PHONE_PLACEHOLDER": "Telefonnummer eingeben",
     "AGENT_CHECKBOX": "Konto als verifizierter Immobilienmakler aktivieren",
@@ -1117,9 +1179,12 @@
     "ANONYMOUS": "Anonymer Benutzer",
     "PROPERTY_REQUIRED": "Die Immobilien-ID ist erforderlich.",
     "RATING_RANGE": "Die Bewertung muss zwischen 1 und 5 liegen.",
+    "COMMENT_TOO_LONG": "Der Kommentar ist zu lang (maximal 1000 Zeichen).",
     "COMMENT_PLACEHOLDER": "Teilen Sie uns Ihre Meinung zu dieser Immobilie mit...",
     "EMPTY_TITLE": "Noch keine Bewertungen",
-    "EMPTY_MESSAGE": "Seien Sie der Erste, der diese Immobilie bewertet."
+    "EMPTY_MESSAGE": "Seien Sie der Erste, der diese Immobilie bewertet.",
+    "ADD_PROPERTY": "Immobilie bewerten",
+    "PROPERTY_HINT": "Immobilienbewertungen sind nach einer abgeschlossenen Besichtigung möglich. Um den Eigentümer nach dem Nachrichtenaustausch zu bewerten:"
   },
   "AGENCY_FORM": {
     "CREATE_TITLE": "Immobilienbüro registrieren",
@@ -1356,7 +1421,9 @@
       "CREDIBILITY": "Glaubwürdigkeit",
       "SAFETY": "Sicherheit",
       "RESPONSE_SPEED": "Antwortgeschwindigkeit",
-      "TRANSPARENCY": "Transparenz"
+      "TRANSPARENCY": "Transparenz",
+      "INFORMATION_ACCURACY": "Richtigkeit der Angaben",
+      "CONDUCT": "Umgang"
     },
     "RATE_CTA": "Diesen Nutzer bewerten",
     "ABOUT_TITLE": "Über mich",
@@ -1367,7 +1434,17 @@
     "RATE_NOT_ELIGIBLE_MESSAGE": "Du musst zuerst eine Besichtigung bei einer Immobilie dieses Nutzers abgeschlossen oder mit ihm Nachrichten ausgetauscht haben, bevor du ihn bewerten kannst.",
     "RATE_EDIT_HINT": "Du hast diesen Nutzer bereits bewertet — du kannst deine Bewertung unten bearbeiten.",
     "UPDATE_RATING": "Bewertung aktualisieren",
-    "RATE_UPDATE_SUCCESS": "Deine Bewertung wurde erfolgreich aktualisiert"
+    "RATE_UPDATE_SUCCESS": "Deine Bewertung wurde erfolgreich aktualisiert",
+    "RATE_QUESTION": "Wie war deine Erfahrung mit diesem Eigentümer?",
+    "RATE_ALL_CRITERIA_REQUIRED": "Bitte vergib für jedes Kriterium Sterne, bevor du absendest.",
+    "CRITERIA_HINT": {
+      "CREDIBILITY": "Hat er Wort gehalten?",
+      "INFORMATION_ACCURACY": "Stimmten Inserat, Fotos und Preis mit der Realität überein?",
+      "CONDUCT": "Respektvoll und höflich",
+      "RESPONSE_SPEED": "Wie schnell geantwortet wurde",
+      "TRANSPARENCY": "Klar zu Bedingungen und Kosten",
+      "SAFETY": "Hast du dich sicher gefühlt und vertrauen können?"
+    }
   },
   "PRICING": {
     "META_TITLE": "Abo-Pakete für Eigentümer und Immobilienbüros",
@@ -1484,6 +1561,94 @@
     },
     "LEGEND_BLOCKED": "Belegt",
     "LEGEND_SELECTED": "Ausgewählt"
+  },
+  "PHOTO_GUIDE": {
+    "OPEN": "Wie mache ich professionelle Fotos?",
+    "OPEN_HINT": "Eine kurze 30-Sekunden-Anleitung",
+    "TITLE": "So gelingen bessere Fotos",
+    "SUBTITLE": "Kurzanleitung — 30 Sekunden",
+    "CLOSE": "Anleitung schließen",
+    "PROGRESS": "Schritte der Anleitung",
+    "STEP_OF": "Foto {{n}} von {{total}}",
+    "WHAT": "Was fotografieren?",
+    "WHY": "Warum?",
+    "HOW": "Wie?",
+    "NEXT": "Weiter",
+    "PREV": "Zurück",
+    "SKIP": "Überspringen",
+    "START": "Fotos hinzufügen",
+    "READY_TITLE": "Bereit? Beginnen wir mit dem besten Foto",
+    "ENCOURAGE": "Ein klares Foto sorgt dafür, dass man bei Ihrer Anzeige stehen bleibt. Die wichtigsten Tipps vorab:",
+    "INTRO": {
+      "sale": "Zum Verkauf: Zeigen Sie Größe, Zustand und Ausstattung so, wie sie sind — Käufer vergleichen viele Anzeigen.",
+      "rent": "Zur Miete: Konzentrieren Sie sich auf Zimmer, Küche, Bad und Zustand — danach fragen Mieter zuerst.",
+      "shortStay": "Für Kurzaufenthalte: Gäste entscheiden anhand der Fotos, zeigen Sie also Bett, Küche, Bad und Komfort."
+    },
+    "KIND_TIP": {
+      "sale": "Fotografieren Sie sichtbare Mängel ehrlich; Offenheit vermeidet Überraschungen bei der Besichtigung.",
+      "rent": "Zeigen Sie die enthaltene Ausstattung (Warmwasserbereiter, Küche, Schränke), damit Mieter wissen, was sie bekommen.",
+      "shortStay": "Zeigen Sie den Komfort aus Ihrer Anzeige: Klimaanlage, Küche, Balkon …"
+    },
+    "TIPS": {
+      "LIGHT": "Nutzen Sie natürliches Licht: Vorhänge und Fenster öffnen.",
+      "TIDY": "Räumen Sie vorher auf: persönliche Dinge und Unordnung entfernen.",
+      "STEADY": "Halten Sie das Handy quer und ruhig — stützen Sie die Ellbogen ab.",
+      "HONEST": "Zeigen Sie den echten Raum; vermeiden Sie irreführende Winkel.",
+      "DETAILS": "Fotografieren Sie wichtige Details, statt dasselbe Motiv zu wiederholen.",
+      "LENS": "Wischen Sie die Handylinse vor dem Start ab.",
+      "SHARP": "Vermeiden Sie dunkle oder verwackelte Fotos; wiederholen Sie die Aufnahme.",
+      "FRESH": "Verwenden Sie nur aktuelle Fotos; hat sich das Objekt verändert, aktualisieren Sie sie."
+    },
+    "STEPS": {
+      "FACADE": {
+        "TITLE": "Gebäudefront",
+        "WHAT": "Das ganze Gebäude von der Straße, inklusive Eingang.",
+        "WHY": "Es ist das erste Foto, das man sieht, und vermittelt einen Eindruck von Haus und Umgebung.",
+        "HOW": "Stellen Sie sich bei Tageslicht gegenüber auf, die Sonne im Rücken, das Handy quer auf Brusthöhe."
+      },
+      "LIVING": {
+        "TITLE": "Wohnzimmer",
+        "WHAT": "Der Raum aus einer Ecke, damit möglichst viel Fläche zu sehen ist.",
+        "WHY": "Man möchte sich darin vorstellen und die echte Größe kennen.",
+        "HOW": "Stellen Sie sich in eine Ecke, öffnen Sie die Vorhänge und räumen Sie Lose weg."
+      },
+      "BEDROOM": {
+        "TITLE": "Schlafzimmer",
+        "WHAT": "Bett, Schrank und Fenster in einem Bild.",
+        "WHY": "Es zeigt, wie viel Platz wirklich da ist und wie das Licht hereinkommt.",
+        "HOW": "Fotografieren Sie von der Tür oder aus einer Ecke, machen Sie das Bett und nutzen Sie Tageslicht."
+      },
+      "KITCHEN": {
+        "TITLE": "Küche",
+        "WHAT": "Schränke, Spüle und Kochstelle.",
+        "WHY": "Nach der Küche wird besonders oft gefragt.",
+        "HOW": "Räumen Sie die Arbeitsflächen frei, reinigen Sie die Spüle und fotografieren Sie aus einer Ecke."
+      },
+      "BATHROOM": {
+        "TITLE": "Badezimmer",
+        "WHAT": "Das ganze Bad: Waschbecken, Dusche und Fliesen.",
+        "WHY": "Sauberkeit schafft hier viel Vertrauen.",
+        "HOW": "Klappen Sie den WC-Deckel zu, verstecken Sie persönliche Dinge und wischen Sie den Spiegel, damit Sie sich nicht spiegeln."
+      },
+      "BALCONY": {
+        "TITLE": "Balkon und Aussicht",
+        "WHAT": "Der Balkon und was man sieht: Straße, Berg oder Viertel.",
+        "WHY": "Eine Aussicht ist ein echter Vorteil und sollte gezeigt werden.",
+        "HOW": "Fotografieren Sie bei Tageslicht mit geradem Horizont; nicht zoomen — lieber näher herangehen."
+      },
+      "COURTYARD": {
+        "TITLE": "Garten, Innenhof oder Dach",
+        "WHAT": "Die Freifläche, wie sie ist, mit ihrem schönsten Detail.",
+        "WHY": "Außenflächen sind selten und heben ein Objekt hervor.",
+        "HOW": "Machen Sie eine Weitwinkelaufnahme der Grenzen und eine Nahaufnahme, etwa vom Brunnen oder Baum."
+      },
+      "ENTRANCE": {
+        "TITLE": "Eingang",
+        "WHAT": "Die Tür und der Eingang des Hauses oder der Wohnung.",
+        "WHY": "Gäste wollen wissen, wo sie hineingehen und dass es gepflegt und sicher ist.",
+        "HOW": "Fotografieren Sie die Tür frontal bei Tageslicht und zeigen Sie keine Namen oder Nummern von Nachbarn."
+      }
+    }
   },
   "SHORTSTAY": {
     "LIST": {
@@ -1629,6 +1794,32 @@
       "ERR_BEDROOMS": "Geben Sie die Zahl der Schlafzimmer an (0 oder mehr).",
       "ERR_BATHROOMS": "Geben Sie die Zahl der Badezimmer an (0 oder mehr).",
       "ERR_TIMES": "Legen Sie Check-in- und Check-out-Zeit fest.",
+      "TIMES_HINT": "Gäste sehen beide Zeiten auf der Inseratsseite und in ihrer Buchungsbestätigung.",
+      "EXTRA_BED_FEE": "Gebühr für Zusatzbett",
+      "QUIET_HOURS_START": "Beginn der Ruhezeiten",
+      "QUIET_HOURS_END": "Ende der Ruhezeiten",
+      "QUIET_HOURS_HINT": "Optional — Beginn und Ende gemeinsam festlegen.",
+      "QUIET_HOURS_CLEAR": "Zurücksetzen",
+      "ERR_QUIET_HOURS": "Legen Sie Beginn und Ende der Ruhezeiten gemeinsam fest oder setzen Sie sie zurück.",
+      "LOCATION_HINT": "Gäste finden Ihr Inserat über das Gouvernement und auf der Karte. Zum Veröffentlichen sind Gouvernement und ein Kartenpunkt erforderlich.",
+      "LOCATION_LOAD_ERROR": "Die Listen der Gouvernements und Bezirke konnten nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+      "GOVERNORATE": "Gouvernement",
+      "SELECT_GOVERNORATE": "Gouvernement auswählen",
+      "DISTRICT": "Bezirk",
+      "NEIGHBORHOOD": "Stadtviertel",
+      "OPTIONAL_SELECT": "Optional",
+      "MAP_HINT": "Tippen Sie auf die Karte, um Ihr Inserat zu platzieren. Den Pin können Sie verschieben.",
+      "USE_MY_LOCATION": "Meinen Standort verwenden",
+      "LOCATING": "Standort wird ermittelt…",
+      "PIN_SELECTED": "Standort festgelegt",
+      "ERR_GOVERNORATE": "Wählen Sie ein Gouvernement.",
+      "ERR_PIN": "Platzieren Sie Ihr Inserat auf der Karte.",
+      "VISIBILITY_EXACT_HINT": "Gäste sehen den genauen Standort auf der Karte.",
+      "VISIBILITY_APPROX_HINT": "Gäste sehen nur die ungefähre Gegend (etwa 1 km); die genaue Adresse bleibt verborgen.",
+      "GPS_UNSUPPORTED": "Ihr Gerät oder Browser unterstützt keine Standortbestimmung. Tippen Sie stattdessen auf die Karte.",
+      "GPS_DENIED": "Der Standortzugriff wurde verweigert. Erlauben Sie ihn in den Browsereinstellungen oder tippen Sie auf die Karte.",
+      "GPS_FAILED": "Ihr Standort konnte gerade nicht ermittelt werden. Versuchen Sie es erneut oder tippen Sie auf die Karte.",
+      "PUBLISH_NEEDS_LOCATION": "Legen Sie Gouvernement und Kartenpunkt fest und speichern Sie, bevor Sie veröffentlichen.",
       "ERR_LOCATION": "Geben Sie Breiten- und Längengrad als gültige Zahlen ein.",
       "ERR_FEES": "Gebühren müssen Zahlen von mindestens 0 sein.",
       "LOCATION": "Standort",
@@ -1670,6 +1861,11 @@
       "PHOTOS_UPLOADING": "Fotos werden hochgeladen...",
       "PHOTOS_SUCCESS": "Fotos erfolgreich hochgeladen.",
       "PHOTOS_ERROR": "Fotos konnten nicht hochgeladen werden.",
+      "PHOTOS_HINT": "Optional — bis zu {{max}} Fotos (JPG, PNG oder WebP, max. 5 MB je Foto). Sie werden nach dem Erstellen automatisch hochgeladen; das erste ist das Titelbild.",
+      "PHOTO_INVALID_TYPE": "„{{name}}“ ist kein unterstütztes Bild (JPG, PNG oder WebP).",
+      "PHOTO_TOO_LARGE": "„{{name}}“ ist größer als 5 MB.",
+      "PHOTO_LIMIT": "Beim Erstellen können höchstens {{max}} Fotos gewählt werden.",
+      "CREATED_PHOTOS_FAILED": "Das Angebot wurde erstellt, aber die Fotos konnten nicht hochgeladen werden. Sie können sie auf der Bearbeitungsseite hinzufügen.",
       "SAVE": "Änderungen speichern",
       "CREATE": "Anzeige erstellen",
       "SAVE_SUCCESS": "Änderungen gespeichert.",
@@ -2257,5 +2453,13 @@
         "SERVICEVERIFIED": "Service verifiziert"
       }
     }
+  },
+  "APP_UPDATE": {
+    "OPTIONAL_TITLE": "Ein neues Update ist verfügbar",
+    "OPTIONAL_BODY": "Die neue Version enthält Verbesserungen und Fehlerbehebungen.",
+    "MANDATORY_TITLE": "App-Update erforderlich",
+    "MANDATORY_BODY": "Diese App-Version wird nicht mehr unterstützt. Bitte aktualisieren Sie, um fortzufahren.",
+    "UPDATE_NOW": "Jetzt aktualisieren",
+    "LATER": "Später"
   }
 }

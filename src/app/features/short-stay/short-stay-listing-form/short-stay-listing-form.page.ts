@@ -1,13 +1,17 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { PhotoGuideSheetComponent } from '../../../shared/ui/photo-guide/photo-guide-sheet.component';
 import { forkJoin } from 'rxjs';
 
 import { ShortStayListingApiService } from '../../../core/api/short-stay-listing-api.service';
-import { LookupsApiService, LookupAmenity } from '../../../core/api/lookups-api.service';
+import { LookupsApiService, LookupAmenity, StructuredLocationLookup, pickLocalizedName } from '../../../core/api/lookups-api.service';
+import { MapPickerComponent } from '../../../map-picker/map-picker.component';
+import { CITY_MAPS } from '../../../map-picker/city-map.config';
+import { LangCode } from '../../../core/services/language.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import {
@@ -17,6 +21,45 @@ import {
   SHORT_STAY_CURRENCIES,
   ShortStayListing
 } from '../../../core/models/short-stay.model';
+
+/** Same limits the backend enforces in AddShortStayListingPhotosCommandHandler. */
+const PHOTO_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const PHOTO_MAX_BYTES = 5 * 1024 * 1024;
+const PHOTO_MAX_PER_REQUEST = 10;
+
+interface PendingPhoto {
+  file: File;
+  previewUrl: string;
+}
+
+/**
+ * `<input type="time">` yields "HH:mm" (or "" once cleared). The API's TimeOnly contract is
+ * "HH:mm:ss", so a short value is padded and an empty one becomes null — sending "" or a
+ * seconds-less value used to fail model binding with "The Check in time field is empty or invalid".
+ */
+export function toApiTime(value: string | null | undefined): string | null {
+  const v = (value ?? '').trim();
+  if (!v) return null;
+  return /^\d{2}:\d{2}$/.test(v) ? `${v}:00` : v;
+}
+
+/**
+ * Best-effort: finds the bundled city map (centre + zoom) for a governorate by its English name so
+ * choosing "Aleppo" pans the picker there. Ignores case, punctuation and doubled letters
+ * ("Lattakia" / "Latakia", "Deir ez-Zor" / "DEIR_EZZOR"); returns null when nothing matches.
+ */
+export function cityMapFor(nameEn: string): { lat: number; lng: number; zoom: number } | null {
+  const collapse = (value: string): string =>
+    value.toUpperCase().replace(/[^A-Z]/g, '').replace(/(.)\1+/g, '$1');
+  const wanted = collapse(nameEn ?? '');
+  if (!wanted) return null;
+
+  const hit = CITY_MAPS.find(c => {
+    const key = collapse(c.nameKey);
+    return key === wanted || key.includes(wanted) || wanted.includes(key);
+  });
+  return hit ? { lat: hit.lat, lng: hit.lng, zoom: hit.zoom } : null;
+}
 
 type PricingRuleForm = {
   ruleType: PricingRuleDto['ruleType'];
@@ -29,7 +72,7 @@ type PricingRuleForm = {
 @Component({
   selector: 'app-short-stay-listing-form-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule],
+  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, PhotoGuideSheetComponent, MapPickerComponent],
   templateUrl: './short-stay-listing-form.page.html',
   styleUrls: ['./short-stay-listing-form.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -43,6 +86,10 @@ export class ShortStayListingFormPage implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  /** Flips on the first submit so required-but-empty fields get highlighted, not just toasted. */
+  readonly submitAttempted = signal(false);
 
   readonly listingId = signal<string | null>(null);
   readonly listing = signal<ShortStayListing | null>(null);
@@ -54,7 +101,22 @@ export class ShortStayListingFormPage implements OnInit {
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly uploadingPhotos = signal(false);
+  /** Photography guide (UX only): closing or reading it changes nothing in the form. */
+  readonly photoGuideOpen = signal(false);
+  /** Photos picked on the create form; uploaded right after the listing exists (the API needs its id). */
+  readonly pendingPhotos = signal<PendingPhoto[]>([]);
+  readonly maxPhotosPerRequest = PHOTO_MAX_PER_REQUEST;
   readonly togglingPublish = signal(false);
+
+  // ── الموقع: المحافظة ← المنطقة ← الحي + نقطة على الخريطة ──
+  readonly governorates = signal<StructuredLocationLookup[]>([]);
+  readonly districts = signal<StructuredLocationLookup[]>([]);
+  readonly neighborhoods = signal<StructuredLocationLookup[]>([]);
+  readonly locationLoadFailed = signal(false);
+  /** The map's pin. Single source of truth: latitude/longitude below always mirror it. */
+  readonly pin = signal<{ lat: number; lng: number } | null>(null);
+  readonly locating = signal(false);
+  @ViewChild(MapPickerComponent) private mapPicker?: MapPickerComponent;
 
   // ── حقول الإنشاء (وضع "جديد" فقط) ──
   accommodationTypeId: number | null = null;
@@ -73,8 +135,8 @@ export class ShortStayListingFormPage implements OnInit {
   selfCheckInEnabled = false;
   instantBookingEnabled = true;
   requestBookingEnabled = false;
-  latitude = 0;
-  longitude = 0;
+  latitude: number | null = null;
+  longitude: number | null = null;
   city = '';
   locationVisibility: LocationVisibility = 'Exact';
 
@@ -110,11 +172,21 @@ export class ShortStayListingFormPage implements OnInit {
   get isEditMode(): boolean { return !!this.listingId(); }
 
   ngOnInit(): void {
+    this.destroyRef.onDestroy(() => this.pendingPhotos().forEach(p => URL.revokeObjectURL(p.previewUrl)));
+
     const id = this.route.snapshot.paramMap.get('id');
     this.listingId.set(id);
 
     this.lookupsApi.getAmenities().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: items => this.amenityCatalog.set(items), error: () => this.amenityCatalog.set([])
+    });
+
+    this.lookupsApi.getGovernorates().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: items => this.governorates.set(items),
+      error: () => {
+        this.governorates.set([]);
+        this.locationLoadFailed.set(true);
+      }
     });
 
     if (id) {
@@ -157,13 +229,14 @@ export class ShortStayListingFormPage implements OnInit {
     this.selfCheckInEnabled = listing.selfCheckInEnabled;
     this.instantBookingEnabled = listing.instantBookingEnabled;
     this.requestBookingEnabled = listing.requestBookingEnabled;
-    this.latitude = listing.latitude ?? 0;
-    this.longitude = listing.longitude ?? 0;
+    this.setPin(listing.latitude, listing.longitude);
     this.city = listing.city ?? '';
     this.locationVisibility = listing.locationVisibility;
     this.governorateId = listing.governorateId;
     this.districtId = listing.districtId;
     this.neighborhoodId = listing.neighborhoodId;
+    if (listing.governorateId) this.loadDistricts(listing.governorateId);
+    if (listing.districtId) this.loadNeighborhoods(listing.districtId);
     this.poolType = listing.poolType;
     this.poolLocation = listing.poolLocation;
     this.poolIsSeasonal = listing.poolIsSeasonal;
@@ -189,6 +262,94 @@ export class ShortStayListingFormPage implements OnInit {
         ruleType: r.ruleType, dayOfWeek: r.dayOfWeek,
         dateRangeStart: r.dateRangeStart, dateRangeEnd: r.dateRangeEnd, pricePerNight: r.pricePerNight
       }))
+    );
+  }
+
+  private get lang(): LangCode {
+    return (this.translate.currentLang === 'ar' ? 'ar' : this.translate.currentLang === 'de' ? 'de' : 'en') as LangCode;
+  }
+
+  locationLabel(item: StructuredLocationLookup): string {
+    return pickLocalizedName(item, this.lang);
+  }
+
+  get mapLang(): LangCode {
+    return this.lang;
+  }
+
+  private loadDistricts(governorateId: number): void {
+    this.lookupsApi.getDistricts(governorateId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: items => this.districts.set(items),
+      error: () => {
+        this.districts.set([]);
+        this.locationLoadFailed.set(true);
+      }
+    });
+  }
+
+  private loadNeighborhoods(districtId: number): void {
+    this.lookupsApi.getNeighborhoods(districtId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: items => this.neighborhoods.set(items),
+      error: () => {
+        this.neighborhoods.set([]);
+        this.locationLoadFailed.set(true);
+      }
+    });
+  }
+
+  onGovernorateChange(id: number | null): void {
+    this.governorateId = id;
+    this.districtId = null;
+    this.neighborhoodId = null;
+    this.districts.set([]);
+    this.neighborhoods.set([]);
+    if (!id) return;
+
+    this.loadDistricts(id);
+
+    // Only steer the map before the host has placed a pin — never move it out from under one.
+    const governorate = this.governorates().find(g => g.id === id);
+    const city = governorate ? cityMapFor(governorate.nameEn) : null;
+    if (city && !this.pin()) this.mapPicker?.updateCenter(city.lat, city.lng, city.zoom);
+  }
+
+  onDistrictChange(id: number | null): void {
+    this.districtId = id;
+    this.neighborhoodId = null;
+    this.neighborhoods.set([]);
+    if (id) this.loadNeighborhoods(id);
+  }
+
+  setPin(lat: number | null, lng: number | null): void {
+    const valid = typeof lat === 'number' && typeof lng === 'number' && Number.isFinite(lat) && Number.isFinite(lng);
+    this.latitude = valid ? lat : null;
+    this.longitude = valid ? lng : null;
+    this.pin.set(valid ? { lat: lat as number, lng: lng as number } : null);
+  }
+
+  onMapPinSelected(location: { lat: number; lng: number }): void {
+    this.setPin(location.lat, location.lng);
+  }
+
+  /** "Use my location": a GPS fix becomes the pin; every failure says what to do next. */
+  useMyLocation(): void {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      this.toast.show(this.translate.instant('SHORTSTAY.FORM.GPS_UNSUPPORTED'), 'error');
+      return;
+    }
+
+    this.locating.set(true);
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        this.locating.set(false);
+        this.setPin(position.coords.latitude, position.coords.longitude);
+      },
+      error => {
+        this.locating.set(false);
+        const key = error.code === 1 ? 'SHORTSTAY.FORM.GPS_DENIED' : 'SHORTSTAY.FORM.GPS_FAILED';
+        this.toast.show(this.translate.instant(key), 'error');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
     );
   }
 
@@ -231,27 +392,51 @@ export class ShortStayListingFormPage implements OnInit {
     if (!isNum(this.bedrooms) || this.bedrooms < 0) return 'SHORTSTAY.FORM.ERR_BEDROOMS';
     if (!isNum(this.bathrooms) || this.bathrooms < 0) return 'SHORTSTAY.FORM.ERR_BATHROOMS';
     if (!this.checkInTime || !this.checkOutTime) return 'SHORTSTAY.FORM.ERR_TIMES';
-    if (!isNum(this.latitude) || !isNum(this.longitude)) return 'SHORTSTAY.FORM.ERR_LOCATION';
+    if (includeFees && !this.quietHoursStart !== !this.quietHoursEnd) return 'SHORTSTAY.FORM.ERR_QUIET_HOURS';
+    if (!this.governorateId) return 'SHORTSTAY.FORM.ERR_GOVERNORATE';
+    if (!isNum(this.latitude) || !isNum(this.longitude)) return 'SHORTSTAY.FORM.ERR_PIN';
     if (includeFees && [this.cleaningFee, this.extraGuestFee, this.extraBedFee].some(fee => !isNum(fee) || fee < 0)) {
       return 'SHORTSTAY.FORM.ERR_FEES';
     }
     return null;
   }
 
+  /** Toast the reason and move the user to the first offending field (highlighted via submitAttempted). */
+  private rejectSubmit(messageKey: string): void {
+    this.toast.show(this.translate.instant(messageKey), 'error');
+    // A missing pin has no invalid <input> to focus — the inline error only renders after this
+    // tick — so point at the map itself.
+    const target = this.host.nativeElement.querySelector<HTMLElement>(
+      messageKey === 'SHORTSTAY.FORM.ERR_PIN'
+        ? '.ssf__map'
+        : 'input.ng-invalid, select.ng-invalid, textarea.ng-invalid'
+    );
+    target?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+    target?.focus?.({ preventScroll: true });
+  }
+
+  /** Not every browser lets users clear an optional time input, so offer an explicit reset. */
+  clearQuietHours(): void {
+    this.quietHoursStart = null;
+    this.quietHoursEnd = null;
+  }
+
   createListing(): void {
+    this.submitAttempted.set(true);
+
     if (!this.accommodationTypeId) {
-      this.toast.show(this.translate.instant('SHORTSTAY.FORM.SELECT_TYPE'), 'error');
+      this.rejectSubmit('SHORTSTAY.FORM.SELECT_TYPE');
       return;
     }
 
     const invalidKey = this.firstInvalidFieldKey(false);
     if (invalidKey) {
-      this.toast.show(this.translate.instant(invalidKey), 'error');
+      this.rejectSubmit(invalidKey);
       return;
     }
 
     if (!(this.defaultBasePricePerNight > 0)) {
-      this.toast.show(this.translate.instant('SHORTSTAY.FORM.PRICE_REQUIRED'), 'error');
+      this.rejectSubmit('SHORTSTAY.FORM.PRICE_REQUIRED');
       return;
     }
 
@@ -263,23 +448,84 @@ export class ShortStayListingFormPage implements OnInit {
       capacity: this.capacity,
       bedrooms: this.bedrooms,
       bathrooms: this.bathrooms,
-      checkInTime: this.checkInTime,
-      checkOutTime: this.checkOutTime,
+      checkInTime: toApiTime(this.checkInTime)!,
+      checkOutTime: toApiTime(this.checkOutTime)!,
       latitude: this.latitude,
       longitude: this.longitude,
+      governorateId: this.governorateId,
+      districtId: this.districtId,
+      neighborhoodId: this.neighborhoodId,
+      locationVisibility: this.locationVisibility,
       defaultBasePricePerNight: this.defaultBasePricePerNight,
       currencyCode: this.currencyCode
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: created => {
-        this.saving.set(false);
-        this.toast.show(this.translate.instant('SHORTSTAY.FORM.CREATE_SUCCESS'), 'success');
-        this.router.navigate(['/short-stay/manage', created.id]);
-      },
+      next: created => this.uploadPendingPhotosThenOpen(created.id),
       error: err => {
         this.saving.set(false);
         this.handleCreateError(err);
       }
     });
+  }
+
+  /**
+   * The listing already exists at this point, so a failed upload must never look like a failed
+   * create (a retry would create a duplicate and burn plan quota): the user lands on the manage
+   * page either way, where photos can be added again.
+   */
+  private uploadPendingPhotosThenOpen(listingId: string): void {
+    const files = this.pendingPhotos().map(p => p.file);
+    const open = (): void => {
+      this.saving.set(false);
+      this.uploadingPhotos.set(false);
+      void this.router.navigate(['/short-stay/manage', listingId]);
+    };
+
+    if (files.length === 0) {
+      this.toast.show(this.translate.instant('SHORTSTAY.FORM.CREATE_SUCCESS'), 'success');
+      open();
+      return;
+    }
+
+    this.uploadingPhotos.set(true);
+    this.api.uploadPhotos(listingId, files).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.toast.show(this.translate.instant('SHORTSTAY.FORM.CREATE_SUCCESS'), 'success');
+        open();
+      },
+      error: () => {
+        this.toast.show(this.translate.instant('SHORTSTAY.FORM.CREATED_PHOTOS_FAILED'), 'error');
+        open();
+      }
+    });
+  }
+
+  onPendingPhotosSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const accepted: PendingPhoto[] = [];
+    let room = PHOTO_MAX_PER_REQUEST - this.pendingPhotos().length;
+
+    for (const file of Array.from(input.files ?? [])) {
+      if (!PHOTO_ALLOWED_TYPES.includes(file.type)) {
+        this.toast.show(this.translate.instant('SHORTSTAY.FORM.PHOTO_INVALID_TYPE', { name: file.name }), 'error');
+      } else if (file.size > PHOTO_MAX_BYTES) {
+        this.toast.show(this.translate.instant('SHORTSTAY.FORM.PHOTO_TOO_LARGE', { name: file.name }), 'error');
+      } else if (room <= 0) {
+        this.toast.show(this.translate.instant('SHORTSTAY.FORM.PHOTO_LIMIT', { max: PHOTO_MAX_PER_REQUEST }), 'error');
+        break;
+      } else {
+        accepted.push({ file, previewUrl: URL.createObjectURL(file) });
+        room--;
+      }
+    }
+
+    this.pendingPhotos.update(list => [...list, ...accepted]);
+    input.value = '';
+  }
+
+  removePendingPhoto(index: number): void {
+    const removed = this.pendingPhotos()[index];
+    if (removed) URL.revokeObjectURL(removed.previewUrl);
+    this.pendingPhotos.update(list => list.filter((_, i) => i !== index));
   }
 
   /**
@@ -324,9 +570,10 @@ export class ShortStayListingFormPage implements OnInit {
     const id = this.listingId();
     if (!id) return;
 
+    this.submitAttempted.set(true);
     const invalidKey = this.firstInvalidFieldKey(true);
     if (invalidKey) {
-      this.toast.show(this.translate.instant(invalidKey), 'error');
+      this.rejectSubmit(invalidKey);
       return;
     }
 
@@ -346,8 +593,8 @@ export class ShortStayListingFormPage implements OnInit {
       capacity: this.capacity,
       bedrooms: this.bedrooms,
       bathrooms: this.bathrooms,
-      checkInTime: this.checkInTime,
-      checkOutTime: this.checkOutTime,
+      checkInTime: toApiTime(this.checkInTime)!,
+      checkOutTime: toApiTime(this.checkOutTime)!,
       selfCheckInEnabled: this.selfCheckInEnabled,
       instantBookingEnabled: this.instantBookingEnabled,
       requestBookingEnabled: this.requestBookingEnabled,
@@ -368,8 +615,8 @@ export class ShortStayListingFormPage implements OnInit {
       allowsSmoking: this.allowsSmoking,
       allowsParties: this.allowsParties,
       allowsPets: this.allowsPets,
-      quietHoursStart: this.quietHoursStart,
-      quietHoursEnd: this.quietHoursEnd,
+      quietHoursStart: toApiTime(this.quietHoursStart),
+      quietHoursEnd: toApiTime(this.quietHoursEnd),
       customRulesText: this.customRulesText || null,
       cancellationFreeCancellationDays: this.cancellationFreeCancellationDays,
       cancellationDepositRefundable: this.cancellationDepositRefundable,
@@ -424,6 +671,14 @@ export class ShortStayListingFormPage implements OnInit {
     const id = this.listingId();
     const current = this.listing();
     if (!id || !current) return;
+
+    // The API refuses to publish without a city and a pin; say so in the user's language and
+    // take them to the fix instead of a generic failure.
+    if (!current.isPublished && (!current.city || current.latitude === null || current.longitude === null)) {
+      this.toast.show(this.translate.instant('SHORTSTAY.FORM.PUBLISH_NEEDS_LOCATION'), 'error');
+      this.host.nativeElement.querySelector('.ssf__location')?.scrollIntoView?.({ block: 'start', behavior: 'smooth' });
+      return;
+    }
 
     this.togglingPublish.set(true);
     const action$ = current.isPublished ? this.api.unpublish(id) : this.api.publish(id);

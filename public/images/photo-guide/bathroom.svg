@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-hidden="true">
+  <defs>
+    <pattern id="tile" width="60" height="60" patternUnits="userSpaceOnUse"><rect width="60" height="60" fill="#f2f5f5"/><path d="M30 6l24 24-24 24L6 30z" fill="#2f6f73" opacity=".85"/><path d="M30 18l12 12-12 12-12-12z" fill="#f2f5f5"/></pattern>
+  </defs>
+  <rect width="640" height="480" fill="#eef1ee"/>
+  <rect y="0" width="640" height="180" fill="#f4f1e8"/>
+  <rect y="330" width="640" height="150" fill="url(#tile)" opacity=".9"/>
+  <rect y="180" width="640" height="150" fill="#dfeceb"/>
+  <path d="M0 180H640" stroke="#b9d0cd" stroke-width="4"/>
+  <path d="M60 210V120a54 54 0 0 1 108 0V210z" fill="#cfe4ee" stroke="#8a6f4d" stroke-width="6"/>
+  <rect x="40" y="250" width="150" height="14" rx="4" fill="#e6e0d2"/><rect x="50" y="264" width="130" height="90" rx="4" fill="#8d6240"/>
+  <ellipse cx="115" cy="248" rx="42" ry="9" fill="#f7f7f5" stroke="#c7cfce" stroke-width="2"/>
+  <path d="M115 240v-22h16" stroke="#8f989c" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <rect x="205" y="200" width="6" height="90" fill="#8f989c"/><rect x="211" y="205" width="44" height="80" rx="3" fill="#d6a84f"/>
+  <rect x="430" y="90" width="170" height="270" fill="#dff0f7" opacity=".55" stroke="#8fa9b3" stroke-width="4"/>
+  <path d="M470 90v-10h40" stroke="#8f989c" stroke-width="6" fill="none"/><circle cx="515" cy="84" r="16" fill="#8f989c"/>
+  <g stroke="#a9d3e6" stroke-width="2" opacity=".8"><path d="M505 108v40M515 108v50M525 108v40"/></g>
+  <rect x="290" y="240" width="70" height="60" rx="8" fill="#f7f7f5" stroke="#c7cfce" stroke-width="2"/><rect x="286" y="296" width="78" height="40" rx="18" fill="#f7f7f5" stroke="#c7cfce" stroke-width="2"/>
+  <polygon points="430,360 600,360 640,470 380,470" fill="#fff7d6" opacity=".22"/>
+</svg>

@@ -247,6 +247,7 @@ JsonNamingPolicy.CamelCase`). `apiToCamelCase()` يبقى في مكانه في �
 | `/properties/{id}/extension`, `/properties/{id}/featured` | `PropertiesController` | ✅ |
 | `/properties/{id}/images/...` | `PropertyImagesController` | ✅ |
 | `/auth/phone/registration/*`, `/auth/phone/login`, `/auth/phone/password-reset/*` | `PhonePasswordAuthController` | ✅ |
+| `/auth/phone/channels` | `PhonePasswordAuthController` | ✅ اختيار وسيلة إيصال رمز التحقق (SMS / Telegram / WhatsApp): `OtpChannelState` + `app-otp-channel-picker` + `app-otp-channel-fallback` في صفحات الهاتف الأربع. الوسائل وتوفرها حسب الدولة تأتي من الباك؛ لا منطق دول في التطبيق. لا تظهر واجهة الاختيار إن كانت SMS وحدها متاحة. |
 | `/users/me`, `/users/me/avatar`, `/users/me/change-password`, `/users/me/plan` | `UsersController` | ✅ |
 | `/admin/users`, `/admin/roles` | `AdminController` | ✅ |
 | `/admin/location-suggestions` | `LocationSuggestionsController` | ✅ |
@@ -326,6 +327,34 @@ JsonNamingPolicy.CamelCase`). `apiToCamelCase()` يبقى في مكانه في �
 
 ---
 
+### 5.10 🆕 دليل تصوير العقار — طبقة UX فوق رفع الصور
+
+- **الهدف:** مساعدة المستخدم على التقاط صور أفضل دون تعقيد النشر. طبقة عرض فقط: لا تلمس
+  نموذج البيانات ولا التحقق من الصور ولا نداءات الـ API ولا قواعد العمل.
+- **المكان:** رابط خفيف «📷 كيف ألتقط صورًا احترافية؟» (`PHOTO_GUIDE.OPEN`) في قسم «صور العقار»
+  في `property-form` (إضافة وتعديل، بيع وإيجار) وفي قسم الصور في `short-stay-listing-form`
+  (إنشاء وتعديل). لا يشغل مساحة دائمة.
+- **المكوّن:** `shared/ui/photo-guide/photo-guide-sheet.component` (لا يوجد Dialog/Sheet عام آخر
+  في المشروع؛ `confirm-modal` نافذة تأكيد بزرّين ولا تناسب). Bottom Sheet على الهاتف وحوار
+  مركزي من 640px، Esc/النقر على الخلفية/زر × للإغلاق، أسهم لوحة المفاتيح تتبع اتجاه القراءة،
+  حبس التركيز وإعادته لزر الفتح، و`ScrollLockService` الموجود لقفل التمرير.
+- **التجربة:** «دليل سريع — 30 ثانية» ← لقطات مرقّمة (١…٦/٧) ← شاشة أخيرة «جاهز؟ لنأخذ أفضل
+  صورة أولًا» بنصائح عامة و«ابدأ بإضافة الصور». الزر يُصدر `start` فيفتح المضيف *منتقي الملفات
+  نفسه* (`input.click()`) — لا مسار رفع جديد.
+- **حسب نوع الإعلان** (`photo-guide.data.ts`): بيع = واجهة، معيشة، نوم، مطبخ، حمّام، شرفة،
+  فناء/سطح · إيجار = معيشة، نوم، مطبخ، حمّام، شرفة، واجهة · إقامة قصيرة = نوم، مطبخ، حمّام،
+  معيشة، شرفة، مدخل. لكل نوع سطر تمهيدي ونصيحة خاصة. نوع الإعلان في النموذج: 1 إيجار، 2 بيع.
+- **الصور:** ثمانية ملفات SVG منفصلة في `public/images/photo-guide/` (لا Infographic واحد)، بطابع
+  سوري: أقواس، حجر أبلق، صالون عربي، بلاط مزخرف، فناء بنافورة وليمون. شبكة الأثلاث تُرسم
+  بـ CSS فوق الصورة. **هذه رسوم توضيحية وليست صوراً فوتوغرافية** — لاستبدالها بصور حقيقية
+  غيّر المسارات في `PHOTO_GUIDE_IMAGES` فقط.
+- **الترجمة:** `PHOTO_GUIDE.*` في ar/en/de (لكل لقطة `TITLE/WHAT/WHY/HOW`)، بلا نصوص حرفية في
+  القوالب؛ RTL عبر خصائص منطقية وسهم يُعكس بـ `:host-context([dir='rtl'])`.
+- **اختبارات:** `photo-guide-sheet.component.spec.ts` (9): الفتح/الإغلاق وقفل التمرير وتحريره
+  عند التدمير، Esc/الخلفية/×، التنقل والأسهم في RTL/LTR، اختلاف اللقطات حسب النوع.
+
+---
+
 ## 6. SignalR — بلا تغيير هذه الدورة
 
 `signalr-notification.service.ts` يتصل بـ `environment.signalRUrl`؛
@@ -379,13 +408,17 @@ phone-register, phone-password-reset, phone-reverify, phone-change)، `property-
 ```bash
 npm run typecheck        # ✅ يمرّ
 npm run audit:frontend   # ✅ يمرّ — الرمز 0
-npm run build:prod       # ✅ 597.55 kB خام / 159.44 kB منقول
+npm run typecheck:strict # ✅ يمرّ (مفروض في CI منذ 2026-09-24)
+npm run check:i18n       # ✅ مفاتيح الترجمة المستعملة كلها موجودة وar/en/de متطابقة
+npm run build:prod       # ✅ 579.62 kB خام / 156.31 kB منقول (2026-09-24)
 npm run postmerge:verify # check:env + audit + typecheck + build:prod
 ```
 
 ### 11.1 ميزانية الحزمة — لا تحذير، زيادة طفيفة متوقَّعة
 
-**الحدّ الفعلي في `angular.json`: `maximumWarning: 650kB`, `maximumError: 1MB`.**
+**الحدّ الفعلي في `angular.json` (منذ 2026-09-24): `maximumWarning: 600kB`, `maximumError: 700kB`.** آخر قياس 2026-09-24: **579.62 kB خام / 156.31 kB منقول** (SignalR يُحمَّل كسولًا).
+
+_القياس التاريخي أدناه محفوظ للسياق:_
 القياس الفعلي هذه الجلسة:
 
 ```
@@ -420,7 +453,7 @@ $ npm run audit:frontend
 | **🔴 تجديد الجلسة عبر CSRF** | ❌ **مكسور فعلياً** | §4.1 — يفشل لكل مستخدم كل ~30 دقيقة على أي نشر حالي |
 | **Service Worker / PWA** | ❌ غير مُفعَّل رغم وجود التبعية | `@angular/service-worker` في `package.json`، `provideServiceWorker` غائب من `app.config.ts` |
 | **تغطية الاختبارات تحت `features/`** | ⚠️ لم تُفحَص هذه الجلسة | `ng test` لم يُعَد تشغيله |
-| **`strict: false`** | ⚠️ مفتوح | بلا تغيير |
+| **`strict: false`** | 🟡 جزئيًا | `tsconfig.json` ما زال `strict: false`، لكن `typecheck:strict` يمرّ بلا أخطاء ومفروض في CI منذ 2026-09-24 |
 | **حجم الحزمة** | ✅ داخل الحدّ الفعلي | 597.55 kB مقابل حدّ 650 kB |
 | **واجهة الوكالات** | ❌ غير مبنيّة، والفجوة اتّسعت أكثر | نقل ملكية + شعار + دعوات — كلّها جديدة في الخلفية بلا أي مقابل هنا |
 | **حدّ إعلانات مرتبط بالخطة المختارة** | ✅ **الخلفية أنجزته** | الواجهة لا تحتاج تغييراً لتستفيد — `/plans` تُصدِّر `listingLimit` الآن |

@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  No cleartext (HTTP) anywhere: the app talks only to HTTPS origins (the API and hudhudnest.com).
+  This used to allow HTTP to nimobizo-001-site1.itempurl.com, a legacy domain nothing in the app
+  uses (audit 2026-09-23; the earlier BLK-03 fix for it was never merged).
+  With minSdk 24 this file, not android:usesCleartextTraffic, decides; the file is kept so a
+  deliberate exception or certificate pinning has a place to go.
+-->
 <network-security-config>
-  <domain-config cleartextTrafficPermitted="true">
-    <domain includeSubdomains="true">nimobizo-001-site1.itempurl.com</domain>
-  </domain-config>
+  <base-config cleartextTrafficPermitted="false" />
 </network-security-config>

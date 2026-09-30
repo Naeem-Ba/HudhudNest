@@ -192,6 +192,24 @@ export const routes: Routes = [
           import('./features/visits/visits.page')
             .then(m => m.VisitsPage)
       },
+      // المراسلة داخل الـ Layout كي تبقى شريط التنقل ظاهرًا (كانت صفحة المحادثة خارجه
+      // فلا يستطيع المستخدم الخروج منها إلا بزر الرجوع).
+      // صندوق الوارد: كل محادثات المستخدم عبر كل العقارات (GET /api/Messages/conversations).
+      {
+        path: 'messages',
+        pathMatch: 'full',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/messages/messages-inbox.page')
+            .then(m => m.MessagesInboxPage)
+      },
+      {
+        path: 'messages/:propertyId',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/messages/property-messages.page')
+            .then(m => m.PropertyMessagesPage)
+      },
       {
         // HudhudNest Services Marketplace — "my requests" list. Browsing/creating a
         // request happens from the property-detail page's CTA, not a separate
@@ -308,6 +326,122 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/checkout/checkout.page')
             .then(m => m.CheckoutPage)
+      },
+      // Account settings and the admin pages render inside the layout too, so they keep the
+      // navbar (account menu + its "Administration" group) — before, opening any of them
+      // left no navigation on screen at all. Paths and guards are unchanged.
+      {
+        path: 'profile',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./profile/profile.component')
+            .then(m => m.ProfileComponent)
+      },
+
+      {
+        path: 'admin/messages',
+        component: AdminMessagesComponent,
+        canActivate: [AdminGuard]
+      },
+      {
+        path: 'admin/messages/:id',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/message-details/message-details.component')
+            .then(m => m.MessageDetailComponent)
+      },
+
+      {
+        path: 'admin/users',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/users/admin-users.page')
+            .then(m => m.AdminUsersPage)
+      },
+      {
+        // تفاصيل مستخدم واحد — الأدوار، الخطة والاشتراك (تفعيل/تمديد/إلغاء إداري).
+        path: 'admin/users/:id',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/user-detail/admin-user-detail.page')
+            .then(m => m.AdminUserDetailPage)
+      },
+      {
+        // "مساحة المستخدم" — كل إعلاناته، مع تمييز/تمديد إداري (يعمل حتى على الخطة المجانية).
+        path: 'admin/users/:id/properties',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/user-properties/admin-user-properties.page')
+            .then(m => m.AdminUserPropertiesPage)
+      },
+
+      {
+        // Admin moderation queue for user-typed district/neighborhood names —
+        // see LocationSuggestion.cs (backend) / property-form.page.ts (frontend
+        // entry point that creates these).
+        path: 'admin/location-suggestions',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/location-suggestions/location-suggestions.page')
+            .then(m => m.AdminLocationSuggestionsPage)
+      },
+
+      // Admin Investment Portal (Phase 2) — backend: AdminInvestmentsController,
+      // [Authorize(Roles = "Admin")] on every action; AdminGuard here is a UX
+      // convenience, the server remains the real boundary. 'new' is registered
+      // before ':id' so it is never swallowed by the id-matching route.
+      {
+        path: 'admin/investments',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./features/investments/admin/admin-investment-list/admin-investment-list.page')
+            .then(m => m.AdminInvestmentListPage)
+      },
+      {
+        path: 'admin/investments/new',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./features/investments/admin/admin-investment-form/admin-investment-form.page')
+            .then(m => m.AdminInvestmentFormPage)
+      },
+      {
+        path: 'admin/investments/:id',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./features/investments/admin/admin-investment-detail/admin-investment-detail.page')
+            .then(m => m.AdminInvestmentDetailPage)
+      },
+
+      // لوحة تحكم التسويق: العروض ("أول 100 مكتب")، العملاء المحتملون، ونتائج
+      // استبيان الاستعداد للدفع من صفحة الهبوط. LeadsController/OffersController/
+      // SurveysController — [Authorize(Roles = "Admin")] على كل نقطة إدارية.
+      {
+        path: 'admin/marketing',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/marketing/admin-marketing.page')
+            .then(m => m.AdminMarketingPage)
+      },
+
+      // App Update Management (Phase 3 — admin dashboard): إدارة إصدارات التطبيق لكل
+      // منصة. AdminAppReleasesController — [Authorize(Roles = "Admin")] على كل نقطة.
+      {
+        path: 'admin/app-updates',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/app-updates/admin-app-updates.page')
+            .then(m => m.AdminAppUpdatesPage)
+      },
+
+      // إدارة النشر التلقائي على وسائل التواصل الاجتماعي — نطاق تشغيلي أساسي (قنوات،
+      // حسابات + ربط/فصل بيانات الاعتماد، ملخص لوحة التحكم، منشورات للعرض فقط).
+      // SocialDistributionController — [Authorize(Roles = "Admin")] على كل نقطة.
+      {
+        path: 'admin/social-distribution',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/social-distribution/admin-social-distribution.page')
+            .then(m => m.AdminSocialDistributionPage)
       }
     ]
   },
@@ -324,107 +458,6 @@ export const routes: Routes = [
       import('./features/auth/login/login.component')
         .then(m => m.LoginComponent)
   },
-  {
-    path: 'profile',
-    canActivate: [AuthGuard],
-    loadComponent: () =>
-      import('./profile/profile.component')
-        .then(m => m.ProfileComponent)
-  },
-
-  {
-    path: 'admin/messages',
-    component: AdminMessagesComponent,
-    canActivate: [AdminGuard]
-  },
-  {
-    path: 'admin/messages/:id',
-    canActivate: [AdminGuard],
-    loadComponent: () =>
-      import('./admin/message-details/message-details.component')
-        .then(m => m.MessageDetailComponent)
-  },
-
-  {
-    path: 'admin/users',
-    canActivate: [AdminGuard],
-    loadComponent: () =>
-      import('./admin/users/admin-users.page')
-        .then(m => m.AdminUsersPage)
-  },
-  {
-    // تفاصيل مستخدم واحد — الأدوار، الخطة والاشتراك (تفعيل/تمديد/إلغاء إداري).
-    path: 'admin/users/:id',
-    canActivate: [AdminGuard],
-    loadComponent: () =>
-      import('./admin/user-detail/admin-user-detail.page')
-        .then(m => m.AdminUserDetailPage)
-  },
-  {
-    // "مساحة المستخدم" — كل إعلاناته، مع تمييز/تمديد إداري (يعمل حتى على الخطة المجانية).
-    path: 'admin/users/:id/properties',
-    canActivate: [AdminGuard],
-    loadComponent: () =>
-      import('./admin/user-properties/admin-user-properties.page')
-        .then(m => m.AdminUserPropertiesPage)
-  },
-
-  {
-    // Admin moderation queue for user-typed district/neighborhood names —
-    // see LocationSuggestion.cs (backend) / property-form.page.ts (frontend
-    // entry point that creates these).
-    path: 'admin/location-suggestions',
-    canActivate: [AdminGuard],
-    loadComponent: () =>
-      import('./admin/location-suggestions/location-suggestions.page')
-        .then(m => m.AdminLocationSuggestionsPage)
-  },
-
-  // Admin Investment Portal (Phase 2) — backend: AdminInvestmentsController,
-  // [Authorize(Roles = "Admin")] on every action; AdminGuard here is a UX
-  // convenience, the server remains the real boundary. 'new' is registered
-  // before ':id' so it is never swallowed by the id-matching route.
-  {
-    path: 'admin/investments',
-    canActivate: [AdminGuard],
-    loadComponent: () =>
-      import('./features/investments/admin/admin-investment-list/admin-investment-list.page')
-        .then(m => m.AdminInvestmentListPage)
-  },
-  {
-    path: 'admin/investments/new',
-    canActivate: [AdminGuard],
-    loadComponent: () =>
-      import('./features/investments/admin/admin-investment-form/admin-investment-form.page')
-        .then(m => m.AdminInvestmentFormPage)
-  },
-  {
-    path: 'admin/investments/:id',
-    canActivate: [AdminGuard],
-    loadComponent: () =>
-      import('./features/investments/admin/admin-investment-detail/admin-investment-detail.page')
-        .then(m => m.AdminInvestmentDetailPage)
-  },
-
-  // لوحة تحكم التسويق: العروض ("أول 100 مكتب")، العملاء المحتملون، ونتائج
-  // استبيان الاستعداد للدفع من صفحة الهبوط. LeadsController/OffersController/
-  // SurveysController — [Authorize(Roles = "Admin")] على كل نقطة إدارية.
-  {
-    path: 'admin/marketing',
-    canActivate: [AdminGuard],
-    loadComponent: () =>
-      import('./admin/marketing/admin-marketing.page')
-        .then(m => m.AdminMarketingPage)
-  },
-
-  {
-    path: 'messages/:propertyId',
-    canActivate: [AuthGuard],
-    loadComponent: () =>
-      import('./features/messages/property-messages.page')
-        .then(m => m.PropertyMessagesPage)
-  },
-
   {
     path: 'language',
     loadComponent: () =>

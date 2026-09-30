@@ -25,7 +25,7 @@
 //
 // [BUG-21 / 🔴 حرج، 2026-08-31] استبدال prompt() (One Tap) بزر
 // renderButton() مخفي + نقرة برمجية — التشخيص الفعلي (استُنسخ حياً على
-// realestateworld.world، لا افتراضاً):
+// hudhudnest.com، لا افتراضاً):
 //   - Chrome (v151+) يُصدر تحذيراً صريحاً في الـ console: "one of the
 //     Google One Tap prompt UI status methods... may stop functioning
 //     when FedCM becomes mandatory".
@@ -60,6 +60,7 @@ import { SignInWithApple } from '@capacitor-community/apple-sign-in';
 
 import { environment } from '../../../environments/environment';
 import { AuthApiService } from './auth-api.service';
+import { isGoogleSignInUnsupportedOrigin } from './google-signin-origin';
 import { AuthTokenResponse } from '../models/auth.model';
 
 // =====================================================================
@@ -165,7 +166,10 @@ export class SocialAuthService {
   }
 
   get isGoogleAvailable(): boolean {
-    return Boolean(environment.googleClientId?.trim());
+    return (
+      Boolean(environment.googleClientId?.trim()) &&
+      !isGoogleSignInUnsupportedOrigin(typeof window === 'undefined' ? null : window.location.hostname)
+    );
   }
 
   get isAppleAvailable(): boolean {

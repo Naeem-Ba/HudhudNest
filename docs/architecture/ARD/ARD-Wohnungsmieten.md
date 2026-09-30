@@ -114,7 +114,7 @@ Wohnungsmieten هي الواجهة الويب/جوال الوحيدة لمنصّ
 | **مستودعان منفصلان تماماً (Frontend/Backend)** | أي تغيير في عقد HTTP يتطلّب تنسيقاً يدوياً بين مستودعي Git؛ لا أداة فحص نوع مشتركة تكتشف عدم التطابق (نفس القيد الموثَّق من جهة الخلفية، ADR الأمني هناك). |
 | **Netlify (ويب) وRender (خلفية) لا يشتركان بنفس النطاق المسجَّل** | يمنع قراءة كوكي CSRF عبر النطاقات من JavaScript — يفرض إعادة التوكن في جسم استجابة JSON بدل الاعتماد على آلية Angular المدمجة وحدها (§4.5، ADR-002). |
 | **لا `process.env` وقت التشغيل في حزمة المتصفّح** | متغيرات البيئة (`GOOGLE_CLIENT_ID`, `API_URL`, ...) يجب أن تُخبَز في ملف مولَّد (`env.generated.ts`) وقت البناء عبر `tools/generate-env.mjs`، لا تُقرأ من العملية وقت التشغيل. |
-| **`strict: false` في `tsconfig.json`** | فحص أنواع أضعف من الحد الأقصى الممكن في TypeScript؛ `tsconfig.strict.json` موجود كخط فحص إضافي منفصل (`npm run typecheck:strict`) لكنه غير مفروض في CI الحالي (`frontend-ci.yml` يشغّل `npm run typecheck` العادي فقط). |
+| **`strict: false` في `tsconfig.json`** | فحص أنواع أضعف من الحد الأقصى الممكن في TypeScript؛ `tsconfig.strict.json` (`npm run typecheck:strict`) **مفروض في CI منذ 2026-09-24** بعد إصلاح أخطائه الـ 27؛ أي كود جديد يجب أن يمرّ به. |
 | **حساب GitHub الحالي يعاني مشكلة فوترة (موثَّق في تعليق الـ workflow نفسه)** | مهمة `android-release` في CI **لم تُختبَر تشغيلها فعلياً بعد** — موثَّق صراحة كتحذير داخل `frontend-ci.yml` نفسه، لا افتراضاً من هذه الوثيقة. |
 | **خطة Render "Free" للخلفية على Staging (قيد خارجي، من جهة الخلفية)** | يحدّ من قدرة اختبار الواجهة مقابل بيئة Staging حيّة بثقة كاملة؛ راجع قيود الخلفية المقابلة. |
 
@@ -185,7 +185,8 @@ src/app/
 - **التوليد قبل البناء إلزامي:** كل سكربت بناء (`build`, `build:staging`, `build:prod`) يستدعي `npm run generate:env` أولاً (`tools/generate-env.mjs`) لخبز متغيرات البيئة كثوابت TypeScript قبل أن يرى `ng build` الشيفرة — **حزمة المتصفّح لا تحتوي `process.env` إطلاقاً في وقت التشغيل.**
 - **بوابة تدقيق مخصَّصة (`npm run audit:frontend`, `tools/frontend-audit-guard.mjs`):** تفحص آلياً — بلا حاجة لمراجعة يدوية — عن `bypassSecurityTrustHtml`، استخدام `[innerHTML]`/`.innerHTML=` مباشرةً، وأنماط تشبه أسرار مثبَّتة في الشيفرة (`api_key=`, `client_secret=`, ...)، بالإضافة لفحص Mojibake (ترميز نص عربي تالف).
 - **الاختبار:** Karma + Jasmine، **41 ملف `.spec.ts`** فعلياً في الشجرة (عدّ مباشر هذه الجلسة) — لم يُشغَّل `ng test` أثناء إعداد هذه الوثيقة؛ الرقم غير مُتحقَّق تنفيذياً هنا، فقط عدد الملفات.
-- **فحص أنواع مزدوج المستوى:** `npm run typecheck` (`tsconfig.app.json`, `strict: false`) هو ما يُشغَّل فعلياً في CI؛ `npm run typecheck:strict` (`tsconfig.strict.json`) موجود كسكربت منفصل لكنه **غير مُستدعى من `frontend-ci.yml`** — فحص أشدّ صرامة متاح، غير مفروض.
+- **فحص أنواع مزدوج المستوى:** `npm run typecheck` (`tsconfig.app.json`, `strict: false`) و`npm run typecheck:strict` (`tsconfig.strict.json`: strict + noUncheckedIndexedAccess + noPropertyAccessFromIndexSignature) **كلاهما يُشغَّل في CI** منذ 2026-09-24.
+- **فحص مفاتيح الترجمة (`npm run check:i18n`, `tools/check-i18n-keys.mjs`):** يفشل إذا استعمل الكود مفتاحًا ثابتًا غير موجود في `en.json`، أو إذا اختلفت مفاتيح ar/en/de. المفاتيح المبنية وقت التشغيل (`'X.STATUS_' + v`) لا تُفحص.
 
 ### 4.3 وجهة النظر العملية (Process View)
 
@@ -220,7 +221,7 @@ provideHttpClient(withInterceptors([
 | بيئات البناء | `environment.ts` (محلي) / `.staging` / `.prod` — تُفرَّق عبر `--configuration` في `ng build`، والقيم الفعلية تُخبَز وقت البناء من `env.generated.ts` | نفس حزمة الويب المبنية بـ`build:prod` | نفس حزمة الويب المبنية بـ`build:prod` |
 
 **خط أنابيب CI (`'.github/workflows/frontend-ci.yml`، ثلاث مهام):**
-1. **`build`** — على كل Push/PR لِـ `main`/`master`/`develop`: `audit:frontend` → `check:env` → `typecheck` → `test:ci` (Karma + ChromeHeadless) → `build:prod`.
+1. **`build`** — على كل Push/PR لِـ `main`/`master`/`develop`: `audit:frontend` → `test:tools` + `version:check` → `check:env` → `check:i18n` → `typecheck` → `typecheck:strict` → `test:ci` (Karma + ChromeHeadless) → `build:prod`.
 2. **`android-release`** — يعمل فقط عند Push إلى `main`، ويُشترَط وجود سرّ `RELEASE_STORE_PASSWORD`؛ يبني ويوقّع AAB. **موثَّق صراحة في الـ workflow نفسه أنه لم يُختبَر تشغيله فعلياً بعد** (مشكلة فوترة على حساب GitHub الحالي).
 3. **`ios-build`** — على `macos-15` (اختيار صريح مؤرَّخ لتفادي `macos-latest` المتغيّر)، Xcode 16.4 مثبَّت صراحة، بناء محاكي غير موقَّع فقط (لا يتطلّب حساب Apple Developer).
 
@@ -325,7 +326,7 @@ provideHttpClient(withInterceptors([
 
 ### 6.1 الأداء
 
-**الحدّ الفعلي في `angular.json`:** `maximumWarning: 650kB`, `maximumError: 1MB` (حزمة أوّلية). **لا قياس فعلي حديث وارد في هذه الوثيقة** (‏`Not verified from this session` — راجع `FRONTEND-REFERENCE.md §11.1` لآخر قياس مسجَّل: 597.55 kB عند `e64daeb`، أقدم بـ53 commit من هذا الإصدار وقد يكون تغيّر مع الميزات الجديدة الكبيرة كالاستثمار العقاري والتقييم).
+**الحدّ الفعلي في `angular.json` (منذ 2026-09-24):** `maximumWarning: 600kB`, `maximumError: 700kB` (حزمة أوّلية؛ كان 650kB/1MB فلم يكن الحد يُفشل البناء فعليًا). **آخر قياس: 579.62 kB خام / 156.31 kB منقول** (2026-09-24، بعد تحميل `@microsoft/signalr` كسولًا عند أول `connect()` بدل الحزمة الأولية — كانت 635.62 kB).
 
 **استراتيجيات التحسين الفعلية في الكود:**
 - تحميل كسول شامل لكل ميزة (`loadComponent`) — لا حزمة أولية تحمل ميزات لم يزرها المستخدم بعد.
@@ -362,7 +363,7 @@ provideHttpClient(withInterceptors([
 | # | الخطر | الاحتمال | الأثر | التخفيف الحالي / الموصى به |
 |---|---|---|---|---|
 | R1 | لا إمكانية مراقبة فعلية (§6.6) — أعطال الإنتاج تمرّ بصمت | مؤكَّد (قيد حالي موثَّق) | عالٍ (لا رؤية لجودة تجربة المستخدم الفعلية) | إضافة أداة مراقبة أخطاء عميل (Sentry أو مكافئ) — لم يُقرَّر بعد |
-| R2 | حزمة الحزمة الأوّلية غير مُقاسة حديثاً في هذه الوثيقة؛ ميزات ثقيلة (استثمار، تقييم) أُضيفت منذ آخر قياس مسجَّل | متوسط | متوسط (قد تقترب من حدّ التحذير 650kB دون علم الفريق) | تشغيل `npm run build:prod` وتسجيل الرقم الفعلي كجزء من أي مراجعة قادمة |
+| R2 | نموّ الحزمة الأوّلية (بلغت 635.62 kB في 2026-09-23) | منخفض الآن | متوسط | ✅ 579.62 kB بعد تحميل SignalR كسولًا؛ حدّ الخطأ صار 700kB فيُفشل البناء فعلًا. أكبر المكوّنات المتبقية: `@angular/core` 125 kB، `@angular/router` 77 kB، `@angular/forms` 49 kB، `navbar.component` 42 kB |
 | R3 | تسجيل دخول Google للويب معتمِد بنيوياً على واجهات Google Identity Services الخارجية وسلوكها المتغيّر (تاريخ BUG-21 دليل حيّ على هذا) | متوسط (تغييرات مزوّد خارج تحكّم الفريق) | متوسط | مراقبة تحذيرات Console المرتبطة بـFedCM دورياً؛ لا حل جذري ممكن غير مراقبة مستمرة |
 | R4 | `netlify.toml` غير موجود في شجرة هذا الفرع رغم أدلة تاريخية على وجوده في مكان ما (commit `a94cffe` على فرع آخر غير مندمج في هذا) | مؤكَّد الغياب من هذا الفرع تحديداً | متوسط (إعداد نشر غير قابل للتحقق من الكود — قد يعتمد على ضبط يدوي في واجهة Netlify عرضة للانحراف بصمت) | التحقق من إعداد Netlify الفعلي مباشرة من لوحة التحكم، وتوثيقه في الشيفرة (`netlify.toml`) إن لم يكن موجوداً هناك أيضاً |
 | R5 | `android-release` في CI لم تُختبَر تشغيلها فعلياً (مشكلة فوترة GitHub موثَّقة في الـ workflow نفسه) | مؤكَّد | متوسط–عالٍ (أول تشغيل فعلي قد يكشف أعطالاً غير متوقَّعة في خطوة حسّاسة — توقيع إصدار حقيقي) | تشغيل تجريبي فور حل مشكلة الفوترة، قبل الاعتماد على المسار لإصدار حقيقي |

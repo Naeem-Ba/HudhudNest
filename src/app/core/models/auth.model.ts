@@ -69,11 +69,33 @@ export enum PhoneVerificationState {
   Restricted = 'Restricted'
 }
 
+/**
+ * طريقة إيصال رمز التحقق. رقم الهاتف يبقى هو الهوية؛ القناة مجرد وسيلة توصيل هذا الرمز.
+ * القيم مطابقة لـ OtpChannel في الباك (تُرسَل كنص).
+ */
+export type OtpChannel = 'Sms' | 'Telegram' | 'WhatsApp';
+
+export const OTP_CHANNELS: readonly OtpChannel[] = ['Sms', 'Telegram', 'WhatsApp'];
+
+/** سبب عدم توفر قناة (POST /auth/phone/channels). */
+export type OtpChannelUnavailableReason = 'COUNTRY_NOT_SUPPORTED' | 'CHANNEL_DISABLED';
+
+export interface OtpChannelOption {
+  channel: OtpChannel;
+  available: boolean;
+  recommended: boolean;
+  reason: OtpChannelUnavailableReason | null;
+  /** رموز الاتصال الدولية (مثل +963) التي لا تعمل فيها هذه القناة، كما تضبطها الإعدادات في الباك. */
+  unavailableCountryCodes: string[];
+}
+
 export interface PhoneWorkflowResponse {
   succeeded: boolean;
   errorCode?: string | null;
   message?: string | null;
   challengeId?: string | null;
+  /** القناة التي أُنشئ لها التحدي (تُرجعها نقاط send-otp). */
+  channel?: OtpChannel | null;
   accessToken?: string | null;
   refreshToken?: string | null;
   accessTokenExpiresAtUtc?: string | null;
@@ -94,6 +116,7 @@ export function normalizePhoneWorkflowResult(response: unknown): PhoneWorkflowRe
     errorCode: (read('errorCode', 'ErrorCode') as string) ?? null,
     message: (read('message', 'Message') as string) ?? null,
     challengeId: (read('challengeId', 'ChallengeId') as string) ?? null,
+    channel: normalizeOtpChannel(read('channel', 'Channel')),
     accessToken: (read('accessToken', 'AccessToken') as string) ?? null,
     refreshToken: (read('refreshToken', 'RefreshToken') as string) ?? null,
     accessTokenExpiresAtUtc: (read('accessTokenExpiresAtUtc', 'AccessTokenExpiresAtUtc') as string) ?? null,
@@ -109,6 +132,7 @@ export const PHONE_WORKFLOW_ERROR_CODES = {
   PHONE_ALREADY_REGISTERED: 'PHONE_ALREADY_REGISTERED',
   PHONE_AUTH_FAILED: 'PHONE_AUTH_FAILED',
   PHONE_NUMBER_INVALID: 'PHONE_NUMBER_INVALID',
+  PHONE_COUNTRY_NOT_SUPPORTED: 'PHONE_COUNTRY_NOT_SUPPORTED',
   PHONE_NUMBER_ALREADY_IN_USE: 'PHONE_NUMBER_ALREADY_IN_USE',
   OTP_INVALID: 'OTP_INVALID',
   PASSWORD_POLICY_FAILED: 'PASSWORD_POLICY_FAILED',
@@ -117,7 +141,9 @@ export const PHONE_WORKFLOW_ERROR_CODES = {
   PHONE_REVERIFICATION_REQUIRED: 'PHONE_REVERIFICATION_REQUIRED',
   PHONE_REVERIFICATION_NOT_CONFIGURED: 'PHONE_REVERIFICATION_NOT_CONFIGURED',
   RECENT_AUTHENTICATION_REQUIRED: 'RECENT_AUTHENTICATION_REQUIRED',
-  PASSWORD_RESET_INVALID: 'PASSWORD_RESET_INVALID'
+  PASSWORD_RESET_INVALID: 'PASSWORD_RESET_INVALID',
+  OTP_CHANNEL_UNAVAILABLE: 'OTP_CHANNEL_UNAVAILABLE',
+  OTP_PROVIDER_UNAVAILABLE: 'OTP_PROVIDER_UNAVAILABLE'
 } as const;
 
 /**
@@ -251,3 +277,39 @@ export interface PhoneAuthResponse {
   user: PhoneAuthUser;
 }
 
+
+/** يقبل الأسماء بأي حالة أحرف ويُعيد null لأي قيمة غير معروفة. */
+export function normalizeOtpChannel(value: unknown): OtpChannel | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  return OTP_CHANNELS.find(channel => channel.toLowerCase() === value.toLowerCase()) ?? null;
+}
+
+/** تحويل دفاعي لاستجابة POST /auth/phone/channels (camelCase أو PascalCase). */
+export function normalizeOtpChannels(response: unknown): OtpChannelOption[] {
+  const root = (response ?? {}) as Record<string, unknown>;
+  const list = root['channels'] ?? root['Channels'];
+  if (!Array.isArray(list)) {
+    return [];
+  }
+
+  const options: OtpChannelOption[] = [];
+  for (const item of list) {
+    const value = (item ?? {}) as Record<string, unknown>;
+    const channel = normalizeOtpChannel(value['channel'] ?? value['Channel']);
+    if (!channel) {
+      continue;
+    }
+    const reason = (value['reason'] ?? value['Reason']) as string | null | undefined;
+    const codes = value['unavailableCountryCodes'] ?? value['UnavailableCountryCodes'];
+    options.push({
+      channel,
+      available: Boolean(value['available'] ?? value['Available']),
+      recommended: Boolean(value['recommended'] ?? value['Recommended']),
+      reason: reason === 'COUNTRY_NOT_SUPPORTED' || reason === 'CHANNEL_DISABLED' ? reason : null,
+      unavailableCountryCodes: Array.isArray(codes) ? codes.filter((code): code is string => typeof code === 'string') : []
+    });
+  }
+  return options;
+}

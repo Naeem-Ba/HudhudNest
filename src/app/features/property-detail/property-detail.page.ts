@@ -56,6 +56,12 @@ import { OverlayBackHandlerService } from '../../core/services/overlay-back-hand
 import { ScrollLockService } from '../../core/services/scroll-lock.service';
 import { PropertyMetaService } from '../../core/sharing/property-meta.service';
 import { PropertyAttributionTrackingService } from '../../core/sharing/property-attribution-tracking.service';
+import { UrlService } from '../../core/services/url.service';
+
+/** عروض النسخ المصغّرة المطلوبة من Cloudinary للصورة الرئيسية (srcset). */
+const GALLERY_IMAGE_WIDTHS = [480, 768, 1024, 1440, 1920] as const;
+const GALLERY_THUMB_WIDTH = 160;
+const LIGHTBOX_IMAGE_WIDTH = 2048;
 
 @Component({
   selector: 'app-property-detail',
@@ -98,6 +104,7 @@ export class PropertyDetailPage implements OnInit {
   private readonly scrollLock = inject(ScrollLockService);
   private readonly propertyMeta = inject(PropertyMetaService);
   private readonly attributionTracking = inject(PropertyAttributionTrackingService);
+  private readonly urlService = inject(UrlService);
 
   // ── State Signals ─────────────────────────────────────────────────────
   readonly property       = signal<Property | null>(null);
@@ -110,6 +117,8 @@ export class PropertyDetailPage implements OnInit {
   readonly showVisitForm  = signal(false);
   readonly showReviewForm = signal(false);
   readonly showMessageForm = signal(false);
+  /** بعد إرسال رسالة بنجاح: يعرض تأكيدًا ورابط المحادثة بدل إغلاق البطاقة بصمت. */
+  readonly messageSent = signal(false);
   readonly isLoggedIn     = computed(() => !!this.authService.getAccessToken());
 
   // ── Computed ──────────────────────────────────────────────────────────
@@ -119,6 +128,18 @@ export class PropertyDetailPage implements OnInit {
   readonly hasImages = computed(() => this.images().length > 0);
   readonly currentImageUrl = computed(() =>
     this.images()[this.currentIndex()]?.url ?? '/images/no-image.svg'
+  );
+  // نسخ بحجم العرض من Cloudinary (c_limit: تصغير فقط مع الحفاظ على نسبة الأبعاد)
+  // بدل تحميل الأصل (قد يكون 4000px وعدة ميغابايت) في إطار عرضه ~400px.
+  // روابط غير Cloudinary تُعاد كما هي.
+  readonly currentImageDisplayUrl = computed(() =>
+    this.urlService.buildResponsiveUrl(this.currentImageUrl(), 1440) ?? this.currentImageUrl()
+  );
+  readonly currentImageSrcSet = computed(() =>
+    this.urlService.buildResponsiveSrcSet(this.currentImageUrl(), GALLERY_IMAGE_WIDTHS)
+  );
+  readonly currentImageLightboxUrl = computed(() =>
+    this.urlService.buildResponsiveUrl(this.currentImageUrl(), LIGHTBOX_IMAGE_WIDTH) ?? this.currentImageUrl()
   );
   readonly currentImageAlt = computed(() =>
     this.images()[this.currentIndex()]?.altText ?? this.property()?.title ?? ''
@@ -332,6 +353,7 @@ export class PropertyDetailPage implements OnInit {
     this.showMessageForm.set(opening);
 
     if (opening) {
+      this.messageSent.set(false);
       this.scrollToElement('message-form-section');
     }
   }
@@ -547,18 +569,21 @@ export class PropertyDetailPage implements OnInit {
   }
 
   onDragStart(event: MouseEvent | TouchEvent): void {
+    // A touch event can arrive with an empty list (e.g. a cancelled multi-touch); ignore it
+    // instead of throwing on touches[0].
+    const startX = 'touches' in event ? event.touches[0]?.clientX : event.pageX;
+    if (startX === undefined) return;
     this.isDragging = true;
-    this.startX = 'touches' in event
-      ? event.touches[0].clientX
-      : event.pageX;
+    this.startX = startX;
   }
 
   onDragEnd(event: MouseEvent | TouchEvent): void {
     if (!this.isDragging) return;
     this.isDragging = false;
     const endX = 'changedTouches' in event
-      ? event.changedTouches[0].clientX
+      ? event.changedTouches[0]?.clientX
       : (event as MouseEvent).pageX;
+    if (endX === undefined) return;
     const diff = endX - this.startX;
     if (diff > 60)       { this.isRTL() ? this.next() : this.prev(); }
     else if (diff < -60) { this.isRTL() ? this.prev() : this.next(); }
@@ -703,15 +728,16 @@ export class PropertyDetailPage implements OnInit {
       .subscribe({
         next: () => {
           this.toast.show(this.translate.instant('MESSAGES.SEND_SUCCESS'), 'success');
-          this.showMessageForm.set(false);
+          this.messageSent.set(true);
           this.messageDraft = '';
           this.savingMessage.set(false);
           // UTM / Attribution (Phase 2) — "contact" half of the Facebook → Property → Visit →
           // Contact funnel (section 13).
           this.attributionTracking.trackMessageSent(property.id);
         },
-        error: () => {
-          this.toast.show(this.translate.instant('MESSAGES.SEND_ERROR'), 'error');
+        error: err => {
+          const backendMessage = err?.error?.message as string | undefined;
+          this.toast.show(backendMessage || this.translate.instant('MESSAGES.SEND_ERROR'), 'error');
           this.savingMessage.set(false);
         }
       });
@@ -756,8 +782,11 @@ export class PropertyDetailPage implements OnInit {
           this.reviewForm.reset({ rating: 5 });
           this.savingReview.set(false);
         },
-        error: () => {
-          this.toast.show(this.translate.instant('REVIEW.ERROR'), 'error');
+        error: err => {
+          // تقييم العقار يتطلب زيارة مكتملة — الخادم يشرح السبب في body.message؛
+          // نعرضه بدل رسالة عامة كانت تُشعر المستخدم بأن "التقييم لا يعمل".
+          const backendMessage = err?.error?.message as string | undefined;
+          this.toast.show(backendMessage || this.translate.instant('REVIEW.ERROR'), 'error');
           this.savingReview.set(false);
         }
       });
@@ -780,6 +809,10 @@ export class PropertyDetailPage implements OnInit {
   safe(value: unknown, fallback = '—'): string {
     const text = value == null ? '' : String(value).trim();
     return text || fallback;
+  }
+
+  thumbnailUrl(url: string | null | undefined): string {
+    return this.urlService.buildResponsiveUrl(url, GALLERY_THUMB_WIDTH) ?? '/images/no-image.svg';
   }
 
   /** رانج النجوم 1-5 للعرض */

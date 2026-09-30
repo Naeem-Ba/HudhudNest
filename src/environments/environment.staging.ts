@@ -39,7 +39,7 @@ const siteUrl = readSiteUrlFromProcessEnv() || 'https://staging--hudhudnest.netl
 // راجع التعليق المطابق في environment.prod.ts: يجب أن يطابق النطاق هنا
 // أحد الأنماط ضمن server.allowNavigation في capacitor.config.ts.
 const appleRedirectUri =
-  readProcessEnv('APPLE_REDIRECT_URI') || 'https://realestateworld.world/auth/apple/callback';
+  readProcessEnv('APPLE_REDIRECT_URI') || 'https://hudhudnest.com/auth/apple/callback';
 
 export const environment: AppEnvironment = createAppEnvironment({
   production: true,

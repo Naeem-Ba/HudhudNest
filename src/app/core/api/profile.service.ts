@@ -208,6 +208,14 @@ export class ProfileService {
   private readonly profileSubject = new BehaviorSubject<UserProfile | null>(null);
   readonly profile$: Observable<UserProfile | null> = this.profileSubject.asObservable();
 
+  /**
+   * true once a GET /users/me has failed and no later one has succeeded. profile$ alone
+   * cannot tell "still loading" from "gave up" (both are null), and the navbar needs that
+   * to stop showing its avatar placeholder and fall back to the initial instead.
+   */
+  private readonly loadFailedSubject = new BehaviorSubject<boolean>(false);
+  readonly loadFailed$: Observable<boolean> = this.loadFailedSubject.asObservable();
+
   constructor(private readonly api: BackendApiService) {}
 
   getMe(): Observable<UserProfile> {
@@ -215,7 +223,13 @@ export class ProfileService {
       .get<BackendUserProfile>('/users/me')
       .pipe(
         map(user => this.toLegacyUserProfile(user)),
-        tap(profile => this.profileSubject.next(profile))
+        tap({
+          next: profile => {
+            this.loadFailedSubject.next(false);
+            this.profileSubject.next(profile);
+          },
+          error: () => this.loadFailedSubject.next(true)
+        })
       );
   }
 
@@ -237,6 +251,7 @@ export class ProfileService {
    */
   clearCache(): void {
     this.profileSubject.next(null);
+    this.loadFailedSubject.next(false);
   }
 
   /**

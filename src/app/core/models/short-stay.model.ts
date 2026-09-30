@@ -228,8 +228,13 @@ export interface CreateShortStayListingRequest {
   bathrooms: number;
   checkInTime: string; // "HH:mm"
   checkOutTime: string;
-  latitude: number;
-  longitude: number;
+  /** Null until the host pins the listing; the API never stores a fake 0,0. */
+  latitude: number | null;
+  longitude: number | null;
+  governorateId?: number | null;
+  districtId?: number | null;
+  neighborhoodId?: number | null;
+  locationVisibility?: LocationVisibility;
   defaultBasePricePerNight: number;
   currencyCode: string;
   propertyId?: string | null;
@@ -246,8 +251,8 @@ export interface UpdateShortStayListingRequest {
   selfCheckInEnabled: boolean;
   instantBookingEnabled: boolean;
   requestBookingEnabled: boolean;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
   governorateId: number | null;
   districtId: number | null;
   neighborhoodId: number | null;
@@ -285,15 +290,15 @@ export interface AddAccommodationUnitRequest {
 /** Human-readable labels for the booking state machine — used consistently across guest and
  * host booking lists so the same status always reads the same way. */
 export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
-  Pending: 'SHORTSTAY.STATUS.PENDING',
-  Approved: 'SHORTSTAY.STATUS.APPROVED',
-  Rejected: 'SHORTSTAY.STATUS.REJECTED',
-  DepositPaid: 'SHORTSTAY.STATUS.DEPOSIT_PAID',
-  Confirmed: 'SHORTSTAY.STATUS.CONFIRMED',
-  CheckedIn: 'SHORTSTAY.STATUS.CHECKED_IN',
-  CheckedOut: 'SHORTSTAY.STATUS.CHECKED_OUT',
-  Completed: 'SHORTSTAY.STATUS.COMPLETED',
-  Cancelled: 'SHORTSTAY.STATUS.CANCELLED',
-  Expired: 'SHORTSTAY.STATUS.EXPIRED',
-  NoShow: 'SHORTSTAY.STATUS.NO_SHOW'
+  Pending: 'SHORTSTAY.BOOKINGS.STATUS.PENDING',
+  Approved: 'SHORTSTAY.BOOKINGS.STATUS.APPROVED',
+  Rejected: 'SHORTSTAY.BOOKINGS.STATUS.REJECTED',
+  DepositPaid: 'SHORTSTAY.BOOKINGS.STATUS.DEPOSIT_PAID',
+  Confirmed: 'SHORTSTAY.BOOKINGS.STATUS.CONFIRMED',
+  CheckedIn: 'SHORTSTAY.BOOKINGS.STATUS.CHECKED_IN',
+  CheckedOut: 'SHORTSTAY.BOOKINGS.STATUS.CHECKED_OUT',
+  Completed: 'SHORTSTAY.BOOKINGS.STATUS.COMPLETED',
+  Cancelled: 'SHORTSTAY.BOOKINGS.STATUS.CANCELLED',
+  Expired: 'SHORTSTAY.BOOKINGS.STATUS.EXPIRED',
+  NoShow: 'SHORTSTAY.BOOKINGS.STATUS.NO_SHOW'
 };

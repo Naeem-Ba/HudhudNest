@@ -33,11 +33,22 @@ jobs:
       - name: Frontend audit guard
         run: npm run audit:frontend
 
+      - name: Native app version check
+        run: |
+          npm run test:tools
+          npm run version:check
+
       - name: Environment validation
         run: npm run check:env
 
+      - name: Translation keys
+        run: npm run check:i18n
+
       - name: TypeScript check
         run: npm run typecheck
+
+      - name: TypeScript strict check
+        run: npm run typecheck:strict
 
       - name: Unit tests
         run: npm run test:ci

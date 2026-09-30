@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, catchError, combineLatest, map, Observable, of, Subject, tap, throwError } from 'rxjs';
 
 import { AuthApiService } from './auth-api.service';
+import { LOGIN_METHOD_STORAGE_KEY, LoginMethod } from './login-identifier';
 import { CsrfTokenService } from '../services/csrf-token.service';
 import { ProfileService } from '../api/profile.service';
 import { ServiceProviderService } from '../api/service-provider.service';
@@ -33,6 +34,11 @@ export interface AuthenticatedUser {
   imageUrl?: string | null;
   [key: string]: unknown;
 }
+
+// Full-URI claim names as emitted by PropertyApi (System.Security.Claims.ClaimTypes).
+const CLAIM_NAME_IDENTIFIER = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier';
+const CLAIM_EMAIL = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress';
+const CLAIM_NAME = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -119,27 +125,71 @@ export class AuthService {
     }
 
     const roles = this.extractRoles(payload);
-    const id = String(payload.sub ?? payload.nameid ?? payload.userId ?? payload.UserId ?? '');
-    const email = String(payload.email ?? '');
+    // PropertyApi's TokenService writes ClaimTypes.* as their full URI names
+    // (…/claims/nameidentifier, …/emailaddress, …/name) — exactly like the role
+    // claim extractRoles() already accepts. Reading only the short names left the
+    // id empty for every signed-in user, so ownership checks in the UI (isOwner,
+    // the owner's messages view, "my message" bubbles, own-profile) never matched.
+    const id = String(
+      payload['sub'] ?? payload['nameid'] ?? payload[CLAIM_NAME_IDENTIFIER] ??
+      payload['userId'] ?? payload['UserId'] ?? ''
+    );
+    const email = String(payload['email'] ?? payload[CLAIM_EMAIL] ?? '');
     // ⚠️ "name"/"unique_name" بالتوكن هو Identity UserName (عادةً نفس البريد)،
     // وليس حقل "الاسم المعروض" (DisplayName) القابل للتعديل من صفحة البروفايل.
     // هذه قيمة مؤقتة فورية فقط، تُستبدَل بالقيمة الحقيقية بمجرد وصول
     // hydrateProfile() أدناه — راجع تعليقها لتفاصيل الخلل الذي يُصلحه.
-    const displayName = String(payload.name ?? payload.unique_name ?? payload.email ?? '');
+    const displayName = String(
+      payload['name'] ?? payload['unique_name'] ?? payload[CLAIM_NAME] ?? email
+    );
+
+    // AuthGuard/AdminGuard call this on every guarded navigation. Rebuilding the user
+    // from the token alone dropped the profile photo and display name that
+    // hydrateProfile() had already merged in, so the navbar avatar fell back to the
+    // letter until the next GET /users/me landed — a visible flicker on every
+    // navigation. Same user ⇒ keep those two fields until the refetch replaces them.
+    const previous = this.currentUserSubject.value;
+    const sameUser = !!previous && !!id && previous.id === id;
 
     this.currentUserSubject.next({
       id,
       Id: id,
       email,
       Email: email,
-      displayName,
-      DisplayName: displayName,
+      displayName: sameUser ? previous.displayName : displayName,
+      DisplayName: sameUser ? previous.DisplayName : displayName,
       roles,
-      Roles: roles
+      Roles: roles,
+      ...(sameUser ? { ImageUrl: previous.ImageUrl ?? null, imageUrl: previous.imageUrl ?? null } : {})
     });
     this.loggedIn.next(true);
 
     this.hydrateProfile();
+  }
+
+  /**
+   * How this browser's current session was signed in — decides whether the account
+   * menu shows the e-mail address or the phone number (an account can have both).
+   * The token carries no such claim and the access token itself lives in memory only,
+   * so the login screens record it here and it survives a reload. Only 'email'/'phone'
+   * is stored — never the identifier itself.
+   */
+  rememberLoginMethod(method: LoginMethod): void {
+    try {
+      localStorage.setItem(LOGIN_METHOD_STORAGE_KEY, method);
+    } catch {
+      // Storage unavailable (private mode, blocked site data): the menu falls back to
+      // inferring the method from the account — see resolveLoginIdentifier().
+    }
+  }
+
+  get loginMethod(): LoginMethod | null {
+    try {
+      const stored = localStorage.getItem(LOGIN_METHOD_STORAGE_KEY);
+      return stored === 'email' || stored === 'phone' ? stored : null;
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -293,6 +343,11 @@ export class AuthService {
     // نفس السبب بالضبط — لا نريد لحالة "مزوّد خدمة" من الجلسة المنتهية أن تُصوَّر لحساب
     // مختلف قد يسجّل دخوله بعدها في نفس تبويب المتصفح قبل إعادة تحميل كاملة للصفحة.
     this.serviceProviderService.clearCache();
+    try {
+      localStorage.removeItem(LOGIN_METHOD_STORAGE_KEY);
+    } catch {
+      // Nothing to clean up if storage is unavailable.
+    }
     this.setAnonymousState();
   }
 

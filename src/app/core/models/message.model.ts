@@ -1,11 +1,10 @@
 // =============================================================
 // src/app/core/models/message.model.ts
 //
-// يطابق PropertyApi.Application.Users.Messaging.DTOs.MessageDto تماماً.
-// المراسلة في الـ Backend مرتبطة دائماً بعقار محدد (PropertyId إلزامي) —
-// لا يوجد endpoint لصندوق وارد عام يجمع كل المحادثات عبر كل العقارات دفعة
-// واحدة. لهذا فإن أي شاشة "رسائلي" في الواجهة يجب أن تُبنى فوق محادثة
-// خاصة بعقار واحد، وليس فوق قائمة محادثات عامة غير مدعومة من الخادم.
+// يطابق PropertyApi.Application.Users.Messaging.DTOs.MessageDto و
+// ConversationSummaryDto. كل رسالة مرتبطة بعقار محدد؛ "المحادثة" = كل الرسائل
+// بين المستخدم الحالي وطرف واحد آخر بخصوص عقار واحد. صندوق الوارد
+// (GET /api/Messages/conversations) يجمعها في الخادم عبر كل العقارات.
 // =============================================================
 
 export interface MessageDto {
@@ -26,7 +25,33 @@ export interface SendMessageRequest {
   content: string;
 }
 
+/** صف واحد في صندوق الوارد — راجع ConversationSummaryDto في الباك اند. */
+export interface ConversationSummaryDto {
+  propertyId: string;
+  propertyTitle: string;
+  propertyImageUrl: string | null;
+  /** true إن كان المستخدم الحالي مالك العقار (أي أن هذا استفسار وارد عليه). */
+  isPropertyOwner: boolean;
+  otherUserId: string;
+  otherUserDisplayName: string;
+  otherUserImageUrl: string | null;
+  lastMessageSenderId: string;
+  lastMessageContent: string;
+  lastMessageAt: string;
+  unreadCount: number;
+}
+
 export const MESSAGE_CONTENT_MAX_LENGTH = 3000;
+
+/** الحد الأقصى لـ pageSize الذي يقبله الخادم (GetMessagesQueryValidator). */
+export const MESSAGES_MAX_PAGE_SIZE = 50;
+
+/** الرسائل بترتيب زمني تصاعدي (الأقدم أولًا) — الخادم يعيدها من الأحدث. */
+export function sortChronologically(messages: MessageDto[]): MessageDto[] {
+  return [...messages].sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
+}
 
 export function validateMessageContent(content: string): string | null {
   const trimmed = (content ?? '').trim();
@@ -40,54 +65,4 @@ export function validateMessageContent(content: string): string | null {
   }
 
   return null;
-}
-
-/**
- * تجميع رسائل عقار واحد (المُعادة كلها للمالك من الخادم دفعة واحدة)
- * في محادثات منفصلة حسب الطرف الآخر — لأن الـ Backend لا يفعل هذا التجميع
- * نيابة عنا، بل يعيد كل الرسائل الخاصة بالعقار مسطّحة.
- */
-export interface ConversationGroup {
-  otherUserId: string;
-  otherUserDisplayName: string;
-  lastMessage: MessageDto;
-  unreadCount: number;
-  messages: MessageDto[];
-}
-
-export function groupMessagesByCounterpart(
-  messages: MessageDto[],
-  currentUserId: string | null
-): ConversationGroup[] {
-  const groups = new Map<string, ConversationGroup>();
-
-  for (const message of messages) {
-    const otherUserId =
-      message.senderId === currentUserId ? message.receiverId : message.senderId;
-
-    const existing = groups.get(otherUserId);
-
-    if (existing) {
-      existing.messages.push(message);
-      if (!message.isRead && message.receiverId === currentUserId) {
-        existing.unreadCount += 1;
-      }
-      if (new Date(message.createdAt) > new Date(existing.lastMessage.createdAt)) {
-        existing.lastMessage = message;
-      }
-    } else {
-      groups.set(otherUserId, {
-        otherUserId,
-        otherUserDisplayName:
-          message.senderId === otherUserId ? message.senderDisplayName : 'أنت',
-        lastMessage: message,
-        unreadCount: !message.isRead && message.receiverId === currentUserId ? 1 : 0,
-        messages: [message]
-      });
-    }
-  }
-
-  return Array.from(groups.values()).sort(
-    (a, b) => new Date(b.lastMessage.createdAt).getTime() - new Date(a.lastMessage.createdAt).getTime()
-  );
 }

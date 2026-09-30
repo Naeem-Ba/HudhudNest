@@ -36,6 +36,8 @@ import { LocationComboComponent } from '../../shared/ui/location-combo.component
 import { LanguageService, LangCode } from '../../core/services/language.service';
 import { EnumItem, EnumService } from '../../core/services/enum.service';
 import { ScrollLockService } from '../../core/services/scroll-lock.service';
+import { PhotoGuideSheetComponent } from '../../shared/ui/photo-guide/photo-guide-sheet.component';
+import { PhotoGuideKind, photoGuideKindForListingType } from '../../shared/ui/photo-guide/photo-guide.data';
 
 interface PropertySavePayload {
   Title: string;
@@ -107,11 +109,15 @@ function toNumberOrNull(value: unknown): number | null {
  * setMonth) read/write the browser's local calendar date — off by a day in
  * every timezone west of UTC (e.g. '2026-01-01' + 6 months silently becoming
  * '2026-06-30' for a user west of Greenwich).
+ * Returns null for anything that is not a complete 'YYYY-MM-DD' (toISOString() would
+ * throw a RangeError on the resulting Invalid Date).
  */
-function addMonthsToDateString(dateString: string, months: number): string {
-  const [year, month, day] = dateString.split('-').map(Number);
+export function addMonthsToDateString(dateString: string, months: number): string | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString);
+  if (!match) return null;
+  const [year, month, day] = match.slice(1).map(Number) as [number, number, number];
   const date = new Date(Date.UTC(year, month - 1 + months, day));
-  return date.toISOString().slice(0, 10);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 10);
 }
 
 function positiveNumber(control: AbstractControl): ValidationErrors | null {
@@ -194,7 +200,8 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
     RouterLink,
     MapPickerComponent,
     ImageFallbackDirective,
-    LocationComboComponent
+    LocationComboComponent,
+    PhotoGuideSheetComponent
   ],
   templateUrl: './property-form.page.html',
   styleUrls: ['./property-form.page.scss']
@@ -213,6 +220,8 @@ export class PropertyFormPage implements OnInit {
   private readonly scrollLock = inject(ScrollLockService);
 
   readonly isSaving = signal(false);
+  /** Photography guide (UX only): never part of the form value nor of the upload flow. */
+  readonly photoGuideOpen = signal(false);
   readonly isEditMode = signal(false);
   readonly propertyId = signal('');
   readonly currentLang = signal<LangCode>('ar');
@@ -502,10 +511,12 @@ export class PropertyFormPage implements OnInit {
       const start = this.form.controls.rentalStartDate.value;
       if (!start) return;
 
-      if (duration === RENTAL_DURATION_SIX_MONTHS) {
-        this.form.patchValue({ rentalEndDate: addMonthsToDateString(start, 6) }, { emitEvent: false });
-      } else if (duration === RENTAL_DURATION_ONE_YEAR) {
-        this.form.patchValue({ rentalEndDate: addMonthsToDateString(start, 12) }, { emitEvent: false });
+      const months = duration === RENTAL_DURATION_SIX_MONTHS ? 6
+        : duration === RENTAL_DURATION_ONE_YEAR ? 12
+          : null;
+      const end = months === null ? null : addMonthsToDateString(start, months);
+      if (end) {
+        this.form.patchValue({ rentalEndDate: end }, { emitEvent: false });
       }
       // Custom: rentalEndDate stays exactly what the user typed.
     };
@@ -909,6 +920,11 @@ export class PropertyFormPage implements OnInit {
           this.imageActionBusyId.set(null);
         }
       });
+  }
+
+  /** Rent (1) / sale (2) decides which shots the photography guide leads with. */
+  get photoGuideKind(): PhotoGuideKind {
+    return photoGuideKindForListingType(this.form.get('listingType')?.value);
   }
 
   setListingType(type: 1 | 2): void {

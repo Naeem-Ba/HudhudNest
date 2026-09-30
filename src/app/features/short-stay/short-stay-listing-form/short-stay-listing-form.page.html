@@ -16,7 +16,7 @@
 
   <p *ngIf="loading()">{{ 'SHORTSTAY.FORM.LOADING' | translate }}</p>
 
-  <form *ngIf="!loading()" class="ssf__form" (ngSubmit)="isEditMode ? saveChanges() : createListing()">
+  <form *ngIf="!loading()" class="ssf__form" novalidate [class.ssf__form--submitted]="submitAttempted()" (ngSubmit)="isEditMode ? saveChanges() : createListing()">
 
     <section class="ssf__section" *ngIf="!isEditMode">
       <h2>{{ 'SHORTSTAY.FORM.TYPE' | translate }}</h2>
@@ -53,13 +53,17 @@
       <div class="ssf__row">
         <div class="ssf__field">
           <label>{{ 'SHORTSTAY.FORM.CHECK_IN_TIME' | translate }}</label>
-          <input type="time" [(ngModel)]="checkInTime" name="checkInTime" required />
+          <input type="time" step="60" [(ngModel)]="checkInTime" name="checkInTime" required />
         </div>
         <div class="ssf__field">
           <label>{{ 'SHORTSTAY.FORM.CHECK_OUT_TIME' | translate }}</label>
-          <input type="time" [(ngModel)]="checkOutTime" name="checkOutTime" required />
+          <input type="time" step="60" [(ngModel)]="checkOutTime" name="checkOutTime" required />
         </div>
       </div>
+      <p class="ssf__hint">{{ 'SHORTSTAY.FORM.TIMES_HINT' | translate }}</p>
+      <p class="ssf__error" role="alert" *ngIf="submitAttempted() && (!checkInTime || !checkOutTime)">
+        {{ 'SHORTSTAY.FORM.ERR_TIMES' | translate }}
+      </p>
       <div class="ssf__field" *ngIf="!isEditMode">
         <label>{{ 'SHORTSTAY.FORM.CURRENCY' | translate }}</label>
         <select [(ngModel)]="currencyCode" name="currencyCode" required>
@@ -76,28 +80,62 @@
       </p>
     </section>
 
-    <section class="ssf__section" *ngIf="isEditMode">
+    <section class="ssf__section ssf__location">
       <h2>{{ 'SHORTSTAY.FORM.LOCATION' | translate }}</h2>
+      <p class="ssf__hint">{{ 'SHORTSTAY.FORM.LOCATION_HINT' | translate }}</p>
+      <p class="ssf__error" role="alert" *ngIf="locationLoadFailed()">{{ 'SHORTSTAY.FORM.LOCATION_LOAD_ERROR' | translate }}</p>
+
+      <div class="ssf__field">
+        <label>{{ 'SHORTSTAY.FORM.GOVERNORATE' | translate }} <span class="ssf__required" aria-hidden="true">*</span></label>
+        <select [ngModel]="governorateId" (ngModelChange)="onGovernorateChange($event)" name="governorateId" required>
+          <option [ngValue]="null" disabled>{{ 'SHORTSTAY.FORM.SELECT_GOVERNORATE' | translate }}</option>
+          <option *ngFor="let g of governorates()" [ngValue]="g.id">{{ locationLabel(g) }}</option>
+        </select>
+      </div>
       <div class="ssf__row">
         <div class="ssf__field">
-          <label>{{ 'SHORTSTAY.FORM.LATITUDE' | translate }}</label>
-          <input type="number" step="0.000001" [(ngModel)]="latitude" name="latitude" />
+          <label>{{ 'SHORTSTAY.FORM.DISTRICT' | translate }}</label>
+          <select [ngModel]="districtId" (ngModelChange)="onDistrictChange($event)" name="districtId" [disabled]="!governorateId">
+            <option [ngValue]="null">{{ 'SHORTSTAY.FORM.OPTIONAL_SELECT' | translate }}</option>
+            <option *ngFor="let d of districts()" [ngValue]="d.id">{{ locationLabel(d) }}</option>
+          </select>
         </div>
         <div class="ssf__field">
-          <label>{{ 'SHORTSTAY.FORM.LONGITUDE' | translate }}</label>
-          <input type="number" step="0.000001" [(ngModel)]="longitude" name="longitude" />
+          <label>{{ 'SHORTSTAY.FORM.NEIGHBORHOOD' | translate }}</label>
+          <select [(ngModel)]="neighborhoodId" name="neighborhoodId" [disabled]="!districtId">
+            <option [ngValue]="null">{{ 'SHORTSTAY.FORM.OPTIONAL_SELECT' | translate }}</option>
+            <option *ngFor="let n of neighborhoods()" [ngValue]="n.id">{{ locationLabel(n) }}</option>
+          </select>
         </div>
       </div>
-      <div class="ssf__field">
-        <label>{{ 'SHORTSTAY.FORM.CITY' | translate }}</label>
-        <input type="text" [(ngModel)]="city" name="city" />
+
+      <div class="ssf__map">
+        <p class="ssf__map-label">{{ 'SHORTSTAY.FORM.MAP_HINT' | translate }}</p>
+        <app-map-picker [lang]="mapLang" [marker]="pin()" (locationChange)="onMapPinSelected($event)"></app-map-picker>
+        <div class="ssf__map-actions">
+          <button type="button" class="btn btn--sm btn--outline" [disabled]="locating()" (click)="useMyLocation()">
+            <span aria-hidden="true">📍</span>
+            {{ (locating() ? 'SHORTSTAY.FORM.LOCATING' : 'SHORTSTAY.FORM.USE_MY_LOCATION') | translate }}
+          </button>
+          <span class="ssf__pin-status" *ngIf="pin() as p">
+            ✓ {{ 'SHORTSTAY.FORM.PIN_SELECTED' | translate }}: {{ p.lat | number:'1.4-4' }}, {{ p.lng | number:'1.4-4' }}
+          </span>
+        </div>
+        <p class="ssf__error ssf__location-error" role="alert" *ngIf="submitAttempted() && !governorateId">
+          {{ 'SHORTSTAY.FORM.ERR_GOVERNORATE' | translate }}
+        </p>
+        <p class="ssf__error ssf__location-error" role="alert" *ngIf="submitAttempted() && !pin()">
+          {{ 'SHORTSTAY.FORM.ERR_PIN' | translate }}
+        </p>
       </div>
+
       <div class="ssf__field">
         <label>{{ 'SHORTSTAY.FORM.LOCATION_VISIBILITY' | translate }}</label>
         <select [(ngModel)]="locationVisibility" name="locationVisibility">
           <option value="Exact">{{ 'SHORTSTAY.FORM.EXACT' | translate }}</option>
           <option value="Approximate">{{ 'SHORTSTAY.FORM.APPROXIMATE' | translate }}</option>
         </select>
+        <p class="ssf__hint">{{ (locationVisibility === 'Exact' ? 'SHORTSTAY.FORM.VISIBILITY_EXACT_HINT' : 'SHORTSTAY.FORM.VISIBILITY_APPROX_HINT') | translate }}</p>
       </div>
     </section>
 
@@ -120,6 +158,10 @@
           <input type="number" min="0" [(ngModel)]="extraGuestFee" name="extraGuestFee" />
         </div>
         <div class="ssf__field">
+          <label>{{ 'SHORTSTAY.FORM.EXTRA_BED_FEE' | translate }}</label>
+          <input type="number" min="0" [(ngModel)]="extraBedFee" name="extraBedFee" />
+        </div>
+        <div class="ssf__field">
           <label>{{ 'SHORTSTAY.FORM.DEPOSIT_PERCENTAGE' | translate }}</label>
           <input type="number" min="0" max="100" [(ngModel)]="depositPercentage" name="depositPercentage" />
         </div>
@@ -131,6 +173,25 @@
       <label class="ssf__checkbox"><input type="checkbox" [(ngModel)]="allowsSmoking" name="allowsSmoking" /> {{ 'SHORTSTAY.FORM.ALLOWS_SMOKING' | translate }}</label>
       <label class="ssf__checkbox"><input type="checkbox" [(ngModel)]="allowsParties" name="allowsParties" /> {{ 'SHORTSTAY.FORM.ALLOWS_PARTIES' | translate }}</label>
       <label class="ssf__checkbox"><input type="checkbox" [(ngModel)]="allowsPets" name="allowsPets" /> {{ 'SHORTSTAY.FORM.ALLOWS_PETS' | translate }}</label>
+      <div class="ssf__row">
+        <div class="ssf__field">
+          <label>{{ 'SHORTSTAY.FORM.QUIET_HOURS_START' | translate }}</label>
+          <input type="time" step="60" [(ngModel)]="quietHoursStart" name="quietHoursStart" />
+        </div>
+        <div class="ssf__field">
+          <label>{{ 'SHORTSTAY.FORM.QUIET_HOURS_END' | translate }}</label>
+          <input type="time" step="60" [(ngModel)]="quietHoursEnd" name="quietHoursEnd" />
+        </div>
+      </div>
+      <p class="ssf__hint">
+        {{ 'SHORTSTAY.FORM.QUIET_HOURS_HINT' | translate }}
+        <button type="button" class="ssf__link" *ngIf="quietHoursStart || quietHoursEnd" (click)="clearQuietHours()">
+          {{ 'SHORTSTAY.FORM.QUIET_HOURS_CLEAR' | translate }}
+        </button>
+      </p>
+      <p class="ssf__error" role="alert" *ngIf="submitAttempted() && !quietHoursStart !== !quietHoursEnd">
+        {{ 'SHORTSTAY.FORM.ERR_QUIET_HOURS' | translate }}
+      </p>
       <div class="ssf__field">
         <label>{{ 'SHORTSTAY.FORM.CUSTOM_RULES' | translate }}</label>
         <textarea [(ngModel)]="customRulesText" name="customRulesText" rows="2"></textarea>
@@ -176,12 +237,44 @@
       <button type="button" class="btn btn--sm btn--outline" (click)="addPricingRule()">{{ 'SHORTSTAY.FORM.ADD_RULE' | translate }}</button>
     </section>
 
+    <section class="ssf__section" *ngIf="!isEditMode">
+      <h2>{{ 'SHORTSTAY.FORM.PHOTOS' | translate }}</h2>
+      <p class="ssf__hint">{{ 'SHORTSTAY.FORM.PHOTOS_HINT' | translate:{ max: maxPhotosPerRequest } }}</p>
+      <button type="button" class="ssf__guide-link" (click)="photoGuideOpen.set(true)">
+        <span aria-hidden="true">📷</span> {{ 'PHOTO_GUIDE.OPEN' | translate }}
+      </button>
+      <div class="ssf__photos" *ngIf="pendingPhotos().length > 0">
+        <figure class="ssf__photo-pending" *ngFor="let photo of pendingPhotos(); let i = index">
+          <img [src]="photo.previewUrl" class="ssf__photo" alt="" />
+          <button type="button" class="btn btn--sm btn--danger" (click)="removePendingPhoto(i)" [disabled]="saving()">
+            {{ 'SHORTSTAY.FORM.REMOVE' | translate }}
+          </button>
+        </figure>
+      </div>
+      <input #createPhotoInput type="file" accept="image/png,image/jpeg,image/webp" multiple
+             (change)="onPendingPhotosSelected($event)" [disabled]="saving()" />
+      <app-photo-guide-sheet
+        [open]="photoGuideOpen() && !isEditMode"
+        kind="shortStay"
+        (closed)="photoGuideOpen.set(false)"
+        (start)="photoGuideOpen.set(false); createPhotoInput.click()" />
+      <p *ngIf="uploadingPhotos()">{{ 'SHORTSTAY.FORM.PHOTOS_UPLOADING' | translate }}</p>
+    </section>
+
     <section class="ssf__section" *ngIf="isEditMode && listing() as l">
       <h2>{{ 'SHORTSTAY.FORM.PHOTOS' | translate }}</h2>
+      <button type="button" class="ssf__guide-link" (click)="photoGuideOpen.set(true)">
+        <span aria-hidden="true">📷</span> {{ 'PHOTO_GUIDE.OPEN' | translate }}
+      </button>
       <div class="ssf__photos">
         <img *ngFor="let url of l.photoUrls" [src]="url" class="ssf__photo" />
       </div>
-      <input type="file" accept="image/png,image/jpeg,image/webp" multiple (change)="onPhotosSelected($event)" [disabled]="uploadingPhotos()" />
+      <input #editPhotoInput type="file" accept="image/png,image/jpeg,image/webp" multiple (change)="onPhotosSelected($event)" [disabled]="uploadingPhotos()" />
+      <app-photo-guide-sheet
+        [open]="photoGuideOpen() && isEditMode"
+        kind="shortStay"
+        (closed)="photoGuideOpen.set(false)"
+        (start)="photoGuideOpen.set(false); editPhotoInput.click()" />
       <p *ngIf="uploadingPhotos()">{{ 'SHORTSTAY.FORM.PHOTOS_UPLOADING' | translate }}</p>
     </section>
 

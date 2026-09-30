@@ -1,0 +1,92 @@
+.otp-channels {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.otp-channels__legend {
+  padding: 0;
+  margin-bottom: .35rem;
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.otp-channel {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  padding: .75rem .9rem;
+  border: 1.5px solid var(--gray-200, #e5e7eb);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease;
+
+  &:hover:not(.otp-channel--unavailable) { border-color: var(--gold-text, #8a6d1d); }
+
+  // Keyboard focus lands on the (visually present) radio, so the ring goes on the whole card.
+  &:focus-within { outline: 2px solid var(--gold-text, #8a6d1d); outline-offset: 2px; }
+}
+
+.otp-channel--selected {
+  border-color: var(--gold-text, #8a6d1d);
+  background: rgba(200, 160, 60, .08);
+}
+
+.otp-channel--unavailable {
+  cursor: not-allowed;
+  background: var(--gray-50, #f9fafb);
+
+  .otp-channel__name,
+  .otp-channel__desc { opacity: .6; }
+}
+
+.otp-channel__input {
+  margin-top: .2rem;
+  flex: 0 0 auto;
+  accent-color: var(--gold-text, #8a6d1d);
+}
+
+.otp-channel__body {
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+  min-width: 0;
+}
+
+.otp-channel__name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.otp-channel__badge {
+  padding: .05rem .5rem;
+  border-radius: 999px;
+  background: var(--gold-text, #8a6d1d);
+  color: #fff;
+  font-size: .7rem;
+  font-weight: 700;
+}
+
+.otp-channel__desc,
+.otp-channel__note {
+  font-weight: 400;
+  font-size: .8rem;
+  line-height: 1.6;
+  color: var(--gray-500);
+  overflow-wrap: anywhere;
+}
+
+.otp-channel__note--warn {
+  color: #b42318;
+  font-weight: 700;
+}

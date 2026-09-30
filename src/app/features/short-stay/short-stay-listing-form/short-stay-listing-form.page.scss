@@ -91,3 +91,89 @@
     margin-top: 1.5rem;
   }
 }
+
+.ssf__photo-pending {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 0 8px 8px 0;
+}
+
+.ssf__guide-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-bottom: 8px;
+  padding: 0 4px;
+  background: none;
+  border: 0;
+  color: var(--gold-dark);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* Shown only after the first submit, so a fresh form is not covered in red. */
+.ssf__form--submitted {
+  input.ng-invalid,
+  select.ng-invalid,
+  textarea.ng-invalid {
+    border-color: var(--danger, #dc2626);
+    box-shadow: 0 0 0 1px var(--danger, #dc2626);
+  }
+}
+
+.ssf__error {
+  margin: -0.35rem 0 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--danger, #dc2626);
+}
+
+.ssf__link {
+  background: none;
+  border: 0;
+  padding: 0 4px;
+  min-height: 32px;
+  color: var(--gold-dark);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.ssf__required { color: var(--danger, #dc2626); }
+
+.ssf__map {
+  margin-bottom: 1rem;
+  /* Shorter than the default 400px so the form keeps scrolling on a phone. */
+  --map-picker-height: 300px;
+}
+
+.ssf__map-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--gray-700, #374151);
+  margin-bottom: 0.5rem;
+}
+
+.ssf__map-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.6rem;
+}
+
+.ssf__pin-status {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--success, #15803d);
+}
+
+.ssf__map .ssf__error { margin-top: 0.5rem; }

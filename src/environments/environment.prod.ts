@@ -10,21 +10,18 @@ import {
 
 const apiBaseUrl = readApiUrlFromProcessEnv() || 'https://wohnungen-api.onrender.com/api';
 
-// هدهد نيست (HudhudNest) — النطاق العام الحقيقي أصبح hudhudnest.com (2026-09-23: DNS/SSL/
-// Netlify Primary domain/Render Frontend__BaseUrl مؤكَّدة حيّة). realestateworld.world بقي
-// alias يعمل عمداً في Netlify وضمن allowNavigation في capacitor.config.ts، لدعم أي نسخة
-// تطبيق مثبَّتة لم تُحدَّث بعد. هذا هو النطاق الذي تُبنى عليه روابط المشاركة العامة
-// (canonical) — راجع PropertyShareUrlService.
+// عقار تيك / Real Estate World — النطاق العام الحقيقي (raiseNavigation في
+// capacitor.config.ts يستخدم نفس النطاق). هذا هو النطاق الذي تُبنى عليه روابط
+// المشاركة العامة (canonical) — راجع PropertyShareUrlService.
 const siteUrl = readSiteUrlFromProcessEnv() || 'https://hudhudnest.com';
 
-// ⚠️ لم يُحدَّث بعد عمداً: Sign in with Apple لا يزال يستخدم realestateworld.world لأن الـ
-// Services ID في Apple Developer لم يُسجَّل بعد لنطاق hudhudnest.com (الحساب غير مُفعَّل
-// هناك حتى 2026-09-23) — تغيير هذا القبل تسجيل النطاق في لوحة Apple يكسر تسجيل الدخول عبر
-// Apple فوراً. يجب أن يطابق نطاق appleRedirectUri أحد الأنماط المدرجة ضمن
-// server.allowNavigation في capacitor.config.ts (كلا النطاقين مدرجان الآن). حدّث هذا السطر
-// إلى hudhudnest.com فور تأكيد تسجيل Domains/Return URLs في Apple Developer.
+// يجب أن يطابق نطاق appleRedirectUri أحد الأنماط المدرجة ضمن
+// server.allowNavigation في capacitor.config.ts، وإلا فسيرفض الغلاف
+// الأصلي (Android/iOS WebView) التنقل إلى صفحة الرجوع بعد مصادقة Apple.
+// النطاق الحالي المدرج هناك هو hudhudnest.com (وليس أي نطاق نتليفاي
+// سابق)، لذلك هو الافتراضي الصحيح هنا.
 const appleRedirectUri =
-  readProcessEnv('APPLE_REDIRECT_URI') || 'https://realestateworld.world/auth/apple/callback';
+  readProcessEnv('APPLE_REDIRECT_URI') || 'https://hudhudnest.com/auth/apple/callback';
 
 export const environment: AppEnvironment = createAppEnvironment({
   production: true,

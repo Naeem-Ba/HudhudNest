@@ -24,7 +24,7 @@ export interface AppEnvironment {
    * Never falls back to a hardcoded default here: local dev has no public origin to point a
    * shared link at, so PropertyShareUrlService falls back to window.location.origin itself
    * (reflecting whatever the developer is actually running on) rather than this being empty
-   * silently becoming "https://realestateworld.world" in a context where that would be wrong.
+   * silently becoming "https://hudhudnest.com" in a context where that would be wrong.
    */
   siteUrl: string;
 

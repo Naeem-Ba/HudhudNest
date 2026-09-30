@@ -23,7 +23,13 @@ import { TranslateModule } from '@ngx-translate/core';
         </div>
 
         <footer class="modal__footer">
-          <button type="button" class="btn btn--outline" (click)="cancelled.emit()" [disabled]="loading">
+          <button
+            *ngIf="!hideCancel"
+            type="button"
+            class="btn btn--outline"
+            (click)="cancelled.emit()"
+            [disabled]="loading"
+          >
             {{ cancelLabel || ('COMMON.CANCEL' | translate) }}
           </button>
           <button
@@ -80,6 +86,9 @@ export class ConfirmModalComponent {
   @Input() danger = false;
   /** يغلق النافذة بالنقر على الخلفية إلا إذا كانت عملية قيد التنفيذ. */
   @Input() closeOnBackdrop = true;
+  /** يخفي زر الإلغاء تماماً — لنافذة لا يمكن تجاوزها (مثل التحديث الإجباري)، مع
+   * closeOnBackdrop=false معاً يمنعان أي مسار لإغلاق النافذة سوى زر التأكيد. */
+  @Input() hideCancel = false;
 
   @Output() confirmed = new EventEmitter<void>();
   @Output() cancelled = new EventEmitter<void>();

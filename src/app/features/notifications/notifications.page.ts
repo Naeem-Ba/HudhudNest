@@ -19,6 +19,7 @@
 //   any         = تخلٍّ عن هذه الحماية
 //   Type Safety = فريق يعمل بثقة ومشروع قابل للصيانة
 // ═══════════════════════════════════════════════════════════════
+import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
@@ -39,7 +40,7 @@ import { VisitService } from '../../core/api/visit.service';
 @Component({
   selector: 'app-notifications-page',
   standalone: true,
-  imports: [CommonModule, TranslateModule, EmptyStateComponent, LoadingSpinnerComponent],
+  imports: [CommonModule, RouterLink, TranslateModule, EmptyStateComponent, LoadingSpinnerComponent],
   template: `
     <section class="page">
       <header class="page-header">
@@ -94,6 +95,16 @@ import { VisitService } from '../../core/api/visit.service';
             <!-- ✅ الحقول محددة النوع — TypeScript يكتشف الأخطاء compile-time -->
             <h2 class="line-clamp-2">{{ notification.message }}</h2>
             <small *ngIf="notification.createdAt">{{ notification.createdAt | date:'short' }}</small>
+
+            <a *ngIf="notification.type === 'PhoneVerification'" class="phone-verify-link" routerLink="/profile/phone-reverify">
+              {{ 'AUTH.PHONE_VERIFY_NOW' | translate }}
+            </a>
+
+            <!-- رسالة جديدة → فتح المحادثة الخاصة بهذا العقار مباشرة -->
+            <a *ngIf="notification.type === 'NewMessage' && notification.propertyId" class="phone-verify-link"
+              [routerLink]="['/messages', notification.propertyId]">
+              {{ 'MESSAGES.OPEN_CONVERSATION' | translate }}
+            </a>
 
             <!-- ✅ إضافة: تأكيد/رفض/اقتراح موعد بديل — للمعلن، على إشعار "طلب زيارة جديد" -->
             <div class="visit-actions" *ngIf="notification.type === 'VisitRequested' && notification.relatedEntityId">

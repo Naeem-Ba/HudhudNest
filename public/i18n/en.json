@@ -65,9 +65,19 @@
     "INVESTMENT_WATCHLIST": "Investment Watchlist",
     "ADMIN_INVESTMENTS": "Investment Portal (Admin)",
     "ADMIN_MARKETING": "Marketing Dashboard",
+    "ADMIN_APP_UPDATES": "App Releases",
+    "ADMIN_SOCIAL_DISTRIBUTION": "Social Distribution",
     "OPEN_MENU": "Open menu",
     "CLOSE_MENU": "Close menu",
-    "PROVIDER_INBOX": "Incoming Service Requests"
+    "PROVIDER_INBOX": "Incoming Service Requests",
+    "MY_MESSAGES": "My messages",
+    "MANAGEMENT": "Administration",
+    "ADMIN_TOOLS": "Admin tools",
+    "ADMIN_LOCATION_SUGGESTIONS": "Location suggestions",
+    "PROFILE_PHOTO": "Profile photo",
+    "SIGNED_IN_WITH_EMAIL": "Signed in with e-mail:",
+    "SIGNED_IN_WITH_PHONE": "Signed in with phone number:",
+    "CURRENT_SECTION": "(current section)"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -116,6 +126,8 @@
     "SEND_OTP_TITLE": "Send verification code",
     "SEND_OTP_BUTTON": "Send code",
     "SEND_OTP_SUCCESS": "Verification code sent.",
+    "PHONE_NO_CODE_HINT": "Didn't get a code? If this number already has an account, no code is sent — log in or reset your password instead.",
+    "PHONE_VERIFY_NOW": "Verify my phone number",
     "VERIFY_OTP_TITLE": "Verify verification code",
     "OTP_CODE": "Verification code",
     "VERIFY_OTP_BUTTON": "Verify",
@@ -155,8 +167,11 @@
       "PASSWORD_MIN": "The password must contain at least 8 characters.",
       "PASSWORD_MISMATCH": "The password and confirmation do not match.",
       "PHONE_REQUIRED": "Phone number is required.",
+      "PHONE_COUNTRY_NOT_SUPPORTED": "Phone numbers from this country are not supported yet. Please use a number from a supported country.",
       "PHONE_INVALID": "The phone number format is invalid. Use the international format, for example: +963911234567",
       "INVALID_CREDENTIALS": "The email or password is incorrect.",
+      "PHONE_INVALID_CREDENTIALS": "The phone number or password is incorrect.",
+      "ACCOUNT_UNAVAILABLE": "This account is unavailable. Contact support if you think this is a mistake.",
       "REGISTER_FAILED": "Unable to create the account. Check the information.",
       "FORGOT_FAILED": "Unable to send the reset link.",
       "RESET_FAILED": "Unable to update the password.",
@@ -187,6 +202,8 @@
       "APPLE_LOGIN": "Continue with Apple",
       "OTP_RATE_LIMITED": "You requested too many codes. Wait one hour and try again.",
       "OTP_SMS_FAILED": "Failed to send the SMS. Check the phone number or try again later.",
+      "OTP_CHANNEL_UNAVAILABLE": "This method is not available right now. Choose another one.",
+      "OTP_PROVIDER_UNAVAILABLE": "The code could not be sent this way right now. Try another method or try again later.",
       "OTP_STORE_FAILED": "The message was sent, but an error occurred while saving the code. Request a new code.",
       "OTP_NOT_FOUND": "No valid verification code was found. Request a new code.",
       "OTP_INVALID": "The code is invalid or has expired.",
@@ -197,10 +214,10 @@
       "PROFILE_NAME_REQUIRED": "This is a new number — enter your name to create the account.",
       "PHONE_AUTH_FAILED": "Unable to complete login with the phone number. Try again.",
       "PHONE_ALREADY_REGISTERED": "This phone number is already registered. Try logging in instead.",
-      "PASSWORD_POLICY_FAILED": "This password doesn't meet the security requirements.",
+      "PASSWORD_POLICY_FAILED": "This password doesn't meet the requirements: at least 8 characters, with an uppercase letter (A-Z), a lowercase letter (a-z) and a digit (0-9).",
       "PHONE_REVERIFICATION_REQUIRED": "Re-verifying your phone number is required to continue.",
       "PHONE_REVERIFICATION_NOT_CONFIGURED": "No phone number is set up for re-verification.",
-      "RECENT_AUTHENTICATION_REQUIRED": "A recent login is required to complete this action.",
+      "RECENT_AUTHENTICATION_REQUIRED": "The current password is incorrect, or the account is temporarily locked after too many attempts. Check it and try again.",
       "PASSWORD_RESET_INVALID": "Your password reset request has expired — please start again.",
       "PASSWORD_RESET_EXPIRED": "This reset code has expired. Request a new one.",
       "PASSWORD_RESET_ALREADY_USED": "This reset code has already been used.",
@@ -226,7 +243,7 @@
     },
     "FIRST_NAME_PLACEHOLDER": "Enter first name",
     "LAST_NAME_PLACEHOLDER": "Enter last name",
-    "PASSWORD_MIN_HINT": "At least 8 characters.",
+    "PASSWORD_MIN_HINT": "At least 8 characters, with an uppercase letter (A-Z), a lowercase letter (a-z) and a digit (0-9).",
     "VERIFYING": "Verifying...",
     "VERIFY_CODE": "Verify code",
     "ALREADY_HAVE_ACCOUNT": "Already have an account?",
@@ -234,6 +251,33 @@
     "FORGOT_PASSWORD_PHONE": "Forgot your password?",
     "PHONE_REGISTER_MOVED_NOTICE": "Phone registration now lives on its own page —",
     "PHONE_REGISTER_MOVED_LINK": "go there",
+    "CHANNELS": {
+      "TITLE": "Choose how to receive your verification code",
+      "RECOMMENDED": "Recommended",
+      "NAMES": {
+        "Sms": "Text message (SMS)",
+        "Telegram": "Telegram",
+        "WhatsApp": "WhatsApp"
+      },
+      "DESCRIPTIONS": {
+        "Sms": "Receive the code as a text message on your phone",
+        "Telegram": "Receive the code in the Telegram app",
+        "WhatsApp": "Receive the code in the WhatsApp app"
+      },
+      "NOT_IN_YOUR_COUNTRY": "This service is not available in your country.",
+      "NOT_AVAILABLE_IN": "Not available in:",
+      "LIST_SEPARATOR": ", ",
+      "COUNTRIES": {
+        "963": "Syria",
+        "53": "Cuba",
+        "98": "Iran",
+        "850": "North Korea"
+      },
+      "SENT_VIA": "The code was sent via {{channel}}. It is valid for 5 minutes.",
+      "NO_CODE": "Didn't receive the code?",
+      "SEND_VIA": "Send via {{channel}}"
+    },
+
     "PHONE_REGISTER": {
       "TITLE": "Create an account with your phone",
       "SUBTITLE": "Enter your phone number to receive a one-time code.",
@@ -798,7 +842,24 @@
     "SELECT_CONVERSATION_FIRST": "Select a conversation before replying.",
     "ERROR_EMPTY": "You cannot send an empty message.",
     "ERROR_TOO_LONG": "The message is too long (3000 characters max).",
-    "SENDING_AS": "This message will be sent as your account: {{name}}"
+    "SENDING_AS": "This message will be sent as your account: {{name}}",
+    "INBOX_TITLE": "My messages",
+    "INBOX_SUBTITLE": "Your questions to property owners, and inquiries about your own listings.",
+    "INBOX_EMPTY_TITLE": "No conversations yet",
+    "INBOX_EMPTY_MESSAGE": "When you message a property owner, or someone messages you about your listing, the conversation will appear here.",
+    "LOAD_MORE": "Show more",
+    "ROLE_INQUIRY": "Inquiry on your listing",
+    "ROLE_OWNER": "Property owner",
+    "UNKNOWN_PROPERTY": "Listing unavailable",
+    "YOU_PREFIX": "You:",
+    "UNREAD_ARIA": "{{count}} unread messages",
+    "CONVERSATION_WITH": "Conversation with {{name}}",
+    "OLDER_HIDDEN": "Showing the latest 50 messages of this conversation.",
+    "RATE_PROMPT": "How was your experience with this owner?",
+    "RATE_OWNER": "Rate the owner",
+    "OPEN_CONVERSATION": "View conversation",
+    "SEND_SUCCESS_DETAIL": "Your message was sent to the owner. You will find the conversation and their reply in “My messages”.",
+    "SEND_ANOTHER": "Send another message"
   },
   "ADMIN_USERS": {
     "TITLE": "User management",
@@ -929,6 +990,7 @@
     "DISPLAY_NAME": "Display name",
     "EMAIL_LOCKED": "Email (cannot be changed)",
     "PHONE": "Phone number",
+    "PHONE_SECURITY": { "TITLE": "Sign-in phone number", "CHANGE": "Change sign-in phone number", "VERIFY": "Verify my phone number" },
     "PHONE_REQUIRED_AGENT": "* Required for real estate agents",
     "PHONE_PLACEHOLDER": "Enter phone number",
     "AGENT_CHECKBOX": "Activate the account as a verified real estate agent",
@@ -1117,9 +1179,12 @@
     "ANONYMOUS": "Anonymous user",
     "PROPERTY_REQUIRED": "Property ID is required.",
     "RATING_RANGE": "The rating must be between 1 and 5.",
+    "COMMENT_TOO_LONG": "The comment is too long (maximum 1000 characters).",
     "COMMENT_PLACEHOLDER": "Share your thoughts about this property...",
     "EMPTY_TITLE": "No reviews yet",
-    "EMPTY_MESSAGE": "Be the first to review this property."
+    "EMPTY_MESSAGE": "Be the first to review this property.",
+    "ADD_PROPERTY": "Review the property",
+    "PROPERTY_HINT": "Property reviews are available after a completed visit. To rate the owner after messaging them:"
   },
   "AGENCY_FORM": {
     "CREATE_TITLE": "Register your agency",
@@ -1356,7 +1421,9 @@
       "CREDIBILITY": "Credibility",
       "SAFETY": "Safety",
       "RESPONSE_SPEED": "Response speed",
-      "TRANSPARENCY": "Transparency"
+      "TRANSPARENCY": "Transparency",
+      "INFORMATION_ACCURACY": "Accuracy of information",
+      "CONDUCT": "Conduct"
     },
     "RATE_CTA": "Rate this user",
     "ABOUT_TITLE": "About",
@@ -1367,7 +1434,17 @@
     "RATE_NOT_ELIGIBLE_MESSAGE": "You need to complete a visit to one of this user's properties, or exchange messages with them, before you can rate them.",
     "RATE_EDIT_HINT": "You've already rated this user — you can edit your rating below.",
     "UPDATE_RATING": "Update rating",
-    "RATE_UPDATE_SUCCESS": "Your rating was updated successfully"
+    "RATE_UPDATE_SUCCESS": "Your rating was updated successfully",
+    "RATE_QUESTION": "How was your experience with this owner?",
+    "RATE_ALL_CRITERIA_REQUIRED": "Choose a star rating for every criterion before submitting.",
+    "CRITERIA_HINT": {
+      "CREDIBILITY": "Did they keep their word?",
+      "INFORMATION_ACCURACY": "Did the listing, photos and price match reality?",
+      "CONDUCT": "Respectful and courteous",
+      "RESPONSE_SPEED": "How quickly they answered",
+      "TRANSPARENCY": "Clear about terms and costs",
+      "SAFETY": "Did you feel safe and able to trust them?"
+    }
   },
   "PRICING": {
     "META_TITLE": "Subscription plans for owners and agencies",
@@ -1484,6 +1561,94 @@
     },
     "LEGEND_BLOCKED": "Booked",
     "LEGEND_SELECTED": "Selected"
+  },
+  "PHOTO_GUIDE": {
+    "OPEN": "How do I take professional photos?",
+    "OPEN_HINT": "A quick 30-second guide",
+    "TITLE": "How to take better photos",
+    "SUBTITLE": "Quick guide — 30 seconds",
+    "CLOSE": "Close the guide",
+    "PROGRESS": "Guide steps",
+    "STEP_OF": "Shot {{n}} of {{total}}",
+    "WHAT": "What to shoot",
+    "WHY": "Why",
+    "HOW": "How",
+    "NEXT": "Next",
+    "PREV": "Back",
+    "SKIP": "Skip",
+    "START": "Start adding photos",
+    "READY_TITLE": "Ready? Let’s get the best photo first",
+    "ENCOURAGE": "A clear photo helps people stop at your listing. Here are the key tips before you start:",
+    "INTRO": {
+      "sale": "For sale: show the size, condition and finish as they really are — buyers compare many listings.",
+      "rent": "For rent: focus on the rooms, kitchen, bathroom and condition — the first things a tenant asks about.",
+      "shortStay": "For short stays: guests decide from the photos, so show the bed, kitchen, bathroom and comforts."
+    },
+    "KIND_TIP": {
+      "sale": "Photograph any visible flaw honestly; being open avoids surprises at the viewing.",
+      "rent": "Show the fittings that are included (water heater, kitchen, wardrobes) so tenants know what they get.",
+      "shortStay": "Show the comforts you mention in the listing: air conditioning, kitchen, balcony…"
+    },
+    "TIPS": {
+      "LIGHT": "Use natural light: open the curtains and windows.",
+      "TIDY": "Tidy up first: remove personal items and clutter.",
+      "STEADY": "Hold the phone horizontally and steady — rest your elbows if you can.",
+      "HONEST": "Show the real space; avoid misleading angles.",
+      "DETAILS": "Capture the important details instead of repeating the same shot.",
+      "LENS": "Wipe your phone lens before you start.",
+      "SHARP": "Avoid dark or blurry photos; retake the shot if needed.",
+      "FRESH": "Use recent photos only; if the property changed, update them."
+    },
+    "STEPS": {
+      "FACADE": {
+        "TITLE": "Building front",
+        "WHAT": "The whole building from the street, including the entrance.",
+        "WHY": "It is the first photo people see and hints at the building and the area.",
+        "HOW": "Stand across the street in daylight with the sun behind you, phone horizontal at chest height."
+      },
+      "LIVING": {
+        "TITLE": "Living room",
+        "WHAT": "The room from a corner so the most floor space shows.",
+        "WHY": "People want to picture themselves in it and know its real size.",
+        "HOW": "Stand in a corner, open the curtains and tidy loose items first."
+      },
+      "BEDROOM": {
+        "TITLE": "Bedroom",
+        "WHAT": "The bed, wardrobe and window in one shot.",
+        "WHY": "It shows how much space there really is and how light gets in.",
+        "HOW": "Shoot from the door or a corner, make the bed and use daylight."
+      },
+      "KITCHEN": {
+        "TITLE": "Kitchen",
+        "WHAT": "The cabinets, sink and cooker area.",
+        "WHY": "The kitchen is one of the things people ask about most.",
+        "HOW": "Clear the counters, clean the sink and shoot from a corner to show it all."
+      },
+      "BATHROOM": {
+        "TITLE": "Bathroom",
+        "WHAT": "The whole bathroom: basin, shower and tiles.",
+        "WHY": "Cleanliness here builds a lot of trust.",
+        "HOW": "Close the toilet lid, hide personal items and wipe the mirror so you are not reflected."
+      },
+      "BALCONY": {
+        "TITLE": "Balcony and view",
+        "WHAT": "The balcony and what you can see from it: street, mountain or neighbourhood.",
+        "WHY": "A view is a real advantage and deserves to be seen.",
+        "HOW": "Shoot in daylight with a straight horizon; don’t pinch-zoom — walk closer or back."
+      },
+      "COURTYARD": {
+        "TITLE": "Garden, courtyard or roof",
+        "WHAT": "The open space as it is, with its best feature.",
+        "WHY": "Outdoor space is rare and sets a property apart.",
+        "HOW": "Take one wide shot showing the boundaries and one close shot of the best detail, like a fountain or tree."
+      },
+      "ENTRANCE": {
+        "TITLE": "Entrance",
+        "WHAT": "The door and the entrance of the building or flat.",
+        "WHY": "Guests want to know where they will walk in and that it is tidy and safe.",
+        "HOW": "Shoot the door straight on in daylight and avoid showing neighbours’ names or numbers."
+      }
+    }
   },
   "SHORTSTAY": {
     "LIST": {
@@ -1629,6 +1794,32 @@
       "ERR_BEDROOMS": "Enter the number of bedrooms (0 or more).",
       "ERR_BATHROOMS": "Enter the number of bathrooms (0 or more).",
       "ERR_TIMES": "Set both the check-in and check-out time.",
+      "TIMES_HINT": "Guests see both times on the listing page and in their booking confirmation.",
+      "EXTRA_BED_FEE": "Extra bed fee",
+      "QUIET_HOURS_START": "Quiet hours start",
+      "QUIET_HOURS_END": "Quiet hours end",
+      "QUIET_HOURS_HINT": "Optional — set the start and the end together.",
+      "QUIET_HOURS_CLEAR": "Clear",
+      "ERR_QUIET_HOURS": "Set both the start and the end of quiet hours, or clear them.",
+      "LOCATION_HINT": "Guests find your listing by governorate and on the map. The governorate and a map pin are required to publish.",
+      "LOCATION_LOAD_ERROR": "Could not load the governorate and district lists. Check your connection and try again.",
+      "GOVERNORATE": "Governorate",
+      "SELECT_GOVERNORATE": "Select a governorate",
+      "DISTRICT": "District",
+      "NEIGHBORHOOD": "Neighborhood",
+      "OPTIONAL_SELECT": "Optional",
+      "MAP_HINT": "Tap the map to place your listing. You can drag the pin to adjust it.",
+      "USE_MY_LOCATION": "Use my current location",
+      "LOCATING": "Finding your location…",
+      "PIN_SELECTED": "Location set",
+      "ERR_GOVERNORATE": "Select a governorate.",
+      "ERR_PIN": "Place your listing on the map.",
+      "VISIBILITY_EXACT_HINT": "Guests see the exact location on the map.",
+      "VISIBILITY_APPROX_HINT": "Guests only see the approximate area (about 1 km); the exact address stays hidden.",
+      "GPS_UNSUPPORTED": "Your device or browser does not support location. Tap the map instead.",
+      "GPS_DENIED": "Location access was denied. Allow it in your browser settings or tap the map.",
+      "GPS_FAILED": "Could not get your location right now. Try again or tap the map.",
+      "PUBLISH_NEEDS_LOCATION": "Set the governorate and a map pin, and save your changes, before publishing.",
       "ERR_LOCATION": "Enter the latitude and longitude as valid numbers.",
       "ERR_FEES": "Fees must be numbers of at least 0.",
       "LOCATION": "Location",
@@ -1670,6 +1861,11 @@
       "PHOTOS_UPLOADING": "Uploading photos...",
       "PHOTOS_SUCCESS": "Photos uploaded successfully.",
       "PHOTOS_ERROR": "Could not upload photos.",
+      "PHOTOS_HINT": "Optional — up to {{max}} photos (JPG, PNG or WebP, max 5 MB each). They upload automatically once the listing is created; the first one is the cover.",
+      "PHOTO_INVALID_TYPE": "“{{name}}” is not a supported image (JPG, PNG or WebP).",
+      "PHOTO_TOO_LARGE": "“{{name}}” is larger than 5 MB.",
+      "PHOTO_LIMIT": "You can pick at most {{max}} photos when creating a listing.",
+      "CREATED_PHOTOS_FAILED": "The listing was created, but the photos could not be uploaded. You can add them from the edit page.",
       "SAVE": "Save changes",
       "CREATE": "Create listing",
       "SAVE_SUCCESS": "Changes saved.",
@@ -2257,5 +2453,13 @@
         "SERVICEVERIFIED": "Service verified"
       }
     }
+  },
+  "APP_UPDATE": {
+    "OPTIONAL_TITLE": "A new update is available",
+    "OPTIONAL_BODY": "The new version includes improvements and fixes.",
+    "MANDATORY_TITLE": "App update required",
+    "MANDATORY_BODY": "This version of the app is no longer supported. Please update to continue.",
+    "UPDATE_NOW": "Update now",
+    "LATER": "Later"
   }
 }

@@ -23,7 +23,8 @@ export class OverlayBackHandlerService {
 
   closeTopOverlay(): boolean {
     for (let index = this.handlers.length - 1; index >= 0; index -= 1) {
-      if (this.handlers[index]()) {
+      // A handler may unregister itself or another one while Back is handled.
+      if (this.handlers[index]?.()) {
         return true;
       }
     }

@@ -22,18 +22,24 @@
 
   &__inner {
     display: grid;
-    grid-template-columns: 1.2fr 1fr;
+    /* minmax(0, …) not plain fr: a bare `1fr` track is minmax(auto, 1fr), so its
+       minimum is the content's min-content width. The thumbnail strip (one 64px
+       button per photo) made that minimum wider than a phone screen — 424px on a
+       360px viewport with 6 photos — pushing the whole page sideways. */
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
     gap: 1.75rem;
     align-items: start;
 
     @include bp.tablet {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 }
 
 /* ── Gallery ── */
 .gallery {
+  min-width: 0;
+
   &__window {
     position: relative;
     aspect-ratio: 16 / 10;
@@ -45,10 +51,16 @@
     &--zoom { cursor: zoom-in; }
   }
 
+  /* contain, not cover: the frame keeps a fixed ratio for a stable layout, but the
+     photo inside is only scaled down — never cropped — so portrait, square and
+     panorama shots are all shown whole with their true proportions (letterboxed
+     on the gallery's dark canvas). Thumbnails below still use cover (they are tiny
+     previews where a centred crop reads better). */
   &__img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    object-position: center;
     transition: transform .3s ease;
   }
 
@@ -183,6 +195,7 @@
     color: var(--gray-600);
     margin: 0;
     flex-wrap: wrap;
+    overflow-wrap: anywhere;
   }
 
   /* ✅ إضافة: معرف الإعلان — نص صغير مكتوم تحت العنوان/الموقع مباشرة */
@@ -235,6 +248,7 @@
 }
 
 .price-value {
+  overflow-wrap: anywhere;
   font-size: 1.5rem;
   font-weight: 900;
   color: var(--gray-900);
@@ -283,17 +297,19 @@
 
 .detail-two-col {
   display: grid;
-  grid-template-columns: 1fr 340px;
+  /* Same minmax(0, …) reason as .detail-hero__inner: long unbroken content must
+     not be able to widen the column past the viewport. */
+  grid-template-columns: minmax(0, 1fr) 340px;
   gap: 1.5rem;
   align-items: start;
 
   @include bp.tablet {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
-.detail-left { display: flex; flex-direction: column; gap: 1.25rem; }
-.detail-right { display: flex; flex-direction: column; gap: 1.25rem; }
+.detail-left { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+.detail-right { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
 
 /* ── Detail Card ── */
 .detail-card {
@@ -406,7 +422,7 @@
 
 .info-row {
   display: grid;
-  grid-template-columns: 140px 1fr;
+  grid-template-columns: minmax(0, 140px) minmax(0, 1fr);
   gap: .5rem 1rem;
   padding: .6rem 0;
   border-bottom: 1px solid var(--gray-100);
@@ -423,11 +439,13 @@
     font-size: .9rem;
     color: var(--gray-800);
     font-weight: 500;
+    overflow-wrap: anywhere;
   }
 }
 
 /* ── Description ── */
 .detail-description {
+  overflow-wrap: anywhere; /* pasted URLs / long numbers without spaces */
   font-size: .92rem;
   color: var(--gray-700);
   line-height: 1.8;
@@ -529,6 +547,7 @@
 }
 
 .review-comment {
+  overflow-wrap: anywhere;
   font-size: .88rem;
   color: var(--gray-700);
   line-height: 1.7;
@@ -636,7 +655,12 @@
   .gallery__arrow { width: 44px; height: 44px; }
   .summary-card { padding: 1rem; }
   .detail-body { padding-block: 1rem; }
+  .detail-card { padding: 1rem; }
   .detail-form__grid { grid-template-columns: 1fr; }
+  .info-row { grid-template-columns: minmax(0, 40%) minmax(0, 1fr); gap: .25rem .75rem; }
+  .lightbox__nav { width: 44px; height: 44px; }
+  .lightbox__nav--prev { inset-inline-start: .5rem; }
+  .lightbox__nav--next { inset-inline-end: .5rem; }
 }
 
 /* زر المفضلة داخل شريط إجراءات صفحة التفاصيل */
@@ -670,9 +694,48 @@
   display: flex;
   flex-direction: column;
   gap: .25rem;
+  min-width: 0;
+}
+
+.owner-card__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem 1rem;
+}
+
+.owner-card__rate-link {
+  color: var(--warning);
+  font-size: .8rem;
+  font-weight: 700;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+/* بعد إرسال رسالة للمالك */
+.message-sent {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+
+  &__text {
+    margin: 0;
+    color: var(--success);
+    font-weight: 600;
+  }
+}
+
+/* توضيح الفرق بين تقييم العقار وتقييم المالك */
+.review-hint {
+  margin: -.5rem 0 1rem;
+  font-size: .82rem;
+  color: var(--gray-500);
+
+  a { color: var(--warning); font-weight: 700; margin-inline-start: .25rem; }
 }
 
 .owner-card__name {
+  overflow-wrap: anywhere;
   margin: 0;
   font-weight: 700;
   color: var(--gray-900);
