@@ -18,6 +18,8 @@ import { writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { checkDeployContext } from './lib/deploy-context-guard.mjs';
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const outFile = join(__dirname, '..', 'src', 'environments', 'env.generated.ts');
 
@@ -40,6 +42,15 @@ const values = {
   SIGNALR_URL: readEnv('SIGNALR_URL', 'NOTIFICATION_HUB_URL'),
   SITE_URL: readEnv('SITE_URL')
 };
+
+const contextProblems = checkDeployContext(
+  { CONTEXT: readEnv('CONTEXT'), BRANCH: readEnv('BRANCH') },
+  values
+);
+if (contextProblems.length > 0) {
+  for (const problem of contextProblems) console.error(`[generate-env] ${problem}`);
+  process.exit(1);
+}
 
 function escape(value) {
   return value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
