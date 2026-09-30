@@ -271,7 +271,7 @@ X-Error-Code: {error-code}
 `LoginResponseDto` يحمل `[JsonPropertyName]` صريحاً**. حذف أي واحد منها يجعل العميل
 يقرأ `accessToken` غير موجود فيخزّن توكن فارغ — فشل صامت، لا استثناء.
 
-هذا محروس بـ `tests/PropertyApi.Auth.Tests/Contracts/LoginResponseContractTests.cs`.
+هذا محروس بـ `tests/HudhudNestApi.Auth.Tests/Contracts/LoginResponseContractTests.cs`.
 
 ### النجاح — 200
 
@@ -545,7 +545,7 @@ private displayValidationErrors(response: any): void {
 
 ## 11. الاشتراكات والخطط (Subscriptions & Plans) — عقد مخطَّط، غير منفَّذ بعد
 
-> **الحالة: لا يوجد أي تنفيذ في الباك-إند.** بحث شامل في `PropertyApi` عن
+> **الحالة: لا يوجد أي تنفيذ في الباك-إند.** بحث شامل في `HudhudNestApi` عن
 > `subscription | plan | billing | invoice | payment gateway | agency | tenant`
 > أعطى صفر نتائج: لا كيان، لا جدول، لا migration، لا Controller.
 > هذا القسم يوثّق العقد المتفق عليه **قبل** بنائه، لأن §9 من هذا الملف يوجب توثيق
@@ -592,7 +592,7 @@ private displayValidationErrors(response: any): void {
 
 - الصلاحية: `[AllowAnonymous]` (صفحة تسويقية عامة).
 - ⚠️ **إلزامي:** إضافة المسار إلى `ApprovedAnonymousEndpoints` في
-  `tests/PropertyApi.Architecture.Tests/Api/PublicEndpointPolicyTests.cs`،
+  `tests/HudhudNestApi.Architecture.Tests/Api/PublicEndpointPolicyTests.cs`،
   وإلا **يفشل البناء** بسبب سياسة الرفض الافتراضي (`FallbackPolicy`) في `Program.cs`.
 
 الاستجابة — `200 OK`:
@@ -698,7 +698,7 @@ private displayValidationErrors(response: any): void {
 > الناقص فعلاً كان **ما بعد انقضاء التاريخ**: الحالة تبقى `Available`، والمالك لا يُبلَّغ،
 > ولا شيء ينظّف. الفلتر يخفي الإعلان؛ لا شيء كان يجعل الانتهاء **حدثاً**.
 
-**البنود النافذة** — مصدرها الوحيد `PropertyApi.Domain/Listings/ListingLifecyclePolicy.cs`:
+**البنود النافذة** — مصدرها الوحيد `HudhudNestApi.Domain/Listings/ListingLifecyclePolicy.cs`:
 
 | البند | القيمة |
 |---|---|

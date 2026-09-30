@@ -1,4 +1,4 @@
-# PropertyApi — سجلّ المشاكل المفتوحة في كود الخلفية
+# HudhudNestApi — سجلّ المشاكل المفتوحة في كود الخلفية
 
 > **الغرض:** قائمة واحدة، مرتّبة بالأولوية، لكل عيب مرصود في كود الخلفية — بدليله من
 > الشيفرة، وأثره الفعلي، وإصلاح مقترح محدَّد.
@@ -8,11 +8,11 @@
 > المكتب، وتزامناً تفاؤلياً كاملاً، وقفلاً استشارياً مُقيَّماً لا مُطبَّقاً تلقائياً،
 > وتفعيل CSRF فعلياً — وأغلقت بذلك **جميع الثمانية بنود** التي كانت مفتوحة في v3.
 > **لكن هذه المراجعة تفتح بنداً جديداً واحداً، وهو الأخطر في هذا الملف حتى الآن.**
-> **مصدر التحقّق:** فحص ثابت مباشر لمستودع `C:\Users\naeem\Source\Repos\PropertyApi`
+> **مصدر التحقّق:** فحص ثابت مباشر لمستودع `C:\Users\naeem\Source\Repos\HudhudNestApi`
 > عند الالتزام **`a151424`** (الفرع `master`)، ولمستودع Angular عند **`e64daeb`**
 > (الفرع `feat/listing-eligibility-gates`) حيث كان البند يخصّ الطرفين.
 > **تحقّق تنفيذي مصاحب (هذه الجلسة، لا محمول):**
-> `dotnet build PropertyApi.sln -c Release` — **0 تحذير، 0 خطأ** (35 ثانية).
+> `dotnet build HudhudNestApi.sln -c Release` — **0 تحذير، 0 خطأ** (35 ثانية).
 > `dotnet test` على خمسة مشاريع لا تحتاج قاعدة بيانات حيّة —
 > **Architecture 108/108 · Application 278/278 · Auth 280/280 · Observability 9/9 ·
 > Concurrency 4/4 — الكل ناجح، صفر فشل.**
@@ -20,7 +20,7 @@
 > `npm run build:prod` ✅ (‏597.55 kB خام — داخل حدّ 650 kB). `Integration.Tests`،
 > `Performance.Tests`، و`StagingSmokeTests` تحتاج Postgres/بيئة staging حيّة غير
 > متوفّرة في هذه الجلسة — لم تُشغَّل، ومُعلَّمة صراحةً حيث وردت.
-> **الوثائق الشقيقة:** `PropertyApi-REFERENCE.md` (المعمارية) · `PROJECT-STRUCTURE.md`
+> **الوثائق الشقيقة:** `HudhudNestApi-REFERENCE.md` (المعمارية) · `PROJECT-STRUCTURE.md`
 > (البنية) · `FRONTEND-REFERENCE.md` (الواجهة).
 
 ---
@@ -181,7 +181,7 @@ Premium/Elite). كلا الثابتين **حُذف**؛ `ListingQuotaOptions.cs` 
 ### ~~B-6b~~ · ✅ قرار مُتعمَّد ومُثبَّت — ليس إصلاحاً ناقصاً
 
 **الموقع:** `Infrastructure/Email/SecurityAlertBackgroundService.cs` ·
-`tests/PropertyApi.Architecture.Tests/BackgroundJobs/BackgroundJobLockExclusionTests.cs`
+`tests/HudhudNestApi.Architecture.Tests/BackgroundJobs/BackgroundJobLockExclusionTests.cs`
 (‏جديد)
 
 **ما تغيّر (‏PR #83، الالتزام `467f23c`):** بدل تطبيق `BackgroundJobLock` كالأربعة
@@ -199,7 +199,7 @@ Premium/Elite). كلا الثابتين **حُذف**؛ `ListingQuotaOptions.cs` 
 
 ### ~~B-7~~ · ✅ اختبار انعكاسي محلّ قائمة السماح
 
-**الموقع:** `tests/PropertyApi.Architecture.Tests/Api/RateLimitingGuardTests.cs`
+**الموقع:** `tests/HudhudNestApi.Architecture.Tests/Api/RateLimitingGuardTests.cs`
 
 **ما تغيّر (‏PR #83):** استُبدل `RateLimitingGuardTests` القديم (‏نقاط مسمّاة واحدة
 واحدة) باختبار (`Every_AllowAnonymous_Endpoint_Should_Have_RateLimiting`) يمسح **كل**
@@ -253,10 +253,10 @@ Premium/Elite). كلا الثابتين **حُذف**؛ `ListingQuotaOptions.cs` 
 
 ### ~~B-18~~ · ✅ بنطاقه الأصلي — لكن انظر B-20 فوراً
 
-**الموقع:** `PropertyApi/Security/Csrf/CookieCsrfOptions.cs` ·
+**الموقع:** `HudhudNestApi/Security/Csrf/CookieCsrfOptions.cs` ·
 `CookieCsrfProtectionMiddleware.cs` · `CsrfExtensions.cs` · `Controllers/CsrfController.cs` ·
 `appsettings.json:19-23` (‏`Enabled: true` الآن) ·
-`tests/PropertyApi.Integration.Tests/Auth/CookieCsrfProtectionIntegrationTests.cs` (‏جديد)
+`tests/HudhudNestApi.Integration.Tests/Auth/CookieCsrfProtectionIntegrationTests.cs` (‏جديد)
 
 **ما تغيّر (‏PR #83):** `CookieCsrf:Enabled=true` في `appsettings.json` (‏قاعدة
 الإنتاج) و`appsettings.Development.example.json` — تبقى `appsettings.Testing.json`
@@ -291,9 +291,9 @@ csrf-token` أولاً، ثم إرسال الرأس المستخرَج) **يعب
 
 ### ~~B-19~~ · ✅ التعليقات التالفة أُعيدت كتابتها
 
-**الموقع:** `PropertyApi/Controllers/PhoneAuthController.cs` ·
-`PropertyApi.Domain/Auth/Entities/OtpCode.cs` ·
-`PropertyApi.Domain/Common/Interfaces/IHasDomainEvents.cs`
+**الموقع:** `HudhudNestApi/Controllers/PhoneAuthController.cs` ·
+`HudhudNestApi.Domain/Auth/Entities/OtpCode.cs` ·
+`HudhudNestApi.Domain/Common/Interfaces/IHasDomainEvents.cs`
 
 **الدليل:** بحث عن نمط `?????` (‏خمس علامات استفهام متتالية أو أكثر) في الملفات الثلاثة
 عند `a151424`: **صفر مطابقة** في كل ملف — مُعاد فحصه حرفياً هذه الجلسة، لا منقولاً.
@@ -307,8 +307,8 @@ csrf-token` أولاً، ثم إرسال الرأس المستخرَج) **يعب
 ## B-20 · 🔴 جديد — الواجهة لا ترسل رأس CSRF؛ تجديد الجلسة وتسجيل الخروج يفشلان لأي متصفّح حقيقي
 
 **الموقع (‏ثلاث طبقات، مستودعان):**
-`PropertyApi/Security/Csrf/CookieCsrfProtectionMiddleware.cs:49-58` (‏الخلفية) ·
-`PropertyApi/appsettings.json:19-23` (‏`Enabled: true`) ·
+`HudhudNestApi/Security/Csrf/CookieCsrfProtectionMiddleware.cs:49-58` (‏الخلفية) ·
+`HudhudNestApi/appsettings.json:19-23` (‏`Enabled: true`) ·
 `src/app/core/interceptors/refresh-auth.interceptor.ts:80-108` (‏الواجهة) ·
 `src/app/app.config.ts:33-61` (‏الواجهة، `restoreSession`)
 

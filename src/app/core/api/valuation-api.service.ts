@@ -1,6 +1,6 @@
 // src/app/core/api/valuation-api.service.ts
 //
-// Stage 7 — consumes ValuationInquiriesController (PropertyApi):
+// Stage 7 — consumes ValuationInquiriesController (HudhudNestApi):
 //   POST /api/ValuationInquiries            ← إنشاء طلب تقييم جديد
 //   GET  /api/ValuationInquiries/{id}       ← التحقق من حالة الطلب (تحديث يدوي)
 // Both anonymous on the backend (a guest may request a valuation), so this service never

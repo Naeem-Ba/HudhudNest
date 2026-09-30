@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────
 // offer.model.ts
 // عرض تسويقي محدود (مثل "أول 100 مكتب عقاري") — يطابق OfferDto
-// الحقيقي على الباك-إند (PropertyApi.Application/Marketing/DTOs/OfferDto.cs).
+// الحقيقي على الباك-إند (HudhudNestApi.Application/Marketing/DTOs/OfferDto.cs).
 //
 // لا بوابة دفع ولا اشتراك فعلي هنا — انظر FRONTEND_BACKEND_CONTRACT.md §11.5.
 // هذا مجرد التزام تسويقي يُسجَّل مع العميل المحتمل (Lead)، ويُطبَّق يدويًا

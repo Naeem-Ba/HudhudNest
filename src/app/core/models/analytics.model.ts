@@ -1,5 +1,5 @@
 // src/app/core/models/analytics.model.ts
-// Matches Backend DTOs in PropertyApi.Application.Analytics.DTOs.
+// Matches Backend DTOs in HudhudNestApi.Application.Analytics.DTOs.
 
 // GET /api/Analytics/property/{propertyId}
 export interface PropertyStatsDto {

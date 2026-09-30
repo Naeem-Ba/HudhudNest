@@ -60,7 +60,7 @@ test('pickForwardableRequestHeaders copies only the allowlisted headers', () => 
     'content-type': 'application/json',
     'x-xsrf-token': 'token-value',
     'x-forwarded-for': '1.2.3.4', // must NOT be forwarded
-    host: 'realestateworld.world' // must NOT be forwarded
+    host: 'hudhudnest.com' // must NOT be forwarded
   });
 
   const forwarded = pickForwardableRequestHeaders(incoming);

@@ -1,4 +1,4 @@
-// Endpoints (PropertyApi.Controllers.ShortStayBookingsController):
+// Endpoints (HudhudNestApi.Controllers.ShortStayBookingsController):
 //   GET    /api/short-stay/bookings/mine                                ← حجوزاتي (ضيف)
 //   GET    /api/short-stay/bookings/host-requests                       ← طلبات حجز وحداتي (مضيف)
 //   GET    /api/short-stay/bookings/units/{unitId}/availability          ← تقويم التوفر (anonymous)

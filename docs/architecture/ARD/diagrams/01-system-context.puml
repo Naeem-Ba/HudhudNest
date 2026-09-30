@@ -3,7 +3,7 @@ skinparam backgroundColor #FFFFFF
 skinparam shadowing false
 skinparam roundcorner 8
 skinparam defaultFontName "Segoe UI"
-title مخطط سياق النظام (System Context) — واجهة Wohnungsmieten
+title مخطط سياق النظام (System Context) — واجهة HudhudNest
 
 left to right direction
 
@@ -12,11 +12,11 @@ actor "مالك عقار / وسيط\n(Property Owner / Agent)" as Owner
 actor "مسؤول النظام\n(Admin)" as Admin
 
 package "أنظمة العميل (Client Applications — هذا المستودع)" {
-  [تطبيق الويب Angular SPA\n(Netlify: realestateworld.world)] as WebApp
+  [تطبيق الويب Angular SPA\n(Netlify: hudhudnest.com)] as WebApp
   [تطبيق الجوال (Capacitor)\niOS + Android — نفس الشيفرة] as MobileApp
 }
 
-node "PropertyApi\n(.NET 8 Web API)\n<<مستودع منفصل تماماً>>" as Backend
+node "HudhudNestApi\n(.NET 8 Web API)\n<<مستودع منفصل تماماً>>" as Backend
 
 package "أنظمة خارجية (External Systems)" {
   [Google Identity Services\n(زرّ تسجيل دخول — الويب)] as GoogleWeb
@@ -40,7 +40,7 @@ MobileApp --> AppleNative : تسجيل دخول أصلي
 WebApp --> Fonts : تحميل خطوط ثابتة (index.html)
 
 note right of Backend
-  PropertyApi هو النظام الوحيد الذي يملك منطق
+  HudhudNestApi هو النظام الوحيد الذي يملك منطق
   العمل وقاعدة البيانات. هذه الواجهة عميل HTTP
   واحد من عدة عملاء محتملين — لا منطق ثقة
   مستقل هنا (§3.3 من الوثيقة).

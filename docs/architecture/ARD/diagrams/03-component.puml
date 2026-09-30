@@ -4,7 +4,7 @@ skinparam shadowing false
 skinparam roundcorner 8
 skinparam defaultFontName "Segoe UI"
 skinparam componentStyle rectangle
-title مخطط المكوّنات (Component Diagram) — واجهة Wohnungsmieten (src/app)
+title مخطط المكوّنات (Component Diagram) — واجهة HudhudNest (src/app)
 
 package "app.config.ts / app.routes.ts (الإقلاع والتوجيه)" as Bootstrap {
   [APP_INITIALIZER\npreloadEnums + restoreSession] as Init
@@ -40,7 +40,7 @@ package "shared/ · layout/ · navbar/ · profile/ · pipes/ · map-picker/ · l
   [shared/ui, directives,\nservices/toast,\ncomponents/consent-checkbox] as SharedUi
 }
 
-node "PropertyApi\n(.NET 8 — مستودع منفصل)" as Backend
+node "HudhudNestApi\n(.NET 8 — مستودع منفصل)" as Backend
 node "Google Identity /\nCapacitor Google & Apple Sign-In" as IdentityProviders
 node "SignalR Hub\n(notificationHub، عبر signalr-notification.service)" as SignalRHub
 

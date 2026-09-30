@@ -24,7 +24,7 @@ type Step = 'phone' | 'details';
 /**
  * تسجيل حساب جديد عبر PhonePasswordAuthController
  * (registration/send-otp → registration/verify).
- * راجع: PropertyApi/Controllers/PhonePasswordAuthController.cs
+ * راجع: HudhudNestApi/Controllers/PhonePasswordAuthController.cs
  */
 @Component({
   selector: 'app-phone-register-page',

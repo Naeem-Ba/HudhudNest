@@ -55,6 +55,21 @@
   object-fit: contain;
 }
 
+/* Two logo files: dark lettering for the light theme, light lettering for the dark theme. */
+.navbar__logo--dark {
+  display: none;
+}
+
+:host-context([data-theme="dark"]) {
+  .navbar__logo--light {
+    display: none;
+  }
+
+  .navbar__logo--dark {
+    display: block;
+  }
+}
+
 /* ── Desktop navigation ── */
 
 .navbar__nav {

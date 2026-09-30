@@ -2,7 +2,7 @@ import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
 /**
  * مرآة لقواعد كلمة المرور في الخادم
- * (PropertyApi.Application/Auth/Services/PasswordSecurityService.cs).
+ * (HudhudNestApi.Application/Auth/Services/PasswordSecurityService.cs).
  *
  * سبب وجود هذا الملف: كان نموذج التسجيل يكتفي بـ minLength(8)، بينما يفرض الخادم ثماني
  * قواعد. فيمرّ النموذج، ويُرسَل الطلب، ثم يردّ الخادم برفضٍ بالإنجليزية — والمستخدم لا

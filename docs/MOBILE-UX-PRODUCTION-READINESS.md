@@ -1,6 +1,6 @@
 # Mobile UX Production Readiness — Phase 7
 
-**Scope:** Angular 20 + Capacitor 8 app (`wohnungsmieten`), targeting Web, Android, iOS.
+**Scope:** Angular 20 + Capacitor 8 app (`hudhudnest`), targeting Web, Android, iOS.
 **Date:** 2026-09-05
 **Method:** Static/code audit + live browser verification (Chromium-based automation
 against `ng serve`, staging config, at multiple emulated viewports) + production build.
@@ -75,9 +75,9 @@ exercised).
 
 ```ts
 appId: 'com.realestate.app'
-webDir: 'dist/Wohnungsmieten/browser'
+webDir: 'dist/HudhudNest/browser'
 server: { androidScheme: 'https', iosScheme: 'capacitor', cleartext: <env-gated, off by default>,
-          allowNavigation: ['realestateworld.world', '*.realestateworld.world'] }
+          allowNavigation: ['hudhudnest.com', '*.hudhudnest.com'] }
 ios: { contentInset: 'automatic', preferredContentMode: 'mobile', scrollEnabled: true }
 plugins: { SystemBars: { insetsHandling: 'css' } }
 ```

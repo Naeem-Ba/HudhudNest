@@ -1,5 +1,5 @@
 // يغلّف الجزء "التشغيلي الأساسي" من SocialDistributionController على الباك-إند
-// (PropertyApi.Controllers.SocialDistributionController) — القنوات، الحسابات (بما فيها
+// (HudhudNestApi.Controllers.SocialDistributionController) — القنوات، الحسابات (بما فيها
 // ربط/فصل بيانات الاعتماد)، ملخص لوحة التحكم، وقائمة المنشورات للعرض فقط. كل نقطة هنا
 // تتطلب دور Admin على الخادم ([Authorize(Roles = "Admin")]).
 //

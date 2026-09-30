@@ -47,7 +47,7 @@ function makeNextContext() {
 
 test('passes through (context.next) for a normal browser User-Agent', async () => {
   const context = makeNextContext();
-  const request = new Request('https://realestateworld.world/properties/p1', {
+  const request = new Request('https://hudhudnest.com/properties/p1', {
     headers: { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0' }
   });
 
@@ -59,7 +59,7 @@ test('passes through (context.next) for a normal browser User-Agent', async () =
 
 test('passes through for a crawler UA on a non-property route', async () => {
   const context = makeNextContext();
-  const request = new Request('https://realestateworld.world/favorites', {
+  const request = new Request('https://hudhudnest.com/favorites', {
     headers: { 'user-agent': 'facebookexternalhit/1.1' }
   });
 
@@ -70,7 +70,7 @@ test('passes through for a crawler UA on a non-property route', async () => {
 
 test('returns pre-rendered HTML with correct tags for a crawler UA on a real property', async () => {
   const context = makeNextContext();
-  const request = new Request('https://realestateworld.world/properties/p1', {
+  const request = new Request('https://hudhudnest.com/properties/p1', {
     headers: { 'user-agent': 'facebookexternalhit/1.1' }
   });
 
@@ -90,12 +90,12 @@ test('returns pre-rendered HTML with correct tags for a crawler UA on a real pro
 
   const html = await response.text();
   assert.match(html, /شقة للبيع في طرطوس/);
-  assert.match(html, /property="og:url" content="https:\/\/realestateworld\.world\/properties\/p1"/);
+  assert.match(html, /property="og:url" content="https:\/\/hudhudnest.com\/properties\/p1"/);
 });
 
 test('returns a 404, non-leaking document when the backend 404s (unpublished/deleted/expired)', async () => {
   const context = makeNextContext();
-  const request = new Request('https://realestateworld.world/properties/missing', {
+  const request = new Request('https://hudhudnest.com/properties/missing', {
     headers: { 'user-agent': 'Twitterbot/1.0' }
   });
 
@@ -110,7 +110,7 @@ test('returns a 404, non-leaking document when the backend 404s (unpublished/del
 
 test('falls back to the SPA (context.next) if the backend call throws', async () => {
   const context = makeNextContext();
-  const request = new Request('https://realestateworld.world/properties/p1', {
+  const request = new Request('https://hudhudnest.com/properties/p1', {
     headers: { 'user-agent': 'facebookexternalhit/1.1' }
   });
 

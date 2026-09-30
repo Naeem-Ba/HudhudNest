@@ -25,7 +25,7 @@ import { MetaService } from '../services/meta.service';
 import { PropertyShareContentService } from './property-share-content.service';
 import { PropertyShareUrlService } from './property-share-url.service';
 
-const FALLBACK_OG_IMAGE_PATH = '/images/horizontal-logo.png';
+const FALLBACK_OG_IMAGE_PATH = '/images/og-default.png';
 
 @Injectable({ providedIn: 'root' })
 export class PropertyMetaService {

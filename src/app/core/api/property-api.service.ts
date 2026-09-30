@@ -5,7 +5,7 @@ import { ApiPagedResult, normalizePagedResult, PagedResult, unwrapItems } from '
 import { DuplicateCheckResult, Property, PropertyFilterDto } from '../models/property.model';
 
 /**
- * Mirrors PropertyApi.Application.Listings.DTOs.ListingExtensionQuoteDto exactly
+ * Mirrors HudhudNestApi.Application.Listings.DTOs.ListingExtensionQuoteDto exactly
  * (camelCase — Program.cs sets JsonNamingPolicy.CamelCase). A quote, not a receipt:
  * the listing is not extended until an admin confirms the fee (see
  * PropertyApiService.requestListingExtension's doc comment).

@@ -1,4 +1,4 @@
-# البنية الهيكلية للمشروع — عقار تيك / Bizorealestateworld
+# البنية الهيكلية للمشروع — هدهد نيست / HudhudNest
 
 > **الغرض:** خريطة واحدة للمشروع كلّه — أين يعيش كل شيء، ولماذا هناك، وما الحدود التي
 > لا تُعبَر. هذا الملف يجيب عن سؤال «أين أضع هذا الملف؟» قبل أن تكتبه.
@@ -8,7 +8,7 @@
 > 35 ثانية)، خمسة مشاريع اختبار خلفية سريعة (‏679/679 ناجحة)، وبوابات الواجهة الثلاث
 > (`typecheck`/`audit:frontend`/`build:prod`) في هذه الجلسة.
 > **الوثائق الشقيقة:** `FRONTEND-REFERENCE.md` (تفصيل الواجهة) ·
-> `PropertyApi-REFERENCE.md` (تفصيل الخلفية) · `BACKEND-ISSUES.md` (عيوب الخلفية
+> `HudhudNestApi-REFERENCE.md` (تفصيل الخلفية) · `BACKEND-ISSUES.md` (عيوب الخلفية
 > المفتوحة — بند واحد فقط الآن، لكنه الأخطر في تاريخ هذا الملف).
 
 ---
@@ -17,11 +17,11 @@
 
 ```
 C:\Users\naeem\
-├── OneDrive\Desktop\Notiz\WohnungsApp\Wohnungsmieten\   ← الواجهة  (Angular 20)
+├── OneDrive\Desktop\Notiz\HudhudNest\Wohnungsmieten\   ← الواجهة  (Angular 20)
 │                                                          فرع افتراضي: main
 │                                                          فرع حالي: feat/listing-eligibility-gates
 │                                                          (HEAD e64daeb)
-└── Source\Repos\PropertyApi\                            ← الخلفية  (.NET 8)
+└── Source\Repos\HudhudNestApi\                            ← الخلفية  (.NET 8)
                                                            فرع افتراضي: master
                                                            فرع حالي: master (HEAD a151424)
 ```
@@ -38,7 +38,7 @@ C:\Users\naeem\
 يدوياً في `core/api/`. نقطة الاختناق الوحيدة لتحويل التسمية هي `api-naming.adapter.ts`.
 
 ⚠️ **الواجهة قيد تعديل نشط أثناء هذه المراجعة نفسها:** لوحظت تغييرات غير مُلتزَمة في
-`Wohnungsmieten` أثناء الفحص الأولي لهذه الجلسة (‏حقول i18n ونموذج الإعلان)، ثم
+`HudhudNest` أثناء الفحص الأولي لهذه الجلسة (‏حقول i18n ونموذج الإعلان)، ثم
 اختفت — التُزمت كـ `e64daeb` قبل أن تكتمل هذه المراجعة. **هذا يعني أن جلسة تطوير أخرى
 كانت نشطة بالتوازي مع هذا التحليل.** كل رقم في هذا الملف مأخوذ من الحالة الملتزَمة عند
 `e64daeb` تحديداً، لا من أي حالة عمل غير ملتزَمة قد تظهر لاحقاً.
@@ -60,12 +60,12 @@ C:\Users\naeem\
    HTTPS (Bearer + كوكي refresh_token HttpOnly)   │   WebSocket (SignalR)
                                │
 ┌──────────────────────────────▼───────────────────────────────────────┐
-│  موازِن حِمل  →  عدّة نسخ من PropertyApi (.NET 8)                      │
+│  موازِن حِمل  →  عدّة نسخ من HudhudNestApi (.NET 8)                      │
 │  ┌────────────────────────────────────────────────────────────────┐  │
-│  │ PropertyApi            (Controllers · Configuration · Security)│  │
-│  │ PropertyApi.Application (Commands · Queries · DTOs)  ← MediatR │  │
-│  │ PropertyApi.Domain      (Entities · Policies)   لا تبعيات      │  │
-│  │ PropertyApi.Infrastructure (EF · Identity · Jobs · Media)      │  │
+│  │ HudhudNestApi            (Controllers · Configuration · Security)│  │
+│  │ HudhudNestApi.Application (Commands · Queries · DTOs)  ← MediatR │  │
+│  │ HudhudNestApi.Domain      (Entities · Policies)   لا تبعيات      │  │
+│  │ HudhudNestApi.Infrastructure (EF · Identity · Jobs · Media)      │  │
 │  └────────────────────────────────────────────────────────────────┘  │
 └───────┬───────────────┬──────────────────┬──────────────┬────────────┘
         │               │                  │              │
@@ -97,31 +97,31 @@ C:\Users\naeem\
 
 ---
 
-## 3. الخلفية — `PropertyApi` (‏.NET 8، Modular Monolith)
+## 3. الخلفية — `HudhudNestApi` (‏.NET 8، Modular Monolith)
 
 ### 3.1 المشاريع الأربعة واتجاه التبعية
 
 ```
-PropertyApi              ──►  PropertyApi.Application  ──►  PropertyApi.Domain
+HudhudNestApi              ──►  HudhudNestApi.Application  ──►  HudhudNestApi.Domain
       │                              ▲                            ▲
       └──────────────────────────────┴────────────────────────────┘
-                     PropertyApi.Infrastructure
+                     HudhudNestApi.Infrastructure
 ```
 
 | المشروع | مسؤوليته | ما يُمنَع فيه |
 |---|---|---|
-| **`PropertyApi`** | HTTP فقط: Controllers (‏25)، `Configuration/` (‏جديد — جذر التركيب)، الأمان، `Program.cs` (‏205 سطراً، كان 713) | لا منطق أعمال، ولا `AppDbContext` (‏3 استثناءات تشخيصية موثّقة) |
-| **`PropertyApi.Application`** | الأوامر والاستعلامات (MediatR)، DTOs، الواجهات (Interfaces) | **صفر تبعية على البنية التحتية** — لا EF، ولا `Microsoft.Extensions.Options` |
-| **`PropertyApi.Domain`** | الكيانات، الثوابت الأعمالية، قواعد السياسة | **صفر تبعيات خارجية إطلاقاً** |
-| **`PropertyApi.Infrastructure`** | EF Core، Identity، Redis، Cloudinary، Twilio، المهام المجدولة، الأقفال الاستشارية | لا يعرفه أحد إلا `Program.cs` عند التركيب |
+| **`HudhudNestApi`** | HTTP فقط: Controllers (‏25)، `Configuration/` (‏جديد — جذر التركيب)، الأمان، `Program.cs` (‏205 سطراً، كان 713) | لا منطق أعمال، ولا `AppDbContext` (‏3 استثناءات تشخيصية موثّقة) |
+| **`HudhudNestApi.Application`** | الأوامر والاستعلامات (MediatR)، DTOs، الواجهات (Interfaces) | **صفر تبعية على البنية التحتية** — لا EF، ولا `Microsoft.Extensions.Options` |
+| **`HudhudNestApi.Domain`** | الكيانات، الثوابت الأعمالية، قواعد السياسة | **صفر تبعيات خارجية إطلاقاً** |
+| **`HudhudNestApi.Infrastructure`** | EF Core، Identity، Redis، Cloudinary، Twilio، المهام المجدولة، الأقفال الاستشارية | لا يعرفه أحد إلا `Program.cs` عند التركيب |
 
 `APIDependencyGuardTests` يفرض هذا الاتجاه في البناء — ضمن 108/108 اختباراً في
 `Architecture.Tests`، مُعاد تشغيلها فعلياً هذه الجلسة.
 
-### 3.1.1 `PropertyApi/Configuration/` — جديد هذه الدورة، جذر تركيب حقيقي لا مجرّد تجميع
+### 3.1.1 `HudhudNestApi/Configuration/` — جديد هذه الدورة، جذر تركيب حقيقي لا مجرّد تجميع
 
 `Program.cs` كان قد كبر إلى 713 سطراً بامتصاص كل تصلّب أمني مرّ به المشروع. هذه الدورة
-استخرجت كل اهتمام مستقل إلى ملف باسمه في `PropertyApi/Configuration/`:
+استخرجت كل اهتمام مستقل إلى ملف باسمه في `HudhudNestApi/Configuration/`:
 `CorsRegistration` · `DatabaseSeedingExtensions` · `JwtAuthenticationRegistration` ·
 `RateLimitingRegistration` · `RedisConnectionResolver` · `SignalRRegistration` ·
 `SwaggerRegistration` — تنضمّ إلى ثلاثة كانت موجودة أصلاً هناك
@@ -153,7 +153,7 @@ PropertyApi              ──►  PropertyApi.Application  ──►  Property
 ```
 POST /api/properties
   │
-  ├─ PropertyApi/Controllers/PropertiesController.cs
+  ├─ HudhudNestApi/Controllers/PropertiesController.cs
   │    يقرأ هوية المستخدم من التوكن، لا من الجسم أبداً
   │
   ├─ Application/Listings/Commands/CreateProperty/CreatePropertyCommandHandler.cs
@@ -200,7 +200,7 @@ POST /api/agencies/invitations/{invitationId}/accept
 6. **مهمة مجدولة جديدة تستخدم `BackgroundJobLock` من أول يوم — إلا إذا كانت مستهلكة
    طابور داخل العملية فعلاً، وحينها وثِّق ذلك صراحة كما فعل `SecurityAlertBackgroundService`.**
 
-### 3.4 خريطة `PropertyApi.Infrastructure`
+### 3.4 خريطة `HudhudNestApi.Infrastructure`
 
 | المجلّد | المحتوى |
 |---|---|
@@ -245,7 +245,7 @@ POST /api/agencies/invitations/{invitationId}/accept
 
 ---
 
-## 4. الواجهة — `Wohnungsmieten` (‏Angular 20، Standalone)
+## 4. الواجهة — `HudhudNest` (‏Angular 20، Standalone)
 
 ### 4.1 الطبقات الأربع — بلا تغيير بنيوي هذه الدورة
 
@@ -343,7 +343,7 @@ clearAndRedirect() → tokenStorage.clear() + توجيه لـ /auth/login
 ### 4.7 المحمول
 
 ```
-capacitor.config.ts   →  webDir: dist/Wohnungsmieten/browser
+capacitor.config.ts   →  webDir: dist/HudhudNest/browser
 android/              →  مشروع Android Studio مولَّد
 resources/            →  الأيقونات وشاشات البدء
 tools/                →  setup-ios.mjs · validate-ios-config.mjs · check-environments.mjs
@@ -396,7 +396,7 @@ tools/                →  setup-ios.mjs · validate-ios-config.mjs · check-env
 
 | ما تبنيه | أين |
 |---|---|
-| نقطة نهاية جديدة | `PropertyApi/Controllers/` + أمر/استعلام في `Application/{Context}/` |
+| نقطة نهاية جديدة | `HudhudNestApi/Controllers/` + أمر/استعلام في `Application/{Context}/` |
 | قاعدة أعمال أو ثابت تجاري ثابت | `Domain/{Context}/` — لا `appsettings` |
 | قيمة مرتبطة بخطة أو خيار مستخدم | حقل على كيان الدومين (`Plan.ListingLimit` مثالاً) خلف واجهة في `Application` — لا `IOptions` بعد اليوم لهذا النوع تحديداً |
 | استعلام قاعدة بيانات | واجهة في `Application/{Context}/Interfaces/` + تنفيذ في `Infrastructure/Repositories/` |
@@ -424,9 +424,9 @@ npm run postmerge:verify  # البوابة الكاملة
 ### الخلفية
 
 ```bash
-dotnet build PropertyApi.sln -c Release   # 0 تحذير، 0 خطأ (مُتحقَّق هذه الجلسة، 35 ثانية)
-dotnet test PropertyApi.sln
-dotnet ef migrations add <Name> --project PropertyApi.Infrastructure --startup-project PropertyApi
+dotnet build HudhudNestApi.sln -c Release   # 0 تحذير، 0 خطأ (مُتحقَّق هذه الجلسة، 35 ثانية)
+dotnet test HudhudNestApi.sln
+dotnet ef migrations add <Name> --project HudhudNestApi.Infrastructure --startup-project HudhudNestApi
 ```
 
 > ⚠️ سكربتات هذا المشروع تعمل على **PowerShell**: لا `&&` ولا `||`. استخدم `-and`
@@ -440,13 +440,13 @@ dotnet ef migrations add <Name> --project PropertyApi.Infrastructure --startup-p
 |---|---|
 | `docs/PROJECT-STRUCTURE.md` (هذا) | ✅ 2026-08-27 |
 | `docs/FRONTEND-REFERENCE.md` | ✅ v5 — 2026-08-27 |
-| `docs/PropertyApi-REFERENCE.md` | ✅ v9 — 2026-08-27 |
+| `docs/HudhudNestApi-REFERENCE.md` | ✅ v9 — 2026-08-27 |
 | `docs/BACKEND-ISSUES.md` | ✅ v4 — 2026-08-27 — بند واحد مفتوح (`B-20`)، الأخطر في تاريخ هذا الملف |
 | `FRONTEND_BACKEND_CONTRACT.md` | ⚠️ لم يُعَد فحصه في هذه الدورة — يحتاج مراجعة مقابل `/plans` ونظام الدعوات الجديد ونموذج الإعلان الديناميكي |
 | `DATABASE_SCHEMA.md` (‏`Downloads`) · `REGISTER_ERROR_DIAGNOSIS.md` | ❌ **خاطئان تاريخياً** — يصفان SQL Server، وقاعدة البيانات PostgreSQL + PostGIS |
 
 **نسخ متطابقة في مستودعين:** توجد نسخة من هذا الملف وثلاثة أخرى في
-`C:\Users\naeem\Source\Repos\PropertyApi\docs\` أيضاً — **لم تُفحَص أو تُحدَّث في هذه
+`C:\Users\naeem\Source\Repos\HudhudNestApi\docs\` أيضاً — **لم تُفحَص أو تُحدَّث في هذه
 الجلسة** (‏لم يُعثَر على ملفات بهذه الأسماء الأربعة هناك عند بدء هذه المراجعة؛ فحص
 مباشر للمستودع ولتاريخ Git الكامل لم يُظهر أنها وُجدت هناك من قبل). **إن أراد الفريق
 نسخة مطابقة في مستودع الخلفية أيضاً، فهذا قرار مستقبلي، لا حالة قائمة اليوم.**

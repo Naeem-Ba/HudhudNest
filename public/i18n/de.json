@@ -2124,9 +2124,9 @@
       "TAGLINE_2": "Eine Plattform, die Immobilienanzeigen in Syrien zu einem einheitlichen Verzeichnis bündelt: echte Fotos, präzise Daten und eine einzige verlässliche Quelle statt Dutzender verstreuter Facebook- und WhatsApp-Gruppen.",
       "TAGLINE_3": "Präzise Filter, vergleichbare Preise und live aktualisierte Ergebnisse aus allen syrischen Städten — kein zufälliges Durchscrollen verstreuter Beiträge mehr.",
       "CTA_PRIMARY": "Warteliste beitreten",
-      "CTA_PRIMARY_ARIA": "Der PropertyApp-Warteliste beitreten",
+      "CTA_PRIMARY_ARIA": "Der HudhudNest-Warteliste beitreten",
       "CTA_GHOST": "Bald eigene Immobilie anbieten",
-      "CTA_GHOST_ARIA": "Ihre Immobilie auf PropertyApp anbieten",
+      "CTA_GHOST_ARIA": "Ihre Immobilie auf HudhudNest anbieten",
       "STATS_ARIA": "Kurzübersicht",
       "STAT_CITIES_VALUE": "5+",
       "STAT_CITIES_LABEL": "syrische Städte",
@@ -2143,9 +2143,9 @@
       "CTA_ARIA": "Ihr Immobilienbüro für dieses Angebot registrieren"
     },
     "PROBLEM_SOLUTION": {
-      "EYEBROW": "Warum PropertyApp?",
+      "EYEBROW": "Warum HudhudNest?",
       "TITLE": "Immobiliensuche in Syrien ist noch immer mühsam",
-      "DESC": "Wir hören täglich dieselben Beschwerden. PropertyApp will sie Schritt für Schritt lösen.",
+      "DESC": "Wir hören täglich dieselben Beschwerden. HudhudNest will sie Schritt für Schritt lösen.",
       "PROBLEM_LABEL": "Aktuelle Situation",
       "PROBLEM_ITEMS": {
         "ITEM_1": "Suche in unübersichtlichen, verstreuten Facebook- und WhatsApp-Gruppen",
@@ -2154,7 +2154,7 @@
         "ITEM_4": "Preise und Lagen lassen sich kaum an einem Ort vergleichen",
         "ITEM_5": "Wenig Vertrauen zwischen Suchenden und Eigentümer oder Büro"
       },
-      "SOLUTION_LABEL": "Mit PropertyApp",
+      "SOLUTION_LABEL": "Mit HudhudNest",
       "SOLUTION_ITEMS": {
         "ITEM_1": "Eine Plattform bündelt Syriens Immobilienangebote — organisiert und durchsuchbar",
         "ITEM_2": "Klare Fotos und einheitliche Basisinformationen bei jeder Anzeige",
@@ -2187,7 +2187,7 @@
     },
     "HOW": {
       "EYEBROW": "In wenigen einfachen Schritten",
-      "TITLE": "Wie funktioniert PropertyApp?",
+      "TITLE": "Wie funktioniert HudhudNest?",
       "ARIA": "Schritte zur Nutzung der Plattform",
       "STEPS": {
         "STEP_1": {
@@ -2206,7 +2206,7 @@
     },
     "FORM": {
       "EYEBROW": "Warteliste",
-      "TITLE": "Seien Sie unter den ersten Nutzer:innen von PropertyApp",
+      "TITLE": "Seien Sie unter den ersten Nutzer:innen von HudhudNest",
       "DESC": "Registrieren Sie jetzt Ihr Interesse — wir melden uns, sobald die Plattform in Ihrer Region startet.",
       "ARIA": "Anmeldeformular für die Warteliste",
       "SUCCESS": {
@@ -2215,7 +2215,7 @@
         "NO_OFFER_TITLE": "Registrierung erfolgreich",
         "NO_OFFER_MSG": "Leider war das begrenzte Angebot bereits ausgeschöpft, bevor Ihre Anmeldung einging — Ihr Interesse wurde aber erfolgreich registriert, und wir melden uns beim Start der Plattform.",
         "PLAIN_TITLE": "Registrierung erfolgreich!",
-        "PLAIN_MSG": "Danke — Ihr Interesse wurde erfolgreich registriert. Wir senden Ihnen Updates, sobald PropertyApp startet.",
+        "PLAIN_MSG": "Danke — Ihr Interesse wurde erfolgreich registriert. Wir senden Ihnen Updates, sobald HudhudNest startet.",
         "RESET_BTN": "Eine weitere Person registrieren"
       },
       "FULLNAME_LABEL": "Vollständiger Name",
@@ -2321,10 +2321,10 @@
       }
     },
     "FINAL_CTA": {
-      "TITLE": "Seien Sie unter den ersten Nutzer:innen von PropertyApp",
+      "TITLE": "Seien Sie unter den ersten Nutzer:innen von HudhudNest",
       "DESC": "Helfen Sie uns, eine besser organisierte Immobilienerfahrung in Syrien aufzubauen. Ihre Stimme prägt die kommende Plattform mit.",
       "BTN": "Jetzt der Warteliste beitreten",
-      "BTN_ARIA": "Der PropertyApp-Warteliste beitreten"
+      "BTN_ARIA": "Der HudhudNest-Warteliste beitreten"
     },
     "FOOTER": {
       "TAGLINE": "Eine digitale Immobilienplattform · Syrien zuerst",

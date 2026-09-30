@@ -4,8 +4,8 @@ import { ShareableContent, SharePlatform } from '../share.model';
 
 const content: ShareableContent = {
   title: 'شقة للبيع في طرطوس',
-  text: 'شقة للبيع في طرطوس\n120 م² • 3 غرف • 75,000 $\nشاهد الإعلان على عقار تيك:\nhttps://realestateworld.world/properties/1',
-  url: 'https://realestateworld.world/properties/1'
+  text: 'شقة للبيع في طرطوس\n120 م² • 3 غرف • 75,000 $\nشاهد الإعلان على هدهد نيست:\nhttps://hudhudnest.com/properties/1',
+  url: 'https://hudhudnest.com/properties/1'
 };
 
 describe('WhatsAppShareProvider', () => {

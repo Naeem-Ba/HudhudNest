@@ -1,4 +1,4 @@
-// Admin Investment Portal (Phase 2) — wraps PropertyApi.Controllers.AdminInvestmentsController.
+// Admin Investment Portal (Phase 2) — wraps HudhudNestApi.Controllers.AdminInvestmentsController.
 // Every endpoint here requires the Admin role on the server ([Authorize(Roles = "Admin")]); the
 // AdminGuard on these routes is a UX convenience only — the backend remains the real boundary.
 //

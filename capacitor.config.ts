@@ -5,7 +5,7 @@ const allowCleartext =
 
 const config: CapacitorConfig = {
   appId: 'com.realestate.app',
-  appName: 'Real Estate World',
+  appName: 'HudhudNest',
   webDir: 'dist/HudhudNest/browser',
 
   server: {

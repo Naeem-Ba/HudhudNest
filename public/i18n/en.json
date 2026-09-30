@@ -2124,9 +2124,9 @@
       "TAGLINE_2": "A platform that organizes Syria's real-estate listings into one unified record: real photos, accurate data, a single source of truth instead of dozens of scattered Facebook and WhatsApp groups.",
       "TAGLINE_3": "Precise filters, comparable prices, and results updated live from every Syrian city — no more scrolling through scattered posts at random.",
       "CTA_PRIMARY": "Join the waitlist",
-      "CTA_PRIMARY_ARIA": "Join the PropertyApp waitlist",
+      "CTA_PRIMARY_ARIA": "Join the HudhudNest waitlist",
       "CTA_GHOST": "List your property soon",
-      "CTA_GHOST_ARIA": "List your property on PropertyApp",
+      "CTA_GHOST_ARIA": "List your property on HudhudNest",
       "STATS_ARIA": "Quick stats",
       "STAT_CITIES_VALUE": "5+",
       "STAT_CITIES_LABEL": "Syrian cities",
@@ -2143,9 +2143,9 @@
       "CTA_ARIA": "Register your real-estate office for this offer"
     },
     "PROBLEM_SOLUTION": {
-      "EYEBROW": "Why PropertyApp?",
+      "EYEBROW": "Why HudhudNest?",
       "TITLE": "Finding a property in Syria is still exhausting",
-      "DESC": "We hear the same complaints every day. PropertyApp aims to fix them, step by step.",
+      "DESC": "We hear the same complaints every day. HudhudNest aims to fix them, step by step.",
       "PROBLEM_LABEL": "Right now",
       "PROBLEM_ITEMS": {
         "ITEM_1": "Searching scattered, disorganized Facebook and WhatsApp groups",
@@ -2154,7 +2154,7 @@
         "ITEM_4": "Hard to compare prices and areas in one place",
         "ITEM_5": "Weak trust between the seeker and the owner or agency"
       },
-      "SOLUTION_LABEL": "With PropertyApp",
+      "SOLUTION_LABEL": "With HudhudNest",
       "SOLUTION_ITEMS": {
         "ITEM_1": "One platform that brings together Syria's listings, organized and searchable",
         "ITEM_2": "Clear photos and consistent basic information on every listing",
@@ -2187,7 +2187,7 @@
     },
     "HOW": {
       "EYEBROW": "In a few simple steps",
-      "TITLE": "How does PropertyApp work?",
+      "TITLE": "How does HudhudNest work?",
       "ARIA": "Steps to use the platform",
       "STEPS": {
         "STEP_1": {
@@ -2206,7 +2206,7 @@
     },
     "FORM": {
       "EYEBROW": "Waitlist",
-      "TITLE": "Be one of the first PropertyApp users",
+      "TITLE": "Be one of the first HudhudNest users",
       "DESC": "Register your interest now and we'll reach out when the platform launches in your area.",
       "ARIA": "Waitlist signup form",
       "SUCCESS": {
@@ -2215,7 +2215,7 @@
         "NO_OFFER_TITLE": "Registration successful",
         "NO_OFFER_MSG": "Unfortunately the limited offer filled up before your registration arrived, but your interest has been registered — we'll reach out when the platform launches.",
         "PLAIN_TITLE": "Registration successful!",
-        "PLAIN_MSG": "Thank you — your interest has been registered. We'll send you updates when PropertyApp launches.",
+        "PLAIN_MSG": "Thank you — your interest has been registered. We'll send you updates when HudhudNest launches.",
         "RESET_BTN": "Register someone else"
       },
       "FULLNAME_LABEL": "Full name",
@@ -2321,10 +2321,10 @@
       }
     },
     "FINAL_CTA": {
-      "TITLE": "Be one of the first PropertyApp users",
+      "TITLE": "Be one of the first HudhudNest users",
       "DESC": "Help us build a more organized real-estate experience in Syria. Your voice will help shape the platform to come.",
       "BTN": "Join the waitlist now",
-      "BTN_ARIA": "Join the PropertyApp waitlist"
+      "BTN_ARIA": "Join the HudhudNest waitlist"
     },
     "FOOTER": {
       "TAGLINE": "A digital real-estate platform · Syria first",

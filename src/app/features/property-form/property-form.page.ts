@@ -82,10 +82,10 @@ interface PropertySavePayload {
   FurnishingStatus?: number | null;
 }
 
-/** AreaUnit — must match PropertyApi.Domain.Listings.Enums.AreaUnit's ordinals. */
+/** AreaUnit — must match HudhudNestApi.Domain.Listings.Enums.AreaUnit's ordinals. */
 const AREA_UNIT_SQUARE_METER = 0;
 
-/** RentalDurationType — must match PropertyApi.Domain.Listings.Enums.RentalDurationType's ordinals. */
+/** RentalDurationType — must match HudhudNestApi.Domain.Listings.Enums.RentalDurationType's ordinals. */
 const RENTAL_DURATION_SIX_MONTHS = 0;
 const RENTAL_DURATION_ONE_YEAR = 1;
 

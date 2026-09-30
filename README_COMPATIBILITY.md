@@ -5,7 +5,7 @@
 تم إنشاء 5 ملفات جديدة في مشروعك:
 
 ```
-Wohnungsmieten/
+HudhudNest/
 ├── FRONTEND_BACKEND_CONTRACT.md      📋 العقد الموحد
 ├── INTEGRATION_GUIDE.md               📖 دليل التكامل
 ├── COMPATIBILITY_REPORT.md            📊 التقرير التفصيلي

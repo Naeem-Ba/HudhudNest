@@ -1,4 +1,4 @@
-// Investment Discovery Portal — Phase 1 (backend: PropertyApi.Controllers.InvestmentsController /
+// Investment Discovery Portal — Phase 1 (backend: HudhudNestApi.Controllers.InvestmentsController /
 // AdminInvestmentsController). Discovery/analysis + Expression of Interest only — nothing here
 // ever represents a real investment, payment, or commitment.
 
@@ -186,7 +186,7 @@ export interface InvestmentCalculatorResult {
   disclaimer: string;
 }
 
-// ── Admin (Phase 2) — backend: PropertyApi.Controllers.AdminInvestmentsController,
+// ── Admin (Phase 2) — backend: HudhudNestApi.Controllers.AdminInvestmentsController,
 // [Authorize(Roles = "Admin")] on every action. ─────────────────────────────────
 
 /** Every state a project can be in — the public list/detail only ever return Published. */
@@ -236,7 +236,7 @@ export interface AdminInvestmentDocument extends InvestmentDocument {
 }
 
 /** Explicit workflow actions on InvestmentProject — never a raw status assignment. Matches the
- * backend's own state machine one-for-one (PropertyApi.Domain.Investments.Entities.InvestmentProject). */
+ * backend's own state machine one-for-one (HudhudNestApi.Domain.Investments.Entities.InvestmentProject). */
 export type InvestmentWorkflowAction =
   | 'submit-review'
   | 'approve'

@@ -33,9 +33,9 @@ netlify/edge-functions/
   lib/social-crawler.mjs             its pure, unit-tested logic
 ```
 
-Backend (PropertyApi, separate repo):
-- `PropertyApi.Domain/Listings/Entities/PropertyShareEvent.cs` + `SharePlatform` enum
-- `PropertyApi.Application/Listings/Commands/TrackPropertyShareEvent/*`
+Backend (HudhudNestApi, separate repo):
+- `HudhudNestApi.Domain/Listings/Entities/PropertyShareEvent.cs` + `SharePlatform` enum
+- `HudhudNestApi.Application/Listings/Commands/TrackPropertyShareEvent/*`
 - `POST /api/properties/{id}/share-events` on `PropertiesController`
 
 ## Architecture
@@ -183,7 +183,7 @@ comment on the backend.
 1. Create `src/app/core/sharing/providers/<platform>-share.provider.ts` implementing
    `ShareProvider` (`platform`, `labelKey`, `isAvailable()`, `share(content)`).
 2. Add the platform to `SharePlatform` in **both** `share.model.ts` (frontend) and
-   `PropertyApi.Domain.Listings.Enums.SharePlatform` (backend) — keep the string values in sync,
+   `HudhudNestApi.Domain.Listings.Enums.SharePlatform` (backend) — keep the string values in sync,
    they travel over the wire in the share-events POST body.
 3. Register the provider in `SocialShareService`'s `providers` array (constructor-injected like
    the others).
@@ -204,10 +204,10 @@ comment on the backend.
   full UTM/Attribution layer (`UtmAttributionService`, `AttributionContextService`,
   `PropertyAttributionTrackingService`).
 - Edge Function tests: `npm run test:edge-functions` (plain Node, no extra dependency).
-- Backend unit tests: `dotnet test tests/PropertyApi.Application.Tests` — covers
+- Backend unit tests: `dotnet test tests/HudhudNestApi.Application.Tests` — covers
   `PropertyShareEvent`/`PropertyAttributionEvent` (the domain entities) and their
   `TrackPropertyShareEventCommandHandler`/`TrackPropertyAttributionEventCommandHandler`.
-- `dotnet test tests/PropertyApi.Architecture.Tests` — enforces that both new anonymous endpoints
+- `dotnet test tests/HudhudNestApi.Architecture.Tests` — enforces that both new anonymous endpoints
   is deliberately approved (`PublicEndpointPolicyTests`) and that the EF model has no pending,
   un-migrated changes.
 
@@ -228,7 +228,7 @@ src/app/core/sharing/
 src/app/core/api/property-attribution-events-api.service.ts   POST /properties/{id}/attribution-events
 ```
 
-Backend (PropertyApi): `PropertyShareEvent` gained four optional `Utm*` columns; a new sibling
+Backend (HudhudNestApi): `PropertyShareEvent` gained four optional `Utm*` columns; a new sibling
 table/entity `PropertyAttributionEvent` (+ `PropertyAttributionEventType` enum) records what
 happens *after* a share — `POST /api/properties/{id}/attribution-events`, anonymous, rate-limited
 (`property-attribution-events`), independently re-validates the listing is still public.
@@ -299,7 +299,7 @@ already happened, and no other query parameter is touched).
 equivalent to a marketing "Lead" is a visit/viewing request (`VisitService.requestVisit`), so
 `PropertyAttributionEventType.VisitRequestCreated` is what section 15's `property_lead_created`
 maps to. A pre-launch, unrelated `Lead`/`Offer` marketing-funnel model already exists in this
-codebase (`PropertyApi.Domain.Marketing.Entities.Lead`, behind `MarketingEventsController`) — it
+codebase (`HudhudNestApi.Domain.Marketing.Entities.Lead`, behind `MarketingEventsController`) — it
 is a different bounded context (landing-page waitlist capture, keyed by email, no `PropertyId`)
 and was deliberately **not** reused or widened for this feature, matching that controller's own
 documented rationale for not sharing a name/table with `AnalyticsController` either. Reusing it

@@ -13,7 +13,7 @@ participant "CsrfTokenService" as Csrf
 participant "CsrfInterceptor" as CsrfInt
 participant "AuthInterceptor\n(RefreshAuthInterceptor)" as AuthInt
 participant "TokenStorageService" as TokenStore
-database "PropertyApi\n(Backend)" as Backend
+database "HudhudNestApi\n(Backend)" as Backend
 
 == 1) إقلاع التطبيق — استعادة الجلسة (APP_INITIALIZER) ==
 User -> LoginUi : فتح التطبيق (أي مسار)

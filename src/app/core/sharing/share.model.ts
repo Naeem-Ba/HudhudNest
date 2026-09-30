@@ -2,7 +2,7 @@
 // src/app/core/sharing/share.model.ts
 //
 // Social Sharing & Distribution — shared types for the sharing layer.
-// Mirrors PropertyApi.Domain.Listings.Enums.SharePlatform exactly (string values match the
+// Mirrors HudhudNestApi.Domain.Listings.Enums.SharePlatform exactly (string values match the
 // backend's [HttpPost("{id}/share-events")] JSON contract — see
 // PropertyShareEventsApiService). Keeping the two in sync is a deliberate manual mirror, the
 // same convention this codebase already uses for every other DTO shared across the two repos

@@ -19,7 +19,7 @@ export interface ConsentRecord {
 
 /**
  * Wraps POST/GET/DELETE /users/me/consents (see docs/privacy/privacy-gaps.md, P1, in the
- * PropertyApi backend repo). Registration forms call `record()` right after a successful
+ * HudhudNestApi backend repo). Registration forms call `record()` right after a successful
  * sign-up, only when the user actually checked the (never pre-checked) consent checkbox —
  * this service never decides on its own that consent happened.
  */

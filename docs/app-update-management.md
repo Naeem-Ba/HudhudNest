@@ -2,7 +2,7 @@
 
 Detects on native app launch whether the installed Android/iOS build is out of date, and shows
 an optional or mandatory update dialog that opens the platform store. Backend contract, data
-model, and admin API live in the separate PropertyApi repo
+model, and admin API live in the separate HudhudNestApi repo
 (`docs/app-update-management.md` there) — this document only covers the frontend half.
 
 **Scope of this pass**: the update-check service and the two dialogs. The admin "App Updates"

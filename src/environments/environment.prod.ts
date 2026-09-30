@@ -10,7 +10,7 @@ import {
 
 const apiBaseUrl = readApiUrlFromProcessEnv() || 'https://wohnungen-api.onrender.com/api';
 
-// عقار تيك / Real Estate World — النطاق العام الحقيقي (raiseNavigation في
+// هدهد نيست / HudhudNest — النطاق العام الحقيقي (raiseNavigation في
 // capacitor.config.ts يستخدم نفس النطاق). هذا هو النطاق الذي تُبنى عليه روابط
 // المشاركة العامة (canonical) — راجع PropertyShareUrlService.
 const siteUrl = readSiteUrlFromProcessEnv() || 'https://hudhudnest.com';

@@ -13,7 +13,7 @@ participant "ProfileService" as Profile
 participant "PropertyFormPage" as FormUi
 participant "PropertyApiService" as PropApi
 participant "CsrfInterceptor →\nAuthInterceptor" as Interceptors
-database "PropertyApi\n(Backend)" as Backend
+database "HudhudNestApi\n(Backend)" as Backend
 
 Owner -> Router : تنقّل إلى /property-form
 activate Router

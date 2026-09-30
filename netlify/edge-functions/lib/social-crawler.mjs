@@ -123,7 +123,7 @@ export function buildPropertyMetaHtml({ property, canonicalUrl, fallbackImageUrl
     (Array.isArray(property.images) && property.images.find(img => img && /^https?:\/\//i.test(img.url))?.url) ||
     fallbackImageUrl;
 
-  const fullTitle = `${title} | عقار تيك`;
+  const fullTitle = `${title} | هدهد نيست`;
   const t = escapeHtml(fullTitle);
   const d = escapeHtml(description);
   const u = escapeHtml(canonicalUrl);
@@ -141,7 +141,7 @@ export function buildPropertyMetaHtml({ property, canonicalUrl, fallbackImageUrl
 <meta property="og:image" content="${img}">
 <meta property="og:url" content="${u}">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="عقار تيك">
+<meta property="og:site_name" content="هدهد نيست">
 <meta property="og:locale" content="ar_SY">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${t}">
@@ -164,7 +164,7 @@ export function buildNotFoundHtml() {
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<title>الإعلان غير متاح | عقار تيك</title>
+<title>الإعلان غير متاح | هدهد نيست</title>
 <meta name="robots" content="noindex">
 </head>
 <body>
