@@ -1,6 +1,6 @@
 // src/app/core/models/agency.model.ts
 //
-// يقابل PropertyApi.Application.Agencies.DTOs.AgencyDto (الباك اند) — بما فيها
+// يقابل HudhudNestApi.Application.Agencies.DTOs.AgencyDto (الباك اند) — بما فيها
 // المرحلة 1 (إغلاق الفجوة الجغرافية): GovernorateId/DistrictId/NeighborhoodId،
 // نفس حقول Property.GovernorateId/DistrictId/NeighborhoodId. جميعها null لأي
 // مكتب "غير مصنَّف جغرافيًا" (مكتب قديم، أو مكتب جديد لم يحدد موقعه بعد).

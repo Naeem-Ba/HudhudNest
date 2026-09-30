@@ -2,7 +2,7 @@
 // src/app/core/sharing/property-attribution-event.model.ts
 //
 // UTM / Attribution (Phase 2) — mirrors
-// PropertyApi.Domain.Listings.Enums.PropertyAttributionEventType exactly (string values travel
+// HudhudNestApi.Domain.Listings.Enums.PropertyAttributionEventType exactly (string values travel
 // over the wire in the POST /properties/{id}/attribution-events body — see
 // PropertyAttributionEventsApiService). Same manual-mirror convention Phase 1 already
 // established for SharePlatform (see share.model.ts).

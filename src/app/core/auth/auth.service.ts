@@ -35,7 +35,7 @@ export interface AuthenticatedUser {
   [key: string]: unknown;
 }
 
-// Full-URI claim names as emitted by PropertyApi (System.Security.Claims.ClaimTypes).
+// Full-URI claim names as emitted by HudhudNestApi (System.Security.Claims.ClaimTypes).
 const CLAIM_NAME_IDENTIFIER = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier';
 const CLAIM_EMAIL = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress';
 const CLAIM_NAME = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name';
@@ -125,7 +125,7 @@ export class AuthService {
     }
 
     const roles = this.extractRoles(payload);
-    // PropertyApi's TokenService writes ClaimTypes.* as their full URI names
+    // HudhudNestApi's TokenService writes ClaimTypes.* as their full URI names
     // (…/claims/nameidentifier, …/emailaddress, …/name) — exactly like the role
     // claim extractRoles() already accepts. Reading only the short names left the
     // id empty for every signed-in user, so ownership checks in the UI (isOwner,

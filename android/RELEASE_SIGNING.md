@@ -77,7 +77,7 @@ keystore من نوع PKCS12 (النوع الافتراضي منذ JDK 9+، وه�
 
 **ما تم تحديثه بعد التدوير:**
 - `release-signing.local.properties` المحلي — كلمتا المرور الجديدتان (متطابقتان).
-- GitHub Secrets على `Naeem-Ba/Wohnungsmieten`: `RELEASE_STORE_PASSWORD`
+- GitHub Secrets على `Naeem-Ba/HudhudNest`: `RELEASE_STORE_PASSWORD`
   و`RELEASE_KEY_PASSWORD` (بالقيمة الجديدة نفسها).
 
 **ما لم يُغيَّر / لا يزال ناقصاً من إعداد BLK-04 الأصلي:** لم يكن أي من
@@ -96,14 +96,14 @@ keystore من نوع PKCS12 (النوع الافتراضي منذ JDK 9+، وه�
 المهمة `android-release` في `.github/workflows/frontend-ci.yml` تعمل على الدفعات إلى `main`
 وعلى `workflow_dispatch` (للتحقق على فرع قبل الدمج: `gh workflow run frontend-ci.yml --ref <branch>`).
 
-**الأسرار الأربعة المطلوبة** (كلها مضبوطة الآن على `Naeem-Ba/Wohnungsmieten`): `RELEASE_STORE_PASSWORD`،
+**الأسرار الأربعة المطلوبة** (كلها مضبوطة الآن على `Naeem-Ba/HudhudNest`): `RELEASE_STORE_PASSWORD`،
 `RELEASE_KEY_PASSWORD`، `RELEASE_KEY_ALIAS` (= `aqar-tech`)، `RELEASE_STORE_FILE_BASE64`. خطوة
 `Validate signing secrets` تتخطى المهمة إن غابت كلها، وتفشل بأسماء الناقص إن غاب بعضها. رفعها (PowerShell،
 بمسار كامل لأن .NET يحلّ المسارات النسبية من `C:Users<user>`):
 
 ```powershell
-gh secret set RELEASE_KEY_ALIAS --repo Naeem-Ba/Wohnungsmieten --body "aqar-tech"
-[Convert]::ToBase64String([IO.File]::ReadAllBytes("<المسار الكامل>androidkeystoreaqar-tech-release.keystore")) | gh secret set RELEASE_STORE_FILE_BASE64 --repo Naeem-Ba/Wohnungsmieten
+gh secret set RELEASE_KEY_ALIAS --repo Naeem-Ba/HudhudNest --body "aqar-tech"
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("<المسار الكامل>androidkeystoreaqar-tech-release.keystore")) | gh secret set RELEASE_STORE_FILE_BASE64 --repo Naeem-Ba/HudhudNest
 ```
 
 **أعطال أُصلحت (PR #70/#71)** — للرجوع إن تكرر أي منها:

@@ -2,9 +2,9 @@
 // src/app/core/models/user-profile.model.ts
 //
 // يطابق:
-//   - PropertyApi.Application.Users.DTOs.UserProfileDto
+//   - HudhudNestApi.Application.Users.DTOs.UserProfileDto
 //     (GET /api/Users/{id}/profile)
-//   - PropertyApi.Application.Reviews.DTOs.UserRatingDto /
+//   - HudhudNestApi.Application.Reviews.DTOs.UserRatingDto /
 //     UserRatingSummaryDto (GET/POST /api/Users/{id}/ratings)
 //
 // صفحة "الملف الشخصي العام" (Public Profile) — منفصلة عمداً عن

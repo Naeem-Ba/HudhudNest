@@ -1,4 +1,4 @@
-// Endpoints (PropertyApi.Controllers.ShortStayListingsController):
+// Endpoints (HudhudNestApi.Controllers.ShortStayListingsController):
 //   GET    /api/short-stay/listings                          ← بحث عام (anonymous)
 //   GET    /api/short-stay/listings/{id}                     ← تفاصيل إعلان (anonymous)
 //   GET    /api/short-stay/listings/mine                     ← إعلاناتي (مضيف)

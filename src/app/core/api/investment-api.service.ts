@@ -1,4 +1,4 @@
-// Endpoints (PropertyApi.Controllers.InvestmentsController / AdminInvestmentsController):
+// Endpoints (HudhudNestApi.Controllers.InvestmentsController / AdminInvestmentsController):
 //   GET    /api/investments/projects                        ← public list (anonymous)
 //   GET    /api/investments/projects/{id}                    ← public detail (anonymous)
 //   GET    /api/investments/projects/{id}/financials          ← public (anonymous)

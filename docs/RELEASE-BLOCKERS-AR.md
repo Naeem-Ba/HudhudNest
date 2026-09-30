@@ -2,10 +2,10 @@
 
 > **الغرض:** جواب واحد عن سؤال واحد: *ما الذي يمنع إصدار هذه النسخة، وبأي ترتيب يُعالَج؟*
 > **تاريخ التقرير:** 2026-08-25
-> **النسخة المفحوصة:** الخلفية `PropertyApi` عند **`293a5c1`** (`feat/resend-email-confirmation`)
-> · الواجهة `Wohnungsmieten` عند **`3d81d37`** (`feat/register-confirmation-notice`)
+> **النسخة المفحوصة:** الخلفية `HudhudNestApi` عند **`293a5c1`** (`feat/resend-email-confirmation`)
+> · الواجهة `HudhudNest` عند **`3d81d37`** (`feat/register-confirmation-notice`)
 > **الوثائق الشقيقة:** `BACKEND-ISSUES.md` (الدليل الكامل لكل بند) ·
-> `PropertyApi-REFERENCE.md` · `FRONTEND-REFERENCE.md` · `PROJECT-STRUCTURE.md`
+> `HudhudNestApi-REFERENCE.md` · `FRONTEND-REFERENCE.md` · `PROJECT-STRUCTURE.md`
 
 ---
 
@@ -28,9 +28,9 @@
 
 | الفحص | النتيجة |
 |---|---|
-| `dotnet build PropertyApi.sln -c Release` | ✅ **0 تحذير · 0 خطأ** |
+| `dotnet build HudhudNestApi.sln -c Release` | ✅ **0 تحذير · 0 خطأ** |
 | اختبارات الخلفية (‏7 مشاريع) | ✅ **588 / 588 تمرّ** |
-| `PropertyApi.StagingSmokeTests` | ⚠️ يفشل محلياً — **متوقَّع**، يشترط `STAGING_BASE_URL`، و`ci.yml` يستثنيه بالاسم |
+| `HudhudNestApi.StagingSmokeTests` | ⚠️ يفشل محلياً — **متوقَّع**، يشترط `STAGING_BASE_URL`، و`ci.yml` يستثنيه بالاسم |
 | `npm run build:prod` | ✅ ينجح · ⚠️ حزمة 595 kB مقابل ميزانية 500 kB |
 | `npm run typecheck` | ✅ يمرّ |
 | `npm run check:env` | ✅ يمرّ |
@@ -144,7 +144,7 @@ private const string ConfirmationPath = "#/auth/verify-email";
 الشيفرة سليمة هنا وتفشل بصوت عالٍ عند أغلب أخطاء الإعداد — لكن **حالة واحدة تمرّ من كل
 الفحوص وتُنتج صفر بريد**:
 
-`Email:From` قيمته الافتراضية `no-reply@propertyapi.local`، وهو **نطاق غير قابل
+`Email:From` قيمته الافتراضية `no-reply@hudhudnest.com`، وهو **نطاق غير قابل
 للتوجيه**. Resend يرفض الإرسال من نطاق غير مُتحقَّق منه بالرمز 403، و**الرفض مبتلَع
 عمداً في كلا المستدعيَين** (وهو قرار صحيح لأسبابه). فالنشر بالقيمة الافتراضية = تسجيل
 يعمل، وصفر رسالة تصل، وسطر ERROR واحد في السجلّ لا يراقبه أحد.

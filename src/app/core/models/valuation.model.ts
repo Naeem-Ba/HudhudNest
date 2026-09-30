@@ -1,6 +1,6 @@
 // src/app/core/models/valuation.model.ts
 //
-// Stage 7 (Valuation module, PropertyApi.Application.Valuation.*) — matches
+// Stage 7 (Valuation module, HudhudNestApi.Application.Valuation.*) — matches
 // CreateValuationInquiryCommand/CreateValuationInquiryResultDto,
 // GetValuationInquiryStatusQuery/ValuationInquiryStatusDto, and ComparableListingsResult on
 // the backend. Deliberately carries no requester identity/contact field anywhere here — the
@@ -28,7 +28,7 @@ export interface CreateValuationInquiryPayload {
   requestType: ValuationRequestType;
 }
 
-/** Mirrors PropertyApi.Application.Valuation.DTOs.ComparableListingsResult (Stage 3). */
+/** Mirrors HudhudNestApi.Application.Valuation.DTOs.ComparableListingsResult (Stage 3). */
 export interface ComparableListingsResultDto {
   hasComparableListings: boolean;
   comparableCount: number;

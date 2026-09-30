@@ -1,6 +1,6 @@
 // src/app/core/models/service.model.ts
 //
-// HudhudNest Services Marketplace — models matching PropertyApi.Application.Services.DTOs.
+// HudhudNest Services Marketplace — models matching HudhudNestApi.Application.Services.DTOs.
 // This vertical slice ships one working category (Verification / "HudhudNest Verify"); the
 // other 12 ServiceCategory values already exist on the backend enum and are included here so
 // this file does not need another breaking change when they go live — nothing in the UI shows

@@ -102,41 +102,41 @@ test('buildPropertyMetaHtml includes every required tag', () => {
       currencyCode: 'USD',
       mainImageUrl: 'https://res.cloudinary.com/demo/image/upload/cover.jpg'
     },
-    canonicalUrl: 'https://realestateworld.world/properties/p1',
-    fallbackImageUrl: 'https://realestateworld.world/images/horizontal-logo.png'
+    canonicalUrl: 'https://hudhudnest.com/properties/p1',
+    fallbackImageUrl: 'https://hudhudnest.com/images/og-default.png'
   });
 
   assert.match(html, /<html lang="ar" dir="rtl">/);
-  assert.match(html, /<title>شقة للبيع في طرطوس \| عقار تيك<\/title>/);
-  assert.match(html, /property="og:title" content="شقة للبيع في طرطوس \| عقار تيك"/);
+  assert.match(html, /<title>شقة للبيع في طرطوس \| هدهد نيست<\/title>/);
+  assert.match(html, /property="og:title" content="شقة للبيع في طرطوس \| هدهد نيست"/);
   assert.match(html, /property="og:description"/);
   assert.match(html, /property="og:image" content="https:\/\/res\.cloudinary\.com\/demo\/image\/upload\/cover\.jpg"/);
-  assert.match(html, /property="og:url" content="https:\/\/realestateworld\.world\/properties\/p1"/);
+  assert.match(html, /property="og:url" content="https:\/\/hudhudnest.com\/properties\/p1"/);
   assert.match(html, /property="og:type" content="website"/);
-  assert.match(html, /property="og:site_name" content="عقار تيك"/);
+  assert.match(html, /property="og:site_name" content="هدهد نيست"/);
   assert.match(html, /property="og:locale" content="ar_SY"/);
   assert.match(html, /name="twitter:card" content="summary_large_image"/);
   assert.match(html, /name="twitter:title"/);
   assert.match(html, /name="twitter:description"/);
   assert.match(html, /name="twitter:image"/);
-  assert.match(html, /<link rel="canonical" href="https:\/\/realestateworld\.world\/properties\/p1">/);
+  assert.match(html, /<link rel="canonical" href="https:\/\/hudhudnest.com\/properties\/p1">/);
 });
 
 test('buildPropertyMetaHtml falls back to the branded placeholder image when the property has none', () => {
   const html = buildPropertyMetaHtml({
     property: { title: 'شقة' },
-    canonicalUrl: 'https://realestateworld.world/properties/p1',
-    fallbackImageUrl: 'https://realestateworld.world/images/horizontal-logo.png'
+    canonicalUrl: 'https://hudhudnest.com/properties/p1',
+    fallbackImageUrl: 'https://hudhudnest.com/images/og-default.png'
   });
 
-  assert.match(html, /og:image" content="https:\/\/realestateworld\.world\/images\/horizontal-logo\.png"/);
+  assert.match(html, /og:image" content="https:\/\/hudhudnest.com\/images\/og-default\.png"/);
 });
 
 test('buildPropertyMetaHtml escapes a title containing HTML/quote characters', () => {
   const html = buildPropertyMetaHtml({
     property: { title: `شقة "خاصة" <script>alert(1)</script>` },
-    canonicalUrl: 'https://realestateworld.world/properties/p1',
-    fallbackImageUrl: 'https://realestateworld.world/images/horizontal-logo.png'
+    canonicalUrl: 'https://hudhudnest.com/properties/p1',
+    fallbackImageUrl: 'https://hudhudnest.com/images/og-default.png'
   });
 
   assert.ok(!html.includes('<script>alert(1)</script>'));
@@ -146,11 +146,11 @@ test('buildPropertyMetaHtml escapes a title containing HTML/quote characters', (
 test('buildPropertyMetaHtml never emits an internal Angular route as the canonical/og:url value', () => {
   const html = buildPropertyMetaHtml({
     property: { title: 'شقة' },
-    canonicalUrl: 'https://realestateworld.world/properties/p1',
-    fallbackImageUrl: 'https://realestateworld.world/images/horizontal-logo.png'
+    canonicalUrl: 'https://hudhudnest.com/properties/p1',
+    fallbackImageUrl: 'https://hudhudnest.com/images/og-default.png'
   });
 
-  assert.ok(!html.includes('og:url" content="https://realestateworld.world/properties/p1#'));
+  assert.ok(!html.includes('og:url" content="https://hudhudnest.com/properties/p1#'));
 });
 
 test('buildNotFoundHtml never includes property-specific data and is marked noindex', () => {

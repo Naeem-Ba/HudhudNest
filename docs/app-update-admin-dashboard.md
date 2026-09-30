@@ -2,7 +2,7 @@
 
 Admin UI for the backend `AdminAppReleasesController` (`/api/admin/app-releases`, Admin role only).
 The backend contract, the derived "mandatory" rule, and the effective-release resolution are
-documented in PropertyApi's `docs/app-update-management.md`; the end-user update dialogs are Phase 2
+documented in HudhudNestApi's `docs/app-update-management.md`; the end-user update dialogs are Phase 2
 (`AppUpdateService`). This document covers only the dashboard.
 
 ## Where things live

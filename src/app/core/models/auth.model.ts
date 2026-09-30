@@ -148,7 +148,7 @@ export const PHONE_WORKFLOW_ERROR_CODES = {
 
 /**
  * أكواد أخطاء /auth/login — مطابقة حرفياً لـ LoginErrorCodes في الباك
- * (PropertyApi.Application/Auth/Models/LoginResponseDto.cs). أي تعديل هنا
+ * (HudhudNestApi.Application/Auth/Models/LoginResponseDto.cs). أي تعديل هنا
  * يجب أن يقابله تعديل هناك، ويحرسه LoginResponseContractTests.
  */
 export const LOGIN_ERROR_CODES = {

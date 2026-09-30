@@ -1,6 +1,6 @@
 // One-off platform fees an owner pays on their own listing.
 //
-// Two exist today, and both follow the identical shape in PropertyApi: the request
+// Two exist today, and both follow the identical shape in HudhudNestApi: the request
 // endpoint records a Pending transaction and returns 202, and the listing only changes
 // once an administrator confirms the money arrived. Nothing here completes a payment,
 // because there is no payment gateway in the system — see FRONTEND_BACKEND_CONTRACT.md.

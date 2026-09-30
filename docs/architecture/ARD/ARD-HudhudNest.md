@@ -1,20 +1,20 @@
 # وثيقة المرجع المعماري (Architectural Reference Document — ARD)
-## واجهة Wohnungsmieten (Angular) — منصّة العقارات (Yaqeen Real Estate / Real Estate World)
+## واجهة HudhudNest (Angular) — منصّة العقارات (Yaqeen Real Estate / HudhudNest)
 
 | | |
 |---|---|
-| **اسم النظام** | Wohnungsmieten Frontend (Angular 20 SPA + Capacitor 8 iOS/Android) |
+| **اسم النظام** | HudhudNest Frontend (Angular 20 SPA + Capacitor 8 iOS/Android) |
 | **إصدار الوثيقة** | 1.0 |
 | **تاريخ الإصدار** | 2026-09-12 |
 | **الحالة** | معتمدة — مطابقة للكود الفعلي في فرع `claude/valuation-customer-ui` (commit `e35e812`) |
-| **المستودع** | `Naeem-Ba/Wohnungsmieten` (مستودع مستقل تماماً عن الخلفية `PropertyApi`) |
+| **المستودع** | `Naeem-Ba/HudhudNest` (مستودع مستقل تماماً عن الخلفية `HudhudNestApi`) |
 | **نطاق الفحص** | تحليل مباشر لشجرة `src/app`: 4 طبقات (`core`/`features`/`admin`/`shared`)، ~24 ميزة (lazy-loaded)، 30 خدمة API، 4 معترِضات، 3 حرّاس، تطبيقا Capacitor (iOS/Android)، خط أنابيب CI (`frontend-ci.yml`) |
 
 ### سجلّ المراجعات (Revision History)
 
 | الإصدار | التاريخ | الوصف | مبني على Commit |
 |---|---|---|---|
-| 1.0 | 2026-09-12 | الإصدار الأول لهذه الوثيقة الرسمية (ARD) — بالتوازي مع `docs/FRONTEND-REFERENCE.md` الموجود مسبقاً (مرجع حيّ من طراز مختلف، آخر تحديث 2026-08-27 عند `e64daeb`؛ الفرعان يتقاطعان في الأدلة لكن هذه الوثيقة منظَّمة بصيغة ARD الرسمية القابلة للمقارنة المباشرة مع `PropertyApi-REFERENCE`/`ARD-PropertyApi`) | `e35e812` |
+| 1.0 | 2026-09-12 | الإصدار الأول لهذه الوثيقة الرسمية (ARD) — بالتوازي مع `docs/FRONTEND-REFERENCE.md` الموجود مسبقاً (مرجع حيّ من طراز مختلف، آخر تحديث 2026-08-27 عند `e64daeb`؛ الفرعان يتقاطعان في الأدلة لكن هذه الوثيقة منظَّمة بصيغة ARD الرسمية القابلة للمقارنة المباشرة مع `HudhudNestApi-REFERENCE`/`ARD-HudhudNestApi`) | `e35e812` |
 
 > **ملاحظة اتساق:** بعض الحقائق أدناه أُعيد التحقق منها مباشرة من الشيفرة الحالية وتخالف ما ورد في `FRONTEND-REFERENCE.md` v5 (المكتوبة عند `e64daeb`، أقدم بـ53 commit) — أبرزها: **مشكلة CSRF الحرجة الموصوفة في تلك الوثيقة (§4.1، B-20) مُصلَحة فعلياً في هذا الكود** (`CsrfInterceptor` + `CsrfTokenService` موجودان ومطبَّقان على مساري التجديد اليدويين أيضاً — انظر §4.5 وADR-002 أدناه). لا تعتمد على القسم الحرج في تلك الوثيقة دون إعادة تحقق.
 
@@ -24,23 +24,23 @@
 
 ### 1.1 الغرض من الوثيقة
 
-توثيق المعمارية الفعلية لواجهة **Wohnungsmieten** (تطبيق Angular أحادي الصفحة + غلاف Capacitor للجوال) كما هي مطبَّقة اليوم في الشيفرة المصدرية. كل ادّعاء هنا تم التحقق منه بالرجوع مباشرة إلى `app.routes.ts`، `app.config.ts`، خدمات `core/`، ملفات الإعداد (`angular.json`, `capacitor.config.ts`, `.github/workflows/frontend-ci.yml`)، وليس من وثائق سابقة قد تكون قديمة.
+توثيق المعمارية الفعلية لواجهة **HudhudNest** (تطبيق Angular أحادي الصفحة + غلاف Capacitor للجوال) كما هي مطبَّقة اليوم في الشيفرة المصدرية. كل ادّعاء هنا تم التحقق منه بالرجوع مباشرة إلى `app.routes.ts`، `app.config.ts`، خدمات `core/`، ملفات الإعداد (`angular.json`, `capacitor.config.ts`, `.github/workflows/frontend-ci.yml`)، وليس من وثائق سابقة قد تكون قديمة.
 
 **الجمهور المستهدف:**
 
 | الفئة | الفائدة من الوثيقة |
 |---|---|
 | مطوّرو الواجهة الجدد | فهم طبقات الكود، عقد الاتصال مع الخلفية، وقواعد الفريق الملزمة قبل الكتابة |
-| مطوّرو الخلفية (PropertyApi) | فهم كيف تستهلك الواجهة عقود الـ API، وأين تكمن حدود التزامن بين المستودعين |
+| مطوّرو الخلفية (HudhudNestApi) | فهم كيف تستهلك الواجهة عقود الـ API، وأين تكمن حدود التزامن بين المستودعين |
 | مهندسو DevOps / المحمول | فهم بنية النشر (Netlify + Capacitor iOS/Android) وخط أنابيب CI |
 | قادة تقنيون | فهم القيود المعمارية الحالية (حزمة أدائية، تغطية اختبارات، فجوات الوكالات/الوكالة) |
 
 ### 1.2 نطاق الوثيقة
 
-**ما تغطيه:** تطبيق Angular 20 (Standalone Components، بدون NgModules) في `src/app/`، غلاف Capacitor 8 لنشر iOS/Android من نفس الشيفرة، عقد HTTP/JSON مع الخلفية `PropertyApi` (مستودع Git منفصل تماماً)، ومسار النشر عبر Netlify (ويب) وGitHub Actions (CI + بناء Android/iOS).
+**ما تغطيه:** تطبيق Angular 20 (Standalone Components، بدون NgModules) في `src/app/`، غلاف Capacitor 8 لنشر iOS/Android من نفس الشيفرة، عقد HTTP/JSON مع الخلفية `HudhudNestApi` (مستودع Git منفصل تماماً)، ومسار النشر عبر Netlify (ويب) وGitHub Actions (CI + بناء Android/iOS).
 
 **ما لا تغطيه:**
-- الشيفرة الداخلية للخلفية `PropertyApi` — تُذكر هنا فقط من زاوية العقد (REST/JSON، الكوكيز، CORS، CSRF)؛ راجع `ARD-PropertyApi.md` في مستودع الخلفية لتفاصيلها.
+- الشيفرة الداخلية للخلفية `HudhudNestApi` — تُذكر هنا فقط من زاوية العقد (REST/JSON، الكوكيز، CORS، CSRF)؛ راجع `ARD-HudhudNestApi.md` في مستودع الخلفية لتفاصيلها.
 - كل الميزات الأربع والعشرين بعمق متساوٍ — التركيز الأعمق على: المصادقة (بما فيها CSRF وتسجيل الدخول الاجتماعي)، دورة حياة الإعلان (`property-form` + `ListingEligibilityGuard`)، والنشر عبر Netlify/Capacitor. نظرة أخفّ على: الوكالات العقارية، الاستثمار العقاري، الإقامة القصيرة، سوق الخدمات.
 - تفاصيل تصميم الواجهة المرئية (UI/UX، نظام الألوان) — موثَّقة في `docs/UIUX_FIXES_SUMMARY.md` و`styles.scss` مباشرة.
 
@@ -63,7 +63,7 @@
 |---|---|
 | المرجع المعماري السابق (نمط "حيّ"، تفاصيل تشغيلية أعمق لكل دورة) | `docs/FRONTEND-REFERENCE.md` |
 | بنية المستودعين معاً | `docs/PROJECT-STRUCTURE.md` |
-| مرجع الخلفية المقابل | `docs/PropertyApi-REFERENCE.md` (هذا المستودع) وَ`docs/architecture/ARD/ARD-PropertyApi.md` (مستودع الخلفية) |
+| مرجع الخلفية المقابل | `docs/HudhudNestApi-REFERENCE.md` (هذا المستودع) وَ`docs/architecture/ARD/ARD-HudhudNestApi.md` (مستودع الخلفية) |
 | عقود API الموثَّقة | `FRONTEND_BACKEND_CONTRACT.md` |
 | سجلّ عيوب الإصدار | `docs/RELEASE-BLOCKERS-AR.md` |
 | دليل نشر iOS | `docs/IOS_BUILD.md`, `docs/IOS_RELEASE.md`, `docs/IOS_SETUP.md` |
@@ -75,7 +75,7 @@
 
 ### 2.1 متطلبات العمل
 
-Wohnungsmieten هي الواجهة الويب/جوال الوحيدة لمنصّة Yaqeen Real Estate، مستخلَصة من `app.routes.ts` الفعلي:
+HudhudNest هي الواجهة الويب/جوال الوحيدة لمنصّة Yaqeen Real Estate، مستخلَصة من `app.routes.ts` الفعلي:
 
 | المجال الوظيفي | الوظائف الأساسية | المسارات/الميزات ذات الصلة |
 |---|---|---|
@@ -94,7 +94,7 @@ Wohnungsmieten هي الواجهة الويب/جوال الوحيدة لمنصّ
 **متطلبات غير وظيفية بارزة مستخلَصة من الكود نفسه:**
 - **لا يوجد منطق عمل مستقل في الواجهة:** كل قرار تفويض (`AdminGuard`, `ListingEligibilityGuard`) يوثّق صراحة في تعليقاته أن الخلفية "تبقى مصدر الحقيقة الفعلي" — الحارس تجربة مستخدم فقط، لا حاجز أمني حقيقي.
 - **دعم عربي أولاً (Arabic-first):** `defaultLanguage: 'ar'` في `TranslateModule.forRoot`، واتجاه الصفحة يُضبَط ديناميكياً عبر `LanguageService`.
-- **قابلية النشر على الجوال من نفس القاعدة البرمجية:** `webDir: 'dist/Wohnungsmieten/browser'` في `capacitor.config.ts` — لا شيفرة منفصلة لكل منصّة.
+- **قابلية النشر على الجوال من نفس القاعدة البرمجية:** `webDir: 'dist/HudhudNest/browser'` في `capacitor.config.ts` — لا شيفرة منفصلة لكل منصّة.
 
 ### 2.2 متطلبات الجودة (Quality Attributes)
 
@@ -124,7 +124,7 @@ Wohnungsmieten هي الواجهة الويب/جوال الوحيدة لمنصّ
 
 ### 3.1 وصف النظام
 
-**Wohnungsmieten** تطبيق **Angular 20** أحادي الصفحة (Standalone Components فقط، بلا `NgModule`) يُبنى مرّتين من نفس الشيفرة: حزمة ويب تُنشَر على **Netlify**، وتطبيقا جوال (iOS/Android) عبر **Capacitor 8** يغلّفان نفس الحزمة مع إضافات أصلية (تسجيل دخول Google/Apple أصلي، أزرار رجوع النظام). التوجيه يعتمد على **Hash Location** (`/#/path`) لا HTML5 History API. التعريب عبر `@ngx-translate` بثلاث لغات (`ar` الافتراضية، `en`, `de`). كل حالة تفاعلية محلية تُبنى بـ `signal()` واستراتيجية `OnPush` إلزامية.
+**HudhudNest** تطبيق **Angular 20** أحادي الصفحة (Standalone Components فقط، بلا `NgModule`) يُبنى مرّتين من نفس الشيفرة: حزمة ويب تُنشَر على **Netlify**، وتطبيقا جوال (iOS/Android) عبر **Capacitor 8** يغلّفان نفس الحزمة مع إضافات أصلية (تسجيل دخول Google/Apple أصلي، أزرار رجوع النظام). التوجيه يعتمد على **Hash Location** (`/#/path`) لا HTML5 History API. التعريب عبر `@ngx-translate` بثلاث لغات (`ar` الافتراضية، `en`, `de`). كل حالة تفاعلية محلية تُبنى بـ `signal()` واستراتيجية `OnPush` إلزامية.
 
 النظام **بلا منطق عمل مستقل**: كل حارس مسار (`AuthGuard`, `AdminGuard`, `ListingEligibilityGuard`) تجربة مستخدم فقط — الخلفية تعيد رفض أي طلب لا يملك المستخدم صلاحيته الفعلية عليه بصرف النظر عمّا يسمح به الحارس محلياً.
 
@@ -134,7 +134,7 @@ Wohnungsmieten هي الواجهة الويب/جوال الوحيدة لمنصّ
 
 *(المصدر القابل للتعديل: `diagrams/01-system-context.puml`)*
 
-الواجهة عميل HTTP/WebSocket واحد من عدة عملاء محتملين للخلفية `PropertyApi` (مستودع منفصل تماماً). الأنظمة الخارجية المتصلة بها **مباشرة** (لا عبر الخلفية) هي فقط: Google Identity Services (تسجيل دخول ويب + One Tap السابق)، Apple/Google عبر مكوّنات Capacitor الأصلية على الجوال، وGoogle Fonts (خطوط ثابتة في `index.html`). كل استدعاء بيانات فعلي (عقارات، مستخدمون، إشعارات) يمرّ حصراً عبر `PropertyApi`.
+الواجهة عميل HTTP/WebSocket واحد من عدة عملاء محتملين للخلفية `HudhudNestApi` (مستودع منفصل تماماً). الأنظمة الخارجية المتصلة بها **مباشرة** (لا عبر الخلفية) هي فقط: Google Identity Services (تسجيل دخول ويب + One Tap السابق)، Apple/Google عبر مكوّنات Capacitor الأصلية على الجوال، وGoogle Fonts (خطوط ثابتة في `index.html`). كل استدعاء بيانات فعلي (عقارات، مستخدمون، إشعارات) يمرّ حصراً عبر `HudhudNestApi`.
 
 ### 3.3 الأهداف المعمارية
 
@@ -376,7 +376,7 @@ provideHttpClient(withInterceptors([
 
 ### 8.1 الملخص
 
-**Wohnungsmieten** واجهة Angular 20 حديثة (Standalone + Signals + OnPush بلا استثناء)، تخدم ثلاث منصّات (ويب/Android/iOS) من قاعدة برمجية واحدة عبر Capacitor. أبرز نقاط القوة الموثَّقة فعلياً: **إصلاح فعلي وموثَّق جيداً لثغرة CSRF حرجة سبقت هذه الوثيقة** (ADR-002)، بوابة تدقيق أمني آلية بسيطة لكن فعّالة (`audit:frontend`)، وانضباط معماري واضح في القواعد المكتوبة (حتى لو لم تكن كلها مفروضة آلياً). أبرز الفجوات الصادقة: **لا مراقبة أخطاء إنتاج فعلية إطلاقاً** (R1)، مسار نشر Android لم يُختبَر بعد فعلياً (R5)، وإعداد Netlify الفعلي غير قابل للتحقق من هذا الفرع (R4).
+**HudhudNest** واجهة Angular 20 حديثة (Standalone + Signals + OnPush بلا استثناء)، تخدم ثلاث منصّات (ويب/Android/iOS) من قاعدة برمجية واحدة عبر Capacitor. أبرز نقاط القوة الموثَّقة فعلياً: **إصلاح فعلي وموثَّق جيداً لثغرة CSRF حرجة سبقت هذه الوثيقة** (ADR-002)، بوابة تدقيق أمني آلية بسيطة لكن فعّالة (`audit:frontend`)، وانضباط معماري واضح في القواعد المكتوبة (حتى لو لم تكن كلها مفروضة آلياً). أبرز الفجوات الصادقة: **لا مراقبة أخطاء إنتاج فعلية إطلاقاً** (R1)، مسار نشر Android لم يُختبَر بعد فعلياً (R5)، وإعداد Netlify الفعلي غير قابل للتحقق من هذا الفرع (R4).
 
 ### 8.2 المراجعات المستقبلية
 

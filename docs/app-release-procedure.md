@@ -3,7 +3,7 @@
 How a native release (Android / iOS) is versioned and how it interacts with the
 App Update Management system:
 
-- backend contract and rules: PropertyApi `docs/app-update-management.md`
+- backend contract and rules: HudhudNestApi `docs/app-update-management.md`
 - end-user update dialogs (launch-time check): Phase 2 (`AppUpdateService`)
 - admin screen (`/admin/app-updates`): Phase 3, `docs/app-update-admin-dashboard.md`
 

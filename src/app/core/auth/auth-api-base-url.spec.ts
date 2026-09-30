@@ -19,7 +19,7 @@ function fakeEnv(overrides: Partial<AppEnvironment>): AppEnvironment {
     apiBaseUrl: 'https://wohnungen-api.onrender.com/api',
     apiUrl: 'https://wohnungen-api.onrender.com/api',
     signalRUrl: 'https://wohnungen-api.onrender.com/notificationHub',
-    siteUrl: 'https://realestateworld.world',
+    siteUrl: 'https://hudhudnest.com',
     googleClientId: '',
     appleClientId: '',
     appleRedirectUri: '',

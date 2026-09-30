@@ -44,8 +44,8 @@ export class PropertyShareContentService {
     const title = this.buildTitle(property);
     const summary = this.buildSummary(property);
     const text = summary
-      ? `${title}\n${summary}\nشاهد الإعلان على عقار تيك:\n${url}`
-      : `${title}\nشاهد الإعلان على عقار تيك:\n${url}`;
+      ? `${title}\n${summary}\nشاهد الإعلان على هدهد نيست:\n${url}`
+      : `${title}\nشاهد الإعلان على هدهد نيست:\n${url}`;
 
     return { title, text, url };
   }

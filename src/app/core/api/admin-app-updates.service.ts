@@ -1,4 +1,4 @@
-// يغلّف نقاط النهاية الإدارية لـ App Update Management (PropertyApi.Controllers.
+// يغلّف نقاط النهاية الإدارية لـ App Update Management (HudhudNestApi.Controllers.
 // AdminAppReleasesController) — كل نقطة هنا تتطلب دور Admin على الخادم
 // ([Authorize(Roles = "Admin")])؛ AdminGuard على المسار في app.routes.ts وسيلة UX فقط،
 // الخادم هو الحد الفعلي.

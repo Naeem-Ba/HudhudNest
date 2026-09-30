@@ -23,7 +23,7 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 /* ----------------------------------------------------------------
-   Aqar Tech tokens, exposed as Tailwind theme values.
+   HudhudNest tokens, exposed as Tailwind theme values.
 
    Each one points at the CSS variable styles.scss already defines rather than
    duplicating its hex. That is the whole reason `bg-surface` works in dark mode

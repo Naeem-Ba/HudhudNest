@@ -3,7 +3,7 @@ skinparam backgroundColor #FFFFFF
 skinparam shadowing false
 skinparam roundcorner 8
 skinparam defaultFontName "Segoe UI"
-title مخطط النشر (Deployment Diagram) — واجهة Wohnungsmieten
+title مخطط النشر (Deployment Diagram) — واجهة HudhudNest
 
 node "متصفّح المستخدم" as Browser
 node "جهاز Android" as AndroidDevice
@@ -26,7 +26,7 @@ artifact "بناء محاكي iOS\n(غير موقَّع، للتحقق فقط)" 
 node "Google Play\n(نشر يدوي خارج CI)" as PlayStore
 node "App Store\n(أرشفة/توقيع يدوي عبر Xcode\ndocs/IOS_RELEASE.md)" as AppStore
 
-node "PropertyApi\n(Render — مستودع/بنية تحتية منفصلة)" as Backend
+node "HudhudNestApi\n(Render — مستودع/بنية تحتية منفصلة)" as Backend
 
 Browser --> WebBundle : HTTPS
 AndroidDevice --> AAB : تثبيت (بعد نشر يدوي إلى Play Store)

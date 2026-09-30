@@ -29,7 +29,7 @@ describe('SocialShareService', () => {
     });
 
     service = TestBed.inject(SocialShareService);
-    (environment as { siteUrl: string }).siteUrl = 'https://realestateworld.world';
+    (environment as { siteUrl: string }).siteUrl = 'https://hudhudnest.com';
     // Modern Chrome (incl. this suite's headless build) ships a real navigator.share, so a
     // plain `delete` cannot be relied on to remove it — shadow it with an own, configurable
     // property instead. See the identical helper in native-share.provider.spec.ts.
@@ -139,7 +139,7 @@ describe('SocialShareService', () => {
     await service.shareToFacebook(makeProperty());
 
     const openedUrl = decodeURIComponent(String(openSpy.calls.mostRecent().args[0]));
-    expect(openedUrl).toContain('u=https://realestateworld.world/properties/p1?utm_source=facebook');
+    expect(openedUrl).toContain('u=https://hudhudnest.com/properties/p1?utm_source=facebook');
     expect(openedUrl).toContain('utm_medium=social');
     expect(openedUrl).toContain('utm_campaign=property_share');
     expect(openedUrl).toContain('utm_content=property_p1');
@@ -162,7 +162,7 @@ describe('SocialShareService', () => {
     await service.copyPropertyLink(makeProperty());
 
     const copied = String(writeTextSpy.calls.mostRecent().args[0]);
-    expect(copied).toContain('https://realestateworld.world/properties/p1?utm_source=copy_link');
+    expect(copied).toContain('https://hudhudnest.com/properties/p1?utm_source=copy_link');
     expect(copied).toContain('utm_medium=referral');
   });
 

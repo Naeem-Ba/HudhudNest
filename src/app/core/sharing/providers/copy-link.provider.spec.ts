@@ -4,8 +4,8 @@ import { ShareableContent, SharePlatform } from '../share.model';
 
 const content: ShareableContent = {
   title: 'شقة للبيع',
-  text: 'شقة للبيع\nhttps://realestateworld.world/properties/1',
-  url: 'https://realestateworld.world/properties/1'
+  text: 'شقة للبيع\nhttps://hudhudnest.com/properties/1',
+  url: 'https://hudhudnest.com/properties/1'
 };
 
 describe('CopyLinkProvider', () => {

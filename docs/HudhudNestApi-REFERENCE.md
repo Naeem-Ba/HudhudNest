@@ -1,13 +1,13 @@
-# PropertyApi — Architectural Reference Document
+# HudhudNestApi — Architectural Reference Document
 
 > **Purpose:** Living reference for all future development sessions.
 > **Last updated:** 2026-08-27 · Analysis **v9** — full re-verification from source (not
 > carried from v8) against the live working repository at
-> `C:\Users\naeem\Source\Repos\PropertyApi` (HEAD **`a151424`**, branch `master`)
+> `C:\Users\naeem\Source\Repos\HudhudNestApi` (HEAD **`a151424`**, branch `master`)
 > together with the Angular source at
-> `C:\Users\naeem\OneDrive\Desktop\Notiz\WohnungsApp\Wohnungsmieten` (HEAD **`e64daeb`**,
+> `C:\Users\naeem\OneDrive\Desktop\Notiz\HudhudNest\Wohnungsmieten` (HEAD **`e64daeb`**,
 > branch `feat/listing-eligibility-gates`).
-> **v9 is backed by fresh execution, not carried claims:** `dotnet build PropertyApi.sln
+> **v9 is backed by fresh execution, not carried claims:** `dotnet build HudhudNestApi.sln
 > -c Release` — 0 warnings, 0 errors, 35s. Five fast `dotnet test` projects —
 > **Architecture 108/108, Application 278/278, Auth 280/280, Observability 9/9,
 > Concurrency 4/4** — all green, run this session. `npm run typecheck`,
@@ -85,7 +85,7 @@ Re-verify before planning, every time.
 
 | Attribute | Value | Verified |
 |---|---|---|
-| Product | PropertyApi / Bizorealestateworld — Real estate SaaS API | — |
+| Product | HudhudNestApi / HudhudNest — Real estate SaaS API | — |
 | Target market | Syrian market (primary, active development) · European roadmap (parallel) | — |
 | Architecture | Modular Monolith (deliberate, not microservices) | ✅ |
 | Backend | ASP.NET Core, Clean Architecture, CQRS/MediatR | ✅ |
@@ -109,8 +109,8 @@ Re-verify before planning, every time.
 ## 2. Layer Structure (verified against the live tree)
 
 ```
-PropertyApi.sln
-├── PropertyApi                      API layer — 25 controllers (unchanged count from v8)
+HudhudNestApi.sln
+├── HudhudNestApi                      API layer — 25 controllers (unchanged count from v8)
 │   ├── Controllers/
 │   ├── Configuration/                NEW this cycle — composition-root extraction (§2.1)
 │   ├── Middleware/                   ExceptionHandlingMiddleware
@@ -123,14 +123,14 @@ PropertyApi.sln
 │   ├── Health/                       HealthEndpointExtensions — NEW, MapOperationalHealthEndpoints
 │   └── Program.cs                    205 lines (was 713 before this cycle's split — §2.1)
 │
-├── PropertyApi.Application          No infrastructure deps
+├── HudhudNestApi.Application          No infrastructure deps
 │   └── {Admin, Agencies, Listings, Plans, Users, Notifications, …}/
 │       └── Commands · Queries · DTOs · Interfaces · Mapping
 │
-├── PropertyApi.Domain               Zero external deps
+├── HudhudNestApi.Domain               Zero external deps
 │   └── {Agencies, Listings, Plans, Users, Transactions, Notifications, Common}/
 │
-├── PropertyApi.Infrastructure
+├── HudhudNestApi.Infrastructure
 │   ├── Auth/Services/                Console · Twilio · Http SMS
 │   ├── Identity/Services/            CachedSecurityStampValidator (IDistributedCache)
 │   ├── Listings/                     ListingExpiryHostedService — Plan.ListingLimit-driven quota now (§7.4)
@@ -143,14 +143,14 @@ PropertyApi.sln
 │   └── Migrations/                   32 migrations (was 29 in v8; +3 this cycle — §7)
 │
 ├── tests/                           8 projects
-│   ├── PropertyApi.Application.Tests          278/278 — RE-RUN this session
-│   ├── PropertyApi.Architecture.Tests          108/108 — RE-RUN this session
-│   ├── PropertyApi.Auth.Tests                  280/280 — RE-RUN this session
-│   ├── PropertyApi.Concurrency.Tests           4/4 — RE-RUN this session
-│   ├── PropertyApi.Integration.Tests           needs live Postgres — not run this session
-│   ├── PropertyApi.Observability.Tests         9/9 — RE-RUN this session
-│   ├── PropertyApi.Performance.Tests           needs live multi-instance deployment — not run
-│   └── PropertyApi.StagingSmokeTests           needs live staging — not run
+│   ├── HudhudNestApi.Application.Tests          278/278 — RE-RUN this session
+│   ├── HudhudNestApi.Architecture.Tests          108/108 — RE-RUN this session
+│   ├── HudhudNestApi.Auth.Tests                  280/280 — RE-RUN this session
+│   ├── HudhudNestApi.Concurrency.Tests           4/4 — RE-RUN this session
+│   ├── HudhudNestApi.Integration.Tests           needs live Postgres — not run this session
+│   ├── HudhudNestApi.Observability.Tests         9/9 — RE-RUN this session
+│   ├── HudhudNestApi.Performance.Tests           needs live multi-instance deployment — not run
+│   └── HudhudNestApi.StagingSmokeTests           needs live staging — not run
 │
 ├── docs/                            architecture · development · observability ·
 │                                    operations · performance · security · testing
@@ -158,7 +158,7 @@ PropertyApi.sln
 └── observability/ · performance/
 ```
 
-**Architecture guard suites** (`tests/PropertyApi.Architecture.Tests/`):
+**Architecture guard suites** (`tests/HudhudNestApi.Architecture.Tests/`):
 `APIDependencyGuardTests` · `HttpClientLifetimeTests` · `MiddlewareOrderGuardTests` ·
 `OptionsValidationGuardTests` · `PublicEndpointPolicyTests` · **`RateLimitingGuardTests`
 — rewritten this cycle as a reflected invariant, not a fixed list (§4)** ·
@@ -169,7 +169,7 @@ project pass, re-verified this session.
 ### 2.1 `Program.cs` composition-root split — new this cycle, no behavior change
 
 `Program.cs` had grown to 713 lines by absorbing every hardening pass in the project's
-history. `PropertyApi/Configuration/` now holds seven extracted, focused files
+history. `HudhudNestApi/Configuration/` now holds seven extracted, focused files
 (`CorsRegistration`, `DatabaseSeedingExtensions`, `JwtAuthenticationRegistration`,
 `RateLimitingRegistration`, `RedisConnectionResolver`, `SignalRRegistration`,
 `SwaggerRegistration`), joining the three that already existed there
@@ -185,7 +185,7 @@ passes.
 
 ## 3. Controller CQRS Audit — RE-VERIFIED
 
-**25 controllers**, unchanged count from v8. Grepping `PropertyApi/Controllers/*.cs` for
+**25 controllers**, unchanged count from v8. Grepping `HudhudNestApi/Controllers/*.cs` for
 `AppDbContext` still returns **3 matches**, unchanged:
 
 | Controller | Uses `AppDbContext` | Gating | Assessment |
@@ -389,8 +389,8 @@ queue consumer, not a cross-instance sweeper) so the exception can't silently re
 be copied by mistake for a service that actually needs the lock.
 
 ### 6.10 Composition root: thin `Program.cs` + static extension methods — now the whole file, not just part of it
-`PropertyApi/Configuration/` — new this cycle — extends the pattern
-`PropertyApi.Infrastructure/DependencyInjection.cs` already established to the API
+`HudhudNestApi/Configuration/` — new this cycle — extends the pattern
+`HudhudNestApi.Infrastructure/DependencyInjection.cs` already established to the API
 project's own startup concerns (CORS, JWT auth, rate limiting, Redis resolution, SignalR,
 Swagger, DB seeding). §2.1.
 
@@ -400,7 +400,7 @@ Swagger, DB seeding). §2.1.
 
 ### 7.1 Free-listing lifecycle — unchanged this cycle
 
-**Policy — one source of truth:** `PropertyApi.Domain/Listings/ListingLifecyclePolicy.cs`
+**Policy — one source of truth:** `HudhudNestApi.Domain/Listings/ListingLifecyclePolicy.cs`
 
 | Term | Value |
 |---|---|
@@ -545,7 +545,7 @@ not.
 
 ---
 
-*This document reflects direct inspection of the live PropertyApi repository at commit
+*This document reflects direct inspection of the live HudhudNestApi repository at commit
 `a151424` and the live Angular source at `e64daeb`, on 2026-08-27, with `dotnet build`
 (clean) and five `dotnet test` projects (679/679 passing) executed fresh this session, plus
 a fresh frontend `typecheck`/`audit:frontend`/`build:prod` pass. Nothing in this revision

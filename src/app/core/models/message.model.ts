@@ -1,7 +1,7 @@
 // =============================================================
 // src/app/core/models/message.model.ts
 //
-// يطابق PropertyApi.Application.Users.Messaging.DTOs.MessageDto و
+// يطابق HudhudNestApi.Application.Users.Messaging.DTOs.MessageDto و
 // ConversationSummaryDto. كل رسالة مرتبطة بعقار محدد؛ "المحادثة" = كل الرسائل
 // بين المستخدم الحالي وطرف واحد آخر بخصوص عقار واحد. صندوق الوارد
 // (GET /api/Messages/conversations) يجمعها في الخادم عبر كل العقارات.

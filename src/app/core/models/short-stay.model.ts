@@ -1,6 +1,6 @@
 // Domain models for the Short-Stay Accommodation subsystem (Airbnb/Booking.com-style
 // bookable listings), distinct from the regular sale/rent Property model. Field names/casing
-// mirror the backend's actual runtime JSON (camelCase — see PropertyApi.Application/ShortStay/DTOs),
+// mirror the backend's actual runtime JSON (camelCase — see HudhudNestApi.Application/ShortStay/DTOs),
 // matching the convention already used by visit.model.ts/property.model.ts in this app.
 //
 // MVP scope (see project decisions): booking targets a single AccommodationUnit at a time.

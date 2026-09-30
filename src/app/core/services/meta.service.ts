@@ -33,7 +33,7 @@ export class MetaService {
    * تعيين جميع meta tags لصفحة معينة
    */
   setMeta(opts: PageMeta): void {
-    const siteName = 'عقار تيك';
+    const siteName = 'هدهد نيست';
     const fullTitle = `${opts.title} | ${siteName}`;
 
     // ── Title ──
@@ -93,7 +93,7 @@ export class MetaService {
       title:       'منصة عقارية رقمية في سوريا',
       description: 'ابحث عن شقق وعقارات للبيع والإيجار في سوريا بسهولة. صور واضحة، معلومات منظمة، وتواصل مباشر مع المالك أو المكتب العقاري.',
       keywords:    'عقارات سوريا, شقق للإيجار في دمشق, عقارات للبيع في حلب, منصة عقارية سوريا, بيع وشراء العقارات',
-      ogImage:     'https://propertyapp.sy/assets/images/og-cover.jpg',
+      ogImage:     'https://hudhudnest.com/assets/images/og-cover.jpg',
     });
   }
 }

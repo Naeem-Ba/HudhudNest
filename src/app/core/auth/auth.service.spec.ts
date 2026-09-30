@@ -124,7 +124,7 @@ describe('AuthService', () => {
     expect(loggedIn).toBeTrue();
   });
 
-  it('✅ توكن PropertyApi الفعلي (أسماء claims بصيغة URI الكاملة) ⇒ يُقرأ المعرّف والبريد', () => {
+  it('✅ توكن HudhudNestApi الفعلي (أسماء claims بصيغة URI الكاملة) ⇒ يُقرأ المعرّف والبريد', () => {
     // نفس شكل التوكن الذي يصدره TokenService في الباك اند (ClaimTypes.*).
     const token = makeJwt({
       'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier': '3fe4a0b1-2121-43d6-90df-2d8bf15a2c65',

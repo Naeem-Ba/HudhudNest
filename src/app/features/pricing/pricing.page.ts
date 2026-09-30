@@ -5,7 +5,7 @@
 // holding an i18n KEY rather than a message).
 //
 // Design note: the approved mockup ships a "Broadcast Red" palette, but this page is
-// drawn with the app's own Aqar Tech tokens (--navy / --gold / Cairo) so it matches the
+// drawn with the app's own HudhudNest tokens (--navy / --gold / Cairo) so it matches the
 // other ~25 pages and inherits dark mode and RTL for free. Only the layout and the plan
 // content come from the mockup.
 

@@ -51,7 +51,7 @@ export function buildTargetUrl(pathname, search, apiBaseUrl) {
  * as a bare platform 500 (no backend headers relayed at all -- confirmed the request never
  * completed, not that the backend answered with an error) instead of this function's own
  * clean 502 JSON. The backend-side cause is a cold Google-certificate-cache network fetch with
- * no bounded timeout (see PropertyApi.Infrastructure/Auth/GoogleTokenVerifier.cs); from here,
+ * no bounded timeout (see HudhudNestApi.Infrastructure/Auth/GoogleTokenVerifier.cs); from here,
  * a plain `fetch(targetUrl, ...)` with no timeout at all has the exact same shape of risk for
  * ANY slow backend response, regardless of cause -- Netlify's own platform-level function
  * timeout eventually kills it ungracefully, bypassing the catch block below entirely. Bounding

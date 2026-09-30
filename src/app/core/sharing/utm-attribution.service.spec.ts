@@ -19,7 +19,7 @@ describe('UtmAttributionService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(UtmAttributionService);
-    (environment as { siteUrl: string }).siteUrl = 'https://realestateworld.world';
+    (environment as { siteUrl: string }).siteUrl = 'https://hudhudnest.com';
   });
 
   // ── getDefaultContext ────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ describe('UtmAttributionService', () => {
 
   it('builds an attributed URL that starts from the exact canonical URL', () => {
     const url = service.buildAttributedPropertyUrl({ property: makeProperty(), source: 'facebook' });
-    expect(url).toContain('https://realestateworld.world/properties/p1?');
+    expect(url).toContain('https://hudhudnest.com/properties/p1?');
   });
 
   it('adds utm_source, utm_medium, utm_campaign and utm_content', () => {
@@ -98,7 +98,7 @@ describe('UtmAttributionService', () => {
     // PropertyShareUrlService never adds extra query params today, but the URL API contract
     // must still hold if it (or a future canonical URL) ever does — verified directly against
     // URLSearchParams semantics used internally.
-    const url = new URL('https://realestateworld.world/properties/p1?ref=abc');
+    const url = new URL('https://hudhudnest.com/properties/p1?ref=abc');
     url.searchParams.set('utm_source', 'facebook');
     expect(url.searchParams.get('ref')).toBe('abc');
     expect(url.searchParams.get('utm_source')).toBe('facebook');
@@ -107,7 +107,7 @@ describe('UtmAttributionService', () => {
   it('encodes Arabic utm_content values correctly', () => {
     // utm_content is always the ASCII property_{id} token, but the URL itself may need to carry
     // Arabic text elsewhere — verify the URL API round-trips it losslessly.
-    const url = new URL('https://realestateworld.world/properties/p1');
+    const url = new URL('https://hudhudnest.com/properties/p1');
     url.searchParams.set('utm_campaign', 'property_share');
     url.searchParams.set('utm_content', 'شقة');
     expect(new URLSearchParams(url.search).get('utm_content')).toBe('شقة');
@@ -158,9 +158,9 @@ describe('UtmAttributionService', () => {
   });
 
   it('uses the configured production/staging siteUrl, never localhost, when one is set', () => {
-    (environment as { siteUrl: string }).siteUrl = 'https://realestateworld.world';
+    (environment as { siteUrl: string }).siteUrl = 'https://hudhudnest.com';
     const url = service.buildAttributedPropertyUrl({ property: makeProperty(), source: 'facebook' });
-    expect(url).toContain('https://realestateworld.world');
+    expect(url).toContain('https://hudhudnest.com');
     expect(url).not.toContain('localhost');
   });
 
@@ -168,7 +168,7 @@ describe('UtmAttributionService', () => {
 
   it('extracts utm_source/medium/campaign/content from a full URL', () => {
     const context = service.parseAttributionFromUrl(
-      'https://realestateworld.world/properties/p1?utm_source=facebook&utm_medium=social&utm_campaign=property_share&utm_content=property_123'
+      'https://hudhudnest.com/properties/p1?utm_source=facebook&utm_medium=social&utm_campaign=property_share&utm_content=property_123'
     );
 
     expect(context).toEqual({
@@ -180,21 +180,21 @@ describe('UtmAttributionService', () => {
   });
 
   it('returns null when there is no utm_source at all (a direct visit)', () => {
-    expect(service.parseAttributionFromUrl('https://realestateworld.world/properties/p1')).toBeNull();
+    expect(service.parseAttributionFromUrl('https://hudhudnest.com/properties/p1')).toBeNull();
   });
 
   it('fills missing individual fields with "none" while still attributing the source', () => {
-    const context = service.parseAttributionFromUrl('https://realestateworld.world/properties/p1?utm_source=facebook');
+    const context = service.parseAttributionFromUrl('https://hudhudnest.com/properties/p1?utm_source=facebook');
     expect(context).toEqual({ source: 'facebook', medium: 'none', campaign: 'none', content: 'none' });
   });
 
   it('treats an invalid utm_source (spaces/HTML) as no attribution at all', () => {
-    expect(service.parseAttributionFromUrl('https://realestateworld.world/properties/p1?utm_source=<script>')).toBeNull();
+    expect(service.parseAttributionFromUrl('https://hudhudnest.com/properties/p1?utm_source=<script>')).toBeNull();
   });
 
   it('ignores a utm value over 60 characters, falling back to "none" for that field', () => {
     const context = service.parseAttributionFromUrl(
-      `https://realestateworld.world/properties/p1?utm_source=facebook&utm_content=${'x'.repeat(61)}`
+      `https://hudhudnest.com/properties/p1?utm_source=facebook&utm_content=${'x'.repeat(61)}`
     );
     expect(context!.content).toBe('none');
   });

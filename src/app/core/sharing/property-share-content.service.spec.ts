@@ -23,7 +23,7 @@ describe('PropertyShareContentService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(PropertyShareContentService);
-    (environment as { siteUrl: string }).siteUrl = 'https://realestateworld.world';
+    (environment as { siteUrl: string }).siteUrl = 'https://hudhudnest.com';
   });
 
   it('returns null when the property is not shareable', () => {
@@ -47,8 +47,8 @@ describe('PropertyShareContentService', () => {
 
   it('includes the canonical URL in the share text', () => {
     const content = service.build(makeProperty())!;
-    expect(content.text).toContain('https://realestateworld.world/properties/p1');
-    expect(content.url).toBe('https://realestateworld.world/properties/p1');
+    expect(content.text).toContain('https://hudhudnest.com/properties/p1');
+    expect(content.url).toBe('https://hudhudnest.com/properties/p1');
   });
 
   it('includes area, rooms, price and city facts in the summary/description', () => {
@@ -66,7 +66,7 @@ describe('PropertyShareContentService', () => {
   });
 
   it('uses the given urlOverride (UTM-attributed URL) instead of the canonical URL when provided', () => {
-    const attributedUrl = 'https://realestateworld.world/properties/p1?utm_source=facebook&utm_medium=social';
+    const attributedUrl = 'https://hudhudnest.com/properties/p1?utm_source=facebook&utm_medium=social';
     const content = service.build(makeProperty(), attributedUrl)!;
 
     expect(content.url).toBe(attributedUrl);

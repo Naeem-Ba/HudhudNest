@@ -1,9 +1,9 @@
 // ─────────────────────────────────────────────────────────
 // lead.model.ts
-// نموذج بيانات المهتمين (Leads) لمنصة PropertyApp
+// نموذج بيانات المهتمين (Leads) لمنصة HudhudNest
 //
 // يطابق LeadSubmitDto/SubmitLeadResultDto الحقيقيين على الباك-إند
-// (PropertyApi.Application/Marketing/DTOs) — انظر LeadsController.
+// (HudhudNestApi.Application/Marketing/DTOs) — انظر LeadsController.
 // القيم المسموحة لـ UserType مطابقة حرفيًا لـ Lead.AllowedUserTypes هناك.
 // ─────────────────────────────────────────────────────────
 

@@ -16,7 +16,7 @@ import { AttributionContext, AttributionUrlOptions } from './utm-attribution.mod
 import { UTM_CAMPAIGN_PROPERTY_SHARE, UTM_MEDIUM_BY_SOURCE } from './utm-platform-mapping';
 
 /** Letters, digits, underscore, hyphen, dot only, 1-60 chars — matches
- *  PropertyApi.Domain.Listings.Entities.PropertyShareEvent's server-side sanitizer exactly, so
+ *  HudhudNestApi.Domain.Listings.Entities.PropertyShareEvent's server-side sanitizer exactly, so
  *  a value that passes here is guaranteed to survive backend storage untouched (section 4: "لا
  *  تحتوي على مسافات أو أحرف غير مناسبة"). */
 const VALID_UTM_VALUE = /^[a-zA-Z0-9_.-]{1,60}$/;

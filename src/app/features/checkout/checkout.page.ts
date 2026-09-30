@@ -6,13 +6,13 @@
 // send them nowhere.
 //
 // WHAT IT ACTUALLY DOES, end to end and for real: the confirm button calls the endpoint
-// that records a Pending transaction in PropertyApi and returns its id. That id is the
+// that records a Pending transaction in HudhudNestApi and returns its id. That id is the
 // reference the owner quotes on their bank transfer, and an administrator settles it
 // through the admin-only confirmation endpoint. Every step on screen corresponds to
 // something that exists.
 //
 // First page in the app drawn with Tailwind utilities rather than the SCSS component
-// classes. Colours come from the same Aqar Tech CSS variables through the @theme block in
+// classes. Colours come from the same HudhudNest CSS variables through the @theme block in
 // src/tailwind.css, so dark mode and RTL work here exactly as they do everywhere else,
 // with no dark: utilities and no logical-property overrides.
 

@@ -1,6 +1,6 @@
 // Subscription plan catalog — the four tiers shown on /pricing.
 //
-// IMPORTANT: there is no backend for plans yet. A repo-wide search of PropertyApi
+// IMPORTANT: there is no backend for plans yet. A repo-wide search of HudhudNestApi
 // for subscription/plan/billing/agency returns zero results — no entity, no table,
 // no endpoint. So the catalog below is the single source of truth for now, and
 // PlansApiService is written contract-first so swapping it for GET /api/plans is
@@ -56,7 +56,7 @@ export interface SubscriptionPlan {
  * Only the numbers are data here; every visible string is an i18n key.
  *
  * The free tier's three-month validity, the expiry alert and the paid extension are
- * now implemented in PropertyApi (2026-08-23): ExpiresAt is set on publish,
+ * now implemented in HudhudNestApi (2026-08-23): ExpiresAt is set on publish,
  * ListingExpiryHostedService warns then expires then deletes after a 30-day grace,
  * and the one-active-listing limit is enforced with a 409. What is still only a
  * TERM is the payment itself — there is no payment gateway, so an extension is

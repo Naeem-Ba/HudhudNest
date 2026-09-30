@@ -1,13 +1,13 @@
-# WohnungsApp (Angular) — المرجع المعماري للواجهة
+# HudhudNest (Angular) — المرجع المعماري للواجهة
 
 > **الغرض:** مرجع حيّ لكل جلسة تطوير قادمة على الواجهة.
 > **آخر تحديث:** 2026-08-27 · النسخة **v5** (نموذج إعلان ديناميكي حسب النوع ×
 > نوع العقار · تصحيح موقع `token-storage.service.ts` · **تحذير حرج: تجديد الجلسة
 > يفشل الآن على أي نشر حقيقي — انظر §4.1**)
 > **مصدر التحقّق:** فحص مباشر لشجرة المصدر في
-> `C:\Users\naeem\OneDrive\Desktop\Notiz\WohnungsApp\Wohnungsmieten`
+> `C:\Users\naeem\OneDrive\Desktop\Notiz\HudhudNest\Wohnungsmieten`
 > (الفرع `feat/listing-eligibility-gates`، آخر التزام **`e64daeb`**) **و** لمستودع
-> الخلفية في `C:\Users\naeem\Source\Repos\PropertyApi` (الفرع `master`، آخر التزام
+> الخلفية في `C:\Users\naeem\Source\Repos\HudhudNestApi` (الفرع `master`، آخر التزام
 > **`a151424`**).
 > **تحقّق تنفيذي في هذه الجلسة:** `npm run typecheck` ✅ · `npm run audit:frontend` ✅
 > (يمرّ فعلياً — الرمز 0) · `npm run build:prod` ✅ (‏597.55 kB خام، **داخل** ميزانية
@@ -269,7 +269,7 @@ JsonNamingPolicy.CamelCase`). `apiToCamelCase()` يبقى في مكانه في �
 
 **⚠️ فجوة الوكالات اتّسعت جوهرياً هذه الدورة، لا مجرد استمرت.** الخلفية أضافت دورة
 حياة مكتب كاملة (‏نقل ملكية، شعار، دعوات بموافقة) بلا أي مقابل في الواجهة إطلاقاً — لا
-خدمة، لا نموذج، لا مسار، لا مفتاح ترجمة. اقرأ `PropertyApi-REFERENCE.md §7.5` قبل
+خدمة، لا نموذج، لا مسار، لا مفتاح ترجمة. اقرأ `HudhudNestApi-REFERENCE.md §7.5` قبل
 تصميم أي شاشة وكالات.
 
 ### 5.3 `/plans` — يقود حصّة الإعلانات فعلياً الآن، لا مجرد تسجيل
@@ -488,7 +488,7 @@ $ npm run audit:frontend
 |---|---|
 | `docs/PROJECT-STRUCTURE.md` | ✅ محدَّث 2026-08-27 |
 | `docs/BACKEND-ISSUES.md` | ✅ v4 — 2026-08-27 — بند واحد مفتوح (`B-20`)، حرج |
-| `docs/PropertyApi-REFERENCE.md` | ✅ v9 — 2026-08-27 |
+| `docs/HudhudNestApi-REFERENCE.md` | ✅ v9 — 2026-08-27 |
 | `FRONTEND_BACKEND_CONTRACT.md` | ⚠️ لم يُعَد فحصه هذه الدورة — يحتاج تحديث لقسم `/plans`، نظام الدعوات، ونموذج الإعلان الديناميكي |
 | `REGISTER_ERROR_DIAGNOSIS.md` | ❌ خاطئ تاريخياً (‏SQL Server) |
 

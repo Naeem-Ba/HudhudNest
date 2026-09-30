@@ -28,7 +28,7 @@ describe('PropertyMetaService', () => {
     service = TestBed.inject(PropertyMetaService);
     meta = TestBed.inject(Meta);
     title = TestBed.inject(Title);
-    (environment as { siteUrl: string }).siteUrl = 'https://realestateworld.world';
+    (environment as { siteUrl: string }).siteUrl = 'https://hudhudnest.com';
 
     // Clean slate — Meta.updateTag persists into the real document between tests otherwise.
     meta.removeTag('property="og:title"');
@@ -42,7 +42,7 @@ describe('PropertyMetaService', () => {
 
   it('sets the <title> with the site name suffix', () => {
     service.applyTo(makeProperty());
-    expect(title.getTitle()).toBe('شقة للبيع في طرطوس | عقار تيك');
+    expect(title.getTitle()).toBe('شقة للبيع في طرطوس | هدهد نيست');
   });
 
   it('sets all required Open Graph tags', () => {
@@ -51,9 +51,9 @@ describe('PropertyMetaService', () => {
     expect(meta.getTag('property="og:title"')?.content).toContain('شقة للبيع في طرطوس');
     expect(meta.getTag('property="og:description"')?.content).toBeTruthy();
     expect(meta.getTag('property="og:type"')?.content).toBe('website');
-    expect(meta.getTag('property="og:site_name"')?.content).toBe('عقار تيك');
+    expect(meta.getTag('property="og:site_name"')?.content).toBe('هدهد نيست');
     expect(meta.getTag('property="og:locale"')?.content).toBe('ar_SY');
-    expect(meta.getTag('property="og:url"')?.content).toBe('https://realestateworld.world/properties/p1');
+    expect(meta.getTag('property="og:url"')?.content).toBe('https://hudhudnest.com/properties/p1');
     expect(meta.getTag('property="og:image"')?.content).toBeTruthy();
   });
 
@@ -71,7 +71,7 @@ describe('PropertyMetaService', () => {
 
     const link = document.querySelector('link[rel="canonical"]');
     expect(link).not.toBeNull();
-    expect(link?.getAttribute('href')).toBe('https://realestateworld.world/properties/p1');
+    expect(link?.getAttribute('href')).toBe('https://hudhudnest.com/properties/p1');
     expect(meta.getTag('property="og:url"')?.content).toBe(link?.getAttribute('href'));
   });
 
@@ -80,15 +80,15 @@ describe('PropertyMetaService', () => {
 
     const canonical = document.querySelector('link[rel="canonical"]')?.getAttribute('href') ?? '';
     expect(canonical).not.toContain('#');
-    expect(canonical.startsWith('https://realestateworld.world/properties/')).toBeTrue();
+    expect(canonical.startsWith('https://hudhudnest.com/properties/')).toBeTrue();
   });
 
   it('falls back to the branded placeholder image when the property has no images', () => {
     service.applyTo(makeProperty({ mainImageUrl: undefined, images: [] }));
 
     const ogImage = meta.getTag('property="og:image"')?.content ?? '';
-    expect(ogImage).toContain('/images/horizontal-logo.png');
-    expect(ogImage.startsWith('https://realestateworld.world')).toBeTrue();
+    expect(ogImage).toContain('/images/og-default.png');
+    expect(ogImage.startsWith('https://hudhudnest.com')).toBeTrue();
   });
 
   it('uses the property main image when present', () => {

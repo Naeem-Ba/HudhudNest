@@ -10,7 +10,7 @@ export const LANDING_ROUTES: Routes = [
     loadComponent: () =>
       import('./landing-page.component')
         .then(m => m.LandingPageComponent),
-    title: 'PropertyApp – منصة عقارية رقمية في سوريا',
+    title: 'HudhudNest – منصة عقارية رقمية في سوريا',
     data: {
       meta: {
         description:

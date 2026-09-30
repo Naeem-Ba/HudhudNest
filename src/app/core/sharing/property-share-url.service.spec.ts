@@ -28,19 +28,19 @@ describe('PropertyShareUrlService', () => {
   });
 
   it('builds a canonical URL for a published property using the configured siteUrl', () => {
-    (environment as { siteUrl: string }).siteUrl = 'https://realestateworld.world';
+    (environment as { siteUrl: string }).siteUrl = 'https://hudhudnest.com';
 
     const url = service.getPropertyPublicUrl(makeProperty());
 
-    expect(url).toBe('https://realestateworld.world/properties/abc-123');
+    expect(url).toBe('https://hudhudnest.com/properties/abc-123');
   });
 
   it('strips a trailing slash from the configured siteUrl', () => {
-    (environment as { siteUrl: string }).siteUrl = 'https://realestateworld.world/';
+    (environment as { siteUrl: string }).siteUrl = 'https://hudhudnest.com/';
 
     const url = service.getPropertyPublicUrl(makeProperty());
 
-    expect(url).toBe('https://realestateworld.world/properties/abc-123');
+    expect(url).toBe('https://hudhudnest.com/properties/abc-123');
   });
 
   it('falls back to window.location.origin when siteUrl is not configured', () => {
@@ -84,16 +84,16 @@ describe('PropertyShareUrlService', () => {
   });
 
   it('never returns an internal Angular route as the share URL', () => {
-    (environment as { siteUrl: string }).siteUrl = 'https://realestateworld.world';
+    (environment as { siteUrl: string }).siteUrl = 'https://hudhudnest.com';
 
     const url = service.getPropertyPublicUrl(makeProperty())!;
 
     expect(url).not.toContain('#');
-    expect(url.startsWith('https://realestateworld.world/properties/')).toBeTrue();
+    expect(url.startsWith('https://hudhudnest.com/properties/')).toBeTrue();
   });
 
   it('URL-encodes the property id', () => {
-    (environment as { siteUrl: string }).siteUrl = 'https://realestateworld.world';
+    (environment as { siteUrl: string }).siteUrl = 'https://hudhudnest.com';
 
     const url = service.getPropertyPublicUrl(makeProperty({ id: 'abc def' }))!;
 
