@@ -13,7 +13,7 @@ import { RouterModule } from '@angular/router';
   template: `
     <section class="legal">
       <div class="legal__card">
-        <h1>شروط الاستخدام — عقاراتك (aqar-tech)</h1>
+        <h1>شروط الاستخدام — هدهد نيست (HudhudNest)</h1>
         <p class="legal__updated">آخر تحديث: 31 أغسطس 2026</p>
 
         <h2>1. قبول الشروط</h2>

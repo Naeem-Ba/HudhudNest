@@ -533,6 +533,7 @@
     "AVAILABLE_FROM": "Verfügbar ab",
     "CONDITION": "Zustand",
     "NO_FEATURES": "Keine zusätzlichen Ausstattungsmerkmale.",
+    "LISTING_ID": "Anzeige-ID",
     "OWNER": "Eigentümer",
     "REGION": "Region",
     "AMENITIES": "Ausstattung",
@@ -1051,7 +1052,7 @@
     },
     "DELETE_MODAL": {
       "TITLE": "Konto endgültig löschen",
-      "INTRO": "Du bist dabei, dein aqar-tech-Konto endgültig zu löschen. Diese Aktion kann nach Abschluss nicht rückgängig gemacht werden.",
+      "INTRO": "Du bist dabei, dein HudhudNest-Konto endgültig zu löschen. Diese Aktion kann nach Abschluss nicht rückgängig gemacht werden.",
       "WILL_DELETE_TITLE": "Wird sofort gelöscht/ausgeblendet:",
       "WILL_DELETE_1": "Dein Name, Profilbild, Beschreibung und Kontaktinformationen",
       "WILL_DELETE_2": "Deine registrierte E-Mail-Adresse und Telefonnummer sowie jede verknüpfte Google-/Apple-Anmeldung — du kannst dich damit nicht mehr bei diesem Konto anmelden",
@@ -1099,7 +1100,7 @@
     "FORM_INVALID": "Bitte füllen Sie alle Pflichtfelder (mit * markiert) aus, bevor Sie absenden."
   },
   "SERVICE_REQUEST": {
-    "CTA": "AqarTech Verify anfragen",
+    "CTA": "HudhudNest Verify anfragen",
     "PROVIDER": "Dienstleister",
     "NOTE": "Hinweise für den Dienstleister",
     "NOTE_PLACEHOLDER": "Fügen Sie Details hinzu, die dem Dienstleister helfen (optional)",
@@ -1112,7 +1113,7 @@
     "NOTE_TOO_LONG": "Die Hinweise sind zu lang (max. 1000 Zeichen)."
   },
   "SERVICE_REQUESTS": {
-    "EYEBROW": "AqarTech Services",
+    "EYEBROW": "HudhudNest Services",
     "TITLE": "Meine Serviceanfragen",
     "SUBTITLE": "Verfolgen Sie den Status der von Ihnen angefragten Services für Ihre Immobilien.",
     "BECOME_PROVIDER": {
@@ -1150,11 +1151,11 @@
   },
   "SERVICES": {
     "CATEGORY": {
-      "Verification": "Verifizierung (AqarTech Verify)",
-      "Valuation": "Bewertung (AqarTech Valuation)",
-      "Inspection": "Inspektion (AqarTech Inspect)",
-      "Photography": "Fotografie (AqarTech Media)",
-      "PropertyManagement": "Fernverwaltung (AqarTech Care)",
+      "Verification": "Verifizierung (HudhudNest Verify)",
+      "Valuation": "Bewertung (HudhudNest Valuation)",
+      "Inspection": "Inspektion (HudhudNest Inspect)",
+      "Photography": "Fotografie (HudhudNest Media)",
+      "PropertyManagement": "Fernverwaltung (HudhudNest Care)",
       "Legal": "Rechtsberatung",
       "Engineering": "Technische Beratung",
       "Maintenance": "Wartung",

@@ -31,7 +31,9 @@ interface StoredAttribution {
   readonly lastTouch: StoredTouch;
 }
 
-const STORAGE_KEY = 'aqartech.attribution.v1';
+const STORAGE_KEY = 'hudhudnest.attribution.v1';
+/** المفتاح القديم من علامة AqarTech قبل إعادة التسمية — يُقرأ مرة واحدة فقط للترحيل. */
+const LEGACY_STORAGE_KEY = 'aqartech.attribution.v1';
 
 /**
  * 📌 قرار موثَّق — Attribution Window = 30 days. Long enough that "saw the Facebook share
@@ -144,7 +146,7 @@ export class AttributionContextService {
 
   private read(): StoredAttribution | null {
     try {
-      const raw = window.localStorage?.getItem(STORAGE_KEY);
+      const raw = window.localStorage?.getItem(STORAGE_KEY) ?? this.migrateLegacyAttribution();
       if (raw) {
         return JSON.parse(raw) as StoredAttribution;
       }
@@ -153,6 +155,23 @@ export class AttributionContextService {
     }
 
     return this.memoryFallback;
+  }
+
+  /**
+   * ترحيل لمرة واحدة من مفتاح AqarTech القديم (LEGACY_STORAGE_KEY) بعد إعادة تسمية
+   * العلامة إلى HudhudNest — يحافظ على نافذة الإسناد الحالية للزائر بدل فقدانها فجأة.
+   */
+  private migrateLegacyAttribution(): string | null {
+    try {
+      const legacy = window.localStorage?.getItem(LEGACY_STORAGE_KEY);
+      if (legacy) {
+        window.localStorage?.setItem(STORAGE_KEY, legacy);
+        window.localStorage?.removeItem(LEGACY_STORAGE_KEY);
+      }
+      return legacy ?? null;
+    } catch {
+      return null;
+    }
   }
 
   private write(value: StoredAttribution): void {

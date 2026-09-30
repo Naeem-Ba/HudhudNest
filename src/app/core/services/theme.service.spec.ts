@@ -8,7 +8,8 @@ import { TestBed } from '@angular/core/testing';
 
 import { ThemeService } from './theme.service';
 
-const STORAGE_KEY = 'aqar-tech-theme';
+const STORAGE_KEY = 'hudhudnest-theme';
+const LEGACY_STORAGE_KEY = 'aqar-tech-theme';
 
 /** يبني matchMedia وهمي يُرجع matches بالقيمة المطلوبة، بغض النظر عن الاستعلام. */
 function stubMatchMedia(prefersDark: boolean): void {
@@ -27,6 +28,7 @@ function stubMatchMedia(prefersDark: boolean): void {
 describe('ThemeService', () => {
   afterEach(() => {
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
     document.documentElement.removeAttribute('data-theme');
     TestBed.resetTestingModule();
   });
@@ -71,6 +73,19 @@ describe('ThemeService', () => {
     const service = TestBed.inject(ThemeService);
 
     expect(service.theme()).toBe('dark');
+  });
+
+  // ────────────── ترحيل مفتاح AqarTech القديم ──────────────
+
+  it('✅ ثيم محفوظ تحت المفتاح القديم (AqarTech) يُرحَّل تلقائياً للمفتاح الجديد', () => {
+    localStorage.setItem(LEGACY_STORAGE_KEY, 'dark');
+    stubMatchMedia(false);
+
+    const service = TestBed.inject(ThemeService);
+
+    expect(service.theme()).toBe('dark');
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('dark');
+    expect(localStorage.getItem(LEGACY_STORAGE_KEY)).toBeNull();
   });
 
   // ────────────── setTheme / toggle ──────────────

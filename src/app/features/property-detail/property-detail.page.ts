@@ -26,7 +26,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Subscription } from 'rxjs';
+import { Subscription, map } from 'rxjs';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -39,6 +39,7 @@ import { ServiceOfferingService } from '../../core/api/service-offering.service'
 import { ServiceRequestService } from '../../core/api/service-request.service';
 import { MessagesApiService } from '../../core/api/messages-api.service';
 import { ProfileService, PublicUserProfile } from '../../core/api/profile.service';
+import { UserProfileApiService } from '../../core/api/user-profile-api.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { Property } from '../../core/models/property.model';
 import { REVIEW_COMMENT_MAX_LENGTH, ReviewDto, validateCreateReview } from '../../core/models/review.model';
@@ -91,6 +92,7 @@ export class PropertyDetailPage implements OnInit {
   private readonly serviceRequestApi  = inject(ServiceRequestService);
   private readonly messagesApi   = inject(MessagesApiService);
   private readonly profileApi    = inject(ProfileService);
+  private readonly userProfileApi = inject(UserProfileApiService);
   private readonly router        = inject(Router);
   private readonly authService   = inject(AuthService);
   private readonly route         = inject(ActivatedRoute);
@@ -203,7 +205,7 @@ export class PropertyDetailPage implements OnInit {
   messageDraft = '';
   readonly messageMaxLength = 3000;
 
-  // ── AqarTech Verify request (Services Marketplace vertical slice) ──────
+  // ── HudhudNest Verify request (Services Marketplace vertical slice) ──────
   // Only the "Verification" category is a live product this session — see
   // ServiceCategory's remarks in service.model.ts. The offering is fetched
   // lazily (once) the first time the panel opens, not on every page load,
@@ -484,6 +486,16 @@ export class PropertyDetailPage implements OnInit {
   /**
    * GET /api/users/{id} — لا داعي لجلبها لصاحب الإعلان نفسه (يرى بياناته
    * أصلاً)، ولا إن كان العقار بلا ownerId لأي سبب.
+   *
+   * ✅ إصلاح: GET /api/users/{id} يتطلب تسجيل دخول بالتصميم (راجع
+   * PublicEndpointPolicyTests.cs — غير مُدرَج ضمن ApprovedAnonymousEndpoints
+   * عمداً)، فكانت بطاقة المالك لا تظهر إطلاقاً لزائر غير مسجَّل دخول. بدل
+   * توسيع سطح الوصول المجهول (قرار معماري يتطلب مراجعة صريحة)، نستخدم بدلاً
+   * منه GET /api/users/{id}/profile الموجودة أصلاً والمُعتمدة كـ AllowAnonymous
+   * (UsersController.GetProfile — "Public seller profile") فقط لزائر غير
+   * مسجَّل دخول؛ نفس مسار الملف الشخصي العام الذي تستهلكه UserProfilePage.
+   * لا رقم هاتف في تلك الاستجابة أصلاً (تصميم الباك اند)، فيبقى الهاتف
+   * ظاهراً فقط للمستخدم المسجَّل دخوله تماماً كما كان.
    */
   private loadOwnerProfile(ownerId: string | undefined): void {
     if (!ownerId || ownerId === this.authService.getCurrentUserId()) {
@@ -491,8 +503,20 @@ export class PropertyDetailPage implements OnInit {
     }
 
     this.ownerProfileLoading.set(true);
-    this.profileApi
-      .getPublicProfile(ownerId)
+
+    const request$ = this.isLoggedIn()
+      ? this.profileApi.getPublicProfile(ownerId)
+      : this.userProfileApi.getProfile(ownerId).pipe(
+          map((p): PublicUserProfile => ({
+            id: p.id,
+            displayName: p.displayName,
+            profileImageUrl: p.profileImageUrl,
+            phoneNumber: null,
+            roles: p.isAgent ? ['Agent'] : []
+          }))
+        );
+
+    request$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: profile => {
@@ -650,7 +674,7 @@ export class PropertyDetailPage implements OnInit {
       });
   }
 
-  // ── AqarTech Verify request ──────────────────────────────────────────
+  // ── HudhudNest Verify request ──────────────────────────────────────────
   submitServiceRequest(): void {
     const property = this.property();
     const offering = this.verifyOffering();

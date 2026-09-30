@@ -6,7 +6,7 @@ const allowCleartext =
 const config: CapacitorConfig = {
   appId: 'com.realestate.app',
   appName: 'Real Estate World',
-  webDir: 'dist/Wohnungsmieten/browser',
+  webDir: 'dist/HudhudNest/browser',
 
   server: {
     androidScheme: 'https',

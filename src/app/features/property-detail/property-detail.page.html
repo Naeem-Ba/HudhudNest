@@ -137,6 +137,11 @@
             <span *ngIf="p.region"> · {{ p.region }}</span>
           </p>
 
+          <!-- ✅ إضافة: معرف الإعلان الحقيقي القادم من الـ Backend (p.id) -->
+          <p class="summary-card__listing-id" *ngIf="p.id">
+            {{ 'PROPERTY_DETAIL.LISTING_ID' | translate }}: <span dir="ltr">#{{ p.id }}</span>
+          </p>
+
           <!-- Main Price -->
           <div class="summary-card__price" *ngIf="isSaleListing()">
             <span class="price-label">{{ 'PROPERTY.PURCHASE_PRICE' | translate }}</span>
@@ -277,7 +282,17 @@
             alt=""
           />
           <div class="owner-card__info">
-            <p class="owner-card__name">{{ owner.displayName }}</p>
+            <!-- ✅ إضافة: اسم صاحب الإعلان قابل للنقر لفتح ملفه العام -->
+            <a
+              *ngIf="property()?.ownerId; else ownerNamePlain"
+              class="owner-card__name owner-card__name--link"
+              [routerLink]="['/users', property()!.ownerId]"
+            >
+              {{ owner.displayName }}
+            </a>
+            <ng-template #ownerNamePlain>
+              <p class="owner-card__name">{{ owner.displayName }}</p>
+            </ng-template>
             <a *ngIf="owner.phoneNumber" class="owner-card__phone" [href]="'tel:' + owner.phoneNumber" (click)="onOwnerPhoneClick()">
               {{ owner.phoneNumber }}
             </a>
@@ -355,7 +370,7 @@
         </form>
       </div>
 
-      <!-- AqarTech Verify Request Form -->
+      <!-- HudhudNest Verify Request Form -->
       <div class="detail-card" id="service-form-section" *ngIf="showServiceForm()">
         <div class="detail-card__header">
           <h2>{{ 'SERVICE_REQUEST.CTA' | translate }}</h2>

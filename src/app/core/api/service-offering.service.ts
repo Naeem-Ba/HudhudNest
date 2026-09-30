@@ -1,6 +1,6 @@
 // src/app/core/api/service-offering.service.ts
 //
-// AqarTech Services Marketplace — public browse surface.
+// HudhudNest Services Marketplace — public browse surface.
 // Endpoints:
 //   GET /api/ServiceOfferings/categories        ← الفئات (تصنيفات الخدمات)
 //   GET /api/ServiceOfferings?category=...       ← الخدمات النشطة ضمن فئة
