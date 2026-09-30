@@ -47,7 +47,7 @@ import {
   buildNotFoundHtml
 } from './lib/social-crawler.mjs';
 
-const DEFAULT_API_BASE_URL = 'https://wohnungen-api.onrender.com/api';
+const DEFAULT_API_BASE_URL = 'https://api.hudhudnest.com/api';
 const FALLBACK_IMAGE_PATH = '/images/og-default.png';
 
 export default async (request, context) => {

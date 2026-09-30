@@ -7,7 +7,8 @@
 // previous good deploy when a build FAILS, so failing here turns that silent outage into a red
 // build. Only Netlify sets CONTEXT/BRANCH, so local and CI builds are unaffected.
 
-const PRODUCTION_API_HOSTS = /wohnungen-api\.onrender\.com|api\.hudhudnest\.com/i;
+// Anchored so `staging-api.hudhudnest.com` (Staging) is not mistaken for `api.hudhudnest.com` (Production).
+const PRODUCTION_API_HOSTS = /(?:^|\/\/)(?:wohnungen-api\.onrender\.com|api\.hudhudnest\.com)(?![\w.-])/i;
 
 /**
  * @param {{ CONTEXT?: string, BRANCH?: string }} env  Netlify build context

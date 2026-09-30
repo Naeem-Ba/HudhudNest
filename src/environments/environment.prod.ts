@@ -8,7 +8,7 @@ import {
   readSiteUrlFromProcessEnv
 } from './environment.model';
 
-const apiBaseUrl = readApiUrlFromProcessEnv() || 'https://wohnungen-api.onrender.com/api';
+const apiBaseUrl = readApiUrlFromProcessEnv() || 'https://api.hudhudnest.com/api';
 
 // هدهد نيست / HudhudNest — النطاق العام الحقيقي (raiseNavigation في
 // capacitor.config.ts يستخدم نفس النطاق). هذا هو النطاق الذي تُبنى عليه روابط
