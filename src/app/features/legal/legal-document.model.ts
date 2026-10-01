@@ -38,7 +38,9 @@ export function parseLegalText(input: string): LegalTextSegment[] {
   for (const m of input.matchAll(LINK)) {
     const idx = m.index ?? 0;
     if (idx > last) out.push({ kind: 'text', text: input.slice(last, idx) });
-    const [full, label, target] = m;
+    const full = m[0];
+    const label = m[1] ?? full;
+    const target = m[2] ?? '';
     if (target.startsWith('/') && !target.startsWith('//')) {
       out.push({ kind: 'route', text: label, href: target });
     } else if (target.startsWith('mailto:')) {
