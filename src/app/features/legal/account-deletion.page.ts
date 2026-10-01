@@ -94,7 +94,7 @@ import { RouterModule } from '@angular/router';
           إن كنت لا تستطيع الوصول إلى حسابك (فقدان الوصول لكلمة المرور أو رقم الهاتف
           مثلاً) وترغب بطلب حذف حسابك وبياناتك، راسلنا من البريد الإلكتروني المسجَّل
           في حسابك على
-          <a href="mailto:naeem.bazzazeh@gmail.com?subject=%D8%B7%D9%84%D8%A8%20%D8%AD%D8%B0%D9%81%20%D8%AD%D8%B3%D8%A7%D8%A8">naeem.bazzazeh@gmail.com</a>
+          <a href="mailto:support@hudhudnest.com?subject=%D8%B7%D9%84%D8%A8%20%D8%AD%D8%B0%D9%81%20%D8%AD%D8%B3%D8%A7%D8%A8">support@hudhudnest.com</a>
           موضّحاً طلبك، وسنتحقق من هويتك قبل تنفيذ الحذف يدوياً.
         </p>
 
