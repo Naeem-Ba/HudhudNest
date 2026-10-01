@@ -8,7 +8,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PhoneAuthApiService } from '../../../core/auth/phone-auth-api.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ConsentApiService } from '../../../core/api/consent-api.service';
-import { PRIVACY_POLICY_VERSION } from '../../../core/models/consent-versions';
+import { PRIVACY_POLICY_VERSION, TERMS_OF_SERVICE_VERSION } from '../../../core/models/consent-versions';
 import { ToastService } from '../../../shared/services/toast.service';
 import { FormErrorComponent } from '../../../shared/ui/form-error.component';
 import { ConsentCheckboxComponent } from '../../../shared/components/consent-checkbox/consent-checkbox.component';
@@ -198,9 +198,11 @@ export class PhoneRegisterPage {
           // بخلاف التسجيل بالبريد، تسجيل الدخول بالهاتف يُصدر رمز وصول فوراً — لذلك
           // نسجّل الموافقة الآن عبر النقطة العامة الموثَّقة بدل تمريرها ضمن نموذج
           // التسجيل نفسه. فشل هذا النداء لا يوقف تسجيل الدخول (best-effort).
-          this.consentApi.record('PrivacyPolicy', PRIVACY_POLICY_VERSION).subscribe({
-            error: () => { /* غير حرج — انظر التعليق أعلاه. */ }
-          });
+          for (const [policy, version] of [['PrivacyPolicy', PRIVACY_POLICY_VERSION], ['TermsOfService', TERMS_OF_SERVICE_VERSION]] as const) {
+            this.consentApi.record(policy, version).subscribe({
+              error: () => { /* غير حرج — انظر التعليق أعلاه. */ }
+            });
+          }
 
           const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
           void this.router.navigateByUrl(returnUrl);

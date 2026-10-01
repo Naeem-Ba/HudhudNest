@@ -2461,5 +2461,21 @@
     "MANDATORY_BODY": "This version of the app is no longer supported. Please update to continue.",
     "UPDATE_NOW": "Update now",
     "LATER": "Later"
+  },
+  "LEGAL": {
+    "VERSION": "Version",
+    "EFFECTIVE": "Effective",
+    "UPDATED": "Last updated",
+    "BACK_HOME": "Back to home",
+    "LOADING": "Loading…",
+    "LOAD_FAILED": "The document could not be loaded. Check your connection and try again."
+  },
+  "CONSENT": {
+    "LEAD": "I agree to the",
+    "TERMS": "Terms of Use",
+    "MIDDLE": "and acknowledge that I have read the",
+    "PRIVACY": "Privacy Policy",
+    "TRAIL": ".",
+    "OPENS_NEW_TAB": "(opens in a new tab)"
   }
 }
