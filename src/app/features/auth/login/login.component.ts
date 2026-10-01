@@ -13,7 +13,7 @@ import { AuthTokenResponse, TokenStorageService } from '../../../core/services/t
 import { AuthService } from '../../../core/auth/auth.service';
 import { LoginMethod } from '../../../core/auth/login-identifier';
 import { ConsentApiService } from '../../../core/api/consent-api.service';
-import { PRIVACY_POLICY_VERSION } from '../../../core/models/consent-versions';
+import { PRIVACY_POLICY_VERSION, TERMS_OF_SERVICE_VERSION } from '../../../core/models/consent-versions';
 import { ConsentCheckboxComponent } from '../../../shared/components/consent-checkbox/consent-checkbox.component';
 import {
   LOGIN_ERROR_CODES,
@@ -341,6 +341,8 @@ export class LoginComponent implements OnDestroy {
       password,
       privacyPolicyAccepted: this.privacyConsentAccepted,
       privacyPolicyVersion: PRIVACY_POLICY_VERSION,
+      termsAccepted: this.privacyConsentAccepted,
+      termsVersion: TERMS_OF_SERVICE_VERSION,
       consentSource: ConsentApiService.currentSource()
     }).subscribe({
       next: () => {

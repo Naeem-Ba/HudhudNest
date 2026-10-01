@@ -13,6 +13,8 @@ export interface RegisterRequest {
   privacyPolicyAccepted?: boolean;
   privacyPolicyVersion?: string;
   consentSource?: string;
+  termsAccepted?: boolean;
+  termsVersion?: string;
 }
 
 export interface RegisterResponse {

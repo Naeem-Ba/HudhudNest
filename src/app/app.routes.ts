@@ -289,15 +289,17 @@ export const routes: Routes = [
         // BUG-17: صفحتا سياسة الخصوصية وشروط الاستخدام — مطلوبتان لإكمال شاشة
         // موافقة Google OAuth (aqar-tech) وأي مراجعة مستقبلية من Apple.
         path: 'privacy-policy',
+        data: { doc: 'privacy' },
         loadComponent: () =>
-          import('./features/legal/privacy-policy.page')
-            .then(m => m.PrivacyPolicyPage)
+          import('./features/legal/legal-document.page')
+            .then(m => m.LegalDocumentPage)
       },
       {
         path: 'terms-of-service',
+        data: { doc: 'terms' },
         loadComponent: () =>
-          import('./features/legal/terms-of-service.page')
-            .then(m => m.TermsOfServicePage)
+          import('./features/legal/legal-document.page')
+            .then(m => m.LegalDocumentPage)
       },
       {
         // Phase 5 (Account Deletion) — public, no AuthGuard: Google Play/Apple App

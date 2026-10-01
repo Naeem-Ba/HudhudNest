@@ -2461,5 +2461,21 @@
     "MANDATORY_BODY": "Diese App-Version wird nicht mehr unterstützt. Bitte aktualisieren Sie, um fortzufahren.",
     "UPDATE_NOW": "Jetzt aktualisieren",
     "LATER": "Später"
+  },
+  "LEGAL": {
+    "VERSION": "Version",
+    "EFFECTIVE": "Gültig ab",
+    "UPDATED": "Zuletzt aktualisiert",
+    "BACK_HOME": "Zurück zur Startseite",
+    "LOADING": "Wird geladen…",
+    "LOAD_FAILED": "Das Dokument konnte nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut."
+  },
+  "CONSENT": {
+    "LEAD": "Ich stimme den",
+    "TERMS": "Nutzungsbedingungen",
+    "MIDDLE": "zu und bestätige, dass ich die",
+    "PRIVACY": "Datenschutzerklärung",
+    "TRAIL": "gelesen habe.",
+    "OPENS_NEW_TAB": "(öffnet in neuem Tab)"
   }
 }

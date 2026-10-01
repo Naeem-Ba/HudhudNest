@@ -21,6 +21,8 @@ export interface PageMeta {
   /** Open Graph type — defaults to 'website'; a property page passes 'website' too (there is
    *  no dedicated 'product'/'real_estate' og:type this app opts into). */
   ogType?: string;
+  /** Overrides the default Arabic site name in the title suffix (e.g. 'HudhudNest' for en/de pages). */
+  siteName?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -33,7 +35,7 @@ export class MetaService {
    * تعيين جميع meta tags لصفحة معينة
    */
   setMeta(opts: PageMeta): void {
-    const siteName = 'هدهد نيست';
+    const siteName = opts.siteName ?? 'هدهد نيست';
     const fullTitle = `${opts.title} | ${siteName}`;
 
     // ── Title ──

@@ -1,12 +1,20 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 
 /**
- * The one required, never-pre-checked "I agree to the Privacy Policy and Terms of Service"
- * checkbox shared by every registration form (email, phone, and the combined login/register
- * page). Added for docs/privacy/privacy-gaps.md (P1): none of the registration forms had any
- * consent checkbox at all before this — a user could create an account without ever being
- * shown a link to either document.
+ * The one required, never-pre-checked "I agree to the Terms of Use and acknowledge that I have
+ * read the Privacy Policy" checkbox shared by every registration form (email, phone, and the
+ * combined login/register page). Added for docs/privacy/privacy-gaps.md (P1): none of the
+ * registration forms had any consent checkbox at all before this — a user could create an
+ * account without ever being shown a link to either document.
+ *
+ * The sentence is localized (CONSENT.* keys in ar/en/de.json) and split into LEAD / link /
+ * MIDDLE / link / TRAIL so each language keeps its own word order (German puts the verb after
+ * the first link) while both links stay real, keyboard-reachable anchors.
+ *
+ * This is the required legal consent only. Marketing consent, if it is ever added, must be a
+ * separate, optional control — never folded into this one.
  *
  * Deliberately a plain [checked]/(checkedChange) pair rather than a ControlValueAccessor:
  * the three host forms have unrelated FormGroup shapes, and this keeps wiring it into each
@@ -16,7 +24,7 @@ import { RouterLink } from '@angular/router';
   selector: 'app-consent-checkbox',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink],
+  imports: [RouterLink, TranslateModule],
   template: `
     <label class="consent-checkbox">
       <input
@@ -27,10 +35,10 @@ import { RouterLink } from '@angular/router';
         [attr.aria-required]="true"
       />
       <span class="consent-checkbox__label">
-        أوافق على
-        <a routerLink="/privacy-policy" target="_blank" rel="noopener">سياسة الخصوصية</a>
-        و
-        <a routerLink="/terms-of-service" target="_blank" rel="noopener">شروط الاستخدام</a>
+        {{ 'CONSENT.LEAD' | translate }}
+        <a routerLink="/terms-of-service" target="_blank" rel="noopener">{{ 'CONSENT.TERMS' | translate }}<span class="consent-checkbox__sr"> {{ 'CONSENT.OPENS_NEW_TAB' | translate }}</span></a>
+        {{ 'CONSENT.MIDDLE' | translate }}
+        <a routerLink="/privacy-policy" target="_blank" rel="noopener">{{ 'CONSENT.PRIVACY' | translate }}<span class="consent-checkbox__sr"> {{ 'CONSENT.OPENS_NEW_TAB' | translate }}</span></a>{{ 'CONSENT.TRAIL' | translate }}
       </span>
     </label>
   `,
@@ -53,10 +61,26 @@ import { RouterLink } from '@angular/router';
       cursor: pointer;
     }
 
+    .consent-checkbox__input:focus-visible,
+    .consent-checkbox__label a:focus-visible {
+      outline: 2px solid var(--primary, #2563eb);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+
     .consent-checkbox__label a {
       color: var(--primary, #2563eb);
       font-weight: 600;
       text-decoration: underline;
+    }
+
+    .consent-checkbox__sr {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
     }
   `]
 })

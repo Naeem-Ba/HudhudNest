@@ -6,7 +6,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AuthApiService } from '../../../core/auth/auth-api.service';
 import { ConsentApiService } from '../../../core/api/consent-api.service';
-import { PRIVACY_POLICY_VERSION } from '../../../core/models/consent-versions';
+import { PRIVACY_POLICY_VERSION, TERMS_OF_SERVICE_VERSION } from '../../../core/models/consent-versions';
 import {
   getPasswordPolicyViolations,
   passwordPolicyValidator,
@@ -365,6 +365,8 @@ export class RegisterPage {
       password: raw.password,
       privacyPolicyAccepted: this.privacyConsentAccepted(),
       privacyPolicyVersion: PRIVACY_POLICY_VERSION,
+      termsAccepted: this.privacyConsentAccepted(),
+      termsVersion: TERMS_OF_SERVICE_VERSION,
       consentSource: ConsentApiService.currentSource()
     };
 
