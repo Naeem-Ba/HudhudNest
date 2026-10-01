@@ -5,6 +5,8 @@ import { checkDeployContext } from './deploy-context-guard.mjs';
 
 const STAGING_API = 'https://propertyapi-staging-api.onrender.com/api';
 const PROD_API = 'https://wohnungen-api.onrender.com/api';
+const STAGING_API_CUSTOM = 'https://staging-api.hudhudnest.com/api';
+const PROD_API_CUSTOM = 'https://api.hudhudnest.com/api';
 
 test('production context with the Staging API is rejected (the 2026-09-30 incident)', () => {
   assert.equal(checkDeployContext({ CONTEXT: 'production' }, { API_URL: STAGING_API }).length, 1);
@@ -35,4 +37,11 @@ test('non-Netlify builds (no CONTEXT) are never blocked', () => {
 
 test('other branch deploys are not treated as staging builds', () => {
   assert.deepEqual(checkDeployContext({ CONTEXT: 'branch-deploy', BRANCH: 'feature/x' }, { API_URL: PROD_API }), []);
+});
+
+test('the custom API domains are classified correctly (staging-api must not look like production)', () => {
+  assert.deepEqual(checkDeployContext({ CONTEXT: 'deploy-preview' }, { API_URL: STAGING_API_CUSTOM }), []);
+  assert.equal(checkDeployContext({ CONTEXT: 'deploy-preview' }, { API_URL: PROD_API_CUSTOM }).length, 1);
+  assert.equal(checkDeployContext({ CONTEXT: 'production' }, { API_URL: STAGING_API_CUSTOM }).length, 1);
+  assert.deepEqual(checkDeployContext({ CONTEXT: 'production' }, { API_URL: PROD_API_CUSTOM }), []);
 });

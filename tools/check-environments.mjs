@@ -65,7 +65,8 @@ if (!hasApiBaseConfig(prod) || !hasApiBaseConfig(staging) || !hasApiBaseConfig(d
 // Cross-contamination guards. The Staging bundle must never carry a Production API fallback
 // (it once did -- see the 2026-09-18 note in environment.staging.ts), and the Production bundle
 // must never point at Staging infrastructure.
-const PRODUCTION_API_HOSTS = /wohnungen-api\.onrender\.com|api\.hudhudnest\.com/i;
+// Anchored so `staging-api.hudhudnest.com` (Staging) is not mistaken for `api.hudhudnest.com` (Production).
+const PRODUCTION_API_HOSTS = /(?:^|\/\/)(?:wohnungen-api\.onrender\.com|api\.hudhudnest\.com)(?![\w.-])/i;
 // Only whole-line comments are stripped: a naive `//.*$` would also chop URLs ("https://...").
 const stripComments = source =>
   source.replace(/^\s*\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
