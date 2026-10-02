@@ -1,6 +1,6 @@
 import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { HttpErrorResponse, provideHttpClient, withInterceptors, HttpBackend, HttpClient } from '@angular/common/http';
-import { provideRouter, withHashLocation } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { firstValueFrom, timeout, TimeoutError } from 'rxjs';
 
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -127,7 +127,7 @@ export function restoreSession(
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes, withHashLocation()),
+    provideRouter(routes),
     provideHttpClient(withInterceptors([CsrfInterceptor, AuthInterceptor, ApiErrorInterceptor])),
     {
       provide: APP_INITIALIZER,

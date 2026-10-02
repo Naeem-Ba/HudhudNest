@@ -5,15 +5,22 @@
   <title>HudhudNest</title>
   <base href="/">
   <script>
-    // Shared property links are canonical path URLs (/properties/:id — PropertyShareUrlService),
-    // but the app routes with Angular's hash location (/#/properties/:id), so a visitor landing
-    // on the path form would fall through to the '' -> home redirect. Bridge it to the hash
-    // route before Angular boots. The real query string (utm_* attribution) stays where
-    // AttributionContextService reads it: ahead of the '#'.
+    // The app used to route with Angular's hash location (/#/properties/:id) -- switched to
+    // real paths (/properties/:id) because hash fragments are effectively invisible to search
+    // engines (see ARD-Wohnungsmieten.md ADR-001). Canonical/shared/og:url links never carried
+    // a hash even back then (PropertyShareUrlService always built the plain path form), so this
+    // is purely a backward-compatibility bridge for links already distributed before the switch
+    // -- old #/properties/:id or #/auth/verify-email?... URLs (emails, bookmarks, old shares)
+    // still need to land on real content instead of silently falling through the '**' -> home
+    // route once hash fragments stop meaning anything to the router.
     (function () {
-      var m = /^\/(properties|wohnungen)\/([^\/]+)\/?$/.exec(location.pathname);
-      if (m && !location.hash) {
-        location.replace('/' + location.search + '#/properties/' + m[2]);
+      var hash = location.hash;
+      if (hash.length > 1 && hash.charAt(1) === '/') {
+        var hashPath = hash.slice(1);
+        var queryIndex = hashPath.indexOf('?');
+        var path = queryIndex === -1 ? hashPath : hashPath.slice(0, queryIndex);
+        var hashQuery = queryIndex === -1 ? '' : hashPath.slice(queryIndex);
+        location.replace(path + (hashQuery || location.search));
       }
     })();
   </script>

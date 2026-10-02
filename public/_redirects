@@ -13,8 +13,8 @@
 #      actually works, and it runs BEFORE this file's rules are even considered (Edge
 #      Functions execute first in Netlify's request chain), so it does not need a rule here.
 #
-# Original rule — SPA fallback. Only a safety net: this app uses Angular's hash-based routing
-# (withHashLocation() in app.config.ts), so every real in-app route is a #/... fragment the
-# server never sees; this exists only for a stray non-hash URL (an old bookmark, a search
-# engine indexing something unexpected) to still get the app shell instead of a raw 404.
+# Original rule — SPA fallback. Load-bearing since hash-based routing was removed (see
+# ARD-Wohnungsmieten.md ADR-001): every in-app route (/properties/:id, /auth/verify-email, …) is
+# now a real path the server receives directly, so EVERY one of them depends on this rule to get
+# the app shell instead of a raw 404 — not just a stray non-hash URL anymore.
 /*    /index.html   200
