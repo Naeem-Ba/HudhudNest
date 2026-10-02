@@ -91,14 +91,25 @@ present in the *initial* HTML for crawlers).
 
 **The fix**: `netlify/edge-functions/social-crawler-meta.mjs`, a Netlify Edge Function (Deno)
 that runs in front of `/properties/*`. It inspects the request's User-Agent:
-- a **known crawler** (Facebook, WhatsApp, Telegram, Twitter/X, LinkedIn, Slack, Discord,
-  Pinterest, Skype, Reddit, Apple, Google, Bing, Yandex, …) → fetches the property from the real
-  backend API and returns a small, complete HTML document with the same tags
-  `PropertyMetaService` would set, built by the same rules as
-  `PropertyShareContentService.buildMetaDescription` (intentionally re-implemented in plain JS —
-  see the file header for why it can't literally import the Angular service).
-- **anyone else** (real visitors, unrecognized bots) → `context.next()`, i.e. the normal Angular
-  `index.html`, completely untouched.
+- a **known social link-unfurler** (Facebook, WhatsApp, Telegram, Twitter/X, LinkedIn, Slack,
+  Discord, Pinterest, Skype, Reddit, Apple, …) → fetches the property from the real backend API
+  and returns a small, complete HTML document with the same tags `PropertyMetaService` would set,
+  built by the same rules as `PropertyShareContentService.buildMetaDescription` (intentionally
+  re-implemented in plain JS — see the file header for why it can't literally import the Angular
+  service).
+- **anyone else** (real visitors, Googlebot, Bingbot, Yandex, unrecognized bots) →
+  `context.next()`, i.e. the normal Angular `index.html`, completely untouched.
+
+**Googlebot/Bingbot/Yandex were removed from the crawler list in 2026-10** (see
+`ARD-HudhudNest.md` ADR-001-R). They were originally included for the same reason as the social
+crawlers — hash routing made the real path-based page unreachable by a plain request — but unlike
+Facebook/WhatsApp's unfurlers, they genuinely execute JavaScript. Once hash routing was removed,
+intercepting them here meant a real search engine indexed a stripped-down title/description/
+one-link stand-in instead of the full page a visitor sees (gallery, specs, amenities, nearby
+listings) — a mismatch that is cloaking by Google's own definition regardless of intent. They now
+reach and render the real SPA directly, exactly like a browser. The one thing this function still
+had covered for them — a `noindex` signal for an unpublished/missing property — moved to the SPA
+itself: `PropertyMetaService.markNotFound()`, called from `property-detail.page.ts`'s 404 handling.
 
 This needed no `netlify.toml` change: the function declares its own route via
 `export const config = { path: '/properties/*' }` in the file itself (Netlify's supported

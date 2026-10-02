@@ -267,7 +267,7 @@
         <span aria-hidden="true">📷</span> {{ 'PHOTO_GUIDE.OPEN' | translate }}
       </button>
       <div class="ssf__photos">
-        <img *ngFor="let url of l.photoUrls" [src]="url" class="ssf__photo" />
+        <img *ngFor="let url of l.photoUrls" [src]="url" class="ssf__photo" alt="" />
       </div>
       <input #editPhotoInput type="file" accept="image/png,image/jpeg,image/webp" multiple (change)="onPhotosSelected($event)" [disabled]="uploadingPhotos()" />
       <app-photo-guide-sheet

@@ -14,10 +14,25 @@
 // =============================================================
 
 /**
- * Known Social Sharing & Distribution crawlers/link-unfurlers that do not execute
- * JavaScript (or do so unreliably) — see PropertyMetaService's doc comment in the Angular app
- * for why they need pre-rendered HTML instead. Matched as a case-insensitive substring of the
- * User-Agent header.
+ * Known social link-unfurlers/preview-card generators that do not execute JavaScript (or do so
+ * unreliably) and need pre-rendered HTML instead of the real SPA — see PropertyMetaService's doc
+ * comment in the Angular app. Matched as a case-insensitive substring of the User-Agent header.
+ *
+ * Googlebot, Bingbot, and Yandex are deliberately NOT here (removed 2026-10, see
+ * ARD-HudhudNest.md ADR-001-R and docs/social-sharing.md). They do execute JavaScript, and now
+ * that the app routes with real paths instead of hash fragments, they can reach and render the
+ * real Angular page exactly like a browser does — the same content a visitor sees, in full
+ * (gallery, specs, amenities, nearby listings), not the thin title/description/one-link stand-in
+ * this function returns. Serving search engines a substantially thinner document than real
+ * visitors see is cloaking by Google's own definition, regardless of intent; that risk only
+ * existed here because hash routing made the real page unreachable by a plain HTTP request in
+ * the first place. A 404/unpublished property's noindex signal is now the SPA's own job (see
+ * PropertyMetaService.markNotFound, wired into property-detail.page.ts's 404 handling) rather
+ * than this function's buildNotFoundHtml, which still covers it for the crawlers below.
+ *
+ * Applebot stays: Apple does not operate a general web-ranking search index the way Google/Bing/
+ * Yandex do — it's consumed for Siri Suggestions/Spotlight-style snippets, the same
+ * preview-card-shaped use case as the social crawlers above, not full-page SEO indexing.
  */
 const CRAWLER_USER_AGENT_SIGNATURES = [
   'facebookexternalhit',
@@ -33,9 +48,6 @@ const CRAWLER_USER_AGENT_SIGNATURES = [
   'redditbot',
   'vkshare',
   'applebot',
-  'googlebot',
-  'bingbot',
-  'yandex',
   'embedly',
   'quora link preview',
   'outbrain',
@@ -109,6 +121,95 @@ export function buildSummary(property) {
   return summary.length > MAX_SUMMARY_LENGTH ? `${summary.slice(0, MAX_SUMMARY_LENGTH - 1)}…` : summary;
 }
 
+/** schema.org/Offer.businessFunction — same GoodRelations terms schema.org itself points to.
+ *  Mirrors PropertyStructuredDataService.resolveBusinessFunction on the Angular side (kept in
+ *  sync manually, same reason as buildSummary above: this file cannot import Angular/TS code).
+ *  'ForRentAndSale' maps to neither alone, so it's omitted rather than guessed. */
+function resolveBusinessFunction(listingType) {
+  if (listingType === 'ForSale') return 'http://purl.org/goodrelations/v1#Sell';
+  if (listingType === 'ForRent') return 'http://purl.org/goodrelations/v1#LeaseOut';
+  return null;
+}
+
+/** schema.org/Offer.availability, mapped from PropertyStatus — mirrors
+ *  PropertyStructuredDataService.resolveAvailability on the Angular side. */
+function resolveAvailability(status) {
+  switch (status) {
+    case 'Available': return 'https://schema.org/InStock';
+    case 'Reserved': return 'https://schema.org/LimitedAvailability';
+    case 'Sold':
+    case 'Rented': return 'https://schema.org/SoldOut';
+    case 'Archived': return 'https://schema.org/Discontinued';
+    default: return null;
+  }
+}
+
+function collectImageUrls(property) {
+  const candidates = [
+    property.mainImageUrl,
+    ...(Array.isArray(property.images) ? property.images.map(img => img && img.url) : [])
+  ];
+  const seen = new Set();
+  const urls = [];
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string' && /^https?:\/\//i.test(candidate) && !seen.has(candidate)) {
+      seen.add(candidate);
+      urls.push(candidate);
+    }
+  }
+  return urls;
+}
+
+/**
+ * Builds the schema.org RealEstateListing JSON-LD for one public property — mirrors
+ * PropertyStructuredDataService.buildListing on the Angular side exactly (field for field),
+ * duplicated here rather than shared at runtime for the same reason as buildSummary above: this
+ * is the ONLY document Googlebot/Bingbot ever receive for this route, since both are in
+ * CRAWLER_USER_AGENT_SIGNATURES above — they never reach the real Angular-rendered page (or its
+ * own client-side JSON-LD) at all, so this is not optional/best-effort the way it would be for
+ * a crawler that does execute JS.
+ */
+export function buildListingJsonLd(property, canonicalUrl) {
+  const price = property.purchasePrice ?? property.coldRent ?? property.warmRent;
+  const businessFunction = resolveBusinessFunction(property.listingType);
+  const availability = resolveAvailability(property.status);
+
+  const offers =
+    price != null && property.currencyCode
+      ? {
+          '@type': 'Offer',
+          price,
+          priceCurrency: property.currencyCode,
+          ...(businessFunction ? { businessFunction } : {}),
+          ...(availability ? { availability } : {})
+        }
+      : null;
+
+  const hasAddressData = Boolean(property.street || property.city || property.countryCode);
+  const address = hasAddressData
+    ? {
+        '@type': 'PostalAddress',
+        ...(property.street ? { streetAddress: sanitizeText(property.street) } : {}),
+        ...(property.city ? { addressLocality: sanitizeText(property.city) } : {}),
+        ...(property.countryCode ? { addressCountry: property.countryCode } : {})
+      }
+    : null;
+
+  const images = collectImageUrls(property);
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'RealEstateListing',
+    name: sanitizeText(property.title) || 'عقار',
+    url: canonicalUrl,
+    ...(property.description ? { description: sanitizeText(property.description) } : {}),
+    ...(property.publishedAt ? { datePosted: property.publishedAt } : {}),
+    ...(images.length ? { image: images } : {}),
+    ...(address ? { address } : {}),
+    ...(offers ? { offers } : {})
+  };
+}
+
 /**
  * Builds the full pre-rendered HTML document a crawler receives for one public property.
  * `canonicalUrl` must be the SAME canonical URL used everywhere else (Web Share API,
@@ -128,6 +229,12 @@ export function buildPropertyMetaHtml({ property, canonicalUrl, fallbackImageUrl
   const d = escapeHtml(description);
   const u = escapeHtml(canonicalUrl);
   const img = escapeHtml(image);
+  // < escapes '<' so a value containing a literal "</script>" (e.g. an address or
+  // description field that somehow bypassed sanitizeText above) can never break out of this
+  // <script> tag's content and start injecting markup -- JSON.parse treats < identically
+  // to a literal '<', so this changes nothing about the data once parsed. Never rely on
+  // sanitizeText alone for this: it protects today's fields, not whatever is added here later.
+  const jsonLd = JSON.stringify(buildListingJsonLd(property, canonicalUrl)).replace(/</g, '\\u003c');
 
   return `<!doctype html>
 <html lang="ar" dir="rtl">
@@ -147,6 +254,7 @@ export function buildPropertyMetaHtml({ property, canonicalUrl, fallbackImageUrl
 <meta name="twitter:title" content="${t}">
 <meta name="twitter:description" content="${d}">
 <meta name="twitter:image" content="${img}">
+<script type="application/ld+json">${jsonLd}</script>
 </head>
 <body>
 <h1>${t}</h1>

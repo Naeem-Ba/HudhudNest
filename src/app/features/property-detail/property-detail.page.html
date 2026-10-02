@@ -86,7 +86,7 @@
               [class.gallery__thumb--active]="currentIndex() === i"
               (click)="currentIndex.set(i)"
             >
-              <img [src]="thumbnailUrl(img.url)" [alt]="'صورة ' + (i+1)" loading="lazy" />
+              <img [src]="thumbnailUrl(img.url)" [alt]="thumbnailAlt(img, i)" loading="lazy" />
             </button>
           </div>
 

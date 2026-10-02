@@ -1509,6 +1509,12 @@
     "BACK_HOME": "Back to home",
     "SWITCH_ACCOUNT": "Sign in with another account"
   },
+  "NOT_FOUND": {
+    "TITLE": "Page not found",
+    "MESSAGE": "The link you tried doesn't exist — it may have been moved or removed.",
+    "BACK_HOME": "Back to home",
+    "BROWSE_PROPERTIES": "Browse properties"
+  },
   "CHECKOUT": {
     "META_TITLE": "Complete your order",
     "META_DESCRIPTION": "Review your listing fee and record the payment request.",

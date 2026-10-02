@@ -8,7 +8,7 @@ title مخطط المكوّنات (Component Diagram) — واجهة HudhudNest 
 
 package "app.config.ts / app.routes.ts (الإقلاع والتوجيه)" as Bootstrap {
   [APP_INITIALIZER\npreloadEnums + restoreSession] as Init
-  [provideRouter\nwithHashLocation()] as Router
+  [provideRouter\n(path-based, ADR-001-R)] as Router
 }
 
 package "core/ (لا مكوّنات مرئية)" as Core {
