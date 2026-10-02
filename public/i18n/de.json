@@ -1509,6 +1509,12 @@
     "BACK_HOME": "Zurück zur Startseite",
     "SWITCH_ACCOUNT": "Mit anderem Konto anmelden"
   },
+  "NOT_FOUND": {
+    "TITLE": "Seite nicht gefunden",
+    "MESSAGE": "Der aufgerufene Link existiert nicht — er wurde möglicherweise verschoben oder entfernt.",
+    "BACK_HOME": "Zurück zur Startseite",
+    "BROWSE_PROPERTIES": "Immobilien durchsuchen"
+  },
   "CHECKOUT": {
     "META_TITLE": "Bestellung abschließen",
     "META_DESCRIPTION": "Prüfe deine Inseratsgebühr und erfasse die Zahlungsanforderung.",

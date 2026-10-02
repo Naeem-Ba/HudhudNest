@@ -22,5 +22,6 @@ Disallow: /investments/watchlist
 Disallow: /login
 Disallow: /auth/
 Disallow: /not-authorized
+Disallow: /not-found
 
 Sitemap: https://hudhudnest.com/sitemap.xml

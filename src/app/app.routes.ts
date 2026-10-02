@@ -314,6 +314,15 @@ export const routes: Routes = [
             .then(m => m.NotAuthorizedPage)
       },
       {
+        // The '**' wildcard at the bottom of this file redirects here instead of to 'home' --
+        // see not-found.page.ts's doc comment for why a redirect-to-a-real-page beats silently
+        // rendering the homepage for a dead link (soft-404 avoidance).
+        path: 'not-found',
+        loadComponent: () =>
+          import('./features/not-found/not-found.page')
+            .then(m => m.NotFoundPage)
+      },
+      {
         // One-off listing fees: :kind is 'extension' or 'featured'.
         // Authenticated because both endpoints behind it are owner-only — an anonymous
         // visitor reaching this page could only ever be shown a 401.
@@ -515,5 +524,5 @@ export const routes: Routes = [
         .then(m => m.PhoneChangePage)
   },
 
-  { path: '**', redirectTo: 'home' }
+  { path: '**', redirectTo: 'not-found' }
 ];

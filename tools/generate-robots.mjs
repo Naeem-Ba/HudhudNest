@@ -48,7 +48,14 @@ const DISALLOWED_PATHS = [
   '/investments/watchlist',
   '/login',
   '/auth/',
-  '/not-authorized'
+  '/not-authorized',
+  // Never linked to directly (only reached via the '**' wildcard's client-side redirect) --
+  // listed for the same reason as /not-authorized: a non-JS crawler fetching it raw sees no
+  // per-page noindex meta tag (that's set by NotFoundPage at runtime), so robots.txt is its only
+  // defense. This does NOT block crawling of the arbitrary dead URLs that redirect here --
+  // Disallow matches the literal path a crawler requests, not the client-side destination a
+  // redirect lands on.
+  '/not-found'
 ];
 
 const GENERATED_COMMENT =
