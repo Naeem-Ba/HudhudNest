@@ -5,6 +5,7 @@
 import { DOCUMENT } from '@angular/common';
 import { Injectable, inject } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
+import { environment } from '../../../environments/environment';
 
 export interface PageMeta {
   title:       string;
@@ -85,6 +86,20 @@ export class MetaService {
       this.document.head.appendChild(link);
     }
     link.setAttribute('href', url);
+  }
+
+  /**
+   * Second layer of Staging/preview protection for a crawler that actually executes JS (robots.txt
+   * is generated per-deploy-context to disallow everything outside Production -- see
+   * tools/generate-robots.mjs -- but that is a static file a JS-executing crawler could in
+   * principle ignore once it has already fetched and rendered the page). Called once, at app
+   * bootstrap (AppComponent), never per-route: there is nothing to turn back on later, since
+   * `environment.environmentName` cannot change within a running app instance.
+   */
+  applyGlobalRobotsPolicy(): void {
+    if (environment.environmentName !== 'production') {
+      this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
+    }
   }
 
   /**

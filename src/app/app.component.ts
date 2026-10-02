@@ -16,6 +16,7 @@ import { ToastService } from './shared/services/toast.service';
 import { AttributionContextService } from './core/sharing/attribution-context.service';
 import { ConfirmModalComponent } from './shared/ui/confirm-modal.component';
 import { EnvironmentBadgeComponent } from './shared/ui/environment-badge.component';
+import { MetaService } from './core/services/meta.service';
 
 @Component({
   selector: 'app-root',
@@ -67,6 +68,7 @@ export class AppComponent {
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly attributionContext = inject(AttributionContextService);
+  private readonly metaService = inject(MetaService);
 
   constructor(
     private readonly authService: AuthService,
@@ -79,6 +81,7 @@ export class AppComponent {
     this.languageService.getCurrent();
     nativeBackButton.initialize();
     this.appUpdate.initialize();
+    this.metaService.applyGlobalRobotsPolicy();
     void themeService; // يُطبَّق الوضع الداكن/الفاتح فور إنشاء الخدمة (constructor)
 
     this.router.events
