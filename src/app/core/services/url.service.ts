@@ -16,6 +16,15 @@ export class UrlService {
       return path;
     }
 
+    // The app's own bundled assets (e.g. the /images/no-image.svg placeholder) live on the web
+    // origin, not the API origin. Prefixing them with baseUrl made the placeholder 404 on the split
+    // Netlify/API deployment, and ImageFallbackDirective cannot recover because the failing src
+    // already ends with its fallback path. The API serves nothing under /images/ (uploads are on
+    // Cloudinary), so these paths are always local.
+    if (path.startsWith('/images/')) {
+      return path;
+    }
+
     const cleanPath = path.startsWith('/') ? path : `/${path}`;
     return this.baseUrl + cleanPath;
   }

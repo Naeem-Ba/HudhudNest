@@ -291,6 +291,9 @@
   font-size: .82rem;
   color: var(--gray-500);
   margin: 0;
+  // Never let the row's flex-shrink squeeze the count into a one-word-per-line column.
+  flex: none;
+  white-space: nowrap;
 }
 
 /* ── Main Content ── */
@@ -555,9 +558,20 @@
     align-items: stretch;
   }
 
-  .prop-list-header__inner > .btn,
-  .mobile-filter-bar .btn {
+  .prop-list-header__inner > .btn {
     width: 100%;
+  }
+
+  // The filter button shares its row with the result count, so it fills the remaining width
+  // instead of a hard 100% that forced the count to shrink to ~33px.
+  .mobile-filter-bar {
+    gap: .75rem;
+    align-items: center;
+  }
+
+  .mobile-filter-bar .btn {
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   .range-inputs {

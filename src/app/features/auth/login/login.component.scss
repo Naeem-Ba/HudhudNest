@@ -261,6 +261,9 @@
   align-items: center;
   justify-content: center;
   padding: .25rem;
+  // 44x44 touch target (was ~29px wide): the eye icon sits inside the input, so it is hit by thumb, not cursor.
+  min-width: 44px;
+  min-height: 44px;
   border-radius: var(--r-sm);
 
   &:hover { color: var(--gray-700); }

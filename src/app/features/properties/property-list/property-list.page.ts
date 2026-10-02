@@ -6,6 +6,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  HostListener,
   OnInit,
   computed,
   inject,
@@ -485,6 +486,15 @@ export class PropertyListPage implements OnInit {
 
   closeFilters(): void {
     this.setFiltersOpen(false);
+  }
+
+  // Keyboard users (and tablets with a hardware keyboard) had no way to dismiss the filter drawer
+  // other than finding its close button; Back and the backdrop were already covered.
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.filtersOpen) {
+      this.closeFilters();
+    }
   }
 
   /** نقطة وحيدة تُزامن `filtersOpen` مع قفل تمرير الصفحة — نفس السبب الموثّق بـ NavbarComponent.setMobileMenuOpen. */

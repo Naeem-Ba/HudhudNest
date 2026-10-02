@@ -29,6 +29,8 @@ import { SocialShareService } from '../../core/sharing/social-share.service';
 import { ShareSheetCoordinatorService } from '../../core/sharing/share-sheet-coordinator.service';
 import { ShareProvider, SharePlatform } from '../../core/sharing/share.model';
 import { ToastService } from '../services/toast.service';
+import { OverlayBackHandlerService } from '../../core/services/overlay-back-handler.service';
+import { ScrollLockService } from '../../core/services/scroll-lock.service';
 
 const PLATFORM_ICON: Record<SharePlatform, string> = {
   [SharePlatform.Native]: '📱',
@@ -130,16 +132,18 @@ const PLATFORM_ICON: Record<SharePlatform, string> = {
       width: 100%;
       max-width: 480px;
       max-height: 82vh;
+      max-height: 82dvh;
       overflow-y: auto;
       border-radius: var(--r-lg, 16px) var(--r-lg, 16px) 0 0;
       box-shadow: 0 -8px 40px rgba(0,0,0,.25);
-      padding: 1rem 1.1rem 1.5rem;
+      /* The sheet is anchored to the bottom edge: keep its last row clear of the iPhone home indicator. */
+      padding: 1rem 1.1rem calc(1.5rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
       outline: none;
     }
 
     @media (min-width: 640px) {
       .share-backdrop { align-items: center; padding: 1rem; }
-      .share-sheet { border-radius: var(--r-lg, 16px); max-height: 85vh; }
+      .share-sheet { border-radius: var(--r-lg, 16px); max-height: 85vh; max-height: 85dvh; padding-bottom: 1.5rem; }
     }
 
     .share-sheet__header {
@@ -152,7 +156,7 @@ const PLATFORM_ICON: Record<SharePlatform, string> = {
     .share-sheet__close {
       border: none; background: transparent; font-size: 1.1rem; line-height: 1;
       color: var(--gray-500); cursor: pointer; padding: .35rem; border-radius: var(--r-pill, 999px);
-      min-width: 32px; min-height: 32px;
+      min-width: 44px; min-height: 44px;
     }
     .share-sheet__close:hover { background: var(--border); }
 
@@ -203,6 +207,9 @@ export class PropertyShareButtonComponent implements OnChanges, OnDestroy {
   private readonly coordinator = inject(ShareSheetCoordinatorService);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
+  private readonly scrollLock = inject(ScrollLockService);
+  private readonly overlayBackHandlers = inject(OverlayBackHandlerService);
+  private unregisterBackHandler: (() => void) | null = null;
 
   @Input({ required: true }) property!: Property;
 
@@ -230,6 +237,7 @@ export class PropertyShareButtonComponent implements OnChanges, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.releaseOverlay();
     this.coordinator.release(this.ownerId);
   }
 
@@ -255,6 +263,18 @@ export class PropertyShareButtonComponent implements OnChanges, OnDestroy {
     this.lastFocusedElement = document.activeElement as HTMLElement | null;
     this.sheetOpen.set(true);
 
+    // A full-screen overlay like the gallery lightbox and the drawers: the page behind it must not
+    // scroll, and Android Back closes the sheet instead of leaving the listing.
+    this.scrollLock.lock();
+    this.unregisterBackHandler = this.overlayBackHandlers.register(() => {
+      if (!this.sheetOpen()) {
+        return false;
+      }
+
+      this.close();
+      return true;
+    });
+
     // The sheet enters via *ngIf, so it needs one render cycle to exist in the DOM before it
     // can receive focus — same pattern PropertyDetailPage already uses for scrollToElement.
     setTimeout(() => this.sheetRef?.nativeElement.focus(), 0);
@@ -266,6 +286,7 @@ export class PropertyShareButtonComponent implements OnChanges, OnDestroy {
     }
 
     this.sheetOpen.set(false);
+    this.releaseOverlay();
     this.coordinator.release(this.ownerId);
     this.lastFocusedElement?.focus();
     this.lastFocusedElement = null;
@@ -275,6 +296,16 @@ export class PropertyShareButtonComponent implements OnChanges, OnDestroy {
     if (event.target === event.currentTarget) {
       this.close();
     }
+  }
+
+  private releaseOverlay(): void {
+    if (!this.unregisterBackHandler) {
+      return;
+    }
+
+    this.unregisterBackHandler();
+    this.unregisterBackHandler = null;
+    this.scrollLock.unlock();
   }
 
   iconFor(provider: ShareProvider): string {

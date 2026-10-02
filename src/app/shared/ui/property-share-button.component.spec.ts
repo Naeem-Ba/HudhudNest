@@ -5,6 +5,8 @@ import { SocialShareService } from '../../core/sharing/social-share.service';
 import { ShareProvider, ShareResult, SharePlatform } from '../../core/sharing/share.model';
 import { Property } from '../../core/models/property.model';
 import { ToastService } from '../services/toast.service';
+import { OverlayBackHandlerService } from '../../core/services/overlay-back-handler.service';
+import { ScrollLockService } from '../../core/services/scroll-lock.service';
 
 function makeProperty(overrides: Partial<Property> = {}): Property {
   return { id: 'p1', title: 'شقة للبيع', city: 'دمشق', isPublished: true, ...overrides } as Property;
@@ -152,5 +154,38 @@ describe('PropertyShareButtonComponent', () => {
     await Promise.all([first, second]);
 
     expect(socialShare.shareVia).toHaveBeenCalledTimes(1);
+  });
+});
+
+
+describe('PropertyShareButtonComponent overlay behaviour', () => {
+  it('locks page scroll while the sheet is open and lets Back close it', () => {
+    const socialShare = jasmine.createSpyObj<SocialShareService>('SocialShareService', ['getAvailableProviders', 'shareVia']);
+    socialShare.getAvailableProviders.and.returnValue([makeProvider(SharePlatform.CopyLink)]);
+    const scrollLock = jasmine.createSpyObj<ScrollLockService>('ScrollLockService', ['lock', 'unlock']);
+
+    TestBed.configureTestingModule({
+      imports: [PropertyShareButtonComponent, TranslateModule.forRoot()],
+      providers: [
+        { provide: SocialShareService, useValue: socialShare },
+        { provide: ScrollLockService, useValue: scrollLock },
+        { provide: ToastService, useValue: jasmine.createSpyObj('ToastService', ['success', 'error']) }
+      ]
+    });
+
+    const fixture = TestBed.createComponent(PropertyShareButtonComponent);
+    fixture.componentInstance.property = makeProperty();
+    fixture.componentInstance.ngOnChanges();
+    fixture.detectChanges();
+
+    fixture.componentInstance.open();
+    expect(scrollLock.lock).toHaveBeenCalledTimes(1);
+
+    expect(TestBed.inject(OverlayBackHandlerService).closeTopOverlay()).toBeTrue();
+    expect(fixture.componentInstance.sheetOpen()).toBeFalse();
+    expect(scrollLock.unlock).toHaveBeenCalledTimes(1);
+
+    // Nothing left to consume Back once the sheet is closed.
+    expect(TestBed.inject(OverlayBackHandlerService).closeTopOverlay()).toBeFalse();
   });
 });
