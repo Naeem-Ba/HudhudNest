@@ -57,6 +57,11 @@ import { ScrollLockService } from '../../core/services/scroll-lock.service';
 import { PropertyMetaService } from '../../core/sharing/property-meta.service';
 import { PropertyAttributionTrackingService } from '../../core/sharing/property-attribution-tracking.service';
 import { UrlService } from '../../core/services/url.service';
+import { PropertyStructuredDataService } from '../../core/sharing/property-structured-data.service';
+import { PropertyShareUrlService } from '../../core/sharing/property-share-url.service';
+import { StructuredDataService, BREADCRUMB_JSON_LD_ID } from '../../core/services/structured-data.service';
+
+const LISTING_JSON_LD_ID = 'ld-real-estate-listing';
 
 /** عروض النسخ المصغّرة المطلوبة من Cloudinary للصورة الرئيسية (srcset). */
 const GALLERY_IMAGE_WIDTHS = [480, 768, 1024, 1440, 1920] as const;
@@ -105,6 +110,9 @@ export class PropertyDetailPage implements OnInit {
   private readonly propertyMeta = inject(PropertyMetaService);
   private readonly attributionTracking = inject(PropertyAttributionTrackingService);
   private readonly urlService = inject(UrlService);
+  private readonly propertyStructuredData = inject(PropertyStructuredDataService);
+  private readonly structuredData = inject(StructuredDataService);
+  private readonly shareUrl = inject(PropertyShareUrlService);
 
   // ── State Signals ─────────────────────────────────────────────────────
   readonly property       = signal<Property | null>(null);
@@ -311,6 +319,12 @@ export class PropertyDetailPage implements OnInit {
       this.scrollLock.forceUnlockIfHeldBy(this.modalOpen());
     });
 
+    // Structured data (JSON-LD) must not leak into whatever page is visited next — removed on
+    // leaving this page the same way PropertyMetaService's tags are left stale deliberately
+    // (they get overwritten by the next page's own call) while these must be fully removed
+    // instead, since there is no "neutral" RealEstateListing to fall back to.
+    this.destroyRef.onDestroy(() => this.removeStructuredData());
+
     // ✅ إصلاح: مزامنة معاينة التاريخ (dd/mm/yyyy) — راجع تعليق visitDateSignal أعلاه.
     this.visitForm.controls.visitDate.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -465,6 +479,7 @@ export class PropertyDetailPage implements OnInit {
           // tags for this specific listing. See PropertyMetaService's doc comment for why this
           // alone does not yet cover crawlers that don't execute JavaScript.
           this.propertyMeta.applyTo(data);
+          this.applyStructuredData(data);
           // UTM / Attribution (Phase 2) — a real page view, never fired merely because the
           // Share button was tapped. Deduplicated per property per page session internally
           // (see PropertyAttributionTrackingService.trackView).
@@ -475,12 +490,39 @@ export class PropertyDetailPage implements OnInit {
           // found" state (error stays empty), not a retryable load failure.
           if (err instanceof HttpErrorResponse && err.status === 404) {
             this.property.set(null);
+            this.removeStructuredData();
           } else {
             this.error.set('PROPERTY_DETAIL.LOAD_ERROR');
           }
           this.loading.set(false);
         }
       });
+  }
+
+  /** JSON-LD (schema.org RealEstateListing + BreadcrumbList) for this listing — same
+   *  public-shareable gate as PropertyMetaService.applyTo (no-ops otherwise). */
+  private applyStructuredData(property: Property): void {
+    const listing = this.propertyStructuredData.buildListing(property);
+    if (!listing) {
+      this.removeStructuredData();
+      return;
+    }
+    this.structuredData.setJsonLd(LISTING_JSON_LD_ID, listing);
+
+    const siteOrigin = this.shareUrl.getSiteOrigin();
+    this.structuredData.setJsonLd(
+      BREADCRUMB_JSON_LD_ID,
+      this.structuredData.buildBreadcrumbList([
+        { name: 'الرئيسية', url: `${siteOrigin}/` },
+        { name: 'العقارات', url: `${siteOrigin}/properties` },
+        { name: property.title?.trim() || 'تفاصيل العقار', url: `${siteOrigin}/properties/${property.id}` }
+      ])
+    );
+  }
+
+  private removeStructuredData(): void {
+    this.structuredData.removeJsonLd(LISTING_JSON_LD_ID);
+    this.structuredData.removeJsonLd(BREADCRUMB_JSON_LD_ID);
   }
 
   /**

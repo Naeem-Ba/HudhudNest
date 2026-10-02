@@ -41,6 +41,8 @@ import { ScrollLockService } from '../../../core/services/scroll-lock.service';
 import { UrlService } from '../../../core/services/url.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { FavoriteToggleButtonComponent } from '../../../shared/ui/favorite-toggle-button.component';
+import { StructuredDataService, BREADCRUMB_JSON_LD_ID } from '../../../core/services/structured-data.service';
+import { PropertyShareUrlService } from '../../../core/sharing/property-share-url.service';
 
 @Component({
   selector: 'app-property-list',
@@ -78,6 +80,8 @@ export class PropertyListPage implements OnInit {
   private readonly overlayBackHandlers = inject(OverlayBackHandlerService);
   private readonly scrollLock = inject(ScrollLockService);
   private readonly urlService = inject(UrlService);
+  private readonly structuredData = inject(StructuredDataService);
+  private readonly shareUrl = inject(PropertyShareUrlService);
 
   readonly properties = signal<Property[]>([]);
   readonly loading = signal(false);
@@ -147,6 +151,16 @@ export class PropertyListPage implements OnInit {
       return true;
     });
     this.destroyRef.onDestroy(unregister);
+
+    const siteOrigin = this.shareUrl.getSiteOrigin();
+    this.structuredData.setJsonLd(
+      BREADCRUMB_JSON_LD_ID,
+      this.structuredData.buildBreadcrumbList([
+        { name: 'الرئيسية', url: `${siteOrigin}/` },
+        { name: 'العقارات', url: `${siteOrigin}/properties` }
+      ])
+    );
+    this.destroyRef.onDestroy(() => this.structuredData.removeJsonLd(BREADCRUMB_JSON_LD_ID));
 
     // نفس منطق الـ Drawer الرئيسي بالـ Navbar: قفل تمرير الصفحة الخلفية
     // أثناء فتح فلاتر الجوال (Overlay كامل الشاشة عبر @include bp.tablet)،
