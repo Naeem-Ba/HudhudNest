@@ -74,6 +74,17 @@ export class PropertyMetaService {
     this.meta.setPageRobots('noindex, nofollow');
   }
 
+  /**
+   * Call from the property page's destroy hook. Session audit (2026-10): canonical was never
+   * cleared on navigating away, so a destination page that sets no canonical of its own (most
+   * pages, as of this audit) kept showing the property's canonical link for the rest of the
+   * session. Title/OG tags are deliberately left as-is here (see MetaService.clearCanonical's
+   * doc comment) -- only canonical has no "the next page overwrites it anyway" safety net.
+   */
+  clear(): void {
+    this.meta.clearCanonical();
+  }
+
   private buildTitle(property: Property): string {
     const title = property.title?.trim();
     if (title) {

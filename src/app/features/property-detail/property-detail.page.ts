@@ -325,6 +325,13 @@ export class PropertyDetailPage implements OnInit {
     // instead, since there is no "neutral" RealEstateListing to fall back to.
     this.destroyRef.onDestroy(() => this.removeStructuredData());
 
+    // Canonical is the one tag from PropertyMetaService.applyTo that does NOT get a free pass
+    // from "the next page's own call overwrites it" (session audit, 2026-10) — most pages don't
+    // set a canonical of their own at all, so without this a page left stays pointed at a
+    // property the visitor already navigated away from. See PropertyMetaService.clear's doc
+    // comment for why title/OG are deliberately left out of this.
+    this.destroyRef.onDestroy(() => this.propertyMeta.clear());
+
     // ✅ إصلاح: مزامنة معاينة التاريخ (dd/mm/yyyy) — راجع تعليق visitDateSignal أعلاه.
     this.visitForm.controls.visitDate.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))

@@ -133,4 +133,13 @@ describe('PropertyMetaService', () => {
 
     expect(meta.getTag('name="robots"')).toBeNull();
   });
+
+  it('clear() removes the canonical link left by applyTo (navigating away must not leak it)', () => {
+    service.applyTo(makeProperty());
+    expect(document.querySelector('link[rel="canonical"]')).not.toBeNull();
+
+    service.clear();
+
+    expect(document.querySelector('link[rel="canonical"]')).toBeNull();
+  });
 });
