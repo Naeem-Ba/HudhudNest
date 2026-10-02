@@ -1,6 +1,5 @@
 ﻿import { Routes } from '@angular/router';
 import { LayoutComponent } from './layout/layout';
-import { HomeComponent } from './features/home/home.component';
 import { AuthGuard } from './core/guards/auth-guard';
 import { ListingEligibilityGuard } from './core/guards/listing-eligibility.guard';
 import { AdminMessagesComponent } from './admin/messages/messages.component';
@@ -13,7 +12,18 @@ export const routes: Routes = [
     component: LayoutComponent,
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
-      { path: 'home', component: HomeComponent },
+      {
+        // Session audit (2026-10): HomeComponent was the one route in this entire file still
+        // eagerly imported (a direct `component:` reference at the top of the file) instead of
+        // loadComponent() like every other route here -- despite being the busiest route in the
+        // app ('/' redirects straight to it), which meant it paid for itself in the INITIAL
+        // bundle rather than its own lazy chunk. That's most of why the initial bundle exceeded
+        // angular.json's 600kB budget warning.
+        path: 'home',
+        loadComponent: () =>
+          import('./features/home/home.component')
+            .then(m => m.HomeComponent)
+      },
 
        {
     path: 'landing',
