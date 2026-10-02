@@ -651,12 +651,6 @@ export class PropertyListPage implements OnInit {
     }
   }
 
-  goToDetails(id: string | undefined): void {
-    if (id) {
-      this.router.navigate(['/properties', id]);
-    }
-  }
-
   trackById(_: number, property: Property): string {
     return property.id ?? String(_);
   }
