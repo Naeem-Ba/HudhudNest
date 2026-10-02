@@ -1,10 +1,10 @@
 // =============================================================
 // src/app/features/property-detail/property-detail.page.ts
 //
-// بديل عن: wohnung-detail/wohnung-detail.component.ts
+// صفحة تفاصيل العقار (حلّت محل المكوّن القديم).
 //
 // التحسينات:
-//   ✅ PropertyApiService بدل WohnungenService
+//   ✅ PropertyApiService
 //   ✅ ReviewService مربوط (GET + POST reviews)
 //   ✅ VisitService مربوط (POST visit request)
 //   ✅ Signals + OnPush

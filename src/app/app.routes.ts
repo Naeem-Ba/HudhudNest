@@ -24,6 +24,7 @@ export const routes: Routes = [
   },
 
       {
+        // Legacy URL kept so previously shared/bookmarked links keep working.
         path: 'wohnungen',
         loadComponent: () =>
           import('./features/properties/property-list/property-list.page')
