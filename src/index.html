@@ -32,6 +32,43 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <!--
+    Organization/WebSite JSON-LD (schema.org) -- static, not injected by StructuredDataService
+    (src/app/core/services/structured-data.service.ts), on purpose: this never changes per
+    route or per data, so it belongs in the raw HTML shell, present even before Angular boots
+    (unlike anything StructuredDataService sets, which only exists once a component has run).
+    The URL is always the real production origin, even in a Staging/local build -- this
+    describes which organization the site IS, not which environment is serving this particular
+    response, and Staging/local already carry noindex + a disallow-everything robots.txt
+    (tools/generate-robots.mjs) regardless.
+  -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "HudhudNest",
+    "alternateName": "هدهد نيست",
+    "url": "https://hudhudnest.com",
+    "logo": "https://hudhudnest.com/images/horizontal-logo.png"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "HudhudNest",
+    "alternateName": "هدهد نيست",
+    "url": "https://hudhudnest.com",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://hudhudnest.com/properties?search={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
 </head>
 <body>
   <app-root></app-root>
