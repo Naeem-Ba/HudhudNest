@@ -89,6 +89,22 @@ export class MetaService {
   }
 
   /**
+   * Removes the canonical <link> entirely. For a component whose destroy hook must not leave a
+   * page-specific canonical sitting in the DOM once the user has navigated away, same spirit as
+   * StructuredDataService.removeJsonLd -- unlike title/og:title/description, which the next
+   * page's own setMeta() call naturally overwrites (and which this app's pages deliberately
+   * leave stale in between for that reason, see PropertyDetailPage's destroy hook), canonical
+   * has no such safety net for a destination page that calls setMeta() with no `canonical` at
+   * all (most pages, as of the 2026-10 session audit): it would otherwise keep pointing at the
+   * property/listing the user has already left. Removing it outright is safe regardless of what
+   * comes next -- a destination that sets its own canonical replaces it immediately, and one
+   * that doesn't is correctly left with none rather than a wrong one.
+   */
+  clearCanonical(): void {
+    this.document.querySelector('link[rel="canonical"]')?.remove();
+  }
+
+  /**
    * Second layer of Staging/preview protection for a crawler that actually executes JS (robots.txt
    * is generated per-deploy-context to disallow everything outside Production -- see
    * tools/generate-robots.mjs -- but that is a static file a JS-executing crawler could in
@@ -128,7 +144,53 @@ export class MetaService {
       title:       'منصة عقارية رقمية في سوريا',
       description: 'ابحث عن شقق وعقارات للبيع والإيجار في سوريا بسهولة. صور واضحة، معلومات منظمة، وتواصل مباشر مع المالك أو المكتب العقاري.',
       keywords:    'عقارات سوريا, شقق للإيجار في دمشق, عقارات للبيع في حلب, منصة عقارية سوريا, بيع وشراء العقارات',
-      ogImage:     'https://hudhudnest.com/assets/images/og-cover.jpg',
+      // Was '/assets/images/og-cover.jpg', a file that has never existed in this project (no
+      // assets/images directory at all) -- a broken og:image means a blank/failed preview image
+      // on every Facebook/WhatsApp/Telegram share of this page. Session audit, 2026-10.
+      ogImage:     'https://hudhudnest.com/images/og-default.png',
+    });
+  }
+
+  /**
+   * Meta tags for the real homepage (/home, what '/' redirects to) -- distinct from
+   * setLandingMeta() above, which is a separate, currently-unlinked marketing page. Session
+   * audit (2026-10) found /home called neither this nor anything else: its title/description
+   * were whatever index.html's static shell happened to say ("HudhudNest", no description at
+   * all) and it had no canonical link, same gap this closes for every other page via setMeta.
+   * `canonical` is passed in rather than built here because resolving the site origin
+   * (environment.siteUrl, falling back to window.location.origin) already has a single home in
+   * PropertyShareUrlService.getSiteOrigin() -- this generic service has no reason to depend on
+   * that property-sharing-named one, so the caller (HomeComponent) resolves it instead.
+   */
+  setHomeMeta(canonical: string): void {
+    this.setMeta({
+      title:       'منصة عقارية رقمية في سوريا',
+      description: 'ابحث عن شقق وعقارات للبيع والإيجار في سوريا بسهولة. صور واضحة، معلومات منظمة، وتواصل مباشر مع المالك أو المكتب العقاري.',
+      keywords:    'عقارات سوريا, شقق للإيجار في دمشق, عقارات للبيع في حلب, منصة عقارية سوريا, بيع وشراء العقارات',
+      ogImage:     'https://hudhudnest.com/images/og-default.png',
+      canonical
+    });
+  }
+
+  /**
+   * Meta tags for the property list/search page. Session audit (2026-10) found two gaps here:
+   * no title/description of its own (same "HudhudNest" default as every unhandled page), and no
+   * canonical at all -- the page's own filters (city, price, rooms...) are real query params
+   * (property-list.page.ts calls router.navigate with queryParams), so /properties?city=...&
+   * minPrice=... is a real, distinct, crawlable URL with no canonical pointing back to the base
+   * listing. `canonical` is always the clean `/properties` path with no query string, regardless
+   * of which filters are active when this is called -- consolidating every filtered variant onto
+   * one canonical URL is the standard fix for this class of faceted-search duplicate content,
+   * and still lets Google crawl/index a specific filtered URL on its own if it chooses to; this
+   * only removes the "these are N different pages" signal that a missing canonical implied.
+   */
+  setPropertiesListMeta(canonical: string): void {
+    this.setMeta({
+      title:       'عقارات للبيع والإيجار في سوريا',
+      description: 'تصفّح آلاف العقارات للبيع والإيجار في سوريا — شقق ومنازل في دمشق وحلب وطرطوس وغيرها، مع صور وتفاصيل كاملة وتواصل مباشر مع المالك أو المكتب العقاري.',
+      keywords:    'عقارات للبيع, عقارات للإيجار, شقق سوريا, عقارات دمشق, عقارات حلب',
+      ogImage:     'https://hudhudnest.com/images/og-default.png',
+      canonical
     });
   }
 }

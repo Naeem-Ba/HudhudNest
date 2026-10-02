@@ -43,6 +43,7 @@ import { ToastService } from '../../../shared/services/toast.service';
 import { FavoriteToggleButtonComponent } from '../../../shared/ui/favorite-toggle-button.component';
 import { StructuredDataService, BREADCRUMB_JSON_LD_ID } from '../../../core/services/structured-data.service';
 import { PropertyShareUrlService } from '../../../core/sharing/property-share-url.service';
+import { MetaService } from '../../../core/services/meta.service';
 
 @Component({
   selector: 'app-property-list',
@@ -82,6 +83,7 @@ export class PropertyListPage implements OnInit {
   private readonly urlService = inject(UrlService);
   private readonly structuredData = inject(StructuredDataService);
   private readonly shareUrl = inject(PropertyShareUrlService);
+  private readonly meta = inject(MetaService);
 
   readonly properties = signal<Property[]>([]);
   readonly loading = signal(false);
@@ -153,6 +155,10 @@ export class PropertyListPage implements OnInit {
     this.destroyRef.onDestroy(unregister);
 
     const siteOrigin = this.shareUrl.getSiteOrigin();
+    // Always the clean base path, never including this load's actual filter query params --
+    // see MetaService.setPropertiesListMeta's doc comment for why (consolidates every filtered
+    // /properties?city=...&minPrice=... variant onto one canonical URL).
+    this.meta.setPropertiesListMeta(`${siteOrigin}/properties`);
     this.structuredData.setJsonLd(
       BREADCRUMB_JSON_LD_ID,
       this.structuredData.buildBreadcrumbList([
