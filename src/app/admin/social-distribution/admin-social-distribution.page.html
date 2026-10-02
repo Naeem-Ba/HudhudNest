@@ -19,6 +19,12 @@
     <button type="button" class="tab" [class.tab--active]="activeTab() === 'publications'" (click)="selectTab('publications')">
       المنشورات
     </button>
+    <button type="button" class="tab" [class.tab--active]="activeTab() === 'rules'" (click)="selectTab('rules')">
+      قواعد التوزيع
+    </button>
+    <button type="button" class="tab" [class.tab--active]="activeTab() === 'deadLetters'" (click)="selectTab('deadLetters')">
+      Dead Letters
+    </button>
   </nav>
 
   <!-- ═══════════════ لوحة المعلومات ═══════════════ -->
@@ -64,7 +70,9 @@
         <label class="field">
           <span>المنصة *</span>
           <select formControlName="platform">
-            <option *ngFor="let p of platforms" [value]="p">{{ platformLabel(p) }}</option>
+            <option *ngFor="let p of platforms" [value]="p" [disabled]="!isPlatformLive(p)">
+              {{ platformLabel(p) }}{{ isPlatformLive(p) ? '' : ' (غير متاح — لا ناشر فعلي)' }}
+            </option>
           </select>
         </label>
         <label class="field">
@@ -275,6 +283,235 @@
       <button type="button" [disabled]="!publications().hasNext" (click)="goToPublicationsPage(publications().page + 1)">›</button>
     </div>
   </div>
+
+  <!-- ═══════════════ قواعد التوزيع ═══════════════ -->
+  <div *ngIf="activeTab() === 'rules'">
+    <div class="panel-toolbar">
+      <button type="button" class="btn btn--primary" (click)="openCreateRuleForm()">+ قاعدة جديدة</button>
+
+      <div class="filters">
+        <select [(ngModel)]="ruleActiveFilter" (ngModelChange)="applyRuleFilters()">
+          <option value="">كل الحالات</option>
+          <option value="true">مُفعَّلة</option>
+          <option value="false">معطَّلة</option>
+        </select>
+        <label class="filter-check">
+          <input type="checkbox" [(ngModel)]="ruleIncludeArchived" (ngModelChange)="applyRuleFilters()" />
+          <span>إظهار المؤرشفة</span>
+        </label>
+      </div>
+    </div>
+
+    <p class="hint">
+      القاعدة تحدّد أي عقار منشور يُرسَل تلقائياً إلى أي حساب. عند تعارض عدة قواعد على نفس العقار والحساب تفوز الأكثر تحديداً ثم الأعلى أولوية.
+      لا يُنشأ شيء بلا قاعدة مُفعَّلة.
+    </p>
+
+    <form *ngIf="showRuleForm()" class="entity-form" [formGroup]="ruleForm" (ngSubmit)="saveRule()">
+      <h3>{{ editingRule() ? 'تعديل القاعدة' : 'قاعدة جديدة' }}</h3>
+      <div class="form-grid">
+        <label class="field">
+          <span>اسم القاعدة *</span>
+          <input type="text" formControlName="name" placeholder="مثال: إيجارات دمشق → قناة تيليغرام" />
+        </label>
+        <label class="field">
+          <span>الحساب المستهدف *{{ editingRule() ? ' (لا يتغيّر بعد الإنشاء)' : '' }}</span>
+          <select formControlName="socialAccountId">
+            <option *ngFor="let a of ruleTargetAccounts()" [value]="a.id">{{ a.displayName }} ({{ platformLabel(a.platform) }})</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>المحافظة (فارغ = كل البلاد)</span>
+          <select formControlName="provinceId">
+            <option value="">كل المحافظات</option>
+            <option *ngFor="let g of governorates()" [value]="g.id">{{ g.nameAr }}</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>نوع العقار (فارغ = كل الأنواع)</span>
+          <select formControlName="propertyTypeId">
+            <option value="">كل الأنواع</option>
+            <option *ngFor="let t of propertyTypes()" [value]="t.id">{{ t.nameAr }}</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>نوع الإعلان (فارغ = الكل)</span>
+          <select formControlName="transactionType">
+            <option value="">الكل</option>
+            <option *ngFor="let t of listingTypes" [value]="t">{{ listingTypeLabel(t) }}</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>الأولوية * (الأعلى تفوز)</span>
+          <input type="number" min="0" formControlName="priority" />
+        </label>
+        <label class="field">
+          <span>تبدأ في (اختياري)</span>
+          <input type="datetime-local" formControlName="startAt" class="ltr-inline" />
+        </label>
+        <label class="field">
+          <span>تنتهي في (اختياري)</span>
+          <input type="datetime-local" formControlName="endAt" class="ltr-inline" />
+        </label>
+        <label class="field field--wide">
+          <span>وصف (اختياري)</span>
+          <input type="text" formControlName="description" />
+        </label>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn--primary" [disabled]="savingRule()">
+          {{ savingRule() ? 'جارٍ الحفظ...' : 'حفظ' }}
+        </button>
+        <button type="button" class="btn btn--outline" (click)="closeRuleForm()">إلغاء</button>
+      </div>
+    </form>
+
+    <app-loading-spinner *ngIf="rulesLoading()" label="جارٍ التحميل..."></app-loading-spinner>
+
+    <app-empty-state
+      *ngIf="!rulesLoading() && rules().items.length === 0"
+      icon="🧭"
+      title="لا توجد قواعد توزيع بعد"
+      message="أنشئ قاعدة لتُرسَل العقارات المنشورة تلقائياً إلى حساب معيّن."
+    ></app-empty-state>
+
+    <div class="entity-table" *ngIf="!rulesLoading() && rules().items.length > 0">
+      <div class="row row--rules row--head">
+        <span>القاعدة</span><span>الحساب</span><span>النطاق</span><span>الأولوية</span><span>الحالة</span><span>إجراءات</span>
+      </div>
+      <div class="row row--rules" *ngFor="let rule of rules().items">
+        <span data-label="القاعدة">{{ rule.name }}</span>
+        <span data-label="الحساب">{{ accountName(rule.socialAccountId) }}</span>
+        <span data-label="النطاق">
+          {{ governorateName(rule.provinceId) }} · {{ propertyTypeName(rule.propertyTypeId) }} · {{ listingTypeLabel(rule.transactionType) }}
+        </span>
+        <span data-label="الأولوية">{{ rule.priority }}</span>
+        <span data-label="الحالة">
+          <span
+            class="status-chip"
+            [class.status-chip--active]="rule.isActive && !rule.isArchived"
+            [class.status-chip--muted]="!rule.isActive || rule.isArchived"
+          >
+            {{ rule.isArchived ? 'مؤرشفة' : rule.isActive ? 'مُفعَّلة' : 'معطَّلة' }}
+          </span>
+        </span>
+        <span data-label="إجراءات" class="row__actions">
+          <ng-container *ngIf="!rule.isArchived">
+            <button type="button" class="btn btn--outline btn--sm" [disabled]="ruleActionInFlightId() === rule.id" (click)="toggleRule(rule)">
+              {{ rule.isActive ? 'تعطيل' : 'تفعيل' }}
+            </button>
+            <button type="button" class="btn btn--outline btn--sm" (click)="openEditRuleForm(rule)">تعديل</button>
+            <button type="button" class="btn btn--danger btn--sm" (click)="requestArchive(rule)">أرشفة</button>
+          </ng-container>
+        </span>
+      </div>
+    </div>
+
+    <div class="pagination" *ngIf="!rulesLoading() && rules().totalPages > 1">
+      <button type="button" [disabled]="!rules().hasPrevious" (click)="goToRulesPage(rules().page - 1)">‹</button>
+      <span>{{ rules().page }} / {{ rules().totalPages }}</span>
+      <button type="button" [disabled]="!rules().hasNext" (click)="goToRulesPage(rules().page + 1)">›</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ Dead Letters ═══════════════ -->
+  <div *ngIf="activeTab() === 'deadLetters'">
+    <div class="panel-toolbar">
+      <div class="filters">
+        <select [(ngModel)]="deadLetterView" (ngModelChange)="applyDeadLetterView()">
+          <option value="unresolved">غير المحلولة</option>
+          <option value="resolved">المحلولة</option>
+          <option value="all">الكل</option>
+        </select>
+      </div>
+    </div>
+
+    <p class="hint">
+      منشورات استنفدت محاولاتها (أو فشلت فشلاً لا يُعاد تلقائياً). أصلح السبب أولاً (مثلاً أعد ربط الحساب برمز جديد)، ثم أعد الإدراج.
+      حالة «نتيجة غير مؤكدة» تعني أن المنصة قد تكون استلمت المنشور فعلاً — تحقق منها يدوياً قبل الإعادة حتى لا يتكرر.
+    </p>
+
+    <app-loading-spinner *ngIf="deadLettersLoading()" label="جارٍ التحميل..."></app-loading-spinner>
+
+    <app-empty-state
+      *ngIf="!deadLettersLoading() && deadLetters().items.length === 0"
+      icon="✅"
+      title="لا توجد عناصر هنا"
+    ></app-empty-state>
+
+    <div class="entity-table" *ngIf="!deadLettersLoading() && deadLetters().items.length > 0">
+      <div class="row row--dead row--head">
+        <span>المنصة</span><span>السبب</span><span>المحاولات</span><span>تاريخ الفشل</span><span>الحالة</span><span>إجراءات</span>
+      </div>
+      <div class="row row--dead" *ngFor="let letter of deadLetters().items">
+        <span data-label="المنصة">{{ platformLabel(letter.platform) }}</span>
+        <span data-label="السبب">
+          <strong class="ltr-inline">{{ letter.lastErrorCode }}</strong>
+          <small class="block" *ngIf="deadLetterErrorHint(letter.lastErrorCode)">{{ deadLetterErrorHint(letter.lastErrorCode) }}</small>
+          <small class="block muted">{{ letter.lastErrorMessage }}</small>
+        </span>
+        <span data-label="المحاولات">{{ letter.attempts }}</span>
+        <span data-label="تاريخ الفشل">{{ letter.failedAt | date:'short' }}</span>
+        <span data-label="الحالة">
+          <span class="status-chip" [class.status-chip--active]="letter.resolvedAt" [class.status-chip--danger]="!letter.resolvedAt">
+            {{ letter.resolvedAt ? 'محلول' : 'معلّق' }}
+          </span>
+          <small class="block muted" *ngIf="letter.resolutionNote">{{ letter.resolutionNote }}</small>
+        </span>
+        <span data-label="إجراءات" class="row__actions">
+          <ng-container *ngIf="!letter.resolvedAt">
+            <button type="button" class="btn btn--success btn--sm" [disabled]="deadLetterActionInFlightId() === letter.id" (click)="requeueDeadLetter(letter)">
+              إعادة إدراج
+            </button>
+            <button type="button" class="btn btn--outline btn--sm" [disabled]="deadLetterActionInFlightId() === letter.id" (click)="requestResolve(letter)">
+              تم الحل
+            </button>
+          </ng-container>
+        </span>
+      </div>
+    </div>
+
+    <div class="pagination" *ngIf="!deadLettersLoading() && deadLetters().totalPages > 1">
+      <button type="button" [disabled]="!deadLetters().hasPrevious" (click)="goToDeadLettersPage(deadLetters().page - 1)">‹</button>
+      <span>{{ deadLetters().page }} / {{ deadLetters().totalPages }}</span>
+      <button type="button" [disabled]="!deadLetters().hasNext" (click)="goToDeadLettersPage(deadLetters().page + 1)">›</button>
+    </div>
+  </div>
+
+  <app-confirm-modal
+    [open]="archivingRule() !== null"
+    title="تأكيد أرشفة القاعدة"
+    confirmLabel="أرشفة"
+    cancelLabel="إلغاء"
+    [danger]="true"
+    [loading]="archiving()"
+    (confirmed)="confirmArchive()"
+    (cancelled)="cancelArchive()"
+  >
+    <p *ngIf="archivingRule() as rule">
+      ستتوقف القاعدة "{{ rule.name }}" عن التوزيع نهائياً (لا يُحذف أي صف؛ تبقى ظاهرة عند «إظهار المؤرشفة»). المنشورات الجارية لا تتأثر.
+    </p>
+  </app-confirm-modal>
+
+  <app-confirm-modal
+    [open]="resolvingDeadLetter() !== null"
+    title="تسجيل حلّ"
+    confirmLabel="حفظ"
+    cancelLabel="إلغاء"
+    [loading]="resolving()"
+    (confirmed)="confirmResolve()"
+    (cancelled)="cancelResolve()"
+  >
+    <p>سجّل أنك عالجت هذا الفشل. يمكنك اختيارياً إعادة المنشور إلى الطابور في نفس الخطوة.</p>
+    <label class="field">
+      <span>ملاحظة (اختياري)</span>
+      <input type="text" [(ngModel)]="resolveNote" [ngModelOptions]="{standalone: true}" />
+    </label>
+    <label class="filter-check">
+      <input type="checkbox" [(ngModel)]="resolveRequeue" [ngModelOptions]="{standalone: true}" />
+      <span>أعِد إدراج المنشور في الطابور</span>
+    </label>
+  </app-confirm-modal>
 
   <!-- ربط بيانات الاعتماد — القيمة الفعلية تُرسَل مرة واحدة، تُشفَّر فوراً على الخادم، ولا تُعرض مرة أخرى. -->
   <app-confirm-modal
