@@ -23,18 +23,12 @@ export const routes: Routes = [
     title: 'منصة عقارية رقمية في سوريا'
   },
 
-      {
-        path: 'wohnungen',
-        loadComponent: () =>
-          import('./features/properties/property-list/property-list.page')
-            .then(m => m.PropertyListPage)
-      },
-      {
-        path: 'wohnungen/:id',
-        loadComponent: () =>
-          import('./features/property-detail/property-detail.page')
-            .then(m => m.PropertyDetailPage)
-      },
+      // /wohnungen duplicated /properties (same component, two URLs for identical content --
+      // a duplicate-content SEO problem). /properties is canonical (it's what
+      // PropertyShareUrlService/MetaService/the social-crawler edge function already build), so
+      // /wohnungen now redirects instead of loading its own copy.
+      { path: 'wohnungen', redirectTo: 'properties', pathMatch: 'full' },
+      { path: 'wohnungen/:id', redirectTo: 'properties/:id' },
       {
         path: 'properties',
         loadComponent: () =>

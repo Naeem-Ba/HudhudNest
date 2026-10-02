@@ -84,7 +84,7 @@ export class AppComponent {
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe(event => {
-        this.showAddButton = event.urlAfterRedirects.startsWith('/wohnungen');
+        this.showAddButton = event.urlAfterRedirects.startsWith('/properties');
 
         // ✅ UTM / Attribution (Phase 2): capture happens here — the app root — for EVERY
         // route, not inside PropertyDetailPage or any other feature page. A shared property

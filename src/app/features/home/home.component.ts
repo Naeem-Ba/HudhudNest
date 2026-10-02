@@ -87,7 +87,7 @@ export class HomeComponent implements OnInit {
     if (this.searchListingType) queryParams['listingType'] = this.searchListingType;
     if (this.searchMaxPrice) queryParams['maxPrice'] = this.searchMaxPrice;
 
-    this.router.navigate(['/wohnungen'], { queryParams });
+    this.router.navigate(['/properties'], { queryParams });
   }
 
   /**
