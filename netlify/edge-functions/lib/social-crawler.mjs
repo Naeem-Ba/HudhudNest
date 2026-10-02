@@ -14,10 +14,25 @@
 // =============================================================
 
 /**
- * Known Social Sharing & Distribution crawlers/link-unfurlers that do not execute
- * JavaScript (or do so unreliably) — see PropertyMetaService's doc comment in the Angular app
- * for why they need pre-rendered HTML instead. Matched as a case-insensitive substring of the
- * User-Agent header.
+ * Known social link-unfurlers/preview-card generators that do not execute JavaScript (or do so
+ * unreliably) and need pre-rendered HTML instead of the real SPA — see PropertyMetaService's doc
+ * comment in the Angular app. Matched as a case-insensitive substring of the User-Agent header.
+ *
+ * Googlebot, Bingbot, and Yandex are deliberately NOT here (removed 2026-10, see
+ * ARD-HudhudNest.md ADR-001-R and docs/social-sharing.md). They do execute JavaScript, and now
+ * that the app routes with real paths instead of hash fragments, they can reach and render the
+ * real Angular page exactly like a browser does — the same content a visitor sees, in full
+ * (gallery, specs, amenities, nearby listings), not the thin title/description/one-link stand-in
+ * this function returns. Serving search engines a substantially thinner document than real
+ * visitors see is cloaking by Google's own definition, regardless of intent; that risk only
+ * existed here because hash routing made the real page unreachable by a plain HTTP request in
+ * the first place. A 404/unpublished property's noindex signal is now the SPA's own job (see
+ * PropertyMetaService.markNotFound, wired into property-detail.page.ts's 404 handling) rather
+ * than this function's buildNotFoundHtml, which still covers it for the crawlers below.
+ *
+ * Applebot stays: Apple does not operate a general web-ranking search index the way Google/Bing/
+ * Yandex do — it's consumed for Siri Suggestions/Spotlight-style snippets, the same
+ * preview-card-shaped use case as the social crawlers above, not full-page SEO indexing.
  */
 const CRAWLER_USER_AGENT_SIGNATURES = [
   'facebookexternalhit',
@@ -33,9 +48,6 @@ const CRAWLER_USER_AGENT_SIGNATURES = [
   'redditbot',
   'vkshare',
   'applebot',
-  'googlebot',
-  'bingbot',
-  'yandex',
   'embedly',
   'quora link preview',
   'outbrain',

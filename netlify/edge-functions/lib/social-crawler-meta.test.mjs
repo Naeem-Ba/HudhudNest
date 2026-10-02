@@ -68,6 +68,20 @@ test('passes through for a crawler UA on a non-property route', async () => {
   assert.equal(context.wasCalled, true);
 });
 
+test('passes through (context.next) for Googlebot on a real property -- it renders the SPA itself', async () => {
+  const context = makeNextContext();
+  const request = new Request('https://hudhudnest.com/properties/p1', {
+    headers: { 'user-agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' }
+  });
+
+  const response = await withFetchStub(async () => {
+    throw new Error('must not call the backend -- Googlebot is no longer intercepted here');
+  }, () => handler(request, context));
+
+  assert.equal(context.wasCalled, true);
+  assert.equal(await response.text(), 'spa-passthrough');
+});
+
 test('returns pre-rendered HTML with correct tags for a crawler UA on a real property', async () => {
   const context = makeNextContext();
   const request = new Request('https://hudhudnest.com/properties/p1', {

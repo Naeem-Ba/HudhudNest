@@ -36,6 +36,20 @@ test('isSocialCrawlerUserAgent rejects an empty/missing UA', () => {
   assert.equal(isSocialCrawlerUserAgent(undefined), false);
 });
 
+test('isSocialCrawlerUserAgent rejects Googlebot, Bingbot, and Yandex -- they get the real SPA, not this stand-in', () => {
+  // See CRAWLER_USER_AGENT_SIGNATURES' doc comment: these three run JavaScript and (now that the
+  // app uses real paths, not hash routing) can render the real page themselves. Intercepting them
+  // here would mean search engines index a thinner document than what a visitor actually sees --
+  // cloaking by Google's own definition, regardless of intent.
+  assert.equal(isSocialCrawlerUserAgent('Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'), false);
+  assert.equal(isSocialCrawlerUserAgent('Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)'), false);
+  assert.equal(isSocialCrawlerUserAgent('Mozilla/5.0 (compatible; YandexBot/3.0; +http://yandex.com/bots)'), false);
+});
+
+test('isSocialCrawlerUserAgent still recognizes Applebot (preview/Siri-suggestion use, not a ranking search index)', () => {
+  assert.equal(isSocialCrawlerUserAgent('Mozilla/5.0 (compatible; Applebot/0.1; +http://www.apple.com/go/applebot)'), true);
+});
+
 test('extractPropertyIdFromPath matches /properties/{id} and /properties/{id}/', () => {
   assert.equal(extractPropertyIdFromPath('/properties/abc-123'), 'abc-123');
   assert.equal(extractPropertyIdFromPath('/properties/abc-123/'), 'abc-123');

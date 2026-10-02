@@ -298,7 +298,8 @@ provideHttpClient(withInterceptors([
 - **القرار:** إزالة `withHashLocation()` — `provideRouter(routes)` فقط. الروابط الحقيقية (`/properties/:id`) تطابق الآن تمامًا الروابط الأساسية (canonical) التي كانت `PropertyShareUrlService`/`MetaService` تبنيها أصلاً.
 - **التوافق الخلفي:** روابط `#/...` الموزَّعة مسبقًا (رسائل بريد، مشاركات، إشارات مرجعية) يعالجها سكربت تمهيدي في `index.html` يحوّلها لمسارها الحقيقي قبل إقلاع Angular — انظر `src/index.html`.
 - **تأثير جانبي محلول:** روابط تأكيد البريد/استعادة كلمة المرور (B-14 في `RELEASE-BLOCKERS-AR.md`) لم تعد تحتاج بادئة `#` من الخلفية إطلاقًا — أُزيلت من `EmailConfirmationUrlBuilder`/`PasswordResetUrlBuilder` في مستودع الخلفية بنفس التغيير.
-- **الأدلة:** `app.config.ts`, `src/index.html`, `public/_redirects`.
+- **تأثير جانبي ثانٍ (2026-10، قرار منفصل):** `netlify/edge-functions/social-crawler-meta.mjs` كان يعترض Googlebot/Bingbot/Yandex أيضًا (بنفس مبرر ADR-001 الأصلي: المسار الحقيقي لم يكن قابلاً للوصول إطلاقًا تحت Hash Routing)، ويُعيد لهم وثيقة HTML مختصرة (عنوان ووصف ورابط واحد) بدل الصفحة الحقيقية. بعد هذا الاستبدال لم يعد ذلك مبرَّرًا: هذه الزواحف الثلاثة تُنفِّذ JavaScript فعليًا، فإبقاء اعتراضها يعني أن محرك بحث حقيقي يفهرس محتوى أفقر بكثير مما يراه الزائر — وهذا Cloaking بتعريف Google نفسه بصرف النظر عن النية. أُزيلت الثلاثة من قائمة الزواحف المعترَضة؛ تبقى Facebook/WhatsApp/Telegram وبقية معاينات الروابط الاجتماعية معترَضة (لا تُنفِّذ JavaScript إطلاقًا، والمعاينة المختصرة هي بالضبط ما يُفترض أن تكون). إشارة `noindex` لعقار غير منشور/محذوف أصبحت مسؤولية الواجهة نفسها (`PropertyMetaService.markNotFound()`) بدل دالة الزاحف. انظر `docs/social-sharing.md` للتفاصيل الكاملة.
+- **الأدلة:** `app.config.ts`, `src/index.html`, `public/_redirects`, `netlify/edge-functions/lib/social-crawler.mjs`.
 
 #### ADR-002 — توكن CSRF مُعاد في جسم JSON عبر خدمة مخصَّصة، وإرفاق يدوي على المسارات المتجاوِزة للمُعترِضات
 
