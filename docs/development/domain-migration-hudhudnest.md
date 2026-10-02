@@ -43,7 +43,7 @@ Google Cloud Console ← مشروع `aqar-tech` ← Credentials ← `aqar-tech W
 - عميلا iOS وAndroid يعتمدان على bundle ID / package name ولا يتأثران بالنطاق.
 
 ### 2.3 Apple Sign-In — محجوب: الحساب غير مسجّل في Apple Developer Program
-نتيجة الفحص (2026-09-23): الحساب `naeem.bazzazeh@gmail.com` حساب Apple عادي. صفحة `developer.apple.com/account` تعرض "Jetzt Mitglied im Apple Developer Program werden"، وصفحة Identifiers تعرض "Access Unavailable — only for developers enrolled in a developer program". لذلك لا يوجد Services ID ولا يمكن إنشاؤه قبل الاشتراك (99$ سنويًا).
+نتيجة الفحص (2026-09-23): حساب Apple الشخصي للمالك (بريد شخصي — لا يُستخدم للتواصل مع المستخدمين) حساب Apple عادي. صفحة `developer.apple.com/account` تعرض "Jetzt Mitglied im Apple Developer Program werden"، وصفحة Identifiers تعرض "Access Unavailable — only for developers enrolled in a developer program". لذلك لا يوجد Services ID ولا يمكن إنشاؤه قبل الاشتراك (99$ سنويًا).
 
 الوضع الحالي في الكود: `APPLE_CLIENT_ID` غير معرّف في Netlify، فتكون `appleClientId` فارغة ويُعطَّل زر Apple (`SocialAuthService` يفحص `Boolean(environment.appleClientId?.trim())`).
 

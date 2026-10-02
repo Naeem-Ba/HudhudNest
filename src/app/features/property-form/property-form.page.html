@@ -7,8 +7,8 @@
     <!-- Page Header -->
     <div class="form-page-header">
       <div>
-        <h1>{{ isEditMode() ? ('wohnung_add.edit_title' | translate) : ('wohnung_add.title' | translate) }}</h1>
-        <p>{{ 'wohnung_add.subtitle' | translate }}</p>
+        <h1>{{ isEditMode() ? ('property_add.edit_title' | translate) : ('property_add.title' | translate) }}</h1>
+        <p>{{ 'property_add.subtitle' | translate }}</p>
       </div>
       <a routerLink="/my-listings" class="btn btn--outline btn--sm">
         {{ 'COMMON.CANCEL' | translate }}
@@ -31,12 +31,12 @@
           <div class="form-section__header">
             <span class="form-section__num">١</span>
             <div>
-              <h2 class="form-section__title">{{ 'wohnung_add.listing_type' | translate }}</h2>
-              <p class="form-section__desc">{{ 'wohnung_add.listing_type_desc' | translate }}</p>
+              <h2 class="form-section__title">{{ 'property_add.listing_type' | translate }}</h2>
+              <p class="form-section__desc">{{ 'property_add.listing_type_desc' | translate }}</p>
             </div>
           </div>
           <div class="form-section__body">
-            <div class="listing-type-toggle" role="group" [attr.aria-label]="'wohnung_add.listing_type' | translate">
+            <div class="listing-type-toggle" role="group" [attr.aria-label]="'property_add.listing_type' | translate">
               <button type="button"
                 class="listing-type-btn"
                 [class.listing-type-btn--active]="isSale"
@@ -45,8 +45,8 @@
                   <path d="M3 9.5L11 2l8 7.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.5"/>
                   <path d="M8 21V13h6v8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                 </svg>
-                {{ 'wohnung_add.mode_sale' | translate }}
-                <span class="listing-type-badge">{{ 'wohnung_add.sale_hint' | translate }}</span>
+                {{ 'property_add.mode_sale' | translate }}
+                <span class="listing-type-badge">{{ 'property_add.sale_hint' | translate }}</span>
               </button>
               <button type="button"
                 class="listing-type-btn"
@@ -56,8 +56,8 @@
                   <rect x="1" y="6" width="20" height="15" rx="2" stroke="currentColor" stroke-width="1.5"/>
                   <path d="M6 6V4a5 5 0 0110 0v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                 </svg>
-                {{ 'wohnung_add.mode_rent' | translate }}
-                <span class="listing-type-badge">{{ 'wohnung_add.rent_hint' | translate }}</span>
+                {{ 'property_add.mode_rent' | translate }}
+                <span class="listing-type-badge">{{ 'property_add.rent_hint' | translate }}</span>
               </button>
             </div>
           </div>
@@ -67,29 +67,29 @@
           <div class="form-section__header">
             <span class="form-section__num">٢</span>
             <div>
-              <h2 class="form-section__title">{{ 'wohnung_add.basic_info' | translate }}</h2>
-              <p class="form-section__desc">{{ 'wohnung_add.basic_info_desc' | translate }}</p>
+              <h2 class="form-section__title">{{ 'property_add.basic_info' | translate }}</h2>
+              <p class="form-section__desc">{{ 'property_add.basic_info_desc' | translate }}</p>
             </div>
           </div>
           <div class="form-section__body">
             <div class="form-grid-2">
               <!-- Title -->
               <div class="form-group form-group--full">
-                <label for="title">{{ 'wohnung_add.titel' | translate }} <span class="required">*</span></label>
+                <label for="title">{{ 'property_add.title_label' | translate }} <span class="required">*</span></label>
                 <input id="title" type="text" formControlName="title"
-                  [placeholder]="'wohnung_add.title_placeholder' | translate" />
+                  [placeholder]="'property_add.title_placeholder' | translate" />
                 <p class="field-error" *ngIf="hasError(f.title)">
-                  {{ f.title.errors?.['required'] ? ('VALIDATION.REQUIRED' | translate) : ('wohnung_add.validation_title' | translate) }}
+                  {{ f.title.errors?.['required'] ? ('VALIDATION.REQUIRED' | translate) : ('property_add.validation_title' | translate) }}
                 </p>
               </div>
 
               <!-- Description -->
               <div class="form-group form-group--full">
-                <label for="description">{{ 'wohnung_add.beschreibung' | translate }} <span class="required">*</span></label>
+                <label for="description">{{ 'property_add.description_label' | translate }} <span class="required">*</span></label>
                 <textarea id="description" formControlName="description" rows="5"
-                  [placeholder]="'wohnung_add.desc_placeholder' | translate"></textarea>
+                  [placeholder]="'property_add.desc_placeholder' | translate"></textarea>
                 <p class="field-error" *ngIf="hasError(f.description)">
-                  {{ f.description.errors?.['required'] ? ('VALIDATION.REQUIRED' | translate) : ('wohnung_add.validation_description' | translate) }}
+                  {{ f.description.errors?.['required'] ? ('VALIDATION.REQUIRED' | translate) : ('property_add.validation_description' | translate) }}
                 </p>
               </div>
             </div>
@@ -100,17 +100,17 @@
           <div class="form-section__header">
             <span class="form-section__num">٣</span>
             <div>
-              <h2 class="form-section__title">{{ 'wohnung_add.location' | translate }}</h2>
-              <p class="form-section__desc">{{ 'wohnung_add.location_desc' | translate }}</p>
+              <h2 class="form-section__title">{{ 'property_add.location' | translate }}</h2>
+              <p class="form-section__desc">{{ 'property_add.location_desc' | translate }}</p>
             </div>
           </div>
           <div class="form-section__body">
             <div class="form-grid-2">
               <div class="form-group">
-                <label for="street">{{ 'wohnung_add.adresse' | translate }} <span class="required">*</span></label>
+                <label for="street">{{ 'property_add.address' | translate }} <span class="required">*</span></label>
                 <input id="street" type="text" formControlName="street"
-                  [placeholder]="'wohnung_add.street_placeholder' | translate" />
-                <p class="field-error" *ngIf="hasError(f.street)">{{ 'wohnung_add.validation_address' | translate }}</p>
+                  [placeholder]="'property_add.street_placeholder' | translate" />
+                <p class="field-error" *ngIf="hasError(f.street)">{{ 'property_add.validation_address' | translate }}</p>
               </div>
 
               <div class="form-group">
@@ -210,14 +210,14 @@
                 <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
                   <path d="M7.5 1C5.29 1 3.5 2.79 3.5 5c0 2.62 4 9 4 9s4-6.38 4-9c0-2.21-1.79-4-4-4z" fill="var(--primary)" opacity=".8"/>
                 </svg>
-                {{ 'wohnung_add.map_hint' | translate }}
+                {{ 'property_add.map_hint' | translate }}
               </p>
               <app-map-picker
                 [lang]="currentLang()"
                 (locationChange)="onLocationSelected($event)">
               </app-map-picker>
               <p class="location-preview" *ngIf="f.latitude.value && f.longitude.value">
-                ✓ {{ 'wohnung_add.location_selected' | translate }}: {{ f.latitude.value | number:'1.4-4' }}, {{ f.longitude.value | number:'1.4-4' }}
+                ✓ {{ 'property_add.location_selected' | translate }}: {{ f.latitude.value | number:'1.4-4' }}, {{ f.longitude.value | number:'1.4-4' }}
               </p>
             </div>
           </div>
@@ -227,8 +227,8 @@
           <div class="form-section__header">
             <span class="form-section__num">٤</span>
             <div>
-              <h2 class="form-section__title">{{ 'wohnung_add.pricing' | translate }}</h2>
-              <p class="form-section__desc">{{ 'wohnung_add.pricing_desc' | translate }}</p>
+              <h2 class="form-section__title">{{ 'property_add.pricing' | translate }}</h2>
+              <p class="form-section__desc">{{ 'property_add.pricing_desc' | translate }}</p>
             </div>
           </div>
           <div class="form-section__body">
@@ -246,12 +246,12 @@
               <!-- For Rent -->
               <ng-container *ngIf="isRent">
                 <div class="form-group">
-                  <label for="coldRent">{{ 'wohnung_add.kaltmiete' | translate }} <span class="required">*</span></label>
+                  <label for="coldRent">{{ 'property_add.cold_rent' | translate }} <span class="required">*</span></label>
                   <input id="coldRent" type="number" formControlName="coldRent" min="1" />
                   <p class="field-error" *ngIf="hasError(f['coldRent'])">{{ 'VALIDATION.REQUIRED' | translate }}</p>
                 </div>
                 <div class="form-group">
-                  <label for="warmRent">{{ 'wohnung_add.warmmiete' | translate }}</label>
+                  <label for="warmRent">{{ 'property_add.warm_rent' | translate }}</label>
                   <input id="warmRent" type="number" formControlName="warmRent" min="0" />
                 </div>
                 <div class="form-group">
@@ -267,7 +267,7 @@
               <!-- For Sale -->
               <ng-container *ngIf="isSale">
                 <div class="form-group">
-                  <label for="purchasePrice">{{ 'wohnung_add.kaufpreis' | translate }} <span class="required">*</span></label>
+                  <label for="purchasePrice">{{ 'property_add.purchase_price' | translate }} <span class="required">*</span></label>
                   <input id="purchasePrice" type="number" formControlName="purchasePrice" min="1" />
                   <p class="field-error" *ngIf="hasError(f['purchasePrice'])">{{ 'VALIDATION.REQUIRED' | translate }}</p>
                 </div>
@@ -334,8 +334,8 @@
           <div class="form-section__header">
             <span class="form-section__num">٥</span>
             <div>
-              <h2 class="form-section__title">{{ 'wohnung_add.details' | translate }}</h2>
-              <p class="form-section__desc">{{ 'wohnung_add.details_desc' | translate }}</p>
+              <h2 class="form-section__title">{{ 'property_add.details' | translate }}</h2>
+              <p class="form-section__desc">{{ 'property_add.details_desc' | translate }}</p>
             </div>
           </div>
           <div class="form-section__body">
@@ -344,11 +344,11 @@
                    rather than just left optional, so the form doesn't ask a
                    question that has no meaningful answer for a plot of land. -->
               <div class="form-group" *ngIf="!isLandCategory">
-                <label for="rooms">{{ 'wohnung_add.zimmer' | translate }}</label>
+                <label for="rooms">{{ 'property_add.rooms' | translate }}</label>
                 <input id="rooms" type="number" formControlName="rooms" min="0" step="0.5" />
               </div>
               <div class="form-group">
-                <label for="area">{{ 'wohnung_add.flaeche' | translate }}</label>
+                <label for="area">{{ 'property_add.area' | translate }}</label>
                 <input id="area" type="number" formControlName="area" min="1" />
                 <p class="field-error" *ngIf="hasError(f.area)">
                   {{ f.area.errors?.['areaGreaterThanTen'] ? ('PROPERTY_FORM.AREA_TOO_SMALL' | translate) : ('VALIDATION.REQUIRED' | translate) }}
@@ -368,11 +368,11 @@
                 </select>
               </div>
               <div class="form-group" *ngIf="!isLandCategory">
-                <label for="floor">{{ 'wohnung_add.etage' | translate }}</label>
+                <label for="floor">{{ 'property_add.floor' | translate }}</label>
                 <input id="floor" type="number" formControlName="floor" />
               </div>
               <div class="form-group">
-                <label for="availableFrom">{{ 'wohnung_add.verfuegbar_ab' | translate }}</label>
+                <label for="availableFrom">{{ 'property_add.available_from' | translate }}</label>
                 <input id="availableFrom" type="date" formControlName="availableFrom" />
               </div>
               <div class="form-group" *ngIf="!isLandCategory">
@@ -399,22 +399,22 @@
 
               <!-- Checkboxes: not applicable to Land, same reasoning as Rooms/Floor. -->
               <div class="form-group form-group--full" *ngIf="!isLandCategory">
-                <label class="section-sublabel">{{ 'wohnung_add.features' | translate }}</label>
+                <label class="section-sublabel">{{ 'property_add.features' | translate }}</label>
                 <div class="checkbox-grid">
                   <label class="checkbox-item">
                     <input type="checkbox" formControlName="hasBalcony" />
                     <span class="checkbox-box"></span>
-                    <span>{{ 'wohnung_add.balkon' | translate }}</span>
+                    <span>{{ 'property_add.balcony' | translate }}</span>
                   </label>
                   <label class="checkbox-item">
                     <input type="checkbox" formControlName="hasElevator" />
                     <span class="checkbox-box"></span>
-                    <span>{{ 'wohnung_add.aufzug' | translate }}</span>
+                    <span>{{ 'property_add.elevator' | translate }}</span>
                   </label>
                   <label class="checkbox-item">
                     <input type="checkbox" formControlName="hasParkingSpace" />
                     <span class="checkbox-box"></span>
-                    <span>{{ 'wohnung_add.parkplatz' | translate }}</span>
+                    <span>{{ 'property_add.parking' | translate }}</span>
                   </label>
                 </div>
               </div>
@@ -448,8 +448,8 @@
           <div class="form-section__header">
             <span class="form-section__num">٦</span>
             <div>
-              <h2 class="form-section__title">{{ 'wohnung_add.images' | translate }}</h2>
-              <p class="form-section__desc">{{ 'wohnung_add.images_desc' | translate }}</p>
+              <h2 class="form-section__title">{{ 'property_add.images' | translate }}</h2>
+              <p class="form-section__desc">{{ 'property_add.images_desc' | translate }}</p>
             </div>
           </div>
           <div class="form-section__body">
@@ -466,12 +466,12 @@
                   <rect x="1" y="1" width="38" height="38" rx="8" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"/>
                   <path d="M20 14v12M14 20h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
-                <strong>{{ 'wohnung_add.upload_click' | translate }}</strong>
-                <span>{{ 'wohnung_add.upload_hint' | translate }}</span>
+                <strong>{{ 'property_add.upload_click' | translate }}</strong>
+                <span>{{ 'property_add.upload_hint' | translate }}</span>
               </label>
               <div class="upload-progress" *ngIf="isSaving()">
                 <span class="spinner-ring" style="width:28px;height:28px;border-width:3px"></span>
-                <p>{{ 'wohnung_add.uploading' | translate }}</p>
+                <p>{{ 'property_add.uploading' | translate }}</p>
               </div>
             </div>
 
@@ -532,7 +532,7 @@
               ? ('PROPERTY_FORM.CHECKING_DUPLICATE' | translate)
               : isSaving()
                 ? ('COMMON.SAVING' | translate)
-                : (isEditMode() ? ('COMMON.SAVE_CHANGES' | translate) : ('wohnung_add.submit' | translate)) }}
+                : (isEditMode() ? ('COMMON.SAVE_CHANGES' | translate) : ('property_add.submit' | translate)) }}
         </button>
       </div>
 
