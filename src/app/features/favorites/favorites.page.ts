@@ -131,7 +131,7 @@ interface FavoritePropertyNested {
             <p class="line-clamp-1">📍 {{ getSubtitle(favorite) }}</p>
             <strong>{{ getPrice(favorite) }}</strong>
             <a *ngIf="getPropertyId(favorite) as id"
-               [routerLink]="['/wohnungen', id]">
+               [routerLink]="['/properties', id]">
               {{ 'APARTMENTS.DETAILS' | translate }}
             </a>
           </div>

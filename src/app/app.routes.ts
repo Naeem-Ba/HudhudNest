@@ -1,6 +1,5 @@
 ﻿import { Routes } from '@angular/router';
 import { LayoutComponent } from './layout/layout';
-import { HomeComponent } from './features/home/home.component';
 import { AuthGuard } from './core/guards/auth-guard';
 import { ListingEligibilityGuard } from './core/guards/listing-eligibility.guard';
 import { AdminMessagesComponent } from './admin/messages/messages.component';
@@ -13,7 +12,18 @@ export const routes: Routes = [
     component: LayoutComponent,
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
-      { path: 'home', component: HomeComponent },
+      {
+        // Session audit (2026-10): HomeComponent was the one route in this entire file still
+        // eagerly imported (a direct `component:` reference at the top of the file) instead of
+        // loadComponent() like every other route here -- despite being the busiest route in the
+        // app ('/' redirects straight to it), which meant it paid for itself in the INITIAL
+        // bundle rather than its own lazy chunk. That's most of why the initial bundle exceeded
+        // angular.json's 600kB budget warning.
+        path: 'home',
+        loadComponent: () =>
+          import('./features/home/home.component')
+            .then(m => m.HomeComponent)
+      },
 
        {
     path: 'landing',
@@ -23,18 +33,12 @@ export const routes: Routes = [
     title: 'منصة عقارية رقمية في سوريا'
   },
 
-      {
-        path: 'wohnungen',
-        loadComponent: () =>
-          import('./features/properties/property-list/property-list.page')
-            .then(m => m.PropertyListPage)
-      },
-      {
-        path: 'wohnungen/:id',
-        loadComponent: () =>
-          import('./features/property-detail/property-detail.page')
-            .then(m => m.PropertyDetailPage)
-      },
+      // /wohnungen duplicated /properties (same component, two URLs for identical content --
+      // a duplicate-content SEO problem). /properties is canonical (it's what
+      // PropertyShareUrlService/MetaService/the social-crawler edge function already build), so
+      // /wohnungen now redirects instead of loading its own copy.
+      { path: 'wohnungen', redirectTo: 'properties', pathMatch: 'full' },
+      { path: 'wohnungen/:id', redirectTo: 'properties/:id' },
       {
         path: 'properties',
         loadComponent: () =>
@@ -320,6 +324,15 @@ export const routes: Routes = [
             .then(m => m.NotAuthorizedPage)
       },
       {
+        // The '**' wildcard at the bottom of this file redirects here instead of to 'home' --
+        // see not-found.page.ts's doc comment for why a redirect-to-a-real-page beats silently
+        // rendering the homepage for a dead link (soft-404 avoidance).
+        path: 'not-found',
+        loadComponent: () =>
+          import('./features/not-found/not-found.page')
+            .then(m => m.NotFoundPage)
+      },
+      {
         // One-off listing fees: :kind is 'extension' or 'featured'.
         // Authenticated because both endpoints behind it are owner-only — an anonymous
         // visitor reaching this page could only ever be shown a 401.
@@ -521,5 +534,5 @@ export const routes: Routes = [
         .then(m => m.PhoneChangePage)
   },
 
-  { path: '**', redirectTo: 'home' }
+  { path: '**', redirectTo: 'not-found' }
 ];

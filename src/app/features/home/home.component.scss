@@ -310,6 +310,10 @@
 
 /* ── Property Card ── */
 .prop-card {
+  // Was an <article> (block by default) — now a real <a href> for crawlability, which defaults
+  // to inline. display: block restores the exact same box behavior the grid layout already
+  // assumes (color/text-decoration are reset globally for every <a>, see styles.scss).
+  display: block;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);

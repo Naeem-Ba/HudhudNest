@@ -275,14 +275,11 @@
         class="properties-grid"
         *ngIf="!loading() && !error() && properties().length > 0"
       >
-        <article
+        <a
           *ngFor="let property of properties(); trackBy: trackById"
+          [routerLink]="['/properties', property.id]"
           class="property-card"
           [class.property-card--featured]="property.isFeatured"
-          (click)="goToDetails(property.id)"
-          (keydown.enter)="goToDetails(property.id)"
-          role="button"
-          tabindex="0"
           [attr.aria-label]="property.title"
         >
           <!-- Image -->
@@ -343,7 +340,7 @@
               </span>
             </div>
           </div>
-        </article>
+        </a>
       </div>
 
       <!-- Pagination -->

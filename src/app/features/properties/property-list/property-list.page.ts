@@ -41,6 +41,9 @@ import { ScrollLockService } from '../../../core/services/scroll-lock.service';
 import { UrlService } from '../../../core/services/url.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { FavoriteToggleButtonComponent } from '../../../shared/ui/favorite-toggle-button.component';
+import { StructuredDataService, BREADCRUMB_JSON_LD_ID } from '../../../core/services/structured-data.service';
+import { PropertyShareUrlService } from '../../../core/sharing/property-share-url.service';
+import { MetaService } from '../../../core/services/meta.service';
 
 @Component({
   selector: 'app-property-list',
@@ -78,6 +81,9 @@ export class PropertyListPage implements OnInit {
   private readonly overlayBackHandlers = inject(OverlayBackHandlerService);
   private readonly scrollLock = inject(ScrollLockService);
   private readonly urlService = inject(UrlService);
+  private readonly structuredData = inject(StructuredDataService);
+  private readonly shareUrl = inject(PropertyShareUrlService);
+  private readonly meta = inject(MetaService);
 
   readonly properties = signal<Property[]>([]);
   readonly loading = signal(false);
@@ -147,6 +153,20 @@ export class PropertyListPage implements OnInit {
       return true;
     });
     this.destroyRef.onDestroy(unregister);
+
+    const siteOrigin = this.shareUrl.getSiteOrigin();
+    // Always the clean base path, never including this load's actual filter query params --
+    // see MetaService.setPropertiesListMeta's doc comment for why (consolidates every filtered
+    // /properties?city=...&minPrice=... variant onto one canonical URL).
+    this.meta.setPropertiesListMeta(`${siteOrigin}/properties`);
+    this.structuredData.setJsonLd(
+      BREADCRUMB_JSON_LD_ID,
+      this.structuredData.buildBreadcrumbList([
+        { name: 'الرئيسية', url: `${siteOrigin}/` },
+        { name: 'العقارات', url: `${siteOrigin}/properties` }
+      ])
+    );
+    this.destroyRef.onDestroy(() => this.structuredData.removeJsonLd(BREADCRUMB_JSON_LD_ID));
 
     // نفس منطق الـ Drawer الرئيسي بالـ Navbar: قفل تمرير الصفحة الخلفية
     // أثناء فتح فلاتر الجوال (Overlay كامل الشاشة عبر @include bp.tablet)،
@@ -634,12 +654,6 @@ export class PropertyListPage implements OnInit {
   prevPage(): void {
     if (this.hasPrevious()) {
       this.goToPage(this.currentPage() - 1);
-    }
-  }
-
-  goToDetails(id: string | undefined): void {
-    if (id) {
-      this.router.navigate(['/properties', id]);
     }
   }
 

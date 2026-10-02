@@ -16,6 +16,8 @@ import {
   pickLocalizedName
 } from '../../core/api/lookups-api.service';
 import { LanguageService } from '../../core/services/language.service';
+import { MetaService } from '../../core/services/meta.service';
+import { PropertyShareUrlService } from '../../core/sharing/property-share-url.service';
 
 /** خيارات سقف السعر بحقل البحث — تُرسَل كـ maxPrice لصفحة النتائج. */
 interface HeroPriceOption {
@@ -44,6 +46,8 @@ export class HomeComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly urlService = inject(UrlService);
+  private readonly meta = inject(MetaService);
+  private readonly shareUrl = inject(PropertyShareUrlService);
 
   private readonly propertyImageWidths = [320, 480, 640, 800] as const;
 
@@ -67,6 +71,10 @@ export class HomeComponent implements OnInit {
   searchMaxPrice: number | null = null;
 
   ngOnInit(): void {
+    // Session audit (2026-10): this was the one gap missing from every other page -- '/home' is
+    // what '/' actually redirects to, yet it set no title/description/canonical at all and
+    // inherited whatever index.html's static shell happened to say.
+    this.meta.setHomeMeta(`${this.shareUrl.getSiteOrigin()}/`);
     this.loadLatestProperties();
     this.loadHeroLookups();
   }
@@ -87,7 +95,7 @@ export class HomeComponent implements OnInit {
     if (this.searchListingType) queryParams['listingType'] = this.searchListingType;
     if (this.searchMaxPrice) queryParams['maxPrice'] = this.searchMaxPrice;
 
-    this.router.navigate(['/wohnungen'], { queryParams });
+    this.router.navigate(['/properties'], { queryParams });
   }
 
   /**
