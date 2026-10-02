@@ -580,7 +580,8 @@ export class AdminSocialDistributionPage implements OnInit {
   }
 
   openCreateRuleForm(): void {
-    if (this.ruleTargetAccounts().length === 0) {
+    const firstAccount = this.ruleTargetAccounts()[0];
+    if (!firstAccount) {
       this.toast.show('أنشئ حساباً أولاً — القاعدة تستهدف حساباً محدداً.', 'warning');
       return;
     }
@@ -588,7 +589,7 @@ export class AdminSocialDistributionPage implements OnInit {
     this.ruleForm.reset({
       name: '',
       description: '',
-      socialAccountId: this.ruleTargetAccounts()[0].id,
+      socialAccountId: firstAccount.id,
       provinceId: '',
       propertyTypeId: '',
       transactionType: '',
