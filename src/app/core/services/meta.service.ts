@@ -103,6 +103,24 @@ export class MetaService {
   }
 
   /**
+   * Per-page robots override, for a specific page that must never be indexed regardless of
+   * environment — e.g. a property id that doesn't exist or isn't public anymore. Pass `null` to
+   * clear it again (e.g. a retry that succeeds): this restores the environment's own default
+   * rather than unconditionally removing the tag, so clearing it on a Production page where
+   * nothing else set `robots` is a no-op, while outside Production it never fights
+   * applyGlobalRobotsPolicy's own noindex, which must stay regardless of per-page state.
+   */
+  setPageRobots(content: string | null): void {
+    if (content) {
+      this.meta.updateTag({ name: 'robots', content });
+      return;
+    }
+    if (environment.environmentName === 'production') {
+      this.meta.removeTag('name="robots"');
+    }
+  }
+
+  /**
    * Meta Tags المُعدَّة مسبقاً لصفحة الهبوط
    */
   setLandingMeta(): void {

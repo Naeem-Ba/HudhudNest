@@ -23,20 +23,27 @@ describe('PropertyMetaService', () => {
   let meta: Meta;
   let title: Title;
 
+  let originalEnvironmentName: string;
+
   beforeEach(() => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(PropertyMetaService);
     meta = TestBed.inject(Meta);
     title = TestBed.inject(Title);
     (environment as { siteUrl: string }).siteUrl = 'https://hudhudnest.com';
+    originalEnvironmentName = environment.environmentName;
+    (environment as { environmentName: string }).environmentName = 'production';
 
     // Clean slate — Meta.updateTag persists into the real document between tests otherwise.
     meta.removeTag('property="og:title"');
     meta.removeTag('property="og:url"');
+    meta.removeTag('name="robots"');
     document.querySelector('link[rel="canonical"]')?.remove();
   });
 
   afterEach(() => {
+    (environment as { environmentName: string }).environmentName = originalEnvironmentName;
+    meta.removeTag('name="robots"');
     document.querySelector('link[rel="canonical"]')?.remove();
   });
 
@@ -111,5 +118,19 @@ describe('PropertyMetaService', () => {
 
     expect(title.getTitle()).toBe(titleBefore);
     expect(document.querySelector('link[rel="canonical"]')).toBeNull();
+  });
+
+  it('markNotFound sets a noindex,nofollow robots tag', () => {
+    service.markNotFound();
+    expect(meta.getTag('name="robots"')?.content).toBe('noindex, nofollow');
+  });
+
+  it('applyTo clears a previous markNotFound (a retry that succeeds must not stay noindex)', () => {
+    service.markNotFound();
+    expect(meta.getTag('name="robots"')?.content).toBe('noindex, nofollow');
+
+    service.applyTo(makeProperty());
+
+    expect(meta.getTag('name="robots"')).toBeNull();
   });
 });

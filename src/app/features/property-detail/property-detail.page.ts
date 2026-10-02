@@ -457,6 +457,8 @@ export class PropertyDetailPage implements OnInit {
     if (!id) {
       this.error.set('PROPERTY_DETAIL.NO_ID');
       this.loading.set(false);
+      this.removeStructuredData();
+      this.propertyMeta.markNotFound();
       return;
     }
 
@@ -491,6 +493,7 @@ export class PropertyDetailPage implements OnInit {
           if (err instanceof HttpErrorResponse && err.status === 404) {
             this.property.set(null);
             this.removeStructuredData();
+            this.propertyMeta.markNotFound();
           } else {
             this.error.set('PROPERTY_DETAIL.LOAD_ERROR');
           }
