@@ -1,11 +1,8 @@
-// يغلّف الجزء "التشغيلي الأساسي" من SocialDistributionController على الباك-إند
+// يغلّف SocialDistributionController على الباك-إند
 // (HudhudNestApi.Controllers.SocialDistributionController) — القنوات، الحسابات (بما فيها
-// ربط/فصل بيانات الاعتماد)، ملخص لوحة التحكم، وقائمة المنشورات للعرض فقط. كل نقطة هنا
-// تتطلب دور Admin على الخادم ([Authorize(Roles = "Admin")]).
-//
-// عمداً خارج هذه الجولة (قواعد التوزيع Distribution Rules، حلّ Dead Letters، توليد
-// الأصول): الـAPI جاهز لها بالكامل على الباك-إند، لكن الواجهة تقتصر الآن على ما يلزم
-// لعرض الحالة وربط الحسابات الحقيقية فعلياً بدل Postman/curl.
+// ربط/فصل بيانات الاعتماد)، ملخص لوحة التحكم، قائمة المنشورات للعرض، قواعد التوزيع،
+// وحلّ/إعادة إدراج Dead Letters، وقائمة الناشرين مع isLive. كل نقطة هنا تتطلب دور Admin
+// على الخادم ([Authorize(Roles = "Admin")]). توليد الأصول عمداً خارج الواجهة حتى تُطلَب.
 //
 //   GET  /api/social-distribution/dashboard/summary
 //   GET  /api/social-distribution/channels
@@ -17,7 +14,16 @@
 //   POST /api/social-distribution/accounts/{id}/connect     ← بيانات الاعتماد الفعلية، تُشفَّر فوراً
 //                                                              على الخادم ولا تُعاد أبداً في أي استجابة
 //   POST /api/social-distribution/accounts/{id}/disconnect
-//   GET  /api/social-distribution/publications             ← مُرقَّمة، للعرض فقط في هذه الجولة
+//   GET  /api/social-distribution/publications             ← مُرقَّمة، للعرض فقط
+//   GET  /api/social-distribution/publishers               ← المنصات وهل لها ناشر حقيقي (isLive)
+//   GET  /api/social-distribution/rules                    ← مُرقَّمة، تصفية
+//   POST /api/social-distribution/rules
+//   PATCH /api/social-distribution/rules/{id}
+//   DELETE /api/social-distribution/rules/{id}             ← حذف منطقي (أرشفة)
+//   POST /api/social-distribution/rules/{id}/activate | deactivate
+//   GET  /api/social-distribution/dead-letters             ← مُرقَّمة، resolved=true|false أو الكل
+//   POST /api/social-distribution/dead-letters/{id}/resolve   ← ملاحظة + إعادة إدراج اختيارية
+//   POST /api/social-distribution/dead-letters/{id}/requeue
 //
 // كل الحقول camelCase، وكل enum كسلسلة نصية (JsonStringEnumConverter على الباك-إند).
 import { Injectable } from '@angular/core';
@@ -142,6 +148,84 @@ export interface CreateSocialAccountValue {
   governorateId: number | null;
 }
 
+export type SocialListingType = 'ForRent' | 'ForSale' | 'ForRentAndSale';
+
+/** يطابق SocialPublisherInfoDto — isLive=false يعني أن الناشر المسجَّل مجرد Placeholder يفشل دائماً بـPlatformNotConfigured. */
+export interface SocialPublisherInfoDto {
+  platform: SocialPlatform;
+  capabilities: Record<string, unknown>;
+  isLive: boolean;
+}
+
+/** يطابق DistributionRuleDto. */
+export interface DistributionRuleDto {
+  id: string;
+  name: string;
+  description: string | null;
+  provinceId: number | null;
+  propertyTypeId: number | null;
+  transactionType: SocialListingType | null;
+  socialAccountId: string;
+  priority: number;
+  isActive: boolean;
+  isArchived: boolean;
+  startAt: string | null;
+  endAt: string | null;
+  specificityScore: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DistributionRuleFilter {
+  provinceId?: number;
+  propertyTypeId?: number;
+  transactionType?: SocialListingType;
+  socialAccountId?: string;
+  isActive?: boolean;
+  includeArchived?: boolean;
+  search?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+/** يطابق CreateDistributionRuleRequest على الخادم حرفياً. */
+export interface CreateDistributionRuleValue {
+  name: string;
+  description: string | null;
+  provinceId: number | null;
+  propertyTypeId: number | null;
+  transactionType: SocialListingType | null;
+  socialAccountId: string;
+  priority: number;
+  startAt: string | null;
+  endAt: string | null;
+}
+
+/** يطابق UpdateDistributionRuleRequest — الحساب المستهدف لا يتغيّر بعد الإنشاء. */
+export type UpdateDistributionRuleValue = Omit<CreateDistributionRuleValue, 'socialAccountId'>;
+
+/** يطابق SocialPublicationDeadLetterDto. */
+export interface SocialPublicationDeadLetterDto {
+  id: string;
+  publicationId: string;
+  socialAccountId: string;
+  platform: SocialPlatform;
+  lastErrorCode: string;
+  lastErrorMessage: string;
+  attempts: number;
+  failedAt: string;
+  resolvedAt: string | null;
+  resolvedByUserId: string | null;
+  resolutionNote: string | null;
+}
+
+export interface DeadLetterFilter {
+  /** false = المعلّقة فقط، true = المحلولة فقط، غير محدد = الكل. */
+  resolved?: boolean;
+  page?: number;
+  pageSize?: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdminSocialDistributionService {
   private readonly endpoint = '/social-distribution';
@@ -206,5 +290,70 @@ export class AdminSocialDistributionService {
     return this.api
       .get<SocialPublicationDto[] | ApiPagedResult<SocialPublicationDto>>(`${this.endpoint}/publications`, query)
       .pipe(map(response => normalizePagedResult(response, item => item, page, pageSize)));
+  }
+
+  getPublishers(): Observable<SocialPublisherInfoDto[]> {
+    return this.api.get<SocialPublisherInfoDto[]>(`${this.endpoint}/publishers`);
+  }
+
+  // ── قواعد التوزيع ────────────────────────────────────────────
+
+  getRules(filter: DistributionRuleFilter = {}): Observable<PagedResult<DistributionRuleDto>> {
+    const page = filter.page ?? 1;
+    const pageSize = filter.pageSize ?? 20;
+    const query: Record<string, QueryValue> = { page, pageSize };
+    if (filter.provinceId !== undefined) query['provinceId'] = filter.provinceId;
+    if (filter.propertyTypeId !== undefined) query['propertyTypeId'] = filter.propertyTypeId;
+    if (filter.transactionType) query['transactionType'] = filter.transactionType;
+    if (filter.socialAccountId) query['socialAccountId'] = filter.socialAccountId;
+    if (filter.isActive !== undefined) query['isActive'] = filter.isActive;
+    if (filter.includeArchived !== undefined) query['includeArchived'] = filter.includeArchived;
+    if (filter.search) query['search'] = filter.search;
+
+    return this.api
+      .get<DistributionRuleDto[] | ApiPagedResult<DistributionRuleDto>>(`${this.endpoint}/rules`, query)
+      .pipe(map(response => normalizePagedResult(response, item => item, page, pageSize)));
+  }
+
+  createRule(value: CreateDistributionRuleValue): Observable<DistributionRuleDto> {
+    return this.api.post<DistributionRuleDto>(`${this.endpoint}/rules`, value);
+  }
+
+  updateRule(id: string, value: UpdateDistributionRuleValue): Observable<DistributionRuleDto> {
+    return this.api.patch<DistributionRuleDto>(`${this.endpoint}/rules/${id}`, value);
+  }
+
+  /** حذف منطقي — لا يُزال أي صف فعلياً. */
+  archiveRule(id: string): Observable<DistributionRuleDto> {
+    return this.api.delete<DistributionRuleDto>(`${this.endpoint}/rules/${id}`);
+  }
+
+  activateRule(id: string): Observable<DistributionRuleDto> {
+    return this.api.post<DistributionRuleDto>(`${this.endpoint}/rules/${id}/activate`);
+  }
+
+  deactivateRule(id: string): Observable<DistributionRuleDto> {
+    return this.api.post<DistributionRuleDto>(`${this.endpoint}/rules/${id}/deactivate`);
+  }
+
+  // ── Dead Letters ──────────────────────────────────────────────
+
+  getDeadLetters(filter: DeadLetterFilter = {}): Observable<PagedResult<SocialPublicationDeadLetterDto>> {
+    const page = filter.page ?? 1;
+    const pageSize = filter.pageSize ?? 20;
+    const query: Record<string, QueryValue> = { page, pageSize };
+    if (filter.resolved !== undefined) query['resolved'] = filter.resolved;
+
+    return this.api
+      .get<SocialPublicationDeadLetterDto[] | ApiPagedResult<SocialPublicationDeadLetterDto>>(`${this.endpoint}/dead-letters`, query)
+      .pipe(map(response => normalizePagedResult(response, item => item, page, pageSize)));
+  }
+
+  resolveDeadLetter(id: string, note: string | null, requeue: boolean): Observable<SocialPublicationDeadLetterDto> {
+    return this.api.post<SocialPublicationDeadLetterDto>(`${this.endpoint}/dead-letters/${id}/resolve`, { note, requeue });
+  }
+
+  requeueDeadLetter(id: string): Observable<SocialPublicationDeadLetterDto> {
+    return this.api.post<SocialPublicationDeadLetterDto>(`${this.endpoint}/dead-letters/${id}/requeue`);
   }
 }
