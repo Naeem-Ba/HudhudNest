@@ -20,7 +20,7 @@
 
   <ul class="msl__list" *ngIf="!loading() && listings().length > 0">
     <li class="msl__card" *ngFor="let listing of listings(); trackBy: trackById">
-      <img [src]="listing.mainPhotoUrl || fallbackImage" [appImageFallback]="fallbackImage" class="msl__image" />
+      <img [src]="listing.mainPhotoUrl || fallbackImage" [appImageFallback]="fallbackImage" [alt]="listing.title" class="msl__image" />
       <div class="msl__body">
         <h3>{{ listing.title }}</h3>
         <p class="msl__meta">{{ listing.city || '—' }} · {{ listing.capacity }} {{ 'SHORTSTAY.MY_LISTINGS.GUESTS_SHORT' | translate }}</p>

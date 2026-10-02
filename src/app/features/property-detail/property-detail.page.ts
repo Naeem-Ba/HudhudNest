@@ -41,7 +41,7 @@ import { MessagesApiService } from '../../core/api/messages-api.service';
 import { ProfileService, PublicUserProfile } from '../../core/api/profile.service';
 import { UserProfileApiService } from '../../core/api/user-profile-api.service';
 import { AuthService } from '../../core/auth/auth.service';
-import { Property } from '../../core/models/property.model';
+import { Property, PropertyImage } from '../../core/models/property.model';
 import { REVIEW_COMMENT_MAX_LENGTH, ReviewDto, validateCreateReview } from '../../core/models/review.model';
 import { CreateVisitRequest, validateCreateVisit } from '../../core/models/visit.model';
 import { ServiceOfferingDto, validateCreateServiceRequest } from '../../core/models/service.model';
@@ -858,6 +858,11 @@ export class PropertyDetailPage implements OnInit {
 
   thumbnailUrl(url: string | null | undefined): string {
     return this.urlService.buildResponsiveUrl(url, GALLERY_THUMB_WIDTH) ?? '/images/no-image.svg';
+  }
+
+  thumbnailAlt(img: PropertyImage, index: number): string {
+    const descriptive = img.altText?.trim() || this.property()?.title?.trim();
+    return descriptive ? `${descriptive} - صورة ${index + 1}` : `صورة ${index + 1}`;
   }
 
   /** رانج النجوم 1-5 للعرض */

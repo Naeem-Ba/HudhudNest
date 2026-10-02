@@ -9,10 +9,10 @@
 <div class="ssd" *ngIf="!loading() && !error() && listing() as l">
   <div class="ssd__gallery" *ngIf="l.photoUrls.length > 0">
     <img
-      *ngFor="let url of l.photoUrls.slice(0, 5)"
+      *ngFor="let url of l.photoUrls.slice(0, 5); let i = index"
       [src]="url"
       [appImageFallback]="fallbackImage"
-      [alt]="l.title"
+      [alt]="l.title + ' - صورة ' + (i + 1)"
       class="ssd__gallery-img"
     />
   </div>
