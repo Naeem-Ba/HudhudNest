@@ -29,4 +29,83 @@ http://www.realestateworld.world/*   https://hudhudnest.com/:splat   301!
 # ARD-Wohnungsmieten.md ADR-001): every in-app route (/properties/:id, /auth/verify-email, …) is
 # now a real path the server receives directly, so EVERY one of them depends on this rule to get
 # the app shell instead of a raw 404 — not just a stray non-hash URL anymore.
-/*    /index.html   200
+# KNOWN ROUTES -> the app shell with 200; EVERYTHING ELSE -> the same shell with a real 404.
+# (SEO audit 2026-10-03.) The old single catch-all answered 200 for every URL, i.e. a soft 404 for
+# every dead link. Real files (assets, /i18n, .well-known, favicon...) never reach these rules --
+# Netlify serves an existing file before applying a non-forced rewrite -- and edge functions
+# (/api/auth/*, /geo, /sitemap.xml, /properties/*) run before this file. The app itself still boots
+# from the 404 shell and its router shows NotFoundPage, so visitors see no difference.
+#
+# DANGER: a real route missing from this list answers 404 to crawlers and drops out of the index.
+# The list is the set of first path segments in src/app/app.routes.ts; the drift guard in
+# tools/lib/private-paths.test.mjs fails CI when the two disagree, in either direction. Each
+# segment needs two lines (the page itself and everything below it).
+/home                             /index.html   200
+/home/*                           /index.html   200
+/landing                          /index.html   200
+/landing/*                        /index.html   200
+/wohnungen                        /index.html   200
+/wohnungen/*                      /index.html   200
+/properties                       /index.html   200
+/properties/*                     /index.html   200
+/short-stay                       /index.html   200
+/short-stay/*                     /index.html   200
+/investments                      /index.html   200
+/investments/*                    /index.html   200
+/kontakt                          /index.html   200
+/kontakt/*                        /index.html   200
+/valuation                        /index.html   200
+/valuation/*                      /index.html   200
+/my-listings                      /index.html   200
+/my-listings/*                    /index.html   200
+/my-agency                        /index.html   200
+/my-agency/*                      /index.html   200
+/property-form                    /index.html   200
+/property-form/*                  /index.html   200
+/favorites                        /index.html   200
+/favorites/*                      /index.html   200
+/saved-searches                   /index.html   200
+/saved-searches/*                 /index.html   200
+/notifications                    /index.html   200
+/notifications/*                  /index.html   200
+/visits                           /index.html   200
+/visits/*                         /index.html   200
+/messages                         /index.html   200
+/messages/*                       /index.html   200
+/my-services                      /index.html   200
+/my-services/*                    /index.html   200
+/provider                         /index.html   200
+/provider/*                       /index.html   200
+/users                            /index.html   200
+/users/*                          /index.html   200
+/reviews                          /index.html   200
+/reviews/*                        /index.html   200
+/analytics                        /index.html   200
+/analytics/*                      /index.html   200
+/offline                          /index.html   200
+/offline/*                        /index.html   200
+/pricing                          /index.html   200
+/pricing/*                        /index.html   200
+/privacy-policy                   /index.html   200
+/privacy-policy/*                 /index.html   200
+/terms-of-service                 /index.html   200
+/terms-of-service/*               /index.html   200
+/account-deletion                 /index.html   200
+/account-deletion/*               /index.html   200
+/not-authorized                   /index.html   200
+/not-authorized/*                 /index.html   200
+/not-found                        /index.html   200
+/not-found/*                      /index.html   200
+/checkout                         /index.html   200
+/checkout/*                       /index.html   200
+/profile                          /index.html   200
+/profile/*                        /index.html   200
+/admin                            /index.html   200
+/admin/*                          /index.html   200
+/login                            /index.html   200
+/login/*                          /index.html   200
+/auth                             /index.html   200
+/auth/*                           /index.html   200
+/language                         /index.html   200
+/language/*                       /index.html   200
+/*                                /index.html   404

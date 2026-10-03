@@ -44,6 +44,9 @@ import {
   buildEmptySitemapXml,
   buildStaticUrlEntries,
   buildPropertyUrlEntries,
+  buildShortStayUrlEntries,
+  buildInvestmentUrlEntries,
+  capEntries,
   fetchAllPublishedProperties
 } from './lib/sitemap.mjs';
 
@@ -70,21 +73,33 @@ export default async (request) => {
 
   const apiBaseUrl = (Netlify.env.get('API_URL') || DEFAULT_API_BASE_URL).replace(/\/+$/, '');
 
-  const properties = await fetchAllPublishedProperties(async (page, pageSize) => {
-    const response = await fetch(
-      `${apiBaseUrl}/properties?page=${page}&pageSize=${pageSize}`,
-      { headers: { accept: 'application/json' } }
-    );
+  // All three public lists share the same paged shape ({ items, totalCount }) and the same
+  // partial-failure rule (see fetchAllPublishedProperties): a source that is down contributes
+  // whatever pages it already returned, never an error for the whole sitemap.
+  const fetchList = path => fetchAllPublishedProperties(async (page, pageSize) => {
+    const response = await fetch(`${apiBaseUrl}${path}?page=${page}&pageSize=${pageSize}`, {
+      headers: { accept: 'application/json' }
+    });
     if (!response.ok) {
-      throw new Error(`properties page ${page} responded ${response.status}`);
+      throw new Error(`${path} page ${page} responded ${response.status}`);
     }
     return response.json();
   });
 
-  const xml = buildSitemapXml([
-    ...buildStaticUrlEntries(siteUrl),
-    ...buildPropertyUrlEntries(siteUrl, properties)
+  const [properties, shortStayListings, investmentProjects] = await Promise.all([
+    fetchList('/properties'),
+    fetchList('/short-stay/listings'),
+    fetchList('/investments/projects')
   ]);
+
+  const xml = buildSitemapXml(
+    capEntries([
+      ...buildStaticUrlEntries(siteUrl),
+      ...buildPropertyUrlEntries(siteUrl, properties),
+      ...buildShortStayUrlEntries(siteUrl, shortStayListings),
+      ...buildInvestmentUrlEntries(siteUrl, investmentProjects)
+    ])
+  );
 
   return new Response(xml, {
     status: 200,

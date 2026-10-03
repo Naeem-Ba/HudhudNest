@@ -60,6 +60,41 @@ describe('PropertyStructuredDataService', () => {
     expect(listing.offers.availability).toBe('https://schema.org/LimitedAvailability');
   });
 
+  it('shows a rent the way the page does: warm rent first, as a per-month UnitPriceSpecification', () => {
+    const listing = service.buildListing(
+      makeProperty({ listingType: 'ForRent', purchasePrice: undefined, coldRent: 450, warmRent: 500, currencyCode: 'USD' })
+    ) as { offers: { price: number; priceSpecification: object } };
+
+    expect(listing.offers.price).toBe(500);
+    expect(listing.offers.priceSpecification).toEqual({
+      '@type': 'UnitPriceSpecification',
+      price: 500,
+      priceCurrency: 'USD',
+      unitCode: 'MON'
+    });
+  });
+
+  it('gives a sale no priceSpecification (a purchase price is not per period)', () => {
+    const listing = service.buildListing(
+      makeProperty({ listingType: 'ForSale', purchasePrice: 75000, currencyCode: 'USD' })
+    ) as { offers: Record<string, unknown> };
+
+    expect(listing.offers['priceSpecification']).toBeUndefined();
+  });
+
+  it('includes GeoCoordinates only when both coordinates are real numbers', () => {
+    const withGeo = service.buildListing(makeProperty({ latitude: 33.5, longitude: 36.3 })) as { geo?: object };
+    expect(withGeo.geo).toEqual({ '@type': 'GeoCoordinates', latitude: 33.5, longitude: 36.3 });
+
+    const onlyLat = service.buildListing(makeProperty({ latitude: 33.5, longitude: undefined })) as { geo?: object };
+    expect(onlyLat.geo).toBeUndefined();
+
+    const nullLat = service.buildListing(makeProperty({ latitude: null as unknown as undefined, longitude: 36.3 })) as {
+      geo?: object;
+    };
+    expect(nullLat.geo).toBeUndefined();
+  });
+
   it('omits businessFunction for ForRentAndSale rather than guessing', () => {
     const listing = service.buildListing(makeProperty({ listingType: 'ForRentAndSale' })) as {
       offers: { businessFunction?: string };

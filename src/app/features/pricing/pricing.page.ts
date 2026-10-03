@@ -30,6 +30,7 @@ import { MetaService } from '../../core/services/meta.service';
 import { SubscriptionPlan } from '../../core/models/subscription-plan.model';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { ToastService } from '../../shared/services/toast.service';
+import { PropertyShareUrlService } from '../../core/sharing/property-share-url.service';
 
 @Component({
   selector: 'app-pricing',
@@ -49,6 +50,7 @@ export class PricingPage implements OnInit {
   private readonly translate = inject(TranslateService);
   private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly shareUrl = inject(PropertyShareUrlService);
 
   readonly plans = signal<SubscriptionPlan[]>([]);
   readonly loading = signal(false);
@@ -75,6 +77,7 @@ export class PricingPage implements OnInit {
 
   ngOnInit(): void {
     this.applyMeta();
+    this.destroyRef.onDestroy(() => this.meta.clearCanonical());
     this.load();
 
     this.showPlanRequiredBanner.set(
@@ -217,7 +220,8 @@ export class PricingPage implements OnInit {
       .subscribe(values => {
         this.meta.setMeta({
           title: values['PRICING.META_TITLE'],
-          description: values['PRICING.META_DESCRIPTION']
+          description: values['PRICING.META_DESCRIPTION'],
+          canonical: `${this.shareUrl.getSiteOrigin()}/pricing`
         });
       });
   }

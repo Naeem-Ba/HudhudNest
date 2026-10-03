@@ -195,9 +195,27 @@ function resolveAvailability(status) {
   }
 }
 
+/** The price a visitor sees: monthly rent for a rental (the detail page shows warm rent first,
+ *  then cold rent), the purchase price otherwise. Mirrors resolvePrice in
+ *  property-structured-data.service.ts -- keep the two in sync. */
+function resolvePrice(property) {
+  if (property.listingType === 'ForRent') {
+    const rent = property.warmRent ?? property.coldRent;
+    if (rent != null) {
+      return { price: rent, isMonthlyRent: true };
+    }
+  }
+
+  return { price: property.purchasePrice ?? property.warmRent ?? property.coldRent, isMonthlyRent: false };
+}
+
 function collectImageUrls(property) {
+  // The raw API DTO has mainImageUrl + imageUrls (string[]); the Angular client maps imageUrls
+  // into `images` ({ url }), which this function never sees -- so read imageUrls directly, and
+  // still accept `images` for any caller that passes the mapped shape.
   const candidates = [
     property.mainImageUrl,
+    ...(Array.isArray(property.imageUrls) ? property.imageUrls : []),
     ...(Array.isArray(property.images) ? property.images.map(img => img && img.url) : [])
   ];
   const seen = new Set();
@@ -221,7 +239,7 @@ function collectImageUrls(property) {
  * a crawler that does execute JS.
  */
 export function buildListingJsonLd(property, canonicalUrl) {
-  const price = property.purchasePrice ?? property.coldRent ?? property.warmRent;
+  const { price, isMonthlyRent } = resolvePrice(property);
   const businessFunction = resolveBusinessFunction(property.listingType);
   const availability = resolveAvailability(property.status);
 
@@ -231,6 +249,16 @@ export function buildListingJsonLd(property, canonicalUrl) {
           '@type': 'Offer',
           price,
           priceCurrency: property.currencyCode,
+          ...(isMonthlyRent
+            ? {
+                priceSpecification: {
+                  '@type': 'UnitPriceSpecification',
+                  price,
+                  priceCurrency: property.currencyCode,
+                  unitCode: 'MON'
+                }
+              }
+            : {}),
           ...(businessFunction ? { businessFunction } : {}),
           ...(availability ? { availability } : {})
         }
@@ -246,6 +274,11 @@ export function buildListingJsonLd(property, canonicalUrl) {
       }
     : null;
 
+  const geo =
+    Number.isFinite(property.latitude) && Number.isFinite(property.longitude)
+      ? { '@type': 'GeoCoordinates', latitude: property.latitude, longitude: property.longitude }
+      : null;
+
   const images = collectImageUrls(property);
 
   return {
@@ -257,6 +290,7 @@ export function buildListingJsonLd(property, canonicalUrl) {
     ...(property.publishedAt ? { datePosted: property.publishedAt } : {}),
     ...(images.length ? { image: images } : {}),
     ...(address ? { address } : {}),
+    ...(geo ? { geo } : {}),
     ...(offers ? { offers } : {})
   };
 }
