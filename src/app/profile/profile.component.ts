@@ -15,6 +15,7 @@ import { ToastService } from '../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../shared/ui/loading-spinner.component';
 import { ImageFallbackDirective } from '../shared/directives/image-fallback.directive';
 import { ConfirmModalComponent } from '../shared/ui/confirm-modal.component';
+import { AVATAR_COMPRESSION, compressImageForUpload } from '../shared/utils/image-compression';
 
 @Component({
   selector: 'app-profile',
@@ -153,7 +154,7 @@ export class ProfileComponent implements OnInit {
 
   /**
    */
-  onFileSelected(event: Event): void {
+  async onFileSelected(event: Event): Promise<void> {
     if (!this.avatarUploadAvailable) {
       const translatedMessage = this.translate.instant('PROFILE.MESSAGES.AVATAR_COMING_SOON');
       const fallbackMessage = 'وظيفة رفع الصورة قيد التطوير وستكون متاحة قريبًا.';
@@ -163,15 +164,25 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
+    const picked = (event.target as HTMLInputElement).files?.[0];
+    if (!picked) return;
 
-    if (!this.allowedTypes.includes(file.type)) {
+    if (!this.allowedTypes.includes(picked.type)) {
       this.toast.error(this.translate.instant('PROFILE.MESSAGES.INVALID_IMAGE_TYPE'));
       return;
     }
 
-    if (file.size / 1024 / 1024 > this.maxFileSizeMB) {
+    // A selfie straight from the camera is usually 3-8 MB; the API accepts 2 MB. Shrink instead of refusing.
+    this.isUploading.set(true);
+    let file: File;
+    try {
+      file = await compressImageForUpload(picked, AVATAR_COMPRESSION);
+    } finally {
+      this.isUploading.set(false);
+    }
+
+    // The server's cap is 2,000,000 bytes (UploadUserAvatarCommandHandler.MaxAvatarSize).
+    if (file.size > this.maxFileSizeMB * 1_000_000) {
       this.toast.error(this.translate.instant('PROFILE.MESSAGES.IMAGE_TOO_LARGE'));
       return;
     }

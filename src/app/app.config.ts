@@ -16,6 +16,9 @@ import { normalizeAuthTokenResponse } from './core/models/auth.model';
 import { resolveAuthApiBaseUrl } from './core/auth/auth-api-base-url';
 import { CsrfTokenService } from './core/services/csrf-token.service';
 import { EnumService } from './core/services/enum.service';
+import { GeoCountryService } from './core/services/geo-country.service';
+import { LanguageService } from './core/services/language.service';
+import { resolveFirstVisitLanguage } from './core/i18n/first-visit-language';
 import { TokenStorageService } from './core/services/token-storage.service';
 import { environment } from '../environments/environment';
 
@@ -41,6 +44,36 @@ export function httpLoaderFactory(http: HttpClient): TranslateHttpLoader {
 
 export function preloadEnums(enumService: EnumService): () => Promise<unknown> {
   return () => enumService.loadAll();
+}
+
+/**
+ * First-time visitors only (nothing stored by the language selector or an earlier visit): pick the
+ * starting language from the visitor's country, falling back to the device language. See
+ * first-visit-language.ts for the exact rules and geo-country.service.ts for where the country comes from.
+ *
+ * Runs inside APP_INITIALIZER so the language is settled before anything renders (no visible flip from one
+ * language/direction to another). It cannot delay or break startup: the lookup is capped at
+ * GEO_COUNTRY_TIMEOUT_MS and every failure resolves to "country unknown".
+ */
+export function resolveInitialLanguage(
+  languageService: LanguageService,
+  geoCountry: GeoCountryService
+): () => Promise<void> {
+  return async () => {
+    if (languageService.hasStoredPreference()) {
+      return;
+    }
+
+    const country = await geoCountry.fetchCountryCode();
+    const lang = resolveFirstVisitLanguage({
+      country,
+      deviceLanguages: languageService.getDeviceLanguages()
+    });
+
+    // Remember the answer only when it came from a real country; with no country the same
+    // lookup is simply tried again on the next visit.
+    languageService.use(lang, country ? 'auto' : 'ephemeral');
+  };
 }
 
 /**
@@ -129,6 +162,12 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideHttpClient(withInterceptors([CsrfInterceptor, AuthInterceptor, ApiErrorInterceptor])),
+    {
+      provide: APP_INITIALIZER,
+      useFactory: resolveInitialLanguage,
+      deps: [LanguageService, GeoCountryService],
+      multi: true
+    },
     {
       provide: APP_INITIALIZER,
       useFactory: preloadEnums,

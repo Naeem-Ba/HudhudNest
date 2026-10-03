@@ -14,6 +14,7 @@ import { CITY_MAPS } from '../../../map-picker/city-map.config';
 import { LangCode } from '../../../core/services/language.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../shared/services/toast.service';
+import { LISTING_PHOTO_COMPRESSION, compressImagesForUpload } from '../../../shared/utils/image-compression';
 import {
   AccommodationTypeDto,
   LocationVisibility,
@@ -24,7 +25,8 @@ import {
 
 /** Same limits the backend enforces in AddShortStayListingPhotosCommandHandler. */
 const PHOTO_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const PHOTO_MAX_BYTES = 5 * 1024 * 1024;
+// Server cap is 5,000,000 bytes (AddShortStayListingPhotosCommandHandler.MaxImageSize), not 5 MiB.
+const PHOTO_MAX_BYTES = 5_000_000;
 const PHOTO_MAX_PER_REQUEST = 10;
 
 interface PendingPhoto {
@@ -106,6 +108,8 @@ export class ShortStayListingFormPage implements OnInit {
   /** Photos picked on the create form; uploaded right after the listing exists (the API needs its id). */
   readonly pendingPhotos = signal<PendingPhoto[]>([]);
   readonly maxPhotosPerRequest = PHOTO_MAX_PER_REQUEST;
+  /** True while picked photos are being shrunk in the browser. */
+  readonly processingPhotos = signal(false);
   readonly togglingPublish = signal(false);
 
   // ── الموقع: المحافظة ← المنطقة ← الحي + نقطة على الخريطة ──
@@ -499,27 +503,52 @@ export class ShortStayListingFormPage implements OnInit {
     });
   }
 
-  onPendingPhotosSelected(event: Event): void {
+  async onPendingPhotosSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
-    const accepted: PendingPhoto[] = [];
+    const files = Array.from(input.files ?? []);
+    input.value = '';
+
+    // Type and count are checked first so no time is spent shrinking a photo that would be refused anyway.
+    const candidates: File[] = [];
     let room = PHOTO_MAX_PER_REQUEST - this.pendingPhotos().length;
 
-    for (const file of Array.from(input.files ?? [])) {
+    for (const file of files) {
       if (!PHOTO_ALLOWED_TYPES.includes(file.type)) {
         this.toast.show(this.translate.instant('SHORTSTAY.FORM.PHOTO_INVALID_TYPE', { name: file.name }), 'error');
-      } else if (file.size > PHOTO_MAX_BYTES) {
-        this.toast.show(this.translate.instant('SHORTSTAY.FORM.PHOTO_TOO_LARGE', { name: file.name }), 'error');
       } else if (room <= 0) {
         this.toast.show(this.translate.instant('SHORTSTAY.FORM.PHOTO_LIMIT', { max: PHOTO_MAX_PER_REQUEST }), 'error');
         break;
       } else {
-        accepted.push({ file, previewUrl: URL.createObjectURL(file) });
+        candidates.push(file);
         room--;
       }
     }
 
+    const prepared = await this.shrinkPhotos(candidates);
+    const accepted: PendingPhoto[] = [];
+
+    for (const file of prepared) {
+      if (file.size > PHOTO_MAX_BYTES) {
+        this.toast.show(this.translate.instant('SHORTSTAY.FORM.PHOTO_TOO_LARGE', { name: file.name }), 'error');
+      } else {
+        accepted.push({ file, previewUrl: URL.createObjectURL(file) });
+      }
+    }
+
     this.pendingPhotos.update(list => [...list, ...accepted]);
-    input.value = '';
+  }
+
+  private async shrinkPhotos(files: File[]): Promise<File[]> {
+    if (files.length === 0) {
+      return files;
+    }
+
+    this.processingPhotos.set(true);
+    try {
+      return await compressImagesForUpload(files, LISTING_PHOTO_COMPRESSION);
+    } finally {
+      this.processingPhotos.set(false);
+    }
   }
 
   removePendingPhoto(index: number): void {
@@ -647,13 +676,28 @@ export class ShortStayListingFormPage implements OnInit {
       });
   }
 
-  onPhotosSelected(event: Event): void {
+  async onPhotosSelected(event: Event): Promise<void> {
     const id = this.listingId();
     const input = event.target as HTMLInputElement;
     if (!id || !input.files || input.files.length === 0) return;
 
+    const files = Array.from(input.files);
+    const prepared = (await this.shrinkPhotos(files.filter(file => PHOTO_ALLOWED_TYPES.includes(file.type) || !file.type)))
+      .filter(file => {
+        if (file.size > PHOTO_MAX_BYTES) {
+          this.toast.show(this.translate.instant('SHORTSTAY.FORM.PHOTO_TOO_LARGE', { name: file.name }), 'error');
+          return false;
+        }
+        return true;
+      });
+
+    if (prepared.length === 0) {
+      input.value = '';
+      return;
+    }
+
     this.uploadingPhotos.set(true);
-    this.api.uploadPhotos(id, Array.from(input.files)).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    this.api.uploadPhotos(id, prepared).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.uploadingPhotos.set(false);
         input.value = '';
