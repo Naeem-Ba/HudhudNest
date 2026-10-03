@@ -15,7 +15,6 @@ import { AuthService } from './core/auth/auth.service';
 import { normalizeAuthTokenResponse } from './core/models/auth.model';
 import { resolveAuthApiBaseUrl } from './core/auth/auth-api-base-url';
 import { CsrfTokenService } from './core/services/csrf-token.service';
-import { EnumService } from './core/services/enum.service';
 import { GeoCountryService } from './core/services/geo-country.service';
 import { LanguageService } from './core/services/language.service';
 import { resolveFirstVisitLanguage } from './core/i18n/first-visit-language';
@@ -40,10 +39,6 @@ function isNetworkOrTimeoutError(error: unknown): boolean {
 
 export function httpLoaderFactory(http: HttpClient): TranslateHttpLoader {
   return new TranslateHttpLoader(http, '/i18n/', '.json');
-}
-
-export function preloadEnums(enumService: EnumService): () => Promise<unknown> {
-  return () => enumService.loadAll();
 }
 
 /**
@@ -168,12 +163,9 @@ export const appConfig: ApplicationConfig = {
       deps: [LanguageService, GeoCountryService],
       multi: true
     },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: preloadEnums,
-      deps: [EnumService],
-      multi: true
-    },
+    // No enum preload here (performance audit 2026-10-03, B5): it fired 10 GET /api/enums/* requests
+    // before the first render, on every page load, for a lookup only the property form reads, and that
+    // screen already awaits EnumService.ensureLoaded() itself.
     {
       provide: APP_INITIALIZER,
       useFactory: restoreSession,

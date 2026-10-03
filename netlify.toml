@@ -98,3 +98,43 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "geolocation=(self), camera=(), microphone=(), payment=(), usb=()"
     Content-Security-Policy-Report-Only = "default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com https://appleid.cdn-apple.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://res.cloudinary.com https://*.tile.openstreetmap.org https://www.openstreetmap.org; connect-src 'self' https://api.hudhudnest.com wss://api.hudhudnest.com https://*.onrender.com wss://*.onrender.com https://accounts.google.com https://appleid.apple.com; frame-src https://accounts.google.com https://appleid.apple.com; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self' https://appleid.apple.com; frame-ancestors 'none'"
+
+
+## Caching (performance audit 2026-10-03, B7). Netlify's default for every file is
+## `public,max-age=0,must-revalidate`, so a returning visitor re-validated all ~35-65 files of the app
+## on every page load. Only files whose NAME changes when their content changes may be immutable:
+## Angular emits those with `outputHashing: "all"` (main-XXXX.js, chunk-XXXX.js, polyfills-XXXX.js,
+## styles-XXXX.css and the hashed assets under /media/). index.html, manifest, the i18n JSON and the
+## unhashed /images/* keep a name across deploys, so they must never be immutable: index.html stays on
+## Netlify's revalidate default (it is what points at the new hashed files), the i18n JSON likewise,
+## and /images/* gets a bounded one-day cache that serves stale for up to a week while it refreshes.
+## tools/lib/cache-headers.test.mjs pins this split.
+[[headers]]
+  for = "/main-*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/chunk-*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/polyfills-*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/styles-*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/media/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"
