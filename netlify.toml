@@ -72,3 +72,29 @@
   [headers.values]
     Content-Type = "application/json"
     Cache-Control = "public, max-age=3600"
+
+## Security headers (security audit 2026-10-03, F-05). Before this, the SPA was served with only
+## Netlify's default HSTS: no clickjacking protection, no nosniff, no referrer policy, no CSP. (The API
+## host already sends all of these -- see SecurityHeadersMiddleware in the API repo.)
+##
+## Rules for editing this block:
+##   * HSTS is left to Netlify's default (max-age=31536000). `includeSubDomains`/`preload` on the apex
+##     would bind every subdomain to HTTPS-only; decide that deliberately, not here.
+##   * No Cross-Origin-Opener-Policy: Google Sign-In opens a popup and needs window.opener.
+##   * Permissions-Policy keeps geolocation for this origin (geo search); everything else is denied.
+##   * Content-Security-Policy is REPORT-ONLY on purpose. It was written from the origins the code
+##     actually references (API, Google/Apple sign-in, Cloudinary, OpenStreetMap, Google Fonts), not from
+##     a live traffic review, and `'unsafe-inline'` is still required by the inline bootstrap script and
+##     Angular's inlined critical CSS. Next steps for whoever owns this: watch the browser console /
+##     add a report-to endpoint for a week, tighten `connect-src` to the exact API hosts, replace
+##     `'unsafe-inline'` with hashes/nonces, then switch the header name to Content-Security-Policy.
+##     tools/lib/security-headers.test.mjs pins the shape so it cannot silently become enforcing or
+##     gain 'unsafe-eval'.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(self), camera=(), microphone=(), payment=(), usb=()"
+    Content-Security-Policy-Report-Only = "default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com https://appleid.cdn-apple.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://res.cloudinary.com https://*.tile.openstreetmap.org https://www.openstreetmap.org; connect-src 'self' https://api.hudhudnest.com wss://api.hudhudnest.com https://*.onrender.com wss://*.onrender.com https://accounts.google.com https://appleid.apple.com; frame-src https://accounts.google.com https://appleid.apple.com; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self' https://appleid.apple.com; frame-ancestors 'none'"
