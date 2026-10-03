@@ -75,6 +75,11 @@ function isAuthEndpoint(url: string): boolean {
   );
 }
 
+/** The only auth endpoint that is [Authorize]-protected and so must carry the access token. */
+function isLogoutEndpoint(url: string): boolean {
+  return toAbsoluteUrl(url).includes('/auth/logout');
+}
+
 function withBearerToken(req: Parameters<HttpInterceptorFn>[0], token: string) {
   return req.clone({
     setHeaders: {
@@ -233,7 +238,10 @@ export const RefreshAuthInterceptor: HttpInterceptorFn = (req, next) => {
   const isAuthRequest = isAuthEndpoint(req.url);
   const accessToken = tokenStorage.getAccessToken();
 
-  const request = isApiRequest && !isAuthRequest && accessToken && !req.headers.has('Authorization')
+  // POST /auth/logout is the one auth endpoint behind [Authorize]: without the Bearer token the API
+  // answers 401, the refresh_token cookie stays valid and the next load silently restores the session.
+  const needsBearer = !isAuthRequest || isLogoutEndpoint(req.url);
+  const request = isApiRequest && needsBearer && accessToken && !req.headers.has('Authorization')
     ? withBearerToken(req, accessToken)
     : req;
 

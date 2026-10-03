@@ -83,3 +83,60 @@ describe('RefreshAuthInterceptor — B-20 CSRF header on the refresh bypass call
     httpMock.expectOne(`${environment.apiUrl}/listings/mine`).flush({ items: [] });
   });
 });
+
+// Core E2E audit 2026-10-02, B-1: POST /auth/logout is [Authorize]-protected but used to go out
+// without a Bearer header (it sits in isAuthEndpoint's list), so the API answered 401, the
+// refresh_token cookie stayed valid and the next page load silently restored the session.
+describe('RefreshAuthInterceptor — logout must carry the Bearer token', () => {
+  let http: HttpClient;
+  let httpMock: HttpTestingController;
+  let liveToken: string;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        provideHttpClient(withInterceptors([RefreshAuthInterceptor])),
+        provideHttpClientTesting()
+      ]
+    });
+
+    http = TestBed.inject(HttpClient);
+    httpMock = TestBed.inject(HttpTestingController);
+    // AuthService.validateSession() drops anything that is not an unexpired JWT, so use a well-formed one.
+    const payload = btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600 }));
+    liveToken = `h.${payload}.s`;
+    TestBed.inject(TokenStorageService).setAccessToken(liveToken);
+  });
+
+  afterEach(() => httpMock.verify());
+
+  it('✅ POST /auth/logout يُرسل Authorization: Bearer عند وجود توكن', () => {
+    http.post(`${environment.apiUrl}/auth/logout`, {}).subscribe();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/auth/logout`);
+    expect(req.request.headers.get('Authorization')).toBe(`Bearer ${liveToken}`);
+    req.flush(null, { status: 204, statusText: 'No Content' });
+  });
+
+  it('✅ 401 على /auth/logout لا يطلق دورة تجديد (لا refresh ولا إعادة محاولة)', () => {
+    let status: number | undefined;
+    http.post(`${environment.apiUrl}/auth/logout`, {}).subscribe({ error: e => (status = e.status) });
+
+    httpMock.expectOne(`${environment.apiUrl}/auth/logout`)
+      .flush({ message: 'unauthorized' }, { status: 401, statusText: 'Unauthorized' });
+
+    expect(status).toBe(401);
+
+    httpMock.expectNone(`${environment.apiUrl}/auth/refresh`);
+    httpMock.expectNone(`${environment.apiUrl}/security/csrf-token`);
+  });
+
+  it('✅ مسارات الدخول العامة (login/refresh) ما زالت بلا Bearer', () => {
+    http.post(`${environment.apiUrl}/auth/login`, {}).subscribe();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+    expect(req.request.headers.has('Authorization')).toBeFalse();
+    req.flush({});
+  });
+});
