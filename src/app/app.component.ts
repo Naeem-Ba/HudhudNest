@@ -9,6 +9,7 @@ import { AuthService } from './core/auth/auth.service';
 import { LanguageService } from './core/services/language.service';
 import { ToastContainerComponent } from './shared/ui/toast-container.component';
 import { NativeBackButtonService } from './core/services/native-back-button.service';
+import { DeepLinkService } from './core/deep-links/deep-link.service';
 import { ThemeService } from './core/services/theme.service';
 import { NotificationsApiService } from './core/api/notifications-api.service';
 import { AppUpdateService } from './core/api/app-update.service';
@@ -75,11 +76,13 @@ export class AppComponent {
     private readonly router: Router,
     private readonly languageService: LanguageService,
     nativeBackButton: NativeBackButtonService,
+    deepLinks: DeepLinkService,
     themeService: ThemeService
   ) {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
     this.languageService.getCurrent();
     nativeBackButton.initialize();
+    deepLinks.initialize();
     this.appUpdate.initialize();
     this.metaService.applyGlobalRobotsPolicy();
     void themeService; // يُطبَّق الوضع الداكن/الفاتح فور إنشاء الخدمة (constructor)

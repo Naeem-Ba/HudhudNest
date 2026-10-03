@@ -36,6 +36,7 @@ import { LocationComboComponent } from '../../shared/ui/location-combo.component
 import { LanguageService, LangCode } from '../../core/services/language.service';
 import { EnumItem, EnumService } from '../../core/services/enum.service';
 import { ScrollLockService } from '../../core/services/scroll-lock.service';
+import { LISTING_PHOTO_COMPRESSION, compressImagesForUpload } from '../../shared/utils/image-compression';
 import { PhotoGuideSheetComponent } from '../../shared/ui/photo-guide/photo-guide-sheet.component';
 import { PhotoGuideKind, photoGuideKindForListingType } from '../../shared/ui/photo-guide/photo-guide.data';
 
@@ -234,6 +235,10 @@ export class PropertyFormPage implements OnInit {
   readonly fallbackImage = '/images/no-image.svg';
   readonly allowedTypes = ['image/png', 'image/jpeg', 'image/webp'];
   readonly maxSizeMB = 5;
+  /** Matches UploadPropertyImagesCommandHandler.MaxImageSize (decimal 5 MB, not 5 MiB). */
+  private readonly maxUploadBytes = 5_000_000;
+  /** True while picked photos are being shrunk in the browser (see image-compression.ts). */
+  readonly processingPhotos = signal(false);
 
   /**
    * ✅ إضافة: قائمة المرافق (GET /api/lookups/amenities) والمدن المقترحة
@@ -835,10 +840,13 @@ export class PropertyFormPage implements OnInit {
     this.form.patchValue({ latitude: location.lat, longitude: location.lng });
   }
 
-  onFileSelected(event: Event): void {
+  async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const files = Array.from(input.files ?? []);
-    const valid: File[] = [];
+    // The File objects stay valid after the input is cleared, and clearing now lets the user pick the same photo again.
+    input.value = '';
+
+    const typed: File[] = [];
 
     for (const file of files) {
       if (!this.allowedTypes.includes(file.type)) {
@@ -846,7 +854,22 @@ export class PropertyFormPage implements OnInit {
         continue;
       }
 
-      if (file.size > this.maxSizeMB * 1024 * 1024) {
+      typed.push(file);
+    }
+
+    // Camera photos routinely exceed the server's 5 MB cap; shrink them here instead of rejecting them.
+    this.processingPhotos.set(true);
+    let prepared: File[];
+    try {
+      prepared = await compressImagesForUpload(typed, LISTING_PHOTO_COMPRESSION);
+    } finally {
+      this.processingPhotos.set(false);
+    }
+
+    const valid: File[] = [];
+
+    for (const file of prepared) {
+      if (file.size > this.maxUploadBytes) {
         this.showToast(this.translate.instant('PROPERTY_FORM.FILE_TOO_LARGE', { name: file.name }), 'error');
         continue;
       }
@@ -863,8 +886,6 @@ export class PropertyFormPage implements OnInit {
       };
       reader.readAsDataURL(file);
     }
-
-    input.value = '';
   }
 
   removeImage(index: number): void {

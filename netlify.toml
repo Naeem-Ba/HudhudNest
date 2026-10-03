@@ -55,3 +55,20 @@
 ## It runs before both this file and public/_redirects are even considered. Do not add
 ## [[redirects]] or _redirects rules for /api/auth/*//api/security/csrf-token as an "easier"
 ## alternative — that is exactly how the first three attempts failed.
+
+## Native deep links (Android App Links / iOS Universal Links) -- see docs/DEEP-LINKS.md.
+## Both files are real static files generated into public/.well-known/ by tools/generate-deep-links.mjs,
+## so they win over the SPA catch-all in public/_redirects (a non-forced rewrite never shadows an existing file).
+## Android and Apple fetch them WITHOUT following redirects and require a JSON content type; Netlify would
+## otherwise serve the extension-less apple-app-site-association as application/octet-stream.
+[[headers]]
+  for = "/.well-known/assetlinks.json"
+  [headers.values]
+    Content-Type = "application/json"
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/.well-known/apple-app-site-association"
+  [headers.values]
+    Content-Type = "application/json"
+    Cache-Control = "public, max-age=3600"

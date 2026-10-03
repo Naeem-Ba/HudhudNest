@@ -148,10 +148,10 @@ describe('ShortStayListingFormPage — photos picked on the create form', () => 
     page.setPin(33.5138, 36.2765);
   });
 
-  it('uploads the picked photos to the NEW listing right after it is created, then opens it', () => {
+  it('uploads the picked photos to the NEW listing right after it is created, then opens it', async () => {
     const a = png('a.png');
     const b = png('b.png');
-    pick(a, b);
+    await pick(a, b);
     page.createListing();
 
     expect(api.create).toHaveBeenCalledTimes(1);
@@ -167,9 +167,9 @@ describe('ShortStayListingFormPage — photos picked on the create form', () => 
     expect(navigate).toHaveBeenCalledWith(['/short-stay/manage', 'new-id']);
   });
 
-  it('a failed upload never looks like a failed create: the user still lands on the listing with a clear message', () => {
+  it('a failed upload never looks like a failed create: the user still lands on the listing with a clear message', async () => {
     api.uploadPhotos.and.returnValue(throwError(() => ({ status: 500 })));
-    pick(png());
+    await pick(png());
     page.createListing();
 
     expect(api.create).toHaveBeenCalledTimes(1);
@@ -178,17 +178,18 @@ describe('ShortStayListingFormPage — photos picked on the create form', () => 
     expect(page.saving()).toBeFalse();
   });
 
-  it('rejects unsupported types and oversized files with the file name, keeping the valid ones', () => {
+  it('rejects unsupported types and oversized files with the file name, keeping the valid ones', async () => {
     const ok = png('ok.png');
-    pick(new File(['x'], 'doc.pdf', { type: 'application/pdf' }), png('big.png', 5 * 1024 * 1024 + 1), ok);
+    // 5,000,001 bytes of zeros cannot be decoded, so shrinking leaves it oversized and it is refused (server cap is 5,000,000).
+    await pick(new File(['x'], 'doc.pdf', { type: 'application/pdf' }), png('big.png', 5_000_001), ok);
 
     expect(page.pendingPhotos().map(p => p.file)).toEqual([ok]);
     expect(toast.show).toHaveBeenCalledWith('SHORTSTAY.FORM.PHOTO_INVALID_TYPE', 'error');
     expect(toast.show).toHaveBeenCalledWith('SHORTSTAY.FORM.PHOTO_TOO_LARGE', 'error');
   });
 
-  it('caps the selection at 10 photos and lets the user remove one', () => {
-    pick(...Array.from({ length: 12 }, (_, i) => png(`p${i}.png`)));
+  it('caps the selection at 10 photos and lets the user remove one', async () => {
+    await pick(...Array.from({ length: 12 }, (_, i) => png(`p${i}.png`)));
 
     expect(page.pendingPhotos().length).toBe(10);
     expect(toast.show).toHaveBeenCalledWith('SHORTSTAY.FORM.PHOTO_LIMIT', 'error');
@@ -196,6 +197,32 @@ describe('ShortStayListingFormPage — photos picked on the create form', () => 
     page.removePendingPhoto(0);
     expect(page.pendingPhotos().length).toBe(9);
   });
+
+  it('shrinks a camera-sized photo instead of rejecting it, and keeps it as a jpeg under the ceiling', async () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 3000;
+    canvas.height = 2000;
+    const context = canvas.getContext('2d')!;
+    const pixels = context.createImageData(canvas.width, canvas.height);
+    for (let i = 0; i < pixels.data.length; i += 4) {
+      pixels.data[i] = Math.random() * 256;
+      pixels.data[i + 1] = Math.random() * 256;
+      pixels.data[i + 2] = Math.random() * 256;
+      pixels.data[i + 3] = 255;
+    }
+    context.putImageData(pixels, 0, 0);
+    const blob = await new Promise<Blob>(resolve => canvas.toBlob(b => resolve(b!), 'image/jpeg', 0.98));
+    const camera = new File([blob], 'IMG_1234.jpg', { type: 'image/jpeg' });
+    expect(camera.size).toBeGreaterThan(5_000_000);
+
+    await pick(camera);
+
+    const [accepted] = page.pendingPhotos();
+    expect(page.pendingPhotos().length).toBe(1);
+    expect(accepted.file.size).toBeLessThanOrEqual(1_800_000);
+    expect(accepted.file.type).toBe('image/jpeg');
+    expect(toast.show).not.toHaveBeenCalledWith('SHORTSTAY.FORM.PHOTO_TOO_LARGE', 'error');
+  }, 30000);
 });
 
 describe('toApiTime', () => {

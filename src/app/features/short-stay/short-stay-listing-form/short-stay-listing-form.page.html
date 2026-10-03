@@ -258,6 +258,7 @@
         kind="shortStay"
         (closed)="photoGuideOpen.set(false)"
         (start)="photoGuideOpen.set(false); createPhotoInput.click()" />
+      <p *ngIf="processingPhotos()" role="status">{{ 'SHORTSTAY.FORM.PHOTOS_PROCESSING' | translate }}</p>
       <p *ngIf="uploadingPhotos()">{{ 'SHORTSTAY.FORM.PHOTOS_UPLOADING' | translate }}</p>
     </section>
 
@@ -275,6 +276,7 @@
         kind="shortStay"
         (closed)="photoGuideOpen.set(false)"
         (start)="photoGuideOpen.set(false); editPhotoInput.click()" />
+      <p *ngIf="processingPhotos()" role="status">{{ 'SHORTSTAY.FORM.PHOTOS_PROCESSING' | translate }}</p>
       <p *ngIf="uploadingPhotos()">{{ 'SHORTSTAY.FORM.PHOTOS_UPLOADING' | translate }}</p>
     </section>
 

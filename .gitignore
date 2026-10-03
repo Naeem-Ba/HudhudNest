@@ -10,6 +10,10 @@
 # real env-var values during a local build. Never commit.
 src/environments/env.generated.ts
 
+# Derived at build time from deep-links.config.json by tools/generate-deep-links.mjs
+# (Android assetlinks.json / iOS apple-app-site-association). Never hand-edit.
+/public/.well-known/
+
 # Node
 /node_modules
 npm-debug.log

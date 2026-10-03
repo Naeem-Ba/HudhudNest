@@ -1,0 +1,19 @@
+{
+  "_comment": "Single source of truth for native deep links (Android App Links + iOS Universal Links). Everything else is derived from or checked against this file: public/.well-known/* (tools/generate-deep-links.mjs), the AndroidManifest intent-filter and the iOS entitlements (both verified by tools/lib/deep-links.test.mjs), and the in-app allow-list (src/app/core/deep-links/deep-link-routes.ts, also verified). See docs/DEEP-LINKS.md.",
+  "host": "hudhudnest.com",
+  "paths": {
+    "exact": ["/"],
+    "prefixes": ["/properties", "/short-stay", "/investments", "/users", "/wohnungen", "/kontakt", "/valuation", "/pricing"],
+    "excludePrefixes": ["/properties/edit"]
+  },
+  "android": {
+    "package": "com.realestate.app",
+    "sha256CertFingerprints": [
+      "7D:30:B4:CB:E7:24:2F:C5:CC:50:2A:FA:B5:87:C7:67:38:3B:3D:0D:4E:D8:7A:6F:B4:F4:8E:2B:9C:64:F7:50"
+    ]
+  },
+  "ios": {
+    "bundleId": "com.realestate.app",
+    "teamId": ""
+  }
+}

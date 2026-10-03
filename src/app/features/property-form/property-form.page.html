@@ -469,6 +469,10 @@
                 <strong>{{ 'property_add.upload_click' | translate }}</strong>
                 <span>{{ 'property_add.upload_hint' | translate }}</span>
               </label>
+              <div class="upload-progress" *ngIf="processingPhotos()" role="status">
+                <span class="spinner-ring" style="width:28px;height:28px;border-width:3px"></span>
+                <p>{{ 'PROPERTY_FORM.PHOTOS_PROCESSING' | translate }}</p>
+              </div>
               <div class="upload-progress" *ngIf="isSaving()">
                 <span class="spinner-ring" style="width:28px;height:28px;border-width:3px"></span>
                 <p>{{ 'property_add.uploading' | translate }}</p>
