@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject } from 'rxjs';
 
-import { isSearchEngineUserAgent, pickDeviceLanguage } from '../i18n/first-visit-language';
+import { pickDeviceLanguage } from '../i18n/first-visit-language';
 
 export type LangCode = 'en' | 'ar' | 'de';
 
@@ -78,14 +78,9 @@ export class LanguageService {
     return this.readStored() !== null;
   }
 
-  /** True for Googlebot/Bingbot/etc. -- see isSearchEngineUserAgent for why they always get Arabic. */
-  isSearchEngineCrawler(): boolean {
-    return typeof navigator !== 'undefined' && isSearchEngineUserAgent(navigator.userAgent);
-  }
-
   /** The browser/device language tags in preference order, e.g. ["ar-SY", "en-US"]. */
   getDeviceLanguages(): readonly string[] {
-    if (typeof navigator === 'undefined' || this.isSearchEngineCrawler()) {
+    if (typeof navigator === 'undefined') {
       return [];
     }
 

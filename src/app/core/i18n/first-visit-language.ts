@@ -35,21 +35,6 @@ export interface FirstVisitInput {
   readonly deviceLanguages: readonly string[];
 }
 
-/**
- * Search-engine crawlers (kept in step with SEARCH_ENGINE_USER_AGENT_SIGNATURES in
- * netlify/edge-functions/lib/social-crawler.mjs -- separate build pipeline, so duplicated).
- * They are always shown the app's default language, Arabic: their IP is usually American and their
- * device language English, so the rules above would render an English UI under Arabic page
- * metadata (title/description/og:locale are Arabic or follow the UI language), indexing a page
- * that contradicts itself. One stable language per URL is what search engines expect, since there
- * is one URL for all three languages. Real visitors are unaffected.
- */
-const SEARCH_ENGINE_USER_AGENT = /googlebot|google-inspectiontool|adsbot-google|bingbot|bingpreview|yandexbot|duckduckbot|baiduspider|slurp/i;
-
-export function isSearchEngineUserAgent(userAgent: string | null | undefined): boolean {
-  return SEARCH_ENGINE_USER_AGENT.test(userAgent ?? '');
-}
-
 /** "ar-SY" -> "ar"; anything unsupported (including "") -> null. */
 export function toSupportedLanguage(tag: string | null | undefined): SupportedLanguage | null {
   const primary = (tag ?? '').trim().toLowerCase().split(/[-_]/, 1)[0];
