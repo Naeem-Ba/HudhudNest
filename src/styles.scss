@@ -511,6 +511,18 @@ textarea {
   }
 }
 
+/* iOS Safari and WKWebView (the Capacitor shell) zoom the whole page when a control with a computed
+   font-size under 16px takes focus. The base rule above already asks for 16px, but component-scoped
+   styles beat it (home hero search .92rem; landing, contact, valuation and forgot-password .95rem), so
+   the floor is enforced here for touch devices only. .otp-input is deliberately larger and is left alone. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not(.otp-input),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 /* Angular validation state classes */
 input.ng-invalid.ng-touched,
 select.ng-invalid.ng-touched,

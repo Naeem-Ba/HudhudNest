@@ -2,9 +2,22 @@
 // (تفعيل/تمديد/إلغاء خطة، تمييز/تمديد إعلان) بدل confirm() الأصلية، لأن هذه الإجراءات
 // تحتاج عرض تفاصيل منسَّقة (اسم المستخدم، الخطة، التاريخ الجديد المحسوب) لا مجرد سؤال
 // نعم/لا. محتوى النافذة يُمرَّر عبر <ng-content> فيبقى المكوّن عاماً بلا معرفة بالسياق.
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  HostListener,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+  SimpleChanges,
+  inject
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { OverlayBackHandlerService } from '../../core/services/overlay-back-handler.service';
+import { ScrollLockService } from '../../core/services/scroll-lock.service';
 
 @Component({
   selector: 'app-confirm-modal',
@@ -54,7 +67,7 @@ import { TranslateModule } from '@ngx-translate/core';
     }
     .modal {
       background: var(--surface); border-radius: var(--r-lg, 14px);
-      max-width: 460px; width: 100%; max-height: 90vh; overflow-y: auto;
+      max-width: 460px; width: 100%; max-height: 90vh; max-height: 90dvh; overflow-y: auto;
       box-shadow: 0 20px 50px rgba(0,0,0,.25);
     }
     .modal__header { padding: 1.1rem 1.25rem .5rem; }
@@ -76,7 +89,11 @@ import { TranslateModule } from '@ngx-translate/core';
     .btn--danger { background: var(--danger-soft); color: var(--danger); border-color: rgba(220,38,38,.25); }
   `]
 })
-export class ConfirmModalComponent {
+export class ConfirmModalComponent implements OnChanges, OnDestroy {
+  private readonly scrollLock = inject(ScrollLockService);
+  private readonly overlayBackHandlers = inject(OverlayBackHandlerService);
+  private unregisterBackHandler: (() => void) | null = null;
+
   @Input() open = false;
   @Input() title = '';
   @Input() confirmLabel = '';
@@ -93,9 +110,61 @@ export class ConfirmModalComponent {
   @Output() confirmed = new EventEmitter<void>();
   @Output() cancelled = new EventEmitter<void>();
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['open']) {
+      if (this.open) {
+        this.hold();
+      } else {
+        this.release();
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.release();
+  }
+
   onBackdropClick(event: MouseEvent): void {
-    if (event.target === event.currentTarget && this.closeOnBackdrop && !this.loading) {
+    if (event.target === event.currentTarget) {
+      this.dismiss();
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.open) {
+      this.dismiss();
+    }
+  }
+
+  /** Same rule for backdrop, Escape and the hardware Back button: never while busy or for a modal that cannot be skipped. */
+  private dismiss(): boolean {
+    if (this.closeOnBackdrop && !this.loading) {
       this.cancelled.emit();
     }
+
+    return true;
+  }
+
+  // An open modal is a full-screen overlay: the page must not scroll behind it, and Android Back
+  // has to close (or at least stay on) the modal instead of leaving the screen underneath it —
+  // the same two guarantees the navbar drawer, the filter drawer and the photo gallery already give.
+  private hold(): void {
+    if (this.unregisterBackHandler) {
+      return;
+    }
+
+    this.scrollLock.lock();
+    this.unregisterBackHandler = this.overlayBackHandlers.register(() => this.open && this.dismiss());
+  }
+
+  private release(): void {
+    if (!this.unregisterBackHandler) {
+      return;
+    }
+
+    this.unregisterBackHandler();
+    this.unregisterBackHandler = null;
+    this.scrollLock.unlock();
   }
 }
