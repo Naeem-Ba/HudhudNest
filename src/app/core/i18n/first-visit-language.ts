@@ -3,17 +3,17 @@
 // Rules, in order (the product owner's rules, kept in one pure function so they are testable):
 //   1. A language the user picked, or one detected on an earlier visit, is handled by LanguageService
 //      and never reaches this function.
-//   2. Country known:
+//   2. The device language wins whenever it is Arabic, English or German - wherever the visitor is.
+//   3. Otherwise (the device speaks something the app is not translated into) the country decides:
 //        Arab League country            -> Arabic
 //        German-speaking country        -> German
-//        anywhere else                  -> the device language when it is Arabic, English or German,
-//                                          otherwise English
-//   3. Country unknown (offline, VPN, geo disabled, endpoint unreachable):
-//        the device language when it is Arabic, English or German, otherwise Arabic (the app's
-//        long-standing default).
+//        anywhere else                  -> English
+//   4. Otherwise (no usable country: offline, VPN, geo disabled, endpoint unreachable) -> Arabic, the
+//      app's long-standing default.
 //
-// "Country" comes from GeoCountryService (an IP lookup at the Netlify edge); no location permission
-// prompt is involved.
+// Because rule 2 settles most visitors on their own, the country lookup (GeoCountryService, an IP lookup
+// at the Netlify edge, no location-permission prompt) is only made when the device language is
+// unsupported - see needsCountryLookup().
 
 export type SupportedLanguage = 'ar' | 'en' | 'de';
 
@@ -53,8 +53,18 @@ export function pickDeviceLanguage(deviceLanguages: readonly string[]): Supporte
   return null;
 }
 
+/** True when the device language alone cannot decide, i.e. the country is worth asking for. */
+export function needsCountryLookup(deviceLanguages: readonly string[]): boolean {
+  return pickDeviceLanguage(deviceLanguages) === null;
+}
+
 export function resolveFirstVisitLanguage({ country, deviceLanguages }: FirstVisitInput): SupportedLanguage {
   const device = pickDeviceLanguage(deviceLanguages);
+
+  if (device) {
+    return device;
+  }
+
   const code = country?.trim().toUpperCase() ?? '';
 
   if (/^[A-Z]{2}$/.test(code)) {
@@ -66,8 +76,8 @@ export function resolveFirstVisitLanguage({ country, deviceLanguages }: FirstVis
       return 'de';
     }
 
-    return device ?? 'en';
+    return 'en';
   }
 
-  return device ?? 'ar';
+  return 'ar';
 }

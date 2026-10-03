@@ -29,6 +29,11 @@ describe('LanguageService first-visit behaviour', () => {
     return { fetchCountryCode: () => Promise.resolve(country) } as unknown as GeoCountryService;
   }
 
+  function geoSpy(country: string | null): { service: GeoCountryService; fetchCountryCode: jasmine.Spy } {
+    const fetchCountryCode = jasmine.createSpy('fetchCountryCode').and.resolveTo(country);
+    return { service: { fetchCountryCode } as unknown as GeoCountryService, fetchCountryCode };
+  }
+
   it('shows the device language at once on a first visit without remembering it', () => {
     deviceLanguages = ['de-DE'];
     const service = TestBed.inject(LanguageService);
@@ -45,7 +50,32 @@ describe('LanguageService first-visit behaviour', () => {
     expect(TestBed.inject(LanguageService).getCurrent()).toBe('ar');
   });
 
-  it('applies the country-based language and remembers it as an automatic choice', async () => {
+  it('the device language wins over the country and no lookup is made', async () => {
+    deviceLanguages = ['en-US'];
+    const { service: geoService, fetchCountryCode } = geoSpy('SY');
+    const service = TestBed.inject(LanguageService);
+
+    await resolveInitialLanguage(service, geoService)();
+
+    expect(service.getCurrent()).toBe('en');
+    expect(fetchCountryCode).not.toHaveBeenCalled();
+    expect(localStorage.getItem('lang_auto')).toBeNull();
+  });
+
+  it('an Arabic device in a German-speaking country stays Arabic', async () => {
+    deviceLanguages = ['ar-SY'];
+    const { service: geoService, fetchCountryCode } = geoSpy('DE');
+    const service = TestBed.inject(LanguageService);
+
+    await resolveInitialLanguage(service, geoService)();
+
+    expect(service.getCurrent()).toBe('ar');
+    expect(document.documentElement.dir).toBe('rtl');
+    expect(fetchCountryCode).not.toHaveBeenCalled();
+  });
+
+  it('an unsupported device language falls back to the country and remembers it as an automatic choice', async () => {
+    deviceLanguages = ['fr-FR'];
     const service = TestBed.inject(LanguageService);
 
     await resolveInitialLanguage(service, geo('SY'))();
@@ -56,7 +86,8 @@ describe('LanguageService first-visit behaviour', () => {
     expect(localStorage.getItem('lang')).toBeNull();
   });
 
-  it('uses German for a German-speaking country', async () => {
+  it('uses German for a German-speaking country when the device language is unsupported', async () => {
+    deviceLanguages = ['fr-FR'];
     const service = TestBed.inject(LanguageService);
 
     await resolveInitialLanguage(service, geo('CH'))();
@@ -65,33 +96,45 @@ describe('LanguageService first-visit behaviour', () => {
     expect(document.documentElement.dir).toBe('ltr');
   });
 
+  it('English for an unsupported device language in a country with no special rule', async () => {
+    deviceLanguages = ['tr-TR'];
+    const service = TestBed.inject(LanguageService);
+
+    await resolveInitialLanguage(service, geo('US'))();
+
+    expect(service.getCurrent()).toBe('en');
+    expect(localStorage.getItem('lang_auto')).toBe('en');
+  });
+
   it('does not remember the result when the country is unknown, so the lookup is retried next time', async () => {
-    deviceLanguages = ['en-GB'];
+    deviceLanguages = ['fr-FR'];
     const service = TestBed.inject(LanguageService);
 
     await resolveInitialLanguage(service, geo(null))();
 
-    expect(service.getCurrent()).toBe('en');
+    expect(service.getCurrent()).toBe('ar');
     expect(localStorage.getItem('lang_auto')).toBeNull();
   });
 
   it('never overrides a language the user chose earlier, and does not even look up the country', async () => {
+    deviceLanguages = ['fr-FR'];
     localStorage.setItem('lang', 'en');
-    const fetchCountryCode = jasmine.createSpy('fetchCountryCode').and.resolveTo('SY');
+    const { service: geoService, fetchCountryCode } = geoSpy('SY');
     const service = TestBed.inject(LanguageService);
 
-    await resolveInitialLanguage(service, { fetchCountryCode } as unknown as GeoCountryService)();
+    await resolveInitialLanguage(service, geoService)();
 
     expect(service.getCurrent()).toBe('en');
     expect(fetchCountryCode).not.toHaveBeenCalled();
   });
 
   it('reuses an earlier automatic choice without another lookup', async () => {
+    deviceLanguages = ['fr-FR'];
     localStorage.setItem('lang_auto', 'de');
-    const fetchCountryCode = jasmine.createSpy('fetchCountryCode').and.resolveTo('SY');
+    const { service: geoService, fetchCountryCode } = geoSpy('SY');
     const service = TestBed.inject(LanguageService);
 
-    await resolveInitialLanguage(service, { fetchCountryCode } as unknown as GeoCountryService)();
+    await resolveInitialLanguage(service, geoService)();
 
     expect(service.getCurrent()).toBe('de');
     expect(fetchCountryCode).not.toHaveBeenCalled();

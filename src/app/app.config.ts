@@ -18,7 +18,7 @@ import { CsrfTokenService } from './core/services/csrf-token.service';
 import { EnumService } from './core/services/enum.service';
 import { GeoCountryService } from './core/services/geo-country.service';
 import { LanguageService } from './core/services/language.service';
-import { resolveFirstVisitLanguage } from './core/i18n/first-visit-language';
+import { needsCountryLookup, resolveFirstVisitLanguage } from './core/i18n/first-visit-language';
 import { TokenStorageService } from './core/services/token-storage.service';
 import { environment } from '../environments/environment';
 
@@ -47,9 +47,11 @@ export function preloadEnums(enumService: EnumService): () => Promise<unknown> {
 }
 
 /**
- * First-time visitors only (nothing stored by the language selector or an earlier visit): pick the
- * starting language from the visitor's country, falling back to the device language. See
- * first-visit-language.ts for the exact rules and geo-country.service.ts for where the country comes from.
+ * First-time visitors only (nothing stored by the language selector or an earlier visit). The device
+ * language decides whenever it is Arabic, English or German (LanguageService already applied it when it was
+ * constructed, and it is re-read on every visit, so it is deliberately not stored). Only when the device speaks
+ * something else is the visitor's country asked for. See first-visit-language.ts for the exact rules and
+ * geo-country.service.ts for where the country comes from.
  *
  * Runs inside APP_INITIALIZER so the language is settled before anything renders (no visible flip from one
  * language/direction to another). It cannot delay or break startup: the lookup is capped at
@@ -60,14 +62,16 @@ export function resolveInitialLanguage(
   geoCountry: GeoCountryService
 ): () => Promise<void> {
   return async () => {
-    if (languageService.hasStoredPreference()) {
+    const deviceLanguages = languageService.getDeviceLanguages();
+
+    if (languageService.hasStoredPreference() || !needsCountryLookup(deviceLanguages)) {
       return;
     }
 
     const country = await geoCountry.fetchCountryCode();
     const lang = resolveFirstVisitLanguage({
       country,
-      deviceLanguages: languageService.getDeviceLanguages()
+      deviceLanguages
     });
 
     // Remember the answer only when it came from a real country; with no country the same
