@@ -42,6 +42,7 @@ export class EnumService {
 
   constructor(private readonly api: BackendApiService) {}
 
+  /** Loads every group. Not called at startup any more (see app.config.ts); screens use ensureLoaded(). */
   async loadAll(): Promise<void> {
     const groups = [
       'STADT', 'ZUSTAND', 'STATUS', 'ENERGIEAUSWEISTYP', 'HEIZUNG', 'LISTINGTYPE',

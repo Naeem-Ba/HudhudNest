@@ -12,12 +12,14 @@
 // =====================================================================
 import { HttpBackend, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { APP_INITIALIZER } from '@angular/core';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 
 import { environment } from '../environments/environment';
-import { restoreSession } from './app.config';
+import { appConfig, restoreSession } from './app.config';
 import { AuthService } from './core/auth/auth.service';
 import { CsrfTokenService } from './core/services/csrf-token.service';
+import { EnumService } from './core/services/enum.service';
 import { TokenStorageService } from './core/services/token-storage.service';
 
 /** Base64url-encodes a JWT payload so AuthService.decodeJwt can parse it. */
@@ -161,4 +163,18 @@ describe('restoreSession (app.config.ts)', () => {
     expect(tokenStorage.getAccessToken()).not.toBeNull();
     expect(authService.currentUserSnapshot).not.toBeNull();
   }));
+});
+
+describe('appConfig startup initializers', () => {
+  it('does not block the first render on the /api/enums lookups (performance audit B5)', () => {
+    // Every APP_INITIALIZER delays bootstrap until its promise settles. The enum lookups only feed the
+    // property form, which awaits EnumService.ensureLoaded() itself, so no initializer may depend on it.
+    const initializers = (appConfig.providers as Array<{ provide?: unknown; deps?: unknown[] }>)
+      .filter(provider => provider.provide === APP_INITIALIZER);
+
+    expect(initializers.length).toBeGreaterThan(0);
+    for (const initializer of initializers) {
+      expect(initializer.deps ?? []).not.toContain(EnumService);
+    }
+  });
 });
