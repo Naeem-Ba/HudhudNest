@@ -178,8 +178,7 @@
               </span>
             </div>
             <p class="prop-card__price">
-              {{ (p.coldRent || p.warmRent || p.purchasePrice) | number }}
-              <span>{{ p.currencyCode || 'SYP' }}</span>
+              {{ getPrice(p) }}
             </p>
           </div>
         </a>

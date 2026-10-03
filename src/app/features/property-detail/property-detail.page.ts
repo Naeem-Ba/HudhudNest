@@ -59,6 +59,7 @@ import { PropertyAttributionTrackingService } from '../../core/sharing/property-
 import { UrlService } from '../../core/services/url.service';
 import { PropertyStructuredDataService } from '../../core/sharing/property-structured-data.service';
 import { PropertyShareUrlService } from '../../core/sharing/property-share-url.service';
+import { formatListingPrice } from '../../shared/utils/listing-price';
 import { StructuredDataService, BREADCRUMB_JSON_LD_ID } from '../../core/services/structured-data.service';
 
 const LISTING_JSON_LD_ID = 'ld-real-estate-listing';
@@ -846,16 +847,7 @@ export class PropertyDetailPage implements OnInit {
 
   // ── Price Helpers ─────────────────────────────────────────────────────
   formatPrice(value: number | null | undefined): string {
-    if (!value) return '—';
-    const p = this.property();
-    const currency = p?.currencyCode ?? 'EUR';
-    try {
-      return new Intl.NumberFormat('ar', {
-        style: 'currency', currency, maximumFractionDigits: 0
-      }).format(value);
-    } catch {
-      return `${value.toLocaleString('ar')} ${currency}`;
-    }
+    return formatListingPrice(value, this.property()?.currencyCode);
   }
 
   safe(value: unknown, fallback = '—'): string {

@@ -45,6 +45,7 @@ import { FavoriteToggleButtonComponent } from '../../../shared/ui/favorite-toggl
 import { StructuredDataService, BREADCRUMB_JSON_LD_ID } from '../../../core/services/structured-data.service';
 import { PropertyShareUrlService } from '../../../core/sharing/property-share-url.service';
 import { MetaService } from '../../../core/services/meta.service';
+import { formatListingPrice, primaryListingPrice } from '../../../shared/utils/listing-price';
 
 @Component({
   selector: 'app-property-list',
@@ -693,21 +694,7 @@ export class PropertyListPage implements OnInit {
   }
 
   getFormattedPrice(property: Property): string {
-    const price = property.purchasePrice ?? property.warmRent ?? property.coldRent;
-
-    if (!price) return '—';
-
-    const currency = property.currencyCode ?? 'SYP';
-
-    try {
-      return new Intl.NumberFormat('ar', {
-        style: 'currency',
-        currency,
-        maximumFractionDigits: 0
-      }).format(price);
-    } catch {
-      return `${price.toLocaleString('ar')} ${currency}`;
-    }
+    return formatListingPrice(primaryListingPrice(property), property.currencyCode);
   }
 
   getLocation(property: Property): string {

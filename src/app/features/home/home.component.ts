@@ -18,6 +18,7 @@ import {
 import { LanguageService } from '../../core/services/language.service';
 import { MetaService } from '../../core/services/meta.service';
 import { PropertyShareUrlService } from '../../core/sharing/property-share-url.service';
+import { formatListingPrice, primaryListingPrice } from '../../shared/utils/listing-price';
 
 /** خيارات سقف السعر بحقل البحث — تُرسَل كـ maxPrice لصفحة النتائج. */
 interface HeroPriceOption {
@@ -151,6 +152,11 @@ export class HomeComponent implements OnInit {
           this.properties = [];
         }
       });
+  }
+
+  /** Same price rule and format as the list and detail pages (see shared/utils/listing-price.ts). */
+  getPrice(property: Property): string {
+    return formatListingPrice(primaryListingPrice(property), property.currencyCode);
   }
 
   propertyImageUrl(property: Property, width = 640): string {
