@@ -18,6 +18,8 @@
 // request's User-Agent:
 //   - a KNOWN crawler → fetch this property from the real backend API and return a small,
 //     complete HTML document with the right tags (see ./lib/social-crawler.mjs)
+//   - a SEARCH ENGINE (Googlebot, Bingbot...) → the normal SPA body, but with a real 404 status
+//     when the backend says the listing doesn't exist (see respondForSearchEngine)
 //   - anyone else (real visitors, unrecognized bots) → `context.next()`, i.e. serve the normal
 //     Angular index.html exactly as before — this function is otherwise fully transparent.
 //
@@ -42,7 +44,9 @@
 
 import {
   isSocialCrawlerUserAgent,
+  isSearchEngineCrawlerUserAgent,
   extractPropertyIdFromPath,
+  resolveCanonicalOrigin,
   buildPropertyMetaHtml,
   buildNotFoundHtml
 } from './lib/social-crawler.mjs';
@@ -50,12 +54,45 @@ import {
 const DEFAULT_API_BASE_URL = 'https://api.hudhudnest.com/api';
 const FALLBACK_IMAGE_PATH = '/images/og-default.png';
 
+/** How long a search-engine crawler's status check may delay the page. Fails open (serves the
+ *  normal SPA with 200) on timeout, so a slow backend can never make a live listing look gone. */
+const SEARCH_ENGINE_STATUS_CHECK_TIMEOUT_MS = 3000;
+
+/**
+ * Search engines (Googlebot, Bingbot...) get the normal SPA body -- see social-crawler.mjs for why
+ * they are not served pre-rendered HTML -- but the SPA shell is a 200 for EVERY path, so a deleted
+ * or unpublished listing would otherwise only be reported "not found" via a JS-injected noindex
+ * (a soft 404). When the backend definitively says 404, keep the SPA body and send a real 404
+ * status instead. Only an explicit 404 changes anything: any other outcome (200, 5xx, timeout,
+ * network error) passes the SPA through as a 200, so this can never de-list a live property.
+ */
+async function respondForSearchEngine(propertyId, apiBaseUrl, context) {
+  try {
+    const response = await fetch(`${apiBaseUrl}/properties/${encodeURIComponent(propertyId)}`, {
+      headers: { accept: 'application/json' },
+      signal: AbortSignal.timeout(SEARCH_ENGINE_STATUS_CHECK_TIMEOUT_MS)
+    });
+
+    if (response.status === 404) {
+      const spa = await context.next();
+      return new Response(spa.body, { status: 404, headers: spa.headers });
+    }
+  } catch {
+    // Timeout / network failure -- fall through to the unmodified SPA below.
+  }
+
+  return context.next();
+}
+
 export default async (request, context) => {
   const userAgent = request.headers.get('user-agent') ?? '';
+  const isSocialCrawler = isSocialCrawlerUserAgent(userAgent);
+  const isSearchEngine = !isSocialCrawler && isSearchEngineCrawlerUserAgent(userAgent);
 
-  // Not a known crawler — every real visitor and any bot we don't specifically recognize gets
-  // the normal Angular app, completely untouched.
-  if (!isSocialCrawlerUserAgent(userAgent)) {
+  // Neither a social unfurler nor a search engine — every real visitor and any bot we don't
+  // specifically recognize gets the normal Angular app, completely untouched (and without an
+  // extra backend round-trip).
+  if (!isSocialCrawler && !isSearchEngine) {
     return context.next();
   }
 
@@ -66,8 +103,18 @@ export default async (request, context) => {
   }
 
   const apiBaseUrl = (Netlify.env.get('API_URL') || DEFAULT_API_BASE_URL).replace(/\/+$/, '');
-  const canonicalUrl = `${url.origin}${url.pathname}`;
-  const fallbackImageUrl = `${url.origin}${FALLBACK_IMAGE_PATH}`;
+
+  if (isSearchEngine) {
+    return respondForSearchEngine(propertyId, apiBaseUrl, context);
+  }
+
+  // Alias hosts (old domain, *.netlify.app) must declare the production URL canonical, not
+  // themselves -- see resolveCanonicalOrigin.
+  const canonicalOrigin = resolveCanonicalOrigin(request.url);
+  // Rebuilt from the id (not url.pathname) so "/properties/<id>/" and "/properties/<id>" share
+  // one canonical, matching PropertyShareUrlService.getPropertyPublicUrl on the Angular side.
+  const canonicalUrl = `${canonicalOrigin}/properties/${encodeURIComponent(propertyId)}`;
+  const fallbackImageUrl = `${canonicalOrigin}${FALLBACK_IMAGE_PATH}`;
 
   try {
     // The public GET already only ever returns a published, unexpired listing (404 otherwise —

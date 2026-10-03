@@ -18,7 +18,9 @@
 // Staging/preview/local deploy must never do (see generate-robots.mjs's identical policy for
 // robots.txt). SITE_URL is the same Netlify environment variable already configured per branch
 // for the Angular build (tools/generate-env.mjs) -- no new variable to manage -- and this
-// function only ever serves the real sitemap when it equals the one real production origin.
+// function only ever serves the real sitemap when it equals the one real production origin, or
+// when the request itself was made to the production hostname (so a missing or build-only-scoped
+// SITE_URL can no longer silently blank the sitemap).
 //
 // SCALE: paginates the backend at its own max page size (100) with a 50,000-URL hard cap (the
 // sitemap protocol's own per-file limit) -- see fetchAllPublishedProperties in ./lib/sitemap.mjs.
@@ -35,7 +37,9 @@
 // =============================================================
 
 import {
+  PRODUCTION_SITE_URL,
   isProductionSiteUrl,
+  isProductionRequestUrl,
   buildSitemapXml,
   buildEmptySitemapXml,
   buildStaticUrlEntries,
@@ -45,10 +49,15 @@ import {
 
 const DEFAULT_API_BASE_URL = 'https://api.hudhudnest.com/api';
 
-export default async () => {
-  const siteUrl = (Netlify.env.get('SITE_URL') || '').replace(/\/+$/, '');
+export default async (request) => {
+  const configuredSiteUrl = (Netlify.env.get('SITE_URL') || '').replace(/\/+$/, '');
+  // Production if SITE_URL says so OR the request really hit the production host -- see
+  // isProductionRequestUrl for why SITE_URL alone is not a reliable signal at runtime.
+  const isProduction =
+    isProductionSiteUrl(configuredSiteUrl) || (request ? isProductionRequestUrl(request.url) : false);
+  const siteUrl = isProduction ? PRODUCTION_SITE_URL : configuredSiteUrl;
 
-  if (!isProductionSiteUrl(siteUrl)) {
+  if (!isProduction) {
     return new Response(buildEmptySitemapXml(), {
       status: 200,
       headers: {

@@ -60,7 +60,9 @@ export function resolveInitialLanguage(
   geoCountry: GeoCountryService
 ): () => Promise<void> {
   return async () => {
-    if (languageService.hasStoredPreference()) {
+    // A search-engine crawler keeps the Arabic default LanguageService already applied (no geo
+    // lookup, no device-language guess) -- see isSearchEngineUserAgent.
+    if (languageService.hasStoredPreference() || languageService.isSearchEngineCrawler()) {
       return;
     }
 

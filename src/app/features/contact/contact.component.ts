@@ -10,6 +10,7 @@ import { ContactService } from '../../core/api/contact.service';
 import { ProfileService } from '../../core/api/profile.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { PlanTier } from '../../core/models/subscription-plan.model';
+import { PageMetaService } from '../../core/services/page-meta.service';
 
 /** Tiers accepted from ?plan=. Anything else is ignored rather than echoed back. */
 const PLAN_TIERS: readonly PlanTier[] = ['free', 'basic', 'premium', 'elite'];
@@ -45,6 +46,7 @@ export class KontaktComponent implements OnInit {
   messagePlaceholderKey = 'KONTAKT.message_placeholder';
 
   private readonly destroyRef = inject(DestroyRef);
+  private readonly pageMeta = inject(PageMetaService);
 
   /** Tracks whatever this component itself last wrote into model.Subject, so a language
    * switch can refresh a still-untouched prefill without ever overwriting text the visitor
@@ -69,6 +71,7 @@ export class KontaktComponent implements OnInit {
    * placeholder) updates immediately.
    */
   ngOnInit(): void {
+    this.pageMeta.applyTranslated('SEO.CONTACT', '/kontakt', this.destroyRef);
     this.applyQueryParamPrefill();
 
     this.translate.onLangChange

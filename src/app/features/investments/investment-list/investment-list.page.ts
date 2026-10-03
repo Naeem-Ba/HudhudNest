@@ -10,6 +10,7 @@ import { InvestmentProjectFilter, InvestmentProjectSummary } from '../../../core
 import { EmptyStateComponent } from '../../../shared/ui/empty-state.component';
 import { SkeletonCardGridComponent } from '../../../shared/ui/skeleton-card-grid.component';
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
+import { PageMetaService } from '../../../core/services/page-meta.service';
 
 @Component({
   selector: 'app-investment-list',
@@ -31,6 +32,7 @@ export class InvestmentListPage implements OnInit {
   private readonly api = inject(InvestmentApiService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly pageMeta = inject(PageMetaService);
 
   readonly projects = signal<InvestmentProjectSummary[]>([]);
   readonly loading = signal(false);
@@ -52,6 +54,7 @@ export class InvestmentListPage implements OnInit {
   maxTermMonths: number | null = null;
 
   ngOnInit(): void {
+    this.pageMeta.applyTranslated('SEO.INVESTMENTS', '/investments', this.destroyRef);
     this.loadProjects();
   }
 

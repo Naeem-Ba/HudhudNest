@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -20,6 +21,7 @@ import {
 } from '../../../core/models/short-stay.model';
 import { DateRangePickerComponent, DateRangeValue } from '../../../shared/ui/date-range-picker.component';
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
+import { PageMetaService } from '../../../core/services/page-meta.service';
 
 // حالات UnitBookingRange التي تُعتبر فعلياً "محجوزة" أمام ضيف جديد. Pending
 // مستثناة عمداً — طلبات متعددة يمكن أن تتنافس على نفس التاريخ إلى أن يختار
@@ -44,6 +46,7 @@ export class ShortStayDetailPage implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly pageMeta = inject(PageMetaService);
 
   readonly listing = signal<ShortStayListing | null>(null);
   readonly loading = signal(false);
@@ -97,8 +100,9 @@ export class ShortStayDetailPage implements OnInit {
   });
 
   ngOnInit(): void {
+    this.destroyRef.onDestroy(() => this.pageMeta.clear());
     const id = this.route.snapshot.paramMap.get('id');
-    if (!id) { this.error.set('SHORTSTAY.DETAIL.NOT_FOUND'); return; }
+    if (!id) { this.error.set('SHORTSTAY.DETAIL.NOT_FOUND'); this.pageMeta.markNotFound(); return; }
     this.load(id);
 
     this.lookupsApi.getAmenities()
@@ -113,11 +117,16 @@ export class ShortStayDetailPage implements OnInit {
     this.listingsApi.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: listing => {
         this.listing.set(listing);
+        this.pageMeta.applyDynamic({ title: listing.title, description: listing.description, path: `/short-stay/${listing.id}` });
         this.loading.set(false);
         this.loadAvailability();
       },
-      error: () => {
+      error: (err: unknown) => {
         this.error.set('SHORTSTAY.DETAIL.LOAD_ERROR');
+        // Only a definitive 404 is a reason to de-index; a transient failure must not be.
+        if (err instanceof HttpErrorResponse && err.status === 404) {
+          this.pageMeta.markNotFound();
+        }
         this.loading.set(false);
       }
     });

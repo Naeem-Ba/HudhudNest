@@ -36,6 +36,7 @@ import {
 } from '../../core/models/valuation.model';
 import { LanguageService, LangCode } from '../../core/services/language.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { PageMetaService } from '../../core/services/page-meta.service';
 
 @Component({
   selector: 'app-valuation-request-page',
@@ -53,6 +54,7 @@ export class ValuationRequestPage implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly pageMeta = inject(PageMetaService);
 
   readonly currentLang = signal<LangCode>(this.language.getCurrent());
 
@@ -80,6 +82,7 @@ export class ValuationRequestPage implements OnInit {
   });
 
   ngOnInit(): void {
+    this.pageMeta.applyTranslated('SEO.VALUATION', '/valuation', this.destroyRef);
     this.language.currentLang$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(lang => this.currentLang.set(lang));
 
     this.lookupsApi.getGovernorates().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

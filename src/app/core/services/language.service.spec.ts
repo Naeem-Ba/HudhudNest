@@ -29,6 +29,22 @@ describe('LanguageService first-visit behaviour', () => {
     return { fetchCountryCode: () => Promise.resolve(country) } as unknown as GeoCountryService;
   }
 
+  it('keeps Arabic for a search-engine crawler even though its device language is English and its country is not Arab', async () => {
+    deviceLanguages = ['en-US'];
+    spyOnProperty(navigator, 'userAgent', 'get').and.returnValue(
+      'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X) AppleWebKit/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+    );
+    const lookup = jasmine.createSpy('fetchCountryCode').and.returnValue(Promise.resolve('US'));
+    const service = TestBed.inject(LanguageService);
+
+    await resolveInitialLanguage(service, { fetchCountryCode: lookup } as unknown as GeoCountryService)();
+
+    expect(service.getCurrent()).toBe('ar');
+    expect(document.documentElement.lang).toBe('ar');
+    expect(lookup).not.toHaveBeenCalled();
+    expect(localStorage.getItem('lang_auto')).toBeNull();
+  });
+
   it('shows the device language at once on a first visit without remembering it', () => {
     deviceLanguages = ['de-DE'];
     const service = TestBed.inject(LanguageService);

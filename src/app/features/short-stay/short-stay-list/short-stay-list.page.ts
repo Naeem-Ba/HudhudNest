@@ -11,6 +11,7 @@ import { EmptyStateComponent } from '../../../shared/ui/empty-state.component';
 import { SkeletonCardGridComponent } from '../../../shared/ui/skeleton-card-grid.component';
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
 import { DateRangePickerComponent, DateRangeValue } from '../../../shared/ui/date-range-picker.component';
+import { PageMetaService } from '../../../core/services/page-meta.service';
 
 @Component({
   selector: 'app-short-stay-list',
@@ -33,6 +34,7 @@ export class ShortStayListPage implements OnInit {
   private readonly api = inject(ShortStayListingApiService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly pageMeta = inject(PageMetaService);
 
   readonly listings = signal<ShortStayListingSummary[]>([]);
   readonly loading = signal(false);
@@ -56,6 +58,7 @@ export class ShortStayListPage implements OnInit {
   maxPrice: number | null = null;
 
   ngOnInit(): void {
+    this.pageMeta.applyTranslated('SEO.SHORT_STAY', '/short-stay', this.destroyRef);
     this.loadListings();
   }
 

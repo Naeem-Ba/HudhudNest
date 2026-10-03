@@ -32,6 +32,7 @@ import {
   UserRatingSummaryDto,
   starsFor
 } from '../../core/models/user-profile.model';
+import { PageMetaService } from '../../core/services/page-meta.service';
 
 /** تعليق اختياري — لكن إن كُتب فلا يكون مسافات فقط. */
 function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
@@ -401,6 +402,7 @@ export class UserProfilePage implements OnInit {
   private readonly translate = inject(TranslateService);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly pageMeta = inject(PageMetaService);
 
   readonly criteria = RATING_CRITERIA;
   readonly starsFn = starsFor;
@@ -454,6 +456,9 @@ export class UserProfilePage implements OnInit {
   readonly isEditingRating = computed(() => !!this.eligibility()?.alreadyRated);
 
   ngOnInit(): void {
+    // Public by design but personal (name, photo, join date) and thin -- kept out of search
+    // results until the owner decides otherwise (SEO audit, 2026-10-03; also X-Robots-Tag in _headers).
+    this.pageMeta.noindex(this.destroyRef);
     this.userId = this.route.snapshot.paramMap.get('id') ?? '';
 
     if (!this.userId) {

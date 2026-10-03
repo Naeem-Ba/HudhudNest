@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -20,6 +21,7 @@ import {
 } from '../../../core/models/investment.model';
 import { LoadingSpinnerComponent } from '../../../shared/ui/loading-spinner.component';
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
+import { PageMetaService } from '../../../core/services/page-meta.service';
 
 @Component({
   selector: 'app-investment-details',
@@ -37,6 +39,7 @@ export class InvestmentDetailsPage implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly pageMeta = inject(PageMetaService);
 
   readonly fallbackImage = '/images/no-image.svg';
 
@@ -63,9 +66,11 @@ export class InvestmentDetailsPage implements OnInit {
   private projectId = '';
 
   ngOnInit(): void {
+    this.destroyRef.onDestroy(() => this.pageMeta.clear());
     this.projectId = this.route.snapshot.paramMap.get('id') ?? '';
     if (!this.projectId) {
       this.error.set('INVESTMENTS.DETAILS.NOT_FOUND');
+      this.pageMeta.markNotFound();
       this.loading.set(false);
       return;
     }
@@ -87,6 +92,12 @@ export class InvestmentDetailsPage implements OnInit {
       .subscribe({
         next: result => {
           this.project.set(result.project);
+          this.pageMeta.applyDynamic({
+            title: result.project.title,
+            description: result.project.shortDescription ?? result.project.description,
+            path: `/investments/${result.project.id}`,
+            image: result.project.propertyMainImageUrl
+          });
           this.financials.set(result.financials);
           this.risk.set(result.risk);
           this.documents.set(result.documents);
@@ -96,8 +107,12 @@ export class InvestmentDetailsPage implements OnInit {
           this.loading.set(false);
           this.loadUserState();
         },
-        error: () => {
+        error: (err: unknown) => {
           this.error.set('INVESTMENTS.DETAILS.LOAD_ERROR');
+          // Only a definitive 404 is a reason to de-index; a transient failure must not be.
+          if (err instanceof HttpErrorResponse && err.status === 404) {
+            this.pageMeta.markNotFound();
+          }
           this.loading.set(false);
         }
       });
