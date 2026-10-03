@@ -97,8 +97,17 @@ that runs in front of `/properties/*`. It inspects the request's User-Agent:
   built by the same rules as `PropertyShareContentService.buildMetaDescription` (intentionally
   re-implemented in plain JS — see the file header for why it can't literally import the Angular
   service).
-- **anyone else** (real visitors, Googlebot, Bingbot, Yandex, unrecognized bots) →
+- a **search engine** (Googlebot, Bingbot, Yandex, DuckDuckBot, Baidu, Slurp) → the normal Angular
+  `index.html` **body**, but with a real **404 status** when the backend answers 404 for that id
+  (`respondForSearchEngine`). Status only — the body is the same one a visitor gets. Any other outcome
+  (200, 5xx, 3 s timeout, network error) passes the SPA through with 200, so a flaky backend can never
+  de-list a live property. Humans never trigger this call.
+- **anyone else** (real visitors, unrecognized bots) →
   `context.next()`, i.e. the normal Angular `index.html`, completely untouched.
+
+The canonical/`og:url` in the pre-rendered document use the production origin when the crawler
+arrives through an alias host (old domain, `*.netlify.app`) — `resolveCanonicalOrigin` in
+`lib/social-crawler.mjs`; staging/preview hosts keep their own origin so previews unfurl correctly.
 
 **Googlebot/Bingbot/Yandex were removed from the crawler list in 2026-10** (see
 `ARD-HudhudNest.md` ADR-001-R). They were originally included for the same reason as the social
