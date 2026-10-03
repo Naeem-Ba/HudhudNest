@@ -82,9 +82,9 @@ Severity: **High** blocks or badly degrades a core flow, **Medium** degrades it,
 
 | ID | Severity | Item |
 |---|---|---|
-| R-01 | Medium | **Photos over 5 MB are rejected on the client and the server** (`property-form.page.ts`, `UploadPropertyImagesCommandHandler.cs`). Modern phone photos are often 5–10 MB. Recommended: downscale to ≈ 2048 px / JPEG 0.85 in the browser before upload. This is a new utility rather than a minimal patch, so it was not done. |
-| R-02 | Medium | **No native deep links.** No `intent-filter` for `https://hudhudnest.com` in `AndroidManifest.xml`, no iOS associated domains, no `appUrlOpen` handler, no `.well-known` files. Shared listing links open in the browser, not the installed app. Needs `assetlinks.json` / `apple-app-site-association` and the release signing fingerprint (owner). |
-| R-03 | Low | First-time language comes from the browser (`navigator.language`) and only falls back to Arabic when unsupported, so a device set to English or German opens the English or German UI. Product decision. |
+| R-01 | Medium | **Photos over 5 MB were rejected on the client and the server** (`property-form.page.ts`, `UploadPropertyImagesCommandHandler.cs`). **Addressed in #114 (merged):** photos are shrunk in the browser to ≤ 1.8 MB before upload (property form, short-stay form, avatar). Not verified on a real device: EXIF orientation of real camera photos. |
+| R-02 | Medium | **No native deep links.** **Addressed in #114 (merged):** Android App Links intent-filter, iOS associated-domains entitlement, generated `assetlinks.json` / `apple-app-site-association`, `DeepLinkService`. **Still needs the owner:** Apple Team ID (`APPLE_TEAM_ID`), the Associated Domains capability, the Play App Signing certificate fingerprint if used, a new app build, then `npm run verify:deep-links` and a real-device check (see `docs/DEEP-LINKS.md`). |
+| R-03 | Low | First-time language came from the browser only. **Addressed in #114 (merged):** the device language (Arabic/English/German) still wins everywhere; only for other device languages does the visitor's country decide (Arab country → Arabic, DE/AT/CH/LI → German, elsewhere → English). See `docs/FIRST-VISIT-LANGUAGE.md`. |
 | R-04 | Low | Hard-coded Arabic `aria-label="إغلاق"` on the filter drawer close button (not translated), and the filter drawer has no `role="dialog"`. |
 | R-05 | Ops | The deployed Staging site (`staging--hudhudnest.netlify.app`) is an **old build**: pre-rebrand logo text and `| PropertyApp` page titles. Redeploy the `staging` branch. |
 
