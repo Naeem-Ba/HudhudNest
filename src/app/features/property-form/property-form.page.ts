@@ -63,7 +63,7 @@ interface PropertySavePayload {
   HasBalcony: boolean;
   HasElevator: boolean;
   HasParkingSpace: boolean;
-  HeatingType: number;
+  HeatingType?: number;
   AvailableFrom?: string | null;
   AmenityIds?: string[];
   // Phase-0, Task 0.
@@ -665,7 +665,7 @@ export class PropertyFormPage implements OnInit {
    */
   private async loadEnumOptions(): Promise<void> {
     await this.enumService.ensureLoaded([
-      'OwnershipType', 'AreaUnit', 'FurnishingStatus', 'RentalDurationType'
+      'OwnershipType', 'AreaUnit', 'FurnishingStatus', 'RentalDurationType', 'HeatingType'
     ]);
 
     this.ownershipTypeOptions.set(this.enumService.getList('OwnershipType'));
@@ -674,6 +674,24 @@ export class PropertyFormPage implements OnInit {
     this.enumOptionsLoadFailed.set(
       this.ownershipTypeOptions().length === 0 || this.furnishingStatusOptions().length === 0
     );
+  }
+
+  /**
+   * Create always sends the chosen value. Edit sends it only when the user changed it: the update
+   * command treats an omitted HeatingType as "keep", whereas sending the untouched default (0 = Unknown)
+   * silently overwrote the stored value — including when this app runs against an API that does not
+   * return the saved heating type yet.
+   */
+  heatingTypeForSave(): number | undefined {
+    const control = this.form.controls.heatingType;
+    if (this.isEditMode() && !control.dirty) return undefined;
+    return control.value ?? 0;
+  }
+
+  /** PropertyDto returns the enum NAME ("Gas"); older payloads may already carry the number. */
+  private heatingTypeId(value: number | string | null | undefined): number {
+    if (typeof value === 'number') return value;
+    return this.enumIdByKey('HeatingType', value) ?? 0;
   }
 
   private enumIdByKey(group: string, key: string | null | undefined): number | null {
@@ -784,7 +802,10 @@ export class PropertyFormPage implements OnInit {
             rentalEndDate: property.rentalEndDate ?? null,
             rentalDurationType: this.enumIdByKey('RentalDurationType', property.rentalDurationType),
             ownershipType: this.enumIdByKey('OwnershipType', property.legalStatus),
-            furnishingStatus: this.enumIdByKey('FurnishingStatus', property.furnishingStatus)
+            furnishingStatus: this.enumIdByKey('FurnishingStatus', property.furnishingStatus),
+            // The control used to keep its default (0 = Unknown) in edit mode, so saving any
+            // edit silently overwrote the stored heating type.
+            heatingType: this.heatingTypeId(property.heatingType)
           });
 
           // Phase-0, Task 0 follow-up: patched with emitEvent:false so the
@@ -1097,7 +1118,7 @@ export class PropertyFormPage implements OnInit {
       HasBalcony: !isLand && (f.hasBalcony ?? false),
       HasElevator: !isLand && (f.hasElevator ?? false),
       HasParkingSpace: !isLand && (f.hasParkingSpace ?? false),
-      HeatingType: f.heatingType ?? 0,
+      HeatingType: this.heatingTypeForSave(),
       AvailableFrom: f.availableFrom ?? null,
       // ✅ إصلاح: كان الحقل معرَّفاً في الـ payload لكن لم يُملأ أبداً — المرافق
       // المختارة من المستخدم لم تكن تُرسَل إلى الباك اند إطلاقاً.

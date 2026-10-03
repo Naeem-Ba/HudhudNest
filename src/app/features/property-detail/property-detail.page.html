@@ -146,13 +146,12 @@
           <div class="summary-card__price" *ngIf="isSaleListing()">
             <span class="price-label">{{ 'PROPERTY.PURCHASE_PRICE' | translate }}</span>
             <strong class="price-value">{{ formatPrice(p.purchasePrice) }}
-              <small>{{ p.currencyCode || 'SYP' }}</small>
             </strong>
           </div>
           <div class="summary-card__price" *ngIf="isRentListing()">
             <span class="price-label">{{ 'PROPERTY.WARM_RENT' | translate }}</span>
             <strong class="price-value">{{ formatPrice(p.warmRent ?? p.coldRent) }}
-              <small>{{ p.currencyCode || 'SYP' }}/{{ 'COMMON.MONTH' | translate }}</small>
+              <small>/{{ 'COMMON.MONTH' | translate }}</small>
             </strong>
           </div>
 
@@ -579,29 +578,29 @@
               <ng-container *ngIf="isSaleListing()">
                 <div class="info-row">
                   <dt>{{ 'PROPERTY.PURCHASE_PRICE' | translate }}</dt>
-                  <dd>{{ formatPrice(p.purchasePrice) }} {{ p.currencyCode }}</dd>
+                  <dd>{{ formatPrice(p.purchasePrice) }}</dd>
                 </div>
                 <div class="info-row" *ngIf="p.deposit">
                   <dt>{{ 'PROPERTY.DEPOSIT' | translate }}</dt>
-                  <dd>{{ formatPrice(p.deposit) }} {{ p.currencyCode }}</dd>
+                  <dd>{{ formatPrice(p.deposit) }}</dd>
                 </div>
               </ng-container>
               <ng-container *ngIf="isRentListing()">
                 <div class="info-row" *ngIf="p.coldRent">
                   <dt>{{ 'PROPERTY.COLD_RENT' | translate }}</dt>
-                  <dd>{{ formatPrice(p.coldRent) }} {{ p.currencyCode }}</dd>
+                  <dd>{{ formatPrice(p.coldRent) }}</dd>
                 </div>
                 <div class="info-row" *ngIf="p.warmRent">
                   <dt>{{ 'PROPERTY.WARM_RENT' | translate }}</dt>
-                  <dd>{{ formatPrice(p.warmRent) }} {{ p.currencyCode }}</dd>
+                  <dd>{{ formatPrice(p.warmRent) }}</dd>
                 </div>
                 <div class="info-row" *ngIf="p.additionalCosts">
                   <dt>{{ 'PROPERTY.ADDITIONAL_COSTS' | translate }}</dt>
-                  <dd>{{ formatPrice(p.additionalCosts) }} {{ p.currencyCode }}</dd>
+                  <dd>{{ formatPrice(p.additionalCosts) }}</dd>
                 </div>
                 <div class="info-row" *ngIf="p.deposit">
                   <dt>{{ 'PROPERTY.DEPOSIT' | translate }}</dt>
-                  <dd>{{ formatPrice(p.deposit) }} {{ p.currencyCode }}</dd>
+                  <dd>{{ formatPrice(p.deposit) }}</dd>
                 </div>
               </ng-container>
             </dl>

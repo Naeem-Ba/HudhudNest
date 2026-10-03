@@ -379,9 +379,10 @@
                 <label for="heatingType">{{ 'PROPERTY_FORM.HEATING' | translate }}</label>
                 <select id="heatingType" formControlName="heatingType">
                   <option [value]="1">{{ 'HEATING.CENTRAL' | translate }}</option>
-                  <option [value]="2">{{ 'HEATING.FLOOR' | translate }}</option>
-                  <option [value]="3">{{ 'HEATING.GAS' | translate }}</option>
-                  <option [value]="4">{{ 'HEATING.ELECTRIC' | translate }}</option>
+                  <!-- Values are the backend HeatingType ids (GET /api/enums/HeatingType): Gas=2, Electric=3, FloorHeating=4. -->
+                  <option [value]="4">{{ 'HEATING.FLOOR' | translate }}</option>
+                  <option [value]="2">{{ 'HEATING.GAS' | translate }}</option>
+                  <option [value]="3">{{ 'HEATING.ELECTRIC' | translate }}</option>
                   <option [value]="5">{{ 'HEATING.OIL' | translate }}</option>
                   <option [value]="0">{{ 'HEATING.OTHER' | translate }}</option>
                 </select>
