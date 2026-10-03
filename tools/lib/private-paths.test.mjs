@@ -68,12 +68,12 @@ test('old-domain redirects come before the SPA catch-all in public/_redirects', 
     .split(/\r?\n/)
     .filter(line => line.trim() && !line.trim().startsWith('#'));
 
-  const catchAll = rules.findIndex(line => /^\/\*\s+\/index\.html\s+200/.test(line));
+  const catchAll = rules.findIndex(line => /^\/\*\s+\/index\.html\s+404/.test(line));
   const oldDomain = rules
     .map((line, index) => ({ line, index }))
     .filter(({ line }) => line.includes('realestateworld.world'));
 
-  assert.ok(catchAll >= 0, 'SPA catch-all rule missing');
+  assert.ok(catchAll >= 0, 'final catch-all (404) rule missing');
   assert.ok(oldDomain.length >= 4, 'expected http/https x apex/www old-domain rules');
   for (const { line, index } of oldDomain) {
     assert.ok(index < catchAll, `old-domain rule must precede the catch-all: ${line}`);
