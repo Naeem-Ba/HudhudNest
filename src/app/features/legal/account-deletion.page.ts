@@ -15,8 +15,9 @@
 // وterms-of-service.page.ts (نص قانوني/إفصاحي واحد كنسخة مرجعية، لا يُدمَج آلياً في
 // مفاتيح i18n الواجهة).
 
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { PageMetaService } from '../../core/services/page-meta.service';
 
 @Component({
   selector: 'app-account-deletion',
@@ -173,4 +174,16 @@ import { RouterModule } from '@angular/router';
     }
   `]
 })
-export class AccountDeletionPage {}
+export class AccountDeletionPage {
+  constructor() {
+    // The page body is fixed Arabic text (see the note at the top of this file), so its metadata
+    // is fixed Arabic too rather than following the UI language like the translated pages.
+    const pageMeta = inject(PageMetaService);
+    pageMeta.applyDynamic({
+      title: 'حذف الحساب والبيانات',
+      description: 'كيف تطلب حذف حسابك وبياناتك من هدهد نيست، وما الذي يُحذف وما الذي يُحتفظ به ولماذا.',
+      path: '/account-deletion'
+    });
+    inject(DestroyRef).onDestroy(() => pageMeta.clear());
+  }
+}

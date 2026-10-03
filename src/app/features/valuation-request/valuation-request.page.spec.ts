@@ -59,9 +59,13 @@ describe('ValuationRequestPage', () => {
         { provide: ToastService, useValue: toastSpy },
         {
           provide: TranslateService,
-          useValue: jasmine.createSpyObj('TranslateService', ['instant', 'get'], {
-            onLangChange: of({}), onTranslationChange: of({}), onDefaultLangChange: of({})
-          })
+          // `stream` is what PageMetaService (SEO meta for the page) subscribes to on ngOnInit.
+          useValue: Object.assign(
+            jasmine.createSpyObj('TranslateService', ['instant', 'get'], {
+              onLangChange: of({}), onTranslationChange: of({}), onDefaultLangChange: of({})
+            }),
+            { stream: () => of({}) }
+          )
         }
       ]
     });

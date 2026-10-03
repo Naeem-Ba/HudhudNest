@@ -56,6 +56,57 @@ const CRAWLER_USER_AGENT_SIGNATURES = [
   'w3c_validator'
 ];
 
+/**
+ * Search-engine crawlers that execute JavaScript and therefore get the real SPA (see the note
+ * above). Listed separately only so the edge function can give them a truthful HTTP status for a
+ * property that no longer exists: the SPA shell is a 200 for every path, so Google would
+ * otherwise only learn "not found" from a JS-injected noindex. The BODY they receive is
+ * unchanged (the normal SPA shell) -- only the status differs, which is not cloaking.
+ */
+const SEARCH_ENGINE_USER_AGENT_SIGNATURES = [
+  'googlebot',
+  'google-inspectiontool',
+  'adsbot-google',
+  'bingbot',
+  'bingpreview',
+  'yandexbot',
+  'duckduckbot',
+  'baiduspider',
+  'slurp'
+];
+
+export function isSearchEngineCrawlerUserAgent(userAgent) {
+  if (!userAgent) {
+    return false;
+  }
+
+  const normalized = userAgent.toLowerCase();
+  return SEARCH_ENGINE_USER_AGENT_SIGNATURES.some(signature => normalized.includes(signature));
+}
+
+/** The one real production origin, and the hostnames that are aliases of the same deployment
+ *  (old domain still attached to the Netlify site, the default *.netlify.app name, www). */
+export const PRODUCTION_SITE_URL = 'https://hudhudnest.com';
+const PRODUCTION_ALIAS_HOSTNAMES = new Set([
+  'hudhudnest.com',
+  'www.hudhudnest.com',
+  'hudhudnest.netlify.app',
+  'realestateworld.world',
+  'www.realestateworld.world'
+]);
+
+/**
+ * The origin to put in canonical/og:url. It used to be the request's own origin, which made a
+ * page reached through an alias host (old domain, *.netlify.app) declare ITSELF canonical -- the
+ * opposite of what an alias should do. Alias hosts now resolve to the production origin; any
+ * other host (staging, deploy previews, local) keeps its own origin so previews still unfurl
+ * correctly when tested there.
+ */
+export function resolveCanonicalOrigin(requestUrl) {
+  const url = new URL(requestUrl);
+  return PRODUCTION_ALIAS_HOSTNAMES.has(url.hostname) ? PRODUCTION_SITE_URL : url.origin;
+}
+
 export function isSocialCrawlerUserAgent(userAgent) {
   if (!userAgent) {
     return false;

@@ -13,6 +13,18 @@
 #      actually works, and it runs BEFORE this file's rules are even considered (Edge
 #      Functions execute first in Netlify's request chain), so it does not need a rule here.
 #
+# Old domain -> hudhudnest.com (SEO audit, 2026-10-03). realestateworld.world is still attached to
+# this Netlify site as an alias and served the whole app with a 200, i.e. a complete duplicate of
+# hudhudnest.com. Each rule below is a host-based 301 (the trailing "!" forces it even though a
+# file/rewrite could match), and MUST stay above the SPA catch-all at the bottom: this file is
+# processed top to bottom and the first match wins (the same ordering trap documented above).
+# Edge functions still run first for /properties/* and /sitemap.xml; on this host the property
+# one now emits the production URL as canonical (resolveCanonicalOrigin).
+https://realestateworld.world/*      https://hudhudnest.com/:splat   301!
+http://realestateworld.world/*       https://hudhudnest.com/:splat   301!
+https://www.realestateworld.world/*  https://hudhudnest.com/:splat   301!
+http://www.realestateworld.world/*   https://hudhudnest.com/:splat   301!
+#
 # Original rule — SPA fallback. Load-bearing since hash-based routing was removed (see
 # ARD-Wohnungsmieten.md ADR-001): every in-app route (/properties/:id, /auth/verify-email, …) is
 # now a real path the server receives directly, so EVERY one of them depends on this rule to get

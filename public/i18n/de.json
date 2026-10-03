@@ -2485,5 +2485,23 @@
     "PRIVACY": "Datenschutzerklärung",
     "TRAIL": "gelesen habe.",
     "OPENS_NEW_TAB": "(öffnet in neuem Tab)"
+  },
+  "SEO": {
+    "SHORT_STAY": {
+      "TITLE": "Kurzaufenthalte und möblierte Wohnungen zur Tagesmiete",
+      "DESCRIPTION": "Buchen Sie einen Kurzaufenthalt in Syrien: möblierte Wohnungen, Häuser und Hotels zur Tagesmiete mit klaren Preisen pro Nacht, Fotos und Bewertungen früherer Gäste."
+    },
+    "INVESTMENTS": {
+      "TITLE": "Immobilien-Investitionsmöglichkeiten",
+      "DESCRIPTION": "Entdecken Sie Immobilien-Investitionsprojekte auf HudhudNest: erwartete Rendite, Laufzeit, Risikostufe, Dokumente und Neuigkeiten zu jedem Projekt."
+    },
+    "CONTACT": {
+      "TITLE": "Kontakt",
+      "DESCRIPTION": "Kontaktieren Sie das HudhudNest-Team bei Fragen zu Inseraten, Abos oder Ihrem Konto – wir antworten so schnell wie möglich."
+    },
+    "VALUATION": {
+      "TITLE": "Immobilie bewerten lassen",
+      "DESCRIPTION": "Fordern Sie eine Bewertung Ihrer Immobilie durch einen Experten an: Senden Sie die Objektdaten, und wir melden uns mit einer Einschätzung des Marktwerts."
+    }
   }
 }

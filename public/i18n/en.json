@@ -2485,5 +2485,23 @@
     "PRIVACY": "Privacy Policy",
     "TRAIL": ".",
     "OPENS_NEW_TAB": "(opens in a new tab)"
+  },
+  "SEO": {
+    "SHORT_STAY": {
+      "TITLE": "Short stays and furnished apartments for daily rent",
+      "DESCRIPTION": "Book a short stay in Syria: furnished apartments, houses and hotels for daily rent, with clear per-night prices, photos and reviews from previous guests."
+    },
+    "INVESTMENTS": {
+      "TITLE": "Real estate investment opportunities",
+      "DESCRIPTION": "Browse real estate investment projects on HudhudNest: expected return, investment term, risk level, documents and updates for every project."
+    },
+    "CONTACT": {
+      "TITLE": "Contact us",
+      "DESCRIPTION": "Get in touch with the HudhudNest team about listings, subscriptions or your account, and we will reply as soon as possible."
+    },
+    "VALUATION": {
+      "TITLE": "Get your property valued",
+      "DESCRIPTION": "Request a valuation of your property from a real estate expert: send the property details and we will contact you with an estimate of its market value."
+    }
   }
 }

@@ -12,6 +12,20 @@ export function isProductionSiteUrl(siteUrl) {
   return (siteUrl ?? '').replace(/\/+$/, '') === PRODUCTION_SITE_URL;
 }
 
+/** True when the request itself was made to the real production host. Added because gating on
+ *  the SITE_URL env var alone made the sitemap silently empty whenever that variable was unset,
+ *  or scoped to "Builds" only (so invisible to an edge function at runtime) -- the live
+ *  production site served an empty, noindex sitemap for exactly that reason (SEO audit,
+ *  2026-10-03). The request host cannot be mis-scoped, and a Staging/preview host never equals
+ *  the production hostname, so this does not weaken the Production-only rule. */
+export function isProductionRequestUrl(requestUrl) {
+  try {
+    return new URL(requestUrl).hostname === new URL(PRODUCTION_SITE_URL).hostname;
+  } catch {
+    return false;
+  }
+}
+
 export function escapeXml(value) {
   return String(value ?? '')
     .replace(/&/g, '&amp;')

@@ -68,18 +68,94 @@ test('passes through for a crawler UA on a non-property route', async () => {
   assert.equal(context.wasCalled, true);
 });
 
-test('passes through (context.next) for Googlebot on a real property -- it renders the SPA itself', async () => {
+const GOOGLEBOT_UA = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
+
+test('passes the SPA through with 200 for Googlebot on a real property -- it renders the SPA itself', async () => {
+  const context = makeNextContext();
+  const request = new Request('https://hudhudnest.com/properties/p1', { headers: { 'user-agent': GOOGLEBOT_UA } });
+
+  const response = await withNetlifyEnvStub({ API_URL: 'https://api.example.test/api' }, () =>
+    withFetchStub(async url => {
+      assert.equal(url, 'https://api.example.test/api/properties/p1');
+      return new Response('{}', { status: 200 });
+    }, () => handler(request, context))
+  );
+
+  assert.equal(context.wasCalled, true);
+  assert.equal(response.status, 200);
+  assert.equal(await response.text(), 'spa-passthrough');
+});
+
+test('gives Googlebot a real 404 status, keeping the SPA body, when the backend says the property is gone', async () => {
+  const context = makeNextContext();
+  const request = new Request('https://hudhudnest.com/properties/gone', { headers: { 'user-agent': GOOGLEBOT_UA } });
+
+  const response = await withNetlifyEnvStub({}, () =>
+    withFetchStub(async () => new Response('', { status: 404 }), () => handler(request, context))
+  );
+
+  assert.equal(response.status, 404);
+  assert.equal(await response.text(), 'spa-passthrough');
+});
+
+test('fails open (SPA with 200) for Googlebot when the backend errors, 5xxs or times out', async () => {
+  for (const impl of [
+    async () => { throw new Error('network down'); },
+    async () => new Response('', { status: 500 }),
+    async () => { throw new DOMException('timed out', 'TimeoutError'); }
+  ]) {
+    const context = makeNextContext();
+    const request = new Request('https://hudhudnest.com/properties/p1', { headers: { 'user-agent': GOOGLEBOT_UA } });
+
+    const response = await withNetlifyEnvStub({}, () => withFetchStub(impl, () => handler(request, context)));
+
+    assert.equal(response.status, 200);
+  }
+});
+
+test('does not call the backend for a normal browser (no extra round-trip for real visitors)', async () => {
   const context = makeNextContext();
   const request = new Request('https://hudhudnest.com/properties/p1', {
-    headers: { 'user-agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' }
+    headers: { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0' }
   });
 
-  const response = await withFetchStub(async () => {
-    throw new Error('must not call the backend -- Googlebot is no longer intercepted here');
+  await withFetchStub(async () => {
+    throw new Error('must not call the backend for a human visitor');
   }, () => handler(request, context));
 
   assert.equal(context.wasCalled, true);
-  assert.equal(await response.text(), 'spa-passthrough');
+});
+
+test('canonical/og:url use the production origin when a crawler arrives via an alias host', async () => {
+  for (const host of ['https://realestateworld.world', 'https://hudhudnest.netlify.app']) {
+    const context = makeNextContext();
+    const request = new Request(`${host}/properties/p1/`, { headers: { 'user-agent': 'facebookexternalhit/1.1' } });
+
+    const response = await withNetlifyEnvStub({}, () =>
+      withFetchStub(async () => new Response(JSON.stringify({ title: 'شقة' }), { status: 200 }), () =>
+        handler(request, context)
+      )
+    );
+
+    const html = await response.text();
+    assert.match(html, /rel="canonical" href="https:\/\/hudhudnest\.com\/properties\/p1"/);
+    assert.match(html, /property="og:url" content="https:\/\/hudhudnest\.com\/properties\/p1"/);
+  }
+});
+
+test('a staging/preview host keeps its own origin as canonical so previews unfurl correctly there', async () => {
+  const context = makeNextContext();
+  const request = new Request('https://staging--hudhudnest.netlify.app/properties/p1', {
+    headers: { 'user-agent': 'facebookexternalhit/1.1' }
+  });
+
+  const response = await withNetlifyEnvStub({}, () =>
+    withFetchStub(async () => new Response(JSON.stringify({ title: 'شقة' }), { status: 200 }), () =>
+      handler(request, context)
+    )
+  );
+
+  assert.match(await response.text(), /rel="canonical" href="https:\/\/staging--hudhudnest\.netlify\.app\/properties\/p1"/);
 });
 
 test('returns pre-rendered HTML with correct tags for a crawler UA on a real property', async () => {

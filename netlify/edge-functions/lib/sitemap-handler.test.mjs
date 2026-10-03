@@ -37,6 +37,31 @@ test('serves an empty, noindex sitemap when SITE_URL is not the production origi
   assert.match(xml, /<urlset[^>]*>\s*<\/urlset>/);
 });
 
+test('serves the real sitemap when SITE_URL is unset/mis-scoped but the request hit the production host', async () => {
+  const requestedUrls = [];
+  const response = await withNetlifyEnvStub({}, () =>
+    withFetchStub(async url => {
+      requestedUrls.push(url);
+      return new Response(JSON.stringify({ items: [{ id: 'p1' }], totalCount: 1 }), { status: 200 });
+    }, () => handler(new Request('https://hudhudnest.com/sitemap.xml')))
+  );
+
+  assert.equal(response.headers.get('x-robots-tag'), null);
+  const xml = await response.text();
+  assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/properties\/p1<\/loc>/);
+  assert.equal(requestedUrls.length, 1);
+});
+
+test('stays empty+noindex for a non-production host even if SITE_URL is unset', async () => {
+  const response = await withNetlifyEnvStub({}, () =>
+    withFetchStub(async () => {
+      throw new Error('must not call the backend for a non-production host');
+    }, () => handler(new Request('https://staging--hudhudnest.netlify.app/sitemap.xml')))
+  );
+
+  assert.equal(response.headers.get('x-robots-tag'), 'noindex');
+});
+
 test('serves an empty sitemap (not a crash) when SITE_URL is unset', async () => {
   const response = await withNetlifyEnvStub({}, () => handler());
   assert.equal(response.status, 200);
