@@ -15,6 +15,7 @@ import { PRIVACY_POLICY_META, TERMS_OF_SERVICE_META } from '../../core/models/co
 import { LanguageService, LangCode } from '../../core/services/language.service';
 import { MetaService } from '../../core/services/meta.service';
 import { LegalDocKind, LegalDocumentContent, parseLegalText } from './legal-document.model';
+import { PropertyShareUrlService } from '../../core/sharing/property-share-url.service';
 
 @Component({
   selector: 'app-legal-document',
@@ -149,6 +150,7 @@ export class LegalDocumentPage {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly metaService = inject(MetaService);
+  private readonly shareUrl = inject(PropertyShareUrlService);
   private readonly languages = inject(LanguageService);
 
   private readonly kind: LegalDocKind = this.route.snapshot.data['doc'] === 'terms' ? 'terms' : 'privacy';
@@ -167,6 +169,7 @@ export class LegalDocumentPage {
   readonly updatedLabel = computed(() => this.formatDate(this.meta.lastUpdated));
 
   constructor() {
+    this.destroyRef.onDestroy(() => this.metaService.clearCanonical());
     toObservable(this.lang)
       .pipe(
         tap(() => {
@@ -191,7 +194,8 @@ export class LegalDocumentPage {
         this.metaService.setMeta({
           title: result.doc.title,
           description: result.doc.metaDescription,
-          siteName: result.lang === 'ar' ? 'هدهد نيست' : 'HudhudNest'
+          siteName: result.lang === 'ar' ? 'هدهد نيست' : 'HudhudNest',
+          canonical: `${this.shareUrl.getSiteOrigin()}/${this.kind === 'terms' ? 'terms-of-service' : 'privacy-policy'}`
         });
       });
   }

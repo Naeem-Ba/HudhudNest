@@ -205,6 +205,52 @@ test('buildListingJsonLd maps rent/sold/reserved correctly and omits offers with
   assert.equal(sold.offers, undefined);
 });
 
+test('buildListingJsonLd shows a rent like the page does: warm rent first, per-month priceSpecification', () => {
+  const json = buildListingJsonLd(
+    { title: 'شقة', listingType: 'ForRent', coldRent: 450, warmRent: 500, currencyCode: 'USD' },
+    'https://hudhudnest.com/properties/p1'
+  );
+
+  assert.equal(json.offers.price, 500);
+  assert.deepEqual(json.offers.priceSpecification, {
+    '@type': 'UnitPriceSpecification',
+    price: 500,
+    priceCurrency: 'USD',
+    unitCode: 'MON'
+  });
+});
+
+test('buildListingJsonLd gives a sale no priceSpecification', () => {
+  const json = buildListingJsonLd(
+    { title: 'شقة', listingType: 'ForSale', purchasePrice: 75000, currencyCode: 'USD' },
+    'https://hudhudnest.com/properties/p1'
+  );
+  assert.equal(json.offers.priceSpecification, undefined);
+});
+
+test('buildListingJsonLd includes geo only when both coordinates are real numbers', () => {
+  const url = 'https://hudhudnest.com/properties/p1';
+  assert.deepEqual(buildListingJsonLd({ title: 'x', latitude: 33.5, longitude: 36.3 }, url).geo, {
+    '@type': 'GeoCoordinates',
+    latitude: 33.5,
+    longitude: 36.3
+  });
+  assert.equal(buildListingJsonLd({ title: 'x', latitude: 33.5 }, url).geo, undefined);
+  assert.equal(buildListingJsonLd({ title: 'x', latitude: null, longitude: 36.3 }, url).geo, undefined);
+});
+
+test('buildListingJsonLd reads the raw API imageUrls, deduplicated and absolute-only', () => {
+  const json = buildListingJsonLd(
+    {
+      title: 'x',
+      mainImageUrl: 'https://img.example/a.jpg',
+      imageUrls: ['https://img.example/a.jpg', 'https://img.example/b.jpg', '/relative.jpg']
+    },
+    'https://hudhudnest.com/properties/p1'
+  );
+  assert.deepEqual(json.image, ['https://img.example/a.jpg', 'https://img.example/b.jpg']);
+});
+
 test('buildListingJsonLd never lets a sanitized field break out of the <script> tag', () => {
   const json = buildListingJsonLd(
     { title: '</script><script>alert(1)</script>شقة' },

@@ -49,7 +49,8 @@ test('serves the real sitemap when SITE_URL is unset/mis-scoped but the request 
   assert.equal(response.headers.get('x-robots-tag'), null);
   const xml = await response.text();
   assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/properties\/p1<\/loc>/);
-  assert.equal(requestedUrls.length, 1);
+  // properties + short-stay listings + investment projects, one page each.
+  assert.equal(requestedUrls.length, 3);
 });
 
 test('stays empty+noindex for a non-production host even if SITE_URL is unset', async () => {
@@ -75,6 +76,12 @@ test('serves a full sitemap with static pages and paginated properties for the p
     () =>
       withFetchStub(async url => {
         requestedUrls.push(url);
+        if (url.includes('/short-stay/listings')) {
+          return new Response(JSON.stringify({ items: [{ id: 's1' }], totalCount: 1 }), { status: 200 });
+        }
+        if (url.includes('/investments/projects')) {
+          return new Response(JSON.stringify({ items: [{ id: 'i1' }], totalCount: 1 }), { status: 200 });
+        }
         if (url.includes('page=1')) {
           return new Response(
             JSON.stringify({
@@ -93,11 +100,17 @@ test('serves a full sitemap with static pages and paginated properties for the p
 
   assert.equal(response.status, 200);
   assert.equal(response.headers.get('content-type'), 'application/xml; charset=utf-8');
-  assert.equal(requestedUrls.length, 2);
-  assert.match(requestedUrls[0], /^https:\/\/api\.example\.test\/api\/properties\?page=1&pageSize=100$/);
-  assert.match(requestedUrls[1], /^https:\/\/api\.example\.test\/api\/properties\?page=2&pageSize=100$/);
+  // 2 pages of properties + 1 page each of short-stay listings and investment projects.
+  assert.equal(requestedUrls.length, 4);
+  assert.ok(requestedUrls.includes('https://api.example.test/api/properties?page=1&pageSize=100'));
+  assert.ok(requestedUrls.includes('https://api.example.test/api/properties?page=2&pageSize=100'));
+  assert.ok(requestedUrls.includes('https://api.example.test/api/short-stay/listings?page=1&pageSize=100'));
+  assert.ok(requestedUrls.includes('https://api.example.test/api/investments/projects?page=1&pageSize=100'));
 
   const xml = await response.text();
+  assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/short-stay\/s1<\/loc>/);
+  assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/investments\/i1<\/loc>/);
+  assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/pricing<\/loc>/);
   assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/<\/loc>/);
   assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/properties<\/loc>/);
   assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/properties\/p0<\/loc>/);

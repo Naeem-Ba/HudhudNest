@@ -48,6 +48,21 @@ function resolveAvailability(status: PropertyStatus | undefined): string | null 
   }
 }
 
+/** The price a visitor sees for this listing: the monthly rent for a rental (the detail page shows
+ *  warm rent first, then cold rent -- "<currency>/month"), the purchase price otherwise. For
+ *  'ForRentAndSale' the sale price wins, as it always has here. */
+function resolvePrice(property: Property): { price: number | null | undefined; isMonthlyRent: boolean } {
+  if (property.listingType === 'ForRent') {
+    const rent = property.warmRent ?? property.coldRent;
+    if (rent != null) {
+      return { price: rent, isMonthlyRent: true };
+    }
+  }
+
+  const price = property.purchasePrice ?? property.warmRent ?? property.coldRent;
+  return { price, isMonthlyRent: false };
+}
+
 function sanitize(value: string): string {
   return value.replace(/<[^>]*>/g, '').trim();
 }
@@ -80,7 +95,7 @@ export class PropertyStructuredDataService {
       return null;
     }
 
-    const price = property.purchasePrice ?? property.coldRent ?? property.warmRent;
+    const { price, isMonthlyRent } = resolvePrice(property);
     const businessFunction = resolveBusinessFunction(property.listingType);
     const availability = resolveAvailability(property.status);
 
@@ -90,6 +105,17 @@ export class PropertyStructuredDataService {
             '@type': 'Offer',
             price,
             priceCurrency: property.currencyCode,
+            // A rent is per month; without this a crawler reads it as a total price.
+            ...(isMonthlyRent
+              ? {
+                  priceSpecification: {
+                    '@type': 'UnitPriceSpecification',
+                    price,
+                    priceCurrency: property.currencyCode,
+                    unitCode: 'MON'
+                  }
+                }
+              : {}),
             ...(businessFunction ? { businessFunction } : {}),
             ...(availability ? { availability } : {})
           }
@@ -105,6 +131,11 @@ export class PropertyStructuredDataService {
         }
       : null;
 
+    const hasCoordinates = Number.isFinite(property.latitude) && Number.isFinite(property.longitude);
+    const geo = hasCoordinates
+      ? { '@type': 'GeoCoordinates', latitude: property.latitude, longitude: property.longitude }
+      : null;
+
     const images = resolveImages(property);
 
     return {
@@ -116,6 +147,7 @@ export class PropertyStructuredDataService {
       ...(property.publishedAt ? { datePosted: property.publishedAt } : {}),
       ...(images.length ? { image: images } : {}),
       ...(address ? { address } : {}),
+      ...(geo ? { geo } : {}),
       ...(offers ? { offers } : {})
     };
   }

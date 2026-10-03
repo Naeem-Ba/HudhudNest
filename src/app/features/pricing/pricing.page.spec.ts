@@ -90,7 +90,7 @@ describe('PricingPage', () => {
           provide: ActivatedRoute,
           useValue: { snapshot: { queryParamMap: convertToParamMap(queryParams) } }
         },
-        { provide: MetaService, useValue: jasmine.createSpyObj('MetaService', ['setMeta']) },
+        { provide: MetaService, useValue: jasmine.createSpyObj('MetaService', ['setMeta', 'clearCanonical']) },
         { provide: ToastService, useValue: toastSpy },
         {
           provide: TranslateService,

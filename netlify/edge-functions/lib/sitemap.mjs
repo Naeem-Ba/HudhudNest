@@ -50,7 +50,19 @@ export function toLastmod(value) {
 export function buildStaticUrlEntries(siteUrl) {
   return [
     { loc: `${siteUrl}/`, changefreq: 'daily', priority: '1.0' },
-    { loc: `${siteUrl}/properties`, changefreq: 'hourly', priority: '0.8' }
+    { loc: `${siteUrl}/properties`, changefreq: 'hourly', priority: '0.8' },
+    // Public sections and pages that have their own title/description/canonical (PageMetaService,
+    // PricingPage, LegalDocumentPage). Listing a page that has none would just hand Google a URL
+    // titled "HudhudNest" -- add a page here only together with its metadata. Private paths
+    // (tools/lib/private-paths.mjs) must never appear; a test enforces that.
+    { loc: `${siteUrl}/short-stay`, changefreq: 'daily', priority: '0.7' },
+    { loc: `${siteUrl}/investments`, changefreq: 'daily', priority: '0.7' },
+    { loc: `${siteUrl}/pricing`, changefreq: 'monthly', priority: '0.5' },
+    { loc: `${siteUrl}/kontakt`, changefreq: 'yearly', priority: '0.4' },
+    { loc: `${siteUrl}/valuation`, changefreq: 'yearly', priority: '0.4' },
+    { loc: `${siteUrl}/privacy-policy`, changefreq: 'yearly', priority: '0.2' },
+    { loc: `${siteUrl}/terms-of-service`, changefreq: 'yearly', priority: '0.2' },
+    { loc: `${siteUrl}/account-deletion`, changefreq: 'yearly', priority: '0.2' }
   ];
 }
 
@@ -63,6 +75,36 @@ export function buildPropertyUrlEntries(siteUrl, properties) {
     changefreq: 'daily',
     priority: '0.6'
   }));
+}
+
+/** One <url> entry per published short-stay listing (GET /api/short-stay/listings, public).
+ *  The list DTO has no modification date, so no <lastmod> -- never guessed. */
+export function buildShortStayUrlEntries(siteUrl, listings) {
+  return listings.map(listing => ({
+    loc: `${siteUrl}/short-stay/${encodeURIComponent(listing.id)}`,
+    lastmod: null,
+    changefreq: 'daily',
+    priority: '0.5'
+  }));
+}
+
+/** One <url> entry per public investment project (GET /api/investments/projects, public). The
+ *  list DTO's only date is publishedAt, which is not a modification date, so no <lastmod>. */
+export function buildInvestmentUrlEntries(siteUrl, projects) {
+  return projects.map(project => ({
+    loc: `${siteUrl}/investments/${encodeURIComponent(project.id)}`,
+    lastmod: null,
+    changefreq: 'daily',
+    priority: '0.5'
+  }));
+}
+
+/** The sitemap protocol allows at most 50,000 URLs per file. Entries are cut in the order given,
+ *  so callers list the most important sources first. */
+export const MAX_SITEMAP_URLS = 50000;
+
+export function capEntries(entries, max = MAX_SITEMAP_URLS) {
+  return entries.length > max ? entries.slice(0, max) : entries;
 }
 
 export function buildSitemapXml(entries) {

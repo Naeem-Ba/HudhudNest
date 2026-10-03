@@ -8,10 +8,15 @@ import {
   toLastmod,
   buildStaticUrlEntries,
   buildPropertyUrlEntries,
+  buildShortStayUrlEntries,
+  buildInvestmentUrlEntries,
+  capEntries,
+  MAX_SITEMAP_URLS,
   buildSitemapXml,
   buildEmptySitemapXml,
   fetchAllPublishedProperties
 } from './sitemap.mjs';
+import { PRIVATE_PATHS } from '../../../tools/lib/private-paths.mjs';
 
 test('isProductionSiteUrl matches only the real production origin', () => {
   assert.equal(isProductionSiteUrl(PRODUCTION_SITE_URL), true);
@@ -36,12 +41,45 @@ test('toLastmod returns null for missing or unparseable input', () => {
   assert.equal(toLastmod('not-a-date'), null);
 });
 
-test('buildStaticUrlEntries lists only home and the bare listing page', () => {
+test('buildStaticUrlEntries lists home, the bare listing page and the public pages that have their own metadata', () => {
   const entries = buildStaticUrlEntries('https://hudhudnest.com');
   assert.deepEqual(
-    entries.map(e => e.loc),
-    ['https://hudhudnest.com/', 'https://hudhudnest.com/properties']
+    entries.map(e => e.loc.replace('https://hudhudnest.com', '')),
+    ['/', '/properties', '/short-stay', '/investments', '/pricing', '/kontakt', '/valuation',
+     '/privacy-policy', '/terms-of-service', '/account-deletion']
   );
+});
+
+test('no sitemap URL is a private path (robots Disallow / noindex header must never contradict the sitemap)', () => {
+  const entries = [
+    ...buildStaticUrlEntries('https://hudhudnest.com'),
+    ...buildPropertyUrlEntries('https://hudhudnest.com', [{ id: 'p1' }]),
+    ...buildShortStayUrlEntries('https://hudhudnest.com', [{ id: 's1' }]),
+    ...buildInvestmentUrlEntries('https://hudhudnest.com', [{ id: 'i1' }])
+  ];
+
+  for (const entry of entries) {
+    const path = entry.loc.replace('https://hudhudnest.com', '') || '/';
+    const hit = PRIVATE_PATHS.find(privatePath => path.startsWith(privatePath));
+    assert.equal(hit, undefined, `${path} is listed in the sitemap but matches private path ${hit}`);
+  }
+});
+
+test('buildShortStayUrlEntries and buildInvestmentUrlEntries build detail URLs without a guessed lastmod', () => {
+  const [stay] = buildShortStayUrlEntries('https://hudhudnest.com', [{ id: 'a b' }]);
+  const [project] = buildInvestmentUrlEntries('https://hudhudnest.com', [{ id: 'i1', publishedAt: '2026-01-01' }]);
+
+  assert.equal(stay.loc, 'https://hudhudnest.com/short-stay/a%20b');
+  assert.equal(stay.lastmod, null);
+  assert.equal(project.loc, 'https://hudhudnest.com/investments/i1');
+  assert.equal(project.lastmod, null);
+});
+
+test('capEntries keeps the first MAX entries (properties are listed before the smaller sources)', () => {
+  const entries = Array.from({ length: 5 }, (_, i) => ({ loc: `u${i}` }));
+  assert.deepEqual(capEntries(entries, 3).map(e => e.loc), ['u0', 'u1', 'u2']);
+  assert.equal(capEntries(entries).length, 5);
+  assert.equal(MAX_SITEMAP_URLS, 50000);
 });
 
 test('buildPropertyUrlEntries builds one /properties/:id entry per property, falling back to publishedAt', () => {
