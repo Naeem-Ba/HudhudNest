@@ -8,7 +8,7 @@
 // CURRENT route actually requires a session.
 // =====================================================================
 import { Component } from '@angular/core';
-import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
+import { HttpClient, HttpContext, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
@@ -16,9 +16,11 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { environment } from '../../../environments/environment';
 import { AuthGuard } from '../guards/auth-guard';
+import { CsrfTokenService } from '../services/csrf-token.service';
 import { TokenStorageService } from '../services/token-storage.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { ApiErrorInterceptor } from './api-error.interceptor';
+import { RefreshAuthInterceptor, RETRIED_AFTER_REFRESH } from './refresh-auth.interceptor';
 
 @Component({ template: '', standalone: true })
 class DummyComponent {}
@@ -72,7 +74,7 @@ describe('ApiErrorInterceptor — 401 toast only when the CURRENT route requires
     expect(toast.toasts()).toEqual([]);
   }));
 
-  it('✅ يُظهر toast "انتهت الجلسة" لِـ401 على صفحة محمية بـ AuthGuard', fakeAsync(() => {
+  it('✅ يُظهر toast لِـ401 ثانٍ على صفحة محمية بعد إعادة المحاولة بالرمز المجدَّد', fakeAsync(() => {
     tokenStorage.setAccessToken(fakeJwt(3600));
     router.navigateByUrl('/my-listings');
     tick();
@@ -84,12 +86,29 @@ describe('ApiErrorInterceptor — 401 toast only when the CURRENT route requires
 
     expect(router.url).toBe('/my-listings');
 
-    http.get(`${environment.apiUrl}/my-listings`).subscribe({ next: () => {}, error: () => {} });
+    http.get(`${environment.apiUrl}/my-listings`, { context: new HttpContext().set(RETRIED_AFTER_REFRESH, true) })
+      .subscribe({ next: () => {}, error: () => {} });
     httpMock.expectOne(`${environment.apiUrl}/my-listings`)
       .flush({ message: 'unauthorized' }, { status: 401, statusText: 'Unauthorized' });
     tick();
 
     expect(toast.toasts().length).toBe(1);
+  }));
+
+  it('✅ لا يُظهر toast لأول 401 على صفحة محمية — RefreshAuthInterceptor سيجدد الرمز ويعيد الطلب', fakeAsync(() => {
+    tokenStorage.setAccessToken(fakeJwt(3600));
+    router.navigateByUrl('/my-listings');
+    tick();
+
+    httpMock.match(`${environment.apiUrl}/users/me`).forEach(r =>
+      r.flush({ DisplayName: 'Test', ImageUrl: null }));
+
+    http.get(`${environment.apiUrl}/my-listings`).subscribe({ next: () => {}, error: () => {} });
+    httpMock.expectOne(`${environment.apiUrl}/my-listings`)
+      .flush({ message: 'unauthorized' }, { status: 401, statusText: 'Unauthorized' });
+    tick();
+
+    expect(toast.toasts()).toEqual([]);
   }));
 
   it('✅ أخطاء أخرى غير 401 (مثل 500) تُظهر toast حتى على صفحة عامة', fakeAsync(() => {
@@ -130,5 +149,69 @@ describe('ApiErrorInterceptor — 401 toast only when the CURRENT route requires
     tick();
 
     expect(toast.toasts()).toEqual([]);
+  }));
+});
+
+// The real chain: RefreshAuthInterceptor wraps ApiErrorInterceptor, so ApiErrorInterceptor sees
+// the first 401 before any refresh. Creating an agency invalidates the access token at once
+// (SecurityStamp change), and the page then showed "You need to sign in" although the retry
+// right after it succeeded.
+describe('ApiErrorInterceptor + RefreshAuthInterceptor — a 401 the refresh recovers shows no toast', () => {
+  let http: HttpClient;
+  let httpMock: HttpTestingController;
+  let toast: ToastService;
+  let router: Router;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [TranslateModule.forRoot()],
+      providers: [
+        provideRouter([
+          { path: 'my-listings', component: DummyComponent, canActivate: [AuthGuard] },
+          { path: 'auth/login', component: DummyComponent }
+        ]),
+        provideHttpClient(withInterceptors([RefreshAuthInterceptor, ApiErrorInterceptor])),
+        provideHttpClientTesting()
+      ]
+    });
+
+    http = TestBed.inject(HttpClient);
+    httpMock = TestBed.inject(HttpTestingController);
+    toast = TestBed.inject(ToastService);
+    router = TestBed.inject(Router);
+    TestBed.inject(TokenStorageService).setAccessToken(fakeJwt(3600));
+    (TestBed.inject(CsrfTokenService) as unknown as { token: string | null }).token = 'csrf';
+  });
+
+  afterEach(() => httpMock.verify());
+
+  function openProtectedPageAndFailOnce(): void {
+    router.navigateByUrl('/my-listings');
+    tick();
+    httpMock.match(`${environment.apiUrl}/users/me`).forEach(r =>
+      r.flush({ DisplayName: 'Test', ImageUrl: null }));
+
+    http.get(`${environment.apiUrl}/agencies/1/invitations`).subscribe({ next: () => {}, error: () => {} });
+    httpMock.expectOne(`${environment.apiUrl}/agencies/1/invitations`)
+      .flush({ message: 'unauthorized' }, { status: 401, statusText: 'Unauthorized' });
+    httpMock.expectOne(`${environment.apiUrl}/auth/refresh`)
+      .flush({ accessToken: fakeJwt(3600), refreshToken: '', expiresIn: 900 });
+  }
+
+  it('✅ التجديد ينجح وإعادة المحاولة تنجح: لا toast', fakeAsync(() => {
+    openProtectedPageAndFailOnce();
+    httpMock.expectOne(`${environment.apiUrl}/agencies/1/invitations`).flush([]);
+    tick();
+
+    expect(toast.toasts()).toEqual([]);
+  }));
+
+  it('✅ التجديد ينجح لكن إعادة المحاولة تُرفض بـ401: toast واحد', fakeAsync(() => {
+    openProtectedPageAndFailOnce();
+    httpMock.expectOne(`${environment.apiUrl}/agencies/1/invitations`)
+      .flush({ message: 'unauthorized' }, { status: 401, statusText: 'Unauthorized' });
+    tick();
+
+    expect(toast.toasts().length).toBe(1);
   }));
 });
