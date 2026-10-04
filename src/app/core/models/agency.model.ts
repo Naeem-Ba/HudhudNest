@@ -89,6 +89,49 @@ export interface AgencyInvitation {
   respondedAt?: string | null;
 }
 
+/**
+ * يقابل AgencySentInvitationDto — دعوة معلّقة كما يراها مالك المكتب
+ * (GET /api/agencies/{id}/invitations).
+ */
+export interface AgencySentInvitation {
+  id: string;
+  targetUserId: string;
+  targetName: string;
+  targetProfileImageUrl?: string | null;
+  createdAt: string;
+  expiresAt: string;
+}
+
+/** ما كتبه المالك في حقل الدعوة: معرّف/رابط صفحة، أو بريد، أو رقم هاتف. */
+export type InviteTarget =
+  | { kind: 'id'; userId: string }
+  | { kind: 'email'; email: string }
+  | { kind: 'phone'; phoneNumber: string };
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_PATTERN = /^\+?[\d\s\-().]{7,20}$/;
+
+/**
+ * يحدد نوع ما أُدخل في حقل الدعوة. الترتيب مقصود: المعرّف أولًا (رابط صفحة يحوي
+ * @ نادرًا لكنه يحوي Guid دائمًا)، ثم البريد، ثم الهاتف. التطبيع الفعلي للهاتف
+ * يجري في الخادم (IPhoneNumberNormalizer)؛ هنا فرز فقط.
+ */
+export function parseInviteTarget(input: string | null | undefined): InviteTarget | null {
+  const value = (input ?? '').trim();
+  if (!value) return null;
+
+  const userId = extractUserId(value);
+  if (userId) return { kind: 'id', userId };
+
+  if (EMAIL_PATTERN.test(value)) return { kind: 'email', email: value.toLowerCase() };
+
+  if (PHONE_PATTERN.test(value) && (value.match(/\d/g) ?? []).length >= 7) {
+    return { kind: 'phone', phoneNumber: value };
+  }
+
+  return null;
+}
+
 const GUID_PATTERN = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 
 /**

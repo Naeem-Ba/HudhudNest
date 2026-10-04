@@ -1240,7 +1240,7 @@
   "AGENCY_MANAGE": {
     "MEMBER_SUBTITLE": "You are a member of this agency. Its owner manages it.",
     "OR_CREATE": "Or register your own agency:",
-    "INACTIVE_NOTICE": "This agency is deactivated: its public page is hidden and no new members can be invited. Contact support to reactivate it.",
+    "INACTIVE_NOTICE": "This agency is deactivated: its public page is hidden and no new members can be invited.",
     "PUBLIC_PAGE": "Public page",
     "PUBLIC_PAGE_DESC": "Share this link with clients. It shows the agency, its team and its published listings.",
     "COPY": "Copy",
@@ -1263,11 +1263,16 @@
     "LEAVE": "Leave agency",
     "INVITE": "Invite a member",
     "INVITE_DESC": "The invited user gets a request they accept or decline themselves; they are not a member until they accept.",
-    "INVITE_LABEL": "User ID or profile link",
-    "INVITE_PLACEHOLDER": "e.g. https://…/users/xxxxxxxx-…",
-    "INVITE_HINT": "Your colleague finds their ID on the \"My agency\" page of their account, or sends you their public profile link.",
-    "INVITE_INVALID_ID": "No valid user ID found in what you entered.",
+    "INVITE_LABEL": "E-mail, phone number or user ID",
+    "INVITE_PLACEHOLDER": "e.g. sara@example.com or 0911 234 567",
+    "INVITE_HINT": "Use the e-mail or phone number your colleague signed up with, or their user ID / profile link.",
+    "INVITE_INVALID": "Enter a valid e-mail, phone number or user ID.",
     "INVITE_USER_NOT_FOUND": "No user exists with this ID.",
+    "INVITE_CONTACT_NOT_FOUND": "No account uses this e-mail or phone number. Check what your colleague signed up with.",
+    "SENT_INVITES": "Awaiting a reply",
+    "SENT_INVITES_EMPTY": "No pending invitations.",
+    "REACTIVATE": "Reactivate agency",
+    "REACTIVATED": "Agency reactivated.",
     "SEND_INVITE": "Send invitation",
     "INVITE_SENT": "Invitation sent.",
     "DEACTIVATE": "Deactivate agency",
@@ -1287,7 +1292,7 @@
       "TRANSFER_BODY": "{{name}} becomes the owner and you lose management rights immediately, staying on as a member. Only they can give ownership back.",
       "TRANSFER_ACTION": "Transfer ownership",
       "DEACTIVATE_TITLE": "Deactivate agency",
-      "DEACTIVATE_BODY": "{{name}}'s public page will disappear and you will not be able to invite new members. There is no reactivate button yet; support can reactivate it.",
+      "DEACTIVATE_BODY": "{{name}}'s public page will disappear and you will not be able to invite new members until you reactivate it from this page.",
       "DEACTIVATE_ACTION": "Deactivate"
     }
   },
@@ -1301,7 +1306,7 @@
     "DECLINE": "Decline",
     "ACCEPTED": "You joined {{name}}.",
     "DECLINED": "Invitation declined.",
-    "MY_ID_HINT": "To be invited by an agency, give its owner this ID:"
+    "MY_ID_HINT": "An owner can invite you by your registered e-mail or phone, or by this ID:"
   },
   "AGENCY_PUBLIC": {
     "NOT_FOUND": "Agency not found",

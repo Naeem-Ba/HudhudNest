@@ -11,6 +11,7 @@ import { BackendApiService } from './backend-api.service';
 import {
   Agency,
   AgencyInvitation,
+  AgencySentInvitation,
   AgencyMember,
   CreateAgencyRequest,
   UpdateAgencyRequest
@@ -51,10 +52,15 @@ export class AgenciesApiService {
 
   /**
    * DELETE /api/agencies/{id} — تعطيل (لا حذف نهائي): تختفي الصفحة العامة ولا
-   * يمكن دعوة أعضاء جدد. لا توجد نقطة لإعادة التفعيل حاليًا.
+   * يمكن دعوة أعضاء جدد. يُعكس بـ reactivate().
    */
   deactivate(agencyId: string): Observable<void> {
     return this.api.delete<void>(`${this.endpoint}/${agencyId}`);
+  }
+
+  /** POST /api/agencies/{id}/reactivate — عكس التعطيل (مالك فقط، idempotent). */
+  reactivate(agencyId: string): Observable<void> {
+    return this.api.post<void>(`${this.endpoint}/${agencyId}/reactivate`);
   }
 
   /** POST /api/agencies/{id}/transfer-ownership — المالك الجديد يجب أن يكون عضوًا. */
@@ -72,6 +78,22 @@ export class AgenciesApiService {
   /** POST /api/agencies/{id}/invitations — ينشئ دعوة معلّقة فقط، لا عضوية. */
   createInvitation(agencyId: string, userId: string): Observable<AgencyInvitation> {
     return this.api.post<AgencyInvitation>(`${this.endpoint}/${agencyId}/invitations`, { userId });
+  }
+
+  /**
+   * POST /api/agencies/{id}/invitations/by-contact — دعوة بالبريد أو الهاتف المسجّل
+   * به الحساب (واحد فقط). 404 إن لم يوجد حساب بهذه الجهة.
+   */
+  createInvitationByContact(
+    agencyId: string,
+    contact: { email: string } | { phoneNumber: string }
+  ): Observable<AgencyInvitation> {
+    return this.api.post<AgencyInvitation>(`${this.endpoint}/${agencyId}/invitations/by-contact`, contact);
+  }
+
+  /** GET /api/agencies/{id}/invitations — دعوات المكتب المعلّقة (مالك فقط). */
+  getSentInvitations(agencyId: string): Observable<AgencySentInvitation[]> {
+    return this.api.get<AgencySentInvitation[]>(`${this.endpoint}/${agencyId}/invitations`);
   }
 
   /** GET /api/agencies/invitations/mine — دعوات المستخدم الحالي القابلة للرد. */

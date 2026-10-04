@@ -1240,7 +1240,7 @@
   "AGENCY_MANAGE": {
     "MEMBER_SUBTITLE": "Sie sind Mitglied dieses Büros. Verwaltet wird es von seinem Inhaber.",
     "OR_CREATE": "Oder registrieren Sie Ihr eigenes Büro:",
-    "INACTIVE_NOTICE": "Dieses Büro ist deaktiviert: Die öffentliche Seite ist ausgeblendet und neue Mitglieder können nicht eingeladen werden. Zur Reaktivierung wenden Sie sich an den Support.",
+    "INACTIVE_NOTICE": "Dieses Büro ist deaktiviert: Die öffentliche Seite ist ausgeblendet und neue Mitglieder können nicht eingeladen werden.",
     "PUBLIC_PAGE": "Öffentliche Seite",
     "PUBLIC_PAGE_DESC": "Teilen Sie diesen Link mit Kunden. Er zeigt das Büro, sein Team und seine veröffentlichten Anzeigen.",
     "COPY": "Kopieren",
@@ -1263,11 +1263,16 @@
     "LEAVE": "Büro verlassen",
     "INVITE": "Mitglied einladen",
     "INVITE_DESC": "Die eingeladene Person erhält eine Anfrage, die sie selbst annimmt oder ablehnt; Mitglied wird sie erst nach Zustimmung.",
-    "INVITE_LABEL": "Benutzer-ID oder Profil-Link",
-    "INVITE_PLACEHOLDER": "z. B. https://…/users/xxxxxxxx-…",
-    "INVITE_HINT": "Ihre Kollegin oder Ihr Kollege findet die eigene ID auf der Seite „Mein Maklerbüro“ oder schickt Ihnen den Link zum öffentlichen Profil.",
-    "INVITE_INVALID_ID": "In der Eingabe wurde keine gültige Benutzer-ID gefunden.",
+    "INVITE_LABEL": "E-Mail, Telefonnummer oder Benutzer-ID",
+    "INVITE_PLACEHOLDER": "z. B. sara@example.com oder 0911 234 567",
+    "INVITE_HINT": "Verwenden Sie die E-Mail oder Telefonnummer, mit der sich Ihre Kollegin oder Ihr Kollege registriert hat, oder die Benutzer-ID bzw. den Profil-Link.",
+    "INVITE_INVALID": "Geben Sie eine gültige E-Mail, Telefonnummer oder Benutzer-ID ein.",
     "INVITE_USER_NOT_FOUND": "Es gibt keinen Benutzer mit dieser ID.",
+    "INVITE_CONTACT_NOT_FOUND": "Kein Konto nutzt diese E-Mail oder Telefonnummer. Prüfen Sie, womit sich Ihre Kollegin oder Ihr Kollege registriert hat.",
+    "SENT_INVITES": "Warten auf Antwort",
+    "SENT_INVITES_EMPTY": "Keine offenen Einladungen.",
+    "REACTIVATE": "Büro reaktivieren",
+    "REACTIVATED": "Büro reaktiviert.",
     "SEND_INVITE": "Einladung senden",
     "INVITE_SENT": "Einladung gesendet.",
     "DEACTIVATE": "Büro deaktivieren",
@@ -1287,7 +1292,7 @@
       "TRANSFER_BODY": "{{name}} wird Inhaber; Sie verlieren sofort die Verwaltungsrechte und bleiben Mitglied. Nur die neue Person kann die Inhaberschaft zurückgeben.",
       "TRANSFER_ACTION": "Übertragen",
       "DEACTIVATE_TITLE": "Büro deaktivieren",
-      "DEACTIVATE_BODY": "Die öffentliche Seite von {{name}} verschwindet und Sie können keine neuen Mitglieder einladen. Eine Reaktivierung ist derzeit nur über den Support möglich.",
+      "DEACTIVATE_BODY": "Die öffentliche Seite von {{name}} verschwindet und Sie können keine neuen Mitglieder einladen, bis Sie das Büro auf dieser Seite wieder aktivieren.",
       "DEACTIVATE_ACTION": "Deaktivieren"
     }
   },
@@ -1301,7 +1306,7 @@
     "DECLINE": "Ablehnen",
     "ACCEPTED": "Sie sind {{name}} beigetreten.",
     "DECLINED": "Einladung abgelehnt.",
-    "MY_ID_HINT": "Damit ein Büro Sie einladen kann, geben Sie dem Inhaber diese ID:"
+    "MY_ID_HINT": "Ein Inhaber kann Sie über Ihre registrierte E-Mail oder Telefonnummer einladen oder über diese ID:"
   },
   "AGENCY_PUBLIC": {
     "NOT_FOUND": "Büro nicht gefunden",
