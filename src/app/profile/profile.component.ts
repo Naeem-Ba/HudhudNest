@@ -1,9 +1,9 @@
-// Profile page: handles user data, password changes and account deletion.
+// Profile page: handles user data, password changes, data export and account deletion.
 // ✅ Avatar upload is now live — POST /users/me/avatar (UsersController.UploadAvatar).
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { ProfileService, UserProfile } from '../core/api/profile.service';
@@ -16,6 +16,9 @@ import { LoadingSpinnerComponent } from '../shared/ui/loading-spinner.component'
 import { ImageFallbackDirective } from '../shared/directives/image-fallback.directive';
 import { ConfirmModalComponent } from '../shared/ui/confirm-modal.component';
 import { AVATAR_COMPRESSION, compressImageForUpload } from '../shared/utils/image-compression';
+import { AppUpdateNativeGateway } from '../core/api/app-update-native.gateway';
+import { environment } from '../../environments/environment';
+import { formatDeletionDate } from '../shared/utils/deletion-date';
 
 @Component({
   selector: 'app-profile',
@@ -40,8 +43,8 @@ export class ProfileComponent implements OnInit {
   private readonly translate      = inject(TranslateService);
   private readonly urlService     = inject(UrlService);
   private readonly toast          = inject(ToastService);
-  private readonly router         = inject(Router);
   private readonly route          = inject(ActivatedRoute);
+  private readonly native         = inject(AppUpdateNativeGateway);
 
   user          = signal<UserProfile | null>(null);
   isLoading     = signal(true);
@@ -82,7 +85,9 @@ export class ProfileComponent implements OnInit {
   // Two-step flow inside the shared ConfirmModalComponent: 'warning' explains what is
   // deleted/retained (no server call yet), 'confirm' collects re-authentication + the
   // typed keyword and actually calls DELETE /api/Users/me. Never a single-click action —
-  // see DELETE_ACCOUNT_KEYWORD below.
+  // see DELETE_ACCOUNT_KEYWORD below. The server only SCHEDULES the deletion (30-day
+  // window); while UserProfile.DeletionScheduledFor is set the Danger Zone shows the date
+  // and a cancel button instead of the delete button.
   showDeleteModal = signal(false);
   deleteStep = signal<'warning' | 'confirm'>('warning');
   isDeletingAccount = signal(false);
@@ -95,6 +100,15 @@ export class ProfileComponent implements OnInit {
    * (same convention as GitHub's "type the repository name to confirm"), so the check
    * never depends on translating/comparing localized text. */
   readonly deleteConfirmKeyword = 'DELETE';
+
+  isCancellingDeletion = signal(false);
+
+  // ── Data export (GET /api/Users/me/export) ─────────────────────────────
+  isExporting = signal(false);
+
+  /** The native WebView cannot save a generated file (no download handling, no filesystem
+   * plugin), so the app hands the export off to the website, where the browser can. */
+  readonly isNativeApp = this.native.isNativePlatform();
 
   ngOnInit(): void {
     this.fetchProfile();
@@ -358,23 +372,104 @@ export class ProfileComponent implements OnInit {
     this.isDeletingAccount.set(true);
 
     this.profileService.deleteAccount(this.deletePassword || undefined).subscribe({
-      next: () => {
+      next: ({ scheduledFor }) => {
         this.isDeletingAccount.set(false);
         this.showDeleteModal.set(false);
 
-        // Clears tokens/CSRF/cached profile (see AuthService.clearSession) — the account
-        // is already gone server-side at this point, this is purely local cleanup.
-        this.authService.logoutLocal();
+        // Nothing is deleted yet: the account stays usable until scheduledFor, so the user
+        // stays signed in and sees the pending state (with its cancel button) right here.
+        this.user.update(current =>
+          current ? { ...current, DeletionScheduledFor: scheduledFor } : current
+        );
+        this.profileService.refresh().subscribe({
+          next: data => this.user.set(data),
+          error: () => undefined
+        });
 
-        this.toast.success(this.translate.instant('PROFILE.MESSAGES.DELETE_SUCCESS'));
-
-        this.router.navigateByUrl('/auth/login');
+        this.toast.success(
+          this.translate.instant('PROFILE.MESSAGES.DELETE_SCHEDULED', {
+            date: this.formatDeletionDate(scheduledFor)
+          })
+        );
       },
       error: err => {
         this.isDeletingAccount.set(false);
         this.deleteError.set(this.mapDeleteAccountError(err));
       }
     });
+  }
+
+  /** POST /api/Users/me/deletion/cancel — one click, no password, by design (see
+   * CancelAccountDeletionCommandHandler): backing out must never be harder than starting. */
+  cancelAccountDeletion(): void {
+    if (this.isCancellingDeletion()) return;
+    this.isCancellingDeletion.set(true);
+
+    this.profileService.cancelAccountDeletion().subscribe({
+      next: data => {
+        this.user.set(data);
+        this.isCancellingDeletion.set(false);
+        this.toast.success(this.translate.instant('PROFILE.DELETION_PENDING.CANCEL_SUCCESS'));
+      },
+      error: () => {
+        this.isCancellingDeletion.set(false);
+        this.toast.error(this.translate.instant('PROFILE.DELETION_PENDING.CANCEL_ERROR'));
+      }
+    });
+  }
+
+  formatDeletionDate(value: string | null | undefined): string {
+    return formatDeletionDate(value, this.translate.currentLang);
+  }
+
+  /** Downloads GET /api/Users/me/export as a JSON file (web), or opens the website's profile
+   * page in the system browser (native app — see isNativeApp). */
+  exportMyData(): void {
+    if (this.isNativeApp) {
+      const siteUrl = (environment.siteUrl ?? '').trim().replace(/\/+$/, '');
+      if (siteUrl) {
+        void this.native.openUrl(`${siteUrl}/profile`);
+        return;
+      }
+    }
+
+    if (this.isExporting()) return;
+    this.isExporting.set(true);
+
+    this.profileService.exportMyData().subscribe({
+      next: data => {
+        this.isExporting.set(false);
+        this.saveJsonFile(data, `hudhudnest-account-export-${this.todayStamp()}.json`);
+        this.toast.success(this.translate.instant('PROFILE.DATA_EXPORT.SUCCESS'));
+      },
+      error: err => {
+        this.isExporting.set(false);
+        this.toast.error(
+          this.translate.instant(
+            err?.status === 429 ? 'PROFILE.DATA_EXPORT.RATE_LIMITED' : 'PROFILE.DATA_EXPORT.ERROR'
+          )
+        );
+      }
+    });
+  }
+
+  private saveJsonFile(data: unknown, fileName: string): void {
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: 'application/json;charset=utf-8'
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    // Revoked on the next tick: some browsers start the download asynchronously.
+    setTimeout(() => URL.revokeObjectURL(url));
+  }
+
+  private todayStamp(): string {
+    return new Date().toISOString().slice(0, 10).replace(/-/g, '');
   }
 
   /** Maps the stable error codes DeleteUserCommandHandler returns (see its Fail(...) calls)

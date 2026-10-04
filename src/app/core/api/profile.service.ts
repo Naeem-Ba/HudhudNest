@@ -27,7 +27,7 @@
 //   - إصلاح شامل لـ toUpdateRequest
 
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, map, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, map, of, switchMap, tap, throwError } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
 
 export interface UserProfile {
@@ -82,6 +82,19 @@ export interface UserProfile {
    * profile.component.ts: onDeleteAccount/confirmDeleteAccount.
    */
   HasPassword?: boolean;
+
+  /**
+   * When a pending self-service deletion request will be executed (UserDto.DeletionScheduledFor,
+   * ISO date). null/undefined means no request is pending. DELETE /api/Users/me only schedules
+   * the deletion (AccountDeletion:DelayDays, 30 by default); the account stays fully usable and
+   * the request can be cancelled until this date.
+   */
+  DeletionScheduledFor?: string | null;
+}
+
+/** 202 body of DELETE /api/Users/me (UsersController.DeleteAccount). */
+export interface AccountDeletionSchedule {
+  scheduledFor: string | null;
 }
 
 interface BackendUserProfile {
@@ -143,6 +156,9 @@ interface BackendUserProfile {
 
   hasPassword?: boolean;
   HasPassword?: boolean;
+
+  deletionScheduledFor?: string | null;
+  DeletionScheduledFor?: string | null;
 }
 
 /**
@@ -273,17 +289,42 @@ export class ProfileService {
   }
 
   /**
-   * DELETE /api/Users/me — server-side account deletion (Phase 5). currentPassword is
-   * required only for a password-based account (UserProfile.HasPassword); left undefined
-   * for a social-login-only account, which has no password to submit. See
-   * DeleteUserCommandHandler for the exact server-side error codes this can surface
-   * (CURRENT_PASSWORD_REQUIRED / INVALID_CURRENT_PASSWORD / ACCOUNT_LOCKED).
+   * DELETE /api/Users/me — requests deletion of the caller's account. The server does NOT
+   * delete anything yet: it re-authenticates, then schedules the deletion and answers 202
+   * with { scheduledFor } (RequestDeleteUserCommandHandler). AccountDeletionSweepHostedService
+   * anonymizes the account once that date arrives, unless cancelAccountDeletion() runs first.
+   * currentPassword is required only for a password-based account (UserProfile.HasPassword).
+   * Error codes: CURRENT_PASSWORD_REQUIRED / INVALID_CURRENT_PASSWORD / ACCOUNT_LOCKED.
+   * Calling it again while a request is pending returns the existing date (idempotent).
    */
-  deleteAccount(currentPassword?: string): Observable<void> {
-    return this.api.delete<void>(
-      '/users/me',
-      currentPassword ? { currentPassword } : {}
+  deleteAccount(currentPassword?: string): Observable<AccountDeletionSchedule> {
+    return this.api
+      .delete<{ scheduledFor?: string | null; ScheduledFor?: string | null } | null>(
+        '/users/me',
+        currentPassword ? { currentPassword } : {}
+      )
+      .pipe(map(res => ({ scheduledFor: res?.scheduledFor ?? res?.ScheduledFor ?? null })));
+  }
+
+  /**
+   * POST /api/Users/me/deletion/cancel — withdraws a pending deletion request (204). No
+   * re-authentication by design (see CancelAccountDeletionCommandHandler). 404 means there was
+   * nothing pending, e.g. it was already cancelled from another device; callers treat that as
+   * done. Either way profile$ is refreshed so every DeletionScheduledFor reader updates.
+   */
+  cancelAccountDeletion(): Observable<UserProfile> {
+    return this.api.post<void>('/users/me/deletion/cancel').pipe(
+      catchError(err => (err?.status === 404 ? of(undefined) : throwError(() => err))),
+      switchMap(() => this.getMe())
     );
+  }
+
+  /**
+   * GET /api/Users/me/export — the caller's own data as one JSON document (AccountDataExportDto).
+   * Rate-limited server-side to 5 per 24 hours ("data-export" policy → 429).
+   */
+  exportMyData(): Observable<unknown> {
+    return this.api.get<unknown>('/users/me/export');
   }
 
   /** GET /api/users/{id} — ملف تعريف عام (مثلاً لعرض بيانات مالك عقار). */
@@ -349,7 +390,9 @@ export class ProfileService {
       Bio: user.bio ?? user.Bio ?? '',
       ContactInfo: user.contactInfo ?? user.ContactInfo ?? '',
 
-      HasPassword: user.hasPassword ?? user.HasPassword ?? false
+      HasPassword: user.hasPassword ?? user.HasPassword ?? false,
+
+      DeletionScheduledFor: user.deletionScheduledFor ?? user.DeletionScheduledFor ?? null
     };
   }
 

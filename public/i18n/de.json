@@ -1036,6 +1036,7 @@
       "AVATAR_COMING_SOON": "Das Hochladen eines Profilbilds befindet sich in Entwicklung und wird bald verfügbar sein.",
       "FILL_ALL_FIELDS": "Bitte korrigieren Sie die erforderlichen Felder.",
       "DELETE_SUCCESS": "Das Konto wurde gelöscht.",
+      "DELETE_SCHEDULED": "Wir haben deinen Löschantrag erhalten. Dein Konto wird am {{date}} gelöscht, sofern du nicht vorher abbrichst.",
       "DELETE_ERROR": "Das Konto konnte nicht gelöscht werden.",
       "PASS_LENGTH": "Das neue Passwort muss mindestens 6 Zeichen enthalten."
     },
@@ -1047,17 +1048,37 @@
       "CONTACT_INFO_PLACEHOLDER": "z. B. deine Adresse, eine zusätzliche Telefonnummer, eine geschäftliche E-Mail...",
       "CONTACT_INFO_HINT": "Diese Angaben werden ebenfalls auf deinem öffentlichen Profil angezeigt — schreibe nur, was du öffentlich teilen möchtest."
     },
+    "DELETION_PENDING": {
+      "MESSAGE": "Dein Konto ist zur Löschung am {{date}} vorgemerkt.",
+      "HINT": "Dein Konto funktioniert bis dahin weiter. Wenn du es dir anders überlegst, brich den Antrag ab und dein Konto bleibt unverändert.",
+      "CANCEL_BTN": "Löschantrag abbrechen",
+      "CANCELLING": "Wird abgebrochen…",
+      "CANCEL_SUCCESS": "Löschantrag abgebrochen. Dein Konto bleibt unverändert.",
+      "CANCEL_ERROR": "Der Löschantrag konnte nicht abgebrochen werden. Bitte versuche es erneut.",
+      "DETAILS_LINK": "Details"
+    },
+    "DATA_EXPORT": {
+      "TITLE": "Deine Daten",
+      "HINT": "Lade eine Kopie der Daten, die wir über dich speichern, als JSON-Datei herunter: Kontodaten, Anzeigen, Bewertungen, Favoriten, Besichtigungsanfragen und Einwilligungen. 5-mal alle 24 Stunden möglich.",
+      "HINT_NATIVE": "Der Download deiner Daten als JSON-Datei ist auf der Website möglich. Öffne sie im Browser und gehe zu deinem Profil (eventuell musst du dich dort anmelden).",
+      "BTN": "Meine Daten herunterladen",
+      "BTN_NATIVE": "Website öffnen",
+      "LOADING": "Wird vorbereitet…",
+      "SUCCESS": "Deine Datendatei wurde heruntergeladen.",
+      "RATE_LIMITED": "Du hast das Export-Limit erreicht (5 alle 24 Stunden). Bitte versuche es später erneut.",
+      "ERROR": "Deine Daten konnten nicht exportiert werden. Bitte versuche es später erneut."
+    },
     "DANGER_ZONE": {
       "TITLE": "Gefahrenzone",
-      "HINT": "Löscht dein Konto und alle deine persönlichen Daten endgültig. Diese Aktion kann nach Abschluss nicht rückgängig gemacht werden."
+      "HINT": "Beantrage die Löschung deines Kontos und deiner persönlichen Daten. Die Löschung wird 30 Tage nach dem Antrag ausgeführt, und du kannst sie bis dahin jederzeit abbrechen. Danach kann sie nicht rückgängig gemacht werden."
     },
     "DELETE_MODAL": {
       "TITLE": "Konto endgültig löschen",
-      "INTRO": "Du bist dabei, dein HudhudNest-Konto endgültig zu löschen. Diese Aktion kann nach Abschluss nicht rückgängig gemacht werden.",
-      "WILL_DELETE_TITLE": "Wird sofort gelöscht/ausgeblendet:",
+      "INTRO": "Du bist dabei, die Löschung deines HudhudNest-Kontos zu beantragen. Es wird nichts sofort gelöscht: Dein Konto funktioniert noch 30 Tage weiter, und du kannst den Antrag in dieser Zeit abbrechen. Danach wird die Löschung ausgeführt und kann nicht rückgängig gemacht werden.",
+      "WILL_DELETE_TITLE": "Wird bei der Ausführung in 30 Tagen gelöscht/ausgeblendet:",
       "WILL_DELETE_1": "Dein Name, Profilbild, Beschreibung und Kontaktinformationen",
       "WILL_DELETE_2": "Deine registrierte E-Mail-Adresse und Telefonnummer sowie jede verknüpfte Google-/Apple-Anmeldung — du kannst dich damit nicht mehr bei diesem Konto anmelden",
-      "WILL_DELETE_3": "Alle aktiven Sitzungen auf allen Geräten — du wirst sofort überall abgemeldet",
+      "WILL_DELETE_3": "Alle aktiven Sitzungen auf allen Geräten — du wirst dann überall abgemeldet",
       "WILL_RETAIN_TITLE": "Bleibt erhalten (ohne deine persönlichen Daten):",
       "WILL_RETAIN_1": "Von dir veröffentlichte Anzeigen, Nachrichten und Bewertungen bleiben für andere sichtbar, jedoch mit \"Gelöschter Nutzer\" statt deinem echten Namen gekennzeichnet",
       "WILL_RETAIN_2": "Begrenzte interne Sicherheitsprotokolle (zur Missbrauchsprävention), die nach der Löschung keine deiner persönlichen Daten mehr enthalten",
@@ -1068,8 +1089,8 @@
       "PASSWORD_LABEL": "Gib dein aktuelles Passwort zur Bestätigung ein",
       "PASSWORD_PLACEHOLDER": "Passwort",
       "TYPE_TO_CONFIRM": "Gib {{ keyword }} unten ein, um zu bestätigen",
-      "FINAL_WARNING": "Sobald du unten auf Löschen klickst, wird dein Konto sofort gelöscht — das kann nicht rückgängig gemacht werden.",
-      "CONFIRM_BTN": "Mein Konto endgültig löschen",
+      "FINAL_WARNING": "Mit dem Bestätigen-Button unten wird dein Konto zur Löschung in 30 Tagen vorgemerkt. Bis dahin funktioniert dein Konto weiter und du kannst im Profil abbrechen; danach kann es nicht rückgängig gemacht werden.",
+      "CONFIRM_BTN": "Löschantrag bestätigen",
       "ERRORS": {
         "CURRENT_PASSWORD_REQUIRED": "Du musst dein aktuelles Passwort eingeben.",
         "INVALID_CURRENT_PASSWORD": "Dein aktuelles Passwort ist falsch.",
