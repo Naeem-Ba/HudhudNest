@@ -15,17 +15,24 @@
 // مقابل له في Agency أصلاً — Agency تحتاج فقط اختيارًا من القائمة، فـ <select>
 // عادي هو إعادة الاستخدام الصحيح لنفس الخدمة والمنطق دون اختراع حقول نصية لا
 // طلب لها.
+//
+// /UI-06/: الصفحة نفسها صارت مركز إدارة المكتب — صندوق الدعوات لمن لا مكتب له
+// (AgencyInvitationsComponent)، ولوحة الفريق/الشعار/النقل/التعطيل تحت النموذج
+// (AgencyTeamPanelComponent). العضو غير المالك لا يرى نموذج التعديل (الخادم كان
+// سيرفضه بـ 403 على أي حال)، بل اللوحة وحدها مع زر المغادرة.
 import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
   OnInit,
+  computed,
   inject,
   signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AgenciesApiService } from '../../core/api/agencies-api.service';
@@ -37,6 +44,10 @@ import {
 import { Agency, CreateAgencyRequest, UpdateAgencyRequest } from '../../core/models/agency.model';
 import { LanguageService, LangCode } from '../../core/services/language.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { AuthService } from '../../core/auth/auth.service';
+import { AuthApiService } from '../../core/auth/auth-api.service';
+import { AgencyTeamPanelComponent } from './agency-team-panel.component';
+import { AgencyInvitationsComponent } from './agency-invitations.component';
 
 /** نفس قائمة رموز الدول المدعومة في CreatePropertyCommandValidator (الباك اند). */
 const SUPPORTED_COUNTRY_CODES = ['SY', 'DE', 'US', 'GB', 'FR', 'AE', 'SA', 'TR', 'EG', 'JO', 'LB'];
@@ -45,7 +56,7 @@ const SUPPORTED_COUNTRY_CODES = ['SY', 'DE', 'US', 'GB', 'FR', 'AE', 'SA', 'TR',
   selector: 'app-agency-form',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, AgencyTeamPanelComponent, AgencyInvitationsComponent],
   templateUrl: './agency-form.page.html',
   styleUrl: './agency-form.page.scss'
 })
@@ -57,12 +68,25 @@ export class AgencyFormPage implements OnInit {
   private readonly translate = inject(TranslateService);
   private readonly lang = inject(LanguageService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly auth = inject(AuthService);
+  private readonly authApi = inject(AuthApiService);
 
   readonly countryCodes = SUPPORTED_COUNTRY_CODES;
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly isEditMode = signal(false);
   private existingAgencyId: string | null = null;
+
+  readonly agency = signal<Agency | null>(null);
+  readonly currentUserId = toSignal(
+    this.auth.currentUser$.pipe(map(user => user?.id || user?.Id || null)),
+    { initialValue: this.auth.getCurrentUserId() }
+  );
+  /** نموذج التعديل للمالك فقط؛ نموذج الإنشاء لمن لا مكتب له. */
+  readonly canEditProfile = computed(() => {
+    const agency = this.agency();
+    return !agency || agency.ownerUserId === this.currentUserId();
+  });
 
   readonly governorates = signal<StructuredLocationLookup[]>([]);
   readonly districts = signal<StructuredLocationLookup[]>([]);
@@ -99,6 +123,46 @@ export class AgencyFormPage implements OnInit {
     return pickLocalizedName(opt, this.langCode);
   }
 
+  /** يعيد قراءة المكتب من الخادم بعد أي إجراء من لوحة الفريق أو صندوق الدعوات. */
+  reloadAgency(): void {
+    this.agenciesApi
+      .getMine()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: agency => (agency ? this.applyExistingAgency(agency) : this.resetToCreateMode())
+      });
+  }
+
+  onLeftAgency(): void {
+    this.resetToCreateMode();
+  }
+
+  /**
+   * الأدوار (AgencyOwner/AgencyAgent) تُمنح وتُسحب في الخادم عند الإنشاء والقبول
+   * ونقل الملكية والمغادرة، لكنها مضمّنة في رمز الوصول الحالي. بلا تجديد، أول
+   * طلب يتطلب الدور الجديد (PUT بعد الإنشاء مثلًا) يُرفض بـ 403 حتى ينتهي الرمز.
+   * محاولة واحدة بلا ضجيج: إن فشلت تبقى الجلسة كما هي.
+   */
+  refreshSession(): void {
+    this.authApi
+      .refreshToken()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: tokens => this.auth.login(tokens),
+        error: () => undefined
+      });
+  }
+
+  private resetToCreateMode(): void {
+    this.agency.set(null);
+    this.isEditMode.set(false);
+    this.existingAgencyId = null;
+    this.form.controls.slug.enable();
+    this.form.reset({ countryCode: 'SY' }, { emitEvent: false });
+    this.districts.set([]);
+    this.neighborhoods.set([]);
+  }
+
   private loadExistingAgency(): void {
     this.agenciesApi
       .getMine()
@@ -118,6 +182,7 @@ export class AgencyFormPage implements OnInit {
   }
 
   private applyExistingAgency(agency: Agency): void {
+    this.agency.set(agency);
     this.isEditMode.set(true);
     this.existingAgencyId = agency.id;
 
@@ -240,6 +305,10 @@ export class AgencyFormPage implements OnInit {
         this.toast.success(this.translate.instant(
           wasEditMode ? 'AGENCY_FORM.UPDATE_SUCCESS' : 'AGENCY_FORM.CREATE_SUCCESS'
         ));
+        if (!wasEditMode) {
+          // الإنشاء منح الدور AgencyOwner — بدونه يُرفض أول تعديل/دعوة بـ 403.
+          this.refreshSession();
+        }
       },
       error: err => {
         this.saving.set(false);

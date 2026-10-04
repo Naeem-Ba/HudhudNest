@@ -1,15 +1,20 @@
 // src/app/core/api/agencies-api.service.ts
 //
-// يستهلك AgenciesController (api/Agencies/*) — لم يكن موجودًا إطلاقًا من قبل
-// بأي شكل (لا service ولا model ولا صفحة) رغم أن الباك اند الكامل (CRUD +
-// أعضاء + دعوات) جاهز منذ فترة. هذه أول واجهة استهلاك له، وتغطي فقط ما
-// تحتاجه صفحة إنشاء/تعديل المكتب — لا كل نقاط AgenciesController (الدعوات،
-// نقل الملكية، الشعار... تبقى خارج هذا النطاق).
+// يستهلك AgenciesController (api/Agencies/*) بالكامل: إنشاء/تعديل المكتب، الصفحة
+// العامة بالـ slug، الدعوات (إرسال/صندوق/قبول/رفض)، إزالة عضو أو المغادرة، نقل
+// الملكية، الشعار، والتعطيل. كل تحقق صلاحيات يجري في الخادم (المقارنة مع
+// OwnerUserId الفعلي — ADR-006)؛ ما تخفيه الواجهة هنا تجميلي فقط.
 
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
-import { Agency, CreateAgencyRequest, UpdateAgencyRequest } from '../models/agency.model';
+import {
+  Agency,
+  AgencyInvitation,
+  AgencyMember,
+  CreateAgencyRequest,
+  UpdateAgencyRequest
+} from '../models/agency.model';
 
 @Injectable({ providedIn: 'root' })
 export class AgenciesApiService {
@@ -26,6 +31,11 @@ export class AgenciesApiService {
     return this.api.get<Agency | null>(`${this.endpoint}/me`);
   }
 
+  /** GET /api/agencies/{slug} — الصفحة العامة (مجهول؛ 404 لمكتب غير مفعّل). */
+  getBySlug(slug: string): Observable<Agency> {
+    return this.api.get<Agency>(`${this.endpoint}/${encodeURIComponent(slug)}`);
+  }
+
   /** POST /api/agencies — تسجيل مكتب جديد؛ ينجح مرة واحدة فقط لكل مستخدم. */
   create(request: CreateAgencyRequest): Observable<Agency> {
     return this.api.post<Agency>(this.endpoint, request);
@@ -37,5 +47,53 @@ export class AgenciesApiService {
    */
   update(agencyId: string, request: UpdateAgencyRequest): Observable<Agency> {
     return this.api.put<Agency>(`${this.endpoint}/${agencyId}`, request);
+  }
+
+  /**
+   * DELETE /api/agencies/{id} — تعطيل (لا حذف نهائي): تختفي الصفحة العامة ولا
+   * يمكن دعوة أعضاء جدد. لا توجد نقطة لإعادة التفعيل حاليًا.
+   */
+  deactivate(agencyId: string): Observable<void> {
+    return this.api.delete<void>(`${this.endpoint}/${agencyId}`);
+  }
+
+  /** POST /api/agencies/{id}/transfer-ownership — المالك الجديد يجب أن يكون عضوًا. */
+  transferOwnership(agencyId: string, newOwnerUserId: string): Observable<Agency> {
+    return this.api.post<Agency>(`${this.endpoint}/${agencyId}/transfer-ownership`, { newOwnerUserId });
+  }
+
+  /** POST /api/agencies/{id}/logo — multipart، الحقل `file` (حد الطلب ~2.5MB). */
+  uploadLogo(agencyId: string, file: File): Observable<Agency> {
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    return this.api.upload<Agency>(`${this.endpoint}/${agencyId}/logo`, formData);
+  }
+
+  /** POST /api/agencies/{id}/invitations — ينشئ دعوة معلّقة فقط، لا عضوية. */
+  createInvitation(agencyId: string, userId: string): Observable<AgencyInvitation> {
+    return this.api.post<AgencyInvitation>(`${this.endpoint}/${agencyId}/invitations`, { userId });
+  }
+
+  /** GET /api/agencies/invitations/mine — دعوات المستخدم الحالي القابلة للرد. */
+  getMyInvitations(): Observable<AgencyInvitation[]> {
+    return this.api.get<AgencyInvitation[]>(`${this.endpoint}/invitations/mine`);
+  }
+
+  /** POST /api/agencies/invitations/{id}/accept — الخطوة الوحيدة التي تنشئ العضوية. */
+  acceptInvitation(invitationId: string): Observable<AgencyMember> {
+    return this.api.post<AgencyMember>(`${this.endpoint}/invitations/${invitationId}/accept`);
+  }
+
+  /** POST /api/agencies/invitations/{id}/decline */
+  declineInvitation(invitationId: string): Observable<void> {
+    return this.api.post<void>(`${this.endpoint}/invitations/${invitationId}/decline`);
+  }
+
+  /**
+   * DELETE /api/agencies/{id}/members/{memberUserId} — نفس النقطة للحالتين: المالك
+   * يزيل عضوًا، أو العضو يغادر (memberUserId = معرّفه هو). المالك لا يُزال أبدًا.
+   */
+  removeMember(agencyId: string, memberUserId: string): Observable<void> {
+    return this.api.delete<void>(`${this.endpoint}/${agencyId}/members/${memberUserId}`);
   }
 }

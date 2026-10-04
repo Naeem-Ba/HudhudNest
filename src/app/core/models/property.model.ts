@@ -162,6 +162,10 @@ export interface PropertyFilterDto {
   // Owner filter
   ownerId?: string;
 
+  // Agency filter — PropertyFilterDto.AgencyId بالباك اند: إعلانات مكتب واحد
+  // (صفحة المكتب العامة). فلتر عرض عام، لا حدّ صلاحيات.
+  agencyId?: string;
+
   // Sorting
   // Values: 'CreatedAt' | 'PurchasePrice' | 'ColdRent' | 'Area'
   sortBy?: string;               // ✅ مضاف

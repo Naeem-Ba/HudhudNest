@@ -47,6 +47,7 @@ type AvatarState = 'pending' | 'image' | 'initial' | 'generic';
  */
 const MANAGEMENT_ROUTE_PREFIXES = [
   '/my-listings',
+  '/my-agency',
   '/properties/edit',
   '/short-stay/manage',
   '/provider',
