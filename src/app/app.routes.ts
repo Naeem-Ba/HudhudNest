@@ -151,6 +151,14 @@ export const routes: Routes = [
             .then(m => m.AgencyFormPage)
       },
       {
+        // الصفحة العامة للمكتب بالرابط القصير (/F-AGY-05/) — مجهولة عمدًا، مثل
+        // GET /api/Agencies/{slug} بالباك اند.
+        path: 'agencies/:slug',
+        loadComponent: () =>
+          import('./features/agency-public/agency-public.page')
+            .then(m => m.AgencyPublicPage)
+      },
+      {
         // Create only. ListingEligibilityGuard runs after AuthGuard (so an anonymous
         // visitor hits the login redirect first) and is NOT applied to the edit route
         // below — editing an already-owned listing isn't "publishing new".

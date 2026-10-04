@@ -66,3 +66,38 @@ export interface UpdateAgencyRequest {
   districtId?: number | null;
   neighborhoodId?: number | null;
 }
+
+/** يقابل HudhudNestApi.Domain.Agencies.Enums.AgencyInvitationStatus (يُسلسَل نصًّا). */
+export type AgencyInvitationStatus = 'Pending' | 'Accepted' | 'Declined' | 'Expired';
+
+/**
+ * يقابل AgencyInvitationDto — دعوة كما تظهر في صندوق المدعوّ (GET
+ * /api/agencies/invitations/mine، الذي لا يعيد إلا الدعوات القابلة للرد)
+ * وكما تُعاد لمالك المكتب بعد إرسالها.
+ */
+export interface AgencyInvitation {
+  id: string;
+  agencyId: string;
+  agencyName: string;
+  agencySlug: string;
+  inviterUserId: string;
+  inviterName: string;
+  targetUserId: string;
+  status: AgencyInvitationStatus;
+  createdAt: string;
+  expiresAt: string;
+  respondedAt?: string | null;
+}
+
+const GUID_PATTERN = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+
+/**
+ * الدعوة في الباك اند تأخذ معرّف المستخدم (Guid) فقط — لا بحث بالبريد أو الهاتف
+ * (عمدًا: لا نقطة تكشف وجود حساب ما). لذلك يقبل حقل الدعوة إما المعرّف نفسه أو
+ * رابط الصفحة العامة للمستخدم (/users/{id}) الذي يمكنه مشاركته، ويستخرج منه
+ * المعرّف. يعيد null إن لم يجد معرّفًا صالحًا.
+ */
+export function extractUserId(input: string | null | undefined): string | null {
+  const match = (input ?? '').trim().match(GUID_PATTERN);
+  return match ? match[0].toLowerCase() : null;
+}

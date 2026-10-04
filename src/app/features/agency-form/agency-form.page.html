@@ -7,8 +7,9 @@
 
     <div class="form-page-header">
       <div>
-        <h1>{{ (isEditMode() ? 'AGENCY_FORM.EDIT_TITLE' : 'AGENCY_FORM.CREATE_TITLE') | translate }}</h1>
-        <p>{{ 'AGENCY_FORM.SUBTITLE' | translate }}</p>
+        <h1 *ngIf="canEditProfile(); else memberTitle">{{ (isEditMode() ? 'AGENCY_FORM.EDIT_TITLE' : 'AGENCY_FORM.CREATE_TITLE') | translate }}</h1>
+        <ng-template #memberTitle><h1>{{ agency()?.name }}</h1></ng-template>
+        <p>{{ (canEditProfile() ? 'AGENCY_FORM.SUBTITLE' : 'AGENCY_MANAGE.MEMBER_SUBTITLE') | translate }}</p>
       </div>
     </div>
 
@@ -16,7 +17,13 @@
       {{ 'COMMON.LOADING' | translate }}
     </div>
 
-    <form class="agency-form" [formGroup]="form" (ngSubmit)="submit()" novalidate *ngIf="!loading()">
+    <!-- لا مكتب: دعوات واردة أولًا، ثم نموذج إنشاء مكتب جديد -->
+    <div class="page-block" *ngIf="!loading() && !agency()">
+      <app-agency-invitations [userId]="currentUserId()" (accepted)="reloadAgency(); refreshSession()"></app-agency-invitations>
+      <p class="or-create">{{ 'AGENCY_MANAGE.OR_CREATE' | translate }}</p>
+    </div>
+
+    <form class="agency-form" [formGroup]="form" (ngSubmit)="submit()" novalidate *ngIf="!loading() && canEditProfile()">
       <div class="form-grid">
 
         <!-- SECTION 1: Basic Info -->
@@ -142,5 +149,16 @@
         </button>
       </div>
     </form>
+
+    <!-- إدارة المكتب: الرابط العام، الشعار، الأعضاء، الدعوة، نقل الملكية، التعطيل -->
+    <div class="page-block" *ngIf="!loading() && agency() as a">
+      <app-agency-team-panel
+        [agency]="a"
+        [currentUserId]="currentUserId()"
+        (agencyChanged)="reloadAgency()"
+        (rolesChanged)="refreshSession()"
+        (left)="onLeftAgency()"
+      ></app-agency-team-panel>
+    </div>
   </div>
 </div>

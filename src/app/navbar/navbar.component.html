@@ -786,6 +786,7 @@
     >
       <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/my-listings', label: 'PROFILE.MY_ADS', icon: '📋' }"></ng-container>
       <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/short-stay/manage', label: 'NAVBAR.SHORT_STAY_LISTINGS', icon: '🏡' }"></ng-container>
+      <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/my-agency', label: 'NAVBAR.MY_AGENCY', icon: '🏢' }"></ng-container>
 
       <ng-container *ngIf="isProvider$ | async">
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/provider/requests', label: 'NAVBAR.PROVIDER_INBOX', icon: '🧰' }"></ng-container>
