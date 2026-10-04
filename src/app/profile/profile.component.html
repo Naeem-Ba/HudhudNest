@@ -237,13 +237,9 @@
     <!-- Your data — GET /api/Users/me/export (right of access, 5 exports per 24 hours). -->
     <div class="data-zone">
       <h3 class="data-zone__title">{{ 'PROFILE.DATA_EXPORT.TITLE' | translate }}</h3>
-      <p class="data-zone__hint">
-        {{ (isNativeApp ? 'PROFILE.DATA_EXPORT.HINT_NATIVE' : 'PROFILE.DATA_EXPORT.HINT') | translate }}
-      </p>
+      <p class="data-zone__hint">{{ 'PROFILE.DATA_EXPORT.HINT' | translate }}</p>
       <button class="btn-export" type="button" [disabled]="isExporting()" (click)="exportMyData()">
-        {{ isExporting()
-          ? ('PROFILE.DATA_EXPORT.LOADING' | translate)
-          : ((isNativeApp ? 'PROFILE.DATA_EXPORT.BTN_NATIVE' : 'PROFILE.DATA_EXPORT.BTN') | translate) }}
+        {{ isExporting() ? ('PROFILE.DATA_EXPORT.LOADING' | translate) : ('PROFILE.DATA_EXPORT.BTN' | translate) }}
       </button>
     </div>
 

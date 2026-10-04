@@ -17,7 +17,7 @@ import { ImageFallbackDirective } from '../shared/directives/image-fallback.dire
 import { ConfirmModalComponent } from '../shared/ui/confirm-modal.component';
 import { AVATAR_COMPRESSION, compressImageForUpload } from '../shared/utils/image-compression';
 import { AppUpdateNativeGateway } from '../core/api/app-update-native.gateway';
-import { environment } from '../../environments/environment';
+import { NativeFileExportGateway } from '../core/native/native-file-export.gateway';
 import { formatDeletionDate } from '../shared/utils/deletion-date';
 
 @Component({
@@ -45,6 +45,7 @@ export class ProfileComponent implements OnInit {
   private readonly toast          = inject(ToastService);
   private readonly route          = inject(ActivatedRoute);
   private readonly native         = inject(AppUpdateNativeGateway);
+  private readonly nativeFiles    = inject(NativeFileExportGateway);
 
   user          = signal<UserProfile | null>(null);
   isLoading     = signal(true);
@@ -106,9 +107,9 @@ export class ProfileComponent implements OnInit {
   // ── Data export (GET /api/Users/me/export) ─────────────────────────────
   isExporting = signal(false);
 
-  /** The native WebView cannot save a generated file (no download handling, no filesystem
-   * plugin), so the app hands the export off to the website, where the browser can. */
-  readonly isNativeApp = this.native.isNativePlatform();
+  /** The native WebView cannot download a blob: URL, so the native app saves the export
+   * through the share sheet instead (NativeFileExportGateway). */
+  private readonly isNativeApp = this.native.isNativePlatform();
 
   ngOnInit(): void {
     this.fetchProfile();
@@ -422,25 +423,34 @@ export class ProfileComponent implements OnInit {
     return formatDeletionDate(value, this.translate.currentLang);
   }
 
-  /** Downloads GET /api/Users/me/export as a JSON file (web), or opens the website's profile
-   * page in the system browser (native app — see isNativeApp). */
+  /** Fetches GET /api/Users/me/export and saves it as a JSON file: a browser download on
+   * the web, the system share sheet ("Save to Files", Drive…) in the native app. */
   exportMyData(): void {
-    if (this.isNativeApp) {
-      const siteUrl = (environment.siteUrl ?? '').trim().replace(/\/+$/, '');
-      if (siteUrl) {
-        void this.native.openUrl(`${siteUrl}/profile`);
-        return;
-      }
-    }
-
     if (this.isExporting()) return;
     this.isExporting.set(true);
 
     this.profileService.exportMyData().subscribe({
       next: data => {
-        this.isExporting.set(false);
-        this.saveJsonFile(data, `hudhudnest-account-export-${this.todayStamp()}.json`);
-        this.toast.success(this.translate.instant('PROFILE.DATA_EXPORT.SUCCESS'));
+        const fileName = `hudhudnest-account-export-${this.todayStamp()}.json`;
+        const json = JSON.stringify(data, null, 2);
+
+        if (!this.isNativeApp) {
+          this.isExporting.set(false);
+          this.saveJsonFile(json, fileName);
+          this.toast.success(this.translate.instant('PROFILE.DATA_EXPORT.SUCCESS'));
+          return;
+        }
+
+        this.nativeFiles
+          .shareTextFile(fileName, json, this.translate.instant('PROFILE.DATA_EXPORT.TITLE'))
+          .then(
+            // The share sheet itself is the feedback; closing it is not an error.
+            () => this.isExporting.set(false),
+            () => {
+              this.isExporting.set(false);
+              this.toast.error(this.translate.instant('PROFILE.DATA_EXPORT.ERROR'));
+            }
+          );
       },
       error: err => {
         this.isExporting.set(false);
@@ -453,8 +463,8 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  private saveJsonFile(data: unknown, fileName: string): void {
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
+  private saveJsonFile(json: string, fileName: string): void {
+    const blob = new Blob([json], {
       type: 'application/json;charset=utf-8'
     });
     const url = URL.createObjectURL(blob);

@@ -1060,9 +1060,7 @@
     "DATA_EXPORT": {
       "TITLE": "Deine Daten",
       "HINT": "Lade eine Kopie der Daten, die wir über dich speichern, als JSON-Datei herunter: Kontodaten, Anzeigen, Bewertungen, Favoriten, Besichtigungsanfragen und Einwilligungen. 5-mal alle 24 Stunden möglich.",
-      "HINT_NATIVE": "Der Download deiner Daten als JSON-Datei ist auf der Website möglich. Öffne sie im Browser und gehe zu deinem Profil (eventuell musst du dich dort anmelden).",
       "BTN": "Meine Daten herunterladen",
-      "BTN_NATIVE": "Website öffnen",
       "LOADING": "Wird vorbereitet…",
       "SUCCESS": "Deine Datendatei wurde heruntergeladen.",
       "RATE_LIMITED": "Du hast das Export-Limit erreicht (5 alle 24 Stunden). Bitte versuche es später erneut.",

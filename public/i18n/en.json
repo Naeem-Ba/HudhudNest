@@ -1060,9 +1060,7 @@
     "DATA_EXPORT": {
       "TITLE": "Your data",
       "HINT": "Download a copy of the data we hold about you as a JSON file: your account details, listings, reviews, favorites, visit requests and consents. Available 5 times every 24 hours.",
-      "HINT_NATIVE": "Downloading a copy of your data as a JSON file is available on the website. Open it in your browser and go to your profile (you may need to sign in there).",
       "BTN": "Download my data",
-      "BTN_NATIVE": "Open the website",
       "LOADING": "Preparing…",
       "SUCCESS": "Your data file was downloaded.",
       "RATE_LIMITED": "You reached the export limit (5 every 24 hours). Please try again later.",
