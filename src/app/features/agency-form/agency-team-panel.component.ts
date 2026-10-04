@@ -1,7 +1,8 @@
 // src/app/features/agency-form/agency-team-panel.component.ts
 //
 // إدارة المكتب بعد إنشائه (/UI-06/، /F-AGY-02..05/): الرابط العام، الشعار، الأعضاء
-// (إزالة/مغادرة)، دعوة عضو، نقل الملكية، والتعطيل. يُعرض داخل /my-agency تحت نموذج
+// (إزالة/مغادرة)، دعوة عضو (بالمعرّف أو البريد أو الهاتف) والدعوات المعلّقة، نقل
+// الملكية، والتعطيل وإعادة التفعيل. يُعرض داخل /my-agency تحت نموذج
 // التعديل لمالك المكتب، ووحده (قراءة + مغادرة) لعضو ليس مالكًا.
 //
 // ما يُخفى هنا عن غير المالك تجميلي فقط — كل معالج في الباك اند يقارن المتصل بـ
@@ -15,7 +16,9 @@ import {
   DestroyRef,
   EventEmitter,
   Input,
+  OnChanges,
   Output,
+  SimpleChanges,
   computed,
   inject,
   signal
@@ -28,7 +31,15 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AgenciesApiService } from '../../core/api/agencies-api.service';
-import { Agency, AgencyMember, extractUserId } from '../../core/models/agency.model';
+import {
+  Agency,
+  AgencyInvitation,
+  AgencyMember,
+  AgencySentInvitation,
+  InviteTarget,
+  parseInviteTarget
+} from '../../core/models/agency.model';
+import { Observable } from 'rxjs';
 import { ToastService } from '../../shared/services/toast.service';
 import { ConfirmModalComponent } from '../../shared/ui/confirm-modal.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
@@ -52,9 +63,13 @@ type PendingAction =
   styleUrl: './agency-panels.scss',
   template: `
     <div class="panels">
-      <p class="notice notice--warning" *ngIf="!agency.isActive">
-        {{ 'AGENCY_MANAGE.INACTIVE_NOTICE' | translate }}
-      </p>
+      <div class="notice notice--warning" *ngIf="!agency.isActive">
+        <p>{{ 'AGENCY_MANAGE.INACTIVE_NOTICE' | translate }}</p>
+        <button *ngIf="isOwner" type="button" class="btn btn--outline btn--sm reactivate-btn"
+          [disabled]="busy()" (click)="reactivate()">
+          {{ (busy() === 'reactivate' ? 'COMMON.SAVING' : 'AGENCY_MANAGE.REACTIVATE') | translate }}
+        </button>
+      </div>
 
       <!-- ── الرابط العام ───────────────────────────────── -->
       <section class="panel" *ngIf="agency.isActive">
@@ -159,6 +174,23 @@ type PendingAction =
               {{ (busy() === 'invite' ? 'COMMON.SAVING' : 'AGENCY_MANAGE.SEND_INVITE') | translate }}
             </button>
           </form>
+
+          <div>
+            <h3 class="panel__subtitle">{{ 'AGENCY_MANAGE.SENT_INVITES' | translate }}</h3>
+            <p class="field-hint" *ngIf="!sentInvitations().length">{{ 'AGENCY_MANAGE.SENT_INVITES_EMPTY' | translate }}</p>
+            <ul class="row-list" *ngIf="sentInvitations().length">
+              <li class="row" *ngFor="let inv of sentInvitations(); trackBy: trackSent">
+                <img class="row__avatar" [src]="inv.targetProfileImageUrl || '/images/default-avatar.svg'"
+                  appImageFallback="/images/default-avatar.svg" alt="" />
+                <div class="row__main">
+                  <a class="row__name" [routerLink]="['/users', inv.targetUserId]">{{ inv.targetName }}</a>
+                  <span class="row__meta">
+                    {{ 'AGENCY_INVITES.EXPIRES' | translate }} {{ inv.expiresAt | date:'dd/MM/yyyy' }}
+                  </span>
+                </div>
+              </li>
+            </ul>
+          </div>
         </div>
       </section>
 
@@ -191,7 +223,7 @@ type PendingAction =
     </app-confirm-modal>
   `
 })
-export class AgencyTeamPanelComponent {
+export class AgencyTeamPanelComponent implements OnChanges {
   private readonly agenciesApi = inject(AgenciesApiService);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
@@ -208,7 +240,8 @@ export class AgencyTeamPanelComponent {
   /** المستخدم لم يعد عضوًا (غادر). */
   @Output() readonly left = new EventEmitter<void>();
 
-  readonly busy = signal<null | 'logo' | 'invite' | PendingAction['kind']>(null);
+  readonly busy = signal<null | 'logo' | 'invite' | 'reactivate' | PendingAction['kind']>(null);
+  readonly sentInvitations = signal<AgencySentInvitation[]>([]);
   readonly pending = signal<PendingAction | null>(null);
   readonly inviteInput = signal('');
   readonly inviteError = signal<string | null>(null);
@@ -236,6 +269,32 @@ export class AgencyTeamPanelComponent {
 
   private pendingKey(): string {
     return (this.pending()?.kind ?? 'remove').toUpperCase();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['agency'] || changes['currentUserId']) {
+      this.loadSentInvitations();
+    }
+  }
+
+  /** الدعوات المعلّقة تُعرض للمالك فقط ولمكتب مفعّل (المعطّل لا يقبل دعوات جديدة). */
+  private loadSentInvitations(): void {
+    if (!this.agency || !this.isOwner || !this.agency.isActive) {
+      this.sentInvitations.set([]);
+      return;
+    }
+
+    this.agenciesApi
+      .getSentInvitations(this.agency.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: items => this.sentInvitations.set(items ?? []),
+        error: () => this.sentInvitations.set([])
+      });
+  }
+
+  trackSent(_: number, inv: AgencySentInvitation): string {
+    return inv.id;
   }
 
   trackMember(_: number, m: AgencyMember): string {
@@ -285,27 +344,58 @@ export class AgencyTeamPanelComponent {
   }
 
   invite(): void {
-    const userId = extractUserId(this.inviteInput());
-    if (!userId) {
-      this.inviteError.set('AGENCY_MANAGE.INVITE_INVALID_ID');
+    const target = parseInviteTarget(this.inviteInput());
+    if (!target) {
+      this.inviteError.set('AGENCY_MANAGE.INVITE_INVALID');
       return;
     }
 
     this.busy.set('invite');
-    this.agenciesApi
-      .createInvitation(this.agency.id, userId)
+    this.sendInvitation(target)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           this.busy.set(null);
           this.inviteInput.set('');
           this.toast.success(this.translate.instant('AGENCY_MANAGE.INVITE_SENT'));
+          this.loadSentInvitations();
         },
         error: (err: HttpErrorResponse) => {
           this.busy.set(null);
-          // الخادم يعيد رسالة إنجليزية عامة لـ 404؛ نوضح السبب داخل الحقل.
-          if (err?.status === 404) this.inviteError.set('AGENCY_MANAGE.INVITE_USER_NOT_FOUND');
+          // 404 = لا حساب بهذا المعرّف/البريد/الرقم؛ نوضحه داخل الحقل أيضًا.
+          if (err?.status === 404) {
+            this.inviteError.set(target.kind === 'id'
+              ? 'AGENCY_MANAGE.INVITE_USER_NOT_FOUND'
+              : 'AGENCY_MANAGE.INVITE_CONTACT_NOT_FOUND');
+          }
         }
+      });
+  }
+
+  private sendInvitation(target: InviteTarget): Observable<AgencyInvitation> {
+    switch (target.kind) {
+      case 'id':
+        return this.agenciesApi.createInvitation(this.agency.id, target.userId);
+      case 'email':
+        return this.agenciesApi.createInvitationByContact(this.agency.id, { email: target.email });
+      case 'phone':
+        return this.agenciesApi.createInvitationByContact(this.agency.id, { phoneNumber: target.phoneNumber });
+    }
+  }
+
+  reactivate(): void {
+    if (this.busy()) return;
+    this.busy.set('reactivate');
+    this.agenciesApi
+      .reactivate(this.agency.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.busy.set(null);
+          this.toast.success(this.translate.instant('AGENCY_MANAGE.REACTIVATED'));
+          this.agencyChanged.emit();
+        },
+        error: () => this.busy.set(null)
       });
   }
 

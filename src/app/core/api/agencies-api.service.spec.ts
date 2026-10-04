@@ -7,7 +7,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 
 import { environment } from '../../../environments/environment';
-import { extractUserId } from '../models/agency.model';
+import { extractUserId, parseInviteTarget } from '../models/agency.model';
 import { AgenciesApiService } from './agencies-api.service';
 
 const AGENCY_ID = '11111111-2222-3333-4444-555555555555';
@@ -81,6 +81,28 @@ describe('AgenciesApiService', () => {
     req.flush({});
   });
 
+  it('createInvitationByContact: يرسل البريد أو الهاتف إلى by-contact', () => {
+    service.createInvitationByContact(AGENCY_ID, { email: 'sara@example.com' }).subscribe();
+    const req = httpMock.expectOne(`${base}/${AGENCY_ID}/invitations/by-contact`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ email: 'sara@example.com' });
+    req.flush({});
+  });
+
+  it('getSentInvitations: GET /agencies/{id}/invitations', () => {
+    service.getSentInvitations(AGENCY_ID).subscribe();
+    const req = httpMock.expectOne(`${base}/${AGENCY_ID}/invitations`);
+    expect(req.request.method).toBe('GET');
+    req.flush([]);
+  });
+
+  it('reactivate: POST /agencies/{id}/reactivate', () => {
+    service.reactivate(AGENCY_ID).subscribe();
+    const req = httpMock.expectOne(`${base}/${AGENCY_ID}/reactivate`);
+    expect(req.request.method).toBe('POST');
+    req.flush(null);
+  });
+
   it('deactivate: DELETE /agencies/{id}', () => {
     service.deactivate(AGENCY_ID).subscribe();
     const req = httpMock.expectOne(`${base}/${AGENCY_ID}`);
@@ -102,5 +124,25 @@ describe('extractUserId', () => {
     expect(extractUserId('ahmad@example.com')).toBeNull();
     expect(extractUserId('')).toBeNull();
     expect(extractUserId(null)).toBeNull();
+  });
+});
+
+describe('parseInviteTarget', () => {
+  it('المعرّف أو رابط الصفحة يُعامَل كمعرّف', () => {
+    expect(parseInviteTarget(`https://hudhudnest.com/users/${USER_ID}`)).toEqual({ kind: 'id', userId: USER_ID });
+  });
+
+  it('البريد يُوحَّد بأحرف صغيرة', () => {
+    expect(parseInviteTarget('  Sara@Example.com ')).toEqual({ kind: 'email', email: 'sara@example.com' });
+  });
+
+  it('رقم الهاتف يُمرَّر كما هو (التطبيع في الخادم)', () => {
+    expect(parseInviteTarget('+963 911 234 567')).toEqual({ kind: 'phone', phoneNumber: '+963 911 234 567' });
+  });
+
+  it('نص لا يشبه أيًّا منها يعيد null', () => {
+    expect(parseInviteTarget('sara')).toBeNull();
+    expect(parseInviteTarget('12345')).toBeNull();
+    expect(parseInviteTarget('')).toBeNull();
   });
 });
