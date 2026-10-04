@@ -458,6 +458,62 @@
   font-size: var(--text-sm, 0.85rem);
 }
 
+.danger-zone__pending {
+  margin: 0 0 0.5rem;
+  color: var(--gray-900);
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+.btn-cancel-deletion {
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.9rem;
+  padding: 0.65rem 1.1rem;
+
+  &:disabled { opacity: .6; cursor: default; }
+}
+
+// Your data — neutral styling on purpose: exporting is safe, unlike the Danger Zone below it.
+.data-zone {
+  margin-top: 2.5rem;
+  padding: 1.25rem;
+  border: 1px solid var(--border, rgba(0, 0, 0, .1));
+  border-radius: 12px;
+}
+
+.data-zone__title {
+  margin: 0 0 0.35rem;
+  color: var(--gray-900);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.data-zone__hint {
+  margin: 0 0 1rem;
+  color: var(--gray-600);
+  font-size: var(--text-sm, 0.85rem);
+  line-height: 1.7;
+}
+
+.btn-export {
+  background: transparent;
+  border: 1px solid var(--gray-800);
+  border-radius: 12px;
+  color: var(--gray-800);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.65rem 1.1rem;
+
+  &:hover:not(:disabled) { background: var(--gray-800); color: #fff; }
+  &:disabled { opacity: .6; cursor: default; }
+}
+
 // Content projected into <app-confirm-modal> for the account-deletion flow.
 .delete-modal__intro,
 .delete-modal__note,

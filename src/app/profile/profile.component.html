@@ -234,18 +234,45 @@
 
     <!-- Danger Zone — deliberately separated from Save above by its own bordered section,
          never adjacent to it, so it cannot be tapped by mistake reaching for Save (§24). -->
+    <!-- Your data — GET /api/Users/me/export (right of access, 5 exports per 24 hours). -->
+    <div class="data-zone">
+      <h3 class="data-zone__title">{{ 'PROFILE.DATA_EXPORT.TITLE' | translate }}</h3>
+      <p class="data-zone__hint">{{ 'PROFILE.DATA_EXPORT.HINT' | translate }}</p>
+      <button class="btn-export" type="button" [disabled]="isExporting()" (click)="exportMyData()">
+        {{ isExporting() ? ('PROFILE.DATA_EXPORT.LOADING' | translate) : ('PROFILE.DATA_EXPORT.BTN' | translate) }}
+      </button>
+    </div>
+
     <div class="danger-zone">
       <h3 class="danger-zone__title">{{ 'PROFILE.DANGER_ZONE.TITLE' | translate }}</h3>
-      <p class="danger-zone__hint">{{ 'PROFILE.DANGER_ZONE.HINT' | translate }}</p>
-      <button class="btn-delete" type="button" (click)="openDeleteModal()">
-        {{ 'PROFILE.DELETE_ACCOUNT' | translate }}
-      </button>
+
+      <!-- A deletion request is pending: the account still works until the scheduled date,
+           and the request can be withdrawn with one click (POST /api/Users/me/deletion/cancel). -->
+      <ng-container *ngIf="user()?.DeletionScheduledFor; else noPendingDeletion">
+        <p class="danger-zone__pending">
+          {{ 'PROFILE.DELETION_PENDING.MESSAGE' | translate: { date: formatDeletionDate(user()?.DeletionScheduledFor) } }}
+        </p>
+        <p class="danger-zone__hint">{{ 'PROFILE.DELETION_PENDING.HINT' | translate }}</p>
+        <button class="btn-cancel-deletion" type="button" [disabled]="isCancellingDeletion()" (click)="cancelAccountDeletion()">
+          {{ isCancellingDeletion()
+            ? ('PROFILE.DELETION_PENDING.CANCELLING' | translate)
+            : ('PROFILE.DELETION_PENDING.CANCEL_BTN' | translate) }}
+        </button>
+      </ng-container>
+
+      <ng-template #noPendingDeletion>
+        <p class="danger-zone__hint">{{ 'PROFILE.DANGER_ZONE.HINT' | translate }}</p>
+        <button class="btn-delete" type="button" (click)="openDeleteModal()">
+          {{ 'PROFILE.DELETE_ACCOUNT' | translate }}
+        </button>
+      </ng-template>
     </div>
   </div>
 
   <!-- Account deletion modal: 'warning' step explains consequences (no request sent yet),
        'confirm' step re-authenticates + requires typing the keyword before the real
-       DELETE /api/Users/me call fires. -->
+       DELETE /api/Users/me call fires. That call schedules the deletion 30 days out; it
+       does not delete anything on the spot. -->
   <app-confirm-modal
     [open]="showDeleteModal()"
     [title]="'PROFILE.DELETE_MODAL.TITLE' | translate"

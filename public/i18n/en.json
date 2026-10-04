@@ -1037,6 +1037,7 @@
       "AVATAR_COMING_SOON": "Uploading an account picture is under development and will be available soon.",
       "FILL_ALL_FIELDS": "Please correct the required fields.",
       "DELETE_SUCCESS": "The account was deleted.",
+      "DELETE_SCHEDULED": "We received your deletion request. Your account will be deleted on {{date}} unless you cancel before then.",
       "DELETE_ERROR": "Unable to delete the account.",
       "PASS_LENGTH": "The new password must contain at least 6 characters."
     },
@@ -1048,17 +1049,35 @@
       "CONTACT_INFO_PLACEHOLDER": "e.g. your address, an extra phone number, a work email...",
       "CONTACT_INFO_HINT": "This is also shown on your public profile — only write what you're comfortable sharing publicly."
     },
+    "DELETION_PENDING": {
+      "MESSAGE": "Your account is scheduled for deletion on {{date}}.",
+      "HINT": "Your account keeps working until then. If you change your mind, cancel the request and your account stays as it is.",
+      "CANCEL_BTN": "Cancel deletion request",
+      "CANCELLING": "Cancelling…",
+      "CANCEL_SUCCESS": "Deletion request cancelled. Your account stays as it is.",
+      "CANCEL_ERROR": "Could not cancel the deletion request. Please try again.",
+      "DETAILS_LINK": "Details"
+    },
+    "DATA_EXPORT": {
+      "TITLE": "Your data",
+      "HINT": "Download a copy of the data we hold about you as a JSON file: your account details, listings, reviews, favorites, visit requests and consents. Available 5 times every 24 hours.",
+      "BTN": "Download my data",
+      "LOADING": "Preparing…",
+      "SUCCESS": "Your data file was downloaded.",
+      "RATE_LIMITED": "You reached the export limit (5 every 24 hours). Please try again later.",
+      "ERROR": "Could not export your data. Please try again later."
+    },
     "DANGER_ZONE": {
       "TITLE": "Danger Zone",
-      "HINT": "Permanently delete your account and all your personal data. This action cannot be undone once completed."
+      "HINT": "Request deletion of your account and personal data. The deletion is carried out 30 days after the request, and you can cancel it any time before then. Once carried out it cannot be undone."
     },
     "DELETE_MODAL": {
       "TITLE": "Permanently Delete Account",
-      "INTRO": "You are about to permanently delete your HudhudNest account. This action cannot be undone once completed.",
-      "WILL_DELETE_TITLE": "Will be deleted/hidden immediately:",
+      "INTRO": "You are about to request deletion of your HudhudNest account. Nothing is deleted right away: your account keeps working for 30 days and you can cancel the request during that time. After that, the deletion is carried out and cannot be undone.",
+      "WILL_DELETE_TITLE": "Deleted/hidden when the deletion is carried out, 30 days from now:",
       "WILL_DELETE_1": "Your name, profile picture, bio, and contact information",
       "WILL_DELETE_2": "Your registered email and phone number, and any linked Google/Apple sign-in — you will not be able to sign in to this account with them again",
-      "WILL_DELETE_3": "Every active session on every device — you will be signed out everywhere immediately",
+      "WILL_DELETE_3": "Every active session on every device — you will be signed out everywhere at that point",
       "WILL_RETAIN_TITLE": "Will be retained (without your personal data):",
       "WILL_RETAIN_1": "Listings, messages, and reviews you previously published stay visible to others, but attributed to \"Deleted User\" instead of your real name",
       "WILL_RETAIN_2": "Limited internal security records (to prevent abuse), containing none of your personal data after deletion",
@@ -1069,8 +1088,8 @@
       "PASSWORD_LABEL": "Enter your current password to confirm",
       "PASSWORD_PLACEHOLDER": "Password",
       "TYPE_TO_CONFIRM": "Type {{ keyword }} below to confirm",
-      "FINAL_WARNING": "As soon as you press the delete button below, your account will be deleted immediately and this cannot be undone.",
-      "CONFIRM_BTN": "Permanently delete my account",
+      "FINAL_WARNING": "Pressing the confirm button below schedules your account for deletion in 30 days. Until then your account keeps working and you can cancel from your profile; after that it cannot be undone.",
+      "CONFIRM_BTN": "Confirm deletion request",
       "ERRORS": {
         "CURRENT_PASSWORD_REQUIRED": "You must enter your current password.",
         "INVALID_CURRENT_PASSWORD": "Your current password is incorrect.",
