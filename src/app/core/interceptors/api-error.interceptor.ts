@@ -16,14 +16,19 @@
 //     ❌ المهاجم في Production
 //   الحل: نُفرِّق بين البيئتين.
 // ═══════════════════════════════════════════════════════════════
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { catchError, throwError } from 'rxjs';
 import { ToastService } from '../../shared/services/toast.service';
 import { environment } from '../../../environments/environment';
-import { currentRouteRequiresAuth } from './refresh-auth.interceptor';
+import {
+  currentRouteRequiresAuth,
+  isAuthEndpoint,
+  isBackendApiRequest,
+  RETRIED_AFTER_REFRESH
+} from './refresh-auth.interceptor';
 
 const MAX_FIELD_MESSAGES = 3;
 
@@ -167,8 +172,18 @@ function isLogoutRequest(reqUrl: string): boolean {
  * toast — RefreshAuthInterceptor already applies the same currentRouteRequiresAuth
  * check before redirecting for the same reason (see its clearAndRedirect doc comment).
  */
-function shouldShowUnauthorizedToast(status: number, router: Router): boolean {
-  return status !== 401 || currentRouteRequiresAuth(router);
+function shouldShowUnauthorizedToast(status: number, router: Router, req: HttpRequest<unknown>): boolean {
+  if (status !== 401) {
+    return true;
+  }
+
+  // RefreshAuthInterceptor refreshes and re-sends this request; if the refresh fails it shows
+  // the session-expired notice itself. Only a 401 on the re-sent copy is worth a toast here.
+  if (isBackendApiRequest(req.url) && !isAuthEndpoint(req.url) && !req.context.get(RETRIED_AFTER_REFRESH)) {
+    return false;
+  }
+
+  return currentRouteRequiresAuth(router);
 }
 
 /** The API answers every unsafe request from a phone-restricted account with this 403 code. */
@@ -204,7 +219,7 @@ export const ApiErrorInterceptor: HttpInterceptorFn = (req, next) => {
         if (
           shouldShowToast(req.url) &&
           !isLogoutRequest(req.url) &&
-          shouldShowUnauthorizedToast(error.status, router)
+          shouldShowUnauthorizedToast(error.status, router, req)
         ) {
           toast.error(friendlyMessage, translate.instant('API_ERRORS.TITLE'));
         }

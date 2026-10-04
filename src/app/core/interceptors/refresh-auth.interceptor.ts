@@ -1,4 +1,4 @@
-import { HttpBackend, HttpClient, HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpBackend, HttpClient, HttpContextToken, HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import {
@@ -22,6 +22,16 @@ import { CsrfTokenService } from '../services/csrf-token.service';
 import { TokenStorageService } from '../services/token-storage.service';
 
 let refreshRequest$: Observable<string> | null = null;
+
+/**
+ * Set on the copy of a request this interceptor re-sends after a successful refresh.
+ * ApiErrorInterceptor sits inside this one, so it sees the first 401 before any refresh is
+ * tried; it uses this flag to stay quiet on that first 401 (this interceptor either recovers
+ * the request or reports the ended session itself) and to toast only a 401 that survives the
+ * retry. Without it, every request made with an expired or just-invalidated access token
+ * showed "You need to sign in" even though the retry then succeeded.
+ */
+export const RETRIED_AFTER_REFRESH = new HttpContextToken<boolean>(() => false);
 
 /**
  * Normalize a URL so interceptor decisions are deterministic for absolute and relative URLs.
@@ -60,7 +70,7 @@ export function isBackendApiRequest(url: string): boolean {
 }
 
 /** Auth endpoints must not trigger refresh loops or receive stale Authorization headers. */
-function isAuthEndpoint(url: string): boolean {
+export function isAuthEndpoint(url: string): boolean {
   const path = toAbsoluteUrl(url);
 
   return (
@@ -262,7 +272,10 @@ export const RefreshAuthInterceptor: HttpInterceptorFn = (req, next) => {
       // missing/expired/invalid cookie surfaces as this call failing, handled below exactly
       // like before.
       return requestNewAccessToken(httpBackend, tokenStorage, router, csrfTokenService, authService).pipe(
-        switchMap(newAccessToken => next(withBearerToken(req, newAccessToken))),
+        switchMap(newAccessToken => next(withBearerToken(
+          req.clone({ context: req.context.set(RETRIED_AFTER_REFRESH, true) }),
+          newAccessToken
+        ))),
         catchError(refreshError => throwError(() => refreshError))
       );
     })

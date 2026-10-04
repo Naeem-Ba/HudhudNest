@@ -143,13 +143,16 @@ export class AgencyFormPage implements OnInit {
    * طلب يتطلب الدور الجديد (PUT بعد الإنشاء مثلًا) يُرفض بـ 403 حتى ينتهي الرمز.
    * محاولة واحدة بلا ضجيج: إن فشلت تبقى الجلسة كما هي.
    */
-  refreshSession(): void {
+  refreshSession(then?: () => void): void {
     this.authApi
       .refreshToken()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: tokens => this.auth.login(tokens),
-        error: () => undefined
+        next: tokens => {
+          this.auth.login(tokens);
+          then?.();
+        },
+        error: () => then?.()
       });
   }
 
@@ -300,15 +303,22 @@ export class AgencyFormPage implements OnInit {
     request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: agency => {
         const wasEditMode = this.isEditMode();
-        this.saving.set(false);
-        this.applyExistingAgency(agency);
         this.toast.success(this.translate.instant(
           wasEditMode ? 'AGENCY_FORM.UPDATE_SUCCESS' : 'AGENCY_FORM.CREATE_SUCCESS'
         ));
-        if (!wasEditMode) {
-          // الإنشاء منح الدور AgencyOwner — بدونه يُرفض أول تعديل/دعوة بـ 403.
-          this.refreshSession();
+        if (wasEditMode) {
+          this.saving.set(false);
+          this.applyExistingAgency(agency);
+          return;
         }
+        // الإنشاء منح الدور AgencyOwner وغيّر SecurityStamp، فيرفض الخادم رمز الوصول
+        // الحالي فورًا. نجدّد الرمز أولًا ثم نعرض لوحة المكتب، لأن عرضها يطلب قائمة
+        // الدعوات مباشرة، ولو سبق التجديد لرُفض بـ 401. يبقى زر الحفظ معطّلًا حتى
+        // ذلك الحين كي لا يُرسل النموذج، وهو ما زال في وضع الإنشاء، مرة ثانية.
+        this.refreshSession(() => {
+          this.saving.set(false);
+          this.applyExistingAgency(agency);
+        });
       },
       error: err => {
         this.saving.set(false);
