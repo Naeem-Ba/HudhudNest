@@ -11,7 +11,10 @@
     "SERVER": "A server error occurred. Please try again later.",
     "UNKNOWN": "An unexpected error occurred.",
     "FIELD_REQUIRED": "The field “{{field}}” is required.",
-    "FIELD_INVALID": "The field “{{field}}” is empty or invalid."
+    "FIELD_INVALID": "The field “{{field}}” is empty or invalid.",
+    "AGENCY_ACCOUNT_NOT_VERIFIED": "Verify your account first: confirm your email or phone number in your account settings, then try again.",
+    "AGENCY_PAID_PLAN_REQUIRED": "A real-estate office needs a paid plan in force. The free plan does not include offices.",
+    "AGENCY_FREE_PLAN_NOT_ALLOWED": "You own a real-estate office, and the free plan does not include offices. Choose a paid plan."
   },
   "COMMON": {
     "SAVE": "Save",
@@ -278,7 +281,6 @@
       "NO_CODE": "Didn't receive the code?",
       "SEND_VIA": "Send via {{channel}}"
     },
-
     "PHONE_REGISTER": {
       "TITLE": "Create an account with your phone",
       "SUBTITLE": "Enter your phone number to receive a one-time code.",
@@ -992,13 +994,12 @@
     "DISPLAY_NAME": "Display name",
     "EMAIL_LOCKED": "Email (cannot be changed)",
     "PHONE": "Phone number",
-    "PHONE_SECURITY": { "TITLE": "Sign-in phone number", "CHANGE": "Change sign-in phone number", "VERIFY": "Verify my phone number" },
-    "PHONE_REQUIRED_AGENT": "* Required for real estate agents",
+    "PHONE_SECURITY": {
+      "TITLE": "Sign-in phone number",
+      "CHANGE": "Change sign-in phone number",
+      "VERIFY": "Verify my phone number"
+    },
     "PHONE_PLACEHOLDER": "Enter phone number",
-    "AGENT_CHECKBOX": "Activate the account as a verified real estate agent",
-    "TAX_NUMBER": "Tax number",
-    "TAX_PLACEHOLDER": "Example: 12/345/67890",
-    "AGENT_VERIFIED_MSG": "Your account has been activated as a verified real estate agent.",
     "CHANGE_PASS_BTN": "Change password",
     "CANCEL_PASS_BTN": "Cancel password change",
     "CURRENT_PASS": "Current password",
@@ -1029,7 +1030,6 @@
       "PASS_MISMATCH": "The new password and its confirmation do not match.",
       "PASS_SUCCESS": "Password changed successfully.",
       "PASS_ERROR": "Unable to change the password.",
-      "AGENT_VALIDATION": "Phone number and tax number are required to activate the agent account.",
       "DELETE_CONFIRM": "Warning: Your account will be deleted permanently. Are you sure?",
       "INVALID_IMAGE_TYPE": "Unsupported image type. Use PNG, JPG, or WebP.",
       "IMAGE_TOO_LARGE": "The image is too large. The maximum size is 5 MB.",
@@ -1295,6 +1295,15 @@
       "DEACTIVATE_BODY": "{{name}}'s public page will disappear and you will not be able to invite new members until you reactivate it from this page.",
       "DEACTIVATE_ACTION": "Deactivate"
     }
+  },
+  "AGENCY_GATE": {
+    "UNVERIFIED_TITLE": "Verify your account first",
+    "UNVERIFIED_DESC": "Creating or joining a real-estate office requires a verified account: confirm your email or phone number.",
+    "UNVERIFIED_CTA": "Verify account",
+    "PLAN_TITLE": "A real-estate office needs a paid plan",
+    "PLAN_DESC": "The free plan does not include real-estate offices. Choose a paid plan to create and manage your office.",
+    "PLAN_CTA": "View plans",
+    "INVITE_PLAN_DESC": "Inviting members requires a paid plan in force. Your office and its data are unchanged and you can still edit it, but new invitations are paused until you activate a paid plan."
   },
   "AGENCY_INVITES": {
     "TITLE": "Agency invitations",
@@ -1602,7 +1611,9 @@
       "F2": "Direct API access",
       "F3": "Dedicated account manager",
       "CTA": "Talk to sales"
-    }
+    },
+    "REASON_AGENCY_PLAN_REQUIRED": "Choose a paid plan to create a real-estate office or invite members to it — the free plan does not include offices.",
+    "AGENCY_NO_FREE": "Not available to a real-estate office owner: the free plan does not include offices."
   },
   "NOT_AUTHORIZED": {
     "TITLE": "You are not authorised",

@@ -161,7 +161,17 @@ type PendingAction =
           <p class="panel__desc">{{ 'AGENCY_MANAGE.INVITE_DESC' | translate }}</p>
         </header>
         <div class="panel__body">
-          <form class="inline-form" (ngSubmit)="invite()">
+          <div class="state-card" role="status" *ngIf="!canInvite" data-testid="invite-plan-gate">
+            <span aria-hidden="true">⭐</span>
+            <div>
+              <p>{{ 'AGENCY_GATE.INVITE_PLAN_DESC' | translate }}</p>
+              <a class="btn btn--outline btn--sm" routerLink="/pricing" [queryParams]="{ reason: 'agency-plan-required' }">
+                {{ 'AGENCY_GATE.PLAN_CTA' | translate }}
+              </a>
+            </div>
+          </div>
+
+          <form class="inline-form" (ngSubmit)="invite()" *ngIf="canInvite">
             <div class="field">
               <label for="invite-user">{{ 'AGENCY_MANAGE.INVITE_LABEL' | translate }}</label>
               <input id="invite-user" name="inviteInput" type="text" autocomplete="off" dir="ltr"
@@ -232,6 +242,8 @@ export class AgencyTeamPanelComponent implements OnChanges {
 
   @Input({ required: true }) agency!: Agency;
   @Input({ required: true }) currentUserId: string | null = null;
+  /** false when the owner has no paid plan in force — inviting is the plan-gated action. */
+  @Input() canInvite = true;
 
   /** المكتب بعد أي تعديل يعيده الخادم (شعار، نقل ملكية) أو بعد إزالة عضو. */
   @Output() readonly agencyChanged = new EventEmitter<void>();

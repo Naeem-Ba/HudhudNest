@@ -11,7 +11,10 @@
     "SERVER": "Ein Serverfehler ist aufgetreten. Bitte versuchen Sie es später erneut.",
     "UNKNOWN": "Ein unerwarteter Fehler ist aufgetreten.",
     "FIELD_REQUIRED": "Das Feld „{{field}}“ ist erforderlich.",
-    "FIELD_INVALID": "Das Feld „{{field}}“ ist leer oder ungültig."
+    "FIELD_INVALID": "Das Feld „{{field}}“ ist leer oder ungültig.",
+    "AGENCY_ACCOUNT_NOT_VERIFIED": "Bestätige zuerst dein Konto: Bestätige in den Kontoeinstellungen deine E-Mail-Adresse oder Telefonnummer und versuche es erneut.",
+    "AGENCY_PAID_PLAN_REQUIRED": "Ein Maklerbüro erfordert ein aktives kostenpflichtiges Paket. Das kostenlose Paket enthält keine Büros.",
+    "AGENCY_FREE_PLAN_NOT_ALLOWED": "Du besitzt ein Maklerbüro, und das kostenlose Paket enthält keine Büros. Wähle ein kostenpflichtiges Paket."
   },
   "COMMON": {
     "SAVE": "Speichern",
@@ -278,7 +281,6 @@
       "NO_CODE": "Code nicht erhalten?",
       "SEND_VIA": "Per {{channel}} senden"
     },
-
     "PHONE_REGISTER": {
       "TITLE": "Konto mit Telefonnummer erstellen",
       "SUBTITLE": "Geben Sie Ihre Telefonnummer ein, um einen einmaligen Code zu erhalten.",
@@ -992,13 +994,12 @@
     "DISPLAY_NAME": "Anzeigename",
     "EMAIL_LOCKED": "E-Mail-Adresse (nicht änderbar)",
     "PHONE": "Telefonnummer",
-    "PHONE_SECURITY": { "TITLE": "Telefonnummer für die Anmeldung", "CHANGE": "Anmelde-Telefonnummer ändern", "VERIFY": "Meine Telefonnummer bestätigen" },
-    "PHONE_REQUIRED_AGENT": "* Für Immobilienmakler erforderlich",
+    "PHONE_SECURITY": {
+      "TITLE": "Telefonnummer für die Anmeldung",
+      "CHANGE": "Anmelde-Telefonnummer ändern",
+      "VERIFY": "Meine Telefonnummer bestätigen"
+    },
     "PHONE_PLACEHOLDER": "Telefonnummer eingeben",
-    "AGENT_CHECKBOX": "Konto als verifizierter Immobilienmakler aktivieren",
-    "TAX_NUMBER": "Steuernummer",
-    "TAX_PLACEHOLDER": "Beispiel: 12/345/67890",
-    "AGENT_VERIFIED_MSG": "Ihr Konto wurde als verifizierter Immobilienmakler aktiviert.",
     "CHANGE_PASS_BTN": "Passwort ändern",
     "CANCEL_PASS_BTN": "Passwortänderung abbrechen",
     "CURRENT_PASS": "Aktuelles Passwort",
@@ -1029,7 +1030,6 @@
       "PASS_MISMATCH": "Das neue Passwort und seine Bestätigung stimmen nicht überein.",
       "PASS_SUCCESS": "Das Passwort wurde erfolgreich geändert.",
       "PASS_ERROR": "Das Passwort konnte nicht geändert werden.",
-      "AGENT_VALIDATION": "Telefonnummer und Steuernummer sind erforderlich, um das Maklerkonto zu aktivieren.",
       "DELETE_CONFIRM": "Warnung: Ihr Konto wird dauerhaft gelöscht. Sind Sie sicher?",
       "INVALID_IMAGE_TYPE": "Nicht unterstützter Bildtyp. Verwenden Sie PNG, JPG oder WebP.",
       "IMAGE_TOO_LARGE": "Das Bild ist zu groß. Die maximale Größe beträgt 5 MB.",
@@ -1295,6 +1295,15 @@
       "DEACTIVATE_BODY": "Die öffentliche Seite von {{name}} verschwindet und Sie können keine neuen Mitglieder einladen, bis Sie das Büro auf dieser Seite wieder aktivieren.",
       "DEACTIVATE_ACTION": "Deaktivieren"
     }
+  },
+  "AGENCY_GATE": {
+    "UNVERIFIED_TITLE": "Bestätige zuerst dein Konto",
+    "UNVERIFIED_DESC": "Um ein Maklerbüro zu gründen oder einem beizutreten, brauchst du ein bestätigtes Konto: Bestätige deine E-Mail-Adresse oder Telefonnummer.",
+    "UNVERIFIED_CTA": "Konto bestätigen",
+    "PLAN_TITLE": "Ein Maklerbüro erfordert ein kostenpflichtiges Paket",
+    "PLAN_DESC": "Das kostenlose Paket enthält keine Maklerbüros. Wähle ein kostenpflichtiges Paket, um dein Büro zu gründen und zu verwalten.",
+    "PLAN_CTA": "Pakete ansehen",
+    "INVITE_PLAN_DESC": "Mitglieder einzuladen erfordert ein aktives kostenpflichtiges Paket. Dein Büro und seine Daten bleiben unverändert und du kannst es weiter bearbeiten, neue Einladungen ruhen aber, bis du ein kostenpflichtiges Paket aktivierst."
   },
   "AGENCY_INVITES": {
     "TITLE": "Einladungen von Maklerbüros",
@@ -1602,7 +1611,9 @@
       "F2": "Direkter API-Zugang",
       "F3": "Persönlicher Account-Manager",
       "CTA": "Vertrieb kontaktieren"
-    }
+    },
+    "REASON_AGENCY_PLAN_REQUIRED": "Wähle ein kostenpflichtiges Paket, um ein Maklerbüro zu gründen oder Mitglieder einzuladen — das kostenlose Paket enthält keine Büros.",
+    "AGENCY_NO_FREE": "Für Inhaber eines Maklerbüros nicht verfügbar: Das kostenlose Paket enthält keine Büros."
   },
   "NOT_AUTHORIZED": {
     "TITLE": "Kein Zugriff",

@@ -24,6 +24,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { switchMap } from 'rxjs';
 
 import { PlansApiService } from '../../core/api/plans-api.service';
+import { AgenciesApiService } from '../../core/api/agencies-api.service';
+import { knownErrorCodeKey } from '../../core/interceptors/api-error.interceptor';
 import { ProfileService } from '../../core/api/profile.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { MetaService } from '../../core/services/meta.service';
@@ -42,6 +44,7 @@ import { ToastService } from '../../shared/services/toast.service';
 export class PricingPage implements OnInit {
   private readonly api = inject(PlansApiService);
   private readonly profileService = inject(ProfileService);
+  private readonly agenciesApi = inject(AgenciesApiService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -73,6 +76,16 @@ export class PricingPage implements OnInit {
    * plan before /property-form will let them in. */
   readonly showPlanRequiredBanner = signal(false);
 
+  /** Set when the visitor was sent here because an office needs a paid plan. */
+  readonly showAgencyPlanBanner = signal(false);
+
+  /**
+   * true when the signed-in visitor owns an office: the free plan does not cover offices,
+   * and the API refuses it (AGENCY_FREE_PLAN_NOT_ALLOWED), so its button is disabled up
+   * front instead of letting them click into an error.
+   */
+  readonly ownsAgency = signal(false);
+
   ngOnInit(): void {
     this.applyMeta();
     this.load();
@@ -80,6 +93,32 @@ export class PricingPage implements OnInit {
     this.showPlanRequiredBanner.set(
       this.route.snapshot.queryParamMap.get('reason') === 'plan-required'
     );
+    this.showAgencyPlanBanner.set(
+      this.route.snapshot.queryParamMap.get('reason') === 'agency-plan-required'
+    );
+    this.loadAgencyOwnership();
+  }
+
+  private loadAgencyOwnership(): void {
+    if (!this.auth.getAccessToken()) {
+      return;
+    }
+
+    this.agenciesApi
+      .getMine()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: agency => {
+          const id = this.auth.getCurrentUserId();
+          this.ownsAgency.set(!!agency && !!id && agency.ownerUserId === id);
+        },
+        // The API refuses the free plan to an owner regardless; this only spares the click.
+        error: () => this.ownsAgency.set(false)
+      });
+  }
+
+  isBlockedForAgencyOwner(plan: SubscriptionPlan): boolean {
+    return this.ownsAgency() && plan.tier === 'free';
   }
 
   load(): void {
@@ -153,6 +192,10 @@ export class PricingPage implements OnInit {
     // The CTA button is itself a selection control — clicking it must move the gold
     // highlight to this plan (and only this plan) before submitting it, so the visual
     // state and the plan actually sent to the backend can never disagree.
+    if (this.isBlockedForAgencyOwner(plan)) {
+      return;
+    }
+
     this.selectedTier.set(plan.tier);
 
     const destination = () =>
@@ -197,9 +240,13 @@ export class PricingPage implements OnInit {
           );
           destination();
         },
-        error: () => {
+        error: err => {
           this.selecting.set(null);
-          this.toast.error(this.translate.instant('PRICING.MESSAGES.SELECT_ERROR'));
+          // ApiErrorInterceptor already toasts a refusal with its own translated text
+          // (AGENCY_FREE_PLAN_NOT_ALLOWED); the generic message would only bury it.
+          if (!knownErrorCodeKey(err)) {
+            this.toast.error(this.translate.instant('PRICING.MESSAGES.SELECT_ERROR'));
+          }
           // Stay on /pricing — a failed save must not send the visitor on to a route
           // that assumes a plan was actually recorded.
         }

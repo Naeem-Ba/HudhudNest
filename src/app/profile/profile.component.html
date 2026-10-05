@@ -111,19 +111,12 @@
       </div>
 
       <div class="field">
-        <label>
-          {{ 'PROFILE.PHONE' | translate }}
-          <span *ngIf="user()?.IsAgent" class="required-note">{{ 'PROFILE.PHONE_REQUIRED_AGENT' | translate }}</span>
-        </label>
+        <label>{{ 'PROFILE.PHONE' | translate }}</label>
         <input
           type="tel"
           [ngModel]="user()?.Phone" (ngModelChange)="patchUserField('Phone', $event)"
           name="ph"
-          #ph="ngModel"
-          [required]="user()?.IsAgent"
-          [placeholder]="user()?.IsAgent ? ('PROFILE.PHONE_PLACEHOLDER' | translate) : ''"
         >
-        <div class="field-error" *ngIf="ph.invalid && (ph.touched || submitted)">⚠️ {{ 'PROFILE.PHONE_REQUIRED_AGENT' | translate }}</div>
       </div>
 
       <!-- رقم تسجيل الدخول (منفصل عن رقم التواصل أعلاه): كانت صفحتا تغييره والتحقق منه بلا أي رابط. -->
@@ -163,38 +156,6 @@
         </div>
       </div>
 
-      <div class="agent-section">
-        <div class="verified-agent-badge" *ngIf="user()?.IsAgent && user()?.TaxNumber && user()?.Phone">
-          <div class="success-icon">✅</div>
-          <p class="success-text">{{ 'PROFILE.AGENT_VERIFIED_MSG' | translate }}</p>
-        </div>
-
-        <div class="agent-setup" *ngIf="!(user()?.IsAgent && user()?.TaxNumber && user()?.Phone)">
-          <label class="checkbox-field">
-            <input type="checkbox" [ngModel]="user()?.IsAgent" (ngModelChange)="patchUserField('IsAgent', $event)" name="ag">
-            <span>{{ 'PROFILE.AGENT_CHECKBOX' | translate }}</span>
-          </label>
-
-          <div class="tax-field" *ngIf="user()?.IsAgent">
-            <div class="field">
-              <label>
-                {{ 'PROFILE.TAX_NUMBER' | translate }}
-                <span class="required-note">{{ 'VALIDATION.REQUIRED' | translate }}</span>
-              </label>
-              <input
-                type="text"
-                [ngModel]="user()?.TaxNumber" (ngModelChange)="patchUserField('TaxNumber', $event)"
-                name="tn"
-                #tn="ngModel"
-                required
-                [placeholder]="'PROFILE.TAX_PLACEHOLDER' | translate"
-              >
-              <div class="field-error" *ngIf="tn.invalid && (tn.touched || submitted)">⚠️ {{ 'VALIDATION.REQUIRED' | translate }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div class="password-section">
         <button type="button" class="btn-toggle-pass" (click)="showPasswordForm.set(!showPasswordForm())">
           {{ showPasswordForm() ? ('PROFILE.CANCEL_PASS_BTN' | translate) : ('PROFILE.CHANGE_PASS_BTN' | translate) }}
@@ -227,7 +188,7 @@
     </form>
 
     <div class="actions">
-      <button class="btn-save" [disabled]="isSaving() || profileForm.invalid || hasAgentValidationError(user())" (click)="onSaveProfile(profileForm)">
+      <button class="btn-save" [disabled]="isSaving() || profileForm.invalid" (click)="onSaveProfile(profileForm)">
         {{ isSaving() ? ('COMMON.SAVING' | translate) : ('PROFILE.SAVE_CHANGES' | translate) }}
       </button>
     </div>

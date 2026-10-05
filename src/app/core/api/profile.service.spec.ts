@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 
 import { environment } from '../../../environments/environment';
-import { ProfileService } from './profile.service';
+import { ProfileService, UserProfile, agencyEligibility, hasPaidPlan } from './profile.service';
 
 describe('ProfileService — loadFailed$', () => {
   let service: ProfileService;
@@ -126,5 +126,29 @@ describe('ProfileService — account deletion window and export', () => {
     req.flush({ account: { id: 'u1' } });
 
     expect(data).toEqual({ account: { id: 'u1' } });
+  });
+});
+
+describe('agencyEligibility — mirrors the API gate so the screen can explain what is missing', () => {
+  const profile = (over: Partial<UserProfile>): UserProfile => ({ ...over });
+
+  it('no profile or nothing confirmed is "unverified", whatever the plan', () => {
+    expect(agencyEligibility(null)).toBe('unverified');
+    expect(agencyEligibility(profile({ PlanTier: 'premium' }))).toBe('unverified');
+  });
+
+  it('email OR phone confirmed counts as verified', () => {
+    expect(agencyEligibility(profile({ EmailConfirmed: true, PlanTier: 'basic' }))).toBe('ok');
+    expect(agencyEligibility(profile({ PhoneConfirmed: true, PlanTier: 'basic' }))).toBe('ok');
+  });
+
+  it('verified but on the free plan, or with no plan, needs a paid plan', () => {
+    expect(agencyEligibility(profile({ EmailConfirmed: true, PlanTier: 'free' }))).toBe('paid-plan-required');
+    expect(agencyEligibility(profile({ EmailConfirmed: true, PlanTier: null }))).toBe('paid-plan-required');
+  });
+
+  it('hasPaidPlan ignores tier case', () => {
+    expect(hasPaidPlan(profile({ PlanTier: 'FREE' }))).toBeFalse();
+    expect(hasPaidPlan(profile({ PlanTier: 'Elite' }))).toBeTrue();
   });
 });

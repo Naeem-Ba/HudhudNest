@@ -13,6 +13,7 @@
 //      (الذي كان سيُعيده AuthGuard إلى هنا بلا أي أثر للاختيار).
 //   6) العودة من الدخول بـ ?autoSelect=free تُكمل الاختيار تلقائيًا.
 // =====================================================================
+import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
@@ -20,6 +21,8 @@ import { of, throwError } from 'rxjs';
 
 import { PricingPage } from './pricing.page';
 import { PlansApiService } from '../../core/api/plans-api.service';
+import { AgenciesApiService } from '../../core/api/agencies-api.service';
+import { Agency } from '../../core/models/agency.model';
 import { ProfileService } from '../../core/api/profile.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { MetaService } from '../../core/services/meta.service';
@@ -61,11 +64,16 @@ describe('PricingPage', () => {
   let authServiceSpy: jasmine.SpyObj<AuthService>;
   let routerSpy: jasmine.SpyObj<Router>;
   let toastSpy: jasmine.SpyObj<ToastService>;
+  let agenciesApiSpy: jasmine.SpyObj<AgenciesApiService>;
 
   function createComponent(
     accessToken: string | null,
-    queryParams: Record<string, string> = {}
+    queryParams: Record<string, string> = {},
+    ownedAgency: Agency | null = null
   ): PricingPage {
+    agenciesApiSpy = jasmine.createSpyObj('AgenciesApiService', ['getMine']);
+    agenciesApiSpy.getMine.and.returnValue(of(ownedAgency));
+
     plansApiSpy = jasmine.createSpyObj('PlansApiService', ['getPlans', 'selectPlan']);
     plansApiSpy.getPlans.and.returnValue(of(PLANS));
     plansApiSpy.selectPlan.and.returnValue(of(undefined));
@@ -73,8 +81,9 @@ describe('PricingPage', () => {
     profileServiceSpy = jasmine.createSpyObj('ProfileService', ['refresh']);
     profileServiceSpy.refresh.and.returnValue(of({}));
 
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['getAccessToken']);
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['getAccessToken', 'getCurrentUserId']);
     authServiceSpy.getAccessToken.and.returnValue(accessToken);
+    authServiceSpy.getCurrentUserId.and.returnValue('owner-1');
 
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
     toastSpy = jasmine.createSpyObj('ToastService', ['success', 'error']);
@@ -85,6 +94,7 @@ describe('PricingPage', () => {
         { provide: PlansApiService, useValue: plansApiSpy },
         { provide: ProfileService, useValue: profileServiceSpy },
         { provide: AuthService, useValue: authServiceSpy },
+        { provide: AgenciesApiService, useValue: agenciesApiSpy },
         { provide: Router, useValue: routerSpy },
         {
           provide: ActivatedRoute,
@@ -192,5 +202,60 @@ describe('PricingPage', () => {
     createComponent(null, { autoSelect: 'free' });
 
     expect(plansApiSpy.selectPlan).not.toHaveBeenCalled();
+  });
+  describe('agency owners and the free plan', () => {
+    const ownedAgency = { id: 'a1', ownerUserId: 'owner-1' } as Agency;
+
+    it('مالك مكتب: بطاقة المجانية معطّلة ولا يُرسَل طلب اختيارها', () => {
+      const component = createComponent('token-123', {}, ownedAgency);
+
+      expect(component.ownsAgency()).toBeTrue();
+      expect(component.isBlockedForAgencyOwner(PLANS[0])).toBeTrue();
+      expect(component.isBlockedForAgencyOwner(PLANS[1])).toBeFalse();
+
+      component.onSelectPlan(PLANS[0]);
+
+      expect(plansApiSpy.selectPlan).not.toHaveBeenCalled();
+      expect(component.selectedTier()).toBeNull();
+    });
+
+    it('مالك مكتب يستطيع اختيار خطة مدفوعة', () => {
+      const component = createComponent('token-123', {}, ownedAgency);
+
+      component.onSelectPlan(PLANS[1]);
+
+      expect(plansApiSpy.selectPlan).toHaveBeenCalledWith('premium');
+    });
+
+    it('عضو غير مالك يبقى بإمكانه اختيار المجانية', () => {
+      const member = createComponent('token-123', {}, { id: 'a1', ownerUserId: 'someone-else' } as Agency);
+
+      expect(member.isBlockedForAgencyOwner(PLANS[0])).toBeFalse();
+    });
+
+    it('من لا مكتب له يبقى بإمكانه اختيار المجانية', () => {
+      const none = createComponent('token-123');
+
+      expect(none.isBlockedForAgencyOwner(PLANS[0])).toBeFalse();
+    });
+
+    it('رفض الخادم برمز AGENCY_FREE_PLAN_NOT_ALLOWED لا يضيف توستًا عامًا فوق رسالة المعترض المترجمة', () => {
+      const component = createComponent('token-123');
+      plansApiSpy.selectPlan.and.returnValue(throwError(() => new HttpErrorResponse({
+        status: 403,
+        error: { code: 'AGENCY_FREE_PLAN_NOT_ALLOWED', message: 'ar' }
+      })));
+
+      component.onSelectPlan(PLANS[0]);
+
+      expect(toastSpy.error).not.toHaveBeenCalled();
+      expect(routerSpy.navigate).not.toHaveBeenCalled();
+    });
+
+    it('?reason=agency-plan-required يُظهر شرح الخطة المدفوعة', () => {
+      const component = createComponent('token-123', { reason: 'agency-plan-required' });
+
+      expect(component.showAgencyPlanBanner()).toBeTrue();
+    });
   });
 });

@@ -145,8 +145,8 @@ export class ProfileComponent implements OnInit {
     const user = this.user();
     if (!user) return;
 
-    if (form.invalid || this.hasAgentValidationError(user)) {
-      this.toast.error(this.translate.instant('PROFILE.MESSAGES.AGENT_VALIDATION'));
+    if (form.invalid) {
+      this.toast.error(this.translate.instant('VALIDATION.FIX_FIELDS'));
       return;
     }
 
@@ -505,10 +505,6 @@ export class ProfileComponent implements OnInit {
     const current = this.user();
     if (!current) return;
     this.user.set({ ...current, [field]: value });
-  }
-
-  hasAgentValidationError(user: UserProfile | null): boolean {
-    return !!user?.IsAgent && (!user.Phone?.trim() || !user.TaxNumber?.trim());
   }
 
   passwordMismatch(): boolean {
