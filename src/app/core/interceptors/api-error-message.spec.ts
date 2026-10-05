@@ -68,3 +68,29 @@ describe('getFriendlyApiErrorMessage — shows the real reason, not the generic 
     expect(getFriendlyApiErrorMessage(fail(500, null), translate)).toBe('API_ERRORS.SERVER');
   });
 });
+
+describe('getFriendlyApiErrorMessage — agency eligibility codes are translated, not echoed in Arabic', () => {
+  [
+    'AGENCY_ACCOUNT_NOT_VERIFIED',
+    'AGENCY_PAID_PLAN_REQUIRED',
+    'AGENCY_FREE_PLAN_NOT_ALLOWED'
+  ].forEach(code => {
+    it(`${code} maps to its own API_ERRORS key whatever Arabic message the server sent`, () => {
+      const message = getFriendlyApiErrorMessage(
+        fail(403, { title: 'Forbidden', status: 403, message: 'رسالة عربية من الخادم', code }),
+        translate
+      );
+
+      expect(message).toBe(`API_ERRORS.${code}`);
+    });
+  });
+
+  it('an unknown 403 code keeps showing the server message', () => {
+    const message = getFriendlyApiErrorMessage(
+      fail(403, { message: 'Only the agency owner can invite members.', code: 'SOMETHING_ELSE' }),
+      translate
+    );
+
+    expect(message).toBe('Only the agency owner can invite members.');
+  });
+});

@@ -11,7 +11,10 @@
     "SERVER": "A server error occurred. Please try again later.",
     "UNKNOWN": "An unexpected error occurred.",
     "FIELD_REQUIRED": "The field “{{field}}” is required.",
-    "FIELD_INVALID": "The field “{{field}}” is empty or invalid."
+    "FIELD_INVALID": "The field “{{field}}” is empty or invalid.",
+    "AGENCY_ACCOUNT_NOT_VERIFIED": "Verify your account first: confirm your email or phone number in your account settings, then try again.",
+    "AGENCY_PAID_PLAN_REQUIRED": "A real-estate office needs a paid plan in force. The free plan does not include offices.",
+    "AGENCY_FREE_PLAN_NOT_ALLOWED": "You own a real-estate office, and the free plan does not include offices. Choose a paid plan."
   },
   "COMMON": {
     "SAVE": "Save",
@@ -78,7 +81,8 @@
     "PROFILE_PHOTO": "Profile photo",
     "SIGNED_IN_WITH_EMAIL": "Signed in with e-mail:",
     "SIGNED_IN_WITH_PHONE": "Signed in with phone number:",
-    "CURRENT_SECTION": "(current section)"
+    "CURRENT_SECTION": "(current section)",
+    "ADMIN_PAYMENT_REQUESTS": "Payment requests"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -278,7 +282,6 @@
       "NO_CODE": "Didn't receive the code?",
       "SEND_VIA": "Send via {{channel}}"
     },
-
     "PHONE_REGISTER": {
       "TITLE": "Create an account with your phone",
       "SUBTITLE": "Enter your phone number to receive a one-time code.",
@@ -782,7 +785,10 @@
     "MESSAGES": "Messages",
     "PUBLISHING": "Publishing...",
     "PUBLISH_NEEDS_IMAGE": "Add at least one photo before publishing.",
-    "FEATURED_UNTIL": "Featured until"
+    "FEATURED_UNTIL": "Featured until",
+    "FEATURE": "Feature listing",
+    "FEATURE_EXTEND": "Extend featuring",
+    "FEATURE_PENDING": "Your featuring request is waiting for an administrator to confirm payment."
   },
   "FAVORITE_TOGGLE": {
     "ADD": "Add to favorites",
@@ -992,13 +998,12 @@
     "DISPLAY_NAME": "Display name",
     "EMAIL_LOCKED": "Email (cannot be changed)",
     "PHONE": "Phone number",
-    "PHONE_SECURITY": { "TITLE": "Sign-in phone number", "CHANGE": "Change sign-in phone number", "VERIFY": "Verify my phone number" },
-    "PHONE_REQUIRED_AGENT": "* Required for real estate agents",
+    "PHONE_SECURITY": {
+      "TITLE": "Sign-in phone number",
+      "CHANGE": "Change sign-in phone number",
+      "VERIFY": "Verify my phone number"
+    },
     "PHONE_PLACEHOLDER": "Enter phone number",
-    "AGENT_CHECKBOX": "Activate the account as a verified real estate agent",
-    "TAX_NUMBER": "Tax number",
-    "TAX_PLACEHOLDER": "Example: 12/345/67890",
-    "AGENT_VERIFIED_MSG": "Your account has been activated as a verified real estate agent.",
     "CHANGE_PASS_BTN": "Change password",
     "CANCEL_PASS_BTN": "Cancel password change",
     "CURRENT_PASS": "Current password",
@@ -1029,7 +1034,6 @@
       "PASS_MISMATCH": "The new password and its confirmation do not match.",
       "PASS_SUCCESS": "Password changed successfully.",
       "PASS_ERROR": "Unable to change the password.",
-      "AGENT_VALIDATION": "Phone number and tax number are required to activate the agent account.",
       "DELETE_CONFIRM": "Warning: Your account will be deleted permanently. Are you sure?",
       "INVALID_IMAGE_TYPE": "Unsupported image type. Use PNG, JPG, or WebP.",
       "IMAGE_TOO_LARGE": "The image is too large. The maximum size is 5 MB.",
@@ -1295,6 +1299,15 @@
       "DEACTIVATE_BODY": "{{name}}'s public page will disappear and you will not be able to invite new members until you reactivate it from this page.",
       "DEACTIVATE_ACTION": "Deactivate"
     }
+  },
+  "AGENCY_GATE": {
+    "UNVERIFIED_TITLE": "Verify your account first",
+    "UNVERIFIED_DESC": "Creating or joining a real-estate office requires a verified account: confirm your email or phone number.",
+    "UNVERIFIED_CTA": "Verify account",
+    "PLAN_TITLE": "A real-estate office needs a paid plan",
+    "PLAN_DESC": "The free plan does not include real-estate offices. Choose a paid plan to create and manage your office.",
+    "PLAN_CTA": "View plans",
+    "INVITE_PLAN_DESC": "Inviting members requires a paid plan in force. Your office and its data are unchanged and you can still edit it, but new invitations are paused until you activate a paid plan."
   },
   "AGENCY_INVITES": {
     "TITLE": "Agency invitations",
@@ -1563,7 +1576,8 @@
     "MESSAGES": {
       "FREE_SELECTED_SUCCESS": "The free plan is selected — you can add your listing now.",
       "PLAN_SELECTED_SUCCESS": "Plan selected successfully.",
-      "SELECT_ERROR": "Could not save your plan selection. Please try again."
+      "SELECT_ERROR": "Could not save your plan selection. Please try again.",
+      "PLAN_REQUEST_SENT": "We received your request. The plan is activated once an administrator confirms your payment; your current plan stays unchanged until then."
     },
     "FREE": {
       "NAME": "Free",
@@ -1602,7 +1616,10 @@
       "F2": "Direct API access",
       "F3": "Dedicated account manager",
       "CTA": "Talk to sales"
-    }
+    },
+    "REASON_AGENCY_PLAN_REQUIRED": "Choose a paid plan to create a real-estate office or invite members to it — the free plan does not include offices.",
+    "AGENCY_NO_FREE": "Not available to a real-estate office owner: the free plan does not include offices.",
+    "PENDING_NOTE": "Your request for this plan is waiting for an administrator to confirm payment."
   },
   "NOT_AUTHORIZED": {
     "TITLE": "You are not authorised",
@@ -2603,5 +2620,27 @@
       "TITLE": "Get your property valued",
       "DESCRIPTION": "Request a valuation of your property from a real estate expert: send the property details and we will contact you with an estimate of its market value."
     }
+  },
+  "ADMIN_PAYMENTS": {
+    "TITLE": "Payment requests",
+    "SUBTITLE": "Paid-plan and featured-listing requests. Nothing is activated until you have confirmed the payment arrived.",
+    "EMPTY_TITLE": "No pending requests",
+    "EMPTY_MESSAGE": "All payment requests have been handled.",
+    "PLANS_TITLE": "Plan requests",
+    "FEATURED_TITLE": "Featured-listing requests",
+    "DURATION_DAYS": "Subscription length (days)",
+    "APPROVE_PLAN": "Confirm payment & activate plan",
+    "APPROVE_FEATURED": "Confirm payment & feature listing",
+    "REJECT": "Reject",
+    "OPEN_USER": "Open user",
+    "INVALID_DURATION": "Enter a valid length between 1 and 3650 days.",
+    "CONFIRM_APPROVE_PLAN": "Confirm that {{name}} has paid and activate the plan for {{days}} days?",
+    "CONFIRM_APPROVE_FEATURED": "Confirm payment arrived and feature \"{{title}}\"?",
+    "CONFIRM_REJECT": "Reject this request ({{name}}) without activating anything?",
+    "PLAN_APPROVED": "Plan activated.",
+    "FEATURED_APPROVED": "Listing featured.",
+    "REJECTED": "Request rejected.",
+    "LOAD_ERROR": "Could not load the requests.",
+    "ACTION_ERROR": "The action failed. The request may already have been handled; the list was refreshed."
   }
 }

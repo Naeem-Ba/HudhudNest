@@ -47,6 +47,9 @@ import { formatStepNumber } from '../../shared/utils/step-number';
 import { ToastService } from '../../shared/services/toast.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { AuthApiService } from '../../core/auth/auth-api.service';
+import { AgencyEligibility, ProfileService, agencyEligibility } from '../../core/api/profile.service';
+import { knownErrorCodeKey } from '../../core/interceptors/api-error.interceptor';
+import { RouterLink } from '@angular/router';
 import { AgencyTeamPanelComponent } from './agency-team-panel.component';
 import { AgencyInvitationsComponent } from './agency-invitations.component';
 
@@ -57,7 +60,7 @@ const SUPPORTED_COUNTRY_CODES = ['SY', 'DE', 'US', 'GB', 'FR', 'AE', 'SA', 'TR',
   selector: 'app-agency-form',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, AgencyTeamPanelComponent, AgencyInvitationsComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, AgencyTeamPanelComponent, AgencyInvitationsComponent],
   templateUrl: './agency-form.page.html',
   styleUrl: './agency-form.page.scss'
 })
@@ -71,6 +74,7 @@ export class AgencyFormPage implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly auth = inject(AuthService);
   private readonly authApi = inject(AuthApiService);
+  private readonly profileService = inject(ProfileService);
 
   readonly countryCodes = SUPPORTED_COUNTRY_CODES;
   readonly loading = signal(true);
@@ -88,6 +92,15 @@ export class AgencyFormPage implements OnInit {
     const agency = this.agency();
     return !agency || agency.ownerUserId === this.currentUserId();
   });
+
+  /**
+   * What the account still lacks before it may register an office. Drawn from the shared
+   * profile; null while it loads (the form is held back rather than flashed). The API
+   * enforces the same two rules — this only explains them early and links to the fix.
+   */
+  readonly eligibility = signal<AgencyEligibility | null>(null);
+  /** The create form is shown only to an eligible account; an existing owner edits freely. */
+  readonly canCreate = computed(() => this.eligibility() === 'ok');
 
   readonly governorates = signal<StructuredLocationLookup[]>([]);
   readonly districts = signal<StructuredLocationLookup[]>([]);
@@ -113,7 +126,19 @@ export class AgencyFormPage implements OnInit {
   ngOnInit(): void {
     this.loadGovernorates();
     this.bindCascadingLocationChanges();
+    this.loadEligibility();
     this.loadExistingAgency();
+  }
+
+  private loadEligibility(): void {
+    this.profileService
+      .getMe()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: profile => this.eligibility.set(agencyEligibility(profile)),
+        // لا نحجب المستخدم بسبب فشل جلب الملف: الخادم هو الحَكَم عند الإرسال.
+        error: () => this.eligibility.set('ok')
+      });
   }
 
   get langCode(): LangCode {
@@ -327,7 +352,11 @@ export class AgencyFormPage implements OnInit {
       },
       error: err => {
         this.saving.set(false);
-        this.toast.error(err?.error?.message || this.translate.instant('AGENCY_FORM.SAVE_ERROR'));
+        // ApiErrorInterceptor already toasts a refusal that has its own translated text
+        // (AGENCY_* codes); a second toast here would only repeat it.
+        if (!knownErrorCodeKey(err)) {
+          this.toast.error(err?.error?.message || this.translate.instant('AGENCY_FORM.SAVE_ERROR'));
+        }
       }
     });
   }

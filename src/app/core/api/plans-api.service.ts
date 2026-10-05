@@ -14,6 +14,17 @@ import { PlanPriceKind, PlanTier, SubscriptionPlan } from '../models/subscriptio
 const VALID_TIERS: readonly PlanTier[] = ['free', 'basic', 'premium', 'elite'];
 const VALID_PRICE_KINDS: readonly PlanPriceKind[] = ['free', 'monthly', 'contact'];
 
+/**
+ * What POST /users/me/plan answered: 204 for the free plan (in force at once, no body) and
+ * 202 { requestId, tier, status: 'pending' } for a paid plan, which only becomes a request
+ * an administrator activates after confirming payment.
+ */
+export interface SelectPlanResult {
+  status: 'activated' | 'pending';
+  tier: PlanTier;
+  requestId: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PlansApiService {
   private readonly endpoint = '/plans';
@@ -36,9 +47,17 @@ export class PlansApiService {
    * comment on the backend). POST /api/users/me/plan, not part of the §11 contract
    * above since it's deliberately a lighter-weight addition: no billing cycle, no
    * checkout — just "which tier did they pick".
+   *
+   * A paid tier is NOT activated by this call: the server records a pending request and
+   * answers 202 (see SelectPlanResult), and the plan only starts once an administrator has
+   * confirmed the payment.
    */
-  selectPlan(tier: PlanTier): Observable<void> {
-    return this.api.post<void>('/users/me/plan', { tier });
+  selectPlan(tier: PlanTier): Observable<SelectPlanResult> {
+    return this.api
+      .post<{ requestId?: string; status?: string } | null>('/users/me/plan', { tier })
+      .pipe(map(body => body?.status === 'pending'
+        ? { status: 'pending' as const, tier, requestId: body.requestId ?? null }
+        : { status: 'activated' as const, tier, requestId: null }));
   }
 
   private toPlans(response: unknown): SubscriptionPlan[] {

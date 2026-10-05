@@ -11,7 +11,10 @@
     "SERVER": "Ein Serverfehler ist aufgetreten. Bitte versuchen Sie es später erneut.",
     "UNKNOWN": "Ein unerwarteter Fehler ist aufgetreten.",
     "FIELD_REQUIRED": "Das Feld „{{field}}“ ist erforderlich.",
-    "FIELD_INVALID": "Das Feld „{{field}}“ ist leer oder ungültig."
+    "FIELD_INVALID": "Das Feld „{{field}}“ ist leer oder ungültig.",
+    "AGENCY_ACCOUNT_NOT_VERIFIED": "Bestätige zuerst dein Konto: Bestätige in den Kontoeinstellungen deine E-Mail-Adresse oder Telefonnummer und versuche es erneut.",
+    "AGENCY_PAID_PLAN_REQUIRED": "Ein Maklerbüro erfordert ein aktives kostenpflichtiges Paket. Das kostenlose Paket enthält keine Büros.",
+    "AGENCY_FREE_PLAN_NOT_ALLOWED": "Du besitzt ein Maklerbüro, und das kostenlose Paket enthält keine Büros. Wähle ein kostenpflichtiges Paket."
   },
   "COMMON": {
     "SAVE": "Speichern",
@@ -78,7 +81,8 @@
     "PROFILE_PHOTO": "Profilbild",
     "SIGNED_IN_WITH_EMAIL": "Angemeldet mit E-Mail:",
     "SIGNED_IN_WITH_PHONE": "Angemeldet mit Telefonnummer:",
-    "CURRENT_SECTION": "(aktueller Bereich)"
+    "CURRENT_SECTION": "(aktueller Bereich)",
+    "ADMIN_PAYMENT_REQUESTS": "Zahlungsanfragen"
   },
   "AUTH": {
     "LOGIN_TITLE": "Willkommen",
@@ -278,7 +282,6 @@
       "NO_CODE": "Code nicht erhalten?",
       "SEND_VIA": "Per {{channel}} senden"
     },
-
     "PHONE_REGISTER": {
       "TITLE": "Konto mit Telefonnummer erstellen",
       "SUBTITLE": "Geben Sie Ihre Telefonnummer ein, um einen einmaligen Code zu erhalten.",
@@ -782,7 +785,10 @@
     "MESSAGES": "Nachrichten",
     "PUBLISHING": "Wird veröffentlicht...",
     "PUBLISH_NEEDS_IMAGE": "Fügen Sie vor der Veröffentlichung mindestens ein Foto hinzu.",
-    "FEATURED_UNTIL": "Hervorgehoben bis"
+    "FEATURED_UNTIL": "Hervorgehoben bis",
+    "FEATURE": "Inserat hervorheben",
+    "FEATURE_EXTEND": "Hervorhebung verlängern",
+    "FEATURE_PENDING": "Ihre Hervorhebungsanfrage wartet auf die Zahlungsbestätigung durch einen Administrator."
   },
   "FAVORITE_TOGGLE": {
     "ADD": "Zu Favoriten hinzufügen",
@@ -992,13 +998,12 @@
     "DISPLAY_NAME": "Anzeigename",
     "EMAIL_LOCKED": "E-Mail-Adresse (nicht änderbar)",
     "PHONE": "Telefonnummer",
-    "PHONE_SECURITY": { "TITLE": "Telefonnummer für die Anmeldung", "CHANGE": "Anmelde-Telefonnummer ändern", "VERIFY": "Meine Telefonnummer bestätigen" },
-    "PHONE_REQUIRED_AGENT": "* Für Immobilienmakler erforderlich",
+    "PHONE_SECURITY": {
+      "TITLE": "Telefonnummer für die Anmeldung",
+      "CHANGE": "Anmelde-Telefonnummer ändern",
+      "VERIFY": "Meine Telefonnummer bestätigen"
+    },
     "PHONE_PLACEHOLDER": "Telefonnummer eingeben",
-    "AGENT_CHECKBOX": "Konto als verifizierter Immobilienmakler aktivieren",
-    "TAX_NUMBER": "Steuernummer",
-    "TAX_PLACEHOLDER": "Beispiel: 12/345/67890",
-    "AGENT_VERIFIED_MSG": "Ihr Konto wurde als verifizierter Immobilienmakler aktiviert.",
     "CHANGE_PASS_BTN": "Passwort ändern",
     "CANCEL_PASS_BTN": "Passwortänderung abbrechen",
     "CURRENT_PASS": "Aktuelles Passwort",
@@ -1029,7 +1034,6 @@
       "PASS_MISMATCH": "Das neue Passwort und seine Bestätigung stimmen nicht überein.",
       "PASS_SUCCESS": "Das Passwort wurde erfolgreich geändert.",
       "PASS_ERROR": "Das Passwort konnte nicht geändert werden.",
-      "AGENT_VALIDATION": "Telefonnummer und Steuernummer sind erforderlich, um das Maklerkonto zu aktivieren.",
       "DELETE_CONFIRM": "Warnung: Ihr Konto wird dauerhaft gelöscht. Sind Sie sicher?",
       "INVALID_IMAGE_TYPE": "Nicht unterstützter Bildtyp. Verwenden Sie PNG, JPG oder WebP.",
       "IMAGE_TOO_LARGE": "Das Bild ist zu groß. Die maximale Größe beträgt 5 MB.",
@@ -1295,6 +1299,15 @@
       "DEACTIVATE_BODY": "Die öffentliche Seite von {{name}} verschwindet und Sie können keine neuen Mitglieder einladen, bis Sie das Büro auf dieser Seite wieder aktivieren.",
       "DEACTIVATE_ACTION": "Deaktivieren"
     }
+  },
+  "AGENCY_GATE": {
+    "UNVERIFIED_TITLE": "Bestätige zuerst dein Konto",
+    "UNVERIFIED_DESC": "Um ein Maklerbüro zu gründen oder einem beizutreten, brauchst du ein bestätigtes Konto: Bestätige deine E-Mail-Adresse oder Telefonnummer.",
+    "UNVERIFIED_CTA": "Konto bestätigen",
+    "PLAN_TITLE": "Ein Maklerbüro erfordert ein kostenpflichtiges Paket",
+    "PLAN_DESC": "Das kostenlose Paket enthält keine Maklerbüros. Wähle ein kostenpflichtiges Paket, um dein Büro zu gründen und zu verwalten.",
+    "PLAN_CTA": "Pakete ansehen",
+    "INVITE_PLAN_DESC": "Mitglieder einzuladen erfordert ein aktives kostenpflichtiges Paket. Dein Büro und seine Daten bleiben unverändert und du kannst es weiter bearbeiten, neue Einladungen ruhen aber, bis du ein kostenpflichtiges Paket aktivierst."
   },
   "AGENCY_INVITES": {
     "TITLE": "Einladungen von Maklerbüros",
@@ -1563,7 +1576,8 @@
     "MESSAGES": {
       "FREE_SELECTED_SUCCESS": "Das kostenlose Paket ist ausgewählt — du kannst jetzt dein Inserat hinzufügen.",
       "PLAN_SELECTED_SUCCESS": "Paket erfolgreich ausgewählt.",
-      "SELECT_ERROR": "Die Paketauswahl konnte nicht gespeichert werden. Bitte versuche es erneut."
+      "SELECT_ERROR": "Die Paketauswahl konnte nicht gespeichert werden. Bitte versuche es erneut.",
+      "PLAN_REQUEST_SENT": "Wir haben Ihre Anfrage erhalten. Der Tarif wird aktiviert, sobald ein Administrator Ihre Zahlung bestätigt hat; bis dahin bleibt Ihr aktueller Tarif unverändert."
     },
     "FREE": {
       "NAME": "Kostenlos",
@@ -1602,7 +1616,10 @@
       "F2": "Direkter API-Zugang",
       "F3": "Persönlicher Account-Manager",
       "CTA": "Vertrieb kontaktieren"
-    }
+    },
+    "REASON_AGENCY_PLAN_REQUIRED": "Wähle ein kostenpflichtiges Paket, um ein Maklerbüro zu gründen oder Mitglieder einzuladen — das kostenlose Paket enthält keine Büros.",
+    "AGENCY_NO_FREE": "Für Inhaber eines Maklerbüros nicht verfügbar: Das kostenlose Paket enthält keine Büros.",
+    "PENDING_NOTE": "Ihre Anfrage für diesen Tarif wartet auf die Zahlungsbestätigung durch einen Administrator."
   },
   "NOT_AUTHORIZED": {
     "TITLE": "Kein Zugriff",
@@ -2603,5 +2620,27 @@
       "TITLE": "Immobilie bewerten lassen",
       "DESCRIPTION": "Fordern Sie eine Bewertung Ihrer Immobilie durch einen Experten an: Senden Sie die Objektdaten, und wir melden uns mit einer Einschätzung des Marktwerts."
     }
+  },
+  "ADMIN_PAYMENTS": {
+    "TITLE": "Zahlungsanfragen",
+    "SUBTITLE": "Anfragen für kostenpflichtige Tarife und hervorgehobene Inserate. Nichts wird aktiviert, bevor Sie den Zahlungseingang bestätigt haben.",
+    "EMPTY_TITLE": "Keine offenen Anfragen",
+    "EMPTY_MESSAGE": "Alle Zahlungsanfragen wurden bearbeitet.",
+    "PLANS_TITLE": "Tarifanfragen",
+    "FEATURED_TITLE": "Hervorhebungsanfragen",
+    "DURATION_DAYS": "Laufzeit (Tage)",
+    "APPROVE_PLAN": "Zahlung bestätigen & Tarif aktivieren",
+    "APPROVE_FEATURED": "Zahlung bestätigen & Inserat hervorheben",
+    "REJECT": "Ablehnen",
+    "OPEN_USER": "Nutzer öffnen",
+    "INVALID_DURATION": "Geben Sie eine gültige Laufzeit zwischen 1 und 3650 Tagen ein.",
+    "CONFIRM_APPROVE_PLAN": "Bestätigen, dass {{name}} bezahlt hat, und den Tarif für {{days}} Tage aktivieren?",
+    "CONFIRM_APPROVE_FEATURED": "Zahlungseingang bestätigen und „{{title}}“ hervorheben?",
+    "CONFIRM_REJECT": "Diese Anfrage ({{name}}) ablehnen, ohne etwas zu aktivieren?",
+    "PLAN_APPROVED": "Tarif aktiviert.",
+    "FEATURED_APPROVED": "Inserat hervorgehoben.",
+    "REJECTED": "Anfrage abgelehnt.",
+    "LOAD_ERROR": "Die Anfragen konnten nicht geladen werden.",
+    "ACTION_ERROR": "Die Aktion ist fehlgeschlagen. Die Anfrage wurde evtl. bereits bearbeitet; die Liste wurde aktualisiert."
   }
 }

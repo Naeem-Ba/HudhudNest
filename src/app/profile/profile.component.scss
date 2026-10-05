@@ -328,24 +328,6 @@
   &:hover { background: var(--gray-100); }
 }
 
-.agent-section {
-  background: var(--primary-soft);
-  padding: 1rem;
-  border-radius: 14px;
-  border: 1px dashed var(--primary);
-}
-
-.tax-field {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border);
-
-  input {
-    background: var(--surface);
-    border-color: var(--primary);
-  }
-}
-
 .checkbox-field {
   display: flex;
   align-items: center;
@@ -547,28 +529,6 @@
   font-size: 0.85rem;
   color: var(--gray-500);
   font-style: italic;
-}
-
-.verified-agent-badge {
-  background-color: var(--success-soft);
-  border: 1px solid rgba(22,163,74,.25);
-  padding: 1.5rem;
-  border-radius: 12px;
-  text-align: center;
-  margin: 1rem 0;
-
-  .success-icon {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .success-text {
-    color: var(--success);
-    font-weight: bold;
-    font-size: 1rem;
-    margin: 0;
-    line-height: 1.6;
-  }
 }
 
 @include bp.mobile {

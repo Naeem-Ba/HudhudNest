@@ -20,10 +20,26 @@
     <!-- لا مكتب: دعوات واردة أولًا، ثم نموذج إنشاء مكتب جديد -->
     <div class="page-block" *ngIf="!loading() && !agency()">
       <app-agency-invitations [userId]="currentUserId()" (accepted)="reloadAgency(); refreshSession()"></app-agency-invitations>
-      <p class="or-create">{{ 'AGENCY_MANAGE.OR_CREATE' | translate }}</p>
+      <p class="or-create" *ngIf="canCreate()">{{ 'AGENCY_MANAGE.OR_CREATE' | translate }}</p>
     </div>
 
-    <form class="agency-form" [formGroup]="form" (ngSubmit)="submit()" novalidate *ngIf="!loading() && canEditProfile()">
+    <!-- حساب غير مؤهَّل: يُشرح السبب ويُعرض الحل بدل نموذج سيرفضه الخادم -->
+    <div class="page-block" *ngIf="!loading() && !agency() && eligibility() && !canCreate()">
+      <div class="state-card" role="status" data-testid="agency-gate">
+        <span aria-hidden="true">{{ eligibility() === 'unverified' ? '🔐' : '⭐' }}</span>
+        <div>
+          <h2>{{ (eligibility() === 'unverified' ? 'AGENCY_GATE.UNVERIFIED_TITLE' : 'AGENCY_GATE.PLAN_TITLE') | translate }}</h2>
+          <p>{{ (eligibility() === 'unverified' ? 'AGENCY_GATE.UNVERIFIED_DESC' : 'AGENCY_GATE.PLAN_DESC') | translate }}</p>
+          <a class="btn btn--primary"
+            [routerLink]="eligibility() === 'unverified' ? '/profile' : '/pricing'"
+            [queryParams]="eligibility() === 'unverified' ? { reason: 'confirm-required' } : { reason: 'agency-plan-required' }">
+            {{ (eligibility() === 'unverified' ? 'AGENCY_GATE.UNVERIFIED_CTA' : 'AGENCY_GATE.PLAN_CTA') | translate }}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <form class="agency-form" [formGroup]="form" (ngSubmit)="submit()" novalidate *ngIf="!loading() && canEditProfile() && (agency() || canCreate())">
       <div class="form-grid">
 
         <!-- SECTION 1: Basic Info -->
@@ -155,6 +171,7 @@
       <app-agency-team-panel
         [agency]="a"
         [currentUserId]="currentUserId()"
+        [canInvite]="eligibility() !== 'paid-plan-required'"
         (agencyChanged)="reloadAgency()"
         (rolesChanged)="refreshSession()"
         (left)="onLeftAgency()"

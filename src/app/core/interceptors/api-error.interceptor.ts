@@ -117,6 +117,13 @@ function extractBackendMessage(error: HttpErrorResponse, translate: TranslateSer
  * من public/i18n/{en,de,ar}.json عبر مفاتيح API_ERRORS.* الجديدة.
  */
 export function getFriendlyApiErrorMessage(error: HttpErrorResponse, translate: TranslateService): string {
+  // A stable error code beats the server's message: the message is Arabic whatever the UI
+  // language is, the code is translated to the reader's own.
+  const codeKey = knownErrorCodeKey(error);
+  if (codeKey) {
+    return translate.instant(codeKey);
+  }
+
   const backendMessage = extractBackendMessage(error, translate);
 
   if (backendMessage) {
@@ -137,6 +144,23 @@ export function getFriendlyApiErrorMessage(error: HttpErrorResponse, translate: 
   })();
 
   return translate.instant(key);
+}
+
+/**
+ * Codes the API attaches to a refusal (ForbiddenException.Code) that have their own
+ * localised text. Agency eligibility: see IAgencyEligibilityPolicy on the backend.
+ */
+const KNOWN_ERROR_CODE_KEYS: Readonly<Record<string, string>> = {
+  AGENCY_ACCOUNT_NOT_VERIFIED: 'API_ERRORS.AGENCY_ACCOUNT_NOT_VERIFIED',
+  AGENCY_PAID_PLAN_REQUIRED: 'API_ERRORS.AGENCY_PAID_PLAN_REQUIRED',
+  AGENCY_FREE_PLAN_NOT_ALLOWED: 'API_ERRORS.AGENCY_FREE_PLAN_NOT_ALLOWED'
+};
+
+/** The i18n key for a refusal's stable `code`, or null when there is none we translate. */
+export function knownErrorCodeKey(error: HttpErrorResponse): string | null {
+  const body = error.error;
+  const code = body && typeof body === 'object' ? (body.code ?? body.Code) : null;
+  return typeof code === 'string' ? (KNOWN_ERROR_CODE_KEYS[code] ?? null) : null;
 }
 
 function shouldShowToast(reqUrl: string): boolean {

@@ -92,6 +92,11 @@
           {{ p.featuredUntil | date:'dd/MM/yyyy' }}
         </p>
 
+        <!-- طلب تمييز بانتظار تأكيد المشرف للدفع: لا تمييز قبل ذلك. -->
+        <p class="featured-note featured-note--pending" *ngIf="hasPendingFeatured(p)" data-testid="featured-pending">
+          ⏳ {{ 'MY_LISTINGS.FEATURE_PENDING' | translate }}
+        </p>
+
         <!-- Expiry Warning -->
         <p class="expiry-warning" *ngIf="isExpiringSoon(p.expiresAt)">
           ⚠️ {{ 'MY_LISTINGS.EXPIRING_IN' | translate: { days: daysLeft(p.expiresAt) } }}
@@ -116,6 +121,14 @@
                 ? ('COMMON.SAVING' | translate)
                 : ('MY_LISTINGS.EXTEND' | translate) }}
           </button>
+          <a
+            *ngIf="canFeature(p) && !hasPendingFeatured(p)"
+            class="btn btn--gold"
+            data-testid="feature-link"
+            [routerLink]="['/checkout', 'featured', p.id]"
+          >
+            ⭐ {{ (p.isFeatured ? 'MY_LISTINGS.FEATURE_EXTEND' : 'MY_LISTINGS.FEATURE') | translate }}
+          </a>
           <button
             *ngIf="!p.isPublished"
             type="button"

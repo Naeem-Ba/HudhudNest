@@ -69,6 +69,12 @@ export interface UserProfile {
   PlanSelectedAt?: string | null;
 
   /**
+   * الخطة المدفوعة التي طلبها المستخدم ولم يفعّلها المشرف بعد (UserDto.PendingPlanTier):
+   * لا تمنح أي ميزة حتى يؤكد المشرف الدفع. PlanTier أعلاه هو ما هو سارٍ فعلًا.
+   */
+  PendingPlanTier?: string | null;
+
+  /**
    * ✅ إضافة: نبذة تعريفية + عنوان/معلومات تواصل تُعرض علنًا بالملف الشخصي
    * العام (UserDto.Bio / UserDto.ContactInfo بالباك اند).
    */
@@ -148,6 +154,8 @@ interface BackendUserProfile {
   PlanTier?: string | null;
   planSelectedAt?: string | null;
   PlanSelectedAt?: string | null;
+  pendingPlanTier?: string | null;
+  PendingPlanTier?: string | null;
 
   bio?: string;
   Bio?: string;
@@ -176,6 +184,28 @@ export function isEligibleForListing(profile: UserProfile | null): boolean {
   const planSelected = !!profile.PlanTier;
 
   return contactConfirmed && planSelected;
+}
+
+/**
+ * What the API (IAgencyEligibilityPolicy) requires before an office can be created or an
+ * invitation sent: a verified account (email OR phone confirmed), then a paid plan.
+ * This is only the early, friendly version of that check — it lets a screen explain what
+ * is missing and link to the fix instead of letting the user fill a form the server will
+ * refuse. The server stays the source of truth: it also knows a plan is cancelled or
+ * expired, which /users/me does not expose, and answers with an AGENCY_* error code.
+ */
+export type AgencyEligibility = 'ok' | 'unverified' | 'paid-plan-required';
+
+export function hasPaidPlan(profile: UserProfile | null): boolean {
+  const tier = profile?.PlanTier?.toLowerCase();
+  return !!tier && tier !== 'free';
+}
+
+export function agencyEligibility(profile: UserProfile | null): AgencyEligibility {
+  if (!profile || !(profile.EmailConfirmed || profile.PhoneConfirmed)) {
+    return 'unverified';
+  }
+  return hasPaidPlan(profile) ? 'ok' : 'paid-plan-required';
 }
 
 export interface ChangePasswordRequest {
@@ -386,6 +416,7 @@ export class ProfileService {
 
       PlanTier: user.planTier ?? user.PlanTier ?? null,
       PlanSelectedAt: user.planSelectedAt ?? user.PlanSelectedAt ?? null,
+      PendingPlanTier: user.pendingPlanTier ?? user.PendingPlanTier ?? null,
 
       Bio: user.bio ?? user.Bio ?? '',
       ContactInfo: user.contactInfo ?? user.ContactInfo ?? '',
