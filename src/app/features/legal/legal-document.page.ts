@@ -23,7 +23,7 @@ import { LegalDocKind, LegalDocumentContent, parseLegalText } from './legal-docu
   imports: [RouterModule, TranslateModule],
   template: `
     <section class="legal">
-      <article class="legal__card" [attr.lang]="contentLang()">
+      <article class="legal__card" [attr.lang]="contentLang()" [attr.dir]="contentDir()">
         @if (content(); as doc) {
           <h1>{{ doc.title }}</h1>
           <p class="legal__updated">
@@ -160,6 +160,8 @@ export class LegalDocumentPage {
   readonly failed = signal(false);
   /** Language of the text actually shown (differs from lang() only if a file failed to load). */
   readonly contentLang = signal<LangCode>(this.languages.getCurrent());
+  /** Follows the text shown, not the UI: the Arabic fallback must stay RTL under an LTR UI. */
+  readonly contentDir = computed(() => (this.contentLang() === 'ar' ? 'rtl' : 'ltr'));
   readonly segments = parseLegalText;
 
   // Intl, not DatePipe: the app registers no Angular locale data for ar/de.

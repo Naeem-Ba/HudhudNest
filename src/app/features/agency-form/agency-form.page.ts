@@ -43,6 +43,7 @@ import {
 } from '../../core/api/lookups-api.service';
 import { Agency, CreateAgencyRequest, UpdateAgencyRequest } from '../../core/models/agency.model';
 import { LanguageService, LangCode } from '../../core/services/language.service';
+import { formatStepNumber } from '../../shared/utils/step-number';
 import { ToastService } from '../../shared/services/toast.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { AuthApiService } from '../../core/auth/auth-api.service';
@@ -117,6 +118,10 @@ export class AgencyFormPage implements OnInit {
 
   get langCode(): LangCode {
     return this.lang.getCurrent();
+  }
+
+  stepNumber(n: number): string {
+    return formatStepNumber(n, this.langCode);
   }
 
   localizedName(opt: StructuredLocationLookup): string {
