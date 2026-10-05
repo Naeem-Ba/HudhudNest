@@ -69,6 +69,12 @@ export interface UserProfile {
   PlanSelectedAt?: string | null;
 
   /**
+   * الخطة المدفوعة التي طلبها المستخدم ولم يفعّلها المشرف بعد (UserDto.PendingPlanTier):
+   * لا تمنح أي ميزة حتى يؤكد المشرف الدفع. PlanTier أعلاه هو ما هو سارٍ فعلًا.
+   */
+  PendingPlanTier?: string | null;
+
+  /**
    * ✅ إضافة: نبذة تعريفية + عنوان/معلومات تواصل تُعرض علنًا بالملف الشخصي
    * العام (UserDto.Bio / UserDto.ContactInfo بالباك اند).
    */
@@ -148,6 +154,8 @@ interface BackendUserProfile {
   PlanTier?: string | null;
   planSelectedAt?: string | null;
   PlanSelectedAt?: string | null;
+  pendingPlanTier?: string | null;
+  PendingPlanTier?: string | null;
 
   bio?: string;
   Bio?: string;
@@ -408,6 +416,7 @@ export class ProfileService {
 
       PlanTier: user.planTier ?? user.PlanTier ?? null,
       PlanSelectedAt: user.planSelectedAt ?? user.PlanSelectedAt ?? null,
+      PendingPlanTier: user.pendingPlanTier ?? user.PendingPlanTier ?? null,
 
       Bio: user.bio ?? user.Bio ?? '',
       ContactInfo: user.contactInfo ?? user.ContactInfo ?? '',

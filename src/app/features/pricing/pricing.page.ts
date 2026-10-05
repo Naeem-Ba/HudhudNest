@@ -86,6 +86,13 @@ export class PricingPage implements OnInit {
    */
   readonly ownsAgency = signal(false);
 
+  /**
+   * The paid tier this visitor already asked for and an administrator has not activated yet.
+   * It grants nothing; the card for it says so, and asking again is harmless (the server
+   * keeps one outstanding request per user).
+   */
+  readonly pendingTier = signal<string | null>(null);
+
   ngOnInit(): void {
     this.applyMeta();
     this.load();
@@ -97,6 +104,13 @@ export class PricingPage implements OnInit {
       this.route.snapshot.queryParamMap.get('reason') === 'agency-plan-required'
     );
     this.loadAgencyOwnership();
+    this.trackPendingPlan();
+  }
+
+  private trackPendingPlan(): void {
+    this.profileService.profile$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(profile => this.pendingTier.set(profile?.PendingPlanTier ?? null));
   }
 
   private loadAgencyOwnership(): void {
@@ -224,7 +238,8 @@ export class PricingPage implements OnInit {
     this.api.selectPlan(plan.tier)
       .pipe(
         // Keep the shared profile$ (navbar, guard) in sync immediately rather than
-        // waiting for their next independent load.
+        // waiting for their next independent load. A paid plan only becomes a pending
+        // request here, so the refresh is what makes the "awaiting confirmation" note appear.
         switchMap(() => this.profileService.refresh()),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -235,7 +250,7 @@ export class PricingPage implements OnInit {
             this.translate.instant(
               plan.tier === 'free'
                 ? 'PRICING.MESSAGES.FREE_SELECTED_SUCCESS'
-                : 'PRICING.MESSAGES.PLAN_SELECTED_SUCCESS'
+                : 'PRICING.MESSAGES.PLAN_REQUEST_SENT'
             )
           );
           destination();

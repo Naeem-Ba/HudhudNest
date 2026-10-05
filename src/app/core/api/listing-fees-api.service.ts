@@ -7,7 +7,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
-import { ListingFeeKind, ListingFeeQuote } from '../models/listing-fee.model';
+import { ListingFeeKind, ListingFeeQuote, PendingFeaturedRequest } from '../models/listing-fee.model';
 
 @Injectable({ providedIn: 'root' })
 export class ListingFeesApiService {
@@ -29,6 +29,26 @@ export class ListingFeesApiService {
     return this.api
       .post<unknown>(path, {})
       .pipe(map(response => this.toQuote(kind, response)));
+  }
+
+  /**
+   * The owner's featured requests an administrator has not confirmed yet
+   * (GET /properties/featured/pending), so "my listings" can mark the listings that
+   * already have one instead of offering to request it again.
+   */
+  getMyPendingFeatured(): Observable<PendingFeaturedRequest[]> {
+    return this.api
+      .get<unknown[]>(`${this.endpoint}/featured/pending`)
+      .pipe(map(list => (Array.isArray(list) ? list : []).map(item => {
+        const row = item as Record<string, unknown>;
+        return {
+          transactionId: String(row['transactionId'] ?? ''),
+          propertyId: String(row['propertyId'] ?? ''),
+          amountUsd: Number(row['amountUsd'] ?? 0),
+          featuredDays: Number(row['featuredDays'] ?? 0),
+          requestedAt: String(row['requestedAt'] ?? '')
+        };
+      })));
   }
 
   private toQuote(kind: ListingFeeKind, response: unknown): ListingFeeQuote {

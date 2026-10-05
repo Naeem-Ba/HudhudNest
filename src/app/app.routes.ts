@@ -399,6 +399,15 @@ export const routes: Routes = [
       },
 
       {
+        // طلبات الخطط المدفوعة وتمييز الإعلانات بانتظار تأكيد الدفع — لا تفعيل تلقائي.
+        path: 'admin/payment-requests',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/payment-requests/payment-requests.page')
+            .then(m => m.AdminPaymentRequestsPage)
+      },
+
+      {
         // Admin moderation queue for user-typed district/neighborhood names —
         // see LocationSuggestion.cs (backend) / property-form.page.ts (frontend
         // entry point that creates these).

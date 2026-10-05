@@ -17,6 +17,7 @@ import { PropertyApiService } from '../../core/api/property-api.service';
 import { ShortStayListingApiService } from '../../core/api/short-stay-listing-api.service';
 import { ProfileService } from '../../core/api/profile.service';
 import { PlansApiService } from '../../core/api/plans-api.service';
+import { ListingFeesApiService } from '../../core/api/listing-fees-api.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { Property } from '../../core/models/property.model';
 import { SkeletonCardGridComponent } from '../../shared/ui/skeleton-card-grid.component';
@@ -43,6 +44,7 @@ export class MyListingsPage implements OnInit {
   private readonly shortStayApi = inject(ShortStayListingApiService);
   private readonly profile = inject(ProfileService);
   private readonly plansApi = inject(PlansApiService);
+  private readonly feesApi = inject(ListingFeesApiService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
@@ -54,6 +56,12 @@ export class MyListingsPage implements OnInit {
   readonly deletingId = signal<string | null>(null);
   readonly publishingId = signal<string | null>(null);
   readonly extendingId = signal<string | null>(null);
+
+  /**
+   * Listings whose featured request is waiting for an administrator to confirm the payment.
+   * The listing is not featured yet; the card says so instead of offering to request again.
+   */
+  readonly pendingFeaturedIds = signal<ReadonlySet<string>>(new Set());
 
   readonly fallbackImage = '/images/no-image.svg';
   private readonly now = Date.now();
@@ -78,6 +86,31 @@ export class MyListingsPage implements OnInit {
   ngOnInit(): void {
     this.loadMyListings();
     this.loadQuotaUsage();
+    this.loadPendingFeatured();
+  }
+
+  private loadPendingFeatured(): void {
+    this.feesApi
+      .getMyPendingFeatured()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: rows => this.pendingFeaturedIds.set(new Set(rows.map(r => r.propertyId))),
+        // Best-effort: without it the card simply offers the request button, and asking
+        // again is safe (the server returns the existing pending fee).
+        error: () => this.pendingFeaturedIds.set(new Set())
+      });
+  }
+
+  /**
+   * Featuring is offered for a published, unexpired listing: the server refuses anything
+   * else (a hidden listing would be paid-for promotion nobody can see).
+   */
+  canFeature(property: Property): boolean {
+    return this.isPublished(property) && property.status !== 'Expired';
+  }
+
+  hasPendingFeatured(property: Property): boolean {
+    return !!property.id && this.pendingFeaturedIds().has(property.id);
   }
 
   private loadQuotaUsage(): void {

@@ -81,7 +81,8 @@
     "PROFILE_PHOTO": "Profilbild",
     "SIGNED_IN_WITH_EMAIL": "Angemeldet mit E-Mail:",
     "SIGNED_IN_WITH_PHONE": "Angemeldet mit Telefonnummer:",
-    "CURRENT_SECTION": "(aktueller Bereich)"
+    "CURRENT_SECTION": "(aktueller Bereich)",
+    "ADMIN_PAYMENT_REQUESTS": "Zahlungsanfragen"
   },
   "AUTH": {
     "LOGIN_TITLE": "Willkommen",
@@ -784,7 +785,10 @@
     "MESSAGES": "Nachrichten",
     "PUBLISHING": "Wird veröffentlicht...",
     "PUBLISH_NEEDS_IMAGE": "Fügen Sie vor der Veröffentlichung mindestens ein Foto hinzu.",
-    "FEATURED_UNTIL": "Hervorgehoben bis"
+    "FEATURED_UNTIL": "Hervorgehoben bis",
+    "FEATURE": "Inserat hervorheben",
+    "FEATURE_EXTEND": "Hervorhebung verlängern",
+    "FEATURE_PENDING": "Ihre Hervorhebungsanfrage wartet auf die Zahlungsbestätigung durch einen Administrator."
   },
   "FAVORITE_TOGGLE": {
     "ADD": "Zu Favoriten hinzufügen",
@@ -1572,7 +1576,8 @@
     "MESSAGES": {
       "FREE_SELECTED_SUCCESS": "Das kostenlose Paket ist ausgewählt — du kannst jetzt dein Inserat hinzufügen.",
       "PLAN_SELECTED_SUCCESS": "Paket erfolgreich ausgewählt.",
-      "SELECT_ERROR": "Die Paketauswahl konnte nicht gespeichert werden. Bitte versuche es erneut."
+      "SELECT_ERROR": "Die Paketauswahl konnte nicht gespeichert werden. Bitte versuche es erneut.",
+      "PLAN_REQUEST_SENT": "Wir haben Ihre Anfrage erhalten. Der Tarif wird aktiviert, sobald ein Administrator Ihre Zahlung bestätigt hat; bis dahin bleibt Ihr aktueller Tarif unverändert."
     },
     "FREE": {
       "NAME": "Kostenlos",
@@ -1613,7 +1618,8 @@
       "CTA": "Vertrieb kontaktieren"
     },
     "REASON_AGENCY_PLAN_REQUIRED": "Wähle ein kostenpflichtiges Paket, um ein Maklerbüro zu gründen oder Mitglieder einzuladen — das kostenlose Paket enthält keine Büros.",
-    "AGENCY_NO_FREE": "Für Inhaber eines Maklerbüros nicht verfügbar: Das kostenlose Paket enthält keine Büros."
+    "AGENCY_NO_FREE": "Für Inhaber eines Maklerbüros nicht verfügbar: Das kostenlose Paket enthält keine Büros.",
+    "PENDING_NOTE": "Ihre Anfrage für diesen Tarif wartet auf die Zahlungsbestätigung durch einen Administrator."
   },
   "NOT_AUTHORIZED": {
     "TITLE": "Kein Zugriff",
@@ -2614,5 +2620,27 @@
       "TITLE": "Immobilie bewerten lassen",
       "DESCRIPTION": "Fordern Sie eine Bewertung Ihrer Immobilie durch einen Experten an: Senden Sie die Objektdaten, und wir melden uns mit einer Einschätzung des Marktwerts."
     }
+  },
+  "ADMIN_PAYMENTS": {
+    "TITLE": "Zahlungsanfragen",
+    "SUBTITLE": "Anfragen für kostenpflichtige Tarife und hervorgehobene Inserate. Nichts wird aktiviert, bevor Sie den Zahlungseingang bestätigt haben.",
+    "EMPTY_TITLE": "Keine offenen Anfragen",
+    "EMPTY_MESSAGE": "Alle Zahlungsanfragen wurden bearbeitet.",
+    "PLANS_TITLE": "Tarifanfragen",
+    "FEATURED_TITLE": "Hervorhebungsanfragen",
+    "DURATION_DAYS": "Laufzeit (Tage)",
+    "APPROVE_PLAN": "Zahlung bestätigen & Tarif aktivieren",
+    "APPROVE_FEATURED": "Zahlung bestätigen & Inserat hervorheben",
+    "REJECT": "Ablehnen",
+    "OPEN_USER": "Nutzer öffnen",
+    "INVALID_DURATION": "Geben Sie eine gültige Laufzeit zwischen 1 und 3650 Tagen ein.",
+    "CONFIRM_APPROVE_PLAN": "Bestätigen, dass {{name}} bezahlt hat, und den Tarif für {{days}} Tage aktivieren?",
+    "CONFIRM_APPROVE_FEATURED": "Zahlungseingang bestätigen und „{{title}}“ hervorheben?",
+    "CONFIRM_REJECT": "Diese Anfrage ({{name}}) ablehnen, ohne etwas zu aktivieren?",
+    "PLAN_APPROVED": "Tarif aktiviert.",
+    "FEATURED_APPROVED": "Inserat hervorgehoben.",
+    "REJECTED": "Anfrage abgelehnt.",
+    "LOAD_ERROR": "Die Anfragen konnten nicht geladen werden.",
+    "ACTION_ERROR": "Die Aktion ist fehlgeschlagen. Die Anfrage wurde evtl. bereits bearbeitet; die Liste wurde aktualisiert."
   }
 }

@@ -74,3 +74,12 @@ export interface ListingFeeQuote {
    */
   isExistingPendingFee: boolean;
 }
+
+/** One of the owner's featured requests that is still waiting for payment confirmation. */
+export interface PendingFeaturedRequest {
+  transactionId: string;
+  propertyId: string;
+  amountUsd: number;
+  featuredDays: number;
+  requestedAt: string;
+}

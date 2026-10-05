@@ -17,7 +17,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { of, throwError } from 'rxjs';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 
 import { PricingPage } from './pricing.page';
 import { PlansApiService } from '../../core/api/plans-api.service';
@@ -65,6 +65,7 @@ describe('PricingPage', () => {
   let routerSpy: jasmine.SpyObj<Router>;
   let toastSpy: jasmine.SpyObj<ToastService>;
   let agenciesApiSpy: jasmine.SpyObj<AgenciesApiService>;
+  let profile$: BehaviorSubject<{ PendingPlanTier?: string | null } | null>;
 
   function createComponent(
     accessToken: string | null,
@@ -76,9 +77,13 @@ describe('PricingPage', () => {
 
     plansApiSpy = jasmine.createSpyObj('PlansApiService', ['getPlans', 'selectPlan']);
     plansApiSpy.getPlans.and.returnValue(of(PLANS));
-    plansApiSpy.selectPlan.and.returnValue(of(undefined));
+    plansApiSpy.selectPlan.and.callFake(tier =>
+      of(tier === 'free'
+        ? { status: 'activated' as const, tier, requestId: null }
+        : { status: 'pending' as const, tier, requestId: 'req-1' }));
 
-    profileServiceSpy = jasmine.createSpyObj('ProfileService', ['refresh']);
+    profile$ = new BehaviorSubject<{ PendingPlanTier?: string | null } | null>(null);
+    profileServiceSpy = jasmine.createSpyObj('ProfileService', ['refresh'], { profile$ });
     profileServiceSpy.refresh.and.returnValue(of({}));
 
     authServiceSpy = jasmine.createSpyObj('AuthService', ['getAccessToken', 'getCurrentUserId']);
@@ -148,6 +153,16 @@ describe('PricingPage', () => {
     expect(component.selecting()).toBeNull();
   });
 
+  it('خطة مدفوعة: رسالة «تم استلام الطلب» لا «تم الاختيار»، لأن التفعيل ينتظر المشرف', () => {
+    const component = createComponent('token-123');
+    const translate = TestBed.inject(TranslateService) as jasmine.SpyObj<TranslateService>;
+    translate.instant.and.callFake((key: string | string[]) => String(key));
+
+    component.onSelectPlan(PLANS[1]);
+
+    expect(toastSpy.success).toHaveBeenCalledWith('PRICING.MESSAGES.PLAN_REQUEST_SENT');
+  });
+
   it('فشل حفظ اختيار الخطة في الخادم يمنع الانتقال ويعرض رسالة خطأ', () => {
     const component = createComponent('token-123');
     plansApiSpy.selectPlan.and.returnValue(throwError(() => new Error('network')));
@@ -203,6 +218,17 @@ describe('PricingPage', () => {
 
     expect(plansApiSpy.selectPlan).not.toHaveBeenCalled();
   });
+  it('طلب خطة بانتظار المشرف يظهر على بطاقتها فقط ويختفي عند التفعيل', () => {
+    const component = createComponent('token-123');
+    expect(component.pendingTier()).toBeNull();
+
+    profile$.next({ PendingPlanTier: 'premium' });
+    expect(component.pendingTier()).toBe('premium');
+
+    profile$.next({ PendingPlanTier: null });
+    expect(component.pendingTier()).toBeNull();
+  });
+
   describe('agency owners and the free plan', () => {
     const ownedAgency = { id: 'a1', ownerUserId: 'owner-1' } as Agency;
 

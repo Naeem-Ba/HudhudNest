@@ -81,7 +81,8 @@
     "PROFILE_PHOTO": "Profile photo",
     "SIGNED_IN_WITH_EMAIL": "Signed in with e-mail:",
     "SIGNED_IN_WITH_PHONE": "Signed in with phone number:",
-    "CURRENT_SECTION": "(current section)"
+    "CURRENT_SECTION": "(current section)",
+    "ADMIN_PAYMENT_REQUESTS": "Payment requests"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -784,7 +785,10 @@
     "MESSAGES": "Messages",
     "PUBLISHING": "Publishing...",
     "PUBLISH_NEEDS_IMAGE": "Add at least one photo before publishing.",
-    "FEATURED_UNTIL": "Featured until"
+    "FEATURED_UNTIL": "Featured until",
+    "FEATURE": "Feature listing",
+    "FEATURE_EXTEND": "Extend featuring",
+    "FEATURE_PENDING": "Your featuring request is waiting for an administrator to confirm payment."
   },
   "FAVORITE_TOGGLE": {
     "ADD": "Add to favorites",
@@ -1572,7 +1576,8 @@
     "MESSAGES": {
       "FREE_SELECTED_SUCCESS": "The free plan is selected — you can add your listing now.",
       "PLAN_SELECTED_SUCCESS": "Plan selected successfully.",
-      "SELECT_ERROR": "Could not save your plan selection. Please try again."
+      "SELECT_ERROR": "Could not save your plan selection. Please try again.",
+      "PLAN_REQUEST_SENT": "We received your request. The plan is activated once an administrator confirms your payment; your current plan stays unchanged until then."
     },
     "FREE": {
       "NAME": "Free",
@@ -1613,7 +1618,8 @@
       "CTA": "Talk to sales"
     },
     "REASON_AGENCY_PLAN_REQUIRED": "Choose a paid plan to create a real-estate office or invite members to it — the free plan does not include offices.",
-    "AGENCY_NO_FREE": "Not available to a real-estate office owner: the free plan does not include offices."
+    "AGENCY_NO_FREE": "Not available to a real-estate office owner: the free plan does not include offices.",
+    "PENDING_NOTE": "Your request for this plan is waiting for an administrator to confirm payment."
   },
   "NOT_AUTHORIZED": {
     "TITLE": "You are not authorised",
@@ -2614,5 +2620,27 @@
       "TITLE": "Get your property valued",
       "DESCRIPTION": "Request a valuation of your property from a real estate expert: send the property details and we will contact you with an estimate of its market value."
     }
+  },
+  "ADMIN_PAYMENTS": {
+    "TITLE": "Payment requests",
+    "SUBTITLE": "Paid-plan and featured-listing requests. Nothing is activated until you have confirmed the payment arrived.",
+    "EMPTY_TITLE": "No pending requests",
+    "EMPTY_MESSAGE": "All payment requests have been handled.",
+    "PLANS_TITLE": "Plan requests",
+    "FEATURED_TITLE": "Featured-listing requests",
+    "DURATION_DAYS": "Subscription length (days)",
+    "APPROVE_PLAN": "Confirm payment & activate plan",
+    "APPROVE_FEATURED": "Confirm payment & feature listing",
+    "REJECT": "Reject",
+    "OPEN_USER": "Open user",
+    "INVALID_DURATION": "Enter a valid length between 1 and 3650 days.",
+    "CONFIRM_APPROVE_PLAN": "Confirm that {{name}} has paid and activate the plan for {{days}} days?",
+    "CONFIRM_APPROVE_FEATURED": "Confirm payment arrived and feature \"{{title}}\"?",
+    "CONFIRM_REJECT": "Reject this request ({{name}}) without activating anything?",
+    "PLAN_APPROVED": "Plan activated.",
+    "FEATURED_APPROVED": "Listing featured.",
+    "REJECTED": "Request rejected.",
+    "LOAD_ERROR": "Could not load the requests.",
+    "ACTION_ERROR": "The action failed. The request may already have been handled; the list was refreshed."
   }
 }

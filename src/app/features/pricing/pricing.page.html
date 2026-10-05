@@ -88,6 +88,10 @@
       >
         {{ plan.ctaKey | translate }}
       </button>
+      <p class="plan-card__note" *ngIf="pendingTier() === plan.tier" data-testid="plan-pending">
+        <span class="plan-card__note-icon" aria-hidden="true">⏳</span>
+        <span>{{ 'PRICING.PENDING_NOTE' | translate }}</span>
+      </p>
       <p class="plan-card__note" *ngIf="isBlockedForAgencyOwner(plan)">
         <span class="plan-card__note-icon" aria-hidden="true">!</span>
         <span>{{ 'PRICING.AGENCY_NO_FREE' | translate }}</span>
