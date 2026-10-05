@@ -12,6 +12,7 @@ import {
   passwordPolicyValidator,
   PASSWORD_POLICY_RULES
 } from '../../../core/auth/password-policy';
+import { isServerFailure } from '../../../core/api/server-failure';
 import { getPasswordRejectionMessages } from '../password-errors';
 import { FormErrorComponent } from '../../../shared/ui/form-error.component';
 import { ConsentCheckboxComponent } from '../../../shared/components/consent-checkbox/consent-checkbox.component';
@@ -432,6 +433,13 @@ export class RegisterPage {
       status?: number;
     };
 
+    // خطأ الخادم (5xx) أولاً: جسمه دائماً "An unexpected error occurred..." بالإنجليزية، ولا
+    // يفيد القارئ بشيء. كان فحصه بعد response.error.message فلا يُبلَغ أبداً، فيرى المستخدم
+    // العربي والألماني نصاً إنجليزياً (POST /api/auth/register، 2026-10-05).
+    if (isServerFailure(error)) {
+      return this.translate.instant('AUTH.ERRORS.SERVER_ERROR');
+    }
+
     if (typeof response.error === 'string' && response.error.trim()) {
       return response.error;
     }
@@ -470,10 +478,6 @@ export class RegisterPage {
 
     if (response.status === 409) {
       return this.translate.instant('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
-    }
-
-    if (response.status === 500) {
-      return this.translate.instant('AUTH.ERRORS.SERVER_ERROR');
     }
 
     return this.translate.instant('AUTH.ERRORS.REGISTER_FAILED');

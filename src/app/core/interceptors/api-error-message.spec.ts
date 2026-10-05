@@ -69,6 +69,27 @@ describe('getFriendlyApiErrorMessage — shows the real reason, not the generic 
   });
 });
 
+describe('getFriendlyApiErrorMessage — a 5xx is never shown as the server wrote it', () => {
+  // The API answers every unhandled exception with this English sentence (ExceptionHandlingMiddleware).
+  const GENERIC_500 = { title: 'Internal Server Error', status: 500, message: 'An unexpected error occurred. Please try again later.' };
+
+  it('replaces the generic English 500 body with the translated server-error text', () => {
+    const message = getFriendlyApiErrorMessage(fail(500, GENERIC_500), translate);
+
+    expect(message).toBe('API_ERRORS.SERVER');
+    expect(message).not.toContain('unexpected');
+  });
+
+  it('does the same for 502/503 and for a title-only or string body', () => {
+    expect(getFriendlyApiErrorMessage(fail(503, { title: 'Rate limiter backend is unavailable.', status: 503 }), translate)).toBe('API_ERRORS.SERVER');
+    expect(getFriendlyApiErrorMessage(fail(502, 'Bad gateway'), translate)).toBe('API_ERRORS.SERVER');
+  });
+
+  it('still shows the message of a 4xx, which is written for the person', () => {
+    expect(getFriendlyApiErrorMessage(fail(409, { message: 'Email already registered.' }), translate)).toBe('Email already registered.');
+  });
+});
+
 describe('getFriendlyApiErrorMessage — agency eligibility codes are translated, not echoed in Arabic', () => {
   [
     'AGENCY_ACCOUNT_NOT_VERIFIED',

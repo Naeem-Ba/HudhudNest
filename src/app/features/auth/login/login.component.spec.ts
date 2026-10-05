@@ -174,6 +174,27 @@ describe('LoginComponent', () => {
     });
   });
 
+  describe('onRegister — خطأ الخادم (5xx)', () => {
+    it('✅ يعرض نصاً مترجَماً بدل جملة "An unexpected error occurred" الإنجليزية', () => {
+      authApi.register.and.returnValue(throwError(() => httpError(500, {
+        title: 'Internal Server Error',
+        status: 500,
+        message: 'An unexpected error occurred. Please try again later.'
+      })));
+      component.registerData = {
+        FirstName: 'Ali',
+        LastName: 'Hasan',
+        Email: 'ali@example.com',
+        Password: FAKE_TEST_CREDENTIAL
+      };
+      component.privacyConsentAccepted = true;
+
+      component.onRegister(fakeForm());
+
+      expect(component.message).toBe('AUTH.ERRORS.SERVER_ERROR');
+    });
+  });
+
   describe('onPhoneLogin — رقم الهاتف', () => {
     it('✅ رقم/كلمة سر خاطئة تعطي نفس الرسالة العامة (بلا كشف عن وجود الحساب)', () => {
       phoneAuthApi.login.and.returnValue(throwError(() => httpError(400, { code: 'PHONE_AUTH_FAILED' })));
