@@ -47,6 +47,7 @@ import { LangCode } from '../../core/services/language.service';
         <input
           type="text"
           class="loc-combo__input"
+          [attr.id]="inputId"
           [value]="query()"
           [disabled]="disabled"
           [placeholder]="(placeholderKey | translate)"
@@ -227,6 +228,8 @@ export class LocationComboComponent implements OnInit, OnChanges {
   @Input({ required: true }) options: StructuredLocationLookup[] = [];
   @Input({ required: true }) idControl!: FormControl<number | null>;
   @Input({ required: true }) textControl!: FormControl<string | null>;
+  /** id of the inner text input, so a parent <label for> reaches a real control. */
+  @Input() inputId: string | null = null;
   @Input() lang: LangCode = 'ar';
   @Input() disabled = false;
   @Input() placeholderKey = 'PROPERTY_FORM.SELECT_PLACEHOLDER';

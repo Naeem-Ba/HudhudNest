@@ -29,7 +29,7 @@
         <!-- SECTION 1: Listing Type -->
         <div class="form-section">
           <div class="form-section__header">
-            <span class="form-section__num">١</span>
+            <span class="form-section__num">{{ stepNumber(1) }}</span>
             <div>
               <h2 class="form-section__title">{{ 'property_add.listing_type' | translate }}</h2>
               <p class="form-section__desc">{{ 'property_add.listing_type_desc' | translate }}</p>
@@ -65,7 +65,7 @@
         <!-- SECTION 2: Basic Info -->
         <div class="form-section">
           <div class="form-section__header">
-            <span class="form-section__num">٢</span>
+            <span class="form-section__num">{{ stepNumber(2) }}</span>
             <div>
               <h2 class="form-section__title">{{ 'property_add.basic_info' | translate }}</h2>
               <p class="form-section__desc">{{ 'property_add.basic_info_desc' | translate }}</p>
@@ -98,7 +98,7 @@
         <!-- SECTION 3: Location -->
         <div class="form-section">
           <div class="form-section__header">
-            <span class="form-section__num">٣</span>
+            <span class="form-section__num">{{ stepNumber(3) }}</span>
             <div>
               <h2 class="form-section__title">{{ 'property_add.location' | translate }}</h2>
               <p class="form-section__desc">{{ 'property_add.location_desc' | translate }}</p>
@@ -157,7 +157,7 @@
                      يستخدم districtId/districtText نفسهما — نفس آلية
                      LocationSuggestion الموجودة أصلًا بالباك اند لم تتغيّر. -->
                 <app-location-combo
-                  id="districtId"
+                  inputId="districtId"
                   [options]="districts()"
                   [idControl]="f.districtId"
                   [textControl]="f.districtText"
@@ -178,7 +178,7 @@
                      ما يقدر حتى يكتب اسم الحي. الشرط الوحيد: يكون فيه شيء
                      مُدخَل للمنطقة أصلاً (محدّدة من القائمة أو مكتوبة). -->
                 <app-location-combo
-                  id="neighborhoodId"
+                  inputId="neighborhoodId"
                   [options]="neighborhoods()"
                   [idControl]="f.neighborhoodId"
                   [textControl]="f.neighborhoodText"
@@ -225,7 +225,7 @@
         <!-- SECTION 4: Pricing -->
         <div class="form-section">
           <div class="form-section__header">
-            <span class="form-section__num">٤</span>
+            <span class="form-section__num">{{ stepNumber(4) }}</span>
             <div>
               <h2 class="form-section__title">{{ 'property_add.pricing' | translate }}</h2>
               <p class="form-section__desc">{{ 'property_add.pricing_desc' | translate }}</p>
@@ -332,7 +332,7 @@
         <!-- SECTION 5: Property Details -->
         <div class="form-section">
           <div class="form-section__header">
-            <span class="form-section__num">٥</span>
+            <span class="form-section__num">{{ stepNumber(5) }}</span>
             <div>
               <h2 class="form-section__title">{{ 'property_add.details' | translate }}</h2>
               <p class="form-section__desc">{{ 'property_add.details_desc' | translate }}</p>
@@ -447,7 +447,7 @@
         <!-- SECTION 6: Images -->
         <div class="form-section">
           <div class="form-section__header">
-            <span class="form-section__num">٦</span>
+            <span class="form-section__num">{{ stepNumber(6) }}</span>
             <div>
               <h2 class="form-section__title">{{ 'property_add.images' | translate }}</h2>
               <p class="form-section__desc">{{ 'property_add.images_desc' | translate }}</p>

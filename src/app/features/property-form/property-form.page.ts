@@ -34,6 +34,7 @@ import { MapPickerComponent } from '../../map-picker/map-picker.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { LocationComboComponent } from '../../shared/ui/location-combo.component';
 import { LanguageService, LangCode } from '../../core/services/language.service';
+import { formatStepNumber } from '../../shared/utils/step-number';
 import { EnumItem, EnumService } from '../../core/services/enum.service';
 import { ScrollLockService } from '../../core/services/scroll-lock.service';
 import { LISTING_PHOTO_COMPRESSION, compressImagesForUpload } from '../../shared/utils/image-compression';
@@ -650,6 +651,10 @@ export class PropertyFormPage implements OnInit {
         next: items => this.neighborhoods.set(items),
         error: () => this.neighborhoods.set([])
       });
+  }
+
+  stepNumber(n: number): string {
+    return formatStepNumber(n, this.currentLang());
   }
 
   /** Localized label for a bilingual lookup item, matching the current UI language. */
