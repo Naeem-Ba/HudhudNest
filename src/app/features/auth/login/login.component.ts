@@ -13,6 +13,7 @@ import { AuthTokenResponse, TokenStorageService } from '../../../core/services/t
 import { AuthService } from '../../../core/auth/auth.service';
 import { LoginMethod } from '../../../core/auth/login-identifier';
 import { ConsentApiService } from '../../../core/api/consent-api.service';
+import { isServerFailure } from '../../../core/api/server-failure';
 import { PRIVACY_POLICY_VERSION, TERMS_OF_SERVICE_VERSION } from '../../../core/models/consent-versions';
 import { ConsentCheckboxComponent } from '../../../shared/components/consent-checkbox/consent-checkbox.component';
 import {
@@ -524,6 +525,11 @@ export class LoginComponent implements OnDestroy {
   }
 
   private getRegisterErrorMessage(error: unknown): string {
+    // خطأ الخادم (5xx) نصه الإنجليزي العام لا يفيد القارئ — نص مترجَم بدلاً منه.
+    if (isServerFailure(error)) {
+      return this.t('AUTH.ERRORS.SERVER_ERROR');
+    }
+
     // كود PASSWORD_BREACHED وأخواته يُترجَمان أولاً — نفس الأداة المشتركة التي
     // يستخدمها register.page.ts، بدل عرض نص الخادم الإنجليزي الخام لمستخدم
     // عربي أو ألماني (كان هذا النموذج المدمج ينفرد بتجاوز الترجمة هنا).

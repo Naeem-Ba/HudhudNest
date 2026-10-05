@@ -49,6 +49,13 @@ describe('phone-auth-errors', () => {
         .toBe('AUTH.ERRORS.OTP_PROVIDER_UNAVAILABLE');
     });
 
+    it('never shows the body of a 5xx, only the translated server-error text', () => {
+      expect(getPhoneWorkflowErrorMessage(translate, undefined, 'FALLBACK', {
+        status: 500,
+        error: { message: 'An unexpected error occurred. Please try again later.' }
+      })).toBe('AUTH.ERRORS.SERVER_ERROR');
+    });
+
     it('falls back to the server message, then to the fallback key', () => {
       expect(getPhoneWorkflowErrorMessage(translate, 'UNKNOWN', 'FALLBACK', { error: { message: 'server says' } })).toBe('server says');
       expect(getPhoneWorkflowErrorMessage(translate, undefined, 'FALLBACK')).toBe('FALLBACK');

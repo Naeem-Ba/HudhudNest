@@ -1,5 +1,7 @@
 import { TranslateService } from '@ngx-translate/core';
 
+import { isServerFailure } from '../../core/api/server-failure';
+
 export { PHONE_E164_PATTERN } from '../../core/auth/phone-number';
 
 /**
@@ -61,6 +63,11 @@ export function getPhoneWorkflowErrorMessage(
   const key = errorCode ? ERROR_CODE_TO_KEY[errorCode] : undefined;
   if (key) {
     return translate.instant(key);
+  }
+
+  // A 5xx body is the API's generic English sentence, never something to show.
+  if (isServerFailure(httpError)) {
+    return translate.instant('AUTH.ERRORS.SERVER_ERROR');
   }
 
   const response = httpError as { error?: { message?: string; Message?: string } } | undefined;

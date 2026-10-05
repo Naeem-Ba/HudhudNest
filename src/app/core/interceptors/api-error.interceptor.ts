@@ -22,6 +22,7 @@ import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { catchError, throwError } from 'rxjs';
 import { ToastService } from '../../shared/services/toast.service';
+import { isServerFailure } from '../api/server-failure';
 import { environment } from '../../../environments/environment';
 import {
   currentRouteRequiresAuth,
@@ -122,6 +123,12 @@ export function getFriendlyApiErrorMessage(error: HttpErrorResponse, translate: 
   const codeKey = knownErrorCodeKey(error);
   if (codeKey) {
     return translate.instant(codeKey);
+  }
+
+  // A 5xx body is the API's generic English sentence ("An unexpected error occurred..."); the
+  // reader gets the translated server-error text instead, whatever the UI language is.
+  if (isServerFailure(error)) {
+    return translate.instant('API_ERRORS.SERVER');
   }
 
   const backendMessage = extractBackendMessage(error, translate);

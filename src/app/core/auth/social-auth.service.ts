@@ -61,6 +61,7 @@ import { SignInWithApple } from '@capacitor-community/apple-sign-in';
 import { environment } from '../../../environments/environment';
 import { AuthApiService } from './auth-api.service';
 import { isGoogleSignInUnsupportedOrigin } from './google-signin-origin';
+import { isServerFailure } from '../api/server-failure';
 import { AuthTokenResponse } from '../models/auth.model';
 
 // =====================================================================
@@ -417,6 +418,11 @@ export class SocialAuthService {
       status?: number;
     };
 
+    // خطأ الخادم (5xx): جسمه "An unexpected error occurred..." بالإنجليزية دائماً، فيُترجَم بدل أن يُعرض.
+    if (isServerFailure(error)) {
+      return this.t('AUTH.ERRORS.SOCIAL_SERVER_ERROR');
+    }
+
     if (typeof typedError.error === 'string' && typedError.error.trim()) {
       return typedError.error;
     }
@@ -457,10 +463,6 @@ export class SocialAuthService {
 
     if (typedError.status === 401) {
       return this.t('AUTH.ERRORS.SOCIAL_TOKEN_REJECTED');
-    }
-
-    if (typedError.status === 500) {
-      return this.t('AUTH.ERRORS.SOCIAL_SERVER_ERROR');
     }
 
     return this.t('AUTH.ERRORS.SOCIAL_GENERIC_FAILED');
