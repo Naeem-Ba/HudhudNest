@@ -26,13 +26,16 @@ import { PageMetaService } from '../../core/services/page-meta.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterModule],
   template: `
-    <section class="legal">
+    <!-- The text below is Arabic only (not translated). Without dir/lang it inherits the UI
+         language's direction, so with the English UI the paragraphs ran left to right and
+         punctuation, parentheses and the DELETE keyword jumped around. -->
+    <section class="legal" dir="rtl" lang="ar">
       <div class="legal__card">
         <h1>حذف الحساب — هدهد نيست (HudhudNest)</h1>
         <p class="legal__updated">آخر تحديث: 4 أكتوبر 2026</p>
 
         <p>
-          يمكنك حذف حسابك في "عقاراتك" نهائياً في أي وقت، من داخل التطبيق (Android
+          يمكنك حذف حسابك في "هدهد نيست" نهائياً في أي وقت، من داخل التطبيق (Android
           وiOS) أو من نسخة الويب — بدون الحاجة لتثبيت التطبيق لبدء الطلب إذا كنت
           تفضّل التواصل معنا مباشرة (انظر القسم الأخير أدناه).
         </p>
