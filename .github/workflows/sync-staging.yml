@@ -1,0 +1,57 @@
+name: Sync staging branch
+
+# Netlify builds the Staging site from the `staging` branch. That branch used to be moved by hand and
+# sat 157 commits behind main (last commit 2026-09-04), so Staging did not show what production ships.
+# This job fast-forwards `staging` to the main commit whose Frontend CI run just passed, so both
+# sites are built from the same commit. The commit each site was built from is in build-info.json
+# (`npm run check:live -- <url>`).
+#
+# Fast-forward only, never forced: if `staging` has commits that main does not, the job fails
+# instead of overwriting them. Netlify "Auto Publishing" for production stays locked; this only
+# moves the Staging branch.
+
+on:
+  workflow_run:
+    workflows: ["Frontend CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-staging
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Fast-forward staging to main
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Fast-forward staging
+        env:
+          # The commit whose CI passed, not whatever main is by now.
+          TARGET_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          set -euo pipefail
+          git fetch origin staging main
+          if ! git merge-base --is-ancestor "$TARGET_SHA" origin/main; then
+            echo "::error::$TARGET_SHA is not on main; refusing to move staging."; exit 1
+          fi
+          if git merge-base --is-ancestor "$TARGET_SHA" origin/staging; then
+            echo "staging already contains ${TARGET_SHA:0:7}; nothing to do."; exit 0
+          fi
+          if ! git merge-base --is-ancestor origin/staging "$TARGET_SHA"; then
+            echo "::error::staging has commits that ${TARGET_SHA:0:7} does not contain. Not overwriting; reset it by hand."; exit 1
+          fi
+          git push origin "$TARGET_SHA:refs/heads/staging"
+          echo "staging -> ${TARGET_SHA:0:7}"
