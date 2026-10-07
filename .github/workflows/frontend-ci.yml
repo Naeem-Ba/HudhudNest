@@ -71,6 +71,10 @@ jobs:
     timeout-minutes: 20
     # push إلى main، أو تشغيل يدوي (workflow_dispatch) للتحقق من التوقيع على فرع قبل الدمج.
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    # contents: write لنشر الـ AAB كـ Release asset (خطوة "Publish signed AAB" أدناه) بدل الاعتماد
+    # وحده على حصة Actions artifacts.
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -172,9 +176,33 @@ jobs:
         working-directory: android
         run: ./gradlew bundleRelease --console=plain
 
+      # القناة الأساسية لتسليم الـ AAB. حصة تخزين Actions artifacts مشتركة بين كل مستودعات الحساب
+      # وامتلأت ثلاث مرات في 2026-10-03..07 فرُفض رفع الـ AAB رغم نجاح البناء والتوقيع. ملفات الـ
+      # Release لا تُحسب على تلك الحصة. يبقى Release واحد فقط (android-latest، pre-release): يُحذف
+      # ويُعاد إنشاؤه عند كل بناء، فلا يتراكم شيء. الرابط: Releases ← "Android signed AAB".
+      - name: Publish signed AAB as a release asset
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          aab="$(ls android/app/build/outputs/bundle/release/*.aab)"
+          sha256="$(sha256sum "$aab" | cut -d' ' -f1)"
+          short="${GITHUB_SHA::7}"
+          gh release delete android-latest --cleanup-tag --yes --repo "$GITHUB_REPOSITORY" || true
+          gh release create android-latest "$aab" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --prerelease \
+            --latest=false \
+            --title "Android signed AAB ($short)" \
+            --notes "Signed release AAB built from ${GITHUB_SHA} by ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. SHA-256: ${sha256}"
+
+      # نسخة احتياطية فقط: فشلها (امتلاء الحصة) لا يُسقط البناء بعد أن نُشر الـ AAB كـ Release.
       # v6 يعمل على Node 24 (v4/v5 على Node 20 الذي تُزال دعمه نهائيًا من الـ runners في 2026-09-23).
       - name: Upload signed AAB
         if: steps.signing.outputs.enabled == 'true'
+        continue-on-error: true
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: aqar-tech-release-aab
