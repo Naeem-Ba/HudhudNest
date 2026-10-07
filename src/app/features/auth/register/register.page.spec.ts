@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { throwError } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { AuthApiService } from '../../../core/auth/auth-api.service';
 import { ToastService } from '../../../shared/services/toast.service';
@@ -77,5 +77,86 @@ describe('RegisterPage — error shown for a failed sign-up', () => {
     page.submit();
 
     expect(page.error()).toBe('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
+  });
+});
+
+describe('RegisterPage — what the success screen says about the confirmation mail', () => {
+  let page: RegisterPage;
+  let authApi: jasmine.SpyObj<AuthApiService>;
+  let toast: jasmine.SpyObj<ToastService>;
+
+  beforeEach(() => {
+    authApi = jasmine.createSpyObj<AuthApiService>('AuthApiService', ['register', 'resendConfirmationEmail']);
+    toast = jasmine.createSpyObj<ToastService>('ToastService', ['success', 'error']);
+    const translate = jasmine.createSpyObj<TranslateService>('TranslateService', ['instant']);
+    translate.instant.and.callFake((key: string | string[]) => String(key));
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: AuthApiService, useValue: authApi },
+        { provide: TranslateService, useValue: translate },
+        { provide: Router, useValue: jasmine.createSpyObj<Router>('Router', ['navigateByUrl']) },
+        { provide: ToastService, useValue: toast }
+      ]
+    });
+
+    page = TestBed.runInInjectionContext(() => new RegisterPage());
+    page.form.setValue({
+      firstName: 'Naeem',
+      lastName: 'Test',
+      email: 'Naeem@Example.com',
+      password: FAKE_TEST_CREDENTIAL
+    });
+    page.privacyConsentAccepted.set(true);
+  });
+
+  it('says a link was sent when the API confirms it', () => {
+    authApi.register.and.returnValue(of({ message: 'ok', userId: 'u1', confirmationEmailSent: true }));
+
+    page.submit();
+
+    expect(page.registered()).toBeTrue();
+    expect(page.confirmationEmailSent()).toBeTrue();
+    expect(toast.success).toHaveBeenCalledWith('AUTH.REGISTER_SUCCESS');
+  });
+
+  it('keeps saying so for an API that predates the field', () => {
+    authApi.register.and.returnValue(of({ message: 'ok', userId: 'u1' }));
+
+    page.submit();
+
+    expect(page.confirmationEmailSent()).toBeTrue();
+    expect(toast.success).toHaveBeenCalledWith('AUTH.REGISTER_SUCCESS');
+  });
+
+  it('does not claim a link was sent when the API says the mail could not be sent', () => {
+    authApi.register.and.returnValue(of({ message: 'ok', userId: 'u1', confirmationEmailSent: false }));
+
+    page.submit();
+
+    expect(page.registered()).toBeTrue();
+    expect(page.confirmationEmailSent()).toBeFalse();
+    expect(toast.success).toHaveBeenCalledWith('AUTH.REGISTER_SUCCESS_MAIL_FAILED');
+  });
+
+  it('resends to the normalised address and shows the server text', () => {
+    authApi.register.and.returnValue(of({ message: 'ok', userId: 'u1', confirmationEmailSent: false }));
+    authApi.resendConfirmationEmail.and.returnValue(of({ message: 'server text' }));
+    page.submit();
+
+    page.resendConfirmation();
+
+    expect(authApi.resendConfirmationEmail).toHaveBeenCalledWith('naeem@example.com');
+    expect(page.resendMessage()).toBe('server text');
+  });
+
+  it('tells the person the resend limit was reached on a 429, not "server error"', () => {
+    authApi.register.and.returnValue(of({ message: 'ok', userId: 'u1' }));
+    authApi.resendConfirmationEmail.and.returnValue(throwError(() => ({ status: 429 })));
+    page.submit();
+
+    page.resendConfirmation();
+
+    expect(page.resendMessage()).toBe('AUTH.RESEND_CONFIRMATION.TOO_MANY');
   });
 });

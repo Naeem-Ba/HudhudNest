@@ -288,8 +288,16 @@ export class ProfileComponent implements OnInit {
     this.isSendingEmail.set(true);
 
     this.phoneAuth.addEmail(email).subscribe({
-      next: () => {
+      next: response => {
         this.isSendingEmail.set(false);
+
+        // The address is saved either way; only an explicit `false` means the mail did not go
+        // out (the API used to answer "sent" regardless). Keep the form open so it can be retried.
+        if (response?.verificationSent === false) {
+          this.toast.error(this.translate.instant('PROFILE.EMAIL_SECTION.LINK_NOT_SENT'));
+          return;
+        }
+
         this.emailLinkSent.set(true);
         this.toast.success(this.translate.instant('PROFILE.EMAIL_SECTION.LINK_SENT'));
       },

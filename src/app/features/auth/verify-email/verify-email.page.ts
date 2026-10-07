@@ -7,6 +7,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AuthApiService } from '../../../core/auth/auth-api.service';
 import { PhoneAuthApiService } from '../../../core/auth/phone-auth-api.service';
+import { isServerFailure } from '../../../core/api/server-failure';
 import { ToastService } from '../../../shared/services/toast.service';
 
 type VerifyState = 'verifying' | 'success' | 'error';
@@ -50,7 +51,7 @@ type VerifyState = 'verifying' | 'success' | 'error';
                المستخدم ليس بالضرورة مسجَّل دخوله -- ومسار resend-confirmation مجهول الهوية
                عمداً لهذا السبب بالذات. البريد ليس في الرابط (حُذف من الـ URL عمداً في
                الخلفية)، فيُطلَب هنا يدوياً. -->
-          <div class="resend-form">
+          <div class="resend-form" *ngIf="!rateLimited()">
             <label for="resendEmail">{{ 'AUTH.EMAIL' | translate }}</label>
             <input
               id="resendEmail"
@@ -105,6 +106,8 @@ export class VerifyEmailPage implements OnInit {
 
   readonly state = signal<VerifyState>('verifying');
   readonly errorMessage = signal('');
+  // 429: لا فائدة من عرض نموذج إعادة الإرسال (له حدّه الخاص) ولا من قول إن الرابط غير صالح.
+  readonly rateLimited = signal(false);
 
   // ✅ B-15 (RELEASE-BLOCKERS-AR.md): إعادة إرسال رابط التأكيد من هنا مباشرة.
   readonly resendEmail = signal('');
@@ -131,9 +134,21 @@ export class VerifyEmailPage implements OnInit {
           this.state.set('success');
           this.toast.success(this.translate.instant('AUTH.VERIFY_EMAIL.SUCCESS'));
         },
-        error: () => {
+        error: error => {
+          // 2026-10-06: كل خطأ كان يعرض "الرابط غير صالح"، حتى 429 (حدّ الطلبات) وانقطاع الخادم
+          // (بدء بارد على Render)، فيظن المستخدم أن رابطه الصحيح فسد. الرابط الفاسد وحده هو 400.
+          const status = (error as { status?: number } | null)?.status;
           this.state.set('error');
-          this.errorMessage.set(this.translate.instant('AUTH.VERIFY_EMAIL.FAILED'));
+          this.rateLimited.set(status === 429);
+          this.errorMessage.set(
+            this.translate.instant(
+              status === 429
+                ? 'AUTH.VERIFY_EMAIL.TOO_MANY'
+                : status === 0 || isServerFailure(error)
+                  ? 'AUTH.VERIFY_EMAIL.TEMPORARY'
+                  : 'AUTH.VERIFY_EMAIL.FAILED'
+            )
+          );
         }
       });
   }
@@ -150,7 +165,14 @@ export class VerifyEmailPage implements OnInit {
     this.authApi.resendConfirmationEmail(this.resendEmail()).subscribe({
       // نصّ الخادم كما هو -- نفس شرط صفحة التسجيل: لا تفرقة بين "موجود"/"غير موجود".
       next: result => this.resendMessage.set(result.message),
-      error: () => this.resendMessage.set(this.translate.instant('AUTH.ERRORS.SERVER_ERROR'))
+      error: error =>
+        this.resendMessage.set(
+          this.translate.instant(
+            (error as { status?: number } | null)?.status === 429
+              ? 'AUTH.RESEND_CONFIRMATION.TOO_MANY'
+              : 'AUTH.ERRORS.SERVER_ERROR'
+          )
+        )
     });
 
     this.startResendCooldown(60);

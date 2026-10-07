@@ -139,6 +139,8 @@
     "VERIFY_OTP_SUCCESS": "Code verified successfully.",
     "LOGIN_SUCCESS": "Welcome! You have logged in successfully.",
     "REGISTER_SUCCESS": "Account created successfully! We sent a confirmation link to your email. You can now log in.",
+    "REGISTER_SUCCESS_MAIL_FAILED": "Your account was created, but we could not send the confirmation email right now. Tap \"Resend confirmation link\" in a moment. You can log in now.",
+    "CONFIRMATION_SPAM_HINT": "If it has not arrived after a few minutes, check your spam folder.",
     "CONTINUE_WITH_EMAIL": "Continue with email",
     "CONTINUE_WITH_PHONE": "Continue with phone number",
     "PHONE_STEP_SUBTITLE": "Enter your phone number with the country code, and we will send you a verification code by SMS.",
@@ -148,7 +150,8 @@
     "RESEND_OTP_IN": "You can resend after {{seconds}} seconds",
     "RESEND_CONFIRMATION": {
       "BUTTON": "Resend confirmation link",
-      "COOLDOWN": "You can resend in {{seconds}}s"
+      "COOLDOWN": "You can resend in {{seconds}}s",
+      "TOO_MANY": "You have reached the resend limit. Please try again in an hour."
     },
     "CHANGE_PHONE_NUMBER": "Change phone number",
     "PROFILE_NAME_STEP_TITLE": "Complete your details",
@@ -160,7 +163,9 @@
       "MISSING_PARAMS": "The verification link is invalid or incomplete.",
       "FAILED": "The verification link is invalid or expired. Enter your email below to get a new one.",
       "GO_TO_PROFILE": "Go to my profile",
-      "BACK_TO_PROFILE": "Back to profile"
+      "BACK_TO_PROFILE": "Back to profile",
+      "TOO_MANY": "Too many attempts from this connection. Please wait a moment, then open the confirmation link again.",
+      "TEMPORARY": "We could not verify your link right now because of a temporary error. Please open the link again in a moment."
     },
     "ERRORS": {
       "FIX_FIELDS": "Please correct the fields before submitting.",
@@ -1022,6 +1027,7 @@
       "INPUT_LABEL": "Email address",
       "SEND_BTN": "Send verification link",
       "LINK_SENT": "A verification link has been sent to your email. Check your inbox (and spam folder).",
+      "LINK_NOT_SENT": "Your email was saved, but we could not send the verification link right now. Please try again shortly.",
       "ERRORS": {
         "ALREADY_SET": "You already have a verified email address.",
         "TAKEN": "This email address is already used by another account.",
