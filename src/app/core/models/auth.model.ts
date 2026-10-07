@@ -20,6 +20,11 @@ export interface RegisterRequest {
 export interface RegisterResponse {
   message: string;
   userId: string;
+  /**
+   * False when the account exists but the API could not send the confirmation mail. Absent on
+   * an API that predates the field, which is read as "sent" (the only behaviour it ever had).
+   */
+  confirmationEmailSent?: boolean;
 }
 
 export interface AuthTokenResponse {

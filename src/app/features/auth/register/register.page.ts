@@ -36,7 +36,10 @@ import { ToastService } from '../../../shared/services/toast.service';
            الصفحة على حالة "أُرسل" مع زرّ إعادة إرسال فعلي. -->
       <div class="auth-card" *ngIf="registered(); else registerForm">
         <h1>{{ 'AUTH.REGISTER_TITLE' | translate }}</h1>
-        <p>{{ 'AUTH.REGISTER_SUCCESS' | translate }}</p>
+        <!-- 2026-10-06: كان النص "أرسلنا رابط تأكيد" يظهر لكل تسجيل ناجح، حتى حين فشل الخادم
+             في الإرسال (Production بلا مضيف SMTP). الآن يقول الخادم صراحةً هل أُرسلت. -->
+        <p>{{ (confirmationEmailSent() ? 'AUTH.REGISTER_SUCCESS' : 'AUTH.REGISTER_SUCCESS_MAIL_FAILED') | translate }}</p>
+        <p class="hint" *ngIf="confirmationEmailSent()">{{ 'AUTH.CONFIRMATION_SPAM_HINT' | translate }}</p>
 
         <button
           type="button"
@@ -285,6 +288,8 @@ export class RegisterPage {
   // ✅ B-15 (RELEASE-BLOCKERS-AR.md): حالة "أُرسل رابط التأكيد" + إعادة الإرسال.
   readonly registered = signal(false);
   readonly registeredEmail = signal('');
+  // false فقط حين يقول الخادم صراحةً إنه لم يستطع إرسال الرسالة؛ غيابه (خادم أقدم) يعني "أُرسلت".
+  readonly confirmationEmailSent = signal(true);
   readonly resendCooldown = signal(0);
   readonly resendMessage = signal('');
   private resendTimer: ReturnType<typeof setInterval> | null = null;
@@ -372,11 +377,15 @@ export class RegisterPage {
     };
 
     this.auth.register(request).subscribe({
-      next: () => {
+      next: response => {
+        const sent = response?.confirmationEmailSent !== false;
         this.loading.set(false);
         this.registeredEmail.set(request.email);
+        this.confirmationEmailSent.set(sent);
         this.registered.set(true);
-        this.toast.success(this.translate.instant('AUTH.REGISTER_SUCCESS'));
+        this.toast.success(
+          this.translate.instant(sent ? 'AUTH.REGISTER_SUCCESS' : 'AUTH.REGISTER_SUCCESS_MAIL_FAILED')
+        );
       },
       error: error => {
         this.loading.set(false);
@@ -398,7 +407,14 @@ export class RegisterPage {
       // نصّ الخادم كما هو -- شرط التقرير الصريح، لأنه مصمَّم ليكون نفسه بصرف النظر
       // عن كون البريد موجوداً أو مؤكَّداً أو أُرسل له للتوّ.
       next: result => this.resendMessage.set(result.message),
-      error: () => this.resendMessage.set(this.translate.instant('AUTH.ERRORS.SERVER_ERROR'))
+      error: error =>
+        this.resendMessage.set(
+          this.translate.instant(
+            (error as { status?: number } | null)?.status === 429
+              ? 'AUTH.RESEND_CONFIRMATION.TOO_MANY'
+              : 'AUTH.ERRORS.SERVER_ERROR'
+          )
+        )
     });
 
     this.startResendCooldown(60);

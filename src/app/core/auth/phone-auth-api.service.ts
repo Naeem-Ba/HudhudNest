@@ -180,8 +180,8 @@ export class PhoneAuthApiService {
    * آخر (EMAIL_TAKEN) — الأخطاء تصل كـ HttpErrorResponse.status === 400 مع
    * error.code، ونتركها لتُعالَج في المكوّن المستدعي.
    */
-  addEmail(email: string): Observable<{ message: string }> {
-    return this.api.post<{ message: string }>('/auth/email/add', {
+  addEmail(email: string): Observable<{ message: string; verificationSent?: boolean }> {
+    return this.api.post<{ message: string; verificationSent?: boolean }>('/auth/email/add', {
       email: email.trim().toLowerCase()
     });
   }

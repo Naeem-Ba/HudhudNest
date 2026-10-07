@@ -139,6 +139,8 @@
     "VERIFY_OTP_SUCCESS": "Der Code wurde erfolgreich bestätigt.",
     "LOGIN_SUCCESS": "Willkommen! Sie haben sich erfolgreich angemeldet.",
     "REGISTER_SUCCESS": "Das Konto wurde erfolgreich erstellt! Wir haben einen Bestätigungslink an Ihre E-Mail-Adresse gesendet. Sie können sich jetzt anmelden.",
+    "REGISTER_SUCCESS_MAIL_FAILED": "Ihr Konto wurde erstellt, aber die Bestätigungs-E-Mail konnte gerade nicht gesendet werden. Tippen Sie gleich auf „Bestätigungslink erneut senden“. Sie können sich jetzt anmelden.",
+    "CONFIRMATION_SPAM_HINT": "Sollte sie nach einigen Minuten nicht angekommen sein, prüfen Sie Ihren Spam-Ordner.",
     "CONTINUE_WITH_EMAIL": "Mit E-Mail fortfahren",
     "CONTINUE_WITH_PHONE": "Mit Telefonnummer fortfahren",
     "PHONE_STEP_SUBTITLE": "Geben Sie Ihre Telefonnummer mit Ländervorwahl ein. Wir senden Ihnen einen Bestätigungscode per SMS.",
@@ -148,7 +150,8 @@
     "RESEND_OTP_IN": "Sie können nach {{seconds}} Sekunden erneut senden",
     "RESEND_CONFIRMATION": {
       "BUTTON": "Bestätigungslink erneut senden",
-      "COOLDOWN": "Erneut senden in {{seconds}}s"
+      "COOLDOWN": "Erneut senden in {{seconds}}s",
+      "TOO_MANY": "Sie haben das Limit für erneutes Senden erreicht. Bitte versuchen Sie es in einer Stunde erneut."
     },
     "CHANGE_PHONE_NUMBER": "Telefonnummer ändern",
     "PROFILE_NAME_STEP_TITLE": "Vervollständigen Sie Ihre Angaben",
@@ -160,7 +163,9 @@
       "MISSING_PARAMS": "Der Bestätigungslink ist ungültig oder unvollständig.",
       "FAILED": "Der Bestätigungslink ist ungültig oder abgelaufen. Geben Sie unten Ihre E-Mail-Adresse ein, um einen neuen zu erhalten.",
       "GO_TO_PROFILE": "Zu meinem Profil",
-      "BACK_TO_PROFILE": "Zurück zum Profil"
+      "BACK_TO_PROFILE": "Zurück zum Profil",
+      "TOO_MANY": "Zu viele Versuche von dieser Verbindung. Bitte warten Sie einen Moment und öffnen Sie den Bestätigungslink erneut.",
+      "TEMPORARY": "Der Link konnte gerade wegen eines vorübergehenden Fehlers nicht überprüft werden. Bitte öffnen Sie ihn in einem Moment erneut."
     },
     "ERRORS": {
       "FIX_FIELDS": "Bitte korrigieren Sie die Felder vor dem Absenden.",
@@ -1022,6 +1027,7 @@
       "INPUT_LABEL": "E-Mail-Adresse",
       "SEND_BTN": "Bestätigungslink senden",
       "LINK_SENT": "Ein Bestätigungslink wurde an Ihre E-Mail-Adresse gesendet. Prüfen Sie Ihren Posteingang (auch den Spam-Ordner).",
+      "LINK_NOT_SENT": "Ihre E-Mail-Adresse wurde gespeichert, aber der Bestätigungslink konnte gerade nicht gesendet werden. Bitte versuchen Sie es gleich erneut.",
       "ERRORS": {
         "ALREADY_SET": "Sie haben bereits eine bestätigte E-Mail-Adresse.",
         "TAKEN": "Diese E-Mail-Adresse wird bereits von einem anderen Konto verwendet.",
