@@ -63,6 +63,14 @@
       </a>
 
       <a
+        routerLink="/services"
+        routerLinkActive="navbar__link--active"
+        class="navbar__link"
+      >
+        {{ 'NAVBAR.SERVICES' | translate }}
+      </a>
+
+      <a
         routerLink="/pricing"
         routerLinkActive="navbar__link--active"
         class="navbar__link"
@@ -532,6 +540,14 @@
         (click)="closeMobileMenu()"
       >
         {{ 'NAVBAR.INVESTMENTS' | translate }}
+      </a>
+
+      <a
+        routerLink="/services"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ 'NAVBAR.SERVICES' | translate }}
       </a>
 
       <a

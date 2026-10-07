@@ -82,7 +82,8 @@
     "SIGNED_IN_WITH_EMAIL": "Signed in with e-mail:",
     "SIGNED_IN_WITH_PHONE": "Signed in with phone number:",
     "CURRENT_SECTION": "(current section)",
-    "ADMIN_PAYMENT_REQUESTS": "Payment requests"
+    "ADMIN_PAYMENT_REQUESTS": "Payment requests",
+    "SERVICES": "HudhudNest Services"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -2648,5 +2649,17 @@
     "REJECTED": "Request rejected.",
     "LOAD_ERROR": "Could not load the requests.",
     "ACTION_ERROR": "The action failed. The request may already have been handled; the list was refreshed."
+  },
+  "SERVICES_CATALOG": {
+    "EYEBROW": "Services marketplace",
+    "TITLE": "HudhudNest Services",
+    "SUBTITLE": "Property services from providers approved by the platform: verification, valuation, inspection, photography and more.",
+    "HOW_TO_REQUEST": "To request a service, open the property it is for and choose the service there, then follow it from \"Service Requests\".",
+    "BROWSE_PROPERTIES": "Browse properties",
+    "CATEGORIES": "Service categories",
+    "LOAD_ERROR": "Could not load the services.",
+    "EMPTY": "No offerings are available in this category yet.",
+    "VERIFIED_PROVIDER": "Verified provider",
+    "DURATION": "Estimated duration: {{days}} day(s)"
   }
 }

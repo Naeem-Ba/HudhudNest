@@ -1,0 +1,57 @@
+<section class="feature-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">{{ 'SERVICES_CATALOG.EYEBROW' | translate }}</p>
+      <h1>{{ 'SERVICES_CATALOG.TITLE' | translate }}</h1>
+      <p>{{ 'SERVICES_CATALOG.SUBTITLE' | translate }}</p>
+    </div>
+    <a *ngIf="isLoggedIn | async" routerLink="/my-services" class="btn secondary">{{ 'NAVBAR.MY_SERVICES' | translate }}</a>
+  </header>
+
+  <p class="how-to">
+    <span aria-hidden="true">ℹ️</span>
+    {{ 'SERVICES_CATALOG.HOW_TO_REQUEST' | translate }}
+    <a routerLink="/properties">{{ 'SERVICES_CATALOG.BROWSE_PROPERTIES' | translate }}</a>
+  </p>
+
+  <div class="filters" role="group" [attr.aria-label]="'SERVICES_CATALOG.CATEGORIES' | translate">
+    <button *ngFor="let category of categories" type="button"
+            [class.active]="selectedCategory() === category"
+            [attr.aria-pressed]="selectedCategory() === category"
+            (click)="selectCategory(category)">
+      {{ ('SERVICES.CATEGORY.' + category) | translate }}
+    </button>
+  </div>
+
+  <div *ngIf="loading()" class="state">{{ 'COMMON.LOADING' | translate }}</div>
+  <div *ngIf="!loading() && error()" class="state error">
+    <p>{{ 'SERVICES_CATALOG.LOAD_ERROR' | translate }}</p>
+    <button type="button" class="btn" (click)="load()">{{ 'COMMON.RETRY' | translate }}</button>
+  </div>
+  <div *ngIf="!loading() && !error() && offerings().length === 0" class="state">
+    {{ 'SERVICES_CATALOG.EMPTY' | translate }}
+  </div>
+
+  <div class="cards" *ngIf="!loading() && !error() && offerings().length > 0">
+    <article class="offering-card" *ngFor="let offering of offerings(); trackBy: trackById">
+      <h2>{{ offering.title }}</h2>
+      <p class="provider">
+        {{ offering.serviceProviderDisplayName }}
+        <span *ngIf="isVerified(offering)" class="badge">✓ {{ 'SERVICES_CATALOG.VERIFIED_PROVIDER' | translate }}</span>
+      </p>
+      <p *ngIf="offering.description" class="description">{{ offering.description }}</p>
+      <p *ngIf="offering.estimatedDurationDays" class="meta">
+        {{ 'SERVICES_CATALOG.DURATION' | translate: { days: offering.estimatedDurationDays } }}
+      </p>
+    </article>
+  </div>
+
+  <a routerLink="/kontakt" [queryParams]="{ intent: 'service-provider' }" class="become-provider-banner">
+    <span aria-hidden="true">🛠️</span>
+    <span class="become-provider-banner__text">
+      <strong>{{ 'SERVICE_REQUESTS.BECOME_PROVIDER.TITLE' | translate }}</strong>
+      <span>{{ 'SERVICE_REQUESTS.BECOME_PROVIDER.SUBTITLE' | translate }}</span>
+    </span>
+    <span class="become-provider-banner__cta">{{ 'SERVICE_REQUESTS.BECOME_PROVIDER.CTA' | translate }}</span>
+  </a>
+</section>

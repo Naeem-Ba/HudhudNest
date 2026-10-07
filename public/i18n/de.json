@@ -82,7 +82,8 @@
     "SIGNED_IN_WITH_EMAIL": "Angemeldet mit E-Mail:",
     "SIGNED_IN_WITH_PHONE": "Angemeldet mit Telefonnummer:",
     "CURRENT_SECTION": "(aktueller Bereich)",
-    "ADMIN_PAYMENT_REQUESTS": "Zahlungsanfragen"
+    "ADMIN_PAYMENT_REQUESTS": "Zahlungsanfragen",
+    "SERVICES": "HudhudNest-Services"
   },
   "AUTH": {
     "LOGIN_TITLE": "Willkommen",
@@ -2648,5 +2649,17 @@
     "REJECTED": "Anfrage abgelehnt.",
     "LOAD_ERROR": "Die Anfragen konnten nicht geladen werden.",
     "ACTION_ERROR": "Die Aktion ist fehlgeschlagen. Die Anfrage wurde evtl. bereits bearbeitet; die Liste wurde aktualisiert."
+  },
+  "SERVICES_CATALOG": {
+    "EYEBROW": "Service-Marktplatz",
+    "TITLE": "HudhudNest-Services",
+    "SUBTITLE": "Immobilien-Services von Anbietern, die die Plattform zugelassen hat: Verifizierung, Bewertung, Inspektion, Fotografie und mehr.",
+    "HOW_TO_REQUEST": "Um einen Service anzufragen, öffnen Sie die betreffende Immobilie und wählen Sie den Service dort aus; verfolgen Sie die Anfrage dann unter „Serviceanfragen“.",
+    "BROWSE_PROPERTIES": "Immobilien ansehen",
+    "CATEGORIES": "Service-Kategorien",
+    "LOAD_ERROR": "Die Services konnten nicht geladen werden.",
+    "EMPTY": "In dieser Kategorie gibt es noch keine Angebote.",
+    "VERIFIED_PROVIDER": "Verifizierter Anbieter",
+    "DURATION": "Geschätzte Dauer: {{days}} Tag(e)"
   }
 }
