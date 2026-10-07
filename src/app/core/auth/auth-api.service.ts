@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { catchError, finalize, map, Observable, of, tap } from 'rxjs';
 
 import { BackendApiService } from '../api/backend-api.service';
+import { withUiLanguage } from '../i18n/ui-language';
 import { TokenStorageService } from '../services/token-storage.service';
 import {
   AppleLoginRequest,
@@ -23,7 +24,7 @@ export class AuthApiService {
   ) {}
 
   register(request: RegisterRequest): Observable<RegisterResponse> {
-    return this.api.post<RegisterResponse>('/auth/register', request);
+    return this.api.post<RegisterResponse>('/auth/register', withUiLanguage(request));
   }
 
   login(request: LoginRequest): Observable<AuthTokenResponse> {
@@ -67,12 +68,13 @@ export class AuthApiService {
    * rate-limited, and answers with the exact same message whether the address is unknown,
    * already confirmed, or a link was just sent — callers must show `message` verbatim and
    * never branch UI copy on the outcome, or the anti-enumeration guarantee the backend
-   * built breaks on this side instead.
+   * built breaks on this side instead. The page language goes along, so the mail comes in it.
    */
   resendConfirmationEmail(email: string): Observable<{ message: string }> {
-    return this.api.post<{ message: string }>('/auth/email/resend-confirmation', {
-      email: email.trim().toLowerCase()
-    });
+    return this.api.post<{ message: string }>(
+      '/auth/email/resend-confirmation',
+      withUiLanguage({ email: email.trim().toLowerCase() })
+    );
   }
 
   resetPassword(request: ResetPasswordRequest): Observable<unknown> {

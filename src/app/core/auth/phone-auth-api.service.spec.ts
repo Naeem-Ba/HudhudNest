@@ -37,6 +37,42 @@ describe('PhoneAuthApiService', () => {
 
   afterEach(() => httpMock.verify());
 
+  describe('addEmail — language of the confirmation mail', () => {
+    let originalLang: string;
+
+    beforeEach(() => {
+      originalLang = document.documentElement.lang;
+    });
+
+    afterEach(() => {
+      document.documentElement.lang = originalLang;
+    });
+
+    it('sends the page language so the mail arrives in it', () => {
+      document.documentElement.lang = 'ar';
+
+      service.addEmail('  Someone@Example.com ').subscribe();
+
+      const req = httpMock.expectOne(`${base}/auth/email/add`);
+
+      expect(req.request.body).toEqual({ email: 'someone@example.com', language: 'ar' });
+
+      req.flush({ message: 'ok' });
+    });
+
+    it('sends only the email when the page language is unknown', () => {
+      document.documentElement.lang = '';
+
+      service.addEmail('someone@example.com').subscribe();
+
+      const req = httpMock.expectOne(`${base}/auth/email/add`);
+
+      expect(req.request.body).toEqual({ email: 'someone@example.com' });
+
+      req.flush({ message: 'ok' });
+    });
+  });
+
   it('sends a normalized number for every OTP challenge endpoint', () => {
     const calls: [() => void, string][] = [
       [() => service.sendRegistrationOtp(' 0933 123 456 ').subscribe(), '/auth/phone/registration/send-otp'],

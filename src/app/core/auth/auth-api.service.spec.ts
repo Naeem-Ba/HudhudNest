@@ -13,8 +13,14 @@ import { AuthApiService } from './auth-api.service';
 describe('AuthApiService.resendConfirmationEmail', () => {
   let service: AuthApiService;
   let httpMock: HttpTestingController;
+  let originalLang: string;
 
   beforeEach(() => {
+    // The page language rides along on this request, and <html lang> is process-wide state that
+    // other specs change; pin it so the exact-body assertions below do not depend on test order.
+    originalLang = document.documentElement.lang;
+    document.documentElement.lang = '';
+
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting()]
     });
@@ -23,7 +29,22 @@ describe('AuthApiService.resendConfirmationEmail', () => {
     httpMock = TestBed.inject(HttpTestingController);
   });
 
-  afterEach(() => httpMock.verify());
+  afterEach(() => {
+    httpMock.verify();
+    document.documentElement.lang = originalLang;
+  });
+
+  it('✅ يرسل لغة الصفحة الحالية ليصل البريد بها', () => {
+    document.documentElement.lang = 'de';
+
+    service.resendConfirmationEmail('someone@example.com').subscribe();
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/auth/email/resend-confirmation`);
+
+    expect(req.request.body).toEqual({ email: 'someone@example.com', language: 'de' });
+
+    req.flush({ message: 'ok' });
+  });
 
   it('✅ يستدعي POST /auth/email/resend-confirmation بالبريد بعد تطبيعه', () => {
     service.resendConfirmationEmail('  Someone@Example.com  ').subscribe();
@@ -46,5 +67,60 @@ describe('AuthApiService.resendConfirmationEmail', () => {
 
     httpMock.expectOne(`${environment.apiBaseUrl}/auth/email/resend-confirmation`)
       .flush({ message: serverMessage });
+  });
+});
+
+describe('AuthApiService.register — language', () => {
+  let service: AuthApiService;
+  let httpMock: HttpTestingController;
+  let originalLang: string;
+
+  const request = {
+    firstName: 'Naeem',
+    lastName: 'Test',
+    email: 'naeem@example.com',
+    password: 'Zq7!rLm2Xw'
+  };
+
+  beforeEach(() => {
+    originalLang = document.documentElement.lang;
+
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()]
+    });
+
+    service = TestBed.inject(AuthApiService);
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    httpMock.verify();
+    document.documentElement.lang = originalLang;
+  });
+
+  for (const lang of ['ar', 'en', 'de']) {
+    it(`✅ يرسل "${lang}" مع طلب التسجيل حين تكون هي لغة الصفحة`, () => {
+      document.documentElement.lang = lang;
+
+      service.register(request).subscribe();
+
+      const req = httpMock.expectOne(`${environment.apiBaseUrl}/auth/register`);
+
+      expect(req.request.body).toEqual({ ...request, language: lang });
+
+      req.flush({ message: 'ok', userId: 'u1' });
+    });
+  }
+
+  it('✅ لا يضيف أي حقل حين لا تُعرف لغة الصفحة -- الجسم كما كان لخادم لا يعرف الحقل', () => {
+    document.documentElement.lang = '';
+
+    service.register(request).subscribe();
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/auth/register`);
+
+    expect(req.request.body).toEqual(request);
+
+    req.flush({ message: 'ok', userId: 'u1' });
   });
 });

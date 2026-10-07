@@ -195,6 +195,39 @@ describe('LoginComponent', () => {
     });
   });
 
+  describe('onRegister — البريد مسجّل مسبقاً (409)', () => {
+    const attempt = (error: unknown) => {
+      authApi.register.and.returnValue(throwError(() => error));
+      component.registerData = {
+        FirstName: 'Ali',
+        LastName: 'Hasan',
+        Email: 'ali@example.com',
+        Password: FAKE_TEST_CREDENTIAL
+      };
+      component.privacyConsentAccepted = true;
+
+      component.onRegister(fakeForm());
+    };
+
+    it('✅ يُترجَم بدل عرض الجملة الإنجليزية "Email already registered." (2026-10-07)', () => {
+      attempt(httpError(409, { message: 'Email already registered.', code: 'EMAIL_ALREADY_REGISTERED' }));
+
+      expect(component.message).toBe('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
+    });
+
+    it('✅ يُترجَم أيضاً من خادم لا يرسل الكود بعد', () => {
+      attempt(httpError(409, { message: 'Email already registered.' }));
+
+      expect(component.message).toBe('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
+    });
+
+    it('✅ ويُترجَم بالكود وحده مهما كان status', () => {
+      attempt(httpError(400, { message: 'Email already registered.', code: 'EMAIL_ALREADY_REGISTERED' }));
+
+      expect(component.message).toBe('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
+    });
+  });
+
   describe('onPhoneLogin — رقم الهاتف', () => {
     it('✅ رقم/كلمة سر خاطئة تعطي نفس الرسالة العامة (بلا كشف عن وجود الحساب)', () => {
       phoneAuthApi.login.and.returnValue(throwError(() => httpError(400, { code: 'PHONE_AUTH_FAILED' })));
