@@ -116,6 +116,11 @@ gh secret set RELEASE_KEY_ALIAS --repo Naeem-Ba/HudhudNest --body "aqar-tech"
 - `ubuntu-latest` ينتقل إلى 26.04 (2026-10-19): `build` و`android-release` مثبَّتان على `ubuntu-26.04` بعد
   اختبار ناجح.
 
+**تسليم الـ AAB (2026-10-07):** يُنشر الـ AAB كملف في Release واحد (`android-latest`، pre-release) يُحذف ويُعاد
+إنشاؤه عند كل بناء، وهو القناة الأساسية. رفعه كـ Actions artifact ما زال يجري كنسخة احتياطية بـ
+`continue-on-error`، لأن حصة تخزين Actions artifacts مشتركة بين مستودعات الحساب وامتلأت ثلاث مرات في
+2026-10-03..07 ("Artifact storage quota has been hit") فكان البناء الناجح يُعلَّم فاشلًا بلا ملف.
+
 **التحقق:** AAB الناتج في CI مُوقَّع بشهادة `CN=aqar-tech`؛ بصمة SHA-256 مطابقة لبصمة الـ keystore المحلي
 (`7D:30:B4:CB:E7:24:2F:C5:CC:50:2A:FA:B5:87:C7:67:38:3B:3D:0D:4E:D8:7A:6F:B4:F4:8E:2B:9C:64:F7:50`)،
 وSHA-1 `66:14:AC:70:8C:6B:07:AA:DF:CF:1C:E4:8E:8B:B5:E5:DA:2C:E2:2E`. (الطريقة:
