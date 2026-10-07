@@ -3,8 +3,8 @@
 // HudhudNest Services Marketplace — models matching HudhudNestApi.Application.Services.DTOs.
 // This vertical slice ships one working category (Verification / "HudhudNest Verify"); the
 // other 12 ServiceCategory values already exist on the backend enum and are included here so
-// this file does not need another breaking change when they go live — nothing in the UI shows
-// them yet.
+// this file does not need another breaking change when they go live. The /services catalog
+// lists all of them; a category with no active offering shows an empty state.
 
 export type ServiceCategory =
   | 'Verification'
@@ -20,6 +20,12 @@ export type ServiceCategory =
   | 'Financing'
   | 'Insurance'
   | 'Investment';
+
+/** Display order for the public catalog (/services) — Verification first, as the one live product. */
+export const SERVICE_CATEGORIES: readonly ServiceCategory[] = [
+  'Verification', 'Valuation', 'Inspection', 'Photography', 'PropertyManagement', 'Legal',
+  'Engineering', 'Maintenance', 'Cleaning', 'Moving', 'Financing', 'Insurance', 'Investment'
+];
 
 export type ServiceRequestStatus =
   | 'Submitted'

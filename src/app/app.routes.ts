@@ -107,6 +107,14 @@ export const routes: Routes = [
             .then(m => m.InvestmentWatchlistPage)
       },
       {
+        // "خدمات هدهد نيست" — public catalog of service offerings; requests are still made
+        // from a property page (ServiceRequest needs a propertyId).
+        path: 'services',
+        loadComponent: () =>
+          import('./features/services/services-catalog.page')
+            .then(m => m.ServicesCatalogPage)
+      },
+      {
         path: 'investments',
         loadComponent: () =>
           import('./features/investments/investment-list/investment-list.page')
