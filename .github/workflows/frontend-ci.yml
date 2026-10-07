@@ -208,7 +208,9 @@ jobs:
           name: aqar-tech-release-aab
           path: android/app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
-          retention-days: 14
+          # يوم واحد: النسخة الرسمية في Release (android-latest)، وهذه احتياطية فقط. 48 نسخة × 14 يومًا
+          # (340 MB) كانت تستهلك حصة تخزين Actions المشتركة.
+          retention-days: 1
 
   ios-build:
     name: iOS Unsigned Simulator Build
