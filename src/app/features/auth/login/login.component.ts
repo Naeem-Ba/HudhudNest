@@ -23,6 +23,7 @@ import {
   parseLoginFailure
 } from '../../../core/models/auth.model';
 import { getPasswordRejectionMessages } from '../password-errors';
+import { isEmailAlreadyRegistered } from '../register-errors';
 import { ToastService } from '../../../shared/services/toast.service';
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
 import { PasswordStrengthIndicatorComponent } from '../../../shared/ui/password-strength-indicator.component';
@@ -528,6 +529,12 @@ export class LoginComponent implements OnDestroy {
     // خطأ الخادم (5xx) نصه الإنجليزي العام لا يفيد القارئ — نص مترجَم بدلاً منه.
     if (isServerFailure(error)) {
       return this.t('AUTH.ERRORS.SERVER_ERROR');
+    }
+
+    // "البريد مسجّل" (409): رسالته إنجليزية ثابتة، فتُترجَم قبل قراءة error.message
+    // -- نفس الأداة المشتركة التي يستخدمها register.page.ts (2026-10-07).
+    if (isEmailAlreadyRegistered(error)) {
+      return this.t('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
     }
 
     // كود PASSWORD_BREACHED وأخواته يُترجَمان أولاً — نفس الأداة المشتركة التي

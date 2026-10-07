@@ -14,6 +14,7 @@ import {
 } from '../../../core/auth/password-policy';
 import { isServerFailure } from '../../../core/api/server-failure';
 import { getPasswordRejectionMessages } from '../password-errors';
+import { isEmailAlreadyRegistered } from '../register-errors';
 import { FormErrorComponent } from '../../../shared/ui/form-error.component';
 import { ConsentCheckboxComponent } from '../../../shared/components/consent-checkbox/consent-checkbox.component';
 import { ToastService } from '../../../shared/services/toast.service';
@@ -456,6 +457,12 @@ export class RegisterPage {
       return this.translate.instant('AUTH.ERRORS.SERVER_ERROR');
     }
 
+    // "البريد مسجّل": جسم 409 يحمل message إنجليزياً ثابتاً، وكان فحص status === 409 أدناه
+    // لا يُبلَغ أبداً لأن response.error.message يسبقه (2026-10-07). يُترجَم هنا قبل قراءة النص.
+    if (isEmailAlreadyRegistered(error)) {
+      return this.translate.instant('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
+    }
+
     if (typeof response.error === 'string' && response.error.trim()) {
       return response.error;
     }
@@ -490,10 +497,6 @@ export class RegisterPage {
       if (response.error?.title) {
         return response.error.title;
       }
-    }
-
-    if (response.status === 409) {
-      return this.translate.instant('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
     }
 
     return this.translate.instant('AUTH.ERRORS.REGISTER_FAILED');

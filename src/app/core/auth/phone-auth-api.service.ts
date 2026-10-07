@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, map, tap } from 'rxjs';
 import { BackendApiService } from '../api/backend-api.service';
+import { withUiLanguage } from '../i18n/ui-language';
 import { TokenStorageService } from '../services/token-storage.service';
 import { normalizePhoneInput } from './phone-number';
 import {
@@ -181,9 +182,10 @@ export class PhoneAuthApiService {
    * error.code، ونتركها لتُعالَج في المكوّن المستدعي.
    */
   addEmail(email: string): Observable<{ message: string; verificationSent?: boolean }> {
-    return this.api.post<{ message: string; verificationSent?: boolean }>('/auth/email/add', {
-      email: email.trim().toLowerCase()
-    });
+    return this.api.post<{ message: string; verificationSent?: boolean }>(
+      '/auth/email/add',
+      withUiLanguage({ email: email.trim().toLowerCase() })
+    );
   }
 
   /**

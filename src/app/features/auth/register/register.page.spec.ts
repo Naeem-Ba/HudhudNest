@@ -78,6 +78,31 @@ describe('RegisterPage — error shown for a failed sign-up', () => {
 
     expect(page.error()).toBe('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
   });
+
+  it('translates the 409 body that carries the English sentence instead of printing it (2026-10-07)', () => {
+    failWith(409, { message: 'Email already registered.', code: 'EMAIL_ALREADY_REGISTERED' });
+
+    page.submit();
+
+    expect(page.error()).toBe('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
+    expect(page.error()).not.toContain('Email already registered');
+  });
+
+  it('translates a 409 from an API build that predates the code', () => {
+    failWith(409, { message: 'Email already registered.' });
+
+    page.submit();
+
+    expect(page.error()).toBe('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
+  });
+
+  it('translates on the code alone, whatever the status', () => {
+    failWith(400, { message: 'Email already registered.', code: 'EMAIL_ALREADY_REGISTERED' });
+
+    page.submit();
+
+    expect(page.error()).toBe('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
+  });
 });
 
 describe('RegisterPage — what the success screen says about the confirmation mail', () => {
