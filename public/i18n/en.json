@@ -527,6 +527,11 @@
     "PAGE": "Page"
   },
   "PROPERTY_DETAIL": {
+    "AGENCY": {
+      "TITLE": "Real estate agency",
+      "NOT_RATED": "Not rated yet",
+      "VIEW_PROFILE": "View the agency page and its rating"
+    },
     "NOT_FOUND_TITLE": "Property not found",
     "NOT_FOUND_MESSAGE": "The property may have been deleted or the link is incorrect.",
     "LOAD_ERROR": "Unable to load property details.",
@@ -1512,6 +1517,44 @@
     "APPROVE_ERROR": "Could not approve the suggestion.",
     "REJECT_ERROR": "Could not reject the suggestion.",
     "LOAD_ERROR": "Could not load pending suggestions."
+  },
+  "AGENCY_RATING": {
+    "RATINGS_COUNT_SUFFIX": "ratings",
+    "NOT_RATED_YET": "Not rated yet",
+    "RATE_CTA": "Rate the agency",
+    "BREAKDOWN": "Agency rating breakdown",
+    "RATE_THIS_AGENCY": "Rate this agency",
+    "SEPARATE_NOTE": "This rates the agency as a business, separately from the rating of the employee you dealt with.",
+    "LOGIN_REQUIRED_TITLE": "Log in to rate",
+    "LOGIN_REQUIRED_MESSAGE": "Rating an agency requires a registered account.",
+    "LOGIN_CTA": "Log in",
+    "NOT_ELIGIBLE_TITLE": "You can rate after dealing with the agency",
+    "NOT_ELIGIBLE_MESSAGE": "You can rate the agency after a completed visit to one of its properties or after messaging it.",
+    "QUESTION": "How was your experience with this agency?",
+    "EDIT_HINT": "You already rated this agency; you can edit your rating.",
+    "CRITERIA": {
+      "SERVICE": "Service",
+      "PROFESSIONALISM": "Professionalism",
+      "RELIABILITY": "Reliability",
+      "OVERALL_EXPERIENCE": "Overall experience"
+    },
+    "CRITERIA_HINT": {
+      "SERVICE": "Quality of service and follow-up",
+      "PROFESSIONALISM": "Commitment and professional conduct",
+      "RELIABILITY": "Keeping promises and accurate information",
+      "OVERALL_EXPERIENCE": "Your overall impression of the agency"
+    },
+    "ALL_CRITERIA_REQUIRED": "Choose a rating for every criterion.",
+    "COMMENT_LABEL": "Comment (optional)",
+    "COMMENT_PLACEHOLDER": "Share your experience with the agency",
+    "SUBMIT": "Submit rating",
+    "UPDATE": "Update rating",
+    "SUCCESS": "Thank you, your agency rating was saved.",
+    "UPDATE_SUCCESS": "Your agency rating was updated.",
+    "ERROR": "The rating could not be saved. Please try again.",
+    "REVIEWS_TITLE": "Customer reviews of the agency",
+    "NO_RATINGS_TITLE": "No ratings yet",
+    "NO_RATINGS_MESSAGE": "Be the first to rate this agency after dealing with it."
   },
   "PUBLIC_PROFILE": {
     "LOAD_ERROR": "Could not load this profile.",

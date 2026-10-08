@@ -18,6 +18,7 @@ import type * as signalR from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
 import { BackendApiService } from './backend-api.service';
 import { TokenStorageService } from '../services/token-storage.service';
+import { LanguageService } from '../services/language.service';
 import { ApiPagedResult, unwrapItems } from '../models/api.model';
 import { NotificationItem, toNotificationItem } from '../models/notification.model';
 
@@ -35,16 +36,21 @@ export class NotificationsApiService {
   constructor(
     private readonly api: BackendApiService,
     private readonly tokenStorage: TokenStorageService,
-    private readonly zone: NgZone
+    private readonly zone: NgZone,
+    private readonly languageService: LanguageService
   ) {}
 
   // ── HTTP endpoints ────────────────────────────────────────────────────────
 
+  /**
+   * قائمة إشعاراتي. نرسل لغة الموقع الحالية (ar | en | de) ليكتب الخادم نصوص إشعارات الرسائل
+   * والاستفسارات بها؛ الأنواع الأخرى وخادم أقدم يتجاهلان المعامل ويعيدان النص المخزَّن كما هو.
+   */
   getNotifications(page = 1, pageSize = 20): Observable<NotificationItem[]> {
     return this.api
       .get<NotificationItem[] | ApiPagedResult<NotificationItem>>(
         '/notifications',
-        { page, pageSize }
+        { page, pageSize, language: this.languageService.getCurrent() }
       )
       .pipe(
         map(response =>

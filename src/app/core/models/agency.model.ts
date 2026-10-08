@@ -144,3 +144,63 @@ export function extractUserId(input: string | null | undefined): string | null {
   const match = (input ?? '').trim().match(GUID_PATTERN);
   return match ? match[0].toLowerCase() : null;
 }
+
+// ── تقييم المكتب (منفصل تمامًا عن تقييم العضو/المعلن: UserRating) ───────────────────────────
+//
+// تقييم المكتب كجهة تجارية. الخادم هو مصدر الحقيقة لكل القواعد: لا يقيّم المالكُ ولا الأعضاءُ
+// مكتبَهم، ويلزم تفاعل فعلي (زيارة مكتملة أو مراسلة عن أحد إعلاناته)، وتقييم واحد لكل مستخدم
+// يُعدَّل في مكانه. الواجهة تعرض فقط ما تقوله /ratings/eligibility.
+
+export const AGENCY_RATING_COMMENT_MAX_LENGTH = 1000;
+
+export const AGENCY_RATING_CRITERIA = [
+  { key: 'service', labelKey: 'AGENCY_RATING.CRITERIA.SERVICE', hintKey: 'AGENCY_RATING.CRITERIA_HINT.SERVICE' },
+  { key: 'professionalism', labelKey: 'AGENCY_RATING.CRITERIA.PROFESSIONALISM', hintKey: 'AGENCY_RATING.CRITERIA_HINT.PROFESSIONALISM' },
+  { key: 'reliability', labelKey: 'AGENCY_RATING.CRITERIA.RELIABILITY', hintKey: 'AGENCY_RATING.CRITERIA_HINT.RELIABILITY' },
+  { key: 'overallExperience', labelKey: 'AGENCY_RATING.CRITERIA.OVERALL_EXPERIENCE', hintKey: 'AGENCY_RATING.CRITERIA_HINT.OVERALL_EXPERIENCE' }
+] as const;
+
+export type AgencyRatingCriterionKey = (typeof AGENCY_RATING_CRITERIA)[number]['key'];
+
+export interface AgencyRatingDto {
+  id: string;
+  agencyId: string;
+  raterId: string;
+  raterName: string;
+  raterImageUrl?: string | null;
+  service: number;
+  professionalism: number;
+  reliability: number;
+  overallExperience: number;
+  overallScore: number;
+  comment?: string | null;
+  createdAt: string;
+}
+
+export interface AgencyRatingSummaryDto {
+  averageService: number;
+  averageProfessionalism: number;
+  averageReliability: number;
+  averageOverallExperience: number;
+  averageOverall: number;
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  ratings: AgencyRatingDto[];
+}
+
+export interface AgencyRatingEligibilityDto {
+  canRate: boolean;
+  isMemberOrOwner: boolean;
+  hasInteraction: boolean;
+  alreadyRated: boolean;
+  existingRating?: AgencyRatingDto | null;
+}
+
+export interface SubmitAgencyRatingRequest {
+  service: number;
+  professionalism: number;
+  reliability: number;
+  overallExperience: number;
+  comment?: string | null;
+}

@@ -9,6 +9,10 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
 import {
+  AgencyRatingDto,
+  AgencyRatingEligibilityDto,
+  AgencyRatingSummaryDto,
+  SubmitAgencyRatingRequest,
   Agency,
   AgencyInvitation,
   AgencySentInvitation,
@@ -35,6 +39,29 @@ export class AgenciesApiService {
   /** GET /api/agencies/{slug} — الصفحة العامة (مجهول؛ 404 لمكتب غير مفعّل). */
   getBySlug(slug: string): Observable<Agency> {
     return this.api.get<Agency>(`${this.endpoint}/${encodeURIComponent(slug)}`);
+  }
+
+  // ── تقييم المكتب — منفصل عن تقييم العضو (/Users/{id}/ratings) ─────────────────────────────
+
+  /** GET /api/agencies/{id}/ratings — عام. الملخص والمتوسطات تُحسب في الخادم. */
+  getRatings(agencyId: string, page = 1, pageSize = 20): Observable<AgencyRatingSummaryDto> {
+    return this.api.get<AgencyRatingSummaryDto>(`${this.endpoint}/${agencyId}/ratings`, { page, pageSize });
+  }
+
+  /** GET /api/agencies/{id}/ratings/eligibility — يتطلب تسجيل دخول. */
+  getRatingEligibility(agencyId: string): Observable<AgencyRatingEligibilityDto> {
+    return this.api.get<AgencyRatingEligibilityDto>(`${this.endpoint}/${agencyId}/ratings/eligibility`);
+  }
+
+  /** POST /api/agencies/{id}/ratings — إنشاء تقييمي للمكتب أو تعديله في مكانه. المُقيِّم من التوكن فقط. */
+  submitRating(agencyId: string, request: SubmitAgencyRatingRequest): Observable<AgencyRatingDto> {
+    return this.api.post<AgencyRatingDto>(`${this.endpoint}/${agencyId}/ratings`, {
+      Service: request.service,
+      Professionalism: request.professionalism,
+      Reliability: request.reliability,
+      OverallExperience: request.overallExperience,
+      Comment: request.comment?.trim() || null
+    });
   }
 
   /** POST /api/agencies — تسجيل مكتب جديد؛ ينجح مرة واحدة فقط لكل مستخدم. */

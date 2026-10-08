@@ -527,6 +527,11 @@
     "PAGE": "الصفحة"
   },
   "PROPERTY_DETAIL": {
+    "AGENCY": {
+      "TITLE": "المكتب العقاري",
+      "NOT_RATED": "لم يُقيَّم بعد",
+      "VIEW_PROFILE": "عرض صفحة المكتب وتقييمه"
+    },
     "NOT_FOUND_TITLE": "العقار غير موجود",
     "NOT_FOUND_MESSAGE": "قد يكون العقار محذوفاً أو الرابط غير صحيح.",
     "LOAD_ERROR": "تعذر تحميل تفاصيل العقار.",
@@ -1512,6 +1517,44 @@
     "APPROVE_ERROR": "تعذّرت الموافقة على الاقتراح.",
     "REJECT_ERROR": "تعذّر رفض الاقتراح.",
     "LOAD_ERROR": "تعذّر تحميل الاقتراحات المعلّقة."
+  },
+  "AGENCY_RATING": {
+    "RATINGS_COUNT_SUFFIX": "تقييم",
+    "NOT_RATED_YET": "لم يُقيَّم بعد",
+    "RATE_CTA": "قيّم المكتب",
+    "BREAKDOWN": "تفصيل تقييم المكتب",
+    "RATE_THIS_AGENCY": "قيّم هذا المكتب",
+    "SEPARATE_NOTE": "هذا تقييم للمكتب كجهة تجارية، وهو منفصل عن تقييم الموظف الذي تعاملت معه.",
+    "LOGIN_REQUIRED_TITLE": "سجّل الدخول للتقييم",
+    "LOGIN_REQUIRED_MESSAGE": "يتطلب تقييم المكتب حساباً مسجّلاً.",
+    "LOGIN_CTA": "تسجيل الدخول",
+    "NOT_ELIGIBLE_TITLE": "التقييم متاح بعد التعامل مع المكتب",
+    "NOT_ELIGIBLE_MESSAGE": "يمكنك تقييم المكتب بعد إتمام زيارة لأحد عقاراته أو مراسلته عبر الرسائل.",
+    "QUESTION": "كيف كانت تجربتك مع هذا المكتب؟",
+    "EDIT_HINT": "لقد قيّمت هذا المكتب من قبل؛ يمكنك تعديل تقييمك.",
+    "CRITERIA": {
+      "SERVICE": "الخدمة",
+      "PROFESSIONALISM": "الاحترافية",
+      "RELIABILITY": "الموثوقية",
+      "OVERALL_EXPERIENCE": "التجربة العامة"
+    },
+    "CRITERIA_HINT": {
+      "SERVICE": "جودة الخدمة والمتابعة",
+      "PROFESSIONALISM": "الالتزام والمهنية في التعامل",
+      "RELIABILITY": "الوفاء بالوعود والمعلومات الصحيحة",
+      "OVERALL_EXPERIENCE": "انطباعك العام عن المكتب"
+    },
+    "ALL_CRITERIA_REQUIRED": "اختر تقييماً لكل محور.",
+    "COMMENT_LABEL": "تعليق (اختياري)",
+    "COMMENT_PLACEHOLDER": "شاركنا تجربتك مع المكتب",
+    "SUBMIT": "إرسال التقييم",
+    "UPDATE": "تحديث التقييم",
+    "SUCCESS": "شكراً، تم حفظ تقييمك للمكتب.",
+    "UPDATE_SUCCESS": "تم تحديث تقييمك للمكتب.",
+    "ERROR": "تعذّر حفظ التقييم. حاول مرة أخرى.",
+    "REVIEWS_TITLE": "آراء العملاء بالمكتب",
+    "NO_RATINGS_TITLE": "لا توجد تقييمات بعد",
+    "NO_RATINGS_MESSAGE": "كن أول من يقيّم هذا المكتب بعد التعامل معه."
   },
   "PUBLIC_PROFILE": {
     "LOAD_ERROR": "تعذر تحميل الملف الشخصي.",

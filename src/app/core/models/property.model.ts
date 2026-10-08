@@ -103,6 +103,15 @@ export interface Property {
   amenities?: Amenity[];
   ownerId?: string;
   ownerName?: string;
+  // المكتب العقاري الذي نُشر الإعلان تحته. agencyId يأتي دائمًا مع إعلان عضو مكتب، أما بقية الحقول
+  // فيملؤها الخادم في القائمة والتفاصيل العامتين فقط وللمكتب الفعّال فقط (null للإعلان الفردي
+  // أو للمكتب المعطَّل، وغائبة تمامًا من خادم أقدم) — فكلها اختيارية ولا تُفترض أبدًا.
+  agencyId?: string | null;
+  agencyName?: string | null;
+  agencySlug?: string | null;
+  agencyLogoUrl?: string | null;
+  agencyRatingAverage?: number | null;
+  agencyRatingCount?: number;
   availableFrom?: string;
   isPublished?: boolean;
   publishedAt?: string;

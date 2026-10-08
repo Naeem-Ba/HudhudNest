@@ -583,3 +583,10 @@
 
   .properties-grid { grid-template-columns: 1fr; }
 }
+
+/* اسم المكتب العقاري على بطاقة الإعلان (نص فقط: البطاقة كلها رابط) */
+.property-card__agency {
+  margin: 0;
+  font-size: .8rem;
+  color: var(--gray-500);
+}
