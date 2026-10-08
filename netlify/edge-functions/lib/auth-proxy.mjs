@@ -80,8 +80,15 @@ export async function fetchWithTimeout(fetchImpl, url, options, timeoutMs) {
 
 /** Allowlist, not a blocklist: only forward what these specific endpoints actually need.
  *  Deliberately excludes Host/Content-Length/Connection (the runtime recomputes these
- *  correctly for the new outgoing request; forwarding stale values would corrupt it). */
-const FORWARDABLE_REQUEST_HEADERS = ['content-type', 'accept', 'accept-language', 'cookie', 'x-xsrf-token'];
+ *  correctly for the new outgoing request; forwarding stale values would corrupt it).
+ *
+ *  `authorization` MUST stay on this list. Not every /api/auth/* endpoint is anonymous:
+ *  POST email/add, POST logout and phone/reverification/* + phone/change/* are [Authorize]. Left
+ *  off (as it was until 2026-10-08), the API receives no Bearer token, answers a bare 401
+ *  (`WWW-Authenticate: Bearer`, empty body), the refresh interceptor refreshes and retries with a
+ *  fresh token that is stripped the same way, and the user sees a generic failure -- "add / resend
+ *  confirmation email" from the profile page was the first visible symptom. */
+const FORWARDABLE_REQUEST_HEADERS = ['content-type', 'accept', 'accept-language', 'cookie', 'x-xsrf-token', 'authorization'];
 
 export function pickForwardableRequestHeaders(incomingHeaders) {
   const headers = new Headers();

@@ -72,6 +72,26 @@ test('pickForwardableRequestHeaders copies only the allowlisted headers', () => 
   assert.equal(forwarded.get('host'), null);
 });
 
+test('pickForwardableRequestHeaders forwards the Bearer token ([Authorize] endpoints under /api/auth/* need it)', () => {
+  // Regression (2026-10-08): the allowlist lacked `authorization`, so POST /api/auth/email/add (and
+  // logout, phone/change/*, phone/reverification/*) reached the API without a token and answered a
+  // bare 401 no matter how fresh the token was.
+  const incoming = new Headers({
+    authorization: 'Bearer test-access-token',
+    'content-type': 'application/json'
+  });
+
+  const forwarded = pickForwardableRequestHeaders(incoming);
+
+  assert.equal(forwarded.get('authorization'), 'Bearer test-access-token');
+});
+
+test('pickForwardableRequestHeaders sends no authorization header when the caller sent none', () => {
+  const forwarded = pickForwardableRequestHeaders(new Headers({ 'content-type': 'application/json' }));
+
+  assert.equal(forwarded.get('authorization'), null);
+});
+
 test('buildProxiedResponseHeaders drops content-encoding/content-length/transfer-encoding', () => {
   const backendHeaders = new Headers({
     'content-type': 'application/json',
