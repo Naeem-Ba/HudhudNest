@@ -33,6 +33,17 @@ import { SubscriptionPlan } from '../../core/models/subscription-plan.model';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { ToastService } from '../../shared/services/toast.service';
 
+/**
+ * F-22: /pricing?autoSelect=<tier> used to POST the plan for any signed-in visitor who merely
+ * opened the link, so a crafted link could change someone's plan without a tap. The auto-select
+ * now only runs for the visitor who actually tapped a plan while signed out in THIS tab: that tap
+ * leaves this single-use marker in sessionStorage, and the return from login consumes it.
+ */
+const PENDING_AUTO_SELECT_KEY = 'pricing.pendingAutoSelect';
+
+/** Long enough for a login round trip, short enough that a stale marker cannot be replayed. */
+const PENDING_AUTO_SELECT_MAX_AGE_MS = 15 * 60 * 1000;
+
 @Component({
   selector: 'app-pricing',
   standalone: true,
@@ -160,6 +171,12 @@ export class PricingPage implements OnInit {
    * "أضف إعلانك مجاناً" مرة ثانية بعد الدخول. لا يُشغَّل إلا إذا كان مسجَّل
    * الدخول فعليًا الآن (احتراز: رابط autoSelect قديم/معاد استخدامه لا يجب أن
    * يُطلق شيئًا لزائر ما زال مجهولاً).
+   *
+   * ✅ إصلاح F-22: وجود ?autoSelect في الرابط وحده لم يعد كافيًا — أي رابط مصنوع
+   * كان يغيّر خطة أي مستخدم مسجَّل الدخول يفتحه بلا نقرة. الآن يلزم أيضًا علامة
+   * لمرة واحدة تركها onSelectPlan في هذا التبويب حين ضغط الزائر الخطة وهو غير
+   * مسجَّل. العلامة تُحذف عند أول قراءة سواء نجحت أم لا، فلا تكرار بإعادة التحميل
+   * ولا بزر الرجوع. بدونها لا يحدث شيء ويضغط المستخدم الزر بنفسه.
    */
   private resumeAutoSelectAfterLogin(): void {
     const tier = this.route.snapshot.queryParamMap.get('autoSelect');
@@ -167,9 +184,47 @@ export class PricingPage implements OnInit {
       return;
     }
 
+    if (!this.consumePendingAutoSelect(tier)) {
+      return;
+    }
+
     const plan = this.plans().find(p => p.tier === tier);
     if (plan) {
       this.onSelectPlan(plan);
+    }
+  }
+
+  private rememberPendingAutoSelect(tier: string): void {
+    try {
+      sessionStorage.setItem(PENDING_AUTO_SELECT_KEY, JSON.stringify({ tier, at: Date.now() }));
+    } catch {
+      // Storage blocked: sign-in still works, the visitor just taps the plan again on return.
+    }
+  }
+
+  /** Reads and always deletes the marker; true only if it is fresh and was left for `tier`. */
+  private consumePendingAutoSelect(tier: string): boolean {
+    try {
+      const raw = sessionStorage.getItem(PENDING_AUTO_SELECT_KEY);
+      if (raw === null) {
+        return false;
+      }
+      sessionStorage.removeItem(PENDING_AUTO_SELECT_KEY);
+
+      const marker: unknown = JSON.parse(raw);
+      if (typeof marker !== 'object' || marker === null) {
+        return false;
+      }
+
+      const { tier: markedTier, at } = marker as { tier?: unknown; at?: unknown };
+      if (markedTier !== tier || typeof at !== 'number') {
+        return false;
+      }
+
+      const age = Date.now() - at;
+      return age >= 0 && age <= PENDING_AUTO_SELECT_MAX_AGE_MS;
+    } catch {
+      return false;
     }
   }
 
@@ -217,6 +272,7 @@ export class PricingPage implements OnInit {
 
     if (!this.auth.getAccessToken()) {
       if (plan.ctaRoute === '/property-form') {
+        this.rememberPendingAutoSelect(plan.tier);
         void this.router.navigate(['/auth/login'], {
           queryParams: { returnUrl: `/pricing?autoSelect=${plan.tier}` }
         });
