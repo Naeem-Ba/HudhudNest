@@ -109,6 +109,42 @@ describe('AgenciesApiService', () => {
     expect(req.request.method).toBe('DELETE');
     req.flush(null);
   });
+
+  // ── تقييم المكتب (منفصل عن تقييم الأعضاء) ──
+
+  it('getRatings: GET /agencies/{id}/ratings with paging (the agency rating, not /Users/{id}/ratings)', () => {
+    service.getRatings(AGENCY_ID, 2, 10).subscribe();
+    const req = httpMock.expectOne(r => r.url === `${base}/${AGENCY_ID}/ratings`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.get('page')).toBe('2');
+    expect(req.request.params.get('pageSize')).toBe('10');
+    req.flush({});
+  });
+
+  it('getRatingEligibility: GET /agencies/{id}/ratings/eligibility', () => {
+    service.getRatingEligibility(AGENCY_ID).subscribe();
+    const req = httpMock.expectOne(`${base}/${AGENCY_ID}/ratings/eligibility`);
+    expect(req.request.method).toBe('GET');
+    req.flush({});
+  });
+
+  it('submitRating: POST the four criteria in PascalCase with a trimmed comment and never a rater id', () => {
+    service
+      .submitRating(AGENCY_ID, { service: 5, professionalism: 4, reliability: 5, overallExperience: 4, comment: '  great  ' })
+      .subscribe();
+    const req = httpMock.expectOne(`${base}/${AGENCY_ID}/ratings`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ Service: 5, Professionalism: 4, Reliability: 5, OverallExperience: 4, Comment: 'great' });
+    expect(Object.keys(req.request.body).some(k => /rater/i.test(k))).toBeFalse();
+    req.flush({});
+  });
+
+  it('submitRating: a blank comment is sent as null', () => {
+    service.submitRating(AGENCY_ID, { service: 1, professionalism: 1, reliability: 1, overallExperience: 1, comment: '   ' }).subscribe();
+    const req = httpMock.expectOne(`${base}/${AGENCY_ID}/ratings`);
+    expect(req.request.body.Comment).toBeNull();
+    req.flush({});
+  });
 });
 
 describe('extractUserId', () => {

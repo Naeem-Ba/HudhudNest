@@ -674,6 +674,63 @@
   --icon-btn-size: 44px;
 }
 
+/* بطاقة المكتب العقاري */
+.agency-card__body {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.agency-card__logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: var(--gray-100, #f1f1f1);
+  flex-shrink: 0;
+}
+
+.agency-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  min-width: 0;
+}
+
+.agency-card__name {
+  font-weight: 700;
+  color: var(--gray-800);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.agency-card__name:hover {
+  color: var(--primary);
+}
+
+.agency-card__rating {
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: .9rem;
+  color: var(--gray-800);
+}
+
+.agency-card__stars {
+  color: var(--warning);
+}
+
+.agency-card__count {
+  font-size: .8rem;
+  color: var(--gray-500);
+}
+
+.agency-card__link {
+  font-size: .85rem;
+  color: var(--primary);
+  text-decoration: none;
+}
+
 /* ✅ إضافة: بطاقة معلومات المالك */
 .owner-card__body {
   display: flex;

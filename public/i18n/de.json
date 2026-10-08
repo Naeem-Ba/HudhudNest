@@ -527,6 +527,11 @@
     "PAGE": "Seite"
   },
   "PROPERTY_DETAIL": {
+    "AGENCY": {
+      "TITLE": "Immobilienbüro",
+      "NOT_RATED": "Noch nicht bewertet",
+      "VIEW_PROFILE": "Büroseite und Bewertung ansehen"
+    },
     "NOT_FOUND_TITLE": "Immobilie nicht gefunden",
     "NOT_FOUND_MESSAGE": "Die Immobilie wurde möglicherweise gelöscht oder der Link ist falsch.",
     "LOAD_ERROR": "Die Immobiliendetails konnten nicht geladen werden.",
@@ -1512,6 +1517,44 @@
     "APPROVE_ERROR": "Der Vorschlag konnte nicht genehmigt werden.",
     "REJECT_ERROR": "Der Vorschlag konnte nicht abgelehnt werden.",
     "LOAD_ERROR": "Ausstehende Vorschläge konnten nicht geladen werden."
+  },
+  "AGENCY_RATING": {
+    "RATINGS_COUNT_SUFFIX": "Bewertungen",
+    "NOT_RATED_YET": "Noch nicht bewertet",
+    "RATE_CTA": "Büro bewerten",
+    "BREAKDOWN": "Aufschlüsselung der Bürobewertung",
+    "RATE_THIS_AGENCY": "Dieses Büro bewerten",
+    "SEPARATE_NOTE": "Dies bewertet das Büro als Unternehmen, getrennt von der Bewertung des Mitarbeiters, mit dem Sie zu tun hatten.",
+    "LOGIN_REQUIRED_TITLE": "Zum Bewerten anmelden",
+    "LOGIN_REQUIRED_MESSAGE": "Für die Bewertung eines Büros ist ein registriertes Konto nötig.",
+    "LOGIN_CTA": "Anmelden",
+    "NOT_ELIGIBLE_TITLE": "Bewertung nach dem Kontakt mit dem Büro möglich",
+    "NOT_ELIGIBLE_MESSAGE": "Sie können das Büro nach einer abgeschlossenen Besichtigung einer seiner Immobilien oder nach einer Nachricht an das Büro bewerten.",
+    "QUESTION": "Wie war Ihre Erfahrung mit diesem Büro?",
+    "EDIT_HINT": "Sie haben dieses Büro bereits bewertet; Sie können Ihre Bewertung ändern.",
+    "CRITERIA": {
+      "SERVICE": "Service",
+      "PROFESSIONALISM": "Professionalität",
+      "RELIABILITY": "Zuverlässigkeit",
+      "OVERALL_EXPERIENCE": "Gesamterfahrung"
+    },
+    "CRITERIA_HINT": {
+      "SERVICE": "Qualität von Service und Nachbetreuung",
+      "PROFESSIONALISM": "Verbindlichkeit und professionelles Auftreten",
+      "RELIABILITY": "Zusagen einhalten und richtige Angaben",
+      "OVERALL_EXPERIENCE": "Ihr Gesamteindruck vom Büro"
+    },
+    "ALL_CRITERIA_REQUIRED": "Wählen Sie für jedes Kriterium eine Bewertung.",
+    "COMMENT_LABEL": "Kommentar (optional)",
+    "COMMENT_PLACEHOLDER": "Teilen Sie Ihre Erfahrung mit dem Büro",
+    "SUBMIT": "Bewertung absenden",
+    "UPDATE": "Bewertung aktualisieren",
+    "SUCCESS": "Danke, Ihre Bürobewertung wurde gespeichert.",
+    "UPDATE_SUCCESS": "Ihre Bürobewertung wurde aktualisiert.",
+    "ERROR": "Die Bewertung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+    "REVIEWS_TITLE": "Kundenbewertungen des Büros",
+    "NO_RATINGS_TITLE": "Noch keine Bewertungen",
+    "NO_RATINGS_MESSAGE": "Seien Sie der Erste, der dieses Büro nach dem Kontakt bewertet."
   },
   "PUBLIC_PROFILE": {
     "LOAD_ERROR": "Dieses Profil konnte nicht geladen werden.",

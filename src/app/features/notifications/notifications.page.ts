@@ -23,7 +23,8 @@ import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subscription } from 'rxjs';
+import { Subscription, skip } from 'rxjs';
+import { LanguageService } from '../../core/services/language.service';
 import { NotificationsApiService } from '../../core/api/notifications-api.service';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
@@ -257,6 +258,7 @@ export class NotificationsPage implements OnDestroy {
   readonly notificationsApi = inject(NotificationsApiService);
   private readonly visits = inject(VisitService);
   private readonly toast = inject(ToastService);
+  private readonly languageService = inject(LanguageService);
   private readonly subscriptions = new Subscription();
 
   // ✅ إصلاح L-2: النوع المحدد بدلاً من any[]
@@ -288,8 +290,25 @@ export class NotificationsPage implements OnDestroy {
         const notification = toNotificationItem(rawNotification);
         this.notifications.update(items => [notification, ...items]);
         this.toast.info(notification.message, 'إشعار جديد');
+        // الدفع الفوري يحمل النص المخزَّن (العربي) لأن لغة المستلم مجهولة وقت الإرسال؛ القائمة
+        // التي يعيدها الخادم تُكتب بلغة الموقع، فنحدّثها بصمت ليظهر الإشعار بلغة المستخدم.
+        this.refreshSilently();
       })
     );
+
+    // تغيير لغة الموقع: أعد جلب القائمة لتُكتب الإشعارات باللغة الجديدة (القيمة الأولى تُتجاهل
+    // لأن load() أعلاه جلبتها أصلًا).
+    this.subscriptions.add(
+      this.languageService.currentLang$.pipe(skip(1)).subscribe(() => this.refreshSilently())
+    );
+  }
+
+  /** إعادة جلب القائمة بلا مؤشر تحميل ولا رسالة خطأ — فشلها يُبقي ما هو معروض. */
+  private refreshSilently(): void {
+    this.notificationsApi.getNotifications().subscribe({
+      next: (items: unknown[]) => this.notifications.set((items ?? []).map(toNotificationItem)),
+      error: () => undefined
+    });
   }
 
   ngOnDestroy(): void {

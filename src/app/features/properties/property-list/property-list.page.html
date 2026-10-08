@@ -325,6 +325,9 @@
             <p class="property-card__location line-clamp-1">
               📍 {{ getLocation(property) }}
             </p>
+            <p class="property-card__agency line-clamp-1" *ngIf="property.agencyName">
+              🏢 {{ property.agencyName }}
+            </p>
             <div class="property-card__specs">
               <span *ngIf="property.rooms">
                 🛏 {{ property.rooms }} {{ 'PROPERTY.ROOMS' | translate }}

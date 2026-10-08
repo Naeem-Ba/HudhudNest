@@ -266,6 +266,39 @@
     <!-- ── Body Content ── -->
     <div class="container detail-body">
 
+      <!-- بطاقة المكتب العقاري: تظهر فقط لإعلان عضو في مكتب فعّال (الخادم يملأ الحقول للمكتب الفعّال
+           فقط؛ إعلان فردي أو مكتب معطَّل أو خادم أقدم = لا بطاقة). المكتب هنا كيان مستقل عن المعلن
+           (بطاقة المالك أدناه) وله تقييمه الخاص في صفحته العامة. -->
+      <div class="detail-card agency-card" *ngIf="property()?.agencyName && property()?.agencySlug">
+        <div class="detail-card__header">
+          <h2>{{ 'PROPERTY_DETAIL.AGENCY.TITLE' | translate }}</h2>
+        </div>
+        <div class="agency-card__body">
+          <img
+            class="agency-card__logo"
+            [src]="property()!.agencyLogoUrl || '/images/default-avatar.svg'"
+            appImageFallback="/images/default-avatar.svg"
+            alt=""
+          />
+          <div class="agency-card__info">
+            <a class="agency-card__name" [routerLink]="['/agencies', property()!.agencySlug]">
+              {{ property()!.agencyName }}
+            </a>
+            <div class="agency-card__rating" *ngIf="(property()!.agencyRatingCount ?? 0) > 0; else agencyNotRated">
+              <span class="agency-card__stars" aria-hidden="true">★</span>
+              <strong>{{ property()!.agencyRatingAverage }}</strong>
+              <span class="agency-card__count">({{ property()!.agencyRatingCount }})</span>
+            </div>
+            <ng-template #agencyNotRated>
+              <span class="agency-card__count">{{ 'PROPERTY_DETAIL.AGENCY.NOT_RATED' | translate }}</span>
+            </ng-template>
+            <a class="agency-card__link" [routerLink]="['/agencies', property()!.agencySlug]">
+              {{ 'PROPERTY_DETAIL.AGENCY.VIEW_PROFILE' | translate }}
+            </a>
+          </div>
+        </div>
+      </div>
+
       <!-- ✅ إضافة: بطاقة معلومات المالك — تستهلك GET /api/users/{id} التي كانت
            غير مستخدَمة إطلاقاً؛ الصفحة سابقًا كانت تكتفي بمقارنة ownerId داخليًا
            دون عرض أي معلومة عامة عن المالك (اسم/صورة/هاتف إن كان وسيطًا). -->
