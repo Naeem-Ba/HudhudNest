@@ -1,4 +1,4 @@
-package com.realestate.app;
+package com.hudhudnest.app;
 
 import com.getcapacitor.BridgeActivity;
 

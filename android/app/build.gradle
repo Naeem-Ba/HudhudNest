@@ -15,10 +15,10 @@ def hasEnvSigning = System.getenv('RELEASE_STORE_PASSWORD') != null
 def hasReleaseSigning = hasLocalSigningFile || hasEnvSigning
 
 android {
-    namespace = "com.realestate.app"
+    namespace = "com.hudhudnest.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.realestate.app"
+        applicationId "com.hudhudnest.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         // BLK-04: أول ترقية فعلية منذ إنشاء المشروع (كانت 1 / "1.0" دائمًا).

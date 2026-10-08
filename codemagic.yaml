@@ -64,7 +64,7 @@ workflows:
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
-        BUNDLE_ID: "com.realestate.app"
+        BUNDLE_ID: "com.hudhudnest.app"
       node: 22.19.0
       xcode: 16.4
     triggering:

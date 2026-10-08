@@ -4,7 +4,7 @@ const allowCleartext =
   process.env['CAPACITOR_ALLOW_CLEARTEXT'] === 'true';
 
 const config: CapacitorConfig = {
-  appId: 'com.realestate.app',
+  appId: 'com.hudhudnest.app',
   appName: 'HudhudNest',
   webDir: 'dist/HudhudNest/browser',
 
