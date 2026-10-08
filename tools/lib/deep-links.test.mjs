@@ -42,7 +42,7 @@ test('assetlinks.json targets the Android package with the configured certificat
   const [entry] = buildAssetLinks(config, {});
   assert.deepEqual(entry.relation, ['delegate_permission/common.handle_all_urls']);
   assert.equal(entry.target.namespace, 'android_app');
-  assert.equal(entry.target.package_name, 'com.realestate.app');
+  assert.equal(entry.target.package_name, 'com.hudhudnest.app');
   assert.deepEqual(entry.target.sha256_cert_fingerprints, [FP_A]);
 });
 
@@ -68,7 +68,7 @@ test('apple-app-site-association lists the app ID and the allowed paths, exclusi
   const aasa = buildAppleSiteAssociation(config, { APPLE_TEAM_ID: 'a1b2c3d4e5' });
   const [detail] = aasa.applinks.details;
 
-  assert.deepEqual(detail.appIDs, ['A1B2C3D4E5.com.realestate.app']);
+  assert.deepEqual(detail.appIDs, ['A1B2C3D4E5.com.hudhudnest.app']);
 
   const paths = detail.components.map(component => component['/']);
   assert.deepEqual(paths.slice(0, 2), ['/properties/edit', '/properties/edit/*']);
@@ -97,6 +97,21 @@ test('AndroidManifest has a verified, browsable intent-filter listing exactly th
 test('the Android package matches the Gradle applicationId and the Capacitor appId', () => {
   assert.match(read('android/app/build.gradle'), new RegExp(`applicationId "${config.android.package.replace(/\./g, '\\.')}"`));
   assert.match(read('capacitor.config.ts'), new RegExp(`appId: '${config.android.package.replace(/\./g, '\\.')}'`));
+});
+
+test('MainActivity lives in the Gradle namespace, and the other native files use the same identifiers', () => {
+  const pkg = config.android.package;
+  const gradle = read('android/app/build.gradle');
+  assert.match(gradle, new RegExp(`namespace = "${pkg.replace(/\./g, '\\.')}"`));
+
+  // A Java file whose package or folder differs from the namespace compiles but crashes at launch (class not found).
+  const activity = read(`android/app/src/main/java/${pkg.replace(/\./g, '/')}/MainActivity.java`);
+  assert.match(activity, new RegExp(`^package ${pkg.replace(/\./g, '\\.')};`, 'm'));
+
+  const strings = read('android/app/src/main/res/values/strings.xml');
+  assert.ok(strings.includes(`<string name="package_name">${pkg}</string>`));
+
+  assert.ok(read('codemagic.yaml').includes(`BUNDLE_ID: "${config.ios.bundleId}"`), 'Codemagic BUNDLE_ID');
 });
 
 test('iOS entitlements declare applinks for the host and the Xcode project uses them in both configurations', () => {

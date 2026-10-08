@@ -48,12 +48,12 @@ Google Cloud Console ← مشروع `aqar-tech` ← Credentials ← `aqar-tech W
 الوضع الحالي في الكود: `APPLE_CLIENT_ID` غير معرّف في Netlify، فتكون `appleClientId` فارغة ويُعطَّل زر Apple (`SocialAuthService` يفحص `Boolean(environment.appleClientId?.trim())`).
 
 الخطوات بعد الاشتراك:
-1. Identifiers ← App IDs ← `com.realestate.app`: فعّل Capability "Sign in with Apple" (Enable as a primary App ID).
-2. Identifiers ← Services IDs ← `+`: أنشئ Services ID، مثلًا `com.realestate.app.web`، وفعّل Sign in with Apple.
-3. Configure: Primary App ID = `com.realestate.app`، Domains = `hudhudnest.com`، Return URLs = `https://hudhudnest.com/auth/apple/callback`. لا تضف نطاقات أخرى إلا عند الحاجة، ولا تضف الـ www لأنه يحوّل إلى النطاق الأساسي.
+1. Identifiers ← App IDs ← `com.hudhudnest.app`: فعّل Capability "Sign in with Apple" (Enable as a primary App ID).
+2. Identifiers ← Services IDs ← `+`: أنشئ Services ID، مثلًا `com.hudhudnest.app.web`، وفعّل Sign in with Apple.
+3. Configure: Primary App ID = `com.hudhudnest.app`، Domains = `hudhudnest.com`، Return URLs = `https://hudhudnest.com/auth/apple/callback`. لا تضف نطاقات أخرى إلا عند الحاجة، ولا تضف الـ www لأنه يحوّل إلى النطاق الأساسي.
 4. Netlify ← Environment variables: `APPLE_CLIENT_ID` = معرّف الـ Services ID. القيمة تُقرأ وقت البناء (`tools/generate-env.mjs`)، فيلزم نشر جديد.
 5. Render (الإنتاج وStaging): `SocialAuth__AppleClientId` = نفس المعرّف. الباك اند يتحقق فقط من `iss = https://appleid.apple.com` و`aud = SocialAuth:AppleClientId` والـ nonce، ولا يحتاج مفتاحًا خاصًا (`AppleTokenVerifier.cs`).
-6. تنبيه: الباك اند يقبل `aud` واحدًا فقط. الويب يستخدم Services ID، أما تطبيق iOS الأصلي فقد يصدر tokens بـ `aud = com.realestate.app`. تحقق من مسار iOS قبل الاعتماد على قيمة واحدة، وقد يلزم دعم أكثر من audience.
+6. تنبيه: الباك اند يقبل `aud` واحدًا فقط. الويب يستخدم Services ID، أما تطبيق iOS الأصلي فقد يصدر tokens بـ `aud = com.hudhudnest.app`. تحقق من مسار iOS قبل الاعتماد على قيمة واحدة، وقد يلزم دعم أكثر من audience.
 
 ## 3. التحقق بعد إكمال الإجراءات اليدوية
 ```bash

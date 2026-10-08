@@ -134,7 +134,7 @@ describe('AppUpdateService', () => {
         mandatory: true,
         latestVersion: '1.2.0',
         minimumSupportedVersion: '1.1.0',
-        storeUrl: 'https://play.google.com/store/apps/details?id=com.realestate.app'
+        storeUrl: 'https://play.google.com/store/apps/details?id=com.hudhudnest.app'
       })
     );
 
@@ -235,7 +235,7 @@ describe('AppUpdateService', () => {
 
   it('✅ openStore مع storeUrl: يفتح المتجر عبر البوابة', async () => {
     native.openUrl.and.resolveTo();
-    const storeUrl = 'https://play.google.com/store/apps/details?id=com.realestate.app';
+    const storeUrl = 'https://play.google.com/store/apps/details?id=com.hudhudnest.app';
 
     await service.openStore(storeUrl);
 

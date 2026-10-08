@@ -74,7 +74,7 @@ exercised).
 [`capacitor.config.ts`](../capacitor.config.ts):
 
 ```ts
-appId: 'com.realestate.app'
+appId: 'com.hudhudnest.app'
 webDir: 'dist/HudhudNest/browser'
 server: { androidScheme: 'https', iosScheme: 'capacitor', cleartext: <env-gated, off by default>,
           allowNavigation: ['hudhudnest.com', '*.hudhudnest.com'] }
