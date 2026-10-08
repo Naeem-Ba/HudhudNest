@@ -342,6 +342,12 @@ POST   /api/auth/forgot-password    طلب إعادة تعيين كلمة الس
 POST   /api/auth/reset-password     تأكيد إعادة تعيين كلمة السر
 ```
 
+**رابط بريد الاستعادة:** `{Frontend:PasswordResetUrl}?email=..&token=..` (يبنيه
+`PasswordResetUrlBuilder` في الخلفية). صفحة `/auth/reset-password` تقرأ `email` و`token` من الرابط
+ولا تعرض التوكن («رمز الاستعادة» ليس رمز هاتف ولا يكتبه المستخدم)؛ يُدخل المستخدم كلمة المرور الجديدة
+وتأكيدها فقط، وتُرسَل `{ email, token, newPassword, confirmPassword }` كما هي. رابط ناقص أحد الوسيطين
+يعرض «الرابط غير صالح» مع زر لطلب رابط جديد. الخلفية تتحقق من تطابق `newPassword` و`confirmPassword`.
+
 ### 6.2 الهاتف والـ OTP
 ```
 POST   /api/auth/phone/register     تسجيل بالهاتف (إرسال OTP)
