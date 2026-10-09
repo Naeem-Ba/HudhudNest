@@ -95,7 +95,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
     .page-header { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap; }
     .page-header h1 { margin:0 0 .3rem; color:var(--navy); font-family:var(--font-display); font-size:clamp(1.5rem,2.6vw,2rem); }
     .page-header p { margin:0; color:var(--gray-500); }
-    .link-btn { background:none; border:0; color:var(--primary); cursor:pointer; font-weight:600; }
+    .link-btn { background:none; border:0; color:var(--primary-text); cursor:pointer; font-weight:600; }
 
     .suggestions-table { display:flex; flex-direction:column; gap:.5rem; }
     .row {
@@ -116,7 +116,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 
     .actions { display:flex; gap:.4rem; align-items:center; flex-wrap:wrap; }
     .btn { border-radius:var(--r-sm); padding:.4rem .75rem; font-size:var(--text-sm); cursor:pointer; border:1px solid transparent; }
-    .btn--primary { background:var(--primary); color:#fff; }
+    .btn--primary { background:var(--primary); color: var(--on-primary); }
     .btn--danger { background:var(--danger-soft); color:var(--danger); border-color:rgba(220,38,38,.2); }
     .btn:disabled { opacity:.6; cursor:not-allowed; }
 

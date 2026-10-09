@@ -802,11 +802,11 @@ a.owner-card__name--link {
   display: block;
   text-decoration: none;
 
-  &:hover { text-decoration: underline; color: var(--primary); }
+  &:hover { text-decoration: underline; color: var(--primary-text); }
 }
 
 .owner-card__phone {
-  color: var(--primary);
+  color: var(--primary-text);
   font-size: .9rem;
   text-decoration: none;
 
@@ -818,5 +818,5 @@ a.owner-card__name--link {
   font-size: .8rem;
   text-decoration: none;
 
-  &:hover { text-decoration: underline; color: var(--primary); }
+  &:hover { text-decoration: underline; color: var(--primary-text); }
 }

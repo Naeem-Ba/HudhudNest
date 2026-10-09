@@ -4,7 +4,7 @@
   padding: var(--space-6, 1.5rem) var(--space-4, 1rem);
 
   &__eyebrow {
-    color: var(--primary, #2563eb);
+    color: var(--primary, #D6A84F);
     font-weight: 600;
     font-size: 0.8125rem;
     text-transform: uppercase;
@@ -28,8 +28,8 @@
     border-bottom: 2px solid transparent;
 
     &--active {
-      color: var(--primary, #2563eb);
-      border-bottom-color: var(--primary, #2563eb);
+      color: var(--primary, #D6A84F);
+      border-bottom-color: var(--primary, #D6A84F);
     }
   }
 

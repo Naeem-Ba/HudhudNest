@@ -302,13 +302,15 @@ export class PricingPage implements OnInit {
       .subscribe({
         next: () => {
           this.selecting.set(null);
-          this.toast.success(
-            this.translate.instant(
-              plan.tier === 'free'
-                ? 'PRICING.MESSAGES.FREE_SELECTED_SUCCESS'
-                : 'PRICING.MESSAGES.PLAN_REQUEST_SENT'
-            )
-          );
+          // Only the free plan is a finished action. A paid tier is merely recorded as a
+          // pending request here; the visitor still has to write and send the contact
+          // message, so a success toast now would claim the request was received before
+          // they have written anything. Guide them to the next step instead.
+          if (plan.tier === 'free') {
+            this.toast.success(this.translate.instant('PRICING.MESSAGES.FREE_SELECTED_SUCCESS'));
+          } else {
+            this.toast.info(this.translate.instant('PRICING.MESSAGES.PLAN_NEXT_STEP'));
+          }
           destination();
         },
         error: err => {

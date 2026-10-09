@@ -152,14 +152,14 @@ const ALL_TYPES: InvestmentProjectType[] = [
     .status-chip--published { background: var(--success-soft, #dcfce7); color: var(--success, #16a34a); }
     .status-chip--draft { background: var(--gray-100); color: var(--gray-500); }
     .status-chip--underreview, .status-chip--scheduled { background: #fef3c7; color: #b45309; }
-    .status-chip--approved { background: #dbeafe; color: #1d4ed8; }
+    .status-chip--approved { background: var(--primary-soft); color: var(--primary-text); }
     .status-chip--rejected, .status-chip--suspended { background: var(--danger-soft); color: var(--danger); }
     .status-chip--closed { background: var(--gray-200, #e5e7eb); color: var(--gray-600); }
 
     .actions { display:flex; gap:.4rem; align-items:center; flex-wrap:wrap; }
     .btn { border-radius:var(--r-sm); padding:.4rem .75rem; font-size:var(--text-sm); cursor:pointer; border:1px solid transparent; font-weight:600; }
     .btn--outline { background:var(--surface); border-color:var(--border); color:var(--navy); }
-    .btn--primary { background: var(--primary); color: #fff; }
+    .btn--primary { background: var(--primary); color: var(--on-primary); }
     .btn:disabled { opacity:.6; cursor:not-allowed; }
 
     .pagination { display:flex; justify-content:center; align-items:center; gap:1rem; margin-top:1.25rem; }

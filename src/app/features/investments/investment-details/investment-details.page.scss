@@ -42,7 +42,7 @@
     border-radius: 999px;
     font-size: 0.72rem;
     font-weight: 700;
-    background: var(--primary, #2563eb);
+    background: var(--primary, #D6A84F);
 
     &--Published { background: #16a34a; }
     &--Suspended { background: #d97706; }
@@ -76,7 +76,7 @@
 
   &__progress-fill {
     height: 100%;
-    background: var(--primary, #2563eb);
+    background: var(--primary, #D6A84F);
     border-radius: 999px;
   }
 
@@ -98,7 +98,7 @@
   }
 
   &__financial-total {
-    dt, dd { color: var(--primary, #2563eb); font-weight: 700; }
+    dt, dd { color: var(--primary, #D6A84F); font-weight: 700; }
   }
 
   &__risk-overall { font-weight: 600; margin-bottom: 0.85rem; }
@@ -176,7 +176,7 @@
         width: 8px;
         height: 8px;
         border-radius: 999px;
-        background: var(--primary, #2563eb);
+        background: var(--primary, #D6A84F);
       }
     }
 
@@ -225,7 +225,7 @@
     strong { display: block; font-size: 1.1rem; }
     span { font-size: 0.78rem; color: #16a34a; }
 
-    &--base { border-color: var(--primary, #2563eb); background: var(--gray-50, #f9fafb); }
+    &--base { border-color: var(--primary, #D6A84F); background: var(--gray-50, #f9fafb); }
   }
 
   &__sidebar { position: static; }
@@ -239,7 +239,7 @@
   }
 
   .btn--block { width: 100%; }
-  .btn--active { background: var(--primary, #2563eb); color: #fff; }
+  .btn--active { background: var(--primary, #D6A84F); color: var(--on-primary); }
 
   @include bp.secondary-layout {
     &__layout { grid-template-columns: 2fr 1fr; align-items: start; }

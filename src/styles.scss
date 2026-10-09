@@ -55,9 +55,13 @@
   --badge-featured-text: var(--gold-dark);
 
   /* UI Colors */
-  --primary:       #2563eb;
-  --primary-dark:  #1d4ed8;
-  --primary-soft:  #eff6ff;
+  /* اللون الأساسي = ذهبي الهوية (كان أزرق). --on-primary: نص أسود فوق أي خلفية ذهبية.
+     --primary-text: نسخة غامقة من الذهبي للنص/الروابط على خلفية فاتحة (تباين ≥ 4.5:1). */
+  --primary:       var(--gold);
+  --primary-dark:  var(--gold-dark);
+  --primary-soft:  var(--gold-soft);
+  --on-primary:    #111111;
+  --primary-text:  #8a6414;
   --success:       #16a34a;
   --success-soft:  #f0fdf4;
   --danger:        #dc2626;
@@ -178,6 +182,7 @@ html[data-theme="dark"] {
   --primary:       var(--gold);
   --primary-dark:  var(--gold-light);
   --primary-soft:  rgba(214, 168, 79, .14);
+  --primary-text:  var(--gold-light);
   --gold-text:     var(--gold-light);
 
   --success-soft:  rgba(22, 163, 74, .16);
@@ -366,13 +371,13 @@ h1, h2, h3, h4, h5, h6 {
 
   &--primary {
     background: var(--primary);
-    color: #fff;
+    color: var(--on-primary);
     border-color: var(--primary);
 
     &:hover:not(:disabled) {
       background: var(--primary-dark);
       transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(37,99,235,.35);
+      box-shadow: 0 4px 16px rgba(214,168,79,.35);
     }
   }
 
@@ -424,7 +429,7 @@ h1, h2, h3, h4, h5, h6 {
   &--ghost {
     background: transparent;
     border-color: transparent;
-    color: var(--primary);
+    color: var(--primary-text);
 
     &:hover:not(:disabled) {
       background: var(--primary-soft);
@@ -503,7 +508,7 @@ textarea {
   &:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    box-shadow: 0 0 0 3px rgba(214,168,79,.12);
   }
 
   &::placeholder {
@@ -591,8 +596,8 @@ textarea.ng-valid.ng-touched {
 
   &--info {
     background: var(--primary-soft);
-    color: var(--primary);
-    border: 1px solid rgba(37,99,235,.2);
+    color: var(--primary-text);
+    border: 1px solid rgba(214,168,79,.2);
   }
 }
 

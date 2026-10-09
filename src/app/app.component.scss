@@ -14,7 +14,7 @@ nav button {
 button {
   background: none;
   border: none;
-  color: blue;
+  color: var(--primary-text);
   cursor: pointer;
 }
 button:hover {

@@ -126,7 +126,7 @@ const PROJECT_TYPES: InvestmentProjectType[] = [
     .form-actions { display:flex; justify-content:flex-end; gap:.75rem; margin-top:.5rem; }
     .btn { border-radius:var(--r-sm); padding:.55rem 1.1rem; font-size:.9rem; cursor:pointer; border:1px solid transparent; font-weight:600; }
     .btn--outline { background:var(--surface); border-color:var(--border); color:var(--navy); }
-    .btn--primary { background: var(--primary); color: #fff; }
+    .btn--primary { background: var(--primary); color: var(--on-primary); }
     .btn:disabled { opacity:.6; cursor:not-allowed; }
   `]
 })

@@ -212,7 +212,7 @@ import { VisitService } from '../../core/api/visit.service';
     .page-header { display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:1rem;flex-wrap:wrap; }
     .page-header h1 { margin:0 0 .35rem;font-size:clamp(1.6rem,3vw,2.2rem); }
     .page-header p { margin:0;color:var(--gray-500);line-height:1.7; }
-    .mark-all-btn { background:var(--primary-soft);color:var(--primary-dark);border:1px solid rgba(37,99,235,.35);border-radius:10px;padding:.55rem 1rem;font-weight:600;cursor:pointer;white-space:nowrap; }
+    .mark-all-btn { background:var(--primary-soft);color:var(--primary-text);border:1px solid rgba(214,168,79,.35);border-radius:10px;padding:.55rem 1rem;font-weight:600;cursor:pointer;white-space:nowrap; }
     .mark-all-btn:disabled { opacity:.6;cursor:default; }
     .state,.card,.state-card { background:var(--surface);padding:1rem;border-radius:16px;box-shadow:var(--shadow-md);border:1px solid var(--border);margin-bottom:1rem; }
     .state { display:flex;gap:.5rem;align-items:center;color:var(--gray-600); }

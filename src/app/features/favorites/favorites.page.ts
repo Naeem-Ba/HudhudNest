@@ -167,7 +167,7 @@ interface FavoritePropertyNested {
     h2, p { margin: 0; color: var(--gray-800); }
     p { color: var(--gray-500); line-height: 1.6; }
     strong { color: var(--badge-rent-text); overflow-wrap: anywhere; }
-    a { width: fit-content; color: var(--primary); font-weight: 700; text-decoration: none; }
+    a { width: fit-content; color: var(--primary-text); font-weight: 700; text-decoration: none; }
     a:hover { text-decoration: underline; }
 
     .state-card {

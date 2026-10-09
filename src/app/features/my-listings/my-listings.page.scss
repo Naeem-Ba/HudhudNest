@@ -168,7 +168,7 @@
 
   &:disabled { opacity: .5; cursor: default; }
 
-  &--primary   { background: var(--primary); color: #fff; &:hover:not(:disabled) { background: var(--primary-dark); } }
+  &--primary   { background: var(--primary); color: var(--on-primary); &:hover:not(:disabled) { background: var(--primary-dark); } }
   &--secondary { background: var(--gray-100); color: var(--gray-700); &:hover:not(:disabled) { background: var(--gray-200); } }
   &--danger    { background: #ef4444; color: #fff; &:hover:not(:disabled) { background: var(--danger); } }
   &--ghost     { background: transparent; color: var(--gray-500); border: 1px solid var(--border); }

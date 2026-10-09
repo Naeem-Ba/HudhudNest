@@ -72,7 +72,7 @@ const PAGE_SIZE = 20;
     .state-card.error { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; color:var(--danger); background:var(--danger-soft);
       border:1px solid rgba(220,38,38,.2); border-radius:var(--r-lg); padding:1rem; }
     .state-card.error p { margin:0; flex:1; }
-    .link-btn { background:none; border:0; color:var(--primary); font-weight:600; cursor:pointer; }
+    .link-btn { background:none; border:0; color:var(--primary-text); font-weight:600; cursor:pointer; }
     .load-more { display:block; margin:1rem auto 0; background:var(--surface); border:1px solid var(--border);
       border-radius:var(--r-pill); padding:.55rem 1.4rem; cursor:pointer; color:var(--navy); font-weight:600; }
     .load-more:disabled { opacity:.6; cursor:default; }
