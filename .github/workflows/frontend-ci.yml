@@ -10,22 +10,44 @@ on:
 permissions:
   contents: read
 
+# دفعة جديدة إلى نفس الـ PR تُلغي التشغيل الأقدم (كان يكتمل كله دون فائدة). غير الـ PR (push إلى main، تشغيل
+# يدوي) يأخذ مجموعة خاصة به (run_id) فلا يُلغى ولا يُؤجَّل ولا يُستبدل: android-release ينشر الـ Release
+# وsync-staging ينتظر اكتمال تشغيل main.
+concurrency:
+  group: frontend-ci-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build:
     name: Audit + Build Angular Production
     # مثبَّت صراحةً (بدل ubuntu-latest) لنفس سبب مهمة Android أدناه؛ يُتحقَّق منه بتشغيل هذا الـ PR.
     runs-on: ubuntu-26.04
     timeout-minutes: 20
+    # هل يمسّ التغيير مشروع iOS؟ تقرؤه مهمة ios-build أدناه (دقيقة macOS أغلى بنحو 10 أضعاف Linux:
+    # 0.062$ مقابل 0.006$؛ وفي المستودعات الخاصة حصة الدقائق المجانية 2000 شهريًا للحساب كله).
+    outputs:
+      native: ${{ steps.native.outputs.native }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          # عمقان يكفيان لمقارنة commit الدمج في الـ PR بأبيه الأول؛ tools/ci-detect-native.mjs يجلب
+          # الـ commit السابق عند الحاجة في دفعات push، وأي فشل يعني "شغّل iOS" (لا يفشل الخطوة أبدًا).
+          fetch-depth: 2
 
       - name: Setup Node.js
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: '22'
           cache: 'npm'
+
+      - name: Detect native changes
+        id: native
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: node tools/ci-detect-native.mjs
 
       - name: Install dependencies
         run: npm ci
@@ -214,6 +236,12 @@ jobs:
 
   ios-build:
     name: iOS Unsigned Simulator Build
+    # يعمل فقط حين يتغيّر ما يدخل مشروع iOS (ios/، capacitor.config.*، package*.json، أدوات iOS، أو هذا
+    # الملف؛ القائمة في tools/lib/native-changes.mjs) وبعد نجاح بناء الويب، فلا يُنفَق وقت macOS على
+    # بناء أحمر. تغيير Angular وحده لا يمكن أن يكسر xcodebuild (مهمة build تتحقق منه). التشغيل اليدوي
+    # (workflow_dispatch) يشغّله دائمًا.
+    needs: build
+    if: needs.build.outputs.native == 'true'
     # macos-14 يدخل طور التقاعد في 2026-07-06 ويُسحَب نهائياً في 2026-11-02
     # (راجع: https://github.com/actions/runner-images/issues/13518) — macos-15 هو
     # أحدث صورة مستقرة غير مؤقَّتة اليوم؛ لا نستخدم macos-latest لأنه تحوّل مؤخراً

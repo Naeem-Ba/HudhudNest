@@ -42,7 +42,9 @@ npm run version:set -- 1.2.0 --build 7
 ## Release procedure
 
 1. `npm run version:set -- <x.y.z>` and commit the change.
-2. Merge to `main`. CI builds the signed Android AAB; the iOS job builds an unsigned simulator build.
+2. Merge to `main`. CI builds the signed Android AAB; the iOS job builds an unsigned simulator build, but only when
+   the change touches the native project (`ios/`, `capacitor.config.*`, `package*.json`, the iOS tools or `frontend-ci.yml`;
+   the list is `tools/lib/native-changes.mjs`). A web-only merge skips it. To force it, run Frontend CI by hand.
    Upload to Google Play / App Store Connect and wait until the build is **live in the stores**.
 3. **Only after the build is live**, open `/admin/app-updates` and create the release for each platform:
    `Version` = the shipped version, `MinimumSupportedVersion` = the oldest version you still support,
