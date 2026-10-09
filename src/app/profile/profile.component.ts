@@ -324,6 +324,9 @@ export class ProfileComponent implements OnInit {
         return this.translate.instant('PROFILE.EMAIL_SECTION.ERRORS.ALREADY_SET');
       case 'EMAIL_TAKEN':
         return this.translate.instant('PROFILE.EMAIL_SECTION.ERRORS.TAKEN');
+      // 429 from the API's per-account quota of confirmation mails (3 per rolling 24 hours).
+      case 'EMAIL_CONFIRMATION_LIMIT_REACHED':
+        return this.translate.instant('PROFILE.EMAIL_SECTION.ERRORS.LIMIT_REACHED');
       default:
         return this.translate.instant('PROFILE.EMAIL_SECTION.ERRORS.GENERIC');
     }

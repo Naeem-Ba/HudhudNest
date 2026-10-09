@@ -1039,6 +1039,7 @@
       "ERRORS": {
         "ALREADY_SET": "You already have a verified email address.",
         "TAKEN": "This email address is already used by another account.",
+        "LIMIT_REACHED": "You have reached the limit of 3 activation emails per 24 hours. Please try again later.",
         "GENERIC": "Could not send the verification link. Please try again."
       }
     },
@@ -1078,11 +1079,11 @@
     },
     "DATA_EXPORT": {
       "TITLE": "Your data",
-      "HINT": "Download a copy of the data we hold about you as a JSON file: your account details, listings, reviews, favorites, visit requests and consents. Available 5 times every 24 hours.",
+      "HINT": "Download a copy of the data we hold about you as a JSON file: your account details, listings, reviews, favorites, visit requests and consents. Available once every 24 hours.",
       "BTN": "Download my data",
       "LOADING": "Preparing…",
       "SUCCESS": "Your data file was downloaded.",
-      "RATE_LIMITED": "You reached the export limit (5 every 24 hours). Please try again later.",
+      "RATE_LIMITED": "You reached the export limit (once every 24 hours). Please try again later.",
       "ERROR": "Could not export your data. Please try again later."
     },
     "DANGER_ZONE": {

@@ -1039,6 +1039,7 @@
       "ERRORS": {
         "ALREADY_SET": "Sie haben bereits eine bestätigte E-Mail-Adresse.",
         "TAKEN": "Diese E-Mail-Adresse wird bereits von einem anderen Konto verwendet.",
+        "LIMIT_REACHED": "Sie haben das Limit von 3 Aktivierungs-E-Mails pro 24 Stunden erreicht. Bitte versuchen Sie es später erneut.",
         "GENERIC": "Der Bestätigungslink konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
       }
     },
@@ -1078,11 +1079,11 @@
     },
     "DATA_EXPORT": {
       "TITLE": "Deine Daten",
-      "HINT": "Lade eine Kopie der Daten, die wir über dich speichern, als JSON-Datei herunter: Kontodaten, Anzeigen, Bewertungen, Favoriten, Besichtigungsanfragen und Einwilligungen. 5-mal alle 24 Stunden möglich.",
+      "HINT": "Lade eine Kopie der Daten, die wir über dich speichern, als JSON-Datei herunter: Kontodaten, Anzeigen, Bewertungen, Favoriten, Besichtigungsanfragen und Einwilligungen. Einmal alle 24 Stunden möglich.",
       "BTN": "Meine Daten herunterladen",
       "LOADING": "Wird vorbereitet…",
       "SUCCESS": "Deine Datendatei wurde heruntergeladen.",
-      "RATE_LIMITED": "Du hast das Export-Limit erreicht (5 alle 24 Stunden). Bitte versuche es später erneut.",
+      "RATE_LIMITED": "Du hast das Export-Limit erreicht (einmal alle 24 Stunden). Bitte versuche es später erneut.",
       "ERROR": "Deine Daten konnten nicht exportiert werden. Bitte versuche es später erneut."
     },
     "DANGER_ZONE": {

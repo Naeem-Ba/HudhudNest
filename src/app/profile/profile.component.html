@@ -164,19 +164,19 @@
         <div class="password-fields" *ngIf="showPasswordForm()">
           <div class="field">
             <label>{{ 'PROFILE.CURRENT_PASS' | translate }} *</label>
-            <input type="password" [(ngModel)]="passwordData.currentPassword" name="currentPassword" placeholder="••••••••">
+            <input type="password" [(ngModel)]="passwordData.currentPassword" name="currentPassword" autocomplete="new-password" placeholder="••••••••">
             <div class="field-error" *ngIf="passwordSubmitted && !passwordData.currentPassword">⚠️ {{ 'VALIDATION.REQUIRED' | translate }}</div>
           </div>
 
           <div class="field">
             <label>{{ 'PROFILE.NEW_PASS' | translate }} *</label>
-            <input type="password" [(ngModel)]="passwordData.newPassword" name="newPassword" placeholder="••••••••">
+            <input type="password" [(ngModel)]="passwordData.newPassword" name="newPassword" autocomplete="new-password" placeholder="••••••••">
             <div class="field-error" *ngIf="passwordSubmitted && passwordData.newPassword.length < 8">⚠️ {{ 'AUTH.ERRORS.PASSWORD_MIN' | translate }}</div>
           </div>
 
           <div class="field">
             <label>{{ 'PROFILE.CONFIRM_PASS' | translate }} *</label>
-            <input type="password" [(ngModel)]="passwordData.confirmPassword" name="confirmPassword" placeholder="••••••••">
+            <input type="password" [(ngModel)]="passwordData.confirmPassword" name="confirmPassword" autocomplete="new-password" placeholder="••••••••">
             <div class="field-error" *ngIf="passwordSubmitted && passwordMismatch()">⚠️ {{ 'PROFILE.MESSAGES.PASS_MISMATCH' | translate }}</div>
           </div>
 
@@ -195,7 +195,7 @@
 
     <!-- Danger Zone — deliberately separated from Save above by its own bordered section,
          never adjacent to it, so it cannot be tapped by mistake reaching for Save (§24). -->
-    <!-- Your data — GET /api/Users/me/export (right of access, 5 exports per 24 hours). -->
+    <!-- Your data — GET /api/Users/me/export (right of access, one export per 24 hours). -->
     <div class="data-zone">
       <h3 class="data-zone__title">{{ 'PROFILE.DATA_EXPORT.TITLE' | translate }}</h3>
       <p class="data-zone__hint">{{ 'PROFILE.DATA_EXPORT.HINT' | translate }}</p>
