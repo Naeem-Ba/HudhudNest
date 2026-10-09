@@ -223,7 +223,7 @@ provideHttpClient(withInterceptors([
 **خط أنابيب CI (`'.github/workflows/frontend-ci.yml`، ثلاث مهام):**
 1. **`build`** — على كل Push/PR لِـ `main`/`master`/`develop`: `audit:frontend` → `test:tools` + `version:check` → `check:env` → `check:i18n` → `typecheck` → `typecheck:strict` → `test:ci` (Karma + ChromeHeadless) → `build:prod`.
 2. **`android-release`** — يعمل فقط عند Push إلى `main`، ويُشترَط وجود سرّ `RELEASE_STORE_PASSWORD`؛ يبني ويوقّع AAB. **موثَّق صراحة في الـ workflow نفسه أنه لم يُختبَر تشغيله فعلياً بعد** (مشكلة فوترة على حساب GitHub الحالي).
-3. **`ios-build`** — على `macos-15` (اختيار صريح مؤرَّخ لتفادي `macos-latest` المتغيّر)، Xcode 16.4 مثبَّت صراحة، بناء محاكي غير موقَّع فقط (لا يتطلّب حساب Apple Developer).
+3. **`ios-build`** — على `macos-15` (اختيار صريح مؤرَّخ لتفادي `macos-latest` المتغيّر)، Xcode 16.4 مثبَّت صراحة، بناء محاكي غير موقَّع فقط (لا يتطلّب حساب Apple Developer). **يعمل فقط بعد نجاح `build` وحين يمسّ التغيير مشروع iOS** (`tools/lib/native-changes.mjs`)؛ تغيير الويب وحده يتخطّاه، والتشغيل اليدوي يشغّله دائمًا. السبب: دقيقة macOS أغلى بنحو 10 أضعاف Linux (0.062$ مقابل 0.006$)، والحصة المجانية في المستودع الخاص 2000 دقيقة شهريًا للحساب كله.
 
 ### 4.5 وجهة النظر الأمنية (Security View)
 
