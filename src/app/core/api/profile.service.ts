@@ -351,7 +351,7 @@ export class ProfileService {
 
   /**
    * GET /api/Users/me/export — the caller's own data as one JSON document (AccountDataExportDto).
-   * Rate-limited server-side to 5 per 24 hours ("data-export" policy → 429).
+   * Rate-limited server-side to one per 24 hours ("data-export" policy → 429).
    */
   exportMyData(): Observable<unknown> {
     return this.api.get<unknown>('/users/me/export');
