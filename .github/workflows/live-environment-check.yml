@@ -7,7 +7,8 @@ name: Live environment check
 #
 # It needs no checkout of dependencies: the checker has none. A red run means one of:
 #   * the live site is a Staging build, or came from a deploy preview / branch deploy  -> republish the
-#     latest `Production: main@...` deploy in Netlify (Deploys -> that deploy -> Publish deploy);
+#     latest `Production: release@...` deploy in Netlify (`Production: main@...` while main is still the
+#     production branch) (Deploys -> that deploy -> Publish deploy);
 #   * the live site serves no build-info.json yet -> it was built before this check existed; publish a deploy
 #     that was built after it was merged;
 #   * the site could not be reached (exit code 2) -> check Netlify status.

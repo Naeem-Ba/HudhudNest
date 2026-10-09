@@ -15,5 +15,10 @@
   "ios": {
     "bundleId": "com.hudhudnest.app",
     "teamId": ""
+  },
+  "stores": {
+    "_comment": "Used only by the /download page (tools/generate-download-page.mjs). Set published to true ONLY once the app is live in that store; until then the page says 'coming soon' and never redirects. The Google Play address is derived from android.package, the App Store address from appStoreId (digits only, no 'id' prefix). No other address is ever accepted. See docs/DEEP-LINKS.md.",
+    "android": { "published": false },
+    "ios": { "published": false, "appStoreId": "" }
   }
 }

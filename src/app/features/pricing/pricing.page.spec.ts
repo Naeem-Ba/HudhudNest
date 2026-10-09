@@ -11,7 +11,9 @@
 //   5) زائر غير مسجَّل الدخول يختار الخطة المجانية ⇐ يُرسَل لتسجيل الدخول مع
 //      returnUrl يحمل ?autoSelect=free بدل الذهاب لـ property-form مباشرة
 //      (الذي كان سيُعيده AuthGuard إلى هنا بلا أي أثر للاختيار).
-//   6) العودة من الدخول بـ ?autoSelect=free تُكمل الاختيار تلقائيًا.
+//   6) العودة من الدخول بـ ?autoSelect=free تُكمل الاختيار تلقائيًا — فقط حين تسبقها
+//      علامة لمرة واحدة تركتها ضغطة الزائر في هذا التبويب (F-22: رابط مصنوع وحده لا
+//      يغيّر خطة أحد).
 // =====================================================================
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
@@ -58,7 +60,17 @@ const PLANS: SubscriptionPlan[] = [
   }
 ];
 
+const MARKER_KEY = 'pricing.pendingAutoSelect';
+
+/** Stands in for the marker onSelectPlan leaves when a signed-out visitor taps a plan. */
+function armMarker(tier: string, ageMs = 0): void {
+  sessionStorage.setItem(MARKER_KEY, JSON.stringify({ tier, at: Date.now() - ageMs }));
+}
+
 describe('PricingPage', () => {
+  beforeEach(() => sessionStorage.removeItem(MARKER_KEY));
+  afterEach(() => sessionStorage.removeItem(MARKER_KEY));
+
   let plansApiSpy: jasmine.SpyObj<PlansApiService>;
   let profileServiceSpy: jasmine.SpyObj<ProfileService>;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
@@ -193,6 +205,21 @@ describe('PricingPage', () => {
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/auth/login'], {
       queryParams: { returnUrl: '/pricing?autoSelect=free' }
     });
+
+    const marker = JSON.parse(sessionStorage.getItem(MARKER_KEY) ?? 'null');
+    expect(marker.tier).toBe('free');
+    expect(Date.now() - marker.at).toBeLessThan(5000);
+  });
+
+  it('F-22: تعذّر الكتابة في sessionStorage لا يمنع التوجيه إلى تسجيل الدخول', () => {
+    spyOn(Storage.prototype, 'setItem').and.throwError('blocked');
+    const component = createComponent(null);
+
+    expect(() => component.onSelectPlan(PLANS[0])).not.toThrow();
+
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/auth/login'], {
+      queryParams: { returnUrl: '/pricing?autoSelect=free' }
+    });
   });
 
   it('زائر غير مسجَّل الدخول يختار خطة مدفوعة ⇐ يذهب مباشرة لصفحة التواصل، بلا تسجيل دخول', () => {
@@ -206,6 +233,7 @@ describe('PricingPage', () => {
   });
 
   it('العودة من الدخول بـ ?autoSelect=free تُكمل الاختيار تلقائيًا دون ضغطة ثانية', () => {
+    armMarker('free');
     const component = createComponent('token-123', { autoSelect: 'free' });
 
     expect(plansApiSpy.selectPlan).toHaveBeenCalledWith('free');
@@ -217,6 +245,74 @@ describe('PricingPage', () => {
     createComponent(null, { autoSelect: 'free' });
 
     expect(plansApiSpy.selectPlan).not.toHaveBeenCalled();
+  });
+
+  describe('F-22: ?autoSelect وحده لا يغيّر خطة أحد', () => {
+    it('مسجَّل الدخول يفتح الرابط بلا علامة ⇐ لا طلب اختيار', () => {
+      createComponent('token-123', { autoSelect: 'free' });
+      expect(plansApiSpy.selectPlan).not.toHaveBeenCalled();
+      expect(routerSpy.navigate).not.toHaveBeenCalled();
+    });
+
+    it('الخطة المدفوعة أيضًا: رابط ?autoSelect=premium بلا علامة لا ينشئ طلبًا معلّقًا', () => {
+      createComponent('token-123', { autoSelect: 'premium' });
+      expect(plansApiSpy.selectPlan).not.toHaveBeenCalled();
+    });
+
+    it('علامة صحيحة تعمل مرة واحدة فقط: إعادة التحميل أو الرجوع لا تكرر الطلب', () => {
+      armMarker('free');
+      const component = createComponent('token-123', { autoSelect: 'free' });
+      expect(plansApiSpy.selectPlan).toHaveBeenCalledTimes(1);
+      expect(sessionStorage.getItem(MARKER_KEY)).toBeNull();
+
+      plansApiSpy.selectPlan.calls.reset();
+      component.ngOnInit();
+
+      expect(plansApiSpy.selectPlan).not.toHaveBeenCalled();
+    });
+
+    it('علامة لخطة أخرى ⇐ لا طلب، وتُحذف العلامة', () => {
+      armMarker('free');
+      createComponent('token-123', { autoSelect: 'premium' });
+      expect(plansApiSpy.selectPlan).not.toHaveBeenCalled();
+      expect(sessionStorage.getItem(MARKER_KEY)).toBeNull();
+    });
+
+    it('علامة منتهية (أقدم من 15 دقيقة) ⇐ لا طلب', () => {
+      armMarker('free', 16 * 60 * 1000);
+      createComponent('token-123', { autoSelect: 'free' });
+      expect(plansApiSpy.selectPlan).not.toHaveBeenCalled();
+    });
+
+    it('علامة بوقت في المستقبل ⇐ لا طلب', () => {
+      armMarker('free', -60 * 1000);
+      createComponent('token-123', { autoSelect: 'free' });
+      expect(plansApiSpy.selectPlan).not.toHaveBeenCalled();
+    });
+
+    for (const raw of ['not json', 'null', '"free"', '{}', '{"tier":"free"}', '{"tier":"free","at":"now"}']) {
+      it(`علامة تالفة ${raw} ⇐ لا طلب، وتُحذف`, () => {
+        sessionStorage.setItem(MARKER_KEY, raw);
+        createComponent('token-123', { autoSelect: 'free' });
+        expect(plansApiSpy.selectPlan).not.toHaveBeenCalled();
+        expect(sessionStorage.getItem(MARKER_KEY)).toBeNull();
+      });
+    }
+
+    it('تعذّر القراءة من sessionStorage ⇐ لا انهيار ولا طلب', () => {
+      armMarker('free');
+      spyOn(Storage.prototype, 'getItem').and.throwError('blocked');
+
+      expect(() => createComponent('token-123', { autoSelect: 'free' })).not.toThrow();
+      expect(plansApiSpy.selectPlan).not.toHaveBeenCalled();
+    });
+
+    it('زائر ما زال غير مسجَّل ⇐ لا طلب، والعلامة باقية لجولة الدخول الفعلية', () => {
+      armMarker('free');
+      createComponent(null, { autoSelect: 'free' });
+      expect(plansApiSpy.selectPlan).not.toHaveBeenCalled();
+      expect(sessionStorage.getItem(MARKER_KEY)).not.toBeNull();
+    });
   });
   it('طلب خطة بانتظار المشرف يظهر على بطاقتها فقط ويختفي عند التفعيل', () => {
     const component = createComponent('token-123');

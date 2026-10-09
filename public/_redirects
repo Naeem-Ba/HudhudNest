@@ -25,6 +25,14 @@ http://realestateworld.world/*       https://hudhudnest.com/:splat   301!
 https://www.realestateworld.world/*  https://hudhudnest.com/:splat   301!
 http://www.realestateworld.world/*   https://hudhudnest.com/:splat   301!
 #
+# /download is NOT an Angular route: it is a static page generated at build time
+# (tools/generate-download-page.mjs -> public/download/index.html) so it works without the app shell
+# and the QR code can point at one stable address. The explicit forced rewrite keeps `/download`
+# (no trailing slash, which is what the QR encodes) answering 200 on that page whatever Netlify's
+# directory handling does, and must stay ABOVE the catch-all below. Do not add /download to
+# deep-links.config.json paths: the installed app would then open this page instead of the store.
+/download   /download/index.html   200!
+#
 # Original rule — SPA fallback. Load-bearing since hash-based routing was removed (see
 # ARD-Wohnungsmieten.md ADR-001): every in-app route (/properties/:id, /auth/verify-email, …) is
 # now a real path the server receives directly, so EVERY one of them depends on this rule to get

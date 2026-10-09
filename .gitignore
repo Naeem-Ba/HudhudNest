@@ -14,6 +14,10 @@ src/environments/env.generated.ts
 # (Android assetlinks.json / iOS apple-app-site-association). Never hand-edit.
 /public/.well-known/
 
+# Derived at build time from deep-links.config.json by tools/generate-download-page.mjs
+# (the public /download page and its QR code). Never hand-edit.
+/public/download/
+
 # Node
 /node_modules
 npm-debug.log
