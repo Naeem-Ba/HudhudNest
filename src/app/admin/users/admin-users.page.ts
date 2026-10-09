@@ -191,7 +191,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
     .actions { display:flex; gap:.4rem; align-items:center; flex-wrap:wrap; }
     .btn { border-radius:var(--r-sm); padding:.4rem .75rem; font-size:var(--text-sm); cursor:pointer; border:1px solid transparent; font-weight:600; }
     .btn--outline { background:var(--surface); border-color:var(--border); color:var(--navy); }
-    .btn--primary { background: var(--primary); color: #fff; }
+    .btn--primary { background: var(--primary); color: var(--on-primary); }
     .btn--danger { background:var(--danger-soft); color:var(--danger); border-color:rgba(220,38,38,.2); }
     .btn:disabled { opacity:.6; cursor:not-allowed; }
 

@@ -318,7 +318,7 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
     .profile-header__info { flex: 1 1 220px; min-width: 0; }
     .profile-header__name { margin: 0; font-size: 1.35rem; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; color: var(--gray-800); }
     .profile-header__agent-badge {
-      font-size: .7rem; background: var(--primary); color: #fff; padding: .15rem .5rem; border-radius: 999px; font-weight: 600;
+      font-size: .7rem; background: var(--primary); color: var(--on-primary); padding: .15rem .5rem; border-radius: 999px; font-weight: 600;
     }
     .profile-header__member-since { margin: .25rem 0 0; color: var(--gray-500); font-size: .9rem; }
 
@@ -390,7 +390,7 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
     .listing-card__body { padding: .6rem; }
     .listing-card__title { margin: 0; font-size: .9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--gray-800); }
     .listing-card__city { margin: .15rem 0; font-size: .78rem; color: var(--gray-500); }
-    .listing-card__price { margin: 0; font-size: .85rem; font-weight: 600; color: var(--primary); }
+    .listing-card__price { margin: 0; font-size: .85rem; font-weight: 600; color: var(--primary-text); }
   `]
 })
 export class UserProfilePage implements OnInit {

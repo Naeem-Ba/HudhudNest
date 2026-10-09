@@ -50,7 +50,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
       border: 0;
       border-radius: 10px;
       background: var(--primary);
-      color: #fff;
+      color: var(--on-primary);
       padding: .7rem 1rem;
       cursor: pointer;
       font-weight: 700;

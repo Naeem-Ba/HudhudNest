@@ -73,7 +73,7 @@ import { ImageFallbackDirective } from '../../shared/directives/image-fallback.d
     }
     .conversation-row:hover { box-shadow:var(--shadow-md); transform:translateY(-1px); }
     .conversation-row:focus-visible { outline:2px solid var(--border-focus); outline-offset:2px; }
-    .conversation-row--unread { border-color:rgba(37,99,235,.35); }
+    .conversation-row--unread { border-color:rgba(214,168,79,.35); }
     .conversation-row--unread .conversation-row__name,
     .conversation-row--unread .conversation-row__preview { font-weight:700; color:var(--gray-800); }
 
@@ -96,7 +96,7 @@ import { ImageFallbackDirective } from '../../shared/directives/image-fallback.d
     .conversation-row__meta { display:flex; flex-direction:column; align-items:flex-end; gap:.3rem; flex-shrink:0; }
     .conversation-row__meta time { color:var(--gray-400); font-size:var(--text-xs); white-space:nowrap; }
     .conversation-row__unread {
-      background:var(--primary); color:#fff; border-radius:var(--r-pill); font-size:var(--text-xs);
+      background:var(--primary); color: var(--on-primary); border-radius:var(--r-pill); font-size:var(--text-xs);
       min-width:20px; height:20px; display:grid; place-items:center; padding:0 .35rem;
     }
   `]

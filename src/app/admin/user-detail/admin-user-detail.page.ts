@@ -272,7 +272,7 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | null;
     .page { padding: clamp(1rem, 3vw, 2rem); max-width: 860px; margin: 0 auto; }
     .page-header { margin-bottom: 1rem; }
     .page-header h1 { margin: .4rem 0 0; color:var(--navy); font-family:var(--font-display); font-size:clamp(1.4rem,2.4vw,1.9rem); }
-    .link-btn { background:none; border:0; color:var(--primary); cursor:pointer; font-weight:600; padding:0; }
+    .link-btn { background:none; border:0; color:var(--primary-text); cursor:pointer; font-weight:600; padding:0; }
 
     .card {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg, 14px);
@@ -312,7 +312,7 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | null;
 
     .btn { border-radius:var(--r-sm); padding:.5rem .9rem; font-size:var(--text-sm); cursor:pointer; border:1px solid transparent; font-weight:600; text-decoration:none; display:inline-block; }
     .btn--outline { background:var(--surface); border-color:var(--border); color:var(--navy); }
-    .btn--primary { background: var(--primary); color: #fff; }
+    .btn--primary { background: var(--primary); color: var(--on-primary); }
     .btn--danger { background:var(--danger-soft); color:var(--danger); border-color:rgba(220,38,38,.2); }
     .btn:disabled { opacity:.6; cursor:not-allowed; }
     .muted { color: var(--gray-400); }
@@ -330,7 +330,7 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | null;
       border:1px solid var(--border); background:var(--surface); border-radius:var(--r-pill);
       padding:.25rem .7rem; font-size:var(--text-xs); cursor:pointer;
     }
-    .preset-chip--active { background: var(--primary); color:#fff; border-color: var(--primary); }
+    .preset-chip--active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
     .preview { background: var(--gold-soft); border-radius: var(--r-sm); padding: .6rem .75rem; font-size: var(--text-sm); color: var(--navy); margin:0; }
   `]
 })

@@ -85,7 +85,7 @@ import { ScrollLockService } from '../../core/services/scroll-lock.service';
     }
     .btn:disabled { opacity: .6; cursor: not-allowed; }
     .btn--outline { background: var(--surface); border-color: var(--border); color: var(--navy); }
-    .btn--primary { background: var(--primary); color: #fff; }
+    .btn--primary { background: var(--primary); color: var(--on-primary); }
     .btn--danger { background: var(--danger-soft); color: var(--danger); border-color: rgba(220,38,38,.25); }
   `]
 })

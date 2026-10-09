@@ -179,14 +179,14 @@ import { PageMetaService } from '../../core/services/page-meta.service';
     }
 
     .legal__card a {
-      color: var(--primary);
+      color: var(--primary-text);
       font-weight: 600;
     }
 
     .legal__back {
       display: inline-block;
       margin-top: var(--space-8);
-      color: var(--primary);
+      color: var(--primary-text);
       font-weight: 600;
       text-decoration: none;
     }

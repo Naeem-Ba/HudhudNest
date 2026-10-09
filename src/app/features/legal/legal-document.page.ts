@@ -126,7 +126,7 @@ import { LegalDocKind, LegalDocumentContent, parseLegalText } from './legal-docu
     }
 
     .legal__card a {
-      color: var(--primary);
+      color: var(--primary-text);
       text-decoration: underline;
     }
 

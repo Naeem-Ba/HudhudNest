@@ -1628,8 +1628,8 @@
     "MESSAGES": {
       "FREE_SELECTED_SUCCESS": "Das kostenlose Paket ist ausgewählt — du kannst jetzt dein Inserat hinzufügen.",
       "PLAN_SELECTED_SUCCESS": "Paket erfolgreich ausgewählt.",
-      "SELECT_ERROR": "Die Paketauswahl konnte nicht gespeichert werden. Bitte versuche es erneut.",
-      "PLAN_REQUEST_SENT": "Wir haben Ihre Anfrage erhalten. Der Tarif wird aktiviert, sobald ein Administrator Ihre Zahlung bestätigt hat; bis dahin bleibt Ihr aktueller Tarif unverändert."
+      "PLAN_NEXT_STEP": "Um deine Paketanfrage abzuschließen, schreibe uns deine Nachricht und sende sie ab.",
+      "SELECT_ERROR": "Die Paketauswahl konnte nicht gespeichert werden. Bitte versuche es erneut."
     },
     "FREE": {
       "NAME": "Kostenlos",

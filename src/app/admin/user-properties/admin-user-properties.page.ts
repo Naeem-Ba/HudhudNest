@@ -166,7 +166,7 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | null;
     .page { padding: clamp(1rem, 3vw, 2rem); max-width: 920px; margin: 0 auto; }
     .page-header { margin-bottom: 1rem; }
     .page-header h1 { margin: .4rem 0 0; color:var(--navy); font-family:var(--font-display); font-size:clamp(1.3rem,2.2vw,1.7rem); }
-    .link-btn { background:none; border:0; color:var(--primary); cursor:pointer; font-weight:600; padding:0; }
+    .link-btn { background:none; border:0; color:var(--primary-text); cursor:pointer; font-weight:600; padding:0; }
 
     .filters { margin-bottom: 1rem; }
     .filters select { border:1px solid var(--border); border-radius:var(--r-md); padding:.5rem .8rem; background:var(--surface); }
@@ -191,7 +191,7 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | null;
     .listing-card__actions { display:flex; align-items:flex-start; gap:.4rem; flex-wrap:wrap; }
     .btn { border-radius:var(--r-sm); padding:.4rem .75rem; font-size:var(--text-sm); cursor:pointer; border:1px solid transparent; font-weight:600; text-decoration:none; }
     .btn--outline { background:var(--surface); border-color:var(--border); color:var(--navy); }
-    .btn--primary { background: var(--primary); color: #fff; }
+    .btn--primary { background: var(--primary); color: var(--on-primary); }
 
     .pagination { display:flex; justify-content:center; align-items:center; gap:1rem; margin-top:1.25rem; }
     .pagination button { border:1px solid var(--border); background:var(--surface); border-radius:var(--r-sm); width:34px; height:34px; cursor:pointer; }
@@ -209,7 +209,7 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | null;
       border:1px solid var(--border); background:var(--surface); border-radius:var(--r-pill);
       padding:.25rem .7rem; font-size:var(--text-xs); cursor:pointer;
     }
-    .preset-chip--active { background: var(--primary); color:#fff; border-color: var(--primary); }
+    .preset-chip--active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
     .preview { background: var(--gold-soft); border-radius: var(--r-sm); padding: .6rem .75rem; font-size: var(--text-sm); color: var(--navy); margin:0; }
   `]
 })

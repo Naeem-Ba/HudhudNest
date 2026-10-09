@@ -63,13 +63,13 @@ import { TranslateModule } from '@ngx-translate/core';
 
     .consent-checkbox__input:focus-visible,
     .consent-checkbox__label a:focus-visible {
-      outline: 2px solid var(--primary, #2563eb);
+      outline: 2px solid var(--primary, #D6A84F);
       outline-offset: 2px;
       border-radius: 2px;
     }
 
     .consent-checkbox__label a {
-      color: var(--primary, #2563eb);
+      color: var(--primary, #D6A84F);
       font-weight: 600;
       text-decoration: underline;
     }

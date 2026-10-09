@@ -1628,8 +1628,8 @@
     "MESSAGES": {
       "FREE_SELECTED_SUCCESS": "The free plan is selected — you can add your listing now.",
       "PLAN_SELECTED_SUCCESS": "Plan selected successfully.",
-      "SELECT_ERROR": "Could not save your plan selection. Please try again.",
-      "PLAN_REQUEST_SENT": "We received your request. The plan is activated once an administrator confirms your payment; your current plan stays unchanged until then."
+      "PLAN_NEXT_STEP": "To complete your plan request, write your message and send it to us.",
+      "SELECT_ERROR": "Could not save your plan selection. Please try again."
     },
     "FREE": {
       "NAME": "Free",

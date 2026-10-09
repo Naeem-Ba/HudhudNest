@@ -207,7 +207,7 @@ import { ToastService } from '../../../shared/services/toast.service';
     input:focus {
       outline: 0;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+      box-shadow: 0 0 0 3px rgba(214,168,79,.12);
     }
 
     button {
@@ -263,7 +263,7 @@ import { ToastService } from '../../../shared/services/toast.service';
     }
 
     a {
-      color: var(--primary);
+      color: var(--primary-text);
       text-decoration: none;
       font-weight: 700;
       text-align: center;

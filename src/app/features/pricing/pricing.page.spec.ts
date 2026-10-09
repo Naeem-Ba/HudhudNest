@@ -103,7 +103,7 @@ describe('PricingPage', () => {
     authServiceSpy.getCurrentUserId.and.returnValue('owner-1');
 
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    toastSpy = jasmine.createSpyObj('ToastService', ['success', 'error']);
+    toastSpy = jasmine.createSpyObj('ToastService', ['success', 'error', 'info']);
 
     TestBed.configureTestingModule({
       imports: [PricingPage],
@@ -165,14 +165,14 @@ describe('PricingPage', () => {
     expect(component.selecting()).toBeNull();
   });
 
-  it('خطة مدفوعة: رسالة «تم استلام الطلب» لا «تم الاختيار»، لأن التفعيل ينتظر المشرف', () => {
+  it('خطة مدفوعة ⇐ لا رسالة نجاح قبل إرسال رسالة التواصل، فقط إرشاد للخطوة التالية', () => {
     const component = createComponent('token-123');
-    const translate = TestBed.inject(TranslateService) as jasmine.SpyObj<TranslateService>;
-    translate.instant.and.callFake((key: string | string[]) => String(key));
 
     component.onSelectPlan(PLANS[1]);
 
-    expect(toastSpy.success).toHaveBeenCalledWith('PRICING.MESSAGES.PLAN_REQUEST_SENT');
+    expect(toastSpy.success).not.toHaveBeenCalled();
+    expect(toastSpy.info).toHaveBeenCalled();
+    expect(routerSpy.navigate).toHaveBeenCalled();
   });
 
   it('فشل حفظ اختيار الخطة في الخادم يمنع الانتقال ويعرض رسالة خطأ', () => {
