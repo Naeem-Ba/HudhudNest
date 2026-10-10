@@ -1,11 +1,16 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { resolveAuthApiBaseUrl } from '../auth/auth-api-base-url';
 
 export type QueryScalar = string | number | boolean;
 export type QueryValue = QueryScalar | readonly QueryScalar[] | null | undefined;
+
+/** Per-request HttpContext, e.g. SKIP_ERROR_TOAST for a failure the caller treats as normal. */
+export interface RequestOptions {
+  context?: HttpContext;
+}
 
 @Injectable({ providedIn: 'root' })
 export class BackendApiService {
@@ -29,8 +34,8 @@ export class BackendApiService {
     return this.http.get<T>(this.url(path), { params: this.params(query), withCredentials: true });
   }
 
-  post<T>(path: string, body?: unknown): Observable<T> {
-    return this.http.post<T>(this.url(path), body ?? {}, { withCredentials: true });
+  post<T>(path: string, body?: unknown, options?: RequestOptions): Observable<T> {
+    return this.http.post<T>(this.url(path), body ?? {}, { withCredentials: true, context: options?.context });
   }
 
   put<T>(path: string, body?: unknown): Observable<T> {
@@ -44,8 +49,8 @@ export class BackendApiService {
   // `body` is optional because most DELETE endpoints in this app take none — Angular's
   // HttpClient supports a DELETE body via the `body` request option (used by e.g.
   // ShortStayBookingsController.Cancel, which accepts an optional cancellation note).
-  delete<T>(path: string, body?: unknown): Observable<T> {
-    return this.http.delete<T>(this.url(path), { body, withCredentials: true });
+  delete<T>(path: string, body?: unknown, options?: RequestOptions): Observable<T> {
+    return this.http.delete<T>(this.url(path), { body, withCredentials: true, context: options?.context });
   }
 
   upload<T>(path: string, formData: FormData): Observable<T> {

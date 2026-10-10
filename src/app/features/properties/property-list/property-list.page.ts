@@ -17,10 +17,9 @@ import { ActivatedRoute, ParamMap, Router, RouterModule } from '@angular/router'
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { catchError, debounceTime, EMPTY, fromEvent, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, catchError, debounceTime, distinctUntilChanged, EMPTY, fromEvent, of, switchMap, tap } from 'rxjs';
 
 import { PropertyApiService } from '../../../core/api/property-api.service';
-import { FavoritesApiService } from '../../../core/api/favorites-api.service';
 import { SavedSearchApiService } from '../../../core/api/saved-search-api.service';
 import {
   LookupsApiService,
@@ -70,7 +69,6 @@ export class PropertyListPage implements OnInit {
   private static readonly DESKTOP_BREAKPOINT_PX = 980;
 
   private readonly api = inject(PropertyApiService);
-  private readonly favoritesApi = inject(FavoritesApiService);
   private readonly savedSearchApi = inject(SavedSearchApiService);
   private readonly lookupsApi = inject(LookupsApiService);
   private readonly auth = inject(AuthService);
@@ -100,13 +98,13 @@ export class PropertyListPage implements OnInit {
 
   readonly fallbackImage = '/images/no-image.svg';
 
-  readonly favoritePropertyIds = signal<Set<string>>(new Set());
-
   /**
    * ✅ إضافة: اقتراحات مدن حقيقية عبر GET /api/lookups/cities لحقل فلترة
    * المدينة (كان نصياً حراً بدون أي اقتراح رغم توفر endpoint جاهز لذلك).
    */
   readonly citySuggestions = signal<LookupItem[]>([]);
+  /** The governorate the city suggestions are scoped to (null = every city). Each change refetches, dropping a stale in-flight reply. */
+  private readonly citySuggestionScope = new BehaviorSubject<number | null>(null);
 
   /**
    * ✅ إضافة: فلترة حسب المرافق — الباك اند يدعم فعلياً AmenityIds ضمن
@@ -190,8 +188,7 @@ export class PropertyListPage implements OnInit {
         }
       });
 
-    this.loadFavoriteIds();
-    this.loadCitySuggestions();
+    this.bindCitySuggestions();
     this.loadAmenities();
     this.loadGovernorates();
     this.loadPropertyTypeCatalog();
@@ -249,6 +246,7 @@ export class PropertyListPage implements OnInit {
     this.neighborhoodId = null;
     this.districts.set([]);
     this.neighborhoods.set([]);
+    this.citySuggestionScope.next(this.governorateId);
 
     if (this.governorateId) {
       this.lookupsApi.getDistricts(this.governorateId)
@@ -295,6 +293,7 @@ export class PropertyListPage implements OnInit {
     this.districtId = params.get('districtId') ? Number(params.get('districtId')) : null;
     this.neighborhoodId = params.get('neighborhoodId') ? Number(params.get('neighborhoodId')) : null;
     this.propertyTypeId = params.get('propertyTypeId') ? Number(params.get('propertyTypeId')) : null;
+    this.citySuggestionScope.next(this.governorateId);
 
     this.currentPage.set(params.get('page') ? Number(params.get('page')) : 1);
     this.pageSize.set(params.get('pageSize') ? Number(params.get('pageSize')) : 20);
@@ -343,6 +342,7 @@ export class PropertyListPage implements OnInit {
    * fetch, so this is the one place that turns a user action into a request.
    */
   private navigateWithCurrentState(page: number): void {
+    this.foldGovernorateNameIntoGovernorateFilter();
     const queryParams: Record<string, string | number | string[] | null> = {
       search: this.searchText.trim() || null,
       city: this.cityFilter.trim() || null,
@@ -362,14 +362,43 @@ export class PropertyListPage implements OnInit {
     this.router.navigate([], { relativeTo: this.route, queryParams });
   }
 
-  private loadCitySuggestions(): void {
-    this.lookupsApi
-      .getCities()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: cities => this.citySuggestions.set(cities),
-        error: () => this.citySuggestions.set([])
-      });
+  /**
+   * A city that is exactly a governorate's name (typed, or picked from the suggestions, which start
+   * with the governorate's own names) names that governorate, not a place inside it. The API matches
+   * the free-text City as a substring, so "دمشق" would also return "ريف دمشق" listings and miss the
+   * ones stored as "Damascus"; the governorate filter matches by id and also covers old listings
+   * that only have the text. So it is sent as the governorate filter instead of as the city.
+   * Naming a different governorate than the selected one switches to it (the area and neighborhood
+   * chosen under the old one no longer apply): the typed name is the latest thing the user said, and
+   * the alternative, a city inside another governorate, can only return nothing.
+   */
+  private foldGovernorateNameIntoGovernorateFilter(): void {
+    const typed = this.cityFilter.trim().toLowerCase();
+    if (!typed) return;
+
+    const named = this.governorates().find(
+      g => g.nameAr?.trim().toLowerCase() === typed || g.nameEn?.trim().toLowerCase() === typed
+    );
+    if (!named) return;
+
+    if (this.governorateId !== named.id) {
+      this.governorateId = named.id;
+      this.districtId = null;
+      this.neighborhoodId = null;
+    }
+    this.cityFilter = '';
+  }
+
+  private bindCitySuggestions(): void {
+    this.citySuggestionScope
+      .pipe(
+        distinctUntilChanged(),
+        switchMap(governorateId =>
+          this.lookupsApi.getCities(governorateId).pipe(catchError(() => of([] as LookupItem[])))
+        ),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(cities => this.citySuggestions.set(cities));
   }
 
   /** GET /api/lookups/amenities — لفلتر المرافق في لوحة البحث. */
@@ -391,27 +420,6 @@ export class PropertyListPage implements OnInit {
     this.selectedAmenityIds = this.isAmenitySelected(amenityId)
       ? this.selectedAmenityIds.filter(id => id !== amenityId)
       : [...this.selectedAmenityIds, amenityId];
-  }
-
-  private loadFavoriteIds(): void {
-    if (!this.auth.getAccessToken()) return;
-
-    this.favoritesApi
-      .getFavorites()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: favorites => {
-          const ids = favorites.map(f => f.propertyId).filter(Boolean);
-          this.favoritePropertyIds.set(new Set(ids));
-        },
-        error: () => {
-          // فشل تحميل المفضلة ليس خطأً حرجاً لصفحة التصفح — يبقى الزر بحالته الافتراضية.
-        }
-      });
-  }
-
-  isFavorite(property: Property): boolean {
-    return !!property.id && this.favoritePropertyIds().has(property.id);
   }
 
   /** يبدّل بين نتائج البحث النصي/الفلاتر العادية والبحث الجغرافي القريب. */
@@ -587,6 +595,7 @@ export class PropertyListPage implements OnInit {
     this.propertyTypeId = null;
     this.districts.set([]);
     this.neighborhoods.set([]);
+    this.citySuggestionScope.next(null);
     this.geoModeActive.set(false);
     this.setFiltersOpen(false);
     // Clears the URL entirely (not just component state) so a refresh or a
@@ -604,6 +613,7 @@ export class PropertyListPage implements OnInit {
     if (this.savingSearch()) return;
 
     const name = (prompt(this.translate.instant('PROPERTY_LIST.SAVE_SEARCH_NAME_PROMPT')) ?? '').trim();
+    this.foldGovernorateNameIntoGovernorateFilter();
     this.savingSearch.set(true);
 
     this.savedSearchApi

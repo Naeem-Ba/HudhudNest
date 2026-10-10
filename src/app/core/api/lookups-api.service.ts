@@ -88,10 +88,13 @@ export class LookupsApiService {
       .pipe(map(response => this.toLookupItems(response)));
   }
 
-  /** GET /api/lookups/cities — المدن الموجودة فعليًا ضمن العقارات الحالية. */
-  getCities(): Observable<LookupItem[]> {
+  /**
+   * GET /api/lookups/cities — المدن الموجودة فعليًا ضمن العقارات الحالية.
+   * مع governorateId تُقتصر القائمة على مدن تلك المحافظة.
+   */
+  getCities(governorateId?: number | null): Observable<LookupItem[]> {
     return this.api
-      .get<unknown[]>(`${this.endpoint}/cities`)
+      .get<unknown[]>(`${this.endpoint}/cities`, governorateId ? { governorateId } : undefined)
       .pipe(map(response => this.toLookupItems(response)));
   }
 
