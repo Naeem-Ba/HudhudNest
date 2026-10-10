@@ -133,6 +133,10 @@
         <p class="email-hint" *ngIf="phone.needsPassword">{{ 'PROFILE.PHONE_SECURITY.NEEDS_PASSWORD' | translate }}</p>
 
         <div class="phone-security">
+          <!-- حساب Google/Apple بلا كلمة مرور: المسار الفعلي هو رابط «نسيت كلمة المرور» عبر البريد، وبعده يظهر التأكيد. -->
+          <a routerLink="/auth/forgot-password" *ngIf="phone.needsPassword">
+            {{ 'PROFILE.PHONE_SECURITY.SET_PASSWORD' | translate }}
+          </a>
           <a routerLink="/profile/phone-change" [queryParams]="{ phone: phone.phone }" *ngIf="phone.canConfirm">
             {{ (phone.kind === 'none' ? 'PROFILE.PHONE_SECURITY.ADD' : 'PROFILE.PHONE_SECURITY.CONFIRM') | translate }}
           </a>
