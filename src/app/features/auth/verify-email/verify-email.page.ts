@@ -85,13 +85,13 @@ type VerifyState = 'verifying' | 'success' | 'error';
     .state--success span,.state--error span{font-size:2rem}
     p{margin:0;color:var(--gray-700);line-height:1.6}
     .btn-primary,.btn-secondary{display:inline-block;margin-top:.5rem;padding:.75rem 1.5rem;border-radius:10px;text-decoration:none;font-weight:700}
-    .btn-primary{background:var(--gray-800);color:#fff}
+    .btn-primary{background:var(--primary);color:var(--on-primary)}.btn-primary:hover{background:var(--primary-dark)}
     .btn-secondary{background:transparent;color:var(--gray-800);border:1px solid var(--gray-800)}
     .resend-form{display:grid;gap:.5rem;text-align:start;width:100%}
     .resend-form label{font-weight:700;color:var(--gray-700);font-size:.85rem}
     .resend-form input,.resend-form button{width:100%;box-sizing:border-box;padding:.75rem 1rem;border-radius:10px}
     .resend-form input{border:1px solid var(--border);background:var(--surface)}
-    .resend-form button{border:0;background:var(--gray-800);color:#fff;font-weight:700;cursor:pointer}
+    .resend-form button{border:0;background:var(--primary);color:var(--on-primary);font-weight:700;cursor:pointer}.resend-form button:hover:not(:disabled){background:var(--primary-dark)}
     .resend-form button:disabled{opacity:.6;cursor:not-allowed}
     .hint{color:var(--gray-500);font-size:.85rem;margin:0}
   `]

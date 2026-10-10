@@ -215,3 +215,49 @@ describe('ApiErrorInterceptor + RefreshAuthInterceptor — a 401 the refresh rec
     expect(toast.toasts().length).toBe(1);
   }));
 });
+
+describe('ApiErrorInterceptor — a 429 on a request that names its own limit', () => {
+  let http: HttpClient;
+  let httpMock: HttpTestingController;
+  let toast: ToastService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [TranslateModule.forRoot()],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(withInterceptors([ApiErrorInterceptor])),
+        provideHttpClientTesting()
+      ]
+    });
+
+    http = TestBed.inject(HttpClient);
+    httpMock = TestBed.inject(HttpTestingController);
+    toast = TestBed.inject(ToastService);
+  });
+
+  afterEach(() => httpMock.verify());
+
+  const limiter429 = {
+    title: 'Too many requests.',
+    detail: 'The request rate limit has been exceeded.',
+    status: 429
+  };
+
+  it('data export: no generic toast on top of the page\'s own "once every 24 hours" message', () => {
+    http.get(`${environment.apiUrl}/users/me/export`).subscribe({ next: () => {}, error: () => {} });
+    httpMock.expectOne(`${environment.apiUrl}/users/me/export`)
+      .flush(limiter429, { status: 429, statusText: 'Too Many Requests' });
+
+    expect(toast.toasts()).toEqual([]);
+  });
+
+  it('any other request still gets one toast, never the limiter\'s English sentence', () => {
+    http.get(`${environment.apiUrl}/properties`).subscribe({ next: () => {}, error: () => {} });
+    httpMock.expectOne(`${environment.apiUrl}/properties`)
+      .flush(limiter429, { status: 429, statusText: 'Too Many Requests' });
+
+    expect(toast.toasts().length).toBe(1);
+    expect(toast.toasts()[0].message).toBe('API_ERRORS.RATE_LIMITED');
+  });
+});

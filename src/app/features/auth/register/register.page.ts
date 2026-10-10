@@ -213,10 +213,14 @@ import { ToastService } from '../../../shared/services/toast.service';
     button {
       margin-top: 1rem;
       border: 0;
-      background: var(--gray-800);
-      color: white;
+      background: var(--primary);
+      color: var(--on-primary);
       font-weight: 700;
       cursor: pointer;
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--primary-dark);
     }
 
     button:disabled {

@@ -107,6 +107,12 @@ function extractBackendMessage(error: HttpErrorResponse, translate: TranslateSer
     return fieldMessages.join(' ');
   }
 
+  // A 429's title/detail ("Too many requests." / "The request rate limit has been exceeded.") is
+  // English whatever the UI language is; the caller falls back to the translated limit text.
+  if (error.status === 429) {
+    return null;
+  }
+
   const generic = body.detail ?? body.Detail ?? body.title ?? body.Title;
   return generic ? String(generic) : null;
 }
@@ -171,7 +177,18 @@ export function knownErrorCodeKey(error: HttpErrorResponse): string | null {
 }
 
 function shouldShowToast(reqUrl: string): boolean {
-  return (reqUrl.includes('/api/') || reqUrl.endsWith('/api')) && !isAuthFlowRequest(reqUrl);
+  return (reqUrl.includes('/api/') || reqUrl.endsWith('/api'))
+    && !isAuthFlowRequest(reqUrl)
+    && !hasOwnErrorMessage(reqUrl);
+}
+
+/**
+ * Requests whose caller always shows its own, more specific message for any failure -- the data
+ * export names its once-per-24-hours limit, so a second generic "too many requests" toast on top
+ * of it only contradicted it.
+ */
+function hasOwnErrorMessage(reqUrl: string): boolean {
+  return reqUrl.includes('/users/me/export');
 }
 
 /**

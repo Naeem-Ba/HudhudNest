@@ -90,6 +90,38 @@ describe('getFriendlyApiErrorMessage — a 5xx is never shown as the server wrot
   });
 });
 
+describe('getFriendlyApiErrorMessage — a 429 is never shown as the limiter wrote it', () => {
+  // RedisRateLimitingMiddleware: problem+json whose title/detail are English.
+  const REDIS_429 = {
+    type: 'https://httpstatuses.com/429',
+    title: 'Too many requests.',
+    status: 429,
+    detail: 'The request rate limit has been exceeded.',
+    policy: 'data-export',
+    retryAfterSeconds: 80000
+  };
+
+  it('replaces the limiter\'s English title/detail with the translated limit text', () => {
+    const message = getFriendlyApiErrorMessage(fail(429, REDIS_429), translate);
+
+    expect(message).toBe('API_ERRORS.RATE_LIMITED');
+    expect(message).not.toContain('rate limit');
+  });
+
+  it('an empty 429 (the in-memory limiter) gets the same translated text', () => {
+    expect(getFriendlyApiErrorMessage(fail(429, null), translate)).toBe('API_ERRORS.RATE_LIMITED');
+  });
+
+  it('a 429 that carries a domain message (written for the person) keeps it', () => {
+    const message = getFriendlyApiErrorMessage(
+      fail(429, { code: 'EMAIL_CONFIRMATION_LIMIT_REACHED', message: 'وصلت إلى الحد اليومي.' }),
+      translate
+    );
+
+    expect(message).toBe('وصلت إلى الحد اليومي.');
+  });
+});
+
 describe('getFriendlyApiErrorMessage — agency eligibility codes are translated, not echoed in Arabic', () => {
   [
     'AGENCY_ACCOUNT_NOT_VERIFIED',

@@ -6,6 +6,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
+import { isRateLimited } from '../core/api/rate-limited';
 import { ProfileService, UserProfile } from '../core/api/profile.service';
 import { AuthService } from '../core/auth/auth.service';
 import { RouterLink } from '@angular/router';
@@ -261,9 +262,12 @@ export class ProfileComponent implements OnInit {
         this.toast.success(this.translate.instant('PROFILE.MESSAGES.PASS_SUCCESS'));
         this.resetPasswordForm();
       },
-      error: () => {
+      error: error => {
         this.isSaving.set(false);
-        this.toast.error(this.translate.instant('PROFILE.MESSAGES.PASS_ERROR'));
+        // 429: the hourly limit on password changes -- say so instead of "could not change".
+        this.toast.error(this.translate.instant(
+          isRateLimited(error) ? 'PROFILE.MESSAGES.PASS_RATE_LIMITED' : 'PROFILE.MESSAGES.PASS_ERROR'
+        ));
       }
     });
   }
@@ -328,7 +332,10 @@ export class ProfileComponent implements OnInit {
       case 'EMAIL_CONFIRMATION_LIMIT_REACHED':
         return this.translate.instant('PROFILE.EMAIL_SECTION.ERRORS.LIMIT_REACHED');
       default:
-        return this.translate.instant('PROFILE.EMAIL_SECTION.ERRORS.GENERIC');
+        // A 429 without our code is some other limiter: still a limit, not a failed send.
+        return this.translate.instant(
+          isRateLimited(error) ? 'API_ERRORS.RATE_LIMITED' : 'PROFILE.EMAIL_SECTION.ERRORS.GENERIC'
+        );
     }
   }
 
@@ -467,7 +474,7 @@ export class ProfileComponent implements OnInit {
         this.isExporting.set(false);
         this.toast.error(
           this.translate.instant(
-            err?.status === 429 ? 'PROFILE.DATA_EXPORT.RATE_LIMITED' : 'PROFILE.DATA_EXPORT.ERROR'
+            isRateLimited(err) ? 'PROFILE.DATA_EXPORT.RATE_LIMITED' : 'PROFILE.DATA_EXPORT.ERROR'
           )
         );
       }

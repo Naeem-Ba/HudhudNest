@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { isRateLimited } from '../../../core/api/rate-limited';
 import { AuthApiService } from '../../../core/auth/auth-api.service';
 import { FormErrorComponent } from '../../../shared/ui/form-error.component';
 import { ToastService } from '../../../shared/services/toast.service';
@@ -32,7 +33,7 @@ import { ToastService } from '../../../shared/services/toast.service';
     </section>
   `,
   styles: [`
-    .auth-page{min-height:70vh;display:grid;place-items:center;background:var(--page-bg);padding:2rem}.auth-card{width:min(450px,100%);background:var(--surface);padding:2rem;border-radius:16px;box-shadow:var(--shadow-lg);display:grid;gap:.55rem}h1,p{margin:0}p{line-height:1.7}label{font-weight:700;margin-top:.5rem}input,button{width:100%;box-sizing:border-box;padding:.85rem 1rem;border-radius:10px}input{border:1px solid var(--border);background:var(--surface)}button{margin-top:1rem;border:0;background:var(--gray-800);color:white;font-weight:700;cursor:pointer}button:disabled{opacity:.6;cursor:not-allowed}.error{color:var(--danger)}.success{color:var(--success)}
+    .auth-page{min-height:70vh;display:grid;place-items:center;background:var(--page-bg);padding:2rem}.auth-card{width:min(450px,100%);background:var(--surface);padding:2rem;border-radius:16px;box-shadow:var(--shadow-lg);display:grid;gap:.55rem}h1,p{margin:0}p{line-height:1.7}label{font-weight:700;margin-top:.5rem}input,button{width:100%;box-sizing:border-box;padding:.85rem 1rem;border-radius:10px}input{border:1px solid var(--border);background:var(--surface)}button{margin-top:1rem;border:0;background:var(--primary);color:var(--on-primary);font-weight:700;cursor:pointer}button:hover:not(:disabled){background:var(--primary-dark)}button:disabled{opacity:.6;cursor:not-allowed}.error{color:var(--danger)}.success{color:var(--success)}
   `]
 })
 export class ForgotPasswordPage {
@@ -69,9 +70,12 @@ export class ForgotPasswordPage {
         this.success.set(message);
         this.toast.success(message);
       },
-      error: () => {
+      error: error => {
         this.loading.set(false);
-        this.error.set(this.translate.instant('AUTH.ERRORS.FORGOT_FAILED'));
+        // 429: say it is the limit (3 requests per hour), not that sending failed.
+        this.error.set(this.translate.instant(
+          isRateLimited(error) ? 'AUTH.ERRORS.PASSWORD_RESET_LIMIT' : 'AUTH.ERRORS.FORGOT_FAILED'
+        ));
       }
     });
   }
