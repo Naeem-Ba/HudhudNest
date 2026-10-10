@@ -1026,7 +1026,8 @@
       "UNCONFIRMED": "Nicht bestätigt",
       "UNCONFIRMED_HINT": "Diese Nummer ist nicht bestätigt und kann Ihr Passwort daher nicht zurücksetzen. Bestätigen Sie sie mit einem Code, der an das Telefon gesendet wird.",
       "NO_NUMBER_HINT": "Fügen Sie Ihre Telefonnummer hinzu und bestätigen Sie sie mit einem Code, um sich damit anzumelden und Ihr Passwort wiederherzustellen.",
-      "NEEDS_PASSWORD": "Für die Bestätigung einer Nummer ist ein Kontopasswort nötig, das Google- und Apple-Konten derzeit nicht haben.",
+      "NEEDS_PASSWORD": "Zum Bestätigen einer Nummer ist ein Passwort nötig, und Ihr Google- oder Apple-Konto hat noch keines. Legen Sie eines über „Passwort vergessen?“ fest (wir senden Ihnen einen Link per E-Mail) und bestätigen Sie danach hier Ihre Nummer.",
+      "SET_PASSWORD": "Passwort festlegen",
       "ADD": "Telefonnummer hinzufügen",
       "CONFIRM": "Meine Nummer bestätigen"
     },

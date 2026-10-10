@@ -14,7 +14,7 @@ export interface PhoneStatus {
   phone: string | null;
   /** The code flow can add or confirm a number only for an account that has a password to re-enter. */
   canConfirm: boolean;
-  /** Not confirmed and no password on the account (social sign-in): confirming is not available yet. */
+  /** Not confirmed and no password on the account (social sign-in): it has to create a password first ("Forgot password" mail). */
   needsPassword: boolean;
 }
 

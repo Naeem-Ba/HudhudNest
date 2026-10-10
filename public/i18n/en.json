@@ -1026,7 +1026,8 @@
       "UNCONFIRMED": "Not confirmed",
       "UNCONFIRMED_HINT": "This number is not confirmed, so it cannot reset your password. Confirm it with a code sent to the phone.",
       "NO_NUMBER_HINT": "Add your phone number and confirm it with a code so you can sign in and recover your password with it.",
-      "NEEDS_PASSWORD": "Confirming a number needs an account password, which Google and Apple accounts do not have yet.",
+      "NEEDS_PASSWORD": "Confirming a number needs a password, and your Google or Apple account does not have one yet. Create one with “Forgot your password?” (we email you a link), then come back here to confirm your number.",
+      "SET_PASSWORD": "Create a password",
       "ADD": "Add a phone number",
       "CONFIRM": "Confirm my number"
     },
