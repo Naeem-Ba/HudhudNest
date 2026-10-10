@@ -110,20 +110,37 @@
         </div>
       </div>
 
-      <div class="field">
+      <!-- رقم الهاتف = رقم الدخول والاستعادة: لا يُكتب كنص حر هنا، يُضاف أو يُغيَّر فقط برمز OTP وكلمة المرور (صفحة phone-change). -->
+      <div class="field phone-status" *ngIf="phoneInfo() as phone">
         <label>{{ 'PROFILE.PHONE' | translate }}</label>
-        <input
-          type="tel"
-          [ngModel]="user()?.Phone" (ngModelChange)="patchUserField('Phone', $event)"
-          name="ph"
-        >
-      </div>
 
-      <!-- رقم تسجيل الدخول (منفصل عن رقم التواصل أعلاه): كانت صفحتا تغييره والتحقق منه بلا أي رابط. -->
-      <div class="field phone-security">
-        <label>{{ 'PROFILE.PHONE_SECURITY.TITLE' | translate }}</label>
-        <a routerLink="/profile/phone-change">{{ 'PROFILE.PHONE_SECURITY.CHANGE' | translate }}</a>
-        <a routerLink="/profile/phone-reverify">{{ 'PROFILE.PHONE_SECURITY.VERIFY' | translate }}</a>
+        <div class="phone-status__row">
+          <span class="phone-status__number" dir="ltr" *ngIf="phone.phone; else noPhone">{{ phone.phone }}</span>
+          <ng-template #noPhone>
+            <span class="phone-status__empty">{{ 'PROFILE.PHONE_SECURITY.NO_NUMBER' | translate }}</span>
+          </ng-template>
+
+          <span class="phone-badge phone-badge--confirmed" *ngIf="phone.kind === 'confirmed'">
+            <span aria-hidden="true">✅</span> {{ 'PROFILE.PHONE_SECURITY.CONFIRMED' | translate }}
+          </span>
+          <span class="phone-badge phone-badge--pending" *ngIf="phone.kind === 'unconfirmed'">
+            <span aria-hidden="true">⏳</span> {{ 'PROFILE.PHONE_SECURITY.UNCONFIRMED' | translate }}
+          </span>
+        </div>
+
+        <p class="email-hint" *ngIf="phone.kind === 'unconfirmed' && phone.canConfirm">{{ 'PROFILE.PHONE_SECURITY.UNCONFIRMED_HINT' | translate }}</p>
+        <p class="email-hint" *ngIf="phone.kind === 'none' && phone.canConfirm">{{ 'PROFILE.PHONE_SECURITY.NO_NUMBER_HINT' | translate }}</p>
+        <p class="email-hint" *ngIf="phone.needsPassword">{{ 'PROFILE.PHONE_SECURITY.NEEDS_PASSWORD' | translate }}</p>
+
+        <div class="phone-security">
+          <a routerLink="/profile/phone-change" [queryParams]="{ phone: phone.phone }" *ngIf="phone.canConfirm">
+            {{ (phone.kind === 'none' ? 'PROFILE.PHONE_SECURITY.ADD' : 'PROFILE.PHONE_SECURITY.CONFIRM') | translate }}
+          </a>
+          <ng-container *ngIf="phone.kind === 'confirmed'">
+            <a routerLink="/profile/phone-change">{{ 'PROFILE.PHONE_SECURITY.CHANGE' | translate }}</a>
+            <a routerLink="/profile/phone-reverify">{{ 'PROFILE.PHONE_SECURITY.VERIFY' | translate }}</a>
+          </ng-container>
+        </div>
       </div>
 
       <!-- ✅ إضافة: نبذة تعريفية + عنوان/معلومات تواصل — تُعرض علنًا بالملف

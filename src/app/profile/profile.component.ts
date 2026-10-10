@@ -1,12 +1,13 @@
 // Profile page: handles user data, password changes, data export and account deletion.
 // ✅ Avatar upload is now live — POST /users/me/avatar (UsersController.UploadAvatar).
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { isRateLimited } from '../core/api/rate-limited';
+import { phoneStatus } from './phone-status';
 import { ProfileService, UserProfile } from '../core/api/profile.service';
 import { AuthService } from '../core/auth/auth.service';
 import { RouterLink } from '@angular/router';
@@ -55,6 +56,9 @@ export class ProfileComponent implements OnInit {
   errorMsg      = signal('');
   avatarPreview = signal<string | null>(null);
   showPasswordForm = signal(false);
+
+  /** The login phone as the page shows it: confirmed, stored but unconfirmed, or none. */
+  readonly phoneInfo = computed(() => phoneStatus(this.user()));
 
   // ✅ إضافة: تدفق "بريد إلكتروني ثانوي" — email/add + email/verify
   // (PhoneAuthController كان يوفّر هذين المسارين بلا أي استهلاك من الواجهة).
@@ -161,9 +165,13 @@ export class ProfileComponent implements OnInit {
         this.submitted = false;
         this.toast.success(this.translate.instant('PROFILE.MESSAGES.SAVE_SUCCESS'));
       },
-      error: () => {
+      error: (error: unknown) => {
         this.isSaving.set(false);
-        this.toast.error(this.translate.instant('PROFILE.MESSAGES.SAVE_ERROR'));
+        // A refusal about the phone (for example an agent account that still has no number) points to the
+        // phone section; the form no longer edits the number itself.
+        const phoneRefused = !!(error as { error?: { errors?: Record<string, unknown> } })?.error?.errors?.['PhoneNumber'];
+        this.toast.error(this.translate.instant(
+          phoneRefused ? 'PROFILE.MESSAGES.PHONE_SAVE_ERROR' : 'PROFILE.MESSAGES.SAVE_ERROR'));
       }
     });
   }

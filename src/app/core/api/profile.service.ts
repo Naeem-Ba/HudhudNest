@@ -441,11 +441,12 @@ export class ProfileService {
    * ملاحظة: System.Text.Json يُطابق camelCase ↔ PascalCase بدون حساسية أثناء الـ deserialization.
    */
   private toUpdateRequest(user: UserProfile): Record<string, unknown> {
+    // phoneNumber is deliberately absent: it is the login and recovery phone, which the API only lets a
+    // verified code flow add or change (profile page: PhoneChangePage). Saving the profile must never touch it.
     return {
       firstName:   user.Vorname?.trim()     || undefined,
       lastName:    user.Name?.trim()        || undefined,
       displayName: user.DisplayName?.trim() || undefined,
-      phoneNumber: user.Phone?.trim()       || undefined,
       // ✅ إضافة: نُرسل قيمة فارغة صراحةً (وليس undefined) عند مسح الحقل
       // بالكامل، كي يتوافق مع دلالة "null تعني عدم التغيير" بالباك اند —
       // إرسال '' (وليس undefined) يُترجَم بالـ Handler إلى مسح الحقل فعليًا.
