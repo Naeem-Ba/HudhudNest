@@ -16,7 +16,7 @@
 //     ❌ المهاجم في Production
 //   الحل: نُفرِّق بين البيئتين.
 // ═══════════════════════════════════════════════════════════════
-import { HttpErrorResponse, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
+import { HttpContextToken, HttpErrorResponse, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
@@ -32,6 +32,13 @@ import {
 } from './refresh-auth.interceptor';
 
 const MAX_FIELD_MESSAGES = 3;
+
+/**
+ * Set on a request whose caller already handles the failure (or treats it as a normal
+ * outcome), so the generic error toast would only add noise. Example: adding a favorite that is
+ * already one answers 409 — the wanted end state is reached, there is nothing to tell the user.
+ */
+export const SKIP_ERROR_TOAST = new HttpContextToken<boolean>(() => false);
 
 /** "$.defaultBasePricePerNight" / "DefaultBasePricePerNight" -> "Default base price per night". */
 function humanizeFieldName(key: string): string {
@@ -249,6 +256,7 @@ export const ApiErrorInterceptor: HttpInterceptorFn = (req, next) => {
 
         if (
           shouldShowToast(req.url) &&
+          !req.context.get(SKIP_ERROR_TOAST) &&
           !isLogoutRequest(req.url) &&
           shouldShowUnauthorizedToast(error.status, router, req)
         ) {

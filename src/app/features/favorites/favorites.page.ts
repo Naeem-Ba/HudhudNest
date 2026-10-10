@@ -12,6 +12,7 @@ import { FavoritesApiService } from '../../core/api/favorites-api.service';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
+import { FavoriteToggleButtonComponent } from '../../shared/ui/favorite-toggle-button.component';
 
 // ✅ FIX #9: Interface محددة بدلاً من any
 export interface FavoriteItem {
@@ -82,7 +83,8 @@ interface FavoritePropertyNested {
     TranslateModule,
     EmptyStateComponent,
     LoadingSpinnerComponent,
-    ImageFallbackDirective
+    ImageFallbackDirective,
+    FavoriteToggleButtonComponent
   ],
   template: `
     <section class="page">
@@ -118,13 +120,23 @@ interface FavoritePropertyNested {
         <article
           class="card"
           *ngFor="let favorite of favorites(); trackBy: trackById">
-          <img
-            class="thumb"
-            [src]="getImage(favorite)"
-            [alt]="getTitle(favorite)"
-            loading="lazy"
-            appImageFallback="/images/no-image.svg"
-          />
+          <div class="thumb-wrap">
+            <img
+              class="thumb"
+              [src]="getImage(favorite)"
+              [alt]="getTitle(favorite)"
+              loading="lazy"
+              appImageFallback="/images/no-image.svg"
+            />
+            <!-- The same shared heart as everywhere else: it is red here (every card on this page is
+                 a favorite) and clicking it removes the property from the favorites. -->
+            <app-favorite-toggle-button
+              *ngIf="getPropertyId(favorite) as id"
+              class="card-fav"
+              [propertyId]="id"
+              (changed)="onFavoriteChanged(id, $event)"
+            ></app-favorite-toggle-button>
+          </div>
 
           <div class="card-body">
             <h2 class="line-clamp-2">{{ getTitle(favorite) }}</h2>
@@ -157,11 +169,19 @@ interface FavoritePropertyNested {
       border: 1px solid var(--border);
       overflow: hidden;
     }
+    .thumb-wrap { position: relative; }
     .thumb {
+      display: block;
       width: 100%;
       aspect-ratio: 16/10;
       object-fit: cover;
       background: var(--gray-100);
+    }
+    .card-fav {
+      position: absolute;
+      top: .6rem;
+      inset-inline-end: .6rem;
+      z-index: 1;
     }
     .card-body { display: grid; gap: .55rem; padding: 1rem; }
     h2, p { margin: 0; color: var(--gray-800); }
@@ -223,6 +243,12 @@ export class FavoritesPage {
         this.loading.set(false);
       }
     });
+  }
+
+  /** The heart on a card was clicked: once the server confirmed the removal the card goes away at once. */
+  onFavoriteChanged(propertyId: string, isFavorite: boolean): void {
+    if (isFavorite) return;
+    this.favorites.update(items => items.filter(item => this.getPropertyId(item) !== propertyId));
   }
 
   // ✅ FIX #9: المعامل نوعه FavoriteItem بدلاً من any

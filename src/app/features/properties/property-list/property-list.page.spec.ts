@@ -20,7 +20,6 @@ import { BehaviorSubject, of, Subject } from 'rxjs';
 
 import { PropertyListPage } from './property-list.page';
 import { PropertyApiService } from '../../../core/api/property-api.service';
-import { FavoritesApiService } from '../../../core/api/favorites-api.service';
 import { SavedSearchApiService } from '../../../core/api/saved-search-api.service';
 import { LookupsApiService } from '../../../core/api/lookups-api.service';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -55,6 +54,7 @@ function toParamMap(queryParams: Record<string, unknown>): ParamMap {
 describe('PropertyListPage', () => {
   let component: PropertyListPage;
   let propertyApiSpy: jasmine.SpyObj<PropertyApiService>;
+  let lookupsApiSpy: jasmine.SpyObj<LookupsApiService>;
   let routerSpy: jasmine.SpyObj<Router>;
   let paramMapSubject: BehaviorSubject<ParamMap>;
 
@@ -80,10 +80,7 @@ describe('PropertyListPage', () => {
       return Promise.resolve(true);
     });
 
-    const favoritesApiSpy = jasmine.createSpyObj('FavoritesApiService', ['getFavorites']);
-    favoritesApiSpy.getFavorites.and.returnValue(of([]));
-
-    const lookupsApiSpy = jasmine.createSpyObj('LookupsApiService', [
+    lookupsApiSpy = jasmine.createSpyObj('LookupsApiService', [
       'getCities', 'getAmenities', 'getGovernorates', 'getPropertyTypeCatalog', 'getDistricts', 'getNeighborhoods'
     ]);
     lookupsApiSpy.getCities.and.returnValue(of([]));
@@ -100,7 +97,6 @@ describe('PropertyListPage', () => {
       imports: [PropertyListPage],
       providers: [
         { provide: PropertyApiService, useValue: propertyApiSpy },
-        { provide: FavoritesApiService, useValue: favoritesApiSpy },
         { provide: SavedSearchApiService, useValue: jasmine.createSpyObj('SavedSearchApiService', ['create']) },
         { provide: LookupsApiService, useValue: lookupsApiSpy },
         { provide: AuthService, useValue: authSpy },
@@ -240,6 +236,55 @@ describe('PropertyListPage', () => {
       expect(req.page).toBe(1);
       expect(req.city).toBeUndefined();
       expect(req.searchTerm).toBeUndefined();
+    });
+  });
+
+  describe('اقتراحات المدينة تتبع المحافظة المختارة', () => {
+    it('✅ بلا محافظة تُجلب كل المدن', () => {
+      expect(lookupsApiSpy.getCities).toHaveBeenCalledTimes(1);
+      expect(lookupsApiSpy.getCities).toHaveBeenCalledWith(null);
+    });
+
+    it('✅ اختيار محافظة يجلب مدنها فقط، ومسحها يعيد كل المدن', () => {
+      component.governorateId = 3;
+      component.onGovernorateChange();
+      expect(lookupsApiSpy.getCities).toHaveBeenCalledWith(3);
+
+      component.governorateId = null;
+      component.onGovernorateChange();
+      expect(lookupsApiSpy.getCities.calls.mostRecent().args[0]).toBeNull();
+    });
+
+    it('✅ تغيير المحافظة يمسح المدينة المكتوبة لأنها تخص المحافظة السابقة', () => {
+      component.cityFilter = 'Aleppo';
+      component.governorateId = 1;
+
+      component.onGovernorateChange();
+
+      expect(component.cityFilter).toBe('');
+    });
+
+    it('✅ رابط يحمل governorateId يجلب مدن تلك المحافظة عند فتح الصفحة', () => {
+      createComponent({ governorateId: '5' });
+
+      expect(lookupsApiSpy.getCities).toHaveBeenCalledWith(5);
+    });
+
+    it('✅ اختيار المحافظة نفسها مرتين متتاليتين لا يعيد الطلب', () => {
+      component.governorateId = 3;
+      component.onGovernorateChange();
+      component.onGovernorateChange();
+
+      expect(lookupsApiSpy.getCities.calls.allArgs().filter(a => a[0] === 3).length).toBe(1);
+    });
+
+    it('✅ إعادة الضبط تعيد كل المدن', () => {
+      component.governorateId = 3;
+      component.onGovernorateChange();
+
+      component.resetFilters();
+
+      expect(lookupsApiSpy.getCities.calls.mostRecent().args[0]).toBeNull();
     });
   });
 

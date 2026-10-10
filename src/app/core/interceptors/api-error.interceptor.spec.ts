@@ -19,7 +19,7 @@ import { AuthGuard } from '../guards/auth-guard';
 import { CsrfTokenService } from '../services/csrf-token.service';
 import { TokenStorageService } from '../services/token-storage.service';
 import { ToastService } from '../../shared/services/toast.service';
-import { ApiErrorInterceptor } from './api-error.interceptor';
+import { ApiErrorInterceptor, SKIP_ERROR_TOAST } from './api-error.interceptor';
 import { RefreshAuthInterceptor, RETRIED_AFTER_REFRESH } from './refresh-auth.interceptor';
 
 @Component({ template: '', standalone: true })
@@ -121,6 +121,21 @@ describe('ApiErrorInterceptor — 401 toast only when the CURRENT route requires
     tick();
 
     expect(toast.toasts().length).toBe(1);
+  }));
+
+  it('✅ طلب يحمل SKIP_ERROR_TOAST (409 على إضافة مفضلة موجودة أصلاً) لا يُظهر toast، والخطأ يصل للمستدعي', fakeAsync(() => {
+    router.navigateByUrl('/short-stay');
+    tick();
+    let reached = false;
+
+    http.post(`${environment.apiUrl}/favorites/p1`, {}, { context: new HttpContext().set(SKIP_ERROR_TOAST, true) })
+      .subscribe({ next: () => {}, error: () => (reached = true) });
+    httpMock.expectOne(`${environment.apiUrl}/favorites/p1`)
+      .flush({ message: 'Property already in favorites.' }, { status: 409, statusText: 'Conflict' });
+    tick();
+
+    expect(toast.toasts()).toEqual([]);
+    expect(reached).toBeTrue();
   }));
 
   it('✅ لا يُظهر أي toast عند فشل POST /auth/logout بـ401 — تسجيل الخروج يُعتبر ناجحاً محلياً دائماً', fakeAsync(() => {

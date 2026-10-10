@@ -9,11 +9,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  Output,
+  computed,
   inject,
+  input,
+  output,
   signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -24,6 +23,12 @@ import { FavoritesApiService } from '../../core/api/favorites-api.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { ToastService } from '../services/toast.service';
 
+/**
+ * The heart. It owns no favorite state of its own: whether it is filled (red) comes from
+ * FavoritesApiService, the one shared set, so the same property shows the same heart on the
+ * list card, the detail page and the favorites page, and a change made in one place shows
+ * up everywhere at once.
+ */
 @Component({
   selector: 'app-favorite-toggle-button',
   standalone: true,
@@ -34,12 +39,12 @@ import { ToastService } from '../services/toast.service';
       type="button"
       class="fav-btn"
       [class.fav-btn--active]="isFavorite()"
-      [disabled]="busy()"
+      [disabled]="busy() || loadingState()"
       (click)="toggle($event)"
       [attr.aria-pressed]="isFavorite()"
       [attr.aria-label]="(isFavorite() ? 'FAVORITE_TOGGLE.REMOVE' : 'FAVORITE_TOGGLE.ADD') | translate"
     >
-      <svg width="18" height="18" viewBox="0 0 18 18" [attr.fill]="isFavorite() ? 'currentColor' : 'none'">
+      <svg width="18" height="18" viewBox="0 0 18 18" [attr.fill]="isFavorite() ? 'currentColor' : 'none'" aria-hidden="true">
         <path d="M9 15.5S2 11 2 6.5a4 4 0 018-1.36A4 4 0 0118 6.5c0 4.5-7 9-9 9z" stroke="currentColor" stroke-width="1.5"/>
       </svg>
     </button>
@@ -58,23 +63,21 @@ import { ToastService } from '../services/toast.service';
     .fav-btn:disabled { opacity: .6; cursor: default; }
   `]
 })
-export class FavoriteToggleButtonComponent implements OnChanges {
+export class FavoriteToggleButtonComponent {
   private readonly favoritesApi = inject(FavoritesApiService);
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
 
-  @Input({ required: true }) propertyId!: string;
-  @Input() initialFavorite = false;
-  @Output() readonly changed = new EventEmitter<boolean>();
+  readonly propertyId = input.required<string>();
+  /** Emits the new favorited state after the server confirmed the change. */
+  readonly changed = output<boolean>();
 
-  readonly isFavorite = signal(false);
   readonly busy = signal(false);
-
-  ngOnChanges(): void {
-    this.isFavorite.set(this.initialFavorite);
-  }
+  readonly isFavorite = computed(() => this.favoritesApi.favoriteIds().has(this.propertyId()));
+  /** While the user's favorites are still loading the heart cannot know its state yet. */
+  readonly loadingState = computed(() => this.favoritesApi.loadState() === 'loading');
 
   toggle(event: Event): void {
     event.stopPropagation();
@@ -86,19 +89,13 @@ export class FavoriteToggleButtonComponent implements OnChanges {
       return;
     }
 
-    if (this.busy() || !this.propertyId) return;
+    const propertyId = this.propertyId();
+    if (this.busy() || !propertyId) return;
 
-    const nextState = !this.isFavorite();
     this.busy.set(true);
-
-    const request$ = nextState
-      ? this.favoritesApi.add(this.propertyId)
-      : this.favoritesApi.remove(this.propertyId);
-
-    request$.subscribe({
-      next: () => {
-        this.isFavorite.set(nextState);
-        this.changed.emit(nextState);
+    this.favoritesApi.toggleFavorite(propertyId).subscribe({
+      next: nowFavorite => {
+        this.changed.emit(nowFavorite);
         this.busy.set(false);
       },
       error: () => {

@@ -8,8 +8,9 @@
 .auth-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  min-height: calc(100vh - var(--navbar-height, 68px));
-  min-height: calc(100dvh - var(--navbar-height, 68px));
+  /* The login route sits outside the main layout, so there is no navbar to subtract. */
+  min-height: 100vh;
+  min-height: 100dvh;
 
   @include bp.tablet {
     /* On mobile the brand/photo panel is hidden (not stacked below the form) */
@@ -19,7 +20,14 @@
 
 /* ── Brand / Photo Panel ── */
 .auth-brand {
-  position: relative;
+  /* Pinned to the viewport instead of stretching to the form's height. The form grows and
+     shrinks (validation messages, the lockout warning, the register form's extra fields), and a
+     panel that follows the row height re-scales and re-crops the photo every time. */
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
 
   @include bp.tablet {
@@ -417,11 +425,6 @@
 }
 
 @include bp.tablet {
-  .auth-layout {
-    min-height: calc(100vh - var(--navbar-height, 68px));
-    min-height: calc(100dvh - var(--navbar-height, 68px));
-  }
-
   .auth-panel {
     align-items: flex-start;
     padding-top: max(1.5rem, var(--safe-area-inset-top, env(safe-area-inset-top, 0px)));
