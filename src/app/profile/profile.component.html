@@ -177,6 +177,8 @@
         </div>
       </div>
 
+      <app-preferences-card />
+
       <div class="password-section">
         <button type="button" class="btn-toggle-pass" (click)="showPasswordForm.set(!showPasswordForm())">
           {{ showPasswordForm() ? ('PROFILE.CANCEL_PASS_BTN' | translate) : ('PROFILE.CHANGE_PASS_BTN' | translate) }}

@@ -940,3 +940,18 @@ transaction الحصّة/القفل الاستشاري — فحوصات رخيص
 
 **الفصل بين التقييمين:** تقييم **العضو/المعلن** يبقى في `/users/:id` (`/Users/{id}/ratings`)، وتقييم **المكتب** في
 `/agencies/:slug` (`/agencies/{id}/ratings`)؛ لا يؤثر أحدهما في الآخر، وتعرض صفحة المكتب أعضاءه كروابط لملفاتهم.
+
+## 14. التفضيلات الشخصية (اللغة والعملة) والإشعارات الفورية — 2026-10-10
+
+التصميم الكامل: `docs/architecture/preferences-notifications-push.md` في مستودع الخلفية.
+
+| الغرض | النقطة | ملاحظات |
+|---|---|---|
+| قراءة التفضيلات | `GET /users/me` | يعيد `preferredLanguage` و`preferredCurrency` و`hasChosenLanguage` و`hasChosenCurrency`. القيمة `false` تعني أن الحساب لم يختر بعد، وأن الرمز المخزَّن مجرد افتراضي لا اختيار. |
+| حفظ التفضيلات | `PUT /users/me/preferences` | الجسم `{ preferredLanguage?, preferredCurrency? }` (الحقل الغائب لا يتغيّر). اللغات `ar\|en\|de`، العملات `EUR\|USD\|SYP\|TRY\|AED\|SAR`، وغير ذلك `400`. |
+| تسجيل جهاز للإشعارات | `POST /devices/push-token` | `{ token, platform: 'android'\|'ios'\|'web' }` — رمز FCM. |
+| إلغاء تسجيل الجهاز | `POST /devices/push-token/revoke` | `{ token }` — يُستدعى قبل تسجيل الخروج. |
+
+* لغة الإشعار هي **لغة المستلم** المحفوظة في حسابه وقت إنشاء الإشعار؛ لا تتأثر بلغة من نفّذ الحدث ولا بأي قيمة يرسلها العميل. المعامل `?language=` في `GET /notifications` يتجاهله الخادم الآن.
+* العملة المفضلة تُحفظ وتُزامَن، لكن الأسعار تُعرض حاليًا بعملة كل إعلان لعدم وجود مصدر أسعار صرف (`core/pricing/price-display.ts` جاهز لذلك).
+* الواجهة: `PreferencesService` هو المالك الوحيد؛ الحفظ على الخادم أولًا ثم التطبيق محليًا.

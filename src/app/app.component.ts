@@ -7,6 +7,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AuthService } from './core/auth/auth.service';
 import { LanguageService } from './core/services/language.service';
+import { PreferencesService } from './core/services/preferences.service';
+import { PushRegistrationService } from './core/push/push-registration.service';
 import { ToastContainerComponent } from './shared/ui/toast-container.component';
 import { NativeBackButtonService } from './core/services/native-back-button.service';
 import { DeepLinkService } from './core/deep-links/deep-link.service';
@@ -70,6 +72,8 @@ export class AppComponent {
   private readonly translate = inject(TranslateService);
   private readonly attributionContext = inject(AttributionContextService);
   private readonly metaService = inject(MetaService);
+  private readonly preferences = inject(PreferencesService);
+  private readonly push = inject(PushRegistrationService);
 
   constructor(
     private readonly authService: AuthService,
@@ -81,6 +85,8 @@ export class AppComponent {
   ) {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
     this.languageService.getCurrent();
+    this.preferences.start();
+    this.push.start();
     nativeBackButton.initialize();
     deepLinks.initialize();
     this.appUpdate.initialize();

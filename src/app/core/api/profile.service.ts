@@ -96,6 +96,12 @@ export interface UserProfile {
    * the request can be cancelled until this date.
    */
   DeletionScheduledFor?: string | null;
+
+  /** Account-level preferences (UserDto). *Chosen is false until the user picked one: the code is then only the stored default. */
+  PreferredLanguage?: string | null;
+  PreferredCurrency?: string | null;
+  HasChosenLanguage?: boolean;
+  HasChosenCurrency?: boolean;
 }
 
 /** 202 body of DELETE /api/Users/me (UsersController.DeleteAccount). */
@@ -167,6 +173,15 @@ interface BackendUserProfile {
 
   deletionScheduledFor?: string | null;
   DeletionScheduledFor?: string | null;
+
+  preferredLanguage?: string | null;
+  PreferredLanguage?: string | null;
+  preferredCurrency?: string | null;
+  PreferredCurrency?: string | null;
+  hasChosenLanguage?: boolean;
+  HasChosenLanguage?: boolean;
+  hasChosenCurrency?: boolean;
+  HasChosenCurrency?: boolean;
 }
 
 /**
@@ -423,7 +438,12 @@ export class ProfileService {
 
       HasPassword: user.hasPassword ?? user.HasPassword ?? false,
 
-      DeletionScheduledFor: user.deletionScheduledFor ?? user.DeletionScheduledFor ?? null
+      DeletionScheduledFor: user.deletionScheduledFor ?? user.DeletionScheduledFor ?? null,
+
+      PreferredLanguage: user.preferredLanguage ?? user.PreferredLanguage ?? null,
+      PreferredCurrency: user.preferredCurrency ?? user.PreferredCurrency ?? null,
+      HasChosenLanguage: user.hasChosenLanguage ?? user.HasChosenLanguage ?? false,
+      HasChosenCurrency: user.hasChosenCurrency ?? user.HasChosenCurrency ?? false
     };
   }
 
