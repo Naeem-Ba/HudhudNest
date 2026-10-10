@@ -342,6 +342,7 @@ export class PropertyListPage implements OnInit {
    * fetch, so this is the one place that turns a user action into a request.
    */
   private navigateWithCurrentState(page: number): void {
+    this.foldGovernorateNameIntoGovernorateFilter();
     const queryParams: Record<string, string | number | string[] | null> = {
       search: this.searchText.trim() || null,
       city: this.cityFilter.trim() || null,
@@ -359,6 +360,33 @@ export class PropertyListPage implements OnInit {
     };
 
     this.router.navigate([], { relativeTo: this.route, queryParams });
+  }
+
+  /**
+   * A city that is exactly a governorate's name (typed, or picked from the suggestions, which start
+   * with the governorate's own names) names that governorate, not a place inside it. The API matches
+   * the free-text City as a substring, so "دمشق" would also return "ريف دمشق" listings and miss the
+   * ones stored as "Damascus"; the governorate filter matches by id and also covers old listings
+   * that only have the text. So it is sent as the governorate filter instead of as the city.
+   * Naming a different governorate than the selected one switches to it (the area and neighborhood
+   * chosen under the old one no longer apply): the typed name is the latest thing the user said, and
+   * the alternative, a city inside another governorate, can only return nothing.
+   */
+  private foldGovernorateNameIntoGovernorateFilter(): void {
+    const typed = this.cityFilter.trim().toLowerCase();
+    if (!typed) return;
+
+    const named = this.governorates().find(
+      g => g.nameAr?.trim().toLowerCase() === typed || g.nameEn?.trim().toLowerCase() === typed
+    );
+    if (!named) return;
+
+    if (this.governorateId !== named.id) {
+      this.governorateId = named.id;
+      this.districtId = null;
+      this.neighborhoodId = null;
+    }
+    this.cityFilter = '';
   }
 
   private bindCitySuggestions(): void {
@@ -585,6 +613,7 @@ export class PropertyListPage implements OnInit {
     if (this.savingSearch()) return;
 
     const name = (prompt(this.translate.instant('PROPERTY_LIST.SAVE_SEARCH_NAME_PROMPT')) ?? '').trim();
+    this.foldGovernorateNameIntoGovernorateFilter();
     this.savingSearch.set(true);
 
     this.savedSearchApi

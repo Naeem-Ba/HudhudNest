@@ -288,6 +288,92 @@ describe('PropertyListPage', () => {
     });
   });
 
+  describe('اسم المحافظة المكتوب كمدينة يُرسَل كفلتر محافظة', () => {
+    const damascus = { id: 1, nameAr: 'دمشق', nameEn: 'Damascus' };
+    const ruralDamascus = { id: 2, nameAr: 'ريف دمشق', nameEn: 'Rural Damascus' };
+
+    beforeEach(() => component.governorates.set([damascus, ruralDamascus]));
+
+    it('✅ بلا محافظة مختارة: «دمشق» تصبح governorateId=1 ولا تُرسَل مدينة', () => {
+      component.cityFilter = 'دمشق';
+      component.applyFilters();
+
+      const req = lastRequest();
+      expect(req.governorateId).toBe(1);
+      expect(req.city).toBeUndefined();
+      expect(routerSpy.navigate).toHaveBeenCalledWith([], jasmine.objectContaining({
+        queryParams: jasmine.objectContaining({ governorateId: 1, city: null })
+      }));
+    });
+
+    it('✅ الاسم الإنجليزي بأي حالة أحرف يعطي النتيجة نفسها، و«ريف دمشق» لا تختلط بـ«دمشق»', () => {
+      component.cityFilter = '  damascus ';
+      component.applyFilters();
+      expect(lastRequest().governorateId).toBe(1);
+
+      component.cityFilter = 'RURAL DAMASCUS';
+      component.governorateId = null;
+      component.applyFilters();
+      expect(lastRequest().governorateId).toBe(2);
+      expect(lastRequest().city).toBeUndefined();
+    });
+
+    it('✅ مع المحافظة نفسها مختارة تُحذف المدينة ويبقى فلتر المحافظة', () => {
+      component.governorateId = 1;
+      component.cityFilter = 'Damascus';
+      component.applyFilters();
+
+      expect(lastRequest().governorateId).toBe(1);
+      expect(lastRequest().city).toBeUndefined();
+    });
+
+    it('✅ اسم محافظة أخرى غير المختارة ينقل الاختيار إليها ويمسح المنطقة والحي القديمين', () => {
+      component.governorateId = 1;
+      component.districtId = 11;
+      component.neighborhoodId = 111;
+      component.cityFilter = 'ريف دمشق';
+      component.applyFilters();
+
+      const req = lastRequest();
+      expect(req.governorateId).toBe(2);
+      expect(req.districtId).toBeUndefined();
+      expect(req.neighborhoodId).toBeUndefined();
+      expect(req.city).toBeUndefined();
+    });
+
+    it('✅ اسم المحافظة المختارة نفسها لا يمسح المنطقة والحي', () => {
+      component.governorateId = 1;
+      component.districtId = 11;
+      component.neighborhoodId = 111;
+      component.cityFilter = 'دمشق';
+      component.applyFilters();
+
+      const req = lastRequest();
+      expect(req.governorateId).toBe(1);
+      expect(req.districtId).toBe(11);
+      expect(req.neighborhoodId).toBe(111);
+    });
+
+    it('✅ مدينة عادية (ليست اسم محافظة) تبقى بحثًا نصيًا كما هي', () => {
+      component.cityFilter = 'Jaramana';
+      component.applyFilters();
+
+      expect(lastRequest().city).toBe('Jaramana');
+      expect(lastRequest().governorateId).toBeUndefined();
+    });
+
+    it('✅ البحث المحفوظ يحفظ المحافظة لا نص المدينة', () => {
+      const savedSearchApi = TestBed.inject(SavedSearchApiService) as jasmine.SpyObj<SavedSearchApiService>;
+      savedSearchApi.create.and.returnValue(of({} as never));
+      spyOn(window, 'prompt').and.returnValue('بحثي');
+
+      component.cityFilter = 'دمشق';
+      component.saveCurrentSearch();
+
+      expect(savedSearchApi.create).toHaveBeenCalledWith(jasmine.objectContaining({ City: null, GovernorateId: 1 }));
+    });
+  });
+
   describe('ربط الحالة بالـ URL (deep link / refresh / back-forward)', () => {
     it('✅ فتح الصفحة بمعاملات موجودة مسبقاً (رابط محفوظ بحث/hero search) يملأ لوحة الفلاتر ويُنفّذ الطلب المطابق', () => {
       const instance = createComponent({ city: 'Damascus', page: '2', minPrice: '300', governorateId: '5' });
