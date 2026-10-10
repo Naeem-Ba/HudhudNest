@@ -383,11 +383,11 @@
 }
 
 .btn-save-pass {
-  background: var(--gray-800);
-  color: white;
+  background: var(--primary);
+  color: var(--on-primary);
   padding: 0.75rem;
 
-  &:hover:not(:disabled) { background: var(--gray-900); }
+  &:hover:not(:disabled) { background: var(--primary-dark); }
 }
 
 .actions {
@@ -492,7 +492,8 @@
   font-weight: 700;
   padding: 0.65rem 1.1rem;
 
-  &:hover:not(:disabled) { background: var(--gray-800); color: #fff; }
+  // --surface (not #fff): --gray-800 turns near-white in the dark theme, so white text vanished.
+  &:hover:not(:disabled) { background: var(--gray-800); color: var(--surface); }
   &:disabled { opacity: .6; cursor: default; }
 }
 
