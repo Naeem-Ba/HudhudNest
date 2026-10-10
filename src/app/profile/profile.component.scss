@@ -266,6 +266,53 @@
   &:hover { background: var(--primary-soft); }
 }
 
+// رقم الهاتف وحالته: نفس لغة شارات البريد (.email-status) لكن بسطر واحد بجانب الرقم.
+.phone-status {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .6rem;
+  }
+
+  &__number {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--gray-800);
+  }
+
+  &__empty {
+    color: var(--gray-500);
+    font-size: .9rem;
+  }
+}
+
+.phone-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: .8rem;
+  font-weight: 700;
+  padding: .25rem .65rem;
+  border-radius: 999px;
+
+  &--confirmed {
+    background: var(--success-soft);
+    color: var(--success);
+    border: 1px solid rgba(22,163,74,.25);
+  }
+
+  &--pending {
+    background: var(--warning-soft);
+    color: var(--warning);
+    border: 1px solid rgba(217,119,6,.25);
+  }
+}
+
 // رابطا تغيير رقم الدخول والتحقق منه: بدون هذا التنسيق كانا نصّين ملتصقين لا يبدوان كرابطين.
 .phone-security {
   display: flex;

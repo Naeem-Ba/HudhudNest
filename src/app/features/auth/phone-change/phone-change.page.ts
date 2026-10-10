@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { PhoneAuthApiService } from '../../../core/auth/phone-auth-api.service';
@@ -35,11 +35,14 @@ export class PhoneChangePage {
   private readonly phoneAuth = inject(PhoneAuthApiService);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly translate = inject(TranslateService);
   private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly step = signal<Step>('phone');
+  /** True when the profile sent the number the account already holds: the page then confirms it. */
+  readonly confirmingExisting = signal(false);
   readonly loading = signal(false);
   readonly submitted = signal(false);
   readonly error = signal('');
@@ -60,6 +63,13 @@ export class PhoneChangePage {
 
   constructor() {
     this.channels.watch(this.phoneForm.controls.phoneNumber);
+
+    // "Confirm my number" in the profile opens this page with the stored, unconfirmed number filled in.
+    const stored = this.route.snapshot.queryParamMap.get('phone')?.trim();
+    if (stored) {
+      this.phoneForm.controls.phoneNumber.setValue(stored);
+      this.confirmingExisting.set(true);
+    }
   }
 
   get maskedPhone(): string {
@@ -170,7 +180,8 @@ export class PhoneChangePage {
           }
 
           this.step.set('done');
-          this.toast.success(this.translate.instant('AUTH.PHONE_CHANGE.SUCCESS'));
+          this.toast.success(this.translate.instant(
+            this.confirmingExisting() ? 'AUTH.PHONE_CHANGE.CONFIRM_SUCCESS' : 'AUTH.PHONE_CHANGE.SUCCESS'));
         },
         error: error => {
           this.loading.set(false);

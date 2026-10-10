@@ -129,6 +129,33 @@ describe('ProfileService — account deletion window and export', () => {
   });
 });
 
+describe('ProfileService — saving the profile', () => {
+  let service: ProfileService;
+  let httpMock: HttpTestingController;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()]
+    });
+    service = TestBed.inject(ProfileService);
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => httpMock.verify());
+
+  it('never sends the phone number: it is the login phone and changes only through the code flow', () => {
+    service
+      .updateProfile({ Vorname: 'Ada', Name: 'Lovelace', Phone: '+963911234567', PhoneConfirmed: false } as UserProfile)
+      .subscribe({ error: () => undefined });
+
+    const put = httpMock.expectOne(r => r.method === 'PUT' && r.url === `${environment.apiUrl}/users/me`);
+    expect(put.request.body.firstName).toBe('Ada');
+    expect('phoneNumber' in put.request.body).toBeFalse();
+    put.flush(null, { status: 204, statusText: 'No Content' });
+    httpMock.expectOne(`${environment.apiUrl}/users/me`).flush({});
+  });
+});
+
 describe('agencyEligibility — mirrors the API gate so the screen can explain what is missing', () => {
   const profile = (over: Partial<UserProfile>): UserProfile => ({ ...over });
 

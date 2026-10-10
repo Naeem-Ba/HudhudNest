@@ -335,7 +335,12 @@
       "SESSIONS_WARNING": "Other active sessions will be signed out after the number is changed.",
       "SAVING": "Saving...",
       "CONFIRM_BUTTON": "Confirm phone change",
-      "SUCCESS": "Your phone number was changed successfully."
+      "SUCCESS": "Your phone number was changed successfully.",
+      "CONFIRM_TITLE": "Confirm phone number",
+      "CONFIRM_SUBTITLE": "We send a verification code to this number. Once you enter it with your password, it becomes your sign-in and password-recovery number.",
+      "CONFIRM_PHONE_NUMBER": "Phone number to confirm",
+      "CONFIRM_NUMBER_BUTTON": "Confirm number",
+      "CONFIRM_SUCCESS": "Your phone number is confirmed."
     },
     "PASSWORD_RULES": {
       "PASSWORD_TOO_SHORT": "At least 8 characters",
@@ -1015,7 +1020,15 @@
     "PHONE_SECURITY": {
       "TITLE": "Sign-in phone number",
       "CHANGE": "Change sign-in phone number",
-      "VERIFY": "Verify my phone number"
+      "VERIFY": "Verify my phone number",
+      "NO_NUMBER": "No phone number",
+      "CONFIRMED": "Confirmed",
+      "UNCONFIRMED": "Not confirmed",
+      "UNCONFIRMED_HINT": "This number is not confirmed, so it cannot reset your password. Confirm it with a code sent to the phone.",
+      "NO_NUMBER_HINT": "Add your phone number and confirm it with a code so you can sign in and recover your password with it.",
+      "NEEDS_PASSWORD": "Confirming a number needs an account password, which Google and Apple accounts do not have yet.",
+      "ADD": "Add a phone number",
+      "CONFIRM": "Confirm my number"
     },
     "PHONE_PLACEHOLDER": "Enter phone number",
     "CHANGE_PASS_BTN": "Change password",
@@ -1060,7 +1073,8 @@
       "DELETE_SUCCESS": "The account was deleted.",
       "DELETE_SCHEDULED": "We received your deletion request. Your account will be deleted on {{date}} unless you cancel before then.",
       "DELETE_ERROR": "Unable to delete the account.",
-      "PASS_LENGTH": "The new password must contain at least 6 characters."
+      "PASS_LENGTH": "The new password must contain at least 6 characters.",
+      "PHONE_SAVE_ERROR": "The phone number can't be saved from here. Add or change it in the phone number section of this page."
     },
     "ABOUT": {
       "BIO_LABEL": "About me",
