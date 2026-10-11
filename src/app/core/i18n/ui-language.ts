@@ -8,6 +8,7 @@
 // LanguageService there would build the real service against that spy and throw.
 
 import { SupportedLanguage, toSupportedLanguage } from './first-visit-language';
+import { numberLocaleFor } from './supported-preferences';
 
 /** "ar" | "en" | "de" for the language on screen, or null when it cannot be told. */
 export function currentUiLanguage(): SupportedLanguage | null {
@@ -27,4 +28,9 @@ export function withUiLanguage<T extends object>(body: T): T & { language?: Supp
   const language = currentUiLanguage();
 
   return language ? { language, ...body } : body;
+}
+
+/** The locale to format numbers and money with: the language on screen (Arabic when it cannot be told). */
+export function uiNumberLocale(): string {
+  return numberLocaleFor(currentUiLanguage());
 }

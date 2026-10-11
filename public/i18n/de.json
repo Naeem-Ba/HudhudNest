@@ -1005,6 +1005,19 @@
     "OPEN_GOOGLE": "In Google Maps öffnen",
     "MY_LOCATION": "Meinen Standort bestimmen"
   },
+  "PREFERENCES": {
+    "TITLE": "Sprache & Währung",
+    "DESC": "Diese Einstellungen gehören zu Ihrem Konto und folgen Ihnen auf jedes Gerät.",
+    "LANGUAGE_LABEL": "Sprache",
+    "CURRENCY_LABEL": "Anzeigewährung",
+    "CURRENCY_NONE": "Nicht festgelegt (Währung der jeweiligen Anzeige)",
+    "SAVING": "Wird gespeichert…",
+    "SAVED": "Gespeichert.",
+    "SAVE_FAILED": "Ihre Auswahl konnte nicht gespeichert werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "GUEST_NOTE": "Melden Sie sich an, um diese Einstellungen auf allen Geräten zu behalten.",
+    "NOTIFICATIONS_NOTE": "Benachrichtigungen erhalten Sie in Ihrer Sprache.",
+    "PRICES_NOTE": "Preise werden derzeit in der Währung der jeweiligen Anzeige angezeigt. Ihre Auswahl wird gespeichert, bis die Währungsumrechnung verfügbar ist."
+  },
   "PROFILE": {
     "SYNC_DATA": "Daten werden synchronisiert...",
     "FETCH_ERROR": "Die Daten konnten nicht geladen werden. Prüfen Sie die Sitzung.",

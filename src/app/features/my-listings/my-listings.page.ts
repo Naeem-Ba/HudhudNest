@@ -23,6 +23,7 @@ import { Property } from '../../core/models/property.model';
 import { SkeletonCardGridComponent } from '../../shared/ui/skeleton-card-grid.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
+import { uiNumberLocale } from '../../core/i18n/ui-language';
 
 @Component({
   selector: 'app-my-listings',
@@ -305,13 +306,13 @@ export class MyListingsPage implements OnInit {
     const currency = property.currencyCode ?? 'EUR';
 
     try {
-      return new Intl.NumberFormat('ar', {
+      return new Intl.NumberFormat(uiNumberLocale(), {
         style: 'currency',
         currency,
         maximumFractionDigits: 0
       }).format(price);
     } catch {
-      return `${price.toLocaleString('ar')} ${currency}`;
+      return `${price.toLocaleString(uiNumberLocale())} ${currency}`;
     }
   }
 

@@ -13,6 +13,7 @@ Disallow: /visits
 Disallow: /my-services
 Disallow: /checkout/
 Disallow: /profile
+Disallow: /settings
 Disallow: /messages
 Disallow: /analytics
 Disallow: /admin/

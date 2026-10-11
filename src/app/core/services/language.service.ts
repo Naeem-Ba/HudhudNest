@@ -11,9 +11,11 @@ export type LangCode = 'en' | 'ar' | 'de';
  *  - 'user'      the visitor chose it (language selector): stored under `lang`, overrides everything, forever;
  *  - 'auto'      detected for a first-time visitor (country / device): stored under `lang_auto` so the next
  *                visit does not repeat the lookup, but a later explicit choice still replaces it;
- *  - 'ephemeral' applied for this page load only (the device-language baseline while the country is looked up).
+ *  - 'ephemeral' applied for this page load only (the device-language baseline while the country is looked up);
+ *  - 'account'   the signed-in account's own language (PreferencesService): shown, but NEVER written to the
+ *                device-wide keys above, so it cannot leak to the next visitor or account on this device.
  */
-export type LangPersistence = 'user' | 'auto' | 'ephemeral';
+export type LangPersistence = 'user' | 'auto' | 'ephemeral' | 'account';
 
 const USER_LANG_KEY = 'lang';
 const AUTO_LANG_KEY = 'lang_auto';
@@ -71,6 +73,15 @@ export class LanguageService {
 
   getLanguages(): readonly LanguageOption[] {
     return this.languages;
+  }
+
+  /**
+   * Back to what this device would show with nobody signed in: the visitor's own choice, else an earlier
+   * automatic detection, else the device language. Called on sign-out so an account's language never
+   * outlives its session.
+   */
+  restoreGuestLanguage(): void {
+    this.init();
   }
 
   /** True when the visitor (or an earlier visit's detection) already settled on a language. */

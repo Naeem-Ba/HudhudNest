@@ -18,6 +18,7 @@ import { Injectable } from '@angular/core';
 import { Property } from '../models/property.model';
 import { PropertyShareUrlService } from './property-share-url.service';
 import { ShareableContent } from './share.model';
+import { uiNumberLocale } from '../i18n/ui-language';
 
 const MAX_SUMMARY_LENGTH = 160;
 
@@ -114,7 +115,7 @@ export class PropertyShareContentService {
 
     const currency = property.currencyCode ?? 'USD';
     try {
-      return new Intl.NumberFormat('ar', {
+      return new Intl.NumberFormat(uiNumberLocale(), {
         style: 'currency',
         currency,
         maximumFractionDigits: 0
@@ -126,7 +127,7 @@ export class PropertyShareContentService {
 
   private formatNumber(value: number): string {
     try {
-      return new Intl.NumberFormat('ar').format(value);
+      return new Intl.NumberFormat(uiNumberLocale()).format(value);
     } catch {
       return String(value);
     }

@@ -33,6 +33,11 @@ const config: CapacitorConfig = {
     SystemBars: {
       insetsHandling: 'css',
     },
+    // The app already shows incoming notifications itself while it is open (SignalR toast), so the
+    // OS must not show a second one for the same event. Background delivery is unaffected.
+    FirebaseMessaging: {
+      presentationOptions: [],
+    },
   },
 };
 

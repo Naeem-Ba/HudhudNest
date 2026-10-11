@@ -1005,6 +1005,19 @@
     "OPEN_GOOGLE": "Open in Google Maps",
     "MY_LOCATION": "Find my location"
   },
+  "PREFERENCES": {
+    "TITLE": "Language & currency",
+    "DESC": "These settings belong to your account and follow you to every device.",
+    "LANGUAGE_LABEL": "Language",
+    "CURRENCY_LABEL": "Display currency",
+    "CURRENCY_NONE": "Not set (show each listing's own currency)",
+    "SAVING": "Saving…",
+    "SAVED": "Saved.",
+    "SAVE_FAILED": "Your choice could not be saved. Check your connection and try again.",
+    "GUEST_NOTE": "Sign in to keep these settings on all your devices.",
+    "NOTIFICATIONS_NOTE": "Notifications are sent in your language.",
+    "PRICES_NOTE": "Prices are currently shown in the currency of each listing. Your choice is saved for when currency conversion becomes available."
+  },
   "PROFILE": {
     "SYNC_DATA": "Synchronizing data...",
     "FETCH_ERROR": "Unable to load data. Check the session.",

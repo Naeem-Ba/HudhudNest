@@ -274,6 +274,12 @@ export const routes: Routes = [
             .then(m => m.UserProfilePage)
       },
       {
+        path: 'settings',
+        loadComponent: () =>
+          import('./features/settings/settings.page')
+            .then(m => m.SettingsPage)
+      },
+      {
         path: 'reviews',
         loadComponent: () =>
           import('./features/reviews/reviews.page')

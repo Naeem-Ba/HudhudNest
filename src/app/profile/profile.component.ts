@@ -17,6 +17,7 @@ import { ToastService } from '../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../shared/ui/loading-spinner.component';
 import { ImageFallbackDirective } from '../shared/directives/image-fallback.directive';
 import { ConfirmModalComponent } from '../shared/ui/confirm-modal.component';
+import { PreferencesCardComponent } from '../shared/ui/preferences-card.component';
 import { AVATAR_COMPRESSION, compressImageForUpload } from '../shared/utils/image-compression';
 import { AppUpdateNativeGateway } from '../core/api/app-update-native.gateway';
 import { NativeFileExportGateway } from '../core/native/native-file-export.gateway';
@@ -33,7 +34,8 @@ import { formatDeletionDate } from '../shared/utils/deletion-date';
     RouterLink,
     LoadingSpinnerComponent,
     ImageFallbackDirective,
-    ConfirmModalComponent
+    ConfirmModalComponent,
+    PreferencesCardComponent
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']

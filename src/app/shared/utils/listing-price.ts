@@ -1,3 +1,5 @@
+import { uiNumberLocale } from '../../core/i18n/ui-language';
+
 /**
  * One rule for "the price of a listing" so Home, the list and the detail page cannot disagree:
  * the purchase price for sales, otherwise the warm rent, otherwise the cold rent. 0 and null both
@@ -21,12 +23,12 @@ export function formatListingPrice(value: number | null | undefined, currencyCod
   const currency = currencyCode || 'SYP';
 
   try {
-    return new Intl.NumberFormat('ar', {
+    return new Intl.NumberFormat(uiNumberLocale(), {
       style: 'currency',
       currency,
       maximumFractionDigits: 0
     }).format(value);
   } catch {
-    return `${value.toLocaleString('ar')} ${currency}`;
+    return `${value.toLocaleString(uiNumberLocale())} ${currency}`;
   }
 }
