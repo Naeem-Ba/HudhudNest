@@ -84,7 +84,17 @@ function makeRepos() {
       return out.status === 0 ? out.stdout.trim() : null;
     },
     setRelease: (sha) => git(work, 'push', 'origin', `${sha}:refs/heads/release`),
-    run: ({ requested = '', green = [] }) => spawnSync('bash', [join(dir, 'script.sh')], {
+    // `staging`: 'skip' (default) bypasses the Staging check; 'ok' / 'bad' install a stub checker that
+    // exits 0 / 1 and records the arguments it was called with.
+    run: ({ requested = '', green = [], staging = 'skip' }) => {
+      mkdirSync(join(work, 'tools'), { recursive: true });
+      if (staging !== 'skip') {
+        writeFileSync(
+          join(work, 'tools', 'check-live-environment.mjs'),
+          `import { writeFileSync } from 'node:fs';\nwriteFileSync(${JSON.stringify(join(dir, 'checker-args.txt'))}, process.argv.slice(2).join(' '));\nprocess.exit(${staging === 'ok' ? 0 : 1});\n`
+        );
+      }
+      return spawnSync('bash', [join(dir, 'script.sh')], {
       cwd: work,
       encoding: 'utf8',
       env: {
@@ -93,9 +103,13 @@ function makeRepos() {
         GH_TOKEN: 'x', REPO: 'o/r',
         REQUESTED_SHA: requested,
         FAKE_GREEN: green.join(' '),
+        SKIP_STAGING_CHECK: staging === 'skip' ? 'true' : 'false',
+        STAGING_URL: 'https://staging.example',
         GITHUB_STEP_SUMMARY: join(dir, 'summary.md')
       }
-    }),
+    });
+    },
+    checkerArgs: () => { try { return readFileSync(join(dir, 'checker-args.txt'), 'utf8'); } catch { return null; } },
     cleanup: () => rmSync(dir, { recursive: true, force: true })
   };
 }
@@ -126,6 +140,22 @@ test('an explicit sha is promoted when its CI is green', () => scenario((r) => {
   const out = r.run({ requested: c2.slice(0, 10), green: [c2] });
   assert.equal(out.status, 0, out.stdout + out.stderr);
   assert.equal(r.releaseAt(), c2);
+}));
+
+test('moves release only after Staging confirms it runs that very commit', () => scenario((r) => {
+  const [, , c3] = r.shas;
+  const out = r.run({ green: [c3], staging: 'ok' });
+  assert.equal(out.status, 0, out.stdout + out.stderr);
+  assert.equal(r.releaseAt(), c3);
+  assert.equal(r.checkerArgs(), `https://staging.example --expect staging --commit ${c3}`);
+}));
+
+test('refuses to promote when Staging is on another commit or unreachable', () => scenario((r) => {
+  const [, , c3] = r.shas;
+  const out = r.run({ green: [c3], staging: 'bad' });
+  assert.notEqual(out.status, 0);
+  assert.match(out.stdout + out.stderr, /Staging is not running/);
+  assert.equal(r.releaseAt(), null);
 }));
 
 test('never moves release backwards', () => scenario((r) => {

@@ -22,7 +22,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         // BLK-04: أول ترقية فعلية منذ إنشاء المشروع (كانت 1 / "1.0" دائمًا).
-        versionCode 2
+        versionCode 3
         versionName "1.1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {

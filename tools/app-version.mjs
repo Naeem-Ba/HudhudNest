@@ -1,11 +1,12 @@
 // CLI for the native app version (see tools/lib/app-version.mjs).
 //   node tools/app-version.mjs check [--strict]          report; --strict also fails on drift
+//   node tools/app-version.mjs verify-tag <vX.Y.Z>        fail unless the tag names the version in both native projects
 //   node tools/app-version.mjs set <x.y.z> [--build N]   write both platforms (build defaults to current versionCode + 1)
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 
-import { applyVersion, evaluate, readAndroid, readIos } from './lib/app-version.mjs';
+import { applyVersion, checkReleaseTag, evaluate, readAndroid, readIos } from './lib/app-version.mjs';
 
 const root = process.cwd();
 const gradlePath = path.join(root, 'android', 'app', 'build.gradle');
@@ -32,6 +33,10 @@ if (command === 'check') {
   const strict = rest.includes('--strict');
   if (errors.length > 0 || (strict && warnings.length > 0)) process.exit(1);
   console.log('[app-version] Checks passed.');
+} else if (command === 'verify-tag') {
+  const problem = checkReleaseTag(rest[0], readAndroid(gradleText), readIos(pbxprojText));
+  if (problem) fail(problem);
+  console.log(`[app-version] Tag ${rest[0]} matches Android and iOS.`);
 } else if (command === 'set') {
   const version = rest[0];
   const buildFlag = rest.indexOf('--build');
@@ -46,5 +51,5 @@ if (command === 'check') {
   }
   console.log(`[app-version] Set Android + iOS to ${version} (build ${build}).`);
 } else {
-  fail('Usage: app-version.mjs check [--strict] | set <x.y.z> [--build N]');
+  fail('Usage: app-version.mjs check [--strict] | verify-tag <vX.Y.Z> | set <x.y.z> [--build N]');
 }

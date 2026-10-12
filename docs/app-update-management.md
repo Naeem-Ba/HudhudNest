@@ -34,6 +34,12 @@ src/app/shared/ui/confirm-modal.component.ts   gained a hideCancel input for the
 - **Non-blocking.** Called from `AppComponent`'s constructor (same place as
   `NativeBackButtonService.initialize()`), never an `APP_INITIALIZER` — the check never delays
   first paint.
+- **Also on resume.** The check runs at launch and every time the app returns from the background, with no timers or
+  polling: a successful check is not repeated for an hour, a failed one may be retried after five minutes, and two
+  checks never run at once. The answer replaces the previous one, so a mandatory dialog disappears once the server stops
+  asking for it, and a failed check changes nothing (an outage never forces an update).
+- **Store link is checked again on the client:** only `https://play.google.com`, `https://apps.apple.com` and
+  `https://itunes.apple.com` links are opened; the mandatory dialog's button stays disabled for anything else.
 - **Version sent to the backend** comes from `App.getInfo().version` (the platform's real
   installed version — Android `versionName`, iOS `MARKETING_VERSION`), normalized to
   `major.minor.patch` via `normalizeAppVersion()`. This matters concretely: iOS's
@@ -46,8 +52,9 @@ src/app/shared/ui/confirm-modal.component.ts   gained a hideCancel input for the
   minimumSupportedVersion`). Mandatory renders with `hideCancel` + `closeOnBackdrop=false` (no
   dismiss path except "Update Now"); optional renders as an ordinary dismissible
   `ConfirmModalComponent` with "Update Now" / "Later".
-- **"Later" is once per app launch**, with no persistence — `optionalUpdate` is a signal on a
-  `providedIn: 'root'` singleton, so it naturally resets the next time the native process starts.
+- **"Later" is once per app launch** for that version, with no persistence — the dismissed version is kept in memory
+  on a `providedIn: 'root'` singleton, so it resets the next time the native process starts, and a newer version asks again.
+- The mandatory dialog shows the release notes in the language selected in the app.
 - **No `storeUrl` yet** (no app is published yet) degrades gracefully: the optional dialog still
   offers "Update Now" but it's a no-op without a URL; the mandatory dialog's "Update Now" button
   is disabled instead of doing nothing silently.
