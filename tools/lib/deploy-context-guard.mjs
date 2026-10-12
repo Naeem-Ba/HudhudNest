@@ -30,6 +30,15 @@ export function checkDeployContext(env, values) {
           'environment.prod.ts) or set it to the Production API.'
       );
     }
+    // Any other API_URL is also refused: Production talks to its own API or nothing at all, so a value
+    // that is neither (a typo, a third host, an old service) is a misconfiguration to stop at build time.
+    // To move Production to a new API host, add it to PRODUCTION_API_HOSTS above in the same change.
+    if (apiUrl && !/staging/i.test(apiUrl) && !PRODUCTION_API_HOSTS.test(apiUrl)) {
+      problems.push(
+        `Netlify CONTEXT=production but API_URL="${apiUrl}" is not a known Production API host. ` +
+          'Remove the API_URL value for the Production scope or add the new host to PRODUCTION_API_HOSTS in tools/lib/deploy-context-guard.mjs.'
+      );
+    }
     if (/staging|netlify\.app/i.test(siteUrl)) {
       problems.push(`Netlify CONTEXT=production but SITE_URL="${siteUrl}" is not a production origin.`);
     }
