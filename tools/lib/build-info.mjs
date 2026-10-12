@@ -71,10 +71,10 @@ export function parseBuildInfo(text) {
 
 /**
  * @param {object | null} info the marker the live site served, or null when it served none
- * @param {{ expectedEnvironment: string }} expected
+ * @param {{ expectedEnvironment: string, expectedCommit?: string | null }} expected
  * @returns {string[]} human-readable problems; empty when the live site is what it should be
  */
-export function validateBuildInfo(info, { expectedEnvironment }) {
+export function validateBuildInfo(info, { expectedEnvironment, expectedCommit = null }) {
   if (!info) {
     return [
       `The site did not serve a ${BUILD_INFO_FILE} marker (it may predate this check, or the deploy is not the build that was meant to be live).`
@@ -84,6 +84,16 @@ export function validateBuildInfo(info, { expectedEnvironment }) {
   const problems = [];
   if (info.environment !== expectedEnvironment) {
     problems.push(`The live site is a "${info.environment}" build but "${expectedEnvironment}" was expected.`);
+  }
+
+  if (expectedCommit) {
+    const wanted = String(expectedCommit).trim().toLowerCase();
+    const built = String(info.commit ?? '').trim().toLowerCase();
+    // A short sha (7+ characters) is accepted, as `git log --oneline` prints it.
+    const same = wanted.length >= 7 && built.length >= 7 && (built.startsWith(wanted) || wanted.startsWith(built));
+    if (!same) {
+      problems.push(`The live build is from commit ${built ? built.slice(0, 7) : '(unknown)'}, but ${wanted.slice(0, 7)} was expected.`);
+    }
   }
 
   const apiUrl = info.apiUrl ?? '';

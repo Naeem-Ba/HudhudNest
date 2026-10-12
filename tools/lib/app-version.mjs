@@ -90,3 +90,19 @@ export function applyVersion(gradleText, pbxprojText, version, build) {
 
   return { gradle, pbxproj };
 }
+
+/** A release tag is `v<x.y.z>` and must name exactly the version written in the native projects, so a
+ * store build can never carry a different number than the tag that was reviewed.
+ * @returns {string | null} the problem, or null when the tag matches */
+export function checkReleaseTag(tag, android, ios) {
+  const wanted = /^v((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*))$/.exec(String(tag ?? ''))?.[1];
+  if (!wanted) return `Tag "${tag}" must look like v<major>.<minor>.<patch>, for example v1.2.0.`;
+  if (android.versionName !== wanted) {
+    return `Tag ${tag} does not match Android versionName "${android.versionName}". Run "npm run version:set -- ${wanted}" and commit it first.`;
+  }
+  const iosVersions = new Set((ios.marketing ?? []).map((value) => normalizeVersion(value)));
+  if (iosVersions.size !== 1 || !iosVersions.has(wanted)) {
+    return `Tag ${tag} does not match iOS MARKETING_VERSION "${(ios.marketing ?? []).join(', ')}".`;
+  }
+  return null;
+}

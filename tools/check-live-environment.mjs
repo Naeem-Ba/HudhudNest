@@ -1,6 +1,6 @@
 // Asks a deployed site which build it is, and fails when it is the wrong one.
 //
-//   node tools/check-live-environment.mjs [url] [--expect production|staging]
+//   node tools/check-live-environment.mjs [url] [--expect production|staging] [--commit <sha>]
 //
 // Defaults: https://hudhudnest.com, production. Zero dependencies, so it also runs on a laptop
 // (`node tools/check-live-environment.mjs` in PowerShell) right after clicking "Publish deploy" in Netlify.
@@ -48,10 +48,20 @@ export async function main(argv, log = console) {
   const expectIndex = args.indexOf('--expect');
   const expectValueIndex = expectIndex >= 0 ? expectIndex + 1 : -1;
   const expectedEnvironment = expectIndex >= 0 ? args[expectValueIndex] : 'production';
-  const siteUrl = args.find((arg, index) => !arg.startsWith('--') && index !== expectValueIndex) ?? 'https://hudhudnest.com';
+  const commitIndex = args.indexOf('--commit');
+  const commitValueIndex = commitIndex >= 0 ? commitIndex + 1 : -1;
+  const expectedCommit = commitIndex >= 0 ? (args[commitValueIndex] ?? '') : null;
+  const siteUrl =
+    args.find((arg, index) => !arg.startsWith('--') && index !== expectValueIndex && index !== commitValueIndex) ??
+    'https://hudhudnest.com';
 
   if (!ENVIRONMENT_NAMES.includes(expectedEnvironment)) {
     log.error(`--expect must be one of: ${ENVIRONMENT_NAMES.join(', ')}`);
+    return 2;
+  }
+
+  if (expectedCommit !== null && !/^[0-9a-f]{7,40}$/i.test(expectedCommit)) {
+    log.error('--commit must be 7 to 40 hex characters.');
     return 2;
   }
 
@@ -63,9 +73,9 @@ export async function main(argv, log = console) {
     return 2;
   }
 
-  const problems = validateBuildInfo(info, { expectedEnvironment });
+  const problems = validateBuildInfo(info, { expectedEnvironment, expectedCommit });
   if (problems.length > 0) {
-    log.error(`[live-env] FAIL ${siteUrl} (expected ${expectedEnvironment})`);
+    log.error(`[live-env] FAIL ${siteUrl} (expected ${expectedEnvironment}${expectedCommit ? ` @ ${expectedCommit.slice(0, 7)}` : ''})`);
     for (const problem of problems) log.error(`  - ${problem}`);
     return 1;
   }

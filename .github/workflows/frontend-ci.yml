@@ -3,6 +3,10 @@ name: Frontend CI
 on:
   push:
     branches: [ main, master, develop ]
+    # Store builds: tag v<major>.<minor>.<patch> on a main commit. The tag must equal the version in
+    # android/app/build.gradle and the Xcode project (checked below), and the whole `build` job (audit,
+    # tests, production build) runs on the tagged commit before any store build starts.
+    tags: [ 'v*' ]
   pull_request:
     branches: [ main, master, develop ]
   workflow_dispatch:
@@ -58,7 +62,7 @@ jobs:
       - name: Native app version check
         run: |
           npm run test:tools
-          npm run version:check
+          npm run version:check -- --strict
 
       - name: Environment validation
         run: npm run check:env
@@ -81,7 +85,8 @@ jobs:
   # BLK-04: يبني ويوقّع Android App Bundle باستخدام مفتاح الإنتاج الحقيقي
   # المخزَّن في GitHub Secrets (لا يُنشأ أو يُخزَّن هنا). يتطلّب الأسرار الأربعة
   # (خطوة "Validate signing secrets"): كلها غائبة = تخطٍّ، بعضها غائب = فشل صريح.
-  # يعمل على الدفعات إلى main أو يدويًا (workflow_dispatch). تم التحقق منه فعليًا
+  # يعمل عند دفع tag بصيغة v<x.y.z> أو يدويًا (workflow_dispatch) — لا عند كل دمج إلى main (دقائق Actions
+  # على مستودع خاص). تم التحقق منه فعليًا
   # بتاريخ 2026-09-19 (AAB موقَّع بالمفتاح الصحيح) — انظر android/RELEASE_SIGNING.md.
   android-release:
     name: Android — Build Signed Release AAB
@@ -91,8 +96,8 @@ jobs:
     # توقيع AAB كاملًا على ubuntu-26.04 بنجاح (run 35427580310).
     runs-on: ubuntu-26.04
     timeout-minutes: 20
-    # push إلى main، أو تشغيل يدوي (workflow_dispatch) للتحقق من التوقيع على فرع قبل الدمج.
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    # دفع tag إصدار (v*)، أو تشغيل يدوي (workflow_dispatch) للتحقق من التوقيع على فرع قبل الدمج.
+    if: (github.event_name == 'push' && github.ref_type == 'tag') || github.event_name == 'workflow_dispatch'
     # contents: write لنشر الـ AAB كـ Release asset (خطوة "Publish signed AAB" أدناه) بدل الاعتماد
     # وحده على حصة Actions artifacts.
     permissions:
@@ -145,13 +150,93 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
+      # الإصدار المبني = ما كُتب في المشروعين = اسم الـ tag، ومن commit موجود على main. أي اختلاف يُفشل البناء
+      # قبل أي عمل مكلف. التشغيل اليدوي لا tag له: يكفي أن يكون الرقمان متطابقين بين المنصتين.
+      - name: Check release identity
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IS_TAG: ${{ github.ref_type == 'tag' }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if [ "$IS_TAG" = "true" ]; then
+            node tools/app-version.mjs verify-tag "$TAG_NAME"
+            status="$(gh api "repos/${GITHUB_REPOSITORY}/compare/main...${GITHUB_SHA}" --jq .status)"
+            case "$status" in
+              identical|behind) ;;
+              *) echo "::error::Tag ${TAG_NAME} points at ${GITHUB_SHA::7}, which is not on main (compare status: ${status}). Tag a commit that was merged to main."; exit 1 ;;
+            esac
+          fi
+          node tools/app-version.mjs check --strict
+
+      # يفشل مغلقًا: AAB بلا معرّف Google لا يسجّل الدخول بـ Google، وبلا google-services.json لا تصل إشعارات
+      # Push، ولا يظهر أي خطأ في البناء نفسه. القيم العامة (معرّفات) في GitHub Variables، والملف في Secret.
+      # Apple اختياري على Android (تسجيل الدخول عبر الويب)؛ تعطيل Push صراحةً: ANDROID_PUSH_DISABLED=true.
+      - name: Check store build configuration
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
+          APPLE_CLIENT_ID: ${{ vars.APPLE_CLIENT_ID }}
+          APPLE_REDIRECT_URI: ${{ vars.APPLE_REDIRECT_URI }}
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+          ANDROID_PUSH_DISABLED: ${{ vars.ANDROID_PUSH_DISABLED }}
+        run: |
+          missing=()
+          [ -n "$GOOGLE_CLIENT_ID" ] || missing+=("variable GOOGLE_CLIENT_ID")
+          if [ -z "$GOOGLE_SERVICES_JSON_BASE64" ] && [ "$ANDROID_PUSH_DISABLED" != "true" ]; then
+            missing+=("secret GOOGLE_SERVICES_JSON_BASE64 (or variable ANDROID_PUSH_DISABLED=true)")
+          fi
+          if [ "${#missing[@]}" -gt 0 ]; then
+            printf '::error::Store build configuration is incomplete. Missing: %s. See docs/RELEASE-RUNBOOK-AR.md.\n' "$(IFS=,; echo "${missing[*]}")"
+            exit 1
+          fi
+          if [ -z "$APPLE_CLIENT_ID" ] || [ -z "$APPLE_REDIRECT_URI" ]; then
+            echo "::warning::APPLE_CLIENT_ID / APPLE_REDIRECT_URI are not set: Apple sign-in will be hidden in this build."
+          fi
+          if [ -z "$GOOGLE_SERVICES_JSON_BASE64" ]; then
+            echo "::warning::ANDROID_PUSH_DISABLED=true: this build has no push notifications."
+          fi
+
       - name: Install dependencies
         if: steps.signing.outputs.enabled == 'true'
         run: npm ci
 
       - name: Build production web assets
         if: steps.signing.outputs.enabled == 'true'
+        env:
+          GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
+          APPLE_CLIENT_ID: ${{ vars.APPLE_CLIENT_ID }}
+          APPLE_REDIRECT_URI: ${{ vars.APPLE_REDIRECT_URI }}
         run: npm run build:prod
+
+      # الحزمة يجب أن تحمل بناء إنتاج من هذا الـ commit بالذات (build-info.json يكتبه tools/stamp-build-info.mjs).
+      - name: Verify the web bundle is the production build of this commit
+        if: steps.signing.outputs.enabled == 'true'
+        run: |
+          node -e '
+            const info = JSON.parse(require("fs").readFileSync("dist/HudhudNest/browser/build-info.json", "utf8"));
+            const problems = [];
+            if (info.environment !== "production") problems.push("environment is " + info.environment);
+            if (info.commit !== process.env.GITHUB_SHA) problems.push("commit is " + info.commit + ", expected " + process.env.GITHUB_SHA);
+            if (/staging/i.test(info.apiUrl ?? "")) problems.push("apiUrl points at Staging");
+            if (problems.length) { console.error("::error::" + problems.join("; ")); process.exit(1); }
+            console.log("Bundle: " + info.environment + " @ " + info.commit.slice(0, 7));
+          '
+
+      - name: Add google-services.json (push notifications)
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON_BASE64" ]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON_BASE64" | base64 -d > android/app/google-services.json
+            if ! node -e 'JSON.parse(require("fs").readFileSync("android/app/google-services.json", "utf8"))' 2>/dev/null; then
+              echo "::error::GOOGLE_SERVICES_JSON_BASE64 is not Base64 of a valid google-services.json."
+              rm -f android/app/google-services.json
+              exit 1
+            fi
+          fi
 
       - name: Sync Capacitor Android
         if: steps.signing.outputs.enabled == 'true'
@@ -211,14 +296,16 @@ jobs:
           aab="$(ls android/app/build/outputs/bundle/release/*.aab)"
           sha256="$(sha256sum "$aab" | cut -d' ' -f1)"
           short="${GITHUB_SHA::7}"
+          version_name="$(sed -n 's/^[[:space:]]*versionName[[:space:]]*"\([^"]*\)".*/\1/p' android/app/build.gradle | head -1)"
+          version_code="$(sed -n 's/^[[:space:]]*versionCode[[:space:]]*\([0-9][0-9]*\).*/\1/p' android/app/build.gradle | head -1)"
           gh release delete android-latest --cleanup-tag --yes --repo "$GITHUB_REPOSITORY" || true
           gh release create android-latest "$aab" \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
             --prerelease \
             --latest=false \
-            --title "Android signed AAB ($short)" \
-            --notes "Signed release AAB built from ${GITHUB_SHA} by ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. SHA-256: ${sha256}"
+            --title "Android signed AAB ${version_name} (${version_code}) - ${short}" \
+            --notes "Signed release AAB ${version_name} (versionCode ${version_code}) built from ${GITHUB_SHA} by ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. SHA-256: ${sha256}"
 
       # نسخة احتياطية فقط: فشلها (امتلاء الحصة) لا يُسقط البناء بعد أن نُشر الـ AAB كـ Release.
       # v6 يعمل على Node 24 (v4/v5 على Node 20 الذي تُزال دعمه نهائيًا من الـ runners في 2026-09-23).
@@ -241,7 +328,7 @@ jobs:
     # بناء أحمر. تغيير Angular وحده لا يمكن أن يكسر xcodebuild (مهمة build تتحقق منه). التشغيل اليدوي
     # (workflow_dispatch) يشغّله دائمًا.
     needs: build
-    if: needs.build.outputs.native == 'true'
+    if: needs.build.outputs.native == 'true' && github.ref_type != 'tag'
     # macos-14 يدخل طور التقاعد في 2026-07-06 ويُسحَب نهائياً في 2026-11-02
     # (راجع: https://github.com/actions/runner-images/issues/13518) — macos-15 هو
     # أحدث صورة مستقرة غير مؤقَّتة اليوم؛ لا نستخدم macos-latest لأنه تحوّل مؤخراً

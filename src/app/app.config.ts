@@ -1,6 +1,6 @@
 import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { HttpErrorResponse, provideHttpClient, withInterceptors, HttpBackend, HttpClient } from '@angular/common/http';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withNavigationErrorHandler } from '@angular/router';
 import { firstValueFrom, timeout, TimeoutError } from 'rxjs';
 
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -18,6 +18,7 @@ import { CsrfTokenService } from './core/services/csrf-token.service';
 import { GeoCountryService } from './core/services/geo-country.service';
 import { LanguageService } from './core/services/language.service';
 import { resolveFirstVisitLanguage } from './core/i18n/first-visit-language';
+import { browserStaleChunkReloadDeps, reloadForStaleChunk } from './core/services/stale-chunk-reload';
 import { TokenStorageService } from './core/services/token-storage.service';
 import { environment } from '../environments/environment';
 
@@ -155,7 +156,13 @@ export function restoreSession(
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes),
+    // A tab left open across a deploy asks for chunks that no longer exist; load the target page fresh once.
+    provideRouter(
+      routes,
+      withNavigationErrorHandler(navigationError => {
+        reloadForStaleChunk(navigationError.error, navigationError.url, browserStaleChunkReloadDeps());
+      })
+    ),
     provideHttpClient(withInterceptors([CsrfInterceptor, AuthInterceptor, ApiErrorInterceptor])),
     {
       provide: APP_INITIALIZER,

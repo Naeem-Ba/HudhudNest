@@ -11,6 +11,11 @@ name: Promote to production
 # deploy, which costs nothing). Auto Publishing stays locked: after the build finishes, publish the new
 # deploy by hand and run `npm run check:live`.
 #
+# Before moving `release` it asks the Staging site (build-info.json, tools/check-live-environment.mjs) which
+# commit it was built from and refuses unless it is the commit being promoted: production only ever gets a
+# commit that Staging already ran. `sync-staging.yml` moves Staging after Frontend CI passes, so wait for
+# that Netlify branch deploy to finish if this step says Staging is still on the previous commit.
+#
 # Run it: Actions -> Promote to production -> Run workflow. Leave `sha` empty to promote the newest main
 # commit whose Frontend CI passed. Needs no secrets: the job's own token pushes `release`.
 
@@ -21,6 +26,15 @@ on:
         description: "Commit of main to promote (empty = newest main commit whose Frontend CI passed)"
         required: false
         default: ""
+      staging_url:
+        description: "Staging site that must already run that commit"
+        required: false
+        default: "https://staging--hudhudnest.netlify.app"
+      skip_staging_check:
+        description: "Emergency only: promote without checking Staging (Netlify Staging down)"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -47,6 +61,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           REQUESTED_SHA: ${{ inputs.sha }}
+          STAGING_URL: ${{ inputs.staging_url }}
+          SKIP_STAGING_CHECK: ${{ inputs.skip_staging_check }}
         run: |
           set -euo pipefail
           git fetch origin main
@@ -82,6 +98,12 @@ jobs:
               echo "::error::release has commits that ${TARGET_SHA:0:7} does not contain. Not overwriting; fix it by hand."; exit 1
             fi
             PREVIOUS=$(git rev-parse --short origin/release)
+          fi
+
+          if [ "${SKIP_STAGING_CHECK:-}" = "true" ]; then
+            echo "::warning::Staging check skipped by request."
+          elif ! node tools/check-live-environment.mjs "${STAGING_URL:-https://staging--hudhudnest.netlify.app}" --expect staging --commit "$TARGET_SHA"; then
+            echo "::error::Staging is not running ${TARGET_SHA:0:7} (or could not be reached). Wait for the Staging deploy of that commit, then run this again."; exit 1
           fi
 
           git push origin "$TARGET_SHA:refs/heads/release"

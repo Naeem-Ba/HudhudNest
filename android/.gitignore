@@ -64,6 +64,8 @@ keystore/
 
 # Google Services (e.g. APIs or Firebase)
 # google-services.json
+# The Firebase client file is written by the release workflow from a secret; never commit it.
+app/google-services.json
 
 # Freeline
 freeline.py
