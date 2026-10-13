@@ -12,118 +12,109 @@
 //   3. توفّر طريقة تواصل بديلة لمن لا يستطيع تسجيل الدخول (نسي كلمة المرور بلا بريد
 //      مسجَّل، أو أي حالة استثنائية) — طلب حذف يدوي عبر البريد.
 //
-// Static content, not routed through ngx-translate — نفس منهجية privacy-policy.page.ts
-// وterms-of-service.page.ts (نص قانوني/إفصاحي واحد كنسخة مرجعية، لا يُدمَج آلياً في
-// مفاتيح i18n الواجهة).
+// QA Phase 5 (P5-D02): the page used to be Arabic only, but the Play and App Store reviewers read
+// English. The text now exists in ar/en/de (account-deletion.content.ts) and follows the app
+// language, like the privacy policy and terms; the three buttons at the top switch the page's
+// language without touching the app's, so a reviewer who lands in the wrong one can fix it.
 
-import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
+import { LangCode, LanguageService } from '../../core/services/language.service';
 import { PageMetaService } from '../../core/services/page-meta.service';
+import { ACCOUNT_DELETION_CONTENT } from './account-deletion.content';
+import { LegalTextSegment, parseLegalText } from './legal-document.model';
+
+interface InlineSegment {
+  bold: boolean;
+  parts: LegalTextSegment[];
+}
+
+const LANGUAGE_BUTTONS: ReadonlyArray<{ code: LangCode; label: string }> = [
+  { code: 'ar', label: 'العربية' },
+  { code: 'en', label: 'English' },
+  { code: 'de', label: 'Deutsch' }
+];
+
+/** Splits "a **b** [c](/d)" into plain/bold runs, each parsed for links (never injected as HTML). */
+export function parseInline(input: string): InlineSegment[] {
+  return input
+    .split('**')
+    .map((chunk, index) => ({ bold: index % 2 === 1, parts: parseLegalText(chunk) }))
+    .filter(segment => segment.parts.length > 0);
+}
 
 @Component({
   selector: 'app-account-deletion',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterModule],
+  imports: [RouterModule, NgTemplateOutlet],
   template: `
-    <!-- The text below is Arabic only (not translated). Without dir/lang it inherits the UI
-         language's direction, so with the English UI the paragraphs ran left to right and
-         punctuation, parentheses and the DELETE keyword jumped around. -->
-    <section class="legal" dir="rtl" lang="ar">
+    <ng-template #runs let-list>
+      @for (part of list; track $index) {
+        @if (part.kind === 'route') {
+          <a [routerLink]="part.href">{{ part.text }}</a>
+        } @else if (part.kind === 'mail') {
+          <a [href]="part.href">{{ part.text }}</a>
+        } @else {
+          {{ part.text }}
+        }
+      }
+    </ng-template>
+
+    <ng-template #rich let-text>
+      @for (seg of inline(text); track $index) {
+        @if (seg.bold) {
+          <strong><ng-container *ngTemplateOutlet="runs; context: { $implicit: seg.parts }" /></strong>
+        } @else {
+          <ng-container *ngTemplateOutlet="runs; context: { $implicit: seg.parts }" />
+        }
+      }
+    </ng-template>
+
+    <section class="legal" [attr.dir]="dir()" [attr.lang]="lang()">
       <div class="legal__card">
-        <h1>حذف الحساب — هدهد نيست (HudhudNest)</h1>
-        <p class="legal__updated">آخر تحديث: 4 أكتوبر 2026</p>
+        <div class="legal__langs" role="group" aria-label="Language / اللغة / Sprache" dir="ltr">
+          @for (option of languageButtons; track option.code) {
+            <button
+              type="button"
+              class="legal__lang"
+              [attr.lang]="option.code"
+              [attr.aria-pressed]="option.code === lang()"
+              (click)="choose(option.code)">
+              {{ option.label }}
+            </button>
+          }
+        </div>
 
-        <p>
-          يمكنك حذف حسابك في "هدهد نيست" نهائياً في أي وقت، من داخل التطبيق (Android
-          وiOS) أو من نسخة الويب — بدون الحاجة لتثبيت التطبيق لبدء الطلب إذا كنت
-          تفضّل التواصل معنا مباشرة (انظر القسم الأخير أدناه).
-        </p>
+        <h1>{{ content().title }}</h1>
+        <p class="legal__updated">{{ content().updated }}</p>
 
-        <h2>1. كيف تحذف حسابك (داخل التطبيق أو الويب)</h2>
-        <ol>
-          <li>سجّل الدخول إلى حسابك.</li>
-          <li>
-            افتح <strong>الملف الشخصي</strong> ←
-            <strong>منطقة الخطر (Danger Zone)</strong> أسفل الصفحة ←
-            اضغط <strong>"حذف الحساب نهائياً"</strong>.
-          </li>
-          <li>
-            (اختياري) قبل ذلك، يمكنك تنزيل نسخة من بياناتك من قسم
-            <strong>"بياناتك"</strong> في الصفحة نفسها.
-          </li>
-          <li>اقرأ التحذير الذي يوضّح ما سيُحذف وما سيبقى محفوظاً، ثم اضغط "متابعة".</li>
-          <li>
-            أدخل كلمة المرور الحالية (إن كان حسابك يستخدم كلمة مرور — لا يُطلب هذا
-            من حسابات الدخول عبر جوجل/آبل فقط)، ثم اكتب
-            <strong>DELETE</strong> في الحقل المخصّص للتأكيد النهائي.
-          </li>
-          <li>
-            عند تأكيد الطلب <strong>يُجدوَل الحذف بعد 30 يومًا</strong> ولا يُحذف شيء
-            فوراً: يبقى حسابك يعمل خلال هذه المدة، وتظهر لك ملاحظة بتاريخ الحذف مع زر
-            <strong>"إلغاء طلب الحذف"</strong>. بانقضاء المدة يُنفَّذ الحذف تلقائياً
-            وتُسجَّل خروجك من جميع أجهزتك. <strong>بعد التنفيذ لا يمكن التراجع.</strong>
-          </li>
-        </ol>
+        <p><ng-container *ngTemplateOutlet="rich; context: { $implicit: content().intro }" /></p>
 
-        <h2>2. ما الذي يُحذف عند تنفيذ الحذف؟</h2>
-        <ul>
-          <li>اسمك، صورتك الشخصية، نبذتك التعريفية، ومعلومات التواصل الخاصة بك.</li>
-          <li>
-            بريدك الإلكتروني ورقم هاتفك المسجَّلان بالحساب، وأي ربط بحساب جوجل/آبل —
-            لن يعود بإمكانك تسجيل الدخول إلى هذا الحساب بها مجدداً.
-          </li>
-          <li>جميع جلسات الدخول النشطة على كل أجهزتك.</li>
-        </ul>
+        @for (section of content().sections; track $index) {
+          <h2>{{ $index + 1 }}. {{ section.heading }}</h2>
+          @for (block of section.blocks; track $index) {
+            @if ('p' in block) {
+              <p><ng-container *ngTemplateOutlet="rich; context: { $implicit: block.p }" /></p>
+            } @else if ('ul' in block) {
+              <ul>
+                @for (item of block.ul; track $index) {
+                  <li><ng-container *ngTemplateOutlet="rich; context: { $implicit: item }" /></li>
+                }
+              </ul>
+            } @else {
+              <ol>
+                @for (item of block.ol; track $index) {
+                  <li><ng-container *ngTemplateOutlet="rich; context: { $implicit: item }" /></li>
+                }
+              </ol>
+            }
+          }
+        }
 
-        <h2>3. ما الذي يبقى محفوظاً (دون بياناتك الشخصية)؟</h2>
-        <ul>
-          <li>
-            الإعلانات العقارية والرسائل والتقييمات التي نشرتها سابقاً تبقى ظاهرة
-            للمستخدمين الآخرين — لكن باسم <strong>"مستخدم محذوف"</strong> بدل اسمك
-            الحقيقي، وليس باسمك أو بياناتك الشخصية.
-          </li>
-          <li>
-            سجلات أمنية داخلية محدودة (لمنع إساءة الاستخدام ومتابعة حوادث أمنية)، لا
-            تحتوي أي من بياناتك الشخصية بعد إتمام الحذف.
-          </li>
-          <li>
-            <strong>ملاحظة:</strong> حذف الحساب لا يحذف عقاراتك المنشورة تلقائياً ولا
-            يُلغي نشرها — إن رغبت بذلك، قم به أولاً من صفحة "إعلاناتي" قبل حذف الحساب.
-          </li>
-        </ul>
-
-        <h2>4. إلغاء طلب الحذف</h2>
-        <p>
-          إن غيّرت رأيك خلال الثلاثين يومًا، سجّل الدخول واضغط
-          <strong>"إلغاء طلب الحذف"</strong> من الملاحظة أعلى الصفحة أو من
-          <strong>منطقة الخطر</strong> في ملفك الشخصي. لا تُطلب كلمة المرور للإلغاء،
-          ويبقى حسابك كما هو.
-        </p>
-
-        <h2>5. المصادقة المطلوبة</h2>
-        <p>
-          حذف الحساب عملية حساسة ونهائية، لذا نطلب تسجيل الدخول أولاً، ثم كلمة
-          المرور الحالية مجدداً كخطوة تأكيد إضافية (لحسابات البريد/كلمة المرور فقط)،
-          إضافة إلى كتابة كلمة تأكيد صريحة قبل قبول طلب الحذف.
-        </p>
-
-        <h2>6. لا تستطيع تسجيل الدخول؟</h2>
-        <p>
-          إن كنت لا تستطيع الوصول إلى حسابك (فقدان الوصول لكلمة المرور أو رقم الهاتف
-          مثلاً) وترغب بطلب حذف حسابك وبياناتك، راسلنا من البريد الإلكتروني المسجَّل
-          في حسابك على
-          <a href="mailto:support@hudhudnest.com?subject=%D8%B7%D9%84%D8%A8%20%D8%AD%D8%B0%D9%81%20%D8%AD%D8%B3%D8%A7%D8%A8">support@hudhudnest.com</a>
-          موضّحاً طلبك، وسنتحقق من هويتك قبل تنفيذ الحذف يدوياً.
-        </p>
-
-        <h2>7. سياسة الخصوصية</h2>
-        <p>
-          لمزيد من التفاصيل حول البيانات التي نجمعها ومدة الاحتفاظ بها، راجع
-          <a routerLink="/privacy-policy">سياسة الخصوصية</a>.
-        </p>
-
-        <a class="legal__back" routerLink="/home">العودة إلى الرئيسية</a>
+        <a class="legal__back" routerLink="/home">{{ content().back }}</a>
       </div>
     </section>
   `,
@@ -183,6 +174,36 @@ import { PageMetaService } from '../../core/services/page-meta.service';
       font-weight: 600;
     }
 
+    .legal__langs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin: 0 0 var(--space-4);
+    }
+
+    .legal__lang {
+      border: 1px solid var(--border);
+      border-radius: var(--r-md, 8px);
+      background: transparent;
+      color: var(--primary-text);
+      font: inherit;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      padding: 0.25rem 0.75rem;
+      cursor: pointer;
+    }
+
+    .legal__lang[aria-pressed='true'] {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--white, #fff);
+    }
+
+    .legal__lang:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
     .legal__back {
       display: inline-block;
       margin-top: var(--space-8);
@@ -193,15 +214,35 @@ import { PageMetaService } from '../../core/services/page-meta.service';
   `]
 })
 export class AccountDeletionPage {
+  private readonly languages = inject(LanguageService);
+  private readonly pageMeta = inject(PageMetaService);
+
+  readonly languageButtons = LANGUAGE_BUTTONS;
+  readonly inline = parseInline;
+
+  private readonly appLang = toSignal(this.languages.currentLang$, { initialValue: this.languages.getCurrent() });
+  /** The reader's own choice on this page; null means follow the app language. */
+  private readonly chosen = signal<LangCode | null>(null);
+
+  readonly lang = computed<LangCode>(() => this.chosen() ?? this.appLang());
+  readonly dir = computed(() => (this.lang() === 'ar' ? 'rtl' : 'ltr'));
+  readonly content = computed(() => ACCOUNT_DELETION_CONTENT[this.lang()]);
+
   constructor() {
-    // The page body is fixed Arabic text (see the note at the top of this file), so its metadata
-    // is fixed Arabic too rather than following the UI language like the translated pages.
-    const pageMeta = inject(PageMetaService);
-    pageMeta.applyDynamic({
-      title: 'حذف الحساب والبيانات',
-      description: 'كيف تطلب حذف حسابك وبياناتك من هدهد نيست، وما الذي يُحذف وما الذي يُحتفظ به ولماذا.',
-      path: '/account-deletion'
+    // Metadata follows the text on screen, not the app language, so a reviewer who switches the
+    // page to English also gets an English title and description.
+    effect(() => {
+      const content = this.content();
+      this.pageMeta.applyDynamic({
+        title: content.metaTitle,
+        description: content.metaDescription,
+        path: '/account-deletion'
+      });
     });
-    inject(DestroyRef).onDestroy(() => pageMeta.clear());
+    inject(DestroyRef).onDestroy(() => this.pageMeta.clear());
+  }
+
+  choose(lang: LangCode): void {
+    this.chosen.set(lang);
   }
 }
