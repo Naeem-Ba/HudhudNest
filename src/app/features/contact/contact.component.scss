@@ -172,3 +172,9 @@
   line-height: 1.6;
   color: var(--gray-500);
 }
+
+.provider-join-notice {
+  margin-bottom: 1rem;
+
+  a { font-weight: 700; margin-inline-start: .35rem; }
+}

@@ -44,7 +44,8 @@ import { AuthService } from '../../core/auth/auth.service';
 import { Property, PropertyImage } from '../../core/models/property.model';
 import { REVIEW_COMMENT_MAX_LENGTH, ReviewDto, validateCreateReview } from '../../core/models/review.model';
 import { CreateVisitRequest, validateCreateVisit } from '../../core/models/visit.model';
-import { ServiceOfferingDto, validateCreateServiceRequest } from '../../core/models/service.model';
+import { SERVICE_CATEGORIES, ServiceCategory, ServiceOfferingDto, validateCreateServiceRequest } from '../../core/models/service.model';
+import { ServiceCategoryAvailabilityDto } from '../../core/models/provider-onboarding.model';
 import { validateMessageContent } from '../../core/models/message.model';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
@@ -215,16 +216,25 @@ export class PropertyDetailPage implements OnInit {
   messageDraft = '';
   readonly messageMaxLength = 3000;
 
-  // ── HudhudNest Verify request (Services Marketplace vertical slice) ──────
-  // Only the "Verification" category is a live product this session — see
-  // ServiceCategory's remarks in service.model.ts. The offering is fetched
-  // lazily (once) the first time the panel opens, not on every page load,
-  // since most visitors never click it.
+  // ── Service request (Services Marketplace) ───────────────────────────────
+  // The panel offers every category that has at least one bookable offering, then the offerings
+  // of the chosen category for THIS property's governorate. Opening it (or arriving with
+  // ?service=<Category>, e.g. from "My services") only shows the form: nothing is created until
+  // the owner presses submit. Data loads lazily the first time the panel opens.
   readonly showServiceForm = signal(false);
-  readonly loadingVerifyOffering = signal(false);
-  readonly verifyOffering = signal<ServiceOfferingDto | null>(null);
-  readonly verifyOfferingUnavailable = signal(false);
+  readonly serviceAvailability = signal<ServiceCategoryAvailabilityDto[]>([]);
+  readonly serviceCategory = signal<ServiceCategory | null>(null);
+  readonly serviceOfferings = signal<ServiceOfferingDto[]>([]);
+  readonly selectedOfferingId = signal<string | null>(null);
+  readonly loadingServiceCategories = signal(false);
+  readonly loadingServiceOfferings = signal(false);
+  readonly serviceLoadFailed = signal(false);
   readonly savingServiceRequest = signal(false);
+  readonly availableServiceCategories = computed(() =>
+    this.serviceAvailability().filter(item => item.offeringCount > 0).map(item => item.category));
+  readonly selectedOffering = computed(() =>
+    this.serviceOfferings().find(offering => offering.id === this.selectedOfferingId()) ?? null);
+  private servicePreselect: ServiceCategory | null = null;
   serviceRequestNote = '';
   readonly serviceRequestNoteMaxLength = 1000;
 
@@ -381,33 +391,81 @@ export class PropertyDetailPage implements OnInit {
     }
   }
 
+  /**
+   * "My services → choose a property" arrives here as ?service=<Category>. It only opens the form
+   * with that category selected (signed-in users); no request exists until the owner submits.
+   */
+  private openServiceFormFromQuery(): void {
+    const raw = this.route.snapshot.queryParamMap.get('service');
+    const category = SERVICE_CATEGORIES.find(item => item === raw) ?? null;
+    if (!category || !this.isLoggedIn()) return;
+
+    this.servicePreselect = category;
+    this.showServiceForm.set(true);
+    this.loadServiceCategoriesIfNeeded();
+    if (this.serviceAvailability().length > 0) this.selectServiceCategory(category);
+    this.scrollToElement('service-form-section');
+  }
+
   toggleServiceForm(): void {
     const opening = !this.showServiceForm();
     this.showServiceForm.set(opening);
 
     if (opening) {
-      this.loadVerifyOfferingIfNeeded();
+      this.loadServiceCategoriesIfNeeded();
       this.scrollToElement('service-form-section');
     }
   }
 
-  private loadVerifyOfferingIfNeeded(): void {
-    if (this.verifyOffering() || this.verifyOfferingUnavailable() || this.loadingVerifyOffering()) {
+  private loadServiceCategoriesIfNeeded(): void {
+    if (this.serviceAvailability().length > 0 || this.loadingServiceCategories()) {
       return;
     }
 
-    this.loadingVerifyOffering.set(true);
-    this.serviceOfferingApi.getByCategory('Verification')
+    this.loadingServiceCategories.set(true);
+    this.serviceLoadFailed.set(false);
+    this.serviceOfferingApi.getAvailability()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: items => {
+          this.serviceAvailability.set(items);
+          this.loadingServiceCategories.set(false);
+          const available = this.availableServiceCategories();
+          const wanted = this.servicePreselect && available.includes(this.servicePreselect)
+            ? this.servicePreselect
+            : (available.includes('Verification') ? 'Verification' : available[0] ?? null);
+          this.servicePreselect = null;
+          if (wanted) this.selectServiceCategory(wanted);
+        },
+        error: () => {
+          this.serviceLoadFailed.set(true);
+          this.loadingServiceCategories.set(false);
+        }
+      });
+  }
+
+  selectServiceCategory(category: ServiceCategory): void {
+    this.serviceCategory.set(category);
+    this.serviceOfferings.set([]);
+    this.selectedOfferingId.set(null);
+    this.serviceLoadFailed.set(false);
+    this.loadingServiceOfferings.set(true);
+
+    // Providers that do not cover this property's governorate are left out by the server.
+    this.serviceOfferingApi.getByCategory(category, this.property()?.governorateId ?? null)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: offerings => {
-          this.verifyOffering.set(offerings[0] ?? null);
-          this.verifyOfferingUnavailable.set(offerings.length === 0);
-          this.loadingVerifyOffering.set(false);
+          // A slow answer for a category the owner already left must not replace the current one.
+          if (this.serviceCategory() !== category) return;
+          this.serviceOfferings.set(offerings);
+          this.selectedOfferingId.set(offerings.length === 1 ? offerings[0]!.id : null);
+          this.loadingServiceOfferings.set(false);
         },
         error: () => {
-          this.verifyOfferingUnavailable.set(true);
-          this.loadingVerifyOffering.set(false);
+          if (this.serviceCategory() !== category) return;
+          this.serviceLoadFailed.set(true);
+          this.loadingServiceOfferings.set(false);
         }
       });
   }
@@ -458,6 +516,10 @@ export class PropertyDetailPage implements OnInit {
     this.reviewsSub?.unsubscribe();
 
     // Clear the previous listing's state so nothing stale shows while (or after failing) to load.
+    this.showServiceForm.set(false);
+    this.serviceCategory.set(null);
+    this.serviceOfferings.set([]);
+    this.selectedOfferingId.set(null);
     this.property.set(null);
     this.reviews.set([]);
     this.error.set('');
@@ -494,6 +556,7 @@ export class PropertyDetailPage implements OnInit {
           this.property.set(data);
           this.currentIndex.set(0);
           this.loading.set(false);
+          this.openServiceFormFromQuery();
           this.loadOwnerProfile(data.ownerId);
           // Social Sharing & Distribution (section 6) — dynamic <title>/OG/Twitter/canonical
           // tags for this specific listing. See PropertyMetaService's doc comment for why this
@@ -737,10 +800,10 @@ export class PropertyDetailPage implements OnInit {
       });
   }
 
-  // ── HudhudNest Verify request ──────────────────────────────────────────
+  // ── Service request ────────────────────────────────────────────────────
   submitServiceRequest(): void {
     const property = this.property();
-    const offering = this.verifyOffering();
+    const offering = this.selectedOffering();
     if (!property || !offering) return;
 
     const payload = {

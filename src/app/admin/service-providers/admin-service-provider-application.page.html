@@ -1,0 +1,125 @@
+<section class="page">
+  <a class="back" routerLink="/admin/service-providers" [queryParams]="{ tab: 'applications' }">← {{ 'ADMIN_PROVIDERS.BACK_TO_LIST' | translate }}</a>
+
+  <app-loading-spinner *ngIf="loading()" [label]="'COMMON.LOADING' | translate"></app-loading-spinner>
+  <div class="state error" *ngIf="!loading() && failed()">
+    <p>{{ 'ADMIN_PROVIDERS.LOAD_ERROR' | translate }}</p>
+    <button type="button" class="btn" (click)="load()">{{ 'COMMON.RETRY' | translate }}</button>
+  </div>
+
+  <ng-container *ngIf="!loading() && detail() as d">
+    <header class="head">
+      <div>
+        <p class="ref" dir="ltr">{{ d.summary.referenceNumber }}</p>
+        <h1>{{ d.summary.displayName }}</h1>
+        <p class="muted">{{ 'ADMIN_PROVIDERS.SUBMITTED' | translate }} {{ d.summary.createdAt | date:'medium' }}</p>
+      </div>
+      <span class="chip" [attr.data-status]="d.summary.status">{{ ('PROVIDER_ONBOARDING.APP_STATUS.' + d.summary.status) | translate }}</span>
+    </header>
+
+    <p class="warn" *ngIf="!d.applicantAccountActive">{{ 'ADMIN_PROVIDERS.ACCOUNT_INACTIVE' | translate }}</p>
+    <p class="warn" *ngIf="d.existingProviderId && d.existingProviderStatus === 'Active' && isOpen()">{{ 'ADMIN_PROVIDERS.ALREADY_PROVIDER' | translate }}</p>
+    <p class="note-line" *ngIf="d.existingProviderId && d.existingProviderStatus !== 'Active'">
+      {{ 'ADMIN_PROVIDERS.EXISTING_PROFILE' | translate }}
+      ({{ ('PROVIDER_ONBOARDING.PROVIDER_STATUS.' + d.existingProviderStatus) | translate }}) —
+      {{ 'ADMIN_PROVIDERS.EXISTING_PROFILE_NOTE' | translate }}
+    </p>
+
+    <div class="grid">
+      <section class="card">
+        <h2>{{ 'ADMIN_PROVIDERS.APPLICANT' | translate }}</h2>
+        <dl>
+          <div><dt>{{ 'ADMIN_PROVIDERS.ACCOUNT' | translate }}</dt><dd>{{ d.applicantAccountName }}</dd></div>
+          <div><dt>{{ 'PROVIDER_JOIN.F_TYPE' | translate }}</dt><dd>{{ ('PROVIDER_ONBOARDING.APPLICANT_TYPE.' + d.summary.applicantType) | translate }}</dd></div>
+          <div><dt>{{ 'PROVIDER_JOIN.F_CONTACT_NAME' | translate }}</dt><dd>{{ d.summary.contactName }}</dd></div>
+          <div *ngIf="d.summary.contactEmail"><dt>{{ 'PROVIDER_JOIN.F_EMAIL' | translate }}</dt><dd dir="ltr">{{ d.summary.contactEmail }}</dd></div>
+          <div *ngIf="d.summary.contactPhone"><dt>{{ 'PROVIDER_JOIN.F_PHONE' | translate }}</dt><dd dir="ltr">{{ d.summary.contactPhone }}</dd></div>
+          <div *ngIf="d.companyName"><dt>{{ 'PROVIDER_JOIN.F_COMPANY' | translate }}</dt><dd>{{ d.companyName }}</dd></div>
+          <div *ngIf="d.licenseNumber"><dt>{{ 'PROVIDER_JOIN.F_LICENSE' | translate }}</dt><dd dir="ltr">{{ d.licenseNumber }}</dd></div>
+          <div><dt>{{ 'PROVIDER_JOIN.F_CATEGORIES' | translate }}</dt>
+            <dd><span class="tag" *ngFor="let c of d.summary.requestedCategories">{{ ('SERVICES.CATEGORY.' + c) | translate }}</span></dd></div>
+          <div><dt>{{ 'PROVIDER_JOIN.F_GOVERNORATES' | translate }}</dt><dd>{{ governorates.names(d.summary.requestedGovernorateIds) }}</dd></div>
+          <div><dt>{{ 'PROVIDER_JOIN.F_EXPERIENCE' | translate }}</dt><dd class="pre">{{ d.experience }}</dd></div>
+          <div><dt>{{ 'ADMIN_PROVIDERS.TERMS_ACCEPTED' | translate }}</dt><dd>{{ d.termsAcceptedAt | date:'medium' }}</dd></div>
+          <div *ngIf="d.infoRequest && d.summary.status === 'NeedsInfo'"><dt>{{ 'ADMIN_PROVIDERS.OPEN_QUESTION' | translate }}</dt><dd class="pre">{{ d.infoRequest }}</dd></div>
+          <div *ngIf="d.decisionReason"><dt>{{ 'ADMIN_PROVIDERS.DECISION_REASON' | translate }}</dt><dd class="pre">{{ d.decisionReason }}</dd></div>
+          <div *ngIf="d.reviewedAt"><dt>{{ 'ADMIN_PROVIDERS.REVIEWED_AT' | translate }}</dt><dd>{{ d.reviewedAt | date:'medium' }}</dd></div>
+        </dl>
+        <a *ngIf="d.serviceProviderId" class="btn primary" [routerLink]="['/admin/service-providers', d.serviceProviderId]">{{ 'ADMIN_PROVIDERS.OPEN_PROVIDER' | translate }}</a>
+      </section>
+
+      <section class="card">
+        <h2>{{ 'ADMIN_PROVIDERS.ACTIONS' | translate }}</h2>
+        <p class="muted" *ngIf="!isOpen()">{{ 'ADMIN_PROVIDERS.CLOSED_NOTE' | translate }}</p>
+
+        <div class="actions" *ngIf="isOpen()">
+          <button type="button" class="btn secondary" [class.on]="mode() === 'note'" (click)="open('note')">{{ 'ADMIN_PROVIDERS.A_NOTE' | translate }}</button>
+          <button type="button" class="btn secondary" [class.on]="mode() === 'info'" (click)="open('info')">{{ 'ADMIN_PROVIDERS.A_REQUEST_INFO' | translate }}</button>
+          <button type="button" class="btn primary" [class.on]="mode() === 'approve'" [disabled]="!canApprove()" (click)="open('approve')">{{ 'ADMIN_PROVIDERS.A_APPROVE' | translate }}</button>
+          <button type="button" class="btn danger" [class.on]="mode() === 'reject'" (click)="open('reject')">{{ 'ADMIN_PROVIDERS.A_REJECT' | translate }}</button>
+        </div>
+
+        <form class="panel" *ngIf="isOpen() && mode() === 'note'" (ngSubmit)="saveNote()">
+          <label for="ap-note">{{ 'ADMIN_PROVIDERS.NOTE_LABEL' | translate }}</label>
+          <textarea id="ap-note" name="note" rows="3" maxlength="2000" [(ngModel)]="noteText"></textarea>
+          <label class="check"><input type="checkbox" name="visible" [(ngModel)]="noteVisible"> {{ 'ADMIN_PROVIDERS.NOTE_VISIBLE' | translate }}</label>
+          <small class="muted">{{ (noteVisible ? 'ADMIN_PROVIDERS.NOTE_VISIBLE_HINT' : 'ADMIN_PROVIDERS.NOTE_INTERNAL_HINT') | translate }}</small>
+          <button type="submit" class="btn primary" [disabled]="busy() || !noteText.trim()">{{ 'COMMON.SAVE' | translate }}</button>
+        </form>
+
+        <form class="panel" *ngIf="isOpen() && mode() === 'info'" (ngSubmit)="sendInfoRequest()">
+          <label for="ap-info">{{ 'ADMIN_PROVIDERS.INFO_LABEL' | translate }}</label>
+          <textarea id="ap-info" name="info" rows="3" maxlength="2000" [(ngModel)]="infoText"></textarea>
+          <small class="muted">{{ 'ADMIN_PROVIDERS.INFO_HINT' | translate }}</small>
+          <button type="submit" class="btn primary" [disabled]="busy() || !infoText.trim()">{{ 'ADMIN_PROVIDERS.SEND' | translate }}</button>
+        </form>
+
+        <form class="panel" *ngIf="isOpen() && mode() === 'approve'" (ngSubmit)="confirming.set(true)">
+          <label for="ap-name">{{ 'PROVIDER_JOIN.F_DISPLAY_NAME' | translate }}</label>
+          <input id="ap-name" name="name" maxlength="150" [(ngModel)]="approveName">
+          <span class="label">{{ 'ADMIN_PROVIDERS.APPROVED_CATEGORIES' | translate }}</span>
+          <app-choice-chips [options]="categoryOptions()" [selected]="approveCategories()" (selectedChange)="approveCategories.set($event)"></app-choice-chips>
+          <span class="label">{{ 'ADMIN_PROVIDERS.APPROVED_GOVERNORATES' | translate }}</span>
+          <app-choice-chips [options]="governorateOptions()" [selected]="approveGovernorates()" (selectedChange)="approveGovernorates.set($event)"></app-choice-chips>
+          <small class="muted">{{ 'ADMIN_PROVIDERS.SCOPE_HINT' | translate }}</small>
+          <label for="ap-ver">{{ 'ADMIN_PROVIDERS.VERIFICATION' | translate }}</label>
+          <select id="ap-ver" name="ver" [(ngModel)]="approveVerification">
+            <option *ngFor="let l of verificationLevels" [value]="l">{{ ('PROVIDER_ONBOARDING.VERIFICATION.' + l) | translate }}</option>
+          </select>
+          <label for="ap-anote">{{ 'ADMIN_PROVIDERS.APPROVE_NOTE' | translate }}</label>
+          <textarea id="ap-anote" name="anote" rows="2" maxlength="2000" [(ngModel)]="approveNote"></textarea>
+          <p class="err" *ngIf="!approveValid()">{{ 'ADMIN_PROVIDERS.SCOPE_REQUIRED' | translate }}</p>
+          <button type="submit" class="btn primary" [disabled]="busy() || !approveValid()">{{ 'ADMIN_PROVIDERS.A_APPROVE' | translate }}</button>
+        </form>
+
+        <form class="panel" *ngIf="isOpen() && mode() === 'reject'" (ngSubmit)="confirming.set(true)">
+          <label for="ap-reject">{{ 'ADMIN_PROVIDERS.REJECT_LABEL' | translate }}</label>
+          <textarea id="ap-reject" name="reject" rows="3" maxlength="2000" [(ngModel)]="rejectReason"></textarea>
+          <small class="muted">{{ 'ADMIN_PROVIDERS.REJECT_HINT' | translate }}</small>
+          <button type="submit" class="btn danger" [disabled]="busy() || !rejectReason.trim()">{{ 'ADMIN_PROVIDERS.A_REJECT' | translate }}</button>
+        </form>
+      </section>
+    </div>
+
+    <section class="card">
+      <h2>{{ 'ADMIN_PROVIDERS.HISTORY' | translate }}</h2>
+      <p class="muted" *ngIf="d.timeline.length === 0">{{ 'ADMIN_PROVIDERS.NO_HISTORY' | translate }}</p>
+      <ol class="timeline">
+        <li *ngFor="let e of d.timeline; trackBy: trackById" [class.internal]="e.isInternal">
+          <span class="when">{{ e.createdAt | date:'medium' }}</span>
+          <strong>{{ ('PROVIDER_ONBOARDING.EVENT.' + e.type) | translate }}</strong>
+          <span class="tag tag--internal" *ngIf="e.isInternal">{{ 'ADMIN_PROVIDERS.INTERNAL' | translate }}</span>
+          <span class="who muted" *ngIf="e.actorUserId" dir="ltr">{{ e.actorUserId }}</span>
+          <span class="text" *ngIf="e.note">{{ e.note }}</span>
+        </li>
+      </ol>
+    </section>
+  </ng-container>
+
+  <app-confirm-modal [open]="confirming()" [danger]="mode() === 'reject'" [loading]="busy()"
+                     [title]="(mode() === 'reject' ? 'ADMIN_PROVIDERS.CONFIRM_REJECT_TITLE' : 'ADMIN_PROVIDERS.CONFIRM_APPROVE_TITLE') | translate"
+                     [confirmLabel]="(mode() === 'reject' ? 'ADMIN_PROVIDERS.A_REJECT' : 'ADMIN_PROVIDERS.A_APPROVE') | translate"
+                     (confirmed)="confirmAction()" (cancelled)="confirming.set(false)">
+    {{ (mode() === 'reject' ? 'ADMIN_PROVIDERS.CONFIRM_REJECT_TEXT' : 'ADMIN_PROVIDERS.CONFIRM_APPROVE_TEXT') | translate }}
+  </app-confirm-modal>
+</section>

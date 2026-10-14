@@ -4,8 +4,10 @@ import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { GovernorateDirectory } from '../../core/api/governorate-directory.service';
 import { ServiceOfferingService } from '../../core/api/service-offering.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { ServiceCategoryAvailabilityDto } from '../../core/models/provider-onboarding.model';
 import { SERVICE_CATEGORIES, ServiceCategory, ServiceOfferingDto } from '../../core/models/service.model';
 
 /**
@@ -26,6 +28,7 @@ export class ServicesCatalogPage implements OnInit {
   private readonly offeringsApi = inject(ServiceOfferingService);
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
+  readonly governorates = inject(GovernorateDirectory);
   private readonly cache = new Map<ServiceCategory, ServiceOfferingDto[]>();
 
   readonly categories = SERVICE_CATEGORIES;
@@ -34,8 +37,36 @@ export class ServicesCatalogPage implements OnInit {
   readonly loading = signal(false);
   readonly error = signal(false);
   readonly isLoggedIn = this.auth.isLoggedIn$;
+  /** Offering count per category, from what is really bookable; unknown until it loads. */
+  readonly counts = signal<Partial<Record<ServiceCategory, number>>>({});
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void {
+    this.governorates.ensureLoaded();
+    this.load();
+    this.offeringsApi.getAvailability()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: items => this.counts.set(this.toCounts(items)),
+        // The pills still work without counts; each category loads its own offerings.
+        error: () => this.counts.set({})
+      });
+  }
+
+  private toCounts(items: ServiceCategoryAvailabilityDto[]): Partial<Record<ServiceCategory, number>> {
+    const counts: Partial<Record<ServiceCategory, number>> = {};
+    for (const item of items) counts[item.category] = item.offeringCount;
+    return counts;
+  }
+
+  countFor(category: ServiceCategory): number | null {
+    const value = this.counts()[category];
+    return value === undefined ? null : value;
+  }
+
+  coverageOf(offering: ServiceOfferingDto): string {
+    const ids = offering.providerCoverageGovernorateIds ?? [];
+    return ids.length > 0 ? this.governorates.names(ids) : '';
+  }
 
   selectCategory(category: ServiceCategory): void {
     if (category === this.selectedCategory() && !this.error()) return;

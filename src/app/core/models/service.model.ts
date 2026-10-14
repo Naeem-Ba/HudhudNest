@@ -57,6 +57,8 @@ export interface ServiceOfferingDto {
   currencyId?: number | null;
   estimatedDurationDays?: number | null;
   isActive: boolean;
+  /** Governorates the provider covers; empty = not restricted (legacy providers). */
+  providerCoverageGovernorateIds?: number[] | null;
   createdAt: string;
 }
 
@@ -85,6 +87,7 @@ export interface ServiceRequestDto {
   cancellationReason?: string | null;
   completedAt?: string | null;
   createdAt: string;
+  updatedAt?: string | null;
 }
 
 export interface ServiceRequestStatusHistoryDto {
@@ -155,10 +158,17 @@ export interface ServiceProviderDto {
   contactPhone?: string | null;
   verificationLevel: ServiceProviderVerificationLevel;
   isActive: boolean;
+  /** Provider status, kept apart from the application status. */
+  status?: ServiceProviderStatus;
+  statusReason?: string | null;
+  approvedCategories?: ServiceCategory[];
+  coverageGovernorateIds?: number[];
   averageRating?: number | null;
   reviewCount: number;
   createdAt: string;
 }
+
+export type ServiceProviderStatus = 'Active' | 'Suspended' | 'Revoked';
 
 export interface UpdateServiceProviderProfilePayload {
   displayName: string;

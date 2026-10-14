@@ -3,6 +3,7 @@
 
   <header class="page-header">
     <h1>{{ 'PROVIDER.PROFILE.TITLE' | translate }}</h1>
+    <a routerLink="/provider/offerings" class="btn">{{ 'PROVIDER.OFFERINGS.TITLE' | translate }}</a>
   </header>
 
   <div *ngIf="loading()" class="state">{{ 'COMMON.LOADING' | translate }}</div>

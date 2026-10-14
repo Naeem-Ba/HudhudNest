@@ -11,3 +11,10 @@
 .state{padding:2rem;text-align:center;background:var(--surface);border:1px dashed var(--gray-300);border-radius:16px;margin-bottom:1.5rem}.error{color:var(--danger)}
 .become-provider-banner{display:flex;align-items:center;gap:.85rem;background:var(--primary-soft);border:1px solid var(--primary-dark);border-radius:14px;padding:.85rem 1.1rem;text-decoration:none;color:inherit}.become-provider-banner span:first-child{font-size:1.4rem}.become-provider-banner__text{display:flex;flex-direction:column;flex:1;gap:.1rem}.become-provider-banner__text strong{color:var(--primary-dark)}.become-provider-banner__text span:last-child{color:var(--gray-600);font-size:.85rem}.become-provider-banner__cta{font-weight:700;color:var(--primary-dark);white-space:nowrap}
 @include bp.mobile{.page-header{flex-direction:column}.page-header .btn{width:100%;text-align:center}.become-provider-banner{flex-direction:column;align-items:flex-start}}
+
+.header-actions{display:flex;gap:.6rem;flex-wrap:wrap}
+.primary{background:var(--primary);color:var(--on-primary)}
+.pill-count{display:inline-block;margin-inline-start:.4rem;font-size:.75rem;opacity:.75}
+.pill-count--zero{opacity:.45}
+.state p{margin:.4rem 0 .8rem;color:var(--gray-600)}
+@include bp.mobile{.header-actions{width:100%}.header-actions .btn{flex:1;text-align:center}}

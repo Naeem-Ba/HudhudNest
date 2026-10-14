@@ -402,7 +402,7 @@
         </form>
       </div>
 
-      <!-- HudhudNest Verify Request Form -->
+      <!-- Service request form: category, offering (filtered by this property's governorate), note -->
       <div class="detail-card" id="service-form-section" *ngIf="showServiceForm()">
         <div class="detail-card__header">
           <h2>{{ 'SERVICE_REQUEST.CTA' | translate }}</h2>
@@ -411,40 +411,65 @@
           </button>
         </div>
 
-        <div *ngIf="loadingVerifyOffering()" class="state">{{ 'COMMON.LOADING' | translate }}</div>
+        <div *ngIf="loadingServiceCategories()" class="state">{{ 'COMMON.LOADING' | translate }}</div>
 
-        <div *ngIf="!loadingVerifyOffering() && verifyOfferingUnavailable()" class="state">
+        <div *ngIf="!loadingServiceCategories() && serviceLoadFailed() && !serviceCategory()" class="state">
+          {{ 'SERVICE_REQUEST.LOAD_ERROR' | translate }}
+        </div>
+
+        <div *ngIf="!loadingServiceCategories() && !serviceLoadFailed() && availableServiceCategories().length === 0" class="state">
           {{ 'SERVICE_REQUEST.UNAVAILABLE' | translate }}
         </div>
 
-        <form class="detail-form" *ngIf="!loadingVerifyOffering() && verifyOffering() as offering" (ngSubmit)="submitServiceRequest()" novalidate>
-          <p class="offering-summary">
-            <strong>{{ offering.title }}</strong>
-            <span *ngIf="offering.description"> — {{ offering.description }}</span>
-          </p>
-          <p class="offering-provider">{{ 'SERVICE_REQUEST.PROVIDER' | translate }}: {{ offering.serviceProviderDisplayName }}</p>
-
+        <form class="detail-form" *ngIf="!loadingServiceCategories() && availableServiceCategories().length > 0" (ngSubmit)="submitServiceRequest()" novalidate>
           <div class="form-group">
-            <label for="serviceRequestNote">{{ 'SERVICE_REQUEST.NOTE' | translate }}</label>
-            <textarea
-              id="serviceRequestNote"
-              [(ngModel)]="serviceRequestNote"
-              name="serviceRequestNote"
-              rows="4"
-              [maxlength]="serviceRequestNoteMaxLength"
-              [placeholder]="'SERVICE_REQUEST.NOTE_PLACEHOLDER' | translate"
-            ></textarea>
+            <label for="serviceCategory">{{ 'SERVICE_REQUEST.CATEGORY' | translate }}</label>
+            <select id="serviceCategory" name="serviceCategory" [ngModel]="serviceCategory()" (ngModelChange)="selectServiceCategory($event)">
+              <option *ngFor="let category of availableServiceCategories()" [ngValue]="category">{{ ('SERVICES.CATEGORY.' + category) | translate }}</option>
+            </select>
           </div>
 
-          <div class="form-actions">
-            <button type="submit" class="btn btn--primary" [disabled]="savingServiceRequest()">
-              <span *ngIf="savingServiceRequest()" class="spinner-ring"></span>
-              {{ savingServiceRequest() ? ('COMMON.SAVING' | translate) : ('SERVICE_REQUEST.SUBMIT' | translate) }}
-            </button>
-            <button type="button" class="btn btn--outline" (click)="showServiceForm.set(false)">
-              {{ 'COMMON.CANCEL' | translate }}
-            </button>
+          <div *ngIf="loadingServiceOfferings()" class="state">{{ 'COMMON.LOADING' | translate }}</div>
+
+          <div *ngIf="!loadingServiceOfferings() && serviceCategory() && serviceOfferings().length === 0" class="state">
+            {{ 'SERVICE_REQUEST.NONE_FOR_AREA' | translate }}
           </div>
+
+          <fieldset class="form-group offering-choices" *ngIf="!loadingServiceOfferings() && serviceOfferings().length > 0">
+            <legend>{{ 'SERVICE_REQUEST.CHOOSE_OFFERING' | translate }}</legend>
+            <label class="offering-choice" *ngFor="let offering of serviceOfferings()">
+              <input type="radio" name="serviceOffering" [value]="offering.id" [ngModel]="selectedOfferingId()" (ngModelChange)="selectedOfferingId.set($event)">
+              <span>
+                <strong>{{ offering.title }}</strong>
+                <span *ngIf="offering.description"> — {{ offering.description }}</span>
+                <small class="offering-provider">{{ 'SERVICE_REQUEST.PROVIDER' | translate }}: {{ offering.serviceProviderDisplayName }}</small>
+              </span>
+            </label>
+          </fieldset>
+
+          <ng-container *ngIf="selectedOffering()">
+            <div class="form-group">
+              <label for="serviceRequestNote">{{ 'SERVICE_REQUEST.NOTE' | translate }}</label>
+              <textarea
+                id="serviceRequestNote"
+                [(ngModel)]="serviceRequestNote"
+                name="serviceRequestNote"
+                rows="4"
+                [maxlength]="serviceRequestNoteMaxLength"
+                [placeholder]="'SERVICE_REQUEST.NOTE_PLACEHOLDER' | translate"
+              ></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn--primary" [disabled]="savingServiceRequest()">
+                <span *ngIf="savingServiceRequest()" class="spinner-ring"></span>
+                {{ savingServiceRequest() ? ('COMMON.SAVING' | translate) : ('SERVICE_REQUEST.SUBMIT' | translate) }}
+              </button>
+              <button type="button" class="btn btn--outline" (click)="showServiceForm.set(false)">
+                {{ 'COMMON.CANCEL' | translate }}
+              </button>
+            </div>
+          </ng-container>
         </form>
       </div>
 

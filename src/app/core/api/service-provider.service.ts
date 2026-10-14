@@ -74,6 +74,10 @@ export class ServiceProviderService {
       contactPhone: p['contactPhone'] as string | null | undefined,
       verificationLevel: (p['verificationLevel'] as ServiceProviderDto['verificationLevel']) ?? 'None',
       isActive: Boolean(p['isActive']),
+      status: (p['status'] as ServiceProviderDto['status']) ?? (p['isActive'] ? 'Active' : 'Suspended'),
+      statusReason: (p['statusReason'] as string | null | undefined) ?? null,
+      approvedCategories: (p['approvedCategories'] as ServiceProviderDto['approvedCategories']) ?? [],
+      coverageGovernorateIds: (p['coverageGovernorateIds'] as number[] | undefined) ?? [],
       averageRating: p['averageRating'] as number | null | undefined,
       reviewCount: Number(p['reviewCount'] ?? 0),
       createdAt: String(p['createdAt'] ?? '')
