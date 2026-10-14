@@ -147,3 +147,32 @@ describe('getFriendlyApiErrorMessage — agency eligibility codes are translated
     expect(message).toBe('Only the agency owner can invite members.');
   });
 });
+
+
+describe('getFriendlyApiErrorMessage — search validation sentences are translated, not echoed (P7-D06)', () => {
+  const cases: [string, string][] = [
+    ['MinPrice must be less than or equal to MaxPrice.', 'API_ERRORS.FILTER_PRICE_RANGE'],
+    ['MinRooms must be less than or equal to MaxRooms.', 'API_ERRORS.FILTER_ROOMS_RANGE'],
+    ['MinArea must be less than or equal to MaxArea.', 'API_ERRORS.FILTER_AREA_RANGE'],
+    ['Page is beyond the first 10000 results; narrow the search instead.', 'API_ERRORS.FILTER_PAGE_TOO_DEEP'],
+    ['SearchTerm contains characters that are not allowed.', 'API_ERRORS.FILTER_TEXT_NOT_ALLOWED'],
+    ['City contains characters that are not allowed.', 'API_ERRORS.FILTER_TEXT_NOT_ALLOWED'],
+    ['SortBy=Price requires ListingType ForSale or ForRent.', 'API_ERRORS.FILTER_SORT_PRICE_NEEDS_TYPE'],
+    ['Latitude is required.', 'API_ERRORS.GEO_COORDS_REQUIRED'],
+    ['Longitude must be between -180 and 180.', 'API_ERRORS.GEO_COORDS_INVALID']
+  ];
+
+  cases.forEach(([english, key]) => {
+    it(`"${english}" -> ${key}`, () => {
+      const message = getFriendlyApiErrorMessage(fail(422, { title: 'Validation Error', errors: { Filter: [english] } }), translate);
+
+      expect(message).toBe(key);
+    });
+  });
+
+  it('a validation sentence it does not know passes through unchanged', () => {
+    const message = getFriendlyApiErrorMessage(fail(422, { title: 'Validation Error', errors: { Title: ['عنوان الإعلان مطلوب.'] } }), translate);
+
+    expect(message).toBe('عنوان الإعلان مطلوب.');
+  });
+});

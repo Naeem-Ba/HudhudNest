@@ -8,7 +8,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { PageMetaService } from '../../core/services/page-meta.service';
 import { TranslateService } from '@ngx-translate/core';
-import { of, throwError } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 
 import { AgencyPublicPage } from './agency-public.page';
 import { AgenciesApiService } from '../../core/api/agencies-api.service';
@@ -86,6 +86,66 @@ describe('AgencyPublicPage', () => {
     expect(page.summary()?.averageOverall).toBe(4);
     expect(agencies.getRatings).toHaveBeenCalledWith('agency-1', 1, 20);
     expect(properties.getPropertiesPaged).toHaveBeenCalledWith({ agencyId: 'agency-1', page: 1, pageSize: 12 });
+  });
+
+  describe('closed-deal tabs (P7-D08)', () => {
+    function pageOf(items: unknown[], totalCount: number) {
+      return of({ items, page: 1, pageSize: 12, totalCount, totalPages: 1, hasNext: false, hasPrevious: false } as never);
+    }
+
+    it('asks for the sold and rented counts and offers a tab only for a non-empty one', () => {
+      properties.getPropertiesPaged.and.callFake(filter =>
+        filter.status === 'Sold' ? pageOf([], 3) : filter.status === 'Rented' ? pageOf([], 0) : pageOf([], 0)
+      );
+      const page = create();
+
+      page.ngOnInit();
+
+      expect(properties.getPropertiesPaged).toHaveBeenCalledWith({ agencyId: 'agency-1', status: 'Sold', page: 1, pageSize: 1 });
+      expect(properties.getPropertiesPaged).toHaveBeenCalledWith({ agencyId: 'agency-1', status: 'Rented', page: 1, pageSize: 1 });
+      expect(page.soldCount()).toBe(3);
+      expect(page.rentedCount()).toBe(0);
+    });
+
+    it('selecting the sold tab loads Sold listings and draws them as muted, tagged cards', () => {
+      const sold = { id: 'p1', title: 'Flat', city: 'Damascus', status: 'Sold' };
+      properties.getPropertiesPaged.and.callFake(filter => (filter.status === 'Sold' ? pageOf([sold], 1) : pageOf([], 0)));
+      const page = create();
+      page.ngOnInit();
+
+      page.selectTab('sold');
+
+      expect(properties.getPropertiesPaged).toHaveBeenCalledWith({ agencyId: 'agency-1', status: 'Sold', page: 1, pageSize: 12 });
+      expect(page.listings()).toEqual([sold as never]);
+      expect(page.isMuted(sold as never)).toBeTrue();
+      expect(page.tagKey(sold as never)).toBe('LISTING_STATUS.SOLD');
+      expect(page.emptyListingsKey()).toBe('AGENCY_PUBLIC.NO_LISTINGS'.replace('NO_LISTINGS', 'NO_SOLD'));
+    });
+
+    it('on the live tab only a Reserved listing is muted and an Available one is not', () => {
+      const page = create();
+      page.ngOnInit();
+
+      expect(page.isMuted({ id: 'a', status: 'Reserved' } as never)).toBeTrue();
+      expect(page.isMuted({ id: 'b', status: 'Available' } as never)).toBeFalse();
+      expect(page.tagKey({ id: 'b', status: 'Available' } as never)).toBeNull();
+    });
+
+    it('a reply for a tab the visitor already left does not overwrite the visible one', () => {
+      const late = new Subject<never>();
+      properties.getPropertiesPaged.and.callFake(filter => {
+        if (filter.status === 'Rented' && filter.pageSize === 12) return late.asObservable();
+        return pageOf([], filter.status ? 2 : 0);
+      });
+      const page = create();
+      page.ngOnInit();
+
+      page.selectTab('rented');
+      page.selectTab('active');
+      late.next({ items: [{ id: 'x', status: 'Rented' }], page: 1, pageSize: 12, totalCount: 1, totalPages: 1, hasNext: false, hasPrevious: false } as never);
+
+      expect(page.listings().some(l => l.id === 'x')).toBeFalse();
+    });
   });
 
   it('shows the not-found state for an unknown or deactivated agency (404)', () => {

@@ -14,7 +14,15 @@
     "FIELD_INVALID": "The field “{{field}}” is empty or invalid.",
     "AGENCY_ACCOUNT_NOT_VERIFIED": "Verify your account first: confirm your email or phone number in your account settings, then try again.",
     "AGENCY_PAID_PLAN_REQUIRED": "A real-estate office needs a paid plan in force. The free plan does not include offices.",
-    "AGENCY_FREE_PLAN_NOT_ALLOWED": "You own a real-estate office, and the free plan does not include offices. Choose a paid plan."
+    "AGENCY_FREE_PLAN_NOT_ALLOWED": "You own a real-estate office, and the free plan does not include offices. Choose a paid plan.",
+    "FILTER_PRICE_RANGE": "The minimum price is higher than the maximum.",
+    "FILTER_ROOMS_RANGE": "The minimum number of rooms is higher than the maximum.",
+    "FILTER_AREA_RANGE": "The minimum area is larger than the maximum.",
+    "FILTER_PAGE_TOO_DEEP": "That page is beyond the first 10,000 results. Narrow the search instead of paging further.",
+    "FILTER_TEXT_NOT_ALLOWED": "The search text contains characters that are not allowed.",
+    "FILTER_SORT_PRICE_NEEDS_TYPE": "Choose “For rent” or “For sale” to sort by price.",
+    "GEO_COORDS_REQUIRED": "Share your location first to search nearby.",
+    "GEO_COORDS_INVALID": "The location coordinates are not valid."
   },
   "COMMON": {
     "SAVE": "Save",
@@ -526,7 +534,16 @@
     "SAVE_SEARCH": "Save this search",
     "SAVE_SEARCH_NAME_PROMPT": "Give this search a name (optional):",
     "SAVE_SEARCH_SUCCESS": "Search saved. We’ll notify you about new matching properties.",
-    "SAVE_SEARCH_ERROR": "Could not save the search. Make sure you are logged in."
+    "SAVE_SEARCH_ERROR": "Could not save the search. Make sure you are logged in.",
+    "KM": "km",
+    "PRICE_CURRENCY": "Price currency",
+    "PRICE_CURRENCY_HINT": "Listings priced in other currencies are included at their approximate equivalent, using indicative exchange rates.",
+    "PRICE_RANGE_INVERTED": "The minimum price is higher than the maximum. Adjust one of them.",
+    "INVALID_FILTERS": "Those search options can't be applied. Check the filters and try again.",
+    "SORT_PRICE_NEEDS_TYPE": "Choose “For rent” or “For sale” to sort by price.",
+    "GEO_UNSUPPORTED": "Your browser does not support location.",
+    "GEO_CONSENT_NOTE": "We use your current location only to show properties near you.",
+    "GEO_DENIED": "Could not get your location. Check the location permission."
   },
   "PAGINATION": {
     "NAV_LABEL": "Page navigation",
@@ -1373,7 +1390,13 @@
     "TEAM": "Team",
     "LISTINGS": "Agency listings",
     "NO_LISTINGS": "This agency has no published listings right now.",
-    "LOAD_MORE": "Show more"
+    "LOAD_MORE": "Show more",
+    "TAB_ACTIVE": "Available listings",
+    "TAB_SOLD": "Sold",
+    "TAB_RENTED": "Rented",
+    "NO_SOLD": "No sold properties yet.",
+    "NO_RENTED": "No rented properties yet.",
+    "CLOSED_NOTE": "Concluded deals kept as a record. They do not appear in search."
   },
   "VALIDATION": {
     "REQUIRED": "This field is required.",
@@ -2702,6 +2725,10 @@
     "VALUATION": {
       "TITLE": "Get your property valued",
       "DESCRIPTION": "Request a valuation of your property from a real estate expert: send the property details and we will contact you with an estimate of its market value."
+    },
+    "PROPERTIES": {
+      "TITLE": "Properties for sale and rent in Syria",
+      "DESCRIPTION": "Browse apartments and houses for sale and rent in Syria, in Damascus, Aleppo, Tartus and more, with photos, full details and direct contact with the owner or agency."
     }
   },
   "ADMIN_PAYMENTS": {
@@ -2737,5 +2764,20 @@
     "EMPTY": "No offerings are available in this category yet.",
     "VERIFIED_PROVIDER": "Verified provider",
     "DURATION": "Estimated duration: {{days}} day(s)"
+  },
+  "LISTING_STATUS": {
+    "AVAILABLE": "Available",
+    "RESERVED": "Reserved",
+    "SOLD": "Sold",
+    "RENTED": "Rented",
+    "ARCHIVED": "Archived",
+    "RESERVED_NOTICE": "This property is currently reserved. It may become available again if the deal falls through.",
+    "SOLD_NOTICE": "This property has been sold. The listing is kept for the record only.",
+    "RENTED_NOTICE": "This property has been rented. The listing is kept for the record only.",
+    "OWNER_LABEL": "Listing status",
+    "CONFIRM_CLOSED": "Marking this listing as sold or rented removes it from search. It stays on your agency page as a record, and its photos are compressed after 14 days to save storage. Continue?",
+    "CONFIRM_ARCHIVED": "An archived listing is hidden from the public; only you can see it. Continue?",
+    "CHANGED": "Listing status updated.",
+    "CHANGE_ERROR": "Could not update the listing status."
   }
 }

@@ -149,6 +149,16 @@
 
 /* ── Summary Card ── */
 /* Phase-0, Task 2 — 30-day staleness banner. */
+.status-notice {
+  padding: .6rem .9rem;
+  border-radius: var(--r-md, .5rem);
+  background: var(--gray-100);
+  border: 1px solid var(--border);
+  color: var(--gray-700);
+  font-size: .85rem;
+  font-weight: 600;
+}
+
 .stale-banner {
   display: flex;
   align-items: center;

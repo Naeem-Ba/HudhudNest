@@ -52,7 +52,7 @@
         </button>
 
         <div class="radius-control" *ngIf="geoModeActive()">
-          <label class="filter-label">{{ 'PROPERTY_LIST.RADIUS' | translate }}: {{ radiusKm }} كم</label>
+          <label class="filter-label">{{ 'PROPERTY_LIST.RADIUS' | translate }}: {{ radiusKm }} {{ 'PROPERTY_LIST.KM' | translate }}</label>
           <input type="range" min="1" max="50" step="1" [(ngModel)]="radiusKm" name="radiusKm" (change)="onRadiusChange()" />
         </div>
       </div>
@@ -85,19 +85,19 @@
               type="button"
               class="filter-toggle"
               [class.filter-toggle--active]="selectedListingType === ''"
-              (click)="selectedListingType = ''"
+              (click)="selectListingType('')"
             >{{ 'PROPERTY_LIST.ALL' | translate }}</button>
             <button
               type="button"
               class="filter-toggle"
               [class.filter-toggle--active]="selectedListingType === 'ForRent'"
-              (click)="selectedListingType = 'ForRent'"
+              (click)="selectListingType('ForRent')"
             >{{ 'PROPERTY.MODE_RENT' | translate }}</button>
             <button
               type="button"
               class="filter-toggle"
               [class.filter-toggle--active]="selectedListingType === 'ForSale'"
-              (click)="selectedListingType = 'ForSale'"
+              (click)="selectListingType('ForSale')"
             >{{ 'PROPERTY.MODE_SALE' | translate }}</button>
           </div>
         </div>
@@ -174,6 +174,16 @@
               min="0"
             />
           </div>
+          <!-- The range is written in this currency. The server compares every listing in it, so a flat
+               advertised in another currency is found at its equivalent price (P7-D01). -->
+          <div class="currency-select" *ngIf="currencies().length > 0">
+            <label class="filter-label" for="filter-currency">{{ 'PROPERTY_LIST.PRICE_CURRENCY' | translate }}</label>
+            <select id="filter-currency" [(ngModel)]="currencyCode" name="currencyCode">
+              <option *ngFor="let c of currencies()" [value]="c.code">{{ currencyLabel(c) }}</option>
+            </select>
+            <p class="filter-hint" *ngIf="hasPriceFilter">{{ 'PROPERTY_LIST.PRICE_CURRENCY_HINT' | translate }}</p>
+          </div>
+          <p class="filter-error" role="alert" *ngIf="filterError()">{{ filterError() | translate }}</p>
         </div>
 
         <!-- Amenities -->
@@ -198,9 +208,10 @@
           <label class="filter-label" for="sort-by">{{ 'PROPERTY_LIST.SORT' | translate }}</label>
           <select id="sort-by" [(ngModel)]="sortBy" name="sortBy">
             <option value="CreatedAt">{{ 'PROPERTY_LIST.SORT_NEWEST' | translate }}</option>
-            <option value="Price">{{ 'PROPERTY_LIST.SORT_PRICE_ASC' | translate }}</option>
-            <option value="PriceDesc">{{ 'PROPERTY_LIST.SORT_PRICE_DESC' | translate }}</option>
+            <option value="Price" [disabled]="!canSortByPrice">{{ 'PROPERTY_LIST.SORT_PRICE_ASC' | translate }}</option>
+            <option value="PriceDesc" [disabled]="!canSortByPrice">{{ 'PROPERTY_LIST.SORT_PRICE_DESC' | translate }}</option>
           </select>
+          <p class="filter-hint" *ngIf="!canSortByPrice">{{ 'PROPERTY_LIST.SORT_PRICE_NEEDS_TYPE' | translate }}</p>
         </div>
 
         <!-- Actions -->
@@ -279,11 +290,13 @@
           [routerLink]="['/properties', property.id]"
           class="property-card"
           [class.property-card--featured]="property.isFeatured"
+          [class.listing-muted]="isReserved(property)"
           [attr.aria-label]="property.title"
         >
           <!-- Image -->
           <div class="property-card__image">
             <img
+              class="listing-muted__media"
               [src]="getResponsiveImage(property)"
               [attr.srcset]="getResponsiveSrcSet(property)"
               sizes="(max-width: 640px) calc(100vw - 2rem), (max-width: 980px) calc(50vw - 2rem), 360px"
@@ -303,6 +316,10 @@
               </span>
               <!-- إعلان مميّز مدفوع. الخادم يرسل القيمة الفعّالة (نافذة منقضية = false)،
                    فلا مقارنة تواريخ هنا. -->
+              <!-- محجوز: ما زال معروضًا حتى انتهاء الحجز أو الإعلان أو تحوّله إلى مباع/مؤجر. -->
+              <span class="badge badge--reserved" *ngIf="isReserved(property)" data-testid="reserved-badge">
+                {{ 'LISTING_STATUS.RESERVED' | translate }}
+              </span>
               <span class="badge badge--featured" *ngIf="property.isFeatured">
                 <span aria-hidden="true">⭐</span>
                 {{ 'PROPERTY.FEATURED' | translate }}
@@ -316,7 +333,7 @@
           </div>
 
           <!-- Body -->
-          <div class="property-card__body">
+          <div class="property-card__body listing-muted__text">
             <h2 class="property-card__title line-clamp-2">
               {{ property.title || ('PROPERTY_LIST.NO_TITLE' | translate) }}
             </h2>
@@ -331,12 +348,15 @@
                 🛏 {{ property.rooms }} {{ 'PROPERTY.ROOMS' | translate }}
               </span>
               <span *ngIf="property.area">
-                📐 {{ property.area }} م²
+                📐 {{ property.area }} {{ 'COMMON.area_unit' | translate }}
               </span>
             </div>
             <div class="property-card__footer">
               <span class="property-card__price">
                 {{ getPrice(property) }}
+              </span>
+              <span class="property-card__equivalent" *ngIf="equivalentPrice(property) as equivalent">
+                {{ equivalent }}
               </span>
             </div>
           </div>

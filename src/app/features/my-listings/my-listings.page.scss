@@ -43,6 +43,8 @@
 }
 
 /* ── Grid ─────────────────────────────────────────────────── */
+.listings-grid > * { min-width: 0; }
+
 .listings-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -77,6 +79,25 @@
     height: 100%;
     object-fit: cover;
   }
+}
+
+.status-tag {
+  position: absolute;
+  top: .5rem;
+  inset-inline-start: .5rem;
+}
+
+.status-control {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-block: .5rem;
+  font-size: .85rem;
+
+  flex-wrap: wrap;
+
+  label { font-weight: 600; color: var(--gray-600); }
+  select { flex: 1 1 9rem; min-width: 0; max-width: 100%; }
 }
 
 .status-badge {
@@ -145,6 +166,7 @@
 
 .card-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: .5rem;
   margin-top: .25rem;
 

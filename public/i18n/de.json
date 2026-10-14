@@ -14,7 +14,15 @@
     "FIELD_INVALID": "Das Feld „{{field}}“ ist leer oder ungültig.",
     "AGENCY_ACCOUNT_NOT_VERIFIED": "Bestätige zuerst dein Konto: Bestätige in den Kontoeinstellungen deine E-Mail-Adresse oder Telefonnummer und versuche es erneut.",
     "AGENCY_PAID_PLAN_REQUIRED": "Ein Maklerbüro erfordert ein aktives kostenpflichtiges Paket. Das kostenlose Paket enthält keine Büros.",
-    "AGENCY_FREE_PLAN_NOT_ALLOWED": "Du besitzt ein Maklerbüro, und das kostenlose Paket enthält keine Büros. Wähle ein kostenpflichtiges Paket."
+    "AGENCY_FREE_PLAN_NOT_ALLOWED": "Du besitzt ein Maklerbüro, und das kostenlose Paket enthält keine Büros. Wähle ein kostenpflichtiges Paket.",
+    "FILTER_PRICE_RANGE": "Der Mindestpreis ist höher als der Höchstpreis.",
+    "FILTER_ROOMS_RANGE": "Die Mindestzahl der Zimmer ist höher als die Höchstzahl.",
+    "FILTER_AREA_RANGE": "Die Mindestfläche ist größer als die Höchstfläche.",
+    "FILTER_PAGE_TOO_DEEP": "Diese Seite liegt hinter den ersten 10.000 Ergebnissen. Grenzen Sie die Suche ein, statt weiter zu blättern.",
+    "FILTER_TEXT_NOT_ALLOWED": "Der Suchtext enthält unzulässige Zeichen.",
+    "FILTER_SORT_PRICE_NEEDS_TYPE": "Wählen Sie „Zur Miete“ oder „Zum Kauf“, um nach Preis zu sortieren.",
+    "GEO_COORDS_REQUIRED": "Geben Sie zuerst Ihren Standort frei, um in der Nähe zu suchen.",
+    "GEO_COORDS_INVALID": "Die Standortkoordinaten sind ungültig."
   },
   "COMMON": {
     "SAVE": "Speichern",
@@ -526,7 +534,16 @@
     "SAVE_SEARCH": "Diese Suche speichern",
     "SAVE_SEARCH_NAME_PROMPT": "Geben Sie dieser Suche einen Namen (optional):",
     "SAVE_SEARCH_SUCCESS": "Suche gespeichert. Wir benachrichtigen Sie über neue passende Immobilien.",
-    "SAVE_SEARCH_ERROR": "Die Suche konnte nicht gespeichert werden. Stellen Sie sicher, dass Sie angemeldet sind."
+    "SAVE_SEARCH_ERROR": "Die Suche konnte nicht gespeichert werden. Stellen Sie sicher, dass Sie angemeldet sind.",
+    "KM": "km",
+    "PRICE_CURRENCY": "Währung des Preises",
+    "PRICE_CURRENCY_HINT": "Inserate in anderen Währungen werden mit ihrem ungefähren Gegenwert berücksichtigt (Richtkurse).",
+    "PRICE_RANGE_INVERTED": "Der Mindestpreis ist höher als der Höchstpreis. Bitte passen Sie einen der Werte an.",
+    "INVALID_FILTERS": "Diese Suchoptionen können nicht angewendet werden. Bitte Filter prüfen und erneut versuchen.",
+    "SORT_PRICE_NEEDS_TYPE": "Wählen Sie „Zur Miete“ oder „Zum Kauf“, um nach Preis zu sortieren.",
+    "GEO_UNSUPPORTED": "Ihr Browser unterstützt keine Standortbestimmung.",
+    "GEO_CONSENT_NOTE": "Wir verwenden Ihren aktuellen Standort nur, um Immobilien in Ihrer Nähe anzuzeigen.",
+    "GEO_DENIED": "Ihr Standort konnte nicht ermittelt werden. Bitte prüfen Sie die Standortfreigabe."
   },
   "PAGINATION": {
     "NAV_LABEL": "Seitennavigation",
@@ -1373,7 +1390,13 @@
     "TEAM": "Team",
     "LISTINGS": "Anzeigen des Büros",
     "NO_LISTINGS": "Dieses Büro hat derzeit keine veröffentlichten Anzeigen.",
-    "LOAD_MORE": "Mehr anzeigen"
+    "LOAD_MORE": "Mehr anzeigen",
+    "TAB_ACTIVE": "Verfügbare Inserate",
+    "TAB_SOLD": "Verkauft",
+    "TAB_RENTED": "Vermietet",
+    "NO_SOLD": "Noch keine verkauften Immobilien.",
+    "NO_RENTED": "Noch keine vermieteten Immobilien.",
+    "CLOSED_NOTE": "Abgeschlossene Geschäfte, nur zur Dokumentation aufbewahrt. Sie erscheinen nicht in der Suche."
   },
   "VALIDATION": {
     "REQUIRED": "Dieses Feld ist erforderlich.",
@@ -2702,6 +2725,10 @@
     "VALUATION": {
       "TITLE": "Immobilie bewerten lassen",
       "DESCRIPTION": "Fordern Sie eine Bewertung Ihrer Immobilie durch einen Experten an: Senden Sie die Objektdaten, und wir melden uns mit einer Einschätzung des Marktwerts."
+    },
+    "PROPERTIES": {
+      "TITLE": "Immobilien zum Kauf und zur Miete in Syrien",
+      "DESCRIPTION": "Entdecken Sie Wohnungen und Häuser zum Kauf und zur Miete in Syrien – Damaskus, Aleppo, Tartus und mehr – mit Fotos, allen Details und direktem Kontakt zum Eigentümer oder Maklerbüro."
     }
   },
   "ADMIN_PAYMENTS": {
@@ -2737,5 +2764,20 @@
     "EMPTY": "In dieser Kategorie gibt es noch keine Angebote.",
     "VERIFIED_PROVIDER": "Verifizierter Anbieter",
     "DURATION": "Geschätzte Dauer: {{days}} Tag(e)"
+  },
+  "LISTING_STATUS": {
+    "AVAILABLE": "Verfügbar",
+    "RESERVED": "Reserviert",
+    "SOLD": "Verkauft",
+    "RENTED": "Vermietet",
+    "ARCHIVED": "Archiviert",
+    "RESERVED_NOTICE": "Diese Immobilie ist derzeit reserviert. Sie kann wieder verfügbar werden, falls der Abschluss scheitert.",
+    "SOLD_NOTICE": "Diese Immobilie wurde verkauft. Das Inserat bleibt nur zur Dokumentation bestehen.",
+    "RENTED_NOTICE": "Diese Immobilie wurde vermietet. Das Inserat bleibt nur zur Dokumentation bestehen.",
+    "OWNER_LABEL": "Status des Inserats",
+    "CONFIRM_CLOSED": "Wird das Inserat als verkauft oder vermietet markiert, verschwindet es aus der Suche. Es bleibt als Nachweis auf der Seite Ihres Büros, und die Fotos werden nach 14 Tagen komprimiert, um Speicher zu sparen. Fortfahren?",
+    "CONFIRM_ARCHIVED": "Ein archiviertes Inserat ist für die Öffentlichkeit nicht sichtbar; nur Sie sehen es. Fortfahren?",
+    "CHANGED": "Status des Inserats aktualisiert.",
+    "CHANGE_ERROR": "Der Status des Inserats konnte nicht aktualisiert werden."
   }
 }

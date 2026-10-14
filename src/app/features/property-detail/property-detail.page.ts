@@ -61,6 +61,7 @@ import { PropertyStructuredDataService } from '../../core/sharing/property-struc
 import { PropertyShareUrlService } from '../../core/sharing/property-share-url.service';
 import { isGuid } from '../../shared/utils/guid';
 import { formatListingPrice } from '../../shared/utils/listing-price';
+import { listingLifecycle, listingStatusTagKey } from '../../shared/utils/listing-status';
 import { StructuredDataService, BREADCRUMB_JSON_LD_ID } from '../../core/services/structured-data.service';
 
 const LISTING_JSON_LD_ID = 'ld-real-estate-listing';
@@ -90,6 +91,24 @@ const LIGHTBOX_IMAGE_WIDTH = 2048;
   styleUrls: ['./property-detail.page.scss']
 })
 export class PropertyDetailPage implements OnInit {
+
+  // ── Listing status (QA Phase 7, P7-D08) ───────────────────────────────
+  /** i18n key of the tag shown for a reserved, sold, rented or archived listing; null for a normal one. */
+  readonly statusTagKey = (p: Property): string | null => listingStatusTagKey(p);
+
+  statusBadgeClass(p: Property): string {
+    return `badge--${listingLifecycle(p)}`;
+  }
+
+  /** The sentence explaining a reserved or concluded listing to the visitor. */
+  statusNoticeKey(p: Property): string | null {
+    switch (listingLifecycle(p)) {
+      case 'reserved': return 'LISTING_STATUS.RESERVED_NOTICE';
+      case 'sold': return 'LISTING_STATUS.SOLD_NOTICE';
+      case 'rented': return 'LISTING_STATUS.RENTED_NOTICE';
+      default: return null;
+    }
+  }
 
   // ── DI ────────────────────────────────────────────────────────────────
   private readonly propertyApi  = inject(PropertyApiService);

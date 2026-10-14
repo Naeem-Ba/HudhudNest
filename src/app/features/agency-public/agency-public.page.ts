@@ -33,8 +33,11 @@ import { Property } from '../../core/models/property.model';
 import { PageMetaService } from '../../core/services/page-meta.service';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
+import { isReservedListing, listingLifecycle, listingStatusTagKey } from '../../shared/utils/listing-status';
 
 const LISTINGS_PAGE_SIZE = 12;
+
+type AgencyListingsTab = 'active' | 'sold' | 'rented';
 
 /** تعليق اختياري — لكن إن كُتب فلا يكون مسافات فقط. */
 function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
@@ -222,17 +225,38 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
         </ul>
 
         <h2 class="section-title">{{ 'AGENCY_PUBLIC.LISTINGS' | translate }}</h2>
+
+        <!-- التبويبات: المتاحة دائمًا، والمباعة/المؤجرة لا تظهر إلا إن وُجدت صفقات منها (سجل توثيق، لا تظهر في البحث). -->
+        <div class="listing-tabs" role="tablist" *ngIf="soldCount() > 0 || rentedCount() > 0">
+          <button type="button" role="tab" class="listing-tabs__tab" data-testid="tab-active"
+            [class.listing-tabs__tab--active]="activeTab() === 'active'" [attr.aria-selected]="activeTab() === 'active'"
+            (click)="selectTab('active')">{{ 'AGENCY_PUBLIC.TAB_ACTIVE' | translate }}</button>
+          <button type="button" role="tab" class="listing-tabs__tab" data-testid="tab-sold" *ngIf="soldCount() > 0"
+            [class.listing-tabs__tab--active]="activeTab() === 'sold'" [attr.aria-selected]="activeTab() === 'sold'"
+            (click)="selectTab('sold')">{{ 'AGENCY_PUBLIC.TAB_SOLD' | translate }} ({{ soldCount() }})</button>
+          <button type="button" role="tab" class="listing-tabs__tab" data-testid="tab-rented" *ngIf="rentedCount() > 0"
+            [class.listing-tabs__tab--active]="activeTab() === 'rented'" [attr.aria-selected]="activeTab() === 'rented'"
+            (click)="selectTab('rented')">{{ 'AGENCY_PUBLIC.TAB_RENTED' | translate }} ({{ rentedCount() }})</button>
+        </div>
+        <p class="muted" *ngIf="activeTab() !== 'active'">{{ 'AGENCY_PUBLIC.CLOSED_NOTE' | translate }}</p>
+
         <p class="muted" *ngIf="listingsLoading()">{{ 'COMMON.LOADING' | translate }}</p>
-        <p class="muted" *ngIf="!listingsLoading() && listings().length === 0">{{ 'AGENCY_PUBLIC.NO_LISTINGS' | translate }}</p>
+        <p class="muted" *ngIf="!listingsLoading() && listings().length === 0">{{ emptyListingsKey() | translate }}</p>
         <div class="listing-grid" *ngIf="listings().length > 0">
-          <a class="listing-card" *ngFor="let listing of listings()" [routerLink]="['/properties', listing.id]">
-            <img
-              class="listing-card__image"
-              [src]="listing.mainImageUrl || listing.images?.[0]?.url || '/images/property-placeholder.svg'"
-              appImageFallback="/images/property-placeholder.svg"
-              alt=""
-            />
-            <div class="listing-card__body">
+          <a class="listing-card" *ngFor="let listing of listings()" [routerLink]="['/properties', listing.id]"
+            [class.listing-muted]="isMuted(listing)" [class.listing-muted--closed]="activeTab() !== 'active'">
+            <div class="listing-card__media">
+              <img
+                class="listing-card__image listing-muted__media"
+                [src]="listing.mainImageUrl || listing.images?.[0]?.url || '/images/no-image.svg'"
+                appImageFallback="/images/no-image.svg"
+                alt=""
+              />
+              <span class="badge listing-card__tag" *ngIf="tagKey(listing) as tag" [ngClass]="tagClass(listing)" data-testid="status-tag">
+                {{ tag | translate }}
+              </span>
+            </div>
+            <div class="listing-card__body listing-muted__text">
               <p class="listing-card__title">{{ listing.title }}</p>
               <p class="listing-card__city">{{ listing.city }}</p>
               <p class="listing-card__price">{{ listingPrice(listing) }}</p>
@@ -273,6 +297,11 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
     .listing-card__city { margin: .15rem 0; font-size: .78rem; color: var(--gray-500); }
     .listing-card__price { margin: 0; font-size: .85rem; font-weight: 600; color: var(--primary); }
     .more-link { margin-top: 1rem; }
+    .listing-tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .75rem; }
+    .listing-tabs__tab { padding: .4rem .9rem; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--gray-700); font: inherit; font-size: .85rem; font-weight: 600; cursor: pointer; }
+    .listing-tabs__tab--active { background: var(--primary-soft); border-color: var(--primary); color: var(--primary-text); }
+    .listing-card__media { position: relative; }
+    .listing-card__tag { position: absolute; inset-block-start: .5rem; inset-inline-start: .5rem; }
 
     /* ── تقييم المكتب (منفصل عن تقييم الأعضاء) ── */
     .detail-card { background: var(--surface); border-radius: 12px; padding: 1.25rem; box-shadow: var(--shadow-xs); border: 1px solid var(--border); margin-top: 1.25rem; }
@@ -368,6 +397,14 @@ export class AgencyPublicPage implements OnInit {
   readonly hasMore = signal(false);
   private listingsPage = 1;
 
+  /**
+   * Tabs (P7-D08): the agency's live listings, and its concluded deals. Sold and rented listings are
+   * not in search; this page is the only place they are listed, as a record of the office's work.
+   */
+  readonly activeTab = signal<AgencyListingsTab>('active');
+  readonly soldCount = signal(0);
+  readonly rentedCount = signal(0);
+
   ngOnInit(): void {
     this.destroyRef.onDestroy(() => this.pageMeta.clear());
 
@@ -379,6 +416,9 @@ export class AgencyPublicPage implements OnInit {
           this.agency.set(null);
           this.listings.set([]);
           this.hasMore.set(false);
+          this.activeTab.set('active');
+          this.soldCount.set(0);
+          this.rentedCount.set(0);
           this.summary.set(null);
           this.ratings.set([]);
           this.eligibility.set(null);
@@ -408,6 +448,7 @@ export class AgencyPublicPage implements OnInit {
             image: agency.logoUrl
           });
           this.loadListings(agency.id, 1);
+          this.loadClosedDealCounts(agency.id);
           this.loadRatings(agency.id);
           if (this.isLoggedIn()) {
             this.loadEligibility(agency.id);
@@ -529,13 +570,65 @@ export class AgencyPublicPage implements OnInit {
     if (agency) this.loadListings(agency.id, this.listingsPage + 1);
   }
 
+  selectTab(tab: AgencyListingsTab): void {
+    const agency = this.agency();
+    if (!agency || this.activeTab() === tab) return;
+
+    this.activeTab.set(tab);
+    this.listings.set([]);
+    this.hasMore.set(false);
+    this.loadListings(agency.id, 1);
+  }
+
+  emptyListingsKey(): string {
+    switch (this.activeTab()) {
+      case 'sold': return 'AGENCY_PUBLIC.NO_SOLD';
+      case 'rented': return 'AGENCY_PUBLIC.NO_RENTED';
+      default: return 'AGENCY_PUBLIC.NO_LISTINGS';
+    }
+  }
+
+  /** A reserved listing on the live tab, or anything on a closed-deals tab, is drawn lighter. */
+  isMuted(listing: Property): boolean {
+    return this.activeTab() !== 'active' || isReservedListing(listing);
+  }
+
+  tagKey(listing: Property): string | null {
+    return listingStatusTagKey(listing);
+  }
+
+  tagClass(listing: Property): string {
+    return `badge--${listingLifecycle(listing)}`;
+  }
+
+  /** One page of one row per tab is enough to learn how many concluded deals the office has. */
+  private loadClosedDealCounts(agencyId: string): void {
+    const count = (status: 'Sold' | 'Rented', target: (n: number) => void): void => {
+      this.propertyApi
+        .getPropertiesPaged({ agencyId, status, page: 1, pageSize: 1 })
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        // Best-effort: without the count the tab is simply not offered.
+        .subscribe({ next: result => target(result.totalCount), error: () => target(0) });
+    };
+
+    count('Sold', n => this.soldCount.set(n));
+    count('Rented', n => this.rentedCount.set(n));
+  }
+
   private loadListings(agencyId: string, page: number): void {
     this.listingsLoading.set(true);
+    const tab = this.activeTab();
+    const status = tab === 'sold' ? 'Sold' : tab === 'rented' ? 'Rented' : undefined;
+
     this.propertyApi
-      .getPropertiesPaged({ agencyId, page, pageSize: LISTINGS_PAGE_SIZE })
+      .getPropertiesPaged({ agencyId, ...(status ? { status } : {}), page, pageSize: LISTINGS_PAGE_SIZE })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: result => {
+          // A reply for the tab the visitor already left must not overwrite the one now on screen.
+          if (this.activeTab() !== tab) {
+            return;
+          }
           this.listingsPage = page;
           this.listings.update(current => (page === 1 ? result.items : [...current, ...result.items]));
           this.hasMore.set(result.hasNext);
