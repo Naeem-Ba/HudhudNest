@@ -3,6 +3,7 @@ import { map, Observable } from 'rxjs';
 import { BackendApiService, QueryValue } from '../api/backend-api.service';
 import { ApiPagedResult, normalizePagedResult, PagedResult, unwrapItems } from '../models/api.model';
 import { DuplicateCheckResult, Property, PropertyFilterDto } from '../models/property.model';
+import { OwnerSelectableStatus } from '../../shared/utils/listing-status';
 
 /**
  * Mirrors HudhudNestApi.Application.Listings.DTOs.ListingExtensionQuoteDto exactly
@@ -92,6 +93,15 @@ export class PropertyApiService {
 
   updateProperty(id: string, payload: unknown): Observable<unknown> {
     return this.api.put<unknown>(`/properties/${id}`, payload);
+  }
+
+  /**
+   * Moves a listing to another status (Available, Reserved, Sold, Rented, Archived). The API has
+   * no dedicated endpoint: PUT /properties/{id} applies only the fields present in the body, so
+   * sending `status` alone changes nothing else. Owner (or agency member) only, enforced by the server.
+   */
+  updateStatus(id: string, status: OwnerSelectableStatus): Observable<unknown> {
+    return this.api.put<unknown>(`/properties/${id}`, { status });
   }
 
   uploadImages(propertyId: string, formData: FormData): Observable<unknown[]> {

@@ -56,6 +56,11 @@ function humanizeFieldName(key: string): string {
 function describeFieldError(field: string, message: string, translate: TranslateService): string {
   const label = humanizeFieldName(field);
 
+  const knownKey = knownValidationMessageKey(message);
+  if (knownKey) {
+    return translate.instant(knownKey);
+  }
+
   if (/field is required/i.test(message)) {
     return label ? translate.instant('API_ERRORS.FIELD_REQUIRED', { field: label }) : translate.instant('API_ERRORS.BAD_REQUEST');
   }
@@ -65,6 +70,27 @@ function describeFieldError(field: string, message: string, translate: Translate
   }
 
   return message;
+}
+
+/**
+ * The search and map endpoints refuse a bad filter with a fixed English sentence (FluentValidation).
+ * Those sentences are matched here and shown in the reader's language instead (QA Phase 7, P7-D06);
+ * any other message passes through unchanged.
+ */
+const KNOWN_VALIDATION_MESSAGE_KEYS: readonly (readonly [RegExp, string])[] = [
+  [/^MinPrice must be less than or equal to MaxPrice\.?$/i, 'API_ERRORS.FILTER_PRICE_RANGE'],
+  [/^MinRooms must be less than or equal to MaxRooms\.?$/i, 'API_ERRORS.FILTER_ROOMS_RANGE'],
+  [/^MinArea must be less than or equal to MaxArea\.?$/i, 'API_ERRORS.FILTER_AREA_RANGE'],
+  [/^Page is beyond the first [\d,]+ results/i, 'API_ERRORS.FILTER_PAGE_TOO_DEEP'],
+  [/^(SearchTerm|City|Region) contains characters that are not allowed\.?$/i, 'API_ERRORS.FILTER_TEXT_NOT_ALLOWED'],
+  [/^SortBy=Price requires ListingType/i, 'API_ERRORS.FILTER_SORT_PRICE_NEEDS_TYPE'],
+  [/^(Latitude|Longitude) is required\.?$/i, 'API_ERRORS.GEO_COORDS_REQUIRED'],
+  [/^(Latitude|Longitude) must be between/i, 'API_ERRORS.GEO_COORDS_INVALID']
+];
+
+export function knownValidationMessageKey(message: string): string | null {
+  const text = message.trim();
+  return KNOWN_VALIDATION_MESSAGE_KEYS.find(([pattern]) => pattern.test(text))?.[1] ?? null;
 }
 
 /** Flattens ProblemDetails / ValidationError `errors` (a field -> messages map, or a list). */

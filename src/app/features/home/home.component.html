@@ -127,11 +127,13 @@
         <a
           *ngFor="let p of properties"
           class="prop-card"
+          [class.listing-muted]="isReserved(p)"
           [routerLink]="['/properties', p.id]"
           [attr.aria-label]="p.title"
         >
           <div class="prop-card__image">
             <img
+              class="listing-muted__media"
               [src]="propertyImageUrl(p)"
               [attr.srcset]="propertyImageSrcSet(p)"
               sizes="(max-width: 640px) calc(100vw - 2rem), (max-width: 980px) calc(50vw - 2rem), 360px"
@@ -147,6 +149,7 @@
                     ? ('PROPERTY.MODE_SALE' | translate)
                     : ('PROPERTY.MODE_RENT' | translate) }}
               </span>
+              <span class="badge badge--reserved" *ngIf="isReserved(p)">{{ 'LISTING_STATUS.RESERVED' | translate }}</span>
               <!-- إعلان مميّز مدفوع — القيمة الفعّالة تأتي من الخادم. -->
               <span class="badge badge--featured" *ngIf="p.isFeatured">
                 <span aria-hidden="true">⭐</span>
@@ -154,7 +157,7 @@
               </span>
             </div>
           </div>
-          <div class="prop-card__body">
+          <div class="prop-card__body listing-muted__text">
             <h3 class="prop-card__title line-clamp-2">{{ p.title || ('PROPERTY_LIST.NO_TITLE' | translate) }}</h3>
             <p class="prop-card__location line-clamp-1">
               <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">

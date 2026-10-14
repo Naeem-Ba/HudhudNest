@@ -24,6 +24,13 @@ import { SkeletonCardGridComponent } from '../../shared/ui/skeleton-card-grid.co
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { uiNumberLocale } from '../../core/i18n/ui-language';
+import {
+  OWNER_SELECTABLE_STATUSES,
+  OwnerSelectableStatus,
+  isClosedDealListing,
+  listingLifecycle,
+  listingStatusTagKey
+} from '../../shared/utils/listing-status';
 
 @Component({
   selector: 'app-my-listings',
@@ -57,6 +64,9 @@ export class MyListingsPage implements OnInit {
   readonly deletingId = signal<string | null>(null);
   readonly publishingId = signal<string | null>(null);
   readonly extendingId = signal<string | null>(null);
+  readonly statusChangingId = signal<string | null>(null);
+
+  readonly selectableStatuses = OWNER_SELECTABLE_STATUSES;
 
   /**
    * Listings whose featured request is waiting for an administrator to confirm the payment.
@@ -77,8 +87,10 @@ export class MyListingsPage implements OnInit {
    */
   readonly planListingLimit = signal<number | null | undefined>(undefined); // undefined = loading, null = unlimited
   readonly shortStayActiveCount = signal(0);
+  // Expired listings and concluded deals (Sold/Rented) no longer count against the plan: the API
+  // excludes them too (P7-D08), so the number here matches the one the server enforces.
   readonly activePropertiesCount = computed(
-    () => this.listings().filter(p => p.status !== 'Expired').length
+    () => this.listings().filter(p => p.status !== 'Expired' && !isClosedDealListing(p)).length
   );
   readonly totalActiveListings = computed(
     () => this.activePropertiesCount() + this.shortStayActiveCount()
@@ -272,6 +284,72 @@ export class MyListingsPage implements OnInit {
             backendMessage || this.translate.instant('MY_LISTINGS.EXTEND_ERROR'),
             'error'
           );
+        }
+      });
+  }
+
+  /** Reserved / sold / rented / archived tag for the card; null for an ordinary listing. */
+  statusTagKey(property: Property): string | null {
+    return listingStatusTagKey(property);
+  }
+
+  statusBadgeClass(property: Property): string {
+    return `badge--${listingLifecycle(property)}`;
+  }
+
+  /** The status the dropdown shows: Expired is not something an owner can choose, so it has no option. */
+  currentStatus(property: Property): OwnerSelectableStatus | null {
+    const lifecycle = listingLifecycle(property);
+    return OWNER_SELECTABLE_STATUSES.find(s => s.toLowerCase() === lifecycle) ?? null;
+  }
+
+  /** Only a published listing has a status to manage (a draft is not on the market, an expired one is extended). */
+  canChangeStatus(property: Property): boolean {
+    return !!property.id && property.isPublished === true && this.currentStatus(property) !== null;
+  }
+
+  statusOptionKey(status: OwnerSelectableStatus): string {
+    return `LISTING_STATUS.${status.toUpperCase()}`;
+  }
+
+  /**
+   * Moves the listing to another status. Sold/Rented take it out of search and Archived hides it
+   * from the public, so those two ask first; if the owner declines, the dropdown goes back to the
+   * stored value (it already shows the new one by then).
+   */
+  changeStatus(property: Property, select: HTMLSelectElement): void {
+    const id = property.id;
+    const next = select.value as OwnerSelectableStatus;
+    const current = this.currentStatus(property);
+
+    if (!id || this.statusChangingId() || !OWNER_SELECTABLE_STATUSES.includes(next) || next === current) {
+      return;
+    }
+
+    const confirmKey = next === 'Sold' || next === 'Rented'
+      ? 'LISTING_STATUS.CONFIRM_CLOSED'
+      : next === 'Archived' ? 'LISTING_STATUS.CONFIRM_ARCHIVED' : null;
+
+    if (confirmKey && !confirm(this.translate.instant(confirmKey))) {
+      select.value = current ?? 'Available';
+      return;
+    }
+
+    this.statusChangingId.set(id);
+
+    this.api
+      .updateStatus(id, next)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.listings.update(prev => prev.map(p => (p.id === id ? { ...p, status: next } : p)));
+          this.toast.show(this.translate.instant('LISTING_STATUS.CHANGED'), 'success');
+          this.statusChangingId.set(null);
+        },
+        error: () => {
+          select.value = current ?? 'Available';
+          this.toast.show(this.translate.instant('LISTING_STATUS.CHANGE_ERROR'), 'error');
+          this.statusChangingId.set(null);
         }
       });
   }

@@ -84,3 +84,104 @@ describe('MyListingsPage — featuring', () => {
     expect(el().querySelector('[data-testid="feature-link"]')).not.toBeNull();
   });
 });
+
+describe('MyListingsPage — listing status (QA Phase 7, P7-D08)', () => {
+  let fixture: ComponentFixture<MyListingsPage>;
+  let propertyApi: jasmine.SpyObj<PropertyApiService>;
+  let toast: jasmine.SpyObj<ToastService>;
+
+  function setup(listings: Property[], updateStatus: () => unknown = () => of({})): void {
+    propertyApi = jasmine.createSpyObj('PropertyApiService', ['getMyProperties', 'updateStatus']);
+    propertyApi.getMyProperties.and.returnValue(of(listings));
+    propertyApi.updateStatus.and.callFake(updateStatus as never);
+    const feesApi = jasmine.createSpyObj('ListingFeesApiService', ['getMyPendingFeatured']);
+    feesApi.getMyPendingFeatured.and.returnValue(of([]));
+    const shortStay = jasmine.createSpyObj('ShortStayListingApiService', ['getMine']);
+    shortStay.getMine.and.returnValue(of([]));
+    toast = jasmine.createSpyObj('ToastService', ['show', 'success', 'error']);
+
+    TestBed.configureTestingModule({
+      imports: [MyListingsPage, TranslateModule.forRoot()],
+      providers: [
+        provideRouter([]),
+        { provide: ListingFeesApiService, useValue: feesApi },
+        { provide: PropertyApiService, useValue: propertyApi },
+        { provide: ShortStayListingApiService, useValue: shortStay },
+        { provide: ProfileService, useValue: { profile$: new BehaviorSubject(null) } },
+        { provide: PlansApiService, useValue: jasmine.createSpyObj('PlansApiService', ['getPlans']) },
+        { provide: ToastService, useValue: toast }
+      ]
+    });
+
+    fixture = TestBed.createComponent(MyListingsPage);
+    fixture.detectChanges();
+  }
+
+  function select(id: string): HTMLSelectElement {
+    return (fixture.nativeElement as HTMLElement).querySelector<HTMLSelectElement>(`#status-${id}`)!;
+  }
+
+  function choose(id: string, value: string): void {
+    const el = select(id);
+    el.value = value;
+    el.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+  }
+
+  it('offers the five owner statuses and preselects the current one', () => {
+    setup([listing('p1', { status: 'Reserved' })]);
+
+    const options = Array.from(select('p1').options).map(o => o.value);
+    expect(options).toEqual(['Available', 'Reserved', 'Sold', 'Rented', 'Archived']);
+    expect(select('p1').value).toBe('Reserved');
+  });
+
+  it('a draft and an expired listing have no status control', () => {
+    setup([listing('draft', { isPublished: false }), listing('old', { status: 'Expired' })]);
+
+    expect(select('draft')).toBeNull();
+    expect(select('old')).toBeNull();
+  });
+
+  it('Reserved is applied without a question and updates the card', () => {
+    setup([listing('p1')]);
+    const ask = spyOn(window, 'confirm');
+
+    choose('p1', 'Reserved');
+
+    expect(ask).not.toHaveBeenCalled();
+    expect(propertyApi.updateStatus).toHaveBeenCalledWith('p1', 'Reserved');
+    expect(fixture.componentInstance.listings()[0].status).toBe('Reserved');
+    expect(toast.show).toHaveBeenCalledWith('LISTING_STATUS.CHANGED', 'success');
+    expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="status-tag"]')).not.toBeNull();
+  });
+
+  it('Sold asks first; declining leaves the status and the dropdown as they were', () => {
+    setup([listing('p1')]);
+    spyOn(window, 'confirm').and.returnValue(false);
+
+    choose('p1', 'Sold');
+
+    expect(propertyApi.updateStatus).not.toHaveBeenCalled();
+    expect(select('p1').value).toBe('Available');
+    expect(fixture.componentInstance.listings()[0].status).toBe('Available');
+  });
+
+  it('Sold confirmed is sent, and a failed save restores the dropdown and says so', () => {
+    setup([listing('p1')], () => throwError(() => new Error('boom')));
+    spyOn(window, 'confirm').and.returnValue(true);
+
+    choose('p1', 'Archived');
+
+    expect(propertyApi.updateStatus).toHaveBeenCalledWith('p1', 'Archived');
+    expect(select('p1').value).toBe('Available');
+    expect(fixture.componentInstance.listings()[0].status).toBe('Available');
+    expect(toast.show).toHaveBeenCalledWith('LISTING_STATUS.CHANGE_ERROR', 'error');
+  });
+
+  it('sold and rented listings do not count against the plan quota, reserved ones do', () => {
+    setup([listing('a'), listing('b', { status: 'Reserved' }), listing('c', { status: 'Sold' }), listing('d', { status: 'Rented' })]);
+
+    expect(fixture.componentInstance.activePropertiesCount()).toBe(2);
+  });
+});
