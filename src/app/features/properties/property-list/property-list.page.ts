@@ -47,7 +47,7 @@ import { PropertyShareUrlService } from '../../../core/sharing/property-share-ur
 import { PageMetaService } from '../../../core/services/page-meta.service';
 import { formatListingPrice, primaryListingPrice } from '../../../shared/utils/listing-price';
 import { isReservedListing } from '../../../shared/utils/listing-status';
-import { CurrencyRatesService } from '../../../core/pricing/currency-rates.service';
+import { CurrencyRatesService, isSearchCurrency } from '../../../core/pricing/currency-rates.service';
 import { PreferencesService } from '../../../core/services/preferences.service';
 
 @Component({
@@ -371,7 +371,10 @@ export class PropertyListPage implements OnInit {
     this.selectedListingType = listingType === 'ForRent' || listingType === 'ForSale' ? listingType : '';
     this.selectedAmenityIds = params.getAll('amenityIds');
     this.sortBy = params.get('sort') ?? 'CreatedAt';
-    this.currencyCode = (params.get('currency') ?? '').trim().toUpperCase() || this.defaultCurrencyCode();
+    // A bookmark or saved search may carry a currency that is no longer searchable (the server
+    // answers 422 for it): fall back to the default instead.
+    const urlCurrency = (params.get('currency') ?? '').trim().toUpperCase();
+    this.currencyCode = isSearchCurrency(urlCurrency) ? urlCurrency : this.defaultCurrencyCode();
 
     this.governorateId = params.get('governorateId') ? Number(params.get('governorateId')) : null;
     this.districtId = params.get('districtId') ? Number(params.get('districtId')) : null;

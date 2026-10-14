@@ -5,6 +5,17 @@ import { CurrencyLookup, LookupsApiService } from '../api/lookups-api.service';
 import { ExchangeRate, ExchangeRateProvider } from './price-display';
 
 /**
+ * The currencies a visitor can search by: the dollar, the euro and the Syrian pound. The server
+ * offers only these (GET /api/lookups/currencies) and refuses any other with 422; the list is
+ * filtered here too so an older server or a stale bookmark cannot put another one in the selector.
+ */
+export const SEARCH_CURRENCY_CODES: readonly string[] = ['USD', 'EUR', 'SYP'];
+
+export function isSearchCurrency(code: string | null | undefined): boolean {
+  return SEARCH_CURRENCY_CODES.includes((code ?? '').trim().toUpperCase());
+}
+
+/**
  * The currencies the product prices in and their administrator-maintained rates
  * (GET /api/lookups/currencies). Used by the search filters (which currency a price range is
  * written in) and by the cards (an approximate equivalent next to a listing priced in another
@@ -27,6 +38,7 @@ export class CurrencyRatesService implements ExchangeRateProvider {
   load(): Observable<readonly CurrencyLookup[]> {
     if (!this.request$) {
       this.request$ = this.lookups.getCurrencies().pipe(
+        map(list => list.filter(c => isSearchCurrency(c.code))),
         tap(list => {
           this.currencies.set(list);
           this.loaded.set(true);

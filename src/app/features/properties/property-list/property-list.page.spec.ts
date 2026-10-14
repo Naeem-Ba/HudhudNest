@@ -414,6 +414,13 @@ describe('PropertyListPage', () => {
       }));
     });
 
+    it('✅ رابط قديم بعملة لم تعد قابلة للبحث (TRY) يعود إلى العملة الافتراضية بدل أن يرفضه الخادم', () => {
+      const instance = createComponent({ minPrice: '100', currency: 'try' });
+
+      expect(instance.currencyCode).toBe('USD');
+      expect(lastRequest().currencyCode).toBe('USD');
+    });
+
     it('✅ رابط يحمل currency=eur يُقرأ بأحرف كبيرة ويُرسَل مع السعر', () => {
       const instance = createComponent({ minPrice: '100', currency: 'eur' });
 

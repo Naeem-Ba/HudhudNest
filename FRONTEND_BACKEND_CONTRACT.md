@@ -964,9 +964,9 @@ transaction الحصّة/القفل الاستشاري — فحوصات رخيص
 
 | الغرض | النقطة | ملاحظات |
 |---|---|---|
-| قائمة العملات | `GET /lookups/currencies` | عامة. `[{ code, nameEn, nameAr, symbol, decimalPlaces, exchangeRateToUsd, rateUpdatedAt, isBase }]`، الأساس (USD) أولًا. `exchangeRateToUsd` = وحدات العملة لكل دولار، تقريبي. |
+| قائمة العملات | `GET /lookups/currencies` | عامة. `[{ code, nameEn, nameAr, symbol, decimalPlaces, exchangeRateToUsd, rateUpdatedAt, isBase }]`، الأساس (USD) أولًا. **ثلاث عملات فقط: USD وEUR وSYP**، بأسعار ثابتة مثبّتة (2026-10-14) ريثما تُربط بمصدر تسعير خارجي. `exchangeRateToUsd` = وحدات العملة لكل دولار، تقريبي. |
 | تحديث سعر عملة | `PUT /admin/currencies/{code}` | مدير فقط، لا تستعمله الواجهة العامة. |
-| فلتر السعر | `GET /properties?minPrice&maxPrice&currencyCode` | المدى مكتوب بهذه العملة ويطابق كل إعلان سعره بعد تحويله داخل المدى أيًّا كانت عملته. بلا `currencyCode` تُقارَن الأرقام كما هي. الواجهة ترسل `currencyCode` (و`?currency=` في الرابط) **فقط** مع وجود حدّ سعر. |
+| فلتر السعر | `GET /properties?minPrice&maxPrice&currencyCode` | المدى مكتوب بهذه العملة ويطابق كل إعلان سعره بعد تحويله داخل المدى أيًّا كانت عملته. بلا `currencyCode` تُقارَن الأرقام كما هي. أي عملة غير USD/EUR/SYP تُرفض بـ `422`، والإعلان المسعَّر بعملة أخرى يطابق نفسها فقط ولا يُحوَّل. الواجهة ترسل `currencyCode` (و`?currency=` في الرابط) **فقط** مع وجود حدّ سعر. |
 | الفرز بالسعر | `sortBy=Price` + `sortDescending` | سعر البيع للبيع والإيجار للإيجار بعملة موحّدة، والفارغ أخيرًا. يتطلب `listingType=ForSale\|ForRent` وإلا `422`؛ لذلك تعطّل الواجهة الخيار تحت «الكل». |
 
 **دورة الحالة** (`status` يصل نصًا: `Available|Reserved|Sold|Rented|Archived|Expired`)
