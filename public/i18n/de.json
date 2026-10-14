@@ -660,7 +660,7 @@
     "DEPOSIT_INVALID": "Die Kaution muss eine positive Zahl sein.",
     "HEATING": "Heizung",
     "INVALID_COUNTRY_CODE": "Ungültiger Ländercode.",
-    "INVALID_CURRENCY_CODE": "Ungültiger Währungscode.",
+    "INVALID_CURRENCY_CODE": "Wählen Sie US-Dollar, Euro oder Syrisches Pfund; andere Währungen werden nicht mehr unterstützt. Wenn Sie die Währung einer älteren Anzeige ändern, geben Sie den Preis in der neuen Währung erneut ein.",
     "REGION_PLACEHOLDER": "z. B. Damaskus - Al-Mazzeh",
     "VALIDATION_ERROR": "Bitte überprüfen Sie die erforderlichen Felder.",
     "WARM_RENT_BELOW_COLD_RENT": "Die Warmmiete darf nicht niedriger als die Kaltmiete sein.",

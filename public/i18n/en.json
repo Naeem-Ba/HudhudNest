@@ -660,7 +660,7 @@
     "DEPOSIT_INVALID": "Deposit must be a positive number.",
     "HEATING": "Heating",
     "INVALID_COUNTRY_CODE": "Invalid country code.",
-    "INVALID_CURRENCY_CODE": "Invalid currency code.",
+    "INVALID_CURRENCY_CODE": "Choose US dollar, euro or Syrian pound; other currencies are no longer supported. When you change the currency of an older listing, enter the price again in the new currency.",
     "REGION_PLACEHOLDER": "e.g. Damascus - Al-Mazzeh",
     "VALIDATION_ERROR": "Please review the required fields.",
     "WARM_RENT_BELOW_COLD_RENT": "Warm rent cannot be lower than cold rent.",
