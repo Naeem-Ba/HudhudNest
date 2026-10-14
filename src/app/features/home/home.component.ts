@@ -19,6 +19,7 @@ import { LanguageService } from '../../core/services/language.service';
 import { MetaService } from '../../core/services/meta.service';
 import { PropertyShareUrlService } from '../../core/sharing/property-share-url.service';
 import { formatListingPrice, primaryListingPrice } from '../../shared/utils/listing-price';
+import { isReservedListing } from '../../shared/utils/listing-status';
 
 /** خيارات سقف السعر بحقل البحث — تُرسَل كـ maxPrice لصفحة النتائج. */
 interface HeroPriceOption {
@@ -40,6 +41,9 @@ interface HeroPriceOption {
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
+
+  /** A reserved listing stays on the page, tagged and drawn lighter (P7-D08). */
+  readonly isReserved = isReservedListing;
 
   private readonly propertyApiService = inject(PropertyApiService);
   private readonly lookupsApi = inject(LookupsApiService);

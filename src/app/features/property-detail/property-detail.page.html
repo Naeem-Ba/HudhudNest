@@ -121,6 +121,14 @@
               <span aria-hidden="true">⭐</span>
               {{ 'PROPERTY.FEATURED' | translate }}
             </span>
+            <!-- حالة الإعلان: محجوز / مباع / مؤجر (لا يظهر شيء لإعلان متاح). -->
+            <span class="badge" *ngIf="statusTagKey(p) as tagKey" [ngClass]="statusBadgeClass(p)" data-testid="status-badge">
+              {{ tagKey | translate }}
+            </span>
+          </div>
+
+          <div class="status-notice" *ngIf="statusNoticeKey(p) as noticeKey" role="status" data-testid="status-notice">
+            {{ noticeKey | translate }}
           </div>
 
           <!-- Title -->
@@ -161,7 +169,7 @@
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                 <rect x="1" y="1" width="12" height="12" rx="1" stroke="currentColor" stroke-width="1.3"/>
               </svg>
-              {{ p.area }} م²
+              {{ p.area }} {{ 'COMMON.area_unit' | translate }}
             </div>
             <div class="spec-chip" *ngIf="p.rooms">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -176,9 +184,9 @@
               </svg>
               {{ 'PROPERTY_DETAIL.FLOOR' | translate }} {{ p.floor }}
             </div>
-            <div class="spec-chip" *ngIf="p.hasBalcony">🏡 شرفة</div>
-            <div class="spec-chip" *ngIf="p.hasElevator">🛗 مصعد</div>
-            <div class="spec-chip" *ngIf="p.hasParkingSpace">🚗 مواقف</div>
+            <div class="spec-chip" *ngIf="p.hasBalcony">🏡 {{ 'PROPERTY.HAS_BALCONY' | translate }}</div>
+            <div class="spec-chip" *ngIf="p.hasElevator">🛗 {{ 'PROPERTY.HAS_ELEVATOR' | translate }}</div>
+            <div class="spec-chip" *ngIf="p.hasParkingSpace">🚗 {{ 'PROPERTY.HAS_PARKING' | translate }}</div>
           </div>
 
           <!-- Rating -->
@@ -608,7 +616,7 @@
               </div>
               <div class="info-row" *ngIf="p.area">
                 <dt>{{ 'PROPERTY_DETAIL.AREA' | translate }}</dt>
-                <dd>{{ p.area }} م²</dd>
+                <dd>{{ p.area }} {{ 'COMMON.area_unit' | translate }}</dd>
               </div>
               <div class="info-row" *ngIf="p.rooms">
                 <dt>{{ 'PROPERTY_DETAIL.ROOMS' | translate }}</dt>

@@ -202,6 +202,26 @@
   }
 }
 
+.currency-select {
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+  margin-top: .5rem;
+}
+
+.filter-hint {
+  margin: 0;
+  font-size: .75rem;
+  color: var(--gray-500);
+}
+
+.filter-error {
+  margin: .35rem 0 0;
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--danger);
+}
+
 .range-inputs {
   display: flex;
   align-items: center;
@@ -414,6 +434,13 @@
     padding-top: .35rem;
     border-top: 1px solid var(--gray-100);
     margin-top: .15rem;
+  }
+
+  /* السعر المكافئ التقريبي بعملة الفلتر لإعلان معلن بعملة أخرى (≈): يوضح لماذا ظهر ضمن النتائج. */
+  &__equivalent {
+    font-size: .75rem;
+    font-weight: 600;
+    color: var(--gray-500);
   }
 
   &__price {

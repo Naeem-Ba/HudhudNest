@@ -110,6 +110,9 @@ export class SavedSearchesPage implements OnInit {
     if (search.listingType) queryParams['listingType'] = search.listingType;
     if (search.minPrice != null) queryParams['minPrice'] = String(search.minPrice);
     if (search.maxPrice != null) queryParams['maxPrice'] = String(search.maxPrice);
+    if ((search.minPrice != null || search.maxPrice != null) && search.currencyCode) {
+      queryParams['currency'] = search.currencyCode;
+    }
 
     void this.router.navigate(['/properties'], { queryParams });
   }

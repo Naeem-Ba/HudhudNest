@@ -124,6 +124,18 @@ describe('PropertyFormPage', () => {
       expect(component.isSale).toBeFalse();
     });
 
+    it('✅ التسعير بالدولار واليورو والليرة السورية فقط؛ غيرها يفشل التحقق', () => {
+      for (const code of ['USD', 'EUR', 'SYP']) {
+        component.form.patchValue({ currencyCode: code });
+        expect(component.form.errors?.['invalidCurrencyCode']).toBeUndefined();
+      }
+
+      for (const code of ['TRY', 'AED', 'GBP']) {
+        component.form.patchValue({ currencyCode: code });
+        expect(component.form.errors?.['invalidCurrencyCode']).toBeTrue();
+      }
+    });
+
     it('❌ الإيجار بدون تاريخ بداية/نهاية/مدة يفشل التحقق', () => {
       component.form.patchValue({ coldRent: 500, rentalStartDate: null, rentalEndDate: null, rentalDurationType: null });
 
