@@ -2,18 +2,8 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Observable, catchError, map, of, shareReplay, tap } from 'rxjs';
 
 import { CurrencyLookup, LookupsApiService } from '../api/lookups-api.service';
+import { isMarketCurrency } from './market-currencies';
 import { ExchangeRate, ExchangeRateProvider } from './price-display';
-
-/**
- * The currencies a visitor can search by: the dollar, the euro and the Syrian pound. The server
- * offers only these (GET /api/lookups/currencies) and refuses any other with 422; the list is
- * filtered here too so an older server or a stale bookmark cannot put another one in the selector.
- */
-export const SEARCH_CURRENCY_CODES: readonly string[] = ['USD', 'EUR', 'SYP'];
-
-export function isSearchCurrency(code: string | null | undefined): boolean {
-  return SEARCH_CURRENCY_CODES.includes((code ?? '').trim().toUpperCase());
-}
 
 /**
  * The currencies the product prices in and their administrator-maintained rates
@@ -38,7 +28,8 @@ export class CurrencyRatesService implements ExchangeRateProvider {
   load(): Observable<readonly CurrencyLookup[]> {
     if (!this.request$) {
       this.request$ = this.lookups.getCurrencies().pipe(
-        map(list => list.filter(c => isSearchCurrency(c.code))),
+        // The server offers only the market currencies; filtered here too so an older server cannot add others.
+        map(list => list.filter(c => isMarketCurrency(c.code))),
         tap(list => {
           this.currencies.set(list);
           this.loaded.set(true);

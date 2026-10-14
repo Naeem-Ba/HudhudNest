@@ -2,7 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { firstValueFrom, of, throwError } from 'rxjs';
 
 import { CurrencyLookup, LookupsApiService } from '../api/lookups-api.service';
-import { CurrencyRatesService, isSearchCurrency } from './currency-rates.service';
+import { CurrencyRatesService } from './currency-rates.service';
+import { isMarketCurrency } from './market-currencies';
 
 function currency(code: string, rate: number, isBase = false): CurrencyLookup {
   return { code, nameEn: code, nameAr: code, symbol: code, decimalPlaces: 2, exchangeRateToUsd: rate, rateUpdatedAt: '2026-10-01T00:00:00Z', isBase };
@@ -39,9 +40,9 @@ describe('CurrencyRatesService', () => {
     expect(service.convert(10, 'USD', 'TRY')).toBeNull();
   });
 
-  it('knows which currencies can be searched by', () => {
-    expect(['usd', 'EUR', ' syp '].every(isSearchCurrency)).toBeTrue();
-    expect(['TRY', 'AED', 'GBP', '', null, undefined].some(isSearchCurrency)).toBeFalse();
+  it('knows which currencies the product prices and searches in', () => {
+    expect(['usd', 'EUR', ' syp '].every(isMarketCurrency)).toBeTrue();
+    expect(['TRY', 'AED', 'GBP', '', null, undefined].some(isMarketCurrency)).toBeFalse();
   });
 
   it('gives no figure for a currency without a rate or before the rates are loaded', () => {
