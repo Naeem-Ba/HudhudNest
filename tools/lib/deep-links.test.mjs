@@ -24,7 +24,9 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const read = relative => readFileSync(join(root, relative), 'utf8');
 const config = JSON.parse(read('deep-links.config.json'));
 
-const FP_A = config.android.sha256CertFingerprints[0];
+// [0] = upload key (sideloaded/CI builds), the rest = Play App Signing key(s) of the Play-distributed app.
+const CONFIGURED = config.android.sha256CertFingerprints;
+const FP_A = CONFIGURED[0];
 const FP_B = 'AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99';
 
 // ---- builders --------------------------------------------------------------------------------------------
@@ -43,12 +45,12 @@ test('assetlinks.json targets the Android package with the configured certificat
   assert.deepEqual(entry.relation, ['delegate_permission/common.handle_all_urls']);
   assert.equal(entry.target.namespace, 'android_app');
   assert.equal(entry.target.package_name, 'com.hudhudnest.app');
-  assert.deepEqual(entry.target.sha256_cert_fingerprints, [FP_A]);
+  assert.deepEqual(entry.target.sha256_cert_fingerprints, CONFIGURED);
 });
 
 test('extra fingerprints (Play App Signing) are merged, normalised and de-duplicated', () => {
   const env = { ANDROID_SHA256_CERT_FINGERPRINTS: `${FP_B.toLowerCase()}, ${FP_A} ${FP_B}` };
-  assert.deepEqual(resolveAndroidFingerprints(config, env), [FP_A, FP_B]);
+  assert.deepEqual(resolveAndroidFingerprints(config, env), [...CONFIGURED, FP_B]);
 });
 
 test('an invalid fingerprint fails loudly instead of publishing a file Android would silently reject', () => {
