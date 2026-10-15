@@ -23,7 +23,8 @@
     "FILTER_TEXT_NOT_ALLOWED": "Der Suchtext enthält unzulässige Zeichen.",
     "FILTER_SORT_PRICE_NEEDS_TYPE": "Wählen Sie „Zur Miete“ oder „Zum Kauf“, um nach Preis zu sortieren.",
     "GEO_COORDS_REQUIRED": "Geben Sie zuerst Ihren Standort frei, um in der Nähe zu suchen.",
-    "GEO_COORDS_INVALID": "Die Standortkoordinaten sind ungültig."
+    "GEO_COORDS_INVALID": "Die Standortkoordinaten sind ungültig.",
+    "UNSUPPORTED_MEDIA": "Die Anfrage konnte nicht in einem vom Server akzeptierten Format gesendet werden. Laden Sie die Seite neu und versuchen Sie es erneut; bei wiederholtem Auftreten wenden Sie sich an den Support."
   },
   "COMMON": {
     "SAVE": "Speichern",
@@ -2396,7 +2397,15 @@
       "PROGRESS_ARIA": "{{count}} von {{max}} beigetreten",
       "PROGRESS_LABEL": "{{count}} von {{max}} Büros sind bereits beigetreten",
       "CTA": "Büro jetzt registrieren",
-      "CTA_ARIA": "Ihr Immobilienbüro für dieses Angebot registrieren"
+      "CTA_ARIA": "Ihr Immobilienbüro für dieses Angebot registrieren",
+      "ENDS_ON": "Angebot endet am {{date}}",
+      "LOADING_ARIA": "Angebote werden geladen",
+      "EMPTY_TITLE": "Derzeit sind keine Angebote veröffentlicht",
+      "EMPTY_TEXT": "Melden Sie Ihr Interesse an – wir informieren Sie, sobald das erste Angebot startet.",
+      "EMPTY_CTA": "Interesse anmelden",
+      "ERROR_TITLE": "Die Angebote konnten gerade nicht geladen werden",
+      "ERROR_TEXT": "Der Rest der Seite funktioniert normal. Sie können es erneut versuchen.",
+      "RETRY": "Erneut versuchen"
     },
     "PROBLEM_SOLUTION": {
       "EYEBROW": "Warum HudhudNest?",
@@ -3038,5 +3047,25 @@
     "CONFIRM_ARCHIVED": "Ein archiviertes Inserat ist für die Öffentlichkeit nicht sichtbar; nur Sie sehen es. Fortfahren?",
     "CHANGED": "Status des Inserats aktualisiert.",
     "CHANGE_ERROR": "Der Status des Inserats konnte nicht aktualisiert werden."
+  },
+  "OFFER_COMMON": {
+    "DISCOUNT_PERCENT": "{{value}} % Rabatt",
+    "DISCOUNT_FIXED_USD": "{{value}} $ Rabatt",
+    "DISCOUNT_FREE_MONTH": "1 Monat gratis",
+    "DISCOUNT_FREE_MONTHS": "{{value}} Monate gratis"
+  },
+  "OFFER_SHARE": {
+    "TITLE": "Angebot zum Teilen vorbereiten",
+    "CLOSE": "Schließen",
+    "HONESTY": "Dies sind Werkzeuge zum Vorbereiten und Teilen: Sie öffnen einen Plattform-Dialog oder kopieren den Text und veröffentlichen selbst nichts. Direktes Veröffentlichen über verbundene Konten gibt es nur für Immobilienanzeigen (Tab „Social Distribution“). Der Link öffnet die Landingpage, die das zum Besuchszeitpunkt aktive Angebot zeigt.",
+    "NOT_VISIBLE": "Ein Angebot, das Besucher nicht sehen können (Entwurf, pausiert, beendet, noch nicht gestartet oder ausgeschöpft), kann nicht geteilt werden. Aktivieren Sie es zuerst und prüfen Sie die Sichtbarkeit.",
+    "LANGUAGE": "Sprache des Beitrags",
+    "COPY_TEXT": "Text kopieren",
+    "TEXT_COPIED": "Beitragstext kopiert.",
+    "DIALOG_OPENED": "Der Teilen-Dialog wurde geöffnet. Es wurde noch nichts veröffentlicht – ein Beitrag entsteht erst nach Ihrer Bestätigung in der Plattform.",
+    "ERROR_BUILD": "Der Beitragstext konnte nicht vorbereitet werden. Bitte versuchen Sie es erneut.",
+    "DEADLINE": "Angebot endet am {{date}}.",
+    "SLOTS_LEFT": "Verbleibende Plätze: {{count}}.",
+    "CTA": "Jetzt Interesse anmelden:"
   }
 }

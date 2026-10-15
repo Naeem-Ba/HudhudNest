@@ -114,6 +114,15 @@
           </span>
         </div>
 
+        <!-- "نشط" لا تعني "ظاهر": العرض النشط يبقى مخفيًا قبل بدايته أو بعد استنفاد حدّه الأقصى. -->
+        <p
+          *ngIf="offer.status === 'Active'"
+          class="offer-tile__visibility"
+          [class.offer-tile__visibility--on]="offer.isPubliclyVisible"
+        >
+          {{ offer.isPubliclyVisible ? 'ظاهر للزوار الآن في صفحة الهبوط' : 'نشط لكنه غير ظاهر للزوار الآن (قبل البداية أو بعد الانتهاء/استنفاد الحد)' }}
+        </p>
+
         <p class="offer-tile__discount">{{ discountTypeLabel(offer.discountType) }} — {{ formatDiscount(offer) }}</p>
         <p *ngIf="offer.description" class="offer-tile__desc">{{ offer.description }}</p>
 
@@ -157,7 +166,22 @@
           >
             إنهاء
           </button>
+          <button
+            *ngIf="offer.isPubliclyVisible"
+            type="button"
+            class="btn btn--outline btn--sm"
+            [attr.aria-expanded]="sharingOfferId() === offer.id"
+            (click)="toggleShare(offer)"
+          >
+            مشاركة
+          </button>
         </div>
+
+        <app-offer-share-panel
+          *ngIf="sharingOfferId() === offer.id"
+          [offer]="offer"
+          (closed)="sharingOfferId.set(null)"
+        ></app-offer-share-panel>
       </article>
     </div>
   </div>

@@ -27,7 +27,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { interval } from 'rxjs';
 import {
@@ -40,9 +40,10 @@ import {
 
 import { LeadService } from '../../core/services/lead.service';
 import { OffersApiService } from '../../core/api/offers-api.service';
+import { MarketingEventsApiService } from '../../core/api/marketing-events-api.service';
 import { MetaService } from '../../core/services/meta.service';
 import { SYRIA_CITY_OPTIONS, USER_TYPE_OPTIONS, UserType } from '../../core/models/lead.model';
-import { Offer, formatOfferDiscount, remainingSlots } from '../../core/models/offer.model';
+import { Offer } from '../../core/models/offer.model';
 
 // ── Validator: رقم هاتف مرن يقبل سوريا والدول العربية ──
 function phoneValidator(ctrl: AbstractControl): ValidationErrors | null {
@@ -68,6 +69,8 @@ export class LandingPageComponent implements OnInit {
   private readonly fb         = inject(FormBuilder);
   private readonly leadSvc    = inject(LeadService);
   private readonly offersApi  = inject(OffersApiService);
+  private readonly events     = inject(MarketingEventsApiService);
+  private readonly route      = inject(ActivatedRoute);
   private readonly metaSvc    = inject(MetaService);
   private readonly translate  = inject(TranslateService);
   private readonly cd         = inject(ChangeDetectorRef);
@@ -80,6 +83,9 @@ export class LandingPageComponent implements OnInit {
 
   // ── عرض "أول 100 مكتب عقاري" — null يعني: لا عرض نشط، أخفِ القسم بالكامل ──
   readonly activeOffer = signal<Offer | null>(null);
+
+  /** loading → هيكل تحميل؛ ready → البطاقة؛ empty → لا عروض منشورة؛ error → تعذّر التحميل (مع إعادة محاولة). */
+  readonly offerState = signal<'loading' | 'ready' | 'empty' | 'error'>('loading');
 
   // ── حالات الـ Form ──
   readonly formState = signal<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -96,6 +102,7 @@ export class LandingPageComponent implements OnInit {
 
   // ── منع الإرسال المتكرر ──
   private submitting = false;
+  private viewTracked = false;
 
   // ── Reactive Form ──
   readonly form = this.fb.nonNullable.group({
@@ -116,15 +123,7 @@ export class LandingPageComponent implements OnInit {
   ngOnInit(): void {
     this.metaSvc.setLandingMeta();
 
-    // فشل تحميل العرض (شبكة، 204 لا يوجد عرض، ...) لا يجب أن يكسر بقية
-    // الصفحة أبدًا — OffersApiService.getActiveOffer() يُرجع null في كل
-    // هذه الحالات، فالقسم يختفي بهدوء بدل إظهار خطأ.
-    this.offersApi.getActiveOffer()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(offer => {
-        this.activeOffer.set(offer);
-        this.cd.markForCheck();
-      });
+    this.loadOffer();
 
     this.startTaglineRotation();
   }
@@ -146,6 +145,34 @@ export class LandingPageComponent implements OnInit {
       });
   }
 
+  /** فشل التحميل لا يكسر بقية الصفحة: يظهر قسم العروض فقط بحالة خطأ وزر إعادة محاولة. */
+  loadOffer(): void {
+    this.offerState.set('loading');
+    this.offersApi.getActiveOfferState()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(state => {
+        const offerId = state.status === 'ready' ? state.offer.id : undefined;
+        if (state.status === 'ready') {
+          this.activeOffer.set(state.offer);
+          this.metaSvc.setLandingMeta({ offerName: state.offer.name, offerDescription: state.offer.description });
+        } else {
+          this.activeOffer.set(null);
+        }
+        // مشاهدة واحدة لكل زيارة: إعادة المحاولة لا تُحتسب مشاهدة جديدة.
+        if (!this.viewTracked) {
+          this.viewTracked = true;
+          this.events.track('PageView', { offerId, campaign: this.campaign() });
+        }
+        this.offerState.set(state.status);
+        this.cd.markForCheck();
+      });
+  }
+
+  /** وسم الحملة القادم من رابط المشاركة (utm_campaign) — للإسناد فقط، بلا بيانات شخصية. */
+  private campaign(): string | null {
+    return this.route.snapshot.queryParamMap.get('utm_campaign');
+  }
+
   toggleFaq(index: number): void {
     this.openFaqIndex.set(this.openFaqIndex() === index ? null : index);
   }
@@ -158,16 +185,39 @@ export class LandingPageComponent implements OnInit {
   /** زر CTA داخل قسم العرض: يهيّئ النموذج لمكتب عقاري وينتقل إليه مباشرة —
    *  offerId الفعلي يُرسَل تلقائيًا من submitForm() عبر activeOffer(). */
   scrollToFormForOffer(): void {
+    this.events.track('CtaClick', { offerId: this.activeOffer()?.id, campaign: this.campaign() });
     this.form.patchValue({ userType: 'agency' });
     this.scrollToForm();
   }
 
+  /** نص الخصم بلغة الواجهة الحالية (مفاتيح OFFER_COMMON.*). */
   offerDiscountText(offer: Offer): string {
-    return formatOfferDiscount(offer);
+    switch (offer.discountType) {
+      case 'Percentage':
+        return this.translate.instant('OFFER_COMMON.DISCOUNT_PERCENT', { value: offer.discountValue });
+      case 'FixedAmountUsd':
+        return this.translate.instant('OFFER_COMMON.DISCOUNT_FIXED_USD', { value: offer.discountValue });
+      case 'FreeMonths':
+        return this.translate.instant(
+          offer.discountValue === 1 ? 'OFFER_COMMON.DISCOUNT_FREE_MONTH' : 'OFFER_COMMON.DISCOUNT_FREE_MONTHS',
+          { value: offer.discountValue },
+        );
+      default:
+        return '';
+    }
   }
 
-  offerRemainingSlots(offer: Offer): number | null {
-    return remainingSlots(offer);
+  /** تاريخ انتهاء العرض بلغة الواجهة، أو null إن لم يكن له تاريخ ثابت. */
+  offerEndsOn(offer: Offer): string | null {
+    if (!offer.endsAtUtc) return null;
+    const lang = this.translate.currentLang || this.translate.defaultLang || 'ar';
+    let date: string;
+    try {
+      date = new Intl.DateTimeFormat(lang, { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(offer.endsAtUtc));
+    } catch {
+      date = offer.endsAtUtc.slice(0, 10);
+    }
+    return this.translate.instant('LANDING.OFFER.ENDS_ON', { date });
   }
 
   /** نص aria-label لشريط تقدّم العرض — "تم الانضمام: X من أصل Y". */

@@ -139,10 +139,15 @@ export class MetaService {
   /**
    * Meta Tags المُعدَّة مسبقاً لصفحة الهبوط
    */
-  setLandingMeta(): void {
+  setLandingMeta(offer?: { offerName: string; offerDescription?: string | null }): void {
+    // With a live offer the tags describe it (browsers/crawlers that run JS see this; crawlers
+    // that don't get the same text from the social-crawler edge function for /landing).
+    const description = offer
+      ? [offer.offerName, offer.offerDescription].filter((part): part is string => !!part?.trim()).join(' — ')
+      : 'ابحث عن شقق وعقارات للبيع والإيجار في سوريا بسهولة. صور واضحة، معلومات منظمة، وتواصل مباشر مع المالك أو المكتب العقاري.';
     this.setMeta({
       title:       'منصة عقارية رقمية في سوريا',
-      description: 'ابحث عن شقق وعقارات للبيع والإيجار في سوريا بسهولة. صور واضحة، معلومات منظمة، وتواصل مباشر مع المالك أو المكتب العقاري.',
+      description,
       keywords:    'عقارات سوريا, شقق للإيجار في دمشق, عقارات للبيع في حلب, منصة عقارية سوريا, بيع وشراء العقارات',
       // Was '/assets/images/og-cover.jpg', a file that has never existed in this project (no
       // assets/images directory at all) -- a broken og:image means a blank/failed preview image

@@ -23,6 +23,8 @@
 //   - anyone else (real visitors, unrecognized bots) → `context.next()`, i.e. serve the normal
 //     Angular index.html exactly as before — this function is otherwise fully transparent.
 //
+// The same function also serves /landing (marketing offer previews, see respondForLandingCrawler).
+//
 // This keeps the SPA architecture completely unchanged for actual users; it only intercepts
 // the narrow slice of traffic that can't run the SPA in the first place.
 //
@@ -46,8 +48,10 @@ import {
   isSocialCrawlerUserAgent,
   isSearchEngineCrawlerUserAgent,
   extractPropertyIdFromPath,
+  isLandingPath,
   resolveCanonicalOrigin,
   buildPropertyMetaHtml,
+  buildOfferMetaHtml,
   buildNotFoundHtml
 } from './lib/social-crawler.mjs';
 
@@ -84,6 +88,43 @@ async function respondForSearchEngine(propertyId, apiBaseUrl, context) {
   return context.next();
 }
 
+async function respondForLandingCrawler(request, context) {
+  const apiBaseUrl = (Netlify.env.get('API_URL') || DEFAULT_API_BASE_URL).replace(/\/+$/, '');
+  const canonicalOrigin = resolveCanonicalOrigin(request.url);
+
+  try {
+    const response = await fetch(`${apiBaseUrl}/offers/active`, {
+      headers: { accept: 'application/json' },
+      signal: AbortSignal.timeout(SEARCH_ENGINE_STATUS_CHECK_TIMEOUT_MS)
+    });
+
+    if (response.status !== 200) {
+      return context.next();
+    }
+
+    const html = buildOfferMetaHtml({
+      offer: await response.json(),
+      canonicalUrl: `${canonicalOrigin}/landing`,
+      fallbackImageUrl: `${canonicalOrigin}${FALLBACK_IMAGE_PATH}`
+    });
+
+    if (!html) {
+      return context.next();
+    }
+
+    return new Response(html, {
+      status: 200,
+      headers: {
+        'content-type': 'text/html; charset=utf-8',
+        // Short: a paused/ended offer must stop being previewed within minutes.
+        'cache-control': 'public, max-age=300'
+      }
+    });
+  } catch {
+    return context.next();
+  }
+}
+
 export default async (request, context) => {
   const userAgent = request.headers.get('user-agent') ?? '';
   const isSocialCrawler = isSocialCrawlerUserAgent(userAgent);
@@ -97,6 +138,15 @@ export default async (request, context) => {
   }
 
   const url = new URL(request.url);
+
+  // /landing: a social crawler gets the live marketing offer's name/description as its preview.
+  // Anything short of a clean 200 with a usable offer (no offer = 204, backend down, timeout)
+  // falls through to the normal SPA, whose static tags describe the platform -- an offer
+  // preview must never turn into an error page.
+  if (isLandingPath(url.pathname)) {
+    return isSocialCrawler ? respondForLandingCrawler(request, context) : context.next();
+  }
+
   const propertyId = extractPropertyIdFromPath(url.pathname);
   if (!propertyId) {
     return context.next();
@@ -151,5 +201,5 @@ export default async (request, context) => {
 };
 
 export const config = {
-  path: '/properties/*'
+  path: ['/properties/*', '/landing']
 };

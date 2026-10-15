@@ -25,20 +25,6 @@ export interface Offer {
   terms?: string | null;
 }
 
-/** نص عربي مختصر لقيمة الخصم، بحسب نوعه — لا يفترض عملة أو مدة غير موجودة فعليًا. */
-export function formatOfferDiscount(offer: Offer): string {
-  switch (offer.discountType) {
-    case 'Percentage':
-      return `خصم ${offer.discountValue}%`;
-    case 'FixedAmountUsd':
-      return `خصم ${offer.discountValue}$`;
-    case 'FreeMonths':
-      return `${offer.discountValue} ${offer.discountValue === 1 ? 'شهر مجاني' : 'أشهر مجانية'}`;
-    default:
-      return '';
-  }
-}
-
 /** null إذا لم يكن للعرض حد أقصى حقيقي — لا نعرض عدّادًا مصطنعًا في هذه الحالة. */
 export function remainingSlots(offer: Offer): number | null {
   if (offer.maxRedemptions == null) return null;

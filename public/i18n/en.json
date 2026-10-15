@@ -23,7 +23,8 @@
     "FILTER_TEXT_NOT_ALLOWED": "The search text contains characters that are not allowed.",
     "FILTER_SORT_PRICE_NEEDS_TYPE": "Choose “For rent” or “For sale” to sort by price.",
     "GEO_COORDS_REQUIRED": "Share your location first to search nearby.",
-    "GEO_COORDS_INVALID": "The location coordinates are not valid."
+    "GEO_COORDS_INVALID": "The location coordinates are not valid.",
+    "UNSUPPORTED_MEDIA": "The request could not be sent in a format the server accepts. Refresh the page and try again; if it keeps happening, contact support."
   },
   "COMMON": {
     "SAVE": "Save",
@@ -2396,7 +2397,15 @@
       "PROGRESS_ARIA": "{{count}} of {{max}} joined so far",
       "PROGRESS_LABEL": "{{count}} of {{max}} offices have joined so far",
       "CTA": "Register your office now",
-      "CTA_ARIA": "Register your real-estate office for this offer"
+      "CTA_ARIA": "Register your real-estate office for this offer",
+      "ENDS_ON": "Offer ends on {{date}}",
+      "LOADING_ARIA": "Loading offers",
+      "EMPTY_TITLE": "No offers are published right now",
+      "EMPTY_TEXT": "Register your interest and we will let you know as soon as the first offer launches.",
+      "EMPTY_CTA": "Register your interest",
+      "ERROR_TITLE": "Offers could not be loaded right now",
+      "ERROR_TEXT": "The rest of the page works normally. You can try again.",
+      "RETRY": "Try again"
     },
     "PROBLEM_SOLUTION": {
       "EYEBROW": "Why HudhudNest?",
@@ -3038,5 +3047,25 @@
     "CONFIRM_ARCHIVED": "An archived listing is hidden from the public; only you can see it. Continue?",
     "CHANGED": "Listing status updated.",
     "CHANGE_ERROR": "Could not update the listing status."
+  },
+  "OFFER_COMMON": {
+    "DISCOUNT_PERCENT": "{{value}}% off",
+    "DISCOUNT_FIXED_USD": "${{value}} off",
+    "DISCOUNT_FREE_MONTH": "1 free month",
+    "DISCOUNT_FREE_MONTHS": "{{value}} free months"
+  },
+  "OFFER_SHARE": {
+    "TITLE": "Prepare the offer for sharing",
+    "CLOSE": "Close",
+    "HONESTY": "These are preparation and sharing tools: they open a platform dialog or copy the text, and publish nothing by themselves. Direct publishing through connected accounts exists for property listings only (the “Social distribution” tab). The link opens the landing page, which shows the offer that is live at the time of the visit.",
+    "NOT_VISIBLE": "An offer that visitors cannot see (draft, paused, ended, not started yet, or fully redeemed) cannot be shared. Activate it and make sure it is visible first.",
+    "LANGUAGE": "Post language",
+    "COPY_TEXT": "Copy text",
+    "TEXT_COPIED": "Post text copied.",
+    "DIALOG_OPENED": "The share dialog was opened. Nothing has been published yet — a post only exists once you confirm it inside the platform.",
+    "ERROR_BUILD": "Could not prepare the share text. Please try again.",
+    "DEADLINE": "Offer ends on {{date}}.",
+    "SLOTS_LEFT": "Spots left: {{count}}.",
+    "CTA": "Register your interest now:"
   }
 }

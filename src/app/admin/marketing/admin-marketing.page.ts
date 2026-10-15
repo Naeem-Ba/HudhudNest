@@ -11,6 +11,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal 
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { OfferSharePanelComponent } from './offer-share-panel.component';
 import { Observable } from 'rxjs';
 
 import {
@@ -86,7 +87,7 @@ const PAYMENT_MODEL_LABELS: Record<string, string> = {
   selector: 'app-admin-marketing',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, LoadingSpinnerComponent, EmptyStateComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, LoadingSpinnerComponent, EmptyStateComponent, OfferSharePanelComponent],
   templateUrl: './admin-marketing.page.html',
   styleUrls: ['./admin-marketing.page.scss'],
 })
@@ -106,6 +107,7 @@ export class AdminMarketingPage implements OnInit {
   readonly editingOfferId = signal<string | null>(null);
   readonly savingOffer = signal(false);
   readonly settingStatusId = signal<string | null>(null);
+  readonly sharingOfferId = signal<string | null>(null);
 
   readonly offerForm = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(150)]],
@@ -263,14 +265,15 @@ export class AdminMarketingPage implements OnInit {
         this.closeOfferForm();
         this.loadOffers();
       },
-      error: err => {
-        this.toast.error(err?.error?.message || 'تعذّر حفظ العرض. تحقق من البيانات وحاول مجددًا.');
-        this.savingOffer.set(false);
-      },
+      // ApiErrorInterceptor already shows the reason (translated); only release the button.
+      error: () => this.savingOffer.set(false),
     });
   }
 
-  changeOfferStatus(offer: AdminOfferDto, status: OfferStatus): void {
+  changeOfferStatus(offer: AdminOfferDto, status: Exclude<OfferStatus, 'Draft'>): void {
+    // A second click while the first request is in flight would send a second PUT.
+    if (this.settingStatusId() !== null) return;
+
     if (status === 'Ended') {
       const confirmed = confirm(`هل أنت متأكد من إنهاء العرض "${offer.name}"؟ لا يمكن التراجع عن هذا الإجراء.`);
       if (!confirmed) return;
@@ -280,18 +283,41 @@ export class AdminMarketingPage implements OnInit {
     this.api.setOfferStatus(offer.id, status)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => {
-          this.offers.update(items =>
-            items.map(o => (o.id === offer.id ? { ...o, status } : o))
-          );
-          this.toast.success('تم تحديث حالة العرض.');
+        next: updated => {
+          // The row shows what the server confirmed (status + isPubliclyVisible), not what the
+          // click asked for.
+          this.offers.update(items => items.map(o => (o.id === updated.id ? updated : o)));
+          if (this.sharingOfferId() === updated.id) this.sharingOfferId.set(null);
+          this.toast.success(this.statusSuccessMessage(updated));
           this.settingStatusId.set(null);
         },
         error: () => {
-          this.toast.error('تعذّر تحديث حالة العرض.');
+          // ApiErrorInterceptor already toasted the (translated) reason; a second toast here
+          // only repeated it. Re-read the list so the screen matches the database again.
           this.settingStatusId.set(null);
+          this.loadOffers();
         },
       });
+  }
+
+  toggleShare(offer: AdminOfferDto): void {
+    this.sharingOfferId.set(this.sharingOfferId() === offer.id ? null : offer.id);
+  }
+
+  /** Honest wording: "Active" is not the same as "visitors can see it". */
+  private statusSuccessMessage(offer: AdminOfferDto): string {
+    switch (offer.status) {
+      case 'Active':
+        return offer.isPubliclyVisible
+          ? 'تم تفعيل العرض وهو ظاهر الآن للزوار.'
+          : 'تم تفعيل العرض، لكنه لن يظهر للزوار قبل موعد بدايته.';
+      case 'Paused':
+        return 'تم إيقاف العرض مؤقتًا وأُخفي عن الزوار.';
+      case 'Ended':
+        return 'تم إنهاء العرض.';
+      default:
+        return 'تم تحديث حالة العرض.';
+    }
   }
 
   private toDatetimeLocal(date: Date): string {
