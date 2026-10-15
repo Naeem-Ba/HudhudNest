@@ -13,6 +13,13 @@
 
       <!-- ── نموذج التواصل ── -->
       <section class="contact-form-card">
+        <div *ngIf="serviceProviderIntent" class="alert alert--success provider-join-notice" role="note">
+          <span aria-hidden="true">🛠️</span>
+          <span>
+            {{ 'KONTAKT.SERVICE_PROVIDER_NOTICE' | translate }}
+            <a routerLink="/services/join">{{ 'KONTAKT.SERVICE_PROVIDER_NOTICE_LINK' | translate }}</a>
+          </span>
+        </div>
         <div *ngIf="messageText" class="alert" [class.alert--success]="success" [class.alert--danger]="!success" role="alert">
           <span aria-hidden="true">{{ success ? '✅' : '⚠️' }}</span>
           <span>{{ messageText }}</span>

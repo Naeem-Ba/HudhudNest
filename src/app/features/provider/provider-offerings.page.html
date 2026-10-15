@@ -1,0 +1,88 @@
+<section class="feature-page">
+  <a routerLink="/provider/requests" class="back-link">→ {{ 'PROVIDER.PROFILE.BACK' | translate }}</a>
+
+  <header class="page-header">
+    <h1>{{ 'PROVIDER.OFFERINGS.TITLE' | translate }}</h1>
+    <p>{{ 'PROVIDER.OFFERINGS.SUBTITLE' | translate }}</p>
+  </header>
+
+  <div *ngIf="loading()" class="state">{{ 'COMMON.LOADING' | translate }}</div>
+  <div *ngIf="!loading() && failed()" class="state error">
+    <p>{{ 'PROVIDER.OFFERINGS.LOAD_ERROR' | translate }}</p>
+    <button type="button" class="btn" (click)="load()">{{ 'COMMON.RETRY' | translate }}</button>
+  </div>
+
+  <ng-container *ngIf="!loading() && !failed() && provider() as p">
+    <p class="callout callout--warn" *ngIf="!canManage()">
+      {{ (p.status === 'Suspended' ? 'PROVIDER.OFFERINGS.SUSPENDED' : 'PROVIDER.OFFERINGS.REVOKED') | translate }}
+      <span *ngIf="p.statusReason">— {{ p.statusReason }}</span>
+    </p>
+
+    <section class="scope">
+      <div><strong>{{ 'PROVIDER.OFFERINGS.APPROVED_CATEGORIES' | translate }}</strong>
+        <span class="tag" *ngFor="let c of approved()">{{ ('SERVICES.CATEGORY.' + c) | translate }}</span>
+        <span class="muted" *ngIf="approved().length === 0">—</span></div>
+      <div><strong>{{ 'PROVIDER.OFFERINGS.COVERAGE' | translate }}</strong>
+        <span>{{ (p.coverageGovernorateIds?.length ?? 0) > 0 ? governorates.names(p.coverageGovernorateIds) : ('PROVIDER.OFFERINGS.COVERAGE_ALL' | translate) }}</span></div>
+      <p class="muted">{{ 'PROVIDER.OFFERINGS.SCOPE_NOTE' | translate }}</p>
+    </section>
+
+    <div class="toolbar">
+      <button type="button" class="btn success" [disabled]="!canManage() || approved().length === 0 || editing()" (click)="startCreate()">
+        {{ 'PROVIDER.OFFERINGS.ADD' | translate }}
+      </button>
+    </div>
+
+    <form class="panel" *ngIf="editing()" (ngSubmit)="save()" novalidate>
+      <h2>{{ (draft().id ? 'PROVIDER.OFFERINGS.EDIT' : 'PROVIDER.OFFERINGS.ADD') | translate }}</h2>
+      <label *ngIf="!draft().id">
+        {{ 'PROVIDER.OFFERINGS.CATEGORY' | translate }}
+        <select name="category" [ngModel]="draft().category" (ngModelChange)="patch({ category: $event })">
+          <option *ngFor="let c of approved()" [value]="c">{{ ('SERVICES.CATEGORY.' + c) | translate }}</option>
+        </select>
+      </label>
+      <label>
+        {{ 'PROVIDER.OFFERINGS.NAME' | translate }}
+        <input type="text" name="title" maxlength="150" [ngModel]="draft().title" (ngModelChange)="patch({ title: $event })">
+        <span class="err" *ngIf="titleError()">{{ 'PROVIDER.OFFERINGS.NAME_REQUIRED' | translate }}</span>
+      </label>
+      <label>
+        {{ 'PROVIDER.OFFERINGS.DESCRIPTION' | translate }}
+        <textarea rows="3" name="description" maxlength="2000" [ngModel]="draft().description" (ngModelChange)="patch({ description: $event })"></textarea>
+      </label>
+      <label>
+        {{ 'PROVIDER.OFFERINGS.DURATION' | translate }}
+        <input type="number" min="1" max="365" name="duration" [ngModel]="draft().estimatedDurationDays" (ngModelChange)="patch({ estimatedDurationDays: $event || null })">
+      </label>
+      <label class="check" *ngIf="draft().id">
+        <input type="checkbox" name="active" [ngModel]="draft().isActive" (ngModelChange)="patch({ isActive: $event })">
+        {{ 'PROVIDER.OFFERINGS.ACTIVE' | translate }}
+      </label>
+      <p class="muted">{{ 'PROVIDER.OFFERINGS.PRICE_NOTE' | translate }}</p>
+      <div class="actions">
+        <button type="submit" class="btn success" [disabled]="saving()">{{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}</button>
+        <button type="button" class="btn secondary" (click)="cancelEdit()">{{ 'COMMON.CANCEL' | translate }}</button>
+      </div>
+    </form>
+
+    <div class="state" *ngIf="offerings().length === 0 && !editing()">{{ 'PROVIDER.OFFERINGS.EMPTY' | translate }}</div>
+
+    <ul class="cards">
+      <li class="card" *ngFor="let o of offerings(); trackBy: trackById">
+        <div class="card__main">
+          <strong>{{ o.title }}</strong>
+          <span class="tag">{{ ('SERVICES.CATEGORY.' + o.category) | translate }}</span>
+          <span class="tag" [class.tag--off]="!o.isActive">{{ (o.isActive ? 'PROVIDER.OFFERINGS.LIVE' : 'PROVIDER.OFFERINGS.HIDDEN') | translate }}</span>
+          <span class="tag tag--off" *ngIf="!isApproved(o.category)">{{ 'PROVIDER.OFFERINGS.NOT_APPROVED' | translate }}</span>
+        </div>
+        <p class="muted" *ngIf="o.description">{{ o.description }}</p>
+        <div class="actions">
+          <button type="button" class="btn secondary" [disabled]="!canManage() || editing()" (click)="startEdit(o)">{{ 'PROVIDER.OFFERINGS.EDIT' | translate }}</button>
+          <button type="button" class="btn secondary" [disabled]="saving() || !canManage() || (!o.isActive && !isApproved(o.category))" (click)="toggleActive(o)">
+            {{ (o.isActive ? 'PROVIDER.OFFERINGS.HIDE' : 'PROVIDER.OFFERINGS.SHOW') | translate }}
+          </button>
+        </div>
+      </li>
+    </ul>
+  </ng-container>
+</section>

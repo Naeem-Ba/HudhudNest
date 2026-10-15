@@ -1,13 +1,17 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
+import { PropertyApiService } from '../../core/api/property-api.service';
+import { ServiceOfferingService } from '../../core/api/service-offering.service';
 import { ServiceRequestService } from '../../core/api/service-request.service';
 import { AuthService } from '../../core/auth/auth.service';
-import { CANCELLABLE_STATUSES, ServiceRequestDto, ServiceRequestStatus, canReview } from '../../core/models/service.model';
+import { Property } from '../../core/models/property.model';
+import { ServiceCategoryAvailabilityDto } from '../../core/models/provider-onboarding.model';
+import { CANCELLABLE_STATUSES, ServiceCategory, ServiceRequestDto, ServiceRequestStatus, canReview } from '../../core/models/service.model';
 import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
@@ -20,6 +24,9 @@ import { ToastService } from '../../shared/services/toast.service';
 })
 export class MyServiceRequestsPage implements OnInit {
   private readonly requestsApi = inject(ServiceRequestService);
+  private readonly offeringsApi = inject(ServiceOfferingService);
+  private readonly propertyApi = inject(PropertyApiService);
+  private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
@@ -42,7 +49,65 @@ export class MyServiceRequestsPage implements OnInit {
     return status === 'All' ? this.requests() : this.requests().filter(item => item.status === status);
   });
 
-  ngOnInit(): void { this.load(); }
+  // ── اكتشف الخدمات ─────────────────────────────────────────────────────
+  // Categories come from what is really bookable (GET /ServiceOfferings/categories/availability),
+  // not from a fixed list. Choosing one only moves the user toward a property; the request itself
+  // is created on the property page, when they press submit.
+  readonly availability = signal<ServiceCategoryAvailabilityDto[]>([]);
+  readonly availabilityLoading = signal(false);
+  readonly availabilityFailed = signal(false);
+  readonly discoverCategory = signal<ServiceCategory | null>(null);
+  readonly myProperties = signal<Property[] | null>(null);
+  readonly propertiesLoading = signal(false);
+  readonly propertiesFailed = signal(false);
+
+  /** Own listings the property page can show (it serves published listings only). */
+  readonly requestableProperties = computed(() =>
+    (this.myProperties() ?? []).filter(property => property.isPublished !== false));
+
+  ngOnInit(): void {
+    this.load();
+    this.loadAvailability();
+  }
+
+  loadAvailability(): void {
+    this.availabilityLoading.set(true);
+    this.availabilityFailed.set(false);
+    this.offeringsApi.getAvailability()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: items => { this.availability.set(items); this.availabilityLoading.set(false); },
+        error: () => { this.availabilityFailed.set(true); this.availabilityLoading.set(false); }
+      });
+  }
+
+  chooseCategory(item: ServiceCategoryAvailabilityDto): void {
+    if (item.offeringCount <= 0) return;
+    this.discoverCategory.set(item.category);
+    if (this.myProperties() === null && !this.propertiesLoading()) this.loadMyProperties();
+  }
+
+  closeDiscover(): void { this.discoverCategory.set(null); }
+
+  loadMyProperties(): void {
+    this.propertiesLoading.set(true);
+    this.propertiesFailed.set(false);
+    this.propertyApi.getMyProperties()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: items => { this.myProperties.set(items); this.propertiesLoading.set(false); },
+        error: () => { this.propertiesFailed.set(true); this.propertiesLoading.set(false); }
+      });
+  }
+
+  chooseProperty(property: Property): void {
+    const category = this.discoverCategory();
+    if (!category) return;
+    void this.router.navigate(['/properties', property.id], { queryParams: { service: category } });
+  }
+
+  trackByCategory(_: number, item: ServiceCategoryAvailabilityDto): ServiceCategory { return item.category; }
+  trackByPropertyId(_: number, item: Property): string { return item.id; }
 
   load(): void {
     this.loading.set(true);

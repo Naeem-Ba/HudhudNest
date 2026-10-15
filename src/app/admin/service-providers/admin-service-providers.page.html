@@ -1,0 +1,105 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>{{ 'ADMIN_PROVIDERS.TITLE' | translate }}</h1>
+      <p>{{ 'ADMIN_PROVIDERS.SUBTITLE' | translate }}</p>
+    </div>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" [attr.aria-selected]="tab() === 'applications'" [class.on]="tab() === 'applications'" (click)="selectTab('applications')">
+      {{ 'ADMIN_PROVIDERS.TAB_APPLICATIONS' | translate }}
+      <span class="count" *ngIf="pendingCount() > 0" [attr.aria-label]="'ADMIN_PROVIDERS.PENDING_COUNT' | translate">{{ pendingCount() }}</span>
+    </button>
+    <button type="button" role="tab" [attr.aria-selected]="tab() === 'providers'" [class.on]="tab() === 'providers'" (click)="selectTab('providers')">
+      {{ 'ADMIN_PROVIDERS.TAB_PROVIDERS' | translate }}
+    </button>
+  </div>
+
+  <div class="filters">
+    <input type="search" class="search-input" [placeholder]="(tab() === 'applications' ? 'ADMIN_PROVIDERS.SEARCH_APPLICATIONS' : 'ADMIN_PROVIDERS.SEARCH_PROVIDERS') | translate"
+           [(ngModel)]="search" (ngModelChange)="onSearchChange($event)" name="search" [attr.aria-label]="'COMMON.SEARCH' | translate">
+
+    <select [(ngModel)]="status" (change)="applyFilters()" name="status" [attr.aria-label]="'ADMIN_PROVIDERS.F_STATUS' | translate">
+      <option value="">{{ 'ADMIN_PROVIDERS.ALL_STATUSES' | translate }}</option>
+      <option *ngFor="let s of statusOptions()" [value]="s">
+        {{ ((tab() === 'applications' ? 'PROVIDER_ONBOARDING.APP_STATUS.' : 'PROVIDER_ONBOARDING.PROVIDER_STATUS.') + s) | translate }}
+      </option>
+    </select>
+
+    <select [(ngModel)]="category" (change)="applyFilters()" name="category" [attr.aria-label]="'ADMIN_PROVIDERS.F_CATEGORY' | translate">
+      <option value="">{{ 'ADMIN_PROVIDERS.ALL_CATEGORIES' | translate }}</option>
+      <option *ngFor="let c of categories" [value]="c">{{ ('SERVICES.CATEGORY.' + c) | translate }}</option>
+    </select>
+
+    <select [(ngModel)]="governorateId" (change)="applyFilters()" name="governorate" [attr.aria-label]="'ADMIN_PROVIDERS.F_GOVERNORATE' | translate">
+      <option [ngValue]="null">{{ 'ADMIN_PROVIDERS.ALL_GOVERNORATES' | translate }}</option>
+      <option *ngFor="let g of governorates.items()" [ngValue]="g.id">{{ governorates.label(g) }}</option>
+    </select>
+  </div>
+
+  <app-loading-spinner *ngIf="loading()" [label]="'COMMON.LOADING' | translate"></app-loading-spinner>
+
+  <div class="state error" *ngIf="!loading() && failed()">
+    <p>{{ 'ADMIN_PROVIDERS.LOAD_ERROR' | translate }}</p>
+    <button type="button" class="btn" (click)="load()">{{ 'COMMON.RETRY' | translate }}</button>
+  </div>
+
+  <!-- Applications -->
+  <ng-container *ngIf="tab() === 'applications' && !loading() && !failed()">
+    <app-empty-state *ngIf="applications().length === 0" icon="📥"
+                     [title]="'ADMIN_PROVIDERS.EMPTY_APPLICATIONS' | translate"
+                     [message]="'ADMIN_PROVIDERS.EMPTY_APPLICATIONS_TEXT' | translate"></app-empty-state>
+
+    <div class="rows" *ngIf="applications().length > 0">
+      <a class="row row--link" *ngFor="let app of applications(); trackBy: trackById" [routerLink]="['/admin/service-providers/applications', app.id]">
+        <div class="cell cell--main">
+          <strong>{{ app.displayName }}</strong>
+          <span class="muted" dir="ltr">{{ app.referenceNumber }}</span>
+        </div>
+        <div class="cell muted">
+          <div>{{ app.contactName }}</div>
+          <div dir="ltr">{{ app.contactEmail || app.contactPhone }}</div>
+        </div>
+        <div class="cell">
+          <span class="tag" *ngFor="let c of app.requestedCategories">{{ ('SERVICES.CATEGORY.' + c) | translate }}</span>
+        </div>
+        <div class="cell muted">{{ governorates.names(app.requestedGovernorateIds) }}</div>
+        <div class="cell"><span class="chip" [attr.data-status]="app.status">{{ ('PROVIDER_ONBOARDING.APP_STATUS.' + app.status) | translate }}</span></div>
+        <div class="cell muted">{{ app.updatedAt | date:'mediumDate' }}</div>
+      </a>
+    </div>
+  </ng-container>
+
+  <!-- Providers -->
+  <ng-container *ngIf="tab() === 'providers' && !loading() && !failed()">
+    <app-empty-state *ngIf="providers().length === 0" icon="🧰"
+                     [title]="'ADMIN_PROVIDERS.EMPTY_PROVIDERS' | translate"
+                     [message]="'ADMIN_PROVIDERS.EMPTY_PROVIDERS_TEXT' | translate"></app-empty-state>
+
+    <div class="rows" *ngIf="providers().length > 0">
+      <a class="row row--link" *ngFor="let p of providers(); trackBy: trackById" [routerLink]="['/admin/service-providers', p.id]">
+        <div class="cell cell--main">
+          <strong>{{ p.displayName }}</strong>
+          <span class="muted">{{ ('PROVIDER_ONBOARDING.VERIFICATION.' + p.verificationLevel) | translate }}</span>
+        </div>
+        <div class="cell muted">
+          <div dir="ltr">{{ p.contactEmail }}</div>
+          <div dir="ltr">{{ p.contactPhone }}</div>
+        </div>
+        <div class="cell">
+          <span class="tag" *ngFor="let c of p.approvedCategories">{{ ('SERVICES.CATEGORY.' + c) | translate }}</span>
+        </div>
+        <div class="cell muted">{{ governorates.names(p.coverageGovernorateIds) }}</div>
+        <div class="cell"><span class="chip" [attr.data-pstatus]="p.status">{{ ('PROVIDER_ONBOARDING.PROVIDER_STATUS.' + p.status) | translate }}</span></div>
+        <div class="cell muted">{{ p.updatedAt | date:'mediumDate' }}</div>
+      </a>
+    </div>
+  </ng-container>
+
+  <div class="pagination" *ngIf="!loading() && !failed() && totalPages() > 1">
+    <button type="button" [disabled]="page() <= 1" (click)="goToPage(page() - 1)" [attr.aria-label]="'COMMON.PREVIOUS' | translate">‹</button>
+    <span>{{ page() }} / {{ totalPages() }}</span>
+    <button type="button" [disabled]="page() >= totalPages()" (click)="goToPage(page() + 1)" [attr.aria-label]="'COMMON.NEXT' | translate">›</button>
+  </div>
+</section>
