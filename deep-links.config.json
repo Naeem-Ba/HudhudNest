@@ -9,7 +9,8 @@
   "android": {
     "package": "com.hudhudnest.app",
     "sha256CertFingerprints": [
-      "7D:30:B4:CB:E7:24:2F:C5:CC:50:2A:FA:B5:87:C7:67:38:3B:3D:0D:4E:D8:7A:6F:B4:F4:8E:2B:9C:64:F7:50"
+      "7D:30:B4:CB:E7:24:2F:C5:CC:50:2A:FA:B5:87:C7:67:38:3B:3D:0D:4E:D8:7A:6F:B4:F4:8E:2B:9C:64:F7:50",
+      "B4:94:0D:22:6C:C9:4D:94:62:4D:E2:CE:E7:2E:3B:72:1C:9D:48:79:E0:A6:96:6A:C1:CB:8D:3C:92:CA:E2:C5"
     ]
   },
   "ios": {
