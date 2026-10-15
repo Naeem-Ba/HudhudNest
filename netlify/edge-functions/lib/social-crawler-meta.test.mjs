@@ -210,3 +210,89 @@ test('falls back to the SPA (context.next) if the backend call throws', async ()
 
   assert.equal(context.wasCalled, true);
 });
+
+// ── /landing: marketing-offer previews ────────────────────────────────────────────────────
+
+const FB_UA = 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uiuc.php)';
+const LIVE_OFFER = {
+  id: 'o1',
+  name: 'أول 100 مكتب عقاري',
+  description: 'خصم للمكاتب المنضمة مبكرًا',
+  discountType: 'Percentage',
+  discountValue: 25,
+  endsAtUtc: '2026-12-31T00:00:00Z',
+  maxRedemptions: 100,
+  redeemedCount: 3,
+  terms: null,
+  targetPlanTier: null
+};
+
+test('/landing: a social crawler gets og tags built from the live offer', async () => {
+  const context = makeNextContext();
+  const request = new Request('https://hudhudnest.com/landing?utm_source=facebook', { headers: { 'user-agent': FB_UA } });
+
+  const response = await withNetlifyEnvStub({ API_URL: 'https://api.example.test/api' }, () =>
+    withFetchStub(async url => {
+      assert.equal(url, 'https://api.example.test/api/offers/active');
+      return new Response(JSON.stringify(LIVE_OFFER), { status: 200, headers: { 'content-type': 'application/json' } });
+    }, () => handler(request, context)));
+
+  assert.equal(context.wasCalled, false);
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /<meta property="og:title" content="أول 100 مكتب عقاري \| هدهد نيست">/);
+  assert.match(html, /<meta property="og:description" content="خصم 25% — خصم للمكاتب المنضمة مبكرًا">/);
+  assert.match(html, /<meta property="og:url" content="https:\/\/hudhudnest\.com\/landing">/);
+  assert.match(html, /<meta property="og:image" content="https:\/\/hudhudnest\.com\/images\/og-default\.png">/);
+  assert.match(html, /<meta property="og:type" content="website">/);
+  // Public offer fields only: no id, counters or status leak into the document.
+  assert.doesNotMatch(html, /o1|redeemed|maxRedemptions|Active/);
+});
+
+test('/landing: markup in an offer name or description is escaped, never injected', async () => {
+  const context = makeNextContext();
+  const request = new Request('https://hudhudnest.com/landing', { headers: { 'user-agent': FB_UA } });
+  const hostile = { ...LIVE_OFFER, name: 'عرض "><script>alert(1)</script>', description: '<img src=x onerror=alert(1)>' };
+
+  const response = await withNetlifyEnvStub({ API_URL: 'https://api.example.test/api' }, () =>
+    withFetchStub(async () => new Response(JSON.stringify(hostile), { status: 200 }), () => handler(request, context)));
+
+  const html = await response.text();
+  assert.doesNotMatch(html, /<script/i);
+  assert.doesNotMatch(html, /<img/i);
+});
+
+test('/landing: no live offer (204), backend error or timeout -> normal SPA', async () => {
+  for (const respond of [
+    async () => new Response(null, { status: 204 }),
+    async () => new Response('boom', { status: 500 }),
+    async () => { throw new Error('network down'); }
+  ]) {
+    const context = makeNextContext();
+    const request = new Request('https://hudhudnest.com/landing', { headers: { 'user-agent': FB_UA } });
+
+    await withNetlifyEnvStub({ API_URL: 'https://api.example.test/api' }, () =>
+      withFetchStub(respond, () => handler(request, context)));
+
+    assert.equal(context.wasCalled, true);
+  }
+});
+
+test('/landing: real visitors and search engines never trigger a backend call', async () => {
+  for (const ua of ['Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0', GOOGLEBOT_UA]) {
+    const context = makeNextContext();
+    const request = new Request('https://hudhudnest.com/landing', { headers: { 'user-agent': ua } });
+    let fetched = false;
+
+    await withNetlifyEnvStub({ API_URL: 'https://api.example.test/api' }, () =>
+      withFetchStub(async () => { fetched = true; return new Response('{}'); }, () => handler(request, context)));
+
+    assert.equal(fetched, false);
+    assert.equal(context.wasCalled, true);
+  }
+});
+
+test('the edge function is mounted on /landing as well as /properties/*', async () => {
+  const { config } = await import('../social-crawler-meta.mjs');
+  assert.deepEqual(config.path, ['/properties/*', '/landing']);
+});

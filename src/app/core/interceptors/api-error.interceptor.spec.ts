@@ -276,3 +276,39 @@ describe('ApiErrorInterceptor — a 429 on a request that names its own limit', 
     expect(toast.toasts()[0].message).toBe('API_ERRORS.RATE_LIMITED');
   });
 });
+
+describe('ApiErrorInterceptor — 415 Unsupported Media Type (marketing-offer activation incident)', () => {
+  let http: HttpClient;
+  let httpMock: HttpTestingController;
+  let toast: ToastService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [TranslateModule.forRoot()],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(withInterceptors([ApiErrorInterceptor])),
+        provideHttpClientTesting()
+      ]
+    });
+
+    http = TestBed.inject(HttpClient);
+    httpMock = TestBed.inject(HttpTestingController);
+    toast = TestBed.inject(ToastService);
+  });
+
+  afterEach(() => httpMock.verify());
+
+  it('shows ONE translated message and never the raw English "Unsupported Media Type"', () => {
+    http.put(`${environment.apiUrl}/offers/o-1/status`, 'Active').subscribe({ next: () => {}, error: () => {} });
+    httpMock.expectOne(`${environment.apiUrl}/offers/o-1/status`).flush(
+      { type: 'https://tools.ietf.org/html/rfc9110#section-15.5.16', title: 'Unsupported Media Type', status: 415 },
+      { status: 415, statusText: 'Unsupported Media Type' }
+    );
+
+    expect(toast.toasts().length).toBe(1);
+    expect(toast.toasts()[0].message).toBe('API_ERRORS.UNSUPPORTED_MEDIA');
+    expect(JSON.stringify(toast.toasts())).not.toContain('Unsupported Media Type');
+  });
+});
+

@@ -316,6 +316,72 @@ export function buildPropertyMetaHtml({ property, canonicalUrl, fallbackImageUrl
 `;
 }
 
+/** True for the page that shows the live marketing offer: "/landing" or "/landing/". */
+export function isLandingPath(pathname) {
+  return /^\/landing\/?$/.test(pathname);
+}
+
+/** Arabic one-line description of an offer's discount, for crawlers that cannot pick a language. */
+function describeOfferDiscount(offer) {
+  const value = Number(offer.discountValue);
+  if (!Number.isFinite(value)) return '';
+  switch (offer.discountType) {
+    case 'Percentage': return `خصم ${value}%`;
+    case 'FixedAmountUsd': return `خصم ${value}$`;
+    case 'FreeMonths': return value === 1 ? 'شهر مجاني' : `${value} أشهر مجانية`;
+    default: return '';
+  }
+}
+
+/**
+ * Pre-rendered document for a social crawler hitting /landing while an offer is live. Built only
+ * from what GET /api/offers/active already makes public (name, description, discount, end date);
+ * it never carries status, ids or counters. Returns null when `offer` has no usable name, so the
+ * caller serves the normal SPA (whose static tags describe the platform) instead of a hollow card.
+ */
+export function buildOfferMetaHtml({ offer, canonicalUrl, fallbackImageUrl }) {
+  const name = sanitizeText(offer?.name);
+  if (!name) {
+    return null;
+  }
+
+  const discount = describeOfferDiscount(offer);
+  const details = sanitizeText(offer.description);
+  const description = [discount, details].filter(Boolean).join(' — ') || name;
+
+  const t = escapeHtml(`${name} | هدهد نيست`);
+  const d = escapeHtml(description.slice(0, 200));
+  const u = escapeHtml(canonicalUrl);
+  const img = escapeHtml(fallbackImageUrl);
+
+  return `<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>${t}</title>
+<meta name="description" content="${d}">
+<link rel="canonical" href="${u}">
+<meta property="og:title" content="${t}">
+<meta property="og:description" content="${d}">
+<meta property="og:image" content="${img}">
+<meta property="og:url" content="${u}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="هدهد نيست">
+<meta property="og:locale" content="ar_SY">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${t}">
+<meta name="twitter:description" content="${d}">
+<meta name="twitter:image" content="${img}">
+</head>
+<body>
+<h1>${t}</h1>
+<p>${d}</p>
+<p><a href="${u}">${u}</a></p>
+</body>
+</html>
+`;
+}
+
 /** Minimal, non-leaking document for a property id that is unpublished/deleted/expired/not
  *  found — never includes any property-specific data, per the feature's privacy rules. */
 export function buildNotFoundHtml() {

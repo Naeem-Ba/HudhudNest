@@ -170,6 +170,13 @@ export function getFriendlyApiErrorMessage(error: HttpErrorResponse, translate: 
     return translate.instant('API_ERRORS.SERVER');
   }
 
+  // 415 means the request body was sent in a format the endpoint does not take -- a client bug,
+  // never something the reader can fix by editing a field. Its ProblemDetails title is the raw
+  // English "Unsupported Media Type", which used to be toasted as is.
+  if (error.status === 415) {
+    return translate.instant('API_ERRORS.UNSUPPORTED_MEDIA');
+  }
+
   const backendMessage = extractBackendMessage(error, translate);
 
   if (backendMessage) {
