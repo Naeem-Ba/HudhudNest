@@ -393,7 +393,7 @@ test('the redirect block sits between /download and the SPA catch-all and is app
   assert.ok(download !== -1 && begin > download && catchAll > begin);
   const updated = applyRedirectsBlock(text, RELEASE);
   assert.ok(updated.includes(`/download/android   ${RELEASE.url}   302!`));
-  assert.equal(applyRedirectsBlock(updated, null), text);
+  assert.equal(applyRedirectsBlock(updated, null), applyRedirectsBlock(text, null));
   assert.throws(() => applyRedirectsBlock('no markers', null), /exactly one generated:download-android block/);
   assert.throws(() => applyRedirectsBlock(`${text}\n${REDIRECT_BEGIN}\n${REDIRECT_END}`, null), /exactly one/);
 });
