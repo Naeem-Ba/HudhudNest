@@ -26,6 +26,7 @@ import { ImageFallbackDirective } from '../shared/directives/image-fallback.dire
 import { OverlayBackHandlerService } from '../core/services/overlay-back-handler.service';
 import { ScrollLockService } from '../core/services/scroll-lock.service';
 import { ThemeService } from '../core/services/theme.service';
+import { isNativeApp } from '../core/native/is-native-app';
 import { NotificationsApiService } from '../core/api/notifications-api.service';
 import { ProfileService, UserProfile, isEligibleForListing } from '../core/api/profile.service';
 import { ServiceProviderService } from '../core/api/service-provider.service';
@@ -107,6 +108,12 @@ export class NavbarComponent implements OnInit {
 
   @ViewChild('mobileToggleRef')
   private mobileToggleRef?: ElementRef<HTMLElement>;
+
+  /**
+   * "Download the app" points at the static /download page (not an Angular route, see public/_redirects), so it is a
+   * plain link that loads the page, and it is hidden inside the installed app where it would be pointless.
+   */
+  readonly showDownloadLink = !isNativeApp();
 
   readonly isLoggedIn$: Observable<boolean> = this.auth.isLoggedIn$;
   readonly isAdmin$: Observable<boolean> = this.auth.isAdmin$;

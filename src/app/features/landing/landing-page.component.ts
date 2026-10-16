@@ -37,6 +37,7 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
+import { isNativeApp } from '../../core/native/is-native-app';
 
 import { LeadService } from '../../core/services/lead.service';
 import { OffersApiService } from '../../core/api/offers-api.service';
@@ -80,6 +81,8 @@ export class LandingPageComponent implements OnInit {
   readonly userTypeOptions = USER_TYPE_OPTIONS;
   readonly cityOptions     = SYRIA_CITY_OPTIONS;
   readonly currentYear     = new Date().getFullYear();
+  /** Hidden inside the installed app, where "download the app" would be pointless. */
+  readonly showDownloadLink = !isNativeApp();
 
   // ── عرض "أول 100 مكتب عقاري" — null يعني: لا عرض نشط، أخفِ القسم بالكامل ──
   readonly activeOffer = signal<Offer | null>(null);
