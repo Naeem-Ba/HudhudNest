@@ -95,10 +95,12 @@ export function parseBadging(text) {
   if (!pkg) {
     throw new Error('aapt2 output has no "package:" line.');
   }
-  const min = /\nsdkVersion:'(\d+)'/.exec(out);
-  const target = /\ntargetSdkVersion:'(\d+)'/.exec(out);
+  // aapt prints `sdkVersion:'N'`; aapt2 (the one in current build-tools) prints `minSdkVersion:'N'`.
+  const min = /^(?:minS|s)dkVersion:'(\d+)'/m.exec(out);
+  const target = /^targetSdkVersion:'(\d+)'/m.exec(out);
   if (!min || !target) {
-    throw new Error('aapt2 output has no sdkVersion / targetSdkVersion.');
+    const seen = out.split(/\r?\n/).filter(line => /sdkversion/i.test(line)).join(' | ') || 'no SDK lines';
+    throw new Error(`aapt2 output has no min/target SDK version (saw: ${seen}).`);
   }
   return {
     packageName: pkg[1],

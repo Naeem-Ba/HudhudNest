@@ -87,7 +87,9 @@ test('aapt2 badging: package, versions and SDK levels are read as numbers', () =
     targetSdk: 36
   });
   assert.throws(() => parseBadging('nothing useful'), /no "package:"/);
-  assert.throws(() => parseBadging(BADGING.replace(/sdkVersion:'24'\n/, '')), /sdkVersion/);
+  assert.throws(() => parseBadging(BADGING.replace(/sdkVersion:'24'\n/, '')), /min\/target SDK/);
+  // aapt2 in current build-tools names the minimum level minSdkVersion (found by the first real CI run).
+  assert.equal(parseBadging(BADGING.replace("\nsdkVersion:'24'", "\nminSdkVersion:'24'")).minSdk, 24);
 });
 
 test('sha256OfFile hashes the real bytes and reports the size', async () => {
