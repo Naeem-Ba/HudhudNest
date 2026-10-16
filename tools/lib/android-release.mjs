@@ -81,11 +81,13 @@ export function parseApkSignerOutput(text) {
   if (!signers || Number(signers[1]) !== 1) {
     throw new Error(`Expected exactly one signer, apksigner reported ${signers ? signers[1] : 'none'}.`);
   }
-  const digest = /Signer #1 certificate SHA-256 digest: ([0-9a-fA-F]{64})/.exec(out);
-  if (!digest) {
-    throw new Error('apksigner output has no "Signer #1 certificate SHA-256 digest" line.');
+  // The label is "Signer #1 certificate ..." for v1/v2 and "Signer (minSdkVersion=..., ...) certificate ..." for v3.
+  const digests = new Set([...out.matchAll(/^Signer(?: #\d+| \([^)\n]*\))? certificate SHA-256 digest: ([0-9a-fA-F]{64})\s*$/gm)].map(match => match[1].toLowerCase()));
+  if (digests.size !== 1) {
+    const seen = out.split(/\r?\n/).filter(line => /certificate/i.test(line) && !/DN:/.test(line)).join(' | ') || 'no certificate lines';
+    throw new Error(`Expected one signing certificate SHA-256 in the apksigner output, found ${digests.size} (saw: ${seen}).`);
   }
-  return toColonFingerprint(digest[1]);
+  return toColonFingerprint([...digests][0]);
 }
 
 /** Reads `aapt2 dump badging <apk>`: package, versions and SDK levels as numbers/strings. */

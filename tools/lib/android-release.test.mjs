@@ -71,10 +71,19 @@ test('apksigner: a verified single-signer APK yields its certificate SHA-256 in 
   assert.equal(parseApkSignerOutput(APKSIGNER), CERT);
 });
 
+test('apksigner: the v3 label "Signer (minSdkVersion=..)" is read too, and the same digest twice is one certificate', () => {
+  const v3 = APKSIGNER.replace('Signer #1 certificate', 'Signer (minSdkVersion=24, maxSdkVersion=2147483647) certificate');
+  assert.equal(parseApkSignerOutput(v3), CERT);
+  const digestLine = APKSIGNER.split('\n').find(line => line.includes('SHA-256 digest'));
+  assert.equal(parseApkSignerOutput(`${APKSIGNER}${digestLine.replace('Signer #1', 'Signer (minSdkVersion=28, maxSdkVersion=2147483647)')}\n`), CERT);
+});
+
 test('apksigner: unverified, unsigned, multi-signer or digest-less output is rejected', () => {
   assert.throws(() => parseApkSignerOutput(APKSIGNER.replace(/Verified using v2 scheme \(APK Signature Scheme v2\): true/, 'Verified using v2 scheme (APK Signature Scheme v2): false').replace(/v3 scheme \(APK Signature Scheme v3\): true/, 'v3 scheme (APK Signature Scheme v3): false')), /verified v2 or v3/);
   assert.throws(() => parseApkSignerOutput(APKSIGNER.replace('Number of signers: 1', 'Number of signers: 2')), /exactly one signer/);
-  assert.throws(() => parseApkSignerOutput(APKSIGNER.replace(/Signer #1 certificate SHA-256 digest: .*\n/, '')), /no "Signer #1/);
+  assert.throws(() => parseApkSignerOutput(APKSIGNER.replace(/Signer #1 certificate SHA-256 digest: .*\n/, '')), /Expected one signing certificate/);
+  const other = 'ab'.repeat(32);
+  assert.throws(() => parseApkSignerOutput(`${APKSIGNER}Signer #2 certificate SHA-256 digest: ${other}\n`), /found 2/, 'two different certificates are refused');
   assert.throws(() => parseApkSignerOutput(''), /verified/);
 });
 
