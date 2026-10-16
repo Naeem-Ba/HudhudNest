@@ -693,6 +693,10 @@
         <a routerLink="/privacy-policy" class="footer__link">{{ 'LANDING.FOOTER.PRIVACY' | translate }}</a>
         ·
         <a routerLink="/terms-of-service" class="footer__link">{{ 'LANDING.FOOTER.TERMS' | translate }}</a>
+        <ng-container *ngIf="showDownloadLink">
+          ·
+          <a href="/download" class="footer__link">{{ 'LANDING.FOOTER.DOWNLOAD' | translate }}</a>
+        </ng-container>
       </p>
     </div>
   </footer>

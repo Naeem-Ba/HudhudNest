@@ -321,6 +321,55 @@ jobs:
           # (340 MB) كانت تستهلك حصة تخزين Actions المشتركة.
           retention-days: 1
 
+      # APK موقّع بنفس المفتاح للتنزيل المباشر من صفحة /download (انظر docs/ANDROID-DIRECT-DOWNLOAD-AR.md). يأتي بعد
+      # نشر الـ AAB عمدًا: أي فشل هنا يُحمّر المهمة لكنه لا يمنع تسليم الـ AAB الذي تعتمد عليه Play. لا يُنشر للعامة
+      # من هنا: يُرفق بـ Release الخاص android-latest، وصاحب المشروع يرفعه يدويًا إلى المستودع العام للإصدارات ثم يعتمده
+      # في PR (downloads/android-release.json). كل الأرقام تُقرأ من الملف النهائي نفسه، لا من قيمة مكتوبة.
+      - name: Build signed release APK
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          RELEASE_STORE_FILE: keystore/aqar-tech-release.keystore
+        working-directory: android
+        run: ./gradlew assembleRelease --console=plain
+
+      # يفحص الـ APK الفعلي: التوقيع (apksigner)، الحزمة والإصدارات (aapt2)، وبصمة الشهادة من القائمة المعتمدة في
+      # deep-links.config.json، ثم يحسب SHA-256 من الملف النهائي ويكتب مسودة البيان (approved:false).
+      - name: Verify the signed APK and describe it
+        if: steps.signing.outputs.enabled == 'true'
+        run: |
+          set -euo pipefail
+          apk="$(ls android/app/build/outputs/apk/release/*.apk)"
+          version_name="$(sed -n 's/^[[:space:]]*versionName[[:space:]]*"\([^"]*\)".*/\1/p' android/app/build.gradle | head -1)"
+          out="android/app/build/outputs/apk-publish"
+          mkdir -p "$out"
+          cp "$apk" "$out/HudhudNest-${version_name}.apk"
+          node tools/android-release.mjs describe \
+            --apk "$out/HudhudNest-${version_name}.apk" \
+            --commit "$GITHUB_SHA" \
+            --released-at "$(date -u +%F)" \
+            --out "$out/android-release.draft.json"
+          (cd "$out" && sha256sum "HudhudNest-${version_name}.apk" > "HudhudNest-${version_name}.apk.sha256")
+          {
+            echo "### Direct-download APK (draft, not published)"
+            echo
+            echo '```json'
+            cat "$out/android-release.draft.json"
+            echo '```'
+            echo
+            echo "Next steps: docs/ANDROID-DIRECT-DOWNLOAD-AR.md (upload the APK to the public releases repository, then approve the manifest in a PR)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Attach the APK, its SHA-256 and the draft manifest to the private release
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release upload android-latest android/app/build/outputs/apk-publish/* --clobber --repo "$GITHUB_REPOSITORY"
+
   ios-build:
     name: iOS Unsigned Simulator Build
     # يعمل فقط حين يتغيّر ما يدخل مشروع iOS (ios/، capacitor.config.*، package*.json، أدوات iOS، أو هذا

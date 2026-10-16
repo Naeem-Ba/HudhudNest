@@ -58,6 +58,7 @@
     "PRICING": "Preise",
     "ADD": "Immobilie hinzufügen",
     "CONTACT": "Kontakt",
+    "DOWNLOAD_APP": "App herunterladen",
     "MESSAGES": "Nachrichten",
     "ADMIN_USERS": "Benutzerverwaltung",
     "ADMIN_INVESTMENTS": "Investmentportal (Admin)",
@@ -2595,7 +2596,8 @@
       "TAGLINE": "Eine digitale Immobilienplattform · Syrien zuerst",
       "RIGHTS": "Alle Rechte vorbehalten",
       "PRIVACY": "Datenschutzerklärung",
-      "TERMS": "Nutzungsbedingungen"
+      "TERMS": "Nutzungsbedingungen",
+      "DOWNLOAD": "App herunterladen"
     }
   },
   "VALUATION": {

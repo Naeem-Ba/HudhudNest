@@ -36,11 +36,11 @@ test('toLastmod returns null for missing or unparseable input', () => {
   assert.equal(toLastmod('not-a-date'), null);
 });
 
-test('buildStaticUrlEntries lists only home and the bare listing page', () => {
+test('buildStaticUrlEntries lists home, the bare listing page and the download page', () => {
   const entries = buildStaticUrlEntries('https://hudhudnest.com');
   assert.deepEqual(
     entries.map(e => e.loc),
-    ['https://hudhudnest.com/', 'https://hudhudnest.com/properties']
+    ['https://hudhudnest.com/', 'https://hudhudnest.com/properties', 'https://hudhudnest.com/download']
   );
 });
 

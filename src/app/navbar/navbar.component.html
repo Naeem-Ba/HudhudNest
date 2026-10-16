@@ -112,6 +112,14 @@
         {{ 'NAVBAR.CONTACT' | translate }}
       </a>
 
+      <a
+        *ngIf="showDownloadLink"
+        href="/download"
+        class="navbar__link navbar__link--download"
+      >
+        {{ 'NAVBAR.DOWNLOAD_APP' | translate }}
+      </a>
+
     </nav>
 
     <!-- Actions -->
@@ -575,6 +583,14 @@
         (click)="closeMobileMenu()"
       >
         {{ 'NAVBAR.CONTACT' | translate }}
+      </a>
+
+      <a
+        *ngIf="showDownloadLink"
+        href="/download"
+        class="mobile-drawer__link"
+      >
+        {{ 'NAVBAR.DOWNLOAD_APP' | translate }}
       </a>
 
       <!-- Mobile User Section -->

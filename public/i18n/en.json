@@ -58,6 +58,7 @@
     "PRICING": "Pricing",
     "ADD": "Add property",
     "CONTACT": "Contact us",
+    "DOWNLOAD_APP": "Download the app",
     "MESSAGES": "Messages",
     "ADMIN_USERS": "User management",
     "LOGIN": "Log in",
@@ -2595,7 +2596,8 @@
       "TAGLINE": "A digital real-estate platform · Syria first",
       "RIGHTS": "All rights reserved",
       "PRIVACY": "Privacy Policy",
-      "TERMS": "Terms of Service"
+      "TERMS": "Terms of Service",
+      "DOWNLOAD": "Download the app"
     }
   },
   "VALUATION": {
