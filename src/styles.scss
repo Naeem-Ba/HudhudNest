@@ -570,6 +570,22 @@ textarea.ng-valid.ng-touched {
   &--draft  { background: var(--gray-100); color: var(--gray-500); }
   &--live   { background: var(--success-soft); color: var(--success); }
   &--warning { background: var(--warning-soft); color: var(--warning); }
+
+  /* حالات الإعلان (QA Phase 7، P7-D08): محجوز ما زال معروضًا، ومباع/مؤجر صفقة منتهية للتوثيق. */
+  &--reserved { background: var(--warning-soft); color: var(--warning); box-shadow: inset 0 0 0 1px rgba(217, 119, 6, .35); }
+  &--sold,
+  &--rented   { background: var(--gray-800); color: var(--surface); }
+  &--archived { background: var(--gray-100); color: var(--gray-600); }
+}
+
+/* بطاقة إعلان محجوز أو مباع/مؤجر أفتح لونًا من العادية كي تُميَّز بنظرة واحدة، دون أن تصير غير مقروءة. */
+.listing-muted {
+  .listing-muted__media { opacity: .72; filter: saturate(.7); }
+  .listing-muted__text { opacity: .82; }
+}
+.listing-muted--closed {
+  .listing-muted__media { opacity: .55; filter: grayscale(.6); }
+  .listing-muted__text { opacity: .7; }
 }
 
 /* Alert / State Cards */

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { applyVersion, evaluate, isStrictVersion, normalizeVersion, readAndroid, readIos } from './app-version.mjs';
+import { applyVersion, checkReleaseTag, evaluate, isStrictVersion, normalizeVersion, readAndroid, readIos } from './app-version.mjs';
 
 const gradle = 'defaultConfig {\n        versionCode 2\n        versionName "1.1.0"\n}';
 const pbx = 'A = {\n CURRENT_PROJECT_VERSION = 1;\n MARKETING_VERSION = 1.0;\n};\nB = {\n CURRENT_PROJECT_VERSION = 1;\n MARKETING_VERSION = 1.0;\n};';
@@ -52,4 +52,18 @@ test('applyVersion rejects bad versions and non-increasing build numbers', () =>
   assert.throws(() => applyVersion(gradle, pbx, '1.2.0', 2), /greater than/);
   assert.throws(() => applyVersion(gradle, pbx, '1.2.0', 1), /greater than/);
   assert.throws(() => applyVersion(gradle, pbx, '1.2.0', 2.5), /positive integer/);
+});
+
+test('checkReleaseTag: the tag must be v<x.y.z> and equal both native versions', () => {
+  const android = { versionName: '1.2.0', versionCode: 3 };
+  const ios = { marketing: ['1.2.0', '1.2.0'], build: ['3', '3'] };
+  assert.equal(checkReleaseTag('v1.2.0', android, ios), null);
+  for (const bad of ['1.2.0', 'v1.2', 'v1.2.0-rc1', 'v01.2.0', 'release-1.2.0', '', undefined]) {
+    assert.match(checkReleaseTag(bad, android, ios), /must look like/, String(bad));
+  }
+  assert.match(checkReleaseTag('v1.3.0', android, ios), /Android versionName "1\.2\.0"/);
+  assert.match(checkReleaseTag('v1.2.0', android, { marketing: ['1.1.0'], build: ['3'] }), /iOS MARKETING_VERSION/);
+  assert.match(checkReleaseTag('v1.2.0', android, { marketing: ['1.2.0', '1.1.0'], build: ['3'] }), /iOS MARKETING_VERSION/);
+  // iOS may still hold the two-segment form; the client normalizes it, so "1.2" counts as 1.2.0.
+  assert.equal(checkReleaseTag('v1.2.0', android, { marketing: ['1.2'], build: ['3'] }), null);
 });

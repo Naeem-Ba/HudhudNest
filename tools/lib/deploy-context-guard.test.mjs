@@ -45,3 +45,14 @@ test('the custom API domains are classified correctly (staging-api must not look
   assert.equal(checkDeployContext({ CONTEXT: 'production' }, { API_URL: STAGING_API_CUSTOM }).length, 1);
   assert.deepEqual(checkDeployContext({ CONTEXT: 'production' }, { API_URL: PROD_API_CUSTOM }), []);
 });
+
+test('production context with an API_URL that is neither Production nor Staging is rejected', () => {
+  assert.equal(checkDeployContext({ CONTEXT: 'production' }, { API_URL: 'https://some-other-host.example.com/api' }).length, 1);
+  assert.equal(checkDeployContext({ CONTEXT: 'production' }, { API_URL: 'https://wohnungen-api.onrender.com.evil.example/api' }).length, 1);
+  assert.deepEqual(checkDeployContext({ CONTEXT: 'production' }, { API_URL: PROD_API }), []);
+  assert.deepEqual(checkDeployContext({ CONTEXT: 'production' }, { API_URL: PROD_API_CUSTOM }), []);
+});
+
+test('a Staging API_URL on Production is reported once, not twice', () => {
+  assert.equal(checkDeployContext({ CONTEXT: 'production' }, { API_URL: STAGING_API }).length, 1);
+});

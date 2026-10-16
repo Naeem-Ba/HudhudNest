@@ -12,17 +12,21 @@ import {
 import { CommonModule } from '@angular/common';
 import { NavigationEnd, NavigationStart, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Observable, combineLatest, debounceTime, distinctUntilChanged, filter, fromEvent, map } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { Observable, combineLatest, debounceTime, distinctUntilChanged, filter, fromEvent, map, switchMap } from 'rxjs';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AuthService, AuthenticatedUser } from '../core/auth/auth.service';
 import { LoginIdentifier, resolveLoginIdentifier } from '../core/auth/login-identifier';
 import { LanguageService } from '../core/services/language.service';
+import { PreferencesService } from '../core/services/preferences.service';
+import { PushRegistrationService } from '../core/push/push-registration.service';
+import { ToastService } from '../shared/services/toast.service';
 import { UrlService } from '../core/services/url.service';
 import { ImageFallbackDirective } from '../shared/directives/image-fallback.directive';
 import { OverlayBackHandlerService } from '../core/services/overlay-back-handler.service';
 import { ScrollLockService } from '../core/services/scroll-lock.service';
 import { ThemeService } from '../core/services/theme.service';
+import { isNativeApp } from '../core/native/is-native-app';
 import { NotificationsApiService } from '../core/api/notifications-api.service';
 import { ProfileService, UserProfile, isEligibleForListing } from '../core/api/profile.service';
 import { ServiceProviderService } from '../core/api/service-provider.service';
@@ -77,6 +81,10 @@ export class NavbarComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly lang = inject(LanguageService);
+  private readonly preferences = inject(PreferencesService);
+  private readonly push = inject(PushRegistrationService);
+  private readonly toast = inject(ToastService);
+  private readonly translate = inject(TranslateService);
   private readonly cd = inject(ChangeDetectorRef);
   private readonly urlService = inject(UrlService);
   private readonly destroyRef = inject(DestroyRef);
@@ -100,6 +108,12 @@ export class NavbarComponent implements OnInit {
 
   @ViewChild('mobileToggleRef')
   private mobileToggleRef?: ElementRef<HTMLElement>;
+
+  /**
+   * "Download the app" points at the static /download page (not an Angular route, see public/_redirects), so it is a
+   * plain link that loads the page, and it is hidden inside the installed app where it would be pointless.
+   */
+  readonly showDownloadLink = !isNativeApp();
 
   readonly isLoggedIn$: Observable<boolean> = this.auth.isLoggedIn$;
   readonly isAdmin$: Observable<boolean> = this.auth.isAdmin$;
@@ -286,8 +300,11 @@ export class NavbarComponent implements OnInit {
     this.dropdownOpen = false;
     this.setMobileMenuOpen(false);
 
-    this.applyLang(lang);
-    this.lang.use(lang);
+    // Saved to the account first when signed in (the language follows the person to every device);
+    // the screen switches when that succeeds, via currentLang$ below. A guest switches at once.
+    this.preferences.setLanguage(lang).subscribe({
+      error: () => this.toast.error(this.translate.instant('PREFERENCES.SAVE_FAILED'))
+    });
 
     this.cd.markForCheck();
   }
@@ -326,7 +343,8 @@ export class NavbarComponent implements OnInit {
   logout(): void {
     this.closeAllMenus();
 
-    this.auth.logout().subscribe({
+    // Push address first (it needs the live session), then the session itself.
+    this.push.revoke().pipe(switchMap(() => this.auth.logout())).subscribe({
       next: () => void this.router.navigateByUrl('/home'),
       error: () => void this.router.navigateByUrl('/home')
     });

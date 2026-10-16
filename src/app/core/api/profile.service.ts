@@ -96,6 +96,12 @@ export interface UserProfile {
    * the request can be cancelled until this date.
    */
   DeletionScheduledFor?: string | null;
+
+  /** Account-level preferences (UserDto). *Chosen is false until the user picked one: the code is then only the stored default. */
+  PreferredLanguage?: string | null;
+  PreferredCurrency?: string | null;
+  HasChosenLanguage?: boolean;
+  HasChosenCurrency?: boolean;
 }
 
 /** 202 body of DELETE /api/Users/me (UsersController.DeleteAccount). */
@@ -167,6 +173,15 @@ interface BackendUserProfile {
 
   deletionScheduledFor?: string | null;
   DeletionScheduledFor?: string | null;
+
+  preferredLanguage?: string | null;
+  PreferredLanguage?: string | null;
+  preferredCurrency?: string | null;
+  PreferredCurrency?: string | null;
+  hasChosenLanguage?: boolean;
+  HasChosenLanguage?: boolean;
+  hasChosenCurrency?: boolean;
+  HasChosenCurrency?: boolean;
 }
 
 /**
@@ -423,7 +438,12 @@ export class ProfileService {
 
       HasPassword: user.hasPassword ?? user.HasPassword ?? false,
 
-      DeletionScheduledFor: user.deletionScheduledFor ?? user.DeletionScheduledFor ?? null
+      DeletionScheduledFor: user.deletionScheduledFor ?? user.DeletionScheduledFor ?? null,
+
+      PreferredLanguage: user.preferredLanguage ?? user.PreferredLanguage ?? null,
+      PreferredCurrency: user.preferredCurrency ?? user.PreferredCurrency ?? null,
+      HasChosenLanguage: user.hasChosenLanguage ?? user.HasChosenLanguage ?? false,
+      HasChosenCurrency: user.hasChosenCurrency ?? user.HasChosenCurrency ?? false
     };
   }
 
@@ -441,11 +461,12 @@ export class ProfileService {
    * ملاحظة: System.Text.Json يُطابق camelCase ↔ PascalCase بدون حساسية أثناء الـ deserialization.
    */
   private toUpdateRequest(user: UserProfile): Record<string, unknown> {
+    // phoneNumber is deliberately absent: it is the login and recovery phone, which the API only lets a
+    // verified code flow add or change (profile page: PhoneChangePage). Saving the profile must never touch it.
     return {
       firstName:   user.Vorname?.trim()     || undefined,
       lastName:    user.Name?.trim()        || undefined,
       displayName: user.DisplayName?.trim() || undefined,
-      phoneNumber: user.Phone?.trim()       || undefined,
       // ✅ إضافة: نُرسل قيمة فارغة صراحةً (وليس undefined) عند مسح الحقل
       // بالكامل، كي يتوافق مع دلالة "null تعني عدم التغيير" بالباك اند —
       // إرسال '' (وليس undefined) يُترجَم بالـ Handler إلى مسح الحقل فعليًا.

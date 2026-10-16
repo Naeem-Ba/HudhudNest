@@ -7,7 +7,7 @@
 // keeps the two identical there, exactly matching this project's other specs, which is why the
 // existing csrf-token/refresh-auth-interceptor specs needed no changes for this fix).
 // =====================================================================
-import { provideHttpClient } from '@angular/common/http';
+import { HttpContext, HttpContextToken, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
@@ -51,5 +51,25 @@ describe('BackendApiService', () => {
     const req = httpMock.expectOne(`${environment.apiUrl}/auth/phone/login`);
     expect(req.request.method).toBe('POST');
     req.flush({});
+  });
+
+  it('✅ post/delete pass an HttpContext through (e.g. to opt out of the generic error toast)', () => {
+    const flag = new HttpContextToken<boolean>(() => false);
+    const context = new HttpContext().set(flag, true);
+
+    service.post('/favorites/p1', undefined, { context }).subscribe();
+    const post = httpMock.expectOne(`${environment.apiUrl}/favorites/p1`);
+    expect(post.request.context.get(flag)).toBeTrue();
+    post.flush({});
+
+    service.delete('/favorites/p1', undefined, { context }).subscribe();
+    const del = httpMock.expectOne(`${environment.apiUrl}/favorites/p1`);
+    expect(del.request.context.get(flag)).toBeTrue();
+    del.flush({});
+
+    service.post('/favorites/p2').subscribe();
+    const plain = httpMock.expectOne(`${environment.apiUrl}/favorites/p2`);
+    expect(plain.request.context.get(flag)).toBeFalse();
+    plain.flush({});
   });
 });

@@ -112,6 +112,14 @@
         {{ 'NAVBAR.CONTACT' | translate }}
       </a>
 
+      <a
+        *ngIf="showDownloadLink"
+        href="/download"
+        class="navbar__link navbar__link--download"
+      >
+        {{ 'NAVBAR.DOWNLOAD_APP' | translate }}
+      </a>
+
     </nav>
 
     <!-- Actions -->
@@ -577,6 +585,14 @@
         {{ 'NAVBAR.CONTACT' | translate }}
       </a>
 
+      <a
+        *ngIf="showDownloadLink"
+        href="/download"
+        class="mobile-drawer__link"
+      >
+        {{ 'NAVBAR.DOWNLOAD_APP' | translate }}
+      </a>
+
       <!-- Mobile User Section -->
       <ng-container *ngIf="isLoggedIn$ | async; else mobileLoginBtn">
         <div class="mobile-drawer__divider"></div>
@@ -806,6 +822,7 @@
 
       <ng-container *ngIf="isProvider$ | async">
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/provider/requests', label: 'NAVBAR.PROVIDER_INBOX', icon: '🧰' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/provider/offerings', label: 'NAVBAR.PROVIDER_OFFERINGS', icon: '🛎️' }"></ng-container>
       </ng-container>
 
       <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/analytics', label: 'NAVBAR.ANALYTICS', icon: '📊' }"></ng-container>
@@ -815,6 +832,7 @@
 
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/messages', label: 'NAVBAR.MESSAGES', icon: '✉️' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/users', label: 'NAVBAR.ADMIN_USERS', icon: '👥' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/service-providers', label: 'NAVBAR.ADMIN_SERVICE_PROVIDERS', icon: '🧰' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/payment-requests', label: 'NAVBAR.ADMIN_PAYMENT_REQUESTS', icon: '💳' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/investments', label: 'NAVBAR.ADMIN_INVESTMENTS', icon: '💼' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/location-suggestions', label: 'NAVBAR.ADMIN_LOCATION_SUGGESTIONS', icon: '📍' }"></ng-container>

@@ -187,7 +187,8 @@ export class ServiceRequestService {
       rejectionReason: r['rejectionReason'] as string | null | undefined,
       cancellationReason: r['cancellationReason'] as string | null | undefined,
       completedAt: r['completedAt'] as string | null | undefined,
-      createdAt: String(r['createdAt'] ?? '')
+      createdAt: String(r['createdAt'] ?? ''),
+      updatedAt: (r['updatedAt'] as string | null | undefined) ?? null
     };
   }
 

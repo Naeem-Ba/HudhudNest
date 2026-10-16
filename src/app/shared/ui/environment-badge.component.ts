@@ -1,10 +1,21 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, InjectionToken, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
+import { AppEnvironmentName } from '../../../environments/environment.model';
 import { AuthService } from '../../core/auth/auth.service';
 import { BackendApiService } from '../../core/api/backend-api.service';
+
+/**
+ * The environment this bundle was built for. A token (defaulting to the build-time constant) so the
+ * visibility and mismatch rules can be tested for every environment, not just the one the unit tests
+ * happen to be built with.
+ */
+export const APP_ENVIRONMENT_NAME = new InjectionToken<AppEnvironmentName>('APP_ENVIRONMENT_NAME', {
+  providedIn: 'root',
+  factory: () => environment.environmentName
+});
 
 /** GET /api/operational/version (Admin only) — never contains secrets or connection details. */
 interface ApiVersionInfo {
@@ -87,7 +98,7 @@ export class EnvironmentBadgeComponent {
   private readonly auth = inject(AuthService);
   private readonly api = inject(BackendApiService);
 
-  private readonly appEnv = environment.environmentName;
+  private readonly appEnv = inject(APP_ENVIRONMENT_NAME);
   private readonly isAdmin = toSignal(this.auth.isAdmin$, { initialValue: false });
 
   protected readonly info = signal<ApiVersionInfo | null>(null);

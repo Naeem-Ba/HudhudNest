@@ -1,8 +1,8 @@
 <section class="flow-page">
   <div class="flow-card">
     <header class="flow-header">
-      <h1>{{ 'AUTH.PHONE_CHANGE.TITLE' | translate }}</h1>
-      <p>{{ 'AUTH.PHONE_CHANGE.SUBTITLE' | translate }}</p>
+      <h1>{{ (confirmingExisting() ? 'AUTH.PHONE_CHANGE.CONFIRM_TITLE' : 'AUTH.PHONE_CHANGE.TITLE') | translate }}</h1>
+      <p>{{ (confirmingExisting() ? 'AUTH.PHONE_CHANGE.CONFIRM_SUBTITLE' : 'AUTH.PHONE_CHANGE.SUBTITLE') | translate }}</p>
     </header>
 
     <div class="step-indicator" *ngIf="step() !== 'done'">
@@ -18,7 +18,7 @@
     <!-- Step 1: new phone number -->
     <form *ngIf="step() === 'phone'" [formGroup]="phoneForm" (ngSubmit)="sendOtp()" novalidate class="flow-form">
       <div class="form-group">
-        <label for="phoneNumber">{{ 'AUTH.PHONE_CHANGE.NEW_PHONE_NUMBER' | translate }}</label>
+        <label for="phoneNumber">{{ (confirmingExisting() ? 'AUTH.PHONE_CHANGE.CONFIRM_PHONE_NUMBER' : 'AUTH.PHONE_CHANGE.NEW_PHONE_NUMBER') | translate }}</label>
         <input id="phoneNumber" type="tel" formControlName="phoneNumber" placeholder="+963xxxxxxxxx" dir="ltr" autocomplete="tel" />
         <app-form-error
           [control]="phoneForm.controls.phoneNumber"
@@ -70,7 +70,7 @@
 
       <button type="submit" class="btn-primary" [disabled]="loading()">
         <span class="spinner" *ngIf="loading()"></span>
-        {{ loading() ? ('AUTH.PHONE_CHANGE.SAVING' | translate) : ('AUTH.PHONE_CHANGE.CONFIRM_BUTTON' | translate) }}
+        {{ loading() ? ('AUTH.PHONE_CHANGE.SAVING' | translate) : ((confirmingExisting() ? 'AUTH.PHONE_CHANGE.CONFIRM_NUMBER_BUTTON' : 'AUTH.PHONE_CHANGE.CONFIRM_BUTTON') | translate) }}
       </button>
 
         <app-otp-channel-fallback
@@ -90,7 +90,7 @@
 
     <!-- Done -->
     <div *ngIf="step() === 'done'" class="flow-form">
-      <p class="alert alert--success" role="status">✅ {{ 'AUTH.PHONE_CHANGE.SUCCESS' | translate }}</p>
+      <p class="alert alert--success" role="status">✅ {{ (confirmingExisting() ? 'AUTH.PHONE_CHANGE.CONFIRM_SUCCESS' : 'AUTH.PHONE_CHANGE.SUCCESS') | translate }}</p>
       <button type="button" class="btn-primary" (click)="goToProfile()">
         {{ 'AUTH.BACK_TO_PROFILE' | translate }}
       </button>

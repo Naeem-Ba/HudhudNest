@@ -7,12 +7,14 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AuthService } from './core/auth/auth.service';
 import { LanguageService } from './core/services/language.service';
+import { PreferencesService } from './core/services/preferences.service';
+import { PushRegistrationService } from './core/push/push-registration.service';
 import { ToastContainerComponent } from './shared/ui/toast-container.component';
 import { NativeBackButtonService } from './core/services/native-back-button.service';
 import { DeepLinkService } from './core/deep-links/deep-link.service';
 import { ThemeService } from './core/services/theme.service';
 import { NotificationsApiService } from './core/api/notifications-api.service';
-import { AppUpdateService } from './core/api/app-update.service';
+import { AppUpdateService, isTrustedStoreUrl } from './core/api/app-update.service';
 import { ToastService } from './shared/services/toast.service';
 import { AttributionContextService } from './core/sharing/attribution-context.service';
 import { ConfirmModalComponent } from './shared/ui/confirm-modal.component';
@@ -48,12 +50,15 @@ import { MetaService } from './core/services/meta.service';
       [open]="appUpdate.mandatoryUpdate() !== null"
       [closeOnBackdrop]="false"
       [hideCancel]="true"
-      [confirmDisabled]="!appUpdate.mandatoryUpdate()?.storeUrl"
+      [confirmDisabled]="!hasTrustedStoreUrl(appUpdate.mandatoryUpdate()?.storeUrl)"
       [title]="'APP_UPDATE.MANDATORY_TITLE' | translate"
       [confirmLabel]="'APP_UPDATE.UPDATE_NOW' | translate"
       (confirmed)="onUpdateNow(appUpdate.mandatoryUpdate()?.storeUrl)"
     >
       {{ 'APP_UPDATE.MANDATORY_BODY' | translate }}
+      @if (appUpdate.mandatoryUpdate()?.releaseNotes; as notes) {
+        <p class="update-notes">{{ notes }}</p>
+      }
     </app-confirm-modal>
   `,
   styleUrls: ['./app.component.scss']
@@ -70,6 +75,8 @@ export class AppComponent {
   private readonly translate = inject(TranslateService);
   private readonly attributionContext = inject(AttributionContextService);
   private readonly metaService = inject(MetaService);
+  private readonly preferences = inject(PreferencesService);
+  private readonly push = inject(PushRegistrationService);
 
   constructor(
     private readonly authService: AuthService,
@@ -81,6 +88,8 @@ export class AppComponent {
   ) {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
     this.languageService.getCurrent();
+    this.preferences.start();
+    this.push.start();
     nativeBackButton.initialize();
     deepLinks.initialize();
     this.appUpdate.initialize();
@@ -149,6 +158,10 @@ export class AppComponent {
         const key = reason === 'revoked' ? 'AUTH.ERRORS.SESSION_REVOKED' : 'AUTH.ERRORS.SESSION_EXPIRED';
         this.toast.info(this.translate.instant(key));
       });
+  }
+
+  protected hasTrustedStoreUrl(storeUrl: string | null | undefined): boolean {
+    return isTrustedStoreUrl(storeUrl);
   }
 
   protected onUpdateNow(storeUrl: string | null | undefined): void {

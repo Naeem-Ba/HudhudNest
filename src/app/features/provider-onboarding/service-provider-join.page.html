@@ -1,0 +1,206 @@
+<section class="feature-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">{{ 'PROVIDER_JOIN.EYEBROW' | translate }}</p>
+      <h1>{{ 'PROVIDER_JOIN.TITLE' | translate }}</h1>
+      <p>{{ 'PROVIDER_JOIN.SUBTITLE' | translate }}</p>
+    </div>
+    <a routerLink="/services" class="btn secondary">{{ 'PROVIDER_JOIN.BACK_TO_SERVICES' | translate }}</a>
+  </header>
+
+  <ul class="steps" aria-label="{{ 'PROVIDER_JOIN.HOW_TITLE' | translate }}">
+    <li><strong>1</strong><span>{{ 'PROVIDER_JOIN.STEP_APPLY' | translate }}</span></li>
+    <li><strong>2</strong><span>{{ 'PROVIDER_JOIN.STEP_REVIEW' | translate }}</span></li>
+    <li><strong>3</strong><span>{{ 'PROVIDER_JOIN.STEP_APPROVED' | translate }}</span></li>
+  </ul>
+
+  <!-- Anonymous: the application belongs to an account, so sign in first and come back here. -->
+  <div class="card signin" *ngIf="!isLoggedIn()">
+    <h2>{{ 'PROVIDER_JOIN.SIGNIN_TITLE' | translate }}</h2>
+    <p>{{ 'PROVIDER_JOIN.SIGNIN_TEXT' | translate }}</p>
+    <div class="actions">
+      <a class="btn primary" routerLink="/login" [queryParams]="{ returnUrl: returnUrl }">{{ 'PROVIDER_JOIN.SIGNIN' | translate }}</a>
+      <a class="btn secondary" routerLink="/auth/register" [queryParams]="{ returnUrl: returnUrl }">{{ 'PROVIDER_JOIN.REGISTER' | translate }}</a>
+    </div>
+  </div>
+
+  <div *ngIf="isLoggedIn() && loading()" class="state">{{ 'COMMON.LOADING' | translate }}</div>
+  <div *ngIf="isLoggedIn() && loadFailed()" class="state error">
+    <p>{{ 'PROVIDER_JOIN.LOAD_ERROR' | translate }}</p>
+    <button type="button" class="btn" (click)="load()">{{ 'COMMON.RETRY' | translate }}</button>
+  </div>
+
+  <!-- Status of the latest application. -->
+  <article class="card status-card" *ngIf="isLoggedIn() && !loading() && latest() as app" [attr.data-status]="app.status">
+    <div class="status-card__head">
+      <div>
+        <p class="ref">{{ 'PROVIDER_JOIN.REFERENCE' | translate }}: <strong dir="ltr">{{ app.referenceNumber }}</strong></p>
+        <h2>{{ app.displayName }}</h2>
+        <p class="muted">{{ 'PROVIDER_JOIN.SUBMITTED_ON' | translate }} {{ app.createdAt | date:'medium' }}</p>
+      </div>
+      <span class="chip" [attr.data-status]="app.status">{{ ('PROVIDER_ONBOARDING.APP_STATUS.' + app.status) | translate }}</span>
+    </div>
+
+    <p class="hint" *ngIf="app.status === 'Pending'">{{ 'PROVIDER_JOIN.HINT_PENDING' | translate }}</p>
+
+    <div class="callout callout--info" *ngIf="app.status === 'NeedsInfo'">
+      <strong>{{ 'PROVIDER_JOIN.INFO_REQUESTED' | translate }}</strong>
+      <p>{{ app.infoRequest }}</p>
+      <button type="button" class="btn primary" (click)="startRespond()" *ngIf="!formVisible()">{{ 'PROVIDER_JOIN.ANSWER' | translate }}</button>
+    </div>
+
+    <div class="callout callout--bad" *ngIf="app.status === 'Rejected'">
+      <strong>{{ 'PROVIDER_JOIN.REJECTED_REASON' | translate }}</strong>
+      <p>{{ app.decisionReason }}</p>
+    </div>
+
+    <div class="callout callout--ok" *ngIf="app.status === 'Approved'">
+      <strong>{{ 'PROVIDER_JOIN.APPROVED_TITLE' | translate }}</strong>
+      <ng-container *ngIf="provider() as p">
+        <p *ngIf="p.status === 'Active'">{{ 'PROVIDER_JOIN.APPROVED_ACTIVE' | translate }}</p>
+        <p *ngIf="p.status === 'Suspended'">{{ 'PROVIDER_JOIN.PROVIDER_SUSPENDED' | translate }} <span *ngIf="p.statusReason">— {{ p.statusReason }}</span></p>
+        <p *ngIf="p.status === 'Revoked'">{{ 'PROVIDER_JOIN.PROVIDER_REVOKED' | translate }} <span *ngIf="p.statusReason">— {{ p.statusReason }}</span></p>
+        <div class="actions" *ngIf="p.status === 'Active'">
+          <a class="btn primary" routerLink="/provider/requests">{{ 'PROVIDER_JOIN.OPEN_INBOX' | translate }}</a>
+          <a class="btn secondary" routerLink="/provider/profile">{{ 'PROVIDER_JOIN.OPEN_PROFILE' | translate }}</a>
+        </div>
+      </ng-container>
+    </div>
+
+    <dl>
+      <div><dt>{{ 'PROVIDER_JOIN.F_TYPE' | translate }}</dt><dd>{{ ('PROVIDER_ONBOARDING.APPLICANT_TYPE.' + app.applicantType) | translate }}</dd></div>
+      <div><dt>{{ 'PROVIDER_JOIN.F_CATEGORIES' | translate }}</dt>
+        <dd><span class="tag" *ngFor="let c of app.requestedCategories">{{ ('SERVICES.CATEGORY.' + c) | translate }}</span></dd></div>
+      <div><dt>{{ 'PROVIDER_JOIN.F_GOVERNORATES' | translate }}</dt><dd>{{ governorates.names(app.requestedGovernorateIds) }}</dd></div>
+    </dl>
+
+    <details class="timeline" *ngIf="timeline().length > 0">
+      <summary>{{ 'PROVIDER_JOIN.TIMELINE' | translate }}</summary>
+      <ol>
+        <li *ngFor="let event of timeline(); trackBy: trackById">
+          <span class="when">{{ event.createdAt | date:'medium' }}</span>
+          <strong>{{ ('PROVIDER_ONBOARDING.EVENT.' + event.type) | translate }}</strong>
+          <span class="note" *ngIf="event.note">{{ event.note }}</span>
+        </li>
+      </ol>
+    </details>
+
+    <div class="actions">
+      <button type="button" class="btn secondary" *ngIf="isOpen(app.status)" [disabled]="busy()" (click)="confirmWithdraw.set(true)">{{ 'PROVIDER_JOIN.WITHDRAW' | translate }}</button>
+      <button type="button" class="btn primary" *ngIf="canApplyAgain() && !formVisible()" (click)="startApplyAgain()">{{ 'PROVIDER_JOIN.APPLY_AGAIN' | translate }}</button>
+    </div>
+  </article>
+
+  <!-- The application / response form. -->
+  <form class="card form" *ngIf="formVisible()" (ngSubmit)="submit()" novalidate>
+    <h2>{{ (mode() === 'respond' ? 'PROVIDER_JOIN.FORM_RESPOND_TITLE' : 'PROVIDER_JOIN.FORM_TITLE') | translate }}</h2>
+
+    <fieldset class="field">
+      <legend>{{ 'PROVIDER_JOIN.F_TYPE' | translate }}</legend>
+      <label class="radio"><input type="radio" name="applicantType" value="Individual" [ngModel]="draft().applicantType" (ngModelChange)="patch({ applicantType: $event })"> {{ 'PROVIDER_ONBOARDING.APPLICANT_TYPE.Individual' | translate }}</label>
+      <label class="radio"><input type="radio" name="applicantType" value="Company" [ngModel]="draft().applicantType" (ngModelChange)="patch({ applicantType: $event })"> {{ 'PROVIDER_ONBOARDING.APPLICANT_TYPE.Company' | translate }}</label>
+    </fieldset>
+
+    <div class="field">
+      <label for="pj-display">{{ 'PROVIDER_JOIN.F_DISPLAY_NAME' | translate }}</label>
+      <input id="pj-display" name="displayName" maxlength="150" autocomplete="organization" [ngModel]="draft().displayName" (ngModelChange)="patch({ displayName: $event })">
+      <small class="hint">{{ 'PROVIDER_JOIN.F_DISPLAY_NAME_HINT' | translate }}</small>
+      <p class="err" *ngIf="errors()['displayName'] as e">{{ e | translate }}</p>
+    </div>
+
+    <div class="field">
+      <label for="pj-contact">{{ 'PROVIDER_JOIN.F_CONTACT_NAME' | translate }}</label>
+      <input id="pj-contact" name="contactName" maxlength="150" autocomplete="name" [ngModel]="draft().contactName" (ngModelChange)="patch({ contactName: $event })">
+      <p class="err" *ngIf="errors()['contactName'] as e">{{ e | translate }}</p>
+    </div>
+
+    <div class="grid2">
+      <div class="field">
+        <label for="pj-email">{{ 'PROVIDER_JOIN.F_EMAIL' | translate }}</label>
+        <input id="pj-email" name="contactEmail" type="email" dir="ltr" maxlength="320" autocomplete="email" [ngModel]="draft().contactEmail" (ngModelChange)="patch({ contactEmail: $event })">
+      </div>
+      <div class="field">
+        <label for="pj-phone">{{ 'PROVIDER_JOIN.F_PHONE' | translate }}</label>
+        <input id="pj-phone" name="contactPhone" type="tel" dir="ltr" maxlength="50" autocomplete="tel" [ngModel]="draft().contactPhone" (ngModelChange)="patch({ contactPhone: $event })">
+      </div>
+    </div>
+    <p class="err" *ngIf="errors()['contact'] as e">{{ e | translate }}</p>
+
+    <div class="field" *ngIf="draft().applicantType === 'Company'">
+      <label for="pj-company">{{ 'PROVIDER_JOIN.F_COMPANY' | translate }}</label>
+      <input id="pj-company" name="companyName" maxlength="200" autocomplete="organization" [ngModel]="draft().companyName" (ngModelChange)="patch({ companyName: $event })">
+      <p class="err" *ngIf="errors()['companyName'] as e">{{ e | translate }}</p>
+    </div>
+
+    <div class="field">
+      <label for="pj-license">{{ 'PROVIDER_JOIN.F_LICENSE' | translate }}</label>
+      <input id="pj-license" name="licenseNumber" maxlength="100" dir="ltr" [ngModel]="draft().licenseNumber" (ngModelChange)="patch({ licenseNumber: $event })">
+      <small class="hint">{{ 'PROVIDER_JOIN.F_LICENSE_HINT' | translate }}</small>
+    </div>
+
+    <div class="field">
+      <span class="label">{{ 'PROVIDER_JOIN.F_CATEGORIES' | translate }}</span>
+      <app-choice-chips [options]="categoryOptions()" [selected]="draft().categories" [ariaLabel]="'PROVIDER_JOIN.F_CATEGORIES' | translate"
+                        (selectedChange)="patch({ categories: $event })"></app-choice-chips>
+      <p class="err" *ngIf="errors()['categories'] as e">{{ e | translate }}</p>
+    </div>
+
+    <div class="field">
+      <span class="label">{{ 'PROVIDER_JOIN.F_GOVERNORATES' | translate }}</span>
+      <app-choice-chips [options]="governorateOptions()" [selected]="draft().governorateIds" [ariaLabel]="'PROVIDER_JOIN.F_GOVERNORATES' | translate"
+                        (selectedChange)="patch({ governorateIds: $event })"></app-choice-chips>
+      <p class="err" *ngIf="errors()['governorates'] as e">{{ e | translate }}</p>
+    </div>
+
+    <div class="field">
+      <label for="pj-exp">{{ 'PROVIDER_JOIN.F_EXPERIENCE' | translate }}</label>
+      <textarea id="pj-exp" name="experience" rows="5" maxlength="3000" [ngModel]="draft().experience" (ngModelChange)="patch({ experience: $event })"></textarea>
+      <p class="err" *ngIf="errors()['experience'] as e">{{ e | translate }}</p>
+    </div>
+
+    <div class="field" *ngIf="mode() === 'respond'">
+      <label for="pj-msg">{{ 'PROVIDER_JOIN.F_MESSAGE' | translate }}</label>
+      <textarea id="pj-msg" name="message" rows="3" maxlength="2000" [ngModel]="draft().message" (ngModelChange)="patch({ message: $event })"></textarea>
+      <p class="err" *ngIf="errors()['message'] as e">{{ e | translate }}</p>
+    </div>
+
+    <div class="field" *ngIf="mode() === 'submit'">
+      <label class="check">
+        <input type="checkbox" name="terms" [ngModel]="draft().termsAccepted" (ngModelChange)="patch({ termsAccepted: $event })">
+        <span>{{ 'PROVIDER_JOIN.F_TERMS' | translate }}
+          <a routerLink="/terms-of-service" target="_blank" rel="noopener">{{ 'PROVIDER_JOIN.TERMS_LINK' | translate }}</a>
+          ·
+          <a routerLink="/privacy-policy" target="_blank" rel="noopener">{{ 'PROVIDER_JOIN.PRIVACY_LINK' | translate }}</a>
+        </span>
+      </label>
+      <p class="err" *ngIf="errors()['terms'] as e">{{ e | translate }}</p>
+    </div>
+
+    <p class="hint">{{ 'PROVIDER_JOIN.DOCS_NOTE' | translate }}</p>
+
+    <div class="actions">
+      <button type="submit" class="btn primary" [disabled]="busy()">
+        {{ busy() ? ('COMMON.SAVING' | translate) : ((mode() === 'respond' ? 'PROVIDER_JOIN.SEND_RESPONSE' : 'PROVIDER_JOIN.SUBMIT') | translate) }}
+      </button>
+      <button type="button" class="btn secondary" *ngIf="latest()" (click)="cancelForm()" [disabled]="busy()">{{ 'COMMON.CANCEL' | translate }}</button>
+    </div>
+  </form>
+
+  <app-confirm-modal [open]="confirmWithdraw()" [danger]="true"
+                     [title]="'PROVIDER_JOIN.WITHDRAW_TITLE' | translate"
+                     [confirmLabel]="'PROVIDER_JOIN.WITHDRAW' | translate"
+                     (confirmed)="withdraw()" (cancelled)="confirmWithdraw.set(false)">
+    {{ 'PROVIDER_JOIN.WITHDRAW_TEXT' | translate }}
+  </app-confirm-modal>
+
+  <section class="card" *ngIf="history().length > 0">
+    <h2>{{ 'PROVIDER_JOIN.PREVIOUS' | translate }}</h2>
+    <ul class="previous">
+      <li *ngFor="let app of history(); trackBy: trackById">
+        <span dir="ltr">{{ app.referenceNumber }}</span>
+        <span class="chip" [attr.data-status]="app.status">{{ ('PROVIDER_ONBOARDING.APP_STATUS.' + app.status) | translate }}</span>
+        <span class="muted">{{ app.createdAt | date:'mediumDate' }}</span>
+      </li>
+    </ul>
+  </section>
+</section>

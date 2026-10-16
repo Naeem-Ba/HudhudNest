@@ -65,6 +65,9 @@
               ? ('MY_LISTINGS.PUBLISHED' | translate)
               : ('MY_LISTINGS.DRAFT' | translate) }}
         </span>
+        <span class="badge status-tag" *ngIf="statusTagKey(p) as tagKey" [ngClass]="statusBadgeClass(p)" data-testid="status-tag">
+          {{ tagKey | translate }}
+        </span>
       </div>
 
       <!-- Info -->
@@ -79,7 +82,7 @@
           <dd>{{ getPrice(p) }}</dd>
 
           <dt>{{ 'PROPERTY_DETAIL.AREA' | translate }}</dt>
-          <dd>{{ p.area ? (p.area + ' م²') : '—' }}</dd>
+          <dd>{{ p.area ? (p.area + ' ' + ('COMMON.area_unit' | translate)) : '—' }}</dd>
 
           <dt>{{ 'PROPERTY_DETAIL.ROOMS' | translate }}</dt>
           <dd>{{ p.rooms ?? '—' }}</dd>
@@ -107,6 +110,20 @@
           {{ 'MY_LISTINGS.CREATED_AT' | translate }}:
           {{ p.createdAt | date:'dd/MM/yyyy' }}
         </time>
+
+        <!-- حالة الإعلان: متاح / محجوز / مباع / مؤجر / مؤرشف. المحجوز يبقى معروضًا؛ المباع والمؤجر يخرجان من البحث. -->
+        <div class="status-control" *ngIf="canChangeStatus(p)">
+          <label [for]="'status-' + p.id">{{ 'LISTING_STATUS.OWNER_LABEL' | translate }}</label>
+          <select
+            [id]="'status-' + p.id"
+            [disabled]="statusChangingId() === p.id"
+            (change)="changeStatus(p, $any($event.target))"
+          >
+            <option *ngFor="let status of selectableStatuses" [value]="status" [selected]="status === currentStatus(p)">
+              {{ statusOptionKey(status) | translate }}
+            </option>
+          </select>
+        </div>
 
         <!-- Actions -->
         <div class="card-actions">

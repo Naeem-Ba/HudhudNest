@@ -1,11 +1,13 @@
 // Profile page: handles user data, password changes, data export and account deletion.
 // ✅ Avatar upload is now live — POST /users/me/avatar (UsersController.UploadAvatar).
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
+import { isRateLimited } from '../core/api/rate-limited';
+import { phoneStatus } from './phone-status';
 import { ProfileService, UserProfile } from '../core/api/profile.service';
 import { AuthService } from '../core/auth/auth.service';
 import { RouterLink } from '@angular/router';
@@ -15,6 +17,7 @@ import { ToastService } from '../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../shared/ui/loading-spinner.component';
 import { ImageFallbackDirective } from '../shared/directives/image-fallback.directive';
 import { ConfirmModalComponent } from '../shared/ui/confirm-modal.component';
+import { PreferencesCardComponent } from '../shared/ui/preferences-card.component';
 import { AVATAR_COMPRESSION, compressImageForUpload } from '../shared/utils/image-compression';
 import { AppUpdateNativeGateway } from '../core/api/app-update-native.gateway';
 import { NativeFileExportGateway } from '../core/native/native-file-export.gateway';
@@ -31,7 +34,8 @@ import { formatDeletionDate } from '../shared/utils/deletion-date';
     RouterLink,
     LoadingSpinnerComponent,
     ImageFallbackDirective,
-    ConfirmModalComponent
+    ConfirmModalComponent,
+    PreferencesCardComponent
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
@@ -54,6 +58,9 @@ export class ProfileComponent implements OnInit {
   errorMsg      = signal('');
   avatarPreview = signal<string | null>(null);
   showPasswordForm = signal(false);
+
+  /** The login phone as the page shows it: confirmed, stored but unconfirmed, or none. */
+  readonly phoneInfo = computed(() => phoneStatus(this.user()));
 
   // ✅ إضافة: تدفق "بريد إلكتروني ثانوي" — email/add + email/verify
   // (PhoneAuthController كان يوفّر هذين المسارين بلا أي استهلاك من الواجهة).
@@ -160,9 +167,13 @@ export class ProfileComponent implements OnInit {
         this.submitted = false;
         this.toast.success(this.translate.instant('PROFILE.MESSAGES.SAVE_SUCCESS'));
       },
-      error: () => {
+      error: (error: unknown) => {
         this.isSaving.set(false);
-        this.toast.error(this.translate.instant('PROFILE.MESSAGES.SAVE_ERROR'));
+        // A refusal about the phone (for example an agent account that still has no number) points to the
+        // phone section; the form no longer edits the number itself.
+        const phoneRefused = !!(error as { error?: { errors?: Record<string, unknown> } })?.error?.errors?.['PhoneNumber'];
+        this.toast.error(this.translate.instant(
+          phoneRefused ? 'PROFILE.MESSAGES.PHONE_SAVE_ERROR' : 'PROFILE.MESSAGES.SAVE_ERROR'));
       }
     });
   }
@@ -261,9 +272,12 @@ export class ProfileComponent implements OnInit {
         this.toast.success(this.translate.instant('PROFILE.MESSAGES.PASS_SUCCESS'));
         this.resetPasswordForm();
       },
-      error: () => {
+      error: error => {
         this.isSaving.set(false);
-        this.toast.error(this.translate.instant('PROFILE.MESSAGES.PASS_ERROR'));
+        // 429: the hourly limit on password changes -- say so instead of "could not change".
+        this.toast.error(this.translate.instant(
+          isRateLimited(error) ? 'PROFILE.MESSAGES.PASS_RATE_LIMITED' : 'PROFILE.MESSAGES.PASS_ERROR'
+        ));
       }
     });
   }
@@ -328,7 +342,10 @@ export class ProfileComponent implements OnInit {
       case 'EMAIL_CONFIRMATION_LIMIT_REACHED':
         return this.translate.instant('PROFILE.EMAIL_SECTION.ERRORS.LIMIT_REACHED');
       default:
-        return this.translate.instant('PROFILE.EMAIL_SECTION.ERRORS.GENERIC');
+        // A 429 without our code is some other limiter: still a limit, not a failed send.
+        return this.translate.instant(
+          isRateLimited(error) ? 'API_ERRORS.RATE_LIMITED' : 'PROFILE.EMAIL_SECTION.ERRORS.GENERIC'
+        );
     }
   }
 
@@ -467,7 +484,7 @@ export class ProfileComponent implements OnInit {
         this.isExporting.set(false);
         this.toast.error(
           this.translate.instant(
-            err?.status === 429 ? 'PROFILE.DATA_EXPORT.RATE_LIMITED' : 'PROFILE.DATA_EXPORT.ERROR'
+            isRateLimited(err) ? 'PROFILE.DATA_EXPORT.RATE_LIMITED' : 'PROFILE.DATA_EXPORT.ERROR'
           )
         );
       }

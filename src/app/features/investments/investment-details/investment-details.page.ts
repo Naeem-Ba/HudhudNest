@@ -22,6 +22,7 @@ import {
 import { LoadingSpinnerComponent } from '../../../shared/ui/loading-spinner.component';
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
 import { PageMetaService } from '../../../core/services/page-meta.service';
+import { uiNumberLocale } from '../../../core/i18n/ui-language';
 
 @Component({
   selector: 'app-investment-details',
@@ -220,7 +221,7 @@ export class InvestmentDetailsPage implements OnInit {
 
   formatAmount(value: number, currency: string): string {
     try {
-      return new Intl.NumberFormat('en', { style: 'currency', currency, maximumFractionDigits: 0 }).format(value);
+      return new Intl.NumberFormat(uiNumberLocale(), { style: 'currency', currency, maximumFractionDigits: 0 }).format(value);
     } catch {
       return `${value.toLocaleString('en')} ${currency}`;
     }

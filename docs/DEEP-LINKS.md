@@ -43,6 +43,7 @@
 ### 2) Android — بصمة الشهادة
 - بصمة **مفتاح الرفع** (`aqar-tech`) مضافة سلفًا (موثّقة في `android/RELEASE_SIGNING.md`) وتكفي للبناءات الموقّعة من CI والتثبيت المباشر.
 - إن كان التطبيق على Google Play مع **Play App Signing** (الافتراضي)، فالتطبيق المُوزَّع يُوقَّع بشهادة مختلفة. انسخ بصمة SHA-256 من Play Console ← Setup ← App signing ← "App signing key certificate" وأضفها في Netlify: `ANDROID_SHA256_CERT_FINGERPRINTS=<البصمة>` (تُدمج مع الموجودة؛ يمكن فصل عدة بصمات بفاصلة). بدونها لن يتحقق الرابط للمستخدمين القادمين من المتجر.
+  - **تم (2026-10-15):** بصمة مفتاح توقيع التطبيق لدى Google Play (`B4:94:0D:22:...:CA:E2:C5`) أُضيفت إلى `android.sha256CertFingerprints` في `deep-links.config.json` (قيمة عامة)، بجانب بصمة مفتاح الرفع. لا حاجة لمتغير Netlify. يصل التغيير إلى الموقع الحي مع نشر الإنتاج التالي.
 
 ### 2.1) تغيير المعرّف إلى `com.hudhudnest.app`
 - قرار المالك بتاريخ 2026-10-08 قبل أول نشر في أي متجر. ملف `assetlinks.json` المنشور اليوم على الإنتاج يحمل الحزمة القديمة `com.realestate.app`، وينتقل إلى الحزمة الجديدة عند أول نشر (Publish deploy) بعد دمج هذا التعديل. حتى ذلك الحين لن يتحقق التطبيق الجديد من الرابط.
@@ -66,22 +67,26 @@ adb shell am start -a android.intent.action.VIEW -d "https://hudhudnest.com/prop
 
 ## صفحة التحميل `/download` ورمز QR
 
-عنوان واحد ثابت، `https://hudhudnest.com/download`، يوجّه الزائر إلى متجره، وهو ما يشير إليه رمز QR الوحيد. هذه صفحة HTML ثابتة وليست مسارًا في Angular، تُولَّد عند كل بناء بـ `tools/generate-download-page.mjs` (منطقها وحراسها في `tools/lib/download-page.mjs` و`.test.mjs`) إلى `public/download/index.html` و`public/download/qr.svg` (مُتجاهَلان في git). قاعدة `/download -> /download/index.html 200!` في `public/_redirects` تسبق قاعدة `/*`.
+عنوان واحد ثابت، `https://hudhudnest.com/download`، يعرض كل طرق الحصول على التطبيق المتاحة فعلًا، وهو ما يشير إليه رمز QR الوحيد. هذه صفحة HTML ثابتة وليست مسارًا في Angular، تُولَّد عند كل بناء بـ `tools/generate-download-page.mjs` (منطقها وحراسها في `tools/lib/download-page.mjs` و`.test.mjs`) إلى `public/download/index.html` و`public/download/qr.svg` (مُتجاهَلان في git). قاعدة `/download -> /download/index.html 200!` في `public/_redirects` تسبق قاعدة `/*`. الرابط إليها من الموقع («تنزيل التطبيق» في الشريط والقائمة الجانبية وتذييل الصفحة الرئيسية) رابط عادي `<a href="/download">` يحمّل الصفحة كاملة، ويختفي داخل التطبيق المثبَّت (`isNativeApp()`).
 
 | الحالة | ما تفعله الصفحة |
 |---|---|
-| المتجر غير منشور (`stores.<os>.published` ليست `true`، وهذه حالتها الآن) | تقول «قريبًا» وتعرض زر «افتح الموقع». لا رابط متجر ولا كود تحويل في الصفحة إطلاقًا |
-| Android ومتجر Play منشور | تحوّل إلى `https://play.google.com/store/apps/details?id=<android.package>` |
-| iPhone/iPad ومتجر App Store منشور | تحوّل إلى `https://apps.apple.com/app/id<appStoreId>` |
-| سطح مكتب | تعرض رمز QR وأزرار المتجرين، دون تحويل |
+| المتجر غير منشور (`stores.<os>.published` ليست `true`، وهذه حالتها الآن) | بطاقة المتجر تقول «غير متاح بعد» بلا أي زر أو رابط |
+| Google Play منشور | زر «فتح في Google Play» إلى `https://play.google.com/store/apps/details?id=<android.package>` |
+| App Store منشور | زر «فتح في App Store» إلى `https://apps.apple.com/app/id<appStoreId>` |
+| وُجد بيان معتمد `downloads/android-release.json` | بطاقة «تنزيل مباشر (APK)» بالإصدار والتاريخ والحجم وSHA-256 وبصمة التوقيع ومساعدة التثبيت؛ الزر يذهب إلى `/download/android` فقط. التفاصيل في `docs/ANDROID-DIRECT-DOWNLOAD-AR.md` |
+| أي جهاز | كل البطاقات ظاهرة؛ الكشف عن الجهاز (`data-os`) يبرز البطاقة المناسبة ويرتّبها أولًا فقط |
+| سطح المكتب | تعرض أيضًا رمز QR |
 
 قواعد لا تُكسر (تحرسها الاختبارات):
-- **الوجهة لا تُقرأ من الطلب**: لا `?url=` ولا hash ولا referrer. العنوانان الوحيدان الممكنان يُبنيان من `android.package` و`stores.ios.appStoreId` (أرقام فقط) بعد فحص صارم، وأي قيمة تالفة تُفشل البناء بدل أن تُنشر.
+- **لا تحويل تلقائي ولا قراءة للطلب**: السكربت لا يغيّر الموقع أبدًا ولا يقرأ `?url=` ولا hash ولا referrer. العناوين الممكنة: عنوانا المتجرين (يُبنيان من `android.package` و`stores.ios.appStoreId` بعد فحص صارم) وعنوان APK المعتمد (مضيف ومسار ثابتان يحددهما `downloads.android.urlPrefix` والإصدار، وSHA-256 حقيقي). أي قيمة تالفة تُفشل البناء بدل أن تُنشر.
 - **لا تضف `/download` إلى `paths` في `deep-links.config.json`**: لو فعلت لفتح التطبيق المثبّت الصفحة نفسها بدل أن ينتقل إلى المتجر.
 - QR يرمّز تمامًا `https://<host>/download` من حقل `host`؛ تغيير النطاق يغيّر الرمز (ويلزم إعادة طباعته إن طُبع).
-- بلا تحليلات ولا مكتبات طرف ثالث ولا خطوط خارجية، والصفحة `noindex`.
+- بلا تحليلات ولا مكتبات طرف ثالث ولا خطوط خارجية.
+- الصفحة `noindex` في كل بناء ما عدا نشر Production الحقيقي (`CONTEXT=production`، نفس مفتاح `robots.txt`)، وهي مدرجة في `sitemap.xml`.
+- كتلة `/download/android` في `public/_redirects` يولّدها البناء (`npm run generate:download`)، ويفشل اختبار إن اختلفت عن البيان.
 
-**ما عليك فعله عند نشر التطبيق في متجر:** في `deep-links.config.json` غيّر `stores.android.published` إلى `true` بعد أن يصبح التطبيق متاحًا فعلًا على Google Play. وفي iOS ضع الرقم في `stores.ios.appStoreId` (من App Store Connect، بلا بادئة `id`) ثم `stores.ios.published: true`. لا تفعّل العلم قبل النشر الفعلي، وإلا حُوِّل الزوار إلى صفحة متجر غير موجودة.
+**ما عليك فعله عند نشر التطبيق في متجر:** في `deep-links.config.json` غيّر `stores.android.published` إلى `true` بعد أن يصبح التطبيق متاحًا فعلًا على Google Play. وفي iOS ضع الرقم في `stores.ios.appStoreId` (من App Store Connect، بلا بادئة `id`) ثم `stores.ios.published: true`. لا تفعّل العلم قبل النشر الفعلي، وإلا عُرض زر إلى صفحة متجر غير موجودة.
 
 ## إضافة مسار جديد قابل للفتح
 1. أضفه في `deep-links.config.json` (`paths.prefixes`).

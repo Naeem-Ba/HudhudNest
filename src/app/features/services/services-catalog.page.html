@@ -5,7 +5,10 @@
       <h1>{{ 'SERVICES_CATALOG.TITLE' | translate }}</h1>
       <p>{{ 'SERVICES_CATALOG.SUBTITLE' | translate }}</p>
     </div>
-    <a *ngIf="isLoggedIn | async" routerLink="/my-services" class="btn secondary">{{ 'NAVBAR.MY_SERVICES' | translate }}</a>
+    <div class="header-actions">
+      <a *ngIf="isLoggedIn | async" routerLink="/my-services" class="btn secondary">{{ 'NAVBAR.MY_SERVICES' | translate }}</a>
+      <a routerLink="/services/join" class="btn primary">{{ 'PROVIDER_JOIN.TITLE' | translate }}</a>
+    </div>
   </header>
 
   <p class="how-to">
@@ -20,6 +23,7 @@
             [attr.aria-pressed]="selectedCategory() === category"
             (click)="selectCategory(category)">
       {{ ('SERVICES.CATEGORY.' + category) | translate }}
+      <span class="pill-count" *ngIf="countFor(category) !== null" [class.pill-count--zero]="countFor(category) === 0">{{ countFor(category) }}</span>
     </button>
   </div>
 
@@ -29,7 +33,9 @@
     <button type="button" class="btn" (click)="load()">{{ 'COMMON.RETRY' | translate }}</button>
   </div>
   <div *ngIf="!loading() && !error() && offerings().length === 0" class="state">
-    {{ 'SERVICES_CATALOG.EMPTY' | translate }}
+    <strong>{{ 'SERVICES_CATALOG.EMPTY' | translate }}</strong>
+    <p>{{ 'SERVICES_CATALOG.EMPTY_HINT' | translate }}</p>
+    <a routerLink="/services/join" class="btn secondary">{{ 'SERVICES_CATALOG.EMPTY_JOIN' | translate }}</a>
   </div>
 
   <div class="cards" *ngIf="!loading() && !error() && offerings().length > 0">
@@ -40,13 +46,16 @@
         <span *ngIf="isVerified(offering)" class="badge">✓ {{ 'SERVICES_CATALOG.VERIFIED_PROVIDER' | translate }}</span>
       </p>
       <p *ngIf="offering.description" class="description">{{ offering.description }}</p>
+      <p *ngIf="coverageOf(offering) as coverage" class="meta">
+        {{ 'SERVICES_CATALOG.COVERAGE' | translate }}: {{ coverage }}
+      </p>
       <p *ngIf="offering.estimatedDurationDays" class="meta">
         {{ 'SERVICES_CATALOG.DURATION' | translate: { days: offering.estimatedDurationDays } }}
       </p>
     </article>
   </div>
 
-  <a routerLink="/kontakt" [queryParams]="{ intent: 'service-provider' }" class="become-provider-banner">
+  <a routerLink="/services/join" class="become-provider-banner">
     <span aria-hidden="true">🛠️</span>
     <span class="become-provider-banner__text">
       <strong>{{ 'SERVICE_REQUESTS.BECOME_PROVIDER.TITLE' | translate }}</strong>

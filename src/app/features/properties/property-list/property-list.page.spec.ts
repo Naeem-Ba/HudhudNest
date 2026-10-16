@@ -16,18 +16,24 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { BehaviorSubject, of, Subject } from 'rxjs';
+import { BehaviorSubject, of, Subject, throwError } from 'rxjs';
 
 import { PropertyListPage } from './property-list.page';
 import { PropertyApiService } from '../../../core/api/property-api.service';
-import { FavoritesApiService } from '../../../core/api/favorites-api.service';
 import { SavedSearchApiService } from '../../../core/api/saved-search-api.service';
-import { LookupsApiService } from '../../../core/api/lookups-api.service';
+import { CurrencyLookup, LookupsApiService } from '../../../core/api/lookups-api.service';
+import { PageMetaService } from '../../../core/services/page-meta.service';
+import { PreferencesService } from '../../../core/services/preferences.service';
+import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/auth/auth.service';
 import { LanguageService } from '../../../core/services/language.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { PagedResult } from '../../../core/models/api.model';
 import { Property, PropertyFilterDto } from '../../../core/models/property.model';
+
+function currencyRow(code: string, rate: number, isBase = false): CurrencyLookup {
+  return { code, nameEn: code, nameAr: code, symbol: code, decimalPlaces: 2, exchangeRateToUsd: rate, rateUpdatedAt: '2026-10-01T00:00:00Z', isBase };
+}
 
 function pagedResult(items: Property[], page: number, totalCount: number, pageSize = 20): PagedResult<Property> {
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
@@ -55,10 +61,11 @@ function toParamMap(queryParams: Record<string, unknown>): ParamMap {
 describe('PropertyListPage', () => {
   let component: PropertyListPage;
   let propertyApiSpy: jasmine.SpyObj<PropertyApiService>;
+  let lookupsApiSpy: jasmine.SpyObj<LookupsApiService>;
   let routerSpy: jasmine.SpyObj<Router>;
   let paramMapSubject: BehaviorSubject<ParamMap>;
 
-  function createComponent(initialParams: Record<string, unknown> = {}): PropertyListPage {
+  function createComponent(initialParams: Record<string, unknown> = {}, preferredCurrency: string | null = null): PropertyListPage {
     // Some tests (deep-link) build a second component within the same `it`, after the
     // outer beforeEach already instantiated one — TestBed requires an explicit reset
     // between two configureTestingModule calls within a single test.
@@ -80,12 +87,10 @@ describe('PropertyListPage', () => {
       return Promise.resolve(true);
     });
 
-    const favoritesApiSpy = jasmine.createSpyObj('FavoritesApiService', ['getFavorites']);
-    favoritesApiSpy.getFavorites.and.returnValue(of([]));
-
-    const lookupsApiSpy = jasmine.createSpyObj('LookupsApiService', [
-      'getCities', 'getAmenities', 'getGovernorates', 'getPropertyTypeCatalog', 'getDistricts', 'getNeighborhoods'
+    lookupsApiSpy = jasmine.createSpyObj('LookupsApiService', [
+      'getCities', 'getAmenities', 'getGovernorates', 'getPropertyTypeCatalog', 'getDistricts', 'getNeighborhoods', 'getCurrencies'
     ]);
+    lookupsApiSpy.getCurrencies.and.returnValue(of([currencyRow('USD', 1, true), currencyRow('SYP', 14000), currencyRow('EUR', 0.9)]));
     lookupsApiSpy.getCities.and.returnValue(of([]));
     lookupsApiSpy.getAmenities.and.returnValue(of([]));
     lookupsApiSpy.getGovernorates.and.returnValue(of([]));
@@ -100,11 +105,12 @@ describe('PropertyListPage', () => {
       imports: [PropertyListPage],
       providers: [
         { provide: PropertyApiService, useValue: propertyApiSpy },
-        { provide: FavoritesApiService, useValue: favoritesApiSpy },
         { provide: SavedSearchApiService, useValue: jasmine.createSpyObj('SavedSearchApiService', ['create']) },
         { provide: LookupsApiService, useValue: lookupsApiSpy },
         { provide: AuthService, useValue: authSpy },
         { provide: LanguageService, useValue: { getCurrent: () => 'ar' } },
+        { provide: PreferencesService, useValue: { currency: preferredCurrency } },
+        { provide: PageMetaService, useValue: jasmine.createSpyObj<PageMetaService>('PageMetaService', ['applyTranslated']) },
         { provide: ToastService, useValue: jasmine.createSpyObj('ToastService', ['success', 'error', 'info']) },
         {
           provide: TranslateService,
@@ -145,6 +151,7 @@ describe('PropertyListPage', () => {
       listingType: undefined,
       minPrice: undefined,
       maxPrice: undefined,
+      currencyCode: undefined,
       amenityIds: undefined,
       sortBy: 'CreatedAt',
       sortDescending: true,
@@ -240,6 +247,302 @@ describe('PropertyListPage', () => {
       expect(req.page).toBe(1);
       expect(req.city).toBeUndefined();
       expect(req.searchTerm).toBeUndefined();
+    });
+  });
+
+  describe('اقتراحات المدينة تتبع المحافظة المختارة', () => {
+    it('✅ بلا محافظة تُجلب كل المدن', () => {
+      expect(lookupsApiSpy.getCities).toHaveBeenCalledTimes(1);
+      expect(lookupsApiSpy.getCities).toHaveBeenCalledWith(null);
+    });
+
+    it('✅ اختيار محافظة يجلب مدنها فقط، ومسحها يعيد كل المدن', () => {
+      component.governorateId = 3;
+      component.onGovernorateChange();
+      expect(lookupsApiSpy.getCities).toHaveBeenCalledWith(3);
+
+      component.governorateId = null;
+      component.onGovernorateChange();
+      expect(lookupsApiSpy.getCities.calls.mostRecent().args[0]).toBeNull();
+    });
+
+    it('✅ تغيير المحافظة يمسح المدينة المكتوبة لأنها تخص المحافظة السابقة', () => {
+      component.cityFilter = 'Aleppo';
+      component.governorateId = 1;
+
+      component.onGovernorateChange();
+
+      expect(component.cityFilter).toBe('');
+    });
+
+    it('✅ رابط يحمل governorateId يجلب مدن تلك المحافظة عند فتح الصفحة', () => {
+      createComponent({ governorateId: '5' });
+
+      expect(lookupsApiSpy.getCities).toHaveBeenCalledWith(5);
+    });
+
+    it('✅ اختيار المحافظة نفسها مرتين متتاليتين لا يعيد الطلب', () => {
+      component.governorateId = 3;
+      component.onGovernorateChange();
+      component.onGovernorateChange();
+
+      expect(lookupsApiSpy.getCities.calls.allArgs().filter(a => a[0] === 3).length).toBe(1);
+    });
+
+    it('✅ إعادة الضبط تعيد كل المدن', () => {
+      component.governorateId = 3;
+      component.onGovernorateChange();
+
+      component.resetFilters();
+
+      expect(lookupsApiSpy.getCities.calls.mostRecent().args[0]).toBeNull();
+    });
+  });
+
+  describe('اسم المحافظة المكتوب كمدينة يُرسَل كفلتر محافظة', () => {
+    const damascus = { id: 1, nameAr: 'دمشق', nameEn: 'Damascus' };
+    const ruralDamascus = { id: 2, nameAr: 'ريف دمشق', nameEn: 'Rural Damascus' };
+
+    beforeEach(() => component.governorates.set([damascus, ruralDamascus]));
+
+    it('✅ بلا محافظة مختارة: «دمشق» تصبح governorateId=1 ولا تُرسَل مدينة', () => {
+      component.cityFilter = 'دمشق';
+      component.applyFilters();
+
+      const req = lastRequest();
+      expect(req.governorateId).toBe(1);
+      expect(req.city).toBeUndefined();
+      expect(routerSpy.navigate).toHaveBeenCalledWith([], jasmine.objectContaining({
+        queryParams: jasmine.objectContaining({ governorateId: 1, city: null })
+      }));
+    });
+
+    it('✅ الاسم الإنجليزي بأي حالة أحرف يعطي النتيجة نفسها، و«ريف دمشق» لا تختلط بـ«دمشق»', () => {
+      component.cityFilter = '  damascus ';
+      component.applyFilters();
+      expect(lastRequest().governorateId).toBe(1);
+
+      component.cityFilter = 'RURAL DAMASCUS';
+      component.governorateId = null;
+      component.applyFilters();
+      expect(lastRequest().governorateId).toBe(2);
+      expect(lastRequest().city).toBeUndefined();
+    });
+
+    it('✅ مع المحافظة نفسها مختارة تُحذف المدينة ويبقى فلتر المحافظة', () => {
+      component.governorateId = 1;
+      component.cityFilter = 'Damascus';
+      component.applyFilters();
+
+      expect(lastRequest().governorateId).toBe(1);
+      expect(lastRequest().city).toBeUndefined();
+    });
+
+    it('✅ اسم محافظة أخرى غير المختارة ينقل الاختيار إليها ويمسح المنطقة والحي القديمين', () => {
+      component.governorateId = 1;
+      component.districtId = 11;
+      component.neighborhoodId = 111;
+      component.cityFilter = 'ريف دمشق';
+      component.applyFilters();
+
+      const req = lastRequest();
+      expect(req.governorateId).toBe(2);
+      expect(req.districtId).toBeUndefined();
+      expect(req.neighborhoodId).toBeUndefined();
+      expect(req.city).toBeUndefined();
+    });
+
+    it('✅ اسم المحافظة المختارة نفسها لا يمسح المنطقة والحي', () => {
+      component.governorateId = 1;
+      component.districtId = 11;
+      component.neighborhoodId = 111;
+      component.cityFilter = 'دمشق';
+      component.applyFilters();
+
+      const req = lastRequest();
+      expect(req.governorateId).toBe(1);
+      expect(req.districtId).toBe(11);
+      expect(req.neighborhoodId).toBe(111);
+    });
+
+    it('✅ مدينة عادية (ليست اسم محافظة) تبقى بحثًا نصيًا كما هي', () => {
+      component.cityFilter = 'Jaramana';
+      component.applyFilters();
+
+      expect(lastRequest().city).toBe('Jaramana');
+      expect(lastRequest().governorateId).toBeUndefined();
+    });
+
+    it('✅ البحث المحفوظ يحفظ المحافظة لا نص المدينة', () => {
+      const savedSearchApi = TestBed.inject(SavedSearchApiService) as jasmine.SpyObj<SavedSearchApiService>;
+      savedSearchApi.create.and.returnValue(of({} as never));
+      spyOn(window, 'prompt').and.returnValue('بحثي');
+
+      component.cityFilter = 'دمشق';
+      component.saveCurrentSearch();
+
+      expect(savedSearchApi.create).toHaveBeenCalledWith(jasmine.objectContaining({ City: null, GovernorateId: 1 }));
+    });
+  });
+
+  describe('العملة (P7-D01)', () => {
+    it('✅ تبدأ بعملة العرض المفضلة للمستخدم إن كانت في القائمة، وإلا بالدولار (الأساس)', () => {
+      expect(component.currencyCode).toBe('USD');
+      expect(createComponent({}, 'SYP').currencyCode).toBe('SYP');
+      expect(createComponent({}, 'SAR').currencyCode).toBe('USD');
+    });
+
+    it('✅ لا تُرسَل العملة (ولا تظهر في الرابط) بلا حدّ سعر', () => {
+      component.currencyCode = 'SYP';
+      component.applyFilters();
+
+      expect(lastRequest().currencyCode).toBeUndefined();
+      expect(routerSpy.navigate).toHaveBeenCalledWith([], jasmine.objectContaining({
+        queryParams: jasmine.objectContaining({ currency: null })
+      }));
+    });
+
+    it('✅ مع حدّ سعر تُرسَل العملة إلى الـ API وتُحفظ في الرابط', () => {
+      component.currencyCode = 'SYP';
+      component.maxPrice = 500000;
+      component.applyFilters();
+
+      expect(lastRequest().currencyCode).toBe('SYP');
+      expect(lastRequest().maxPrice).toBe(500000);
+      expect(routerSpy.navigate).toHaveBeenCalledWith([], jasmine.objectContaining({
+        queryParams: jasmine.objectContaining({ currency: 'SYP', maxPrice: 500000 })
+      }));
+    });
+
+    it('✅ رابط قديم بعملة لم تعد قابلة للبحث (TRY) يعود إلى العملة الافتراضية بدل أن يرفضه الخادم', () => {
+      const instance = createComponent({ minPrice: '100', currency: 'try' });
+
+      expect(instance.currencyCode).toBe('USD');
+      expect(lastRequest().currencyCode).toBe('USD');
+    });
+
+    it('✅ رابط يحمل currency=eur يُقرأ بأحرف كبيرة ويُرسَل مع السعر', () => {
+      const instance = createComponent({ minPrice: '100', currency: 'eur' });
+
+      expect(instance.currencyCode).toBe('EUR');
+      expect(lastRequest().currencyCode).toBe('EUR');
+    });
+
+    it('✅ البحث المحفوظ يحفظ العملة مع المدى', () => {
+      const savedSearchApi = TestBed.inject(SavedSearchApiService) as jasmine.SpyObj<SavedSearchApiService>;
+      savedSearchApi.create.and.returnValue(of({} as never));
+      spyOn(window, 'prompt').and.returnValue('');
+
+      component.currencyCode = 'SYP';
+      component.minPrice = 1000;
+      component.saveCurrentSearch();
+
+      expect(savedSearchApi.create).toHaveBeenCalledWith(jasmine.objectContaining({ MinPrice: 1000, CurrencyCode: 'SYP' }));
+    });
+
+    it('✅ السعر المكافئ التقريبي يظهر فقط أثناء فلترة السعر ولإعلان بعملة مختلفة', () => {
+      const flatInDollars = { id: 'a', currencyCode: 'USD', purchasePrice: 100 } as Property;
+      const flatInPounds = { id: 'b', currencyCode: 'SYP', purchasePrice: 1_400_000 } as Property;
+
+      expect(component.equivalentPrice(flatInDollars)).toBeNull(); // no price filter -> nothing to explain
+
+      component.currencyCode = 'SYP';
+      component.maxPrice = 5_000_000;
+      expect(component.equivalentPrice(flatInDollars)).toContain('≈');
+      expect(component.equivalentPrice(flatInPounds)).toBeNull(); // already in the chosen currency
+    });
+  });
+
+  describe('الفرز بالسعر (P7-D02)', () => {
+    it('✅ تحت «الكل» لا يُرسَل فرز السعر ويُستعمل الأحدث أولًا', () => {
+      component.sortBy = 'PriceDesc';
+      component.applyFilters();
+
+      expect(lastRequest().sortBy).toBe('CreatedAt');
+      expect(component.canSortByPrice).toBeFalse();
+    });
+
+    it('✅ مع نوع إعلان يُرسَل sortBy=Price الموحّد للبيع وللإيجار', () => {
+      component.selectListingType('ForSale');
+      component.sortBy = 'Price';
+      component.applyFilters();
+      expect(lastRequest().sortBy).toBe('Price');
+      expect(lastRequest().sortDescending).toBeFalse();
+
+      component.selectListingType('ForRent');
+      component.sortBy = 'PriceDesc';
+      component.applyFilters();
+      expect(lastRequest().sortBy).toBe('Price');
+      expect(lastRequest().sortDescending).toBeTrue();
+    });
+
+    it('✅ العودة إلى «الكل» تُرجع الفرز إلى الأحدث بدل ترك فرز لا يعمل', () => {
+      component.selectListingType('ForSale');
+      component.sortBy = 'Price';
+
+      component.selectListingType('');
+
+      expect(component.sortBy).toBe('CreatedAt');
+    });
+  });
+
+  describe('أخطاء المدخلات والرابط (P7-D06, P7-D07)', () => {
+    it('✅ مدى سعر معكوس لا يُرسَل للخادم ويظهر سببه مترجمًا', () => {
+      const before = propertyApiSpy.getPropertiesPaged.calls.count();
+      component.minPrice = 900;
+      component.maxPrice = 100;
+
+      component.applyFilters();
+
+      expect(propertyApiSpy.getPropertiesPaged.calls.count()).toBe(before);
+      expect(component.filterError()).toBe('PROPERTY_LIST.PRICE_RANGE_INVERTED');
+
+      component.minPrice = 50;
+      component.applyFilters();
+      expect(component.filterError()).toBe('');
+      expect(propertyApiSpy.getPropertiesPaged.calls.count()).toBe(before + 1);
+    });
+
+    it('✅ رفض الخادم للفلاتر (422) يظهر كخطأ فلاتر لا كعطل تحميل', () => {
+      propertyApiSpy.getPropertiesPaged.and.returnValue(throwError(() => new HttpErrorResponse({ status: 422 })));
+      component.applyFilters();
+      expect(component.error()).toBe('PROPERTY_LIST.INVALID_FILTERS');
+
+      propertyApiSpy.getPropertiesPaged.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+      component.applyFilters();
+      expect(component.error()).toBe('PROPERTY_LIST.LOAD_ERROR');
+    });
+
+    it('✅ page أكبر من الأخير يرجع تلقائيًا إلى آخر صفحة صالحة بدل قائمة فارغة', () => {
+      propertyApiSpy.getPropertiesPaged.and.callFake((filter: PropertyFilterDto = {}) =>
+        of(filter.page === 5 ? pagedResult([{ id: 'last' } as Property], 5, 100) : pagedResult([], filter.page ?? 1, 100))
+      );
+
+      paramMapSubject.next(toParamMap({ page: '99' }));
+
+      expect(routerSpy.navigate).toHaveBeenCalledWith([], jasmine.objectContaining({ replaceUrl: true }));
+      expect(component.currentPage()).toBe(5);
+      expect(component.properties().map(p => p.id)).toEqual(['last']);
+    });
+
+    it('✅ page وpageSize خارج المدى المسموح يُقصّان قبل الإرسال', () => {
+      const withItems = (filter: PropertyFilterDto = {}) => of(pagedResult([{ id: 'x' } as Property], filter.page ?? 1, 100_000, filter.pageSize ?? 20));
+      propertyApiSpy.getPropertiesPaged.and.callFake(withItems);
+
+      paramMapSubject.next(toParamMap({ page: '999999', pageSize: '500' }));
+      expect(lastRequest().pageSize).toBe(100);
+      expect(lastRequest().page).toBe(100); // 10 000 rows / 100 per page
+
+      paramMapSubject.next(toParamMap({ page: '-4', pageSize: 'abc' }));
+      expect(lastRequest().page).toBe(1);
+      expect(lastRequest().pageSize).toBe(20);
+    });
+  });
+
+  describe('محجوز (P7-D08)', () => {
+    it('✅ البطاقة المحجوزة تُميَّز، والعادية لا', () => {
+      expect(component.isReserved({ id: 'a', status: 'Reserved' } as Property)).toBeTrue();
+      expect(component.isReserved({ id: 'b', status: 'Available' } as Property)).toBeFalse();
     });
   });
 

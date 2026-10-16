@@ -52,7 +52,7 @@
         </button>
 
         <div class="radius-control" *ngIf="geoModeActive()">
-          <label class="filter-label">{{ 'PROPERTY_LIST.RADIUS' | translate }}: {{ radiusKm }} كم</label>
+          <label class="filter-label">{{ 'PROPERTY_LIST.RADIUS' | translate }}: {{ radiusKm }} {{ 'PROPERTY_LIST.KM' | translate }}</label>
           <input type="range" min="1" max="50" step="1" [(ngModel)]="radiusKm" name="radiusKm" (change)="onRadiusChange()" />
         </div>
       </div>
@@ -85,50 +85,49 @@
               type="button"
               class="filter-toggle"
               [class.filter-toggle--active]="selectedListingType === ''"
-              (click)="selectedListingType = ''"
+              (click)="selectListingType('')"
             >{{ 'PROPERTY_LIST.ALL' | translate }}</button>
             <button
               type="button"
               class="filter-toggle"
               [class.filter-toggle--active]="selectedListingType === 'ForRent'"
-              (click)="selectedListingType = 'ForRent'"
+              (click)="selectListingType('ForRent')"
             >{{ 'PROPERTY.MODE_RENT' | translate }}</button>
             <button
               type="button"
               class="filter-toggle"
               [class.filter-toggle--active]="selectedListingType === 'ForSale'"
-              (click)="selectedListingType = 'ForSale'"
+              (click)="selectListingType('ForSale')"
             >{{ 'PROPERTY.MODE_SALE' | translate }}</button>
           </div>
         </div>
 
-        <!-- City -->
-        <div class="filter-group">
-          <label class="filter-label" for="filter-city">{{ 'PROPERTY_LIST.CITY' | translate }}</label>
-          <!-- ✅ إضافة: اقتراحات مدن حقيقية من GET /api/lookups/cities -->
-          <input
-            id="filter-city"
-            type="text"
-            list="propertyListCitySuggestions"
-            [(ngModel)]="cityFilter"
-            name="city"
-            [placeholder]="'PROPERTY_LIST.CITY_PLACEHOLDER' | translate"
-          />
-          <datalist id="propertyListCitySuggestions">
-            <option *ngFor="let city of citySuggestions()" [value]="city.name"></option>
-          </datalist>
-        </div>
-
-        <!-- Phase-0, Task 0 follow-up: structured location + property-type filters.
-             Cascading governorate -> district -> neighborhood, same pattern as
-             property-form.page.ts. All optional; the free-text city filter above
-             still works independently of these. -->
+        <!-- Location, broadest to narrowest: governorate -> city -> district -> neighborhood.
+             Choosing a governorate narrows the city suggestions and the district list to it;
+             every level is optional. -->
         <div class="filter-group">
           <label class="filter-label" for="filter-governorate">{{ 'PROPERTY_LIST.GOVERNORATE' | translate }}</label>
           <select id="filter-governorate" [(ngModel)]="governorateId" name="governorateId" (ngModelChange)="onGovernorateChange()">
             <option [ngValue]="null">{{ 'PROPERTY_LIST.SELECT_OPTIONAL' | translate }}</option>
             <option *ngFor="let g of governorates()" [ngValue]="g.id">{{ localizedName(g) }}</option>
           </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label" for="filter-city">{{ 'PROPERTY_LIST.CITY' | translate }}</label>
+          <!-- Suggestions come from GET /api/lookups/cities, scoped to the governorate above when one is chosen. -->
+          <input
+            id="filter-city"
+            type="text"
+            list="propertyListCitySuggestions"
+            [(ngModel)]="cityFilter"
+            name="city"
+            autocomplete="off"
+            [placeholder]="'PROPERTY_LIST.CITY_PLACEHOLDER' | translate"
+          />
+          <datalist id="propertyListCitySuggestions">
+            <option *ngFor="let city of citySuggestions()" [value]="city.name"></option>
+          </datalist>
         </div>
 
         <div class="filter-group" *ngIf="governorateId">
@@ -175,6 +174,16 @@
               min="0"
             />
           </div>
+          <!-- The range is written in this currency. The server compares every listing in it, so a flat
+               advertised in another currency is found at its equivalent price (P7-D01). -->
+          <div class="currency-select" *ngIf="currencies().length > 0">
+            <label class="filter-label" for="filter-currency">{{ 'PROPERTY_LIST.PRICE_CURRENCY' | translate }}</label>
+            <select id="filter-currency" [(ngModel)]="currencyCode" name="currencyCode">
+              <option *ngFor="let c of currencies()" [value]="c.code">{{ currencyLabel(c) }}</option>
+            </select>
+            <p class="filter-hint" *ngIf="hasPriceFilter">{{ 'PROPERTY_LIST.PRICE_CURRENCY_HINT' | translate }}</p>
+          </div>
+          <p class="filter-error" role="alert" *ngIf="filterError()">{{ filterError() | translate }}</p>
         </div>
 
         <!-- Amenities -->
@@ -199,9 +208,10 @@
           <label class="filter-label" for="sort-by">{{ 'PROPERTY_LIST.SORT' | translate }}</label>
           <select id="sort-by" [(ngModel)]="sortBy" name="sortBy">
             <option value="CreatedAt">{{ 'PROPERTY_LIST.SORT_NEWEST' | translate }}</option>
-            <option value="Price">{{ 'PROPERTY_LIST.SORT_PRICE_ASC' | translate }}</option>
-            <option value="PriceDesc">{{ 'PROPERTY_LIST.SORT_PRICE_DESC' | translate }}</option>
+            <option value="Price" [disabled]="!canSortByPrice">{{ 'PROPERTY_LIST.SORT_PRICE_ASC' | translate }}</option>
+            <option value="PriceDesc" [disabled]="!canSortByPrice">{{ 'PROPERTY_LIST.SORT_PRICE_DESC' | translate }}</option>
           </select>
+          <p class="filter-hint" *ngIf="!canSortByPrice">{{ 'PROPERTY_LIST.SORT_PRICE_NEEDS_TYPE' | translate }}</p>
         </div>
 
         <!-- Actions -->
@@ -280,11 +290,13 @@
           [routerLink]="['/properties', property.id]"
           class="property-card"
           [class.property-card--featured]="property.isFeatured"
+          [class.listing-muted]="isReserved(property)"
           [attr.aria-label]="property.title"
         >
           <!-- Image -->
           <div class="property-card__image">
             <img
+              class="listing-muted__media"
               [src]="getResponsiveImage(property)"
               [attr.srcset]="getResponsiveSrcSet(property)"
               sizes="(max-width: 640px) calc(100vw - 2rem), (max-width: 980px) calc(50vw - 2rem), 360px"
@@ -304,21 +316,24 @@
               </span>
               <!-- إعلان مميّز مدفوع. الخادم يرسل القيمة الفعّالة (نافذة منقضية = false)،
                    فلا مقارنة تواريخ هنا. -->
+              <!-- محجوز: ما زال معروضًا حتى انتهاء الحجز أو الإعلان أو تحوّله إلى مباع/مؤجر. -->
+              <span class="badge badge--reserved" *ngIf="isReserved(property)" data-testid="reserved-badge">
+                {{ 'LISTING_STATUS.RESERVED' | translate }}
+              </span>
               <span class="badge badge--featured" *ngIf="property.isFeatured">
                 <span aria-hidden="true">⭐</span>
                 {{ 'PROPERTY.FEATURED' | translate }}
               </span>
             </div>
-            <!-- Favorite Button (مربوط الآن بـ FavoritesApiService) -->
+            <!-- القلب أحمر عندما يكون العقار في المفضلة — الحالة مصدرها FavoritesApiService المشترك. -->
             <app-favorite-toggle-button
               class="fav-btn-wrapper"
               [propertyId]="property.id!"
-              [initialFavorite]="isFavorite(property)"
             ></app-favorite-toggle-button>
           </div>
 
           <!-- Body -->
-          <div class="property-card__body">
+          <div class="property-card__body listing-muted__text">
             <h2 class="property-card__title line-clamp-2">
               {{ property.title || ('PROPERTY_LIST.NO_TITLE' | translate) }}
             </h2>
@@ -333,12 +348,15 @@
                 🛏 {{ property.rooms }} {{ 'PROPERTY.ROOMS' | translate }}
               </span>
               <span *ngIf="property.area">
-                📐 {{ property.area }} م²
+                📐 {{ property.area }} {{ 'COMMON.area_unit' | translate }}
               </span>
             </div>
             <div class="property-card__footer">
               <span class="property-card__price">
                 {{ getPrice(property) }}
+              </span>
+              <span class="property-card__equivalent" *ngIf="equivalentPrice(property) as equivalent">
+                {{ equivalent }}
               </span>
             </div>
           </div>

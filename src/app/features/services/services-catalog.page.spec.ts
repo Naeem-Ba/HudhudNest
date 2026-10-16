@@ -4,6 +4,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { BehaviorSubject, Subject, of, throwError } from 'rxjs';
 
 import { ServicesCatalogPage } from './services-catalog.page';
+import { GovernorateDirectory } from '../../core/api/governorate-directory.service';
 import { ServiceOfferingService } from '../../core/api/service-offering.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { ServiceCategory, ServiceOfferingDto } from '../../core/models/service.model';
@@ -18,13 +19,15 @@ function offering(id: string, category: ServiceCategory): ServiceOfferingDto {
 
 describe('ServicesCatalogPage', () => {
   let getByCategory: jasmine.Spy;
+  let getAvailability: jasmine.Spy;
 
   function create() {
     TestBed.configureTestingModule({
       imports: [ServicesCatalogPage, TranslateModule.forRoot()],
       providers: [
         provideRouter([]),
-        { provide: ServiceOfferingService, useValue: { getByCategory } },
+        { provide: ServiceOfferingService, useValue: { getByCategory, getAvailability } },
+        { provide: GovernorateDirectory, useValue: { ensureLoaded: () => undefined, names: (ids: number[]) => ids.join(','), items: () => [] } },
         { provide: AuthService, useValue: { isLoggedIn$: new BehaviorSubject(false) } }
       ]
     });
@@ -35,6 +38,7 @@ describe('ServicesCatalogPage', () => {
 
   beforeEach(() => {
     getByCategory = jasmine.createSpy('getByCategory');
+    getAvailability = jasmine.createSpy('getAvailability').and.returnValue(of([]));
   });
 
   it('loads the Verification offerings on open and renders them', () => {
@@ -84,5 +88,27 @@ describe('ServicesCatalogPage', () => {
     expect(page.selectedCategory()).toBe('Legal');
     expect(page.offerings().map(o => o.id)).toEqual(['l']);
     expect(page.loading()).toBeFalse();
+  });
+
+  it('shows how many bookable offerings each category has and the dedicated join path', () => {
+    getByCategory.and.returnValue(of([]));
+    getAvailability.and.returnValue(of([
+      { category: 'Verification', offeringCount: 2 },
+      { category: 'Legal', offeringCount: 0 }
+    ]));
+    const fixture = create();
+    fixture.detectChanges();
+
+    const pills = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.filters .pill-count'))
+      .map(el => el.textContent?.trim());
+    expect(pills).toEqual(['2', '0']);
+    expect(fixture.nativeElement.querySelector('a[href="/services/join"]')).not.toBeNull();
+  });
+
+  it('lists the governorates an offering covers', () => {
+    getByCategory.and.returnValue(of([{ ...offering('a', 'Verification'), providerCoverageGovernorateIds: [1, 2] }]));
+    const fixture = create();
+
+    expect(fixture.nativeElement.querySelector('.offering-card').textContent).toContain('1,2');
   });
 });

@@ -1,0 +1,55 @@
+<section class="share-panel" [attr.dir]="uiDirection()" [attr.aria-label]="'OFFER_SHARE.TITLE' | translate">
+  <header class="share-panel__head">
+    <h4>{{ 'OFFER_SHARE.TITLE' | translate }}</h4>
+    <button type="button" class="btn btn--outline btn--sm" (click)="closed.emit()">
+      {{ 'OFFER_SHARE.CLOSE' | translate }}
+    </button>
+  </header>
+
+  <p class="share-panel__honesty">{{ 'OFFER_SHARE.HONESTY' | translate }}</p>
+
+  @if (!shareable()) {
+    <p class="share-panel__blocked" role="alert">{{ 'OFFER_SHARE.NOT_VISIBLE' | translate }}</p>
+  } @else {
+    <div class="share-panel__langs" role="group" [attr.aria-label]="'OFFER_SHARE.LANGUAGE' | translate">
+      @for (lang of languages; track lang) {
+        <button
+          type="button"
+          class="lang-btn"
+          [class.lang-btn--active]="language() === lang"
+          [attr.aria-pressed]="language() === lang"
+          (click)="selectLanguage(lang)"
+        >{{ languageLabel(lang) }}</button>
+      }
+    </div>
+
+    @if (content(); as c) {
+      <article class="share-preview" [attr.dir]="direction(language())">
+        <strong class="share-preview__title">{{ c.title }}</strong>
+        <pre class="share-preview__text">{{ c.text }}</pre>
+        <a class="share-preview__link" [href]="c.url" target="_blank" rel="noopener noreferrer">{{ c.url }}</a>
+      </article>
+    }
+
+    <div class="share-panel__actions">
+      <button type="button" class="btn btn--outline btn--sm" [disabled]="!content()" (click)="copyText()">
+        {{ 'OFFER_SHARE.COPY_TEXT' | translate }}
+      </button>
+      @for (provider of providers; track provider.platform) {
+        <button
+          type="button"
+          class="btn btn--outline btn--sm"
+          [disabled]="busy() || !content()"
+          (click)="shareVia(provider)"
+        >{{ provider.labelKey | translate }}</button>
+      }
+    </div>
+  }
+
+  <p
+    class="share-panel__notice"
+    [class.share-panel__notice--error]="notice()?.kind === 'error'"
+    role="status"
+    aria-live="polite"
+  >{{ noticeText() }}</p>
+</section>

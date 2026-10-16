@@ -33,6 +33,13 @@ http://www.realestateworld.world/*   https://hudhudnest.com/:splat   301!
 # deep-links.config.json paths: the installed app would then open this page instead of the store.
 /download   /download/index.html   200!
 #
+# /download/android: the stable address for the direct APK download. The block below is rewritten by the build
+# (tools/generate-download-page.mjs) from downloads/android-release.json: an approved release redirects to its one
+# validated address; with none it returns to /download. Do not edit it by hand.
+# BEGIN generated:download-android (tools/generate-download-page.mjs; edit downloads/android-release.json instead)
+/download/android   /download   302!
+# END generated:download-android
+#
 # Original rule — SPA fallback. Load-bearing since hash-based routing was removed (see
 # ARD-Wohnungsmieten.md ADR-001): every in-app route (/properties/:id, /auth/verify-email, …) is
 # now a real path the server receives directly, so EVERY one of them depends on this rule to get

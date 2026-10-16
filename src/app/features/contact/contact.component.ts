@@ -1,7 +1,7 @@
 ﻿import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { take } from 'rxjs';
@@ -18,7 +18,7 @@ const PLAN_TIERS: readonly PlanTier[] = ['free', 'basic', 'premium', 'elite'];
 @Component({
   selector: 'app-kontakt',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [CommonModule, FormsModule, RouterLink, TranslateModule],
   templateUrl: './contact.component.html',
   styleUrl: './contact.component.scss'
 })
@@ -44,6 +44,10 @@ export class KontaktComponent implements OnInit {
    * أعلاه لروابط /pricing?plan=. لا حقول قاعدة بيانات جديدة، لا Endpoint جديد.
    */
   messagePlaceholderKey = 'KONTAKT.message_placeholder';
+
+  /** True for the old published /kontakt?intent=service-provider links: the page keeps working
+   * but points the visitor at the real application form (/services/join). */
+  serviceProviderIntent = false;
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly pageMeta = inject(PageMetaService);
@@ -81,7 +85,8 @@ export class KontaktComponent implements OnInit {
 
   private applyQueryParamPrefill(): void {
     const intent = this.route.snapshot.queryParamMap.get('intent');
-    if (intent === 'service-provider') {
+    this.serviceProviderIntent = intent === 'service-provider';
+    if (this.serviceProviderIntent) {
       this.setAutoSubject(this.translate.instant('KONTAKT.SERVICE_PROVIDER_SUBJECT'));
       this.messagePlaceholderKey = 'KONTAKT.SERVICE_PROVIDER_MESSAGE_PLACEHOLDER';
 

@@ -102,56 +102,89 @@
   </section>
 
   <!-- ══════════════════════════════════════════════════════
-       قسم عرض الانضمام المبكر — "أول 100 مكتب عقاري"
-       مبني بالكامل على GET /api/offers/active (activeOffer signal).
-       لا نص أو رقم ثابت هنا: يختفي القسم كليًا إن لم يوجد عرض نشط.
+       قسم العرض التسويقي — مبني بالكامل على GET /api/offers/active.
+       لا نص أو رقم ثابت عن العرض هنا. أربع حالات صريحة (offerState):
+       loading (هيكل) · ready (البطاقة) · empty (لا عروض منشورة) · error (إعادة محاولة).
+       فشل التحميل يبقى داخل هذا القسم ولا يمس بقية الصفحة.
        ══════════════════════════════════════════════════════ -->
   <section
-    *ngIf="activeOffer() as offer"
     class="section section--offer"
     aria-labelledby="offer-heading"
+    [attr.aria-busy]="offerState() === 'loading'"
   >
     <div class="container container--narrow">
-      <div class="offer-card">
-        <div class="offer-card__badge">{{ offerDiscountText(offer) }}</div>
+      <ng-container [ngSwitch]="offerState()">
 
-        <p class="section-eyebrow section-eyebrow--gold">{{ 'LANDING.OFFER.EYEBROW' | translate }}</p>
-        <h2 id="offer-heading" class="section-title section-title--white">
-          {{ offer.name }}
-        </h2>
-        <p *ngIf="offer.description" class="offer-card__desc">
-          {{ offer.description }}
-        </p>
-
-        <!-- عدّاد حقيقي فقط إن كان للعرض حد أقصى فعلي — لا عدّاد وهمي -->
-        <div
-          *ngIf="offer.maxRedemptions as max"
-          class="offer-progress"
-          role="status"
-          [attr.aria-label]="offerProgressAriaLabel(offer, max)"
-        >
-          <div class="offer-progress__track">
-            <div
-              class="offer-progress__fill"
-              [style.width.%]="(offer.redeemedCount / max) * 100"
-            ></div>
-          </div>
-          <span class="offer-progress__label">
-            {{ offerProgressLabel(offer, max) }}
-          </span>
+        <div *ngSwitchCase="'loading'" class="offer-card offer-card--skeleton" role="status" [attr.aria-label]="'LANDING.OFFER.LOADING_ARIA' | translate">
+          <span class="skeleton skeleton--badge"></span>
+          <span class="skeleton skeleton--title"></span>
+          <span class="skeleton skeleton--line"></span>
+          <span class="skeleton skeleton--line skeleton--short"></span>
+          <h2 id="offer-heading" class="sr-only">{{ 'LANDING.OFFER.LOADING_ARIA' | translate }}</h2>
         </div>
 
-        <button
-          type="button"
-          class="btn btn--gold offer-card__cta"
-          (click)="scrollToFormForOffer()"
-          [attr.aria-label]="'LANDING.OFFER.CTA_ARIA' | translate"
-        >
-          {{ 'LANDING.OFFER.CTA' | translate }}
-        </button>
+        <div *ngSwitchCase="'error'" class="offer-card offer-card--message" role="alert">
+          <h2 id="offer-heading" class="section-title section-title--white">{{ 'LANDING.OFFER.ERROR_TITLE' | translate }}</h2>
+          <p class="offer-card__desc">{{ 'LANDING.OFFER.ERROR_TEXT' | translate }}</p>
+          <button type="button" class="btn btn--gold offer-card__cta" (click)="loadOffer()">
+            {{ 'LANDING.OFFER.RETRY' | translate }}
+          </button>
+        </div>
 
-        <p *ngIf="offer.terms" class="offer-card__terms">{{ offer.terms }}</p>
-      </div>
+        <div *ngSwitchCase="'empty'" class="offer-card offer-card--message">
+          <h2 id="offer-heading" class="section-title section-title--white">{{ 'LANDING.OFFER.EMPTY_TITLE' | translate }}</h2>
+          <p class="offer-card__desc">{{ 'LANDING.OFFER.EMPTY_TEXT' | translate }}</p>
+          <button type="button" class="btn btn--gold offer-card__cta" (click)="scrollToForm()">
+            {{ 'LANDING.OFFER.EMPTY_CTA' | translate }}
+          </button>
+        </div>
+
+        <div *ngSwitchCase="'ready'" class="offer-card">
+          <ng-container *ngIf="activeOffer() as offer">
+            <div class="offer-card__badge">{{ offerDiscountText(offer) }}</div>
+
+            <p class="section-eyebrow section-eyebrow--gold">{{ 'LANDING.OFFER.EYEBROW' | translate }}</p>
+            <h2 id="offer-heading" class="section-title section-title--white">
+              {{ offer.name }}
+            </h2>
+            <p *ngIf="offer.description" class="offer-card__desc">
+              {{ offer.description }}
+            </p>
+
+            <p *ngIf="offerEndsOn(offer) as ends" class="offer-card__ends">{{ ends }}</p>
+
+            <!-- عدّاد حقيقي فقط إن كان للعرض حد أقصى فعلي — لا عدّاد وهمي -->
+            <div
+              *ngIf="offer.maxRedemptions as max"
+              class="offer-progress"
+              role="status"
+              [attr.aria-label]="offerProgressAriaLabel(offer, max)"
+            >
+              <div class="offer-progress__track">
+                <div
+                  class="offer-progress__fill"
+                  [style.width.%]="(offer.redeemedCount / max) * 100"
+                ></div>
+              </div>
+              <span class="offer-progress__label">
+                {{ offerProgressLabel(offer, max) }}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              class="btn btn--gold offer-card__cta"
+              (click)="scrollToFormForOffer()"
+              [attr.aria-label]="'LANDING.OFFER.CTA_ARIA' | translate"
+            >
+              {{ 'LANDING.OFFER.CTA' | translate }}
+            </button>
+
+            <p *ngIf="offer.terms" class="offer-card__terms">{{ offer.terms }}</p>
+          </ng-container>
+        </div>
+
+      </ng-container>
     </div>
   </section>
 
@@ -660,6 +693,10 @@
         <a routerLink="/privacy-policy" class="footer__link">{{ 'LANDING.FOOTER.PRIVACY' | translate }}</a>
         ·
         <a routerLink="/terms-of-service" class="footer__link">{{ 'LANDING.FOOTER.TERMS' | translate }}</a>
+        <ng-container *ngIf="showDownloadLink">
+          ·
+          <a href="/download" class="footer__link">{{ 'LANDING.FOOTER.DOWNLOAD' | translate }}</a>
+        </ng-container>
       </p>
     </div>
   </footer>

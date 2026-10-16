@@ -25,6 +25,12 @@ export class AppUpdateNativeGateway {
     return App.getInfo().then(info => info.version);
   }
 
+  /** Calls `callback` every time the app returns from the background. Never rejects: a bridge that
+   * cannot register the listener only means the update check stays launch-only. */
+  onResume(callback: () => void): void {
+    void App.addListener('resume', callback).catch(() => undefined);
+  }
+
   openUrl(url: string): Promise<void> {
     return Browser.open({ url });
   }

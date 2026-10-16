@@ -29,6 +29,7 @@ import {
   pickLocalizedName
 } from '../../core/api/lookups-api.service';
 import { Property, DuplicateCandidate } from '../../core/models/property.model';
+import { isMarketCurrency } from '../../core/pricing/market-currencies';
 import { ToastService } from '../../shared/services/toast.service';
 import { MapPickerComponent } from '../../map-picker/map-picker.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
@@ -92,7 +93,6 @@ const RENTAL_DURATION_SIX_MONTHS = 0;
 const RENTAL_DURATION_ONE_YEAR = 1;
 
 const VALID_COUNTRY_CODES = new Set(['DE', 'SY', 'US', 'GB', 'FR', 'AE', 'SA', 'TR', 'EG', 'JO', 'LB']);
-const VALID_CURRENCY_CODES = new Set(['EUR', 'USD', 'GBP', 'SYP', 'TRY', 'AED', 'SAR', 'EGP', 'JOD', 'LBP']);
 
 function toNumberOrNull(value: unknown): number | null {
   if (value === null || value === undefined || value === '') {
@@ -163,7 +163,7 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
     errors['invalidCountryCode'] = true;
   }
 
-  if (!VALID_CURRENCY_CODES.has(currencyCode)) {
+  if (!isMarketCurrency(currencyCode)) {
     errors['invalidCurrencyCode'] = true;
   }
 

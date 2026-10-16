@@ -149,6 +149,16 @@
 
 /* ── Summary Card ── */
 /* Phase-0, Task 2 — 30-day staleness banner. */
+.status-notice {
+  padding: .6rem .9rem;
+  border-radius: var(--r-md, .5rem);
+  background: var(--gray-100);
+  border: 1px solid var(--border);
+  color: var(--gray-700);
+  font-size: .85rem;
+  font-weight: 600;
+}
+
 .stale-banner {
   display: flex;
   align-items: center;
@@ -819,4 +829,27 @@ a.owner-card__name--link {
   text-decoration: none;
 
   &:hover { text-decoration: underline; color: var(--primary-text); }
+}
+
+// Service request panel: radio list of offerings for the chosen category.
+.offering-choices {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: .5rem;
+
+  legend { font-weight: 700; margin-bottom: .35rem; padding: 0; }
+}
+
+.offering-choice {
+  display: flex;
+  gap: .6rem;
+  align-items: flex-start;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: .65rem .8rem;
+  cursor: pointer;
+
+  small { display: block; color: var(--gray-500); margin-top: .15rem; }
 }

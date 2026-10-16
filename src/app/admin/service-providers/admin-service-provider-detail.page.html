@@ -1,0 +1,118 @@
+<section class="page">
+  <a class="back" routerLink="/admin/service-providers" [queryParams]="{ tab: 'providers' }">← {{ 'ADMIN_PROVIDERS.BACK_TO_LIST' | translate }}</a>
+
+  <app-loading-spinner *ngIf="loading()" [label]="'COMMON.LOADING' | translate"></app-loading-spinner>
+  <div class="state error" *ngIf="!loading() && failed()">
+    <p>{{ 'ADMIN_PROVIDERS.LOAD_ERROR' | translate }}</p>
+    <button type="button" class="btn" (click)="load()">{{ 'COMMON.RETRY' | translate }}</button>
+  </div>
+
+  <ng-container *ngIf="!loading() && detail() as d">
+    <header class="head">
+      <div>
+        <h1>{{ d.provider.displayName }}</h1>
+        <p class="muted">
+          {{ 'ADMIN_PROVIDERS.OPEN_REQUESTS' | translate }}: {{ d.openRequestCount }}
+          · {{ ('PROVIDER_ONBOARDING.VERIFICATION.' + d.provider.verificationLevel) | translate }}
+        </p>
+      </div>
+      <span class="chip" [attr.data-pstatus]="status()">{{ ('PROVIDER_ONBOARDING.PROVIDER_STATUS.' + status()) | translate }}</span>
+    </header>
+
+    <p class="note-line" *ngIf="status() !== 'Active'">
+      {{ (status() === 'Suspended' ? 'ADMIN_PROVIDERS.SUSPENDED_INFO' : 'ADMIN_PROVIDERS.REVOKED_INFO') | translate }}
+      <span *ngIf="d.provider.statusReason">— {{ d.provider.statusReason }}</span>
+    </p>
+
+    <div class="grid">
+      <form class="card" (ngSubmit)="saveProfile()">
+        <h2>{{ 'ADMIN_PROVIDERS.PROFILE' | translate }}</h2>
+        <label for="pd-name">{{ 'PROVIDER_JOIN.F_DISPLAY_NAME' | translate }}</label>
+        <input id="pd-name" name="name" maxlength="150" [(ngModel)]="displayName">
+        <label for="pd-bio">{{ 'ADMIN_PROVIDERS.BIO' | translate }}</label>
+        <textarea id="pd-bio" name="bio" rows="3" maxlength="2000" [(ngModel)]="bio"></textarea>
+        <div class="two">
+          <div><label for="pd-email">{{ 'PROVIDER_JOIN.F_EMAIL' | translate }}</label><input id="pd-email" name="email" type="email" dir="ltr" [(ngModel)]="contactEmail"></div>
+          <div><label for="pd-phone">{{ 'PROVIDER_JOIN.F_PHONE' | translate }}</label><input id="pd-phone" name="phone" type="tel" dir="ltr" [(ngModel)]="contactPhone"></div>
+        </div>
+
+        <span class="label">{{ 'ADMIN_PROVIDERS.APPROVED_CATEGORIES' | translate }}</span>
+        <app-choice-chips [options]="categoryOptions" [selected]="categories()" (selectedChange)="categories.set($event)"></app-choice-chips>
+        <p class="warn" *ngIf="removedCategories().length > 0">{{ 'ADMIN_PROVIDERS.REMOVE_CATEGORY_WARNING' | translate }}</p>
+
+        <span class="label">{{ 'ADMIN_PROVIDERS.COVERAGE' | translate }}</span>
+        <app-choice-chips [options]="governorateOptions()" [selected]="coverage()" (selectedChange)="coverage.set($event)"></app-choice-chips>
+        <p class="err" *ngIf="!scopeValid()">{{ 'ADMIN_PROVIDERS.SCOPE_REQUIRED' | translate }}</p>
+
+        <button type="submit" class="btn primary" [disabled]="busy() || !displayName.trim() || !scopeValid()">{{ 'COMMON.SAVE' | translate }}</button>
+      </form>
+
+      <div class="side">
+        <section class="card">
+          <h2>{{ 'ADMIN_PROVIDERS.STATUS_ACTIONS' | translate }}</h2>
+          <div class="actions">
+            <button type="button" class="btn secondary" *ngIf="status() === 'Active'" [disabled]="busy()" (click)="askStatusChange('suspend')">{{ 'ADMIN_PROVIDERS.SUSPEND' | translate }}</button>
+            <button type="button" class="btn primary" *ngIf="status() === 'Suspended'" [disabled]="busy()" (click)="askStatusChange('reactivate')">{{ 'ADMIN_PROVIDERS.REACTIVATE' | translate }}</button>
+            <button type="button" class="btn danger" *ngIf="status() !== 'Revoked'" [disabled]="busy()" (click)="askStatusChange('revoke')">{{ 'ADMIN_PROVIDERS.REVOKE' | translate }}</button>
+          </div>
+          <p class="muted" *ngIf="status() === 'Revoked'">{{ 'ADMIN_PROVIDERS.REVOKED_FINAL' | translate }}</p>
+          <p class="muted">{{ 'ADMIN_PROVIDERS.STATUS_EFFECT' | translate }}</p>
+        </section>
+
+        <section class="card">
+          <h2>{{ 'ADMIN_PROVIDERS.VERIFICATION' | translate }}</h2>
+          <select name="verification" [(ngModel)]="verification" [attr.aria-label]="'ADMIN_PROVIDERS.VERIFICATION' | translate">
+            <option *ngFor="let l of verificationLevels" [value]="l">{{ ('PROVIDER_ONBOARDING.VERIFICATION.' + l) | translate }}</option>
+          </select>
+          <button type="button" class="btn secondary" [disabled]="busy() || verification === d.provider.verificationLevel" (click)="saveVerification()">{{ 'COMMON.SAVE' | translate }}</button>
+        </section>
+      </div>
+    </div>
+
+    <section class="card">
+      <h2>{{ 'ADMIN_PROVIDERS.OFFERINGS' | translate }}</h2>
+      <p class="muted" *ngIf="d.offerings.length === 0">{{ 'ADMIN_PROVIDERS.NO_OFFERINGS' | translate }}</p>
+      <ul class="plain">
+        <li *ngFor="let o of d.offerings; trackBy: trackById">
+          <strong>{{ o.title }}</strong>
+          <span class="tag">{{ ('SERVICES.CATEGORY.' + o.category) | translate }}</span>
+          <span class="tag" [class.tag--off]="!o.isActive">{{ (o.isActive ? 'ADMIN_PROVIDERS.OFFERING_ACTIVE' : 'ADMIN_PROVIDERS.OFFERING_INACTIVE') | translate }}</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="card" *ngIf="d.applications.length > 0">
+      <h2>{{ 'ADMIN_PROVIDERS.APPLICATIONS' | translate }}</h2>
+      <ul class="plain">
+        <li *ngFor="let a of d.applications; trackBy: trackById">
+          <a [routerLink]="['/admin/service-providers/applications', a.id]" dir="ltr">{{ a.referenceNumber }}</a>
+          <span class="tag">{{ ('PROVIDER_ONBOARDING.APP_STATUS.' + a.status) | translate }}</span>
+          <span class="muted">{{ a.createdAt | date:'mediumDate' }}</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>{{ 'ADMIN_PROVIDERS.HISTORY' | translate }}</h2>
+      <p class="muted" *ngIf="d.timeline.length === 0">{{ 'ADMIN_PROVIDERS.NO_HISTORY' | translate }}</p>
+      <ol class="timeline">
+        <li *ngFor="let e of d.timeline; trackBy: trackById" [class.internal]="e.isInternal">
+          <span class="when">{{ e.createdAt | date:'medium' }}</span>
+          <strong>{{ ('PROVIDER_ONBOARDING.EVENT.' + e.type) | translate }}</strong>
+          <span class="tag tag--internal" *ngIf="e.isInternal">{{ 'ADMIN_PROVIDERS.INTERNAL' | translate }}</span>
+          <span class="text" *ngIf="e.note">{{ e.note }}</span>
+        </li>
+      </ol>
+    </section>
+  </ng-container>
+
+  <app-confirm-modal [open]="pendingAction() !== null" [danger]="pendingAction() !== 'reactivate'" [loading]="busy()"
+                     [confirmDisabled]="reasonRequired() && !statusReason.trim()"
+                     [title]="('ADMIN_PROVIDERS.CONFIRM_' + (pendingAction() || 'suspend').toUpperCase() + '_TITLE') | translate"
+                     [confirmLabel]="('ADMIN_PROVIDERS.' + (pendingAction() || 'suspend').toUpperCase()) | translate"
+                     (confirmed)="confirmStatusChange()" (cancelled)="cancelStatusChange()">
+    <p>{{ ('ADMIN_PROVIDERS.CONFIRM_' + (pendingAction() || 'suspend').toUpperCase() + '_TEXT') | translate }}</p>
+    <label class="reason-label" for="pd-reason">{{ (reasonRequired() ? 'ADMIN_PROVIDERS.REASON_REQUIRED' : 'ADMIN_PROVIDERS.REASON_OPTIONAL') | translate }}</label>
+    <textarea id="pd-reason" class="reason" name="reason" rows="3" maxlength="2000" [(ngModel)]="statusReason"></textarea>
+  </app-confirm-modal>
+</section>

@@ -53,6 +53,22 @@ export interface PropertyTypeLookup {
 }
 
 /**
+ * GET /api/lookups/currencies (QA Phase 7, P7-D01). `exchangeRateToUsd` is units of this currency per
+ * one US dollar, set by an administrator and therefore approximate: it is good enough to compare
+ * prices advertised in different currencies, not to quote a payable amount.
+ */
+export interface CurrencyLookup {
+  code: string;
+  nameEn: string;
+  nameAr: string;
+  symbol: string;
+  decimalPlaces: number;
+  exchangeRateToUsd: number;
+  rateUpdatedAt: string;
+  isBase: boolean;
+}
+
+/**
  * Picks the display name matching the current UI language for a bilingual
  * lookup item. No German column exists on the backend for these tables, so
  * 'de' (like any unrecognized code) falls back to English.
@@ -88,10 +104,13 @@ export class LookupsApiService {
       .pipe(map(response => this.toLookupItems(response)));
   }
 
-  /** GET /api/lookups/cities — المدن الموجودة فعليًا ضمن العقارات الحالية. */
-  getCities(): Observable<LookupItem[]> {
+  /**
+   * GET /api/lookups/cities — المدن الموجودة فعليًا ضمن العقارات الحالية.
+   * مع governorateId تُقتصر القائمة على مدن تلك المحافظة.
+   */
+  getCities(governorateId?: number | null): Observable<LookupItem[]> {
     return this.api
-      .get<unknown[]>(`${this.endpoint}/cities`)
+      .get<unknown[]>(`${this.endpoint}/cities`, governorateId ? { governorateId } : undefined)
       .pipe(map(response => this.toLookupItems(response)));
   }
 
@@ -124,6 +143,13 @@ export class LookupsApiService {
     return this.api
       .get<unknown[]>(`${this.endpoint}/property-type-catalog`)
       .pipe(map(response => this.toPropertyTypes(response)));
+  }
+
+  /** GET /api/lookups/currencies — العملات المفعّلة وأسعار صرفها التقريبية (الأساس أولًا). */
+  getCurrencies(): Observable<CurrencyLookup[]> {
+    return this.api
+      .get<unknown[]>(`${this.endpoint}/currencies`)
+      .pipe(map(response => this.toCurrencies(response)));
   }
 
   /**
@@ -175,6 +201,24 @@ export class LookupsApiService {
         parentId: item['parentId'] === undefined || item['parentId'] === null ? null : Number(item['parentId'])
       }))
       .filter(item => Number.isFinite(item.id));
+  }
+
+  private toCurrencies(response: unknown): CurrencyLookup[] {
+    const list = Array.isArray(response) ? response : [];
+
+    return list
+      .map(item => (item as Record<string, unknown>))
+      .map(item => ({
+        code: String(item['code'] ?? '').trim().toUpperCase(),
+        nameEn: String(item['nameEn'] ?? ''),
+        nameAr: String(item['nameAr'] ?? ''),
+        symbol: String(item['symbol'] ?? ''),
+        decimalPlaces: Number(item['decimalPlaces'] ?? 2),
+        exchangeRateToUsd: Number(item['exchangeRateToUsd']),
+        rateUpdatedAt: String(item['rateUpdatedAt'] ?? ''),
+        isBase: Boolean(item['isBase'])
+      }))
+      .filter(item => !!item.code && Number.isFinite(item.exchangeRateToUsd) && item.exchangeRateToUsd > 0);
   }
 
   private toPropertyTypes(response: unknown): PropertyTypeLookup[] {

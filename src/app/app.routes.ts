@@ -115,6 +115,15 @@ export const routes: Routes = [
             .then(m => m.ServicesCatalogPage)
       },
       {
+        // "انضم كمزوّد خدمة" — public landing; the form needs a signed-in account (the page
+        // sends anonymous visitors to log in and back). Replaces /kontakt?intent=service-provider,
+        // which stays working and now points here.
+        path: 'services/join',
+        loadComponent: () =>
+          import('./features/provider-onboarding/service-provider-join.page')
+            .then(m => m.ServiceProviderJoinPage)
+      },
+      {
         path: 'investments',
         loadComponent: () =>
           import('./features/investments/investment-list/investment-list.page')
@@ -259,6 +268,14 @@ export const routes: Routes = [
             .then(m => m.ProviderRequestDetailPage)
       },
       {
+        // عروض المزوّد نفسه: إنشاء/تعديل/تفعيل ضمن الفئات المعتمدة فقط.
+        path: 'provider/offerings',
+        canActivate: [ProviderGuard],
+        loadComponent: () =>
+          import('./features/provider/provider-offerings.page')
+            .then(m => m.ProviderOfferingsPage)
+      },
+      {
         path: 'provider/profile',
         canActivate: [ProviderGuard],
         loadComponent: () =>
@@ -272,6 +289,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/user-profile/user-profile.page')
             .then(m => m.UserProfilePage)
+      },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('./features/settings/settings.page')
+            .then(m => m.SettingsPage)
       },
       {
         path: 'reviews',
@@ -404,6 +427,29 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./admin/user-properties/admin-user-properties.page')
             .then(m => m.AdminUserPropertiesPage)
+      },
+
+      {
+        // إدارة مزوّدي الخدمات: طلبات الانضمام ثم المزوّدون المعتمدون. Role Admin على الخادم لكل نقطة.
+        path: 'admin/service-providers',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/service-providers/admin-service-providers.page')
+            .then(m => m.AdminServiceProvidersPage)
+      },
+      {
+        path: 'admin/service-providers/applications/:id',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/service-providers/admin-service-provider-application.page')
+            .then(m => m.AdminServiceProviderApplicationPage)
+      },
+      {
+        path: 'admin/service-providers/:id',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/service-providers/admin-service-provider-detail.page')
+            .then(m => m.AdminServiceProviderDetailPage)
       },
 
       {

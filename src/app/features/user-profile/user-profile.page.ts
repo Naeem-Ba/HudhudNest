@@ -284,8 +284,8 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
             >
               <img
                 class="listing-card__image"
-                [src]="listing.mainImageUrl || listing.images?.[0]?.url || '/images/property-placeholder.svg'"
-                appImageFallback="/images/property-placeholder.svg"
+                [src]="listing.mainImageUrl || listing.images?.[0]?.url || '/images/no-image.svg'"
+                appImageFallback="/images/no-image.svg"
                 alt=""
               />
               <div class="listing-card__body">

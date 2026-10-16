@@ -12,6 +12,7 @@ import { SkeletonCardGridComponent } from '../../../shared/ui/skeleton-card-grid
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
 import { DateRangePickerComponent, DateRangeValue } from '../../../shared/ui/date-range-picker.component';
 import { PageMetaService } from '../../../core/services/page-meta.service';
+import { uiNumberLocale } from '../../../core/i18n/ui-language';
 
 @Component({
   selector: 'app-short-stay-list',
@@ -149,11 +150,11 @@ export class ShortStayListPage implements OnInit {
   formatPrice(listing: ShortStayListingSummary): string {
     if (listing.fromPricePerNight === null) return '—';
     try {
-      return new Intl.NumberFormat('ar', {
+      return new Intl.NumberFormat(uiNumberLocale(), {
         style: 'currency', currency: listing.currencyCode, maximumFractionDigits: 0
       }).format(listing.fromPricePerNight);
     } catch {
-      return `${listing.fromPricePerNight.toLocaleString('ar')} ${listing.currencyCode}`;
+      return `${listing.fromPricePerNight.toLocaleString(uiNumberLocale())} ${listing.currencyCode}`;
     }
   }
 }

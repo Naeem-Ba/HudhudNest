@@ -16,7 +16,7 @@
 //     ❌ المهاجم في Production
 //   الحل: نُفرِّق بين البيئتين.
 // ═══════════════════════════════════════════════════════════════
-import { HttpErrorResponse, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
+import { HttpContextToken, HttpErrorResponse, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
@@ -32,6 +32,13 @@ import {
 } from './refresh-auth.interceptor';
 
 const MAX_FIELD_MESSAGES = 3;
+
+/**
+ * Set on a request whose caller already handles the failure (or treats it as a normal
+ * outcome), so the generic error toast would only add noise. Example: adding a favorite that is
+ * already one answers 409 — the wanted end state is reached, there is nothing to tell the user.
+ */
+export const SKIP_ERROR_TOAST = new HttpContextToken<boolean>(() => false);
 
 /** "$.defaultBasePricePerNight" / "DefaultBasePricePerNight" -> "Default base price per night". */
 function humanizeFieldName(key: string): string {
@@ -49,6 +56,11 @@ function humanizeFieldName(key: string): string {
 function describeFieldError(field: string, message: string, translate: TranslateService): string {
   const label = humanizeFieldName(field);
 
+  const knownKey = knownValidationMessageKey(message);
+  if (knownKey) {
+    return translate.instant(knownKey);
+  }
+
   if (/field is required/i.test(message)) {
     return label ? translate.instant('API_ERRORS.FIELD_REQUIRED', { field: label }) : translate.instant('API_ERRORS.BAD_REQUEST');
   }
@@ -58,6 +70,27 @@ function describeFieldError(field: string, message: string, translate: Translate
   }
 
   return message;
+}
+
+/**
+ * The search and map endpoints refuse a bad filter with a fixed English sentence (FluentValidation).
+ * Those sentences are matched here and shown in the reader's language instead (QA Phase 7, P7-D06);
+ * any other message passes through unchanged.
+ */
+const KNOWN_VALIDATION_MESSAGE_KEYS: readonly (readonly [RegExp, string])[] = [
+  [/^MinPrice must be less than or equal to MaxPrice\.?$/i, 'API_ERRORS.FILTER_PRICE_RANGE'],
+  [/^MinRooms must be less than or equal to MaxRooms\.?$/i, 'API_ERRORS.FILTER_ROOMS_RANGE'],
+  [/^MinArea must be less than or equal to MaxArea\.?$/i, 'API_ERRORS.FILTER_AREA_RANGE'],
+  [/^Page is beyond the first [\d,]+ results/i, 'API_ERRORS.FILTER_PAGE_TOO_DEEP'],
+  [/^(SearchTerm|City|Region) contains characters that are not allowed\.?$/i, 'API_ERRORS.FILTER_TEXT_NOT_ALLOWED'],
+  [/^SortBy=Price requires ListingType/i, 'API_ERRORS.FILTER_SORT_PRICE_NEEDS_TYPE'],
+  [/^(Latitude|Longitude) is required\.?$/i, 'API_ERRORS.GEO_COORDS_REQUIRED'],
+  [/^(Latitude|Longitude) must be between/i, 'API_ERRORS.GEO_COORDS_INVALID']
+];
+
+export function knownValidationMessageKey(message: string): string | null {
+  const text = message.trim();
+  return KNOWN_VALIDATION_MESSAGE_KEYS.find(([pattern]) => pattern.test(text))?.[1] ?? null;
 }
 
 /** Flattens ProblemDetails / ValidationError `errors` (a field -> messages map, or a list). */
@@ -107,6 +140,12 @@ function extractBackendMessage(error: HttpErrorResponse, translate: TranslateSer
     return fieldMessages.join(' ');
   }
 
+  // A 429's title/detail ("Too many requests." / "The request rate limit has been exceeded.") is
+  // English whatever the UI language is; the caller falls back to the translated limit text.
+  if (error.status === 429) {
+    return null;
+  }
+
   const generic = body.detail ?? body.Detail ?? body.title ?? body.Title;
   return generic ? String(generic) : null;
 }
@@ -129,6 +168,13 @@ export function getFriendlyApiErrorMessage(error: HttpErrorResponse, translate: 
   // reader gets the translated server-error text instead, whatever the UI language is.
   if (isServerFailure(error)) {
     return translate.instant('API_ERRORS.SERVER');
+  }
+
+  // 415 means the request body was sent in a format the endpoint does not take -- a client bug,
+  // never something the reader can fix by editing a field. Its ProblemDetails title is the raw
+  // English "Unsupported Media Type", which used to be toasted as is.
+  if (error.status === 415) {
+    return translate.instant('API_ERRORS.UNSUPPORTED_MEDIA');
   }
 
   const backendMessage = extractBackendMessage(error, translate);
@@ -160,7 +206,8 @@ export function getFriendlyApiErrorMessage(error: HttpErrorResponse, translate: 
 const KNOWN_ERROR_CODE_KEYS: Readonly<Record<string, string>> = {
   AGENCY_ACCOUNT_NOT_VERIFIED: 'API_ERRORS.AGENCY_ACCOUNT_NOT_VERIFIED',
   AGENCY_PAID_PLAN_REQUIRED: 'API_ERRORS.AGENCY_PAID_PLAN_REQUIRED',
-  AGENCY_FREE_PLAN_NOT_ALLOWED: 'API_ERRORS.AGENCY_FREE_PLAN_NOT_ALLOWED'
+  AGENCY_FREE_PLAN_NOT_ALLOWED: 'API_ERRORS.AGENCY_FREE_PLAN_NOT_ALLOWED',
+  SERVICE_CATEGORY_NOT_APPROVED: 'API_ERRORS.SERVICE_CATEGORY_NOT_APPROVED'
 };
 
 /** The i18n key for a refusal's stable `code`, or null when there is none we translate. */
@@ -171,7 +218,18 @@ export function knownErrorCodeKey(error: HttpErrorResponse): string | null {
 }
 
 function shouldShowToast(reqUrl: string): boolean {
-  return (reqUrl.includes('/api/') || reqUrl.endsWith('/api')) && !isAuthFlowRequest(reqUrl);
+  return (reqUrl.includes('/api/') || reqUrl.endsWith('/api'))
+    && !isAuthFlowRequest(reqUrl)
+    && !hasOwnErrorMessage(reqUrl);
+}
+
+/**
+ * Requests whose caller always shows its own, more specific message for any failure -- the data
+ * export names its once-per-24-hours limit, so a second generic "too many requests" toast on top
+ * of it only contradicted it.
+ */
+function hasOwnErrorMessage(reqUrl: string): boolean {
+  return reqUrl.includes('/users/me/export');
 }
 
 /**
@@ -249,6 +307,7 @@ export const ApiErrorInterceptor: HttpInterceptorFn = (req, next) => {
 
         if (
           shouldShowToast(req.url) &&
+          !req.context.get(SKIP_ERROR_TOAST) &&
           !isLogoutRequest(req.url) &&
           shouldShowUnauthorizedToast(error.status, router, req)
         ) {

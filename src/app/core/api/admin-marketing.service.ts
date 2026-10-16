@@ -8,7 +8,8 @@
 //   GET  /api/offers
 //   POST /api/offers
 //   PUT  /api/offers/{id}
-//   PUT  /api/offers/{id}/status        { "Active" | "Paused" | "Ended" }
+//   PUT  /api/offers/{id}/status        { "status": "Active" | "Paused" | "Ended" }  (application/json)
+//        ← يردّ العرض كما أصبح (AdminOfferDto) بما فيه isPubliclyVisible
 //   GET  /api/surveys?page=&pageSize=
 //   GET  /api/surveys/stats
 //   GET  /api/marketing-events/summary?fromUtc=&toUtc=
@@ -57,6 +58,8 @@ export interface AdminOfferDto {
   terms: string | null;
   createdAt: string;
   updatedAt: string;
+  /** قرار الخادم نفسه: هل يراه الزائر الآن (نشط + ضمن نافذة التاريخ + لم يبلغ الحد الأقصى)؟ */
+  isPubliclyVisible: boolean;
 }
 
 export interface OfferFormValue {
@@ -153,8 +156,12 @@ export class AdminMarketingService {
     return this.api.put<void>(`/offers/${id}`, value);
   }
 
-  setOfferStatus(id: string, status: OfferStatus): Observable<void> {
-    return this.api.put<void>(`/offers/${id}/status`, status);
+  /**
+   * الجسم كائن JSON باسم الحقل { status } — وليس نصًا خامًا. HttpClient يرسل النص الخام
+   * text/plain فيردّه الخادم بـ 415 (Unsupported Media Type)، وهذا كان سبب فشل التفعيل.
+   */
+  setOfferStatus(id: string, status: Exclude<OfferStatus, 'Draft'>): Observable<AdminOfferDto> {
+    return this.api.put<AdminOfferDto>(`/offers/${id}/status`, { status });
   }
 
   getSurveyResponses(page = 1, pageSize = 20): Observable<PagedResult<AdminSurveyResponseDto>> {

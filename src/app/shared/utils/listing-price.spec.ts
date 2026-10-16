@@ -18,6 +18,24 @@ describe('listing price', () => {
   });
 
   describe('formatListingPrice', () => {
+    let originalLang: string;
+
+    beforeEach(() => {
+      originalLang = document.documentElement.lang;
+      document.documentElement.lang = 'ar';
+    });
+
+    afterEach(() => {
+      document.documentElement.lang = originalLang;
+    });
+
+    it('formats in the language on screen, not a fixed one', () => {
+      document.documentElement.lang = 'de';
+      expect(formatListingPrice(1234, 'EUR')).toContain('1.234');
+      document.documentElement.lang = 'en';
+      expect(formatListingPrice(1234, 'USD')).toBe('$1,234');
+    });
+
     it('prints the currency exactly once', () => {
       const text = formatListingPrice(1450.5, 'USD');
       expect(text).toContain('1');

@@ -14,7 +14,17 @@
     "FIELD_INVALID": "The field “{{field}}” is empty or invalid.",
     "AGENCY_ACCOUNT_NOT_VERIFIED": "Verify your account first: confirm your email or phone number in your account settings, then try again.",
     "AGENCY_PAID_PLAN_REQUIRED": "A real-estate office needs a paid plan in force. The free plan does not include offices.",
-    "AGENCY_FREE_PLAN_NOT_ALLOWED": "You own a real-estate office, and the free plan does not include offices. Choose a paid plan."
+    "AGENCY_FREE_PLAN_NOT_ALLOWED": "You own a real-estate office, and the free plan does not include offices. Choose a paid plan.",
+    "SERVICE_CATEGORY_NOT_APPROVED": "This category is not approved for your provider account. Contact the team to have it added.",
+    "FILTER_PRICE_RANGE": "The minimum price is higher than the maximum.",
+    "FILTER_ROOMS_RANGE": "The minimum number of rooms is higher than the maximum.",
+    "FILTER_AREA_RANGE": "The minimum area is larger than the maximum.",
+    "FILTER_PAGE_TOO_DEEP": "That page is beyond the first 10,000 results. Narrow the search instead of paging further.",
+    "FILTER_TEXT_NOT_ALLOWED": "The search text contains characters that are not allowed.",
+    "FILTER_SORT_PRICE_NEEDS_TYPE": "Choose “For rent” or “For sale” to sort by price.",
+    "GEO_COORDS_REQUIRED": "Share your location first to search nearby.",
+    "GEO_COORDS_INVALID": "The location coordinates are not valid.",
+    "UNSUPPORTED_MEDIA": "The request could not be sent in a format the server accepts. Refresh the page and try again; if it keeps happening, contact support."
   },
   "COMMON": {
     "SAVE": "Save",
@@ -39,7 +49,8 @@
     "SAVE_CHANGES": "Save changes",
     "CLICK_TO_ZOOM": "Click to zoom",
     "MONTH": "month",
-    "CLEAR": "Clear"
+    "CLEAR": "Clear",
+    "SEARCH": "Search"
   },
   "NAVBAR": {
     "HOME": "Home",
@@ -47,6 +58,7 @@
     "PRICING": "Pricing",
     "ADD": "Add property",
     "CONTACT": "Contact us",
+    "DOWNLOAD_APP": "Download the app",
     "MESSAGES": "Messages",
     "ADMIN_USERS": "User management",
     "LOGIN": "Log in",
@@ -83,7 +95,9 @@
     "SIGNED_IN_WITH_PHONE": "Signed in with phone number:",
     "CURRENT_SECTION": "(current section)",
     "ADMIN_PAYMENT_REQUESTS": "Payment requests",
-    "SERVICES": "HudhudNest Services"
+    "SERVICES": "HudhudNest Services",
+    "ADMIN_SERVICE_PROVIDERS": "Service providers",
+    "PROVIDER_OFFERINGS": "My offerings"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -187,6 +201,7 @@
       "ACCOUNT_UNAVAILABLE": "This account is unavailable. Contact support if you think this is a mistake.",
       "REGISTER_FAILED": "Unable to create the account. Check the information.",
       "FORGOT_FAILED": "Unable to send the reset link.",
+      "PASSWORD_RESET_LIMIT": "You have reached the limit for password reset requests (3 per hour). Please wait and try again.",
       "RESET_FAILED": "Unable to update the password.",
       "SEND_OTP_FAILED": "Unable to send the verification code.",
       "VERIFY_OTP_FAILED": "The code is incorrect or has expired.",
@@ -334,7 +349,12 @@
       "SESSIONS_WARNING": "Other active sessions will be signed out after the number is changed.",
       "SAVING": "Saving...",
       "CONFIRM_BUTTON": "Confirm phone change",
-      "SUCCESS": "Your phone number was changed successfully."
+      "SUCCESS": "Your phone number was changed successfully.",
+      "CONFIRM_TITLE": "Confirm phone number",
+      "CONFIRM_SUBTITLE": "We send a verification code to this number. Once you enter it with your password, it becomes your sign-in and password-recovery number.",
+      "CONFIRM_PHONE_NUMBER": "Phone number to confirm",
+      "CONFIRM_NUMBER_BUTTON": "Confirm number",
+      "CONFIRM_SUCCESS": "Your phone number is confirmed."
     },
     "PASSWORD_RULES": {
       "PASSWORD_TOO_SHORT": "At least 8 characters",
@@ -442,7 +462,9 @@
     "name_placeholder": "Enter full name",
     "subject_placeholder": "Enter the message subject",
     "message_placeholder": "Write your message clearly",
-    "response_note": "We usually reply within 24 business hours."
+    "response_note": "We usually reply within 24 business hours.",
+    "SERVICE_PROVIDER_NOTICE": "To join as a service provider, use the new application form: you can follow your application and answer questions from our team there.",
+    "SERVICE_PROVIDER_NOTICE_LINK": "Open the application form"
   },
   "ADMIN_MSG": {
     "title": "Contact messages",
@@ -520,7 +542,16 @@
     "SAVE_SEARCH": "Save this search",
     "SAVE_SEARCH_NAME_PROMPT": "Give this search a name (optional):",
     "SAVE_SEARCH_SUCCESS": "Search saved. We’ll notify you about new matching properties.",
-    "SAVE_SEARCH_ERROR": "Could not save the search. Make sure you are logged in."
+    "SAVE_SEARCH_ERROR": "Could not save the search. Make sure you are logged in.",
+    "KM": "km",
+    "PRICE_CURRENCY": "Price currency",
+    "PRICE_CURRENCY_HINT": "Listings priced in other currencies are included at their approximate equivalent, using indicative exchange rates.",
+    "PRICE_RANGE_INVERTED": "The minimum price is higher than the maximum. Adjust one of them.",
+    "INVALID_FILTERS": "Those search options can't be applied. Check the filters and try again.",
+    "SORT_PRICE_NEEDS_TYPE": "Choose “For rent” or “For sale” to sort by price.",
+    "GEO_UNSUPPORTED": "Your browser does not support location.",
+    "GEO_CONSENT_NOTE": "We use your current location only to show properties near you.",
+    "GEO_DENIED": "Could not get your location. Check the location permission."
   },
   "PAGINATION": {
     "NAV_LABEL": "Page navigation",
@@ -637,7 +668,7 @@
     "DEPOSIT_INVALID": "Deposit must be a positive number.",
     "HEATING": "Heating",
     "INVALID_COUNTRY_CODE": "Invalid country code.",
-    "INVALID_CURRENCY_CODE": "Invalid currency code.",
+    "INVALID_CURRENCY_CODE": "Choose US dollar, euro or Syrian pound; other currencies are no longer supported. When you change the currency of an older listing, enter the price again in the new currency.",
     "REGION_PLACEHOLDER": "e.g. Damascus - Al-Mazzeh",
     "VALIDATION_ERROR": "Please review the required fields.",
     "WARM_RENT_BELOW_COLD_RENT": "Warm rent cannot be lower than cold rent.",
@@ -999,6 +1030,19 @@
     "OPEN_GOOGLE": "Open in Google Maps",
     "MY_LOCATION": "Find my location"
   },
+  "PREFERENCES": {
+    "TITLE": "Language & currency",
+    "DESC": "These settings belong to your account and follow you to every device.",
+    "LANGUAGE_LABEL": "Language",
+    "CURRENCY_LABEL": "Display currency",
+    "CURRENCY_NONE": "Not set (show each listing's own currency)",
+    "SAVING": "Saving…",
+    "SAVED": "Saved.",
+    "SAVE_FAILED": "Your choice could not be saved. Check your connection and try again.",
+    "GUEST_NOTE": "Sign in to keep these settings on all your devices.",
+    "NOTIFICATIONS_NOTE": "Notifications are sent in your language.",
+    "PRICES_NOTE": "Prices are currently shown in the currency of each listing. Your choice is saved for when currency conversion becomes available."
+  },
   "PROFILE": {
     "SYNC_DATA": "Synchronizing data...",
     "FETCH_ERROR": "Unable to load data. Check the session.",
@@ -1014,7 +1058,16 @@
     "PHONE_SECURITY": {
       "TITLE": "Sign-in phone number",
       "CHANGE": "Change sign-in phone number",
-      "VERIFY": "Verify my phone number"
+      "VERIFY": "Verify my phone number",
+      "NO_NUMBER": "No phone number",
+      "CONFIRMED": "Confirmed",
+      "UNCONFIRMED": "Not confirmed",
+      "UNCONFIRMED_HINT": "This number is not confirmed, so it cannot reset your password. Confirm it with a code sent to the phone.",
+      "NO_NUMBER_HINT": "Add your phone number and confirm it with a code so you can sign in and recover your password with it.",
+      "NEEDS_PASSWORD": "Confirming a number needs a password, and your Google or Apple account does not have one yet. Create one with “Forgot your password?” (we email you a link), then come back here to confirm your number.",
+      "SET_PASSWORD": "Create a password",
+      "ADD": "Add a phone number",
+      "CONFIRM": "Confirm my number"
     },
     "PHONE_PLACEHOLDER": "Enter phone number",
     "CHANGE_PASS_BTN": "Change password",
@@ -1049,6 +1102,7 @@
       "PASS_MISMATCH": "The new password and its confirmation do not match.",
       "PASS_SUCCESS": "Password changed successfully.",
       "PASS_ERROR": "Unable to change the password.",
+      "PASS_RATE_LIMITED": "You have reached the limit for changing your password (5 attempts per hour). Please try again later.",
       "DELETE_CONFIRM": "Warning: Your account will be deleted permanently. Are you sure?",
       "INVALID_IMAGE_TYPE": "Unsupported image type. Use PNG, JPG, or WebP.",
       "IMAGE_TOO_LARGE": "The image is too large. The maximum size is 5 MB.",
@@ -1058,7 +1112,8 @@
       "DELETE_SUCCESS": "The account was deleted.",
       "DELETE_SCHEDULED": "We received your deletion request. Your account will be deleted on {{date}} unless you cancel before then.",
       "DELETE_ERROR": "Unable to delete the account.",
-      "PASS_LENGTH": "The new password must contain at least 6 characters."
+      "PASS_LENGTH": "The new password must contain at least 6 characters.",
+      "PHONE_SAVE_ERROR": "The phone number can't be saved from here. Add or change it in the phone number section of this page."
     },
     "ABOUT": {
       "BIO_LABEL": "About me",
@@ -1140,7 +1195,7 @@
     "FORM_INVALID": "Please fill in all required fields (marked with *) before submitting."
   },
   "SERVICE_REQUEST": {
-    "CTA": "Request HudhudNest Verify",
+    "CTA": "Request a service for this property",
     "PROVIDER": "Service provider",
     "NOTE": "Notes for the provider",
     "NOTE_PLACEHOLDER": "Add any details that help the provider (optional)",
@@ -1150,7 +1205,11 @@
     "UNAVAILABLE": "This service is not available right now.",
     "PROPERTY_REQUIRED": "A property is required.",
     "OFFERING_REQUIRED": "A service must be selected.",
-    "NOTE_TOO_LONG": "Notes are too long (max 1000 characters)."
+    "NOTE_TOO_LONG": "Notes are too long (max 1000 characters).",
+    "CATEGORY": "Service type",
+    "CHOOSE_OFFERING": "Choose an offering",
+    "NONE_FOR_AREA": "No approved provider offers this service in this property's governorate right now.",
+    "LOAD_ERROR": "Could not load the services. Please try again."
   },
   "SERVICE_REQUESTS": {
     "EYEBROW": "HudhudNest Services",
@@ -1187,7 +1246,22 @@
       "REVIEWED": "Reviewed",
       "REJECTED": "Rejected",
       "CANCELLED": "Cancelled"
-    }
+    },
+    "MY_REQUESTS": "My requests",
+    "CREATED_AT": "Created",
+    "UPDATED_AT": "Last update",
+    "VIEW_PROPERTY": "View property",
+    "DISCOVER_TITLE": "Discover services",
+    "DISCOVER_SUBTITLE": "Pick a service, then the property you need it for. Nothing is requested until you confirm.",
+    "DISCOVER_ERROR": "Could not load the available services.",
+    "OFFERS_COUNT": "{{count}} available",
+    "NO_OFFERS": "Not available yet",
+    "PICK_PROPERTY": "Which property do you need “{{category}}” for?",
+    "PROPERTIES_ERROR": "Could not load your properties.",
+    "NO_OWN_PROPERTIES": "You have no published properties. You can pick any property from the public list.",
+    "BROWSE_OTHER": "Choose another property from the list",
+    "JOIN_QUESTION": "Do you offer property services?",
+    "JOIN_LINK": "Join as a provider"
   },
   "SERVICES": {
     "CATEGORY": {
@@ -1343,7 +1417,13 @@
     "TEAM": "Team",
     "LISTINGS": "Agency listings",
     "NO_LISTINGS": "This agency has no published listings right now.",
-    "LOAD_MORE": "Show more"
+    "LOAD_MORE": "Show more",
+    "TAB_ACTIVE": "Available listings",
+    "TAB_SOLD": "Sold",
+    "TAB_RENTED": "Rented",
+    "NO_SOLD": "No sold properties yet.",
+    "NO_RENTED": "No rented properties yet.",
+    "CLOSED_NOTE": "Concluded deals kept as a record. They do not appear in search."
   },
   "VALIDATION": {
     "REQUIRED": "This field is required.",
@@ -2318,7 +2398,15 @@
       "PROGRESS_ARIA": "{{count}} of {{max}} joined so far",
       "PROGRESS_LABEL": "{{count}} of {{max}} offices have joined so far",
       "CTA": "Register your office now",
-      "CTA_ARIA": "Register your real-estate office for this offer"
+      "CTA_ARIA": "Register your real-estate office for this offer",
+      "ENDS_ON": "Offer ends on {{date}}",
+      "LOADING_ARIA": "Loading offers",
+      "EMPTY_TITLE": "No offers are published right now",
+      "EMPTY_TEXT": "Register your interest and we will let you know as soon as the first offer launches.",
+      "EMPTY_CTA": "Register your interest",
+      "ERROR_TITLE": "Offers could not be loaded right now",
+      "ERROR_TEXT": "The rest of the page works normally. You can try again.",
+      "RETRY": "Try again"
     },
     "PROBLEM_SOLUTION": {
       "EYEBROW": "Why HudhudNest?",
@@ -2508,7 +2596,8 @@
       "TAGLINE": "A digital real-estate platform · Syria first",
       "RIGHTS": "All rights reserved",
       "PRIVACY": "Privacy Policy",
-      "TERMS": "Terms of Service"
+      "TERMS": "Terms of Service",
+      "DOWNLOAD": "Download the app"
     }
   },
   "VALUATION": {
@@ -2630,6 +2719,33 @@
         "BUSINESSVERIFIED": "Business verified",
         "SERVICEVERIFIED": "Service verified"
       }
+    },
+    "OFFERINGS": {
+      "TITLE": "My offerings",
+      "SUBTITLE": "Add and enable offerings in the categories our team approved. Only enabled offerings are visible to customers.",
+      "LOAD_ERROR": "Could not load your offerings.",
+      "SUSPENDED": "Your account is suspended: your offerings are hidden and cannot be edited, and you cannot accept new requests.",
+      "REVOKED": "Your approval was revoked. Submit a new application to return.",
+      "APPROVED_CATEGORIES": "Approved categories",
+      "COVERAGE": "Governorates",
+      "COVERAGE_ALL": "Not restricted",
+      "SCOPE_NOTE": "To widen categories or governorates, contact our team.",
+      "ADD": "Add offering",
+      "EDIT": "Edit",
+      "CATEGORY": "Category",
+      "NAME": "Offering name",
+      "NAME_REQUIRED": "A name is required.",
+      "DESCRIPTION": "Description",
+      "DURATION": "Estimated duration in days",
+      "ACTIVE": "Visible to customers",
+      "PRICE_NOTE": "You quote your price when you accept each request.",
+      "EMPTY": "No offerings yet. Add your first one so customers can see it.",
+      "LIVE": "Visible",
+      "HIDDEN": "Hidden",
+      "NOT_APPROVED": "Category not approved",
+      "HIDE": "Hide",
+      "SHOW": "Show",
+      "SAVED": "Offering saved."
     }
   },
   "APP_UPDATE": {
@@ -2672,6 +2788,10 @@
     "VALUATION": {
       "TITLE": "Get your property valued",
       "DESCRIPTION": "Request a valuation of your property from a real estate expert: send the property details and we will contact you with an estimate of its market value."
+    },
+    "PROPERTIES": {
+      "TITLE": "Properties for sale and rent in Syria",
+      "DESCRIPTION": "Browse apartments and houses for sale and rent in Syria, in Damascus, Aleppo, Tartus and more, with photos, full details and direct contact with the owner or agency."
     }
   },
   "ADMIN_PAYMENTS": {
@@ -2706,6 +2826,248 @@
     "LOAD_ERROR": "Could not load the services.",
     "EMPTY": "No offerings are available in this category yet.",
     "VERIFIED_PROVIDER": "Verified provider",
-    "DURATION": "Estimated duration: {{days}} day(s)"
+    "DURATION": "Estimated duration: {{days}} day(s)",
+    "EMPTY_HINT": "Try another category, or join as a provider and be the first to offer it.",
+    "EMPTY_JOIN": "Join as a provider",
+    "COVERAGE": "Covers"
+  },
+  "PROVIDER_ONBOARDING": {
+    "APP_STATUS": {
+      "Pending": "Under review",
+      "NeedsInfo": "Waiting for your information",
+      "Approved": "Approved",
+      "Rejected": "Rejected",
+      "Withdrawn": "Withdrawn"
+    },
+    "PROVIDER_STATUS": {
+      "Active": "Active",
+      "Suspended": "Suspended",
+      "Revoked": "Approval revoked"
+    },
+    "APPLICANT_TYPE": {
+      "Individual": "Individual",
+      "Company": "Company"
+    },
+    "VERIFICATION": {
+      "None": "Not verified",
+      "AccountVerified": "Account verified",
+      "IdentityVerified": "Identity verified",
+      "BusinessVerified": "Business verified",
+      "ServiceVerified": "Service verified"
+    },
+    "EVENT": {
+      "ApplicationSubmitted": "Application submitted",
+      "InfoRequested": "More information requested",
+      "ApplicantResponded": "Applicant responded",
+      "Note": "Note",
+      "ApplicationApproved": "Application approved",
+      "ApplicationRejected": "Application rejected",
+      "ApplicationWithdrawn": "Application withdrawn",
+      "ProviderCreated": "Provider profile created",
+      "ProviderLinked": "Linked to an existing provider profile",
+      "ProviderUpdated": "Provider updated",
+      "ProviderSuspended": "Provider suspended",
+      "ProviderReactivated": "Provider reactivated",
+      "ProviderRevoked": "Provider approval revoked",
+      "VerificationChanged": "Verification level changed"
+    }
+  },
+  "PROVIDER_JOIN": {
+    "EYEBROW": "Service providers",
+    "TITLE": "Join as a service provider",
+    "SUBTITLE": "Apply once, our team reviews it, and after approval your services appear to property owners in the governorates you cover.",
+    "BACK_TO_SERVICES": "Back to services",
+    "HOW_TITLE": "How joining works",
+    "STEP_APPLY": "Submit your application",
+    "STEP_REVIEW": "We review it and may ask for details",
+    "STEP_APPROVED": "Once approved you add offerings and receive requests",
+    "SIGNIN_TITLE": "Sign in first",
+    "SIGNIN_TEXT": "Your application is tied to your account so you can follow it and answer questions securely. You will return to this page after signing in.",
+    "SIGNIN": "Sign in",
+    "REGISTER": "Create an account",
+    "LOAD_ERROR": "Could not load your applications.",
+    "REFERENCE": "Reference number",
+    "SUBMITTED_ON": "Submitted on",
+    "HINT_PENDING": "Your application is with our team for review. You will be notified here and in your notifications.",
+    "INFO_REQUESTED": "Our team needs more information from you",
+    "ANSWER": "Update and answer",
+    "REJECTED_REASON": "Reason for rejection",
+    "APPROVED_TITLE": "Your application was approved",
+    "APPROVED_ACTIVE": "Your provider account is active. Add offerings in your approved categories so customers can see them.",
+    "PROVIDER_SUSPENDED": "Your provider account is suspended: it is hidden from customers and cannot take new requests.",
+    "PROVIDER_REVOKED": "Your provider approval was revoked. You can submit a new application.",
+    "OPEN_INBOX": "Request inbox",
+    "OPEN_PROFILE": "Provider profile",
+    "F_TYPE": "Provider type",
+    "F_CATEGORIES": "Service categories",
+    "F_GOVERNORATES": "Governorates you cover",
+    "TIMELINE": "Application history",
+    "WITHDRAW": "Withdraw application",
+    "WITHDRAW_TITLE": "Withdraw this application?",
+    "WITHDRAW_TEXT": "The application is closed and will no longer be reviewed. You can apply again later.",
+    "APPLY_AGAIN": "Apply again",
+    "FORM_TITLE": "Application",
+    "FORM_RESPOND_TITLE": "Answer our team's request",
+    "F_DISPLAY_NAME": "Name you will be listed under",
+    "F_DISPLAY_NAME_HINT": "Your name or company name as customers see it.",
+    "F_CONTACT_NAME": "Contact person",
+    "F_EMAIL": "Email",
+    "F_PHONE": "Phone",
+    "F_COMPANY": "Company name",
+    "F_LICENSE": "License or registration number (optional)",
+    "F_LICENSE_HINT": "Our team checks it manually. Do not upload ID or document images here.",
+    "F_EXPERIENCE": "Your experience and specialty",
+    "F_MESSAGE": "Your message to our team",
+    "F_TERMS": "I accept the terms and the privacy policy.",
+    "TERMS_LINK": "Terms",
+    "PRIVACY_LINK": "Privacy",
+    "DOCS_NOTE": "Our team may ask for documents later through this page. Do not send sensitive documents before they are requested.",
+    "SUBMIT": "Submit application",
+    "SEND_RESPONSE": "Send answer",
+    "PREVIOUS": "Previous applications",
+    "SUBMITTED": "Your application was submitted. Keep the reference number to follow it.",
+    "RESPONDED": "Your answer was sent and the application is back in review.",
+    "WITHDRAWN": "Application withdrawn.",
+    "ERR": {
+      "DISPLAY_NAME": "Enter the name you will be listed under.",
+      "CONTACT_NAME": "Enter the contact person.",
+      "CONTACT": "Enter an email or a phone number.",
+      "CATEGORIES": "Choose at least one category.",
+      "GOVERNORATES": "Choose at least one governorate.",
+      "EXPERIENCE": "Describe your experience.",
+      "COMPANY_NAME": "Company name is required.",
+      "TERMS": "You must accept the terms and privacy policy.",
+      "MESSAGE": "Write your answer to our team's question."
+    }
+  },
+  "ADMIN_PROVIDERS": {
+    "TITLE": "Service provider management",
+    "SUBTITLE": "Review join applications, approve or reject, and manage approved providers: categories, coverage and suspension.",
+    "TAB_APPLICATIONS": "Applications",
+    "TAB_PROVIDERS": "Providers",
+    "PENDING_COUNT": "Applications waiting for a decision",
+    "SEARCH_APPLICATIONS": "Search name, email, phone or reference",
+    "SEARCH_PROVIDERS": "Search name, email or phone",
+    "F_STATUS": "Status",
+    "F_CATEGORY": "Category",
+    "F_GOVERNORATE": "Governorate",
+    "ALL_STATUSES": "All statuses",
+    "ALL_CATEGORIES": "All categories",
+    "ALL_GOVERNORATES": "All governorates",
+    "LOAD_ERROR": "Could not load the data.",
+    "EMPTY_APPLICATIONS": "No applications",
+    "EMPTY_APPLICATIONS_TEXT": "No applications match the current filters.",
+    "EMPTY_PROVIDERS": "No providers",
+    "EMPTY_PROVIDERS_TEXT": "A provider appears here once their application is approved.",
+    "BACK_TO_LIST": "Back to the list",
+    "SUBMITTED": "Submitted on",
+    "ACCOUNT_INACTIVE": "The applicant's account is deleted or disabled, so the application cannot be approved.",
+    "ALREADY_PROVIDER": "This account already has an active provider profile, so a second approval is not possible.",
+    "EXISTING_PROFILE": "This account has an earlier provider profile",
+    "EXISTING_PROFILE_NOTE": "Approving relinks and reactivates it without creating a duplicate.",
+    "APPLICANT": "Applicant",
+    "ACCOUNT": "Account",
+    "TERMS_ACCEPTED": "Terms accepted",
+    "OPEN_QUESTION": "Open question",
+    "DECISION_REASON": "Decision reason",
+    "REVIEWED_AT": "Last reviewed",
+    "OPEN_PROVIDER": "Open provider",
+    "ACTIONS": "Actions",
+    "CLOSED_NOTE": "This application is closed; no actions remain. The history below is kept.",
+    "A_NOTE": "Add note",
+    "A_REQUEST_INFO": "Request information",
+    "A_APPROVE": "Approve",
+    "A_REJECT": "Reject",
+    "NOTE_LABEL": "Note",
+    "NOTE_VISIBLE": "Show to the applicant",
+    "NOTE_VISIBLE_HINT": "It will appear in the applicant's history.",
+    "NOTE_INTERNAL_HINT": "Internal: the applicant cannot see it.",
+    "INFO_LABEL": "What do you need from the applicant?",
+    "INFO_HINT": "The applicant is notified in their language and the status becomes “needs information”.",
+    "SEND": "Send",
+    "APPROVED_CATEGORIES": "Approved categories",
+    "APPROVED_GOVERNORATES": "Approved governorates",
+    "SCOPE_HINT": "You cannot approve more than was requested. You can widen the scope later from the provider page.",
+    "SCOPE_REQUIRED": "Choose at least one category and one governorate.",
+    "VERIFICATION": "Verification level",
+    "APPROVE_NOTE": "Internal note (optional)",
+    "REJECT_LABEL": "Reason for rejection",
+    "REJECT_HINT": "The applicant will see it. Keep it clear and polite.",
+    "CONFIRM_APPROVE_TITLE": "Approve this application?",
+    "CONFIRM_APPROVE_TEXT": "The provider profile is created (or linked to the existing one), activated within the chosen scope, and the applicant is notified.",
+    "CONFIRM_REJECT_TITLE": "Reject this application?",
+    "CONFIRM_REJECT_TEXT": "The application is closed and the applicant is told the reason. Nothing is deleted; the history stays.",
+    "HISTORY": "History",
+    "NO_HISTORY": "No events yet.",
+    "INTERNAL": "Internal",
+    "DONE_NOTE": "Note saved.",
+    "DONE_INFO": "Information request sent.",
+    "DONE_APPROVED": "Application approved.",
+    "DONE_REJECTED": "Application rejected.",
+    "DONE_SAVED": "Changes saved.",
+    "DONE_SUSPEND": "Provider suspended.",
+    "DONE_REACTIVATE": "Provider reactivated.",
+    "DONE_REVOKE": "Provider approval revoked.",
+    "OPEN_REQUESTS": "Open requests",
+    "SUSPENDED_INFO": "The provider is suspended: hidden from customers and not accepting new requests; accepted work can still be finished.",
+    "REVOKED_INFO": "The provider's approval was revoked. Hidden, no new requests; returning requires a new application.",
+    "PROFILE": "Provider details and scope",
+    "BIO": "Bio",
+    "COVERAGE": "Governorates covered",
+    "REMOVE_CATEGORY_WARNING": "Removing a category hides the provider's offerings in it immediately. Existing requests are not deleted.",
+    "STATUS_ACTIONS": "Provider status",
+    "SUSPEND": "Suspend",
+    "REACTIVATE": "Reactivate",
+    "REVOKE": "Revoke approval",
+    "REVOKED_FINAL": "Revocation is final for this approval; a new application is needed to return.",
+    "STATUS_EFFECT": "Suspending or revoking hides the offerings and blocks new requests; existing requests stay.",
+    "CONFIRM_SUSPEND_TITLE": "Suspend this provider?",
+    "CONFIRM_SUSPEND_TEXT": "They disappear from public services and take no new requests until you reactivate them. They are told the reason.",
+    "CONFIRM_REACTIVATE_TITLE": "Reactivate this provider?",
+    "CONFIRM_REACTIVATE_TEXT": "They become visible again within their approved scope and accept requests.",
+    "CONFIRM_REVOKE_TITLE": "Revoke this provider's approval?",
+    "CONFIRM_REVOKE_TEXT": "They disappear and take no requests; returning needs a new application. No record or request is deleted.",
+    "REASON_REQUIRED": "Reason (required)",
+    "REASON_OPTIONAL": "Note (optional)",
+    "OFFERINGS": "Offerings",
+    "NO_OFFERINGS": "The provider has not added offerings yet.",
+    "OFFERING_ACTIVE": "Visible",
+    "OFFERING_INACTIVE": "Hidden",
+    "APPLICATIONS": "Applications"
+  },
+  "LISTING_STATUS": {
+    "AVAILABLE": "Available",
+    "RESERVED": "Reserved",
+    "SOLD": "Sold",
+    "RENTED": "Rented",
+    "ARCHIVED": "Archived",
+    "RESERVED_NOTICE": "This property is currently reserved. It may become available again if the deal falls through.",
+    "SOLD_NOTICE": "This property has been sold. The listing is kept for the record only.",
+    "RENTED_NOTICE": "This property has been rented. The listing is kept for the record only.",
+    "OWNER_LABEL": "Listing status",
+    "CONFIRM_CLOSED": "Marking this listing as sold or rented removes it from search. It stays on your agency page as a record, and its photos are compressed after 14 days to save storage. Continue?",
+    "CONFIRM_ARCHIVED": "An archived listing is hidden from the public; only you can see it. Continue?",
+    "CHANGED": "Listing status updated.",
+    "CHANGE_ERROR": "Could not update the listing status."
+  },
+  "OFFER_COMMON": {
+    "DISCOUNT_PERCENT": "{{value}}% off",
+    "DISCOUNT_FIXED_USD": "${{value}} off",
+    "DISCOUNT_FREE_MONTH": "1 free month",
+    "DISCOUNT_FREE_MONTHS": "{{value}} free months"
+  },
+  "OFFER_SHARE": {
+    "TITLE": "Prepare the offer for sharing",
+    "CLOSE": "Close",
+    "HONESTY": "These are preparation and sharing tools: they open a platform dialog or copy the text, and publish nothing by themselves. Direct publishing through connected accounts exists for property listings only (the “Social distribution” tab). The link opens the landing page, which shows the offer that is live at the time of the visit.",
+    "NOT_VISIBLE": "An offer that visitors cannot see (draft, paused, ended, not started yet, or fully redeemed) cannot be shared. Activate it and make sure it is visible first.",
+    "LANGUAGE": "Post language",
+    "COPY_TEXT": "Copy text",
+    "TEXT_COPIED": "Post text copied.",
+    "DIALOG_OPENED": "The share dialog was opened. Nothing has been published yet — a post only exists once you confirm it inside the platform.",
+    "ERROR_BUILD": "Could not prepare the share text. Please try again.",
+    "DEADLINE": "Offer ends on {{date}}.",
+    "SLOTS_LEFT": "Spots left: {{count}}.",
+    "CTA": "Register your interest now:"
   }
 }

@@ -173,7 +173,8 @@ export class PhonePasswordResetPage {
         },
         error: error => {
           this.loading.set(false);
-          this.setError(getPhoneWorkflowErrorMessage(this.translate, this.readErrorCode(error), 'AUTH.ERRORS.VERIFY_OTP_FAILED', error));
+          // Verify is limited by attempts (5 per 15 minutes), not by codes requested.
+          this.setError(getPhoneWorkflowErrorMessage(this.translate, this.readErrorCode(error, 'OTP_RATE_LIMITED'), 'AUTH.ERRORS.VERIFY_OTP_FAILED', error));
         }
       });
   }
@@ -239,10 +240,10 @@ export class PhonePasswordResetPage {
     this.resendCooldown.set(0);
   }
 
-  private readErrorCode(error: unknown): string | undefined {
+  private readErrorCode(error: unknown, rateLimitedCode = 'RATE_LIMITED'): string | undefined {
     const response = error as { status?: number; error?: { code?: string; Code?: string } };
     if (response.status === 429) {
-      return 'RATE_LIMITED';
+      return rateLimitedCode;
     }
     return response.error?.code ?? response.error?.Code;
   }

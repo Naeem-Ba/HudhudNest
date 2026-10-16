@@ -15,7 +15,10 @@ import { ProfileService, UserProfile } from '../core/api/profile.service';
 import { ServiceProviderService } from '../core/api/service-provider.service';
 import { NotificationsApiService } from '../core/api/notifications-api.service';
 import { LanguageService } from '../core/services/language.service';
+import { PreferencesService } from '../core/services/preferences.service';
+import { PushRegistrationService } from '../core/push/push-registration.service';
 import { UrlService } from '../core/services/url.service';
+import { Capacitor } from '@capacitor/core';
 
 @Component({ standalone: true, template: '' })
 class BlankPage {}
@@ -80,6 +83,8 @@ describe('NavbarComponent (Phase 6)', () => {
         },
         { provide: NotificationsApiService, useValue: { unreadCount: signal(0) } },
         { provide: LanguageService, useValue: { currentLang$: of('ar'), use: () => undefined } },
+        { provide: PreferencesService, useValue: { setLanguage: () => of(void 0) } },
+        { provide: PushRegistrationService, useValue: { revoke: () => of(void 0) } },
         {
           provide: UrlService,
           useValue: { buildWithCacheBuster: (p?: string) => (p ? `${p}?t=1` : null) }
@@ -288,5 +293,27 @@ describe('NavbarComponent (Phase 6)', () => {
     expect(profile.refresh).not.toHaveBeenCalled();
     expect(profile.getMe).not.toHaveBeenCalled();
     expect(providerRefresh).toHaveBeenCalledTimes(1);
+  });
+  // ────────────── تنزيل التطبيق ──────────────
+
+  it('✅ الويب ⇒ رابط «تنزيل التطبيق» في الشريط وفي القائمة الجانبية، رابط عادي إلى الصفحة الثابتة /download', () => {
+    const links = Array.from(el().querySelectorAll('a[href="/download"]'));
+    expect(links.length).toBeGreaterThanOrEqual(2);
+    expect(el().querySelector('.navbar__nav a[href="/download"]')).not.toBeNull();
+    expect(links.every(link => !link.hasAttribute('ng-reflect-router-link'))).toBeTrue();
+  });
+
+  it('✅ الرابط متاح بلا تسجيل دخول وللمشرف أيضًا', () => {
+    expect(el().querySelector('a[href="/download"]')).not.toBeNull();
+    auth.signIn({ email: 'admin@example.com' }, true);
+    fixture.detectChanges();
+    expect(el().querySelector('a[href="/download"]')).not.toBeNull();
+  });
+
+  it('✅ داخل التطبيق المثبّت (Capacitor) ⇒ لا رابط تنزيل', () => {
+    spyOn(Capacitor, 'isNativePlatform').and.returnValue(true);
+    fixture = TestBed.createComponent(NavbarComponent);
+    fixture.detectChanges();
+    expect(el().querySelector('a[href="/download"]')).toBeNull();
   });
 });

@@ -121,4 +121,15 @@ describe('ResetPasswordPage — the page the reset email link opens', () => {
     expect(page.error()).toBe('AUTH.ERRORS.RESET_FAILED');
     expect(page.loading()).toBeFalse();
   });
+
+  it('names the limit, not a failed reset, when the API answers 429', () => {
+    authApi.resetPassword.and.returnValue(throwError(() => ({ status: 429 })));
+    const page = create({ email: 'a@b.com', token: 't' });
+    page.form.setValue({ newPassword: NEW_VALUE, confirmPassword: NEW_VALUE });
+
+    page.submit();
+
+    expect(page.error()).toBe('AUTH.ERRORS.PASSWORD_RESET_LIMIT');
+    expect(page.loading()).toBeFalse();
+  });
 });

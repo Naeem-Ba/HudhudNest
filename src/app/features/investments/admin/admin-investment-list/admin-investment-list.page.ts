@@ -19,6 +19,7 @@ import { AdminInvestmentProjectListItem, InvestmentProjectStatus, InvestmentProj
 import { ToastService } from '../../../../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner.component';
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state.component';
+import { uiNumberLocale } from '../../../../core/i18n/ui-language';
 
 const ALL_STATUSES: InvestmentProjectStatus[] = [
   'Draft', 'UnderReview', 'Approved', 'Scheduled', 'Published', 'Closed', 'Rejected', 'Suspended'
@@ -251,7 +252,7 @@ export class AdminInvestmentListPage implements OnInit {
   }
 
   formatAmount(value: number): string {
-    return new Intl.NumberFormat('en').format(value);
+    return new Intl.NumberFormat(uiNumberLocale()).format(value);
   }
 
   trackById(_: number, project: AdminInvestmentProjectListItem): string {

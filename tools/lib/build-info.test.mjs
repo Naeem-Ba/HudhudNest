@@ -160,3 +160,31 @@ test('fetchLiveBuildInfo asks for a fresh copy', async () => {
   });
   assert.equal(requested, 'https://hudhudnest.com/build-info.json?cb=42');
 });
+
+test('expectedCommit: the live build must come from that commit (full or short sha)', () => {
+  const info = { ...productionInfo, commit: 'ab12cd34ef56ab12cd34ef56ab12cd34ef56ab12' };
+  const check = (expectedCommit) => validateBuildInfo(info, { expectedEnvironment: 'production', expectedCommit });
+  assert.deepEqual(check('ab12cd34ef56ab12cd34ef56ab12cd34ef56ab12'), []);
+  assert.deepEqual(check('ab12cd3'), []);
+  assert.match(check('ffffffff')[0], /from commit ab12cd3, but ffffff/);
+  assert.equal(check('ab12').length, 1, 'a sha shorter than 7 characters is never enough');
+  assert.equal(validateBuildInfo({ ...info, commit: null }, { expectedEnvironment: 'production', expectedCommit: 'ab12cd3' }).length, 1);
+  assert.deepEqual(validateBuildInfo(info, { expectedEnvironment: 'production' }), [], 'no expectation, no check');
+});
+
+test('the checker --commit flag compares the live commit and rejects a malformed sha', async () => {
+  const original = globalThis.fetch;
+  try {
+    const commit = 'ab12cd34ef56ab12cd34ef56ab12cd34ef56ab12';
+    globalThis.fetch = fakeFetch(JSON.stringify({ ...productionInfo, commit }));
+    assert.equal(await main(['node', 'check', '--commit', commit.slice(0, 10)], capture()), 0);
+
+    const stale = capture();
+    assert.equal(await main(['node', 'check', 'https://hudhudnest.com', '--commit', '1234567'], stale), 1);
+    assert.match(stale.lines.join("\n"), /but 1234567 was expected/);
+
+    assert.equal(await main(['node', 'check', '--commit', 'main'], capture()), 2);
+  } finally {
+    globalThis.fetch = original;
+  }
+});

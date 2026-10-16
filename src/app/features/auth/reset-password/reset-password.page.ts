@@ -9,6 +9,7 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { isRateLimited } from '../../../core/api/rate-limited';
 import { AuthApiService } from '../../../core/auth/auth-api.service';
 import { FormErrorComponent } from '../../../shared/ui/form-error.component';
 import { ToastService } from '../../../shared/services/toast.service';
@@ -74,7 +75,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
     </section>
   `,
   styles: [`
-    .auth-page{min-height:70vh;display:grid;place-items:center;background:var(--page-bg);padding:2rem}.auth-card{width:min(450px,100%);background:var(--surface);padding:2rem;border-radius:16px;box-shadow:var(--shadow-lg);display:grid;gap:.55rem}h1,p{margin:0}label{font-weight:700;margin-top:.5rem}input,button,.link-button{width:100%;box-sizing:border-box;padding:.85rem 1rem;border-radius:10px}input{border:1px solid var(--border);background:var(--surface)}button,.link-button{margin-top:1rem;border:0;background:var(--gray-800);color:white;font-weight:700;cursor:pointer;text-align:center;text-decoration:none}button:disabled{opacity:.6;cursor:not-allowed}.account{color:var(--gray-600);overflow-wrap:anywhere}.error{color:var(--danger)}.success{color:var(--success)}
+    .auth-page{min-height:70vh;display:grid;place-items:center;background:var(--page-bg);padding:2rem}.auth-card{width:min(450px,100%);background:var(--surface);padding:2rem;border-radius:16px;box-shadow:var(--shadow-lg);display:grid;gap:.55rem}h1,p{margin:0}label{font-weight:700;margin-top:.5rem}input,button,.link-button{width:100%;box-sizing:border-box;padding:.85rem 1rem;border-radius:10px}input{border:1px solid var(--border);background:var(--surface)}button,.link-button{margin-top:1rem;border:0;background:var(--primary);color:var(--on-primary);font-weight:700;cursor:pointer;text-align:center;text-decoration:none}button:hover:not(:disabled),.link-button:hover{background:var(--primary-dark)}button:disabled{opacity:.6;cursor:not-allowed}.account{color:var(--gray-600);overflow-wrap:anywhere}.error{color:var(--danger)}.success{color:var(--success)}
   `]
 })
 export class ResetPasswordPage {
@@ -143,9 +144,12 @@ export class ResetPasswordPage {
         this.success.set(message);
         this.toast.success(message);
       },
-      error: () => {
+      error: error => {
         this.loading.set(false);
-        this.error.set(this.translate.instant('AUTH.ERRORS.RESET_FAILED'));
+        // 429: the reset limit (3 per hour, shared with "forgot password"), not a wrong link.
+        this.error.set(this.translate.instant(
+          isRateLimited(error) ? 'AUTH.ERRORS.PASSWORD_RESET_LIMIT' : 'AUTH.ERRORS.RESET_FAILED'
+        ));
       }
     });
   }

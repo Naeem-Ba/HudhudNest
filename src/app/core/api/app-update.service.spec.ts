@@ -16,7 +16,14 @@ import { TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
 
 import { AppUpdateNativeGateway } from './app-update-native.gateway';
-import { AppUpdateCheckDto, AppUpdateService, normalizeAppVersion } from './app-update.service';
+import {
+  AppUpdateCheckDto,
+  AppUpdateService,
+  isTrustedStoreUrl,
+  normalizeAppVersion,
+  UPDATE_CHECK_MIN_INTERVAL_MS,
+  UPDATE_CHECK_RETRY_INTERVAL_MS
+} from './app-update.service';
 
 function fakeCheckResponse(overrides: Partial<AppUpdateCheckDto> = {}): AppUpdateCheckDto {
   return {
@@ -62,6 +69,7 @@ describe('AppUpdateService', () => {
       'isNativePlatform',
       'getPlatform',
       'getAppVersion',
+      'onResume',
       'openUrl'
     ]);
 
@@ -240,5 +248,163 @@ describe('AppUpdateService', () => {
     await service.openStore(storeUrl);
 
     expect(native.openUrl).toHaveBeenCalledWith(storeUrl);
+  });
+
+  describe('resume and repeat checks', () => {
+    let nowMs: number;
+    let resume: () => void;
+
+    const flushMicrotasks = async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    };
+    const expectCheck = () => httpMock.expectOne(r => r.url.endsWith('/app-updates/check'));
+    const settleCheck = async (response: AppUpdateCheckDto | 'error') => {
+      await flushMicrotasks();
+      if (response === 'error') {
+        expectCheck().error(new ProgressEvent('network error'));
+      } else {
+        expectCheck().flush(response);
+      }
+    };
+
+    beforeEach(() => {
+      nowMs = 1_000_000;
+      spyOn(Date, 'now').and.callFake(() => nowMs);
+      native.isNativePlatform.and.returnValue(true);
+      native.getPlatform.and.returnValue('android');
+      native.getAppVersion.and.resolveTo('1.0.0');
+      native.onResume.and.callFake((callback: () => void) => {
+        resume = callback;
+      });
+    });
+
+    it('✅ يسجّل مستمع العودة من الخلفية مرة واحدة فقط', async () => {
+      service.initialize();
+      service.initialize();
+      await settleCheck(fakeCheckResponse());
+
+      expect(native.onResume).toHaveBeenCalledTimes(1);
+    });
+
+    it('✅ عودة سريعة بعد فحص ناجح لا تُرسل طلبًا جديدًا', async () => {
+      service.initialize();
+      await settleCheck(fakeCheckResponse());
+
+      nowMs += UPDATE_CHECK_MIN_INTERVAL_MS - 1;
+      resume();
+      await flushMicrotasks();
+
+      httpMock.expectNone(() => true);
+    });
+
+    it('✅ عودة بعد انقضاء الحد الأدنى تفحص من جديد وتُظهر التحديث الاختياري', async () => {
+      service.initialize();
+      await settleCheck(fakeCheckResponse());
+
+      nowMs += UPDATE_CHECK_MIN_INTERVAL_MS;
+      resume();
+      await settleCheck(fakeCheckResponse({ updateAvailable: true, latestVersion: '1.1.0' }));
+
+      expect(service.optionalUpdate()?.latestVersion).toBe('1.1.0');
+      expect(service.mandatoryUpdate()).toBeNull();
+    });
+
+    it('✅ عودة أثناء طلب جارٍ لا تُكرّر الطلب', async () => {
+      service.initialize();
+      await flushMicrotasks();
+      const pending = expectCheck();
+
+      nowMs += UPDATE_CHECK_MIN_INTERVAL_MS;
+      resume();
+      await flushMicrotasks();
+      httpMock.expectNone(() => true);
+
+      pending.flush(fakeCheckResponse());
+    });
+
+    it('✅ بعد فشل الشبكة: عودة خلال 5 دقائق لا تعيد المحاولة، وبعدها تعيدها', async () => {
+      service.initialize();
+      await settleCheck('error');
+
+      nowMs += UPDATE_CHECK_RETRY_INTERVAL_MS - 1;
+      resume();
+      await flushMicrotasks();
+      httpMock.expectNone(() => true);
+
+      nowMs += 1;
+      resume();
+      await settleCheck(fakeCheckResponse());
+      expect(service.mandatoryUpdate()).toBeNull();
+    });
+
+    it('✅ فشل فحص لاحق لا يرفع حوارًا إلزاميًا معروضًا ولا يفرض واحدًا جديدًا', async () => {
+      service.initialize();
+      await settleCheck(
+        fakeCheckResponse({ updateAvailable: true, mandatory: true, latestVersion: '1.2.0' })
+      );
+      expect(service.mandatoryUpdate()).not.toBeNull();
+
+      nowMs += UPDATE_CHECK_MIN_INTERVAL_MS;
+      resume();
+      await settleCheck('error');
+
+      expect(service.mandatoryUpdate()).not.toBeNull();
+    });
+
+    it('✅ الحوار الإلزامي يُرفع عندما يعطّل الخادم الإصدار الذي رفع الحد الأدنى', async () => {
+      service.initialize();
+      await settleCheck(
+        fakeCheckResponse({ updateAvailable: true, mandatory: true, latestVersion: '1.2.0' })
+      );
+
+      nowMs += UPDATE_CHECK_MIN_INTERVAL_MS;
+      resume();
+      await settleCheck(fakeCheckResponse());
+
+      expect(service.mandatoryUpdate()).toBeNull();
+      expect(service.optionalUpdate()).toBeNull();
+    });
+
+    it('✅ «لاحقًا» على نسخة لا تعيد الحوار عند العودة، لكن نسخة أحدث تعيده', async () => {
+      service.initialize();
+      await settleCheck(fakeCheckResponse({ updateAvailable: true, latestVersion: '1.1.0' }));
+      service.dismissOptionalUpdate();
+
+      nowMs += UPDATE_CHECK_MIN_INTERVAL_MS;
+      resume();
+      await settleCheck(fakeCheckResponse({ updateAvailable: true, latestVersion: '1.1.0' }));
+      expect(service.optionalUpdate()).toBeNull();
+
+      nowMs += UPDATE_CHECK_MIN_INTERVAL_MS;
+      resume();
+      await settleCheck(fakeCheckResponse({ updateAvailable: true, latestVersion: '1.2.0' }));
+      expect(service.optionalUpdate()?.latestVersion).toBe('1.2.0');
+    });
+  });
+
+  it('✅ openStore يرفض رابطًا غير رسمي: لا يفتح شيئًا', async () => {
+    await service.openStore('https://evil.example/store');
+    await service.openStore('http://play.google.com/store/apps/details?id=x');
+    await service.openStore('javascript:alert(1)');
+
+    expect(native.openUrl).not.toHaveBeenCalled();
+  });
+});
+
+describe('isTrustedStoreUrl', () => {
+  it('✅ يقبل https لمتجر Google Play وApp Store فقط', () => {
+    expect(isTrustedStoreUrl('https://play.google.com/store/apps/details?id=com.hudhudnest.app')).toBeTrue();
+    expect(isTrustedStoreUrl('https://apps.apple.com/app/id123456789')).toBeTrue();
+  });
+
+  it('✅ يرفض http ونطاقات أخرى ونطاقات تحتوي اسم المتجر كجزء من نطاق آخر وغير الروابط', () => {
+    expect(isTrustedStoreUrl('http://play.google.com/x')).toBeFalse();
+    expect(isTrustedStoreUrl('https://play.google.com.evil.example/x')).toBeFalse();
+    expect(isTrustedStoreUrl('https://evil.example/play.google.com')).toBeFalse();
+    expect(isTrustedStoreUrl('market://details?id=x')).toBeFalse();
+    expect(isTrustedStoreUrl('not a url')).toBeFalse();
+    expect(isTrustedStoreUrl(null)).toBeFalse();
+    expect(isTrustedStoreUrl('')).toBeFalse();
   });
 });

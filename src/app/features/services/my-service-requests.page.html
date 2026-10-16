@@ -8,17 +8,7 @@
     <button type="button" class="btn secondary" (click)="load()" [disabled]="loading()">{{ 'COMMON.REFRESH' | translate }}</button>
   </header>
 
-  <!-- ✅ إضافة: بوابة "اطلب أن تصبح مزوّد خدمة" — يعيد استخدام نموذج التواصل الموجود
-       أصلاً (ContactController)، وليس إنشاءً ذاتياً مباشراً؛ الإدارة تراجع الطلب ثم
-       تُفعّله يدوياً عبر ServiceProvidersController.Create. -->
-  <a routerLink="/kontakt" [queryParams]="{ intent: 'service-provider' }" class="become-provider-banner">
-    <span aria-hidden="true">🛠️</span>
-    <span class="become-provider-banner__text">
-      <strong>{{ 'SERVICE_REQUESTS.BECOME_PROVIDER.TITLE' | translate }}</strong>
-      <span>{{ 'SERVICE_REQUESTS.BECOME_PROVIDER.SUBTITLE' | translate }}</span>
-    </span>
-    <span class="become-provider-banner__cta">{{ 'SERVICE_REQUESTS.BECOME_PROVIDER.CTA' | translate }} ←</span>
-  </a>
+  <h2 class="section-title">{{ 'SERVICE_REQUESTS.MY_REQUESTS' | translate }}</h2>
 
   <div class="filters" role="group" [attr.aria-label]="'SERVICE_REQUESTS.FILTER' | translate">
     <button *ngFor="let status of statuses" type="button" [class.active]="selectedStatus() === status" (click)="selectStatus(status)">
@@ -38,7 +28,12 @@
         <div>
           <p class="request-number">{{ request.requestNumber }}</p>
           <a class="property-link" [routerLink]="['/properties', request.propertyId]">{{ request.propertyTitle }}</a>
-          <p class="date">{{ request.createdAt | date:'medium' }}</p>
+          <p class="date">
+            {{ 'SERVICE_REQUESTS.CREATED_AT' | translate }}: {{ request.createdAt | date:'medium' }}
+            <ng-container *ngIf="request.updatedAt && request.updatedAt !== request.createdAt">
+              · {{ 'SERVICE_REQUESTS.UPDATED_AT' | translate }}: {{ request.updatedAt | date:'medium' }}
+            </ng-container>
+          </p>
         </div>
         <span class="status" [attr.data-status]="request.status">{{ ('SERVICE_REQUESTS.STATUS.' + request.status.toUpperCase()) | translate }}</span>
       </div>
@@ -52,7 +47,8 @@
         <div *ngIf="request.cancellationReason"><dt>{{ 'SERVICE_REQUESTS.CANCELLATION_REASON' | translate }}</dt><dd>{{ request.cancellationReason }}</dd></div>
       </dl>
 
-      <div class="actions" *ngIf="canCancel(request) || canReview(request)">
+      <div class="actions">
+        <a class="btn secondary" [routerLink]="['/properties', request.propertyId]">{{ 'SERVICE_REQUESTS.VIEW_PROPERTY' | translate }}</a>
         <button *ngIf="canCancel(request)" type="button" class="btn secondary" (click)="cancel(request)" [disabled]="processingId() === request.id">
           {{ 'SERVICE_REQUESTS.CANCEL' | translate }}
         </button>
@@ -80,4 +76,60 @@
       </form>
     </article>
   </div>
+
+  <!-- اكتشف الخدمات: dynamic categories -> a property -> the property's service form. -->
+  <section class="discover" aria-labelledby="discover-title">
+    <h2 id="discover-title" class="section-title">{{ 'SERVICE_REQUESTS.DISCOVER_TITLE' | translate }}</h2>
+    <p class="muted">{{ 'SERVICE_REQUESTS.DISCOVER_SUBTITLE' | translate }}</p>
+
+    <div *ngIf="availabilityLoading()" class="state">{{ 'COMMON.LOADING' | translate }}</div>
+    <div *ngIf="!availabilityLoading() && availabilityFailed()" class="state error">
+      <p>{{ 'SERVICE_REQUESTS.DISCOVER_ERROR' | translate }}</p>
+      <button type="button" class="btn" (click)="loadAvailability()">{{ 'COMMON.RETRY' | translate }}</button>
+    </div>
+
+    <div class="category-grid" *ngIf="!availabilityLoading() && !availabilityFailed()">
+      <button type="button" class="category-card" *ngFor="let item of availability(); trackBy: trackByCategory"
+              [class.category-card--off]="item.offeringCount === 0"
+              [class.category-card--on]="discoverCategory() === item.category"
+              [disabled]="item.offeringCount === 0"
+              [attr.aria-pressed]="discoverCategory() === item.category"
+              (click)="chooseCategory(item)">
+        <strong>{{ ('SERVICES.CATEGORY.' + item.category) | translate }}</strong>
+        <span class="count">{{ (item.offeringCount > 0 ? 'SERVICE_REQUESTS.OFFERS_COUNT' : 'SERVICE_REQUESTS.NO_OFFERS') | translate: { count: item.offeringCount } }}</span>
+      </button>
+    </div>
+
+    <div class="property-picker" *ngIf="discoverCategory() as category">
+      <div class="property-picker__head">
+        <h3>{{ 'SERVICE_REQUESTS.PICK_PROPERTY' | translate: { category: ('SERVICES.CATEGORY.' + category) | translate } }}</h3>
+        <button type="button" class="btn secondary" (click)="closeDiscover()">{{ 'COMMON.CLOSE' | translate }}</button>
+      </div>
+
+      <div *ngIf="propertiesLoading()" class="state">{{ 'COMMON.LOADING' | translate }}</div>
+      <div *ngIf="!propertiesLoading() && propertiesFailed()" class="state error">
+        <p>{{ 'SERVICE_REQUESTS.PROPERTIES_ERROR' | translate }}</p>
+        <button type="button" class="btn" (click)="loadMyProperties()">{{ 'COMMON.RETRY' | translate }}</button>
+      </div>
+
+      <ul class="property-list" *ngIf="!propertiesLoading() && !propertiesFailed() && requestableProperties().length > 0">
+        <li *ngFor="let property of requestableProperties(); trackBy: trackByPropertyId">
+          <button type="button" class="property-choice" (click)="chooseProperty(property)">
+            <strong>{{ property.title }}</strong>
+            <span class="muted">{{ property.city }}</span>
+          </button>
+        </li>
+      </ul>
+
+      <p class="muted" *ngIf="!propertiesLoading() && !propertiesFailed() && requestableProperties().length === 0">
+        {{ 'SERVICE_REQUESTS.NO_OWN_PROPERTIES' | translate }}
+      </p>
+      <a routerLink="/properties" class="browse-link">{{ 'SERVICE_REQUESTS.BROWSE_OTHER' | translate }}</a>
+    </div>
+  </section>
+
+  <p class="join-link">
+    {{ 'SERVICE_REQUESTS.JOIN_QUESTION' | translate }}
+    <a routerLink="/services/join">{{ 'SERVICE_REQUESTS.JOIN_LINK' | translate }}</a>
+  </p>
 </section>

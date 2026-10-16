@@ -19,7 +19,7 @@ import { AuthGuard } from '../guards/auth-guard';
 import { CsrfTokenService } from '../services/csrf-token.service';
 import { TokenStorageService } from '../services/token-storage.service';
 import { ToastService } from '../../shared/services/toast.service';
-import { ApiErrorInterceptor } from './api-error.interceptor';
+import { ApiErrorInterceptor, SKIP_ERROR_TOAST } from './api-error.interceptor';
 import { RefreshAuthInterceptor, RETRIED_AFTER_REFRESH } from './refresh-auth.interceptor';
 
 @Component({ template: '', standalone: true })
@@ -123,6 +123,21 @@ describe('ApiErrorInterceptor — 401 toast only when the CURRENT route requires
     expect(toast.toasts().length).toBe(1);
   }));
 
+  it('✅ طلب يحمل SKIP_ERROR_TOAST (409 على إضافة مفضلة موجودة أصلاً) لا يُظهر toast، والخطأ يصل للمستدعي', fakeAsync(() => {
+    router.navigateByUrl('/short-stay');
+    tick();
+    let reached = false;
+
+    http.post(`${environment.apiUrl}/favorites/p1`, {}, { context: new HttpContext().set(SKIP_ERROR_TOAST, true) })
+      .subscribe({ next: () => {}, error: () => (reached = true) });
+    httpMock.expectOne(`${environment.apiUrl}/favorites/p1`)
+      .flush({ message: 'Property already in favorites.' }, { status: 409, statusText: 'Conflict' });
+    tick();
+
+    expect(toast.toasts()).toEqual([]);
+    expect(reached).toBeTrue();
+  }));
+
   it('✅ لا يُظهر أي toast عند فشل POST /auth/logout بـ401 — تسجيل الخروج يُعتبر ناجحاً محلياً دائماً', fakeAsync(() => {
     tokenStorage.setAccessToken(fakeJwt(3600));
     router.navigateByUrl('/my-listings'); // صفحة محمية — لو كان هذا نداءً عادياً لأظهر toast
@@ -215,3 +230,85 @@ describe('ApiErrorInterceptor + RefreshAuthInterceptor — a 401 the refresh rec
     expect(toast.toasts().length).toBe(1);
   }));
 });
+
+describe('ApiErrorInterceptor — a 429 on a request that names its own limit', () => {
+  let http: HttpClient;
+  let httpMock: HttpTestingController;
+  let toast: ToastService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [TranslateModule.forRoot()],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(withInterceptors([ApiErrorInterceptor])),
+        provideHttpClientTesting()
+      ]
+    });
+
+    http = TestBed.inject(HttpClient);
+    httpMock = TestBed.inject(HttpTestingController);
+    toast = TestBed.inject(ToastService);
+  });
+
+  afterEach(() => httpMock.verify());
+
+  const limiter429 = {
+    title: 'Too many requests.',
+    detail: 'The request rate limit has been exceeded.',
+    status: 429
+  };
+
+  it('data export: no generic toast on top of the page\'s own "once every 24 hours" message', () => {
+    http.get(`${environment.apiUrl}/users/me/export`).subscribe({ next: () => {}, error: () => {} });
+    httpMock.expectOne(`${environment.apiUrl}/users/me/export`)
+      .flush(limiter429, { status: 429, statusText: 'Too Many Requests' });
+
+    expect(toast.toasts()).toEqual([]);
+  });
+
+  it('any other request still gets one toast, never the limiter\'s English sentence', () => {
+    http.get(`${environment.apiUrl}/properties`).subscribe({ next: () => {}, error: () => {} });
+    httpMock.expectOne(`${environment.apiUrl}/properties`)
+      .flush(limiter429, { status: 429, statusText: 'Too Many Requests' });
+
+    expect(toast.toasts().length).toBe(1);
+    expect(toast.toasts()[0].message).toBe('API_ERRORS.RATE_LIMITED');
+  });
+});
+
+describe('ApiErrorInterceptor — 415 Unsupported Media Type (marketing-offer activation incident)', () => {
+  let http: HttpClient;
+  let httpMock: HttpTestingController;
+  let toast: ToastService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [TranslateModule.forRoot()],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(withInterceptors([ApiErrorInterceptor])),
+        provideHttpClientTesting()
+      ]
+    });
+
+    http = TestBed.inject(HttpClient);
+    httpMock = TestBed.inject(HttpTestingController);
+    toast = TestBed.inject(ToastService);
+  });
+
+  afterEach(() => httpMock.verify());
+
+  it('shows ONE translated message and never the raw English "Unsupported Media Type"', () => {
+    http.put(`${environment.apiUrl}/offers/o-1/status`, 'Active').subscribe({ next: () => {}, error: () => {} });
+    httpMock.expectOne(`${environment.apiUrl}/offers/o-1/status`).flush(
+      { type: 'https://tools.ietf.org/html/rfc9110#section-15.5.16', title: 'Unsupported Media Type', status: 415 },
+      { status: 415, statusText: 'Unsupported Media Type' }
+    );
+
+    expect(toast.toasts().length).toBe(1);
+    expect(toast.toasts()[0].message).toBe('API_ERRORS.UNSUPPORTED_MEDIA');
+    expect(JSON.stringify(toast.toasts())).not.toContain('Unsupported Media Type');
+  });
+});
+
