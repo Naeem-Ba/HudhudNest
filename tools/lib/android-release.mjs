@@ -81,8 +81,9 @@ export function parseApkSignerOutput(text) {
   if (!signers || Number(signers[1]) !== 1) {
     throw new Error(`Expected exactly one signer, apksigner reported ${signers ? signers[1] : 'none'}.`);
   }
-  // The label is "Signer #1 certificate ..." for v1/v2 and "Signer (minSdkVersion=..., ...) certificate ..." for v3.
-  const digests = new Set([...out.matchAll(/^Signer(?: #\d+| \([^)\n]*\))? certificate SHA-256 digest: ([0-9a-fA-F]{64})\s*$/gm)].map(match => match[1].toLowerCase()));
+  // The label differs by apksigner version: "Signer #1 certificate ...", "Signer (minSdkVersion=..., ...) certificate ..."
+  // and, in the build-tools the CI runs, "V2 Signer: certificate ..." (seen in the first real run).
+  const digests = new Set([...out.matchAll(/^(?:V[\d.]+ )?Signer(?: #\d+| \([^)\n]*\))?:? certificate SHA-256 digest: ([0-9a-fA-F]{64})\s*$/gm)].map(match => match[1].toLowerCase()));
   if (digests.size !== 1) {
     const seen = out.split(/\r?\n/).filter(line => /certificate/i.test(line) && !/DN:/.test(line)).join(' | ') || 'no certificate lines';
     throw new Error(`Expected one signing certificate SHA-256 in the apksigner output, found ${digests.size} (saw: ${seen}).`);

@@ -74,6 +74,8 @@ test('apksigner: a verified single-signer APK yields its certificate SHA-256 in 
 test('apksigner: the v3 label "Signer (minSdkVersion=..)" is read too, and the same digest twice is one certificate', () => {
   const v3 = APKSIGNER.replace('Signer #1 certificate', 'Signer (minSdkVersion=24, maxSdkVersion=2147483647) certificate');
   assert.equal(parseApkSignerOutput(v3), CERT);
+  const v2 = APKSIGNER.replace('Signer #1 certificate', 'V2 Signer: certificate');
+  assert.equal(parseApkSignerOutput(v2), CERT, 'the label the CI build-tools print');
   const digestLine = APKSIGNER.split('\n').find(line => line.includes('SHA-256 digest'));
   assert.equal(parseApkSignerOutput(`${APKSIGNER}${digestLine.replace('Signer #1', 'Signer (minSdkVersion=28, maxSdkVersion=2147483647)')}\n`), CERT);
 });
