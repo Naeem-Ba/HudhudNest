@@ -50,12 +50,14 @@ import { isReservedListing } from '../../../shared/utils/listing-status';
 import { CurrencyRatesService } from '../../../core/pricing/currency-rates.service';
 import { isMarketCurrency } from '../../../core/pricing/market-currencies';
 import { PreferencesService } from '../../../core/services/preferences.service';
+import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
 
 @Component({
   selector: 'app-property-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AmenityLabelPipe,
     CommonModule,
     RouterModule,
     FormsModule,

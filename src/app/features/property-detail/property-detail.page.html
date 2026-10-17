@@ -106,25 +106,39 @@
             {{ 'PROPERTY_DETAIL.STALE_BANNER' | translate: { days: daysSinceFreshnessSignal() } }}
           </div>
 
-          <!-- Badges -->
-          <div class="summary-card__badges">
-            <span class="badge"
-              [class.badge--rent]="isRentListing()"
-              [class.badge--sale]="isSaleListing()">
-              {{ isSaleListing()
-                  ? ('PROPERTY.MODE_SALE' | translate)
-                  : ('PROPERTY.MODE_RENT' | translate) }}
-            </span>
-            <!-- إعلان مميّز مدفوع. مرئي لكل زائر لا للمالك وحده — التمييز يُشترى
-                 ليراه الباحثون، وشارة يراها المالك فقط ليست المنتج المدفوع. -->
-            <span class="badge badge--featured" *ngIf="p.isFeatured">
-              <span aria-hidden="true">⭐</span>
-              {{ 'PROPERTY.FEATURED' | translate }}
-            </span>
-            <!-- حالة الإعلان: محجوز / مباع / مؤجر (لا يظهر شيء لإعلان متاح). -->
-            <span class="badge" *ngIf="statusTagKey(p) as tagKey" [ngClass]="statusBadgeClass(p)" data-testid="status-badge">
-              {{ tagKey | translate }}
-            </span>
+          <!-- Header row: the listing badges on the leading side, the favorite + share pair on the
+               trailing side. Flex with logical alignment, so it mirrors by itself in RTL and wraps
+               (pair below the badges) instead of overlapping when the badges are wide. -->
+          <div class="summary-card__top">
+            <div class="summary-card__badges">
+              <span class="badge"
+                [class.badge--rent]="isRentListing()"
+                [class.badge--sale]="isSaleListing()">
+                {{ isSaleListing()
+                    ? ('PROPERTY.MODE_SALE' | translate)
+                    : ('PROPERTY.MODE_RENT' | translate) }}
+              </span>
+              <!-- إعلان مميّز مدفوع. مرئي لكل زائر لا للمالك وحده — التمييز يُشترى
+                   ليراه الباحثون، وشارة يراها المالك فقط ليست المنتج المدفوع. -->
+              <span class="badge badge--featured" *ngIf="p.isFeatured">
+                <span aria-hidden="true">⭐</span>
+                {{ 'PROPERTY.FEATURED' | translate }}
+              </span>
+              <!-- حالة الإعلان: محجوز / مباع / مؤجر (لا يظهر شيء لإعلان متاح). -->
+              <span class="badge" *ngIf="statusTagKey(p) as tagKey" [ngClass]="statusBadgeClass(p)" data-testid="status-badge">
+                {{ tagKey | translate }}
+              </span>
+            </div>
+
+            <div class="summary-card__quick" role="group" [attr.aria-label]="'PROPERTY_DETAIL.QUICK_ACTIONS' | translate">
+              <app-favorite-toggle-button
+                *ngIf="p.id"
+                [propertyId]="p.id"
+              ></app-favorite-toggle-button>
+              <!-- Social Sharing & Distribution — hides itself when the property has no usable
+                   share channel (e.g. not public); see PropertyShareButtonComponent. -->
+              <app-property-share-button [property]="p"></app-property-share-button>
+            </div>
           </div>
 
           <div class="status-notice" *ngIf="statusNoticeKey(p) as noticeKey" role="status" data-testid="status-notice">
@@ -199,14 +213,6 @@
 
           <!-- CTA Actions -->
           <div class="summary-card__actions">
-            <app-favorite-toggle-button
-              *ngIf="p.id"
-              class="detail-fav-btn"
-              [propertyId]="p.id"
-            ></app-favorite-toggle-button>
-            <!-- Social Sharing & Distribution — hides itself when the property has no usable
-                 share channel (e.g. not public); see PropertyShareButtonComponent. -->
-            <app-property-share-button [property]="p"></app-property-share-button>
             <!-- Phase-0, Task 2: owner-only "still available?" confirmation.
                  Backend also enforces ownership (403 for anyone else) — this
                  *ngIf is a UX convenience, not the actual security boundary. -->
@@ -703,7 +709,7 @@
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
                   <path d="M2 6l3 3 5-5" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round"/>
                 </svg>
-                {{ a.name }}
+                {{ a | amenityLabel }}
               </li>
             </ul>
           </div>

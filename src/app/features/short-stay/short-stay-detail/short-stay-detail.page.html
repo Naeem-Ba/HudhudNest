@@ -44,7 +44,7 @@
       <section class="ssd__section" *ngIf="listingAmenities().length > 0">
         <h2>{{ 'SHORTSTAY.DETAIL.AMENITIES' | translate }}</h2>
         <ul class="ssd__amenities">
-          <li *ngFor="let amenity of listingAmenities()">{{ amenity.name }}</li>
+          <li *ngFor="let amenity of listingAmenities()">{{ amenity | amenityLabel }}</li>
         </ul>
       </section>
 

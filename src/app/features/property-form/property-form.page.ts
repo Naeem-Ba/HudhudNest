@@ -40,6 +40,7 @@ import { EnumItem, EnumService } from '../../core/services/enum.service';
 import { ScrollLockService } from '../../core/services/scroll-lock.service';
 import { LISTING_PHOTO_COMPRESSION, compressImagesForUpload } from '../../shared/utils/image-compression';
 import { PhotoGuideSheetComponent } from '../../shared/ui/photo-guide/photo-guide-sheet.component';
+import { AmenityLabelPipe } from '../../pipes/amenity-label.pipe';
 import { PhotoGuideKind, photoGuideKindForListingType } from '../../shared/ui/photo-guide/photo-guide.data';
 
 interface PropertySavePayload {
@@ -203,7 +204,8 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
     MapPickerComponent,
     ImageFallbackDirective,
     LocationComboComponent,
-    PhotoGuideSheetComponent
+    PhotoGuideSheetComponent,
+    AmenityLabelPipe
   ],
   templateUrl: './property-form.page.html',
   styleUrls: ['./property-form.page.scss']
@@ -249,6 +251,7 @@ export class PropertyFormPage implements OnInit {
    */
   readonly amenities = signal<LookupAmenity[]>([]);
   readonly amenitiesLoadFailed = signal(false);
+  readonly amenitiesLoading = signal(false);
   readonly selectedAmenityIds = signal<Set<string>>(new Set());
   readonly citySuggestions = signal<LookupItem[]>([]);
 
@@ -706,13 +709,21 @@ export class PropertyFormPage implements OnInit {
   }
 
   /** GET /api/lookups/amenities — كانت غير مستخدمة إطلاقاً في الواجهة. */
-  private loadAmenities(): void {
+  loadAmenities(): void {
+    this.amenitiesLoading.set(true);
+    this.amenitiesLoadFailed.set(false);
     this.lookupsApi
       .getAmenities()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: amenities => this.amenities.set(amenities),
-        error: () => this.amenitiesLoadFailed.set(true)
+        next: amenities => {
+          this.amenities.set(amenities);
+          this.amenitiesLoading.set(false);
+        },
+        error: () => {
+          this.amenitiesLoadFailed.set(true);
+          this.amenitiesLoading.set(false);
+        }
       });
   }
 

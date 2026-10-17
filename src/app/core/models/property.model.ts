@@ -43,6 +43,8 @@ export interface Amenity {
   id: string;
   name: string;
   icon?: string;
+  /** Stable language-neutral key from the API (translated through AMENITIES_CATALOG.*). */
+  iconName?: string | null;
 }
 
 export interface Property {

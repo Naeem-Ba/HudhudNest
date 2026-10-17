@@ -8,6 +8,15 @@ const content: ShareableContent = {
   url: 'https://hudhudnest.com/properties/1'
 };
 
+/** Captures the link the provider hands over (the anchor click) without navigating anywhere. */
+function captureLink(): { href: () => string | null } {
+  let href: string | null = null;
+  spyOn(HTMLAnchorElement.prototype, 'click').and.callFake(function (this: HTMLAnchorElement) {
+    href = this.href;
+  });
+  return { href: () => href };
+}
+
 describe('TelegramShareProvider', () => {
   let provider: TelegramShareProvider;
 
@@ -19,26 +28,35 @@ describe('TelegramShareProvider', () => {
   it('declares the Telegram platform', () => {
     expect(provider.platform).toBe(SharePlatform.Telegram);
   });
-
-  it('opens the official t.me share widget with url and text as separate encoded params', async () => {
-    const openSpy = spyOn(window, 'open').and.returnValue({} as Window);
+  it('hands the share link over by an anchor click and never trusts window.open', async () => {
+    const openSpy = spyOn(window, 'open');
+    const link = captureLink();
 
     const result = await provider.share(content);
 
-    expect(openSpy).toHaveBeenCalledWith(
-      `https://t.me/share/url?url=${encodeURIComponent(content.url)}&text=${encodeURIComponent(content.title)}`,
-      '_blank',
-      'noopener,noreferrer'
-    );
+    expect(openSpy).not.toHaveBeenCalled();
+    expect(link.href()).toContain('t.me/share/url');
+    expect(decodeURIComponent(link.href() ?? '')).toContain(content.url);
     expect(result.success).toBeTrue();
   });
 
-  it('reports a failure result when the popup is blocked', async () => {
-    spyOn(window, 'open').and.returnValue(null);
+  it('does NOT report a pop-up failure for a normal share (the old noopener false error)', async () => {
+    captureLink();
+
+    const result = await provider.share(content);
+
+    expect(result.success).toBeTrue();
+    expect(result.errorCode).toBeUndefined();
+    expect(result.message).toBeUndefined();
+  });
+
+  it('reports a real failure only when the hand-over itself throws', async () => {
+    spyOn(HTMLAnchorElement.prototype, 'click').and.throwError('blocked');
 
     const result = await provider.share(content);
 
     expect(result.success).toBeFalse();
-    expect(result.errorCode).toBe('POPUP_BLOCKED');
+    expect(result.errorCode).toBe('OPEN_FAILED');
+    expect(result.message).toBe('SHARE.ERROR_OPEN_FAILED');
   });
 });

@@ -22,6 +22,7 @@ import {
 import { DateRangePickerComponent, DateRangeValue } from '../../../shared/ui/date-range-picker.component';
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
 import { PageMetaService } from '../../../core/services/page-meta.service';
+import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
 
 // حالات UnitBookingRange التي تُعتبر فعلياً "محجوزة" أمام ضيف جديد. Pending
 // مستثناة عمداً — طلبات متعددة يمكن أن تتنافس على نفس التاريخ إلى أن يختار
@@ -31,7 +32,7 @@ const BLOCKING_STATUSES = new Set(['Reserved', 'CheckedIn', 'Blocked']);
 @Component({
   selector: 'app-short-stay-detail-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, DateRangePickerComponent, ImageFallbackDirective],
+  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, DateRangePickerComponent, ImageFallbackDirective, AmenityLabelPipe],
   templateUrl: './short-stay-detail.page.html',
   styleUrls: ['./short-stay-detail.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

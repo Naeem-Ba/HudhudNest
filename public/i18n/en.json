@@ -594,7 +594,10 @@
     "EXTEND_LISTING": "Extend listing",
     "FEATURE_LISTING": "Feature listing",
     "CONFIRM_AVAILABILITY_SUCCESS": "Confirmed — this listing is still available.",
-    "CONFIRM_AVAILABILITY_ERROR": "Could not confirm availability. Please try again."
+    "CONFIRM_AVAILABILITY_ERROR": "Could not confirm availability. Please try again.",
+    "QUICK_ACTIONS": "Listing actions",
+    "IMAGE_ALT": "{{title}} - photo {{n}}",
+    "IMAGE_N": "Photo {{n}}"
   },
   "SHARE": {
     "BUTTON_LABEL": "Share",
@@ -612,7 +615,22 @@
     "NATIVE_NOT_SUPPORTED": "Your browser doesn't support direct sharing — try another option.",
     "ERROR_POPUP_BLOCKED": "Could not open the share window. Check your browser's pop-up blocker settings.",
     "ERROR_NOT_SHAREABLE": "This listing is no longer available to share.",
-    "ERROR_GENERIC": "Couldn't share. Please try again."
+    "ERROR_GENERIC": "Couldn't share. Please try again.",
+    "LINK_LABEL": "Listing link",
+    "COPIED": "Copied",
+    "SHARE_VIA": "Or share via",
+    "EMAIL": "Email",
+    "ERROR_OPEN_FAILED": "Couldn't open that app. Try another option or copy the link.",
+    "MORE": "More",
+    "MSG": {
+      "VIEW_ON": "See the listing on HudhudNest:",
+      "ROOMS": "{{count}} rooms",
+      "MODE_SALE": "for sale",
+      "MODE_RENT": "for rent",
+      "MODE_BOTH": "for sale or rent",
+      "FALLBACK_TITLE_CITY": "Property {{mode}} in {{city}}",
+      "FALLBACK_TITLE": "Property {{mode}}"
+    }
   },
   "PROPERTY": {
     "MODE_RENT": "For rent",
@@ -3335,5 +3353,60 @@
       "account": "Account",
       "social": "Social"
     }
+  },
+  "PRINT": {
+    "BUTTON": "Print listing",
+    "ERROR": "Couldn't print. Please try again.",
+    "LISTING_TYPE": "Listing type",
+    "AREA": "Area",
+    "ROOMS": "Rooms",
+    "FLOOR": "Floor",
+    "LOCATION": "Location",
+    "DESCRIPTION": "Description",
+    "AMENITIES": "Amenities",
+    "AGENCY": "Real-estate agency",
+    "LINK": "Listing link",
+    "PRINTED_ON": "Printed on {{date}}"
+  },
+  "LISTING_PHOTOS": {
+    "TAKE_PHOTO": "Take a photo with the camera",
+    "IMAGE_N": "Photo {{n}}",
+    "REMOVE_N": "Remove photo {{n}}"
+  },
+  "AMENITIES_CATALOG": {
+    "wifi": "Internet / Wi-Fi",
+    "air-conditioning": "Air conditioning",
+    "heating": "Heating",
+    "solar-heater": "Solar water heater",
+    "solar-energy": "Solar power",
+    "generator": "Power generator",
+    "ups-batteries": "Batteries / UPS",
+    "water-tank": "Water tank",
+    "central-heating": "Central heating",
+    "elevator": "Elevator",
+    "parking": "Parking space",
+    "garage": "Garage",
+    "garden": "Garden",
+    "balcony": "Balcony",
+    "terrace": "Terrace",
+    "roof-access": "Private roof",
+    "pool": "Swimming pool",
+    "bbq-area": "BBQ area",
+    "sea-view": "Sea view",
+    "mountain-view": "Mountain view",
+    "security-guard": "Security guard",
+    "cctv": "CCTV cameras",
+    "intercom": "Intercom",
+    "fire-safety": "Fire-safety system",
+    "furnished-kitchen": "Equipped kitchen",
+    "washing-machine": "Washing machine",
+    "refrigerator": "Refrigerator",
+    "oven-stove": "Oven and stove",
+    "tv": "TV",
+    "gym": "Gym",
+    "playground": "Children's playground",
+    "storage-room": "Storage room",
+    "pets-allowed": "Pets allowed",
+    "wheelchair-access": "Wheelchair access"
   }
 }
