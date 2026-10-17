@@ -11,6 +11,8 @@ export interface AdminPropertySummary {
   isPublished: boolean;
   publishedAt: string | null;
   expiresAt: string | null;
+  isTakenDown: boolean;
+  takenDownReason: string | null;
   isFeatured: boolean;
   featuredUntil: string | null;
   createdAt: string;

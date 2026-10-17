@@ -805,6 +805,8 @@
     "available_from": "Verfügbar ab"
   },
   "MY_LISTINGS": {
+    "TAKEN_DOWN": "Die Verwaltung hat diese Anzeige gesperrt.",
+    "TAKEN_DOWN_REASON": "Grund: {{reason}}",
     "TITLE": "Meine Anzeigen",
     "ADD_NEW": "Neue Immobilie hinzufügen",
     "QUOTA_USED": "Du hast {{used}} von {{limit}} Anzeigen, die dein Paket erlaubt",
@@ -971,6 +973,15 @@
     "ACTION_ERROR": "Die Aktion konnte nicht ausgeführt werden."
   },
   "ADMIN_USER_PROPERTIES": {
+    "TAKEN_DOWN": "Gesperrt",
+    "TAKE_DOWN": "Sperren",
+    "RESTORE": "Wiederherstellen",
+    "TAKE_DOWN_MODAL_TITLE": "Diese Anzeige sperren",
+    "TAKE_DOWN_HINT": "Die Anzeige verschwindet von der Website und der Inserent erhält den Grund unten als Benachrichtigung. Er kann sie weder veröffentlichen noch verlängern, bis Sie sie wiederherstellen.",
+    "TAKE_DOWN_REASON": "Grund für den Inserenten (erforderlich)",
+    "TAKE_DOWN_SUCCESS": "Die Anzeige wurde gesperrt.",
+    "RESTORE_MODAL_TITLE": "Diese Anzeige wiederherstellen",
+    "RESTORE_SUCCESS": "Die Anzeige wurde wiederhergestellt.",
     "TITLE": "Anzeigen von {{name}}",
     "STATUS": {
       "Available": "Verfügbar",

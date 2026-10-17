@@ -805,6 +805,8 @@
     "available_from": "متاح من"
   },
   "MY_LISTINGS": {
+    "TAKEN_DOWN": "أوقفت الإدارة هذا الإعلان.",
+    "TAKEN_DOWN_REASON": "السبب: {{reason}}",
     "TITLE": "إعلاناتي",
     "ADD_NEW": "إضافة عقار جديد",
     "QUOTA_USED": "لديك {{used}} من أصل {{limit}} إعلاناً مسموحاً به ضمن خطتك",
@@ -994,6 +996,15 @@
     "ACTION_ERROR": "تعذر تنفيذ العملية."
   },
   "ADMIN_USER_PROPERTIES": {
+    "TAKEN_DOWN": "موقوف",
+    "TAKE_DOWN": "إيقاف الإعلان",
+    "RESTORE": "استعادة",
+    "TAKE_DOWN_MODAL_TITLE": "إيقاف هذا الإعلان",
+    "TAKE_DOWN_HINT": "يختفي الإعلان من الموقع ويصل المالك إشعار بالسبب أدناه. لا يستطيع المالك نشره أو تمديده حتى تستعيده.",
+    "TAKE_DOWN_REASON": "السبب الذي يراه المالك (إلزامي)",
+    "TAKE_DOWN_SUCCESS": "أُوقف الإعلان.",
+    "RESTORE_MODAL_TITLE": "استعادة هذا الإعلان",
+    "RESTORE_SUCCESS": "استُعيد الإعلان.",
     "TITLE": "إعلانات {{name}}",
     "STATUS": {
       "Available": "متاح",
