@@ -877,7 +877,26 @@
     "PROPOSE_ALTERNATE_CANCEL": "Cancel",
     "ALTERNATE_NOTE_PLACEHOLDER": "Optional note for the visitor...",
     "ACCEPT_RESCHEDULE": "Accept new time",
-    "DECLINE_RESCHEDULE": "Decline new time"
+    "DECLINE_RESCHEDULE": "Decline new time",
+    "OPEN": "Open",
+    "FILTER_LABEL": "Filter notifications",
+    "FILTER_ALL": "All",
+    "FILTER_EMPTY": "No notifications in this category.",
+    "LOAD_MORE": "Show more",
+    "LOAD_ERROR": "Could not load notifications. Check your connection, sign in and try again.",
+    "MARK_READ_ERROR": "Could not mark the notification as read.",
+    "CATEGORY": {
+      "messages": "Messages",
+      "listings": "Listings",
+      "saved-search": "Saved searches",
+      "visits": "Viewings",
+      "short-stay": "Short stays",
+      "services": "Services",
+      "agency": "Agency",
+      "valuation": "Valuation",
+      "account": "Account",
+      "social": "Ratings"
+    }
   },
   "MESSAGES": {
     "TITLE": "Messages",
@@ -3080,5 +3099,36 @@
     "DEADLINE": "Offer ends on {{date}}.",
     "SLOTS_LEFT": "Spots left: {{count}}.",
     "CTA": "Register your interest now:"
+  },
+  "NOTIFICATION_SETTINGS": {
+    "TITLE": "Notification settings",
+    "DESC": "Choose which updates reach you, in the app and as push on your phone. Account-safety messages are always sent.",
+    "CATEGORY": "Topic",
+    "IN_APP": "In the app",
+    "PUSH": "Push",
+    "ALWAYS": "Always on",
+    "PREVIEW_LABEL": "What a push shows",
+    "PREVIEW_GENERIC": "General sentence only (recommended)",
+    "PREVIEW_FULL": "Full text, including names",
+    "PREVIEW_HINT": "Pushes can show on a locked screen. The general sentence hides names and details.",
+    "QUIET_LABEL": "Quiet hours",
+    "QUIET_FROM": "From",
+    "QUIET_TO": "To",
+    "QUIET_HINT": "During quiet hours routine pushes wait silently. The notification still appears in the app, and urgent ones are delivered at once.",
+    "SAVING": "Saving…",
+    "SAVE_FAILED": "Your change could not be saved. Check your connection and try again.",
+    "LOAD_FAILED": "Notification settings could not be loaded.",
+    "CATEGORIES": {
+      "messages": "Messages",
+      "listings": "Listings",
+      "saved-search": "Saved searches",
+      "visits": "Visits",
+      "short-stay": "Short stays",
+      "services": "Services",
+      "agency": "Agency",
+      "valuation": "Valuation",
+      "account": "Account",
+      "social": "Social"
+    }
   }
 }

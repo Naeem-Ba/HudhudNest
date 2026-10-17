@@ -45,8 +45,16 @@ export class PushNativeGateway {
     await FirebaseMessaging.addListener('tokenReceived', event => listener(event.token));
   }
 
-  async onNotificationTapped(listener: () => void): Promise<void> {
+  /** Calls back with the data the server attached to the push (type, targetKind, ids), when the person taps it. */
+  async onNotificationTapped(listener: (data: Record<string, string>) => void): Promise<void> {
     const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
-    await FirebaseMessaging.addListener('notificationActionPerformed', () => listener());
+    await FirebaseMessaging.addListener('notificationActionPerformed', event => {
+      const data = (event.notification?.data ?? {}) as Record<string, unknown>;
+      const strings: Record<string, string> = {};
+      for (const [key, value] of Object.entries(data)) {
+        if (typeof value === 'string') strings[key] = value;
+      }
+      listener(strings);
+    });
   }
 }

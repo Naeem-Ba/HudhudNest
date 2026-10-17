@@ -141,6 +141,14 @@ export class AppComponent {
     this.notificationsApi.realtime$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(notification => {
+        // The conversation is open on screen: the message is already visible, no toast on top of it.
+        if (this.isViewingConversationOf(notification)) {
+          // Seen as it arrived: mark it read (the server then syncs the badge on every device).
+          if (notification.id) {
+            this.notificationsApi.markAsRead(notification.id).subscribe({ error: () => undefined });
+          }
+          return;
+        }
         this.toast.info(
           notification.message,
           this.translate.instant('NOTIFICATIONS.NEW_TOAST_TITLE')
@@ -166,5 +174,14 @@ export class AppComponent {
 
   protected onUpdateNow(storeUrl: string | null | undefined): void {
     void this.appUpdate.openStore(storeUrl);
+  }
+
+  /** True when a new-message notification belongs to the chat thread the person is looking at right now. */
+  private isViewingConversationOf(notification: { type?: string; propertyId?: string | null }): boolean {
+    if (notification.type !== 'NewMessage' || !notification.propertyId) {
+      return false;
+    }
+    const path = this.router.url.split(/[?#]/)[0];
+    return path === `/messages/${notification.propertyId}`;
   }
 }
