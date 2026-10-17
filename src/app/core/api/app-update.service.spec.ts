@@ -15,6 +15,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
 
+import { SKIP_ERROR_TOAST } from '../interceptors/api-error.interceptor';
 import { AppUpdateNativeGateway } from './app-update-native.gateway';
 import {
   AppUpdateCheckDto,
@@ -110,6 +111,20 @@ describe('AppUpdateService', () => {
     expect(req.request.params.get('platform')).toBe('Android');
     expect(req.request.params.get('currentVersion')).toBe('1.1.0');
     req.flush(fakeCheckResponse());
+  });
+
+  it('✅ فحص التحديث صامت: لا toast "خطأ في الخادم" على أول شاشة إن فشل', async () => {
+    native.isNativePlatform.and.returnValue(true);
+    native.getPlatform.and.returnValue('android');
+    native.getAppVersion.and.resolveTo('1.1.0');
+
+    service.initialize();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const req = httpMock.expectOne(r => r.url.endsWith('/app-updates/check'));
+    expect(req.request.context.get(SKIP_ERROR_TOAST)).toBeTrue();
+    req.flush({}, { status: 500, statusText: 'Internal Server Error' });
   });
 
   it('✅ على iOS: MARKETING_VERSION "1.0" يُطبَّع إلى "1.0.0" قبل إرساله (وإلا يرفضه الـ backend بـ 422)', async () => {

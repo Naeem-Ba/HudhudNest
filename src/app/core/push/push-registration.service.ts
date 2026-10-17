@@ -1,8 +1,10 @@
+import { HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, catchError, defer, from, of, switchMap } from 'rxjs';
 
 import { BackendApiService } from '../api/backend-api.service';
+import { SKIP_ERROR_TOAST } from '../interceptors/api-error.interceptor';
 import { AuthService } from '../auth/auth.service';
 import { PushNativeGateway } from './push-native.gateway';
 import { routeForNotification } from '../models/notification-route';
@@ -17,6 +19,9 @@ import { routeForNotification } from '../models/notification-route';
  * On the web nothing happens: web users get the in-app (SignalR) notifications.
  * Push is a convenience: every failure here is silent and never blocks sign-in or sign-out.
  */
+/** Push is a convenience and every failure is swallowed here: none of it may toast. */
+const SILENT = new HttpContext().set(SKIP_ERROR_TOAST, true);
+
 @Injectable({ providedIn: 'root' })
 export class PushRegistrationService {
   private readonly api = inject(BackendApiService);
@@ -50,7 +55,7 @@ export class PushRegistrationService {
       }
 
       this.currentToken = null;
-      return this.api.post<void>('/devices/push-token/revoke', { token }).pipe(
+      return this.api.post<void>('/devices/push-token/revoke', { token }, { context: SILENT }).pipe(
         switchMap(() => from(this.native.deleteToken().catch(() => undefined))),
         switchMap(() => of(void 0)),
         catchError(() => of(void 0))
@@ -105,7 +110,7 @@ export class PushRegistrationService {
 
   private async send(token: string, platform: 'android' | 'ios'): Promise<void> {
     await new Promise<void>((resolve, reject) => {
-      this.api.post<void>('/devices/push-token', { token, platform }).subscribe({
+      this.api.post<void>('/devices/push-token', { token, platform }, { context: SILENT }).subscribe({
         next: () => {
           this.currentToken = token;
           resolve();

@@ -9,6 +9,7 @@
     "CONFLICT": "Es besteht ein Konflikt mit den aktuellen Daten. Aktualisieren Sie die Seite und versuchen Sie es erneut.",
     "RATE_LIMITED": "Zu viele Anfragen. Bitte warten Sie einen Moment und versuchen Sie es erneut.",
     "SERVER": "Ein Serverfehler ist aufgetreten. Bitte versuchen Sie es später erneut.",
+    "SERVER_REFERENCE": "Fehlercode: {{status}} · {{request}}",
     "UNKNOWN": "Ein unerwarteter Fehler ist aufgetreten.",
     "FIELD_REQUIRED": "Das Feld „{{field}}“ ist erforderlich.",
     "FIELD_INVALID": "Das Feld „{{field}}“ ist leer oder ungültig.",

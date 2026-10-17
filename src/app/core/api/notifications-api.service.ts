@@ -10,12 +10,14 @@
 //
 // ✅ الإصلاح: إضافة العناصر المفقودة + إصلاح الـ token.
 
+import { HttpContext } from '@angular/common/http';
 import { Injectable, NgZone, signal } from '@angular/core';
 import { Observable, Subject, map } from 'rxjs';
 // Types only: the SignalR client (~55 kB) is loaded on the first connect(), which only happens for a
 // signed-in user, instead of being part of every visitor's initial bundle.
 import type * as signalR from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
+import { SKIP_ERROR_TOAST } from '../interceptors/api-error.interceptor';
 import { BackendApiService } from './backend-api.service';
 import { TokenStorageService } from '../services/token-storage.service';
 import { LanguageService } from '../services/language.service';
@@ -69,7 +71,12 @@ export class NotificationsApiService {
 
   getUnreadCount(): Observable<number> {
     return this.api
-      .get<number | { unreadCount?: number; UnreadCount?: number; count?: number; Count?: number }>('/notifications/unread-count')
+      .get<number | { unreadCount?: number; UnreadCount?: number; count?: number; Count?: number }>(
+        '/notifications/unread-count',
+        undefined,
+        // The badge is a convenience and every caller swallows a failure: no toast for it.
+        { context: new HttpContext().set(SKIP_ERROR_TOAST, true) }
+      )
       .pipe(
         map(response =>
           typeof response === 'number'

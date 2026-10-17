@@ -217,6 +217,45 @@ export function knownErrorCodeKey(error: HttpErrorResponse): string | null {
   return typeof code === 'string' ? (KNOWN_ERROR_CODE_KEYS[code] ?? null) : null;
 }
 
+/**
+ * "GET /api/properties/3f2a…/photos?x=1" -> "GET /api/properties/:id/photos". Ids and the query string are
+ * left out: the point is to tell WHICH endpoint failed, not to expose what was asked.
+ */
+export function describeRequest(method: string, rawUrl: string): string {
+  let path = rawUrl;
+  try {
+    path = new URL(rawUrl, 'http://placeholder.invalid').pathname;
+  } catch {
+    path = rawUrl.split(/[?#]/)[0] ?? rawUrl;
+  }
+  const generic = path
+    .split('/')
+    .map(segment => (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(segment) || /^\d+$/.test(segment) ? ':id' : segment))
+    .join('/');
+  return `${method.toUpperCase()} ${generic}`;
+}
+
+/**
+ * The "server error" toast used to say nothing about WHICH request failed, so a tester who saw it on app
+ * open could not tell the update check from the home listings (or an API deployed without its database
+ * migration from a real outage). A 5xx now carries its status and endpoint; other errors are unchanged.
+ */
+export function withServerReference(
+  message: string,
+  error: HttpErrorResponse,
+  req: HttpRequest<unknown>,
+  translate: TranslateService
+): string {
+  if (!isServerFailure(error) || knownErrorCodeKey(error)) {
+    return message;
+  }
+  const reference = translate.instant('API_ERRORS.SERVER_REFERENCE', {
+    status: error.status,
+    request: describeRequest(req.method, req.url)
+  });
+  return `${message} (${reference})`;
+}
+
 function shouldShowToast(reqUrl: string): boolean {
   return (reqUrl.includes('/api/') || reqUrl.endsWith('/api'))
     && !isAuthFlowRequest(reqUrl)
@@ -311,7 +350,7 @@ export const ApiErrorInterceptor: HttpInterceptorFn = (req, next) => {
           !isLogoutRequest(req.url) &&
           shouldShowUnauthorizedToast(error.status, router, req)
         ) {
-          toast.error(friendlyMessage, translate.instant('API_ERRORS.TITLE'));
+          toast.error(withServerReference(friendlyMessage, error, req, translate), translate.instant('API_ERRORS.TITLE'));
         }
 
         // ✅ إصلاح L-3: تقسيم الـ Logging بين Development و Production
