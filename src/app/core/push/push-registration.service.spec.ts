@@ -1,9 +1,11 @@
+import { HttpContext } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 
 import { BackendApiService } from '../api/backend-api.service';
 import { AuthService } from '../auth/auth.service';
+import { SKIP_ERROR_TOAST } from '../interceptors/api-error.interceptor';
 import { PushNativeGateway } from './push-native.gateway';
 import { PushRegistrationService } from './push-registration.service';
 
@@ -62,7 +64,14 @@ describe('PushRegistrationService', () => {
     loggedIn.next(true);
     await flush();
 
-    expect(api.post).toHaveBeenCalledWith('/devices/push-token', { token: 'fcm-token-1', platform: 'android' });
+    expect(api.post).toHaveBeenCalledWith(
+      '/devices/push-token',
+      { token: 'fcm-token-1', platform: 'android' },
+      jasmine.objectContaining({ context: jasmine.any(HttpContext) })
+    );
+    // Push is a convenience: a failing registration never toasts "server error" on app open.
+    const options = api.post.calls.mostRecent().args[2] as { context: HttpContext };
+    expect(options.context.get(SKIP_ERROR_TOAST)).toBeTrue();
   });
 
   it('registers nothing when the person refuses notifications', async () => {
@@ -84,7 +93,11 @@ describe('PushRegistrationService', () => {
     refreshed?.('fcm-token-2');
     await flush();
 
-    expect(api.post).toHaveBeenCalledWith('/devices/push-token', { token: 'fcm-token-2', platform: 'android' });
+    expect(api.post).toHaveBeenCalledWith(
+      '/devices/push-token',
+      { token: 'fcm-token-2', platform: 'android' },
+      jasmine.objectContaining({ context: jasmine.any(HttpContext) })
+    );
   });
 
   it('opens the notifications page when a push without a target is tapped', async () => {
@@ -127,7 +140,11 @@ describe('PushRegistrationService', () => {
 
     await new Promise<void>(resolve => service.revoke().subscribe({ complete: resolve }));
 
-    expect(api.post).toHaveBeenCalledWith('/devices/push-token/revoke', { token: 'fcm-token-1' });
+    expect(api.post).toHaveBeenCalledWith(
+      '/devices/push-token/revoke',
+      { token: 'fcm-token-1' },
+      jasmine.objectContaining({ context: jasmine.any(HttpContext) })
+    );
     expect(native.deleteToken).toHaveBeenCalled();
   });
 
