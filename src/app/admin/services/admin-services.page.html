@@ -1,0 +1,217 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>{{ 'ADMIN_SERVICES.TITLE' | translate }}</h1>
+      <p>{{ 'ADMIN_SERVICES.SUBTITLE' | translate }}</p>
+    </div>
+    <a class="btn" routerLink="/admin/service-providers">{{ 'ADMIN_SERVICES.PROVIDERS_LINK' | translate }}</a>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" [attr.aria-selected]="tab() === 'overview'" [class.on]="tab() === 'overview'" (click)="selectTab('overview')">
+      {{ 'ADMIN_SERVICES.TAB_OVERVIEW' | translate }}
+    </button>
+    <button type="button" role="tab" [attr.aria-selected]="tab() === 'requests'" [class.on]="tab() === 'requests'" (click)="selectTab('requests')">
+      {{ 'ADMIN_SERVICES.TAB_REQUESTS' | translate }}
+    </button>
+  </div>
+
+  <!-- ── Overview ─────────────────────────────────────────────────── -->
+  <ng-container *ngIf="tab() === 'overview'">
+    <div class="filters">
+      <label>{{ 'ADMIN_SERVICES.FROM' | translate }}
+        <input type="date" name="from" [(ngModel)]="from" (change)="applyRange()" />
+      </label>
+      <label>{{ 'ADMIN_SERVICES.TO' | translate }}
+        <input type="date" name="to" [(ngModel)]="to" (change)="applyRange()" />
+      </label>
+      <button type="button" class="btn" (click)="setLastDays(30)">{{ 'ADMIN_SERVICES.LAST_30' | translate }}</button>
+      <button type="button" class="btn" (click)="setLastDays(90)">{{ 'ADMIN_SERVICES.LAST_90' | translate }}</button>
+      <button type="button" class="btn" (click)="setLastDays(null)">{{ 'ADMIN_SERVICES.ALL_TIME' | translate }}</button>
+    </div>
+
+    <app-loading-spinner *ngIf="statsLoading()" [label]="'COMMON.LOADING' | translate"></app-loading-spinner>
+    <div class="state error" *ngIf="!statsLoading() && statsFailed()">
+      <p>{{ 'ADMIN_SERVICES.LOAD_ERROR' | translate }}</p>
+      <button type="button" class="btn" (click)="loadStats()">{{ 'COMMON.RETRY' | translate }}</button>
+    </div>
+
+    <ng-container *ngIf="!statsLoading() && !statsFailed() && stats() as s">
+      <div class="kpis">
+        <div class="kpi"><strong>{{ s.totals.inquiries ?? 0 }}</strong><span>{{ 'ADMIN_SERVICES.K_INQUIRIES' | translate }}</span></div>
+        <div class="kpi"><strong>{{ s.totals.requested }}</strong><span>{{ 'ADMIN_SERVICES.K_REQUESTED' | translate }}</span></div>
+        <div class="kpi"><strong>{{ percent(s.totals.conversionRate) }}</strong><span>{{ 'ADMIN_SERVICES.K_CONVERSION' | translate }}</span></div>
+        <div class="kpi kpi--warn"><strong>{{ s.totals.expired ?? 0 }}</strong><span>{{ 'ADMIN_SERVICES.K_EXPIRED' | translate }}</span></div>
+        <div class="kpi"><strong>{{ s.totals.open }}</strong><span>{{ 'ADMIN_SERVICES.K_OPEN' | translate }}</span></div>
+        <div class="kpi kpi--good"><strong>{{ s.totals.completed }}</strong><span>{{ 'ADMIN_SERVICES.K_COMPLETED' | translate }}</span></div>
+        <div class="kpi kpi--bad"><strong>{{ s.totals.notCompleted }}</strong><span>{{ 'ADMIN_SERVICES.K_NOT_COMPLETED' | translate }}</span></div>
+        <div class="kpi"><strong>{{ s.totals.rejected + s.totals.cancelled }}</strong><span>{{ 'ADMIN_SERVICES.K_REJECTED_CANCELLED' | translate }}</span></div>
+        <div class="kpi kpi--warn"><strong>{{ s.totals.disputed }}</strong><span>{{ 'ADMIN_SERVICES.K_DISPUTED' | translate }}</span></div>
+        <div class="kpi"><strong>{{ percent(s.totals.completionRate) }}</strong><span>{{ 'ADMIN_SERVICES.K_RATE' | translate }}</span></div>
+        <div class="kpi"><strong>{{ s.totals.averageRating != null ? (s.totals.averageRating | number:'1.1-1') : '—' }}</strong><span>{{ 'ADMIN_SERVICES.K_RATING' | translate }}</span></div>
+      </div>
+
+      <p class="note-line" *ngIf="neverRequested() > 0">{{ 'ADMIN_SERVICES.NEVER_REQUESTED' | translate: { count: neverRequested() } }}</p>
+
+      <div class="subtabs" role="group" [attr.aria-label]="'ADMIN_SERVICES.BREAKDOWN' | translate">
+        <button type="button" [class.on]="breakdown() === 'offering'" (click)="selectBreakdown('offering')">{{ 'ADMIN_SERVICES.BY_OFFERING' | translate }}</button>
+        <button type="button" [class.on]="breakdown() === 'category'" (click)="selectBreakdown('category')">{{ 'ADMIN_SERVICES.BY_CATEGORY' | translate }}</button>
+        <button type="button" [class.on]="breakdown() === 'provider'" (click)="selectBreakdown('provider')">{{ 'ADMIN_SERVICES.BY_PROVIDER' | translate }}</button>
+      </div>
+
+      <app-empty-state *ngIf="rows().length === 0" icon="🧰"
+                       [title]="'ADMIN_SERVICES.EMPTY_STATS' | translate"
+                       [message]="'ADMIN_SERVICES.EMPTY_STATS_TEXT' | translate"></app-empty-state>
+
+      <div class="table-wrap" *ngIf="rows().length > 0">
+        <table class="stats">
+          <thead>
+            <tr>
+              <th>{{ 'ADMIN_SERVICES.C_NAME' | translate }}</th>
+              <th>{{ 'ADMIN_SERVICES.C_INQUIRIES' | translate }}</th>
+              <th>{{ 'ADMIN_SERVICES.C_REQUESTED' | translate }}</th>
+              <th>{{ 'ADMIN_SERVICES.C_CONVERSION' | translate }}</th>
+              <th>{{ 'ADMIN_SERVICES.C_OPEN' | translate }}</th>
+              <th>{{ 'ADMIN_SERVICES.C_COMPLETED' | translate }}</th>
+              <th>{{ 'ADMIN_SERVICES.C_NOT_COMPLETED' | translate }}</th>
+              <th>{{ 'ADMIN_SERVICES.C_REJECTED' | translate }}</th>
+              <th>{{ 'ADMIN_SERVICES.C_CANCELLED' | translate }}</th>
+              <th>{{ 'ADMIN_SERVICES.C_EXPIRED' | translate }}</th>
+              <th>{{ 'ADMIN_SERVICES.C_DISPUTED' | translate }}</th>
+              <th>{{ 'ADMIN_SERVICES.C_RATE' | translate }}</th>
+              <th>{{ 'ADMIN_SERVICES.C_RATING' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of rows(); trackBy: trackByKey" class="clickable" tabindex="0"
+                (click)="openRow(row)" (keydown.enter)="openRow(row)">
+              <td class="name">
+                <strong>{{ breakdown() === 'category' ? (('SERVICES.CATEGORY.' + row.key) | translate) : row.label }}</strong>
+                <span class="muted" *ngIf="row.subLabel">{{ breakdown() === 'offering' ? (('SERVICES.CATEGORY.' + row.subLabel) | translate) : row.subLabel }}</span>
+                <span class="chip chip--off" *ngIf="row.isActive === false">{{ 'ADMIN_SERVICES.INACTIVE' | translate }}</span>
+              </td>
+              <td class="num">{{ row.inquiries ?? 0 }}</td>
+              <td class="num strong">{{ row.requested }}</td>
+              <td class="num">{{ percent(row.conversionRate) }}</td>
+              <td class="num">{{ row.open }}</td>
+              <td class="num good">{{ row.completed }}</td>
+              <td class="num bad">{{ row.notCompleted }}</td>
+              <td class="num">{{ row.rejected }}</td>
+              <td class="num">{{ row.cancelled }}</td>
+              <td class="num">{{ row.expired ?? 0 }}</td>
+              <td class="num warn">{{ row.disputed }}</td>
+              <td class="num">{{ percent(row.completionRate) }}</td>
+              <td class="num" dir="ltr">{{ row.averageRating != null ? ('★ ' + (row.averageRating | number:'1.1-1') + ' (' + row.ratingCount + ')') : '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted">{{ 'ADMIN_SERVICES.TABLE_HINT' | translate }}</p>
+
+      <div class="reasons">
+        <section class="card" *ngIf="(s.expiryReasons?.length ?? 0) > 0">
+          <h2>{{ 'ADMIN_SERVICES.EXPIRY_REASONS' | translate }}</h2>
+          <p class="muted">{{ 'ADMIN_SERVICES.EXPIRY_REASONS_HINT' | translate }}</p>
+          <ul class="bars">
+            <li *ngFor="let item of s.expiryReasons; trackBy: trackByReason">
+              <span class="label">{{ ('ADMIN_SERVICES.EXPIRY.' + item.reason) | translate }}</span>
+              <span class="bar"><i [style.width.%]="barWidth(item, s.expiryReasons ?? [])"></i></span>
+              <span class="n">{{ item.count }}</span>
+            </li>
+          </ul>
+        </section>
+        <section class="card">
+          <h2>{{ 'ADMIN_SERVICES.PROVIDER_REASONS' | translate }}</h2>
+          <p class="muted">{{ 'ADMIN_SERVICES.PROVIDER_REASONS_HINT' | translate }}</p>
+          <p class="muted" *ngIf="s.providerReasons.length === 0">{{ 'ADMIN_SERVICES.NO_REASONS' | translate }}</p>
+          <ul class="bars">
+            <li *ngFor="let item of s.providerReasons; trackBy: trackByReason">
+              <span class="label">{{ ('SERVICE_OUTCOME.PROVIDER.' + item.reason) | translate }}</span>
+              <span class="bar"><i [style.width.%]="barWidth(item, s.providerReasons)"></i></span>
+              <span class="n">{{ item.count }}</span>
+            </li>
+          </ul>
+        </section>
+        <section class="card">
+          <h2>{{ 'ADMIN_SERVICES.REQUESTER_REASONS' | translate }}</h2>
+          <p class="muted">{{ 'ADMIN_SERVICES.REQUESTER_REASONS_HINT' | translate }}</p>
+          <p class="muted" *ngIf="s.requesterReasons.length === 0">{{ 'ADMIN_SERVICES.NO_REASONS' | translate }}</p>
+          <ul class="bars">
+            <li *ngFor="let item of s.requesterReasons; trackBy: trackByReason">
+              <span class="label">{{ ('SERVICE_OUTCOME.REQUESTER.' + item.reason) | translate }}</span>
+              <span class="bar"><i [style.width.%]="barWidth(item, s.requesterReasons)"></i></span>
+              <span class="n">{{ item.count }}</span>
+            </li>
+          </ul>
+        </section>
+      </div>
+    </ng-container>
+  </ng-container>
+
+  <!-- ── Requests ─────────────────────────────────────────────────── -->
+  <ng-container *ngIf="tab() === 'requests'">
+    <div class="filters">
+      <input type="search" class="search-input" [placeholder]="'ADMIN_SERVICES.SEARCH' | translate"
+             [(ngModel)]="search" (ngModelChange)="onSearchChange($event)" name="search" [attr.aria-label]="'COMMON.SEARCH' | translate">
+      <select [(ngModel)]="status" (change)="applyFilters()" name="status" [attr.aria-label]="'ADMIN_SERVICES.F_STATUS' | translate">
+        <option value="">{{ 'ADMIN_SERVICES.ALL_STATUSES' | translate }}</option>
+        <option *ngFor="let s of statuses" [value]="s">{{ ('SERVICE_REQUESTS.STATUS.' + s.toUpperCase()) | translate }}</option>
+      </select>
+      <select [(ngModel)]="category" (change)="applyFilters()" name="category" [attr.aria-label]="'ADMIN_SERVICES.F_CATEGORY' | translate">
+        <option value="">{{ 'ADMIN_SERVICES.ALL_CATEGORIES' | translate }}</option>
+        <option *ngFor="let c of categories" [value]="c">{{ ('SERVICES.CATEGORY.' + c) | translate }}</option>
+      </select>
+      <select [(ngModel)]="confirmed" (change)="applyFilters()" name="confirmed" [attr.aria-label]="'ADMIN_SERVICES.F_CONFIRMED' | translate">
+        <option value="">{{ 'ADMIN_SERVICES.CONFIRMED_ALL' | translate }}</option>
+        <option value="yes">{{ 'ADMIN_SERVICES.CONFIRMED_YES' | translate }}</option>
+        <option value="no">{{ 'ADMIN_SERVICES.CONFIRMED_NO' | translate }}</option>
+      </select>
+      <label class="check"><input type="checkbox" name="needsAttention" [(ngModel)]="needsAttention" (change)="applyFilters()" /> {{ 'ADMIN_SERVICES.NEEDS_ATTENTION' | translate }}</label>
+      <button type="button" class="btn" *ngIf="offeringId || providerId" (click)="clearScope()">{{ 'ADMIN_SERVICES.CLEAR_SCOPE' | translate }} ✕</button>
+    </div>
+
+    <app-loading-spinner *ngIf="loading()" [label]="'COMMON.LOADING' | translate"></app-loading-spinner>
+    <div class="state error" *ngIf="!loading() && failed()">
+      <p>{{ 'ADMIN_SERVICES.LOAD_ERROR' | translate }}</p>
+      <button type="button" class="btn" (click)="loadRequests()">{{ 'COMMON.RETRY' | translate }}</button>
+    </div>
+
+    <ng-container *ngIf="!loading() && !failed()">
+      <app-empty-state *ngIf="requests().length === 0" icon="📭"
+                       [title]="'ADMIN_SERVICES.EMPTY_REQUESTS' | translate"
+                       [message]="'ADMIN_SERVICES.EMPTY_REQUESTS_TEXT' | translate"></app-empty-state>
+
+      <div class="rows" *ngIf="requests().length > 0">
+        <a class="row row--link" *ngFor="let r of requests(); trackBy: trackById" [routerLink]="['/admin/services', r.id]">
+          <div class="cell cell--main">
+            <strong dir="ltr">{{ r.requestNumber }}</strong>
+            <span class="muted">{{ r.propertyTitle }}</span>
+          </div>
+          <div class="cell">
+            <div>{{ r.serviceOfferingTitle }}</div>
+            <span class="muted">{{ ('SERVICES.CATEGORY.' + r.category) | translate }} · {{ r.serviceProviderName }}</span>
+          </div>
+          <div class="cell muted">{{ r.requesterName }}</div>
+          <div class="cell">
+            <span class="chip" [attr.data-status]="r.status">{{ ('SERVICE_REQUESTS.STATUS.' + r.status.toUpperCase()) | translate }}</span>
+            <span class="chip chip--warn" *ngIf="r.needsAttention">⚠ {{ 'ADMIN_SERVICES.ATTENTION' | translate }}</span>
+          </div>
+          <div class="cell muted">
+            <span *ngIf="r.outcomeReason">{{ ('SERVICE_OUTCOME.PROVIDER.' + r.outcomeReason) | translate }}</span>
+            <span *ngIf="r.requesterReason"><br />{{ ('SERVICE_OUTCOME.REQUESTER.' + r.requesterReason) | translate }}</span>
+            <span *ngIf="r.rating">★ {{ r.rating }}</span>
+            <span *ngIf="r.expiredWaitingOn">{{ ('ADMIN_SERVICES.EXPIRY.' + r.expiredWaitingOn) | translate }}</span>
+            <span *ngIf="(r.messageCount ?? 0) > 0">💬 {{ r.messageCount }}</span>
+          </div>
+          <div class="cell muted">{{ (r.updatedAt || r.createdAt) | date:'mediumDate' }}</div>
+        </a>
+      </div>
+    </ng-container>
+
+    <div class="pagination" *ngIf="!loading() && !failed() && totalPages() > 1">
+      <button type="button" [disabled]="page() <= 1" (click)="goToPage(page() - 1)" [attr.aria-label]="'COMMON.PREVIOUS' | translate">‹</button>
+      <span>{{ page() }} / {{ totalPages() }}</span>
+      <button type="button" [disabled]="page() >= totalPages()" (click)="goToPage(page() + 1)" [attr.aria-label]="'COMMON.NEXT' | translate">›</button>
+    </div>
+  </ng-container>
+</section>

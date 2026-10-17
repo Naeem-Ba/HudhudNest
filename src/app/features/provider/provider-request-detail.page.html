@@ -29,17 +29,21 @@
         <div *ngIf="r.finalPrice != null"><dt>{{ 'PROVIDER.DETAIL.FINAL_PRICE' | translate }}</dt><dd>{{ r.finalPrice }}</dd></div>
         <div *ngIf="r.rejectionReason"><dt>{{ 'SERVICE_REQUESTS.REJECTION_REASON' | translate }}</dt><dd>{{ r.rejectionReason }}</dd></div>
         <div *ngIf="r.cancellationReason"><dt>{{ 'SERVICE_REQUESTS.CANCELLATION_REASON' | translate }}</dt><dd>{{ r.cancellationReason }}</dd></div>
+        <div *ngIf="r.status === 'NotCompleted' && r.outcomeReason"><dt>{{ 'SERVICE_REQUESTS.NOT_COMPLETED_REASON' | translate }}</dt><dd>{{ ('SERVICE_OUTCOME.PROVIDER.' + r.outcomeReason) | translate }}<ng-container *ngIf="r.outcomeNote"> — {{ r.outcomeNote }}</ng-container></dd></div>
         <a class="property-link" [routerLink]="['/properties', r.propertyId]">{{ 'PROVIDER.DETAIL.VIEW_PROPERTY' | translate }} →</a>
       </dl>
     </section>
 
     <!-- لوحة الإجراء — زر/نموذج واحد بارز يطابق nextProviderAction() لحالة الطلب الحالية -->
-    <section class="panel action-panel" *ngIf="action() !== 'None'">
+    <section class="panel action-panel" *ngIf="action() === 'Reply' || action() === 'AcceptOrReject' || action() === 'Schedule' || action() === 'Start'">
       <h2>{{ 'PROVIDER.DETAIL.ACTION' | translate }}</h2>
+      <p class="hint" *ngIf="action() === 'Schedule' || action() === 'Start'">{{ 'PROVIDER.DETAIL.OPTIONAL_STEP' | translate }}</p>
 
-      <ng-container *ngIf="action() === 'AcceptOrReject'">
+      <p class="hint" *ngIf="action() === 'Reply'">{{ 'PROVIDER.DETAIL.INQUIRY_HINT' | translate }}</p>
+
+      <ng-container *ngIf="action() === 'AcceptOrReject' || action() === 'Reply'">
         <div class="actions" *ngIf="!openForm()">
-          <button type="button" class="btn success" (click)="openAcceptForm()">{{ 'PROVIDER.DETAIL.ACCEPT' | translate }}</button>
+          <button type="button" class="btn success" *ngIf="action() === 'AcceptOrReject'" (click)="openAcceptForm()">{{ 'PROVIDER.DETAIL.ACCEPT' | translate }}</button>
           <button type="button" class="btn danger" (click)="openRejectForm()">{{ 'PROVIDER.DETAIL.REJECT' | translate }}</button>
         </div>
 
@@ -59,6 +63,13 @@
         </form>
 
         <form class="inline-form" *ngIf="openForm() === 'reject'" (ngSubmit)="submitReject()">
+          <label>
+            {{ 'PROVIDER.DETAIL.REJECT_CODE' | translate }} ({{ 'PROVIDER.DETAIL.OPTIONAL' | translate }})
+            <select [ngModel]="rejectReasonCode()" (ngModelChange)="rejectReasonCode.set($event)" name="rejectReasonCode">
+              <option value="">{{ 'SERVICE_REQUESTS.REASON_OPTIONAL' | translate }}</option>
+              <option *ngFor="let reason of outcomeReasons" [value]="reason">{{ ('SERVICE_OUTCOME.PROVIDER.' + reason) | translate }}</option>
+            </select>
+          </label>
           <label>
             {{ 'PROVIDER.DETAIL.REJECT_REASON' | translate }}
             <textarea rows="3" required [ngModel]="rejectReason()" (ngModelChange)="rejectReason.set($event)" name="rejectReason"></textarea>
@@ -84,15 +95,52 @@
         <button type="button" class="btn success" (click)="submitStart()" [disabled]="submitting()">{{ 'PROVIDER.DETAIL.CONFIRM_START' | translate }}</button>
       </div>
 
-      <form class="inline-form" *ngIf="action() === 'Complete'" (ngSubmit)="submitComplete()">
+    </section>
+
+    <!-- Done / not done: the answer the owner's statistics are built from. -->
+    <section class="panel action-panel" *ngIf="canClose()">
+      <h2>{{ 'PROVIDER.DETAIL.OUTCOME_TITLE' | translate }}</h2>
+      <p class="hint">{{ 'PROVIDER.DETAIL.OUTCOME_HINT' | translate }}</p>
+
+      <div class="actions" *ngIf="!openForm()">
+        <button type="button" class="btn success" (click)="openDoneForm()">{{ 'PROVIDER.DETAIL.MARK_DONE' | translate }}</button>
+        <button type="button" class="btn danger" (click)="openNotDoneForm()">{{ 'PROVIDER.DETAIL.MARK_NOT_DONE' | translate }}</button>
+      </div>
+
+      <form class="inline-form" *ngIf="openForm() === 'done'" (ngSubmit)="submitComplete()">
         <label>
           {{ 'PROVIDER.DETAIL.FINAL_PRICE' | translate }} ({{ 'PROVIDER.DETAIL.OPTIONAL' | translate }})
           <input type="number" min="0" step="0.01" [ngModel]="finalPrice()" (ngModelChange)="finalPrice.set($event)" name="finalPrice" />
         </label>
         <div class="form-actions">
           <button type="submit" class="btn success" [disabled]="submitting()">{{ 'PROVIDER.DETAIL.CONFIRM_COMPLETE' | translate }}</button>
+          <button type="button" class="btn secondary" (click)="closeForm()">{{ 'COMMON.CANCEL' | translate }}</button>
         </div>
       </form>
+
+      <form class="inline-form" *ngIf="openForm() === 'notdone'" (ngSubmit)="submitNotDone()">
+        <label>
+          {{ 'PROVIDER.DETAIL.NOT_DONE_REASON' | translate }}
+          <select required [ngModel]="notDoneReason()" (ngModelChange)="notDoneReason.set($event)" name="notDoneReason">
+            <option value="" disabled>{{ 'SERVICE_REQUESTS.REASON_CHOOSE' | translate }}</option>
+            <option *ngFor="let reason of outcomeReasons" [value]="reason">{{ ('SERVICE_OUTCOME.PROVIDER.' + reason) | translate }}</option>
+          </select>
+        </label>
+        <label>
+          {{ 'PROVIDER.DETAIL.NOT_DONE_NOTE' | translate }}
+          <textarea rows="3" maxlength="500" [ngModel]="notDoneNote()" (ngModelChange)="notDoneNote.set($event)" name="notDoneNote"></textarea>
+        </label>
+        <div class="form-actions">
+          <button type="submit" class="btn danger" [disabled]="!canSubmitNotDone()">{{ 'PROVIDER.DETAIL.CONFIRM_NOT_DONE' | translate }}</button>
+          <button type="button" class="btn secondary" (click)="closeForm()">{{ 'COMMON.CANCEL' | translate }}</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- In-app conversation with the customer: the only contact channel until the request is accepted. -->
+    <section class="panel" *ngIf="hasThread()">
+      <h2>{{ 'SERVICE_CONVERSATION.TITLE' | translate }}</h2>
+      <app-service-conversation [request]="r" role="provider" />
     </section>
 
     <section class="panel">
