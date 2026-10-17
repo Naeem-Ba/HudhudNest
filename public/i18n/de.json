@@ -1033,7 +1033,26 @@
     "PROPOSE_ALTERNATE_CANCEL": "Abbrechen",
     "ALTERNATE_NOTE_PLACEHOLDER": "Optionale Notiz für den Besucher...",
     "ACCEPT_RESCHEDULE": "Neuen Termin annehmen",
-    "DECLINE_RESCHEDULE": "Neuen Termin ablehnen"
+    "DECLINE_RESCHEDULE": "Neuen Termin ablehnen",
+    "OPEN": "Öffnen",
+    "FILTER_LABEL": "Benachrichtigungen filtern",
+    "FILTER_ALL": "Alle",
+    "FILTER_EMPTY": "Keine Benachrichtigungen in dieser Kategorie.",
+    "LOAD_MORE": "Mehr anzeigen",
+    "LOAD_ERROR": "Benachrichtigungen konnten nicht geladen werden. Verbindung prüfen, anmelden und erneut versuchen.",
+    "MARK_READ_ERROR": "Benachrichtigung konnte nicht als gelesen markiert werden.",
+    "CATEGORY": {
+      "messages": "Nachrichten",
+      "listings": "Inserate",
+      "saved-search": "Gespeicherte Suchen",
+      "visits": "Besichtigungen",
+      "short-stay": "Kurzaufenthalte",
+      "services": "Services",
+      "agency": "Büro",
+      "valuation": "Bewertung",
+      "account": "Konto",
+      "social": "Bewertungen"
+    }
   },
   "MAP": {
     "APARTMENT_LOCATION": "Standort der Immobilie {{title}}",
@@ -3283,6 +3302,37 @@
     "PARTY": {
       "Requester": "Kunde",
       "Provider": "Anbieter"
+    }
+  },
+  "NOTIFICATION_SETTINGS": {
+    "TITLE": "Benachrichtigungseinstellungen",
+    "DESC": "Wählen Sie, welche Meldungen Sie in der App und als Push auf dem Handy erhalten. Sicherheitsmeldungen zum Konto werden immer gesendet.",
+    "CATEGORY": "Thema",
+    "IN_APP": "In der App",
+    "PUSH": "Push",
+    "ALWAYS": "Immer an",
+    "PREVIEW_LABEL": "Was ein Push zeigt",
+    "PREVIEW_GENERIC": "Nur allgemeiner Satz (empfohlen)",
+    "PREVIEW_FULL": "Voller Text mit Namen",
+    "PREVIEW_HINT": "Pushes können auf dem Sperrbildschirm erscheinen. Der allgemeine Satz verbirgt Namen und Details.",
+    "QUIET_LABEL": "Ruhezeiten",
+    "QUIET_FROM": "Von",
+    "QUIET_TO": "Bis",
+    "QUIET_HINT": "In den Ruhezeiten warten gewöhnliche Pushes still. Die Meldung bleibt in der App sichtbar, dringende kommen sofort an.",
+    "SAVING": "Wird gespeichert…",
+    "SAVE_FAILED": "Ihre Änderung konnte nicht gespeichert werden. Prüfen Sie die Verbindung und versuchen Sie es erneut.",
+    "LOAD_FAILED": "Die Benachrichtigungseinstellungen konnten nicht geladen werden.",
+    "CATEGORIES": {
+      "messages": "Nachrichten",
+      "listings": "Inserate",
+      "saved-search": "Gespeicherte Suchen",
+      "visits": "Besichtigungen",
+      "short-stay": "Kurzaufenthalte",
+      "services": "Dienstleistungen",
+      "agency": "Agentur",
+      "valuation": "Bewertung",
+      "account": "Konto",
+      "social": "Interaktion"
     }
   }
 }

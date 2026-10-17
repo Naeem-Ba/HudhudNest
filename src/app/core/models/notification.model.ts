@@ -29,9 +29,22 @@ export interface NotificationDto {
 
 // ✅ نموذج camelCase للاستخدام الداخلي في Angular
 // الباك اند يُرجع camelCase مباشرة الآن (RELEASE-BLOCKERS-AR.md B-11) — لا تحويل مطلوب
+/** Which screen a notification opens (computed by the API). The screen re-checks access itself. */
+export interface NotificationTarget {
+  kind: string;
+  id?: string | null;
+  propertyId?: string | null;
+}
+
+export type NotificationPriority = 'Low' | 'Normal' | 'High';
+
 export interface NotificationItem {
   id: string;
   type?: string;
+  /** Filter group: messages, listings, visits, services ... (absent on an older API). */
+  category?: string;
+  priority?: NotificationPriority;
+  target?: NotificationTarget | null;
   message: string;           // ✅ الحقل الصحيح (كان "body" خطأً)
   propertyId?: string | null;
   relatedEntityId?: string | null;
@@ -67,11 +80,33 @@ export function toNotificationItem(raw: unknown): NotificationItem {
   return {
     id: String(r['Id'] ?? r['id'] ?? ''),
     type: String(r['Type'] ?? r['type'] ?? ''),
+    category: ((r['Category'] ?? r['category']) as string | undefined) || undefined,
+    priority: toPriority(r['Priority'] ?? r['priority']),
+    target: toTarget(r['Target'] ?? r['target']),
     message: String(r['Message'] ?? r['message'] ?? ''),
     propertyId: (r['PropertyId'] ?? r['propertyId']) as string | null | undefined,
     relatedEntityId: (r['RelatedEntityId'] ?? r['relatedEntityId']) as string | null | undefined,
     isRead: Boolean(r['IsRead'] ?? r['isRead'] ?? false),
     readAt: (r['ReadAt'] ?? r['readAt']) as string | null | undefined,
     createdAt: String(r['CreatedAt'] ?? r['createdAt'] ?? '')
+  };
+}
+
+function toPriority(value: unknown): NotificationPriority | undefined {
+  if (value === 0 || value === 'Low') return 'Low';
+  if (value === 1 || value === 'Normal') return 'Normal';
+  if (value === 2 || value === 'High') return 'High';
+  return undefined;
+}
+
+function toTarget(value: unknown): NotificationTarget | null {
+  if (!value || typeof value !== 'object') return null;
+  const t = value as Record<string, unknown>;
+  const kind = String(t['Kind'] ?? t['kind'] ?? '');
+  if (!kind) return null;
+  return {
+    kind,
+    id: ((t['Id'] ?? t['id']) as string | null | undefined) ?? null,
+    propertyId: ((t['PropertyId'] ?? t['propertyId']) as string | null | undefined) ?? null
   };
 }

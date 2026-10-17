@@ -5,6 +5,7 @@ import { Observable, catchError, defer, from, of, switchMap } from 'rxjs';
 import { BackendApiService } from '../api/backend-api.service';
 import { AuthService } from '../auth/auth.service';
 import { PushNativeGateway } from './push-native.gateway';
+import { routeForNotification } from '../models/notification-route';
 
 /**
  * Keeps this app install's push address registered against the signed-in account:
@@ -88,8 +89,17 @@ export class PushRegistrationService {
     await this.native.onTokenRefresh(token => {
       void this.send(token, platform).catch(() => undefined);
     });
-    await this.native.onNotificationTapped(() => {
-      void this.router.navigateByUrl('/notifications');
+    await this.native.onNotificationTapped(data => {
+      // Open the screen the push is about; anything unknown falls back to the notification list.
+      const route = data['targetKind']
+        ? routeForNotification({
+            type: data['type'],
+            target: { kind: data['targetKind'], id: data['relatedEntityId'] ?? null, propertyId: data['propertyId'] ?? null },
+            propertyId: data['propertyId'] ?? null,
+            relatedEntityId: data['relatedEntityId'] ?? null
+          })
+        : null;
+      void this.router.navigate(route ?? ['/notifications']);
     });
   }
 

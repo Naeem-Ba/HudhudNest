@@ -11,7 +11,7 @@ describe('PushRegistrationService', () => {
   let api: jasmine.SpyObj<BackendApiService>;
   let native: jasmine.SpyObj<PushNativeGateway>;
   let loggedIn: BehaviorSubject<boolean>;
-  let tapped: (() => void) | undefined;
+  let tapped: ((data: Record<string, string>) => void) | undefined;
   let refreshed: ((token: string) => void) | undefined;
   let router: jasmine.SpyObj<Router>;
 
@@ -30,7 +30,8 @@ describe('PushRegistrationService', () => {
     native.deleteToken.and.resolveTo();
     native.onTokenRefresh.and.callFake(async cb => { refreshed = cb; });
     native.onNotificationTapped.and.callFake(async cb => { tapped = cb; });
-    router = jasmine.createSpyObj<Router>('Router', ['navigateByUrl']);
+    router = jasmine.createSpyObj<Router>('Router', ['navigateByUrl', 'navigate']);
+    router.navigate.and.resolveTo(true);
     loggedIn = new BehaviorSubject<boolean>(false);
 
     TestBed.configureTestingModule({
@@ -86,14 +87,35 @@ describe('PushRegistrationService', () => {
     expect(api.post).toHaveBeenCalledWith('/devices/push-token', { token: 'fcm-token-2', platform: 'android' });
   });
 
-  it('opens the notifications page when a push is tapped', async () => {
+  it('opens the notifications page when a push without a target is tapped', async () => {
     TestBed.inject(PushRegistrationService).start();
     loggedIn.next(true);
     await flush();
 
-    tapped?.();
+    tapped?.({});
 
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/notifications');
+    expect(router.navigate).toHaveBeenCalledWith(['/notifications']);
+  });
+
+  it('opens the screen the push is about when the server sent a target', async () => {
+    TestBed.inject(PushRegistrationService).start();
+    loggedIn.next(true);
+    await flush();
+    const propertyId = '3f2b8c1e-9d4a-4c55-8f0a-1b2c3d4e5f60';
+
+    tapped?.({ type: 'NewMessage', targetKind: 'messages', propertyId, relatedEntityId: '11111111-2222-4333-8444-555555555555' });
+
+    expect(router.navigate).toHaveBeenCalledWith(['/messages', propertyId]);
+  });
+
+  it('never builds a route from an id that is not a GUID', async () => {
+    TestBed.inject(PushRegistrationService).start();
+    loggedIn.next(true);
+    await flush();
+
+    tapped?.({ type: 'NewMessage', targetKind: 'messages', propertyId: '../admin/users' });
+
+    expect(router.navigate).toHaveBeenCalledWith(['/messages']);
   });
 
   it('revokes the token on the server and on the device at sign-out', async () => {

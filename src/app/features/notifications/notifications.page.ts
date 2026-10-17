@@ -19,10 +19,10 @@
 //   any         = تخلٍّ عن هذه الحماية
 //   Type Safety = فريق يعمل بثقة ومشروع قابل للصيانة
 // ═══════════════════════════════════════════════════════════════
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subscription, skip } from 'rxjs';
 import { LanguageService } from '../../core/services/language.service';
 import { NotificationsApiService } from '../../core/api/notifications-api.service';
@@ -32,6 +32,7 @@ import { ToastService } from '../../shared/services/toast.service';
 
 // ✅ استيراد النموذج المُحدَّد بدلاً من any
 import { NotificationItem, toNotificationItem } from '../../core/models/notification.model';
+import { routeForNotification } from '../../core/models/notification-route';
 
 // ✅ إضافة: للتصرف بطلب الزيارة (تأكيد/رفض/موعد بديل) مباشرة من بطاقة
 // الإشعار — بدل الاكتفاء بـ "تحديد كمقروء"/"تجاهل" فقط، ما كان يجبر
@@ -62,6 +63,16 @@ import { VisitService } from '../../core/api/visit.service';
         </button>
       </header>
 
+      <div class="filters" role="group" [attr.aria-label]="'NOTIFICATIONS.FILTER_LABEL' | translate" *ngIf="categories().length > 1">
+        <button type="button" class="chip" [class.active]="filter() === 'all'" [attr.aria-pressed]="filter() === 'all'" (click)="filter.set('all')">
+          {{ 'NOTIFICATIONS.FILTER_ALL' | translate }}
+        </button>
+        <button type="button" class="chip" *ngFor="let category of categories()"
+          [class.active]="filter() === category" [attr.aria-pressed]="filter() === category" (click)="filter.set(category)">
+          {{ 'NOTIFICATIONS.CATEGORY.' + category | translate }}
+        </button>
+      </div>
+
       <p class="state">
         <span aria-hidden="true">●</span>
         {{ 'NOTIFICATIONS.CONNECTION_STATE' | translate }}: {{ notificationsApi.connectionState() }}
@@ -82,15 +93,20 @@ import { VisitService } from '../../core/api/visit.service';
         [message]="'NOTIFICATIONS.EMPTY_MESSAGE' | translate"
       ></app-empty-state>
 
-      <div class="notifications-list" *ngIf="!loading() && notifications().length > 0 && !error()">
+      <p class="state" *ngIf="!loading() && !error() && notifications().length > 0 && visible().length === 0">
+        {{ 'NOTIFICATIONS.FILTER_EMPTY' | translate }}
+      </p>
+
+      <div class="notifications-list" *ngIf="!loading() && visible().length > 0 && !error()">
         <!--
           ✅ التحسين: trackBy يستخدم item.id الآن (مُحدَّد النوع)
           بدلاً من item?.id ?? item?.Id ?? index (any-style)
         -->
         <article
           class="card"
-          *ngFor="let notification of notifications(); trackBy: trackById"
+          *ngFor="let notification of visible(); trackBy: trackById"
           [class.unread]="!notification.isRead"
+          [class.high]="notification.priority === 'High'"
         >
           <div>
             <!-- ✅ الحقول محددة النوع — TypeScript يكتشف الأخطاء compile-time -->
@@ -188,6 +204,9 @@ import { VisitService } from '../../core/api/visit.service';
           </div>
 
           <div class="card-actions">
+            <button type="button" class="open-btn" *ngIf="routeOf(notification)" (click)="open(notification)">
+              {{ 'NOTIFICATIONS.OPEN' | translate }}
+            </button>
             <button type="button" [disabled]="notification.isRead" (click)="markAsRead(notification)">
               {{ notification.isRead
                  ? ('NOTIFICATIONS.READ' | translate)
@@ -205,6 +224,12 @@ import { VisitService } from '../../core/api/visit.service';
           </div>
         </article>
       </div>
+
+      <div class="load-more" *ngIf="!loading() && !error() && hasMore()">
+        <button type="button" [disabled]="loadingMore()" (click)="loadMore()">
+          {{ loadingMore() ? ('COMMON.LOADING' | translate) : ('NOTIFICATIONS.LOAD_MORE' | translate) }}
+        </button>
+      </div>
     </section>
   `,
   styles: [`
@@ -220,6 +245,12 @@ import { VisitService } from '../../core/api/visit.service';
     .notifications-list { display:grid;gap:.85rem; }
     .card { display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:start; }
     .card.unread { border-inline-start:5px solid var(--primary); }
+    .card.high.unread { border-inline-start-color: var(--danger); }
+    .filters { display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem; }
+    .chip { background:var(--gray-100);color:var(--gray-700);border:1px solid var(--border);border-radius:999px;padding:.4rem .9rem; }
+    .chip.active { background:var(--primary-soft);color:var(--primary-text);border-color:var(--primary);font-weight:600; }
+    .open-btn { background:var(--primary-soft);color:var(--primary-text);border:1px solid rgba(214,168,79,.35); }
+    .load-more { display:flex;justify-content:center;margin-top:1rem; }
     h2 { margin:0 0 .35rem;font-size:1.05rem;color:var(--gray-800); }
     p { margin:0;color:var(--gray-600);line-height:1.7; }
     small { display:inline-block;margin-top:.45rem;color:var(--gray-400); }
@@ -259,6 +290,9 @@ export class NotificationsPage implements OnDestroy {
   private readonly visits = inject(VisitService);
   private readonly toast = inject(ToastService);
   private readonly languageService = inject(LanguageService);
+  private readonly router = inject(Router);
+  private readonly translate = inject(TranslateService);
+  private static readonly PageSize = 20;
   private readonly subscriptions = new Subscription();
 
   // ✅ إصلاح L-2: النوع المحدد بدلاً من any[]
@@ -279,6 +313,25 @@ export class NotificationsPage implements OnDestroy {
 
   readonly hasUnread = computed(() => this.notifications().some(n => !n.isRead));
 
+  readonly filter = signal<string>('all');
+  readonly page = signal(1);
+  readonly hasMore = signal(false);
+  readonly loadingMore = signal(false);
+
+  /** Categories present in what is loaded, in first-seen order. */
+  readonly categories = computed(() => {
+    const seen: string[] = [];
+    for (const n of this.notifications()) {
+      if (n.category && !seen.includes(n.category)) seen.push(n.category);
+    }
+    return seen;
+  });
+
+  readonly visible = computed(() => {
+    const f = this.filter();
+    return f === 'all' ? this.notifications() : this.notifications().filter(n => n.category === f);
+  });
+
   constructor() {
     this.load();
     this.notificationsApi.connect();
@@ -288,8 +341,9 @@ export class NotificationsPage implements OnDestroy {
       this.notificationsApi.realtime$.subscribe(rawNotification => {
         // ✅ تحويل آمن من Backend format إلى NotificationItem
         const notification = toNotificationItem(rawNotification);
-        this.notifications.update(items => [notification, ...items]);
-        this.toast.info(notification.message, 'إشعار جديد');
+        // The toast is shown once, app-wide, by AppComponent; this page only updates its list.
+        this.notifications.update(items =>
+          items.some(n => n.id === notification.id) ? items : [notification, ...items]);
         // الدفع الفوري يحمل النص المخزَّن (العربي) لأن لغة المستلم مجهولة وقت الإرسال؛ القائمة
         // التي يعيدها الخادم تُكتب بلغة الموقع، فنحدّثها بصمت ليظهر الإشعار بلغة المستخدم.
         this.refreshSilently();
@@ -298,6 +352,16 @@ export class NotificationsPage implements OnDestroy {
 
     // تغيير لغة الموقع: أعد جلب القائمة لتُكتب الإشعارات باللغة الجديدة (القيمة الأولى تُتجاهل
     // لأن load() أعلاه جلبتها أصلًا).
+    // Read elsewhere (another tab or device): reflect it here without a reload.
+    this.subscriptions.add(
+      this.notificationsApi.readSync$.subscribe(sync =>
+        this.notifications.update(items =>
+          items.map(n => (sync.all || sync.ids?.includes(n.id) ? { ...n, isRead: true } : n))))
+    );
+
+    // The live connection came back after a drop: pick up what was raised meanwhile.
+    this.subscriptions.add(this.notificationsApi.resync$.subscribe(() => this.refreshSilently()));
+
     this.subscriptions.add(
       this.languageService.currentLang$.pipe(skip(1)).subscribe(() => this.refreshSilently())
     );
@@ -305,8 +369,13 @@ export class NotificationsPage implements OnDestroy {
 
   /** إعادة جلب القائمة بلا مؤشر تحميل ولا رسالة خطأ — فشلها يُبقي ما هو معروض. */
   private refreshSilently(): void {
-    this.notificationsApi.getNotifications().subscribe({
-      next: (items: unknown[]) => this.notifications.set((items ?? []).map(toNotificationItem)),
+    this.notificationsApi.getNotifications(1, NotificationsPage.PageSize).subscribe({
+      next: (items: unknown[]) => {
+        const fresh = (items ?? []).map(toNotificationItem);
+        const freshIds = new Set(fresh.map(n => n.id));
+        // Keep older pages that were loaded with "load more"; the first page is replaced.
+        this.notifications.update(existing => [...fresh, ...existing.filter(n => !freshIds.has(n.id) && this.isOlderThan(n, fresh))]);
+      },
       error: () => undefined
     });
   }
@@ -319,18 +388,59 @@ export class NotificationsPage implements OnDestroy {
     this.loading.set(true);
     this.error.set('');
 
-    this.notificationsApi.getNotifications().subscribe({
+    this.page.set(1);
+    this.notificationsApi.getNotifications(1, NotificationsPage.PageSize).subscribe({
       next: (items: unknown[]) => {
-        // ✅ تحويل كل عنصر باستخدام toNotificationItem() بشكل صريح وآمن
         const typed: NotificationItem[] = (items ?? []).map(toNotificationItem);
         this.notifications.set(typed);
+        this.hasMore.set(typed.length >= NotificationsPage.PageSize);
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('يجب تسجيل الدخول لعرض الإشعارات أو تعذر تحميل البيانات.');
+        this.error.set(this.translate.instant('NOTIFICATIONS.LOAD_ERROR'));
         this.loading.set(false);
       }
     });
+  }
+
+  loadMore(): void {
+    if (this.loadingMore() || !this.hasMore()) return;
+    this.loadingMore.set(true);
+    const next = this.page() + 1;
+
+    this.notificationsApi.getNotifications(next, NotificationsPage.PageSize).subscribe({
+      next: (items: unknown[]) => {
+        const more: NotificationItem[] = (items ?? []).map(toNotificationItem);
+        this.notifications.update(existing => {
+          const ids = new Set(existing.map(n => n.id));
+          return [...existing, ...more.filter(n => !ids.has(n.id))];
+        });
+        this.page.set(next);
+        this.hasMore.set(more.length >= NotificationsPage.PageSize);
+        this.loadingMore.set(false);
+      },
+      error: () => {
+        this.toast.error(this.translate.instant('NOTIFICATIONS.LOAD_ERROR'));
+        this.loadingMore.set(false);
+      }
+    });
+  }
+
+  private isOlderThan(item: NotificationItem, fresh: NotificationItem[]): boolean {
+    const oldestFresh = fresh[fresh.length - 1]?.createdAt;
+    return !oldestFresh || !item.createdAt || item.createdAt < oldestFresh;
+  }
+
+  routeOf(item: NotificationItem): string[] | null {
+    return routeForNotification(item);
+  }
+
+  /** Opens the screen the notification is about; reading it is implied. The screen re-checks access. */
+  open(item: NotificationItem): void {
+    const route = routeForNotification(item);
+    if (!route) return;
+    this.markAsRead(item);
+    void this.router.navigate(route);
   }
 
   // ✅ trackBy بنوع محدد: NotificationItem له id مضمون
@@ -348,7 +458,7 @@ export class NotificationsPage implements OnDestroy {
           items.map(n => n.id === item.id ? { ...n, isRead: true } : n)
         );
       },
-      error: () => this.toast.error('تعذر تعليم الإشعار كمقروء.')
+      error: () => this.toast.error(this.translate.instant('NOTIFICATIONS.MARK_READ_ERROR'))
     });
   }
 
@@ -362,7 +472,7 @@ export class NotificationsPage implements OnDestroy {
         this.markingAll.set(false);
       },
       error: () => {
-        this.toast.error('تعذر تعليم كل الإشعارات كمقروءة.');
+        this.toast.error(this.translate.instant('NOTIFICATIONS.MARK_ALL_ERROR'));
         this.markingAll.set(false);
       }
     });
@@ -379,7 +489,7 @@ export class NotificationsPage implements OnDestroy {
         this.dismissingId.set(null);
       },
       error: () => {
-        this.toast.error('تعذر تجاهل الإشعار.');
+        this.toast.error(this.translate.instant('NOTIFICATIONS.DISMISS_ERROR'));
         this.dismissingId.set(null);
       }
     });

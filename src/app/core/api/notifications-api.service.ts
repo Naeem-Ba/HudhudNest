@@ -30,6 +30,14 @@ export class NotificationsApiService {
   private readonly realtimeSubject = new Subject<NotificationItem>();
 
   readonly realtime$ = this.realtimeSubject.asObservable();
+
+  /** Another tab or device marked notifications as read: ids, or all=true. */
+  private readonly readSyncSubject = new Subject<{ ids: string[] | null; all: boolean }>();
+  readonly readSync$ = this.readSyncSubject.asObservable();
+
+  /** The live connection came back after a drop: anything raised meanwhile must be re-fetched. */
+  private readonly resyncSubject = new Subject<void>();
+  readonly resync$ = this.resyncSubject.asObservable();
   readonly unreadCount = signal(0);
   readonly connectionState = signal<'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'error'>('disconnected');
 
@@ -148,8 +156,22 @@ export class NotificationsApiService {
       this.zone.run(() => this.connectionState.set('reconnecting'));
     });
 
+    this.hub.on('NotificationsRead', (payload: { ids?: string[] | null; Ids?: string[] | null; all?: boolean; All?: boolean }) => {
+      this.zone.run(() => {
+        this.readSyncSubject.next({
+          ids: payload?.ids ?? payload?.Ids ?? null,
+          all: Boolean(payload?.all ?? payload?.All)
+        });
+      });
+    });
+
     this.hub.onreconnected(() => {
-      this.zone.run(() => this.connectionState.set('connected'));
+      this.zone.run(() => {
+        this.connectionState.set('connected');
+        // Notifications raised while the connection was down only exist on the server: re-sync.
+        this.getUnreadCount().subscribe({ next: count => this.unreadCount.set(count), error: () => undefined });
+        this.resyncSubject.next();
+      });
     });
 
     this.hub.onclose(() => {
