@@ -100,6 +100,12 @@
           ⏳ {{ 'MY_LISTINGS.FEATURE_PENDING' | translate }}
         </p>
 
+        <!-- أوقفته الإدارة: السبب يظهر للمالك فقط -->
+        <p class="taken-down-note" *ngIf="p.isTakenDown" role="alert" data-testid="taken-down-note">
+          🚫 {{ 'MY_LISTINGS.TAKEN_DOWN' | translate }}
+          <span *ngIf="p.takenDownReason">— {{ 'MY_LISTINGS.TAKEN_DOWN_REASON' | translate: { reason: p.takenDownReason } }}</span>
+        </p>
+
         <!-- Expiry Warning -->
         <p class="expiry-warning" *ngIf="isExpiringSoon(p.expiresAt)">
           ⚠️ {{ 'MY_LISTINGS.EXPIRING_IN' | translate: { days: daysLeft(p.expiresAt) } }}
@@ -147,7 +153,7 @@
             ⭐ {{ (p.isFeatured ? 'MY_LISTINGS.FEATURE_EXTEND' : 'MY_LISTINGS.FEATURE') | translate }}
           </a>
           <button
-            *ngIf="!p.isPublished"
+            *ngIf="canPublish(p)"
             type="button"
             class="btn btn--publish"
             [disabled]="publishingId() === p.id"

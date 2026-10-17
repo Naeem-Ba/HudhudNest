@@ -250,7 +250,17 @@ export class MyListingsPage implements OnInit {
    * اند)، والإعلان نفسه لا يُلمَس ولا يُكرَّر — فقط ExpiresAt يُمدَّد لاحقًا بعد التأكيد.
    */
   canExtend(property: Property): boolean {
+    // الخادم يرفض التمديد (409) لإعلان مباع/مؤجَّر/مؤرشف أو موقوف إداريًا (QA المرحلة 8، P8-D02/D10)؛
+    // لا نعرض زرًا يفشل.
+    if (property.isTakenDown || ['sold', 'rented', 'archived'].includes(listingLifecycle(property))) {
+      return false;
+    }
     return property.status === 'Expired' || this.isExpiringSoon(property.expiresAt);
+  }
+
+  /** Publishing is refused for a listing the administration took down; the owner sees the reason instead. */
+  canPublish(property: Property): boolean {
+    return !property.isPublished && !property.isTakenDown;
   }
 
   extend(id: string | undefined): void {

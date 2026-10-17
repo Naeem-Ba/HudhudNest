@@ -805,6 +805,8 @@
     "available_from": "Available from"
   },
   "MY_LISTINGS": {
+    "TAKEN_DOWN": "This listing was taken down by the administration.",
+    "TAKEN_DOWN_REASON": "Reason: {{reason}}",
     "TITLE": "My listings",
     "ADD_NEW": "Add new property",
     "QUOTA_USED": "You have {{used}} of {{limit}} listings allowed on your plan",
@@ -994,6 +996,15 @@
     "ACTION_ERROR": "Could not complete the action."
   },
   "ADMIN_USER_PROPERTIES": {
+    "TAKEN_DOWN": "Taken down",
+    "TAKE_DOWN": "Take down",
+    "RESTORE": "Restore",
+    "TAKE_DOWN_MODAL_TITLE": "Take this listing down",
+    "TAKE_DOWN_HINT": "The listing disappears from the site and the owner is notified with the reason below. The owner cannot publish or extend it until you restore it.",
+    "TAKE_DOWN_REASON": "Reason shown to the owner (required)",
+    "TAKE_DOWN_SUCCESS": "The listing was taken down.",
+    "RESTORE_MODAL_TITLE": "Restore this listing",
+    "RESTORE_SUCCESS": "The listing was restored.",
     "TITLE": "{{name}}'s listings",
     "STATUS": {
       "Available": "Available",
