@@ -44,7 +44,8 @@ import { AuthService } from '../../core/auth/auth.service';
 import { Property, PropertyImage } from '../../core/models/property.model';
 import { REVIEW_COMMENT_MAX_LENGTH, ReviewDto, validateCreateReview } from '../../core/models/review.model';
 import { CreateVisitRequest, validateCreateVisit } from '../../core/models/visit.model';
-import { SERVICE_CATEGORIES, ServiceCategory, ServiceOfferingDto, ServiceRequestDto, validateCreateServiceRequest } from '../../core/models/service.model';
+import { SERVICE_CATEGORIES, ServiceCategory, ServiceOfferingDto, ServiceRequestDto, ServiceRequestIntent, validateCreateServiceRequest } from '../../core/models/service.model';
+import { ServiceConversationActivity, ServiceConversationComponent } from '../services/service-conversation.component';
 import { ServiceCategoryAvailabilityDto } from '../../core/models/provider-onboarding.model';
 import { validateMessageContent } from '../../core/models/message.model';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
@@ -82,6 +83,7 @@ const LIGHTBOX_IMAGE_WIDTH = 2048;
     ReactiveFormsModule,
     FormsModule,
     TranslateModule,
+    ServiceConversationComponent,
     ImageFallbackDirective,
     LoadingSpinnerComponent,
     EmptyStateComponent,
@@ -829,7 +831,11 @@ export class PropertyDetailPage implements OnInit {
     this.createdServiceRequest.set(null);
   }
 
-  submitServiceRequest(): void {
+  /**
+   * Both buttons open the same in-app conversation: "ask more" and "request the service" differ only in the
+   * intent that is recorded for the statistics. It becomes a real request when the customer confirms it.
+   */
+  submitServiceRequest(intent: ServiceRequestIntent = 'Request'): void {
     const property = this.property();
     const offering = this.selectedOffering();
     if (!property || !offering) return;
@@ -837,7 +843,8 @@ export class PropertyDetailPage implements OnInit {
     const payload = {
       propertyId: property.id,
       serviceOfferingId: offering.id,
-      requesterNote: this.serviceRequestNote.trim() || null
+      requesterNote: this.serviceRequestNote.trim() || null,
+      intent
     };
 
     const validationError = validateCreateServiceRequest(payload);
@@ -861,6 +868,22 @@ export class PropertyDetailPage implements OnInit {
           this.savingServiceRequest.set(false);
         }
       });
+  }
+
+  /** The embedded thread reports its size so the confirm button appears after the first message. */
+  onCreatedActivity(activity: ServiceConversationActivity): void {
+    this.createdServiceRequest.update(created => created && created.id === activity.requestId
+      ? { ...created, messageCount: activity.messageCount, unreadMessageCount: activity.unreadMessageCount, lastMessageAt: activity.lastMessageAt }
+      : created);
+  }
+
+  onCreatedConfirmed(updated: ServiceRequestDto): void {
+    this.createdServiceRequest.update(created => ({
+      ...updated,
+      messageCount: updated.messageCount ?? created?.messageCount,
+      unreadMessageCount: updated.unreadMessageCount ?? created?.unreadMessageCount,
+      lastMessageAt: updated.lastMessageAt ?? created?.lastMessageAt
+    }));
   }
 
   // ── Message Owner (يستخدم MessagesController — كان بدون أي واجهة إطلاقاً) ──

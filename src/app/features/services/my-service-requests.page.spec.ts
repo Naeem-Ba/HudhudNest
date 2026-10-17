@@ -40,10 +40,12 @@ describe('MyServiceRequestsPage', () => {
   }
 
   beforeEach(() => {
-    requests = jasmine.createSpyObj('ServiceRequestService', ['getMine', 'cancel', 'addReview', 'create', 'sendFeedback']);
+    requests = jasmine.createSpyObj('ServiceRequestService', ['getMine', 'cancel', 'addReview', 'create', 'sendFeedback', 'getMessages', 'sendMessage', 'markMessagesRead', 'confirm']);
     offerings = jasmine.createSpyObj('ServiceOfferingService', ['getAvailability']);
     properties = jasmine.createSpyObj('PropertyApiService', ['getMyProperties']);
     requests.getMine.and.returnValue(of([request]));
+    requests.getMessages.and.returnValue(of([]));
+    requests.markMessagesRead.and.returnValue(of(undefined));
     offerings.getAvailability.and.returnValue(of([
       { category: 'Cleaning', offeringCount: 2 },
       { category: 'Legal', offeringCount: 0 }
@@ -210,5 +212,124 @@ describe('MyServiceRequestsPage', () => {
     page.cancel(item);
 
     expect(requests.cancel).toHaveBeenCalledOnceWith('r1', null, null);
+  });
+  // ── inquiries and the conversation ───────────────────────────────────────
+
+  it('opens the conversation of an inquiry by itself and explains that it is not a request yet', () => {
+    requests.getMine.and.returnValue(of([{ ...request, status: 'Inquiry', messageCount: 1 }]));
+    const el: HTMLElement = create().nativeElement;
+
+    expect(el.querySelector('app-service-conversation')).not.toBeNull();
+    expect(el.querySelector('.stage-note')?.textContent).toContain('SERVICE_REQUESTS.INQUIRY_NOTE');
+    expect(requests.getMessages).toHaveBeenCalledWith('r1');
+  });
+
+  it('keeps an ordinary request\'s thread folded until the customer opens it, and opens it for unread replies', () => {
+    requests.getMine.and.returnValue(of([{ ...request, messageCount: 2, unreadMessageCount: 0 }]));
+    const fixture = create();
+    const page = fixture.componentInstance;
+
+    expect(fixture.nativeElement.querySelector('app-service-conversation')).toBeNull();
+    page.toggleThread(page.requests()[0]);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-service-conversation')).not.toBeNull();
+    page.toggleThread(page.requests()[0]);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-service-conversation')).toBeNull();
+
+    TestBed.resetTestingModule();
+    requests.getMine.and.returnValue(of([{ ...request, messageCount: 2, unreadMessageCount: 1 }]));
+    const unread = create();
+    expect(unread.nativeElement.querySelector('app-service-conversation')).not.toBeNull();
+    // Reading clears the count, and the thread stays open under the reader instead of folding away.
+    expect(unread.componentInstance.requests()[0].unreadMessageCount).toBe(0);
+    expect(unread.nativeElement.querySelector('app-service-conversation')).not.toBeNull();
+  });
+
+  it('shows the unread badge on a folded card whose thread the list reports as unread', () => {
+    requests.getMine.and.returnValue(of([{ ...request, messageCount: 2, unreadMessageCount: 2 }]));
+    requests.getMessages.and.returnValue(of([]));
+    const fixture = create();
+    const page = fixture.componentInstance;
+    // Fold it before the thread had a chance to report: the card shows what the list said.
+    page.requests.update(items => items.map(item => ({ ...item, unreadMessageCount: 2 })));
+    page.toggleThread(page.requests()[0]);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-service-conversation')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.thread-toggle .badge')?.textContent).toContain('2');
+  });
+
+  it('lets the customer fold an inquiry that opened by itself', () => {
+    requests.getMine.and.returnValue(of([{ ...request, status: 'Inquiry', messageCount: 1 }]));
+    const fixture = create();
+    const page = fixture.componentInstance;
+
+    page.toggleThread(page.requests()[0]);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-service-conversation')).toBeNull();
+  });
+
+  it('keeps the message counters when a cancel or an answer comes back without them', () => {
+    requests.getMine.and.returnValue(of([{ ...request, messageCount: 3, unreadMessageCount: 0, lastMessageAt: '2026-10-12T00:00:00Z' }]));
+    requests.cancel.and.returnValue(of({ ...request, status: 'Cancelled' }));
+    const page = create().componentInstance;
+
+    page.cancel(page.requests()[0]);
+
+    expect(page.requests()[0].status).toBe('Cancelled');
+    expect(page.requests()[0].messageCount).toBe(3);
+    expect(page.requests()[0].lastMessageAt).toBe('2026-10-12T00:00:00Z');
+  });
+
+  it('turns an inquiry into a request in the list when the thread reports the confirmation', () => {
+    requests.getMine.and.returnValue(of([{ ...request, status: 'Inquiry', messageCount: 2 }]));
+    requests.getMessages.and.returnValue(of([
+      { id: 'm1', serviceRequestId: 'r1', senderParty: 'Requester', senderName: 'Me', body: 'a', createdAt: '2026-10-12T00:00:00Z', isMine: true },
+      { id: 'm2', serviceRequestId: 'r1', senderParty: 'Provider', senderName: 'Clean Co', body: 'b', createdAt: '2026-10-12T01:00:00Z', isMine: false, readAt: '2026-10-12T02:00:00Z' }
+    ]));
+    const fixture = create();
+    const page = fixture.componentInstance;
+
+    page.onRequestConfirmed({ ...request, status: 'UnderReview', confirmedAt: '2026-10-12T00:00:00Z' });
+
+    fixture.detectChanges();
+
+    expect(page.requests()[0].status).toBe('UnderReview');
+    expect(page.requests()[0].messageCount).toBe(2);
+    // The thread the customer was reading stays open after the status changed.
+    expect(fixture.nativeElement.querySelector('app-service-conversation')).not.toBeNull();
+  });
+
+  it('follows the thread\'s own counters for the badge and the confirm button', () => {
+    requests.getMine.and.returnValue(of([{ ...request, status: 'Inquiry', messageCount: 0 }]));
+    const page = create().componentInstance;
+
+    page.onThreadActivity({ requestId: 'r1', messageCount: 4, unreadMessageCount: 0, lastMessageAt: '2026-10-12T00:00:00Z' });
+
+    expect(page.requests()[0].messageCount).toBe(4);
+  });
+
+  it('says why a request expired, naming who stayed silent, and filters inquiries and expired ones', () => {
+    requests.getMine.and.returnValue(of([{ ...request, status: 'Expired', expiredWaitingOn: 'Provider', messageCount: 1 }]));
+    const fixture = create();
+    const page = fixture.componentInstance;
+
+    expect(fixture.nativeElement.querySelector('.stage-note--expired')?.textContent).toContain('SERVICE_REQUESTS.EXPIRED_PROVIDER');
+    expect(page.statuses).toContain('Inquiry');
+    expect(page.statuses).toContain('Expired');
+    page.selectStatus('Expired');
+    expect(page.filteredRequests().length).toBe(1);
+  });
+
+  it('does not promise a phone number before the provider accepted', () => {
+    const under: HTMLElement = create().nativeElement;
+    expect(under.querySelector('.contact-missing')?.textContent).toContain('SERVICE_REQUEST.CONTACT_AFTER_ACCEPT');
+
+    TestBed.resetTestingModule();
+    requests.getMine.and.returnValue(of([{ ...request, status: 'Accepted' }]));
+    const accepted: HTMLElement = create().nativeElement;
+    expect(accepted.querySelector('.contact-missing')?.textContent).toContain('SERVICE_REQUEST.NO_CONTACT_YET');
   });
 });

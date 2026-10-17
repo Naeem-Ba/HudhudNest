@@ -37,6 +37,7 @@ export class AdminServiceRequestsService {
       from: filter.from || undefined,
       to: filter.to || undefined,
       needsAttention: filter.needsAttention ? true : undefined,
+      confirmed: filter.confirmed ?? undefined,
       page: filter.page ?? 1,
       pageSize: filter.pageSize ?? 20
     };

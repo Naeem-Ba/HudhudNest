@@ -1198,10 +1198,10 @@
   "SERVICE_REQUEST": {
     "CTA": "Leistung für diese Immobilie anfragen",
     "PROVIDER": "Dienstleister",
-    "NOTE": "Hinweise für den Dienstleister",
-    "NOTE_PLACEHOLDER": "Fügen Sie Details hinzu, die dem Dienstleister helfen (optional)",
-    "SUBMIT": "Anfrage senden",
-    "SUCCESS": "Ihre Serviceanfrage wurde gesendet. Verfolgen Sie sie auf der Seite „Serviceanfragen“.",
+    "NOTE": "Ihre Nachricht an den Anbieter",
+    "NOTE_PLACEHOLDER": "Beschreiben Sie, was Sie brauchen, und fragen Sie nach Preis, Zahlung und Dauer",
+    "SUBMIT": "Leistung anfragen",
+    "SUCCESS": "Ihre Nachricht ist beim Anbieter angekommen. Setzen Sie das Gespräch hier fort.",
     "ERROR": "Die Serviceanfrage konnte nicht gesendet werden.",
     "UNAVAILABLE": "Dieser Service ist derzeit nicht verfügbar.",
     "PROPERTY_REQUIRED": "Eine Immobilie ist erforderlich.",
@@ -1211,13 +1211,19 @@
     "CHOOSE_OFFERING": "Angebot wählen",
     "NONE_FOR_AREA": "Derzeit bietet kein freigegebener Anbieter diese Leistung im Gouvernement dieser Immobilie an.",
     "LOAD_ERROR": "Die Leistungen konnten nicht geladen werden. Bitte erneut versuchen.",
-    "SENT_TITLE": "Ihre Anfrage {{number}} wurde gesendet",
-    "SENT_BODY": "Sie können „{{provider}}“ jetzt direkt kontaktieren. Diese Kontaktdaten bleiben auch auf Ihrer Anfragenseite sichtbar.",
+    "SENT_TITLE": "Ihr Auftrag {{number}} ist bestätigt",
+    "SENT_BODY": "„{{provider}}“ wird Ihren Auftrag beantworten. Die Kontaktnummer erscheint auf Ihrer Seite, sobald er angenommen wurde.",
     "CONTACT_PHONE": "Telefon",
     "CONTACT_EMAIL": "E-Mail",
-    "NO_CONTACT_YET": "Der Anbieter hat noch keine Kontaktmöglichkeit hinterlegt. Er wurde über Ihre Anfrage informiert und meldet sich bei Ihnen.",
+    "NO_CONTACT_YET": "Der Anbieter hat keine Kontaktdaten außerhalb der App hinterlegt. Schreiben Sie ihm im Gespräch.",
     "OPEN_MY_REQUESTS": "Meine Anfragen",
-    "NO_REVIEWS_YET": "Noch keine Bewertungen"
+    "NO_REVIEWS_YET": "Noch keine Bewertungen",
+    "MESSAGE_HINT": "Sie schreiben dem Anbieter zunächst in der App. Es wird erst zur Anfrage, wenn Sie bestätigen; die Nummer des Anbieters erscheint erst nach seiner Annahme.",
+    "INQUIRE": "Mehr erfragen",
+    "MESSAGE_REQUIRED": "Schreiben Sie dem Anbieter zuerst eine Nachricht.",
+    "INQUIRY_SENT_TITLE": "Gespräch mit dem Anbieter gestartet",
+    "INQUIRY_SENT_BODY": "Dies ist eine Anfrage, noch kein registrierter Auftrag. Wenn die Details geklärt sind, drücken Sie „Auftrag bestätigen“; sonst erinnern wir Sie nach zwei Tagen.",
+    "CONTACT_AFTER_ACCEPT": "Die Nummer des Anbieters erscheint hier, sobald er Ihren Auftrag annimmt. Nutzen Sie bis dahin das Gespräch."
   },
   "SERVICE_REQUESTS": {
     "EYEBROW": "HudhudNest Services",
@@ -1254,7 +1260,9 @@
       "REVIEWED": "Bewertet",
       "REJECTED": "Abgelehnt",
       "CANCELLED": "Storniert",
-      "NOTCOMPLETED": "Nicht ausgeführt"
+      "NOTCOMPLETED": "Nicht ausgeführt",
+      "INQUIRY": "Anfrage",
+      "EXPIRED": "Abgelaufen"
     },
     "MY_REQUESTS": "Meine Anfragen",
     "CREATED_AT": "Erstellt",
@@ -1294,7 +1302,10 @@
     "FEEDBACK_SUBMIT": "Antwort senden",
     "FEEDBACK_SUCCESS": "Danke, Ihre Antwort ist eingegangen.",
     "CANCEL_REASON_LABEL": "Warum stornieren Sie?",
-    "CANCEL_CONFIRM": "Stornierung bestätigen"
+    "CANCEL_CONFIRM": "Stornierung bestätigen",
+    "INQUIRY_NOTE": "Das ist eine Anfrage, noch kein Auftrag. Bestätigen Sie sie, wenn Sie bereit sind.",
+    "EXPIRED_PROVIDER": "Nach einem Monat ohne Antwort des Anbieters automatisch geschlossen. Es bleibt in Ihrem Verlauf.",
+    "EXPIRED_REQUESTER": "Nach einem Monat ohne Kontakt von Ihnen automatisch geschlossen. Es bleibt in Ihrem Verlauf."
   },
   "SERVICES": {
     "CATEGORY": {
@@ -2697,7 +2708,8 @@
       "PENDING_COUNT": "{{count}} Anfrage(n) warten auf deine Antwort",
       "EMPTY": "Noch keine Anfragen in diesem Filter.",
       "LOAD_ERROR": "Eingehende Anfragen konnten nicht geladen werden.",
-      "REQUESTER": "Anfragende(r)"
+      "REQUESTER": "Anfragende(r)",
+      "UNREAD_MESSAGES": "{{count}} neue Nachricht(en) vom Kunden"
     },
     "DETAIL": {
       "BACK": "Eingehende Anfragen",
@@ -2742,7 +2754,8 @@
       "MARK_NOT_DONE": "Leistung nicht erbracht",
       "NOT_DONE_REASON": "Grund",
       "NOT_DONE_NOTE": "Hinweis (bei „Sonstiges“ erforderlich)",
-      "CONFIRM_NOT_DONE": "Als nicht erbracht erfassen"
+      "CONFIRM_NOT_DONE": "Als nicht erbracht erfassen",
+      "INQUIRY_HINT": "Dies ist eine noch nicht bestätigte Anfrage. Antworten Sie im Gespräch unten; wenn Sie nicht können, lehnen Sie ab."
     },
     "PROFILE": {
       "BACK": "Eingehende Anfragen",
@@ -3151,7 +3164,7 @@
     "LAST_90": "Letzte 90 Tage",
     "ALL_TIME": "Gesamter Zeitraum",
     "LOAD_ERROR": "Die Daten konnten nicht geladen werden.",
-    "K_REQUESTED": "Anfragen gesamt",
+    "K_REQUESTED": "Bestätigte Aufträge",
     "K_OPEN": "Offen",
     "K_COMPLETED": "Erbracht",
     "K_NOT_COMPLETED": "Nicht erbracht",
@@ -3218,6 +3231,47 @@
     "FORM_HIDE": "Bewertung ausblenden",
     "ADMIN_NOTE": "Admin-Notiz (erforderlich, im Verlauf sichtbar)",
     "CONFIRM": "Bestätigen",
-    "SAVED": "Gespeichert."
+    "SAVED": "Gespeichert.",
+    "K_INQUIRIES": "Anfragen",
+    "K_CONVERSION": "Anfrage → Auftrag",
+    "K_EXPIRED": "Abgelaufen",
+    "C_INQUIRIES": "Anfragen",
+    "C_CONVERSION": "Konv.",
+    "C_EXPIRED": "Abgelaufen",
+    "EXPIRY_REASONS": "Wer vor dem Ablauf schwieg",
+    "EXPIRY_REASONS_HINT": "Aufträge, die nach einem Monat ohne Kontakt automatisch geschlossen wurden.",
+    "EXPIRY": {
+      "Provider": "Anbieter hat nicht geantwortet",
+      "Requester": "Kunde hat sich nicht gemeldet"
+    },
+    "F_CONFIRMED": "Bestätigung",
+    "CONFIRMED_ALL": "Alle (Anfragen und Aufträge)",
+    "CONFIRMED_YES": "Nur bestätigte Aufträge",
+    "CONFIRMED_NO": "Unbestätigte Anfragen"
+  },
+  "SERVICE_CONVERSATION": {
+    "TITLE": "Gespräch",
+    "ADMIN_TITLE": "Gespräch zwischen Kunde und Anbieter (nur lesen)",
+    "COUNT": "{{count}} Nachricht(en)",
+    "EMPTY": "Noch keine Nachrichten.",
+    "LOAD_ERROR": "Das Gespräch konnte nicht geladen werden.",
+    "PLACEHOLDER": "Nachricht schreiben …",
+    "SEND": "Senden",
+    "SEND_ERROR": "Die Nachricht konnte nicht gesendet werden.",
+    "SHOW": "Gespräch anzeigen",
+    "HIDE": "Gespräch ausblenden",
+    "SAFETY": "Teilen Sie keine Passwörter oder Kartendaten. Zahlung und Details klären Sie hier; jede Seite haftet für die Vereinbarung.",
+    "CONFIRM": "Auftrag bestätigen",
+    "CONFIRM_HELP": "Details geklärt? Bestätigen Sie, damit es als Auftrag registriert wird.",
+    "CONFIRM_SUCCESS": "Ihr Auftrag ist bestätigt.",
+    "CONFIRM_ERROR": "Der Auftrag konnte nicht bestätigt werden.",
+    "HINT_INQUIRY_REQUESTER": "Anfrage: noch kein Auftrag. Fragen Sie nach Preis, Zahlung und Dauer und bestätigen Sie dann.",
+    "HINT_INQUIRY_PROVIDER": "Der Kunde fragt noch und hat nicht bestätigt.",
+    "HINT_EXPIRED": "Diese Anfrage ist mangels Kontakt abgelaufen. Das Gespräch bleibt schreibgeschützt erhalten.",
+    "HINT_CLOSED": "Der Auftrag ist geschlossen. Das Gespräch bleibt schreibgeschützt erhalten.",
+    "PARTY": {
+      "Requester": "Kunde",
+      "Provider": "Anbieter"
+    }
   }
 }

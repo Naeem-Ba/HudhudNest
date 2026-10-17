@@ -96,6 +96,12 @@
       </div>
     </form>
 
+    <section class="card" *ngIf="d.messages as messages">
+      <h2>{{ 'SERVICE_CONVERSATION.ADMIN_TITLE' | translate }}</h2>
+      <p class="muted" *ngIf="d.request.expiredWaitingOn">{{ ('ADMIN_SERVICES.EXPIRY.' + d.request.expiredWaitingOn) | translate }}</p>
+      <app-service-conversation [request]="d.request" role="admin" [preloaded]="messages" [pollMs]="0" />
+    </section>
+
     <section class="card">
       <h2>{{ 'PROVIDER.DETAIL.HISTORY' | translate }}</h2>
       <ol class="timeline">

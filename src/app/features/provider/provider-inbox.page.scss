@@ -12,3 +12,6 @@ dl{display:grid;gap:.6rem;margin:1rem 0}dl div{display:grid;grid-template-column
 .btn{border:0;border-radius:10px;padding:.65rem 1rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}.btn:disabled{opacity:.55}.secondary{background:var(--gray-100);color:var(--gray-700)}
 .state{padding:2rem;text-align:center;background:var(--surface);border:1px dashed var(--gray-300);border-radius:16px}.error{color:var(--danger)}
 @include bp.mobile{.page-header{flex-direction:column}.header-actions .btn{flex:1}.card-main{flex-direction:column;padding-inline-end:0}.status{align-self:flex-start}dl div{grid-template-columns:1fr;gap:.2rem}.chevron{display:none}}
+
+.status[data-status='Inquiry'],.status[data-status='Expired']{background:var(--gray-100);color:var(--gray-600)}
+.unread{margin:.4rem 0 0;font-weight:700;color:var(--primary-text)}

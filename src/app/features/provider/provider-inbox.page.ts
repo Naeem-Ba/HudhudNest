@@ -41,15 +41,18 @@ export class ProviderInboxPage implements OnInit {
   // بـ service.model.ts) — بدونها، تبويب "بانتظار ردّك" الوحيد المتاح للتصفية كان
   // 'Submitted' الذي لا يحدث أبداً في الواقع، فيبدو وكأن لا طلبات جديدة إطلاقاً.
   readonly statuses: Array<ServiceRequestStatus | 'All'> =
-    ['All', 'UnderReview', 'Accepted', 'Scheduled', 'InProgress', 'Completed', 'NotCompleted', 'Rejected', 'Cancelled'];
+    ['All', 'Inquiry', 'UnderReview', 'Accepted', 'Scheduled', 'InProgress', 'Completed', 'NotCompleted', 'Rejected', 'Cancelled', 'Expired'];
 
   readonly filteredRequests = computed(() => {
     const status = this.selectedStatus();
     return status === 'All' ? this.requests() : this.requests().filter(item => item.status === status);
   });
 
+  /** Requests waiting for the provider's decision, plus inquiries whose last word is the customer's. */
   readonly pendingCount = computed(
-    () => this.requests().filter(item => item.status === 'Submitted' || item.status === 'UnderReview').length
+    () => this.requests().filter(item =>
+      item.status === 'Submitted' || item.status === 'UnderReview'
+      || (item.status === 'Inquiry' && (item.unreadMessageCount ?? 0) > 0)).length
   );
 
   ngOnInit(): void {

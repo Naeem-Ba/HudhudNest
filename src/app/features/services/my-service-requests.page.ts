@@ -19,15 +19,17 @@ import {
   ServiceRequesterAnswer,
   ServiceRequesterReason,
   ServiceRequestStatus,
+  canExchangeMessages,
   canReview,
   needsRequesterFeedback
 } from '../../core/models/service.model';
 import { ToastService } from '../../shared/services/toast.service';
+import { ServiceConversationActivity, ServiceConversationComponent } from './service-conversation.component';
 
 @Component({
   selector: 'app-my-service-requests-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule],
+  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, ServiceConversationComponent],
   templateUrl: './my-service-requests.page.html',
   styleUrls: ['./my-service-requests.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -63,7 +65,12 @@ export class MyServiceRequestsPage implements OnInit {
   readonly feedbackNote = signal('');
 
   readonly statuses: Array<ServiceRequestStatus | 'All'> =
-    ['All', 'Submitted', 'UnderReview', 'Accepted', 'Scheduled', 'InProgress', 'Completed', 'NotCompleted', 'Reviewed', 'Rejected', 'Cancelled'];
+    ['All', 'Inquiry', 'UnderReview', 'Accepted', 'Scheduled', 'InProgress', 'Completed', 'NotCompleted', 'Reviewed', 'Rejected', 'Cancelled', 'Expired'];
+
+  // ── The conversation with the provider ────────────────────────────────
+  /** Cards whose thread the customer opened (or that open on their own: inquiries and unread replies). */
+  private readonly openThreads = signal<ReadonlySet<string>>(new Set());
+  private readonly closedThreads = signal<ReadonlySet<string>>(new Set());
 
   readonly filteredRequests = computed(() => {
     const status = this.selectedStatus();
@@ -143,6 +150,57 @@ export class MyServiceRequestsPage implements OnInit {
 
   selectStatus(status: ServiceRequestStatus | 'All'): void { this.selectedStatus.set(status); }
 
+  /** Inquiries and threads with unseen replies open by themselves; the customer can still fold them. */
+  isThreadOpen(request: ServiceRequestDto): boolean {
+    if (this.closedThreads().has(request.id)) return false;
+    if (this.openThreads().has(request.id)) return true;
+    return request.status === 'Inquiry' || (request.unreadMessageCount ?? 0) > 0;
+  }
+
+  /** The thread exists for every request that was ever in conversation, including closed ones (read-only). */
+  hasThread(request: ServiceRequestDto): boolean {
+    return (request.messageCount ?? 0) > 0 || canExchangeMessages(request.status);
+  }
+
+  toggleThread(request: ServiceRequestDto): void {
+    const open = this.isThreadOpen(request);
+    const flip = (set: ReadonlySet<string>, on: boolean) => {
+      const next = new Set(set);
+      if (on) next.add(request.id); else next.delete(request.id);
+      return next;
+    };
+    this.openThreads.update(set => flip(set, !open));
+    this.closedThreads.update(set => flip(set, open));
+  }
+
+  /** The thread reports its size and unread count; the card keeps its badge and confirm button in step. */
+  onThreadActivity(activity: ServiceConversationActivity): void {
+    // Reading the thread clears the unread count that opened it; remember it is open so it does not fold under the reader.
+    const current = this.requests().find(item => item.id === activity.requestId);
+    if (current && this.isThreadOpen(current) && !this.openThreads().has(current.id)) {
+      this.openThreads.update(set => new Set(set).add(current.id));
+    }
+    this.requests.update(items => items.map(item => item.id === activity.requestId
+      ? { ...item, messageCount: activity.messageCount, unreadMessageCount: activity.unreadMessageCount, lastMessageAt: activity.lastMessageAt }
+      : item));
+  }
+
+  /** Confirming turns the inquiry into a request; the response has no message stats, so keep the ones we have. */
+  onRequestConfirmed(updated: ServiceRequestDto): void {
+    this.mergeKeepingMessages(updated);
+  }
+
+  private mergeKeepingMessages(updated: ServiceRequestDto): void {
+    this.requests.update(items => items.map(item => item.id === updated.id
+      ? {
+          ...updated,
+          messageCount: updated.messageCount ?? item.messageCount,
+          unreadMessageCount: updated.unreadMessageCount ?? item.unreadMessageCount,
+          lastMessageAt: updated.lastMessageAt ?? item.lastMessageAt
+        }
+      : item));
+  }
+
   canCancel(request: ServiceRequestDto): boolean {
     const userId = this.auth.getCurrentUserId();
     return !!userId && request.requesterId === userId && CANCELLABLE_STATUSES.includes(request.status);
@@ -190,7 +248,7 @@ export class MyServiceRequestsPage implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: updated => {
-          this.requests.update(items => items.map(item => item.id === updated.id ? updated : item));
+          this.mergeKeepingMessages(updated);
           this.processingId.set(null);
           this.feedbackId.set(null);
           this.toast.show(this.translate.instant('SERVICE_REQUESTS.FEEDBACK_SUCCESS'), 'success');
@@ -215,7 +273,7 @@ export class MyServiceRequestsPage implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: updated => {
-          this.requests.update(items => items.map(item => item.id === updated.id ? updated : item));
+          this.mergeKeepingMessages(updated);
           this.processingId.set(null);
           this.cancelingId.set(null);
           this.toast.show(this.translate.instant('SERVICE_REQUESTS.CANCEL_SUCCESS'), 'success');

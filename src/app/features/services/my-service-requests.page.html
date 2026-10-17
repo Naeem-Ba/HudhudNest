@@ -37,6 +37,10 @@
         </div>
         <span class="status" [attr.data-status]="request.status">{{ ('SERVICE_REQUESTS.STATUS.' + request.status.toUpperCase()) | translate }}</span>
       </div>
+      <p class="stage-note" *ngIf="request.status === 'Inquiry'">{{ 'SERVICE_REQUESTS.INQUIRY_NOTE' | translate }}</p>
+      <p class="stage-note stage-note--expired" *ngIf="request.status === 'Expired'">
+        {{ (request.expiredWaitingOn === 'Provider' ? 'SERVICE_REQUESTS.EXPIRED_PROVIDER' : 'SERVICE_REQUESTS.EXPIRED_REQUESTER') | translate }}
+      </p>
       <dl>
         <div><dt>{{ 'SERVICE_REQUESTS.CATEGORY' | translate }}</dt><dd>{{ ('SERVICES.CATEGORY.' + request.category) | translate }}</dd></div>
         <div><dt>{{ 'SERVICE_REQUESTS.PROVIDER' | translate }}</dt><dd>{{ request.serviceProviderDisplayName }}</dd></div>
@@ -52,7 +56,7 @@
         </dd></div>
       </dl>
 
-      <!-- The provider's contact appears only here, after the customer asked for the service. -->
+      <!-- The provider's contact appears only here, after the provider accepted a confirmed request. -->
       <div class="contact-card" *ngIf="request.providerContact as contact; else noContactYet">
         <strong>{{ 'SERVICE_REQUESTS.CONTACT_TITLE' | translate: { provider: request.serviceProviderDisplayName } }}</strong>
         <ul>
@@ -61,12 +65,26 @@
         </ul>
       </div>
       <ng-template #noContactYet>
-        <p class="muted contact-missing" *ngIf="request.status === 'UnderReview' || request.status === 'Accepted' || request.status === 'Scheduled' || request.status === 'InProgress'">
+        <p class="muted contact-missing" *ngIf="request.status === 'UnderReview'">
+          {{ 'SERVICE_REQUEST.CONTACT_AFTER_ACCEPT' | translate }}
+        </p>
+        <p class="muted contact-missing" *ngIf="request.status === 'Accepted' || request.status === 'Scheduled' || request.status === 'InProgress'">
           {{ 'SERVICE_REQUEST.NO_CONTACT_YET' | translate }}
         </p>
       </ng-template>
 
       <!-- The provider closed the request: ask the customer once whether that is right. -->
+      <!-- In-app conversation: inquiries open it by themselves, other requests fold it away. -->
+      <div class="thread-toggle" *ngIf="hasThread(request)">
+        <button type="button" class="btn secondary" (click)="toggleThread(request)" [attr.aria-expanded]="isThreadOpen(request)">
+          {{ (isThreadOpen(request) ? 'SERVICE_CONVERSATION.HIDE' : 'SERVICE_CONVERSATION.SHOW') | translate }}
+          <span class="badge" *ngIf="(request.unreadMessageCount ?? 0) > 0">{{ request.unreadMessageCount }}</span>
+        </button>
+      </div>
+      <app-service-conversation *ngIf="hasThread(request) && isThreadOpen(request)"
+        [request]="request" role="requester"
+        (activity)="onThreadActivity($event)" (requestChange)="onRequestConfirmed($event)" />
+
       <div class="feedback-prompt" *ngIf="canAnswer(request) && feedbackId() !== request.id">
         <p>{{ (request.status === 'Completed' ? 'SERVICE_REQUESTS.ASK_COMPLETED' : 'SERVICE_REQUESTS.ASK_NOT_COMPLETED') | translate }}</p>
         <button type="button" class="btn success" (click)="openFeedbackForm(request)">{{ 'SERVICE_REQUESTS.ANSWER_NOW' | translate }}</button>

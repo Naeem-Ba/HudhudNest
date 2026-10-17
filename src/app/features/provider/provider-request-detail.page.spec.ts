@@ -37,10 +37,12 @@ describe('ProviderRequestDetailPage: done / not done', () => {
   }
 
   beforeEach(() => {
-    requests = jasmine.createSpyObj('ServiceRequestService', ['getById', 'getHistory', 'getDocuments', 'complete', 'markNotCompleted', 'reject']);
+    requests = jasmine.createSpyObj('ServiceRequestService', ['getById', 'getHistory', 'getDocuments', 'complete', 'markNotCompleted', 'reject', 'getMessages', 'sendMessage', 'markMessagesRead']);
     offerings = jasmine.createSpyObj('ServiceOfferingService', ['getById']);
     requests.getHistory.and.returnValue(of([]));
     requests.getDocuments.and.returnValue(of([]));
+    requests.getMessages.and.returnValue(of([]));
+    requests.markMessagesRead.and.returnValue(of(undefined));
     offerings.getById.and.returnValue(of({ currencyId: 1 } as never));
   });
 
@@ -125,5 +127,31 @@ describe('ProviderRequestDetailPage: done / not done', () => {
     page.submitReject();
 
     expect(requests.reject).toHaveBeenCalledOnceWith('r1', 'Outside my area.', 'OutsideCoverage');
+  });
+  // ── inquiries (conversation stage) ──────────────────────────────────────
+
+  it('shows only a decline action and the conversation for an inquiry, with no accept button', () => {
+    const fixture = create('Inquiry', { messageCount: 1 });
+    const el: HTMLElement = fixture.nativeElement;
+
+    expect(fixture.componentInstance.action()).toBe('Reply');
+    expect(el.textContent).toContain('PROVIDER.DETAIL.INQUIRY_HINT');
+    expect(el.textContent).toContain('PROVIDER.DETAIL.REJECT');
+    expect(el.textContent).not.toContain('PROVIDER.DETAIL.ACCEPT');
+    expect(el.querySelector('app-service-conversation')).not.toBeNull();
+    expect(requests.getMessages).toHaveBeenCalledWith('r1');
+  });
+
+  it('keeps the thread readable after the request closed if anything was written, and hides it otherwise', () => {
+    expect((create('Completed', { messageCount: 3 }).nativeElement as HTMLElement).querySelector('app-service-conversation')).not.toBeNull();
+    TestBed.resetTestingModule();
+    expect((create('Completed', { messageCount: 0 }).nativeElement as HTMLElement).querySelector('app-service-conversation')).toBeNull();
+  });
+
+  it('gives an expired request no provider action', () => {
+    const page = create('Expired', { messageCount: 2 }).componentInstance;
+
+    expect(page.action()).toBe('None');
+    expect(page.canClose()).toBeFalse();
   });
 });

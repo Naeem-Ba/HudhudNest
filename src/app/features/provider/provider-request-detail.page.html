@@ -35,13 +35,15 @@
     </section>
 
     <!-- لوحة الإجراء — زر/نموذج واحد بارز يطابق nextProviderAction() لحالة الطلب الحالية -->
-    <section class="panel action-panel" *ngIf="action() === 'AcceptOrReject' || action() === 'Schedule' || action() === 'Start'">
+    <section class="panel action-panel" *ngIf="action() === 'Reply' || action() === 'AcceptOrReject' || action() === 'Schedule' || action() === 'Start'">
       <h2>{{ 'PROVIDER.DETAIL.ACTION' | translate }}</h2>
       <p class="hint" *ngIf="action() === 'Schedule' || action() === 'Start'">{{ 'PROVIDER.DETAIL.OPTIONAL_STEP' | translate }}</p>
 
-      <ng-container *ngIf="action() === 'AcceptOrReject'">
+      <p class="hint" *ngIf="action() === 'Reply'">{{ 'PROVIDER.DETAIL.INQUIRY_HINT' | translate }}</p>
+
+      <ng-container *ngIf="action() === 'AcceptOrReject' || action() === 'Reply'">
         <div class="actions" *ngIf="!openForm()">
-          <button type="button" class="btn success" (click)="openAcceptForm()">{{ 'PROVIDER.DETAIL.ACCEPT' | translate }}</button>
+          <button type="button" class="btn success" *ngIf="action() === 'AcceptOrReject'" (click)="openAcceptForm()">{{ 'PROVIDER.DETAIL.ACCEPT' | translate }}</button>
           <button type="button" class="btn danger" (click)="openRejectForm()">{{ 'PROVIDER.DETAIL.REJECT' | translate }}</button>
         </div>
 
@@ -133,6 +135,12 @@
           <button type="button" class="btn secondary" (click)="closeForm()">{{ 'COMMON.CANCEL' | translate }}</button>
         </div>
       </form>
+    </section>
+
+    <!-- In-app conversation with the customer: the only contact channel until the request is accepted. -->
+    <section class="panel" *ngIf="hasThread()">
+      <h2>{{ 'SERVICE_CONVERSATION.TITLE' | translate }}</h2>
+      <app-service-conversation [request]="r" role="provider" />
     </section>
 
     <section class="panel">

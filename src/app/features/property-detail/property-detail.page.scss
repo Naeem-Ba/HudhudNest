@@ -857,7 +857,8 @@ a.owner-card__name--link {
 .offering-rating { color: var(--warning, #b7791f); font-weight: 700; }
 .offering-rating--none { color: var(--gray-500); font-weight: 400; }
 
-// Shown once the request exists: the provider's contact is an introduction earned by asking.
+// Shown once the conversation exists; the provider's contact appears only after a confirmed request is accepted.
+.form-hint { margin: 0; color: var(--gray-500); font-size: .85rem; }
 .service-sent {
   display: grid;
   gap: .6rem;

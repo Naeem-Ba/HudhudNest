@@ -37,3 +37,10 @@ a.btn{text-decoration:none;display:inline-block;text-align:center}
 .answer-choices{border:0;margin:0;padding:0;display:grid;gap:.4rem}
 .answer-choices legend{font-weight:700;padding:0;margin-bottom:.25rem}
 .answer-choices label{display:flex;gap:.5rem;align-items:center}
+
+.status[data-status='Inquiry']{background:var(--gray-100);color:var(--gray-700)}
+.status[data-status='Expired']{background:var(--gray-100);color:var(--gray-500)}
+.stage-note{margin:.5rem 0 0;padding:.5rem .75rem;border-radius:10px;background:var(--primary-soft);color:var(--primary-text);font-size:.9rem}
+.stage-note--expired{background:var(--gray-100);color:var(--gray-600)}
+.thread-toggle{margin-top:.75rem}
+.thread-toggle .badge{display:inline-block;min-width:1.2rem;margin-inline-start:.4rem;padding:0 .35rem;border-radius:999px;background:var(--danger);color:#fff;font-size:.75rem;line-height:1.2rem;text-align:center}

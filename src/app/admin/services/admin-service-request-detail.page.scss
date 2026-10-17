@@ -42,3 +42,4 @@ select,textarea{border:1px solid var(--gray-300);border-radius:8px;padding:.55re
   dl div{grid-template-columns:1fr;gap:.15rem}
   .actions .btn{flex:1 1 100%}
 }
+.chip[data-status='Inquiry'],.chip[data-status='Expired']{background:var(--gray-100);color:var(--gray-600)}

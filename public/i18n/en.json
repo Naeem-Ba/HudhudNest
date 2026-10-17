@@ -1198,10 +1198,10 @@
   "SERVICE_REQUEST": {
     "CTA": "Request a service for this property",
     "PROVIDER": "Service provider",
-    "NOTE": "Notes for the provider",
-    "NOTE_PLACEHOLDER": "Add any details that help the provider (optional)",
-    "SUBMIT": "Submit request",
-    "SUCCESS": "Your service request was submitted. Track it from the Service Requests page.",
+    "NOTE": "Your message to the provider",
+    "NOTE_PLACEHOLDER": "Describe what you need and ask about the price, payment and how long it takes",
+    "SUBMIT": "Request the service",
+    "SUCCESS": "Your message reached the provider. Continue the conversation here.",
     "ERROR": "Could not submit the service request.",
     "UNAVAILABLE": "This service is not available right now.",
     "PROPERTY_REQUIRED": "A property is required.",
@@ -1211,13 +1211,19 @@
     "CHOOSE_OFFERING": "Choose an offering",
     "NONE_FOR_AREA": "No approved provider offers this service in this property's governorate right now.",
     "LOAD_ERROR": "Could not load the services. Please try again.",
-    "SENT_TITLE": "Your request {{number}} was sent",
-    "SENT_BODY": "You can now contact “{{provider}}” directly. These contact details also stay on your requests page.",
+    "SENT_TITLE": "Your request {{number}} is confirmed",
+    "SENT_BODY": "“{{provider}}” will answer your request. Their contact number appears on your requests page once they accept.",
     "CONTACT_PHONE": "Phone",
     "CONTACT_EMAIL": "Email",
-    "NO_CONTACT_YET": "The provider has not added a contact method yet. They were notified of your request and will get in touch.",
+    "NO_CONTACT_YET": "The provider has not added contact details outside the app. Write to them in the conversation.",
     "OPEN_MY_REQUESTS": "My requests",
-    "NO_REVIEWS_YET": "No reviews yet"
+    "NO_REVIEWS_YET": "No reviews yet",
+    "MESSAGE_HINT": "You talk to the provider inside the app first. It only becomes a request once you confirm it, and the provider’s number appears only after they accept.",
+    "INQUIRE": "Ask more",
+    "MESSAGE_REQUIRED": "Write a message to the provider first.",
+    "INQUIRY_SENT_TITLE": "Conversation with the provider started",
+    "INQUIRY_SENT_BODY": "This is an inquiry, not a registered request yet. When you agree on the details, press “Confirm request”; otherwise we will remind you in two days.",
+    "CONTACT_AFTER_ACCEPT": "The provider’s number appears here once they accept your request. Use the conversation until then."
   },
   "SERVICE_REQUESTS": {
     "EYEBROW": "HudhudNest Services",
@@ -1254,7 +1260,9 @@
       "REVIEWED": "Reviewed",
       "REJECTED": "Rejected",
       "CANCELLED": "Cancelled",
-      "NOTCOMPLETED": "Not completed"
+      "NOTCOMPLETED": "Not completed",
+      "INQUIRY": "Inquiry",
+      "EXPIRED": "Expired"
     },
     "MY_REQUESTS": "My requests",
     "CREATED_AT": "Created",
@@ -1294,7 +1302,10 @@
     "FEEDBACK_SUBMIT": "Send answer",
     "FEEDBACK_SUCCESS": "Thank you, your answer was received.",
     "CANCEL_REASON_LABEL": "Why are you cancelling?",
-    "CANCEL_CONFIRM": "Confirm cancellation"
+    "CANCEL_CONFIRM": "Confirm cancellation",
+    "INQUIRY_NOTE": "This is an inquiry, not a request yet. Confirm it when you are ready so it reaches the provider as a real request.",
+    "EXPIRED_PROVIDER": "Closed automatically after a month without a reply from the provider. It stays in your history.",
+    "EXPIRED_REQUESTER": "Closed automatically after a month without contact from you. It stays in your history."
   },
   "SERVICES": {
     "CATEGORY": {
@@ -2697,7 +2708,8 @@
       "PENDING_COUNT": "{{count}} request(s) awaiting your response",
       "EMPTY": "No requests in this filter yet.",
       "LOAD_ERROR": "Could not load your incoming requests.",
-      "REQUESTER": "Requester"
+      "REQUESTER": "Requester",
+      "UNREAD_MESSAGES": "{{count}} new message(s) from the customer"
     },
     "DETAIL": {
       "BACK": "Incoming Requests",
@@ -2742,7 +2754,8 @@
       "MARK_NOT_DONE": "Service not done",
       "NOT_DONE_REASON": "Reason",
       "NOT_DONE_NOTE": "Note (required for “Other”)",
-      "CONFIRM_NOT_DONE": "Record as not done"
+      "CONFIRM_NOT_DONE": "Record as not done",
+      "INQUIRY_HINT": "This is an inquiry the customer has not confirmed yet. Answer in the conversation below; if you cannot do it, you can decline."
     },
     "PROFILE": {
       "BACK": "Incoming Requests",
@@ -3151,7 +3164,7 @@
     "LAST_90": "Last 90 days",
     "ALL_TIME": "All time",
     "LOAD_ERROR": "Could not load the data.",
-    "K_REQUESTED": "Total requests",
+    "K_REQUESTED": "Confirmed requests",
     "K_OPEN": "Open",
     "K_COMPLETED": "Completed",
     "K_NOT_COMPLETED": "Not completed",
@@ -3218,6 +3231,47 @@
     "FORM_HIDE": "Hide the review",
     "ADMIN_NOTE": "Admin note (required, shown in the history)",
     "CONFIRM": "Confirm",
-    "SAVED": "Saved."
+    "SAVED": "Saved.",
+    "K_INQUIRIES": "Inquiries",
+    "K_CONVERSION": "Inquiry → request",
+    "K_EXPIRED": "Expired",
+    "C_INQUIRIES": "Inquiries",
+    "C_CONVERSION": "Conv.",
+    "C_EXPIRED": "Expired",
+    "EXPIRY_REASONS": "Who stayed silent before expiry",
+    "EXPIRY_REASONS_HINT": "Requests closed automatically after a month without contact.",
+    "EXPIRY": {
+      "Provider": "Provider did not reply",
+      "Requester": "Customer did not follow up"
+    },
+    "F_CONFIRMED": "Confirmation",
+    "CONFIRMED_ALL": "All (inquiries and requests)",
+    "CONFIRMED_YES": "Confirmed requests only",
+    "CONFIRMED_NO": "Unconfirmed inquiries"
+  },
+  "SERVICE_CONVERSATION": {
+    "TITLE": "Conversation",
+    "ADMIN_TITLE": "Customer–provider conversation (read only)",
+    "COUNT": "{{count}} message(s)",
+    "EMPTY": "No messages yet.",
+    "LOAD_ERROR": "Could not load the conversation.",
+    "PLACEHOLDER": "Write your message…",
+    "SEND": "Send",
+    "SEND_ERROR": "The message could not be sent. Try again.",
+    "SHOW": "Show conversation",
+    "HIDE": "Hide conversation",
+    "SAFETY": "Never share passwords or card details. Agree on payment and details here; each side is responsible for the agreement.",
+    "CONFIRM": "Confirm request",
+    "CONFIRM_HELP": "Agreed on the details? Confirm so it is registered as a real request for the provider.",
+    "CONFIRM_SUCCESS": "Your request is confirmed.",
+    "CONFIRM_ERROR": "The request could not be confirmed.",
+    "HINT_INQUIRY_REQUESTER": "Inquiry: not a request yet. Ask about price, payment and duration, then confirm.",
+    "HINT_INQUIRY_PROVIDER": "The customer is still asking and has not confirmed yet.",
+    "HINT_EXPIRED": "This request expired for lack of contact. The conversation is kept, read only.",
+    "HINT_CLOSED": "The request is closed. The conversation is kept, read only.",
+    "PARTY": {
+      "Requester": "Customer",
+      "Provider": "Provider"
+    }
   }
 }

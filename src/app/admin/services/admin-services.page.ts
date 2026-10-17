@@ -21,7 +21,7 @@ type Tab = 'overview' | 'requests';
 type Breakdown = 'offering' | 'category' | 'provider';
 
 const ALL_STATUSES: ServiceRequestStatus[] = [
-  'UnderReview', 'Accepted', 'Scheduled', 'InProgress', 'Completed', 'NotCompleted', 'Reviewed', 'Rejected', 'Cancelled'
+  'Inquiry', 'UnderReview', 'Accepted', 'Scheduled', 'InProgress', 'Completed', 'NotCompleted', 'Reviewed', 'Rejected', 'Cancelled', 'Expired'
 ];
 
 /**
@@ -83,6 +83,8 @@ export class AdminServicesPage implements OnInit {
   offeringId: string | null = null;
   providerId: string | null = null;
   needsAttention = false;
+  /** '' = all, 'yes' = confirmed requests, 'no' = inquiries that never became a request. */
+  confirmed: '' | 'yes' | 'no' = '';
 
   private readonly search$ = new Subject<string>();
   private requestSeq = 0;
@@ -98,6 +100,8 @@ export class AdminServicesPage implements OnInit {
       this.offeringId = params.get('offeringId');
       this.providerId = params.get('providerId');
       this.needsAttention = params.get('needsAttention') === 'true';
+      const confirmed = params.get('confirmed');
+      this.confirmed = confirmed === 'true' ? 'yes' : confirmed === 'false' ? 'no' : '';
       this.from = params.get('from') ?? '';
       this.to = (params.get('to') ?? '').slice(0, 10);
       this.page.set(1);
@@ -190,6 +194,7 @@ export class AdminServicesPage implements OnInit {
       from: this.from || null,
       to: this.to ? this.endOfDay(this.to) : null,
       needsAttention: this.needsAttention,
+      confirmed: this.confirmed === '' ? null : this.confirmed === 'yes',
       page: this.page(),
       pageSize: this.pageSize
     })

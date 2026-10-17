@@ -77,3 +77,4 @@ td.warn{color:var(--warning,#92400e)}
   .tabs button{flex:1}
 }
 td.name .chip{justify-self:start}
+.chip[data-status='Inquiry'],.chip[data-status='Expired']{background:var(--gray-100);color:var(--gray-600)}

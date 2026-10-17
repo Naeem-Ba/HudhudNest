@@ -38,7 +38,10 @@
 
     <ng-container *ngIf="!statsLoading() && !statsFailed() && stats() as s">
       <div class="kpis">
+        <div class="kpi"><strong>{{ s.totals.inquiries ?? 0 }}</strong><span>{{ 'ADMIN_SERVICES.K_INQUIRIES' | translate }}</span></div>
         <div class="kpi"><strong>{{ s.totals.requested }}</strong><span>{{ 'ADMIN_SERVICES.K_REQUESTED' | translate }}</span></div>
+        <div class="kpi"><strong>{{ percent(s.totals.conversionRate) }}</strong><span>{{ 'ADMIN_SERVICES.K_CONVERSION' | translate }}</span></div>
+        <div class="kpi kpi--warn"><strong>{{ s.totals.expired ?? 0 }}</strong><span>{{ 'ADMIN_SERVICES.K_EXPIRED' | translate }}</span></div>
         <div class="kpi"><strong>{{ s.totals.open }}</strong><span>{{ 'ADMIN_SERVICES.K_OPEN' | translate }}</span></div>
         <div class="kpi kpi--good"><strong>{{ s.totals.completed }}</strong><span>{{ 'ADMIN_SERVICES.K_COMPLETED' | translate }}</span></div>
         <div class="kpi kpi--bad"><strong>{{ s.totals.notCompleted }}</strong><span>{{ 'ADMIN_SERVICES.K_NOT_COMPLETED' | translate }}</span></div>
@@ -65,12 +68,15 @@
           <thead>
             <tr>
               <th>{{ 'ADMIN_SERVICES.C_NAME' | translate }}</th>
+              <th>{{ 'ADMIN_SERVICES.C_INQUIRIES' | translate }}</th>
               <th>{{ 'ADMIN_SERVICES.C_REQUESTED' | translate }}</th>
+              <th>{{ 'ADMIN_SERVICES.C_CONVERSION' | translate }}</th>
               <th>{{ 'ADMIN_SERVICES.C_OPEN' | translate }}</th>
               <th>{{ 'ADMIN_SERVICES.C_COMPLETED' | translate }}</th>
               <th>{{ 'ADMIN_SERVICES.C_NOT_COMPLETED' | translate }}</th>
               <th>{{ 'ADMIN_SERVICES.C_REJECTED' | translate }}</th>
               <th>{{ 'ADMIN_SERVICES.C_CANCELLED' | translate }}</th>
+              <th>{{ 'ADMIN_SERVICES.C_EXPIRED' | translate }}</th>
               <th>{{ 'ADMIN_SERVICES.C_DISPUTED' | translate }}</th>
               <th>{{ 'ADMIN_SERVICES.C_RATE' | translate }}</th>
               <th>{{ 'ADMIN_SERVICES.C_RATING' | translate }}</th>
@@ -84,12 +90,15 @@
                 <span class="muted" *ngIf="row.subLabel">{{ breakdown() === 'offering' ? (('SERVICES.CATEGORY.' + row.subLabel) | translate) : row.subLabel }}</span>
                 <span class="chip chip--off" *ngIf="row.isActive === false">{{ 'ADMIN_SERVICES.INACTIVE' | translate }}</span>
               </td>
+              <td class="num">{{ row.inquiries ?? 0 }}</td>
               <td class="num strong">{{ row.requested }}</td>
+              <td class="num">{{ percent(row.conversionRate) }}</td>
               <td class="num">{{ row.open }}</td>
               <td class="num good">{{ row.completed }}</td>
               <td class="num bad">{{ row.notCompleted }}</td>
               <td class="num">{{ row.rejected }}</td>
               <td class="num">{{ row.cancelled }}</td>
+              <td class="num">{{ row.expired ?? 0 }}</td>
               <td class="num warn">{{ row.disputed }}</td>
               <td class="num">{{ percent(row.completionRate) }}</td>
               <td class="num" dir="ltr">{{ row.averageRating != null ? ('★ ' + (row.averageRating | number:'1.1-1') + ' (' + row.ratingCount + ')') : '—' }}</td>
@@ -100,6 +109,17 @@
       <p class="muted">{{ 'ADMIN_SERVICES.TABLE_HINT' | translate }}</p>
 
       <div class="reasons">
+        <section class="card" *ngIf="(s.expiryReasons?.length ?? 0) > 0">
+          <h2>{{ 'ADMIN_SERVICES.EXPIRY_REASONS' | translate }}</h2>
+          <p class="muted">{{ 'ADMIN_SERVICES.EXPIRY_REASONS_HINT' | translate }}</p>
+          <ul class="bars">
+            <li *ngFor="let item of s.expiryReasons; trackBy: trackByReason">
+              <span class="label">{{ ('ADMIN_SERVICES.EXPIRY.' + item.reason) | translate }}</span>
+              <span class="bar"><i [style.width.%]="barWidth(item, s.expiryReasons ?? [])"></i></span>
+              <span class="n">{{ item.count }}</span>
+            </li>
+          </ul>
+        </section>
         <section class="card">
           <h2>{{ 'ADMIN_SERVICES.PROVIDER_REASONS' | translate }}</h2>
           <p class="muted">{{ 'ADMIN_SERVICES.PROVIDER_REASONS_HINT' | translate }}</p>
@@ -141,6 +161,11 @@
         <option value="">{{ 'ADMIN_SERVICES.ALL_CATEGORIES' | translate }}</option>
         <option *ngFor="let c of categories" [value]="c">{{ ('SERVICES.CATEGORY.' + c) | translate }}</option>
       </select>
+      <select [(ngModel)]="confirmed" (change)="applyFilters()" name="confirmed" [attr.aria-label]="'ADMIN_SERVICES.F_CONFIRMED' | translate">
+        <option value="">{{ 'ADMIN_SERVICES.CONFIRMED_ALL' | translate }}</option>
+        <option value="yes">{{ 'ADMIN_SERVICES.CONFIRMED_YES' | translate }}</option>
+        <option value="no">{{ 'ADMIN_SERVICES.CONFIRMED_NO' | translate }}</option>
+      </select>
       <label class="check"><input type="checkbox" name="needsAttention" [(ngModel)]="needsAttention" (change)="applyFilters()" /> {{ 'ADMIN_SERVICES.NEEDS_ATTENTION' | translate }}</label>
       <button type="button" class="btn" *ngIf="offeringId || providerId" (click)="clearScope()">{{ 'ADMIN_SERVICES.CLEAR_SCOPE' | translate }} ✕</button>
     </div>
@@ -175,6 +200,8 @@
             <span *ngIf="r.outcomeReason">{{ ('SERVICE_OUTCOME.PROVIDER.' + r.outcomeReason) | translate }}</span>
             <span *ngIf="r.requesterReason"><br />{{ ('SERVICE_OUTCOME.REQUESTER.' + r.requesterReason) | translate }}</span>
             <span *ngIf="r.rating">★ {{ r.rating }}</span>
+            <span *ngIf="r.expiredWaitingOn">{{ ('ADMIN_SERVICES.EXPIRY.' + r.expiredWaitingOn) | translate }}</span>
+            <span *ngIf="(r.messageCount ?? 0) > 0">💬 {{ r.messageCount }}</span>
           </div>
           <div class="cell muted">{{ (r.updatedAt || r.createdAt) | date:'mediumDate' }}</div>
         </a>

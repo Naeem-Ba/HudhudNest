@@ -25,16 +25,18 @@ import {
   ServiceRequestDto,
   ServiceRequestStatusHistoryDto,
   canCloseRequest,
+  canExchangeMessages,
   nextProviderAction
 } from '../../core/models/service.model';
 import { ToastService } from '../../shared/services/toast.service';
+import { ServiceConversationComponent } from '../services/service-conversation.component';
 
 const MAX_DOCUMENT_SIZE = 5_000_000; // يطابق ServiceRequestsController.MaxDocumentSize بالباك اند.
 
 @Component({
   selector: 'app-provider-request-detail-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule],
+  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, ServiceConversationComponent],
   templateUrl: './provider-request-detail.page.html',
   styleUrls: ['./provider-request-detail.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -84,6 +86,12 @@ export class ProviderRequestDetailPage implements OnInit {
   readonly canClose = computed(() => {
     const r = this.request();
     return !!r && canCloseRequest(r.status);
+  });
+
+  /** The thread exists while the two sides can talk, and stays readable afterwards if anything was written. */
+  readonly hasThread = computed(() => {
+    const r = this.request();
+    return !!r && ((r.messageCount ?? 0) > 0 || canExchangeMessages(r.status));
   });
 
   readonly canSubmitNotDone = computed(() => {

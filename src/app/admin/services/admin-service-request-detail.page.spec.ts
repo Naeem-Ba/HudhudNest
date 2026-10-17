@@ -139,4 +139,32 @@ describe('AdminServiceRequestDetailPage', () => {
     page.restoreReview();
     expect(api.setReviewVisibility).toHaveBeenCalledWith('v1', false);
   });
+  it('shows the whole conversation read-only, without a composer, and names who stayed silent on an expired request', () => {
+    const el: HTMLElement = create(detail({ status: 'Expired', expiredWaitingOn: 'Provider' }, {
+      messages: [
+        { id: 'm1', serviceRequestId: 'r1', senderParty: 'Requester', senderName: 'Me', body: 'Price?', createdAt: '2026-10-10T10:00:00Z', isMine: false },
+        { id: 'm2', serviceRequestId: 'r1', senderParty: 'Provider', senderName: 'Clean Co', body: '50 USD', createdAt: '2026-10-10T11:00:00Z', isMine: false }
+      ]
+    })).nativeElement;
+
+    expect(el.querySelector('app-service-conversation')).not.toBeNull();
+    expect(el.textContent).toContain('Price?');
+    expect(el.textContent).toContain('50 USD');
+    expect(el.querySelector('form.composer')).toBeNull();
+    expect(el.textContent).toContain('ADMIN_SERVICES.EXPIRY.Provider');
+  });
+
+  it('lets the admin cancel an unconfirmed inquiry but not set an outcome on it', () => {
+    const page = create(detail({ status: 'Inquiry' })).componentInstance;
+
+    expect(page.canCancel()).toBeTrue();
+    expect(page.canSetOutcome()).toBeFalse();
+  });
+
+  it('offers nothing to do on an expired request', () => {
+    const page = create(detail({ status: 'Expired' })).componentInstance;
+
+    expect(page.canCancel()).toBeFalse();
+    expect(page.canSetOutcome()).toBeFalse();
+  });
 });

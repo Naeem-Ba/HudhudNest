@@ -73,7 +73,7 @@ describe('AdminServicesPage', () => {
   it('shows the totals and both reason lists', () => {
     const el: HTMLElement = create().nativeElement;
 
-    expect(el.querySelectorAll('.kpi').length).toBe(8);
+    expect(el.querySelectorAll('.kpi').length).toBe(11);
     expect(el.querySelectorAll('.bars li').length).toBe(3);
     expect(el.textContent).toContain('50%');
   });
@@ -161,5 +161,31 @@ describe('AdminServicesPage', () => {
     const el: HTMLElement = create().nativeElement;
 
     expect(el.querySelector('.state.error')).not.toBeNull();
+  });
+  it('shows inquiries, conversion and expiry on the overview, and who stayed silent', () => {
+    api.stats.and.returnValue(of({
+      ...stats,
+      totals: { ...stats.totals, inquiries: 20, conversionRate: 0.35, expired: 4 },
+      expiryReasons: [{ reason: 'Provider', count: 3 }, { reason: 'Requester', count: 1 }]
+    }));
+    const el: HTMLElement = create().nativeElement;
+
+    expect(el.textContent).toContain('ADMIN_SERVICES.K_INQUIRIES');
+    expect(el.textContent).toContain('35%');
+    expect(el.textContent).toContain('ADMIN_SERVICES.EXPIRY.Provider');
+    expect(el.textContent).toContain('ADMIN_SERVICES.EXPIRY.Requester');
+  });
+
+  it('passes the confirmation filter to the list: confirmed requests, unconfirmed inquiries, or both', () => {
+    create({ tab: 'requests', confirmed: 'false' });
+    expect(api.search.calls.mostRecent().args[0].confirmed).toBeFalse();
+
+    TestBed.resetTestingModule();
+    create({ tab: 'requests', confirmed: 'true' });
+    expect(api.search.calls.mostRecent().args[0].confirmed).toBeTrue();
+
+    TestBed.resetTestingModule();
+    create({ tab: 'requests' });
+    expect(api.search.calls.mostRecent().args[0].confirmed).toBeNull();
   });
 });

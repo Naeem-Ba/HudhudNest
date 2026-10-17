@@ -419,15 +419,16 @@
           </button>
         </div>
 
-        <!-- The provider's contact is an introduction earned by asking: it appears here, once the request exists. -->
+        <!-- After the first message the two sides talk here; the customer confirms when ready. The provider's phone appears only after a confirmed request is accepted. -->
         <div class="service-sent" *ngIf="createdServiceRequest() as created">
-          <p class="service-sent__title">{{ 'SERVICE_REQUEST.SENT_TITLE' | translate: { number: created.requestNumber } }}</p>
-          <p>{{ 'SERVICE_REQUEST.SENT_BODY' | translate: { provider: created.serviceProviderDisplayName } }}</p>
-          <ul class="service-sent__contact" *ngIf="created.providerContact as contact; else noContact">
-            <li *ngIf="contact.phone"><span>{{ 'SERVICE_REQUEST.CONTACT_PHONE' | translate }}</span> <a [href]="'tel:' + contact.phone" dir="ltr">{{ contact.phone }}</a></li>
-            <li *ngIf="contact.email"><span>{{ 'SERVICE_REQUEST.CONTACT_EMAIL' | translate }}</span> <a [href]="'mailto:' + contact.email" dir="ltr">{{ contact.email }}</a></li>
-          </ul>
-          <ng-template #noContact><p class="muted">{{ 'SERVICE_REQUEST.NO_CONTACT_YET' | translate }}</p></ng-template>
+          <p class="service-sent__title">
+            {{ (created.status === 'Inquiry' ? 'SERVICE_REQUEST.INQUIRY_SENT_TITLE' : 'SERVICE_REQUEST.SENT_TITLE') | translate: { number: created.requestNumber } }}
+          </p>
+          <p>
+            {{ (created.status === 'Inquiry' ? 'SERVICE_REQUEST.INQUIRY_SENT_BODY' : 'SERVICE_REQUEST.SENT_BODY') | translate: { provider: created.serviceProviderDisplayName } }}
+          </p>
+          <app-service-conversation [request]="created" role="requester"
+            (activity)="onCreatedActivity($event)" (requestChange)="onCreatedConfirmed($event)" />
           <div class="form-actions">
             <a class="btn btn--primary" routerLink="/my-services">{{ 'SERVICE_REQUEST.OPEN_MY_REQUESTS' | translate }}</a>
             <button type="button" class="btn btn--outline" (click)="closeServiceForm()">{{ 'COMMON.CLOSE' | translate }}</button>
@@ -444,7 +445,7 @@
           {{ 'SERVICE_REQUEST.UNAVAILABLE' | translate }}
         </div>
 
-        <form class="detail-form" *ngIf="!createdServiceRequest() && !loadingServiceCategories() && availableServiceCategories().length > 0" (ngSubmit)="submitServiceRequest()" novalidate>
+        <form class="detail-form" *ngIf="!createdServiceRequest() && !loadingServiceCategories() && availableServiceCategories().length > 0" (ngSubmit)="submitServiceRequest('Request')" novalidate>
           <div class="form-group">
             <label for="serviceCategory">{{ 'SERVICE_REQUEST.CATEGORY' | translate }}</label>
             <select id="serviceCategory" name="serviceCategory" [ngModel]="serviceCategory()" (ngModelChange)="selectServiceCategory($event)">
@@ -474,7 +475,7 @@
 
           <ng-container *ngIf="selectedOffering()">
             <div class="form-group">
-              <label for="serviceRequestNote">{{ 'SERVICE_REQUEST.NOTE' | translate }}</label>
+              <label for="serviceRequestNote">{{ 'SERVICE_REQUEST.NOTE' | translate }} *</label>
               <textarea
                 id="serviceRequestNote"
                 [(ngModel)]="serviceRequestNote"
@@ -485,10 +486,15 @@
               ></textarea>
             </div>
 
+            <p class="form-hint">{{ 'SERVICE_REQUEST.MESSAGE_HINT' | translate }}</p>
+
             <div class="form-actions">
-              <button type="submit" class="btn btn--primary" [disabled]="savingServiceRequest()">
+              <button type="submit" class="btn btn--primary" [disabled]="savingServiceRequest() || !serviceRequestNote.trim()">
                 <span *ngIf="savingServiceRequest()" class="spinner-ring"></span>
                 {{ savingServiceRequest() ? ('COMMON.SAVING' | translate) : ('SERVICE_REQUEST.SUBMIT' | translate) }}
+              </button>
+              <button type="button" class="btn btn--outline" (click)="submitServiceRequest('Inquire')" [disabled]="savingServiceRequest() || !serviceRequestNote.trim()">
+                {{ 'SERVICE_REQUEST.INQUIRE' | translate }}
               </button>
               <button type="button" class="btn btn--outline" (click)="showServiceForm.set(false)">
                 {{ 'COMMON.CANCEL' | translate }}

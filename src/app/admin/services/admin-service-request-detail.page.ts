@@ -10,6 +10,7 @@ import { ServiceRequestService } from '../../core/api/service-request.service';
 import { AdminServiceRequestDetailDto } from '../../core/models/admin-service-requests.model';
 import { CANCELLABLE_STATUSES, SERVICE_OUTCOME_REASONS, ServiceOutcomeReason } from '../../core/models/service.model';
 import { ToastService } from '../../shared/services/toast.service';
+import { ServiceConversationComponent } from '../../features/services/service-conversation.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 
 type Action = 'done' | 'notdone' | 'cancel' | 'hide' | null;
@@ -23,7 +24,7 @@ type Action = 'done' | 'notdone' | 'cancel' | 'hide' | null;
   selector: 'app-admin-service-request-detail-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, LoadingSpinnerComponent],
+  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, LoadingSpinnerComponent, ServiceConversationComponent],
   templateUrl: './admin-service-request-detail.page.html',
   styleUrls: ['./admin-service-request-detail.page.scss']
 })

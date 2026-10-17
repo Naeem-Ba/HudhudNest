@@ -5,7 +5,10 @@
 import {
   ServiceCategory,
   ServiceOutcomeReason,
+  ServiceParty,
   ServiceRequestDto,
+  ServiceRequestIntent,
+  ServiceRequestMessageDto,
   ServiceRequestStatus,
   ServiceRequestStatusHistoryDto,
   ServiceRequesterAnswer,
@@ -22,6 +25,8 @@ export interface AdminServiceRequestFilter {
   from?: string | null;
   to?: string | null;
   needsAttention?: boolean;
+  /** true = confirmed requests only, false = inquiries that never became a request. */
+  confirmed?: boolean | null;
   page?: number;
   pageSize?: number;
 }
@@ -45,6 +50,11 @@ export interface AdminServiceRequestSummaryDto {
   needsAttention: boolean;
   createdAt: string;
   updatedAt?: string | null;
+  intent?: ServiceRequestIntent | null;
+  confirmedAt?: string | null;
+  lastActivityAt?: string | null;
+  expiredWaitingOn?: ServiceParty | null;
+  messageCount?: number;
 }
 
 export type AdminServiceRequestPage = ServicePage<AdminServiceRequestSummaryDto>;
@@ -65,6 +75,8 @@ export interface AdminServiceRequestDetailDto {
   history: ServiceRequestStatusHistoryDto[];
   review?: AdminServiceReviewDto | null;
   needsAttention: boolean;
+  /** The whole conversation; the admin reads it but is not a side of it. */
+  messages?: ServiceRequestMessageDto[] | null;
 }
 
 export interface ReasonCountDto {
@@ -91,6 +103,14 @@ export interface ServiceStatsRowDto {
   closed: number;
   /** Completed / closed, 0..1. Null until something closed. */
   completionRate?: number | null;
+  /** Every conversation opened (confirmed or not). `requested` counts only the confirmed ones. */
+  inquiries?: number;
+  openInquiries?: number;
+  /** Conversations that ended (declined, withdrawn or expired) without ever becoming a request. */
+  inquiriesDropped?: number;
+  expired?: number;
+  /** requested / inquiries, 0..1. Null until someone made contact. */
+  conversionRate?: number | null;
 }
 
 export interface ServiceStatsDto {
@@ -102,6 +122,8 @@ export interface ServiceStatsDto {
   byProvider: ServiceStatsRowDto[];
   providerReasons: ReasonCountDto[];
   requesterReasons: ReasonCountDto[];
+  /** Who stayed silent when requests expired: `Provider` or `Requester`. */
+  expiryReasons?: ReasonCountDto[] | null;
 }
 
 export interface AdminSetOutcomePayload {
