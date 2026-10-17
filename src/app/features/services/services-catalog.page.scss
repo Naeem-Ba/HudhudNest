@@ -18,3 +18,4 @@
 .pill-count--zero{opacity:.45}
 .state p{margin:.4rem 0 .8rem;color:var(--gray-600)}
 @include bp.mobile{.header-actions{width:100%}.header-actions .btn{flex:1;text-align:center}}
+.offering-card .rating{color:var(--warning,#b7791f);font-weight:700}

@@ -16,7 +16,13 @@
 //   PUT    /api/ServiceRequests/{id}/schedule           ← جدولة موعد (مزوّد الخدمة)
 //   PUT    /api/ServiceRequests/{id}/start              ← بدء التنفيذ (مزوّد الخدمة)
 //   PUT    /api/ServiceRequests/{id}/complete           ← إتمام الطلب (مزوّد الخدمة)
+//   PUT    /api/ServiceRequests/{id}/not-completed      ← لم تُنجَز الخدمة + السبب (مزوّد الخدمة)
+//   PUT    /api/ServiceRequests/{id}/feedback           ← ردّ العميل على النتيجة (يؤكد/يعترض) + سببه
 //   PUT    /api/ServiceRequests/{id}/cancel             ← إلغاء طلب
+//   GET    /api/ServiceRequests/{id}/messages           ← محادثة الطلب بين العميل والمزوّد
+//   POST   /api/ServiceRequests/{id}/messages           ← رسالة جديدة
+//   PUT    /api/ServiceRequests/{id}/messages/read      ← تعليم رسائل الطرف الآخر كمقروءة
+//   PUT    /api/ServiceRequests/{id}/confirm            ← تأكيد العميل: يتحوّل الاستعلام إلى طلب
 //   POST   /api/ServiceRequests/{id}/review             ← تقييم خدمة مكتملة
 
 import { Injectable } from '@angular/core';
@@ -28,7 +34,15 @@ import {
   AddServiceReviewPayload,
   CompleteServiceRequestPayload,
   CreateServiceRequestPayload,
+  NotCompletedServiceRequestPayload,
+  ServiceOutcomeReason,
   ServiceRequestDocumentDto,
+  ServiceParty,
+  ServiceRequestFeedbackPayload,
+  ServiceRequestIntent,
+  ServiceRequestMessageDto,
+  ServiceRequesterAnswer,
+  ServiceRequesterReason,
   ServiceRequestDto,
   ServiceRequestStatus,
   ServiceRequestStatusHistoryDto,
@@ -66,16 +80,50 @@ export class ServiceRequestService {
     const body = {
       PropertyId: payload.propertyId,
       ServiceOfferingId: payload.serviceOfferingId,
-      RequesterNote: payload.requesterNote ?? null
+      RequesterNote: payload.requesterNote?.trim() || null,
+      Intent: payload.intent ?? null
     };
 
     return this.api.post<unknown>(this.endpoint, body).pipe(map(response => this.toRequest(response)));
   }
 
-  cancel(id: string, reason?: string | null): Observable<ServiceRequestDto> {
+  /** The conversation of a request, oldest first. Allowed for the customer, the provider and an admin (read-only). */
+  getMessages(id: string): Observable<ServiceRequestMessageDto[]> {
     return this.api
-      .put<unknown>(`${this.endpoint}/${id}/cancel`, { Reason: reason ?? null })
+      .get<ServiceRequestMessageDto[] | ApiPagedResult<ServiceRequestMessageDto>>(`${this.endpoint}/${id}/messages`)
+      .pipe(map(response => unwrapItems(response).map(item => this.toMessage(item))));
+  }
+
+  sendMessage(id: string, body: string): Observable<ServiceRequestMessageDto> {
+    return this.api
+      .post<unknown>(`${this.endpoint}/${id}/messages`, { Body: body.trim() })
+      .pipe(map(response => this.toMessage(response)));
+  }
+
+  /** Opening the thread marks the other side's messages as read. */
+  markMessagesRead(id: string): Observable<void> {
+    return this.api.put<unknown>(`${this.endpoint}/${id}/messages/read`, {}).pipe(map(() => undefined));
+  }
+
+  /** The customer confirms: the inquiry becomes a request and the provider has to answer it. */
+  confirm(id: string): Observable<ServiceRequestDto> {
+    return this.api.put<unknown>(`${this.endpoint}/${id}/confirm`, {}).pipe(map(response => this.toRequest(response)));
+  }
+
+  cancel(id: string, reason?: string | null, requesterReason?: ServiceRequesterReason | null): Observable<ServiceRequestDto> {
+    return this.api
+      .put<unknown>(`${this.endpoint}/${id}/cancel`, { Reason: reason ?? null, RequesterReason: requesterReason ?? null })
       .pipe(map(response => this.toRequest(response)));
+  }
+
+  /** The customer answers "is the provider's outcome right?" and gives their own reason. */
+  sendFeedback(id: string, payload: ServiceRequestFeedbackPayload): Observable<ServiceRequestDto> {
+    const body = {
+      Answer: payload.answer,
+      Reason: payload.reason ?? null,
+      Note: payload.note?.trim() || null
+    };
+    return this.api.put<unknown>(`${this.endpoint}/${id}/feedback`, body).pipe(map(response => this.toRequest(response)));
   }
 
   addReview(id: string, payload: AddServiceReviewPayload): Observable<ServiceReviewDto> {
@@ -123,10 +171,16 @@ export class ServiceRequestService {
     return this.api.put<unknown>(`${this.endpoint}/${id}/accept`, body).pipe(map(response => this.toRequest(response)));
   }
 
-  reject(id: string, reason: string): Observable<ServiceRequestDto> {
+  reject(id: string, reason: string, reasonCode?: ServiceOutcomeReason | null): Observable<ServiceRequestDto> {
     return this.api
-      .put<unknown>(`${this.endpoint}/${id}/reject`, { Reason: reason.trim() })
+      .put<unknown>(`${this.endpoint}/${id}/reject`, { Reason: reason.trim(), ReasonCode: reasonCode ?? null })
       .pipe(map(response => this.toRequest(response)));
+  }
+
+  /** The provider closes an accepted request as not delivered, with a reason from the list. */
+  markNotCompleted(id: string, payload: NotCompletedServiceRequestPayload): Observable<ServiceRequestDto> {
+    const body = { Reason: payload.reason, Note: payload.note?.trim() || null };
+    return this.api.put<unknown>(`${this.endpoint}/${id}/not-completed`, body).pipe(map(response => this.toRequest(response)));
   }
 
   schedule(id: string, scheduledAtIso: string): Observable<ServiceRequestDto> {
@@ -188,7 +242,37 @@ export class ServiceRequestService {
       cancellationReason: r['cancellationReason'] as string | null | undefined,
       completedAt: r['completedAt'] as string | null | undefined,
       createdAt: String(r['createdAt'] ?? ''),
-      updatedAt: (r['updatedAt'] as string | null | undefined) ?? null
+      updatedAt: (r['updatedAt'] as string | null | undefined) ?? null,
+      providerContact: (r['providerContact'] as ServiceRequestDto['providerContact']) ?? null,
+      outcomeReason: (r['outcomeReason'] as ServiceOutcomeReason | null | undefined) ?? null,
+      outcomeNote: (r['outcomeNote'] as string | null | undefined) ?? null,
+      notCompletedAt: (r['notCompletedAt'] as string | null | undefined) ?? null,
+      requesterAnswer: (r['requesterAnswer'] as ServiceRequesterAnswer | null | undefined) ?? null,
+      requesterReason: (r['requesterReason'] as ServiceRequesterReason | null | undefined) ?? null,
+      requesterFeedbackNote: (r['requesterFeedbackNote'] as string | null | undefined) ?? null,
+      requesterFeedbackAt: (r['requesterFeedbackAt'] as string | null | undefined) ?? null,
+      intent: (r['intent'] as ServiceRequestIntent | null | undefined) ?? null,
+      confirmedAt: (r['confirmedAt'] as string | null | undefined) ?? null,
+      lastActivityAt: (r['lastActivityAt'] as string | null | undefined) ?? null,
+      expiredAt: (r['expiredAt'] as string | null | undefined) ?? null,
+      expiredWaitingOn: (r['expiredWaitingOn'] as ServiceParty | null | undefined) ?? null,
+      messageCount: Number(r['messageCount'] ?? 0),
+      unreadMessageCount: Number(r['unreadMessageCount'] ?? 0),
+      lastMessageAt: (r['lastMessageAt'] as string | null | undefined) ?? null
+    };
+  }
+
+  private toMessage(raw: unknown): ServiceRequestMessageDto {
+    const m = raw as Record<string, unknown>;
+    return {
+      id: String(m['id'] ?? ''),
+      serviceRequestId: String(m['serviceRequestId'] ?? ''),
+      senderParty: (m['senderParty'] as ServiceParty) ?? 'Requester',
+      senderName: String(m['senderName'] ?? ''),
+      body: String(m['body'] ?? ''),
+      createdAt: String(m['createdAt'] ?? ''),
+      readAt: (m['readAt'] as string | null | undefined) ?? null,
+      isMine: m['isMine'] === true
     };
   }
 
