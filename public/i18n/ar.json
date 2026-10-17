@@ -594,7 +594,10 @@
     "EXTEND_LISTING": "تمديد الإعلان",
     "FEATURE_LISTING": "تمييز الإعلان",
     "CONFIRM_AVAILABILITY_SUCCESS": "تم تأكيد أن الإعلان لا يزال متاحاً.",
-    "CONFIRM_AVAILABILITY_ERROR": "تعذر تأكيد التوفر. حاول مجدداً."
+    "CONFIRM_AVAILABILITY_ERROR": "تعذر تأكيد التوفر. حاول مجدداً.",
+    "QUICK_ACTIONS": "إجراءات الإعلان",
+    "IMAGE_ALT": "{{title}} - صورة {{n}}",
+    "IMAGE_N": "صورة {{n}}"
   },
   "SHARE": {
     "BUTTON_LABEL": "مشاركة",
@@ -612,7 +615,22 @@
     "NATIVE_NOT_SUPPORTED": "متصفحك لا يدعم المشاركة المباشرة — جرّب أحد الخيارات الأخرى.",
     "ERROR_POPUP_BLOCKED": "تعذر فتح نافذة المشاركة. تحقق من إعدادات حظر النوافذ المنبثقة في متصفحك.",
     "ERROR_NOT_SHAREABLE": "لم يعد هذا الإعلان متاحاً للمشاركة.",
-    "ERROR_GENERIC": "تعذرت المشاركة. حاول مرة أخرى."
+    "ERROR_GENERIC": "تعذرت المشاركة. حاول مرة أخرى.",
+    "LINK_LABEL": "رابط الإعلان",
+    "COPIED": "تم النسخ",
+    "SHARE_VIA": "أو شارك عبر",
+    "EMAIL": "البريد الإلكتروني",
+    "ERROR_OPEN_FAILED": "تعذّر فتح التطبيق المطلوب. جرّب خيارًا آخر أو انسخ الرابط.",
+    "MORE": "المزيد",
+    "MSG": {
+      "VIEW_ON": "شاهد الإعلان على هدهد نيست:",
+      "ROOMS": "{{count}} غرف",
+      "MODE_SALE": "للبيع",
+      "MODE_RENT": "للإيجار",
+      "MODE_BOTH": "للبيع أو الإيجار",
+      "FALLBACK_TITLE_CITY": "عقار {{mode}} في {{city}}",
+      "FALLBACK_TITLE": "عقار {{mode}}"
+    }
   },
   "PROPERTY": {
     "MODE_RENT": "للإيجار",
@@ -3335,5 +3353,60 @@
       "account": "الحساب",
       "social": "التفاعل"
     }
+  },
+  "PRINT": {
+    "BUTTON": "طباعة الإعلان",
+    "ERROR": "تعذّرت الطباعة. حاول مرة أخرى.",
+    "LISTING_TYPE": "نوع الإعلان",
+    "AREA": "المساحة",
+    "ROOMS": "عدد الغرف",
+    "FLOOR": "الطابق",
+    "LOCATION": "الموقع",
+    "DESCRIPTION": "الوصف",
+    "AMENITIES": "المرافق",
+    "AGENCY": "المكتب العقاري",
+    "LINK": "رابط الإعلان",
+    "PRINTED_ON": "تاريخ الطباعة: {{date}}"
+  },
+  "LISTING_PHOTOS": {
+    "TAKE_PHOTO": "التقاط صورة بالكاميرا",
+    "IMAGE_N": "صورة {{n}}",
+    "REMOVE_N": "حذف الصورة {{n}}"
+  },
+  "AMENITIES_CATALOG": {
+    "wifi": "إنترنت / واي فاي",
+    "air-conditioning": "تكييف",
+    "heating": "تدفئة",
+    "solar-heater": "سخان شمسي",
+    "solar-energy": "طاقة شمسية",
+    "generator": "مولدة كهرباء",
+    "ups-batteries": "بطاريات / UPS",
+    "water-tank": "خزان مياه",
+    "central-heating": "تدفئة مركزية",
+    "elevator": "مصعد",
+    "parking": "موقف سيارات",
+    "garage": "كراج",
+    "garden": "حديقة",
+    "balcony": "شرفة / بلكون",
+    "terrace": "تراس",
+    "roof-access": "سطح خاص",
+    "pool": "مسبح",
+    "bbq-area": "منطقة شواء",
+    "sea-view": "إطلالة بحرية",
+    "mountain-view": "إطلالة جبلية",
+    "security-guard": "حارس / أمن",
+    "cctv": "كاميرات مراقبة",
+    "intercom": "إنتركوم",
+    "fire-safety": "نظام إطفاء",
+    "furnished-kitchen": "مطبخ مجهّز",
+    "washing-machine": "غسالة",
+    "refrigerator": "براد",
+    "oven-stove": "فرن وغاز",
+    "tv": "تلفاز",
+    "gym": "نادي رياضي",
+    "playground": "ملعب أطفال",
+    "storage-room": "غرفة تخزين",
+    "pets-allowed": "يُسمح بالحيوانات الأليفة",
+    "wheelchair-access": "مدخل لذوي الاحتياجات الخاصة"
   }
 }

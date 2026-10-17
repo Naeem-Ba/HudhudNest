@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PropertyShareContentService } from './property-share-content.service';
 import { Property } from '../models/property.model';
 import { environment } from '../../../environments/environment';
@@ -21,7 +22,25 @@ describe('PropertyShareContentService', () => {
   let service: PropertyShareContentService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ imports: [TranslateModule.forRoot()] });
+    const translate = TestBed.inject(TranslateService);
+    translate.setTranslation('ar', {
+      COMMON: { area_unit: 'م²' },
+      SHARE: { MSG: {
+        VIEW_ON: 'شاهد الإعلان على هدهد نيست:', ROOMS: '{{count}} غرف',
+        MODE_SALE: 'للبيع', MODE_RENT: 'للإيجار', MODE_BOTH: 'للبيع أو الإيجار',
+        FALLBACK_TITLE_CITY: 'عقار {{mode}} في {{city}}', FALLBACK_TITLE: 'عقار {{mode}}'
+      } }
+    });
+    translate.setTranslation('de', {
+      COMMON: { area_unit: 'm²' },
+      SHARE: { MSG: {
+        VIEW_ON: 'Anzeige auf HudhudNest ansehen:', ROOMS: '{{count}} Zimmer',
+        MODE_SALE: 'zu verkaufen', MODE_RENT: 'zu vermieten', MODE_BOTH: 'zu verkaufen oder zu vermieten',
+        FALLBACK_TITLE_CITY: 'Immobilie {{mode}} in {{city}}', FALLBACK_TITLE: 'Immobilie {{mode}}'
+      } }
+    });
+    translate.use('ar');
     service = TestBed.inject(PropertyShareContentService);
     (environment as { siteUrl: string }).siteUrl = 'https://hudhudnest.com';
   });
@@ -43,6 +62,19 @@ describe('PropertyShareContentService', () => {
     const content = service.build(makeProperty({ title: '  ' }))!;
     expect(content.title.length).toBeGreaterThan(0);
     expect(content.title).toContain('دمشق');
+  });
+
+  it('writes the message in the UI language of the sender, not always in Arabic', () => {
+    const translate = TestBed.inject(TranslateService);
+
+    expect(service.build(makeProperty())!.text).toContain('شاهد الإعلان على هدهد نيست:');
+    expect(service.build(makeProperty())!.text).toContain('3 غرف');
+
+    translate.use('de');
+    const german = service.build(makeProperty())!;
+    expect(german.text).toContain('Anzeige auf HudhudNest ansehen:');
+    expect(german.text).toContain('3 Zimmer');
+    expect(german.text).not.toContain('شاهد');
   });
 
   it('includes the canonical URL in the share text', () => {

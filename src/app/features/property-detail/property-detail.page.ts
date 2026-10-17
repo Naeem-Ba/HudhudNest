@@ -53,6 +53,7 @@ import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.compone
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { FavoriteToggleButtonComponent } from '../../shared/ui/favorite-toggle-button.component';
 import { PropertyShareButtonComponent } from '../../shared/ui/property-share-button.component';
+import { PRINT_QUERY_PARAM, PropertyPrintService } from '../../core/print/property-print.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { OverlayBackHandlerService } from '../../core/services/overlay-back-handler.service';
 import { ScrollLockService } from '../../core/services/scroll-lock.service';
@@ -65,6 +66,7 @@ import { isGuid } from '../../shared/utils/guid';
 import { formatListingPrice } from '../../shared/utils/listing-price';
 import { listingLifecycle, listingStatusTagKey } from '../../shared/utils/listing-status';
 import { StructuredDataService, BREADCRUMB_JSON_LD_ID } from '../../core/services/structured-data.service';
+import { AmenityLabelPipe } from '../../pipes/amenity-label.pipe';
 
 const LISTING_JSON_LD_ID = 'ld-real-estate-listing';
 
@@ -78,6 +80,7 @@ const LIGHTBOX_IMAGE_WIDTH = 2048;
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AmenityLabelPipe,
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
@@ -137,6 +140,7 @@ export class PropertyDetailPage implements OnInit {
   private readonly propertyStructuredData = inject(PropertyStructuredDataService);
   private readonly structuredData = inject(StructuredDataService);
   private readonly shareUrl = inject(PropertyShareUrlService);
+  private readonly printer = inject(PropertyPrintService);
 
   // ── State Signals ─────────────────────────────────────────────────────
   readonly property       = signal<Property | null>(null);
@@ -592,6 +596,7 @@ export class PropertyDetailPage implements OnInit {
           // Share button was tapped. Deduplicated per property per page session internally
           // (see PropertyAttributionTrackingService.trackView).
           this.attributionTracking.trackView(data.id);
+          this.printFromQueryOnce(data);
         },
         error: (err: unknown) => {
           // A definitive 404 means the listing doesn't exist / isn't public: show the "not
@@ -969,6 +974,15 @@ export class PropertyDetailPage implements OnInit {
       });
   }
 
+  /** The native app opens `<public url>?print=1` in the system browser to print (a WebView cannot print
+   *  an iframe); the listing is then printed once it has loaded. */
+  private printRequested = false;
+  private printFromQueryOnce(data: Property): void {
+    if (this.printRequested || this.route.snapshot.queryParamMap.get(PRINT_QUERY_PARAM) !== '1') return;
+    this.printRequested = true;
+    void this.printer.print(data);
+  }
+
   // ── Price Helpers ─────────────────────────────────────────────────────
   formatPrice(value: number | null | undefined): string {
     return formatListingPrice(value, this.property()?.currencyCode);
@@ -985,7 +999,9 @@ export class PropertyDetailPage implements OnInit {
 
   thumbnailAlt(img: PropertyImage, index: number): string {
     const descriptive = img.altText?.trim() || this.property()?.title?.trim();
-    return descriptive ? `${descriptive} - صورة ${index + 1}` : `صورة ${index + 1}`;
+    return descriptive
+      ? this.translate.instant('PROPERTY_DETAIL.IMAGE_ALT', { title: descriptive, n: index + 1 })
+      : this.translate.instant('PROPERTY_DETAIL.IMAGE_N', { n: index + 1 });
   }
 
   /** رانج النجوم 1-5 للعرض */

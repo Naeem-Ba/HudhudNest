@@ -179,6 +179,9 @@ interface FavoritePropertyNested {
       background: var(--gray-100);
     }
     .card-fav {
+      --icon-btn-size: 40px;
+      display: block;
+      line-height: 0;
       position: absolute;
       top: .6rem;
       inset-inline-end: .6rem;

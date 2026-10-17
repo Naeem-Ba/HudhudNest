@@ -187,6 +187,28 @@
     flex-wrap: wrap;
     align-items: center;
     gap: .5rem;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  /* Header row: badges lead, the icon pair trails. space-between + logical flow = mirrored in RTL;
+     wrap keeps the pair on its own line, still at the trailing edge, when the badges are wide. */
+  &__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem .75rem;
+    --icon-btn-size: 44px;
+  }
+
+  /* One group, one size, one gap: both buttons are the same 44px circle (a real touch target). */
+  &__quick {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    flex: none;
+    margin-inline-start: auto;
   }
 
   &__title {
@@ -674,15 +696,6 @@
 }
 
 /* زر المفضلة داخل شريط إجراءات صفحة التفاصيل */
-.detail-fav-btn {
-  display: inline-flex;
-  align-self: center;
-}
-
-/* Favorite + Share share one circular size here (44px touch target). */
-.summary-card__actions {
-  --icon-btn-size: 44px;
-}
 
 /* بطاقة المكتب العقاري */
 .agency-card__body {

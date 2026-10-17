@@ -594,7 +594,10 @@
     "EXTEND_LISTING": "Inserat verlängern",
     "FEATURE_LISTING": "Inserat hervorheben",
     "CONFIRM_AVAILABILITY_SUCCESS": "Bestätigt — dieses Inserat ist weiterhin verfügbar.",
-    "CONFIRM_AVAILABILITY_ERROR": "Verfügbarkeit konnte nicht bestätigt werden. Bitte versuchen Sie es erneut."
+    "CONFIRM_AVAILABILITY_ERROR": "Verfügbarkeit konnte nicht bestätigt werden. Bitte versuchen Sie es erneut.",
+    "QUICK_ACTIONS": "Aktionen zur Anzeige",
+    "IMAGE_ALT": "{{title}} - Foto {{n}}",
+    "IMAGE_N": "Foto {{n}}"
   },
   "SHARE": {
     "BUTTON_LABEL": "Teilen",
@@ -612,7 +615,22 @@
     "NATIVE_NOT_SUPPORTED": "Ihr Browser unterstützt kein direktes Teilen — versuchen Sie eine andere Option.",
     "ERROR_POPUP_BLOCKED": "Das Freigabefenster konnte nicht geöffnet werden. Prüfen Sie die Pop-up-Blocker-Einstellungen Ihres Browsers.",
     "ERROR_NOT_SHAREABLE": "Dieses Inserat kann nicht mehr geteilt werden.",
-    "ERROR_GENERIC": "Teilen fehlgeschlagen. Bitte versuchen Sie es erneut."
+    "ERROR_GENERIC": "Teilen fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "LINK_LABEL": "Link zur Anzeige",
+    "COPIED": "Kopiert",
+    "SHARE_VIA": "Oder teilen über",
+    "EMAIL": "E-Mail",
+    "ERROR_OPEN_FAILED": "Die App konnte nicht geöffnet werden. Versuchen Sie eine andere Option oder kopieren Sie den Link.",
+    "MORE": "Mehr",
+    "MSG": {
+      "VIEW_ON": "Anzeige auf HudhudNest ansehen:",
+      "ROOMS": "{{count}} Zimmer",
+      "MODE_SALE": "zum Verkauf",
+      "MODE_RENT": "zur Miete",
+      "MODE_BOTH": "zum Verkauf oder zur Miete",
+      "FALLBACK_TITLE_CITY": "Immobilie {{mode}} in {{city}}",
+      "FALLBACK_TITLE": "Immobilie {{mode}}"
+    }
   },
   "PROPERTY": {
     "MODE_RENT": "Zu vermieten",
@@ -3335,5 +3353,60 @@
       "account": "Konto",
       "social": "Interaktion"
     }
+  },
+  "PRINT": {
+    "BUTTON": "Anzeige drucken",
+    "ERROR": "Drucken nicht möglich. Bitte versuchen Sie es erneut.",
+    "LISTING_TYPE": "Anzeigenart",
+    "AREA": "Fläche",
+    "ROOMS": "Zimmer",
+    "FLOOR": "Etage",
+    "LOCATION": "Lage",
+    "DESCRIPTION": "Beschreibung",
+    "AMENITIES": "Ausstattung",
+    "AGENCY": "Immobilienbüro",
+    "LINK": "Link zur Anzeige",
+    "PRINTED_ON": "Gedruckt am {{date}}"
+  },
+  "LISTING_PHOTOS": {
+    "TAKE_PHOTO": "Foto mit der Kamera aufnehmen",
+    "IMAGE_N": "Foto {{n}}",
+    "REMOVE_N": "Foto {{n}} entfernen"
+  },
+  "AMENITIES_CATALOG": {
+    "wifi": "Internet / WLAN",
+    "air-conditioning": "Klimaanlage",
+    "heating": "Heizung",
+    "solar-heater": "Solar-Warmwasserbereiter",
+    "solar-energy": "Solarstrom",
+    "generator": "Stromgenerator",
+    "ups-batteries": "Batterien / USV",
+    "water-tank": "Wassertank",
+    "central-heating": "Zentralheizung",
+    "elevator": "Aufzug",
+    "parking": "Stellplatz",
+    "garage": "Garage",
+    "garden": "Garten",
+    "balcony": "Balkon",
+    "terrace": "Terrasse",
+    "roof-access": "Eigene Dachterrasse",
+    "pool": "Schwimmbad",
+    "bbq-area": "Grillbereich",
+    "sea-view": "Meerblick",
+    "mountain-view": "Bergblick",
+    "security-guard": "Sicherheitsdienst",
+    "cctv": "Überwachungskameras",
+    "intercom": "Gegensprechanlage",
+    "fire-safety": "Brandschutzanlage",
+    "furnished-kitchen": "Einbauküche",
+    "washing-machine": "Waschmaschine",
+    "refrigerator": "Kühlschrank",
+    "oven-stove": "Backofen und Herd",
+    "tv": "Fernseher",
+    "gym": "Fitnessraum",
+    "playground": "Kinderspielplatz",
+    "storage-room": "Abstellraum",
+    "pets-allowed": "Haustiere erlaubt",
+    "wheelchair-access": "Rollstuhlgerechter Zugang"
   }
 }
