@@ -419,17 +419,32 @@
           </button>
         </div>
 
-        <div *ngIf="loadingServiceCategories()" class="state">{{ 'COMMON.LOADING' | translate }}</div>
+        <!-- The provider's contact is an introduction earned by asking: it appears here, once the request exists. -->
+        <div class="service-sent" *ngIf="createdServiceRequest() as created">
+          <p class="service-sent__title">{{ 'SERVICE_REQUEST.SENT_TITLE' | translate: { number: created.requestNumber } }}</p>
+          <p>{{ 'SERVICE_REQUEST.SENT_BODY' | translate: { provider: created.serviceProviderDisplayName } }}</p>
+          <ul class="service-sent__contact" *ngIf="created.providerContact as contact; else noContact">
+            <li *ngIf="contact.phone"><span>{{ 'SERVICE_REQUEST.CONTACT_PHONE' | translate }}</span> <a [href]="'tel:' + contact.phone" dir="ltr">{{ contact.phone }}</a></li>
+            <li *ngIf="contact.email"><span>{{ 'SERVICE_REQUEST.CONTACT_EMAIL' | translate }}</span> <a [href]="'mailto:' + contact.email" dir="ltr">{{ contact.email }}</a></li>
+          </ul>
+          <ng-template #noContact><p class="muted">{{ 'SERVICE_REQUEST.NO_CONTACT_YET' | translate }}</p></ng-template>
+          <div class="form-actions">
+            <a class="btn btn--primary" routerLink="/my-services">{{ 'SERVICE_REQUEST.OPEN_MY_REQUESTS' | translate }}</a>
+            <button type="button" class="btn btn--outline" (click)="closeServiceForm()">{{ 'COMMON.CLOSE' | translate }}</button>
+          </div>
+        </div>
 
-        <div *ngIf="!loadingServiceCategories() && serviceLoadFailed() && !serviceCategory()" class="state">
+        <div *ngIf="!createdServiceRequest() && loadingServiceCategories()" class="state">{{ 'COMMON.LOADING' | translate }}</div>
+
+        <div *ngIf="!createdServiceRequest() && !loadingServiceCategories() && serviceLoadFailed() && !serviceCategory()" class="state">
           {{ 'SERVICE_REQUEST.LOAD_ERROR' | translate }}
         </div>
 
-        <div *ngIf="!loadingServiceCategories() && !serviceLoadFailed() && availableServiceCategories().length === 0" class="state">
+        <div *ngIf="!createdServiceRequest() && !loadingServiceCategories() && !serviceLoadFailed() && availableServiceCategories().length === 0" class="state">
           {{ 'SERVICE_REQUEST.UNAVAILABLE' | translate }}
         </div>
 
-        <form class="detail-form" *ngIf="!loadingServiceCategories() && availableServiceCategories().length > 0" (ngSubmit)="submitServiceRequest()" novalidate>
+        <form class="detail-form" *ngIf="!createdServiceRequest() && !loadingServiceCategories() && availableServiceCategories().length > 0" (ngSubmit)="submitServiceRequest()" novalidate>
           <div class="form-group">
             <label for="serviceCategory">{{ 'SERVICE_REQUEST.CATEGORY' | translate }}</label>
             <select id="serviceCategory" name="serviceCategory" [ngModel]="serviceCategory()" (ngModelChange)="selectServiceCategory($event)">
@@ -451,6 +466,8 @@
                 <strong>{{ offering.title }}</strong>
                 <span *ngIf="offering.description"> — {{ offering.description }}</span>
                 <small class="offering-provider">{{ 'SERVICE_REQUEST.PROVIDER' | translate }}: {{ offering.serviceProviderDisplayName }}</small>
+                <small class="offering-rating" *ngIf="offering.averageRating != null && (offering.reviewCount ?? 0) > 0">★ {{ offering.averageRating | number:'1.1-1' }} ({{ offering.reviewCount }})</small>
+                <small class="offering-rating offering-rating--none" *ngIf="!offering.reviewCount">{{ 'SERVICE_REQUEST.NO_REVIEWS_YET' | translate }}</small>
               </span>
             </label>
           </fieldset>

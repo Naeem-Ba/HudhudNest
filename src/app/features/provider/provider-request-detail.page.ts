@@ -19,9 +19,12 @@ import { ServiceRequestService } from '../../core/api/service-request.service';
 import { ServiceOfferingService } from '../../core/api/service-offering.service';
 import {
   ProviderAction,
+  SERVICE_OUTCOME_REASONS,
+  ServiceOutcomeReason,
   ServiceRequestDocumentDto,
   ServiceRequestDto,
   ServiceRequestStatusHistoryDto,
+  canCloseRequest,
   nextProviderAction
 } from '../../core/models/service.model';
 import { ToastService } from '../../shared/services/toast.service';
@@ -59,7 +62,12 @@ export class ProviderRequestDetailPage implements OnInit {
 
   /** أي نموذج إجراء مفتوح حالياً: 'accept' | 'reject' | null — 'schedule'/'start'/'complete'
    * لها زر واحد فقط أو حقل واحد فلا تحتاج toggle منفصل بنفس التعقيد. */
-  readonly openForm = signal<'accept' | 'reject' | null>(null);
+  readonly openForm = signal<'accept' | 'reject' | 'done' | 'notdone' | null>(null);
+
+  readonly outcomeReasons = SERVICE_OUTCOME_REASONS;
+  readonly rejectReasonCode = signal<ServiceOutcomeReason | ''>('');
+  readonly notDoneReason = signal<ServiceOutcomeReason | ''>('');
+  readonly notDoneNote = signal('');
 
   readonly quotedPrice = signal<number | null>(null);
   readonly providerNote = signal('');
@@ -70,6 +78,17 @@ export class ProviderRequestDetailPage implements OnInit {
   readonly action = computed<ProviderAction>(() => {
     const r = this.request();
     return r ? nextProviderAction(r.status) : 'None';
+  });
+
+  /** Done / not done is available from the moment the request is accepted; scheduling and starting stay optional. */
+  readonly canClose = computed(() => {
+    const r = this.request();
+    return !!r && canCloseRequest(r.status);
+  });
+
+  readonly canSubmitNotDone = computed(() => {
+    if (this.submitting() || !this.notDoneReason()) return false;
+    return this.notDoneReason() !== 'Other' || this.notDoneNote().trim().length > 0;
   });
 
   ngOnInit(): void {
@@ -126,6 +145,18 @@ export class ProviderRequestDetailPage implements OnInit {
   openRejectForm(): void {
     this.openForm.set('reject');
     this.rejectReason.set('');
+    this.rejectReasonCode.set('');
+  }
+
+  openDoneForm(): void {
+    this.openForm.set('done');
+    this.finalPrice.set(null);
+  }
+
+  openNotDoneForm(): void {
+    this.openForm.set('notdone');
+    this.notDoneReason.set('');
+    this.notDoneNote.set('');
   }
 
   closeForm(): void {
@@ -152,7 +183,7 @@ export class ProviderRequestDetailPage implements OnInit {
     }
 
     this.submitting.set(true);
-    this.requestsApi.reject(this.requestId, this.rejectReason())
+    this.requestsApi.reject(this.requestId, this.rejectReason(), this.rejectReasonCode() || null)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: updated => this.onActionSuccess(updated, 'PROVIDER.DETAIL.REJECT_SUCCESS'),
@@ -198,6 +229,19 @@ export class ProviderRequestDetailPage implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: updated => this.onActionSuccess(updated, 'PROVIDER.DETAIL.COMPLETE_SUCCESS'),
+        error: () => this.onActionError()
+      });
+  }
+
+  submitNotDone(): void {
+    const reason = this.notDoneReason();
+    if (!reason || !this.canSubmitNotDone()) return;
+
+    this.submitting.set(true);
+    this.requestsApi.markNotCompleted(this.requestId, { reason, note: this.notDoneNote().trim() || null })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: updated => this.onActionSuccess(updated, 'PROVIDER.DETAIL.NOT_DONE_SUCCESS'),
         error: () => this.onActionError()
       });
   }

@@ -16,6 +16,8 @@
 //   PUT    /api/ServiceRequests/{id}/schedule           ← جدولة موعد (مزوّد الخدمة)
 //   PUT    /api/ServiceRequests/{id}/start              ← بدء التنفيذ (مزوّد الخدمة)
 //   PUT    /api/ServiceRequests/{id}/complete           ← إتمام الطلب (مزوّد الخدمة)
+//   PUT    /api/ServiceRequests/{id}/not-completed      ← لم تُنجَز الخدمة + السبب (مزوّد الخدمة)
+//   PUT    /api/ServiceRequests/{id}/feedback           ← ردّ العميل على النتيجة (يؤكد/يعترض) + سببه
 //   PUT    /api/ServiceRequests/{id}/cancel             ← إلغاء طلب
 //   POST   /api/ServiceRequests/{id}/review             ← تقييم خدمة مكتملة
 
@@ -28,7 +30,12 @@ import {
   AddServiceReviewPayload,
   CompleteServiceRequestPayload,
   CreateServiceRequestPayload,
+  NotCompletedServiceRequestPayload,
+  ServiceOutcomeReason,
   ServiceRequestDocumentDto,
+  ServiceRequestFeedbackPayload,
+  ServiceRequesterAnswer,
+  ServiceRequesterReason,
   ServiceRequestDto,
   ServiceRequestStatus,
   ServiceRequestStatusHistoryDto,
@@ -72,10 +79,20 @@ export class ServiceRequestService {
     return this.api.post<unknown>(this.endpoint, body).pipe(map(response => this.toRequest(response)));
   }
 
-  cancel(id: string, reason?: string | null): Observable<ServiceRequestDto> {
+  cancel(id: string, reason?: string | null, requesterReason?: ServiceRequesterReason | null): Observable<ServiceRequestDto> {
     return this.api
-      .put<unknown>(`${this.endpoint}/${id}/cancel`, { Reason: reason ?? null })
+      .put<unknown>(`${this.endpoint}/${id}/cancel`, { Reason: reason ?? null, RequesterReason: requesterReason ?? null })
       .pipe(map(response => this.toRequest(response)));
+  }
+
+  /** The customer answers "is the provider's outcome right?" and gives their own reason. */
+  sendFeedback(id: string, payload: ServiceRequestFeedbackPayload): Observable<ServiceRequestDto> {
+    const body = {
+      Answer: payload.answer,
+      Reason: payload.reason ?? null,
+      Note: payload.note?.trim() || null
+    };
+    return this.api.put<unknown>(`${this.endpoint}/${id}/feedback`, body).pipe(map(response => this.toRequest(response)));
   }
 
   addReview(id: string, payload: AddServiceReviewPayload): Observable<ServiceReviewDto> {
@@ -123,10 +140,16 @@ export class ServiceRequestService {
     return this.api.put<unknown>(`${this.endpoint}/${id}/accept`, body).pipe(map(response => this.toRequest(response)));
   }
 
-  reject(id: string, reason: string): Observable<ServiceRequestDto> {
+  reject(id: string, reason: string, reasonCode?: ServiceOutcomeReason | null): Observable<ServiceRequestDto> {
     return this.api
-      .put<unknown>(`${this.endpoint}/${id}/reject`, { Reason: reason.trim() })
+      .put<unknown>(`${this.endpoint}/${id}/reject`, { Reason: reason.trim(), ReasonCode: reasonCode ?? null })
       .pipe(map(response => this.toRequest(response)));
+  }
+
+  /** The provider closes an accepted request as not delivered, with a reason from the list. */
+  markNotCompleted(id: string, payload: NotCompletedServiceRequestPayload): Observable<ServiceRequestDto> {
+    const body = { Reason: payload.reason, Note: payload.note?.trim() || null };
+    return this.api.put<unknown>(`${this.endpoint}/${id}/not-completed`, body).pipe(map(response => this.toRequest(response)));
   }
 
   schedule(id: string, scheduledAtIso: string): Observable<ServiceRequestDto> {
@@ -188,7 +211,15 @@ export class ServiceRequestService {
       cancellationReason: r['cancellationReason'] as string | null | undefined,
       completedAt: r['completedAt'] as string | null | undefined,
       createdAt: String(r['createdAt'] ?? ''),
-      updatedAt: (r['updatedAt'] as string | null | undefined) ?? null
+      updatedAt: (r['updatedAt'] as string | null | undefined) ?? null,
+      providerContact: (r['providerContact'] as ServiceRequestDto['providerContact']) ?? null,
+      outcomeReason: (r['outcomeReason'] as ServiceOutcomeReason | null | undefined) ?? null,
+      outcomeNote: (r['outcomeNote'] as string | null | undefined) ?? null,
+      notCompletedAt: (r['notCompletedAt'] as string | null | undefined) ?? null,
+      requesterAnswer: (r['requesterAnswer'] as ServiceRequesterAnswer | null | undefined) ?? null,
+      requesterReason: (r['requesterReason'] as ServiceRequesterReason | null | undefined) ?? null,
+      requesterFeedbackNote: (r['requesterFeedbackNote'] as string | null | undefined) ?? null,
+      requesterFeedbackAt: (r['requesterFeedbackAt'] as string | null | undefined) ?? null
     };
   }
 

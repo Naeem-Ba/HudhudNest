@@ -41,7 +41,7 @@ export class ProviderInboxPage implements OnInit {
   // بـ service.model.ts) — بدونها، تبويب "بانتظار ردّك" الوحيد المتاح للتصفية كان
   // 'Submitted' الذي لا يحدث أبداً في الواقع، فيبدو وكأن لا طلبات جديدة إطلاقاً.
   readonly statuses: Array<ServiceRequestStatus | 'All'> =
-    ['All', 'UnderReview', 'Accepted', 'Scheduled', 'InProgress', 'Completed', 'Rejected', 'Cancelled'];
+    ['All', 'UnderReview', 'Accepted', 'Scheduled', 'InProgress', 'Completed', 'NotCompleted', 'Rejected', 'Cancelled'];
 
   readonly filteredRequests = computed(() => {
     const status = this.selectedStatus();

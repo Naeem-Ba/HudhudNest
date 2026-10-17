@@ -36,7 +36,45 @@ export type ServiceRequestStatus =
   | 'Completed'
   | 'Reviewed'
   | 'Rejected'
-  | 'Cancelled';
+  | 'Cancelled'
+  | 'NotCompleted';
+
+/** Why the provider says a service did not happen (or why they rejected it). Mirrors ServiceOutcomeReason. */
+export type ServiceOutcomeReason =
+  | 'CustomerUnreachable'
+  | 'CustomerNotAvailable'
+  | 'CustomerCancelled'
+  | 'PriceNotAgreed'
+  | 'PropertyNotAccessible'
+  | 'OutsideCoverage'
+  | 'ProviderUnavailable'
+  | 'ScopeNotSuitable'
+  | 'Other';
+
+export const SERVICE_OUTCOME_REASONS: readonly ServiceOutcomeReason[] = [
+  'CustomerUnreachable', 'CustomerNotAvailable', 'CustomerCancelled', 'PriceNotAgreed',
+  'PropertyNotAccessible', 'OutsideCoverage', 'ProviderUnavailable', 'ScopeNotSuitable', 'Other'
+];
+
+/** The customer's own reasons (cancelling, a service that did not happen, or a disputed outcome). */
+export type ServiceRequesterReason =
+  | 'ProviderDidNotContact'
+  | 'ProviderNoShow'
+  | 'PriceTooHigh'
+  | 'ChangedMind'
+  | 'FoundOtherProvider'
+  | 'NoLongerNeeded'
+  | 'TimingNotSuitable'
+  | 'ServiceNotAsDescribed'
+  | 'QualityIssue'
+  | 'Other';
+
+export const SERVICE_REQUESTER_REASONS: readonly ServiceRequesterReason[] = [
+  'ProviderDidNotContact', 'ProviderNoShow', 'PriceTooHigh', 'ChangedMind', 'FoundOtherProvider',
+  'NoLongerNeeded', 'TimingNotSuitable', 'ServiceNotAsDescribed', 'QualityIssue', 'Other'
+];
+
+export type ServiceRequesterAnswer = 'Confirmed' | 'Disputed';
 
 export type ServiceProviderVerificationLevel =
   | 'None'
@@ -60,6 +98,9 @@ export interface ServiceOfferingDto {
   /** Governorates the provider covers; empty = not restricted (legacy providers). */
   providerCoverageGovernorateIds?: number[] | null;
   createdAt: string;
+  /** Average of the visible reviews of this service; null until it has one. */
+  averageRating?: number | null;
+  reviewCount?: number;
 }
 
 export interface ServiceRequestDto {
@@ -88,6 +129,32 @@ export interface ServiceRequestDto {
   completedAt?: string | null;
   createdAt: string;
   updatedAt?: string | null;
+  /** Only the requester (and an admin) receive it, and only while the request is alive or delivered. */
+  providerContact?: ServiceProviderContact | null;
+  outcomeReason?: ServiceOutcomeReason | null;
+  outcomeNote?: string | null;
+  notCompletedAt?: string | null;
+  /** The customer's own answer. Never sent to the provider. */
+  requesterAnswer?: ServiceRequesterAnswer | null;
+  requesterReason?: ServiceRequesterReason | null;
+  requesterFeedbackNote?: string | null;
+  requesterFeedbackAt?: string | null;
+}
+
+export interface ServiceProviderContact {
+  phone?: string | null;
+  email?: string | null;
+}
+
+export interface NotCompletedServiceRequestPayload {
+  reason: ServiceOutcomeReason;
+  note?: string | null;
+}
+
+export interface ServiceRequestFeedbackPayload {
+  answer: ServiceRequesterAnswer;
+  reason?: ServiceRequesterReason | null;
+  note?: string | null;
 }
 
 export interface ServiceRequestStatusHistoryDto {
@@ -138,6 +205,19 @@ export const CANCELLABLE_STATUSES: ServiceRequestStatus[] = [
 /** Once Completed, the requester may leave exactly one review. */
 export function canReview(request: ServiceRequestDto, currentUserId: string | null): boolean {
   return !!currentUserId && request.requesterId === currentUserId && request.status === 'Completed';
+}
+
+/** After the provider closed the request (done or not done) the customer is asked once whether that is right. */
+export function needsRequesterFeedback(request: ServiceRequestDto, currentUserId: string | null): boolean {
+  return !!currentUserId
+    && request.requesterId === currentUserId
+    && !request.requesterAnswer
+    && (request.status === 'Completed' || request.status === 'NotCompleted');
+}
+
+/** Where the provider may close a request as done or not done (mirrors ServiceRequest.EnsureCanClose). */
+export function canCloseRequest(status: ServiceRequestStatus): boolean {
+  return status === 'Accepted' || status === 'Scheduled' || status === 'InProgress';
 }
 
 // ---------------------------------------------------------------------------
@@ -217,6 +297,6 @@ export function nextProviderAction(status: ServiceRequestStatus): ProviderAction
     case 'Accepted': return 'Schedule';
     case 'Scheduled': return 'Start';
     case 'InProgress': return 'Complete';
-    default: return 'None';
+    default: return 'None'; // Completed, Reviewed, Rejected, Cancelled, NotCompleted
   }
 }

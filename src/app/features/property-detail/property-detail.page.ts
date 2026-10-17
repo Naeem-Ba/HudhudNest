@@ -44,7 +44,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { Property, PropertyImage } from '../../core/models/property.model';
 import { REVIEW_COMMENT_MAX_LENGTH, ReviewDto, validateCreateReview } from '../../core/models/review.model';
 import { CreateVisitRequest, validateCreateVisit } from '../../core/models/visit.model';
-import { SERVICE_CATEGORIES, ServiceCategory, ServiceOfferingDto, validateCreateServiceRequest } from '../../core/models/service.model';
+import { SERVICE_CATEGORIES, ServiceCategory, ServiceOfferingDto, ServiceRequestDto, validateCreateServiceRequest } from '../../core/models/service.model';
 import { ServiceCategoryAvailabilityDto } from '../../core/models/provider-onboarding.model';
 import { validateMessageContent } from '../../core/models/message.model';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
@@ -249,6 +249,8 @@ export class PropertyDetailPage implements OnInit {
   readonly loadingServiceOfferings = signal(false);
   readonly serviceLoadFailed = signal(false);
   readonly savingServiceRequest = signal(false);
+  /** The request just created: its response carries the provider's contact (shown once, on request). */
+  readonly createdServiceRequest = signal<ServiceRequestDto | null>(null);
   readonly availableServiceCategories = computed(() =>
     this.serviceAvailability().filter(item => item.offeringCount > 0).map(item => item.category));
   readonly selectedOffering = computed(() =>
@@ -420,6 +422,7 @@ export class PropertyDetailPage implements OnInit {
     if (!category || !this.isLoggedIn()) return;
 
     this.servicePreselect = category;
+    this.createdServiceRequest.set(null);
     this.showServiceForm.set(true);
     this.loadServiceCategoriesIfNeeded();
     if (this.serviceAvailability().length > 0) this.selectServiceCategory(category);
@@ -429,6 +432,7 @@ export class PropertyDetailPage implements OnInit {
   toggleServiceForm(): void {
     const opening = !this.showServiceForm();
     this.showServiceForm.set(opening);
+    if (opening) this.createdServiceRequest.set(null);
 
     if (opening) {
       this.loadServiceCategoriesIfNeeded();
@@ -820,6 +824,11 @@ export class PropertyDetailPage implements OnInit {
   }
 
   // ── Service request ────────────────────────────────────────────────────
+  closeServiceForm(): void {
+    this.showServiceForm.set(false);
+    this.createdServiceRequest.set(null);
+  }
+
   submitServiceRequest(): void {
     const property = this.property();
     const offering = this.selectedOffering();
@@ -841,9 +850,9 @@ export class PropertyDetailPage implements OnInit {
     this.serviceRequestApi.create(payload)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => {
+        next: created => {
           this.toast.show(this.translate.instant('SERVICE_REQUEST.SUCCESS'), 'success');
-          this.showServiceForm.set(false);
+          this.createdServiceRequest.set(created);
           this.serviceRequestNote = '';
           this.savingServiceRequest.set(false);
         },

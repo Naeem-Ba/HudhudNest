@@ -11,7 +11,17 @@ import { ServiceRequestService } from '../../core/api/service-request.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { Property } from '../../core/models/property.model';
 import { ServiceCategoryAvailabilityDto } from '../../core/models/provider-onboarding.model';
-import { CANCELLABLE_STATUSES, ServiceCategory, ServiceRequestDto, ServiceRequestStatus, canReview } from '../../core/models/service.model';
+import {
+  CANCELLABLE_STATUSES,
+  SERVICE_REQUESTER_REASONS,
+  ServiceCategory,
+  ServiceRequestDto,
+  ServiceRequesterAnswer,
+  ServiceRequesterReason,
+  ServiceRequestStatus,
+  canReview,
+  needsRequesterFeedback
+} from '../../core/models/service.model';
 import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
@@ -41,8 +51,19 @@ export class MyServiceRequestsPage implements OnInit {
   readonly reviewRating = signal(5);
   readonly reviewComment = signal('');
 
+  // ── Cancel with the customer's own reason (feeds the admin statistics) ─────
+  readonly requesterReasons = SERVICE_REQUESTER_REASONS;
+  readonly cancelingId = signal<string | null>(null);
+  readonly cancelReason = signal<ServiceRequesterReason | ''>('');
+
+  // ── The customer's answer to the provider's outcome ─────────────────────
+  readonly feedbackId = signal<string | null>(null);
+  readonly feedbackAnswer = signal<ServiceRequesterAnswer>('Confirmed');
+  readonly feedbackReason = signal<ServiceRequesterReason | ''>('');
+  readonly feedbackNote = signal('');
+
   readonly statuses: Array<ServiceRequestStatus | 'All'> =
-    ['All', 'Submitted', 'UnderReview', 'Accepted', 'Scheduled', 'InProgress', 'Completed', 'Reviewed', 'Rejected', 'Cancelled'];
+    ['All', 'Submitted', 'UnderReview', 'Accepted', 'Scheduled', 'InProgress', 'Completed', 'NotCompleted', 'Reviewed', 'Rejected', 'Cancelled'];
 
   readonly filteredRequests = computed(() => {
     const status = this.selectedStatus();
@@ -131,14 +152,72 @@ export class MyServiceRequestsPage implements OnInit {
     return canReview(request, this.auth.getCurrentUserId());
   }
 
-  cancel(request: ServiceRequestDto): void {
+  canAnswer(request: ServiceRequestDto): boolean {
+    return needsRequesterFeedback(request, this.auth.getCurrentUserId());
+  }
+
+  /** The reason list is mandatory when the service did not happen or the customer disputes the outcome. */
+  feedbackNeedsReason(request: ServiceRequestDto): boolean {
+    return request.status === 'NotCompleted' || this.feedbackAnswer() === 'Disputed';
+  }
+
+  canSubmitFeedback(request: ServiceRequestDto): boolean {
+    if (this.processingId() === request.id) return false;
+    if (!this.feedbackNeedsReason(request)) return true;
+    const reason = this.feedbackReason();
+    if (!reason) return false;
+    return reason !== 'Other' || this.feedbackNote().trim().length > 0;
+  }
+
+  openFeedbackForm(request: ServiceRequestDto): void {
+    this.feedbackId.set(request.id);
+    this.feedbackAnswer.set('Confirmed');
+    this.feedbackReason.set('');
+    this.feedbackNote.set('');
+  }
+
+  closeFeedbackForm(): void { this.feedbackId.set(null); }
+
+  submitFeedback(request: ServiceRequestDto): void {
+    if (!this.canSubmitFeedback(request)) return;
+    const reason = this.feedbackNeedsReason(request) ? (this.feedbackReason() || null) : null;
     this.processingId.set(request.id);
-    this.requestsApi.cancel(request.id)
+    this.requestsApi.sendFeedback(request.id, {
+      answer: this.feedbackAnswer(),
+      reason,
+      note: this.feedbackNote().trim() || null
+    })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: updated => {
           this.requests.update(items => items.map(item => item.id === updated.id ? updated : item));
           this.processingId.set(null);
+          this.feedbackId.set(null);
+          this.toast.show(this.translate.instant('SERVICE_REQUESTS.FEEDBACK_SUCCESS'), 'success');
+        },
+        error: () => {
+          this.processingId.set(null);
+          this.toast.show(this.translate.instant('SERVICE_REQUESTS.ACTION_ERROR'), 'error');
+        }
+      });
+  }
+
+  openCancelForm(request: ServiceRequestDto): void {
+    this.cancelingId.set(request.id);
+    this.cancelReason.set('');
+  }
+
+  closeCancelForm(): void { this.cancelingId.set(null); }
+
+  cancel(request: ServiceRequestDto): void {
+    this.processingId.set(request.id);
+    this.requestsApi.cancel(request.id, null, this.cancelReason() || null)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: updated => {
+          this.requests.update(items => items.map(item => item.id === updated.id ? updated : item));
+          this.processingId.set(null);
+          this.cancelingId.set(null);
           this.toast.show(this.translate.instant('SERVICE_REQUESTS.CANCEL_SUCCESS'), 'success');
         },
         error: () => {
