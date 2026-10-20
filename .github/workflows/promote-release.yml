@@ -1,0 +1,115 @@
+name: Promote to production
+
+# Netlify builds PRODUCTION from the `release` branch (Project configuration -> Developer settings ->
+# Continuous deployment -> Branches and deploy contexts -> Production branch). `main` is not the
+# production branch, so merging to main costs no production build. On the Free plan a production build
+# costs 15 of the 300 credits per month, while Deploy Previews and branch deploys cost nothing, so the
+# production build now happens only when someone runs this workflow.
+#
+# What it does: moves `release` to a main commit whose Frontend CI run passed. Fast-forward only, never
+# forced, and it never moves `release` backwards (rolling back is Netlify's "Publish deploy" on an older
+# deploy, which costs nothing). Auto Publishing stays locked: after the build finishes, publish the new
+# deploy by hand and run `npm run check:live`.
+#
+# Before moving `release` it asks the Staging site (build-info.json, tools/check-live-environment.mjs) which
+# commit it was built from and refuses unless it is the commit being promoted: production only ever gets a
+# commit that Staging already ran. `sync-staging.yml` moves Staging after Frontend CI passes, so wait for
+# that Netlify branch deploy to finish if this step says Staging is still on the previous commit.
+#
+# Run it: Actions -> Promote to production -> Run workflow. Leave `sha` empty to promote the newest main
+# commit whose Frontend CI passed. Needs no secrets: the job's own token pushes `release`.
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: "Commit of main to promote (empty = newest main commit whose Frontend CI passed)"
+        required: false
+        default: ""
+      staging_url:
+        description: "Staging site that must already run that commit"
+        required: false
+        default: "https://staging--hudhudnest.netlify.app"
+      skip_staging_check:
+        description: "Emergency only: promote without checking Staging (Netlify Staging down)"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: promote-release
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    name: Fast-forward release to a tested main commit
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Fast-forward release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          REQUESTED_SHA: ${{ inputs.sha }}
+          STAGING_URL: ${{ inputs.staging_url }}
+          SKIP_STAGING_CHECK: ${{ inputs.skip_staging_check }}
+        run: |
+          set -euo pipefail
+          git fetch origin main
+
+          if [ -n "$REQUESTED_SHA" ]; then
+            if ! printf '%s' "$REQUESTED_SHA" | grep -Eq '^[0-9a-f]{7,40}$'; then
+              echo "::error::sha must be 7 to 40 lowercase hex characters."; exit 1
+            fi
+            TARGET_SHA=$(git rev-parse --verify "${REQUESTED_SHA}^{commit}")
+          else
+            TARGET_SHA=$(gh run list --repo "$REPO" --workflow frontend-ci.yml --branch main --event push --status success --limit 1 --json headSha --jq '.[0].headSha // empty')
+            if [ -z "$TARGET_SHA" ]; then
+              echo "::error::No successful Frontend CI run on main was found."; exit 1
+            fi
+          fi
+
+          if ! git merge-base --is-ancestor "$TARGET_SHA" origin/main; then
+            echo "::error::${TARGET_SHA:0:7} is not on main; refusing to promote it."; exit 1
+          fi
+
+          PASSED=$(gh run list --repo "$REPO" --workflow frontend-ci.yml --event push --status success --commit "$TARGET_SHA" --limit 1 --json headSha --jq '.[0].headSha // empty')
+          if [ "$PASSED" != "$TARGET_SHA" ]; then
+            echo "::error::Frontend CI has no successful run for ${TARGET_SHA:0:7}. Wait for it or pick another commit."; exit 1
+          fi
+
+          PREVIOUS="none (the branch is created)"
+          if git ls-remote --exit-code --heads origin release >/dev/null 2>&1; then
+            git fetch origin release
+            if git merge-base --is-ancestor "$TARGET_SHA" origin/release; then
+              echo "release already contains ${TARGET_SHA:0:7}; nothing to do."; exit 0
+            fi
+            if ! git merge-base --is-ancestor origin/release "$TARGET_SHA"; then
+              echo "::error::release has commits that ${TARGET_SHA:0:7} does not contain. Not overwriting; fix it by hand."; exit 1
+            fi
+            PREVIOUS=$(git rev-parse --short origin/release)
+          fi
+
+          if [ "${SKIP_STAGING_CHECK:-}" = "true" ]; then
+            echo "::warning::Staging check skipped by request."
+          elif ! node tools/check-live-environment.mjs "${STAGING_URL:-https://staging--hudhudnest.netlify.app}" --expect staging --commit "$TARGET_SHA"; then
+            echo "::error::Staging is not running ${TARGET_SHA:0:7} (or could not be reached). Wait for the Staging deploy of that commit, then run this again."; exit 1
+          fi
+
+          git push origin "$TARGET_SHA:refs/heads/release"
+          echo "release: $PREVIOUS -> ${TARGET_SHA:0:7}"
+          {
+            echo "### release now points at \`${TARGET_SHA:0:7}\`"
+            echo "Before: $PREVIOUS"
+            echo "Netlify now builds production from it (15 credits on the Free plan). When the deploy is ready: Publish deploy, then \`npm run check:live\`."
+          } >> "${GITHUB_STEP_SUMMARY:-/dev/null}"

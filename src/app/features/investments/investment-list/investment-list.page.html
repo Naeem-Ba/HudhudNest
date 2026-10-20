@@ -1,0 +1,116 @@
+<div class="invl">
+  <header class="invl__header">
+    <p class="invl__eyebrow">{{ 'INVESTMENTS.LIST.EYEBROW' | translate }}</p>
+    <h1>{{ 'INVESTMENTS.LIST.TITLE' | translate }}</h1>
+    <p class="invl__subtitle">{{ 'INVESTMENTS.LIST.SUBTITLE' | translate }}</p>
+  </header>
+
+  <form class="invl__filters" (ngSubmit)="applyFilters()">
+    <div class="invl__field">
+      <label>{{ 'INVESTMENTS.LIST.SEARCH' | translate }}</label>
+      <input type="text" [(ngModel)]="search" name="search" [placeholder]="'INVESTMENTS.LIST.SEARCH_PLACEHOLDER' | translate" />
+    </div>
+
+    <div class="invl__field">
+      <label>{{ 'INVESTMENTS.LIST.PROJECT_TYPE' | translate }}</label>
+      <select [(ngModel)]="projectType" name="projectType">
+        <option value="">{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
+        <option value="Residential">{{ 'INVESTMENTS.PROJECT_TYPE.RESIDENTIAL' | translate }}</option>
+        <option value="Commercial">{{ 'INVESTMENTS.PROJECT_TYPE.COMMERCIAL' | translate }}</option>
+        <option value="Mixed">{{ 'INVESTMENTS.PROJECT_TYPE.MIXED' | translate }}</option>
+        <option value="Industrial">{{ 'INVESTMENTS.PROJECT_TYPE.INDUSTRIAL' | translate }}</option>
+        <option value="Land">{{ 'INVESTMENTS.PROJECT_TYPE.LAND' | translate }}</option>
+        <option value="Renovation">{{ 'INVESTMENTS.PROJECT_TYPE.RENOVATION' | translate }}</option>
+        <option value="NewConstruction">{{ 'INVESTMENTS.PROJECT_TYPE.NEWCONSTRUCTION' | translate }}</option>
+      </select>
+    </div>
+
+    <div class="invl__field">
+      <label>{{ 'INVESTMENTS.RISK.LABEL' | translate }}</label>
+      <select [(ngModel)]="riskLevel" name="riskLevel">
+        <option value="">{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
+        <option value="Low">{{ 'INVESTMENTS.RISK.LOW' | translate }}</option>
+        <option value="Medium">{{ 'INVESTMENTS.RISK.MEDIUM' | translate }}</option>
+        <option value="High">{{ 'INVESTMENTS.RISK.HIGH' | translate }}</option>
+        <option value="VeryHigh">{{ 'INVESTMENTS.RISK.VERYHIGH' | translate }}</option>
+      </select>
+    </div>
+
+    <div class="invl__field">
+      <label>{{ 'INVESTMENTS.LIST.MIN_RETURN' | translate }}</label>
+      <input type="number" min="0" [(ngModel)]="minExpectedReturn" name="minExpectedReturn" />
+    </div>
+
+    <div class="invl__field">
+      <label>{{ 'INVESTMENTS.LIST.MAX_TERM' | translate }}</label>
+      <input type="number" min="1" [(ngModel)]="maxTermMonths" name="maxTermMonths" />
+    </div>
+
+    <div class="invl__filter-actions">
+      <button type="submit" class="btn btn--primary btn--sm">{{ 'INVESTMENTS.LIST.SEARCH_ACTION' | translate }}</button>
+      <button type="button" class="btn btn--outline btn--sm" (click)="resetFilters()">{{ 'INVESTMENTS.LIST.RESET' | translate }}</button>
+    </div>
+  </form>
+
+  <app-skeleton-card-grid *ngIf="loading()" [count]="6" />
+
+  <p *ngIf="error()" class="invl__error">{{ error() | translate }}</p>
+
+  <app-empty-state
+    *ngIf="!loading() && !error() && projects().length === 0"
+    icon="📈"
+    [title]="'INVESTMENTS.LIST.EMPTY_TITLE' | translate"
+    [message]="'INVESTMENTS.LIST.EMPTY_MESSAGE' | translate"
+  />
+
+  <div class="invl__grid" *ngIf="!loading() && projects().length > 0">
+    <article class="invl__card" *ngFor="let project of projects(); trackBy: trackById" (click)="goToDetails(project.id)">
+      <img
+        [src]="project.propertyMainImageUrl || fallbackImage"
+        [appImageFallback]="fallbackImage"
+        [alt]="project.title"
+        class="invl__card-image"
+      />
+      <span class="invl__risk-badge" [class]="'invl__risk-badge--' + (project.riskLevel || 'Unknown')" *ngIf="project.riskLevel">
+        {{ ('INVESTMENTS.RISK.' + project.riskLevel.toUpperCase()) | translate }}
+      </span>
+
+      <div class="invl__card-body">
+        <p class="invl__card-type">{{ ('INVESTMENTS.PROJECT_TYPE.' + project.projectType.toUpperCase()) | translate }}</p>
+        <h3 class="invl__card-title">{{ project.title }}</h3>
+        <p class="invl__card-meta">📍 {{ project.propertyCity || '—' }}</p>
+
+        <div class="invl__progress">
+          <div class="invl__progress-bar">
+            <div class="invl__progress-fill" [style.width.%]="project.fundingProgressPercent"></div>
+          </div>
+          <div class="invl__progress-labels">
+            <span>{{ formatAmount(project.raisedAmount, project.currency) }} {{ 'INVESTMENTS.DETAILS.RAISED' | translate }}</span>
+            <span>{{ project.fundingProgressPercent | number:'1.0-0' }}%</span>
+          </div>
+        </div>
+
+        <div class="invl__card-stats">
+          <div>
+            <span class="invl__stat-label">{{ 'INVESTMENTS.DETAILS.MINIMUM' | translate }}</span>
+            <strong>{{ formatAmount(project.minimumInvestment, project.currency) }}</strong>
+          </div>
+          <div>
+            <span class="invl__stat-label">{{ 'INVESTMENTS.DETAILS.EXPECTED_RETURN' | translate }}</span>
+            <strong>{{ project.expectedReturnMin }}–{{ project.expectedReturnMax }}%</strong>
+          </div>
+          <div>
+            <span class="invl__stat-label">{{ 'INVESTMENTS.DETAILS.TERM' | translate }}</span>
+            <strong>{{ project.investmentTermMonths }} {{ 'INVESTMENTS.DETAILS.MONTHS' | translate }}</strong>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <nav class="invl__pagination" *ngIf="!loading() && totalPages() > 1" aria-label="pagination">
+    <button type="button" class="btn btn--outline btn--sm" [disabled]="!hasPrevious()" (click)="prevPage()">‹</button>
+    <span class="invl__page-info">{{ currentPage() }} / {{ totalPages() }}</span>
+    <button type="button" class="btn btn--outline btn--sm" [disabled]="!hasNext()" (click)="nextPage()">›</button>
+  </nav>
+</div>

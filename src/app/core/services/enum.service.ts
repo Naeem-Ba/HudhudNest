@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { firstValueFrom, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { BackendApiService } from '../api/backend-api.service';
+import { LookupsApiService } from '../api/lookups-api.service';
 export interface EnumItem {
   Id: number | string;
   Key: string;
@@ -11,6 +12,8 @@ export interface EnumItem {
 export class EnumService {
   private readonly endpoint = '/enums';
   private readonly cache = new Map<string, EnumItem[]>();
+  private readonly inflight = new Map<string, Promise<void>>();
+  private readonly lookups = inject(LookupsApiService);
 
   /**
    * UI still uses the older German group names, while the backend now exposes
@@ -27,22 +30,58 @@ export class EnumService {
     PROPERTYCONDITION: 'PropertyCondition',
     PROPERTYSTATUS: 'PropertyStatus',
     ENERGYEFFICIENCY: 'EnergyEfficiency',
-    HEATINGTYPE: 'HeatingType'
+    HEATINGTYPE: 'HeatingType',
+    // Dynamic listing form (ListingType × PropertyType redesign, Syrian
+    // market) — "OwnershipType" is the product-facing name for the backend's
+    // LegalStatusType, see EnumController's doc comment.
+    OWNERSHIPTYPE: 'OwnershipType',
+    AREAUNIT: 'AreaUnit',
+    FURNISHINGSTATUS: 'FurnishingStatus',
+    RENTALDURATIONTYPE: 'RentalDurationType'
   };
 
   constructor(private readonly api: BackendApiService) {}
 
+  /** Loads every group. Not called at startup any more (see app.config.ts); screens use ensureLoaded(). */
   async loadAll(): Promise<void> {
-    const groups = ['STADT', 'ZUSTAND', 'STATUS', 'ENERGIEAUSWEISTYP', 'HEIZUNG', 'LISTINGTYPE'];
+    const groups = [
+      'STADT', 'ZUSTAND', 'STATUS', 'ENERGIEAUSWEISTYP', 'HEIZUNG', 'LISTINGTYPE',
+      'OWNERSHIPTYPE', 'AREAUNIT', 'FURNISHINGSTATUS', 'RENTALDURATIONTYPE'
+    ];
     await Promise.all(groups.map(group => this.loadGroup(group)));
   }
 
-  private async loadGroup(group: string): Promise<void> {
+  /**
+   * Loads (or re-loads) only the groups that have no usable list yet. A group whose
+   * startup fetch failed is deliberately NOT cached (see loadGroup), so screens whose
+   * required dropdowns depend on an enum — e.g. the property form's OwnershipType /
+   * FurnishingStatus — call this instead of trusting the one-shot APP_INITIALIZER
+   * preload, which used to leave them empty until a full page reload.
+   */
+  async ensureLoaded(groups: string[]): Promise<void> {
+    await Promise.all(
+      groups
+        .filter(group => this.getList(group).length === 0)
+        .map(group => this.loadGroup(group))
+    );
+  }
+
+  private loadGroup(group: string): Promise<void> {
+    const key = group.toUpperCase();
+    const pending = this.inflight.get(key);
+    if (pending) return pending;
+
+    const request = this.fetchGroup(group).finally(() => this.inflight.delete(key));
+    this.inflight.set(key, request);
+    return request;
+  }
+
+  private async fetchGroup(group: string): Promise<void> {
     const normalized = group.toUpperCase();
     const backendGroup = this.backendGroupByUiGroup[normalized] ?? group;
 
     if (normalized === 'STADT') {
-      this.cache.set(normalized, this.localCities());
+      await this.loadCities();
       return;
     }
 
@@ -51,21 +90,21 @@ export class EnumService {
       return;
     }
 
-    try {
-      const data = await firstValueFrom(
-        this.api.get<unknown>(`${this.endpoint}/${backendGroup}`).pipe(
-          map(response => this.normalize(response)),
-          catchError(error => {
-            console.warn(`Enum '${backendGroup}' could not be loaded. Using empty list.`, error);
-            return of([] as EnumItem[]);
-          })
-        )
-      );
+    // A failed request must not be cached as an empty list: that made a single
+    // transient failure (cold API start, network blip) permanent for the session.
+    const data = await firstValueFrom(
+      this.api.get<unknown>(`${this.endpoint}/${backendGroup}`).pipe(
+        map(response => this.normalize(response)),
+        catchError(error => {
+          console.warn(`Enum '${backendGroup}' could not be loaded; it will be retried on next use.`, error);
+          return of(null);
+        })
+      )
+    );
 
+    if (data) {
       this.cache.set(normalized, data);
       this.cache.set(backendGroup.toUpperCase(), data);
-    } catch {
-      this.cache.set(normalized, []);
     }
   }
 
@@ -114,21 +153,50 @@ export class EnumService {
     return { Id: index, Key: '' };
   }
 
-  private localCities(): EnumItem[] {
+  /**
+   * ✅ إصلاح: كانت قائمة المدن (STADT) مكتوبة يدويًا (13 مدينة ثابتة) بدلاً من
+   * استهلاك GET /api/lookups/cities الموجود فعليًا في الباك اند (LookupsController).
+   * الآن تُجلب ديناميكيًا من الباك اند (وهي مبنية هناك من المدن الموجودة فعليًا
+   * ضمن العقارات الحالية)، مع الاحتفاظ بقائمة احتياطية محلية صغيرة تُستخدم فقط
+   * إذا فشل الطلب أو كانت قاعدة البيانات لا تزال فارغة (مثلاً عند أول تشغيل).
+   */
+  private async loadCities(): Promise<void> {
+    try {
+      const cities = await firstValueFrom(
+        this.lookups.getCities().pipe(
+          catchError(error => {
+            console.warn('Lookups \'cities\' could not be loaded. Falling back to local list.', error);
+            return of([] as { id: string; name: string }[]);
+          })
+        )
+      );
+
+      const items: EnumItem[] = cities.length > 0
+        ? cities.map(city => ({ Id: city.id, Key: city.name }))
+        : this.fallbackCities();
+
+      this.cache.set('STADT', items);
+    } catch {
+      this.cache.set('STADT', this.fallbackCities());
+    }
+  }
+
+  /** يُستخدم فقط كاحتياط عند تعذّر الوصول للباك اند أو عندما تكون قاعدة البيانات فارغة بعد. */
+  private fallbackCities(): EnumItem[] {
     return [
-      { Id: 'Damascus', Key: '\u062F\u0645\u0634\u0642' },
-      { Id: 'Aleppo', Key: '\u062D\u0644\u0628' },
-      { Id: 'Homs', Key: '\u062D\u0645\u0635' },
-      { Id: 'Hama', Key: '\u062D\u0645\u0627\u0629' },
-      { Id: 'Latakia', Key: '\u0627\u0644\u0644\u0627\u0630\u0642\u064A\u0629' },
-      { Id: 'Tartus', Key: '\u0637\u0631\u0637\u0648\u0633' },
-      { Id: 'Idlib', Key: '\u0625\u062F\u0644\u0628' },
-      { Id: 'Daraa', Key: '\u062F\u0631\u0639\u0627' },
-      { Id: 'Dusseldorf', Key: '\u062F\u0648\u0633\u0644\u062F\u0648\u0631\u0641' },
-      { Id: 'Essen', Key: '\u0625\u064A\u0633\u0646' },
-      { Id: 'Dortmund', Key: '\u062F\u0648\u0631\u062A\u0645\u0648\u0646\u062F' },
-      { Id: 'Gelsenkirchen', Key: '\u063A\u064A\u0644\u0633\u0646\u0643\u064A\u0631\u0634\u0646' },
-      { Id: 'Berlin', Key: '\u0628\u0631\u0644\u064A\u0646' }
+      { Id: 'Damascus', Key: 'دمشق' },
+      { Id: 'Aleppo', Key: 'حلب' },
+      { Id: 'Homs', Key: 'حمص' },
+      { Id: 'Hama', Key: 'حماة' },
+      { Id: 'Latakia', Key: 'اللاذقية' },
+      { Id: 'Tartus', Key: 'طرطوس' },
+      { Id: 'Idlib', Key: 'إدلب' },
+      { Id: 'Daraa', Key: 'درعا' },
+      { Id: 'Dusseldorf', Key: 'دوسلدورف' },
+      { Id: 'Essen', Key: 'إيسن' },
+      { Id: 'Dortmund', Key: 'دورتموند' },
+      { Id: 'Gelsenkirchen', Key: 'غيلسنكيرشن' },
+      { Id: 'Berlin', Key: 'برلين' }
     ];
   }
 }

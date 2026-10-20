@@ -1,134 +1,180 @@
-.kontakt-page {
+@use '../../../styles/auth-flow' as flow;
+@use '../../../styles/breakpoints' as bp;
+
+/* إعادة استخدام نفس نمط الحقول/الزر/السبينر الموحّد بصفحات auth
+   (login/phone-*) بدل اختراع نمط محلي جديد — يضمن اتساق بصري كامل. */
+.form-group { @include flow.form-group; }
+.contact-submit { @include flow.primary-btn; }
+.spinner { @include flow.spinner; }
+
+.contact-page {
+  min-height: calc(100vh - var(--navbar-height, 68px));
+  min-height: calc(100dvh - var(--navbar-height, 68px));
+  background: var(--page-bg);
+  padding-block: clamp(1.5rem, 4vw, 3rem);
+}
+
+.container {
+  max-width: 1080px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+/* ── رأس الصفحة ── */
+.contact-header {
+  border-bottom: none;
+  margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+
+  h1 {
+    margin: .35rem 0 .5rem;
+  }
+}
+
+.contact-header__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .8rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  color: var(--gold-text);
+  text-transform: uppercase;
+}
+
+/* ── التخطيط: نموذج + بطاقة معلومات جانبية ── */
+.contact-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.5rem;
   align-items: flex-start;
-  padding: clamp(1rem, 4vw, 2.5rem);
 }
 
-.kontakt-card,
-.contact-info {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, .08);
-  border: 1px solid #e2e8f0;
+@include bp.secondary-layout {
+  .contact-grid {
+    grid-template-columns: minmax(0, 1fr) 320px;
+  }
 }
 
-.kontakt-card {
-  padding: clamp(1.25rem, 4vw, 2rem);
+/* ── بطاقة النموذج ── */
+.contact-form-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl, 20px);
+  box-shadow: var(--shadow-sm);
+  padding: clamp(1.5rem, 4vw, 2.25rem);
 }
 
-.kontakt-card h1 {
-  margin: 0 0 .4rem;
-  font-size: clamp(1.5rem, 3vw, 2rem);
-}
-
-.intro {
-  margin: 0 0 1rem;
-  color: #64748b;
-  line-height: 1.7;
-}
-
-.alert {
+.contact-form {
   display: flex;
-  align-items: center;
-  gap: .5rem;
-  padding: .85rem 1rem;
-  border-radius: 12px;
-  margin-bottom: 1rem;
-  line-height: 1.5;
+  flex-direction: column;
+  gap: 1.1rem;
 }
 
-.alert.success {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #166534;
-}
-
-.alert.error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #b91c1c;
-}
-
-form {
+.form-row {
   display: grid;
-  gap: .45rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.1rem;
+
+  @include bp.max(560px) {
+    grid-template-columns: 1fr;
+  }
 }
 
-label {
-  margin-top: .75rem;
-  font-weight: 700;
-  color: #334155;
-}
-
-input,
-textarea {
-  width: 100%;
-  padding: .8rem 1rem;
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
-  font-size: 1rem;
-  transition: border-color .15s ease, box-shadow .15s ease;
-}
-
-input:focus,
-textarea:focus {
-  border-color: #2563eb;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
-}
-
-textarea {
+.contact-form textarea {
   resize: vertical;
   min-height: 140px;
+  line-height: 1.7;
 }
 
-.field-error {
+.contact-submit {
+  margin-top: .25rem;
+  width: auto;
+  padding-inline: 2rem;
+  align-self: flex-start;
+
+  @include bp.max(560px) {
+    width: 100%;
+    align-self: stretch;
+  }
+}
+
+/* ── بطاقة معلومات التواصل ── */
+.contact-info-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl, 20px);
+  box-shadow: var(--shadow-sm);
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--gray-900);
+  }
+}
+
+.contact-info-row {
   display: flex;
   align-items: center;
-  gap: .35rem;
-  color: #dc2626;
-  font-size: .875rem;
-  line-height: 1.45;
-}
+  gap: .75rem;
+  padding: .65rem;
+  border-radius: var(--r-md);
+  text-decoration: none;
+  color: inherit;
+  transition: background .15s ease;
 
-.send-btn {
-  margin-top: 1rem;
-  background: #2563eb;
-  color: white;
-  padding: .9rem 1rem;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 700;
-  transition: background .18s ease, transform .08s ease;
-}
-
-.send-btn:hover:not(:disabled) {
-  background: #1d4ed8;
-  transform: translateY(-1px);
-}
-
-.contact-info {
-  padding: 1.25rem;
-  color: #334155;
-  line-height: 1.7;
-
-  h3,
-  h4 {
-    margin: 0 0 .5rem;
-    color: #0f172a;
+  &:hover {
+    background: var(--gold-soft);
   }
 
-  p {
-    margin: 0 0 .85rem;
+  &__icon {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gold-soft);
+    color: var(--gold-text);
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: .1rem;
+    min-width: 0;
+  }
+
+  &__label {
+    font-size: .74rem;
+    font-weight: 700;
+    color: var(--gray-500);
+  }
+
+  &__value {
+    font-size: .92rem;
+    font-weight: 600;
+    color: var(--gray-900);
     overflow-wrap: anywhere;
   }
 }
 
-@media (min-width: 900px) {
-  .kontakt-page {
-    grid-template-columns: minmax(0, 1fr) 320px;
-  }
+.contact-info-note {
+  margin: 0;
+  padding-top: .5rem;
+  border-top: 1px solid var(--border);
+  font-size: .8rem;
+  line-height: 1.6;
+  color: var(--gray-500);
+}
+
+.provider-join-notice {
+  margin-bottom: 1rem;
+
+  a { font-weight: 700; margin-inline-start: .35rem; }
 }

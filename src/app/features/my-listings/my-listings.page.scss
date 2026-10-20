@@ -1,5 +1,7 @@
 /* src/app/features/my-listings/my-listings.page.scss */
 
+@use '../../../styles/breakpoints' as bp;
+
 .my-listings-page {
   width: min(1180px, 100%);
   margin-inline: auto;
@@ -17,30 +19,51 @@
   h1 {
     margin: 0;
     font-size: clamp(1.4rem, 3vw, 2rem);
-    color: #0f172a;
+    color: var(--gray-900);
   }
 }
 
+/* ── Quota summary ────────────────────────────────────────── */
+.quota-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--gray-700, var(--gray-900));
+  font-size: 0.95rem;
+  width: fit-content;
+}
+
+.quota-summary__icon {
+  font-size: 1rem;
+}
+
 /* ── Grid ─────────────────────────────────────────────────── */
+.listings-grid > * { min-width: 0; }
+
 .listings-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.25rem;
 
-  @media (min-width: 640px) { grid-template-columns: repeat(2, 1fr); }
-  @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); }
+  @include bp.min(640px) { grid-template-columns: repeat(2, 1fr); }
+  @include bp.min(1024px) { grid-template-columns: repeat(3, 1fr); }
 }
 
 /* ── Card ─────────────────────────────────────────────────── */
 .listing-card {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
   border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, .07);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
   transition: box-shadow .18s;
 
-  &:hover { box-shadow: 0 14px 32px rgba(15, 23, 42, .12); }
+  &:hover { box-shadow: var(--shadow-md); }
 
   &.expiring { border-color: #fbbf24; }
 }
@@ -49,13 +72,32 @@
   position: relative;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  background: #f1f5f9;
+  background: var(--gray-100);
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
+}
+
+.status-tag {
+  position: absolute;
+  top: .5rem;
+  inset-inline-start: .5rem;
+}
+
+.status-control {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-block: .5rem;
+  font-size: .85rem;
+
+  flex-wrap: wrap;
+
+  label { font-weight: 600; color: var(--gray-600); }
+  select { flex: 1 1 9rem; min-width: 0; max-width: 100%; }
 }
 
 .status-badge {
@@ -67,8 +109,8 @@
   font-size: .78rem;
   font-weight: 700;
 
-  &--published { background: #dcfce7; color: #166534; }
-  &--draft     { background: #f1f5f9; color: #475569; }
+  &--published { background: var(--success-soft); color: var(--success); }
+  &--draft     { background: var(--gray-100); color: var(--gray-600); }
 }
 
 .card-body {
@@ -76,7 +118,7 @@
   display: grid;
   gap: .6rem;
 
-  h2 { margin: 0; font-size: .95rem; color: #0f172a; line-height: 1.45; }
+  h2 { margin: 0; font-size: .95rem; color: var(--gray-900); line-height: 1.45; }
 }
 
 .meta-grid {
@@ -85,30 +127,60 @@
   gap: .25rem .75rem;
   font-size: .88rem;
 
-  dt { color: #64748b; font-weight: 500; }
-  dd { margin: 0; color: #0f172a; }
+  dt { color: var(--gray-500); font-weight: 500; }
+  dd { margin: 0; color: var(--gray-900); }
+}
+
+.taken-down-note {
+  margin: 0;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--danger);
+  background: var(--danger-soft);
+  padding: .35rem .6rem;
+  border-radius: 8px;
 }
 
 .expiry-warning {
   margin: 0;
   font-size: .85rem;
-  color: #b45309;
-  background: #fffbeb;
+  color: var(--warning);
+  background: var(--warning-soft);
   padding: .35rem .6rem;
   border-radius: 8px;
 }
 
+/* ملاحظة التمييز المدفوع. رموز التصميم لا ألوان سداسية — على عكس
+   .expiry-warning أعلاه (كانت ديناً قائمًا بألوان ثابتة، أُصلح الآن أيضًا
+   بربطه برموز --warning/--warning-soft العالمية المتوافقة مع الوضع الداكن). */
+.featured-note {
+  margin: 0;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--badge-featured-text);
+  background: var(--badge-featured-bg);
+  padding: .35rem .6rem;
+  border-radius: 8px;
+}
+
+/* طلب تمييز بانتظار تأكيد الدفع — محايد، لا يوحي بأن التمييز فعّال. */
+.featured-note--pending {
+  color: var(--gray-500);
+  background: var(--warning-soft, var(--gray-100));
+}
+
 .created-at {
   font-size: .82rem;
-  color: #94a3b8;
+  color: var(--gray-400);
 }
 
 .card-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: .5rem;
   margin-top: .25rem;
 
-  @media (max-width: 420px) { flex-direction: column; }
+  @include bp.small-mobile { flex-direction: column; }
 }
 
 /* ── Buttons ─────────────────────────────────────────────── */
@@ -128,10 +200,12 @@
 
   &:disabled { opacity: .5; cursor: default; }
 
-  &--primary   { background: #2563eb; color: #fff; &:hover:not(:disabled) { background: #1d4ed8; } }
-  &--secondary { background: #f1f5f9; color: #334155; &:hover:not(:disabled) { background: #e2e8f0; } }
-  &--danger    { background: #ef4444; color: #fff; &:hover:not(:disabled) { background: #dc2626; } }
-  &--ghost     { background: transparent; color: #64748b; border: 1px solid #e2e8f0; }
+  &--primary   { background: var(--primary); color: var(--on-primary); &:hover:not(:disabled) { background: var(--primary-dark); } }
+  &--secondary { background: var(--gray-100); color: var(--gray-700); &:hover:not(:disabled) { background: var(--gray-200); } }
+  &--danger    { background: #ef4444; color: #fff; &:hover:not(:disabled) { background: var(--danger); } }
+  &--ghost     { background: transparent; color: var(--gray-500); border: 1px solid var(--border); }
+  &--gold      { background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%); color: var(--navy); &:hover:not(:disabled) { opacity: .9; } }
+  &--publish   { background: var(--success); color: #fff; &:hover:not(:disabled) { background: #15803d; } }
 }
 
 /* ── State Cards ─────────────────────────────────────────── */
@@ -141,14 +215,14 @@
   gap: .75rem;
   padding: 1rem;
   border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, .07);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
 
   p { flex: 1; margin: 0; }
 }
 
 .error-state {
-  border: 1px solid #fecaca;
-  background: #fff7f7;
-  color: #b91c1c;
+  border: 1px solid rgba(220,38,38,.2);
+  background: var(--danger-soft);
+  color: var(--danger);
 }

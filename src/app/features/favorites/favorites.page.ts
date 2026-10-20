@@ -12,6 +12,8 @@ import { FavoritesApiService } from '../../core/api/favorites-api.service';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
+import { FavoriteToggleButtonComponent } from '../../shared/ui/favorite-toggle-button.component';
+import { uiNumberLocale } from '../../core/i18n/ui-language';
 
 // ✅ FIX #9: Interface محددة بدلاً من any
 export interface FavoriteItem {
@@ -82,7 +84,8 @@ interface FavoritePropertyNested {
     TranslateModule,
     EmptyStateComponent,
     LoadingSpinnerComponent,
-    ImageFallbackDirective
+    ImageFallbackDirective,
+    FavoriteToggleButtonComponent
   ],
   template: `
     <section class="page">
@@ -118,20 +121,30 @@ interface FavoritePropertyNested {
         <article
           class="card"
           *ngFor="let favorite of favorites(); trackBy: trackById">
-          <img
-            class="thumb"
-            [src]="getImage(favorite)"
-            [alt]="getTitle(favorite)"
-            loading="lazy"
-            appImageFallback="/images/no-image.svg"
-          />
+          <div class="thumb-wrap">
+            <img
+              class="thumb"
+              [src]="getImage(favorite)"
+              [alt]="getTitle(favorite)"
+              loading="lazy"
+              appImageFallback="/images/no-image.svg"
+            />
+            <!-- The same shared heart as everywhere else: it is red here (every card on this page is
+                 a favorite) and clicking it removes the property from the favorites. -->
+            <app-favorite-toggle-button
+              *ngIf="getPropertyId(favorite) as id"
+              class="card-fav"
+              [propertyId]="id"
+              (changed)="onFavoriteChanged(id, $event)"
+            ></app-favorite-toggle-button>
+          </div>
 
           <div class="card-body">
             <h2 class="line-clamp-2">{{ getTitle(favorite) }}</h2>
             <p class="line-clamp-1">📍 {{ getSubtitle(favorite) }}</p>
             <strong>{{ getPrice(favorite) }}</strong>
             <a *ngIf="getPropertyId(favorite) as id"
-               [routerLink]="['/wohnungen', id]">
+               [routerLink]="['/properties', id]">
               {{ 'APARTMENTS.DETAILS' | translate }}
             </a>
           </div>
@@ -143,7 +156,7 @@ interface FavoritePropertyNested {
     .page { padding: clamp(1rem, 3vw, 2rem); }
     .page-header { margin-bottom: 1rem; }
     .page-header h1 { margin: 0 0 .35rem; font-size: clamp(1.6rem, 3vw, 2.2rem); }
-    .page-header p { margin: 0; color: #64748b; line-height: 1.7; }
+    .page-header p { margin: 0; color: var(--gray-500); line-height: 1.7; }
 
     .favorites-grid {
       display: grid;
@@ -151,23 +164,34 @@ interface FavoritePropertyNested {
       gap: 1rem;
     }
     .card, .state-card {
-      background: #fff;
+      background: var(--surface);
       border-radius: 16px;
-      box-shadow: 0 12px 30px rgba(15,23,42,.08);
-      border: 1px solid #e2e8f0;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border);
       overflow: hidden;
     }
+    .thumb-wrap { position: relative; }
     .thumb {
+      display: block;
       width: 100%;
       aspect-ratio: 16/10;
       object-fit: cover;
-      background: #f1f5f9;
+      background: var(--gray-100);
+    }
+    .card-fav {
+      --icon-btn-size: 40px;
+      display: block;
+      line-height: 0;
+      position: absolute;
+      top: .6rem;
+      inset-inline-end: .6rem;
+      z-index: 1;
     }
     .card-body { display: grid; gap: .55rem; padding: 1rem; }
-    h2, p { margin: 0; }
-    p { color: #64748b; line-height: 1.6; }
-    strong { color: #0f766e; overflow-wrap: anywhere; }
-    a { width: fit-content; color: #2563eb; font-weight: 700; text-decoration: none; }
+    h2, p { margin: 0; color: var(--gray-800); }
+    p { color: var(--gray-500); line-height: 1.6; }
+    strong { color: var(--badge-rent-text); overflow-wrap: anywhere; }
+    a { width: fit-content; color: var(--primary-text); font-weight: 700; text-decoration: none; }
     a:hover { text-decoration: underline; }
 
     .state-card {
@@ -175,14 +199,14 @@ interface FavoritePropertyNested {
       align-items: center;
       gap: .75rem;
       padding: 1rem;
-      color: #b91c1c;
-      background: #fff7f7;
-      border-color: #fecaca;
+      color: var(--danger);
+      background: var(--danger-soft);
+      border-color: rgba(220,38,38,.2);
     }
     .state-card p { flex: 1; color: inherit; }
     .state-card button {
       border: 0;
-      background: #dc2626;
+      background: var(--danger);
       color: #fff;
       border-radius: 10px;
       padding: .6rem .9rem;
@@ -223,6 +247,12 @@ export class FavoritesPage {
         this.loading.set(false);
       }
     });
+  }
+
+  /** The heart on a card was clicked: once the server confirmed the removal the card goes away at once. */
+  onFavoriteChanged(propertyId: string, isFavorite: boolean): void {
+    if (isFavorite) return;
+    this.favorites.update(items => items.filter(item => this.getPropertyId(item) !== propertyId));
   }
 
   // ✅ FIX #9: المعامل نوعه FavoriteItem بدلاً من any
@@ -277,13 +307,13 @@ export class FavoritesPage {
     if (!price) return 'السعر غير محدد';
 
     try {
-      return new Intl.NumberFormat('ar', {
+      return new Intl.NumberFormat(uiNumberLocale(), {
         style: 'currency',
         currency,
         maximumFractionDigits: 0
       }).format(Number(price));
     } catch {
-      return `${Number(price).toLocaleString('ar')} ${currency}`;
+      return `${Number(price).toLocaleString(uiNumberLocale())} ${currency}`;
     }
   }
 

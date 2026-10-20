@@ -1,0 +1,128 @@
+<section class="flow-page">
+  <div class="flow-card">
+    <header class="flow-header">
+      <h1>{{ 'AUTH.PHONE_REGISTER.TITLE' | translate }}</h1>
+      <p>{{ 'AUTH.PHONE_REGISTER.SUBTITLE' | translate }}</p>
+    </header>
+
+    <div class="step-indicator">
+      <div class="step" [class.step--active]="step() === 'phone'" [class.step--done]="step() === 'details'">
+        <span class="step__dot">1</span>
+      </div>
+      <span class="step__line"></span>
+      <div class="step" [class.step--active]="step() === 'details'">
+        <span class="step__dot">2</span>
+      </div>
+    </div>
+
+    <!-- Step 1: Phone number -->
+    <form *ngIf="step() === 'phone'" [formGroup]="phoneForm" (ngSubmit)="sendOtp()" novalidate class="flow-form">
+      <div class="form-group">
+        <label for="phoneNumber">{{ 'AUTH.PHONE' | translate }}</label>
+        <input
+          id="phoneNumber"
+          type="tel"
+          formControlName="phoneNumber"
+          placeholder="+963xxxxxxxxx"
+          dir="ltr"
+          autocomplete="tel"
+        />
+        <p class="field-hint">{{ 'AUTH.PHONE_HINT' | translate }}</p>
+        <app-form-error
+          [control]="phoneForm.controls.phoneNumber"
+          [submitted]="submitted()"
+          [messages]="{ pattern: ('AUTH.ERRORS.PHONE_INVALID' | translate) }"
+        ></app-form-error>
+      </div>
+
+        <app-otp-channel-picker
+          *ngIf="channels.showPicker()"
+          [options]="channels.options()"
+          [selected]="channels.selected()"
+          [disabled]="loading()"
+          (selectedChange)="channels.select($event)"
+        ></app-otp-channel-picker>
+
+      <p class="alert alert--error" role="alert" *ngIf="error()">⚠️ {{ error() }}</p>
+
+      <button type="submit" class="btn-primary" [disabled]="loading()">
+        <span class="spinner" *ngIf="loading()"></span>
+        {{ loading() ? ('AUTH.SENDING' | translate) : ('AUTH.PHONE_REGISTER.SEND_OTP' | translate) }}
+      </button>
+    </form>
+
+    <!-- Step 2: OTP + password + name -->
+    <form *ngIf="step() === 'details'" [formGroup]="detailsForm" (ngSubmit)="submitDetails()" novalidate class="flow-form">
+      <p class="phone-confirm">
+        {{ 'AUTH.PHONE_REGISTER.OTP_SENT_TO' | translate }}
+        <strong dir="ltr">{{ maskedPhone }}</strong>
+        <button type="button" class="link-btn" (click)="changePhoneNumber()">
+          {{ 'AUTH.CHANGE_PHONE_NUMBER' | translate }}
+        </button>
+      </p>
+
+      <div class="form-group">
+        <label for="code">{{ 'AUTH.OTP_CODE' | translate }}</label>
+        <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="otp-input" formControlName="code" dir="ltr" />
+        <app-form-error [control]="detailsForm.controls.code" [submitted]="submitted()"></app-form-error>
+      </div>
+
+      <p class="field-hint no-code-hint">{{ 'AUTH.PHONE_NO_CODE_HINT' | translate }}</p>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">{{ 'AUTH.FIRST_NAME' | translate }}</label>
+          <input id="firstName" type="text" formControlName="firstName" autocomplete="given-name" />
+          <app-form-error [control]="detailsForm.controls.firstName" [submitted]="submitted()"></app-form-error>
+        </div>
+        <div class="form-group">
+          <label for="lastName">{{ 'AUTH.LAST_NAME' | translate }}</label>
+          <input id="lastName" type="text" formControlName="lastName" autocomplete="family-name" />
+          <app-form-error [control]="detailsForm.controls.lastName" [submitted]="submitted()"></app-form-error>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">{{ 'AUTH.PASSWORD' | translate }}</label>
+        <input id="password" type="password" formControlName="password" autocomplete="new-password" />
+        <p class="field-hint">{{ 'AUTH.PASSWORD_MIN_HINT' | translate }}</p>
+        <app-form-error
+          [control]="detailsForm.controls.password"
+          [submitted]="submitted()"
+          [messages]="{ minlength: ('AUTH.ERRORS.PASSWORD_MIN' | translate) }"
+        ></app-form-error>
+      </div>
+
+      <app-consent-checkbox
+        [checked]="privacyConsentAccepted()"
+        (checkedChange)="privacyConsentAccepted.set($event)">
+      </app-consent-checkbox>
+
+      <p class="alert alert--error" role="alert" *ngIf="error()">⚠️ {{ error() }}</p>
+
+      <button type="submit" class="btn-primary" [disabled]="loading() || !privacyConsentAccepted()">
+        <span class="spinner" *ngIf="loading()"></span>
+        {{ loading() ? ('AUTH.PHONE_REGISTER.CREATING' | translate) : ('AUTH.PHONE_REGISTER.CREATE_ACCOUNT' | translate) }}
+      </button>
+
+        <app-otp-channel-fallback
+          *ngIf="channels.showPicker()"
+          [sent]="sentChannel()"
+          [alternatives]="channels.alternativesTo(sentChannel())"
+          [disabled]="loading()"
+          (pick)="resendVia($event)"
+        ></app-otp-channel-fallback>
+
+      <button type="button" class="btn-ghost" [disabled]="resendDisabled" (click)="resendOtp()">
+        {{ resendCooldown() > 0
+            ? (('AUTH.RESEND_OTP_IN' | translate) + ' ' + resendCooldown() + 's')
+            : ('AUTH.RESEND_OTP' | translate) }}
+      </button>
+    </form>
+
+    <p class="footer-link">
+      {{ 'AUTH.ALREADY_HAVE_ACCOUNT' | translate }}
+      <a routerLink="/auth/login">{{ 'AUTH.LOGIN_TITLE' | translate }}</a>
+    </p>
+  </div>
+</section>

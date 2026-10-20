@@ -8,13 +8,13 @@
 //   POST   /api/Visits                       ← طلب زيارة جديدة
 //   PUT    /api/Visits/{id}/confirm          ← قبول زيارة
 //   PUT    /api/Visits/{id}/decline          ← رفض زيارة
+//   PUT    /api/Visits/{id}/complete         ← إغلاق دورة حياة الزيارة (مالك العقار فقط)
 //   DELETE /api/Visits/{id}                  ← إلغاء زيارة
 
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { BackendApiService } from '../api/backend-api.service';
 import { ApiPagedResult, unwrapItems } from '../models/api.model';
-import { apiToCamelCase } from '../adapters/api-naming.adapter';
 import {
   CreateVisitRequest,
   VisitDto,
@@ -92,6 +92,42 @@ export class VisitService {
   }
 
   /**
+   * ✅ إضافة: اقتراح موعد بديل — للمالك فقط. بدل تأكيد/رفض موعد الزائر كما هو،
+   * يقترح المالك موعدًا مختلفًا؛ الزيارة تنتقل لحالة RescheduleProposed
+   * بانتظار قبول/رفض الزائر (acceptReschedule/declineReschedule أدناه).
+   */
+  proposeAlternate(visitId: string, proposedAt: string, note?: string | null): Observable<void> {
+    return this.api.put<void>(`${this.endpoint}/${visitId}/propose-alternate`, {
+      ProposedAt: proposedAt,
+      Note: note ?? null
+    });
+  }
+
+  /**
+   * ✅ إضافة: قبول الموعد البديل الذي اقترحه المالك — للزائر (صاحب الطلب) فقط.
+   */
+  acceptReschedule(visitId: string): Observable<void> {
+    return this.api.put<void>(`${this.endpoint}/${visitId}/accept-reschedule`);
+  }
+
+  /**
+   * ✅ إضافة: رفض الموعد البديل الذي اقترحه المالك — للزائر (صاحب الطلب) فقط.
+   */
+  declineReschedule(visitId: string): Observable<void> {
+    return this.api.put<void>(`${this.endpoint}/${visitId}/decline-reschedule`);
+  }
+
+  /**
+   * ✅ إضافة: تمييز زيارة مؤكَّدة (Confirmed) كمكتملة — لمالك العقار فقط.
+   * الباك اند (CompleteVisitCommandHandler) يتحقق من الملكية ويرفض الطلب بـ 403
+   * لغير المالك؛ كانت هذه النقطة موجودة بالباك اند دون أي استدعاء من الواجهة،
+   * ما كان يمنع إغلاق دورة حياة الزيارة (تبقى عالقة على Confirmed للأبد).
+   */
+  completeVisit(visitId: string): Observable<void> {
+    return this.api.put<void>(`${this.endpoint}/${visitId}/complete`);
+  }
+
+  /**
    * إلغاء زيارة — للزائر (صاحب الطلب) فقط.
    */
   cancelVisit(visitId: string): Observable<void> {
@@ -99,7 +135,7 @@ export class VisitService {
   }
 
   private toVisit(raw: unknown): VisitDto {
-    const v = apiToCamelCase<Record<string, unknown>>(raw);
+    const v = (raw as Record<string, unknown>);
     return {
       id: String(v['id'] ?? ''),
       propertyId: String(v['propertyId'] ?? ''),

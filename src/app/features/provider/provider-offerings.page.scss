@@ -1,0 +1,26 @@
+@use '../../../styles/breakpoints' as bp;
+.feature-page{max-width:900px;margin:0 auto;padding:clamp(1rem,3vw,2rem);display:grid;gap:1rem}
+.back-link{color:var(--primary-text);font-weight:700;text-decoration:none}
+.page-header h1{margin:.2rem 0;color:var(--gray-800)}.page-header p{margin:0;color:var(--gray-500)}
+.callout{border-radius:12px;padding:.8rem 1rem;margin:0}.callout--warn{background:var(--warning-soft,#fef3c7)}
+.scope{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:.9rem 1rem;display:grid;gap:.5rem}
+.scope div{display:flex;flex-wrap:wrap;gap:.4rem .6rem;align-items:center}
+.muted{color:var(--gray-500);font-size:.85rem;margin:0}
+.tag{display:inline-block;background:var(--gray-100);border-radius:999px;padding:.12rem .55rem;font-size:.8rem}
+.tag--off{background:var(--danger-soft);color:var(--danger)}
+.toolbar{display:flex;justify-content:flex-end}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1rem;display:grid;gap:.8rem}
+.panel h2{margin:0;font-size:1.1rem}
+.panel label{display:grid;gap:.3rem;font-weight:700;color:var(--gray-700);font-size:.9rem}
+.panel input:not([type=checkbox]),.panel textarea,.panel select{border:1px solid var(--gray-300);border-radius:8px;padding:.55rem;font:inherit;font-size:16px;background:var(--surface);color:var(--gray-900)}
+.check{display:flex!important;grid-auto-flow:column;align-items:center;gap:.5rem;font-weight:400!important}
+.err{color:var(--danger);font-size:.85rem;font-weight:400}
+.cards{list-style:none;margin:0;padding:0;display:grid;gap:.8rem}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1rem;display:grid;gap:.5rem}
+.card__main{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+.actions{display:flex;gap:.6rem;flex-wrap:wrap}
+.btn{border:0;border-radius:10px;padding:.6rem 1rem;font:inherit;font-weight:700;cursor:pointer}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.success{background:var(--success);color:#fff}.secondary{background:var(--gray-100);color:var(--gray-700)}
+.state{padding:1.5rem;text-align:center;background:var(--surface);border:1px dashed var(--gray-300);border-radius:16px}.state.error{color:var(--danger)}
+@include bp.mobile{.actions .btn,.toolbar .btn{flex:1 1 100%}}

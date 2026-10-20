@@ -26,7 +26,7 @@
   &__title {
     font-size: clamp(1.3rem, 2.5vw, 1.75rem);
     font-weight: 800;
-    color: var(--navy);
+    color: var(--gray-900);
     margin: 0 0 .2rem;
   }
 
@@ -85,7 +85,17 @@
   @include bp.tablet {
     inset-inline-start: unset;
     inset-inline-end: 0;
-    transform: translateX(105%);
+
+    // Mobile UX audit (Phase 7) — BLOCKER: under dir="rtl", inset-inline-end
+    // resolves to physical `left: 0` (same as the mobile-drawer panel in
+    // navbar.component.scss, confirmed live), so the closed-state transform
+    // must move the panel further left (negative X) to clear the viewport.
+    // The previous `translateX(105%)` pushed it right *from that left:0
+    // anchor*, landing it back on top of the property list instead of off
+    // -screen — real horizontal overflow on every mobile RTL load of this
+    // P0 screen, only hidden from view by the global `overflow-x: clip`
+    // safety net in styles.scss (which clips, not fixes, the root cause).
+    transform: translateX(-105%);
 
     &.filter-sidebar--open {
       transform: translateX(0);
@@ -106,7 +116,7 @@
   gap: .5rem;
   font-size: 1rem;
   font-weight: 700;
-  color: var(--navy);
+  color: var(--gray-900);
   margin: 0;
 }
 
@@ -187,9 +197,29 @@
 
   &--active {
     background: var(--surface);
-    color: var(--primary);
+    color: var(--gold-text);
     box-shadow: var(--shadow-xs);
   }
+}
+
+.currency-select {
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+  margin-top: .5rem;
+}
+
+.filter-hint {
+  margin: 0;
+  font-size: .75rem;
+  color: var(--gray-500);
+}
+
+.filter-error {
+  margin: .35rem 0 0;
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--danger);
 }
 
 .range-inputs {
@@ -198,6 +228,31 @@
   gap: .5rem;
 
   input { flex: 1; }
+}
+
+/* ✅ إضافة: فلتر المرافق (Amenities) */
+.amenity-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+}
+
+.amenity-chip {
+  padding: .35rem .75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill, 999px);
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--surface);
+  color: var(--gray-600);
+  transition: all .15s;
+
+  &--active {
+    background: var(--gold-soft);
+    color: var(--gold-text);
+    border-color: var(--gold);
+  }
 }
 
 .range-sep {
@@ -245,8 +300,8 @@
   justify-content: center;
   width: 18px;
   height: 18px;
-  background: var(--primary);
-  color: #fff;
+  background: var(--gold);
+  color: #1a1206;
   border-radius: 50%;
   font-size: .65rem;
   font-weight: 700;
@@ -256,6 +311,9 @@
   font-size: .82rem;
   color: var(--gray-500);
   margin: 0;
+  // Never let the row's flex-shrink squeeze the count into a one-word-per-line column.
+  flex: none;
+  white-space: nowrap;
 }
 
 /* ── Main Content ── */
@@ -274,6 +332,10 @@
 
 /* ── Property Card ── */
 .property-card {
+  // Was an <article> (block by default) — now a real <a href> for crawlability, which defaults
+  // to inline. display: block restores the exact same box behavior the grid layout below
+  // already assumes (color/text-decoration are reset globally for every <a>, see styles.scss).
+  display: block;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
@@ -286,6 +348,19 @@
     box-shadow: var(--shadow-lg);
     border-color: var(--gray-200);
     outline: none;
+  }
+
+  /* إعلان مميّز مدفوع — إطار ذهبي واضح على البطاقة نفسها، لا يتعدّى الشارة
+     (badge--featured في styles.scss) فقط. مقصور على هذه البطاقة وحدها فلا
+     يغيّر تخطيط الشبكة أو حجم البطاقات الأخرى — border يبقى ضمن حدود
+     الصندوق (border-box هو الوضع الافتراضي هنا) فلا يزاح المحتوى. */
+  &--featured {
+    border: 2px solid var(--gold);
+    box-shadow: 0 0 0 1px rgba(181, 135, 46, .25);
+
+    &:hover, &:focus-within {
+      border-color: var(--gold);
+    }
   }
 
   &__image {
@@ -301,10 +376,17 @@
       transition: transform .35s ease;
     }
 
-    .badge {
+    /* غلاف الشارات بدل تموضع كل شارة على حدة: البطاقة قد تحمل شارتين (النوع
+       والتمييز المدفوع)، وتموضعهما المطلق منفردتين كان يكدّسهما فوق بعضهما. */
+    .card-badges {
       position: absolute;
       top: .75rem;
       inset-inline-start: .75rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: .35rem;
+      z-index: 1;
     }
   }
 
@@ -354,10 +436,17 @@
     margin-top: .15rem;
   }
 
+  /* السعر المكافئ التقريبي بعملة الفلتر لإعلان معلن بعملة أخرى (≈): يوضح لماذا ظهر ضمن النتائج. */
+  &__equivalent {
+    font-size: .75rem;
+    font-weight: 600;
+    color: var(--gray-500);
+  }
+
   &__price {
     font-size: 1.05rem;
     font-weight: 800;
-    color: var(--navy);
+    color: var(--gray-900);
 
     small {
       font-size: .72rem;
@@ -368,29 +457,55 @@
   }
 }
 
-/* Favorite Button */
-.fav-btn {
+/* ── Geo-search ("بالقرب مني") ── */
+.geo-search-group {
+  padding: 0 0 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+}
+
+.geo-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  justify-content: center;
+  padding: .65rem 1rem;
+  border-radius: var(--r-md, 10px);
+  border: 1px solid var(--gold);
+  background: var(--gold-soft);
+  color: var(--gold-text);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+
+  &:disabled { opacity: .6; cursor: default; }
+
+  &--active {
+    background: var(--gold);
+    color: #1a1206;
+  }
+}
+
+.radius-control {
+  margin-top: .75rem;
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--gold);
+  }
+}
+
+/* Favorite Button — app-favorite-toggle-button يحمل تصميمه الخاص داخلياً؛
+   هذا فقط يتحكم بموضعه فوق صورة البطاقة. */
+.fav-btn-wrapper {
+  --icon-btn-size: 40px;
+  display: block;
+  line-height: 0;
   position: absolute;
   top: .6rem;
   inset-inline-end: .6rem;
-  width: 34px;
-  height: 34px;
-  background: rgba(255,255,255,.9);
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--gray-400);
-  transition: all .15s;
-  backdrop-filter: blur(4px);
-
-  &:hover {
-    color: var(--danger);
-    background: #fff;
-    transform: scale(1.1);
-  }
+  z-index: 2;
 }
 
 /* ── Pagination ── */
@@ -417,8 +532,8 @@
     transition: all .15s;
 
     &:hover:not(:disabled) {
-      border-color: var(--primary);
-      color: var(--primary);
+      border-color: var(--gold);
+      color: var(--gold-text);
     }
 
     &:disabled {
@@ -454,9 +569,9 @@
     }
 
     &--active {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: #fff;
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #1a1206;
     }
   }
 }
@@ -473,9 +588,20 @@
     align-items: stretch;
   }
 
-  .prop-list-header__inner > .btn,
-  .mobile-filter-bar .btn {
+  .prop-list-header__inner > .btn {
     width: 100%;
+  }
+
+  // The filter button shares its row with the result count, so it fills the remaining width
+  // instead of a hard 100% that forced the count to shrink to ~33px.
+  .mobile-filter-bar {
+    gap: .75rem;
+    align-items: center;
+  }
+
+  .mobile-filter-bar .btn {
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   .range-inputs {
@@ -486,4 +612,11 @@
   .range-sep { display: none; }
 
   .properties-grid { grid-template-columns: 1fr; }
+}
+
+/* اسم المكتب العقاري على بطاقة الإعلان (نص فقط: البطاقة كلها رابط) */
+.property-card__agency {
+  margin: 0;
+  font-size: .8rem;
+  color: var(--gray-500);
 }

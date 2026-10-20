@@ -62,6 +62,33 @@ if (!hasApiBaseConfig(prod) || !hasApiBaseConfig(staging) || !hasApiBaseConfig(d
   fail('All environment files should expose apiBaseUrl or apiUrl.');
 }
 
+// Cross-contamination guards. The Staging bundle must never carry a Production API fallback
+// (it once did -- see the 2026-09-18 note in environment.staging.ts), and the Production bundle
+// must never point at Staging infrastructure.
+// Anchored so `staging-api.hudhudnest.com` (Staging) is not mistaken for `api.hudhudnest.com` (Production).
+const PRODUCTION_API_HOSTS = /(?:^|\/\/)(?:wohnungen-api\.onrender\.com|api\.hudhudnest\.com)(?![\w.-])/i;
+// Only whole-line comments are stripped: a naive `//.*$` would also chop URLs ("https://...").
+const stripComments = source =>
+  source.replace(/^\s*\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+const stagingCode = stripComments(staging);
+const prodCode = stripComments(prod);
+
+if (PRODUCTION_API_HOSTS.test(stagingCode)) {
+  fail('environment.staging.ts must not reference a Production API host (no silent Production fallback).');
+}
+
+if (!/environmentName\s*:\s*'staging'/.test(stagingCode)) {
+  fail("environment.staging.ts must declare environmentName: 'staging'.");
+}
+
+if (!/environmentName\s*:\s*'production'/.test(prodCode)) {
+  fail("environment.prod.ts must declare environmentName: 'production'.");
+}
+
+if (/staging/i.test(prodCode)) {
+  fail("environment.prod.ts must not reference anything 'staging'.");
+}
+
 if (failed) {
   process.exit(1);
 }

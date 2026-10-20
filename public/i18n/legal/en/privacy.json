@@ -1,0 +1,262 @@
+{
+  "title": "Privacy Policy",
+  "metaDescription": "How HudhudNest collects, uses, shares and protects your personal data, and the choices and rights you have.",
+  "sections": [
+    {
+      "heading": "Introduction",
+      "blocks": [
+        { "p": "HudhudNest is a digital real-estate marketplace where people publish and browse property listings for sale, long-term rent and short stays, and contact one another about them. This Privacy Policy explains what personal data we collect when you use the HudhudNest website and apps (together, the \"Platform\"), why we collect it, who receives it, how long we keep it and what rights you have." },
+        { "p": "We describe only what the Platform actually does at the date shown above. If you do not agree with this Policy, please do not use the Platform." }
+      ]
+    },
+    {
+      "heading": "Who we are (data controller)",
+      "blocks": [
+        { "p": "The Platform is operated by HudhudNest (\"we\", \"us\"). For the personal data described in this Policy, we are the data controller, to the extent that concept applies under the law that governs you." },
+        { "p": "Contact for privacy matters: [support@hudhudnest.com](mailto:support@hudhudnest.com). Security reports: [security@hudhudnest.com](mailto:security@hudhudnest.com)." }
+      ]
+    },
+    {
+      "heading": "Scope",
+      "blocks": [
+        { "p": "This Policy applies to visitors, registered users, advertisers (owners, agents and agencies) and anyone who contacts us. It does not cover third-party websites or services that the Platform links to or relies on; those are governed by their own policies (see sections 13 and 21)." }
+      ]
+    },
+    {
+      "heading": "Information you provide",
+      "blocks": [
+        { "p": "Depending on how you use the Platform, you may give us:" },
+        {
+          "ul": [
+            "Account data: first and last name, email address and/or phone number, and a password (we store only a salted cryptographic hash of it, never the password itself).",
+            "Sign-in with Google or Apple: if you choose these, we receive your name, email address and, from Google, your public profile picture.",
+            "Profile data: an optional profile photo, biography and contact details you choose to add.",
+            "Listing data: descriptions, prices, address details, map coordinates, photos, documents and the contact details you choose to publish for property sales, rentals, short stays and investment projects.",
+            "Agency data: business and location details when you create or join an agency.",
+            "Activity data you create: favourites, saved searches, ratings and reviews, short-stay bookings and booking requests, property-valuation requests, and expressions of interest in investment projects.",
+            "Messages: the content of messages you send to other users through the Platform.",
+            "Contact and waitlist forms: name, email or phone, city, type of user, subject and message text.",
+            "Plan selection: the subscription plan you choose and its status. We do not collect payment-card details in the Platform at this time."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Information collected automatically",
+      "blocks": [
+        {
+          "ul": [
+            "IP address: used for security (detecting abuse and suspicious sign-ins), rate limiting and short-lived security logs. It is stored with session records and sign-in audit logs.",
+            "Session data: a refresh token (stored in your browser as one strictly necessary cookie, and as a hash on our servers) and a short-lived access token that keeps you signed in.",
+            "Technical and error logs: operational logs that may include request details and error information, used to keep the service running and to investigate faults.",
+            "Sharing and attribution events: when a listing is shared or opened through a tracked link, we record the listing, the type of event and the campaign parameters (UTM) of the link, and your user ID if you are signed in. We do not store your IP address or message content in these events.",
+            "Landing-page funnel events: aggregate events (for example that a form was viewed or submitted) tied to a random session identifier, not to your identity or IP address.",
+            "Your approximate current location, only if you press the \"near me\" search: your browser or device asks for permission first, and we use the coordinates only to run that search; we do not store them."
+          ]
+        },
+        { "p": "At the date of this Policy we do not use advertising trackers, third-party analytics or crash-reporting services, device fingerprinting, device identifiers or push-notification tokens. If that changes, we will update this Policy first." }
+      ]
+    },
+    {
+      "heading": "Listings and public information",
+      "blocks": [
+        { "p": "Listings are public by design. Listing text, photos, price, address and map location, the name shown on the listing and any contact details you include may be visible to anyone, including people without an account and search engines. Photo links are public: anyone who has a link can open the image." },
+        { "p": "We may also republish public listing content (for example a photo, headline, price and location) on HudhudNest's own channels on third-party social platforms such as Telegram, Facebook and Instagram to promote the listing. Do not include in a listing any personal data you do not want to be public." }
+      ]
+    },
+    {
+      "heading": "Communications",
+      "blocks": [
+        { "p": "Messages between users are stored so that conversations can be delivered and shown to the participants. We do not read them as a matter of routine, but we may access them where necessary to investigate abuse, fraud or a violation of our Terms, to handle a complaint, or to comply with the law." },
+        { "p": "If you submit a property-valuation request or an office replies to one, your contact details are shared with the valuation office only after you give a separate, specific consent for that purpose, which you can withdraw." },
+        { "p": "We send service messages (for example account confirmation, password reset, security alerts, booking and message notifications) by email, in-app notification and, for verification codes, by text message or messaging app." }
+      ]
+    },
+    {
+      "heading": "Account security and verification codes",
+      "blocks": [
+        { "p": "To protect accounts we apply rate limits, record sign-in events, may notify you of unusual activity, and may periodically ask you to re-verify your phone number." },
+        { "p": "When you register or sign in with a phone number, we send a one-time verification code (OTP) through the channel you select: SMS, Telegram or WhatsApp. The code is delivered by the corresponding provider (see section 13); we store only a hash of the code, which expires after a few minutes. Your phone number must be supplied to that provider so the message can be delivered." },
+        { "p": "When you set a password, we may check it against a database of known breached passwords using a privacy-preserving method: only the first five characters of a hash of the password are sent, never the password." }
+      ]
+    },
+    {
+      "heading": "Cookies and similar technologies",
+      "blocks": [
+        { "p": "We use one strictly necessary, HttpOnly cookie that keeps you signed in. We do not use advertising or tracking cookies." },
+        { "p": "We also use your browser's local storage for functions you ask for or that the Platform needs: your language and theme choice, your session state, and (if you open a tracked link) the campaign parameters of that link so we can attribute a later action to it. You can clear this data in your browser settings; some features may then stop working or reset." },
+        { "p": "Some third-party resources load directly in your browser (fonts and map tiles, see section 13) and receive your IP address when they do." }
+      ]
+    },
+    {
+      "heading": "How we use personal data",
+      "blocks": [
+        {
+          "ul": [
+            "To create and secure your account and to authenticate you.",
+            "To publish your listings and let users find and contact one another.",
+            "To deliver messages, bookings, notifications and service emails.",
+            "To operate search, favourites and saved searches, including location-based search when you ask for it.",
+            "To prevent fraud, abuse and security incidents, and to enforce our Terms.",
+            "To maintain, debug and improve the Platform.",
+            "To respond to your requests and to handle valuation, agency and investment features you use.",
+            "To promote public listings and the Platform, and to measure which links bring visitors (without advertising profiles).",
+            "To comply with legal obligations and to establish, exercise or defend legal claims.",
+            "To keep a record of the versions of the Terms and Privacy Policy you accepted and when."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Legal bases for processing",
+      "blocks": [
+        { "p": "Where data-protection law such as the GDPR applies, we rely on the following bases:" },
+        {
+          "ul": [
+            "Performance of a contract: account, listing, messaging, booking and plan features you use.",
+            "Legitimate interests: security, fraud prevention, service improvement, aggregate attribution of shared links, and promoting public listings, balanced against your rights and interests.",
+            "Consent: where we ask for it, for example sharing your contact details with a valuation office, location access for \"near me\" search, and any optional marketing. You may withdraw consent at any time without affecting earlier processing.",
+            "Legal obligation: where we must retain or disclose data by law.",
+            "Records of your acceptance of the Terms and this Policy are kept to demonstrate that acceptance."
+          ]
+        },
+        { "p": "To the extent required by applicable law, the exact legal basis for a given processing activity may differ depending on your country." }
+      ]
+    },
+    {
+      "heading": "Sharing of personal data",
+      "blocks": [
+        { "p": "We do not sell your personal data. We share it only as follows:" },
+        {
+          "ul": [
+            "With other users and the public, as you direct, through your listings, profile and messages.",
+            "With service providers that process data on our behalf (section 13).",
+            "With agencies or valuation offices you choose to engage, within the scope of your request and consent.",
+            "With authorities, courts or other parties where required by law or to protect rights, safety and security.",
+            "In connection with a merger, acquisition or restructuring, subject to this Policy or notice to you."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Service providers and third parties",
+      "blocks": [
+        { "p": "We use the following providers. Each receives only what it needs for its role." },
+        {
+          "ul": [
+            "Cloudinary: storage and delivery of profile and listing images.",
+            "Resend: sending account confirmation, password reset and security emails.",
+            "Twilio or a comparable SMS provider: delivering SMS verification codes.",
+            "Telegram and WhatsApp (Meta): delivering verification codes when you choose those channels.",
+            "Telegram, Facebook and Instagram (Meta): publishing public listing content to HudhudNest's own channels, as described in section 6.",
+            "Google and Apple: sign-in, if you choose it. Google Identity Services is loaded in your browser on sign-in pages.",
+            "Google Fonts: page fonts, loaded from Google, which may see your IP address.",
+            "CARTO: map tiles shown when you view or pick a location, which may see your IP address.",
+            "Cloud hosting providers (currently Render for the API and database and Netlify for the web app): infrastructure on which the Platform runs.",
+            "Have I Been Pwned (k-anonymity range lookup): breached-password check, see section 8."
+          ]
+        },
+        { "p": "These providers act under their own terms and privacy policies. We may change providers; this Policy will be updated where the change is material." }
+      ]
+    },
+    {
+      "heading": "International data transfers",
+      "blocks": [
+        { "p": "Our providers and servers may be located in countries other than yours, including countries whose data-protection law differs from that of your country. Where applicable law requires safeguards for such transfers (for example standard contractual clauses), we take steps to put them in place with our providers. Contact us for details of the safeguards that apply to your data." }
+      ]
+    },
+    {
+      "heading": "Data retention",
+      "blocks": [
+        { "p": "We keep personal data only as long as needed for the purposes in this Policy:" },
+        {
+          "ul": [
+            "Account and profile data: while your account is active; see section 18 for deletion.",
+            "Listings: while the listing is active and for a limited period afterwards under the Platform's listing lifecycle. Images are stored with our image provider and may remain there after a listing is removed until we delete them.",
+            "Session tokens: until they expire (up to 30 days) or you sign out.",
+            "Verification codes: stored as a hash and valid for a few minutes.",
+            "Security and sign-in logs: kept for a limited period for security purposes. We have not yet fixed a final retention period for every log type and will update this Policy when we do.",
+            "Contact-form messages: kept as long as needed to handle your request. We have not set a fixed deletion period yet.",
+            "Consent records: kept as proof of what you accepted and when.",
+            "Backups: encrypted and rotated on a schedule (48 hours, then daily for 30 days, weekly for 12 weeks, monthly for 12 months). Data deleted from our live systems can remain in a backup until that backup expires."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Data security",
+      "blocks": [
+        { "p": "We use measures appropriate to the risk, including encryption in transit, hashed passwords and tokens, encryption at rest for certain sensitive fields such as phone numbers, access controls and rate limiting. No system is completely secure, and we cannot guarantee absolute security. Please keep your credentials confidential and tell us promptly at [security@hudhudnest.com](mailto:security@hudhudnest.com) if you suspect misuse." }
+      ]
+    },
+    {
+      "heading": "Your rights",
+      "blocks": [
+        { "p": "Depending on where you live and to the extent required by applicable law, you may have the right to:" },
+        {
+          "ul": [
+            "access the personal data we hold about you and obtain a copy (a self-service export is available in your account where offered);",
+            "correct inaccurate or incomplete data (most profile fields can be edited in your account);",
+            "request deletion of your data;",
+            "restrict or object to certain processing, including processing based on legitimate interests;",
+            "receive your data in a portable format;",
+            "withdraw consent at any time;",
+            "not be subject to a decision based solely on automated processing that has legal or similarly significant effects (we do not make such decisions);",
+            "lodge a complaint with a data-protection supervisory authority (see section 25)."
+          ]
+        },
+        { "p": "To exercise a right, write to [support@hudhudnest.com](mailto:support@hudhudnest.com). We may need to verify your identity first and will respond within the time required by applicable law. Where laws such as the CCPA/CPRA apply, we do not sell or share personal data for cross-context behavioural advertising, and you will not be treated unfavourably for exercising your rights." }
+      ]
+    },
+    {
+      "heading": "Account deletion",
+      "blocks": [
+        { "p": "You can delete your account from your profile or through the [account deletion page](/account-deletion). After a short grace period in which you can cancel, your name, profile photo, biography and contact information are erased, your email address and phone number are replaced with values that cannot be linked back to you, and links to Google or Apple sign-in are removed." },
+        { "p": "Listings, messages and reviews you posted may remain visible to other users for operational reasons (such as the continuity of existing conversations), without your personal data and attributed to \"deleted user\". Limited security records and backups can persist for the periods in section 15." }
+      ]
+    },
+    {
+      "heading": "Marketing communications",
+      "blocks": [
+        { "p": "We will only send you marketing emails or messages where the law allows it and, where consent is required, with your separate, optional consent, which is distinct from your acceptance of the Terms and this Policy, is not a condition of using the Platform and can be withdrawn at any time. Service and security messages are not marketing and are sent as part of the service." }
+      ]
+    },
+    {
+      "heading": "Children's privacy",
+      "blocks": [
+        { "p": "The Platform is intended for people aged 18 or over and is not directed to children. We do not knowingly collect personal data from anyone under 18. If you believe a child has given us personal data, contact us and we will take steps to delete it." }
+      ]
+    },
+    {
+      "heading": "Third-party links",
+      "blocks": [
+        { "p": "Listings and profiles may contain links to other websites or services. We do not control them and are not responsible for their content or privacy practices. Please read their policies before you provide data to them." }
+      ]
+    },
+    {
+      "heading": "User-generated content",
+      "blocks": [
+        { "p": "Anything you publish in a listing, review, profile or message may be seen, copied or used by others. Please do not post personal data about other people without a proper basis to do so. We may remove content that breaches our [Terms of Use](/terms-of-service) or the rights of others." }
+      ]
+    },
+    {
+      "heading": "Automated processing and profiling",
+      "blocks": [
+        { "p": "We do not use automated decision-making that produces legal or similarly significant effects on you, and we do not build advertising profiles. Search results and listing ordering are generated from your filters and listing attributes; our systems also automatically apply rate limits and security checks to block abuse." }
+      ]
+    },
+    {
+      "heading": "Changes to this Policy",
+      "blocks": [
+        { "p": "We may update this Policy. The version and dates are shown at the top of this page. For material changes we will notify you in the Platform or by email and, where required by law, ask you to accept the new version again. Continued use after the effective date means that you are subject to the updated Policy, to the extent permitted by law." }
+      ]
+    },
+    {
+      "heading": "Contact and complaints",
+      "blocks": [
+        { "p": "For any question about this Policy or your data: [support@hudhudnest.com](mailto:support@hudhudnest.com)." },
+        { "p": "You have the right to complain to the data-protection supervisory authority in your country of residence, place of work or the place of an alleged infringement. We encourage you to contact us first so we can try to resolve your concern." }
+      ]
+    }
+  ]
+}

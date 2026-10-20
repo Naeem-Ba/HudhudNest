@@ -14,8 +14,8 @@
     <div class="auth-brand__inner">
       <a routerLink="/home" class="auth-brand__logo" aria-label="Home">
         <img
-          src="/images/horizontal-logo.png"
-          alt="Logo"
+          src="/images/horizontal-logo-dark-480.png"
+          alt="HudhudNest"
           appImageFallback="/images/default-avatar.svg"
         />
       </a>
@@ -29,8 +29,8 @@
       <!-- Logo (mobile only, brand panel is hidden below 900px) -->
       <div class="auth-panel__logo-mobile">
         <img
-          src="/images/horizontal-logo.png"
-          alt="Logo"
+          src="/images/horizontal-logo-480.png"
+          alt="HudhudNest"
           appImageFallback="/images/default-avatar.svg"
         />
       </div>
@@ -95,9 +95,44 @@
         {{ message }}
       </div>
 
-      <!-- ============ Login Form ============ -->
+      <!-- عدّاد المحاولات المتبقية قبل قفل الحساب — يرسله الخادم مع رد 401 -->
+      <div
+        *ngIf="loginAttemptWarning && !isLockedOut"
+        class="auth-alert auth-alert--warning"
+        role="status"
+        aria-live="polite"
+      >
+        <span aria-hidden="true">⏳</span>
+        {{ loginAttemptWarning }}
+      </div>
+
+      <!-- ============ Auth Mode Tabs (Email / Phone) — تعمل مع الدخول والتسجيل معاً ============ -->
+      <div class="auth-tabs" role="tablist">
+        <button
+          type="button"
+          class="auth-tab"
+          [class.auth-tab--active]="authMode === 'email'"
+          role="tab"
+          [attr.aria-selected]="authMode === 'email'"
+          (click)="switchAuthMode('email')"
+        >
+          {{ 'AUTH.CONTINUE_WITH_EMAIL' | translate }}
+        </button>
+        <button
+          type="button"
+          class="auth-tab"
+          [class.auth-tab--active]="authMode === 'phone'"
+          role="tab"
+          [attr.aria-selected]="authMode === 'phone'"
+          (click)="switchAuthMode('phone')"
+        >
+          {{ 'AUTH.CONTINUE_WITH_PHONE' | translate }}
+        </button>
+      </div>
+
+      <!-- ============ Login Form (email) ============ -->
       <form
-        *ngIf="!showRegister"
+        *ngIf="!showRegister && authMode === 'email'"
         class="auth-form"
         (ngSubmit)="onLogin(loginForm)"
         #loginForm="ngForm"
@@ -132,6 +167,9 @@
         <div class="form-group">
           <div class="form-group__header">
             <label for="login-password">{{ 'AUTH.PASSWORD' | translate }} *</label>
+            <a routerLink="/auth/forgot-password" class="auth-switch__btn forgot-password-link">
+              {{ 'AUTH.FORGOT_PASSWORD' | translate }}
+            </a>
           </div>
 
           <div class="password-field">
@@ -169,7 +207,11 @@
           </div>
         </div>
 
-        <button type="submit" class="auth-submit" [disabled]="loginForm.invalid || loading">
+        <button
+          type="submit"
+          class="auth-submit"
+          [disabled]="loginForm.invalid || loading || isLockedOut"
+        >
           <span *ngIf="loading">⏳ {{ 'AUTH.LOADING' | translate }}</span>
           <span *ngIf="!loading">{{ 'AUTH.LOGIN_BUTTON' | translate }}</span>
         </button>
@@ -182,9 +224,109 @@
         </p>
       </form>
 
-      <!-- ============ Register Form ============ -->
+      <!-- ============ Phone Login Form (رقم + كلمة سر، بدون OTP) ============ -->
       <form
-        *ngIf="showRegister"
+        *ngIf="!showRegister && authMode === 'phone'"
+        class="auth-form"
+        (ngSubmit)="onPhoneLogin(phoneLoginForm)"
+        #phoneLoginForm="ngForm"
+        novalidate
+      >
+        <div class="form-group">
+          <label for="phone-login-number">{{ 'AUTH.PHONE' | translate }} *</label>
+          <input
+            id="phone-login-number"
+            type="tel"
+            [(ngModel)]="phoneLoginNumber"
+            name="phoneLoginNumber"
+            #phoneLoginNumberField="ngModel"
+            required
+            autocomplete="tel"
+            inputmode="tel"
+            [placeholder]="'AUTH.PHONE_PLACEHOLDER' | translate"
+          />
+          <div
+            class="field-error"
+            *ngIf="phoneLoginNumberField.invalid && (phoneLoginNumberField.touched || submitted)"
+          >
+            ⚠️ {{ 'AUTH.ERRORS.PHONE_REQUIRED' | translate }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="phone-login-password">{{ 'AUTH.PASSWORD' | translate }} *</label>
+
+          <div class="password-field">
+            <input
+              id="phone-login-password"
+              [type]="showPhoneLoginPass ? 'text' : 'password'"
+              [(ngModel)]="phoneLoginPassword"
+              name="phoneLoginPassword"
+              #phoneLoginPasswordField="ngModel"
+              required
+              autocomplete="current-password"
+              placeholder="••••••••"
+            />
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="showPhoneLoginPass = !showPhoneLoginPass"
+              [attr.aria-label]="'AUTH.TOGGLE_PASSWORD' | translate"
+            >
+              {{ showPhoneLoginPass ? '🙈' : '👁️' }}
+            </button>
+          </div>
+
+          <div
+            class="field-error"
+            *ngIf="phoneLoginPasswordField.invalid && (phoneLoginPasswordField.touched || submitted)"
+          >
+            ⚠️ {{ 'AUTH.ERRORS.PASSWORD_REQUIRED' | translate }}
+          </div>
+        </div>
+
+        <button type="submit" class="auth-submit" [disabled]="phoneLoginForm.invalid || loading">
+          <span *ngIf="loading">⏳ {{ 'AUTH.LOADING' | translate }}</span>
+          <span *ngIf="!loading">{{ 'AUTH.LOGIN_BUTTON' | translate }}</span>
+        </button>
+
+        <p class="auth-switch">
+          {{ 'AUTH.NO_ACCOUNT' | translate }}
+          <button type="button" class="auth-switch__btn" (click)="toggleRegister()">
+            {{ 'AUTH.CREATE_ACCOUNT' | translate }}
+          </button>
+        </p>
+
+        <p class="auth-switch">
+          <a routerLink="/auth/phone-password-reset" class="auth-switch__btn">
+            {{ 'AUTH.FORGOT_PASSWORD_PHONE' | translate }}
+          </a>
+        </p>
+      </form>
+
+      <!-- ============ Phone Registration — moved to its own page ============ -->
+      <!-- The OTP-based "register with phone" flow used to be inline here, calling the
+           now-retired /auth/phone/send-otp + /auth/phone/verify endpoints (backend returns
+           410 Gone for both — see PhoneAuthController.cs). It was replaced by
+           /auth/phone-register (PhonePasswordAuthController's registration/* endpoints);
+           this tab now only points there instead of re-implementing a dead flow. -->
+      <ng-container *ngIf="showRegister && authMode === 'phone'">
+        <p class="auth-subtitle">
+          {{ 'AUTH.PHONE_REGISTER_MOVED_NOTICE' | translate }}
+          <a routerLink="/auth/phone-register">{{ 'AUTH.PHONE_REGISTER_MOVED_LINK' | translate }}</a>
+        </p>
+
+        <p class="auth-switch">
+          {{ 'AUTH.HAS_ACCOUNT' | translate }}
+          <button type="button" class="auth-switch__btn" (click)="toggleRegister()">
+            {{ 'AUTH.GO_LOGIN' | translate }}
+          </button>
+        </p>
+      </ng-container>
+
+      <!-- ============ Register Form (email) ============ -->
+      <form
+        *ngIf="showRegister && authMode === 'email'"
         class="auth-form"
         (ngSubmit)="onRegister(regForm)"
         #regForm="ngForm"
@@ -282,6 +424,8 @@
               minlength="8"
               autocomplete="new-password"
               placeholder="••••••••"
+              (focus)="onRegisterPasswordFocus()"
+              (blur)="onRegisterPasswordBlur()"
             />
             <button
               type="button"
@@ -292,6 +436,12 @@
               {{ showPassReg ? '🙈' : '👁️' }}
             </button>
           </div>
+
+          <!-- ✨ جديد: عرض تعليمات قوة كلمة المرور -->
+          <app-password-strength-indicator
+            *ngIf="showPasswordStrengthReg"
+            [password]="registerData.Password"
+          ></app-password-strength-indicator>
 
           <div
             class="field-error"
@@ -306,7 +456,12 @@
           </div>
         </div>
 
-        <button type="submit" class="auth-submit" [disabled]="regForm.invalid || loading">
+        <app-consent-checkbox
+          [checked]="privacyConsentAccepted"
+          (checkedChange)="privacyConsentAccepted = $event">
+        </app-consent-checkbox>
+
+        <button type="submit" class="auth-submit" [disabled]="regForm.invalid || loading || !privacyConsentAccepted">
           <span *ngIf="loading">⏳ {{ 'AUTH.LOADING' | translate }}</span>
           <span *ngIf="!loading">{{ 'AUTH.REGISTER_BUTTON' | translate }}</span>
         </button>

@@ -12,7 +12,7 @@
   <div *ngIf="!loading() && error()" class="state-card error-state container" role="alert">
     <span aria-hidden="true">⚠️</span>
     <p>{{ error() | translate }}</p>
-    <button type="button" class="btn btn--outline btn--sm" (click)="ngOnInit()">
+    <button type="button" class="btn btn--outline btn--sm" (click)="retry()">
       {{ 'COMMON.RETRY' | translate }}
     </button>
   </div>
@@ -42,7 +42,9 @@
             (lostpointercapture)="onGalleryPointerCancel()"
             (click)="onGalleryClick($event)">
             <img
-              [src]="currentImageUrl()"
+              [src]="currentImageDisplayUrl()"
+              [attr.srcset]="currentImageSrcSet()"
+              sizes="(max-width: 980px) 100vw, 55vw"
               [alt]="currentImageAlt()"
               draggable="false"
               class="gallery__img"
@@ -86,7 +88,7 @@
               [attr.aria-pressed]="currentIndex() === i"
               (click)="currentIndex.set(i)"
             >
-              <img [src]="img.url || '/images/no-image.svg'" [alt]="'صورة ' + (i+1)" loading="lazy" appImageFallback="/images/no-image.svg" />
+              <img [src]="thumbnailUrl(img.url)" [alt]="thumbnailAlt(img, i)" loading="lazy" appImageFallback="/images/no-image.svg" />
             </button>
           </div>
 
@@ -98,14 +100,52 @@
 
         <!-- ── Summary Card ── -->
         <div class="summary-card">
-          <!-- Badge -->
-          <span class="badge"
-            [class.badge--rent]="isRentListing()"
-            [class.badge--sale]="isSaleListing()">
-            {{ isSaleListing()
-                ? ('PROPERTY.MODE_SALE' | translate)
-                : ('PROPERTY.MODE_RENT' | translate) }}
-          </span>
+          <!-- Phase-0, Task 2: 30-day staleness banner, visible to every
+               visitor (not just the owner) — a buyer/renter deciding whether
+               to bother contacting the owner needs this signal too. -->
+          <div class="stale-banner" *ngIf="isStale()" role="status">
+            <span aria-hidden="true">⏳</span>
+            {{ 'PROPERTY_DETAIL.STALE_BANNER' | translate: { days: daysSinceFreshnessSignal() } }}
+          </div>
+
+          <!-- Header row: the listing badges on the leading side, the favorite + share pair on the
+               trailing side. Flex with logical alignment, so it mirrors by itself in RTL and wraps
+               (pair below the badges) instead of overlapping when the badges are wide. -->
+          <div class="summary-card__top">
+            <div class="summary-card__badges">
+              <span class="badge"
+                [class.badge--rent]="isRentListing()"
+                [class.badge--sale]="isSaleListing()">
+                {{ isSaleListing()
+                    ? ('PROPERTY.MODE_SALE' | translate)
+                    : ('PROPERTY.MODE_RENT' | translate) }}
+              </span>
+              <!-- إعلان مميّز مدفوع. مرئي لكل زائر لا للمالك وحده — التمييز يُشترى
+                   ليراه الباحثون، وشارة يراها المالك فقط ليست المنتج المدفوع. -->
+              <span class="badge badge--featured" *ngIf="p.isFeatured">
+                <span aria-hidden="true">⭐</span>
+                {{ 'PROPERTY.FEATURED' | translate }}
+              </span>
+              <!-- حالة الإعلان: محجوز / مباع / مؤجر (لا يظهر شيء لإعلان متاح). -->
+              <span class="badge" *ngIf="statusTagKey(p) as tagKey" [ngClass]="statusBadgeClass(p)" data-testid="status-badge">
+                {{ tagKey | translate }}
+              </span>
+            </div>
+
+            <div class="summary-card__quick" role="group" [attr.aria-label]="'PROPERTY_DETAIL.QUICK_ACTIONS' | translate">
+              <app-favorite-toggle-button
+                *ngIf="p.id"
+                [propertyId]="p.id"
+              ></app-favorite-toggle-button>
+              <!-- Social Sharing & Distribution — hides itself when the property has no usable
+                   share channel (e.g. not public); see PropertyShareButtonComponent. -->
+              <app-property-share-button [property]="p"></app-property-share-button>
+            </div>
+          </div>
+
+          <div class="status-notice" *ngIf="statusNoticeKey(p) as noticeKey" role="status" data-testid="status-notice">
+            {{ noticeKey | translate }}
+          </div>
 
           <!-- Title -->
           <h1 class="summary-card__title line-clamp-3">
@@ -121,17 +161,21 @@
             <span *ngIf="p.region"> · {{ p.region }}</span>
           </p>
 
+          <!-- ✅ إضافة: معرف الإعلان الحقيقي القادم من الـ Backend (p.id) -->
+          <p class="summary-card__listing-id" *ngIf="p.id">
+            {{ 'PROPERTY_DETAIL.LISTING_ID' | translate }}: <span dir="ltr">#{{ p.id }}</span>
+          </p>
+
           <!-- Main Price -->
           <div class="summary-card__price" *ngIf="isSaleListing()">
             <span class="price-label">{{ 'PROPERTY.PURCHASE_PRICE' | translate }}</span>
             <strong class="price-value">{{ formatPrice(p.purchasePrice) }}
-              <small>{{ p.currencyCode || 'SYP' }}</small>
             </strong>
           </div>
           <div class="summary-card__price" *ngIf="isRentListing()">
             <span class="price-label">{{ 'PROPERTY.WARM_RENT' | translate }}</span>
             <strong class="price-value">{{ formatPrice(p.warmRent ?? p.coldRent) }}
-              <small>{{ p.currencyCode || 'SYP' }}/{{ 'COMMON.MONTH' | translate }}</small>
+              <small>/{{ 'COMMON.MONTH' | translate }}</small>
             </strong>
           </div>
 
@@ -141,7 +185,7 @@
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                 <rect x="1" y="1" width="12" height="12" rx="1" stroke="currentColor" stroke-width="1.3"/>
               </svg>
-              {{ p.area }} م²
+              {{ p.area }} {{ 'COMMON.area_unit' | translate }}
             </div>
             <div class="spec-chip" *ngIf="p.rooms">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -156,9 +200,9 @@
               </svg>
               {{ 'PROPERTY_DETAIL.FLOOR' | translate }} {{ p.floor }}
             </div>
-            <div class="spec-chip" *ngIf="p.hasBalcony">🏡 شرفة</div>
-            <div class="spec-chip" *ngIf="p.hasElevator">🛗 مصعد</div>
-            <div class="spec-chip" *ngIf="p.hasParkingSpace">🚗 مواقف</div>
+            <div class="spec-chip" *ngIf="p.hasBalcony">🏡 {{ 'PROPERTY.HAS_BALCONY' | translate }}</div>
+            <div class="spec-chip" *ngIf="p.hasElevator">🛗 {{ 'PROPERTY.HAS_ELEVATOR' | translate }}</div>
+            <div class="spec-chip" *ngIf="p.hasParkingSpace">🚗 {{ 'PROPERTY.HAS_PARKING' | translate }}</div>
           </div>
 
           <!-- Rating -->
@@ -171,8 +215,35 @@
 
           <!-- CTA Actions -->
           <div class="summary-card__actions">
+            <!-- Phase-0, Task 2: owner-only "still available?" confirmation.
+                 Backend also enforces ownership (403 for anyone else) — this
+                 *ngIf is a UX convenience, not the actual security boundary. -->
+            <button type="button" class="btn btn--outline"
+              *ngIf="isOwner()"
+              [disabled]="confirmingAvailability()"
+              (click)="confirmStillAvailable()">
+              <span aria-hidden="true">✅</span>
+              {{ confirmingAvailability()
+                  ? ('COMMON.SAVING' | translate)
+                  : ('PROPERTY_DETAIL.CONFIRM_AVAILABILITY' | translate) }}
+            </button>
+            <!-- Owner-only paid actions. Links, not buttons: they navigate to the checkout
+                 page, which reviews the fee before recording anything. Ownership is
+                 enforced server-side (403) — these *ngIf guards are UX, not security. -->
+            <a class="btn btn--outline"
+              *ngIf="isOwner()"
+              [routerLink]="['/checkout', 'extension', p.id]">
+              <span aria-hidden="true">🔁</span>
+              {{ 'PROPERTY_DETAIL.EXTEND_LISTING' | translate }}
+            </a>
+            <a class="btn btn--outline"
+              *ngIf="isOwner()"
+              [routerLink]="['/checkout', 'featured', p.id]">
+              <span aria-hidden="true">⭐</span>
+              {{ 'PROPERTY_DETAIL.FEATURE_LISTING' | translate }}
+            </a>
             <button type="button" class="btn btn--primary"
-              (click)="showVisitForm.set(!showVisitForm())">
+              (click)="toggleVisitForm()">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <rect x="1" y="2" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/>
                 <path d="M5 1v2M11 1v2M1 6h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -181,11 +252,27 @@
             </button>
             <button type="button" class="btn btn--outline"
               *ngIf="isLoggedIn()"
+              (click)="toggleServiceForm()">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M8 1l2 4 4.5.6-3.3 3.1.8 4.5L8 11l-4 2.2.8-4.5L1.5 5.6 6 5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+              </svg>
+              {{ 'SERVICE_REQUEST.CTA' | translate }}
+            </button>
+            <button type="button" class="btn btn--outline"
+              *ngIf="isLoggedIn() && !isOwner()"
+              (click)="toggleMessageForm()">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M2 3h12v8H5l-3 3V3z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+              </svg>
+              {{ 'MESSAGES.CONTACT_OWNER' | translate }}
+            </button>
+            <button type="button" class="btn btn--outline"
+              *ngIf="isLoggedIn()"
               (click)="showReviewForm.set(!showReviewForm())">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <path d="M8 1l1.8 3.6L14 5.3l-3 2.9.7 4.1L8 10.4l-3.7 1.9.7-4.1L2 5.3l4.2-.7z" stroke="currentColor" stroke-width="1.3"/>
               </svg>
-              {{ 'REVIEW.ADD' | translate }}
+              {{ 'REVIEW.ADD_PROPERTY' | translate }}
             </button>
           </div>
         </div>
@@ -195,8 +282,238 @@
     <!-- ── Body Content ── -->
     <div class="container detail-body">
 
+      <!-- بطاقة المكتب العقاري: تظهر فقط لإعلان عضو في مكتب فعّال (الخادم يملأ الحقول للمكتب الفعّال
+           فقط؛ إعلان فردي أو مكتب معطَّل أو خادم أقدم = لا بطاقة). المكتب هنا كيان مستقل عن المعلن
+           (بطاقة المالك أدناه) وله تقييمه الخاص في صفحته العامة. -->
+      <div class="detail-card agency-card" *ngIf="property()?.agencyName && property()?.agencySlug">
+        <div class="detail-card__header">
+          <h2>{{ 'PROPERTY_DETAIL.AGENCY.TITLE' | translate }}</h2>
+        </div>
+        <div class="agency-card__body">
+          <img
+            class="agency-card__logo"
+            [src]="property()!.agencyLogoUrl || '/images/default-avatar.svg'"
+            appImageFallback="/images/default-avatar.svg"
+            alt=""
+          />
+          <div class="agency-card__info">
+            <a class="agency-card__name" [routerLink]="['/agencies', property()!.agencySlug]">
+              {{ property()!.agencyName }}
+            </a>
+            <div class="agency-card__rating" *ngIf="(property()!.agencyRatingCount ?? 0) > 0; else agencyNotRated">
+              <span class="agency-card__stars" aria-hidden="true">★</span>
+              <strong>{{ property()!.agencyRatingAverage }}</strong>
+              <span class="agency-card__count">({{ property()!.agencyRatingCount }})</span>
+            </div>
+            <ng-template #agencyNotRated>
+              <span class="agency-card__count">{{ 'PROPERTY_DETAIL.AGENCY.NOT_RATED' | translate }}</span>
+            </ng-template>
+            <a class="agency-card__link" [routerLink]="['/agencies', property()!.agencySlug]">
+              {{ 'PROPERTY_DETAIL.AGENCY.VIEW_PROFILE' | translate }}
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ إضافة: بطاقة معلومات المالك — تستهلك GET /api/users/{id} التي كانت
+           غير مستخدَمة إطلاقاً؛ الصفحة سابقًا كانت تكتفي بمقارنة ownerId داخليًا
+           دون عرض أي معلومة عامة عن المالك (اسم/صورة/هاتف إن كان وسيطًا). -->
+      <div class="detail-card owner-card" *ngIf="!isOwner() && ownerProfile() as owner">
+        <div class="detail-card__header">
+          <h2>{{ 'PROPERTY_DETAIL.OWNER' | translate }}</h2>
+        </div>
+        <div class="owner-card__body">
+          <img
+            class="owner-card__avatar"
+            [src]="owner.profileImageUrl || '/images/default-avatar.svg'"
+            appImageFallback="/images/default-avatar.svg"
+            alt=""
+          />
+          <div class="owner-card__info">
+            <!-- ✅ إضافة: اسم صاحب الإعلان قابل للنقر لفتح ملفه العام -->
+            <a
+              *ngIf="property()?.ownerId; else ownerNamePlain"
+              class="owner-card__name owner-card__name--link"
+              [routerLink]="['/users', property()!.ownerId]"
+            >
+              {{ owner.displayName }}
+            </a>
+            <ng-template #ownerNamePlain>
+              <p class="owner-card__name">{{ owner.displayName }}</p>
+            </ng-template>
+            <a *ngIf="owner.phoneNumber" class="owner-card__phone" [href]="'tel:' + owner.phoneNumber" (click)="onOwnerPhoneClick()">
+              {{ owner.phoneNumber }}
+            </a>
+            <!-- ✅ إضافة: رابط الملف الشخصي العام (تقييمات + إعلانات نشطة) -->
+            <div class="owner-card__links">
+              <a
+                *ngIf="property()?.ownerId"
+                class="owner-card__profile-link"
+                [routerLink]="['/users', property()!.ownerId]"
+              >
+                {{ 'PUBLIC_PROFILE.VIEW_PROFILE_LINK' | translate }}
+              </a>
+              <!-- تقييم المالك يعيش في ملفه العام؛ الخادم يسمح به فقط بعد تواصل فعلي
+                   (رسالة أو زيارة مكتملة) — الصفحة هناك تشرح الحالة إن لم يكن مؤهلًا بعد. -->
+              <a
+                *ngIf="isLoggedIn() && property()?.ownerId"
+                class="owner-card__rate-link"
+                [routerLink]="['/users', property()!.ownerId]"
+                fragment="rate-user"
+              >
+                ⭐ {{ 'MESSAGES.RATE_OWNER' | translate }}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message Owner Form -->
+      <div class="detail-card" id="message-form-section" *ngIf="showMessageForm()">
+        <div class="detail-card__header">
+          <h2>{{ 'MESSAGES.CONTACT_OWNER' | translate }}</h2>
+          <button type="button" class="card-close-btn" (click)="showMessageForm.set(false)" aria-label="إغلاق">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <!-- ✅ إضافة: توضيح هوية المُرسِل — لا يوجد حقل "اسم" قابل للتعديل هنا
+             لأن الباك اند يحدّد هوية المُرسِل من حساب الدخول نفسه، وليس من نص حر. -->
+        <!-- بعد الإرسال: تأكيد واضح + طريق مباشر للمحادثة نفسها (حيث يظهر رد المالك). -->
+        <div class="message-sent" *ngIf="messageSent()" role="status">
+          <p class="message-sent__text">✅ {{ 'MESSAGES.SEND_SUCCESS_DETAIL' | translate }}</p>
+          <div class="form-actions">
+            <a class="btn btn--primary" [routerLink]="['/messages', p.id]">
+              {{ 'MESSAGES.OPEN_CONVERSATION' | translate }}
+            </a>
+            <button type="button" class="btn btn--outline" (click)="messageSent.set(false)">
+              {{ 'MESSAGES.SEND_ANOTHER' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <p class="sender-as-hint" *ngIf="!messageSent() && currentUserDisplayName()">
+          {{ 'MESSAGES.SENDING_AS' | translate: { name: currentUserDisplayName() } }}
+        </p>
+        <form class="detail-form" *ngIf="!messageSent()" (ngSubmit)="sendMessage()" novalidate>
+          <div class="form-group">
+            <label for="messageDraft">{{ 'MESSAGES.PLACEHOLDER' | translate }}</label>
+            <textarea
+              id="messageDraft"
+              [(ngModel)]="messageDraft"
+              name="messageDraft"
+              rows="4"
+              [maxlength]="messageMaxLength"
+              [placeholder]="'MESSAGES.PLACEHOLDER' | translate"
+            ></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn--primary" [disabled]="!messageDraft.trim() || savingMessage()">
+              <span *ngIf="savingMessage()" class="spinner-ring"></span>
+              {{ savingMessage() ? ('COMMON.SAVING' | translate) : ('MESSAGES.SEND' | translate) }}
+            </button>
+            <button type="button" class="btn btn--outline" (click)="showMessageForm.set(false)">
+              {{ 'COMMON.CANCEL' | translate }}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Service request form: category, offering (filtered by this property's governorate), note -->
+      <div class="detail-card" id="service-form-section" *ngIf="showServiceForm()">
+        <div class="detail-card__header">
+          <h2>{{ 'SERVICE_REQUEST.CTA' | translate }}</h2>
+          <button type="button" class="card-close-btn" (click)="showServiceForm.set(false)" aria-label="إغلاق">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <!-- After the first message the two sides talk here; the customer confirms when ready. The provider's phone appears only after a confirmed request is accepted. -->
+        <div class="service-sent" *ngIf="createdServiceRequest() as created">
+          <p class="service-sent__title">
+            {{ (created.status === 'Inquiry' ? 'SERVICE_REQUEST.INQUIRY_SENT_TITLE' : 'SERVICE_REQUEST.SENT_TITLE') | translate: { number: created.requestNumber } }}
+          </p>
+          <p>
+            {{ (created.status === 'Inquiry' ? 'SERVICE_REQUEST.INQUIRY_SENT_BODY' : 'SERVICE_REQUEST.SENT_BODY') | translate: { provider: created.serviceProviderDisplayName } }}
+          </p>
+          <app-service-conversation [request]="created" role="requester"
+            (activity)="onCreatedActivity($event)" (requestChange)="onCreatedConfirmed($event)" />
+          <div class="form-actions">
+            <a class="btn btn--primary" routerLink="/my-services">{{ 'SERVICE_REQUEST.OPEN_MY_REQUESTS' | translate }}</a>
+            <button type="button" class="btn btn--outline" (click)="closeServiceForm()">{{ 'COMMON.CLOSE' | translate }}</button>
+          </div>
+        </div>
+
+        <div *ngIf="!createdServiceRequest() && loadingServiceCategories()" class="state">{{ 'COMMON.LOADING' | translate }}</div>
+
+        <div *ngIf="!createdServiceRequest() && !loadingServiceCategories() && serviceLoadFailed() && !serviceCategory()" class="state">
+          {{ 'SERVICE_REQUEST.LOAD_ERROR' | translate }}
+        </div>
+
+        <div *ngIf="!createdServiceRequest() && !loadingServiceCategories() && !serviceLoadFailed() && availableServiceCategories().length === 0" class="state">
+          {{ 'SERVICE_REQUEST.UNAVAILABLE' | translate }}
+        </div>
+
+        <form class="detail-form" *ngIf="!createdServiceRequest() && !loadingServiceCategories() && availableServiceCategories().length > 0" (ngSubmit)="submitServiceRequest('Request')" novalidate>
+          <div class="form-group">
+            <label for="serviceCategory">{{ 'SERVICE_REQUEST.CATEGORY' | translate }}</label>
+            <select id="serviceCategory" name="serviceCategory" [ngModel]="serviceCategory()" (ngModelChange)="selectServiceCategory($event)">
+              <option *ngFor="let category of availableServiceCategories()" [ngValue]="category">{{ ('SERVICES.CATEGORY.' + category) | translate }}</option>
+            </select>
+          </div>
+
+          <div *ngIf="loadingServiceOfferings()" class="state">{{ 'COMMON.LOADING' | translate }}</div>
+
+          <div *ngIf="!loadingServiceOfferings() && serviceCategory() && serviceOfferings().length === 0" class="state">
+            {{ 'SERVICE_REQUEST.NONE_FOR_AREA' | translate }}
+          </div>
+
+          <fieldset class="form-group offering-choices" *ngIf="!loadingServiceOfferings() && serviceOfferings().length > 0">
+            <legend>{{ 'SERVICE_REQUEST.CHOOSE_OFFERING' | translate }}</legend>
+            <label class="offering-choice" *ngFor="let offering of serviceOfferings()">
+              <input type="radio" name="serviceOffering" [value]="offering.id" [ngModel]="selectedOfferingId()" (ngModelChange)="selectedOfferingId.set($event)">
+              <span>
+                <strong>{{ offering.title }}</strong>
+                <span *ngIf="offering.description"> — {{ offering.description }}</span>
+                <small class="offering-provider">{{ 'SERVICE_REQUEST.PROVIDER' | translate }}: {{ offering.serviceProviderDisplayName }}</small>
+                <small class="offering-rating" *ngIf="offering.averageRating != null && (offering.reviewCount ?? 0) > 0">★ {{ offering.averageRating | number:'1.1-1' }} ({{ offering.reviewCount }})</small>
+                <small class="offering-rating offering-rating--none" *ngIf="!offering.reviewCount">{{ 'SERVICE_REQUEST.NO_REVIEWS_YET' | translate }}</small>
+              </span>
+            </label>
+          </fieldset>
+
+          <ng-container *ngIf="selectedOffering()">
+            <div class="form-group">
+              <label for="serviceRequestNote">{{ 'SERVICE_REQUEST.NOTE' | translate }} *</label>
+              <textarea
+                id="serviceRequestNote"
+                [(ngModel)]="serviceRequestNote"
+                name="serviceRequestNote"
+                rows="4"
+                [maxlength]="serviceRequestNoteMaxLength"
+                [placeholder]="'SERVICE_REQUEST.NOTE_PLACEHOLDER' | translate"
+              ></textarea>
+            </div>
+
+            <p class="form-hint">{{ 'SERVICE_REQUEST.MESSAGE_HINT' | translate }}</p>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn--primary" [disabled]="savingServiceRequest() || !serviceRequestNote.trim()">
+                <span *ngIf="savingServiceRequest()" class="spinner-ring"></span>
+                {{ savingServiceRequest() ? ('COMMON.SAVING' | translate) : ('SERVICE_REQUEST.SUBMIT' | translate) }}
+              </button>
+              <button type="button" class="btn btn--outline" (click)="submitServiceRequest('Inquire')" [disabled]="savingServiceRequest() || !serviceRequestNote.trim()">
+                {{ 'SERVICE_REQUEST.INQUIRE' | translate }}
+              </button>
+              <button type="button" class="btn btn--outline" (click)="showServiceForm.set(false)">
+                {{ 'COMMON.CANCEL' | translate }}
+              </button>
+            </div>
+          </ng-container>
+        </form>
+      </div>
+
       <!-- Visit Request Form -->
-      <div class="detail-card" *ngIf="showVisitForm()">
+      <div class="detail-card" id="visit-form-section" *ngIf="showVisitForm()">
         <div class="detail-card__header">
           <h2>{{ 'VISIT.REQUEST' | translate }}</h2>
           <button type="button" class="card-close-btn" (click)="showVisitForm.set(false)" aria-label="إغلاق">
@@ -205,17 +522,37 @@
         </div>
         <form class="detail-form" [formGroup]="visitForm" (ngSubmit)="submitVisit()" novalidate>
           <div class="detail-form__grid">
+            <!-- ✅ إصلاح: التاريخ والوقت الآن مربّعان منفصلان (بدل datetime-local
+                 الواحد الذي كان يخلط الاثنين، وترتيب عرضه يتبع لغة المتصفح). -->
             <div class="form-group">
-              <label for="proposedAt">{{ 'VISIT.DATE' | translate }} *</label>
-              <input id="proposedAt" type="datetime-local" formControlName="proposedAt" />
+              <label for="visitDate">{{ 'VISIT.DATE' | translate }} *</label>
+              <input id="visitDate" type="date" formControlName="visitDate" [min]="minVisitDateAttr" />
+              <!-- معاينة صريحة يوم/شهر/سنة — لا تعتمد على لغة/محرك المتصفح -->
+              <p class="field-hint" *ngIf="visitDatePreview()">📅 {{ visitDatePreview() }}</p>
+              <p class="field-error" *ngIf="visitForm.controls.visitDate.invalid && visitForm.controls.visitDate.touched">
+                {{ 'VISIT.DATE_REQUIRED' | translate }}
+              </p>
+            </div>
+            <div class="form-group">
+              <label for="visitTime">{{ 'VISIT.TIME' | translate }} *</label>
+              <input id="visitTime" type="time" formControlName="visitTime" />
+              <p class="field-error" *ngIf="visitForm.controls.visitTime.invalid && visitForm.controls.visitTime.touched">
+                {{ 'VISIT.TIME_REQUIRED' | translate }}
+              </p>
             </div>
             <div class="form-group">
               <label for="visitorName">{{ 'VISIT.NAME' | translate }} *</label>
               <input id="visitorName" type="text" formControlName="visitorName" [placeholder]="'VISIT.NAME' | translate" />
+              <p class="field-error" *ngIf="visitForm.controls.visitorName.invalid && visitForm.controls.visitorName.touched">
+                {{ 'VISIT.NAME_REQUIRED' | translate }}
+              </p>
             </div>
             <div class="form-group">
               <label for="visitorPhone">{{ 'VISIT.PHONE' | translate }} *</label>
               <input id="visitorPhone" type="tel" formControlName="visitorPhone" placeholder="+963..." dir="ltr" />
+              <p class="field-error" *ngIf="visitForm.controls.visitorPhone.invalid && visitForm.controls.visitorPhone.touched">
+                {{ 'VISIT.PHONE_INVALID' | translate }}
+              </p>
             </div>
             <div class="form-group">
               <label for="visitorNote">{{ 'VISIT.NOTE' | translate }}</label>
@@ -223,7 +560,7 @@
             </div>
           </div>
           <div class="form-actions">
-            <button type="submit" class="btn btn--primary" [disabled]="visitForm.invalid || savingVisit()">
+            <button type="submit" class="btn btn--primary" [disabled]="savingVisit()">
               <span *ngIf="savingVisit()" class="spinner-ring"></span>
               {{ savingVisit() ? ('COMMON.SAVING' | translate) : ('VISIT.SUBMIT' | translate) }}
             </button>
@@ -231,17 +568,27 @@
               {{ 'COMMON.CANCEL' | translate }}
             </button>
           </div>
+          <!-- ✅ إصلاح: كان الزر يُعطَّل بصمت (visitForm.invalid) بلا أي تفسير —
+               الآن الزر يبقى مفعَّلاً دائمًا (submitVisit() تتحقق وتعرض الأخطاء
+               بوضوح)، فلا يبدو الأمر وكأن "لا شيء يحدث" عند الضغط. -->
         </form>
       </div>
 
       <!-- Review Form -->
       <div class="detail-card" *ngIf="showReviewForm()">
         <div class="detail-card__header">
-          <h2>{{ 'REVIEW.ADD' | translate }}</h2>
+          <h2>{{ 'REVIEW.ADD_PROPERTY' | translate }}</h2>
           <button type="button" class="card-close-btn" (click)="showReviewForm.set(false)" aria-label="إغلاق">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
           </button>
         </div>
+        <!-- تقييم العقار ≠ تقييم المالك: الأول يتطلب زيارة مكتملة، والثاني متاح بعد المراسلة. -->
+        <p class="review-hint">
+          {{ 'REVIEW.PROPERTY_HINT' | translate }}
+          <a *ngIf="!isOwner() && p.ownerId" [routerLink]="['/users', p.ownerId]" fragment="rate-user">
+            {{ 'MESSAGES.RATE_OWNER' | translate }}
+          </a>
+        </p>
         <form class="detail-form" [formGroup]="reviewForm" (ngSubmit)="submitReview()" novalidate>
           <div class="form-group">
             <label>{{ 'REVIEW.RATING' | translate }}</label>
@@ -300,7 +647,7 @@
               </div>
               <div class="info-row" *ngIf="p.area">
                 <dt>{{ 'PROPERTY_DETAIL.AREA' | translate }}</dt>
-                <dd>{{ p.area }} م²</dd>
+                <dd>{{ p.area }} {{ 'COMMON.area_unit' | translate }}</dd>
               </div>
               <div class="info-row" *ngIf="p.rooms">
                 <dt>{{ 'PROPERTY_DETAIL.ROOMS' | translate }}</dt>
@@ -328,29 +675,29 @@
               <ng-container *ngIf="isSaleListing()">
                 <div class="info-row">
                   <dt>{{ 'PROPERTY.PURCHASE_PRICE' | translate }}</dt>
-                  <dd>{{ formatPrice(p.purchasePrice) }} {{ p.currencyCode }}</dd>
+                  <dd>{{ formatPrice(p.purchasePrice) }}</dd>
                 </div>
                 <div class="info-row" *ngIf="p.deposit">
                   <dt>{{ 'PROPERTY.DEPOSIT' | translate }}</dt>
-                  <dd>{{ formatPrice(p.deposit) }} {{ p.currencyCode }}</dd>
+                  <dd>{{ formatPrice(p.deposit) }}</dd>
                 </div>
               </ng-container>
               <ng-container *ngIf="isRentListing()">
                 <div class="info-row" *ngIf="p.coldRent">
                   <dt>{{ 'PROPERTY.COLD_RENT' | translate }}</dt>
-                  <dd>{{ formatPrice(p.coldRent) }} {{ p.currencyCode }}</dd>
+                  <dd>{{ formatPrice(p.coldRent) }}</dd>
                 </div>
                 <div class="info-row" *ngIf="p.warmRent">
                   <dt>{{ 'PROPERTY.WARM_RENT' | translate }}</dt>
-                  <dd>{{ formatPrice(p.warmRent) }} {{ p.currencyCode }}</dd>
+                  <dd>{{ formatPrice(p.warmRent) }}</dd>
                 </div>
                 <div class="info-row" *ngIf="p.additionalCosts">
                   <dt>{{ 'PROPERTY.ADDITIONAL_COSTS' | translate }}</dt>
-                  <dd>{{ formatPrice(p.additionalCosts) }} {{ p.currencyCode }}</dd>
+                  <dd>{{ formatPrice(p.additionalCosts) }}</dd>
                 </div>
                 <div class="info-row" *ngIf="p.deposit">
                   <dt>{{ 'PROPERTY.DEPOSIT' | translate }}</dt>
-                  <dd>{{ formatPrice(p.deposit) }} {{ p.currencyCode }}</dd>
+                  <dd>{{ formatPrice(p.deposit) }}</dd>
                 </div>
               </ng-container>
             </dl>
@@ -364,7 +711,7 @@
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
                   <path d="M2 6l3 3 5-5" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round"/>
                 </svg>
-                {{ a.name }}
+                {{ a | amenityLabel }}
               </li>
             </ul>
           </div>
@@ -440,14 +787,14 @@
       (pointerup)="onGalleryPointerUp($event)"
       (pointercancel)="onGalleryPointerCancel()"
       (lostpointercapture)="onGalleryPointerCancel()">
-      <img [src]="currentImageUrl()" [alt]="currentImageAlt()" class="lightbox__img" draggable="false" appImageFallback="/images/no-image.svg" />
+      <img [src]="currentImageLightboxUrl()" [alt]="currentImageAlt()" class="lightbox__img" draggable="false" appImageFallback="/images/no-image.svg" />
     </div>
     <button *ngIf="currentIndex() > 0" class="lightbox__nav lightbox__nav--prev" type="button"
-      (click)="isRTL() ? next() : prev()" [attr.aria-label]="'COMMON.PREVIOUS' | translate">
+      (click)="isRTL() ? next() : prev(); $event.stopPropagation()" [attr.aria-label]="'COMMON.PREVIOUS' | translate">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
     </button>
     <button *ngIf="currentIndex() < images().length - 1" class="lightbox__nav lightbox__nav--next" type="button"
-      (click)="isRTL() ? prev() : next()" [attr.aria-label]="'COMMON.NEXT' | translate">
+      (click)="isRTL() ? prev() : next(); $event.stopPropagation()" [attr.aria-label]="'COMMON.NEXT' | translate">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
     </button>
     <p class="lightbox__counter">{{ currentIndex() + 1 }} / {{ images().length }}</p>

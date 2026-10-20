@@ -1,17 +1,35 @@
 // ─────────────────────────────────────────────────────────
 // landing-page.component.ts
-// صفحة الهبوط الرئيسية لمنصة PropertyApp
+//
+// [هذه الجولة] تبنّي هوية "دفتر العائلة" + دعم عربي/إنكليزي/ألماني كامل:
+// - كل نصوص القالب صارت مفاتيح ترجمة (translate pipe) تحت مساحة LANDING
+//   في public/i18n/{ar,de,en}.json، بدل نص عربي ثابت.
+// - رسائل الأخطاء وaria-label الديناميكية (تحتوي أرقامًا/متغيرات) تُبنى هنا
+//   عبر TranslateService.instant مع params بدل تجميع نص خام.
+// - قوائم "نوع المستخدم"/"المدينة" تستخدم LabeledOption (قيمة ثابتة تُرسَل
+//   للباك-إند + مفتاح ترجمة للعرض) من lead.model.ts بدل نص عربي مباشر.
+// - ميزة تبديل الشعار الفرعي أسفل العنوان الرئيسي: 3 صيغ تدور تلقائيًا
+//   (taglineIndex)، مع إيقاف الدوران بالكامل إذا كان المستخدم يفضّل تقليل
+//   الحركة (prefers-reduced-motion) بدل الاكتفاء بتسريع الانتقال فقط.
+//
+// [الجولة السابقة] قسم "أول 100 مكتب عقاري" مبني على GET /api/offers/active
+// (OffersApiService) — لا عرض ثابت في الكود، القسم يختفي تلقائيًا إن لم
+// يوجد عرض نشط.
 // ─────────────────────────────────────────────────────────
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  DestroyRef,
   inject,
-  OnDestroy,
   OnInit,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { interval } from 'rxjs';
 import {
   AbstractControl,
   FormBuilder,
@@ -19,10 +37,14 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
+import { isNativeApp } from '../../core/native/is-native-app';
 
 import { LeadService } from '../../core/services/lead.service';
+import { OffersApiService } from '../../core/api/offers-api.service';
+import { MarketingEventsApiService } from '../../core/api/marketing-events-api.service';
 import { MetaService } from '../../core/services/meta.service';
-import { SYRIA_CITIES, USER_TYPE_LABELS, UserType } from '../../core/models/lead.model';
+import { SYRIA_CITY_OPTIONS, USER_TYPE_OPTIONS, UserType } from '../../core/models/lead.model';
+import { Offer } from '../../core/models/offer.model';
 
 // ── Validator: رقم هاتف مرن يقبل سوريا والدول العربية ──
 function phoneValidator(ctrl: AbstractControl): ValidationErrors | null {
@@ -31,34 +53,59 @@ function phoneValidator(ctrl: AbstractControl): ValidationErrors | null {
   return valid ? null : { phone: true };
 }
 
+/** عدد صيغ الشعار الفرعي المتوفرة تحت LANDING.HERO.TAGLINE_1..3 — يُبقي
+ *  التدوير في .ts متزامنًا مع عدد المفاتيح الفعلي في ملفات الترجمة. */
+const TAGLINE_COUNT = 3;
+const TAGLINE_ROTATE_MS = 5200;
+
 @Component({
   selector:        'app-landing-page',
   standalone:      true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports:         [CommonModule, ReactiveFormsModule],
+  imports:         [CommonModule, ReactiveFormsModule, RouterLink, TranslateModule],
   templateUrl:     './landing-page.component.html',
   styleUrls:       ['./landing-page.component.scss'],
 })
-export class LandingPageComponent implements OnInit, OnDestroy {
-  private readonly fb        = inject(FormBuilder);
-  private readonly leadSvc   = inject(LeadService);
-  private readonly metaSvc   = inject(MetaService);
-  private readonly cd        = inject(ChangeDetectorRef);
+export class LandingPageComponent implements OnInit {
+  private readonly fb         = inject(FormBuilder);
+  private readonly leadSvc    = inject(LeadService);
+  private readonly offersApi  = inject(OffersApiService);
+  private readonly events     = inject(MarketingEventsApiService);
+  private readonly route      = inject(ActivatedRoute);
+  private readonly metaSvc    = inject(MetaService);
+  private readonly translate  = inject(TranslateService);
+  private readonly cd         = inject(ChangeDetectorRef);
+  private readonly destroyRef = inject(DestroyRef);
 
-  // ── قوائم مساعدة للـ Template ──
-  readonly userTypeOptions = Object.entries(USER_TYPE_LABELS) as [UserType, string][];
-  readonly cities          = SYRIA_CITIES;
+  // ── قوائم مساعدة للـ Template (قيمة ثابتة للباك-إند + مفتاح ترجمة للعرض) ──
+  readonly userTypeOptions = USER_TYPE_OPTIONS;
+  readonly cityOptions     = SYRIA_CITY_OPTIONS;
   readonly currentYear     = new Date().getFullYear();
+  /** Hidden inside the installed app, where "download the app" would be pointless. */
+  readonly showDownloadLink = !isNativeApp();
+
+  // ── عرض "أول 100 مكتب عقاري" — null يعني: لا عرض نشط، أخفِ القسم بالكامل ──
+  readonly activeOffer = signal<Offer | null>(null);
+
+  /** loading → هيكل تحميل؛ ready → البطاقة؛ empty → لا عروض منشورة؛ error → تعذّر التحميل (مع إعادة محاولة). */
+  readonly offerState = signal<'loading' | 'ready' | 'empty' | 'error'>('loading');
 
   // ── حالات الـ Form ──
   readonly formState = signal<'idle' | 'loading' | 'success' | 'error'>('idle');
+  /** يُضبط عند النجاح فقط إذا طُلب عرض فعلاً — يُستخدم لعرض رسالة نجاح
+   *  صادقة تفرّق بين "انضممت للعرض" و"سُجِّلت، لكن العرض لم يعد متاحًا". */
+  readonly offerAppliedOnSuccess = signal<boolean | null>(null);
   errorMessage = '';
 
   // ── تتبع FAQ المفتوح ──
   readonly openFaqIndex = signal<number | null>(null);
 
+  // ── تبديل الشعار الفرعي في الـ Hero ──
+  readonly taglineIndex = signal(0);
+
   // ── منع الإرسال المتكرر ──
   private submitting = false;
+  private viewTracked = false;
 
   // ── Reactive Form ──
   readonly form = this.fb.nonNullable.group({
@@ -69,40 +116,64 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     notes:           ['', Validators.maxLength(300)],
   });
 
-  // ── FAQ بيانات ──
-  readonly faqs = [
-    {
-      q: 'متى سيتم إطلاق المنصة؟',
-      a: 'نحن في مرحلة بناء النسخة التجريبية (MVP). المسجّلون في قائمة الانتظار سيكونون أول من يحصل على دعوة الإطلاق.',
-    },
-    {
-      q: 'هل الخدمة مجانية في البداية؟',
-      a: 'نعم، نخطط لأن تكون الخدمة مجانية في مرحلتها الأولى للباحثين وأصحاب العقارات، مع إمكانية إضافة خطط مميزة لاحقاً.',
-    },
-    {
-      q: 'هل يمكن لأصحاب العقارات التسجيل الآن؟',
-      a: 'بالتأكيد. سجّل اهتمامك عبر النموذج واختر "أريد نشر عقاري"، وسنتواصل معك عند فتح باب النشر.',
-    },
-    {
-      q: 'هل يمكن للمكاتب العقارية إضافة عروضها؟',
-      a: 'نعم، نرحب بالمكاتب العقارية. اختر "مكتب عقاري" في النموذج وسنتواصل معك بتفاصيل الشراكة.',
-    },
-    {
-      q: 'هل العقارات موثّقة وآمنة؟',
-      a: 'نعمل على توفير معلومات أوضح وتقليل الإعلانات العشوائية. المنصة في مرحلة تطوير، وآليات التحقق ستتحسن تدريجياً. كما هو الحال في أي صفقة عقارية، ننصح دائماً بالتحقق الشخصي قبل اتخاذ أي قرار.',
-    },
-    {
-      q: 'هل المنصة مخصصة لسوريا فقط؟',
-      a: 'نبدأ من سوريا، لكن التصميم يدعم التوسع إلى أسواق عربية وعالمية لاحقاً، خاصةً لخدمة المغتربين السوريين في كل مكان.',
-    },
-  ];
+  // ── مفاتيح أسئلة FAQ الشائعة — النص الفعلي في LANDING.FAQ.ITEMS.* ──
+  readonly faqKeys = ['LAUNCH', 'FREE', 'OWNER', 'AGENCY', 'VERIFIED', 'SYRIA_ONLY'];
+
+  /** مصفوفة ثابتة (لا تُعاد إنشاؤها كل دورة CD) لعناصر قسم المشكلة/الحل —
+   *  5 عناصر لكل عمود، النص الفعلي في LANDING.PROBLEM_SOLUTION.*_ITEMS. */
+  readonly psItemIndices = [1, 2, 3, 4, 5];
 
   ngOnInit(): void {
     this.metaSvc.setLandingMeta();
+
+    this.loadOffer();
+
+    this.startTaglineRotation();
   }
 
-  ngOnDestroy(): void {
-    // تنظيف إذا أُضيفت subscriptions لاحقاً
+  /** لا تدوير على الإطلاق إذا فضّل المستخدم تقليل الحركة — وليس فقط
+   *  انتقالًا أسرع بينها؛ تغيّر محتوى متكرر بلا داعٍ يبقى غير مرغوب. */
+  private startTaglineRotation(): void {
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion) return;
+
+    interval(TAGLINE_ROTATE_MS)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.taglineIndex.update(i => (i + 1) % TAGLINE_COUNT);
+        this.cd.markForCheck();
+      });
+  }
+
+  /** فشل التحميل لا يكسر بقية الصفحة: يظهر قسم العروض فقط بحالة خطأ وزر إعادة محاولة. */
+  loadOffer(): void {
+    this.offerState.set('loading');
+    this.offersApi.getActiveOfferState()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(state => {
+        const offerId = state.status === 'ready' ? state.offer.id : undefined;
+        if (state.status === 'ready') {
+          this.activeOffer.set(state.offer);
+          this.metaSvc.setLandingMeta({ offerName: state.offer.name, offerDescription: state.offer.description });
+        } else {
+          this.activeOffer.set(null);
+        }
+        // مشاهدة واحدة لكل زيارة: إعادة المحاولة لا تُحتسب مشاهدة جديدة.
+        if (!this.viewTracked) {
+          this.viewTracked = true;
+          this.events.track('PageView', { offerId, campaign: this.campaign() });
+        }
+        this.offerState.set(state.status);
+        this.cd.markForCheck();
+      });
+  }
+
+  /** وسم الحملة القادم من رابط المشاركة (utm_campaign) — للإسناد فقط، بلا بيانات شخصية. */
+  private campaign(): string | null {
+    return this.route.snapshot.queryParamMap.get('utm_campaign');
   }
 
   toggleFaq(index: number): void {
@@ -114,6 +185,60 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  /** زر CTA داخل قسم العرض: يهيّئ النموذج لمكتب عقاري وينتقل إليه مباشرة —
+   *  offerId الفعلي يُرسَل تلقائيًا من submitForm() عبر activeOffer(). */
+  scrollToFormForOffer(): void {
+    this.events.track('CtaClick', { offerId: this.activeOffer()?.id, campaign: this.campaign() });
+    this.form.patchValue({ userType: 'agency' });
+    this.scrollToForm();
+  }
+
+  /** نص الخصم بلغة الواجهة الحالية (مفاتيح OFFER_COMMON.*). */
+  offerDiscountText(offer: Offer): string {
+    switch (offer.discountType) {
+      case 'Percentage':
+        return this.translate.instant('OFFER_COMMON.DISCOUNT_PERCENT', { value: offer.discountValue });
+      case 'FixedAmountUsd':
+        return this.translate.instant('OFFER_COMMON.DISCOUNT_FIXED_USD', { value: offer.discountValue });
+      case 'FreeMonths':
+        return this.translate.instant(
+          offer.discountValue === 1 ? 'OFFER_COMMON.DISCOUNT_FREE_MONTH' : 'OFFER_COMMON.DISCOUNT_FREE_MONTHS',
+          { value: offer.discountValue },
+        );
+      default:
+        return '';
+    }
+  }
+
+  /** تاريخ انتهاء العرض بلغة الواجهة، أو null إن لم يكن له تاريخ ثابت. */
+  offerEndsOn(offer: Offer): string | null {
+    if (!offer.endsAtUtc) return null;
+    const lang = this.translate.currentLang || this.translate.defaultLang || 'ar';
+    let date: string;
+    try {
+      date = new Intl.DateTimeFormat(lang, { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(offer.endsAtUtc));
+    } catch {
+      date = offer.endsAtUtc.slice(0, 10);
+    }
+    return this.translate.instant('LANDING.OFFER.ENDS_ON', { date });
+  }
+
+  /** نص aria-label لشريط تقدّم العرض — "تم الانضمام: X من أصل Y". */
+  offerProgressAriaLabel(offer: Offer, max: number): string {
+    return this.translate.instant('LANDING.OFFER.PROGRESS_ARIA', {
+      count: offer.redeemedCount,
+      max,
+    });
+  }
+
+  /** نص وصفي أسفل شريط التقدّم — "انضمّ X من أصل Y مكتب حتى الآن". */
+  offerProgressLabel(offer: Offer, max: number): string {
+    return this.translate.instant('LANDING.OFFER.PROGRESS_LABEL', {
+      count: offer.redeemedCount,
+      max,
+    });
+  }
+
   submitForm(): void {
     if (this.submitting || this.formState() === 'loading') return;
 
@@ -123,14 +248,19 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     this.submitting = true;
     this.formState.set('loading');
     this.errorMessage = '';
+    this.offerAppliedOnSuccess.set(null);
 
     const { fullName, phoneOrWhatsapp, userType, city, notes } = this.form.getRawValue();
+    const offerId = this.activeOffer()?.id;
 
     this.leadSvc
-      .submitLead({ fullName, phoneOrWhatsapp, userType, city, notes })
+      .submitLead({ fullName, phoneOrWhatsapp, userType, city, notes, offerId })
       .subscribe({
-        next: () => {
+        next: res => {
           this.formState.set('success');
+          // undefined (لم يُطلب عرض أصلاً) يبقى null — الفرق بين "لا يوجد
+          // عرض" و"طُلب عرض لكنه لم يعد متاحًا" مهم لرسالة النجاح.
+          this.offerAppliedOnSuccess.set(offerId ? !!res.offerApplied : null);
           this.submitting = false;
           this.cd.markForCheck();
         },
@@ -152,11 +282,15 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     const ctrl = this.form.get(field);
     if (!ctrl || !ctrl.errors) return '';
     const e = ctrl.errors;
-    if (e['required'])  return 'هذا الحقل مطلوب.';
-    if (e['minlength']) return `الاسم قصير جداً (الحد الأدنى ${e['minlength'].requiredLength} حروف).`;
-    if (e['maxlength']) return 'تجاوزت الحد الأقصى للنص.';
-    if (e['phone'])     return 'رقم الهاتف غير صحيح. مثال: 0933123456 أو +963933123456';
-    return 'قيمة غير صحيحة.';
+    if (e['required'])  return this.translate.instant('LANDING.FORM.ERRORS.REQUIRED');
+    if (e['minlength']) {
+      return this.translate.instant('LANDING.FORM.ERRORS.MINLENGTH', {
+        min: e['minlength'].requiredLength,
+      });
+    }
+    if (e['maxlength']) return this.translate.instant('LANDING.FORM.ERRORS.MAXLENGTH');
+    if (e['phone'])     return this.translate.instant('LANDING.FORM.ERRORS.PHONE');
+    return this.translate.instant('LANDING.FORM.ERRORS.GENERIC');
   }
 
   resetForm(): void {
@@ -164,5 +298,6 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     this.formState.set('idle');
     this.errorMessage = '';
     this.submitting   = false;
+    this.offerAppliedOnSuccess.set(null);
   }
 }

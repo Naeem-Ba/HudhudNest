@@ -5,7 +5,18 @@ import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AuthApiService } from '../../../core/auth/auth-api.service';
+import { ConsentApiService } from '../../../core/api/consent-api.service';
+import { PRIVACY_POLICY_VERSION, TERMS_OF_SERVICE_VERSION } from '../../../core/models/consent-versions';
+import {
+  getPasswordPolicyViolations,
+  passwordPolicyValidator,
+  PASSWORD_POLICY_RULES
+} from '../../../core/auth/password-policy';
+import { isServerFailure } from '../../../core/api/server-failure';
+import { getPasswordRejectionMessages } from '../password-errors';
+import { isEmailAlreadyRegistered } from '../register-errors';
 import { FormErrorComponent } from '../../../shared/ui/form-error.component';
+import { ConsentCheckboxComponent } from '../../../shared/components/consent-checkbox/consent-checkbox.component';
 import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
@@ -16,10 +27,41 @@ import { ToastService } from '../../../shared/services/toast.service';
     ReactiveFormsModule,
     RouterModule,
     TranslateModule,
-    FormErrorComponent
+    FormErrorComponent,
+    ConsentCheckboxComponent
   ],
   template: `
     <section class="auth-page">
+      <!-- ✅ B-15 (RELEASE-BLOCKERS-AR.md): قبل هذا كانت الرسالة تظهر توستاً عابراً ثم
+           تنتقل الصفحة فوراً لتسجيل الدخول -- فلا مخرج لمن لم يصله الرابط. الآن تبقى
+           الصفحة على حالة "أُرسل" مع زرّ إعادة إرسال فعلي. -->
+      <div class="auth-card" *ngIf="registered(); else registerForm">
+        <h1>{{ 'AUTH.REGISTER_TITLE' | translate }}</h1>
+        <!-- 2026-10-06: كان النص "أرسلنا رابط تأكيد" يظهر لكل تسجيل ناجح، حتى حين فشل الخادم
+             في الإرسال (Production بلا مضيف SMTP). الآن يقول الخادم صراحةً هل أُرسلت. -->
+        <p>{{ (confirmationEmailSent() ? 'AUTH.REGISTER_SUCCESS' : 'AUTH.REGISTER_SUCCESS_MAIL_FAILED') | translate }}</p>
+        <p class="hint" *ngIf="confirmationEmailSent()">{{ 'AUTH.CONFIRMATION_SPAM_HINT' | translate }}</p>
+
+        <button
+          type="button"
+          [disabled]="resendDisabled"
+          (click)="resendConfirmation()">
+          <ng-container *ngIf="resendCooldown() > 0; else resendReady">
+            {{ 'AUTH.RESEND_CONFIRMATION.COOLDOWN' | translate: { seconds: resendCooldown() } }}
+          </ng-container>
+          <ng-template #resendReady>
+            {{ 'AUTH.RESEND_CONFIRMATION.BUTTON' | translate }}
+          </ng-template>
+        </button>
+
+        <!-- نصّ الخادم كما هو، بلا تخصيص -- شرط التقرير الصريح كي لا تنكسر مقاومة
+             التعداد المبنية في نقطة resend-confirmation. -->
+        <p class="hint" *ngIf="resendMessage()" aria-live="polite">{{ resendMessage() }}</p>
+
+        <a routerLink="/auth/login">{{ 'AUTH.GO_LOGIN' | translate }}</a>
+      </div>
+
+      <ng-template #registerForm>
       <form class="auth-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
         <h1>{{ 'AUTH.REGISTER_TITLE' | translate }}</h1>
         <p>{{ 'AUTH.REGISTER_SUBTITLE' | translate }}</p>
@@ -72,6 +114,7 @@ import { ToastService } from '../../../shared/services/toast.service';
           formControlName="password"
           placeholder="••••••••"
           autocomplete="new-password"
+          (input)="syncPasswordRules()"
         />
         <app-form-error
           [control]="form.controls.password"
@@ -79,7 +122,21 @@ import { ToastService } from '../../../shared/services/toast.service';
           [messages]="passwordMessages">
         </app-form-error>
 
-        <button type="submit" [disabled]="form.invalid || loading()">
+        <ul class="password-rules" aria-live="polite">
+          <li
+            *ngFor="let rule of passwordRules"
+            [class.is-met]="isRuleMet(rule)">
+            <span class="mark" aria-hidden="true">{{ isRuleMet(rule) ? '✓' : '•' }}</span>
+            {{ 'AUTH.PASSWORD_RULES.' + rule | translate }}
+          </li>
+        </ul>
+
+        <app-consent-checkbox
+          [checked]="privacyConsentAccepted()"
+          (checkedChange)="privacyConsentAccepted.set($event)">
+        </app-consent-checkbox>
+
+        <button type="submit" [disabled]="form.invalid || !privacyConsentAccepted() || loading()">
           <ng-container *ngIf="loading(); else registerText">
             ⏳ {{ 'AUTH.LOADING' | translate }}
           </ng-container>
@@ -95,6 +152,7 @@ import { ToastService } from '../../../shared/services/toast.service';
           {{ 'AUTH.GO_LOGIN' | translate }}
         </a>
       </form>
+      </ng-template>
     </section>
   `,
   styles: [`
@@ -102,16 +160,16 @@ import { ToastService } from '../../../shared/services/toast.service';
       min-height: 70vh;
       display: grid;
       place-items: center;
-      background: #f7f7f7;
+      background: var(--page-bg);
       padding: clamp(1rem, 3vw, 2rem);
     }
 
     .auth-card {
       width: min(460px, 100%);
-      background: #fff;
+      background: var(--surface);
       padding: clamp(1.25rem, 4vw, 2rem);
       border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
+      box-shadow: var(--shadow-lg);
       display: grid;
       gap: .45rem;
     }
@@ -122,7 +180,7 @@ import { ToastService } from '../../../shared/services/toast.service';
     }
 
     p {
-      color: #64748b;
+      color: var(--gray-500);
       line-height: 1.7;
       margin-bottom: .75rem;
     }
@@ -130,7 +188,7 @@ import { ToastService } from '../../../shared/services/toast.service';
     label {
       font-weight: 700;
       margin-top: .55rem;
-      color: #334155;
+      color: var(--gray-700);
     }
 
     input,
@@ -142,22 +200,27 @@ import { ToastService } from '../../../shared/services/toast.service';
     }
 
     input {
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--border);
+      background: var(--surface);
     }
 
     input:focus {
       outline: 0;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(214,168,79,.12);
     }
 
     button {
       margin-top: 1rem;
       border: 0;
-      background: #1e3a5f;
-      color: white;
+      background: var(--primary);
+      color: var(--on-primary);
       font-weight: 700;
       cursor: pointer;
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--primary-dark);
     }
 
     button:disabled {
@@ -166,11 +229,45 @@ import { ToastService } from '../../../shared/services/toast.service';
     }
 
     .error {
-      color: #b00020;
+      color: var(--danger);
+    }
+
+    .hint {
+      color: var(--gray-500);
+      font-size: var(--text-sm, .85rem);
+      text-align: center;
+    }
+
+    /* القواعد كانت غير معروفة للمستخدم إطلاقاً: النموذج يفرض 8 أحرف والخادم يفرض ثمانياً
+       من القواعد. عرضها أثناء الكتابة يحوّل الرفض بعد الإرسال إلى إرشاد قبله. */
+    .password-rules {
+      list-style: none;
+      margin: .5rem 0 0;
+      padding: 0;
+      display: grid;
+      gap: .2rem;
+      font-size: var(--text-xs, .75rem);
+      color: var(--gray-500, #64748b);
+    }
+
+    .password-rules li {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+
+    .password-rules .mark {
+      flex: 0 0 auto;
+      width: 1em;
+      text-align: center;
+    }
+
+    .password-rules li.is-met {
+      color: var(--success, #16a34a);
     }
 
     a {
-      color: #2563eb;
+      color: var(--primary-text);
       text-decoration: none;
       font-weight: 700;
       text-align: center;
@@ -189,12 +286,46 @@ export class RegisterPage {
   readonly submitted = signal(false);
   readonly error = signal('');
 
+  // مربّع الموافقة على سياسة الخصوصية وشروط الاستخدام — غير محدَّد افتراضياً،
+  // ومطلوب فعلياً (الزر معطَّل بدونه)، انظر docs/privacy/privacy-gaps.md (P1).
+  readonly privacyConsentAccepted = signal(false);
+
+  // ✅ B-15 (RELEASE-BLOCKERS-AR.md): حالة "أُرسل رابط التأكيد" + إعادة الإرسال.
+  readonly registered = signal(false);
+  readonly registeredEmail = signal('');
+  // false فقط حين يقول الخادم صراحةً إنه لم يستطع إرسال الرسالة؛ غيابه (خادم أقدم) يعني "أُرسلت".
+  readonly confirmationEmailSent = signal(true);
+  readonly resendCooldown = signal(0);
+  readonly resendMessage = signal('');
+  private resendTimer: ReturnType<typeof setInterval> | null = null;
+
+  readonly passwordRules = PASSWORD_POLICY_RULES;
+
+  /**
+   * القواعد غير المستوفاة. تبدأ بالقائمة كاملة لأن حقلاً فارغاً لم يستوفِ شيئاً --
+   * getPasswordPolicyViolations('') يُعيد PASSWORD_REQUIRED وحده، ولو استُخدم كما هو
+   * لظهرت كل القواعد «مستوفاة» قبل أن يكتب المستخدم حرفاً.
+   */
+  private readonly passwordViolations = signal<readonly string[]>(PASSWORD_POLICY_RULES);
+
   readonly form = this.fb.nonNullable.group({
     firstName: ['', [Validators.required, Validators.minLength(2)]],
     lastName: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(8)]]
+
+    // minLength(8) سقط لأن passwordPolicyValidator يغطّي الطول ضمن PASSWORD_TOO_SHORT،
+    // وإبقاؤهما معاً يعني رسالتين لسببٍ واحد.
+    password: ['', [Validators.required, passwordPolicyValidator()]]
   });
+
+  syncPasswordRules(): void {
+    const value = this.form.controls.password.value;
+    this.passwordViolations.set(value ? getPasswordPolicyViolations(value) : PASSWORD_POLICY_RULES);
+  }
+
+  isRuleMet(rule: string): boolean {
+    return !this.passwordViolations().includes(rule);
+  }
 
   get firstNameMessages(): Record<string, string> {
     return {
@@ -213,7 +344,7 @@ export class RegisterPage {
   get passwordMessages(): Record<string, string> {
     return {
       required: this.translate.instant('AUTH.ERRORS.PASSWORD_REQUIRED'),
-      minlength: this.translate.instant('AUTH.ERRORS.PASSWORD_MIN')
+      passwordPolicy: this.translate.instant('AUTH.ERRORS.PASSWORD_POLICY_UNMET')
     };
   }
 
@@ -222,6 +353,13 @@ export class RegisterPage {
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.error.set(this.translate.instant('AUTH.ERRORS.FIX_FIELDS'));
+      return;
+    }
+
+    // دفاع إضافي: زر الإرسال معطَّل بدون الموافقة أصلاً، لكن Enter داخل حقل النموذج
+    // قد يُطلق (ngSubmit) في بعض المتصفحات حتى مع تعطيل الزر.
+    if (!this.privacyConsentAccepted()) {
       this.error.set(this.translate.instant('AUTH.ERRORS.FIX_FIELDS'));
       return;
     }
@@ -235,20 +373,74 @@ export class RegisterPage {
       firstName: raw.firstName.trim(),
       lastName: raw.lastName.trim(),
       email: raw.email.trim().toLowerCase(),
-      password: raw.password
+      password: raw.password,
+      privacyPolicyAccepted: this.privacyConsentAccepted(),
+      privacyPolicyVersion: PRIVACY_POLICY_VERSION,
+      termsAccepted: this.privacyConsentAccepted(),
+      termsVersion: TERMS_OF_SERVICE_VERSION,
+      consentSource: ConsentApiService.currentSource()
     };
 
     this.auth.register(request).subscribe({
-      next: () => {
+      next: response => {
+        const sent = response?.confirmationEmailSent !== false;
         this.loading.set(false);
-        this.toast.success(this.translate.instant('AUTH.REGISTER_SUCCESS'));
-        void this.router.navigate(['/auth/login']);
+        this.registeredEmail.set(request.email);
+        this.confirmationEmailSent.set(sent);
+        this.registered.set(true);
+        this.toast.success(
+          this.translate.instant(sent ? 'AUTH.REGISTER_SUCCESS' : 'AUTH.REGISTER_SUCCESS_MAIL_FAILED')
+        );
       },
       error: error => {
         this.loading.set(false);
         this.error.set(this.getRegisterErrorMessage(error));
       }
     });
+  }
+
+  get resendDisabled(): boolean {
+    return this.resendCooldown() > 0;
+  }
+
+  resendConfirmation(): void {
+    if (this.resendDisabled) {
+      return;
+    }
+
+    this.auth.resendConfirmationEmail(this.registeredEmail()).subscribe({
+      // نصّ الخادم كما هو -- شرط التقرير الصريح، لأنه مصمَّم ليكون نفسه بصرف النظر
+      // عن كون البريد موجوداً أو مؤكَّداً أو أُرسل له للتوّ.
+      next: result => this.resendMessage.set(result.message),
+      error: error =>
+        this.resendMessage.set(
+          this.translate.instant(
+            (error as { status?: number } | null)?.status === 429
+              ? 'AUTH.RESEND_CONFIRMATION.TOO_MANY'
+              : 'AUTH.ERRORS.SERVER_ERROR'
+          )
+        )
+    });
+
+    this.startResendCooldown(60);
+  }
+
+  private startResendCooldown(seconds: number): void {
+    this.resendCooldown.set(seconds);
+    this.clearResendTimer();
+    this.resendTimer = setInterval(() => {
+      this.resendCooldown.update(value => Math.max(0, value - 1));
+      if (this.resendCooldown() === 0) {
+        this.clearResendTimer();
+      }
+    }, 1000);
+  }
+
+  private clearResendTimer(): void {
+    if (this.resendTimer) {
+      clearInterval(this.resendTimer);
+      this.resendTimer = null;
+    }
   }
 
   private getRegisterErrorMessage(error: unknown): string {
@@ -262,8 +454,29 @@ export class RegisterPage {
       status?: number;
     };
 
+    // خطأ الخادم (5xx) أولاً: جسمه دائماً "An unexpected error occurred..." بالإنجليزية، ولا
+    // يفيد القارئ بشيء. كان فحصه بعد response.error.message فلا يُبلَغ أبداً، فيرى المستخدم
+    // العربي والألماني نصاً إنجليزياً (POST /api/auth/register، 2026-10-05).
+    if (isServerFailure(error)) {
+      return this.translate.instant('AUTH.ERRORS.SERVER_ERROR');
+    }
+
+    // "البريد مسجّل": جسم 409 يحمل message إنجليزياً ثابتاً، وكان فحص status === 409 أدناه
+    // لا يُبلَغ أبداً لأن response.error.message يسبقه (2026-10-07). يُترجَم هنا قبل قراءة النص.
+    if (isEmailAlreadyRegistered(error)) {
+      return this.translate.instant('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
+    }
+
     if (typeof response.error === 'string' && response.error.trim()) {
       return response.error;
+    }
+
+    // كلمة المرور أولاً: هي السبب الوحيد الذي لا يستطيع النموذج توقّعه محلياً (فحص
+    // التسريبات يجري على الخادم)، وهي التي كانت تصل بالإنجليزية.
+    const passwordReasons = getPasswordRejectionMessages(this.translate, error);
+
+    if (passwordReasons.length > 0) {
+      return passwordReasons.join(' ');
     }
 
     if (typeof response.error === 'object') {
@@ -275,10 +488,8 @@ export class RegisterPage {
         return response.error.detail;
       }
 
-      if (response.error?.title) {
-        return response.error.title;
-      }
-
+      // أخطاء الحقول تسبق title: جسم 422 يحمل title = "Validation Error" دائماً، وفحصه
+      // أولاً كان يحجب السبب الفعلي خلف عنوان عام لا يقول للمستخدم شيئاً.
       if (response.error?.errors) {
         const messages = Object.values(response.error.errors).flat();
 
@@ -286,14 +497,10 @@ export class RegisterPage {
           return messages.join(' ');
         }
       }
-    }
 
-    if (response.status === 409) {
-      return this.translate.instant('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
-    }
-
-    if (response.status === 500) {
-      return this.translate.instant('AUTH.ERRORS.SERVER_ERROR');
+      if (response.error?.title) {
+        return response.error.title;
+      }
     }
 
     return this.translate.instant('AUTH.ERRORS.REGISTER_FAILED');

@@ -14,9 +14,14 @@ nav button {
 button {
   background: none;
   border: none;
-  color: blue;
+  color: var(--primary-text);
   cursor: pointer;
 }
 button:hover {
   text-decoration: underline;
+}
+
+.update-notes {
+  margin: 0.75rem 0 0;
+  white-space: pre-line;
 }

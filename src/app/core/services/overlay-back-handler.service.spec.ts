@@ -25,6 +25,18 @@ describe('OverlayBackHandlerService', () => {
     expect(calls).toEqual(['newer']);
   });
 
+  it('does not throw when a handler unregisters others while Back is handled', () => {
+    const unregisterOlder = service.register(() => true);
+    const unregisterMiddle = service.register(() => false);
+    service.register(() => {
+      unregisterMiddle();
+      unregisterOlder();
+      return false;
+    });
+
+    expect(() => service.closeTopOverlay()).not.toThrow();
+  });
+
   it('continues until a handler consumes the back action', () => {
     const calls: string[] = [];
     service.register(() => {

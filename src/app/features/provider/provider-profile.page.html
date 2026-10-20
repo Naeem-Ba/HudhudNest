@@ -1,0 +1,44 @@
+<section class="feature-page">
+  <a routerLink="/provider/requests" class="back-link">→ {{ 'PROVIDER.PROFILE.BACK' | translate }}</a>
+
+  <header class="page-header">
+    <h1>{{ 'PROVIDER.PROFILE.TITLE' | translate }}</h1>
+    <a routerLink="/provider/offerings" class="btn">{{ 'PROVIDER.OFFERINGS.TITLE' | translate }}</a>
+  </header>
+
+  <div *ngIf="loading()" class="state">{{ 'COMMON.LOADING' | translate }}</div>
+  <div *ngIf="!loading() && error()" class="state error">
+    <p>{{ error() | translate }}</p><button type="button" class="btn" (click)="load()">{{ 'COMMON.RETRY' | translate }}</button>
+  </div>
+
+  <ng-container *ngIf="!loading() && !error() && provider() as p">
+    <div class="verification" [attr.data-level]="p.verificationLevel">
+      {{ ('PROVIDER.PROFILE.VERIFICATION.' + p.verificationLevel.toUpperCase()) | translate }}
+    </div>
+    <p class="rating" *ngIf="p.reviewCount > 0">
+      ⭐ {{ p.averageRating | number:'1.1-1' }} · {{ 'PROVIDER.PROFILE.REVIEW_COUNT' | translate:{ count: p.reviewCount } }}
+    </p>
+
+    <form class="panel" (ngSubmit)="save()">
+      <label>
+        {{ 'PROVIDER.PROFILE.DISPLAY_NAME' | translate }}
+        <input type="text" required [ngModel]="displayName()" (ngModelChange)="displayName.set($event)" name="displayName" />
+      </label>
+      <label>
+        {{ 'PROVIDER.PROFILE.BIO' | translate }}
+        <textarea rows="4" [ngModel]="bio()" (ngModelChange)="bio.set($event)" name="bio"></textarea>
+      </label>
+      <label>
+        {{ 'PROVIDER.PROFILE.CONTACT_EMAIL' | translate }}
+        <input type="email" [ngModel]="contactEmail()" (ngModelChange)="contactEmail.set($event)" name="contactEmail" />
+      </label>
+      <label>
+        {{ 'PROVIDER.PROFILE.CONTACT_PHONE' | translate }}
+        <input type="tel" [ngModel]="contactPhone()" (ngModelChange)="contactPhone.set($event)" name="contactPhone" />
+      </label>
+      <button type="submit" class="btn success" [disabled]="saving() || !displayName().trim()">
+        {{ saving() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+      </button>
+    </form>
+  </ng-container>
+</section>

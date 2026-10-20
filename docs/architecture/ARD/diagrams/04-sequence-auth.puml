@@ -1,0 +1,86 @@
+@startuml Sequence_Auth
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+title مخطط تسلسلي — المصادقة، CSRF، واستعادة الجلسة
+autonumber
+
+actor "مستخدم" as User
+participant "LoginComponent" as LoginUi
+participant "AuthApiService" as AuthApi
+participant "AuthService" as AuthSvc
+participant "CsrfTokenService" as Csrf
+participant "CsrfInterceptor" as CsrfInt
+participant "AuthInterceptor\n(RefreshAuthInterceptor)" as AuthInt
+participant "TokenStorageService" as TokenStore
+database "HudhudNestApi\n(Backend)" as Backend
+
+== 1) إقلاع التطبيق — استعادة الجلسة (APP_INITIALIZER) ==
+User -> LoginUi : فتح التطبيق (أي مسار)
+activate LoginUi
+LoginUi -> Csrf : fetchToken()\n(restoreSession في app.config.ts)
+Csrf -> Backend : GET /api/security/csrf-token\n(withCredentials: true)
+Backend --> Csrf : { csrfToken }
+Csrf -> Csrf : تخزين التوكن في الذاكرة
+
+LoginUi -> Backend : POST /auth/refresh\n(HttpClient خام على HttpBackend —\nيتجاوز كل المُعترِضات عمداً)\nHeaders: X-XSRF-TOKEN مُرفَق يدوياً (ADR-002)
+alt كوكي refresh_token غائبة (زائر فعلي) أو منتهية
+    Backend --> LoginUi : 401 / فشل
+    LoginUi -> TokenStore : clear()
+    LoginUi -> Csrf : clear()
+    note right: لا شيء يظهر للزائر — استمرار كضيف
+else كوكي refresh_token صالحة
+    Backend --> LoginUi : { accessToken, ... }
+    LoginUi -> AuthSvc : login(response)
+    AuthSvc -> TokenStore : تخزين accessToken في الذاكرة فقط
+end
+deactivate LoginUi
+
+== 2) تسجيل دخول صريح (بريد/كلمة مرور) ==
+User -> LoginUi : إدخال البيانات + إرسال
+activate LoginUi
+LoginUi -> AuthApi : login(credentials)
+AuthApi -> CsrfInt : POST /auth/login\n(عبر سلسلة المُعترِضات العادية)
+CsrfInt -> CsrfInt : طلب "غير آمن" — يُرفق\nX-XSRF-TOKEN تلقائياً إن توفّر توكن
+CsrfInt -> Backend : POST /auth/login + X-XSRF-TOKEN
+alt بيانات خاطئة
+    Backend --> LoginUi : 400/401 (رسالة موحّدة —\nلا كشف سبب الفشل، من جهة الخلفية)
+else نجاح
+    Backend --> AuthApi : { accessToken, refresh_token\nكوكي HttpOnly }
+    AuthApi --> LoginUi : الاستجابة
+    LoginUi -> AuthSvc : login(response)
+    AuthSvc -> TokenStore : تخزين accessToken
+    LoginUi -> User : توجيه لـ returnUrl أو /home
+end
+deactivate LoginUi
+
+== 3) طلب API لاحق — تجديد تلقائي عند 401 ==
+User -> AuthInt : أي طلب API محمي (بعد 30 دقيقة، مثلاً)
+activate AuthInt
+AuthInt -> Backend : الطلب الأصلي + Bearer
+Backend --> AuthInt : 401 (Access Token منتهٍ)
+AuthInt -> Csrf : getToken() ?? fetchToken()
+Csrf -> Backend : (GET /api/security/csrf-token إن لزم)
+AuthInt -> Backend : POST /auth/refresh\n(HttpClient خام — يتجاوز المُعترِضات)\nX-XSRF-TOKEN مُرفَق يدوياً
+alt التجديد نجح
+    Backend --> AuthInt : { accessToken جديد }
+    AuthInt -> TokenStore : تحديث accessToken
+    AuthInt -> Backend : إعادة الطلب الأصلي + Bearer الجديد
+    Backend --> AuthInt : 200 OK
+    AuthInt --> User : الاستجابة الأصلية بنجاح
+else التجديد فشل (كوكي غير صالحة/منتهية)
+    Backend --> AuthInt : 401/403
+    AuthInt -> TokenStore : clear()
+    AuthInt -> Csrf : clear()
+    AuthInt -> User : توجيه إلى /auth/login
+end
+deactivate AuthInt
+
+note over Csrf, AuthInt
+  ADR-002: كلا مساري "استعادة الجلسة" و"التجديد التلقائي"
+  يبنيان HttpClient خاماً على HttpBackend لتفادي حلقة
+  تجديد لا نهائية — هذا يتجاوز CsrfInterceptor أيضاً،
+  فيُرفَق X-XSRF-TOKEN يدوياً في كليهما تحديداً.
+end note
+
+@enduml

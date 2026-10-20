@@ -43,6 +43,8 @@ export interface Amenity {
   id: string;
   name: string;
   icon?: string;
+  /** Stable language-neutral key from the API (translated through AMENITIES_CATALOG.*). */
+  iconName?: string | null;
 }
 
 export interface Property {
@@ -54,6 +56,21 @@ export interface Property {
   region?: string;
   countryCode?: string;
   postalCode?: string;
+  // Phase-0, Task 0: structured location + property-type FKs. Optional — old
+  // listings created before this feature have none of these set, and the
+  // free-text city/region fields keep working exactly as before.
+  governorateId?: number | null;
+  districtId?: number | null;
+  // Manual fallback name when districtId has no matching seeded row —
+  // submitted automatically as an admin-reviewed LocationSuggestion.
+  districtText?: string | null;
+  neighborhoodId?: number | null;
+  // Manual fallback name when neighborhoodId has no matching seeded row —
+  // same LocationSuggestion mechanism as districtText.
+  neighborhoodText?: string | null;
+  propertyTypeId?: number | null;
+  // Phase-0, Task 2: price-history + availability confirmation.
+  lastConfirmedAvailableAt?: string | null;
   latitude?: number;
   longitude?: number;
   listingType?: ListingType;
@@ -67,7 +84,16 @@ export interface Property {
   currencyCode?: string;
   rooms?: number;
   area?: number;
+  // Dynamic listing form (ListingType × PropertyType redesign, Syrian market).
+  // Returned as enum-name strings (e.g. "SquareMeter", "GreenDeed") — see
+  // PropertyDto on the backend. RentalStartDate/RentalEndDate are 'YYYY-MM-DD'.
+  areaUnit?: string;
   floor?: number;
+  rentalStartDate?: string | null;
+  rentalEndDate?: string | null;
+  rentalDurationType?: string | null;
+  legalStatus?: string;
+  furnishingStatus?: string;
   hasBalcony?: boolean;
   hasElevator?: boolean;
   hasParkingSpace?: boolean;
@@ -79,10 +105,27 @@ export interface Property {
   amenities?: Amenity[];
   ownerId?: string;
   ownerName?: string;
+  // المكتب العقاري الذي نُشر الإعلان تحته. agencyId يأتي دائمًا مع إعلان عضو مكتب، أما بقية الحقول
+  // فيملؤها الخادم في القائمة والتفاصيل العامتين فقط وللمكتب الفعّال فقط (null للإعلان الفردي
+  // أو للمكتب المعطَّل، وغائبة تمامًا من خادم أقدم) — فكلها اختيارية ولا تُفترض أبدًا.
+  agencyId?: string | null;
+  agencyName?: string | null;
+  agencySlug?: string | null;
+  agencyLogoUrl?: string | null;
+  agencyRatingAverage?: number | null;
+  agencyRatingCount?: number;
   availableFrom?: string;
   isPublished?: boolean;
+  // أوقفته الإدارة بسبب يراه المالك فقط (QA المرحلة 8، P8-D10). غائبان من خادم أقدم فلا يُفترضان.
+  isTakenDown?: boolean;
+  takenDownReason?: string | null;
   publishedAt?: string;
   expiresAt?: string;
+  // إعلان مميّز مدفوع. isFeatured هو القيمة الفعّالة وقت الاستجابة لا العمود الخام:
+  // كنس إنهاء التمييز يعمل كل ست ساعات، فبين دورتين قد يبقى العمود true لنافذة انقضت.
+  // featuredUntil هو سجلّ ما دُفِع ثمنه ومتى ينتهي.
+  isFeatured?: boolean;
+  featuredUntil?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -93,10 +136,18 @@ export interface PropertyFilterDto {
   page?: number;
   pageSize?: number;
 
+  // Free-text keyword search — matched against Title/Description on the backend (Phase 3).
+  searchTerm?: string;
+
   // Location
   countryCode?: string;
   city?: string;
   region?: string;         // ✅ مضاف
+  // Phase-0, Task 0: structured location + property-type filters.
+  governorateId?: number;
+  districtId?: number;
+  neighborhoodId?: number;
+  propertyTypeId?: number;
 
   // Type & Status
   listingType?: string | number;
@@ -125,6 +176,10 @@ export interface PropertyFilterDto {
   // Owner filter
   ownerId?: string;
 
+  // Agency filter — PropertyFilterDto.AgencyId بالباك اند: إعلانات مكتب واحد
+  // (صفحة المكتب العامة). فلتر عرض عام، لا حدّ صلاحيات.
+  agencyId?: string;
+
   // Sorting
   // Values: 'CreatedAt' | 'PurchasePrice' | 'ColdRent' | 'Area'
   sortBy?: string;               // ✅ مضاف
@@ -144,6 +199,14 @@ export interface CreatePropertyDto {
   region?: string | null;
   countryCode: string;
   postalCode?: string | null;
+  // Phase-0, Task 0. Not currently used — see PropertySavePayload in
+  // property-form.page.ts for the interface actually sent on the wire; kept
+  // here in sync anyway since this DTO documents the backend contract.
+  governorateId?: number | null;
+  districtId?: number | null;
+  neighborhoodId?: number | null;
+  neighborhoodText?: string | null;
+  propertyTypeId?: number | null;
   latitude?: number | null;
   longitude?: number | null;
   coldRent?: number | null;
@@ -163,6 +226,26 @@ export interface CreatePropertyDto {
   condition?: number | string;
   availableFrom?: string | null;
   amenityIds?: string[] | null;
+  // Dynamic listing form (ListingType × PropertyType redesign, Syrian market).
+  legalStatus?: number | null;
+  areaUnit: number;
+  rentalStartDate?: string | null;
+  rentalEndDate?: string | null;
+  rentalDurationType?: number | null;
+  furnishingStatus?: number | null;
+}
+
+// Phase-0, Task 4 — advisory duplicate-listing check (GET /properties/check-duplicate).
+export interface DuplicateCandidate {
+  propertyId: string;
+  title: string;
+  isSameOwner: boolean;
+  matchReason: string;
+}
+
+export interface DuplicateCheckResult {
+  hasPotentialDuplicates: boolean;
+  candidates: DuplicateCandidate[];
 }
 
 // ✅ نموذج صور العقار من الـ API

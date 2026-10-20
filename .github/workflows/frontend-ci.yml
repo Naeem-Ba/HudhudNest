@@ -3,6 +3,10 @@ name: Frontend CI
 on:
   push:
     branches: [ main, master, develop ]
+    # Store builds: tag v<major>.<minor>.<patch> on a main commit. The tag must equal the version in
+    # android/app/build.gradle and the Xcode project (checked below), and the whole `build` job (audit,
+    # tests, production build) runs on the tagged commit before any store build starts.
+    tags: [ 'v*' ]
   pull_request:
     branches: [ main, master, develop ]
   workflow_dispatch:
@@ -10,21 +14,44 @@ on:
 permissions:
   contents: read
 
+# دفعة جديدة إلى نفس الـ PR تُلغي التشغيل الأقدم (كان يكتمل كله دون فائدة). غير الـ PR (push إلى main، تشغيل
+# يدوي) يأخذ مجموعة خاصة به (run_id) فلا يُلغى ولا يُؤجَّل ولا يُستبدل: android-release ينشر الـ Release
+# وsync-staging ينتظر اكتمال تشغيل main.
+concurrency:
+  group: frontend-ci-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build:
     name: Audit + Build Angular Production
-    runs-on: ubuntu-latest
+    # مثبَّت صراحةً (بدل ubuntu-latest) لنفس سبب مهمة Android أدناه؛ يُتحقَّق منه بتشغيل هذا الـ PR.
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
+    # هل يمسّ التغيير مشروع iOS؟ تقرؤه مهمة ios-build أدناه (دقيقة macOS أغلى بنحو 10 أضعاف Linux:
+    # 0.062$ مقابل 0.006$؛ وفي المستودعات الخاصة حصة الدقائق المجانية 2000 شهريًا للحساب كله).
+    outputs:
+      native: ${{ steps.native.outputs.native }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          # عمقان يكفيان لمقارنة commit الدمج في الـ PR بأبيه الأول؛ tools/ci-detect-native.mjs يجلب
+          # الـ commit السابق عند الحاجة في دفعات push، وأي فشل يعني "شغّل iOS" (لا يفشل الخطوة أبدًا).
+          fetch-depth: 2
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: '22'
           cache: 'npm'
+
+      - name: Detect native changes
+        id: native
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: node tools/ci-detect-native.mjs
 
       - name: Install dependencies
         run: npm ci
@@ -32,11 +59,372 @@ jobs:
       - name: Frontend audit guard
         run: npm run audit:frontend
 
+      - name: Native app version check
+        run: |
+          npm run test:tools
+          npm run version:check -- --strict
+
       - name: Environment validation
         run: npm run check:env
+
+      - name: Translation keys
+        run: npm run check:i18n
 
       - name: TypeScript check
         run: npm run typecheck
 
+      - name: TypeScript strict check
+        run: npm run typecheck:strict
+
+      - name: Unit tests
+        run: npm run test:ci
+
       - name: Build production
         run: npm run build:prod
+
+  # BLK-04: يبني ويوقّع Android App Bundle باستخدام مفتاح الإنتاج الحقيقي
+  # المخزَّن في GitHub Secrets (لا يُنشأ أو يُخزَّن هنا). يتطلّب الأسرار الأربعة
+  # (خطوة "Validate signing secrets"): كلها غائبة = تخطٍّ، بعضها غائب = فشل صريح.
+  # يعمل عند دفع tag بصيغة v<x.y.z> أو يدويًا (workflow_dispatch) — لا عند كل دمج إلى main (دقائق Actions
+  # على مستودع خاص). تم التحقق منه فعليًا
+  # بتاريخ 2026-09-19 (AAB موقَّع بالمفتاح الصحيح) — انظر android/RELEASE_SIGNING.md.
+  android-release:
+    name: Android — Build Signed Release AAB
+    needs: build
+    # مثبَّت صراحةً على ubuntu-26.04 بدل ubuntu-latest (الذي ينتقل إليه بين 2026-10-19 و2026-11-19،
+    # https://github.com/actions/runner-images/issues/14748) كي لا يتغيّر البناء بصمت. اختُبر
+    # توقيع AAB كاملًا على ubuntu-26.04 بنجاح (run 35427580310).
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    # دفع tag إصدار (v*)، أو تشغيل يدوي (workflow_dispatch) للتحقق من التوقيع على فرع قبل الدمج.
+    if: (github.event_name == 'push' && github.ref_type == 'tag') || github.event_name == 'workflow_dispatch'
+    # contents: write لنشر الـ AAB كـ Release asset (خطوة "Publish signed AAB" أدناه) بدل الاعتماد
+    # وحده على حصة Actions artifacts.
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      # فحص الأسرار الأربعة معًا قبل أي عمل مكلف. لا تُطبَع القيم أبدًا — فقط أسماء
+      # الأسرار الناقصة. كلها غائبة = تخطٍّ مقصود (كالسابق)؛ بعضها غائب = فشل صريح لأنه
+      # إعداد ناقص (كان يُنتج keystore فارغًا وalias فارغًا ثم يفشل بلا تفسير).
+      - name: Validate signing secrets
+        id: signing
+        env:
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          RELEASE_STORE_FILE_BASE64: ${{ secrets.RELEASE_STORE_FILE_BASE64 }}
+        run: |
+          missing=()
+          [ -n "$RELEASE_STORE_PASSWORD" ]    || missing+=(RELEASE_STORE_PASSWORD)
+          [ -n "$RELEASE_KEY_ALIAS" ]         || missing+=(RELEASE_KEY_ALIAS)
+          [ -n "$RELEASE_KEY_PASSWORD" ]      || missing+=(RELEASE_KEY_PASSWORD)
+          [ -n "$RELEASE_STORE_FILE_BASE64" ] || missing+=(RELEASE_STORE_FILE_BASE64)
+          if [ "${#missing[@]}" -eq 4 ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Release signing secrets are not configured; skipping signed AAB build. See android/RELEASE_SIGNING.md."
+          elif [ "${#missing[@]}" -gt 0 ]; then
+            echo "::error::Incomplete release signing configuration. Missing GitHub secrets: ${missing[*]}. See android/RELEASE_SIGNING.md."
+            exit 1
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # git يجب أن يخزّن gradlew بوضع 100755 (git ls-files --stage). كان 100644 فيفشل
+      # `./gradlew` بـ "Permission denied" (exit 126).
+      - name: Verify Gradle wrapper is executable
+        if: steps.signing.outputs.enabled == 'true'
+        run: |
+          if [ ! -x android/gradlew ]; then
+            echo "::error::android/gradlew is not executable. Fix with: git update-index --chmod=+x android/gradlew"
+            exit 1
+          fi
+
+      - name: Setup Node.js
+        if: steps.signing.outputs.enabled == 'true'
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      # الإصدار المبني = ما كُتب في المشروعين = اسم الـ tag، ومن commit موجود على main. أي اختلاف يُفشل البناء
+      # قبل أي عمل مكلف. التشغيل اليدوي لا tag له: يكفي أن يكون الرقمان متطابقين بين المنصتين.
+      - name: Check release identity
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IS_TAG: ${{ github.ref_type == 'tag' }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if [ "$IS_TAG" = "true" ]; then
+            node tools/app-version.mjs verify-tag "$TAG_NAME"
+            status="$(gh api "repos/${GITHUB_REPOSITORY}/compare/main...${GITHUB_SHA}" --jq .status)"
+            case "$status" in
+              identical|behind) ;;
+              *) echo "::error::Tag ${TAG_NAME} points at ${GITHUB_SHA::7}, which is not on main (compare status: ${status}). Tag a commit that was merged to main."; exit 1 ;;
+            esac
+          fi
+          node tools/app-version.mjs check --strict
+
+      # يفشل مغلقًا: AAB بلا معرّف Google لا يسجّل الدخول بـ Google، وبلا google-services.json لا تصل إشعارات
+      # Push، ولا يظهر أي خطأ في البناء نفسه. القيم العامة (معرّفات) في GitHub Variables، والملف في Secret.
+      # Apple اختياري على Android (تسجيل الدخول عبر الويب)؛ تعطيل Push صراحةً: ANDROID_PUSH_DISABLED=true.
+      - name: Check store build configuration
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
+          APPLE_CLIENT_ID: ${{ vars.APPLE_CLIENT_ID }}
+          APPLE_REDIRECT_URI: ${{ vars.APPLE_REDIRECT_URI }}
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+          ANDROID_PUSH_DISABLED: ${{ vars.ANDROID_PUSH_DISABLED }}
+        run: |
+          missing=()
+          [ -n "$GOOGLE_CLIENT_ID" ] || missing+=("variable GOOGLE_CLIENT_ID")
+          if [ -z "$GOOGLE_SERVICES_JSON_BASE64" ] && [ "$ANDROID_PUSH_DISABLED" != "true" ]; then
+            missing+=("secret GOOGLE_SERVICES_JSON_BASE64 (or variable ANDROID_PUSH_DISABLED=true)")
+          fi
+          if [ "${#missing[@]}" -gt 0 ]; then
+            printf '::error::Store build configuration is incomplete. Missing: %s. See docs/RELEASE-RUNBOOK-AR.md.\n' "$(IFS=,; echo "${missing[*]}")"
+            exit 1
+          fi
+          if [ -z "$APPLE_CLIENT_ID" ] || [ -z "$APPLE_REDIRECT_URI" ]; then
+            echo "::warning::APPLE_CLIENT_ID / APPLE_REDIRECT_URI are not set: Apple sign-in will be hidden in this build."
+          fi
+          if [ -z "$GOOGLE_SERVICES_JSON_BASE64" ]; then
+            echo "::warning::ANDROID_PUSH_DISABLED=true: this build has no push notifications."
+          fi
+
+      - name: Install dependencies
+        if: steps.signing.outputs.enabled == 'true'
+        run: npm ci
+
+      - name: Build production web assets
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
+          APPLE_CLIENT_ID: ${{ vars.APPLE_CLIENT_ID }}
+          APPLE_REDIRECT_URI: ${{ vars.APPLE_REDIRECT_URI }}
+        run: npm run build:prod
+
+      # الحزمة يجب أن تحمل بناء إنتاج من هذا الـ commit بالذات (build-info.json يكتبه tools/stamp-build-info.mjs).
+      - name: Verify the web bundle is the production build of this commit
+        if: steps.signing.outputs.enabled == 'true'
+        run: |
+          node -e '
+            const info = JSON.parse(require("fs").readFileSync("dist/HudhudNest/browser/build-info.json", "utf8"));
+            const problems = [];
+            if (info.environment !== "production") problems.push("environment is " + info.environment);
+            if (info.commit !== process.env.GITHUB_SHA) problems.push("commit is " + info.commit + ", expected " + process.env.GITHUB_SHA);
+            if (/staging/i.test(info.apiUrl ?? "")) problems.push("apiUrl points at Staging");
+            if (problems.length) { console.error("::error::" + problems.join("; ")); process.exit(1); }
+            console.log("Bundle: " + info.environment + " @ " + info.commit.slice(0, 7));
+          '
+
+      - name: Add google-services.json (push notifications)
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON_BASE64" ]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON_BASE64" | base64 -d > android/app/google-services.json
+            if ! node -e 'JSON.parse(require("fs").readFileSync("android/app/google-services.json", "utf8"))' 2>/dev/null; then
+              echo "::error::GOOGLE_SERVICES_JSON_BASE64 is not Base64 of a valid google-services.json."
+              rm -f android/app/google-services.json
+              exit 1
+            fi
+          fi
+
+      - name: Sync Capacitor Android
+        if: steps.signing.outputs.enabled == 'true'
+        run: npx cap sync android
+
+      # JDK 21 مطلوب: Capacitor 8 يضبط sourceCompatibility = VERSION_21
+      # (android/app/capacitor.build.gradle)، وGradle 8.14.3 / AGP 8.13.0 يدعمانه.
+      - name: Set up JDK 21
+        if: steps.signing.outputs.enabled == 'true'
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'gradle'
+
+      - name: Decode release keystore
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_STORE_FILE_BASE64: ${{ secrets.RELEASE_STORE_FILE_BASE64 }}
+        run: |
+          mkdir -p android/keystore
+          printf '%s' "$RELEASE_STORE_FILE_BASE64" | base64 -d > android/keystore/aqar-tech-release.keystore
+          chmod 600 android/keystore/aqar-tech-release.keystore
+          if [ ! -s android/keystore/aqar-tech-release.keystore ]; then
+            echo "::error::Decoded keystore is empty; RELEASE_STORE_FILE_BASE64 is not valid Base64 of the .keystore file."
+            exit 1
+          fi
+          # يتحقق من كلمة المرور والـ alias دون طباعة أي سر (-storepass:env يقرأ من البيئة).
+          if ! keytool -list -keystore android/keystore/aqar-tech-release.keystore \
+                 -storepass:env RELEASE_STORE_PASSWORD -alias "$RELEASE_KEY_ALIAS" > /dev/null 2>&1; then
+            echo "::error::Keystore could not be opened or alias not found. Check RELEASE_STORE_PASSWORD, RELEASE_KEY_ALIAS and RELEASE_STORE_FILE_BASE64."
+            exit 1
+          fi
+
+      - name: Build signed release AAB
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          RELEASE_STORE_FILE: keystore/aqar-tech-release.keystore
+        working-directory: android
+        run: ./gradlew bundleRelease --console=plain
+
+      # القناة الأساسية لتسليم الـ AAB. حصة تخزين Actions artifacts مشتركة بين كل مستودعات الحساب
+      # وامتلأت ثلاث مرات في 2026-10-03..07 فرُفض رفع الـ AAB رغم نجاح البناء والتوقيع. ملفات الـ
+      # Release لا تُحسب على تلك الحصة. يبقى Release واحد فقط (android-latest، pre-release): يُحذف
+      # ويُعاد إنشاؤه عند كل بناء، فلا يتراكم شيء. الرابط: Releases ← "Android signed AAB".
+      - name: Publish signed AAB as a release asset
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          aab="$(ls android/app/build/outputs/bundle/release/*.aab)"
+          sha256="$(sha256sum "$aab" | cut -d' ' -f1)"
+          short="${GITHUB_SHA::7}"
+          version_name="$(sed -n 's/^[[:space:]]*versionName[[:space:]]*"\([^"]*\)".*/\1/p' android/app/build.gradle | head -1)"
+          version_code="$(sed -n 's/^[[:space:]]*versionCode[[:space:]]*\([0-9][0-9]*\).*/\1/p' android/app/build.gradle | head -1)"
+          gh release delete android-latest --cleanup-tag --yes --repo "$GITHUB_REPOSITORY" || true
+          gh release create android-latest "$aab" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --prerelease \
+            --latest=false \
+            --title "Android signed AAB ${version_name} (${version_code}) - ${short}" \
+            --notes "Signed release AAB ${version_name} (versionCode ${version_code}) built from ${GITHUB_SHA} by ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. SHA-256: ${sha256}"
+
+      # نسخة احتياطية فقط: فشلها (امتلاء الحصة) لا يُسقط البناء بعد أن نُشر الـ AAB كـ Release.
+      # v6 يعمل على Node 24 (v4/v5 على Node 20 الذي تُزال دعمه نهائيًا من الـ runners في 2026-09-23).
+      - name: Upload signed AAB
+        if: steps.signing.outputs.enabled == 'true'
+        continue-on-error: true
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: aqar-tech-release-aab
+          path: android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+          # يوم واحد: النسخة الرسمية في Release (android-latest)، وهذه احتياطية فقط. 48 نسخة × 14 يومًا
+          # (340 MB) كانت تستهلك حصة تخزين Actions المشتركة.
+          retention-days: 1
+
+      # APK موقّع بنفس المفتاح للتنزيل المباشر من صفحة /download (انظر docs/ANDROID-DIRECT-DOWNLOAD-AR.md). يأتي بعد
+      # نشر الـ AAB عمدًا: أي فشل هنا يُحمّر المهمة لكنه لا يمنع تسليم الـ AAB الذي تعتمد عليه Play. لا يُنشر للعامة
+      # من هنا: يُرفق بـ Release الخاص android-latest، وصاحب المشروع يرفعه يدويًا إلى المستودع العام للإصدارات ثم يعتمده
+      # في PR (downloads/android-release.json). كل الأرقام تُقرأ من الملف النهائي نفسه، لا من قيمة مكتوبة.
+      - name: Build signed release APK
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          RELEASE_STORE_FILE: keystore/aqar-tech-release.keystore
+        working-directory: android
+        run: ./gradlew assembleRelease --console=plain
+
+      # يفحص الـ APK الفعلي: التوقيع (apksigner)، الحزمة والإصدارات (aapt2)، وبصمة الشهادة من القائمة المعتمدة في
+      # deep-links.config.json، ثم يحسب SHA-256 من الملف النهائي ويكتب مسودة البيان (approved:false).
+      - name: Verify the signed APK and describe it
+        if: steps.signing.outputs.enabled == 'true'
+        run: |
+          set -euo pipefail
+          apk="$(ls android/app/build/outputs/apk/release/*.apk)"
+          version_name="$(sed -n 's/^[[:space:]]*versionName[[:space:]]*"\([^"]*\)".*/\1/p' android/app/build.gradle | head -1)"
+          out="android/app/build/outputs/apk-publish"
+          mkdir -p "$out"
+          cp "$apk" "$out/HudhudNest-${version_name}.apk"
+          node tools/android-release.mjs describe \
+            --apk "$out/HudhudNest-${version_name}.apk" \
+            --commit "$GITHUB_SHA" \
+            --released-at "$(date -u +%F)" \
+            --out "$out/android-release.draft.json"
+          (cd "$out" && sha256sum "HudhudNest-${version_name}.apk" > "HudhudNest-${version_name}.apk.sha256")
+          {
+            echo "### Direct-download APK (draft, not published)"
+            echo
+            echo '```json'
+            cat "$out/android-release.draft.json"
+            echo '```'
+            echo
+            echo "Next steps: docs/ANDROID-DIRECT-DOWNLOAD-AR.md (upload the APK to the public releases repository, then approve the manifest in a PR)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Attach the APK, its SHA-256 and the draft manifest to the private release
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release upload android-latest android/app/build/outputs/apk-publish/* --clobber --repo "$GITHUB_REPOSITORY"
+
+  ios-build:
+    name: iOS Unsigned Simulator Build
+    # يعمل فقط حين يتغيّر ما يدخل مشروع iOS (ios/، capacitor.config.*، package*.json، أدوات iOS، أو هذا
+    # الملف؛ القائمة في tools/lib/native-changes.mjs) وبعد نجاح بناء الويب، فلا يُنفَق وقت macOS على
+    # بناء أحمر. تغيير Angular وحده لا يمكن أن يكسر xcodebuild (مهمة build تتحقق منه). التشغيل اليدوي
+    # (workflow_dispatch) يشغّله دائمًا.
+    needs: build
+    if: needs.build.outputs.native == 'true' && github.ref_type != 'tag'
+    # macos-14 يدخل طور التقاعد في 2026-07-06 ويُسحَب نهائياً في 2026-11-02
+    # (راجع: https://github.com/actions/runner-images/issues/13518) — macos-15 هو
+    # أحدث صورة مستقرة غير مؤقَّتة اليوم؛ لا نستخدم macos-latest لأنه تحوّل مؤخراً
+    # إلى macos-26 (Xcode 26 افتراضياً)، وهو أحدث من أن يُعتمَد بلا تحقّق صريح هنا.
+    runs-on: macos-15
+    timeout-minutes: 30
+    # Validates that the Capacitor iOS project actually compiles (xcodebuild), catching
+    # native-project breakage (e.g. a stale ios/ scaffold, a broken Package.swift) that
+    # `npm run build:prod` alone cannot see. Deliberately unsigned/simulator-only: it needs
+    # no Apple Developer Team ID or signing certificate, so it can run on every PR. It does
+    # NOT archive, sign, or validate for App Store submission -- that remains a manual Xcode
+    # step requiring a real Apple Developer account (see docs/IOS_RELEASE.md).
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # نثبّت نسخة Xcode صراحةً بدل الاعتماد على افتراضي الصورة (الذي يتغيّر بصمت مع
+      # كل تحديث لـ macos-15). 16.4 هي نسخة Xcode 16 الافتراضية المؤكَّدة على هذه
+      # الصورة حالياً وتفوق الحد الأدنى الذي يتطلّبه @capacitor/ios@8. حدِّثها هنا
+      # عمداً (لا تتركها "latest") عند رفع iOS deployment target أو Capacitor مستقبلاً.
+      - name: Select Xcode 16.4
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
+        with:
+          xcode-version: '16.4'
+
+      - name: Log toolchain versions
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Build production and sync iOS platform
+        run: npm run ios:sync
+
+      - name: Build for iOS Simulator (unsigned)
+        run: |
+          xcodebuild build \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -destination 'generic/platform=iOS Simulator' \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO

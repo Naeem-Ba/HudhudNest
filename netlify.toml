@@ -1,0 +1,140 @@
+## إعدادات بناء Netlify الخاصة بهذا المشروع.
+#
+# لماذا هذا الملف ضروري: قبل إضافته، كانت لوحة Netlify تُشغّل "npm run build"
+# (إعداد production الافتراضي في angular.json) لكل الفروع بلا استثناء — بما فيها
+# فرع staging نفسه. النتيجة: نشر staging كان في الواقع بناء production كاملاً
+# (يقرأ environment.prod.ts) منشورًا فقط تحت نطاق Netlify الخاص بـ staging، وليس
+# بناء staging حقيقيًا (الذي يقرأ environment.staging.ts). هذا الملف يعيد أمر
+# البناء لفرع staging تحديدًا إلى "npm run build:staging" دون التأثير على أي فرع
+# آخر — القسم العلوي [build] يبقى هو الافتراضي لكل سياق لم يُذكر صراحةً (بما فيها
+# production)، ويطابق تمامًا القيم المضبوطة سلفًا في لوحة Netlify (Build & deploy).
+
+[build]
+  command = "npm run build"
+  publish = "dist/HudhudNest/browser"
+  functions = "netlify/functions"
+
+# اسم الفرع "staging" هنا يطابق حرفياً اسم الفرع في GitHub — Netlify يدعم
+# [context.<اسم-فرع>] لتخصيص فرع بعينه، بالإضافة إلى السياقات المحجوزة
+# (production / deploy-preview / branch-deploy).
+[context.staging]
+  command = "npm run build:staging"
+
+## CORS incident (2026-09-28): بدون هذا السياق، كانت معاينات الـ PR (deploy previews،
+## روابط مثل https://deploy-preview-101--hudhudnest.netlify.app) تُبنى بالأمر الافتراضي
+## أعلاه ("npm run build" = إعداد production في angular.json)، أي environment.prod.ts،
+## التي تتراجع افتراضيًا إلى الـ API الحقيقي للإنتاج (api.hudhudnest.com) عندما
+## لا يكون API_URL مضبوطًا لسياق deploy-preview. الـ backend هناك يسمح فقط بالنطاق
+## الحقيقي hudhudnest.com (راجع Cors:AllowedOrigins في HudhudNestApi) فرُفض كل طلب من نطاق
+## المعاينة الديناميكي بواسطة CORS — بلا أي تغيير محلي ممكن أن يكشفه (الواجهة المحلية
+## تستهدف مضيفًا مختلفًا تمامًا). إضافة سياق deploy-preview هنا توجّه المعاينات إلى بناء
+## staging (environment.staging.ts) بدل الاعتماد الصامت على قيمة الإنتاج الافتراضية —
+## نفس المنطق الذي طُبّق على فرع staging أعلاه، ويمنع كتابة بيانات اختبار PR على قاعدة
+## بيانات الإنتاج الحقيقية. يتطلب هذا أيضًا ضبط متغيّر البيئة API_URL على لوحة Netlify
+## لسياق "Deploy Previews" ليشير إلى https://staging-api.hudhudnest.com/api
+## (بدون ذلك سيفشل هذا البناء بالكامل، لأن environment.staging.ts يرفض العمل بلا
+## API_URL صراحةً) — وضبط Cors:AllowedOriginPatterns على backend الـ Staging ليقبل
+## نطاقات المعاينة المتغيّرة لكل PR (راجع HudhudNestApi/Configuration/CorsRegistration.cs).
+[context.deploy-preview]
+  command = "npm run build:staging"
+
+## Production incident (2026-09-18) — the same-origin auth proxy (Safari third-party-cookie
+## fix; see src/app/core/auth/auth-api-base-url.ts) is NOT configured here, and was never
+## configured in public/_redirects either, after three attempts:
+##   1. `context = "production"` on a [[redirects]] rule here — not valid Netlify syntax for a
+##      per-rule field, so those rules were silently discarded entirely.
+##   2. Plain unscoped [[redirects]] here — still didn't work, because Netlify processes
+##      public/_redirects BEFORE netlify.toml, and that file's own catch-all
+##      (`/* -> /index.html 200`) matched every /api/auth/* request first.
+##   3. The two rules moved into public/_redirects, ahead of its catch-all — fixed the routing,
+##      but Netlify's declarative redirect/rewrite engine does not reliably relay Set-Cookie
+##      headers back to the client, so the cookies this whole fix exists for still never
+##      reached the browser.
+## The actual, working fix is netlify/edge-functions/auth-proxy.mjs — full programmatic
+## control over the Response, including correctly relaying every individual Set-Cookie header.
+## It runs before both this file and public/_redirects are even considered. Do not add
+## [[redirects]] or _redirects rules for /api/auth/*//api/security/csrf-token as an "easier"
+## alternative — that is exactly how the first three attempts failed.
+
+## Native deep links (Android App Links / iOS Universal Links) -- see docs/DEEP-LINKS.md.
+## Both files are real static files generated into public/.well-known/ by tools/generate-deep-links.mjs,
+## so they win over the SPA catch-all in public/_redirects (a non-forced rewrite never shadows an existing file).
+## Android and Apple fetch them WITHOUT following redirects and require a JSON content type; Netlify would
+## otherwise serve the extension-less apple-app-site-association as application/octet-stream.
+[[headers]]
+  for = "/.well-known/assetlinks.json"
+  [headers.values]
+    Content-Type = "application/json"
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/.well-known/apple-app-site-association"
+  [headers.values]
+    Content-Type = "application/json"
+    Cache-Control = "public, max-age=3600"
+
+## Security headers (security audit 2026-10-03, F-05). Before this, the SPA was served with only
+## Netlify's default HSTS: no clickjacking protection, no nosniff, no referrer policy, no CSP. (The API
+## host already sends all of these -- see SecurityHeadersMiddleware in the API repo.)
+##
+## Rules for editing this block:
+##   * HSTS is left to Netlify's default (max-age=31536000). `includeSubDomains`/`preload` on the apex
+##     would bind every subdomain to HTTPS-only; decide that deliberately, not here.
+##   * No Cross-Origin-Opener-Policy: Google Sign-In opens a popup and needs window.opener.
+##   * Permissions-Policy keeps geolocation for this origin (geo search); everything else is denied.
+##   * Content-Security-Policy is REPORT-ONLY on purpose. It was written from the origins the code
+##     actually references (API, Google/Apple sign-in, Cloudinary, OpenStreetMap, Google Fonts), not from
+##     a live traffic review, and `'unsafe-inline'` is still required by the inline bootstrap script and
+##     Angular's inlined critical CSS. Next steps for whoever owns this: watch the browser console /
+##     add a report-to endpoint for a week, tighten `connect-src` to the exact API hosts, replace
+##     `'unsafe-inline'` with hashes/nonces, then switch the header name to Content-Security-Policy.
+##     tools/lib/security-headers.test.mjs pins the shape so it cannot silently become enforcing or
+##     gain 'unsafe-eval'.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(self), camera=(), microphone=(), payment=(), usb=()"
+    Content-Security-Policy-Report-Only = "default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com https://appleid.cdn-apple.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://res.cloudinary.com https://*.tile.openstreetmap.org https://www.openstreetmap.org; connect-src 'self' https://api.hudhudnest.com wss://api.hudhudnest.com https://*.onrender.com wss://*.onrender.com https://accounts.google.com https://appleid.apple.com; frame-src https://accounts.google.com https://appleid.apple.com; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self' https://appleid.apple.com; frame-ancestors 'none'"
+
+
+## Caching (performance audit 2026-10-03, B7). Netlify's default for every file is
+## `public,max-age=0,must-revalidate`, so a returning visitor re-validated all ~35-65 files of the app
+## on every page load. Only files whose NAME changes when their content changes may be immutable:
+## Angular emits those with `outputHashing: "all"` (main-XXXX.js, chunk-XXXX.js, polyfills-XXXX.js,
+## styles-XXXX.css and the hashed assets under /media/). index.html, manifest, the i18n JSON and the
+## unhashed /images/* keep a name across deploys, so they must never be immutable: index.html stays on
+## Netlify's revalidate default (it is what points at the new hashed files), the i18n JSON likewise,
+## and /images/* gets a bounded one-day cache that serves stale for up to a week while it refreshes.
+## tools/lib/cache-headers.test.mjs pins this split.
+[[headers]]
+  for = "/main-*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/chunk-*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/polyfills-*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/styles-*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/media/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"

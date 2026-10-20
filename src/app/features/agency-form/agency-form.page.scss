@@ -1,0 +1,214 @@
+@use '../../../styles/breakpoints' as bp;
+
+/* ================================================================
+   agency-form.page.scss — Create/Edit Agency
+   نفس نمط property-form.page.scss (نفس متغيرات CSS العامة)، بأقل قدر ممكن
+   لأن نطاق هذه الصفحة أبسط بكثير (لا صور، لا خرائط، لا أقسام مشروطة).
+   ================================================================ */
+
+.form-page {
+  min-height: calc(100vh - var(--navbar-height, 68px));
+  min-height: calc(100dvh - var(--navbar-height, 68px));
+  background: var(--page-bg);
+  padding-block: 2rem;
+}
+
+.form-page-header {
+  margin-bottom: 1.5rem;
+
+  h1 {
+    font-size: clamp(1.3rem, 2.5vw, 1.75rem);
+    font-weight: 800;
+    color: var(--gray-900);
+    margin: 0 0 .25rem;
+  }
+
+  p {
+    font-size: .85rem;
+    color: var(--gray-500);
+    margin: 0;
+  }
+}
+
+.loading-state {
+  padding: 2rem;
+  text-align: center;
+  color: var(--gray-500);
+}
+
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--gray-50);
+  }
+
+  &__num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: var(--navy);
+    color: #fff;
+    border-radius: 50%;
+    font-size: .9rem;
+    font-weight: 700;
+    font-family: var(--font-display);
+    flex-shrink: 0;
+  }
+
+  &__title {
+    font-size: .98rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin: 0 0 .2rem;
+  }
+
+  &__desc {
+    font-size: .8rem;
+    color: var(--gray-500);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  &__body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+
+  @include bp.mobile { grid-template-columns: 1fr; }
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.25rem;
+
+  @include bp.mobile { grid-template-columns: 1fr; }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+
+  &--full {
+    grid-column: 1 / -1;
+  }
+
+  label {
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--gray-700);
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: .72rem .9rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-md);
+    // 16px صريح (لا .92rem) — أقل من 16px يُشغّل تكبير iOS Safari التلقائي عند
+    // التركيز، مؤكَّد حيّاً على نموذج تسجيل المكتب العقاري (أهم نموذج لمالك المكتب).
+    font-size: 16px;
+    background: var(--surface);
+    color: var(--gray-800);
+    transition: border-color .15s, box-shadow .15s;
+    min-height: 44px;
+    appearance: none;
+
+    &:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-soft);
+    }
+
+    &:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+      background: var(--gray-50);
+    }
+
+    &.ng-invalid.ng-touched {
+      border-color: var(--danger) !important;
+      box-shadow: 0 0 0 3px rgba(220,38,38,.08) !important;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.7;
+  }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left .9rem center;
+    padding-left: 2.25rem;
+    cursor: pointer;
+  }
+
+  :host-context(html[dir="rtl"]) select {
+    background-position: right .9rem center;
+    padding-left: .9rem;
+    padding-right: 2.25rem;
+  }
+}
+
+.required {
+  color: var(--danger);
+  margin-inline-start: .15rem;
+}
+
+.field-error {
+  margin: 0;
+  font-size: .78rem;
+  color: var(--danger);
+}
+
+.field-hint {
+  margin: 0;
+  font-size: .78rem;
+  color: var(--gray-500);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.page-block {
+  margin-block: 1.5rem;
+}
+
+.or-create {
+  margin: 1.5rem 0 1rem;
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--gray-700);
+}

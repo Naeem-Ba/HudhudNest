@@ -6,7 +6,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { BackendApiService } from '../api/backend-api.service';
-import { apiToCamelCase } from '../adapters/api-naming.adapter';
 import {
   CityMarketInsightDto,
   MarketInsightsDto,
@@ -37,7 +36,7 @@ export class AnalyticsService {
   }
 
   private toPropertyStats(raw: unknown): PropertyStatsDto {
-    const s = apiToCamelCase<Record<string, unknown>>(raw);
+    const s = (raw as Record<string, unknown>);
 
     return {
       propertyId: String(s['propertyId'] ?? ''),
@@ -56,7 +55,7 @@ export class AnalyticsService {
   }
 
   private toMarketInsights(raw: unknown): MarketInsightsDto {
-    const m = apiToCamelCase<Record<string, unknown>>(raw);
+    const m = (raw as Record<string, unknown>);
     const rawCities = Array.isArray(m['cities']) ? m['cities'] : [];
 
     return {
@@ -66,7 +65,7 @@ export class AnalyticsService {
   }
 
   private toCityMarketInsight(raw: unknown): CityMarketInsightDto {
-    const c = apiToCamelCase<Record<string, unknown>>(raw);
+    const c = (raw as Record<string, unknown>);
 
     return {
       city: String(c['city'] ?? ''),

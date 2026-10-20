@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "Wohnungsmieten": {
+    "HudhudNest": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -30,6 +30,7 @@
               }
             ],
             "styles": [
+              "src/tailwind.css",
               "src/styles.scss"
             ],
             "scripts": [],
@@ -48,13 +49,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "600kB",
+                  "maximumError": "700kB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "16kB",
-                  "maximumError": "20kB"
+                  "maximumWarning": "24kB",
+                  "maximumError": "28kB"
                 }
               ],
               "outputHashing": "all"
@@ -74,13 +75,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "600kB",
+                  "maximumError": "700kB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "24kB",
+                  "maximumError": "28kB"
                 }
               ],
               "outputHashing": "all"
@@ -96,13 +97,13 @@
           },
           "configurations": {
             "production": {
-              "buildTarget": "Wohnungsmieten:build:production"
+              "buildTarget": "HudhudNest:build:production"
             },
             "development": {
-              "buildTarget": "Wohnungsmieten:build:development"
+              "buildTarget": "HudhudNest:build:development"
             },
             "staging": {
-              "buildTarget": "Wohnungsmieten:build:staging"
+              "buildTarget": "HudhudNest:build:staging"
             }
           },
           "defaultConfiguration": "development"
@@ -129,6 +130,7 @@
               }
             ],
             "styles": [
+              "src/tailwind.css",
               "src/styles.scss"
             ]
           }

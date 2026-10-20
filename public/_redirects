@@ -1,1 +1,47 @@
+# Production incident (2026-09-18) — history, so nobody re-adds a redirect rule here without
+# reading this first. The same-origin auth proxy (Safari third-party-cookie fix; see
+# netlify/edge-functions/auth-proxy.mjs) went through three attempts:
+#   1. netlify.toml [[redirects]] with an (invalid) `context = "..."` field — silently
+#      discarded entirely, total login outage on every browser.
+#   2. The two rules moved to THIS file, ahead of the catch-all below (this file is processed
+#      before netlify.toml, which is why attempt 1's rules never had a chance either way) —
+#      fixed the 404s, but Netlify's declarative redirect/rewrite engine does not reliably
+#      relay Set-Cookie headers back to the client, so refresh_token/CSRF cookies still never
+#      reached the browser. Confirmed against Netlify's own support forum/docs.
+#   3. netlify/edge-functions/auth-proxy.mjs — full programmatic control over the Response,
+#      including Headers.getSetCookie() to relay cookies correctly. This is the one that
+#      actually works, and it runs BEFORE this file's rules are even considered (Edge
+#      Functions execute first in Netlify's request chain), so it does not need a rule here.
+#
+# Old domain -> hudhudnest.com (SEO audit, 2026-10-03). realestateworld.world is still attached to
+# this Netlify site as an alias and served the whole app with a 200, i.e. a complete duplicate of
+# hudhudnest.com. Each rule below is a host-based 301 (the trailing "!" forces it even though a
+# file/rewrite could match), and MUST stay above the SPA catch-all at the bottom: this file is
+# processed top to bottom and the first match wins (the same ordering trap documented above).
+# Edge functions still run first for /properties/* and /sitemap.xml; on this host the property
+# one now emits the production URL as canonical (resolveCanonicalOrigin).
+https://realestateworld.world/*      https://hudhudnest.com/:splat   301!
+http://realestateworld.world/*       https://hudhudnest.com/:splat   301!
+https://www.realestateworld.world/*  https://hudhudnest.com/:splat   301!
+http://www.realestateworld.world/*   https://hudhudnest.com/:splat   301!
+#
+# /download is NOT an Angular route: it is a static page generated at build time
+# (tools/generate-download-page.mjs -> public/download/index.html) so it works without the app shell
+# and the QR code can point at one stable address. The explicit forced rewrite keeps `/download`
+# (no trailing slash, which is what the QR encodes) answering 200 on that page whatever Netlify's
+# directory handling does, and must stay ABOVE the catch-all below. Do not add /download to
+# deep-links.config.json paths: the installed app would then open this page instead of the store.
+/download   /download/index.html   200!
+#
+# /download/android: the stable address for the direct APK download. The block below is rewritten by the build
+# (tools/generate-download-page.mjs) from downloads/android-release.json: an approved release redirects to its one
+# validated address; with none it returns to /download. Do not edit it by hand.
+# BEGIN generated:download-android (tools/generate-download-page.mjs; edit downloads/android-release.json instead)
+/download/android   https://github.com/Naeem-Ba/HudhudNest-Releases/releases/download/v1.1.0/HudhudNest-1.1.0.apk   302!
+# END generated:download-android
+#
+# Original rule — SPA fallback. Load-bearing since hash-based routing was removed (see
+# ARD-Wohnungsmieten.md ADR-001): every in-app route (/properties/:id, /auth/verify-email, …) is
+# now a real path the server receives directly, so EVERY one of them depends on this rule to get
+# the app shell instead of a raw 404 — not just a stray non-hash URL anymore.
 /*    /index.html   200

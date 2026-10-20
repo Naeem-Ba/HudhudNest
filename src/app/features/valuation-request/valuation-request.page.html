@@ -1,0 +1,164 @@
+<div class="valuation-page">
+  <div class="container">
+    <header class="page-header">
+      <span class="eyebrow">🏠 {{ 'VALUATION.EYEBROW' | translate }}</span>
+      <h1>{{ 'VALUATION.TITLE' | translate }}</h1>
+      <p>{{ 'VALUATION.SUBTITLE' | translate }}</p>
+    </header>
+
+    <!-- ── النموذج ── -->
+    <section class="valuation-card" *ngIf="!result()">
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="governorateId">{{ 'VALUATION.GOVERNORATE' | translate }} *</label>
+            <select id="governorateId" formControlName="governorateId">
+              <option [ngValue]="null">{{ 'VALUATION.SELECT_PLACEHOLDER' | translate }}</option>
+              <option *ngFor="let g of governorates()" [ngValue]="g.id">{{ localizedName(g) }}</option>
+            </select>
+            <p class="field-error" *ngIf="form.controls.governorateId.invalid && form.controls.governorateId.touched">
+              ⚠️ {{ 'VALIDATION.REQUIRED' | translate }}
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label for="districtId">{{ 'VALUATION.DISTRICT' | translate }}</label>
+            <select id="districtId" formControlName="districtId" [disabled]="!form.controls.governorateId.value">
+              <option [ngValue]="null">{{ 'VALUATION.SELECT_PLACEHOLDER' | translate }}</option>
+              <option *ngFor="let d of districts()" [ngValue]="d.id">{{ localizedName(d) }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="neighborhoodId">{{ 'VALUATION.NEIGHBORHOOD' | translate }}</label>
+            <select id="neighborhoodId" formControlName="neighborhoodId" [disabled]="!form.controls.districtId.value">
+              <option [ngValue]="null">{{ 'VALUATION.SELECT_PLACEHOLDER' | translate }}</option>
+              <option *ngFor="let n of neighborhoods()" [ngValue]="n.id">{{ localizedName(n) }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="propertyTypeId">{{ 'VALUATION.PROPERTY_TYPE' | translate }}</label>
+            <select id="propertyTypeId" formControlName="propertyTypeId">
+              <option [ngValue]="null">{{ 'VALUATION.SELECT_PLACEHOLDER' | translate }}</option>
+              <option *ngFor="let t of propertyTypes()" [ngValue]="t.id">{{ localizedName(t) }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="requestType">{{ 'VALUATION.REQUEST_TYPE' | translate }} *</label>
+            <select id="requestType" formControlName="requestType">
+              <option *ngFor="let rt of requestTypes" [ngValue]="rt">{{ ('VALUATION.REQUEST_TYPES.' + rt) | translate }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="area">{{ 'VALUATION.AREA' | translate }}</label>
+            <input id="area" type="number" min="1" formControlName="area" [placeholder]="'VALUATION.AREA_PLACEHOLDER' | translate" />
+          </div>
+
+          <div class="form-group">
+            <label for="rooms">{{ 'VALUATION.ROOMS' | translate }}</label>
+            <input id="rooms" type="number" min="1" max="50" formControlName="rooms" />
+          </div>
+        </div>
+
+        <button type="submit" class="valuation-submit" [disabled]="submitting()">
+          <span class="spinner" *ngIf="submitting()"></span>
+          <span *ngIf="!submitting()">{{ 'VALUATION.SUBMIT' | translate }}</span>
+          <span *ngIf="submitting()">{{ 'VALUATION.SUBMITTING' | translate }}</span>
+        </button>
+      </form>
+    </section>
+
+    <!-- ── النتيجة ── -->
+    <section class="valuation-result" *ngIf="result() as r">
+
+      <!-- المسار السريع: عدد كافٍ من الإعلانات المشابهة (3+) — اكتمل التقييم فورًا. -->
+      <div class="alert alert--success" *ngIf="!r.requiresOfficeValuation" role="alert">
+        <span aria-hidden="true">✅</span>
+        <div>
+          <p class="alert-title">{{ 'VALUATION.FAST_PATH.COMPLETE_TITLE' | translate }}</p>
+          <p>{{ r.fastPath.message || ('VALUATION.FAST_PATH.COMPLETE_BODY' | translate) }}</p>
+        </div>
+      </div>
+
+      <!-- تقدير أولي محدود (1-2 إعلان) قبل الانتقال لمسار المكاتب. -->
+      <div class="alert alert--info" *ngIf="r.requiresOfficeValuation && r.fastPath.hasComparableListings" role="status">
+        <span aria-hidden="true">ℹ️</span>
+        <p>{{ r.fastPath.message }}</p>
+      </div>
+
+      <div class="price-card" *ngIf="r.fastPath.hasComparableListings">
+        <div class="price-card__row">
+          <span>{{ 'VALUATION.MIN_PRICE' | translate }}</span>
+          <strong>{{ r.fastPath.minPrice | number }}</strong>
+        </div>
+        <div class="price-card__row">
+          <span>{{ 'VALUATION.MAX_PRICE' | translate }}</span>
+          <strong>{{ r.fastPath.maxPrice | number }}</strong>
+        </div>
+        <div class="price-card__row price-card__row--highlight">
+          <span>{{ 'VALUATION.AVERAGE_PRICE' | translate }}</span>
+          <strong>{{ r.fastPath.averagePrice | number }}</strong>
+        </div>
+        <div class="price-card__row">
+          <span>{{ 'VALUATION.MEDIAN_PRICE' | translate }}</span>
+          <strong>{{ r.fastPath.medianPrice | number }}</strong>
+        </div>
+        <p class="price-card__source" *ngIf="r.fastPath.source">{{ r.fastPath.source }}</p>
+        <p class="price-card__disclaimer" *ngIf="r.fastPath.disclaimer">{{ r.fastPath.disclaimer }}</p>
+      </div>
+
+      <!-- مسار المكاتب: تم إرسال الطلب لمكاتب عقارية مطابقة جغرافيًا. -->
+      <div class="office-path" *ngIf="r.requiresOfficeValuation">
+        <div class="alert alert--info" role="status">
+          <span aria-hidden="true">🏢</span>
+          <p>{{ 'VALUATION.OFFICE_PATH.SENT_TO' | translate: { count: r.officeMatchCount } }}</p>
+        </div>
+
+        <!-- قاعدة الإفصاح عن المحافظات المجاورة. -->
+        <div class="alert alert--warning" *ngIf="r.matchedNeighboringGovernorate" role="status">
+          <span aria-hidden="true">📍</span>
+          <p>{{ 'VALUATION.OFFICE_PATH.NEIGHBORING_GOVERNORATE_DISCLOSURE' | translate }}</p>
+        </div>
+
+        <div class="alert alert--warning" *ngIf="r.insufficientOfficeCoverage" role="status">
+          <span aria-hidden="true">⚠️</span>
+          <p>{{ 'VALUATION.OFFICE_PATH.INSUFFICIENT_COVERAGE' | translate }}</p>
+        </div>
+
+        <p class="expiry-note">{{ 'VALUATION.OFFICE_PATH.EXPIRES_AT' | translate: { date: (r.expiresAt | date: 'short') } }}</p>
+
+        <button type="button" class="valuation-refresh" (click)="checkStatus()" [disabled]="checkingStatus()">
+          <span class="spinner" *ngIf="checkingStatus()"></span>
+          <span>{{ 'VALUATION.OFFICE_PATH.CHECK_STATUS' | translate }}</span>
+        </button>
+
+        <div class="estimates" *ngIf="statusResult() as s">
+          <p class="estimates__status">
+            {{ ('VALUATION.STATUS.' + s.status.toUpperCase()) | translate }}
+          </p>
+
+          <ng-container *ngIf="s.estimates.length; else noEstimates">
+            <div class="estimate-row" *ngFor="let e of s.estimates">
+              <strong>{{ e.estimatedPrice | number }}</strong>
+              <span *ngIf="e.notes">{{ e.notes }}</span>
+            </div>
+          </ng-container>
+          <ng-template #noEstimates>
+            <p class="estimates__empty">{{ 'VALUATION.OFFICE_PATH.NO_ESTIMATES_YET' | translate }}</p>
+          </ng-template>
+        </div>
+      </div>
+
+      <button type="button" class="valuation-restart" (click)="reset()">
+        {{ 'VALUATION.NEW_REQUEST' | translate }}
+      </button>
+    </section>
+  </div>
+</div>

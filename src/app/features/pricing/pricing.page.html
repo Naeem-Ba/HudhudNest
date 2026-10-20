@@ -1,0 +1,106 @@
+<!-- src/app/features/pricing/pricing.page.html — public subscription plans -->
+
+<section class="pricing-page">
+
+  <header class="pricing-hero">
+    <span class="section-label">{{ 'PRICING.EYEBROW' | translate }}</span>
+    <h1>{{ 'PRICING.TITLE' | translate }}</h1>
+    <p>{{ 'PRICING.SUBTITLE' | translate }}</p>
+  </header>
+
+  <div *ngIf="showPlanRequiredBanner()" class="state-card" role="status">
+    <span aria-hidden="true">ℹ️</span>
+    <p>{{ 'PRICING.REASON_PLAN_REQUIRED' | translate }}</p>
+  </div>
+
+  <div *ngIf="showAgencyPlanBanner()" class="state-card" role="status">
+    <span aria-hidden="true">ℹ️</span>
+    <p>{{ 'PRICING.REASON_AGENCY_PLAN_REQUIRED' | translate }}</p>
+  </div>
+
+  <app-loading-spinner *ngIf="loading()" [label]="'COMMON.LOADING' | translate" />
+
+  <div *ngIf="!loading() && error()" class="state-card error-state" role="alert">
+    <span aria-hidden="true">⚠️</span>
+    <p>{{ error() | translate }}</p>
+    <button type="button" class="btn btn--outline" (click)="load()">
+      {{ 'COMMON.RETRY' | translate }}
+    </button>
+  </div>
+
+  <div class="plans-grid" *ngIf="!loading() && !error()">
+    <article
+      *ngFor="let plan of plans(); trackBy: trackByTier"
+      class="plan-card"
+      role="button"
+      tabindex="0"
+      [attr.aria-pressed]="selectedTier() === plan.tier"
+      [class.plan-card--featured]="selectedTier() === plan.tier"
+      (click)="selectCard(plan)"
+      (keydown.enter)="selectCard(plan)"
+      (keydown.space)="selectCard(plan); $event.preventDefault()"
+    >
+      <span class="plan-card__flag" *ngIf="selectedTier() === plan.tier" aria-hidden="true"></span>
+
+      <span class="badge plan-card__badge" *ngIf="plan.isRecommended">
+        {{ 'PRICING.RECOMMENDED' | translate }}
+      </span>
+
+      <h2 class="plan-card__name">{{ plan.nameKey | translate }}</h2>
+
+      <p class="plan-card__price" *ngIf="plan.priceKind === 'monthly'">
+        <span class="plan-card__amount" dir="ltr">${{ plan.priceUsd }}</span>
+        <span class="plan-card__period">{{ 'PRICING.PER_MONTH' | translate }}</span>
+      </p>
+      <p class="plan-card__price plan-card__price--text" *ngIf="plan.priceKind === 'free'">
+        <span class="plan-card__amount plan-card__amount--text">
+          {{ 'PRICING.FREE_PRICE' | translate }}
+        </span>
+      </p>
+      <p class="plan-card__price plan-card__price--text" *ngIf="plan.priceKind === 'contact'">
+        <span class="plan-card__amount plan-card__amount--text">
+          {{ 'PRICING.CONTACT_PRICE' | translate }}
+        </span>
+      </p>
+
+      <p class="plan-card__tagline">{{ plan.taglineKey | translate }}</p>
+
+      <ul class="plan-card__features">
+        <li *ngFor="let featureKey of plan.featureKeys">
+          <span class="plan-card__check" aria-hidden="true">✓</span>
+          <span>{{ featureKey | translate }}</span>
+        </li>
+      </ul>
+
+      <!-- A condition of the plan, not a benefit — kept out of the ticked list. -->
+      <p class="plan-card__note" *ngIf="plan.noteKey">
+        <span class="plan-card__note-icon" aria-hidden="true">!</span>
+        <span>{{ plan.noteKey | translate }}</span>
+      </p>
+
+      <button
+        type="button"
+        class="btn plan-card__cta"
+        [class.btn--gold]="selectedTier() === plan.tier"
+        [class.btn--outline]="selectedTier() !== plan.tier"
+        [disabled]="selecting() === plan.tier || isBlockedForAgencyOwner(plan)"
+        (click)="onSelectPlan(plan); $event.stopPropagation()"
+      >
+        {{ plan.ctaKey | translate }}
+      </button>
+      <p class="plan-card__note" *ngIf="pendingTier() === plan.tier" data-testid="plan-pending">
+        <span class="plan-card__note-icon" aria-hidden="true">⏳</span>
+        <span>{{ 'PRICING.PENDING_NOTE' | translate }}</span>
+      </p>
+      <p class="plan-card__note" *ngIf="isBlockedForAgencyOwner(plan)">
+        <span class="plan-card__note-icon" aria-hidden="true">!</span>
+        <span>{{ 'PRICING.AGENCY_NO_FREE' | translate }}</span>
+      </p>
+    </article>
+  </div>
+
+  <p class="pricing-note" *ngIf="!loading() && !error()">
+    {{ 'PRICING.NOTE_CURRENCY' | translate }}
+  </p>
+
+</section>

@@ -35,4 +35,4 @@ npm run ios:setup
 npm run ios:open
 ```
 
-داخل Xcode افتح Target `App` ثم `Signing & Capabilities` واختر Team الصحيح. لا تغيّر Bundle Identifier بعد إصدار التطبيق إلا بقرار مقصود؛ القيمة الحالية هي `com.realestate.app` وينبغي استبدالها بمعرف العلامة النهائي قبل أول نشر.
+داخل Xcode افتح Target `App` ثم `Signing & Capabilities` واختر Team الصحيح. لا تغيّر Bundle Identifier بعد إصدار التطبيق: المعرّف النهائي بقرار المالك (2026-10-08) هو `com.hudhudnest.app`، ويجب تسجيله في Apple Developer (Identifiers) وإنشاء التطبيق به في App Store Connect قبل أول نشر. توفّره عند Apple UNCONFIRMED حتى يُسجَّل.

@@ -13,6 +13,11 @@
       <p>{{ 'PROFILE.SUBTITLE' | translate }}</p>
     </div>
 
+    <div class="state-info" role="status" *ngIf="showConfirmRequiredBanner()">
+      <span aria-hidden="true">ℹ️</span>
+      {{ 'PROFILE.REASON_CONFIRM_REQUIRED' | translate }}
+    </div>
+
     <div class="avatar-container">
       <div class="img-wrapper" [class.uploading]="isUploading()">
         <img [src]="avatarPreview() || fallbackAvatar" alt="User Avatar" appImageFallback="/images/default-avatar.svg">
@@ -48,53 +53,131 @@
         <input type="email" [value]="user()!.Email" disabled>
       </div>
 
-      <div class="field">
-        <label>
-          {{ 'PROFILE.PHONE' | translate }}
-          <span *ngIf="user()?.IsAgent" class="required-note">{{ 'PROFILE.PHONE_REQUIRED_AGENT' | translate }}</span>
-        </label>
-        <input
-          type="tel"
-          [ngModel]="user()?.Phone" (ngModelChange)="patchUserField('Phone', $event)"
-          name="ph"
-          #ph="ngModel"
-          [required]="user()?.IsAgent"
-          [placeholder]="user()?.IsAgent ? ('PROFILE.PHONE_PLACEHOLDER' | translate) : ''"
-        >
-        <div class="field-error" *ngIf="ph.invalid && (ph.touched || submitted)">⚠️ {{ 'PROFILE.PHONE_REQUIRED_AGENT' | translate }}</div>
-      </div>
+      <!-- ✅ إضافة: قسم البريد الإلكتروني الثانوي (email/add + email/verify) -->
+      <div class="email-section">
+        <ng-container *ngIf="user()?.Email && user()?.EmailConfirmed">
+          <div class="email-status email-status--confirmed">
+            <span aria-hidden="true">✅</span>
+            {{ 'PROFILE.EMAIL_SECTION.CONFIRMED' | translate }}
+          </div>
+        </ng-container>
 
-      <div class="agent-section">
-        <div class="verified-agent-badge" *ngIf="user()?.IsAgent && user()?.TaxNumber && user()?.Phone">
-          <div class="success-icon">✅</div>
-          <p class="success-text">{{ 'PROFILE.AGENT_VERIFIED_MSG' | translate }}</p>
-        </div>
+        <ng-container *ngIf="user()?.Email && !user()?.EmailConfirmed">
+          <div class="email-status email-status--pending">
+            <span aria-hidden="true">⏳</span>
+            {{ 'PROFILE.EMAIL_SECTION.PENDING' | translate }}
+          </div>
 
-        <div class="agent-setup" *ngIf="!(user()?.IsAgent && user()?.TaxNumber && user()?.Phone)">
-          <label class="checkbox-field">
-            <input type="checkbox" [ngModel]="user()?.IsAgent" (ngModelChange)="patchUserField('IsAgent', $event)" name="ag">
-            <span>{{ 'PROFILE.AGENT_CHECKBOX' | translate }}</span>
-          </label>
+          <button type="button" class="btn-email-action" *ngIf="!showEmailForm() && !emailLinkSent()" (click)="showEmailForm.set(true); secondaryEmail = user()!.Email || ''">
+            {{ 'PROFILE.EMAIL_SECTION.RESEND_BTN' | translate }}
+          </button>
+        </ng-container>
 
-          <div class="tax-field" *ngIf="user()?.IsAgent">
-            <div class="field">
-              <label>
-                {{ 'PROFILE.TAX_NUMBER' | translate }}
-                <span class="required-note">{{ 'VALIDATION.REQUIRED' | translate }}</span>
-              </label>
-              <input
-                type="text"
-                [ngModel]="user()?.TaxNumber" (ngModelChange)="patchUserField('TaxNumber', $event)"
-                name="tn"
-                #tn="ngModel"
-                required
-                [placeholder]="'PROFILE.TAX_PLACEHOLDER' | translate"
-              >
-              <div class="field-error" *ngIf="tn.invalid && (tn.touched || submitted)">⚠️ {{ 'VALIDATION.REQUIRED' | translate }}</div>
-            </div>
+        <ng-container *ngIf="!user()?.Email">
+          <p class="email-hint">{{ 'PROFILE.EMAIL_SECTION.NO_EMAIL_HINT' | translate }}</p>
+
+          <button type="button" class="btn-email-action" *ngIf="!showEmailForm() && !emailLinkSent()" (click)="showEmailForm.set(true)">
+            {{ 'PROFILE.EMAIL_SECTION.ADD_BTN' | translate }}
+          </button>
+        </ng-container>
+
+        <div class="email-form" *ngIf="showEmailForm() && !emailLinkSent()">
+          <label>{{ 'PROFILE.EMAIL_SECTION.INPUT_LABEL' | translate }}</label>
+          <input
+            type="email"
+            [(ngModel)]="secondaryEmail"
+            name="secondaryEmail"
+            #secEmail="ngModel"
+            required
+            email
+            [placeholder]="'AUTH.EMAIL_PLACEHOLDER' | translate"
+          >
+          <div class="field-error" *ngIf="emailSubmitted && secEmail.invalid">⚠️ {{ 'VALIDATION.REQUIRED' | translate }}</div>
+
+          <div class="email-form-actions">
+            <button type="button" class="btn-email-send" [disabled]="isSendingEmail()" (click)="addSecondaryEmail()">
+              {{ isSendingEmail() ? ('COMMON.SAVING' | translate) : ('PROFILE.EMAIL_SECTION.SEND_BTN' | translate) }}
+            </button>
+            <button type="button" class="btn-email-cancel" (click)="cancelSecondaryEmail()">
+              {{ 'COMMON.CANCEL' | translate }}
+            </button>
           </div>
         </div>
+
+        <div class="email-status email-status--confirmed" *ngIf="emailLinkSent()">
+          <span aria-hidden="true">📩</span>
+          {{ 'PROFILE.EMAIL_SECTION.LINK_SENT' | translate }}
+        </div>
       </div>
+
+      <!-- رقم الهاتف = رقم الدخول والاستعادة: لا يُكتب كنص حر هنا، يُضاف أو يُغيَّر فقط برمز OTP وكلمة المرور (صفحة phone-change). -->
+      <div class="field phone-status" *ngIf="phoneInfo() as phone">
+        <label>{{ 'PROFILE.PHONE' | translate }}</label>
+
+        <div class="phone-status__row">
+          <span class="phone-status__number" dir="ltr" *ngIf="phone.phone; else noPhone">{{ phone.phone }}</span>
+          <ng-template #noPhone>
+            <span class="phone-status__empty">{{ 'PROFILE.PHONE_SECURITY.NO_NUMBER' | translate }}</span>
+          </ng-template>
+
+          <span class="phone-badge phone-badge--confirmed" *ngIf="phone.kind === 'confirmed'">
+            <span aria-hidden="true">✅</span> {{ 'PROFILE.PHONE_SECURITY.CONFIRMED' | translate }}
+          </span>
+          <span class="phone-badge phone-badge--pending" *ngIf="phone.kind === 'unconfirmed'">
+            <span aria-hidden="true">⏳</span> {{ 'PROFILE.PHONE_SECURITY.UNCONFIRMED' | translate }}
+          </span>
+        </div>
+
+        <p class="email-hint" *ngIf="phone.kind === 'unconfirmed' && phone.canConfirm">{{ 'PROFILE.PHONE_SECURITY.UNCONFIRMED_HINT' | translate }}</p>
+        <p class="email-hint" *ngIf="phone.kind === 'none' && phone.canConfirm">{{ 'PROFILE.PHONE_SECURITY.NO_NUMBER_HINT' | translate }}</p>
+        <p class="email-hint" *ngIf="phone.needsPassword">{{ 'PROFILE.PHONE_SECURITY.NEEDS_PASSWORD' | translate }}</p>
+
+        <div class="phone-security">
+          <!-- حساب Google/Apple بلا كلمة مرور: المسار الفعلي هو رابط «نسيت كلمة المرور» عبر البريد، وبعده يظهر التأكيد. -->
+          <a routerLink="/auth/forgot-password" *ngIf="phone.needsPassword">
+            {{ 'PROFILE.PHONE_SECURITY.SET_PASSWORD' | translate }}
+          </a>
+          <a routerLink="/profile/phone-change" [queryParams]="{ phone: phone.phone }" *ngIf="phone.canConfirm">
+            {{ (phone.kind === 'none' ? 'PROFILE.PHONE_SECURITY.ADD' : 'PROFILE.PHONE_SECURITY.CONFIRM') | translate }}
+          </a>
+          <ng-container *ngIf="phone.kind === 'confirmed'">
+            <a routerLink="/profile/phone-change">{{ 'PROFILE.PHONE_SECURITY.CHANGE' | translate }}</a>
+            <a routerLink="/profile/phone-reverify">{{ 'PROFILE.PHONE_SECURITY.VERIFY' | translate }}</a>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- ✅ إضافة: نبذة تعريفية + عنوان/معلومات تواصل — تُعرض علنًا بالملف
+           الشخصي العام (/users/:id) كي يعرّف صاحب الحساب بنفسه وعمله. -->
+      <div class="about-section">
+        <div class="field">
+          <label>{{ 'PROFILE.ABOUT.BIO_LABEL' | translate }}</label>
+          <textarea
+            [ngModel]="user()?.Bio"
+            (ngModelChange)="patchUserField('Bio', $event)"
+            name="bio"
+            rows="4"
+            maxlength="2000"
+            [placeholder]="'PROFILE.ABOUT.BIO_PLACEHOLDER' | translate"
+          ></textarea>
+          <p class="field-hint">{{ 'PROFILE.ABOUT.BIO_HINT' | translate }}</p>
+        </div>
+
+        <div class="field">
+          <label>{{ 'PROFILE.ABOUT.CONTACT_INFO_LABEL' | translate }}</label>
+          <textarea
+            [ngModel]="user()?.ContactInfo"
+            (ngModelChange)="patchUserField('ContactInfo', $event)"
+            name="contactInfo"
+            rows="2"
+            maxlength="500"
+            [placeholder]="'PROFILE.ABOUT.CONTACT_INFO_PLACEHOLDER' | translate"
+          ></textarea>
+          <p class="field-hint">{{ 'PROFILE.ABOUT.CONTACT_INFO_HINT' | translate }}</p>
+        </div>
+      </div>
+
+      <app-preferences-card />
 
       <div class="password-section">
         <button type="button" class="btn-toggle-pass" (click)="showPasswordForm.set(!showPasswordForm())">
@@ -104,19 +187,19 @@
         <div class="password-fields" *ngIf="showPasswordForm()">
           <div class="field">
             <label>{{ 'PROFILE.CURRENT_PASS' | translate }} *</label>
-            <input type="password" [(ngModel)]="passwordData.currentPassword" name="currentPassword" placeholder="••••••••">
+            <input type="password" [(ngModel)]="passwordData.currentPassword" name="currentPassword" autocomplete="new-password" placeholder="••••••••">
             <div class="field-error" *ngIf="passwordSubmitted && !passwordData.currentPassword">⚠️ {{ 'VALIDATION.REQUIRED' | translate }}</div>
           </div>
 
           <div class="field">
             <label>{{ 'PROFILE.NEW_PASS' | translate }} *</label>
-            <input type="password" [(ngModel)]="passwordData.newPassword" name="newPassword" placeholder="••••••••">
+            <input type="password" [(ngModel)]="passwordData.newPassword" name="newPassword" autocomplete="new-password" placeholder="••••••••">
             <div class="field-error" *ngIf="passwordSubmitted && passwordData.newPassword.length < 8">⚠️ {{ 'AUTH.ERRORS.PASSWORD_MIN' | translate }}</div>
           </div>
 
           <div class="field">
             <label>{{ 'PROFILE.CONFIRM_PASS' | translate }} *</label>
-            <input type="password" [(ngModel)]="passwordData.confirmPassword" name="confirmPassword" placeholder="••••••••">
+            <input type="password" [(ngModel)]="passwordData.confirmPassword" name="confirmPassword" autocomplete="new-password" placeholder="••••••••">
             <div class="field-error" *ngIf="passwordSubmitted && passwordMismatch()">⚠️ {{ 'PROFILE.MESSAGES.PASS_MISMATCH' | translate }}</div>
           </div>
 
@@ -128,10 +211,113 @@
     </form>
 
     <div class="actions">
-      <button class="btn-save" [disabled]="isSaving() || profileForm.invalid || hasAgentValidationError(user())" (click)="onSaveProfile(profileForm)">
+      <button class="btn-save" [disabled]="isSaving() || profileForm.invalid" (click)="onSaveProfile(profileForm)">
         {{ isSaving() ? ('COMMON.SAVING' | translate) : ('PROFILE.SAVE_CHANGES' | translate) }}
       </button>
-      <button class="btn-delete" type="button" (click)="onDeleteAccount()">{{ 'PROFILE.DELETE_ACCOUNT' | translate }}</button>
+    </div>
+
+    <!-- Danger Zone — deliberately separated from Save above by its own bordered section,
+         never adjacent to it, so it cannot be tapped by mistake reaching for Save (§24). -->
+    <!-- Your data — GET /api/Users/me/export (right of access, one export per 24 hours). -->
+    <div class="data-zone">
+      <h3 class="data-zone__title">{{ 'PROFILE.DATA_EXPORT.TITLE' | translate }}</h3>
+      <p class="data-zone__hint">{{ 'PROFILE.DATA_EXPORT.HINT' | translate }}</p>
+      <button class="btn-export" type="button" [disabled]="isExporting()" (click)="exportMyData()">
+        {{ isExporting() ? ('PROFILE.DATA_EXPORT.LOADING' | translate) : ('PROFILE.DATA_EXPORT.BTN' | translate) }}
+      </button>
+    </div>
+
+    <div class="danger-zone">
+      <h3 class="danger-zone__title">{{ 'PROFILE.DANGER_ZONE.TITLE' | translate }}</h3>
+
+      <!-- A deletion request is pending: the account still works until the scheduled date,
+           and the request can be withdrawn with one click (POST /api/Users/me/deletion/cancel). -->
+      <ng-container *ngIf="user()?.DeletionScheduledFor; else noPendingDeletion">
+        <p class="danger-zone__pending">
+          {{ 'PROFILE.DELETION_PENDING.MESSAGE' | translate: { date: formatDeletionDate(user()?.DeletionScheduledFor) } }}
+        </p>
+        <p class="danger-zone__hint">{{ 'PROFILE.DELETION_PENDING.HINT' | translate }}</p>
+        <button class="btn-cancel-deletion" type="button" [disabled]="isCancellingDeletion()" (click)="cancelAccountDeletion()">
+          {{ isCancellingDeletion()
+            ? ('PROFILE.DELETION_PENDING.CANCELLING' | translate)
+            : ('PROFILE.DELETION_PENDING.CANCEL_BTN' | translate) }}
+        </button>
+      </ng-container>
+
+      <ng-template #noPendingDeletion>
+        <p class="danger-zone__hint">{{ 'PROFILE.DANGER_ZONE.HINT' | translate }}</p>
+        <button class="btn-delete" type="button" (click)="openDeleteModal()">
+          {{ 'PROFILE.DELETE_ACCOUNT' | translate }}
+        </button>
+      </ng-template>
     </div>
   </div>
+
+  <!-- Account deletion modal: 'warning' step explains consequences (no request sent yet),
+       'confirm' step re-authenticates + requires typing the keyword before the real
+       DELETE /api/Users/me call fires. That call schedules the deletion 30 days out; it
+       does not delete anything on the spot. -->
+  <app-confirm-modal
+    [open]="showDeleteModal()"
+    [title]="'PROFILE.DELETE_MODAL.TITLE' | translate"
+    [danger]="true"
+    [loading]="isDeletingAccount()"
+    [closeOnBackdrop]="deleteStep() === 'warning'"
+    [confirmLabel]="deleteStep() === 'warning'
+      ? ('PROFILE.DELETE_MODAL.CONTINUE_BTN' | translate)
+      : ('PROFILE.DELETE_MODAL.CONFIRM_BTN' | translate)"
+    [cancelLabel]="deleteStep() === 'warning'
+      ? ('PROFILE.DELETE_MODAL.CANCEL_BTN' | translate)
+      : ('PROFILE.DELETE_MODAL.BACK_BTN' | translate)"
+    [confirmDisabled]="deleteStep() === 'confirm' && !canConfirmAccountDeletion()"
+    (confirmed)="deleteStep() === 'warning' ? proceedToDeleteConfirmStep() : confirmDeleteAccount()"
+    (cancelled)="deleteStep() === 'warning' ? cancelDeleteModal() : backToDeleteWarningStep()"
+  >
+    <ng-container *ngIf="deleteStep() === 'warning'">
+      <p class="delete-modal__intro">{{ 'PROFILE.DELETE_MODAL.INTRO' | translate }}</p>
+
+      <p class="delete-modal__section-title">{{ 'PROFILE.DELETE_MODAL.WILL_DELETE_TITLE' | translate }}</p>
+      <ul class="delete-modal__list delete-modal__list--delete">
+        <li>{{ 'PROFILE.DELETE_MODAL.WILL_DELETE_1' | translate }}</li>
+        <li>{{ 'PROFILE.DELETE_MODAL.WILL_DELETE_2' | translate }}</li>
+        <li>{{ 'PROFILE.DELETE_MODAL.WILL_DELETE_3' | translate }}</li>
+      </ul>
+
+      <p class="delete-modal__section-title">{{ 'PROFILE.DELETE_MODAL.WILL_RETAIN_TITLE' | translate }}</p>
+      <ul class="delete-modal__list delete-modal__list--retain">
+        <li>{{ 'PROFILE.DELETE_MODAL.WILL_RETAIN_1' | translate }}</li>
+        <li>{{ 'PROFILE.DELETE_MODAL.WILL_RETAIN_2' | translate }}</li>
+      </ul>
+
+      <p class="delete-modal__note">{{ 'PROFILE.DELETE_MODAL.BUSINESS_NOTE' | translate }}</p>
+    </ng-container>
+
+    <ng-container *ngIf="deleteStep() === 'confirm'">
+      <p class="delete-modal__final-warning">{{ 'PROFILE.DELETE_MODAL.FINAL_WARNING' | translate }}</p>
+
+      <div class="field" *ngIf="user()?.HasPassword">
+        <label>{{ 'PROFILE.DELETE_MODAL.PASSWORD_LABEL' | translate }}</label>
+        <input
+          type="password"
+          [(ngModel)]="deletePassword"
+          name="deletePassword"
+          autocomplete="current-password"
+          [placeholder]="'PROFILE.DELETE_MODAL.PASSWORD_PLACEHOLDER' | translate"
+        >
+      </div>
+
+      <div class="field">
+        <label>{{ 'PROFILE.DELETE_MODAL.TYPE_TO_CONFIRM' | translate: { keyword: deleteConfirmKeyword } }}</label>
+        <input
+          type="text"
+          [(ngModel)]="deleteConfirmText"
+          name="deleteConfirmText"
+          autocomplete="off"
+          [placeholder]="deleteConfirmKeyword"
+        >
+      </div>
+
+      <div class="field-error" *ngIf="deleteSubmitted && deleteError()">⚠️ {{ deleteError() }}</div>
+    </ng-container>
+  </app-confirm-modal>
 </div>

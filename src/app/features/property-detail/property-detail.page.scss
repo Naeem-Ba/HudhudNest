@@ -17,23 +17,29 @@
 
 /* ── Hero Section ── */
 .detail-hero {
-  background: var(--navy);
+  background: var(--gallery-canvas);
   padding-block: 2rem;
 
   &__inner {
     display: grid;
-    grid-template-columns: 1.2fr 1fr;
+    /* minmax(0, …) not plain fr: a bare `1fr` track is minmax(auto, 1fr), so its
+       minimum is the content's min-content width. The thumbnail strip (one 64px
+       button per photo) made that minimum wider than a phone screen — 424px on a
+       360px viewport with 6 photos — pushing the whole page sideways. */
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
     gap: 1.75rem;
     align-items: start;
 
     @include bp.tablet {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 }
 
 /* ── Gallery ── */
 .gallery {
+  min-width: 0;
+
   &__window {
     position: relative;
     aspect-ratio: 16 / 10;
@@ -49,10 +55,16 @@
     &--zoom { cursor: zoom-in; }
   }
 
+  /* contain, not cover: the frame keeps a fixed ratio for a stable layout, but the
+     photo inside is only scaled down — never cropped — so portrait, square and
+     panorama shots are all shown whole with their true proportions (letterboxed
+     on the gallery's dark canvas). Thumbnails below still use cover (they are tiny
+     previews where a centred crop reads better). */
   &__img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    object-position: center;
     transition: transform .3s ease;
     pointer-events: none;
     -webkit-user-drag: none;
@@ -142,6 +154,30 @@
 }
 
 /* ── Summary Card ── */
+/* Phase-0, Task 2 — 30-day staleness banner. */
+.status-notice {
+  padding: .6rem .9rem;
+  border-radius: var(--r-md, .5rem);
+  background: var(--gray-100);
+  border: 1px solid var(--border);
+  color: var(--gray-700);
+  font-size: .85rem;
+  font-weight: 600;
+}
+
+.stale-banner {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .6rem .9rem;
+  border-radius: var(--r-md, .5rem);
+  background: var(--warning-soft);
+  border: 1px solid rgba(217,119,6,.3);
+  color: var(--warning);
+  font-size: .85rem;
+  font-weight: 600;
+}
+
 .summary-card {
   background: var(--surface);
   border-radius: var(--r-lg);
@@ -150,10 +186,41 @@
   flex-direction: column;
   gap: 1rem;
 
+  /* صفّ الشارات: البطاقة عمود flex، وشارة مفردة كانت تتمدّد على العرض كاملاً.
+     الغلاف يعيدها إلى حجمها الطبيعي ويسمح بشارة ثانية (التمييز المدفوع) بجانبها. */
+  &__badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  /* Header row: badges lead, the icon pair trails. space-between + logical flow = mirrored in RTL;
+     wrap keeps the pair on its own line, still at the trailing edge, when the badges are wide. */
+  &__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem .75rem;
+    --icon-btn-size: 44px;
+  }
+
+  /* One group, one size, one gap: both buttons are the same 44px circle (a real touch target). */
+  &__quick {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    flex: none;
+    margin-inline-start: auto;
+  }
+
   &__title {
     font-size: clamp(1.1rem, 2vw, 1.45rem);
     font-weight: 800;
-    color: var(--navy);
+    color: var(--gray-900);
     line-height: 1.35;
     margin: 0;
   }
@@ -166,6 +233,15 @@
     color: var(--gray-600);
     margin: 0;
     flex-wrap: wrap;
+    overflow-wrap: anywhere;
+  }
+
+  /* ✅ إضافة: معرف الإعلان — نص صغير مكتوم تحت العنوان/الموقع مباشرة */
+  &__listing-id {
+    font-size: .78rem;
+    color: var(--gray-500);
+    margin: 0;
+    word-break: break-all;
   }
 
   &__price {
@@ -210,9 +286,10 @@
 }
 
 .price-value {
+  overflow-wrap: anywhere;
   font-size: 1.5rem;
   font-weight: 900;
-  color: var(--navy);
+  color: var(--gray-900);
   font-family: var(--font-display);
 
   small {
@@ -258,17 +335,19 @@
 
 .detail-two-col {
   display: grid;
-  grid-template-columns: 1fr 340px;
+  /* Same minmax(0, …) reason as .detail-hero__inner: long unbroken content must
+     not be able to widen the column past the viewport. */
+  grid-template-columns: minmax(0, 1fr) 340px;
   gap: 1.5rem;
   align-items: start;
 
   @include bp.tablet {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
-.detail-left { display: flex; flex-direction: column; gap: 1.25rem; }
-.detail-right { display: flex; flex-direction: column; gap: 1.25rem; }
+.detail-left { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+.detail-right { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
 
 /* ── Detail Card ── */
 .detail-card {
@@ -290,7 +369,7 @@
   &__title {
     font-size: 1rem;
     font-weight: 700;
-    color: var(--navy);
+    color: var(--gray-900);
     margin: 0 0 1.25rem;
     padding-bottom: .75rem;
     border-bottom: 1px solid var(--border);
@@ -325,8 +404,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--primary);
-  color: #fff;
+  background: var(--gold);
+  color: #1a1206;
   font-size: .7rem;
   font-weight: 700;
   min-width: 20px;
@@ -358,6 +437,20 @@
   border-top: 1px solid var(--border);
 }
 
+/* ✅ إضافة: سطر "سيتم الإرسال باسم: ..." فوق نموذج مراسلة المالك */
+.sender-as-hint {
+  margin: -.4rem 0 0;
+  font-size: .82rem;
+  color: var(--gray-500);
+}
+
+/* ✅ إضافة: معاينة يوم/شهر/سنة تحت حقل تاريخ الزيارة (نفس نمط property-form.page.scss) */
+.field-hint {
+  font-size: .75rem;
+  color: var(--gray-500);
+  margin: .25rem 0 0;
+}
+
 /* ── Info Grid ── */
 .info-grid {
   display: flex;
@@ -367,7 +460,7 @@
 
 .info-row {
   display: grid;
-  grid-template-columns: 140px 1fr;
+  grid-template-columns: minmax(0, 140px) minmax(0, 1fr);
   gap: .5rem 1rem;
   padding: .6rem 0;
   border-bottom: 1px solid var(--gray-100);
@@ -384,11 +477,13 @@
     font-size: .9rem;
     color: var(--gray-800);
     font-weight: 500;
+    overflow-wrap: anywhere;
   }
 }
 
 /* ── Description ── */
 .detail-description {
+  overflow-wrap: anywhere; /* pasted URLs / long numbers without spaces */
   font-size: .92rem;
   color: var(--gray-700);
   line-height: 1.8;
@@ -490,6 +585,7 @@
 }
 
 .review-comment {
+  overflow-wrap: anywhere;
   font-size: .88rem;
   color: var(--gray-700);
   line-height: 1.7;
@@ -628,5 +724,210 @@
   .gallery__arrow { width: 44px; height: 44px; }
   .summary-card { padding: 1rem; }
   .detail-body { padding-block: 1rem; }
+  .detail-card { padding: 1rem; }
   .detail-form__grid { grid-template-columns: 1fr; }
+  .info-row { grid-template-columns: minmax(0, 40%) minmax(0, 1fr); gap: .25rem .75rem; }
+  .lightbox__nav { width: 44px; height: 44px; }
+  .lightbox__nav--prev { inset-inline-start: .5rem; }
+  .lightbox__nav--next { inset-inline-end: .5rem; }
+}
+
+/* زر المفضلة داخل شريط إجراءات صفحة التفاصيل */
+
+/* بطاقة المكتب العقاري */
+.agency-card__body {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.agency-card__logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: var(--gray-100, #f1f1f1);
+  flex-shrink: 0;
+}
+
+.agency-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  min-width: 0;
+}
+
+.agency-card__name {
+  font-weight: 700;
+  color: var(--gray-800);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.agency-card__name:hover {
+  color: var(--primary);
+}
+
+.agency-card__rating {
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: .9rem;
+  color: var(--gray-800);
+}
+
+.agency-card__stars {
+  color: var(--warning);
+}
+
+.agency-card__count {
+  font-size: .8rem;
+  color: var(--gray-500);
+}
+
+.agency-card__link {
+  font-size: .85rem;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+/* ✅ إضافة: بطاقة معلومات المالك */
+.owner-card__body {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.owner-card__avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--gray-100, #f1f1f1);
+  flex-shrink: 0;
+}
+
+.owner-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  min-width: 0;
+}
+
+.owner-card__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem 1rem;
+}
+
+.owner-card__rate-link {
+  color: var(--warning);
+  font-size: .8rem;
+  font-weight: 700;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+/* بعد إرسال رسالة للمالك */
+.message-sent {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+
+  &__text {
+    margin: 0;
+    color: var(--success);
+    font-weight: 600;
+  }
+}
+
+/* توضيح الفرق بين تقييم العقار وتقييم المالك */
+.review-hint {
+  margin: -.5rem 0 1rem;
+  font-size: .82rem;
+  color: var(--gray-500);
+
+  a { color: var(--warning); font-weight: 700; margin-inline-start: .25rem; }
+}
+
+.owner-card__name {
+  overflow-wrap: anywhere;
+  margin: 0;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+a.owner-card__name--link {
+  display: block;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; color: var(--primary-text); }
+}
+
+.owner-card__phone {
+  color: var(--primary-text);
+  font-size: .9rem;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+.owner-card__profile-link {
+  color: var(--gray-600, #6b7280);
+  font-size: .8rem;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; color: var(--primary-text); }
+}
+
+// Service request panel: radio list of offerings for the chosen category.
+.offering-choices {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: .5rem;
+
+  legend { font-weight: 700; margin-bottom: .35rem; padding: 0; }
+}
+
+.offering-choice {
+  display: flex;
+  gap: .6rem;
+  align-items: flex-start;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: .65rem .8rem;
+  cursor: pointer;
+
+  small { display: block; color: var(--gray-500); margin-top: .15rem; }
+}
+
+.offering-rating { color: var(--warning, #b7791f); font-weight: 700; }
+.offering-rating--none { color: var(--gray-500); font-weight: 400; }
+
+// Shown once the conversation exists; the provider's contact appears only after a confirmed request is accepted.
+.form-hint { margin: 0; color: var(--gray-500); font-size: .85rem; }
+.service-sent {
+  display: grid;
+  gap: .6rem;
+  padding: 1rem;
+  border: 1px solid var(--success, #2f855a);
+  border-radius: 12px;
+  background: var(--success-soft, #f0fff4);
+
+  p { margin: 0; }
+  .service-sent__title { font-weight: 800; }
+  .service-sent__contact {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: .35rem;
+
+    li { display: flex; gap: .6rem; align-items: baseline; flex-wrap: wrap; }
+    li span { color: var(--gray-500); }
+    a { font-weight: 700; }
+  }
 }

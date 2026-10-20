@@ -4,9 +4,9 @@ const allowCleartext =
   process.env['CAPACITOR_ALLOW_CLEARTEXT'] === 'true';
 
 const config: CapacitorConfig = {
-  appId: 'com.realestate.app',
-  appName: 'Real Estate World',
-  webDir: 'dist/Wohnungsmieten/browser',
+  appId: 'com.hudhudnest.app',
+  appName: 'HudhudNest',
+  webDir: 'dist/HudhudNest/browser',
 
   server: {
     androidScheme: 'https',
@@ -18,8 +18,8 @@ const config: CapacitorConfig = {
     cleartext: allowCleartext,
 
     allowNavigation: [
-      'realestateworld.world',
-      '*.realestateworld.world',
+      'hudhudnest.com',
+      '*.hudhudnest.com',
     ],
   },
 
@@ -32,6 +32,11 @@ const config: CapacitorConfig = {
   plugins: {
     SystemBars: {
       insetsHandling: 'css',
+    },
+    // The app already shows incoming notifications itself while it is open (SignalR toast), so the
+    // OS must not show a second one for the same event. Background delivery is unaffected.
+    FirebaseMessaging: {
+      presentationOptions: [],
     },
   },
 };

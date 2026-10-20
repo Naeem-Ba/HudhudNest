@@ -1,0 +1,72 @@
+@startuml Sequence_PropertyListing
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+title مخطط تسلسلي — إنشاء إعلان عقاري (property-form)
+autonumber
+
+actor "مالك عقار" as Owner
+participant "Router\n(app.routes.ts)" as Router
+participant "AuthGuard" as AuthGuard
+participant "ListingEligibilityGuard" as EligGuard
+participant "ProfileService" as Profile
+participant "PropertyFormPage" as FormUi
+participant "PropertyApiService" as PropApi
+participant "CsrfInterceptor →\nAuthInterceptor" as Interceptors
+database "HudhudNestApi\n(Backend)" as Backend
+
+Owner -> Router : تنقّل إلى /property-form
+activate Router
+Router -> AuthGuard : canActivate
+alt غير مسجَّل دخول
+    AuthGuard --> Router : UrlTree → /auth/login?returnUrl=/property-form
+    Router --> Owner : توجيه لتسجيل الدخول
+else مسجَّل دخول
+    AuthGuard --> Router : true
+    Router -> EligGuard : canActivate
+    EligGuard -> Profile : getMe()\n(يجلب الملف الشخصي طازجاً، لا من ذاكرة مؤقّتة)
+    Profile -> Backend : GET /api/users/me
+    Backend --> Profile : الملف الشخصي الحالي
+
+    alt فشل الجلب
+        EligGuard --> Router : UrlTree → /profile
+    else isEligibleForListing(profile) == false
+        alt البريد/الهاتف غير مؤكَّد
+            EligGuard --> Router : UrlTree → /profile?reason=confirm-required
+        else الخطة لا تسمح بإعلان جديد
+            EligGuard --> Router : UrlTree → /pricing?reason=plan-required
+        end
+        Router --> Owner : توجيه حسب البوابة الناقصة
+    else مؤهَّل فعلياً
+        EligGuard --> Router : true
+        Router --> FormUi : تفعيل الصفحة (loadComponent)
+        activate FormUi
+        Owner -> FormUi : تعبئة الحقول\n(ديناميكية حسب ListingType × PropertyType)
+        FormUi -> PropApi : create(propertyDto)
+        PropApi -> Interceptors : POST /api/properties
+        Interceptors -> Interceptors : إرفاق X-XSRF-TOKEN + Bearer
+        Interceptors -> Backend : POST /api/properties + الرؤوس
+        alt الخلفية ترفض أيضاً (دفاع بعمق)
+            Backend --> FormUi : 403\n(نفس القاعدة التي يفرضها\nListingEligibilityGuard، لكن من\nمصدر الحقيقة الفعلي)
+            FormUi -> Owner : رسالة خطأ قابلة للعرض\n(عبر ApiErrorInterceptor)
+        else نجاح
+            Backend --> PropApi : 201 Created { id, isPublished, ... }
+            PropApi --> FormUi : النتيجة
+            FormUi -> Owner : توجيه لرفع الصور / صفحة العقار
+        end
+        deactivate FormUi
+    end
+end
+deactivate Router
+
+note over EligGuard, Backend
+  تعليق الكود نفسه (listing-eligibility.guard.ts) يقرّ صراحة:
+  هذا الحارس نسخة من نفس القاعدة التي يفرضها
+  CreatePropertyCommandHandler على الخلفية — وهي "تبقى
+  مصدر الحقيقة الفعلي". الحارس هنا تجربة مستخدم فقط
+  (تجنّب رحلة تعبئة نموذج كاملة تُرفَض في النهاية)، لا
+  حاجز أمني حقيقي — الرفض 403 من الخلفية أعلاه هو خط
+  الدفاع الحقيقي.
+end note
+
+@enduml

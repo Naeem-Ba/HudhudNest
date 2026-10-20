@@ -1,8 +1,8 @@
 {
-  "name": "منصة العقارات",
-  "short_name": "عقارات",
-  "description": "منصة عقارية متعددة اللغات",
-  "theme_color": "#1E3A5F",
+  "name": "هدهد نيست",
+  "short_name": "هدهد نيست",
+  "description": "منصة هدهد نيست العقارية متعددة اللغات",
+  "theme_color": "#0F2742",
   "background_color": "#FFFFFF",
   "display": "standalone",
   "start_url": "/",
@@ -10,6 +10,9 @@
   "dir": "rtl",
   "lang": "ar",
   "icons": [
-    { "src": "favicon.ico", "sizes": "48x48", "type": "image/x-icon" }
+    { "src": "favicon.ico", "sizes": "48x48", "type": "image/x-icon" },
+    { "src": "images/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "images/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "images/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

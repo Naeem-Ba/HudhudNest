@@ -16,6 +16,15 @@ export class UrlService {
       return path;
     }
 
+    // The app's own bundled assets (e.g. the /images/no-image.svg placeholder) live on the web
+    // origin, not the API origin. Prefixing them with baseUrl made the placeholder 404 on the split
+    // Netlify/API deployment, and ImageFallbackDirective cannot recover because the failing src
+    // already ends with its fallback path. The API serves nothing under /images/ (uploads are on
+    // Cloudinary), so these paths are always local.
+    if (path.startsWith('/images/')) {
+      return path;
+    }
+
     const cleanPath = path.startsWith('/') ? path : `/${path}`;
     return this.baseUrl + cleanPath;
   }
@@ -24,6 +33,11 @@ export class UrlService {
   /**
    * Builds an optimized Cloudinary delivery URL for a target display width.
    * Non-Cloudinary URLs are returned unchanged after normal URL resolution.
+   *
+   * c_limit (not c_fill): scales the stored original DOWN to at most `width`,
+   * preserving its aspect ratio, and never upscales a smaller photo (c_fill with
+   * only a width upscaled small uploads, which made them look soft/"compressed").
+   * The display box, not the delivered file, decides any cropping (object-fit).
    */
   buildResponsiveUrl(path: string | null | undefined, width: number): string | null {
     const url = this.build(path ?? undefined);
@@ -40,7 +54,7 @@ export class UrlService {
       return url;
     }
 
-    const transformations = `f_auto,q_auto,w_${normalizedWidth},c_fill`;
+    const transformations = `f_auto,q_auto,w_${normalizedWidth},c_limit`;
 
     return url.replace(
       this.cloudinaryUploadSegment,

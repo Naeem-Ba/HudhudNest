@@ -2,8 +2,8 @@
 //
 // ✅ نموذج جديد كامل — مطابق لمواصفات الـ API (قسم 9.9)
 //
-// الـ Backend يرجع PascalCase. نستخدم camelCase داخلياً
-// مع تحويل عبر apiToCamelCase() أو toVisitRequest().
+// الـ Backend يُرجع camelCase الآن مباشرة (RELEASE-BLOCKERS-AR.md B-11 — كان PascalCase،
+// ويُحوَّل عبر apiToCamelCase() المحذوفة). toVisitRequest() ما زالت مستخدَمة لبناء الطلب الصادر.
 
 // حالات طلب الزيارة (قسم 9.9 من المواصفات)
 export type VisitStatus =
@@ -11,7 +11,8 @@ export type VisitStatus =
   | 'Confirmed'
   | 'Declined'
   | 'Cancelled'
-  | 'Completed';
+  | 'Completed'
+  | 'RescheduleProposed';
 
 // نموذج الزيارة الكامل (ما يرجعه الـ Backend)
 export interface VisitDto {

@@ -1,0 +1,61 @@
+name: Live environment check
+
+# Fails when the site that is live is not the build it should be. Two incidents (2026-09-30 and
+# 2026-10-05) put a Staging build on hudhudnest.com and nothing noticed until a person looked at the
+# page. Every build now writes build-info.json (tools/stamp-build-info.mjs); this job fetches it from
+# the live site and compares (tools/check-live-environment.mjs).
+#
+# It needs no checkout of dependencies: the checker has none. A red run means one of:
+#   * the live site is a Staging build, or came from a deploy preview / branch deploy  -> republish the
+#     latest `Production: release@...` deploy in Netlify (`Production: main@...` while main is still the
+#     production branch) (Deploys -> that deploy -> Publish deploy);
+#   * the live site serves no build-info.json yet -> it was built before this check existed; publish a deploy
+#     that was built after it was merged;
+#   * the site could not be reached (exit code 2) -> check Netlify status.
+# After publishing a deploy by hand, the same check runs locally: `npm run check:live`.
+#
+# GitHub emails whoever last edited the schedule line below when a scheduled run fails.
+
+on:
+  schedule:
+    - cron: "17 */3 * * *"   # every 3 hours, at :17
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Site to check (default: https://hudhudnest.com)"
+        required: false
+        default: "https://hudhudnest.com"
+      expect:
+        description: "Environment it must be"
+        type: choice
+        options:
+          - production
+          - staging
+        default: production
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-environment-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Live site is the intended build
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '22'
+
+      - name: Ask the live site which build it is
+        env:
+          SITE_URL: ${{ inputs.url }}
+          EXPECT: ${{ inputs.expect }}
+        run: node tools/check-live-environment.mjs "${SITE_URL:-https://hudhudnest.com}" --expect "${EXPECT:-production}"

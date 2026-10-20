@@ -23,7 +23,7 @@
   h1 {
     font-size: clamp(1.3rem, 2.5vw, 1.75rem);
     font-weight: 800;
-    color: var(--navy);
+    color: var(--gray-900);
     margin: 0 0 .25rem;
   }
 
@@ -97,7 +97,7 @@
   &__title {
     font-size: .98rem;
     font-weight: 700;
-    color: var(--navy);
+    color: var(--gray-900);
     margin: 0 0 .2rem;
   }
 
@@ -144,16 +144,16 @@
   svg { color: var(--gray-400); transition: color .2s; }
 
   &:hover {
-    border-color: var(--primary);
-    color: var(--primary);
-    svg { color: var(--primary); }
+    border-color: var(--gold);
+    color: var(--gold-text);
+    svg { color: var(--gold-text); }
   }
 
   &--active {
-    border-color: var(--primary);
-    background: var(--primary-soft);
-    color: var(--primary);
-    svg { color: var(--primary); }
+    border-color: var(--gold);
+    background: var(--gold-soft);
+    color: var(--gold-text);
+    svg { color: var(--gold-text); }
   }
 }
 
@@ -194,7 +194,9 @@
     padding: .72rem .9rem;
     border: 1.5px solid var(--border);
     border-radius: var(--r-md);
-    font-size: .92rem;
+    // 16px صريح (لا .92rem) — أقل من 16px يُشغّل تكبير iOS Safari التلقائي عند
+    // التركيز، مؤكَّد حيّاً. هذا أهم نموذج بالتطبيق (نشر/تعديل إعلان عقاري).
+    font-size: 16px;
     background: var(--surface);
     color: var(--gray-800);
     transition: border-color .15s, box-shadow .15s;
@@ -203,8 +205,8 @@
 
     &:focus {
       outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-soft);
     }
 
     &::placeholder { color: var(--gray-400); }
@@ -265,6 +267,10 @@
   font-weight: 500;
   color: var(--gray-700);
   user-select: none;
+  // المربّع المرئي 20px فقط، وبلا هذا الحشو تصبح منطقة اللمس الفعلية بارتفاع
+  // محتواها (~21px) — أصغر بكثير من حد اللمس المريح على الهاتف (44px). الحشو
+  // العمودي يوسّع منطقة اللمس بلا تغيير الحجم المرئي للمربّع نفسه.
+  padding-block: .75rem;
 
   input[type="checkbox"] { display: none; }
 
@@ -282,19 +288,19 @@
   }
 
   input:checked + .checkbox-box {
-    background: var(--primary);
-    border-color: var(--primary);
+    background: var(--gold);
+    border-color: var(--gold);
 
     &::after {
       content: '✓';
-      color: #fff;
+      color: var(--navy);
       font-size: .75rem;
       font-weight: 700;
     }
   }
 
   &:hover .checkbox-box {
-    border-color: var(--primary);
+    border-color: var(--gold);
   }
 }
 
@@ -337,8 +343,8 @@
   background: var(--gray-50);
 
   &:hover {
-    border-color: var(--primary);
-    background: var(--primary-soft);
+    border-color: var(--gold);
+    background: var(--gold-soft);
   }
 }
 
@@ -354,7 +360,7 @@
 
   strong {
     font-size: .92rem;
-    color: var(--primary);
+    color: var(--gold-text);
     font-weight: 700;
   }
 
@@ -414,6 +420,56 @@
   transition: background .15s;
 
   &:hover { background: var(--danger); }
+  &:disabled { opacity: .5; cursor: default; }
+}
+
+/* ── إدارة الصور المحفوظة (setmain / delete) ── */
+.existing-images__label {
+  margin: 0 0 .5rem;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--gray-600, #475569);
+}
+
+.image-preview--main { border-color: var(--gold, #D6A84F); border-width: 2px; }
+
+.main-badge {
+  position: absolute;
+  bottom: .25rem;
+  inset-inline-start: .25rem;
+  background: var(--gold, #D6A84F);
+  color: var(--navy, #0F2742);
+  font-size: .65rem;
+  font-weight: 700;
+  padding: .1rem .4rem;
+  border-radius: var(--r-sm, 6px);
+}
+
+.image-preview__actions {
+  position: absolute;
+  top: .25rem;
+  inset-inline-end: .25rem;
+  display: flex;
+  gap: .25rem;
+}
+
+.set-main-btn {
+  width: 22px;
+  height: 22px;
+  background: rgba(0,0,0,.6);
+  color: var(--gold-light, #e8c47a);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: .8rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+
+  &:hover { background: rgba(0,0,0,.8); }
+  &:disabled { opacity: .5; cursor: default; }
 }
 
 /* ── Submit Bar ── */
@@ -456,4 +512,133 @@
     bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
     border-radius: var(--r-md) var(--r-md) 0 0;
   }
+}
+
+/* ── Phase-0, Task 0 follow-up: small hint under the neighborhood select ── */
+.field-hint {
+  font-size: .75rem;
+  color: var(--gray-500);
+  margin: .25rem 0 0;
+}
+
+/* Manual neighborhood-name fallback input, shown under the (often-empty)
+   neighborhood select — kept visually secondary since the dropdown is the
+   preferred path when data exists. */
+.field-secondary-input {
+  margin-top: .4rem;
+  font-size: .875rem;
+}
+
+/* ── Phase-0, Task 4: advisory duplicate-listing warning dialog ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 45%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1000;
+}
+
+.modal-dialog {
+  background: var(--page-bg, #fff);
+  border-radius: var(--r-md, .75rem);
+  padding: 1.5rem;
+  max-width: 30rem;
+  width: 100%;
+  max-height: 85dvh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgb(0 0 0 / 20%);
+
+  h2 {
+    margin: 0 0 .5rem;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--gray-900);
+  }
+
+  p {
+    margin: 0 0 1rem;
+    font-size: .875rem;
+    color: var(--gray-500);
+  }
+}
+
+.duplicate-candidate-list {
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+
+  li {
+    border: 1px solid var(--gray-200, #e5e7eb);
+    border-radius: var(--r-sm, .5rem);
+    padding: .625rem .75rem;
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+  }
+
+  strong {
+    font-size: .9rem;
+    color: var(--gray-900);
+  }
+}
+
+.duplicate-candidate-reason {
+  font-size: .8rem;
+  color: var(--gray-500);
+}
+
+.duplicate-candidate-owner {
+  font-size: .75rem;
+  font-weight: 700;
+  color: var(--gold-text);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: .75rem;
+  flex-wrap: wrap;
+}
+
+// Photography guide entry point: a light text link, not a permanent block in the form.
+.photo-guide-link {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-bottom: 8px;
+  padding: 0 4px;
+  background: none;
+  border: 0;
+  color: var(--gold-dark);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.field-hint--error { color: var(--danger); }
+.link-btn {
+  border: 0; background: none; padding: 0 .35rem; min-height: 0;
+  color: var(--primary-text, var(--navy)); font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer;
+}
+
+/* Take a photo with the camera: sits under the pick-files label inside the dashed zone. */
+.camera-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  min-height: 44px; margin-top: .9rem; padding: 0 1.1rem;
+  border: 1px solid var(--gold, var(--border)); border-radius: var(--r-md);
+  background: var(--surface); color: var(--gold-dark, var(--navy)); font-weight: 700; font-size: var(--text-sm);
+  cursor: pointer;
+  &:hover:not(:disabled) { background: var(--gold-soft); }
+  &:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+  &:disabled { opacity: .6; cursor: default; }
 }

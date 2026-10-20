@@ -1,0 +1,245 @@
+/* src/app/features/pricing/pricing.page.scss
+   Colors come exclusively from the global tokens in styles.scss so the dark theme
+   (html[data-theme="dark"]) works without a second ruleset. Do not hardcode hex here —
+   several older feature stylesheets do and they break in dark mode. */
+
+@use '../../../styles/breakpoints' as bp;
+
+.pricing-page {
+  width: min(1200px, 100%);
+  margin-inline: auto;
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+/* ── Hero ── */
+.pricing-hero {
+  text-align: center;
+  max-width: 720px;
+  margin-inline: auto;
+  margin-bottom: var(--space-12);
+
+  h1 {
+    margin: var(--space-3) 0 var(--space-4);
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 4vw, 2.5rem);
+    font-weight: 800;
+    color: var(--gray-900);
+    line-height: 1.25;
+  }
+
+  p {
+    margin: 0;
+    font-size: var(--text-base);
+    line-height: 1.8;
+    color: var(--gray-500);
+  }
+}
+
+/* ── Grid ──
+   Four tiers: 4 across on desktop, 2 across on tablet (a 4-up row below ~980px
+   squeezes the price line onto two lines), 1 on mobile. */
+.plans-grid {
+  display: grid;
+  /* minmax(0, …) not 1fr: a plain 1fr track cannot shrink below its min-content,
+     so one long CTA label would push the 4-up row past the viewport. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-5);
+  align-items: stretch;
+
+  @include bp.tablet {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @include bp.mobile {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── Card ── */
+.plan-card {
+  position: relative;
+  min-width: 0;
+  overflow-wrap: break-word;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-8) var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out), border-color .2s var(--ease-out);
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  /* The recommended tier is lifted and gold-trimmed. On tablet and below the grid
+     drops to two columns and then one, so the lift is removed to keep rows even. */
+  &--featured {
+    border-color: var(--gold);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-12px);
+
+    @include bp.tablet {
+      transform: none;
+    }
+  }
+
+  &__flag {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    height: 4px;
+    background: var(--gold);
+    border-start-start-radius: var(--r-lg);
+    border-start-end-radius: var(--r-lg);
+  }
+
+  &__badge {
+    align-self: flex-start;
+    margin-bottom: var(--space-3);
+    background: var(--gold-soft);
+    color: var(--gold-text);
+  }
+
+  &__name {
+    margin: 0 0 var(--space-3);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: 700;
+    color: var(--gray-900);
+  }
+
+  &__price {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    margin: 0 0 var(--space-3);
+    min-height: 48px;
+
+    /* Free and Elite show a word instead of a figure — centre it on the same
+       48px band so all four cards keep one shared baseline. */
+    &--text {
+      align-items: center;
+    }
+  }
+
+  &__amount {
+    font-family: var(--font-display);
+    font-size: var(--text-3xl);
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--gray-900);
+
+    &--text {
+      font-size: var(--text-2xl);
+    }
+  }
+
+  &__period {
+    font-size: var(--text-sm);
+    color: var(--gray-500);
+  }
+
+  &__tagline {
+    margin: 0 0 var(--space-6);
+    font-size: var(--text-sm);
+    line-height: 1.7;
+    color: var(--gray-500);
+  }
+
+  &__features {
+    list-style: none;
+    margin: 0 0 var(--space-6);
+    padding: 0;
+    display: grid;
+    gap: var(--space-3);
+    flex: 1;
+
+    li {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-2);
+      font-size: var(--text-sm);
+      line-height: 1.6;
+      color: var(--gray-700);
+    }
+  }
+
+  &__check {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    margin-block-start: 1px;
+    border-radius: var(--r-pill);
+    background: var(--success-soft);
+    color: var(--success);
+    font-size: var(--text-xs);
+    font-weight: 700;
+  }
+
+  /* Fine print: a condition of the plan, deliberately styled unlike the ticked
+     benefits above it so the two are never read as the same kind of statement. */
+  &__note {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-6);
+    padding: var(--space-3);
+    border: 1px dashed var(--border);
+    border-radius: var(--r-md);
+    font-size: var(--text-xs);
+    line-height: 1.7;
+    color: var(--gray-500);
+  }
+
+  &__note-icon {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border: 1px solid var(--warning);
+    border-radius: var(--r-pill);
+    color: var(--warning);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  /* .btn already guarantees the 44px minimum touch target required by
+     docs/RESPONSIVE-MANUAL-TEST-MATRIX.md — only the width is set here. */
+  &__cta {
+    width: 100%;
+    margin-block-start: auto;
+    /* .btn sets white-space: nowrap globally. In a four-across grid that turns the
+       longest plan label into the card min-width, so allow these to wrap. .btn
+       keeps min-height: 44px, so a two-line label still clears the touch target. */
+    white-space: normal;
+    text-align: center;
+    padding-inline: var(--space-3);
+  }
+}
+
+/* ── Footnote ── */
+.pricing-note {
+  margin: var(--space-10) auto 0;
+  max-width: 720px;
+  text-align: center;
+  font-size: var(--text-xs);
+  line-height: 1.8;
+  color: var(--gray-400);
+}
+
+.state-card {
+  margin-block: var(--space-8);
+}

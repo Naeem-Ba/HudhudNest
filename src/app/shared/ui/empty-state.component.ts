@@ -20,10 +20,10 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
       text-align: center;
       gap: .35rem;
       padding: 2rem;
-      border: 1px dashed #cbd5e1;
+      border: 1px dashed var(--gray-300);
       border-radius: 18px;
-      background: #f8fafc;
-      color: #475569;
+      background: var(--gray-50);
+      color: var(--gray-600);
       min-height: 180px;
     }
 
@@ -35,7 +35,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 
     h2 {
       margin: 0;
-      color: #0f172a;
+      color: var(--gray-900);
       font-size: 1.25rem;
     }
 
@@ -49,8 +49,8 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
       margin-top: .75rem;
       border: 0;
       border-radius: 10px;
-      background: #2563eb;
-      color: #fff;
+      background: var(--primary);
+      color: var(--on-primary);
       padding: .7rem 1rem;
       cursor: pointer;
       font-weight: 700;

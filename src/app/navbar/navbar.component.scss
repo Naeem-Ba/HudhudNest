@@ -55,6 +55,21 @@
   object-fit: contain;
 }
 
+/* Two logo files: dark lettering for the light theme, light lettering for the dark theme. */
+.navbar__logo--dark {
+  display: none;
+}
+
+:host-context([data-theme="dark"]) {
+  .navbar__logo--light {
+    display: none;
+  }
+
+  .navbar__logo--dark {
+    display: block;
+  }
+}
+
 /* ── Desktop navigation ── */
 
 .navbar__nav {
@@ -88,17 +103,17 @@
 }
 
 .navbar__link:hover {
-  color: var(--primary);
+  color: var(--primary-text);
   background: var(--gray-50);
 }
 
 .navbar__link--active {
-  color: var(--primary);
+  color: var(--primary-text);
   background: var(--gray-50);
 }
 
 .navbar__link--add {
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 /* ── Actions ── */
@@ -109,6 +124,127 @@
   justify-content: flex-end;
   gap: 0.65rem;
   flex-shrink: 0;
+}
+
+/* ================================================================
+   Theme toggle (dark/light)
+   ================================================================ */
+
+.theme-toggle {
+  width: 40px;
+  height: 40px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill, 999px);
+
+  background: var(--surface);
+  color: var(--gold);
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--gold);
+  background: var(--gold-soft);
+  transform: rotate(12deg);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.mobile-theme-toggle {
+  color: var(--gold) !important;
+}
+
+/* ================================================================
+   ✅ إضافة: جرس الإشعارات (Bell) — نفس مقاس/نمط theme-toggle
+   ================================================================ */
+
+.notif-bell {
+  position: relative;
+
+  width: 40px;
+  height: 40px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill, 999px);
+
+  background: var(--surface);
+  color: var(--gray-700, var(--gray-500));
+
+  cursor: pointer;
+  text-decoration: none;
+
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease;
+
+  &:hover,
+  &.navbar__link--active {
+    border-color: var(--gold);
+    background: var(--gold-soft);
+    color: var(--gold-text);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+}
+
+.notif-bell__badge {
+  position: absolute;
+  top: -4px;
+  inset-inline-end: -4px;
+
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 999px;
+  background: var(--danger, #dc2626);
+  color: #fff;
+
+  font-size: .68rem;
+  font-weight: 700;
+  line-height: 1;
+
+  /* ✅ مقاس لمس مريح على الجوال (44px قابل للنقر فعليًا عبر .notif-bell نفسه) */
+  pointer-events: none;
+}
+
+/* نسخة القائمة الجانبية للجوال: الشارة تظهر بجانب النص لا فوق أيقونة */
+.mobile-drawer__link--notif {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.notif-bell__badge--inline {
+  position: static;
 }
 
 /* ================================================================
@@ -151,7 +287,7 @@
 .lang-btn:hover {
   background: var(--gray-50);
   border-color: var(--gray-300);
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .lang-btn:focus-visible {
@@ -215,12 +351,12 @@
 .lang-menu li:hover,
 .lang-menu li:focus-visible {
   background: var(--gray-50);
-  color: var(--primary);
+  color: var(--primary-text);
   outline: none;
 }
 
 .lang-menu__item--active {
-  color: var(--primary) !important;
+  color: var(--primary-text) !important;
   background: var(--gray-50);
 }
 
@@ -295,6 +431,16 @@
   font-size: 1rem;
 }
 
+/* Profile not loaded yet — neutral placeholder, replaced by the photo or the initial. */
+.account__avatar--pending {
+  background: var(--gray-100);
+  border: 1px solid var(--border);
+}
+
+.account__avatar--generic {
+  background: var(--gray-50);
+}
+
 .account__chevron {
   transition: transform 0.18s ease;
 }
@@ -310,6 +456,12 @@
   z-index: 1100;
 
   width: min(300px, calc(100vw - 2rem));
+
+  /* With the Administration group open (admins: up to 10 tools) the menu can outgrow a
+     short laptop viewport — scroll inside it instead of running off the screen. */
+  max-height: calc(100dvh - 5.5rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 
   padding: 0.5rem;
 
@@ -384,7 +536,7 @@
 
 .account__item:hover {
   background: var(--gray-50);
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .account__item--danger {
@@ -394,6 +546,107 @@
 .account__item--danger:hover {
   color: var(--danger);
   background: rgba(220, 38, 38, 0.08);
+}
+
+/* ================================================================
+   Active item + "Administration" group (account menu and drawer)
+   The active item is marked by weight and an inline-start bar as well as
+   colour, so it does not rely on colour alone; aria-current="page" is set
+   by routerLinkActive for screen readers.
+   ================================================================ */
+
+/* Doubled class: .account__item / .mobile-drawer__link (same specificity, declared
+   later in this file for the drawer) would otherwise win back colour and background. */
+.account__item.account__item--active,
+.mobile-drawer__link.mobile-drawer__link--active {
+  background: var(--gray-50);
+  color: var(--primary-text);
+  font-weight: 800;
+  box-shadow: inset 3px 0 0 var(--primary);
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+
+:host-context([dir='rtl']) .account__item.account__item--active,
+:host-context([dir='rtl']) .mobile-drawer__link.mobile-drawer__link--active {
+  box-shadow: inset -3px 0 0 var(--primary);
+}
+
+/* Keyboard focus for every menu/drawer entry, including the group toggle. */
+.account__item:focus-visible,
+.mobile-drawer__link:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.account__group-toggle,
+.mobile-drawer__group-toggle {
+  min-height: 44px;
+}
+
+.group-toggle__label {
+  flex: 1;
+  min-width: 0;
+}
+
+.group-toggle--current .group-toggle__label {
+  font-weight: 800;
+  color: var(--primary-text);
+}
+
+.group-toggle__current-dot {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.group-toggle__chevron {
+  flex-shrink: 0;
+  transition: transform 0.18s ease;
+}
+
+[aria-expanded='true'] > .group-toggle__chevron {
+  transform: rotate(180deg);
+}
+
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+
+  padding-inline-start: 0.75rem;
+  margin-inline-start: 0.85rem;
+  border-inline-start: 1px solid var(--border);
+}
+
+.nav-group[hidden] {
+  display: none;
+}
+
+.nav-group__label {
+  margin: 0.55rem 0 0.2rem;
+  padding-inline: 0.75rem;
+
+  color: var(--gray-500);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* Visually hidden, still announced (the "signed in with" prefix, "current section"). */
+.navbar-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ================================================================
@@ -529,15 +782,38 @@
 
 .mobile-drawer__link:hover {
   background: var(--gray-50);
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .mobile-drawer__link--highlight {
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .mobile-drawer__link--danger {
   color: var(--danger);
+}
+
+.mobile-drawer__user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  padding: 0.35rem 0.85rem 0.6rem;
+  min-width: 0;
+}
+
+.mobile-drawer__identifier {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  color: var(--gray-700);
+  font-size: 0.88rem;
+  font-weight: 600;
 }
 
 .mobile-drawer__divider {
@@ -588,7 +864,7 @@
 .mobile-lang__btn--active {
   border-color: var(--primary);
   background: var(--gray-50);
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 /* ================================================================
@@ -677,6 +953,37 @@
   .account__chevron {
     display: none;
   }
+
+  /* The menu used to hang off the avatar (inset-inline-end: 0 of .account), which is not
+     at the screen edge — the burger button sits beside it — so on a 320px phone its 288px
+     width started 24px off-screen. Anchor it to the full-width sticky header instead. */
+  .account {
+    position: static;
+  }
+
+  .account__dropdown {
+    inset-inline-end: 0.5rem;
+    width: min(300px, calc(100vw - 1rem));
+  }
+}
+
+/* Very small phones (320px): logged-in actions (theme, bell, account, menu ≈ 196px)
+   + the fixed-size logo (120px) + gaps were ~28px wider than the screen, pushing
+   every page sideways. Let the logo shrink (object-fit: contain keeps its ratio)
+   and tighten the action gap instead of hiding anything. */
+@include bp.small-mobile {
+  .navbar__brand {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  .navbar__logo {
+    max-width: 100%;
+  }
+
+  .navbar__actions {
+    gap: 0.35rem;
+  }
 }
 
 /* ================================================================
@@ -687,6 +994,7 @@
 @media (prefers-reduced-motion: reduce) {
   .lang-chevron,
   .account__chevron,
+  .group-toggle__chevron,
   .mobile-toggle__bar,
   .mobile-drawer,
   .mobile-overlay {

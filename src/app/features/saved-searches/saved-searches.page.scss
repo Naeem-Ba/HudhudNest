@@ -1,0 +1,116 @@
+/* src/app/features/saved-searches/saved-searches.page.scss — Phase-0, Task 3
+   Deliberately mirrors my-listings.page.scss's tokens/spacing for visual consistency. */
+
+.saved-searches-page {
+  width: min(900px, 100%);
+  margin-inline: auto;
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  h1 {
+    margin: 0 0 .25rem;
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    color: var(--gray-900);
+  }
+
+  p {
+    margin: 0;
+    color: var(--gray-500);
+  }
+}
+
+.searches-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.search-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  padding: 1rem 1.25rem;
+
+  &__body { flex: 1; min-width: 200px; }
+
+  h2 { margin: 0 0 .3rem; font-size: 1rem; color: var(--gray-900); }
+
+  &__summary {
+    margin: 0 0 .3rem;
+    font-size: .88rem;
+    color: var(--gray-700);
+  }
+
+  &__matched {
+    margin: 0;
+    font-size: .8rem;
+    color: var(--gray-400);
+  }
+
+  &__actions {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+  }
+}
+
+.btn {
+  border: 0;
+  border-radius: 10px;
+  padding: .55rem .9rem;
+  font-weight: 700;
+  font-size: .88rem;
+  cursor: pointer;
+  transition: opacity .15s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  white-space: nowrap;
+
+  &:disabled { opacity: .5; cursor: default; }
+
+  &--primary   { background: var(--primary); color: var(--on-primary); &:hover:not(:disabled) { background: var(--primary-dark); } }
+  &--secondary { background: var(--gray-100); color: var(--gray-700); &:hover:not(:disabled) { background: var(--gray-200); } }
+  &--danger    { background: #ef4444; color: #fff; &:hover:not(:disabled) { background: var(--danger); } }
+}
+
+.state-card {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: 1rem;
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+
+  p { flex: 1; margin: 0; }
+
+  button {
+    border: 0;
+    background: var(--danger);
+    color: #fff;
+    border-radius: 10px;
+    padding: .6rem .9rem;
+    cursor: pointer;
+  }
+}
+
+.error-state {
+  border: 1px solid rgba(220,38,38,.2);
+  background: var(--danger-soft);
+  color: var(--danger);
+}

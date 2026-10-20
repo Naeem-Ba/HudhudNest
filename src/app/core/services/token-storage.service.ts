@@ -5,39 +5,32 @@ export interface AuthTokenResponse {
   AccessToken?: string | null;
   token?: string | null;
   Token?: string | null;
-  refreshToken?: string | null;
-  RefreshToken?: string | null;
   expiresIn?: number | null;
   ExpiresIn?: number | null;
 }
 
+/**
+ * RELEASE-BLOCKERS-AR.md B-13: the refresh token is no longer handled here at all — it
+ * travels only in an HttpOnly `refresh_token` cookie the browser manages invisibly to
+ * JavaScript (see the backend's RefreshTokenCookie). Before this fix it was persisted to
+ * sessionStorage, readable by any script that ever ran on the page — including an XSS
+ * payload, which is exactly what B-13 flagged.
+ *
+ * Only the access token is kept here, in memory only, exactly as before. It does not survive
+ * a page reload by design; app.config.ts's restoreSession() mints a fresh one from the
+ * ambient cookie on every boot instead of reading anything out of storage.
+ */
 @Injectable({ providedIn: 'root' })
 export class TokenStorageService {
   private accessToken: string | null = null;
-  private readonly REFRESH_KEY = 'wohnungsapp_refresh';
-  private readonly REMEMBER_KEY = 'wohnungsapp_remember';
 
-  storeTokens(response: AuthTokenResponse, remember = false): void {
+  storeTokens(response: AuthTokenResponse): void {
     const accessToken =
       response?.accessToken ?? response?.AccessToken ??
       response?.token ?? response?.Token ?? null;
 
-    const refreshToken =
-      response?.refreshToken ?? response?.RefreshToken ?? null;
-
     if (accessToken) {
       this.accessToken = accessToken;
-    }
-
-    if (refreshToken) {
-      sessionStorage.setItem(this.REFRESH_KEY, refreshToken);
-      localStorage.removeItem(this.REFRESH_KEY);
-
-      if (remember) {
-        localStorage.setItem(this.REMEMBER_KEY, 'true');
-      } else {
-        localStorage.removeItem(this.REMEMBER_KEY);
-      }
     }
   }
 
@@ -49,21 +42,16 @@ export class TokenStorageService {
     return this.accessToken;
   }
 
-  getRefreshToken(): string | null {
-    return sessionStorage.getItem(this.REFRESH_KEY);
-  }
-
-  isRemembered(): boolean {
-    return localStorage.getItem(this.REMEMBER_KEY) === 'true';
-  }
-
   clear(): void {
     this.accessToken = null;
-    sessionStorage.removeItem(this.REFRESH_KEY);
-    localStorage.removeItem(this.REFRESH_KEY);
-    localStorage.removeItem(this.REMEMBER_KEY);
 
-    for (const key of ['accessToken', 'token', 'refreshToken', 'loggedUser', 'user']) {
+    // Defensive cleanup only: nothing writes these keys any more, but a browser that still
+    // holds a value from before this migration must not keep offering it up indefinitely.
+    for (const key of [
+      'accessToken', 'token', 'refreshToken',
+      'wohnungsapp_refresh', 'wohnungsapp_remember',
+      'loggedUser', 'user'
+    ]) {
       localStorage.removeItem(key);
       sessionStorage.removeItem(key);
     }

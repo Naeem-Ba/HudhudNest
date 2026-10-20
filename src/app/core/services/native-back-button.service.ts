@@ -50,7 +50,7 @@ export class NativeBackButtonService {
   }
 
   private isRootRoute(url: string): boolean {
-    const path = url.split(/[?#]/, 1)[0].replace(/\/+$/, '') || '/';
+    const path = (url.split(/[?#]/, 1)[0] ?? '').replace(/\/+$/, '') || '/';
     return path === '/' || path === '/home';
   }
 }

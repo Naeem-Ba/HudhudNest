@@ -1,35 +1,75 @@
 /* ================================================================
-   PropertyApp — Global Design System
+   HudhudNest — Global Design System
    نظام التصميم العالمي
    ================================================================ */
 
+@use 'styles/breakpoints' as bp;
+
 @import "leaflet/dist/leaflet.css";
 
-/* ── Google Fonts ── */
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+/* Google Fonts: NOT imported here (RELEASE-BLOCKERS-AR.md, "dead @import" item) — index.html
+   already loads the same family list via a <link rel="stylesheet">, so this @import was a
+   second, redundant fetch of the same fonts. It also triggered a build warning on its own:
+   once leaflet.css above is inlined, its rules sit ahead of this @import in the final
+   stylesheet, and @import must be first — removing the redundant import removes that warning
+   too. */
 
 /* ================================================================
    CSS Custom Properties — Design Tokens
+   وضع افتراضي فاتح (Light) — يُطبَّق دومًا ما لم يُفعَّل [data-theme="dark"]
+   على <html> (يتم ذلك تلقائيًا عبر ThemeService حسب اختيار المستخدم
+   أو تفضيل نظام التشغيل عند أول زيارة).
    ================================================================ */
 :root {
-  /* Brand Colors */
+  /* Brand Colors — هوية HudhudNest / هدهد نيست */
   --navy:          #0F2742;
   --navy-80:       rgba(15, 39, 66, .80);
   --navy-600:      #1a3a5c;
   --gold:          #D6A84F;
   --gold-light:    #e8c47a;
+  --gold-dark:     #b5872e;
   --gold-soft:     rgba(214, 168, 79, .12);
+  /* نص ذهبي بتباين كافٍ حسب الوضع: غامق على خلفية فاتحة، فاتح على خلفية داكنة.
+     يُعاد تعريفه بكتلة [data-theme="dark"] أدناه. */
+  --gold-text:     var(--gold-dark);
+
+  /* لوحة معرض الصور — محايدة دافئة (رمادي فحمي دافئ) بدل الأزرق الملاحظ
+     سابقًا (كان var(--navy) وهو أزرق داكن). هذه القيمة ثابتة عمدًا بكلا
+     الوضعين لأن أدوات التنقل بالمعرض (الأسهم/العدّاد) بيضاء اللون ثابتة،
+     ومحايدة دافئة كهذه أكثر راحة للعين من الأزرق البارد عند تصفّح صور
+     عقارات لفترة طويلة، وتُبقي تركيز المستخدم على الصورة نفسها لا الخلفية. */
+  --gallery-canvas: #1b1a18;
+
+  /* شارات "إيجار/بيع" — درجات هادئة مائلة للأخضر-الفيروزي (إيجار) والكهرماني
+     الدافئ (بيع) بدل الأزرق/الأخضر الفاتح القديم، لتمييز بصري أوضح وأهدأ
+     يساعد على اتخاذ القرار بسرعة دون تنافر مع هوية الذهبي/الأسود. */
+  --badge-rent-bg:   rgba(13, 148, 136, .12);
+  --badge-rent-text: #0f766e;
+  --badge-sale-bg:   rgba(180, 83, 9, .14);
+  --badge-sale-text: #9a5313;
+
+  /* شارة الإعلان المميّز (المدفوع). ذهبي هوية التطبيق نفسه لا لون ثالث جديد:
+     التمييز منتج مدفوع، ويجب أن يُقرأ فوراً كشيء مختلف عن شارتَي الإيجار/البيع
+     الوصفيتين، لا كتصنيف ثالث لنوع العرض. */
+  --badge-featured-bg:   rgba(214, 168, 79, .20);
+  --badge-featured-text: var(--gold-dark);
 
   /* UI Colors */
-  --primary:       #2563eb;
-  --primary-dark:  #1d4ed8;
-  --primary-soft:  #eff6ff;
+  /* اللون الأساسي = ذهبي الهوية (كان أزرق). --on-primary: نص أسود فوق أي خلفية ذهبية.
+     --primary-text: نسخة غامقة من الذهبي للنص/الروابط على خلفية فاتحة (تباين ≥ 4.5:1). */
+  --primary:       var(--gold);
+  --primary-dark:  var(--gold-dark);
+  --primary-soft:  var(--gold-soft);
+  --on-primary:    #111111;
+  --primary-text:  #8a6414;
   --success:       #16a34a;
   --success-soft:  #f0fdf4;
   --danger:        #dc2626;
   --danger-soft:   #fef2f2;
   --warning:       #d97706;
   --warning-soft:  #fffbeb;
+  --info:          #0891b2;
+  --info-soft:     #ecfeff;
 
   /* Neutral Scale */
   --gray-50:    #f8fafc;
@@ -47,11 +87,21 @@
   --surface:    #ffffff;
   --page-bg:    #f8fafc;
   --border:     #e2e8f0;
-  --border-focus: #2563eb;
+  --border-focus: var(--gold);
 
-  /* Typography */
-  --font-display: 'Cairo', 'Segoe UI', system-ui, sans-serif;
-  --font-body:    'Cairo', 'Inter', system-ui, sans-serif;
+  /* Typography
+     -----------------------------------------------------------------
+     Roboto أولاً ثم IBM Plex Sans Arabic — والترتيب هو الآلية نفسها لا تفضيلاً
+     جمالياً: Roboto لا يحتوي محرفاً عربياً واحداً، فالمتصفح يسقط لكل محرف عربي
+     إلى الخط التالي في القائمة. النتيجة أن اللاتينية تُعرض بـ Roboto والعربية
+     بـ IBM Plex Sans Arabic دون أي منطق في الكود ودون :lang().
+
+     ولذلك يجب ألا يتقدّم أي خط عربي على Roboto هنا: لو تقدّم، لالتقط اللاتينية
+     أيضاً وضاع نصف القرار. وCairo يبقى في آخر القائمة احتياطاً لأن كل صفحة قائمة
+     رُسمت عليه، فلو تعذّر تحميل IBM Plex لا يسقط النص إلى خط النظام مباشرة.
+     ----------------------------------------------------------------- */
+  --font-display: 'Roboto', 'IBM Plex Sans Arabic', 'Cairo', system-ui, sans-serif;
+  --font-body:    'Roboto', 'IBM Plex Sans Arabic', 'Cairo', system-ui, sans-serif;
   --font-mono:    'Courier New', monospace;
 
   /* Type Scale */
@@ -104,6 +154,69 @@
   --z-overlay:  300;
   --z-modal:    400;
   --z-toast:    500;
+}
+
+/* ================================================================
+   الوضع الداكن — HudhudNest Dark Theme
+   أسود فاخر + ذهبي، مطابق للهوية البصرية المرجعية (Luxora/Luxe).
+   كل مكوّن يستخدم var(--surface) / var(--gray-*) / var(--border) —
+   بلا استثناء — يتحوّل تلقائيًا هنا بدون أي تعديل بملفه الخاص.
+   ================================================================ */
+html[data-theme="dark"] {
+  --surface:      #15161a;
+  --page-bg:      #0a0a0c;
+  --border:       #2a2b31;
+  --border-focus: var(--gold);
+
+  --gray-50:    #1c1d22;
+  --gray-100:   #23242a;
+  --gray-200:   #2a2b31;
+  --gray-300:   #383a42;
+  --gray-400:   #6b6d78;
+  --gray-500:   #9497a3;
+  --gray-600:   #b7b9c3;
+  --gray-700:   #d4d6dd;
+  --gray-800:   #eceef2;
+  --gray-900:   #f7f8fa;
+
+  --primary:       var(--gold);
+  --primary-dark:  var(--gold-light);
+  --primary-soft:  rgba(214, 168, 79, .14);
+  --primary-text:  var(--gold-light);
+  --gold-text:     var(--gold-light);
+
+  --success-soft:  rgba(22, 163, 74, .16);
+  --danger-soft:   rgba(220, 38, 38, .16);
+  --warning-soft:  rgba(217, 119, 6, .16);
+  --info-soft:     rgba(8, 145, 178, .16);
+
+  /* شارات إيجار/بيع بالوضع الداكن — تشبّع أعلى قليلاً وشفافية أكبر عشان
+     تظل الشارة واضحة فوق الخلفيات الداكنة بدل الباستيل الفاتح اللي كان
+     يبدو غير مناسب (منخفض التباين/غير متناغم) على الخلفية الداكنة. */
+  --badge-rent-bg:   rgba(45, 212, 191, .18);
+  --badge-rent-text: #5eead4;
+  --badge-sale-bg:   rgba(251, 146, 60, .20);
+  --badge-sale-text: #fdba74;
+
+  /* الذهبي على الداكن يحتاج نصاً أفتح لا أغمق — gold-dark يختفي هنا. */
+  --badge-featured-bg:   rgba(214, 168, 79, .24);
+  --badge-featured-text: var(--gold-light);
+
+  --shadow-xs: 0 1px 3px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.25);
+  --shadow-sm: 0 2px 10px rgba(0,0,0,.40);
+  --shadow-md: 0 6px 20px rgba(0,0,0,.45);
+  --shadow-lg: 0 10px 34px rgba(0,0,0,.55);
+  --shadow-xl: 0 18px 55px rgba(0,0,0,.60);
+
+  color-scheme: dark;
+}
+
+/* انتقال ناعم عند تبديل الوضع بدل قفزة لونية مفاجئة */
+body,
+.navbar,
+.card,
+.btn {
+  transition: background-color .25s ease, color .25s ease, border-color .25s ease;
 }
 
 /* ================================================================
@@ -186,7 +299,7 @@ h1, h2, h3, h4, h5, h6 {
   margin-inline: auto;
   padding-inline: var(--space-6);
 
-  @media (max-width: 640px) {
+  @include bp.mobile {
     padding-inline: var(--space-4);
   }
 }
@@ -207,7 +320,7 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 1200px;
   margin-inline: auto;
 
-  @media (max-width: 640px) {
+  @include bp.mobile {
     padding-inline: var(--space-4);
     padding-block: var(--space-6);
   }
@@ -219,7 +332,7 @@ h1, h2, h3, h4, h5, h6 {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--space-6);
 
-  @media (max-width: 640px) {
+  @include bp.mobile {
     grid-template-columns: 1fr;
     gap: var(--space-4);
   }
@@ -258,13 +371,13 @@ h1, h2, h3, h4, h5, h6 {
 
   &--primary {
     background: var(--primary);
-    color: #fff;
+    color: var(--on-primary);
     border-color: var(--primary);
 
     &:hover:not(:disabled) {
       background: var(--primary-dark);
       transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(37,99,235,.35);
+      box-shadow: 0 4px 16px rgba(214,168,79,.35);
     }
   }
 
@@ -316,7 +429,7 @@ h1, h2, h3, h4, h5, h6 {
   &--ghost {
     background: transparent;
     border-color: transparent;
-    color: var(--primary);
+    color: var(--primary-text);
 
     &:hover:not(:disabled) {
       background: var(--primary-soft);
@@ -372,6 +485,11 @@ input[type="password"],
 input[type="tel"],
 input[type="number"],
 input[type="date"],
+// ✅ إضافة: input[type="search"] كان الوحيد المفقود من هذه القائمة — أي حقل بحث
+// (.search-input بلوحة المشرف/قائمة العقارات) كان يقع خارج هذا الـ reset فيرث خط
+// المتصفح الافتراضي لـ input[type=search] (أقل من 16px)، ما يُشغّل تكبير iOS
+// Safari التلقائي عند التركيز عليه — مؤكَّد حيّاً على أكثر من صفحة.
+input[type="search"],
 select,
 textarea {
   width: 100%;
@@ -390,11 +508,23 @@ textarea {
   &:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    box-shadow: 0 0 0 3px rgba(214,168,79,.12);
   }
 
   &::placeholder {
     color: var(--gray-400);
+  }
+}
+
+/* iOS Safari and WKWebView (the Capacitor shell) zoom the whole page when a control with a computed
+   font-size under 16px takes focus. The base rule above already asks for 16px, but component-scoped
+   styles beat it (home hero search .92rem; landing, contact, valuation and forgot-password .95rem), so
+   the floor is enforced here for touch devices only. .otp-input is deliberately larger and is left alone. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not(.otp-input),
+  select,
+  textarea {
+    font-size: 16px !important;
   }
 }
 
@@ -429,11 +559,33 @@ textarea.ng-valid.ng-touched {
   letter-spacing: .02em;
   white-space: nowrap;
 
-  &--rent   { background: #dbeafe; color: var(--primary-dark); }
-  &--sale   { background: #dcfce7; color: var(--success); }
+  &--rent   { background: var(--badge-rent-bg); color: var(--badge-rent-text); }
+  &--sale   { background: var(--badge-sale-bg); color: var(--badge-sale-text); }
+  &--featured {
+    background: var(--badge-featured-bg);
+    color: var(--badge-featured-text);
+    /* حدّ خفيف: الشارة تجلس فوق صورة العقار مباشرة، وبعض الصور ذهبية اللون. */
+    box-shadow: inset 0 0 0 1px rgba(181, 135, 46, .35);
+  }
   &--draft  { background: var(--gray-100); color: var(--gray-500); }
   &--live   { background: var(--success-soft); color: var(--success); }
   &--warning { background: var(--warning-soft); color: var(--warning); }
+
+  /* حالات الإعلان (QA Phase 7، P7-D08): محجوز ما زال معروضًا، ومباع/مؤجر صفقة منتهية للتوثيق. */
+  &--reserved { background: var(--warning-soft); color: var(--warning); box-shadow: inset 0 0 0 1px rgba(217, 119, 6, .35); }
+  &--sold,
+  &--rented   { background: var(--gray-800); color: var(--surface); }
+  &--archived { background: var(--gray-100); color: var(--gray-600); }
+}
+
+/* بطاقة إعلان محجوز أو مباع/مؤجر أفتح لونًا من العادية كي تُميَّز بنظرة واحدة، دون أن تصير غير مقروءة. */
+.listing-muted {
+  .listing-muted__media { opacity: .72; filter: saturate(.7); }
+  .listing-muted__text { opacity: .82; }
+}
+.listing-muted--closed {
+  .listing-muted__media { opacity: .55; filter: grayscale(.6); }
+  .listing-muted__text { opacity: .7; }
 }
 
 /* Alert / State Cards */
@@ -460,8 +612,8 @@ textarea.ng-valid.ng-touched {
 
   &--info {
     background: var(--primary-soft);
-    color: var(--primary);
-    border: 1px solid rgba(37,99,235,.2);
+    color: var(--primary-text);
+    border: 1px solid rgba(214,168,79,.2);
   }
 }
 
@@ -479,7 +631,7 @@ textarea.ng-valid.ng-touched {
   h1 {
     font-size: clamp(1.5rem, 3vw, 2rem);
     font-weight: 800;
-    color: var(--navy);
+    color: var(--gray-900);
     margin: 0;
   }
 
@@ -594,7 +746,7 @@ textarea.ng-valid.ng-touched {
 /* ================================================================
    Responsive Helpers
    ================================================================ */
-@media (max-width: 640px) {
+@include bp.mobile {
   body { font-size: 15px; }
 
   button, input, select, textarea {
@@ -636,6 +788,20 @@ textarea.ng-valid.ng-touched {
 
 /* Phase 3 responsive baseline */
 html { overflow-x: clip; }
+
+/* ScrollLockService (core/services/scroll-lock.service.ts) — يمنع الصفحة
+   الخلفية من التمرير أثناء فتح Mobile Drawer/Modal. body يُثبَّت بـ
+   position:fixed (لا overflow:hidden وحده) لأن هذا وحده ما يمنع فعليًا
+   التمرير اللمسي خلف عنصر fixed على iOS Safari/WKWebView. */
+html.scroll-locked {
+  overflow: hidden;
+}
+
+html.scroll-locked body {
+  position: fixed;
+  inset-inline: 0;
+  overflow: hidden;
+}
 body { min-width: 320px; }
 img, video, canvas, svg { max-width: 100%; }
 button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }

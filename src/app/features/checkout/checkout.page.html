@@ -1,0 +1,214 @@
+<!--
+  Tailwind utilities only — no .card / .btn classes from styles.scss.
+
+  Every colour is a theme token backed by a HudhudNest CSS variable (see @theme in
+  src/tailwind.css), so this page follows the navbar's dark-mode switch without one dark:
+  utility. Spacing uses logical utilities (ps-/pe-/ms-/me-, text-start/end) rather than
+  left/right, so the RTL and LTR passes are the same markup rather than mirrored overrides.
+-->
+<section class="mx-auto w-full max-w-3xl px-4 py-8 sm:py-12">
+
+  <!-- Heading -->
+  <header class="mb-8">
+    <a
+      routerLink="/property-form"
+      class="inline-flex min-h-11 items-center gap-2 text-sm text-ink-500 transition-colors hover:text-gold-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+    >
+      <span aria-hidden="true">&#8592;</span>
+      {{ 'COMMON.BACK' | translate }}
+    </a>
+
+    <h1 class="mt-3 font-display text-2xl font-bold text-ink-900 sm:text-3xl">
+      {{ 'CHECKOUT.TITLE' | translate }}
+    </h1>
+    <p class="mt-2 text-sm leading-relaxed text-ink-600">
+      {{ 'CHECKOUT.SUBTITLE' | translate }}
+    </p>
+  </header>
+
+  <!--
+    The honesty banner. It is the first thing on the page rather than fine print at the
+    bottom, because "there is no online payment" is the single most important fact here and
+    a user who misses it has misunderstood the whole screen.
+  -->
+  <div
+    class="mb-6 flex gap-3 rounded-xl border border-gold/40 bg-gold-soft p-4"
+    role="note"
+  >
+    <span class="text-lg leading-none" aria-hidden="true">&#9432;</span>
+    <div>
+      <p class="text-sm font-semibold text-gold-text">
+        {{ 'CHECKOUT.NO_GATEWAY_TITLE' | translate }}
+      </p>
+      <p class="mt-1 text-sm leading-relaxed text-ink-700">
+        {{ 'CHECKOUT.NO_GATEWAY_BODY' | translate }}
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Step 1: review what is being ordered ──────────────────── -->
+  <div
+    *ngIf="preview() as item"
+    class="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm"
+  >
+    <div class="border-b border-line p-5 sm:p-6">
+      <h2 class="font-display text-lg font-bold text-ink-900">
+        {{ item.titleKey | translate }}
+      </h2>
+      <p class="mt-2 text-sm leading-relaxed text-ink-600">
+        {{ item.descriptionKey | translate }}
+      </p>
+    </div>
+
+    <dl class="divide-y divide-line">
+      <div class="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
+        <dt class="text-sm text-ink-600">{{ 'CHECKOUT.DURATION' | translate }}</dt>
+        <dd class="text-sm font-semibold text-ink-900">
+          {{ 'CHECKOUT.DAYS' | translate: { days: quote()?.days ?? item.days } }}
+        </dd>
+      </div>
+
+      <div class="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
+        <dt class="text-sm text-ink-600">{{ 'CHECKOUT.AMOUNT' | translate }}</dt>
+        <dd class="font-display text-xl font-bold tabular-nums text-gold-text">
+          {{ 'CHECKOUT.USD' | translate: { amount: (quote()?.amountUsd ?? item.amountUsd) } }}
+        </dd>
+      </div>
+
+      <!-- Extension only: the deadline that makes this urgent. -->
+      <div
+        *ngIf="quote()?.graceEndsAt as graceEndsAt"
+        class="flex items-center justify-between gap-4 px-5 py-4 sm:px-6"
+      >
+        <dt class="text-sm text-ink-600">{{ 'CHECKOUT.GRACE_ENDS' | translate }}</dt>
+        <dd class="text-sm font-semibold tabular-nums text-ink-900">
+          {{ graceEndsAt | date: 'yyyy-MM-dd' }}
+        </dd>
+      </div>
+
+      <!-- Featured only: proof that remaining days are added, not forfeited. -->
+      <div
+        *ngIf="quote()?.projectedFeaturedUntil as projectedUntil"
+        class="flex items-center justify-between gap-4 px-5 py-4 sm:px-6"
+      >
+        <dt class="text-sm text-ink-600">{{ 'CHECKOUT.FEATURED_UNTIL' | translate }}</dt>
+        <dd class="text-sm font-semibold tabular-nums text-ink-900">
+          {{ projectedUntil | date: 'yyyy-MM-dd' }}
+        </dd>
+      </div>
+    </dl>
+
+    <!-- Confirm — only before a charge exists -->
+    <div *ngIf="!isRecorded()" class="border-t border-line bg-ink-50 p-5 sm:p-6">
+      <p *ngIf="error() as errorKey" class="mb-3 text-sm text-red-600" role="alert">
+        {{ errorKey | translate }}
+      </p>
+
+      <button
+        type="button"
+        (click)="confirm()"
+        [disabled]="submitting()"
+        class="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-navy px-6 font-semibold text-white transition-colors hover:bg-navy-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <app-loading-spinner *ngIf="submitting()" />
+        <span>{{ 'CHECKOUT.CONFIRM' | translate }}</span>
+      </button>
+
+      <p class="mt-3 text-center text-xs leading-relaxed text-ink-500">
+        {{ 'CHECKOUT.CONFIRM_HINT' | translate }}
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Step 2: the recorded charge and how to settle it ──────── -->
+  <div *ngIf="quote() as recorded" class="mt-6 space-y-6">
+
+    <!-- Status -->
+    <div class="rounded-2xl border border-line bg-surface p-5 shadow-sm sm:p-6">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h2 class="font-display text-lg font-bold text-ink-900">
+          {{ 'CHECKOUT.RECORDED_TITLE' | translate }}
+        </h2>
+        <span
+          class="inline-flex items-center gap-1.5 rounded-full bg-gold-soft px-3 py-1 text-xs font-semibold text-gold-text"
+        >
+          <span class="h-1.5 w-1.5 rounded-full bg-gold" aria-hidden="true"></span>
+          {{ 'CHECKOUT.STATUS_PENDING' | translate }}
+        </span>
+      </div>
+
+      <p class="mt-2 text-sm leading-relaxed text-ink-600">
+        {{ 'CHECKOUT.RECORDED_BODY' | translate }}
+      </p>
+
+      <!--
+        Reusing an existing charge is stated out loud. Somebody who lands here twice must
+        not walk away believing they have been billed twice.
+      -->
+      <p
+        *ngIf="recorded.isExistingPendingFee"
+        class="mt-3 rounded-lg bg-ink-100 px-3 py-2 text-sm text-ink-700"
+      >
+        {{ 'CHECKOUT.ALREADY_PENDING' | translate }}
+      </p>
+
+      <!-- The reference -->
+      <div class="mt-5">
+        <p class="text-xs font-semibold uppercase tracking-wide text-ink-500">
+          {{ 'CHECKOUT.REFERENCE' | translate }}
+        </p>
+        <div class="mt-2 flex flex-wrap items-center gap-3">
+          <code
+            class="flex-1 select-all overflow-x-auto rounded-lg border border-line bg-ink-50 px-3 py-2.5 font-mono text-sm text-ink-900"
+          >{{ recorded.transactionId }}</code>
+
+          <button
+            type="button"
+            (click)="copyReference()"
+            class="min-h-11 shrink-0 rounded-lg border border-line px-4 text-sm font-semibold text-ink-700 transition-colors hover:border-gold hover:text-gold-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+          >
+            {{ (referenceCopied() ? 'CHECKOUT.COPIED' : 'CHECKOUT.COPY') | translate }}
+          </button>
+        </div>
+        <p class="mt-2 text-xs leading-relaxed text-ink-500">
+          {{ 'CHECKOUT.REFERENCE_HINT' | translate }}
+        </p>
+      </div>
+    </div>
+
+    <!--
+      What happens next. Numbered because these genuinely are sequential steps in one
+      process, not three unrelated bullets dressed up as a list.
+    -->
+    <ol class="space-y-3">
+      <li
+        *ngFor="let step of ['ONE', 'TWO', 'THREE']; index as i"
+        class="flex gap-4 rounded-xl border border-line bg-surface p-4"
+      >
+        <span
+          class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-navy text-xs font-bold tabular-nums text-white"
+          aria-hidden="true"
+        >{{ i + 1 }}</span>
+        <p class="text-sm leading-relaxed text-ink-700">
+          {{ 'CHECKOUT.STEP_' + step | translate }}
+        </p>
+      </li>
+    </ol>
+
+    <!-- Where to get transfer details. Deliberately a link to the real contact form
+         rather than an account number printed on the page: this repo has no bank details
+         in it, and inventing an IBAN would be inventing a record. -->
+    <div class="rounded-2xl border border-line bg-ink-50 p-5 text-center sm:p-6">
+      <p class="text-sm leading-relaxed text-ink-700">
+        {{ 'CHECKOUT.TRANSFER_DETAILS' | translate }}
+      </p>
+      <a
+        routerLink="/kontakt"
+        [queryParams]="{ ref: recorded.transactionId }"
+        class="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-gold px-6 font-semibold text-navy transition-colors hover:bg-gold-dark hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy"
+      >
+        {{ 'CHECKOUT.CONTACT_US' | translate }}
+      </a>
+    </div>
+  </div>
+</section>

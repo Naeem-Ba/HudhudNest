@@ -2,15 +2,73 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <title>WohnungsApp</title>
+  <title>HudhudNest</title>
   <base href="/">
+  <script>
+    // The app used to route with Angular's hash location (/#/properties/:id) -- switched to
+    // real paths (/properties/:id) because hash fragments are effectively invisible to search
+    // engines (see ARD-Wohnungsmieten.md ADR-001). Canonical/shared/og:url links never carried
+    // a hash even back then (PropertyShareUrlService always built the plain path form), so this
+    // is purely a backward-compatibility bridge for links already distributed before the switch
+    // -- old #/properties/:id or #/auth/verify-email?... URLs (emails, bookmarks, old shares)
+    // still need to land on real content instead of silently falling through the '**' -> home
+    // route once hash fragments stop meaning anything to the router.
+    (function () {
+      var hash = location.hash;
+      if (hash.length > 1 && hash.charAt(1) === '/') {
+        var hashPath = hash.slice(1);
+        var queryIndex = hashPath.indexOf('?');
+        var path = queryIndex === -1 ? hashPath : hashPath.slice(0, queryIndex);
+        var hashQuery = queryIndex === -1 ? '' : hashPath.slice(queryIndex);
+        location.replace(path + (hashQuery || location.search));
+      }
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#2563eb">
+  <meta name="theme-color" content="#0F2742">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <!--
+    Organization/WebSite JSON-LD (schema.org) -- static, not injected by StructuredDataService
+    (src/app/core/services/structured-data.service.ts), on purpose: this never changes per
+    route or per data, so it belongs in the raw HTML shell, present even before Angular boots
+    (unlike anything StructuredDataService sets, which only exists once a component has run).
+    The URL is always the real production origin, even in a Staging/local build -- this
+    describes which organization the site IS, not which environment is serving this particular
+    response, and Staging/local already carry noindex + a disallow-everything robots.txt
+    (tools/generate-robots.mjs) regardless.
+  -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "HudhudNest",
+    "alternateName": "هدهد نيست",
+    "url": "https://hudhudnest.com",
+    "logo": "https://hudhudnest.com/images/horizontal-logo.png"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "HudhudNest",
+    "alternateName": "هدهد نيست",
+    "url": "https://hudhudnest.com",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://hudhudnest.com/properties?search={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
 </head>
 <body>
   <app-root></app-root>

@@ -1,0 +1,93 @@
+<div class="ssb">
+  <header class="ssb__header">
+    <p class="ssb__eyebrow">{{ 'SHORTSTAY.BOOKINGS.EYEBROW' | translate }}</p>
+    <h1>{{ 'SHORTSTAY.BOOKINGS.TITLE' | translate }}</h1>
+  </header>
+
+  <div class="ssb__tabs" role="tablist">
+    <button type="button" role="tab" [attr.aria-selected]="tab() === 'mine'"
+      class="ssb__tab" [class.ssb__tab--active]="tab() === 'mine'" (click)="switchTab('mine')">
+      {{ 'SHORTSTAY.BOOKINGS.TAB_MINE' | translate }}
+    </button>
+    <button type="button" role="tab" [attr.aria-selected]="tab() === 'host'"
+      class="ssb__tab" [class.ssb__tab--active]="tab() === 'host'" (click)="switchTab('host')">
+      {{ 'SHORTSTAY.BOOKINGS.TAB_HOST' | translate }}
+    </button>
+  </div>
+
+  <p *ngIf="loading()" class="ssb__loading">{{ 'SHORTSTAY.BOOKINGS.LOADING' | translate }}</p>
+  <p *ngIf="error()" class="ssb__error">{{ error() | translate }}</p>
+  <p *ngIf="!loading() && !error() && sorted().length === 0" class="ssb__empty">
+    {{ 'SHORTSTAY.BOOKINGS.EMPTY' | translate }}
+  </p>
+
+  <ul class="ssb__list" *ngIf="!loading() && sorted().length > 0">
+    <li class="ssb__card" *ngFor="let booking of sorted(); trackBy: trackById">
+      <div class="ssb__card-main">
+        <a [routerLink]="['/short-stay', booking.shortStayListingId]" class="ssb__title">
+          {{ booking.listingTitle }}
+        </a>
+        <span class="ssb__status" [class]="'ssb__status--' + booking.status.toLowerCase()">
+          {{ statusLabel(booking.status) | translate }}
+        </span>
+      </div>
+
+      <div class="ssb__dates">
+        <span>{{ booking.checkIn | date:'d MMM y' }} → {{ booking.checkOut | date:'d MMM y' }}</span>
+        <span class="ssb__guests">
+          {{ 'SHORTSTAY.BOOKINGS.GUESTS' | translate:{ count: booking.adults + booking.children } }}
+        </span>
+      </div>
+
+      <div class="ssb__amounts">
+        <span>{{ 'SHORTSTAY.BOOKINGS.TOTAL' | translate }}: {{ booking.totalAmount | number:'1.0-2' }} {{ booking.currencyCode }}</span>
+        <span *ngIf="booking.depositAmount > 0">
+          {{ 'SHORTSTAY.BOOKINGS.DEPOSIT' | translate }}: {{ booking.depositAmount | number:'1.0-2' }} {{ booking.currencyCode }}
+        </span>
+      </div>
+
+      <div class="ssb__actions">
+        <button type="button" class="btn btn--sm btn--danger" *ngIf="canCancel(booking)"
+          [disabled]="processingId() === booking.id" (click)="cancel(booking)">
+          {{ 'SHORTSTAY.BOOKINGS.CANCEL' | translate }}
+        </button>
+
+        <ng-container *ngIf="canApproveOrReject(booking)">
+          <button type="button" class="btn btn--sm btn--primary"
+            [disabled]="processingId() === booking.id" (click)="approve(booking)">
+            {{ 'SHORTSTAY.BOOKINGS.APPROVE' | translate }}
+          </button>
+          <button type="button" class="btn btn--sm btn--danger"
+            [disabled]="processingId() === booking.id" (click)="reject(booking)">
+            {{ 'SHORTSTAY.BOOKINGS.REJECT' | translate }}
+          </button>
+        </ng-container>
+
+        <button type="button" class="btn btn--sm btn--primary" *ngIf="canRecordDepositPaid(booking)"
+          [disabled]="processingId() === booking.id" (click)="recordDepositPaid(booking)">
+          {{ 'SHORTSTAY.BOOKINGS.RECORD_DEPOSIT' | translate }}
+        </button>
+
+        <button type="button" class="btn btn--sm btn--primary" *ngIf="canConfirm(booking)"
+          [disabled]="processingId() === booking.id" (click)="confirmBooking(booking)">
+          {{ 'SHORTSTAY.BOOKINGS.CONFIRM' | translate }}
+        </button>
+
+        <button type="button" class="btn btn--sm btn--primary" *ngIf="canCheckIn(booking)"
+          [disabled]="processingId() === booking.id" (click)="checkIn(booking)">
+          {{ 'SHORTSTAY.BOOKINGS.CHECK_IN' | translate }}
+        </button>
+
+        <button type="button" class="btn btn--sm btn--primary" *ngIf="canCheckOut(booking)"
+          [disabled]="processingId() === booking.id" (click)="checkOut(booking)">
+          {{ 'SHORTSTAY.BOOKINGS.CHECK_OUT' | translate }}
+        </button>
+
+        <button type="button" class="btn btn--sm btn--primary" *ngIf="canComplete(booking)"
+          [disabled]="processingId() === booking.id" (click)="complete(booking)">
+          {{ 'SHORTSTAY.BOOKINGS.COMPLETE' | translate }}
+        </button>
+      </div>
+    </li>
+  </ul>
+</div>

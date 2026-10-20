@@ -1,0 +1,80 @@
+@use '../../../../styles/breakpoints' as bp;
+
+.invw {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-6, 1.5rem) var(--space-4, 1rem);
+
+  &__header { margin-bottom: 1rem; }
+  &__header h1 { margin: 0 0 .35rem; font-size: clamp(1.5rem, 3vw, 2rem); }
+  &__header p { margin: 0; color: var(--gray-500, #6b7280); }
+
+  &__error {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: 1rem;
+    border-radius: 12px;
+    color: var(--danger, #dc2626);
+    background: var(--danger-soft, #fee2e2);
+    border: 1px solid rgba(220,38,38,.2);
+
+    p { flex: 1; margin: 0; }
+    button {
+      border: 0;
+      background: var(--danger, #dc2626);
+      color: #fff;
+      border-radius: 10px;
+      padding: .5rem .85rem;
+      cursor: pointer;
+    }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  &__card {
+    background: var(--surface, #fff);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: box-shadow .2s ease, transform .2s ease;
+
+    &:hover { box-shadow: var(--shadow-md, 0 6px 20px rgba(0,0,0,.1)); transform: translateY(-2px); }
+  }
+
+  &__thumb {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    background: var(--gray-100, #f3f4f6);
+  }
+
+  &__body { display: grid; gap: .5rem; padding: 1rem; }
+  &__title { margin: 0; font-size: 1.05rem; }
+  &__meta { margin: 0; color: var(--gray-500, #6b7280); font-size: .85rem; }
+
+  &__remove {
+    justify-self: start;
+    border: 1px solid var(--border, #e5e7eb);
+    background: none;
+    border-radius: 8px;
+    padding: .4rem .75rem;
+    font-size: .8rem;
+    cursor: pointer;
+
+    &:hover { background: var(--gray-50, #f9fafb); }
+    &:disabled { opacity: .6; cursor: default; }
+  }
+
+  @include bp.min(768px) {
+    &__grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  }
+  @include bp.min(1100px) {
+    &__grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  }
+}

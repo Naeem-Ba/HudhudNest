@@ -1,8 +1,26 @@
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, map, Observable, tap } from 'rxjs';
+import { BehaviorSubject, catchError, combineLatest, map, Observable, of, Subject, tap, throwError } from 'rxjs';
 
 import { AuthApiService } from './auth-api.service';
+import { LOGIN_METHOD_STORAGE_KEY, LoginMethod } from './login-identifier';
+import { CsrfTokenService } from '../services/csrf-token.service';
+import { ProfileService } from '../api/profile.service';
+import { ServiceProviderService } from '../api/service-provider.service';
 import { TokenStorageService } from '../services/token-storage.service';
+
+/**
+ * حالات الجلسة الصريحة — إضافية فوق isLoggedIn$/currentUser$ الحاليين، وليست
+ * بديلاً عنهما (كل المستهلكين الحاليين — الـ guards، navbar، إلخ — يستمرون
+ * بلا أي تغيير). الهدف: تمييز "لا تزال الجلسة تُستعاد/تُجدَّد" و"جلسة انتهت
+ * فعلاً" عن boolean واحد لا يفرّق بين "مجهول تأكيدياً" و"جارٍ التحقق"،
+ * تماماً كما وُثِّق في قسم "التفريق بين حالات Authentication" من خطة
+ * المرحلة الأولى. sessionExpired ليست حالة مستقرة — هي حدث لحظي (Subject)
+ * يُطلَق فقط عند انتهاء جلسة كانت موجودة فعلاً على صفحة تتطلّب تسجيل دخول
+ * (راجع notifySessionExpired ومستدعيها في refresh-auth.interceptor.ts)،
+ * ثم تستقر الحالة على 'anonymous' كالمعتاد.
+ */
+export type AuthStatus = 'anonymous' | 'authenticated' | 'sessionRefreshing';
+
 export interface AuthenticatedUser {
   id: string;
   Id: string;
@@ -17,10 +35,18 @@ export interface AuthenticatedUser {
   [key: string]: unknown;
 }
 
+// Full-URI claim names as emitted by HudhudNestApi (System.Security.Claims.ClaimTypes).
+const CLAIM_NAME_IDENTIFIER = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier';
+const CLAIM_EMAIL = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress';
+const CLAIM_NAME = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name';
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly tokenStorage = inject(TokenStorageService);
   private readonly authApi = inject(AuthApiService);
+  private readonly csrfTokenService = inject(CsrfTokenService);
+  private readonly profileService = inject(ProfileService);
+  private readonly serviceProviderService = inject(ServiceProviderService);
 
   private readonly loggedIn = new BehaviorSubject<boolean>(false);
   readonly isLoggedIn$ = this.loggedIn.asObservable();
@@ -30,6 +56,30 @@ export class AuthService {
 
   readonly isAdmin$ = this.currentUser$.pipe(
     map(user => user?.roles?.includes('Admin') ?? false)
+  );
+
+  /** انظر تعليق AuthStatus أعلاه. true فقط أثناء عملية /auth/refresh فعلية. */
+  private readonly refreshingSession = new BehaviorSubject<boolean>(false);
+
+  /**
+   * حدث لحظي (وليس حالة مستقرة) — راجع تعليق AuthStatus. 'revoked' يعني تم
+   * كشف إعادة استخدام refresh token (كل الجلسات أُلغيت لأسباب أمنية)؛
+   * 'expired' يغطي كل حالة انتهاء أخرى (بما فيها تعارض تجديد متزامن نادر).
+   * AppComponent هو المشترك الوحيد حالياً — يعرض رسالة toast مترجَمة مطابقة.
+   */
+  private readonly sessionExpiredEvent = new Subject<'expired' | 'revoked'>();
+  readonly sessionExpired$ = this.sessionExpiredEvent.asObservable();
+
+  readonly authStatus$: Observable<AuthStatus> = combineLatest([
+    this.isLoggedIn$,
+    this.refreshingSession.asObservable()
+  ]).pipe(
+    map(([loggedIn, refreshing]) => {
+      if (refreshing) {
+        return 'sessionRefreshing';
+      }
+      return loggedIn ? 'authenticated' : 'anonymous';
+    })
   );
 
   constructor() {
@@ -75,31 +125,115 @@ export class AuthService {
     }
 
     const roles = this.extractRoles(payload);
-    const id = String(payload.sub ?? payload.nameid ?? payload.userId ?? payload.UserId ?? '');
-    const email = String(payload.email ?? '');
-    const displayName = String(payload.name ?? payload.unique_name ?? payload.email ?? '');
+    // HudhudNestApi's TokenService writes ClaimTypes.* as their full URI names
+    // (…/claims/nameidentifier, …/emailaddress, …/name) — exactly like the role
+    // claim extractRoles() already accepts. Reading only the short names left the
+    // id empty for every signed-in user, so ownership checks in the UI (isOwner,
+    // the owner's messages view, "my message" bubbles, own-profile) never matched.
+    const id = String(
+      payload['sub'] ?? payload['nameid'] ?? payload[CLAIM_NAME_IDENTIFIER] ??
+      payload['userId'] ?? payload['UserId'] ?? ''
+    );
+    const email = String(payload['email'] ?? payload[CLAIM_EMAIL] ?? '');
+    // ⚠️ "name"/"unique_name" بالتوكن هو Identity UserName (عادةً نفس البريد)،
+    // وليس حقل "الاسم المعروض" (DisplayName) القابل للتعديل من صفحة البروفايل.
+    // هذه قيمة مؤقتة فورية فقط، تُستبدَل بالقيمة الحقيقية بمجرد وصول
+    // hydrateProfile() أدناه — راجع تعليقها لتفاصيل الخلل الذي يُصلحه.
+    const displayName = String(
+      payload['name'] ?? payload['unique_name'] ?? payload[CLAIM_NAME] ?? email
+    );
+
+    // AuthGuard/AdminGuard call this on every guarded navigation. Rebuilding the user
+    // from the token alone dropped the profile photo and display name that
+    // hydrateProfile() had already merged in, so the navbar avatar fell back to the
+    // letter until the next GET /users/me landed — a visible flicker on every
+    // navigation. Same user ⇒ keep those two fields until the refetch replaces them.
+    const previous = this.currentUserSubject.value;
+    const sameUser = !!previous && !!id && previous.id === id;
 
     this.currentUserSubject.next({
       id,
       Id: id,
       email,
       Email: email,
-      displayName,
-      DisplayName: displayName,
+      displayName: sameUser ? previous.displayName : displayName,
+      DisplayName: sameUser ? previous.DisplayName : displayName,
       roles,
-      Roles: roles
+      Roles: roles,
+      ...(sameUser ? { ImageUrl: previous.ImageUrl ?? null, imageUrl: previous.imageUrl ?? null } : {})
     });
     this.loggedIn.next(true);
+
+    this.hydrateProfile();
   }
 
-  /** Stores tokens from login/refresh responses, then rebuilds auth state. */
+  /**
+   * How this browser's current session was signed in — decides whether the account
+   * menu shows the e-mail address or the phone number (an account can have both).
+   * The token carries no such claim and the access token itself lives in memory only,
+   * so the login screens record it here and it survives a reload. Only 'email'/'phone'
+   * is stored — never the identifier itself.
+   */
+  rememberLoginMethod(method: LoginMethod): void {
+    try {
+      localStorage.setItem(LOGIN_METHOD_STORAGE_KEY, method);
+    } catch {
+      // Storage unavailable (private mode, blocked site data): the menu falls back to
+      // inferring the method from the account — see resolveLoginIdentifier().
+    }
+  }
+
+  get loginMethod(): LoginMethod | null {
+    try {
+      const stored = localStorage.getItem(LOGIN_METHOD_STORAGE_KEY);
+      return stored === 'email' || stored === 'phone' ? stored : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * ✅ إصلاح: DisplayName وصورة البروفايل (ImageUrl) هما حقلا عمل يُعدَّلان من
+   * صفحة البروفايل، لكن validateSession() أعلاه تبنيهما فقط من claims التوكن —
+   * الذي لا يحمل رابط صورة إطلاقاً، ويحمل لـ"الاسم" قيمة Identity UserName لا
+   * DisplayName الفعلي. النتيجة: حفظ الصورة/الاسم المعروض من صفحة البروفايل
+   * كان يظهر فورًا (لأن ProfileComponent.syncAuthStateFromProfile تستدعي
+   * updateCurrentUser() مباشرة)، لكنه يرتدّ للقيم القديمة فور أي إعادة تحميل
+   * للصفحة أو تجديد جلسة، لأن validateSession() تُعاد من الصفر من التوكن فقط
+   * في كل مرة. نجلب هنا القيم الصحيحة من GET /users/me (نفس نداء
+   * ProfileComponent.fetchProfile) وندمجها في الحالة المشتركة كي يستفيد كل
+   * مستهلكي currentUser$ (شريط التنقل مثلاً) لا صفحة البروفايل وحدها.
+   * فشل الجلب متسامَح معه بالكامل — إثراء اختياري لا يجب أن يعطّل تسجيل الدخول.
+   */
+  private hydrateProfile(): void {
+    this.profileService
+      .getMe()
+      .pipe(catchError(() => of(null)))
+      .subscribe(profile => {
+        if (!profile) {
+          return;
+        }
+
+        this.updateCurrentUser({
+          DisplayName: profile.DisplayName,
+          displayName: profile.DisplayName,
+          ImageUrl: profile.ImageUrl ?? null,
+          imageUrl: profile.ImageUrl ?? null
+        });
+      });
+  }
+
+  /**
+   * Stores the access token from a login/refresh response, then rebuilds auth state.
+   * RELEASE-BLOCKERS-AR.md B-13: no refresh token to read here any more — it never appears
+   * in the response body, only in the HttpOnly cookie.
+   */
   login(response: unknown): void {
     const res = (response ?? {}) as Record<string, unknown>;
     const accessToken = res['accessToken'] ?? res['AccessToken'] ?? res['token'] ?? res['Token'];
-    const refreshToken = res['refreshToken'] ?? res['RefreshToken'];
 
     if (typeof accessToken === 'string' && accessToken.trim()) {
-      this.tokenStorage.storeTokens({ accessToken, refreshToken: String(refreshToken ?? '') });
+      this.tokenStorage.storeTokens({ accessToken });
     }
 
     this.validateSession();
@@ -112,10 +246,23 @@ export class AuthService {
   /**
    * Performs a real logout: backend refresh-token invalidation + local cleanup.
    * Callers subscribe because this is an HTTP operation.
+   *
+   * Phase 1 (Authentication & Session) fix: local cleanup used to run only in the success
+   * path (tap), so a failed API call (e.g. an access token that had just expired — POST
+   * /auth/logout requires [Authorize] and is deliberately excluded from the auto-refresh
+   * interceptor to avoid a refresh-then-logout loop) left the in-memory token/profile/CSRF
+   * state untouched even though the caller (navbar) navigates away regardless of outcome,
+   * as if logout had silently no-op'd for anything still reading that state client-side
+   * before the next full reload. Local state now always clears, matching what the user
+   * asked for regardless of whether the server call itself succeeded.
    */
   logout(): Observable<void> {
     return this.authApi.logout().pipe(
-      tap(() => this.clearSession())
+      tap(() => this.clearSession()),
+      catchError(error => {
+        this.clearSession();
+        return throwError(() => error);
+      })
     );
   }
 
@@ -158,8 +305,49 @@ export class AuthService {
     return this.tokenStorage.getAccessToken();
   }
 
+  /**
+   * يُستدعى من app.config.ts (restoreSession عند إقلاع التطبيق) ومن
+   * refresh-auth.interceptor.ts (قبل محاولة /auth/refresh) كي يعكس authStatus$
+   * الحالة الفعلية 'sessionRefreshing' بدل أن يظهر المستخدم 'anonymous' مؤقتاً
+   * أثناء عملية شبكة لا تزال جارية فعلاً.
+   */
+  beginSessionRefresh(): void {
+    this.refreshingSession.next(true);
+  }
+
+  /** يُستدعى دائماً بعد انتهاء محاولة التجديد (نجاحاً أو فشلاً) — راجع beginSessionRefresh. */
+  endSessionRefresh(): void {
+    this.refreshingSession.next(false);
+  }
+
+  /**
+   * يُطلَق فقط عند انتهاء جلسة كانت قائمة فعلاً على صفحة تتطلّب تسجيل دخول —
+   * وليس لكل 401 عابر. راجع currentRouteRequiresAuth في refresh-auth.interceptor.ts،
+   * وهو المستدعي الوحيد لهذه الدالة.
+   */
+  notifySessionExpired(reason: 'expired' | 'revoked' = 'expired'): void {
+    this.refreshingSession.next(false);
+    this.sessionExpiredEvent.next(reason);
+  }
+
   private clearSession(): void {
     this.tokenStorage.clear();
+    // RELEASE-BLOCKERS-AR.md B-20: prevent a stale CSRF token from a previous session
+    // being reused after logout.
+    this.csrfTokenService.clear();
+    // Account deletion (Phase 5) and plain logout both end up here: without this, the
+    // just-ended session's name/email/avatar stays in ProfileService's shared profile$
+    // BehaviorSubject in memory and could still render to a component that reads it before
+    // the next full page reload.
+    this.profileService.clearCache();
+    // نفس السبب بالضبط — لا نريد لحالة "مزوّد خدمة" من الجلسة المنتهية أن تُصوَّر لحساب
+    // مختلف قد يسجّل دخوله بعدها في نفس تبويب المتصفح قبل إعادة تحميل كاملة للصفحة.
+    this.serviceProviderService.clearCache();
+    try {
+      localStorage.removeItem(LOGIN_METHOD_STORAGE_KEY);
+    } catch {
+      // Nothing to clean up if storage is unavailable.
+    }
     this.setAnonymousState();
   }
 

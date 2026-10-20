@@ -1,0 +1,134 @@
+workflows:
+  # -------------------------------------------------------------------------
+  # 1) فحص سريع بدون توقيع (Simulator SDK) — لاختبار أن خط الأنابيب يعمل
+  #    قبل ما يتوفر عندك مفتاح App Store Connect API / شهادات التوقيع.
+  #    يُشغَّل يدويًا فقط (Start new build في Codemagic).
+  # -------------------------------------------------------------------------
+  ios-build-unsigned:
+    name: iOS Build Check (unsigned, simulator SDK)
+    max_build_duration: 30
+    instance_type: mac_mini_m2
+    environment:
+      vars:
+        XCODE_PROJECT: "ios/App/App.xcodeproj"
+        XCODE_SCHEME: "App"
+      node: 22.19.0
+      xcode: 16.4
+    # Manual start only. Pull requests are already covered by the `ios-build` job in GitHub's Frontend CI
+    # (same Xcode, only when native files change), so a second build per PR here only spends macOS minutes.
+    scripts:
+      - name: Install npm dependencies
+        script: npm ci
+      - name: Validate iOS config (capacitor.config.ts + capacitor deps)
+        script: npm run ios:check
+      - name: Build Angular (prod) + cap sync ios + fix SPM paths
+        script: npm run ios:sync
+      - name: xcodebuild (simulator SDK, no signing)
+        script: |
+          xcodebuild \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+    artifacts:
+      - /tmp/xcodebuild_logs/*.log
+
+  # -------------------------------------------------------------------------
+  # 2) بناء موقّع + رفع تلقائي إلى TestFlight — عند دفع tag إصدار فقط (v1.2.0 مثلًا)
+  #    يتطلب مسبقًا (تُضاف من واجهة Codemagic، وليست هنا):
+  #      - Team > Integrations > App Store Connect: مفتاح API باسم
+  #        "codemagic_asc_api_key" (غيّر الاسم أدناه إذا استخدمت اسمًا آخر)
+  #      - توقيع تلقائي: فعّل "Automatic code signing" في نفس التكامل
+  #        (Codemagic يجلب الشهادة والـ provisioning profile تلقائيًا عبر API)
+  #      - Environment variable group باسم "frontend_env" فيه:
+  #        API_URL, BASE_URL (أو API_ORIGIN), SIGNALR_URL (أو
+  #        NOTIFICATION_HUB_URL), GOOGLE_CLIENT_ID, APPLE_CLIENT_ID,
+  #        APPLE_REDIRECT_URI, SITE_URL
+  #      - مخطط (scheme) "App" مشترك (Shared) في Xcode ومضاف لِلـ git —
+  #        راجع الملاحظة المهمة في الرد قبل هذا الملف.
+  # -------------------------------------------------------------------------
+  ios-release:
+    name: iOS Release (App Store / TestFlight)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: codemagic_asc_api_key
+    environment:
+      groups:
+        - frontend_env
+      vars:
+        XCODE_PROJECT: "ios/App/App.xcodeproj"
+        XCODE_SCHEME: "App"
+        BUNDLE_ID: "com.hudhudnest.app"
+      node: 22.19.0
+      xcode: 16.4
+    # Only a version tag (v<major>.<minor>.<patch>) starts a store build, never a plain push to main.
+    # The same tag also starts Frontend CI on GitHub, which runs the audit, the tests and the production
+    # build on that commit; start the TestFlight build only after that run is green.
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: "v*"
+          include: true
+    scripts:
+      - name: Install npm dependencies
+        script: npm ci
+      - name: Check release identity (tag = native version, both platforms aligned)
+        script: |
+          set -e
+          node tools/app-version.mjs verify-tag "$CM_TAG"
+          node tools/app-version.mjs check --strict
+          # The build number comes from the commit (npm run version:set). TestFlight refuses a build
+          # number it has already seen, so a repeated number fails the upload instead of passing silently.
+      - name: Check store build configuration (fail closed)
+        script: |
+          set -e
+          missing=""
+          for name in API_URL GOOGLE_CLIENT_ID APPLE_CLIENT_ID APPLE_REDIRECT_URI SITE_URL; do
+            eval "value=\${$name:-}"
+            [ -n "$value" ] || missing="$missing $name"
+          done
+          if [ -n "$missing" ]; then
+            echo "Missing in the frontend_env group:$missing" >&2
+            exit 1
+          fi
+          case "$API_URL" in
+            *staging*) echo "API_URL points at Staging; a store build must use the Production API." >&2; exit 1 ;;
+          esac
+          echo "COMMIT_REF=$CM_COMMIT" >> "$CM_ENV"
+      - name: Validate iOS config
+        script: npm run ios:check
+      - name: Build Angular (prod) + cap sync ios + fix SPM paths
+        script: npm run ios:sync
+      - name: Verify the web bundle is the production build of this commit
+        script: |
+          node -e '
+            const info = JSON.parse(require("fs").readFileSync("dist/HudhudNest/browser/build-info.json", "utf8"));
+            const problems = [];
+            if (info.environment !== "production") problems.push("environment is " + info.environment);
+            if (info.commit !== process.env.CM_COMMIT) problems.push("commit is " + info.commit + ", expected " + process.env.CM_COMMIT);
+            if (/staging/i.test(info.apiUrl ?? "")) problems.push("apiUrl points at Staging");
+            if (problems.length) { console.error(problems.join("; ")); process.exit(1); }
+            console.log("Bundle: " + info.environment + " @ " + info.commit.slice(0, 7));
+          '
+      - name: Set up automatic code signing
+        script: |
+          xcode-project use-profiles
+
+      - name: Build signed ipa
+        script: |
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        # الإرسال إلى مراجعة App Store خطوة منفصلة يدوية من App Store Connect؛ تبقى false عمدًا.
+        submit_to_app_store: false

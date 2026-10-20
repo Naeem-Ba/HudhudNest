@@ -1,6 +1,6 @@
 <div class="home">
 
-  <!-- ── Hero Search Banner ── -->
+  <!-- ── Hero Search Banner (تخطيط HudhudNest — مطابق للموك-اب المرجعي) ── -->
   <section class="home-hero">
     <div class="home-hero__bg">
       <div class="home-hero__overlay"></div>
@@ -9,11 +9,77 @@
       <span class="home-hero__eyebrow">🏠 {{ 'HOME.hero_subtitle' | translate }}</span>
       <h1 class="home-hero__title">{{ 'HOME.hero_title' | translate }}</h1>
       <p class="home-hero__desc">{{ 'HOME.hero_desc' | translate }}</p>
+
+      <!-- بطاقة البحث الزجاجية العائمة أسفل الـ hero -->
+      <form class="hero-search" (ngSubmit)="submitHeroSearch()">
+        <div class="hero-search__field">
+          <label for="heroSearchCity">{{ 'HOME.search.location' | translate }}</label>
+          <input
+            id="heroSearchCity"
+            type="text"
+            [(ngModel)]="searchCity"
+            name="searchCity"
+            list="heroCitySuggestions"
+            autocomplete="off"
+            [placeholder]="'HOME.search.location_any' | translate"
+          />
+          <datalist id="heroCitySuggestions">
+            <option *ngFor="let c of cities" [value]="c.name"></option>
+          </datalist>
+        </div>
+
+        <div class="hero-search__divider" aria-hidden="true"></div>
+
+        <div class="hero-search__field">
+          <label for="heroSearchType">{{ 'HOME.search.type' | translate }}</label>
+          <input
+            id="heroSearchType"
+            type="text"
+            [(ngModel)]="searchPropertyTypeText"
+            name="searchPropertyTypeText"
+            list="heroPropertyTypeSuggestions"
+            autocomplete="off"
+            [placeholder]="'HOME.search.type_any' | translate"
+          />
+          <datalist id="heroPropertyTypeSuggestions">
+            <option *ngFor="let t of propertyTypes" [value]="localizedTypeName(t)"></option>
+          </datalist>
+        </div>
+
+        <div class="hero-search__divider" aria-hidden="true"></div>
+
+        <div class="hero-search__field">
+          <label>{{ 'HOME.search.max_price' | translate }}</label>
+          <select [(ngModel)]="searchMaxPrice" name="searchMaxPrice">
+            <option *ngFor="let p of priceOptions" [ngValue]="p.value">{{ p.labelKey | translate }}</option>
+          </select>
+        </div>
+
+        <div class="hero-search__divider" aria-hidden="true"></div>
+
+        <div class="hero-search__field">
+          <label>{{ 'HOME.search.listing_type' | translate }}</label>
+          <select [(ngModel)]="searchListingType" name="searchListingType">
+            <option value="">{{ 'HOME.search.listing_type_any' | translate }}</option>
+            <option value="ForRent">{{ 'PROPERTY.MODE_RENT' | translate }}</option>
+            <option value="ForSale">{{ 'PROPERTY.MODE_SALE' | translate }}</option>
+          </select>
+        </div>
+
+        <button type="submit" class="hero-search__submit">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          {{ 'HOME.search.submit' | translate }}
+        </button>
+      </form>
+
       <div class="home-hero__actions">
-        <a routerLink="/wohnungen" class="btn btn--gold btn--lg">
+        <a routerLink="/properties" class="btn btn--outline-light btn--sm">
           {{ 'HOME.browse_properties' | translate }}
         </a>
-        <a routerLink="/property-form" class="btn btn--outline-light btn--lg">
+        <a routerLink="/property-form" class="btn btn--outline-light btn--sm">
           {{ 'HOME.list_property' | translate }}
         </a>
       </div>
@@ -48,7 +114,7 @@
           <p class="home-section__eyebrow">{{ 'HOME.latest_label' | translate }}</p>
           <h2 class="home-section__title">{{ 'HOME.latest_apartments' | translate }}</h2>
         </div>
-        <a routerLink="/wohnungen" class="btn btn--outline">
+        <a routerLink="/properties" class="btn btn--outline">
           {{ 'HOME.view_all' | translate }}
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
             <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -58,16 +124,16 @@
 
       <!-- Properties Grid -->
       <div class="property-grid" *ngIf="properties.length > 0">
-        <article
+        <a
           *ngFor="let p of properties"
           class="prop-card"
-          [routerLink]="['/wohnungen', p.id]"
-          tabindex="0"
-          role="button"
+          [class.listing-muted]="isReserved(p)"
+          [routerLink]="['/properties', p.id]"
           [attr.aria-label]="p.title"
         >
           <div class="prop-card__image">
             <img
+              class="listing-muted__media"
               [src]="propertyImageUrl(p)"
               [attr.srcset]="propertyImageSrcSet(p)"
               sizes="(max-width: 640px) calc(100vw - 2rem), (max-width: 980px) calc(50vw - 2rem), 360px"
@@ -75,15 +141,23 @@
               loading="lazy"
               appImageFallback="/images/no-image.svg"
             />
-            <span class="badge"
-              [class.badge--rent]="p.listingType === 'ForRent'"
-              [class.badge--sale]="p.listingType === 'ForSale'">
-              {{ p.listingType === 'ForSale'
-                  ? ('PROPERTY.MODE_SALE' | translate)
-                  : ('PROPERTY.MODE_RENT' | translate) }}
-            </span>
+            <div class="card-badges">
+              <span class="badge"
+                [class.badge--rent]="p.listingType === 'ForRent'"
+                [class.badge--sale]="p.listingType === 'ForSale'">
+                {{ p.listingType === 'ForSale'
+                    ? ('PROPERTY.MODE_SALE' | translate)
+                    : ('PROPERTY.MODE_RENT' | translate) }}
+              </span>
+              <span class="badge badge--reserved" *ngIf="isReserved(p)">{{ 'LISTING_STATUS.RESERVED' | translate }}</span>
+              <!-- إعلان مميّز مدفوع — القيمة الفعّالة تأتي من الخادم. -->
+              <span class="badge badge--featured" *ngIf="p.isFeatured">
+                <span aria-hidden="true">⭐</span>
+                {{ 'PROPERTY.FEATURED' | translate }}
+              </span>
+            </div>
           </div>
-          <div class="prop-card__body">
+          <div class="prop-card__body listing-muted__text">
             <h3 class="prop-card__title line-clamp-2">{{ p.title || ('PROPERTY_LIST.NO_TITLE' | translate) }}</h3>
             <p class="prop-card__location line-clamp-1">
               <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
@@ -107,11 +181,10 @@
               </span>
             </div>
             <p class="prop-card__price">
-              {{ (p.coldRent || p.warmRent || p.purchasePrice) | number }}
-              <span>{{ p.currencyCode || 'SYP' }}</span>
+              {{ getPrice(p) }}
             </p>
           </div>
-        </article>
+        </a>
       </div>
 
       <!-- Empty State -->

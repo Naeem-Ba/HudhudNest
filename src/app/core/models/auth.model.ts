@@ -8,11 +8,23 @@ export interface RegisterRequest {
   lastName: string;
   email: string;
   password: string;
+  // اختيارية إضافياً فقط — انظر docs/privacy/privacy-gaps.md (P1) في مستودع الـ backend.
+  // تُرسَل فقط عندما يضع المستخدم فعلاً علامة على مربّع الموافقة غير المحدَّد مسبقاً.
+  privacyPolicyAccepted?: boolean;
+  privacyPolicyVersion?: string;
+  consentSource?: string;
+  termsAccepted?: boolean;
+  termsVersion?: string;
 }
 
 export interface RegisterResponse {
   message: string;
   userId: string;
+  /**
+   * False when the account exists but the API could not send the confirmation mail. Absent on
+   * an API that predates the field, which is read as "sent" (the only behaviour it ever had).
+   */
+  confirmationEmailSent?: boolean;
 }
 
 export interface AuthTokenResponse {
@@ -41,37 +53,203 @@ export interface AppleLoginRequest {
   authorizationCode?: string | null;
   firstName?: string | null;
   lastName?: string | null;
+  /** Raw (unhashed) nonce passed to AppleID.auth.init — see B-16 in RELEASE-BLOCKERS-AR.md. */
+  nonce?: string | null;
 }
 
-export interface SendOtpRequest {
-  phoneNumber?: string;
-  email?: string;
-  purpose?: string;
-  firstName?: string;
-  lastName?: string;
+/** تسجيل الدخول برقم الهاتف + كلمة السر (بدون OTP) — راجع PhoneAuthApiService. */
+export interface PhoneLoginRequest {
+  phoneNumber: string;
+  password: string;
 }
 
-export interface SendOtpResponse {
-  message?: string;
-  expiresAt?: string;
-  expiresInSeconds?: number;
+/**
+ * التدفق الموازي الكامل عبر PhonePasswordAuthController (api/auth/phone/...).
+ * الاستجابة الموحّدة لكل الـ 10 نقاط نهاية هي PhoneWorkflowResult من الباك،
+ * لذلك نُعرِّف نوعًا واحدًا يغطيها جميعًا بدل نوع لكل استدعاء.
+ */
+export enum PhoneVerificationState {
+  NotConfigured = 'NotConfigured',
+  Verified = 'Verified',
+  DueSoon = 'DueSoon',
+  GracePeriod = 'GracePeriod',
+  Restricted = 'Restricted'
 }
 
-export interface VerifyOtpRequest {
-  phoneNumber?: string;
-  email?: string;
-  code: string;
-  purpose?: string;
-  firstName?: string;
-  lastName?: string;
+/**
+ * طريقة إيصال رمز التحقق. رقم الهاتف يبقى هو الهوية؛ القناة مجرد وسيلة توصيل هذا الرمز.
+ * القيم مطابقة لـ OtpChannel في الباك (تُرسَل كنص).
+ */
+export type OtpChannel = 'Sms' | 'Telegram' | 'WhatsApp';
+
+export const OTP_CHANNELS: readonly OtpChannel[] = ['Sms', 'Telegram', 'WhatsApp'];
+
+/** سبب عدم توفر قناة (POST /auth/phone/channels). */
+export type OtpChannelUnavailableReason = 'COUNTRY_NOT_SUPPORTED' | 'CHANNEL_DISABLED';
+
+export interface OtpChannelOption {
+  channel: OtpChannel;
+  available: boolean;
+  recommended: boolean;
+  reason: OtpChannelUnavailableReason | null;
+  /** رموز الاتصال الدولية (مثل +963) التي لا تعمل فيها هذه القناة، كما تضبطها الإعدادات في الباك. */
+  unavailableCountryCodes: string[];
 }
 
-export interface VerifyOtpResponse {
-  message?: string;
-  verified?: boolean;
-  accessToken?: string;
-  refreshToken?: string;
-  expiresIn?: number;
+export interface PhoneWorkflowResponse {
+  succeeded: boolean;
+  errorCode?: string | null;
+  message?: string | null;
+  challengeId?: string | null;
+  /** القناة التي أُنشئ لها التحدي (تُرجعها نقاط send-otp). */
+  channel?: OtpChannel | null;
+  accessToken?: string | null;
+  refreshToken?: string | null;
+  accessTokenExpiresAtUtc?: string | null;
+  /** يُستخدم فقط في password-reset/verify → يُمرَّر إلى password-reset/confirm. */
+  confirmationToken?: string | null;
+  verificationState?: PhoneVerificationState | null;
+  dueAtUtc?: string | null;
+  graceEndsAtUtc?: string | null;
+}
+
+/** تحويل دفاعي يقرأ PascalCase وcamelCase معًا (PhoneWorkflowResult من الباك). */
+export function normalizePhoneWorkflowResult(response: unknown): PhoneWorkflowResponse {
+  const value = (response ?? {}) as Record<string, unknown>;
+  const read = (camel: string, pascal: string): unknown => value[camel] ?? value[pascal];
+
+  return {
+    succeeded: Boolean(read('succeeded', 'Succeeded')),
+    errorCode: (read('errorCode', 'ErrorCode') as string) ?? null,
+    message: (read('message', 'Message') as string) ?? null,
+    challengeId: (read('challengeId', 'ChallengeId') as string) ?? null,
+    channel: normalizeOtpChannel(read('channel', 'Channel')),
+    accessToken: (read('accessToken', 'AccessToken') as string) ?? null,
+    refreshToken: (read('refreshToken', 'RefreshToken') as string) ?? null,
+    accessTokenExpiresAtUtc: (read('accessTokenExpiresAtUtc', 'AccessTokenExpiresAtUtc') as string) ?? null,
+    confirmationToken: (read('confirmationToken', 'ConfirmationToken') as string) ?? null,
+    verificationState: (read('verificationState', 'VerificationState') as PhoneVerificationState) ?? null,
+    dueAtUtc: (read('dueAtUtc', 'DueAtUtc') as string) ?? null,
+    graceEndsAtUtc: (read('graceEndsAtUtc', 'GraceEndsAtUtc') as string) ?? null
+  };
+}
+
+/** أكواد الأخطاء الموثّقة في phone-password-authentication-and-reverification.md */
+export const PHONE_WORKFLOW_ERROR_CODES = {
+  PHONE_ALREADY_REGISTERED: 'PHONE_ALREADY_REGISTERED',
+  PHONE_AUTH_FAILED: 'PHONE_AUTH_FAILED',
+  PHONE_NUMBER_INVALID: 'PHONE_NUMBER_INVALID',
+  PHONE_COUNTRY_NOT_SUPPORTED: 'PHONE_COUNTRY_NOT_SUPPORTED',
+  PHONE_NUMBER_ALREADY_IN_USE: 'PHONE_NUMBER_ALREADY_IN_USE',
+  OTP_INVALID: 'OTP_INVALID',
+  PASSWORD_POLICY_FAILED: 'PASSWORD_POLICY_FAILED',
+  USER_CREATE_FAILED: 'USER_CREATE_FAILED',
+  ROLE_ASSIGNMENT_FAILED: 'ROLE_ASSIGNMENT_FAILED',
+  PHONE_REVERIFICATION_REQUIRED: 'PHONE_REVERIFICATION_REQUIRED',
+  PHONE_REVERIFICATION_NOT_CONFIGURED: 'PHONE_REVERIFICATION_NOT_CONFIGURED',
+  RECENT_AUTHENTICATION_REQUIRED: 'RECENT_AUTHENTICATION_REQUIRED',
+  PASSWORD_RESET_INVALID: 'PASSWORD_RESET_INVALID',
+  OTP_CHANNEL_UNAVAILABLE: 'OTP_CHANNEL_UNAVAILABLE',
+  OTP_PROVIDER_UNAVAILABLE: 'OTP_PROVIDER_UNAVAILABLE'
+} as const;
+
+/**
+ * أكواد أخطاء /auth/login — مطابقة حرفياً لـ LoginErrorCodes في الباك
+ * (HudhudNestApi.Application/Auth/Models/LoginResponseDto.cs). أي تعديل هنا
+ * يجب أن يقابله تعديل هناك، ويحرسه LoginResponseContractTests.
+ */
+export const LOGIN_ERROR_CODES = {
+  INVALID_REQUEST: 'INVALID_REQUEST',
+  INVALID_CREDENTIALS: 'INVALID_CREDENTIALS',
+  ACCOUNT_LOCKED: 'ACCOUNT_LOCKED',
+  RATE_LIMITED: 'RATE_LIMITED',
+  ACCOUNT_DISABLED: 'ACCOUNT_DISABLED',
+  PASSWORD_CHANGE_REQUIRED: 'PASSWORD_CHANGE_REQUIRED',
+  SERVER_ERROR: 'SERVER_ERROR'
+} as const;
+
+export type LoginErrorCode = (typeof LOGIN_ERROR_CODES)[keyof typeof LOGIN_ERROR_CODES];
+
+/**
+ * جسم استجابة /auth/login عند الفشل (401 / 423 / 429 / 403 / 500).
+ * مسار النجاح يبقى AuthTokenResponse عبر normalizeAuthTokenResponse، لأن
+ * حقول التوكن ما زالت في جذر نفس الجسم.
+ */
+export interface LoginFailure {
+  /** رمز HTTP الفعلي من الشبكة — هو المرجع، وليس statusCode داخل الجسم. */
+  status: number;
+  errorCode: LoginErrorCode | null;
+  /** نص من الخادم بالإنجليزية — للتشخيص فقط. لا تعرضه للمستخدم؛ استخدم مفاتيح i18n. */
+  serverMessage: string | null;
+  failedAttemptCount: number | null;
+  remainingAttemptsBeforeLockout: number | null;
+  isAccountLocked: boolean;
+  /**
+   * لحظة فك القفل بصيغة ISO. مُفضَّلة على lockoutMinutesRemaining لأن الأخيرة
+   * تُحسب لحظة التسلسل وتصبح قديمة فوراً.
+   */
+  lockoutEndTimeUtc: string | null;
+  passwordResetUrl: string | null;
+}
+
+/** الدقائق المتبقية حتى فك القفل، محسوبة من الطابع الزمني المطلق. */
+export function lockoutMinutesRemaining(failure: LoginFailure, now: Date = new Date()): number {
+  if (!failure.lockoutEndTimeUtc) {
+    return 0;
+  }
+
+  const unlockAt = new Date(failure.lockoutEndTimeUtc).getTime();
+  if (Number.isNaN(unlockAt)) {
+    return 0;
+  }
+
+  return Math.max(0, Math.ceil((unlockAt - now.getTime()) / 60_000));
+}
+
+function readNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+/**
+ * يقرأ خطأ HttpClient ويستخرج عقد الفشل. دفاعي عمداً: أي حقل مفقود يصبح null
+ * بدل أن يرمي، حتى يبقى تسجيل الدخول قابلاً للاستخدام لو تغيّر الجسم أو جاء
+ * الخطأ من طبقة شبكة (بدون جسم أصلاً).
+ */
+export function parseLoginFailure(error: unknown): LoginFailure {
+  const httpError = (error ?? {}) as { status?: unknown; error?: unknown };
+  const status = readNumber(httpError.status) ?? 0;
+  const body = (httpError.error ?? {}) as Record<string, unknown>;
+
+  const errorCode = typeof body['errorCode'] === 'string' ? body['errorCode'] : null;
+
+  return {
+    status,
+    errorCode: (errorCode as LoginErrorCode | null) ?? inferErrorCodeFromStatus(status),
+    serverMessage: typeof body['message'] === 'string' ? body['message'] : null,
+    failedAttemptCount: readNumber(body['failedAttemptCount']),
+    remainingAttemptsBeforeLockout: readNumber(body['remainingAttemptsBeforeLockout']),
+    isAccountLocked: body['isAccountLocked'] === true || status === 423,
+    lockoutEndTimeUtc:
+      typeof body['lockoutEndTimeUtc'] === 'string' ? body['lockoutEndTimeUtc'] : null,
+    passwordResetUrl:
+      typeof body['passwordResetUrl'] === 'string' ? body['passwordResetUrl'] : null
+  };
+}
+
+/** احتياط لو وصل رد بلا errorCode (وسيط، أو نسخة باك أقدم). */
+function inferErrorCodeFromStatus(status: number): LoginErrorCode | null {
+  switch (status) {
+    case 401:
+      return LOGIN_ERROR_CODES.INVALID_CREDENTIALS;
+    case 423:
+      return LOGIN_ERROR_CODES.ACCOUNT_LOCKED;
+    case 429:
+      return LOGIN_ERROR_CODES.RATE_LIMITED;
+    case 500:
+      return LOGIN_ERROR_CODES.SERVER_ERROR;
+    default:
+      return null;
+  }
 }
 
 export function normalizeAuthTokenResponse(response: unknown): AuthTokenResponse {
@@ -86,4 +264,59 @@ export function normalizeAuthTokenResponse(response: unknown): AuthTokenResponse
     refreshToken: value.refreshToken ?? value.refresh_token ?? '',
     expiresIn: value.expiresIn ?? value.expires_in ?? 0
   };
+}
+
+export interface PhoneAuthUser {
+  id: string;
+  phoneNumber: string;
+  email: string | null;
+  displayName: string | null;
+  hasEmail: boolean;
+  hasPassword: boolean;
+  emailVerified: boolean;
+}
+
+export interface PhoneAuthResponse {
+  isNewUser: boolean;
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: string;
+  user: PhoneAuthUser;
+}
+
+
+/** يقبل الأسماء بأي حالة أحرف ويُعيد null لأي قيمة غير معروفة. */
+export function normalizeOtpChannel(value: unknown): OtpChannel | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  return OTP_CHANNELS.find(channel => channel.toLowerCase() === value.toLowerCase()) ?? null;
+}
+
+/** تحويل دفاعي لاستجابة POST /auth/phone/channels (camelCase أو PascalCase). */
+export function normalizeOtpChannels(response: unknown): OtpChannelOption[] {
+  const root = (response ?? {}) as Record<string, unknown>;
+  const list = root['channels'] ?? root['Channels'];
+  if (!Array.isArray(list)) {
+    return [];
+  }
+
+  const options: OtpChannelOption[] = [];
+  for (const item of list) {
+    const value = (item ?? {}) as Record<string, unknown>;
+    const channel = normalizeOtpChannel(value['channel'] ?? value['Channel']);
+    if (!channel) {
+      continue;
+    }
+    const reason = (value['reason'] ?? value['Reason']) as string | null | undefined;
+    const codes = value['unavailableCountryCodes'] ?? value['UnavailableCountryCodes'];
+    options.push({
+      channel,
+      available: Boolean(value['available'] ?? value['Available']),
+      recommended: Boolean(value['recommended'] ?? value['Recommended']),
+      reason: reason === 'COUNTRY_NOT_SUPPORTED' || reason === 'CHANNEL_DISABLED' ? reason : null,
+      unavailableCountryCodes: Array.isArray(codes) ? codes.filter((code): code is string => typeof code === 'string') : []
+    });
+  }
+  return options;
 }

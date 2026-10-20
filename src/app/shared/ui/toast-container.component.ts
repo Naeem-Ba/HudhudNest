@@ -39,6 +39,11 @@ import { ToastMessage, ToastService } from '../services/toast.service';
       display: grid;
       gap: .75rem;
       width: min(420px, calc(100vw - 2rem));
+      /* عدّة تنبيهات متزامنة (مثل فشل طلبات API متعددة) لا يجب أن تغطي
+         الشاشة كاملة على الهاتف — الحزمة تصبح قابلة للتمرير بدل ذلك. */
+      max-height: calc(100dvh - 2rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
       pointer-events: none;
     }
 
@@ -50,17 +55,17 @@ import { ToastMessage, ToastService } from '../services/toast.service';
       align-items: start;
       padding: .9rem 1rem;
       border-radius: 14px;
-      background: #fff;
-      color: #1f2937;
-      box-shadow: 0 18px 45px rgba(15, 23, 42, .18);
-      border-inline-start: 5px solid #2563eb;
+      background: var(--surface);
+      color: var(--gray-800);
+      box-shadow: var(--shadow-lg);
+      border-inline-start: 5px solid var(--primary);
       animation: toast-in .18s ease-out;
     }
 
-    .toast.success { border-inline-start-color: #16a34a; }
-    .toast.error { border-inline-start-color: #dc2626; }
-    .toast.warning { border-inline-start-color: #d97706; }
-    .toast.info { border-inline-start-color: #2563eb; }
+    .toast.success { border-inline-start-color: var(--success); }
+    .toast.error { border-inline-start-color: var(--danger); }
+    .toast.warning { border-inline-start-color: var(--warning); }
+    .toast.info { border-inline-start-color: var(--info); }
 
     .toast-icon {
       font-size: 1.1rem;
@@ -83,7 +88,7 @@ import { ToastMessage, ToastService } from '../services/toast.service';
     .toast-close {
       border: 0;
       background: transparent;
-      color: #64748b;
+      color: var(--gray-500);
       font-size: 1.25rem;
       line-height: 1;
       cursor: pointer;
@@ -91,7 +96,7 @@ import { ToastMessage, ToastService } from '../services/toast.service';
     }
 
     .toast-close:hover {
-      color: #111827;
+      color: var(--gray-800);
     }
 
     @keyframes toast-in {

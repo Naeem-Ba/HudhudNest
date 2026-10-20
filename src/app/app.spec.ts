@@ -1,10 +1,15 @@
-import { TestBed } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
+﻿import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppComponent } from './app.component';
 
+// ✅ إصلاح (كان ٢/٥٤ فاشلَين): AppComponent يحقن NotificationsApiService، الذي يحقن
+// BackendApiService، الذي يحقن HttpClient حقيقياً -- بلا أي مزوّد له هنا كانت
+// TestBed تفشل بـ NG0201. provideHttpClientTesting() تمنع أيضاً أي طلب شبكة حقيقي
+// إن حاول المكوّن إطلاق واحد أثناء detectChanges(). راجع الحرج ٥ في
+// RELEASE-BLOCKERS-AR.md.
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({

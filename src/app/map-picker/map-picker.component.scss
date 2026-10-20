@@ -6,9 +6,9 @@
 .map-wrapper {
   position: relative;
   width: 100%;
-  height: clamp(260px, 42vw, 400px);
+  height: var(--map-picker-height, clamp(260px, 42vw, 400px));
   min-height: 260px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border, #e5e7eb);
   border-radius: 12px;
   overflow: hidden;
   background: #eef2f3;

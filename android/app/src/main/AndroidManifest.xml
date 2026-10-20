@@ -8,7 +8,7 @@
       android:roundIcon="@mipmap/ic_launcher_round"
       android:supportsRtl="true"
       android:theme="@style/AppTheme"
-      android:usesCleartextTraffic="true"
+      android:usesCleartextTraffic="false"
       android:networkSecurityConfig="@xml/network_security_config">
 
         <activity
@@ -22,6 +22,29 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!--
+              Android App Links: https://hudhudnest.com/... opens this app instead of the browser once Android has
+              verified https://hudhudnest.com/.well-known/assetlinks.json against the app's signing certificate
+              (autoVerify). The <data> list mirrors deep-links.config.json; tools/lib/deep-links.test.mjs fails
+              if the two drift. /properties/edit is refused inside the app (deep-link-routes.ts) because a
+              pathPrefix cannot express an exclusion. See docs/DEEP-LINKS.md.
+            -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="hudhudnest.com" />
+                <data android:path="/" />
+                <data android:pathPrefix="/properties" />
+                <data android:pathPrefix="/short-stay" />
+                <data android:pathPrefix="/investments" />
+                <data android:pathPrefix="/users" />
+                <data android:pathPrefix="/wohnungen" />
+                <data android:pathPrefix="/kontakt" />
+                <data android:pathPrefix="/valuation" />
+                <data android:pathPrefix="/pricing" />
             </intent-filter>
 
         </activity>

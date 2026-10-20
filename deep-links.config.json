@@ -1,0 +1,29 @@
+{
+  "_comment": "Single source of truth for native deep links (Android App Links + iOS Universal Links). Everything else is derived from or checked against this file: public/.well-known/* (tools/generate-deep-links.mjs), the AndroidManifest intent-filter and the iOS entitlements (both verified by tools/lib/deep-links.test.mjs), and the in-app allow-list (src/app/core/deep-links/deep-link-routes.ts, also verified). See docs/DEEP-LINKS.md.",
+  "host": "hudhudnest.com",
+  "paths": {
+    "exact": ["/"],
+    "prefixes": ["/properties", "/short-stay", "/investments", "/users", "/wohnungen", "/kontakt", "/valuation", "/pricing"],
+    "excludePrefixes": ["/properties/edit"]
+  },
+  "android": {
+    "package": "com.hudhudnest.app",
+    "sha256CertFingerprints": [
+      "7D:30:B4:CB:E7:24:2F:C5:CC:50:2A:FA:B5:87:C7:67:38:3B:3D:0D:4E:D8:7A:6F:B4:F4:8E:2B:9C:64:F7:50",
+      "B4:94:0D:22:6C:C9:4D:94:62:4D:E2:CE:E7:2E:3B:72:1C:9D:48:79:E0:A6:96:6A:C1:CB:8D:3C:92:CA:E2:C5"
+    ]
+  },
+  "ios": {
+    "bundleId": "com.hudhudnest.app",
+    "teamId": ""
+  },
+  "stores": {
+    "_comment": "Used only by the /download page (tools/generate-download-page.mjs). Set published to true ONLY once the app is live in that store; until then the page says 'coming soon' and never redirects. The Google Play address is derived from android.package, the App Store address from appStoreId (digits only, no 'id' prefix). No other address is ever accepted. See docs/DEEP-LINKS.md.",
+    "android": { "published": false },
+    "ios": { "published": false, "appStoreId": "" }
+  },
+  "downloads": {
+    "_comment": "Direct Android download offered on /download (tools/lib/android-release.mjs). urlPrefix is the ONLY place a download address may live: the public releases repository. The offered file is described by downloads/android-release.json (set approved:true there, in a reviewed PR, only after the APK is uploaded and checked). See docs/ANDROID-DIRECT-DOWNLOAD-AR.md.",
+    "android": { "urlPrefix": "https://github.com/Naeem-Ba/HudhudNest-Releases/releases/download/" }
+  }
+}

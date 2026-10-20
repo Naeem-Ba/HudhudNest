@@ -1,0 +1,54 @@
+@startuml System_Context
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam defaultFontName "Segoe UI"
+title مخطط سياق النظام (System Context) — واجهة HudhudNest
+
+left to right direction
+
+actor "زائر / باحث عقاري\n(Renter / Buyer)" as Visitor
+actor "مالك عقار / وسيط\n(Property Owner / Agent)" as Owner
+actor "مسؤول النظام\n(Admin)" as Admin
+
+package "أنظمة العميل (Client Applications — هذا المستودع)" {
+  [تطبيق الويب Angular SPA\n(Netlify: hudhudnest.com)] as WebApp
+  [تطبيق الجوال (Capacitor)\niOS + Android — نفس الشيفرة] as MobileApp
+}
+
+node "HudhudNestApi\n(.NET 8 Web API)\n<<مستودع منفصل تماماً>>" as Backend
+
+package "أنظمة خارجية (External Systems)" {
+  [Google Identity Services\n(زرّ تسجيل دخول — الويب)] as GoogleWeb
+  [Capacitor Google Sign-In\n(SDK أصلي — الجوال)] as GoogleNative
+  [Capacitor Apple Sign-In\n(SDK أصلي — iOS بشكل أساسي)] as AppleNative
+  [Google Fonts\n(Roboto, IBM Plex Sans Arabic, Cairo)] as Fonts
+}
+
+Visitor --> WebApp
+Visitor --> MobileApp
+Owner --> WebApp
+Owner --> MobileApp
+Admin --> WebApp
+
+WebApp --> Backend : HTTPS/JSON REST\n+ SignalR (WebSocket)
+MobileApp --> Backend : HTTPS/JSON REST\n+ SignalR (WebSocket)
+
+WebApp --> GoogleWeb : تحقق هوية (ID Token)\nvia renderButton()، ليس prompt()/One Tap (ADR-003)
+MobileApp --> GoogleNative : تسجيل دخول أصلي
+MobileApp --> AppleNative : تسجيل دخول أصلي
+WebApp --> Fonts : تحميل خطوط ثابتة (index.html)
+
+note right of Backend
+  HudhudNestApi هو النظام الوحيد الذي يملك منطق
+  العمل وقاعدة البيانات. هذه الواجهة عميل HTTP
+  واحد من عدة عملاء محتملين — لا منطق ثقة
+  مستقل هنا (§3.3 من الوثيقة).
+end note
+
+note bottom of WebApp
+  Hash Routing (/#/path، ADR-001) — لا يحتاج
+  إعداد Rewrite من جهة استضافة Netlify الثابتة.
+end note
+
+@enduml

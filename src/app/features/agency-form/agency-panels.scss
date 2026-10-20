@@ -1,0 +1,252 @@
+@use '../../../styles/breakpoints' as bp;
+
+/* ================================================================
+   agency-panels.scss — مشترك بين agency-team-panel وagency-invitations.
+   نفس بطاقة .form-section في agency-form.page.scss (المكوّنات معزولة
+   الأنماط، فلا تصل إليها أنماط الصفحة).
+   ================================================================ */
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
+
+  &__header {
+    padding: 1.1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--gray-50);
+  }
+
+  &__title {
+    font-size: .98rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin: 0 0 .2rem;
+  }
+
+  &__desc {
+    font-size: .8rem;
+    color: var(--gray-500);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  &__subtitle {
+    font-size: .88rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin: .5rem 0 .25rem;
+  }
+
+  &__body {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+.panels {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.notice {
+  padding: .8rem 1rem;
+  border-radius: var(--r-md);
+  font-size: .85rem;
+  line-height: 1.6;
+  background: var(--gray-50);
+  color: var(--gray-700);
+  border: 1px solid var(--border);
+
+  p { margin: 0; }
+
+  .reactivate-btn { margin-top: .6rem; }
+
+  &--warning {
+    background: var(--danger-soft);
+    color: var(--danger);
+    border-color: rgba(220, 38, 38, .25);
+  }
+}
+
+.row-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: .85rem;
+  padding: .75rem 0;
+  border-bottom: 1px solid var(--border);
+
+  &:last-child { border-bottom: none; }
+
+  &__avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--gray-100);
+  }
+
+  &__main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .15rem;
+  }
+
+  &__name {
+    font-weight: 600;
+    color: var(--gray-900);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  &__meta {
+    font-size: .78rem;
+    color: var(--gray-500);
+  }
+
+  &__actions {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  @include bp.mobile {
+    flex-wrap: wrap;
+
+    &__actions { width: 100%; justify-content: flex-start; }
+  }
+}
+
+.badge {
+  display: inline-block;
+  margin-inline-start: .4rem;
+  padding: .1rem .5rem;
+  border-radius: 999px;
+  font-size: .7rem;
+  font-weight: 700;
+  background: var(--gold-soft);
+  color: var(--navy);
+}
+
+.inline-form {
+  display: flex;
+  gap: .6rem;
+  align-items: flex-start;
+
+  @include bp.mobile { flex-direction: column; align-items: stretch; }
+}
+
+.field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+
+  label {
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--gray-700);
+  }
+
+  input, select {
+    width: 100%;
+    padding: .65rem .9rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-md);
+    font-size: 16px; // أقل من 16px يكبّر iOS Safari الصفحة عند التركيز
+    background: var(--surface);
+    color: var(--gray-800);
+    min-height: 44px;
+
+    &:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-soft);
+    }
+  }
+}
+
+.field-hint, .field-error {
+  margin: 0;
+  font-size: .78rem;
+}
+
+.field-hint { color: var(--gray-500); }
+.field-error { color: var(--danger); }
+
+.logo-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.logo-preview {
+  width: 88px;
+  height: 88px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  object-fit: contain;
+  background: var(--surface);
+}
+
+.logo-placeholder {
+  width: 88px;
+  height: 88px;
+  border-radius: var(--r-md);
+  border: 1.5px dashed var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: var(--gray-400);
+}
+
+.file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.copy-box {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  flex-wrap: wrap;
+
+  code {
+    padding: .45rem .7rem;
+    border-radius: var(--r-sm);
+    background: var(--gray-50);
+    border: 1px solid var(--border);
+    font-size: .8rem;
+    direction: ltr;
+    overflow-wrap: anywhere;
+  }
+}
+
+.danger-zone {
+  border-color: rgba(220, 38, 38, .3);
+
+  .panel__header { background: var(--danger-soft); }
+}
+

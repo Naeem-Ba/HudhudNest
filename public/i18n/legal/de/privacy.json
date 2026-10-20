@@ -1,0 +1,262 @@
+{
+  "title": "Datenschutzerklärung",
+  "metaDescription": "Wie HudhudNest personenbezogene Daten erhebt, verwendet, weitergibt und schützt – sowie Ihre Wahlmöglichkeiten und Rechte.",
+  "sections": [
+    {
+      "heading": "Einleitung",
+      "blocks": [
+        { "p": "HudhudNest ist ein digitaler Immobilienmarktplatz, auf dem Nutzer Immobilienanzeigen zum Verkauf, zur langfristigen Vermietung und für Kurzaufenthalte veröffentlichen und durchsuchen und einander dazu kontaktieren können. Diese Datenschutzerklärung erläutert, welche personenbezogenen Daten wir bei der Nutzung der HudhudNest-Website und -Apps (zusammen die „Plattform“) erheben, warum wir sie erheben, wer sie erhält, wie lange wir sie speichern und welche Rechte Sie haben." },
+        { "p": "Wir beschreiben nur, was die Plattform zum oben genannten Datum tatsächlich tut. Wenn Sie mit dieser Erklärung nicht einverstanden sind, nutzen Sie die Plattform bitte nicht." }
+      ]
+    },
+    {
+      "heading": "Wer wir sind (Verantwortlicher)",
+      "blocks": [
+        { "p": "Die Plattform wird von HudhudNest („wir“, „uns“) betrieben. Für die in dieser Erklärung beschriebenen personenbezogenen Daten sind wir Verantwortlicher, soweit dieser Begriff nach dem für Sie geltenden Recht Anwendung findet." },
+        { "p": "Kontakt für Datenschutzfragen: [support@hudhudnest.com](mailto:support@hudhudnest.com). Sicherheitsmeldungen: [security@hudhudnest.com](mailto:security@hudhudnest.com)." }
+      ]
+    },
+    {
+      "heading": "Geltungsbereich",
+      "blocks": [
+        { "p": "Diese Erklärung gilt für Besucher, registrierte Nutzer, Inserenten (Eigentümer, Makler und Agenturen) und alle, die uns kontaktieren. Sie gilt nicht für Websites oder Dienste Dritter, auf die die Plattform verweist oder die sie nutzt; für diese gelten deren eigene Erklärungen (siehe Abschnitte 13 und 21)." }
+      ]
+    },
+    {
+      "heading": "Informationen, die Sie uns mitteilen",
+      "blocks": [
+        { "p": "Je nach Nutzung der Plattform übermitteln Sie uns möglicherweise:" },
+        {
+          "ul": [
+            "Kontodaten: Vor- und Nachname, E-Mail-Adresse und/oder Telefonnummer sowie ein Passwort (wir speichern nur einen gesalzenen kryptografischen Hash, niemals das Passwort selbst).",
+            "Anmeldung mit Google oder Apple: Wenn Sie diese Option wählen, erhalten wir Ihren Namen, Ihre E-Mail-Adresse und – von Google – Ihr öffentliches Profilbild.",
+            "Profildaten: ein optionales Profilfoto, eine Biografie und Kontaktdaten, die Sie hinzufügen.",
+            "Anzeigendaten: Beschreibungen, Preise, Adressangaben, Kartenkoordinaten, Fotos, Dokumente und die Kontaktdaten, die Sie bei Verkaufs-, Miet-, Kurzaufenthalts- und Investitionsanzeigen veröffentlichen.",
+            "Agenturdaten: geschäftliche und Standortangaben, wenn Sie eine Agentur anlegen oder ihr beitreten.",
+            "Von Ihnen erzeugte Aktivitätsdaten: Favoriten, gespeicherte Suchen, Bewertungen, Buchungen und Buchungsanfragen für Kurzaufenthalte, Immobilienbewertungsanfragen und Interessenbekundungen für Investitionsprojekte.",
+            "Nachrichten: der Inhalt von Nachrichten, die Sie über die Plattform an andere Nutzer senden.",
+            "Kontakt- und Wartelistenformulare: Name, E-Mail oder Telefonnummer, Stadt, Nutzertyp, Betreff und Nachrichtentext.",
+            "Tarifauswahl: der von Ihnen gewählte Tarif und sein Status. Zahlungskartendaten erheben wir derzeit nicht in der Plattform."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Automatisch erhobene Informationen",
+      "blocks": [
+        {
+          "ul": [
+            "IP-Adresse: wird zur Sicherheit (Erkennung von Missbrauch und verdächtigen Anmeldungen), zur Ratenbegrenzung und für kurzlebige Sicherheitsprotokolle verwendet. Sie wird mit Sitzungsdaten und Anmeldeprotokollen gespeichert.",
+            "Sitzungsdaten: ein Refresh-Token (in Ihrem Browser als ein unbedingt erforderliches Cookie und bei uns als Hash gespeichert) und ein kurzlebiges Zugriffstoken, das Sie angemeldet hält.",
+            "Technische und Fehlerprotokolle: Betriebsprotokolle, die Anfragedetails und Fehlerinformationen enthalten können und dem Betrieb des Dienstes sowie der Fehleranalyse dienen.",
+            "Teilen- und Zuordnungsereignisse: Wenn eine Anzeige geteilt oder über einen nachverfolgten Link geöffnet wird, erfassen wir die Anzeige, die Art des Ereignisses und die Kampagnenparameter (UTM) des Links sowie – falls Sie angemeldet sind – Ihre Nutzer-ID. IP-Adresse und Nachrichteninhalte speichern wir in diesen Ereignissen nicht.",
+            "Trichter-Ereignisse der Startseite: aggregierte Ereignisse (z. B. dass ein Formular angezeigt oder abgesendet wurde), verknüpft mit einer zufälligen Sitzungskennung, nicht mit Ihrer Identität oder IP-Adresse.",
+            "Ihr ungefährer aktueller Standort, nur wenn Sie die Suche „in meiner Nähe“ auslösen: Ihr Browser oder Gerät fragt zuvor nach Ihrer Erlaubnis; wir nutzen die Koordinaten nur, um diese Suche auszuführen, und speichern sie nicht."
+          ]
+        },
+        { "p": "Zum Datum dieser Erklärung setzen wir keine Werbe-Tracker, keine Analyse- oder Absturzberichtsdienste Dritter, kein Device-Fingerprinting, keine Gerätekennungen und keine Push-Benachrichtigungs-Token ein. Ändert sich das, aktualisieren wir zuvor diese Erklärung." }
+      ]
+    },
+    {
+      "heading": "Anzeigen und öffentliche Informationen",
+      "blocks": [
+        { "p": "Anzeigen sind ihrer Natur nach öffentlich. Anzeigentext, Fotos, Preis, Adresse und Kartenstandort, der in der Anzeige angezeigte Name und von Ihnen angegebene Kontaktdaten können für jedermann sichtbar sein, auch für Personen ohne Konto und für Suchmaschinen. Foto-Links sind öffentlich: Jeder, der einen Link kennt, kann das Bild öffnen." },
+        { "p": "Wir können öffentliche Anzeigeninhalte (z. B. Foto, Überschrift, Preis und Standort) zudem in den eigenen Kanälen von HudhudNest auf Plattformen Dritter wie Telegram, Facebook und Instagram erneut veröffentlichen, um die Anzeige zu bewerben. Nehmen Sie in eine Anzeige keine personenbezogenen Daten auf, die nicht öffentlich sein sollen." }
+      ]
+    },
+    {
+      "heading": "Kommunikation",
+      "blocks": [
+        { "p": "Nachrichten zwischen Nutzern werden gespeichert, damit Unterhaltungen zugestellt und den Beteiligten angezeigt werden können. Wir lesen sie nicht routinemäßig, können aber darauf zugreifen, soweit dies erforderlich ist, um Missbrauch, Betrug oder Verstöße gegen unsere Nutzungsbedingungen zu untersuchen, eine Beschwerde zu bearbeiten oder gesetzliche Pflichten zu erfüllen." },
+        { "p": "Wenn Sie eine Immobilienbewertung anfragen oder ein Büro darauf antwortet, werden Ihre Kontaktdaten nur nach Ihrer gesonderten, ausdrücklichen Einwilligung für diesen Zweck an das Bewertungsbüro weitergegeben; diese Einwilligung können Sie widerrufen." },
+        { "p": "Wir versenden Servicenachrichten (z. B. Kontobestätigung, Passwortzurücksetzung, Sicherheitswarnungen, Buchungs- und Nachrichtenbenachrichtigungen) per E-Mail, als In-App-Benachrichtigung und – bei Verifizierungscodes – per SMS oder Messenger." }
+      ]
+    },
+    {
+      "heading": "Kontosicherheit und Verifizierungscodes",
+      "blocks": [
+        { "p": "Zum Schutz von Konten wenden wir Ratenbegrenzungen an, protokollieren Anmeldeereignisse, können Sie über ungewöhnliche Aktivitäten informieren und Sie in Abständen bitten, Ihre Telefonnummer erneut zu verifizieren." },
+        { "p": "Wenn Sie sich mit einer Telefonnummer registrieren oder anmelden, senden wir einen einmaligen Verifizierungscode (OTP) über den von Ihnen gewählten Kanal: SMS, Telegram oder WhatsApp. Der Code wird vom jeweiligen Anbieter zugestellt (siehe Abschnitt 13); wir speichern nur einen Hash des Codes, der nach wenigen Minuten abläuft. Damit die Nachricht zugestellt werden kann, muss Ihre Telefonnummer an diesen Anbieter übermittelt werden." },
+        { "p": "Wenn Sie ein Passwort festlegen, können wir es datenschutzfreundlich mit einer Datenbank bekannter kompromittierter Passwörter abgleichen: Es werden nur die ersten fünf Zeichen eines Hashwerts des Passworts übermittelt, niemals das Passwort selbst." }
+      ]
+    },
+    {
+      "heading": "Cookies und ähnliche Technologien",
+      "blocks": [
+        { "p": "Wir verwenden ein einziges unbedingt erforderliches HttpOnly-Cookie, das Sie angemeldet hält. Wir verwenden keine Werbe- oder Tracking-Cookies." },
+        { "p": "Außerdem nutzen wir den lokalen Speicher Ihres Browsers für Funktionen, die Sie wünschen oder die die Plattform benötigt: Ihre Sprach- und Designauswahl, Ihren Sitzungsstatus und – wenn Sie einen nachverfolgten Link öffnen – dessen Kampagnenparameter, damit wir eine spätere Aktion diesem Link zuordnen können. Sie können diese Daten in den Browsereinstellungen löschen; manche Funktionen funktionieren dann nicht mehr oder werden zurückgesetzt." },
+        { "p": "Einige Ressourcen Dritter werden direkt in Ihrem Browser geladen (Schriften und Kartenkacheln, siehe Abschnitt 13) und erhalten dabei Ihre IP-Adresse." }
+      ]
+    },
+    {
+      "heading": "Wie wir personenbezogene Daten verwenden",
+      "blocks": [
+        {
+          "ul": [
+            "Um Ihr Konto zu erstellen, zu sichern und Sie zu authentifizieren.",
+            "Um Ihre Anzeigen zu veröffentlichen und Nutzern das Finden und Kontaktieren zu ermöglichen.",
+            "Um Nachrichten, Buchungen, Benachrichtigungen und Service-E-Mails zuzustellen.",
+            "Um Suche, Favoriten und gespeicherte Suchen bereitzustellen, einschließlich standortbasierter Suche auf Ihren Wunsch.",
+            "Um Betrug, Missbrauch und Sicherheitsvorfälle zu verhindern und unsere Nutzungsbedingungen durchzusetzen.",
+            "Um die Plattform zu betreiben, Fehler zu beheben und zu verbessern.",
+            "Um auf Ihre Anfragen zu antworten und die von Ihnen genutzten Bewertungs-, Agentur- und Investitionsfunktionen zu betreiben.",
+            "Um öffentliche Anzeigen und die Plattform zu bewerben und zu messen, welche Links Besucher bringen (ohne Werbeprofile).",
+            "Um rechtlichen Pflichten nachzukommen und Rechtsansprüche geltend zu machen, auszuüben oder zu verteidigen.",
+            "Um festzuhalten, welchen Versionen der Nutzungsbedingungen und der Datenschutzerklärung Sie wann zugestimmt haben."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Rechtsgrundlagen der Verarbeitung",
+      "blocks": [
+        { "p": "Soweit Datenschutzrecht wie die DSGVO anwendbar ist, stützen wir uns auf folgende Grundlagen:" },
+        {
+          "ul": [
+            "Vertragserfüllung: Konto-, Anzeigen-, Nachrichten-, Buchungs- und Tariffunktionen, die Sie nutzen.",
+            "Berechtigte Interessen: Sicherheit, Betrugsprävention, Verbesserung des Dienstes, aggregierte Zuordnung geteilter Links und Bewerbung öffentlicher Anzeigen, jeweils abgewogen gegen Ihre Rechte und Interessen.",
+            "Einwilligung: wo wir sie einholen, etwa für die Weitergabe Ihrer Kontaktdaten an ein Bewertungsbüro, den Standortzugriff für die Suche „in meiner Nähe“ und optionales Marketing. Sie können eine Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen.",
+            "Rechtliche Verpflichtung: wo wir Daten aufgrund von Gesetzen aufbewahren oder offenlegen müssen.",
+            "Nachweise Ihrer Zustimmung zu den Nutzungsbedingungen und dieser Erklärung werden aufbewahrt, um diese Zustimmung belegen zu können."
+          ]
+        },
+        { "p": "Soweit anwendbares Recht dies verlangt, kann die genaue Rechtsgrundlage einer Verarbeitung je nach Land abweichen." }
+      ]
+    },
+    {
+      "heading": "Weitergabe personenbezogener Daten",
+      "blocks": [
+        { "p": "Wir verkaufen Ihre personenbezogenen Daten nicht. Wir geben sie nur wie folgt weiter:" },
+        {
+          "ul": [
+            "an andere Nutzer und die Öffentlichkeit, wie Sie es durch Ihre Anzeigen, Ihr Profil und Ihre Nachrichten veranlassen;",
+            "an Dienstleister, die in unserem Auftrag Daten verarbeiten (Abschnitt 13);",
+            "an Agenturen oder Bewertungsbüros, die Sie beauftragen, im Rahmen Ihrer Anfrage und Einwilligung;",
+            "an Behörden, Gerichte oder andere Stellen, soweit dies gesetzlich vorgeschrieben oder zum Schutz von Rechten, Sicherheit und Integrität erforderlich ist;",
+            "im Zusammenhang mit einer Fusion, einer Übernahme oder Umstrukturierung, vorbehaltlich dieser Erklärung bzw. einer Benachrichtigung an Sie."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Dienstleister und Dritte",
+      "blocks": [
+        { "p": "Wir setzen die folgenden Anbieter ein. Jeder erhält nur, was er für seine Aufgabe benötigt." },
+        {
+          "ul": [
+            "Cloudinary: Speicherung und Auslieferung von Profil- und Anzeigenbildern.",
+            "Resend: Versand von Kontobestätigungs-, Passwortzurücksetzungs- und Sicherheits-E-Mails.",
+            "Twilio oder ein vergleichbarer SMS-Anbieter: Zustellung von SMS-Verifizierungscodes.",
+            "Telegram und WhatsApp (Meta): Zustellung von Verifizierungscodes, wenn Sie diese Kanäle wählen.",
+            "Telegram, Facebook und Instagram (Meta): Veröffentlichung öffentlicher Anzeigeninhalte in den eigenen Kanälen von HudhudNest, wie in Abschnitt 6 beschrieben.",
+            "Google und Apple: Anmeldung, wenn Sie sie wählen. Google Identity Services wird auf Anmeldeseiten in Ihrem Browser geladen.",
+            "Google Fonts: Schriften der Seiten, von Google geladen; Google kann dabei Ihre IP-Adresse sehen.",
+            "CARTO: Kartenkacheln, die beim Anzeigen oder Auswählen eines Standorts geladen werden; CARTO kann dabei Ihre IP-Adresse sehen.",
+            "Cloud-Hosting-Anbieter (derzeit Render für API und Datenbank und Netlify für die Web-App): Infrastruktur, auf der die Plattform läuft.",
+            "Have I Been Pwned (k-Anonymitäts-Bereichsabfrage): Prüfung auf kompromittierte Passwörter, siehe Abschnitt 8."
+          ]
+        },
+        { "p": "Diese Anbieter handeln nach ihren eigenen Bedingungen und Datenschutzerklärungen. Wir können Anbieter wechseln; bei wesentlichen Änderungen aktualisieren wir diese Erklärung." }
+      ]
+    },
+    {
+      "heading": "Internationale Datenübermittlungen",
+      "blocks": [
+        { "p": "Unsere Anbieter und Server können sich in anderen Ländern als Ihrem befinden, auch in Ländern, deren Datenschutzrecht von dem Ihres Landes abweicht. Verlangt anwendbares Recht für solche Übermittlungen Garantien (z. B. Standardvertragsklauseln), bemühen wir uns, diese mit unseren Anbietern zu vereinbaren. Auf Anfrage teilen wir Ihnen mit, welche Garantien für Ihre Daten gelten." }
+      ]
+    },
+    {
+      "heading": "Speicherdauer",
+      "blocks": [
+        { "p": "Wir speichern personenbezogene Daten nur so lange, wie es für die in dieser Erklärung genannten Zwecke erforderlich ist:" },
+        {
+          "ul": [
+            "Konto- und Profildaten: solange Ihr Konto aktiv ist; zur Löschung siehe Abschnitt 18.",
+            "Anzeigen: solange die Anzeige aktiv ist und für einen begrenzten Zeitraum danach nach dem Anzeigen-Lebenszyklus der Plattform. Bilder werden bei unserem Bildanbieter gespeichert und können dort nach Entfernung einer Anzeige verbleiben, bis wir sie löschen.",
+            "Sitzungstoken: bis zu ihrem Ablauf (bis zu 30 Tage) oder bis Sie sich abmelden.",
+            "Verifizierungscodes: als Hash gespeichert und wenige Minuten gültig.",
+            "Sicherheits- und Anmeldeprotokolle: für sicherheitsrelevante Zwecke für einen begrenzten Zeitraum. Eine endgültige Aufbewahrungsfrist für jede Protokollart haben wir noch nicht festgelegt und werden diese Erklärung aktualisieren, sobald dies geschehen ist.",
+            "Nachrichten aus dem Kontaktformular: so lange, wie es zur Bearbeitung Ihrer Anfrage erforderlich ist. Eine feste Löschfrist haben wir noch nicht festgelegt.",
+            "Einwilligungsnachweise: als Nachweis dessen, was Sie wann akzeptiert haben.",
+            "Backups: verschlüsselt und nach Zeitplan rotiert (48 Stunden, dann täglich 30 Tage, wöchentlich 12 Wochen, monatlich 12 Monate). Aus unseren Live-Systemen gelöschte Daten können bis zum Ablauf des jeweiligen Backups darin verbleiben."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Datensicherheit",
+      "blocks": [
+        { "p": "Wir setzen dem Risiko angemessene Maßnahmen ein, darunter Verschlüsselung bei der Übertragung, gehashte Passwörter und Token, Verschlüsselung im Ruhezustand für bestimmte sensible Felder wie Telefonnummern, Zugriffskontrollen und Ratenbegrenzung. Kein System ist vollkommen sicher, und wir können keine absolute Sicherheit garantieren. Bitte halten Sie Ihre Zugangsdaten geheim und informieren Sie uns bei Verdacht auf Missbrauch umgehend unter [security@hudhudnest.com](mailto:security@hudhudnest.com)." }
+      ]
+    },
+    {
+      "heading": "Ihre Rechte",
+      "blocks": [
+        { "p": "Je nach Wohnort und soweit nach anwendbarem Recht vorgesehen, haben Sie möglicherweise das Recht," },
+        {
+          "ul": [
+            "Auskunft über die zu Ihnen gespeicherten personenbezogenen Daten zu erhalten und eine Kopie zu bekommen (soweit angeboten, steht in Ihrem Konto ein Selbstbedienungs-Export zur Verfügung);",
+            "unrichtige oder unvollständige Daten zu berichtigen (die meisten Profilfelder können Sie in Ihrem Konto bearbeiten);",
+            "die Löschung Ihrer Daten zu verlangen;",
+            "die Verarbeitung einzuschränken oder ihr zu widersprechen, auch wenn sie auf berechtigten Interessen beruht;",
+            "Ihre Daten in einem übertragbaren Format zu erhalten;",
+            "eine Einwilligung jederzeit zu widerrufen;",
+            "nicht einer ausschließlich auf automatisierter Verarbeitung beruhenden Entscheidung mit rechtlicher oder ähnlich erheblicher Wirkung unterworfen zu werden (wir treffen keine solchen Entscheidungen);",
+            "bei einer Datenschutz-Aufsichtsbehörde Beschwerde einzulegen (siehe Abschnitt 25)."
+          ]
+        },
+        { "p": "Zur Ausübung eines Rechts schreiben Sie an [support@hudhudnest.com](mailto:support@hudhudnest.com). Möglicherweise müssen wir zunächst Ihre Identität prüfen; wir antworten innerhalb der nach anwendbarem Recht vorgeschriebenen Frist. Soweit Gesetze wie CCPA/CPRA gelten, verkaufen oder teilen wir personenbezogene Daten nicht für kontextübergreifende verhaltensbasierte Werbung, und Ihnen entstehen aus der Ausübung Ihrer Rechte keine Nachteile." }
+      ]
+    },
+    {
+      "heading": "Kontolöschung",
+      "blocks": [
+        { "p": "Sie können Ihr Konto in Ihrem Profil oder über die [Seite zur Kontolöschung](/account-deletion) löschen. Nach einer kurzen Karenzzeit, in der Sie die Löschung widerrufen können, werden Ihr Name, Ihr Profilfoto, Ihre Biografie und Ihre Kontaktinformationen gelöscht, Ihre E-Mail-Adresse und Telefonnummer durch Werte ersetzt, die nicht mehr mit Ihnen verknüpft werden können, und Verknüpfungen zur Google- oder Apple-Anmeldung entfernt." },
+        { "p": "Von Ihnen veröffentlichte Anzeigen, Nachrichten und Bewertungen können aus betrieblichen Gründen (etwa zur Kontinuität bestehender Unterhaltungen) für andere Nutzer sichtbar bleiben, jedoch ohne Ihre personenbezogenen Daten und zugeordnet zu „gelöschter Nutzer“. Begrenzte Sicherheitsaufzeichnungen und Backups können für die in Abschnitt 15 genannten Zeiträume bestehen bleiben." }
+      ]
+    },
+    {
+      "heading": "Marketingkommunikation",
+      "blocks": [
+        { "p": "Wir senden Ihnen Marketing-E-Mails oder -Nachrichten nur, soweit das Gesetz es erlaubt, und – wo eine Einwilligung erforderlich ist – nur mit Ihrer gesonderten, freiwilligen Einwilligung, die von Ihrer Zustimmung zu den Nutzungsbedingungen und dieser Erklärung getrennt ist, keine Voraussetzung für die Nutzung der Plattform ist und jederzeit widerrufen werden kann. Service- und Sicherheitsnachrichten sind kein Marketing und werden als Teil des Dienstes versandt." }
+      ]
+    },
+    {
+      "heading": "Schutz von Kindern",
+      "blocks": [
+        { "p": "Die Plattform richtet sich an Personen ab 18 Jahren und nicht an Kinder. Wir erheben wissentlich keine personenbezogenen Daten von Personen unter 18 Jahren. Wenn Sie glauben, dass ein Kind uns personenbezogene Daten übermittelt hat, kontaktieren Sie uns; wir werden die Daten löschen." }
+      ]
+    },
+    {
+      "heading": "Links zu Dritten",
+      "blocks": [
+        { "p": "Anzeigen und Profile können Links zu anderen Websites oder Diensten enthalten. Wir haben darauf keinen Einfluss und sind für deren Inhalte oder Datenschutzpraktiken nicht verantwortlich. Bitte lesen Sie deren Erklärungen, bevor Sie dort Daten angeben." }
+      ]
+    },
+    {
+      "heading": "Nutzergenerierte Inhalte",
+      "blocks": [
+        { "p": "Alles, was Sie in einer Anzeige, Bewertung, einem Profil oder einer Nachricht veröffentlichen, kann von anderen gesehen, kopiert oder verwendet werden. Veröffentlichen Sie bitte keine personenbezogenen Daten anderer Personen ohne ausreichende Grundlage. Wir können Inhalte entfernen, die gegen unsere [Nutzungsbedingungen](/terms-of-service) oder Rechte anderer verstoßen." }
+      ]
+    },
+    {
+      "heading": "Automatisierte Verarbeitung und Profiling",
+      "blocks": [
+        { "p": "Wir treffen keine automatisierten Entscheidungen mit rechtlicher oder ähnlich erheblicher Wirkung für Sie und erstellen keine Werbeprofile. Suchergebnisse und die Reihenfolge von Anzeigen ergeben sich aus Ihren Filtern und den Merkmalen der Anzeigen; unsere Systeme wenden zudem automatisch Ratenbegrenzungen und Sicherheitsprüfungen an, um Missbrauch zu verhindern." }
+      ]
+    },
+    {
+      "heading": "Änderungen dieser Erklärung",
+      "blocks": [
+        { "p": "Wir können diese Erklärung aktualisieren. Version und Datum stehen oben auf dieser Seite. Über wesentliche Änderungen informieren wir Sie in der Plattform oder per E-Mail und bitten Sie, soweit gesetzlich erforderlich, erneut um Zustimmung. Wenn Sie die Plattform nach dem Inkrafttreten weiter nutzen, unterliegen Sie – soweit gesetzlich zulässig – der aktualisierten Erklärung." }
+      ]
+    },
+    {
+      "heading": "Kontakt und Beschwerden",
+      "blocks": [
+        { "p": "Bei Fragen zu dieser Erklärung oder Ihren Daten: [support@hudhudnest.com](mailto:support@hudhudnest.com)." },
+        { "p": "Sie haben das Recht, sich bei der Datenschutz-Aufsichtsbehörde Ihres Wohnorts, Ihres Arbeitsorts oder des Orts des mutmaßlichen Verstoßes zu beschweren. Wir bitten Sie, sich zunächst an uns zu wenden, damit wir versuchen können, Ihr Anliegen zu klären." }
+      ]
+    }
+  ]
+}

@@ -4,6 +4,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
+
+    /* صريح لأن TypeScript لم يعد يستنتجه: الجذر هو src، لا مجلّد المشروع. */
+    "rootDir": "./src",
     "types": []
   },
   "include": [

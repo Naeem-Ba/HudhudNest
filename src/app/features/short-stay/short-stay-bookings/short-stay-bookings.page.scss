@@ -1,0 +1,99 @@
+.ssb {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--space-6, 1.5rem) var(--space-4, 1rem);
+
+  &__eyebrow {
+    color: var(--primary, #D6A84F);
+    font-weight: 600;
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin: 1rem 0 1.5rem;
+    border-bottom: 1px solid var(--border, #e5e7eb);
+  }
+
+  &__tab {
+    background: none;
+    border: none;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: var(--gray-500, #6b7280);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+
+    &--active {
+      color: var(--primary, #D6A84F);
+      border-bottom-color: var(--primary, #D6A84F);
+    }
+  }
+
+  &__loading, &__error, &__empty {
+    padding: 2rem 0;
+    text-align: center;
+    color: var(--gray-500, #6b7280);
+  }
+
+  &__error { color: var(--danger, #dc2626); }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__card {
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: var(--r-md, 10px);
+    padding: 1rem 1.25rem;
+    background: var(--card-bg, #fff);
+  }
+
+  &__card-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  &__title {
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  &__status {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: var(--gray-100, #f3f4f6);
+    color: var(--gray-700, #374151);
+    white-space: nowrap;
+
+    &--confirmed, &--checkedin, &--completed { background: #dcfce7; color: #15803d; }
+    &--pending, &--approved, &--depositpaid { background: #fef9c3; color: #a16207; }
+    &--rejected, &--cancelled, &--expired, &--noshow { background: #fee2e2; color: #b91c1c; }
+  }
+
+  &__dates, &__amounts {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 0.875rem;
+    color: var(--gray-600, #4b5563);
+    margin-top: 0.4rem;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+  }
+}
