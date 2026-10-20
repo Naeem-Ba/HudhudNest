@@ -1,3 +1,16 @@
-<div class="map-wrapper">
-  <div id="map"></div>
+<div class="map-wrapper" [class.map-wrapper--readonly]="!interactive">
+  <div #mapElement class="map-canvas" role="application"
+    [attr.aria-label]="lang === 'ar' ? 'خريطة موقع العقار' : lang === 'de' ? 'Karte des Immobilienstandorts' : 'Property location map'"></div>
+
+  <div class="map-status" *ngIf="tilesUnavailable()" role="status">
+    {{ lang === 'ar' ? 'تعذر تحميل الخريطة. تحقق من الاتصال بالإنترنت.' : lang === 'de' ? 'Die Karte konnte nicht geladen werden. Prüfen Sie die Internetverbindung.' : 'The map could not load. Check your internet connection.' }}
+  </div>
+
+  <div class="map-actions" *ngIf="interactive && enableLocate">
+    <button type="button" class="map-action" (click)="locateCurrentPosition()">
+      {{ lang === 'ar' ? 'استخدام موقعي الحالي' : lang === 'de' ? 'Meinen Standort verwenden' : 'Use my current location' }}
+    </button>
+  </div>
+
+  <p class="map-location-message" *ngIf="locationMessage()" role="status">{{ locationMessage() }}</p>
 </div>

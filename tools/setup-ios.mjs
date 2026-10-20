@@ -41,6 +41,11 @@ if (fs.existsSync(plist)) {
   };
   set('CFBundleDisplayName', 'string', 'Real Estate World');
   set('UIViewControllerBasedStatusBarAppearance', 'bool', 'true');
+  set(
+    'NSLocationWhenInUseUsageDescription',
+    'string',
+    'Use your location to center the map only when you choose. The property location is saved after you select it.'
+  );
 }
 
 const privacySource = path.join(root, 'resources', 'ios', 'PrivacyInfo.xcprivacy');
