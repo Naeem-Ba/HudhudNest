@@ -34,18 +34,19 @@
       <div class="container detail-hero__inner">
 
         <!-- Gallery -->
-        <div class="gallery"
-          (mousedown)="onDragStart($event)"
-          (mouseup)="onDragEnd($event)"
-          (touchstart)="onDragStart($event)"
-          (touchend)="onDragEnd($event)"
-        >
-          <div class="gallery__window" [class.gallery__window--zoom]="hasImages()" (click)="openModal()">
+        <div class="gallery">
+          <div class="gallery__window" [class.gallery__window--zoom]="hasImages()"
+            (pointerdown)="onGalleryPointerDown($event)"
+            (pointerup)="onGalleryPointerUp($event)"
+            (pointercancel)="onGalleryPointerCancel()"
+            (lostpointercapture)="onGalleryPointerCancel()"
+            (click)="onGalleryClick($event)">
             <img
               [src]="currentImageDisplayUrl()"
               [attr.srcset]="currentImageSrcSet()"
               sizes="(max-width: 980px) 100vw, 55vw"
               [alt]="currentImageAlt()"
+              draggable="false"
               class="gallery__img"
               appImageFallback="/images/no-image.svg"
             />
@@ -84,14 +85,15 @@
               type="button"
               class="gallery__thumb"
               [class.gallery__thumb--active]="currentIndex() === i"
+              [attr.aria-pressed]="currentIndex() === i"
               (click)="currentIndex.set(i)"
             >
-              <img [src]="thumbnailUrl(img.url)" [alt]="thumbnailAlt(img, i)" loading="lazy" />
+              <img [src]="thumbnailUrl(img.url)" [alt]="thumbnailAlt(img, i)" loading="lazy" appImageFallback="/images/no-image.svg" />
             </button>
           </div>
 
           <!-- Counter -->
-          <p class="gallery__counter" *ngIf="hasImages()">
+          <p class="gallery__counter" *ngIf="hasImages()" aria-live="polite" aria-atomic="true">
             {{ currentIndex() + 1 }} / {{ images().length }}
           </p>
         </div>
@@ -753,8 +755,19 @@
         <aside class="detail-right">
           <div class="detail-card detail-card--sticky">
             <h2 class="detail-card__title">{{ 'PROPERTY_DETAIL.LOCATION_MAP' | translate }}</h2>
-            <div class="no-map" *ngIf="p.latitude && p.longitude">📍 {{ p.latitude }}, {{ p.longitude }}</div>
-            <p class="no-map" *ngIf="!p.latitude || !p.longitude">
+            <app-map-picker *ngIf="validLocation() as location"
+              [lang]="currentLang()"
+              [center]="location"
+              [interactive]="false"
+              [enableLocate]="false">
+            </app-map-picker>
+            <a *ngIf="validLocation() as location"
+              class="map-external-link"
+              [href]="'https://www.google.com/maps/search/?api=1&query=' + location.lat + ',' + location.lng"
+              target="_blank" rel="noopener noreferrer">
+              {{ 'MAP.OPEN_GOOGLE' | translate }}
+            </a>
+            <p class="no-map" *ngIf="!validLocation()">
               {{ 'PROPERTY_DETAIL.NO_MAP' | translate }}
             </p>
           </div>
@@ -765,12 +778,16 @@
   </ng-container>
 
   <!-- ── Image Modal (Lightbox) ── -->
-  <div class="lightbox" [class.lightbox--open]="modalOpen()" role="dialog" aria-modal="true" aria-label="عارض الصور" *ngIf="modalOpen()">
-    <button type="button" class="lightbox__close" (click)="closeModal()" aria-label="إغلاق">
+  <div class="lightbox" [class.lightbox--open]="modalOpen()" role="dialog" aria-modal="true" aria-label="عارض الصور" tabindex="-1" (keydown)="onLightboxKeydown($event)" *ngIf="modalOpen()">
+    <button #lightboxClose type="button" class="lightbox__close" (click)="closeModal()" aria-label="إغلاق">
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 3l16 16M19 3L3 19" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
     </button>
-    <div class="lightbox__img-wrap">
-      <img [src]="currentImageLightboxUrl()" [alt]="currentImageAlt()" class="lightbox__img" />
+    <div class="lightbox__img-wrap"
+      (pointerdown)="onGalleryPointerDown($event)"
+      (pointerup)="onGalleryPointerUp($event)"
+      (pointercancel)="onGalleryPointerCancel()"
+      (lostpointercapture)="onGalleryPointerCancel()">
+      <img [src]="currentImageLightboxUrl()" [alt]="currentImageAlt()" class="lightbox__img" draggable="false" appImageFallback="/images/no-image.svg" />
     </div>
     <button *ngIf="currentIndex() > 0" class="lightbox__nav lightbox__nav--prev" type="button"
       (click)="isRTL() ? next() : prev(); $event.stopPropagation()" [attr.aria-label]="'COMMON.PREVIOUS' | translate">

@@ -708,6 +708,7 @@
     "SELECT_PLACEHOLDER": "— اختر —",
     "GOVERNORATE_REQUIRED": "يرجى اختيار المحافظة.",
     "DISTRICT_REQUIRED": "يرجى اختيار المنطقة.",
+    "INVALID_COORDINATES": "يرجى اختيار موقع عقار صالح على الخريطة.",
     "PROPERTY_TYPE_REQUIRED": "يرجى اختيار نوع العقار.",
     "NEIGHBORHOOD_MANUAL_PLACEHOLDER": "أو اكتب اسم الحي يدويًا",
     "STRUCTURED_LOCATION_LOAD_ERROR": "تعذّر تحميل قائمة المحافظات، حاول تحديث الصفحة.",
