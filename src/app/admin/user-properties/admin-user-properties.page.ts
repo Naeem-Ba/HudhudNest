@@ -25,7 +25,7 @@ import { ConfirmModalComponent } from '../../shared/ui/confirm-modal.component';
 
 const DURATION_PRESETS = [30, 90, 180, 365];
 
-type ModalKind = 'feature' | 'unfeature' | 'extend' | null;
+type ModalKind = 'feature' | 'unfeature' | 'extend' | 'takedown' | 'restore' | null;
 
 @Component({
   selector: 'app-admin-user-properties',
@@ -61,10 +61,12 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | null;
             <strong>{{ p.title }}</strong>
             <div class="badges">
               <span class="badge" [class]="'badge--' + p.status.toLowerCase()">{{ ('ADMIN_USER_PROPERTIES.STATUS.' + p.status) | translate }}</span>
+              <span class="badge badge--taken-down" *ngIf="p.isTakenDown">{{ 'ADMIN_USER_PROPERTIES.TAKEN_DOWN' | translate }}</span>
               <span class="badge badge--featured" *ngIf="p.isFeatured">
                 {{ 'ADMIN_USER_PROPERTIES.FEATURED_UNTIL' | translate:{ date: (p.featuredUntil | date:'mediumDate') } }}
               </span>
             </div>
+            <p class="taken-down-reason" *ngIf="p.isTakenDown && p.takenDownReason">{{ p.takenDownReason }}</p>
             <div class="meta">
               <span *ngIf="p.expiresAt">{{ 'ADMIN_USER_PROPERTIES.EXPIRES_AT' | translate:{ date: (p.expiresAt | date:'mediumDate') } }}</span>
               <span>{{ 'ADMIN_USER_PROPERTIES.CREATED_AT' | translate:{ date: (p.createdAt | date:'mediumDate') } }}</span>
@@ -80,6 +82,12 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | null;
             </button>
             <button type="button" class="btn btn--outline" *ngIf="p.isFeatured" (click)="openUnfeatureModal(p)">
               {{ 'ADMIN_USER_PROPERTIES.UNFEATURE' | translate }}
+            </button>
+            <button type="button" class="btn btn--outline" *ngIf="!p.isTakenDown" data-testid="take-down" (click)="openTakeDownModal(p)">
+              {{ 'ADMIN_USER_PROPERTIES.TAKE_DOWN' | translate }}
+            </button>
+            <button type="button" class="btn btn--outline" *ngIf="p.isTakenDown" data-testid="restore" (click)="openRestoreModal(p)">
+              {{ 'ADMIN_USER_PROPERTIES.RESTORE' | translate }}
             </button>
             <!-- يبقى مفعَّلاً بصرف النظر عن خطة صاحب الإعلان — انظر تعليق الملف أعلاه -->
             <button type="button" class="btn btn--primary" (click)="openExtendModal(p)">
@@ -129,6 +137,36 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | null;
       [confirmLabel]="'ADMIN_USER_PROPERTIES.UNFEATURE' | translate"
       [loading]="saving()"
       (confirmed)="submitUnfeature()"
+      (cancelled)="closeModal()"
+    >
+      <div class="modal-form">
+        <textarea rows="2" [placeholder]="'ADMIN_USER_DETAIL.REASON_OPTIONAL' | translate" [(ngModel)]="actionReason"></textarea>
+      </div>
+    </app-confirm-modal>
+
+    <!-- نافذة إيقاف الإعلان: السبب إلزامي ويظهر للمالك -->
+    <app-confirm-modal
+      [open]="activeModal() === 'takedown'"
+      [title]="'ADMIN_USER_PROPERTIES.TAKE_DOWN_MODAL_TITLE' | translate"
+      [confirmLabel]="'ADMIN_USER_PROPERTIES.TAKE_DOWN' | translate"
+      [confirmDisabled]="!actionReason.trim()"
+      [loading]="saving()"
+      (confirmed)="submitTakeDown()"
+      (cancelled)="closeModal()"
+    >
+      <div class="modal-form">
+        <p class="preview">{{ 'ADMIN_USER_PROPERTIES.TAKE_DOWN_HINT' | translate }}</p>
+        <textarea rows="3" maxlength="500" data-testid="take-down-reason" [placeholder]="'ADMIN_USER_PROPERTIES.TAKE_DOWN_REASON' | translate" [(ngModel)]="actionReason"></textarea>
+      </div>
+    </app-confirm-modal>
+
+    <!-- نافذة استعادة إعلان موقوف -->
+    <app-confirm-modal
+      [open]="activeModal() === 'restore'"
+      [title]="'ADMIN_USER_PROPERTIES.RESTORE_MODAL_TITLE' | translate"
+      [confirmLabel]="'ADMIN_USER_PROPERTIES.RESTORE' | translate"
+      [loading]="saving()"
+      (confirmed)="submitRestore()"
       (cancelled)="closeModal()"
     >
       <div class="modal-form">
@@ -186,6 +224,8 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | null;
     .badge--expired, .badge--archived { background: var(--danger-soft); color: var(--danger); }
     .badge--available { background: var(--success-soft, #dcfce7); color: var(--success, #16a34a); }
     .badge--featured { background: var(--gold-soft); color: var(--navy); }
+    .badge--taken-down { background: var(--danger-soft); color: var(--danger); }
+    .taken-down-reason { margin:0 0 .35rem; font-size:var(--text-sm); color: var(--gray-700); }
     .meta { display:flex; gap:.8rem; flex-wrap:wrap; font-size: .78rem; color: var(--gray-500); }
 
     .listing-card__actions { display:flex; align-items:flex-start; gap:.4rem; flex-wrap:wrap; }
@@ -305,6 +345,18 @@ export class AdminUserPropertiesPage implements OnInit {
     this.activeModal.set('extend');
   }
 
+  openTakeDownModal(p: AdminPropertySummary): void {
+    this.selected.set(p);
+    this.actionReason = '';
+    this.activeModal.set('takedown');
+  }
+
+  openRestoreModal(p: AdminPropertySummary): void {
+    this.selected.set(p);
+    this.actionReason = '';
+    this.activeModal.set('restore');
+  }
+
   closeModal(): void {
     if (this.saving()) return;
     this.activeModal.set(null);
@@ -352,6 +404,45 @@ export class AdminUserPropertiesPage implements OnInit {
     this.adminProperties.unfeatureListing(p.id, this.actionReason).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.toast.success(this.translate.instant('ADMIN_USER_PROPERTIES.UNFEATURE_SUCCESS'));
+        this.saving.set(false);
+        this.activeModal.set(null);
+        this.load();
+      },
+      error: err => {
+        this.saving.set(false);
+        this.toast.error(err?.error?.message || this.translate.instant('ADMIN_USER_PROPERTIES.ACTION_ERROR'));
+      }
+    });
+  }
+
+  submitTakeDown(): void {
+    const p = this.selected();
+    const reason = this.actionReason.trim();
+    if (!p || !reason) return;
+
+    this.saving.set(true);
+    this.adminProperties.takeDownListing(p.id, reason).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.toast.success(this.translate.instant('ADMIN_USER_PROPERTIES.TAKE_DOWN_SUCCESS'));
+        this.saving.set(false);
+        this.activeModal.set(null);
+        this.load();
+      },
+      error: err => {
+        this.saving.set(false);
+        this.toast.error(err?.error?.message || this.translate.instant('ADMIN_USER_PROPERTIES.ACTION_ERROR'));
+      }
+    });
+  }
+
+  submitRestore(): void {
+    const p = this.selected();
+    if (!p) return;
+
+    this.saving.set(true);
+    this.adminProperties.restoreListing(p.id, this.actionReason).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.toast.success(this.translate.instant('ADMIN_USER_PROPERTIES.RESTORE_SUCCESS'));
         this.saving.set(false);
         this.activeModal.set(null);
         this.load();

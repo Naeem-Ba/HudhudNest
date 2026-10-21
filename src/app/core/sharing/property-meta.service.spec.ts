@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { TranslateModule } from '@ngx-translate/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { PropertyMetaService } from './property-meta.service';
 import { Property } from '../models/property.model';
@@ -26,7 +27,7 @@ describe('PropertyMetaService', () => {
   let originalEnvironmentName: string;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ imports: [TranslateModule.forRoot()] });
     service = TestBed.inject(PropertyMetaService);
     meta = TestBed.inject(Meta);
     title = TestBed.inject(Title);

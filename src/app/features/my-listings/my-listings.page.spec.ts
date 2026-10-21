@@ -184,4 +184,44 @@ describe('MyListingsPage — listing status (QA Phase 7, P7-D08)', () => {
 
     expect(fixture.componentInstance.activePropertiesCount()).toBe(2);
   });
+
+  describe('QA Phase 8: extension and administrative take-down', () => {
+    const soon = new Date(Date.now() + 2 * 24 * 3600 * 1000).toISOString();
+
+    it('offers extension to a live listing that is about to expire and to an expired one', () => {
+      setup([listing('soon', { expiresAt: soon }), listing('old', { status: 'Expired' })]);
+
+      expect(fixture.componentInstance.canExtend(fixture.componentInstance.listings()[0])).toBeTrue();
+      expect(fixture.componentInstance.canExtend(fixture.componentInstance.listings()[1])).toBeTrue();
+    });
+
+    it('never offers extension for a sold, rented or archived listing (the server answers 409)', () => {
+      setup([
+        listing('s', { status: 'Sold', expiresAt: soon }),
+        listing('r', { status: 'Rented', expiresAt: soon }),
+        listing('a', { status: 'Archived', expiresAt: soon })
+      ]);
+
+      for (const p of fixture.componentInstance.listings()) {
+        expect(fixture.componentInstance.canExtend(p)).withContext(p.id ?? '').toBeFalse();
+      }
+    });
+
+    it('a taken-down listing shows the reason, and offers neither publish nor extend', () => {
+      setup([listing('t', { isPublished: false, isTakenDown: true, takenDownReason: 'صور لا تخص العقار', expiresAt: soon })]);
+
+      const note = (fixture.nativeElement as HTMLElement).querySelector('[data-testid="taken-down-note"]');
+      expect(note).not.toBeNull();
+      expect(note!.textContent).toContain('MY_LISTINGS.TAKEN_DOWN');
+      expect(fixture.componentInstance.canExtend(fixture.componentInstance.listings()[0])).toBeFalse();
+      expect(fixture.componentInstance.canPublish(fixture.componentInstance.listings()[0])).toBeFalse();
+      expect((fixture.nativeElement as HTMLElement).querySelector('.btn--publish')).toBeNull();
+    });
+
+    it('an ordinary draft can still be published', () => {
+      setup([listing('d', { isPublished: false })]);
+
+      expect(fixture.componentInstance.canPublish(fixture.componentInstance.listings()[0])).toBeTrue();
+    });
+  });
 });

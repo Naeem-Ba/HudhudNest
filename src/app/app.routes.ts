@@ -430,6 +430,22 @@ export const routes: Routes = [
       },
 
       {
+        // إدارة الخدمات: أي خدمة مفعّلة ومطلوبة، كم مرة، هل أُنجزت ولماذا لا. Role Admin على الخادم لكل نقطة.
+        path: 'admin/services',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/services/admin-services.page')
+            .then(m => m.AdminServicesPage)
+      },
+      {
+        path: 'admin/services/:id',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/services/admin-service-request-detail.page')
+            .then(m => m.AdminServiceRequestDetailPage)
+      },
+
+      {
         // إدارة مزوّدي الخدمات: طلبات الانضمام ثم المزوّدون المعتمدون. Role Admin على الخادم لكل نقطة.
         path: 'admin/service-providers',
         canActivate: [AdminGuard],

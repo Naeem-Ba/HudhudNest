@@ -19,7 +19,7 @@ import { AuthGuard } from '../guards/auth-guard';
 import { CsrfTokenService } from '../services/csrf-token.service';
 import { TokenStorageService } from '../services/token-storage.service';
 import { ToastService } from '../../shared/services/toast.service';
-import { ApiErrorInterceptor, SKIP_ERROR_TOAST } from './api-error.interceptor';
+import { ApiErrorInterceptor, describeRequest, SKIP_ERROR_TOAST } from './api-error.interceptor';
 import { RefreshAuthInterceptor, RETRIED_AFTER_REFRESH } from './refresh-auth.interceptor';
 
 @Component({ template: '', standalone: true })
@@ -312,3 +312,52 @@ describe('ApiErrorInterceptor — 415 Unsupported Media Type (marketing-offer ac
   });
 });
 
+
+describe('ApiErrorInterceptor — a server error names the request that failed', () => {
+  let http: HttpClient;
+  let httpMock: HttpTestingController;
+  let toast: ToastService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [TranslateModule.forRoot()],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(withInterceptors([ApiErrorInterceptor])),
+        provideHttpClientTesting()
+      ]
+    });
+
+    http = TestBed.inject(HttpClient);
+    httpMock = TestBed.inject(HttpTestingController);
+    toast = TestBed.inject(ToastService);
+  });
+
+  afterEach(() => httpMock.verify());
+
+  it('a 500 toast carries the status and the endpoint, so a tester can tell WHICH call failed', () => {
+    http.get(`${environment.apiUrl}/properties/featured`).subscribe({ next: () => {}, error: () => {} });
+    httpMock.expectOne(`${environment.apiUrl}/properties/featured`)
+      .flush({ message: 'An unexpected error occurred.' }, { status: 500, statusText: 'Internal Server Error' });
+
+    expect(toast.toasts().length).toBe(1);
+    const message = toast.toasts()[0].message;
+    expect(message).toContain('API_ERRORS.SERVER');
+    expect(message).toContain('API_ERRORS.SERVER_REFERENCE');
+  });
+
+  it('a non-server error (404) is unchanged: no technical reference in front of the reader', () => {
+    http.get(`${environment.apiUrl}/properties/x`).subscribe({ next: () => {}, error: () => {} });
+    httpMock.expectOne(`${environment.apiUrl}/properties/x`).flush(null, { status: 404, statusText: 'Not Found' });
+
+    expect(toast.toasts()[0].message).toBe('API_ERRORS.NOT_FOUND');
+  });
+
+  it('describeRequest drops the host and the query string and masks ids', () => {
+    expect(describeRequest('get', 'https://api.example.com/api/properties/3f2a1b0c-1111-2222-3333-444455556666/photos?token=abc'))
+      .toBe('GET /api/properties/:id/photos');
+    expect(describeRequest('POST', '/api/notifications/42/read')).toBe('POST /api/notifications/:id/read');
+    expect(describeRequest('GET', 'https://api.example.com/api/app-updates/check?platform=Android'))
+      .toBe('GET /api/app-updates/check');
+  });
+});

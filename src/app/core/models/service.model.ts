@@ -36,7 +36,54 @@ export type ServiceRequestStatus =
   | 'Completed'
   | 'Reviewed'
   | 'Rejected'
-  | 'Cancelled';
+  | 'Cancelled'
+  | 'NotCompleted'
+  /** A conversation the customer has not confirmed yet: counted as an inquiry, not as a request. */
+  | 'Inquiry'
+  /** Closed by the system after a month without contact. Kept, never deleted. */
+  | 'Expired';
+
+/** Which button opened the conversation: "ask more" or "request this service". */
+export type ServiceRequestIntent = 'Inquire' | 'Request';
+
+export type ServiceParty = 'Requester' | 'Provider';
+
+/** Why the provider says a service did not happen (or why they rejected it). Mirrors ServiceOutcomeReason. */
+export type ServiceOutcomeReason =
+  | 'CustomerUnreachable'
+  | 'CustomerNotAvailable'
+  | 'CustomerCancelled'
+  | 'PriceNotAgreed'
+  | 'PropertyNotAccessible'
+  | 'OutsideCoverage'
+  | 'ProviderUnavailable'
+  | 'ScopeNotSuitable'
+  | 'Other';
+
+export const SERVICE_OUTCOME_REASONS: readonly ServiceOutcomeReason[] = [
+  'CustomerUnreachable', 'CustomerNotAvailable', 'CustomerCancelled', 'PriceNotAgreed',
+  'PropertyNotAccessible', 'OutsideCoverage', 'ProviderUnavailable', 'ScopeNotSuitable', 'Other'
+];
+
+/** The customer's own reasons (cancelling, a service that did not happen, or a disputed outcome). */
+export type ServiceRequesterReason =
+  | 'ProviderDidNotContact'
+  | 'ProviderNoShow'
+  | 'PriceTooHigh'
+  | 'ChangedMind'
+  | 'FoundOtherProvider'
+  | 'NoLongerNeeded'
+  | 'TimingNotSuitable'
+  | 'ServiceNotAsDescribed'
+  | 'QualityIssue'
+  | 'Other';
+
+export const SERVICE_REQUESTER_REASONS: readonly ServiceRequesterReason[] = [
+  'ProviderDidNotContact', 'ProviderNoShow', 'PriceTooHigh', 'ChangedMind', 'FoundOtherProvider',
+  'NoLongerNeeded', 'TimingNotSuitable', 'ServiceNotAsDescribed', 'QualityIssue', 'Other'
+];
+
+export type ServiceRequesterAnswer = 'Confirmed' | 'Disputed';
 
 export type ServiceProviderVerificationLevel =
   | 'None'
@@ -60,6 +107,9 @@ export interface ServiceOfferingDto {
   /** Governorates the provider covers; empty = not restricted (legacy providers). */
   providerCoverageGovernorateIds?: number[] | null;
   createdAt: string;
+  /** Average of the visible reviews of this service; null until it has one. */
+  averageRating?: number | null;
+  reviewCount?: number;
 }
 
 export interface ServiceRequestDto {
@@ -88,6 +138,57 @@ export interface ServiceRequestDto {
   completedAt?: string | null;
   createdAt: string;
   updatedAt?: string | null;
+  /** Only the requester (and an admin) receive it, and only while the request is alive or delivered. */
+  providerContact?: ServiceProviderContact | null;
+  outcomeReason?: ServiceOutcomeReason | null;
+  outcomeNote?: string | null;
+  notCompletedAt?: string | null;
+  /** The customer's own answer. Never sent to the provider. */
+  requesterAnswer?: ServiceRequesterAnswer | null;
+  requesterReason?: ServiceRequesterReason | null;
+  requesterFeedbackNote?: string | null;
+  requesterFeedbackAt?: string | null;
+  intent?: ServiceRequestIntent | null;
+  /** Null while it is only an inquiry. */
+  confirmedAt?: string | null;
+  lastActivityAt?: string | null;
+  expiredAt?: string | null;
+  /** Who stayed silent when the request expired. */
+  expiredWaitingOn?: ServiceParty | null;
+  messageCount?: number;
+  /** Messages from the other side that the viewer has not opened. */
+  unreadMessageCount?: number;
+  lastMessageAt?: string | null;
+}
+
+/** One message of the conversation between the customer and the provider. */
+export interface ServiceRequestMessageDto {
+  id: string;
+  serviceRequestId: string;
+  senderParty: ServiceParty;
+  senderName: string;
+  body: string;
+  createdAt: string;
+  readAt?: string | null;
+  isMine: boolean;
+}
+
+export const SERVICE_MESSAGE_MAX_LENGTH = 1000;
+
+export interface ServiceProviderContact {
+  phone?: string | null;
+  email?: string | null;
+}
+
+export interface NotCompletedServiceRequestPayload {
+  reason: ServiceOutcomeReason;
+  note?: string | null;
+}
+
+export interface ServiceRequestFeedbackPayload {
+  answer: ServiceRequesterAnswer;
+  reason?: ServiceRequesterReason | null;
+  note?: string | null;
 }
 
 export interface ServiceRequestStatusHistoryDto {
@@ -113,7 +214,9 @@ export interface ServiceReviewDto {
 export interface CreateServiceRequestPayload {
   propertyId: string;
   serviceOfferingId: string;
+  /** The first message of the conversation. Required whenever an intent is sent. */
   requesterNote?: string | null;
+  intent?: ServiceRequestIntent | null;
 }
 
 export interface AddServiceReviewPayload {
@@ -126,18 +229,46 @@ export interface AddServiceReviewPayload {
 export function validateCreateServiceRequest(payload: CreateServiceRequestPayload): string | null {
   if (!payload.propertyId) return 'SERVICE_REQUEST.PROPERTY_REQUIRED';
   if (!payload.serviceOfferingId) return 'SERVICE_REQUEST.OFFERING_REQUIRED';
-  if (payload.requesterNote && payload.requesterNote.length > 1000) return 'SERVICE_REQUEST.NOTE_TOO_LONG';
+  if (payload.requesterNote && payload.requesterNote.length > SERVICE_MESSAGE_MAX_LENGTH) return 'SERVICE_REQUEST.NOTE_TOO_LONG';
+  if (payload.intent && !payload.requesterNote?.trim()) return 'SERVICE_REQUEST.MESSAGE_REQUIRED';
   return null;
 }
 
 /** The statuses a requester can still cancel from — mirrors ServiceRequest.Cancel's guard. */
 export const CANCELLABLE_STATUSES: ServiceRequestStatus[] = [
-  'Submitted', 'UnderReview', 'Accepted', 'Scheduled', 'InProgress'
+  'Inquiry', 'Submitted', 'UnderReview', 'Accepted', 'Scheduled', 'InProgress'
 ];
+
+/** The two sides talk until the request is delivered or closed (mirrors ServiceRequest.CanExchangeMessages). */
+export function canExchangeMessages(status: ServiceRequestStatus): boolean {
+  return status === 'Inquiry' || status === 'UnderReview' || status === 'Accepted'
+    || status === 'Scheduled' || status === 'InProgress';
+}
+
+/** The customer turns an inquiry into a request once they have written to the provider. */
+export function canConfirmRequest(request: ServiceRequestDto, currentUserId: string | null): boolean {
+  return !!currentUserId
+    && request.requesterId === currentUserId
+    && request.status === 'Inquiry'
+    && (request.messageCount ?? 0) > 0;
+}
 
 /** Once Completed, the requester may leave exactly one review. */
 export function canReview(request: ServiceRequestDto, currentUserId: string | null): boolean {
   return !!currentUserId && request.requesterId === currentUserId && request.status === 'Completed';
+}
+
+/** After the provider closed the request (done or not done) the customer is asked once whether that is right. */
+export function needsRequesterFeedback(request: ServiceRequestDto, currentUserId: string | null): boolean {
+  return !!currentUserId
+    && request.requesterId === currentUserId
+    && !request.requesterAnswer
+    && (request.status === 'Completed' || request.status === 'NotCompleted');
+}
+
+/** Where the provider may close a request as done or not done (mirrors ServiceRequest.EnsureCanClose). */
+export function canCloseRequest(status: ServiceRequestStatus): boolean {
+  return status === 'Accepted' || status === 'Scheduled' || status === 'InProgress';
 }
 
 // ---------------------------------------------------------------------------
@@ -208,15 +339,16 @@ export interface CompleteServiceRequestPayload {
  * يراها مزوّد الخدمة. AcceptServiceRequestCommandHandler/RejectServiceRequestCommandHandler
  * يتطلبان EnsureStatus(UnderReview) تحديداً — القبول/الرفض من 'Submitted' يفشل بـ409
  * دائماً في الواقع، لأن أي طلب حقيقي لا يصل بهذه الحالة إطلاقاً. */
-export type ProviderAction = 'AcceptOrReject' | 'Schedule' | 'Start' | 'Complete' | 'None';
+export type ProviderAction = 'Reply' | 'AcceptOrReject' | 'Schedule' | 'Start' | 'Complete' | 'None';
 
 export function nextProviderAction(status: ServiceRequestStatus): ProviderAction {
   switch (status) {
+    case 'Inquiry': return 'Reply'; // not a request yet: answer the customer, or decline
     case 'Submitted': // نظرياً غير قابل للحدوث فعلياً (انظر التعليق أعلاه) — يُعامَل بنفس UnderReview احتياطاً.
     case 'UnderReview': return 'AcceptOrReject';
     case 'Accepted': return 'Schedule';
     case 'Scheduled': return 'Start';
     case 'InProgress': return 'Complete';
-    default: return 'None';
+    default: return 'None'; // Completed, Reviewed, Rejected, Cancelled, NotCompleted, Expired
   }
 }

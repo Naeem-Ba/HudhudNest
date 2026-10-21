@@ -13,6 +13,7 @@
 // =============================================================
 
 import { Injectable } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
 import { ShareableContent, ShareProvider, ShareResult, SharePlatform } from '../share.model';
 
 /** Minimal shape this provider actually needs — deliberately NOT `extends Navigator`, since
@@ -28,11 +29,19 @@ export class NativeShareProvider implements ShareProvider {
   readonly labelKey = 'SHARE.NATIVE';
 
   isAvailable(): boolean {
+    // The Capacitor app always has the system share sheet (@capacitor/share, installed).
+    if (Capacitor.isNativePlatform()) {
+      return true;
+    }
     const nav = this.navigatorWithShare();
     return typeof nav?.share === 'function';
   }
 
   async share(content: ShareableContent): Promise<ShareResult> {
+    if (Capacitor.isNativePlatform()) {
+      return this.shareWithCapacitor(content);
+    }
+
     const nav = this.navigatorWithShare();
     if (typeof nav?.share !== 'function') {
       return {
@@ -61,7 +70,33 @@ export class NativeShareProvider implements ShareProvider {
     }
   }
 
+  /** The installed app: the OS share sheet through @capacitor/share, which is guaranteed there even on
+   *  WebViews without navigator.share. Dismissing it rejects ("Share canceled" on iOS, an abort on
+   *  Android) and is a normal outcome, not an error. */
+  private async shareWithCapacitor(content: ShareableContent): Promise<ShareResult> {
+    try {
+      const { Share } = await import('@capacitor/share');
+      await Share.share({ title: content.title, text: content.text, url: content.url, dialogTitle: content.title });
+      return { success: true, platform: this.platform };
+    } catch (err) {
+      if (this.isUserCancellation(err)) {
+        return { success: false, platform: this.platform, cancelled: true };
+      }
+      return {
+        success: false,
+        platform: this.platform,
+        errorCode: 'NATIVE_SHARE_FAILED',
+        message: 'SHARE.ERROR_GENERIC'
+      };
+    }
+  }
+
   private isUserCancellation(err: unknown): boolean {
+    const message = err instanceof Error ? err.message : typeof err === 'string' ? err : '';
+    if (/cancel/i.test(message)) {
+      return true;
+    }
+
     // Every major browser rejects navigator.share() with an AbortError DOMException when the
     // user dismisses the share sheet — this is the standard, spec-documented signal for it.
     return err instanceof DOMException && err.name === 'AbortError';

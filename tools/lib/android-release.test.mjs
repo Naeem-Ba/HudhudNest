@@ -71,10 +71,21 @@ test('apksigner: a verified single-signer APK yields its certificate SHA-256 in 
   assert.equal(parseApkSignerOutput(APKSIGNER), CERT);
 });
 
+test('apksigner: the v3 label "Signer (minSdkVersion=..)" is read too, and the same digest twice is one certificate', () => {
+  const v3 = APKSIGNER.replace('Signer #1 certificate', 'Signer (minSdkVersion=24, maxSdkVersion=2147483647) certificate');
+  assert.equal(parseApkSignerOutput(v3), CERT);
+  const v2 = APKSIGNER.replace('Signer #1 certificate', 'V2 Signer: certificate');
+  assert.equal(parseApkSignerOutput(v2), CERT, 'the label the CI build-tools print');
+  const digestLine = APKSIGNER.split('\n').find(line => line.includes('SHA-256 digest'));
+  assert.equal(parseApkSignerOutput(`${APKSIGNER}${digestLine.replace('Signer #1', 'Signer (minSdkVersion=28, maxSdkVersion=2147483647)')}\n`), CERT);
+});
+
 test('apksigner: unverified, unsigned, multi-signer or digest-less output is rejected', () => {
   assert.throws(() => parseApkSignerOutput(APKSIGNER.replace(/Verified using v2 scheme \(APK Signature Scheme v2\): true/, 'Verified using v2 scheme (APK Signature Scheme v2): false').replace(/v3 scheme \(APK Signature Scheme v3\): true/, 'v3 scheme (APK Signature Scheme v3): false')), /verified v2 or v3/);
   assert.throws(() => parseApkSignerOutput(APKSIGNER.replace('Number of signers: 1', 'Number of signers: 2')), /exactly one signer/);
-  assert.throws(() => parseApkSignerOutput(APKSIGNER.replace(/Signer #1 certificate SHA-256 digest: .*\n/, '')), /no "Signer #1/);
+  assert.throws(() => parseApkSignerOutput(APKSIGNER.replace(/Signer #1 certificate SHA-256 digest: .*\n/, '')), /Expected one signing certificate/);
+  const other = 'ab'.repeat(32);
+  assert.throws(() => parseApkSignerOutput(`${APKSIGNER}Signer #2 certificate SHA-256 digest: ${other}\n`), /found 2/, 'two different certificates are refused');
   assert.throws(() => parseApkSignerOutput(''), /verified/);
 });
 
@@ -87,7 +98,9 @@ test('aapt2 badging: package, versions and SDK levels are read as numbers', () =
     targetSdk: 36
   });
   assert.throws(() => parseBadging('nothing useful'), /no "package:"/);
-  assert.throws(() => parseBadging(BADGING.replace(/sdkVersion:'24'\n/, '')), /sdkVersion/);
+  assert.throws(() => parseBadging(BADGING.replace(/sdkVersion:'24'\n/, '')), /min\/target SDK/);
+  // aapt2 in current build-tools names the minimum level minSdkVersion (found by the first real CI run).
+  assert.equal(parseBadging(BADGING.replace("\nsdkVersion:'24'", "\nminSdkVersion:'24'")).minSdk, 24);
 });
 
 test('sha256OfFile hashes the real bytes and reports the size', async () => {

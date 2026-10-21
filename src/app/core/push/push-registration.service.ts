@@ -1,10 +1,13 @@
+import { HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, catchError, defer, from, of, switchMap } from 'rxjs';
 
 import { BackendApiService } from '../api/backend-api.service';
+import { SKIP_ERROR_TOAST } from '../interceptors/api-error.interceptor';
 import { AuthService } from '../auth/auth.service';
 import { PushNativeGateway } from './push-native.gateway';
+import { routeForNotification } from '../models/notification-route';
 
 /**
  * Keeps this app install's push address registered against the signed-in account:
@@ -16,6 +19,9 @@ import { PushNativeGateway } from './push-native.gateway';
  * On the web nothing happens: web users get the in-app (SignalR) notifications.
  * Push is a convenience: every failure here is silent and never blocks sign-in or sign-out.
  */
+/** Push is a convenience and every failure is swallowed here: none of it may toast. */
+const SILENT = new HttpContext().set(SKIP_ERROR_TOAST, true);
+
 @Injectable({ providedIn: 'root' })
 export class PushRegistrationService {
   private readonly api = inject(BackendApiService);
@@ -49,7 +55,7 @@ export class PushRegistrationService {
       }
 
       this.currentToken = null;
-      return this.api.post<void>('/devices/push-token/revoke', { token }).pipe(
+      return this.api.post<void>('/devices/push-token/revoke', { token }, { context: SILENT }).pipe(
         switchMap(() => from(this.native.deleteToken().catch(() => undefined))),
         switchMap(() => of(void 0)),
         catchError(() => of(void 0))
@@ -88,14 +94,23 @@ export class PushRegistrationService {
     await this.native.onTokenRefresh(token => {
       void this.send(token, platform).catch(() => undefined);
     });
-    await this.native.onNotificationTapped(() => {
-      void this.router.navigateByUrl('/notifications');
+    await this.native.onNotificationTapped(data => {
+      // Open the screen the push is about; anything unknown falls back to the notification list.
+      const route = data['targetKind']
+        ? routeForNotification({
+            type: data['type'],
+            target: { kind: data['targetKind'], id: data['relatedEntityId'] ?? null, propertyId: data['propertyId'] ?? null },
+            propertyId: data['propertyId'] ?? null,
+            relatedEntityId: data['relatedEntityId'] ?? null
+          })
+        : null;
+      void this.router.navigate(route ?? ['/notifications']);
     });
   }
 
   private async send(token: string, platform: 'android' | 'ios'): Promise<void> {
     await new Promise<void>((resolve, reject) => {
-      this.api.post<void>('/devices/push-token', { token, platform }).subscribe({
+      this.api.post<void>('/devices/push-token', { token, platform }, { context: SILENT }).subscribe({
         next: () => {
           this.currentToken = token;
           resolve();

@@ -22,6 +22,7 @@ import {
   SHORT_STAY_CURRENCIES,
   ShortStayListing
 } from '../../../core/models/short-stay.model';
+import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
 
 /** Same limits the backend enforces in AddShortStayListingPhotosCommandHandler. */
 const PHOTO_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -74,7 +75,7 @@ type PricingRuleForm = {
 @Component({
   selector: 'app-short-stay-listing-form-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, PhotoGuideSheetComponent, MapPickerComponent],
+  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, PhotoGuideSheetComponent, MapPickerComponent, AmenityLabelPipe],
   templateUrl: './short-stay-listing-form.page.html',
   styleUrls: ['./short-stay-listing-form.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -97,6 +98,8 @@ export class ShortStayListingFormPage implements OnInit {
   readonly listing = signal<ShortStayListing | null>(null);
   readonly accommodationTypes = signal<AccommodationTypeDto[]>([]);
   readonly amenityCatalog = signal<LookupAmenity[]>([]);
+  readonly amenitiesLoading = signal(false);
+  readonly amenitiesLoadFailed = signal(false);
   readonly selectedAmenityIds = signal<Set<string>>(new Set());
   readonly pricingRules = signal<PricingRuleForm[]>([]);
 
@@ -175,15 +178,22 @@ export class ShortStayListingFormPage implements OnInit {
 
   get isEditMode(): boolean { return !!this.listingId(); }
 
+  loadAmenities(): void {
+    this.amenitiesLoading.set(true);
+    this.amenitiesLoadFailed.set(false);
+    this.lookupsApi.getAmenities().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: items => { this.amenityCatalog.set(items); this.amenitiesLoading.set(false); },
+      error: () => { this.amenityCatalog.set([]); this.amenitiesLoadFailed.set(true); this.amenitiesLoading.set(false); }
+    });
+  }
+
   ngOnInit(): void {
     this.destroyRef.onDestroy(() => this.pendingPhotos().forEach(p => URL.revokeObjectURL(p.previewUrl)));
 
     const id = this.route.snapshot.paramMap.get('id');
     this.listingId.set(id);
 
-    this.lookupsApi.getAmenities().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: items => this.amenityCatalog.set(items), error: () => this.amenityCatalog.set([])
-    });
+    this.loadAmenities();
 
     this.lookupsApi.getGovernorates().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: items => this.governorates.set(items),
@@ -706,6 +716,8 @@ export class ShortStayListingFormPage implements OnInit {
       },
       error: () => {
         this.uploadingPhotos.set(false);
+        // Cleared so the same photo can be picked again for the retry (a change event only fires on a new value).
+        input.value = '';
         this.toast.show(this.translate.instant('SHORTSTAY.FORM.PHOTOS_ERROR'), 'error');
       }
     });

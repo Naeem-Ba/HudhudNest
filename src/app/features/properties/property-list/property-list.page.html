@@ -199,7 +199,7 @@
               *ngFor="let amenity of amenities()"
               [class.amenity-chip--active]="isAmenitySelected(amenity.id)"
               (click)="toggleAmenityFilter(amenity.id)"
-            >{{ amenity.name }}</button>
+            >{{ amenity | amenityLabel }}</button>
           </div>
         </div>
 

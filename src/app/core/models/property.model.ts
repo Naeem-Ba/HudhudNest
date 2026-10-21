@@ -43,6 +43,8 @@ export interface Amenity {
   id: string;
   name: string;
   icon?: string;
+  /** Stable language-neutral key from the API (translated through AMENITIES_CATALOG.*). */
+  iconName?: string | null;
 }
 
 export interface Property {
@@ -114,6 +116,9 @@ export interface Property {
   agencyRatingCount?: number;
   availableFrom?: string;
   isPublished?: boolean;
+  // أوقفته الإدارة بسبب يراه المالك فقط (QA المرحلة 8، P8-D10). غائبان من خادم أقدم فلا يُفترضان.
+  isTakenDown?: boolean;
+  takenDownReason?: string | null;
   publishedAt?: string;
   expiresAt?: string;
   // إعلان مميّز مدفوع. isFeatured هو القيمة الفعّالة وقت الاستجابة لا العمود الخام:

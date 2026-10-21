@@ -44,7 +44,8 @@ import { AuthService } from '../../core/auth/auth.service';
 import { Property, PropertyImage } from '../../core/models/property.model';
 import { REVIEW_COMMENT_MAX_LENGTH, ReviewDto, validateCreateReview } from '../../core/models/review.model';
 import { CreateVisitRequest, validateCreateVisit } from '../../core/models/visit.model';
-import { SERVICE_CATEGORIES, ServiceCategory, ServiceOfferingDto, validateCreateServiceRequest } from '../../core/models/service.model';
+import { SERVICE_CATEGORIES, ServiceCategory, ServiceOfferingDto, ServiceRequestDto, ServiceRequestIntent, validateCreateServiceRequest } from '../../core/models/service.model';
+import { ServiceConversationActivity, ServiceConversationComponent } from '../services/service-conversation.component';
 import { ServiceCategoryAvailabilityDto } from '../../core/models/provider-onboarding.model';
 import { validateMessageContent } from '../../core/models/message.model';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
@@ -52,6 +53,7 @@ import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.compone
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { FavoriteToggleButtonComponent } from '../../shared/ui/favorite-toggle-button.component';
 import { PropertyShareButtonComponent } from '../../shared/ui/property-share-button.component';
+import { PRINT_QUERY_PARAM, PropertyPrintService } from '../../core/print/property-print.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { OverlayBackHandlerService } from '../../core/services/overlay-back-handler.service';
 import { ScrollLockService } from '../../core/services/scroll-lock.service';
@@ -64,6 +66,7 @@ import { isGuid } from '../../shared/utils/guid';
 import { formatListingPrice } from '../../shared/utils/listing-price';
 import { listingLifecycle, listingStatusTagKey } from '../../shared/utils/listing-status';
 import { StructuredDataService, BREADCRUMB_JSON_LD_ID } from '../../core/services/structured-data.service';
+import { AmenityLabelPipe } from '../../pipes/amenity-label.pipe';
 
 const LISTING_JSON_LD_ID = 'ld-real-estate-listing';
 
@@ -77,11 +80,13 @@ const LIGHTBOX_IMAGE_WIDTH = 2048;
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AmenityLabelPipe,
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
     FormsModule,
     TranslateModule,
+    ServiceConversationComponent,
     ImageFallbackDirective,
     LoadingSpinnerComponent,
     EmptyStateComponent,
@@ -135,6 +140,7 @@ export class PropertyDetailPage implements OnInit {
   private readonly propertyStructuredData = inject(PropertyStructuredDataService);
   private readonly structuredData = inject(StructuredDataService);
   private readonly shareUrl = inject(PropertyShareUrlService);
+  private readonly printer = inject(PropertyPrintService);
 
   // ── State Signals ─────────────────────────────────────────────────────
   readonly property       = signal<Property | null>(null);
@@ -249,6 +255,8 @@ export class PropertyDetailPage implements OnInit {
   readonly loadingServiceOfferings = signal(false);
   readonly serviceLoadFailed = signal(false);
   readonly savingServiceRequest = signal(false);
+  /** The request just created: its response carries the provider's contact (shown once, on request). */
+  readonly createdServiceRequest = signal<ServiceRequestDto | null>(null);
   readonly availableServiceCategories = computed(() =>
     this.serviceAvailability().filter(item => item.offeringCount > 0).map(item => item.category));
   readonly selectedOffering = computed(() =>
@@ -420,6 +428,7 @@ export class PropertyDetailPage implements OnInit {
     if (!category || !this.isLoggedIn()) return;
 
     this.servicePreselect = category;
+    this.createdServiceRequest.set(null);
     this.showServiceForm.set(true);
     this.loadServiceCategoriesIfNeeded();
     if (this.serviceAvailability().length > 0) this.selectServiceCategory(category);
@@ -429,6 +438,7 @@ export class PropertyDetailPage implements OnInit {
   toggleServiceForm(): void {
     const opening = !this.showServiceForm();
     this.showServiceForm.set(opening);
+    if (opening) this.createdServiceRequest.set(null);
 
     if (opening) {
       this.loadServiceCategoriesIfNeeded();
@@ -586,6 +596,7 @@ export class PropertyDetailPage implements OnInit {
           // Share button was tapped. Deduplicated per property per page session internally
           // (see PropertyAttributionTrackingService.trackView).
           this.attributionTracking.trackView(data.id);
+          this.printFromQueryOnce(data);
         },
         error: (err: unknown) => {
           // A definitive 404 means the listing doesn't exist / isn't public: show the "not
@@ -820,7 +831,16 @@ export class PropertyDetailPage implements OnInit {
   }
 
   // ── Service request ────────────────────────────────────────────────────
-  submitServiceRequest(): void {
+  closeServiceForm(): void {
+    this.showServiceForm.set(false);
+    this.createdServiceRequest.set(null);
+  }
+
+  /**
+   * Both buttons open the same in-app conversation: "ask more" and "request the service" differ only in the
+   * intent that is recorded for the statistics. It becomes a real request when the customer confirms it.
+   */
+  submitServiceRequest(intent: ServiceRequestIntent = 'Request'): void {
     const property = this.property();
     const offering = this.selectedOffering();
     if (!property || !offering) return;
@@ -828,7 +848,8 @@ export class PropertyDetailPage implements OnInit {
     const payload = {
       propertyId: property.id,
       serviceOfferingId: offering.id,
-      requesterNote: this.serviceRequestNote.trim() || null
+      requesterNote: this.serviceRequestNote.trim() || null,
+      intent
     };
 
     const validationError = validateCreateServiceRequest(payload);
@@ -841,9 +862,9 @@ export class PropertyDetailPage implements OnInit {
     this.serviceRequestApi.create(payload)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => {
+        next: created => {
           this.toast.show(this.translate.instant('SERVICE_REQUEST.SUCCESS'), 'success');
-          this.showServiceForm.set(false);
+          this.createdServiceRequest.set(created);
           this.serviceRequestNote = '';
           this.savingServiceRequest.set(false);
         },
@@ -852,6 +873,22 @@ export class PropertyDetailPage implements OnInit {
           this.savingServiceRequest.set(false);
         }
       });
+  }
+
+  /** The embedded thread reports its size so the confirm button appears after the first message. */
+  onCreatedActivity(activity: ServiceConversationActivity): void {
+    this.createdServiceRequest.update(created => created && created.id === activity.requestId
+      ? { ...created, messageCount: activity.messageCount, unreadMessageCount: activity.unreadMessageCount, lastMessageAt: activity.lastMessageAt }
+      : created);
+  }
+
+  onCreatedConfirmed(updated: ServiceRequestDto): void {
+    this.createdServiceRequest.update(created => ({
+      ...updated,
+      messageCount: updated.messageCount ?? created?.messageCount,
+      unreadMessageCount: updated.unreadMessageCount ?? created?.unreadMessageCount,
+      lastMessageAt: updated.lastMessageAt ?? created?.lastMessageAt
+    }));
   }
 
   // ── Message Owner (يستخدم MessagesController — كان بدون أي واجهة إطلاقاً) ──
@@ -937,6 +974,15 @@ export class PropertyDetailPage implements OnInit {
       });
   }
 
+  /** The native app opens `<public url>?print=1` in the system browser to print (a WebView cannot print
+   *  an iframe); the listing is then printed once it has loaded. */
+  private printRequested = false;
+  private printFromQueryOnce(data: Property): void {
+    if (this.printRequested || this.route.snapshot.queryParamMap.get(PRINT_QUERY_PARAM) !== '1') return;
+    this.printRequested = true;
+    void this.printer.print(data);
+  }
+
   // ── Price Helpers ─────────────────────────────────────────────────────
   formatPrice(value: number | null | undefined): string {
     return formatListingPrice(value, this.property()?.currencyCode);
@@ -953,7 +999,9 @@ export class PropertyDetailPage implements OnInit {
 
   thumbnailAlt(img: PropertyImage, index: number): string {
     const descriptive = img.altText?.trim() || this.property()?.title?.trim();
-    return descriptive ? `${descriptive} - صورة ${index + 1}` : `صورة ${index + 1}`;
+    return descriptive
+      ? this.translate.instant('PROPERTY_DETAIL.IMAGE_ALT', { title: descriptive, n: index + 1 })
+      : this.translate.instant('PROPERTY_DETAIL.IMAGE_N', { n: index + 1 });
   }
 
   /** رانج النجوم 1-5 للعرض */

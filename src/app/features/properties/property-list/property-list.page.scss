@@ -499,6 +499,9 @@
 /* Favorite Button — app-favorite-toggle-button يحمل تصميمه الخاص داخلياً؛
    هذا فقط يتحكم بموضعه فوق صورة البطاقة. */
 .fav-btn-wrapper {
+  --icon-btn-size: 40px;
+  display: block;
+  line-height: 0;
   position: absolute;
   top: .6rem;
   inset-inline-end: .6rem;

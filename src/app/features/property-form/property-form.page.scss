@@ -624,3 +624,21 @@
   text-underline-offset: 3px;
   cursor: pointer;
 }
+
+.field-hint--error { color: var(--danger); }
+.link-btn {
+  border: 0; background: none; padding: 0 .35rem; min-height: 0;
+  color: var(--primary-text, var(--navy)); font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer;
+}
+
+/* Take a photo with the camera: sits under the pick-files label inside the dashed zone. */
+.camera-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  min-height: 44px; margin-top: .9rem; padding: 0 1.1rem;
+  border: 1px solid var(--gold, var(--border)); border-radius: var(--r-md);
+  background: var(--surface); color: var(--gold-dark, var(--navy)); font-weight: 700; font-size: var(--text-sm);
+  cursor: pointer;
+  &:hover:not(:disabled) { background: var(--gold-soft); }
+  &:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+  &:disabled { opacity: .6; cursor: default; }
+}

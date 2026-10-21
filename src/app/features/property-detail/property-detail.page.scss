@@ -187,6 +187,28 @@
     flex-wrap: wrap;
     align-items: center;
     gap: .5rem;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  /* Header row: badges lead, the icon pair trails. space-between + logical flow = mirrored in RTL;
+     wrap keeps the pair on its own line, still at the trailing edge, when the badges are wide. */
+  &__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem .75rem;
+    --icon-btn-size: 44px;
+  }
+
+  /* One group, one size, one gap: both buttons are the same 44px circle (a real touch target). */
+  &__quick {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    flex: none;
+    margin-inline-start: auto;
   }
 
   &__title {
@@ -674,15 +696,6 @@
 }
 
 /* زر المفضلة داخل شريط إجراءات صفحة التفاصيل */
-.detail-fav-btn {
-  display: inline-flex;
-  align-self: center;
-}
-
-/* Favorite + Share share one circular size here (44px touch target). */
-.summary-card__actions {
-  --icon-btn-size: 44px;
-}
 
 /* بطاقة المكتب العقاري */
 .agency-card__body {
@@ -852,4 +865,32 @@ a.owner-card__name--link {
   cursor: pointer;
 
   small { display: block; color: var(--gray-500); margin-top: .15rem; }
+}
+
+.offering-rating { color: var(--warning, #b7791f); font-weight: 700; }
+.offering-rating--none { color: var(--gray-500); font-weight: 400; }
+
+// Shown once the conversation exists; the provider's contact appears only after a confirmed request is accepted.
+.form-hint { margin: 0; color: var(--gray-500); font-size: .85rem; }
+.service-sent {
+  display: grid;
+  gap: .6rem;
+  padding: 1rem;
+  border: 1px solid var(--success, #2f855a);
+  border-radius: 12px;
+  background: var(--success-soft, #f0fff4);
+
+  p { margin: 0; }
+  .service-sent__title { font-weight: 800; }
+  .service-sent__contact {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: .35rem;
+
+    li { display: flex; gap: .6rem; align-items: baseline; flex-wrap: wrap; }
+    li span { color: var(--gray-500); }
+    a { font-weight: 700; }
+  }
 }

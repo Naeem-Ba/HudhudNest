@@ -14,7 +14,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { PropertyFormPage, addMonthsToDateString } from './property-form.page';
 import { PropertyApiService } from '../../core/api/property-api.service';
@@ -304,6 +304,48 @@ describe('PropertyFormPage', () => {
 
       expect(component.form.errors).toBeNull();
     });
+  });
+});
+
+describe('PropertyFormPage amenities loading', () => {
+  it('shows a failure (not a misleading empty list) when the lookup fails, and a retry loads them', () => {
+    const lookups = jasmine.createSpyObj('LookupsApiService', [
+      'getGovernorates', 'getDistricts', 'getNeighborhoods', 'getPropertyTypeCatalog', 'getAmenities', 'getCities'
+    ]);
+    lookups.getGovernorates.and.returnValue(of([]));
+    lookups.getDistricts.and.returnValue(of([]));
+    lookups.getNeighborhoods.and.returnValue(of([]));
+    lookups.getPropertyTypeCatalog.and.returnValue(of([]));
+    lookups.getCities.and.returnValue(of([]));
+    lookups.getAmenities.and.returnValues(throwError(() => new Error('down')), of([{ id: 'a1', name: 'مسبح', category: null, iconName: 'pool' }]));
+    const enumSvc = jasmine.createSpyObj('EnumService', ['getList', 'getKey', 'loadAll', 'ensureLoaded']);
+    enumSvc.ensureLoaded.and.returnValue(Promise.resolve());
+    enumSvc.getList.and.returnValue([]);
+
+    TestBed.configureTestingModule({
+      imports: [PropertyFormPage],
+      providers: [
+        { provide: PropertyApiService, useValue: jasmine.createSpyObj('PropertyApiService', ['checkDuplicate']) },
+        { provide: LookupsApiService, useValue: lookups },
+        { provide: EnumService, useValue: enumSvc },
+        { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({}) } } },
+        { provide: LanguageService, useValue: { getCurrentLang: () => 'ar', currentLang$: of('ar') } },
+        { provide: ToastService, useValue: jasmine.createSpyObj('ToastService', ['success', 'error']) },
+        { provide: TranslateService, useValue: jasmine.createSpyObj('TranslateService', ['instant', 'get'], { onLangChange: of({}), onTranslationChange: of({}), onDefaultLangChange: of({}) }) }
+      ]
+    });
+    const component = TestBed.createComponent(PropertyFormPage).componentInstance;
+    component.ngOnInit();
+
+    expect(component.amenitiesLoadFailed()).toBeTrue();
+    expect(component.amenities().length).toBe(0);
+
+    component.loadAmenities();
+
+    expect(component.amenitiesLoadFailed()).toBeFalse();
+    expect(component.amenitiesLoading()).toBeFalse();
+    expect(component.amenities().length).toBe(1);
   });
 });
 

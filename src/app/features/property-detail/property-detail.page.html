@@ -106,25 +106,39 @@
             {{ 'PROPERTY_DETAIL.STALE_BANNER' | translate: { days: daysSinceFreshnessSignal() } }}
           </div>
 
-          <!-- Badges -->
-          <div class="summary-card__badges">
-            <span class="badge"
-              [class.badge--rent]="isRentListing()"
-              [class.badge--sale]="isSaleListing()">
-              {{ isSaleListing()
-                  ? ('PROPERTY.MODE_SALE' | translate)
-                  : ('PROPERTY.MODE_RENT' | translate) }}
-            </span>
-            <!-- إعلان مميّز مدفوع. مرئي لكل زائر لا للمالك وحده — التمييز يُشترى
-                 ليراه الباحثون، وشارة يراها المالك فقط ليست المنتج المدفوع. -->
-            <span class="badge badge--featured" *ngIf="p.isFeatured">
-              <span aria-hidden="true">⭐</span>
-              {{ 'PROPERTY.FEATURED' | translate }}
-            </span>
-            <!-- حالة الإعلان: محجوز / مباع / مؤجر (لا يظهر شيء لإعلان متاح). -->
-            <span class="badge" *ngIf="statusTagKey(p) as tagKey" [ngClass]="statusBadgeClass(p)" data-testid="status-badge">
-              {{ tagKey | translate }}
-            </span>
+          <!-- Header row: the listing badges on the leading side, the favorite + share pair on the
+               trailing side. Flex with logical alignment, so it mirrors by itself in RTL and wraps
+               (pair below the badges) instead of overlapping when the badges are wide. -->
+          <div class="summary-card__top">
+            <div class="summary-card__badges">
+              <span class="badge"
+                [class.badge--rent]="isRentListing()"
+                [class.badge--sale]="isSaleListing()">
+                {{ isSaleListing()
+                    ? ('PROPERTY.MODE_SALE' | translate)
+                    : ('PROPERTY.MODE_RENT' | translate) }}
+              </span>
+              <!-- إعلان مميّز مدفوع. مرئي لكل زائر لا للمالك وحده — التمييز يُشترى
+                   ليراه الباحثون، وشارة يراها المالك فقط ليست المنتج المدفوع. -->
+              <span class="badge badge--featured" *ngIf="p.isFeatured">
+                <span aria-hidden="true">⭐</span>
+                {{ 'PROPERTY.FEATURED' | translate }}
+              </span>
+              <!-- حالة الإعلان: محجوز / مباع / مؤجر (لا يظهر شيء لإعلان متاح). -->
+              <span class="badge" *ngIf="statusTagKey(p) as tagKey" [ngClass]="statusBadgeClass(p)" data-testid="status-badge">
+                {{ tagKey | translate }}
+              </span>
+            </div>
+
+            <div class="summary-card__quick" role="group" [attr.aria-label]="'PROPERTY_DETAIL.QUICK_ACTIONS' | translate">
+              <app-favorite-toggle-button
+                *ngIf="p.id"
+                [propertyId]="p.id"
+              ></app-favorite-toggle-button>
+              <!-- Social Sharing & Distribution — hides itself when the property has no usable
+                   share channel (e.g. not public); see PropertyShareButtonComponent. -->
+              <app-property-share-button [property]="p"></app-property-share-button>
+            </div>
           </div>
 
           <div class="status-notice" *ngIf="statusNoticeKey(p) as noticeKey" role="status" data-testid="status-notice">
@@ -199,14 +213,6 @@
 
           <!-- CTA Actions -->
           <div class="summary-card__actions">
-            <app-favorite-toggle-button
-              *ngIf="p.id"
-              class="detail-fav-btn"
-              [propertyId]="p.id"
-            ></app-favorite-toggle-button>
-            <!-- Social Sharing & Distribution — hides itself when the property has no usable
-                 share channel (e.g. not public); see PropertyShareButtonComponent. -->
-            <app-property-share-button [property]="p"></app-property-share-button>
             <!-- Phase-0, Task 2: owner-only "still available?" confirmation.
                  Backend also enforces ownership (403 for anyone else) — this
                  *ngIf is a UX convenience, not the actual security boundary. -->
@@ -419,17 +425,33 @@
           </button>
         </div>
 
-        <div *ngIf="loadingServiceCategories()" class="state">{{ 'COMMON.LOADING' | translate }}</div>
+        <!-- After the first message the two sides talk here; the customer confirms when ready. The provider's phone appears only after a confirmed request is accepted. -->
+        <div class="service-sent" *ngIf="createdServiceRequest() as created">
+          <p class="service-sent__title">
+            {{ (created.status === 'Inquiry' ? 'SERVICE_REQUEST.INQUIRY_SENT_TITLE' : 'SERVICE_REQUEST.SENT_TITLE') | translate: { number: created.requestNumber } }}
+          </p>
+          <p>
+            {{ (created.status === 'Inquiry' ? 'SERVICE_REQUEST.INQUIRY_SENT_BODY' : 'SERVICE_REQUEST.SENT_BODY') | translate: { provider: created.serviceProviderDisplayName } }}
+          </p>
+          <app-service-conversation [request]="created" role="requester"
+            (activity)="onCreatedActivity($event)" (requestChange)="onCreatedConfirmed($event)" />
+          <div class="form-actions">
+            <a class="btn btn--primary" routerLink="/my-services">{{ 'SERVICE_REQUEST.OPEN_MY_REQUESTS' | translate }}</a>
+            <button type="button" class="btn btn--outline" (click)="closeServiceForm()">{{ 'COMMON.CLOSE' | translate }}</button>
+          </div>
+        </div>
 
-        <div *ngIf="!loadingServiceCategories() && serviceLoadFailed() && !serviceCategory()" class="state">
+        <div *ngIf="!createdServiceRequest() && loadingServiceCategories()" class="state">{{ 'COMMON.LOADING' | translate }}</div>
+
+        <div *ngIf="!createdServiceRequest() && !loadingServiceCategories() && serviceLoadFailed() && !serviceCategory()" class="state">
           {{ 'SERVICE_REQUEST.LOAD_ERROR' | translate }}
         </div>
 
-        <div *ngIf="!loadingServiceCategories() && !serviceLoadFailed() && availableServiceCategories().length === 0" class="state">
+        <div *ngIf="!createdServiceRequest() && !loadingServiceCategories() && !serviceLoadFailed() && availableServiceCategories().length === 0" class="state">
           {{ 'SERVICE_REQUEST.UNAVAILABLE' | translate }}
         </div>
 
-        <form class="detail-form" *ngIf="!loadingServiceCategories() && availableServiceCategories().length > 0" (ngSubmit)="submitServiceRequest()" novalidate>
+        <form class="detail-form" *ngIf="!createdServiceRequest() && !loadingServiceCategories() && availableServiceCategories().length > 0" (ngSubmit)="submitServiceRequest('Request')" novalidate>
           <div class="form-group">
             <label for="serviceCategory">{{ 'SERVICE_REQUEST.CATEGORY' | translate }}</label>
             <select id="serviceCategory" name="serviceCategory" [ngModel]="serviceCategory()" (ngModelChange)="selectServiceCategory($event)">
@@ -451,13 +473,15 @@
                 <strong>{{ offering.title }}</strong>
                 <span *ngIf="offering.description"> — {{ offering.description }}</span>
                 <small class="offering-provider">{{ 'SERVICE_REQUEST.PROVIDER' | translate }}: {{ offering.serviceProviderDisplayName }}</small>
+                <small class="offering-rating" *ngIf="offering.averageRating != null && (offering.reviewCount ?? 0) > 0">★ {{ offering.averageRating | number:'1.1-1' }} ({{ offering.reviewCount }})</small>
+                <small class="offering-rating offering-rating--none" *ngIf="!offering.reviewCount">{{ 'SERVICE_REQUEST.NO_REVIEWS_YET' | translate }}</small>
               </span>
             </label>
           </fieldset>
 
           <ng-container *ngIf="selectedOffering()">
             <div class="form-group">
-              <label for="serviceRequestNote">{{ 'SERVICE_REQUEST.NOTE' | translate }}</label>
+              <label for="serviceRequestNote">{{ 'SERVICE_REQUEST.NOTE' | translate }} *</label>
               <textarea
                 id="serviceRequestNote"
                 [(ngModel)]="serviceRequestNote"
@@ -468,10 +492,15 @@
               ></textarea>
             </div>
 
+            <p class="form-hint">{{ 'SERVICE_REQUEST.MESSAGE_HINT' | translate }}</p>
+
             <div class="form-actions">
-              <button type="submit" class="btn btn--primary" [disabled]="savingServiceRequest()">
+              <button type="submit" class="btn btn--primary" [disabled]="savingServiceRequest() || !serviceRequestNote.trim()">
                 <span *ngIf="savingServiceRequest()" class="spinner-ring"></span>
                 {{ savingServiceRequest() ? ('COMMON.SAVING' | translate) : ('SERVICE_REQUEST.SUBMIT' | translate) }}
+              </button>
+              <button type="button" class="btn btn--outline" (click)="submitServiceRequest('Inquire')" [disabled]="savingServiceRequest() || !serviceRequestNote.trim()">
+                {{ 'SERVICE_REQUEST.INQUIRE' | translate }}
               </button>
               <button type="button" class="btn btn--outline" (click)="showServiceForm.set(false)">
                 {{ 'COMMON.CANCEL' | translate }}
@@ -680,7 +709,7 @@
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
                   <path d="M2 6l3 3 5-5" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round"/>
                 </svg>
-                {{ a.name }}
+                {{ a | amenityLabel }}
               </li>
             </ul>
           </div>

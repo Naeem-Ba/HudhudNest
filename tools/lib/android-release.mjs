@@ -81,11 +81,14 @@ export function parseApkSignerOutput(text) {
   if (!signers || Number(signers[1]) !== 1) {
     throw new Error(`Expected exactly one signer, apksigner reported ${signers ? signers[1] : 'none'}.`);
   }
-  const digest = /Signer #1 certificate SHA-256 digest: ([0-9a-fA-F]{64})/.exec(out);
-  if (!digest) {
-    throw new Error('apksigner output has no "Signer #1 certificate SHA-256 digest" line.');
+  // The label differs by apksigner version: "Signer #1 certificate ...", "Signer (minSdkVersion=..., ...) certificate ..."
+  // and, in the build-tools the CI runs, "V2 Signer: certificate ..." (seen in the first real run).
+  const digests = new Set([...out.matchAll(/^(?:V[\d.]+ )?Signer(?: #\d+| \([^)\n]*\))?:? certificate SHA-256 digest: ([0-9a-fA-F]{64})\s*$/gm)].map(match => match[1].toLowerCase()));
+  if (digests.size !== 1) {
+    const seen = out.split(/\r?\n/).filter(line => /certificate/i.test(line) && !/DN:/.test(line)).join(' | ') || 'no certificate lines';
+    throw new Error(`Expected one signing certificate SHA-256 in the apksigner output, found ${digests.size} (saw: ${seen}).`);
   }
-  return toColonFingerprint(digest[1]);
+  return toColonFingerprint([...digests][0]);
 }
 
 /** Reads `aapt2 dump badging <apk>`: package, versions and SDK levels as numbers/strings. */
@@ -95,10 +98,12 @@ export function parseBadging(text) {
   if (!pkg) {
     throw new Error('aapt2 output has no "package:" line.');
   }
-  const min = /\nsdkVersion:'(\d+)'/.exec(out);
-  const target = /\ntargetSdkVersion:'(\d+)'/.exec(out);
+  // aapt prints `sdkVersion:'N'`; aapt2 (the one in current build-tools) prints `minSdkVersion:'N'`.
+  const min = /^(?:minS|s)dkVersion:'(\d+)'/m.exec(out);
+  const target = /^targetSdkVersion:'(\d+)'/m.exec(out);
   if (!min || !target) {
-    throw new Error('aapt2 output has no sdkVersion / targetSdkVersion.');
+    const seen = out.split(/\r?\n/).filter(line => /sdkversion/i.test(line)).join(' | ') || 'no SDK lines';
+    throw new Error(`aapt2 output has no min/target SDK version (saw: ${seen}).`);
   }
   return {
     packageName: pkg[1],
