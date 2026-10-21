@@ -18,8 +18,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  ElementRef,
   HostListener,
   OnInit,
+  ViewChild,
   computed,
   inject,
   signal
@@ -42,6 +44,10 @@ import { ProfileService, PublicUserProfile } from '../../core/api/profile.servic
 import { UserProfileApiService } from '../../core/api/user-profile-api.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { Property, PropertyImage } from '../../core/models/property.model';
+import { isValidCoordinates } from '../../core/models/property-location';
+import { MapPickerComponent } from '../../map-picker/map-picker.component';
+import { LangCode } from '../../core/services/language.service';
+import { getGallerySwipeNavigation } from './gallery-swipe';
 import { REVIEW_COMMENT_MAX_LENGTH, ReviewDto, validateCreateReview } from '../../core/models/review.model';
 import { CreateVisitRequest, validateCreateVisit } from '../../core/models/visit.model';
 import { SERVICE_CATEGORIES, ServiceCategory, ServiceOfferingDto, ServiceRequestDto, ServiceRequestIntent, validateCreateServiceRequest } from '../../core/models/service.model';
@@ -86,6 +92,7 @@ const LIGHTBOX_IMAGE_WIDTH = 2048;
     ReactiveFormsModule,
     FormsModule,
     TranslateModule,
+    MapPickerComponent,
     ServiceConversationComponent,
     ImageFallbackDirective,
     LoadingSpinnerComponent,
@@ -97,6 +104,7 @@ const LIGHTBOX_IMAGE_WIDTH = 2048;
   styleUrls: ['./property-detail.page.scss']
 })
 export class PropertyDetailPage implements OnInit {
+  @ViewChild('lightboxClose') private lightboxClose?: ElementRef<HTMLButtonElement>;
 
   // ── Listing status (QA Phase 7, P7-D08) ───────────────────────────────
   /** i18n key of the tag shown for a reserved, sold, rented or archived listing; null for a normal one. */
@@ -150,6 +158,13 @@ export class PropertyDetailPage implements OnInit {
   readonly error          = signal('');
   readonly currentIndex   = signal(0);
   readonly modalOpen      = signal(false);
+  readonly currentLang    = signal<LangCode>('ar');
+  readonly validLocation  = computed(() => {
+    const property = this.property();
+    return property && isValidCoordinates(property.latitude, property.longitude)
+      ? { lat: property.latitude as number, lng: property.longitude as number }
+      : null;
+  });
   readonly showVisitForm  = signal(false);
   readonly showReviewForm = signal(false);
   readonly showMessageForm = signal(false);
@@ -181,7 +196,7 @@ export class PropertyDetailPage implements OnInit {
     this.images()[this.currentIndex()]?.altText ?? this.property()?.title ?? ''
   );
   readonly isRTL = computed(() =>
-    this.translate.currentLang === 'ar' || document.documentElement.dir === 'rtl'
+    this.currentLang() === 'ar' || document.documentElement.dir === 'rtl'
   );
   readonly averageRating = computed(() => {
     const all = this.reviews();
@@ -328,10 +343,16 @@ export class PropertyDetailPage implements OnInit {
   readonly fallbackImage = '/images/no-image.svg';
 
   // ── Drag/Swipe state ──────────────────────────────────────────────────
-  private startX = 0;
-  private isDragging = false;
+  private pointerStart?: { id: number; x: number; y: number };
+  private suppressGalleryClickUntil = 0;
+  private modalReturnFocus?: HTMLElement;
 
   ngOnInit(): void {
+    this.currentLang.set((this.translate.currentLang || 'ar') as LangCode);
+    this.translate.onLangChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(event => this.currentLang.set(event.lang as LangCode));
+
     // paramMap (not a one-time snapshot): this component instance is reused by the router when
     // only :id changes (Back/Forward between two listings, an in-app link to another one), so
     // a snapshot read would keep showing the previous listing — or its error state.
@@ -712,9 +733,12 @@ export class PropertyDetailPage implements OnInit {
 
   openModal(): void {
     if (!this.hasImages()) return;
-
+    this.modalReturnFocus = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : undefined;
     this.modalOpen.set(true);
     this.scrollLock.lock();
+    setTimeout(() => this.lightboxClose?.nativeElement.focus(), 0);
   }
 
   closeModal(): void {
@@ -722,27 +746,73 @@ export class PropertyDetailPage implements OnInit {
 
     this.modalOpen.set(false);
     this.scrollLock.unlock();
+    this.modalReturnFocus?.focus();
+    this.modalReturnFocus = undefined;
   }
 
-  onDragStart(event: MouseEvent | TouchEvent): void {
-    // A touch event can arrive with an empty list (e.g. a cancelled multi-touch); ignore it
-    // instead of throwing on touches[0].
-    const startX = 'touches' in event ? event.touches[0]?.clientX : event.pageX;
-    if (startX === undefined) return;
-    this.isDragging = true;
-    this.startX = startX;
+  onGalleryPointerDown(event: PointerEvent): void {
+    this.suppressGalleryClickUntil = 0;
+    if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) return;
+    if (event.target instanceof Element && event.target.closest('button, a, input, textarea, select')) return;
+
+    this.pointerStart = { id: event.pointerId, x: event.clientX, y: event.clientY };
+    try {
+      (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+    } catch {
+      // Pointer capture is unavailable in a few embedded browser implementations.
+    }
   }
 
-  onDragEnd(event: MouseEvent | TouchEvent): void {
-    if (!this.isDragging) return;
-    this.isDragging = false;
-    const endX = 'changedTouches' in event
-      ? event.changedTouches[0]?.clientX
-      : (event as MouseEvent).pageX;
-    if (endX === undefined) return;
-    const diff = endX - this.startX;
-    if (diff > 60)       { this.isRTL() ? this.next() : this.prev(); }
-    else if (diff < -60) { this.isRTL() ? this.prev() : this.next(); }
+  onGalleryPointerUp(event: PointerEvent): void {
+    const start = this.pointerStart;
+    this.pointerStart = undefined;
+    if (!start || start.id !== event.pointerId) return;
+
+    const navigation = getGallerySwipeNavigation(
+      event.clientX - start.x,
+      event.clientY - start.y,
+      this.isRTL()
+    );
+    if (!navigation) return;
+
+    this.suppressGalleryClickUntil = Date.now() + 500;
+    if (navigation === 'next') this.next();
+    else this.prev();
+  }
+
+  onGalleryPointerCancel(): void {
+    this.pointerStart = undefined;
+  }
+
+  onGalleryClick(event: MouseEvent): void {
+    if (Date.now() < this.suppressGalleryClickUntil) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    this.openModal();
+  }
+
+  onLightboxKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Tab') this.trapLightboxFocus(event);
+  }
+
+  private trapLightboxFocus(event: KeyboardEvent): void {
+    const lightbox = event.currentTarget as HTMLElement;
+    const focusable = Array.from(lightbox.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+    ));
+    const first = focusable.at(0);
+    const last = focusable.at(-1);
+    if (!first || !last) return;
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
   }
 
   // ── Availability confirmation (Phase-0, Task 2) ──────────────────────

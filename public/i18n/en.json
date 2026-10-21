@@ -708,6 +708,7 @@
     "SELECT_PLACEHOLDER": "— Select —",
     "GOVERNORATE_REQUIRED": "Please select a governorate.",
     "DISTRICT_REQUIRED": "Please select a district.",
+    "INVALID_COORDINATES": "Choose a valid property location on the map.",
     "PROPERTY_TYPE_REQUIRED": "Please select a property type.",
     "NEIGHBORHOOD_MANUAL_PLACEHOLDER": "Or type the neighborhood name manually",
     "STRUCTURED_LOCATION_LOAD_ERROR": "Could not load the governorate list — please refresh the page.",

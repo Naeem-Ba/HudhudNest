@@ -214,10 +214,14 @@
               </p>
               <app-map-picker
                 [lang]="currentLang()"
+                [center]="mapCenter()"
                 (locationChange)="onLocationSelected($event)">
               </app-map-picker>
-              <p class="location-preview" *ngIf="f.latitude.value && f.longitude.value">
+              <p class="location-preview" *ngIf="f.latitude.value !== null && f.latitude.value !== undefined && f.longitude.value !== null && f.longitude.value !== undefined">
                 ✓ {{ 'property_add.location_selected' | translate }}: {{ f.latitude.value | number:'1.4-4' }}, {{ f.longitude.value | number:'1.4-4' }}
+              </p>
+              <p class="field-error" *ngIf="form.errors?.['invalidCoordinates'] && (f.latitude.touched || f.longitude.touched)">
+                {{ 'PROPERTY_FORM.INVALID_COORDINATES' | translate }}
               </p>
             </div>
           </div>

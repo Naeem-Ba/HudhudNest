@@ -20,6 +20,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
 
 import { PropertyApiService } from '../../core/api/property-api.service';
+import { hasCompleteCoordinates, isValidCoordinates } from '../../core/models/property-location';
 import {
   LookupsApiService,
   LookupAmenity,
@@ -189,6 +190,12 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
     errors['districtRequired'] = true;
   }
 
+  const latitude = group.get('latitude')?.value;
+  const longitude = group.get('longitude')?.value;
+  if (!hasCompleteCoordinates(latitude, longitude)) {
+    errors['invalidCoordinates'] = true;
+  }
+
   return Object.keys(errors).length ? errors : null;
 }
 
@@ -230,6 +237,7 @@ export class PropertyFormPage implements OnInit {
   readonly propertyId = signal('');
   readonly currentLang = signal<LangCode>('ar');
   readonly submitError = signal('');
+  readonly mapCenter = signal<{ lat: number; lng: number } | undefined>(undefined);
 
   readonly selectedFiles = signal<File[]>([]);
   readonly previews = signal<string[]>([]);
@@ -407,6 +415,16 @@ export class PropertyFormPage implements OnInit {
   }, { validators: [propertyFormValidator, this.conditionalFieldsValidator] });
 
   ngOnInit(): void {
+    this.form.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(value => {
+        const latitude = value.latitude;
+        const longitude = value.longitude;
+        this.mapCenter.set(isValidCoordinates(latitude, longitude)
+          ? { lat: latitude as number, lng: longitude as number }
+          : undefined);
+      });
+
     const id = this.route.snapshot.paramMap.get('id') ?? '';
 
     if (id) {
@@ -874,6 +892,7 @@ export class PropertyFormPage implements OnInit {
   }
 
   onLocationSelected(location: { lat: number; lng: number }): void {
+    if (!isValidCoordinates(location.lat, location.lng)) return;
     this.form.patchValue({ latitude: location.lat, longitude: location.lng });
   }
 
@@ -1271,6 +1290,7 @@ export class PropertyFormPage implements OnInit {
     if (errors['invalidCountryCode']) return 'PROPERTY_FORM.INVALID_COUNTRY_CODE';
     if (errors['invalidCurrencyCode']) return 'PROPERTY_FORM.INVALID_CURRENCY_CODE';
     if (errors['districtRequired']) return 'PROPERTY_FORM.DISTRICT_REQUIRED';
+    if (errors['invalidCoordinates']) return 'PROPERTY_FORM.INVALID_COORDINATES';
 
     // Dynamic listing form (ListingType × PropertyType redesign, Syrian market).
     if (errors['ownershipTypeRequired']) return 'PROPERTY_FORM.OWNERSHIP_TYPE_REQUIRED';

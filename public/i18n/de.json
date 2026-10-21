@@ -708,6 +708,7 @@
     "SELECT_PLACEHOLDER": "— Auswählen —",
     "GOVERNORATE_REQUIRED": "Bitte wählen Sie eine Provinz aus.",
     "DISTRICT_REQUIRED": "Bitte wählen Sie einen Bezirk aus.",
+    "INVALID_COORDINATES": "Bitte wählen Sie einen gültigen Immobilienstandort auf der Karte aus.",
     "PROPERTY_TYPE_REQUIRED": "Bitte wählen Sie einen Immobilientyp aus.",
     "NEIGHBORHOOD_MANUAL_PLACEHOLDER": "Oder Stadtviertel manuell eingeben",
     "STRUCTURED_LOCATION_LOAD_ERROR": "Die Provinzliste konnte nicht geladen werden — bitte Seite aktualisieren.",
