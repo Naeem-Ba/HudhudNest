@@ -871,6 +871,27 @@
     "FEATURE_EXTEND": "Extend featuring",
     "FEATURE_PENDING": "Your featuring request is waiting for an administrator to confirm payment."
   },
+  "VIEW_COUNT": {
+    "LABEL": "Views",
+    "ARIA": "Views: {{count}}"
+  },
+  "VIEW_STATS": {
+    "TITLE": "Listing views",
+    "HELP": "How many times each listing's detail page was opened. Repeat opens by the same visitor within 24 hours, and views by the listing's owner, their agency staff, administrators and bots, are not counted.",
+    "SCOPE": "Statistics scope",
+    "SCOPE_MINE": "My listings",
+    "SCOPE_AGENCY": "Agency listings",
+    "ERROR": "Unable to load view statistics.",
+    "TOTAL": "Total views",
+    "LAST_7": "Last 7 days",
+    "LAST_30": "Last 30 days",
+    "UNIQUE_30": "Distinct visitors (30 days)",
+    "LISTING": "Listing",
+    "TREND": "Daily views, last {{days}} days",
+    "TREND_ARIA": "Bar chart of daily views over the last {{days}} days, {{count}} in total",
+    "EMPTY": "You have no listings to show views for yet.",
+    "NOTE": "The total covers every counted view since the counter was introduced; the 7/30-day figures and the daily chart are only kept for {{days}} days. \"Distinct visitors\" is an estimate based on an anonymous browser or account identifier."
+  },
   "FAVORITE_TOGGLE": {
     "ADD": "Add to favorites",
     "REMOVE": "Remove from favorites",

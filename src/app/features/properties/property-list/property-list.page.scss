@@ -419,7 +419,11 @@
   &__specs {
     display: flex;
     align-items: center;
-    gap: .85rem;
+    flex-wrap: wrap;
+    gap: .35rem .85rem;
+
+    // View counter pushed to the trailing edge (mirrors in RTL); wraps under the specs on narrow cards.
+    .card-views { margin-inline-start: auto; }
 
     span {
       font-size: .8rem;

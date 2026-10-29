@@ -52,12 +52,14 @@ import { CurrencyRatesService } from '../../../core/pricing/currency-rates.servi
 import { isMarketCurrency } from '../../../core/pricing/market-currencies';
 import { PreferencesService } from '../../../core/services/preferences.service';
 import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
+import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count.component';
 
 @Component({
   selector: 'app-property-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    ListingViewCountComponent,
     AmenityLabelPipe,
     CommonModule,
     RouterModule,

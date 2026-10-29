@@ -34,6 +34,7 @@ import { PageMetaService } from '../../core/services/page-meta.service';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { isReservedListing, listingLifecycle, listingStatusTagKey } from '../../shared/utils/listing-status';
+import { ListingViewCountComponent } from '../../shared/ui/listing-view-count.component';
 
 const LISTINGS_PAGE_SIZE = 12;
 
@@ -49,7 +50,7 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
   selector: 'app-agency-public-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, EmptyStateComponent, ImageFallbackDirective],
+  imports: [ListingViewCountComponent, CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, EmptyStateComponent, ImageFallbackDirective],
   template: `
     <section class="container agency-page" *ngIf="!loading(); else loadingTpl">
       <app-empty-state
@@ -260,6 +261,7 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
               <p class="listing-card__title">{{ listing.title }}</p>
               <p class="listing-card__city">{{ listing.city }}</p>
               <p class="listing-card__price">{{ listingPrice(listing) }}</p>
+              <app-listing-view-count class="card-views" [compact]="true" [count]="listing.viewCount"></app-listing-view-count>
             </div>
           </a>
         </div>

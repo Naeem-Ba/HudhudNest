@@ -20,6 +20,7 @@ import { MetaService } from '../../core/services/meta.service';
 import { PropertyShareUrlService } from '../../core/sharing/property-share-url.service';
 import { formatListingPrice, primaryListingPrice } from '../../shared/utils/listing-price';
 import { isReservedListing } from '../../shared/utils/listing-status';
+import { ListingViewCountComponent } from '../../shared/ui/listing-view-count.component';
 
 /** خيارات سقف السعر بحقل البحث — تُرسَل كـ maxPrice لصفحة النتائج. */
 interface HeroPriceOption {
@@ -31,6 +32,7 @@ interface HeroPriceOption {
   selector: 'app-home',
   standalone: true,
   imports: [
+    ListingViewCountComponent,
     CommonModule,
     RouterLink,
     FormsModule,

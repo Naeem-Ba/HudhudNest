@@ -358,6 +358,7 @@
               <span *ngIf="property.area">
                 📐 {{ property.area }} {{ 'COMMON.area_unit' | translate }}
               </span>
+              <app-listing-view-count class="card-views" [compact]="true" [count]="property.viewCount"></app-listing-view-count>
             </div>
             <div class="property-card__footer">
               <span class="property-card__price">
