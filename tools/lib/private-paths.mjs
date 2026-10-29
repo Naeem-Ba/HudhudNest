@@ -27,6 +27,7 @@ export const PRIVATE_PATHS = [
   '/notifications',
   '/visits',
   '/my-services',
+  '/my-reports',
   '/checkout/',
   '/profile',
   '/settings',
