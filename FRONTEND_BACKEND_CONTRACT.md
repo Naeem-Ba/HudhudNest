@@ -1013,7 +1013,7 @@ transaction الحصّة/القفل الاستشاري — فحوصات رخيص
 | `DELETE …/blocks/{blockId}` | فك الحجب. |
 | `PUT …/units/{unitId}/availability` `{ isActive }` | «غير متاح حاليًا» (`false`) أو «متاح»؛ لا يلغي الحجوزات القائمة. |
 | `BookingDto` | حقلان جديدان: `confirmationDeadline: string \| null` (آخر موعد للرد/التأكيد) و`reviewed: boolean`. |
-| انتهاء المهلة | الطلب المعلّق يُلغى تلقائيًا بعد 3 أيام، والمعتمد غير المؤكَّد بعد 3 أيام من الاعتماد، وبحدٍّ أقصى 7 أيام من الطلب (حالة `Expired`). يعمل المنظّف كل بضع دقائق. |
+| انتهاء المهلة | الطلب المعلّق يُلغى تلقائيًا بعد 3 أيام، والمعتمد غير المؤكَّد بعد 3 أيام من الاعتماد، وبحدٍّ أقصى 7 أيام من الطلب (حالة `Expired`). يعمل المنظّف كل 15 دقيقة. |
 | `POST /short-stay/bookings/{id}/check-in` | `400` قبل تاريخ الوصول. |
 | `POST /short-stay/reviews` `{ bookingId, rating 1-5, comment? ≤ 1000 }` | `201`. `400` برسالة عربية إن لم يكتمل الحجز/لم يحن تاريخ المغادرة/قُيّم سابقًا/لا خطة فعّالة للمضيف. الضيف لا يحتاج خطة. التقييم ممكن بعد حذف الإعلان. |
 | `GET /short-stay/listings/{id}/reviews?page=&pageSize=` | عام (بلا تسجيل دخول): `{ averageRating, totalCount, reviews: [{ id, reviewerId, reviewerName, reviewerImageUrl, rating, comment, createdAt }] }`. |
