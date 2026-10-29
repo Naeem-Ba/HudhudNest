@@ -3480,5 +3480,13 @@
     "REASON_OPTIONAL": "Note (optional)",
     "RESTORE_SUCCESS": "The listing was restored.",
     "ACTION_ERROR": "The action could not be completed."
+  },
+  "ADS": {
+    "LABEL": "Ad",
+    "CHOICES": "Ad choices",
+    "CONSENT_TITLE": "Ads on HudhudNest",
+    "CONSENT_TEXT": "We would like to show a few clearly labelled ads to help cover running costs. They are non-personalised and never replace or reorder listings. Choose \"Allow ads\" to see them, or \"No ads\" to keep the site ad-free. You can change this any time under \"Ad choices\".",
+    "ACCEPT": "Allow ads",
+    "DECLINE": "No ads"
   }
 }

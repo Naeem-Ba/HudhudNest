@@ -620,3 +620,8 @@
   font-size: .8rem;
   color: var(--gray-500);
 }
+
+/* Monetization slot spans the whole grid row so it never sits inside a card column. */
+.properties-grid__ad {
+  grid-column: 1 / -1;
+}

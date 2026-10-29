@@ -73,6 +73,7 @@ import { formatListingPrice } from '../../shared/utils/listing-price';
 import { listingLifecycle, listingStatusTagKey } from '../../shared/utils/listing-status';
 import { StructuredDataService, BREADCRUMB_JSON_LD_ID } from '../../core/services/structured-data.service';
 import { AmenityLabelPipe } from '../../pipes/amenity-label.pipe';
+import { AdSlotComponent } from '../../core/ads/ad-slot.component';
 
 const LISTING_JSON_LD_ID = 'ld-real-estate-listing';
 
@@ -86,6 +87,7 @@ const LIGHTBOX_IMAGE_WIDTH = 2048;
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AdSlotComponent,
     AmenityLabelPipe,
     CommonModule,
     RouterModule,

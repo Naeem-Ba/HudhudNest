@@ -49,6 +49,16 @@
 
         </activity>
 
+        <!--
+          AdMob application ID (NOT an ad unit ID). The Mobile Ads SDK crashes the app at launch when this entry is
+          missing, so it must exist even while ads are disabled. The value below is Google's official SAMPLE app ID
+          and serves no real ads and earns nothing. Replace admob_app_id in res/values/strings.xml with the real ID
+          from the owner's AdMob account only after the AdMob account is approved (docs/MONETIZATION.md).
+        -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="@string/admob_app_id" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
