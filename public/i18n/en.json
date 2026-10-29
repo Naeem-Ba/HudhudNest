@@ -566,6 +566,16 @@
     "PAGE": "Page"
   },
   "PROPERTY_DETAIL": {
+    "TRANSLATION": {
+      "LOADING": "Translating the description…",
+      "WAITING": "The translation is taking longer. Showing the original text for now.",
+      "AUTO_LABEL": "Automatically translated",
+      "SHOWING_ORIGINAL": "Showing the original text",
+      "SHOW_ORIGINAL": "Show original",
+      "SHOW_TRANSLATION": "Show translation",
+      "UNAVAILABLE": "The translation isn’t available right now. Showing the original text.",
+      "RETRY": "Try again"
+    },
     "AGENCY": {
       "TITLE": "Real estate agency",
       "NOT_RATED": "Not rated yet",

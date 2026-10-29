@@ -155,8 +155,8 @@
           </div>
 
           <!-- Title -->
-          <h1 class="summary-card__title line-clamp-3">
-            {{ safe(p.title, ('PROPERTY_LIST.NO_TITLE' | translate)) }}
+          <h1 class="summary-card__title line-clamp-3" dir="auto">
+            {{ safe(displayTitle(p), ('PROPERTY_LIST.NO_TITLE' | translate)) }}
           </h1>
 
           <!-- Location -->
@@ -633,7 +633,12 @@
           <!-- Description -->
           <div class="detail-card" *ngIf="p.description">
             <h2 class="detail-card__title">{{ 'PROPERTY_DETAIL.DESCRIPTION' | translate }}</h2>
-            <p class="detail-description">{{ p.description }}</p>
+            <app-translation-notice
+              [view]="translation.view()"
+              [showOriginal]="translation.showOriginal()"
+              (toggle)="translation.toggleOriginal()"
+              (retry)="translation.retry()" />
+            <p class="detail-description" dir="auto">{{ displayDescription(p) }}</p>
           </div>
 
           <!-- Property Info -->

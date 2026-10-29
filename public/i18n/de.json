@@ -566,6 +566,16 @@
     "PAGE": "Seite"
   },
   "PROPERTY_DETAIL": {
+    "TRANSLATION": {
+      "LOADING": "Text wird übersetzt …",
+      "WAITING": "Die Übersetzung dauert länger. Vorerst wird der Originaltext angezeigt.",
+      "AUTO_LABEL": "Automatisch übersetzt",
+      "SHOWING_ORIGINAL": "Originaltext des Anbieters",
+      "SHOW_ORIGINAL": "Original anzeigen",
+      "SHOW_TRANSLATION": "Übersetzung anzeigen",
+      "UNAVAILABLE": "Die Übersetzung ist derzeit nicht verfügbar. Der Originaltext wird angezeigt.",
+      "RETRY": "Erneut versuchen"
+    },
     "AGENCY": {
       "TITLE": "Immobilienbüro",
       "NOT_RATED": "Noch nicht bewertet",

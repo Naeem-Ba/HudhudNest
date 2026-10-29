@@ -47,6 +47,9 @@ import { Property, PropertyImage } from '../../core/models/property.model';
 import { isValidCoordinates } from '../../core/models/property-location';
 import { MapPickerComponent } from '../../map-picker/map-picker.component';
 import { LangCode } from '../../core/services/language.service';
+import { ListingTranslationService } from '../../core/api/listing-translation.service';
+import { ListingTranslationController } from './listing-translation.controller';
+import { TranslationNoticeComponent } from './translation-notice.component';
 import { getGallerySwipeNavigation } from './gallery-swipe';
 import { REVIEW_COMMENT_MAX_LENGTH, ReviewDto, validateCreateReview } from '../../core/models/review.model';
 import { CreateVisitRequest, validateCreateVisit } from '../../core/models/visit.model';
@@ -100,7 +103,8 @@ const LIGHTBOX_IMAGE_WIDTH = 2048;
     EmptyStateComponent,
     FavoriteToggleButtonComponent,
     PropertyShareButtonComponent,
-    ReportListingButtonComponent
+    ReportListingButtonComponent,
+    TranslationNoticeComponent
   ],
   templateUrl: './property-detail.page.html',
   styleUrls: ['./property-detail.page.scss']
@@ -151,6 +155,19 @@ export class PropertyDetailPage implements OnInit {
   private readonly structuredData = inject(StructuredDataService);
   private readonly shareUrl = inject(PropertyShareUrlService);
   private readonly printer = inject(PropertyPrintService);
+
+  // Automatic translation of title/description into the active language. Purely additive: the listing
+  // renders from the original text first, and this only swaps text in when a stored translation exists.
+  readonly translation = new ListingTranslationController(inject(ListingTranslationService));
+
+  /** Title to show: the translation when it is ready and the visitor has not asked for the original. */
+  displayTitle(p: Property): string {
+    return (!this.translation.showOriginal() && this.translation.title()) || p.title;
+  }
+
+  displayDescription(p: Property): string {
+    return (!this.translation.showOriginal() && this.translation.description()) || p.description || '';
+  }
 
   // ── State Signals ─────────────────────────────────────────────────────
   readonly property       = signal<Property | null>(null);
@@ -353,7 +370,12 @@ export class PropertyDetailPage implements OnInit {
     this.currentLang.set((this.translate.currentLang || 'ar') as LangCode);
     this.translate.onLangChange
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(event => this.currentLang.set(event.lang as LangCode));
+      .subscribe(event => {
+        this.currentLang.set(event.lang as LangCode);
+        const current = this.property();
+        if (current) this.translation.start(current.id, this.currentLang());
+      });
+    this.destroyRef.onDestroy(() => this.translation.reset());
 
     // paramMap (not a one-time snapshot): this component instance is reused by the router when
     // only :id changes (Back/Forward between two listings, an in-app link to another one), so
@@ -573,6 +595,7 @@ export class PropertyDetailPage implements OnInit {
     this.serviceOfferings.set([]);
     this.selectedOfferingId.set(null);
     this.property.set(null);
+    this.translation.reset();
     this.reviews.set([]);
     this.error.set('');
     this.currentIndex.set(0);
@@ -620,6 +643,8 @@ export class PropertyDetailPage implements OnInit {
           // (see PropertyAttributionTrackingService.trackView).
           this.attributionTracking.trackView(data.id);
           this.printFromQueryOnce(data);
+          // After everything the visitor needs is on screen; a failure here changes nothing above.
+          this.translation.start(data.id, this.currentLang());
         },
         error: (err: unknown) => {
           // A definitive 404 means the listing doesn't exist / isn't public: show the "not
