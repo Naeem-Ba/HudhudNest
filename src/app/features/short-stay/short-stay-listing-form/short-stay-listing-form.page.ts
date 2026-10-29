@@ -13,6 +13,8 @@ import { MapPickerComponent } from '../../../map-picker/map-picker.component';
 import { CITY_MAPS } from '../../../map-picker/city-map.config';
 import { LangCode } from '../../../core/services/language.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { apiErrorText } from '../../../core/api/api-error-text';
+import { UnitAvailabilityPanelComponent } from '../unit-availability-panel/unit-availability-panel.component';
 import { ToastService } from '../../../shared/services/toast.service';
 import { LISTING_PHOTO_COMPRESSION, compressImagesForUpload } from '../../../shared/utils/image-compression';
 import {
@@ -20,7 +22,8 @@ import {
   LocationVisibility,
   PricingRuleDto,
   SHORT_STAY_CURRENCIES,
-  ShortStayListing
+  ShortStayListing,
+  canPublishShortStay
 } from '../../../core/models/short-stay.model';
 import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
 
@@ -75,7 +78,7 @@ type PricingRuleForm = {
 @Component({
   selector: 'app-short-stay-listing-form-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, PhotoGuideSheetComponent, MapPickerComponent, AmenityLabelPipe],
+  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, PhotoGuideSheetComponent, MapPickerComponent, AmenityLabelPipe, UnitAvailabilityPanelComponent],
   templateUrl: './short-stay-listing-form.page.html',
   styleUrls: ['./short-stay-listing-form.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -723,10 +726,16 @@ export class ShortStayListingFormPage implements OnInit {
     });
   }
 
+  /** Publishing is refused (409) for a listing an administrator took down, so it is not offered. */
+  canPublish(listing: ShortStayListing): boolean {
+    return canPublishShortStay(listing);
+  }
+
   togglePublish(): void {
     const id = this.listingId();
     const current = this.listing();
     if (!id || !current) return;
+    if (!current.isPublished && !this.canPublish(current)) return;
 
     // The API refuses to publish without a city and a pin; say so in the user's language and
     // take them to the fix instead of a generic failure.
@@ -745,9 +754,9 @@ export class ShortStayListingFormPage implements OnInit {
         this.toast.show(this.translate.instant('SHORTSTAY.FORM.PUBLISH_TOGGLE_SUCCESS'), 'success');
         this.loadForEdit(id);
       },
-      error: () => {
+      error: err => {
         this.togglingPublish.set(false);
-        this.toast.show(this.translate.instant('SHORTSTAY.FORM.PUBLISH_TOGGLE_ERROR'), 'error');
+        this.toast.show(apiErrorText(err) ?? this.translate.instant('SHORTSTAY.FORM.PUBLISH_TOGGLE_ERROR'), 'error');
       }
     });
   }

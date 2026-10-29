@@ -99,7 +99,8 @@
     "SERVICES": "HudhudNest Services",
     "ADMIN_SERVICE_PROVIDERS": "Service providers",
     "PROVIDER_OFFERINGS": "My offerings",
-    "ADMIN_SERVICES": "Services overview"
+    "ADMIN_SERVICES": "Services overview",
+    "ADMIN_SHORT_STAY": "Short stays (admin)"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -2063,7 +2064,9 @@
       "OWNER_CANNOT_BOOK": "You cannot book your own listing.",
       "BOOKING_SUCCESS": "Booking submitted successfully.",
       "BOOKING_ERROR": "Could not complete the booking.",
-      "BOOKING_CONFLICT": "These dates are no longer available, please choose different dates."
+      "BOOKING_CONFLICT": "These dates are no longer available, please choose different dates.",
+      "INSTANT_HINT": "Instant booking: your stay must start within {{days}} days from today and last at most {{nights}} nights.",
+      "UNAVAILABLE_NOW": "This unit is not available for booking right now."
     },
     "BOOKINGS": {
       "EYEBROW": "Short Stay",
@@ -2099,7 +2102,9 @@
         "CANCELLED": "Cancelled",
         "EXPIRED": "Expired",
         "NO_SHOW": "No-show"
-      }
+      },
+      "CONFIRM_BEFORE": "Must be confirmed before {{date}} or the booking expires automatically",
+      "RATE_STAY": "Rate your stay"
     },
     "MY_LISTINGS": {
       "TITLE": "My Listings",
@@ -2225,6 +2230,47 @@
       "LOAD_ERROR": "Could not load the listing.",
       "PUBLISH_TOGGLE_SUCCESS": "Publish status updated.",
       "PUBLISH_TOGGLE_ERROR": "Could not update publish status."
+    },
+    "AVAILABILITY": {
+      "TITLE": "Availability and blocked periods",
+      "HINT": "Mark days or periods as booked / unavailable per unit, or switch a unit off for now. Existing bookings are not affected.",
+      "AVAILABLE_NOW": "Available now",
+      "UNAVAILABLE_NOW": "Not available for now",
+      "UNAVAILABLE_HINT": "This unit is hidden from search and takes no new bookings until you switch it back on.",
+      "TOGGLE_SUCCESS": "Unit availability updated.",
+      "TOGGLE_ERROR": "Could not update the unit's availability.",
+      "BLOCKS_TITLE": "Blocked periods",
+      "LOADING": "Loading...",
+      "LOAD_ERROR": "Could not load the blocked periods.",
+      "NO_BLOCKS": "No blocked periods.",
+      "FROM": "From",
+      "TO": "To",
+      "TO_HINT": "The \"To\" date is the morning the unit is available again.",
+      "ADD": "Block period",
+      "ADD_SUCCESS": "The period was blocked.",
+      "ADD_ERROR": "Could not block the period.",
+      "REMOVE_ERROR": "Could not remove the blocked period.",
+      "ERR_DATES_REQUIRED": "Choose both dates.",
+      "ERR_ORDER": "\"To\" must be after \"From\".",
+      "ERR_PAST": "A period cannot start in the past."
+    },
+    "REVIEWS": {
+      "TITLE": "Reviews",
+      "COUNT": "{{count}} reviews",
+      "EMPTY": "No reviews yet.",
+      "LOADING": "Loading reviews...",
+      "LOAD_ERROR": "Could not load the reviews.",
+      "LOAD_MORE": "Show more",
+      "DIALOG_TITLE": "Rate your stay",
+      "COMMENT_LABEL": "Your comment (optional, up to 1000 characters)",
+      "SUBMIT": "Submit review",
+      "THANKS": "Thank you, your review was saved.",
+      "SUBMIT_ERROR": "Could not submit your review."
+    },
+    "TAKEN_DOWN": {
+      "BANNER": "Administrators took this listing down; it is hidden from visitors and cannot be published until they restore it.",
+      "REASON": "Reason: {{reason}}",
+      "SEE_REASON": "See the reason"
     }
   },
   "INVESTMENTS": {
@@ -3408,5 +3454,30 @@
     "storage-room": "Storage room",
     "pets-allowed": "Pets allowed",
     "wheelchair-access": "Wheelchair access"
+  },
+  "ADMIN_SHORT_STAY": {
+    "TITLE": "Short-stay administration",
+    "SUBTITLE": "Review short-stay listings, take a violating listing down with a reason, or restore it.",
+    "SEARCH_PLACEHOLDER": "Search by title or city",
+    "TAKEN_DOWN_ONLY": "Taken down only",
+    "LOAD_ERROR": "Could not load the listings.",
+    "EMPTY_TITLE": "No listings",
+    "EMPTY_MESSAGE": "No short-stay listings match your search.",
+    "PUBLISHED": "Published",
+    "NOT_PUBLISHED": "Not published",
+    "TAKEN_DOWN": "Taken down by admin",
+    "TAKEN_DOWN_AT": "Taken down on {{date}}",
+    "CREATED_AT": "Created on {{date}}",
+    "TAKE_DOWN": "Take down",
+    "TAKE_DOWN_MODAL_TITLE": "Take down short-stay listing",
+    "TAKE_DOWN_HINT": "The listing disappears from search and the owner cannot publish it again; existing bookings stay. The owner is notified with the reason.",
+    "TAKE_DOWN_REASON": "Reason (required, up to 500 characters)",
+    "TAKE_DOWN_SUCCESS": "The listing was taken down.",
+    "RESTORE": "Restore",
+    "RESTORE_MODAL_TITLE": "Restore listing",
+    "RESTORE_HINT": "The listing is published again and the owner is notified.",
+    "REASON_OPTIONAL": "Note (optional)",
+    "RESTORE_SUCCESS": "The listing was restored.",
+    "ACTION_ERROR": "The action could not be completed."
   }
 }

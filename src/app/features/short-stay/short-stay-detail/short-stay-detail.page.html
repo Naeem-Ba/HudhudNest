@@ -17,6 +17,11 @@
     />
   </div>
 
+  <p class="ssd__taken-down" role="alert" data-testid="taken-down-banner" *ngIf="l.isTakenDown">
+    🚫 {{ 'SHORTSTAY.TAKEN_DOWN.BANNER' | translate }}
+    <span *ngIf="l.takenDownReason">— {{ 'SHORTSTAY.TAKEN_DOWN.REASON' | translate:{ reason: l.takenDownReason } }}</span>
+  </p>
+
   <div class="ssd__layout">
     <div class="ssd__main">
       <header class="ssd__header">
@@ -66,6 +71,10 @@
           {{ 'SHORTSTAY.DETAIL.FREE_CANCELLATION' | translate:{ days: l.cancellationFreeCancellationDays } }}
         </p>
       </section>
+
+      <section class="ssd__section">
+        <app-short-stay-reviews-section [listingId]="l.id" />
+      </section>
     </div>
 
     <aside class="ssd__booking" *ngIf="bookableUnit() as unit">
@@ -85,6 +94,10 @@
 
         <p class="ssd__min-nights" *ngIf="minNights() > 1">
           {{ 'SHORTSTAY.DETAIL.MIN_NIGHTS' | translate:{ nights: minNights() } }}
+        </p>
+
+        <p class="ssd__instant-hint" data-testid="instant-hint" *ngIf="l.instantBookingEnabled">
+          ⚡ {{ 'SHORTSTAY.DETAIL.INSTANT_HINT' | translate:instantLimits }}
         </p>
 
         <div class="ssd__guest-fields">
@@ -146,6 +159,11 @@
       <ng-template #ownerNotice>
         <p class="ssd__owner-notice">{{ 'SHORTSTAY.DETAIL.OWNER_CANNOT_BOOK' | translate }}</p>
       </ng-template>
+    </aside>
+
+    <!-- كل وحدات الإعلان «غير متاحة حاليًا» (قرّر المضيف إيقافها مؤقتًا) -->
+    <aside class="ssd__booking" *ngIf="!bookableUnit() && !isOwner()">
+      <p class="ssd__owner-notice" data-testid="unavailable-now">{{ 'SHORTSTAY.DETAIL.UNAVAILABLE_NOW' | translate }}</p>
     </aside>
   </div>
 </div>

@@ -1000,3 +1000,25 @@ transaction الحصّة/القفل الاستشاري — فحوصات رخيص
 | إشعارات جديدة | `ListingTakenDown=44`، `ListingRestored=45`، `VisitCancelledByHost=46` (إلغاء طلب زيارة عند حذف الإعلان). النص يأتي مترجمًا من الخادم. |
 
 لوحة الإدارة: في «إعلانات المستخدم» (`/admin/users/:id/properties`) زر «إيقاف الإعلان» (نافذة بسبب إلزامي) و«استعادة» للموقوف.
+
+## 17. الإقامة القصيرة: الحجز الفوري وفترات الإتاحة والمهل والتقييمات والإيقاف الإداري — 2026-10-18 (QA المرحلة 9)
+
+التصميم والقرارات: `docs/operations/listing-lifecycle-currency-search.md` §7 في مستودع الخلفية. تُنشر الخلفية **قبل** هذه الواجهة (الواجهة تستدعي نقاطًا جديدة).
+
+| النقطة | السلوك |
+|---|---|
+| إنشاء حجز فوري (`POST /short-stay/bookings` لوحدة بحجز فوري) | `400` برسالة عربية جاهزة إن تجاوز: بدء الإقامة > 30 يومًا من اليوم، أو > 30 ليلة، أو للضيف 3 حجوزات فورية نشطة. وضع «طلب» يبقى بحدّه القديم. |
+| `GET /short-stay/listings/units/{unitId}/blocks` | فترات الحجب التي وضعها المضيف: `[{ id, unitId, from, to }]` (`from` شاملة، `to` حصرية، `yyyy-MM-dd`). المالك فقط. |
+| `POST /short-stay/listings/units/{unitId}/blocks` `{ from, to }` | `201`. `422` لتاريخ ماضٍ أو `to <= from` أو أكثر من 366 ليلة أو أبعد من 730 يومًا أو بعد 100 فترة للوحدة؛ `409` إن تقاطعت مع حجز قائم. |
+| `DELETE …/blocks/{blockId}` | فك الحجب. |
+| `PUT …/units/{unitId}/availability` `{ isActive }` | «غير متاح حاليًا» (`false`) أو «متاح»؛ لا يلغي الحجوزات القائمة. |
+| `BookingDto` | حقلان جديدان: `confirmationDeadline: string \| null` (آخر موعد للرد/التأكيد) و`reviewed: boolean`. |
+| انتهاء المهلة | الطلب المعلّق يُلغى تلقائيًا بعد 3 أيام، والمعتمد غير المؤكَّد بعد 3 أيام من الاعتماد، وبحدٍّ أقصى 7 أيام من الطلب (حالة `Expired`). يعمل المنظّف كل بضع دقائق. |
+| `POST /short-stay/bookings/{id}/check-in` | `400` قبل تاريخ الوصول. |
+| `POST /short-stay/reviews` `{ bookingId, rating 1-5, comment? ≤ 1000 }` | `201`. `400` برسالة عربية إن لم يكتمل الحجز/لم يحن تاريخ المغادرة/قُيّم سابقًا/لا خطة فعّالة للمضيف. الضيف لا يحتاج خطة. التقييم ممكن بعد حذف الإعلان. |
+| `GET /short-stay/listings/{id}/reviews?page=&pageSize=` | عام (بلا تسجيل دخول): `{ averageRating, totalCount, reviews: [{ id, reviewerId, reviewerName, reviewerImageUrl, rating, comment, createdAt }] }`. |
+| `GET /admin/short-stay?search=&takenDown=&page=&pageSize=` | مدير فقط. قائمة مقسّمة بـ `AdminShortStayListingDto` (`isTakenDown`, `takenDownAt`, `takenDownReason`…). |
+| `POST /admin/short-stay/{id}/take-down` `{ reason }` | سبب إلزامي (≤ 500). يخفي الإعلان علنًا ويُشعر المالك. `POST …/restore` `{ reason? }` يعيده. |
+| `ShortStayListingDto` / `SummaryDto` | حقل `isTakenDown`؛ والتفاصيل فيها `takenDownReason`. النشر لموقوف إداريًا `409`، والواجهة تخفي زر النشر (`canPublishShortStay`). |
+
+الواجهة: لوحة «الإتاحة» داخل نموذج الإعلان لكل وحدة، سطر «يجب التأكيد قبل …» في حجوزاتي، زر «قيّم إقامتك» للحجز المكتمل، قسم التقييمات في صفحة التفاصيل، وصفحة `/admin/short-stay` مع رابط في القائمة للمدير.

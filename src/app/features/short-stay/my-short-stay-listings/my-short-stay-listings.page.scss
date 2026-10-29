@@ -59,6 +59,18 @@
     &--published { background: #dcfce7; color: #15803d; }
   }
 
+  &__taken-down {
+    margin: 0.5rem 0 0;
+    padding: 0.35rem 0.6rem;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--danger, #dc2626);
+    background: var(--danger-soft, #fee2e2);
+
+    a { margin-inline-start: 0.4rem; text-decoration: underline; }
+  }
+
   &__actions {
     display: flex;
     flex-direction: column;
