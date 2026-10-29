@@ -90,6 +90,13 @@
     margin-top: 0.4rem;
   }
 
+  &__deadline {
+    margin: 0.5rem 0 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #a16207;
+  }
+
   &__actions {
     display: flex;
     gap: 0.5rem;

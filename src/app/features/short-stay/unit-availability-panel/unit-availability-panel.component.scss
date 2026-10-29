@@ -1,0 +1,92 @@
+.uap {
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: var(--r-md, 10px);
+  padding: 0.9rem 1rem;
+  margin-bottom: 1rem;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  &__room { font-size: 0.75rem; color: var(--gray-500, #6b7280); margin: 0; }
+  &__unit { font-size: 1rem; margin: 0; }
+  &__subtitle { font-size: 0.875rem; margin: 1rem 0 0.5rem; }
+
+  &__switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.875rem;
+
+    input { width: 1.1rem; height: 1.1rem; }
+  }
+
+  &__switch-label { color: #15803d; }
+  &__switch-label--off { color: var(--danger, #dc2626); }
+
+  &__hint { font-size: 0.8125rem; color: var(--gray-500, #6b7280); margin: 0.4rem 0 0; }
+  &__state { font-size: 0.875rem; color: var(--gray-500, #6b7280); margin: 0; }
+  &__state--error { color: var(--danger, #dc2626); }
+  &__error { color: var(--danger, #dc2626); font-size: 0.875rem; margin: 0.4rem 0 0; }
+
+  &__link {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: var(--primary-text, #92651a);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  &__blocks {
+    list-style: none;
+    margin: 0 0 0.75rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  &__block {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    background: var(--gray-100, #f3f4f6);
+  }
+
+  &__range { font-size: 0.875rem; direction: ltr; unicode-bidi: plaintext; }
+
+  &__add {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1 1 140px;
+
+    label { font-size: 0.75rem; font-weight: 600; color: var(--gray-700, #374151); }
+
+    input {
+      padding: 0.5rem 0.6rem;
+      border: 1px solid var(--border, #e5e7eb);
+      border-radius: 8px;
+      font: inherit;
+      font-size: 16px;
+    }
+  }
+}

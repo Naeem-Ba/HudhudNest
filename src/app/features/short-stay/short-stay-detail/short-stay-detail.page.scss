@@ -95,6 +95,25 @@
     background: #fff;
   }
 
+  &__taken-down {
+    margin: 0 0 1rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--danger, #dc2626);
+    background: var(--danger-soft, #fee2e2);
+  }
+
+  &__instant-hint {
+    margin: 0.5rem 0;
+    padding: 0.45rem 0.65rem;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    color: var(--primary-text, #92651a);
+    background: var(--gold-soft, #fdf6e3);
+  }
+
   &__owner-notice {
     padding: 1rem;
     background: var(--gray-50, #f9fafb);
