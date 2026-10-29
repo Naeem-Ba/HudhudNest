@@ -200,6 +200,14 @@ export const routes: Routes = [
             .then(m => m.FavoritesPage)
       },
       {
+        // بلاغاتي: البلاغات التي أرسلها المستخدم وحالتها العامة (لا يرى ملاحظات الإدارة).
+        path: 'my-reports',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/listing-reports/my-listing-reports.page')
+            .then(m => m.MyListingReportsPage)
+      },
+      {
         // Phase-0, Task 3.
         path: 'saved-searches',
         canActivate: [AuthGuard],
@@ -443,6 +451,22 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./admin/services/admin-service-request-detail.page')
             .then(m => m.AdminServiceRequestDetailPage)
+      },
+
+      {
+        // إدارة البلاغات عن الإعلانات. Role Admin على الخادم لكل نقطة.
+        path: 'admin/listing-reports',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/listing-reports/admin-listing-reports.page')
+            .then(m => m.AdminListingReportsPage)
+      },
+      {
+        path: 'admin/listing-reports/:id',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/listing-reports/admin-listing-report-detail.page')
+            .then(m => m.AdminListingReportDetailPage)
       },
 
       {

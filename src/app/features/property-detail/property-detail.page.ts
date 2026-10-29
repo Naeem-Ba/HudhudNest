@@ -59,6 +59,7 @@ import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.compone
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { FavoriteToggleButtonComponent } from '../../shared/ui/favorite-toggle-button.component';
 import { PropertyShareButtonComponent } from '../../shared/ui/property-share-button.component';
+import { ReportListingButtonComponent } from '../../shared/ui/report-listing-button.component';
 import { PRINT_QUERY_PARAM, PropertyPrintService } from '../../core/print/property-print.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { OverlayBackHandlerService } from '../../core/services/overlay-back-handler.service';
@@ -98,7 +99,8 @@ const LIGHTBOX_IMAGE_WIDTH = 2048;
     LoadingSpinnerComponent,
     EmptyStateComponent,
     FavoriteToggleButtonComponent,
-    PropertyShareButtonComponent
+    PropertyShareButtonComponent,
+    ReportListingButtonComponent
   ],
   templateUrl: './property-detail.page.html',
   styleUrls: ['./property-detail.page.scss']
