@@ -3,7 +3,8 @@ import { Subscription, timer } from 'rxjs';
 import {
   ListingTranslation,
   ListingTranslationService,
-  TranslationLanguage
+  TranslationLanguage,
+  TranslationListingKind
 } from '../../core/api/listing-translation.service';
 
 /**
@@ -46,6 +47,7 @@ export class ListingTranslationController {
   private key = '';
   private propertyId = '';
   private language: TranslationLanguage = 'ar';
+  private kind: TranslationListingKind = 'property';
   private polls = 0;
 
   constructor(
@@ -54,8 +56,8 @@ export class ListingTranslationController {
   ) {}
 
   /** Begins (or re-uses) the translation of a listing into a language. Safe to call repeatedly. */
-  start(propertyId: string, language: TranslationLanguage): void {
-    const key = `${propertyId}|${language}`;
+  start(propertyId: string, language: TranslationLanguage, kind: TranslationListingKind = 'property'): void {
+    const key = `${kind}|${propertyId}|${language}`;
     if (key === this.key && this.view() !== 'unavailable' && this.view() !== 'none') {
       return; // already loaded or in flight: re-rendering or re-navigating must not repeat the request
     }
@@ -64,6 +66,7 @@ export class ListingTranslationController {
     this.key = key;
     this.propertyId = propertyId;
     this.language = language;
+    this.kind = kind;
     this.polls = 0;
     this.showOriginal.set(false);
     this.title.set(null);
@@ -108,7 +111,7 @@ export class ListingTranslationController {
       if (this.key === key && this.view() === 'loading') this.view.set('waiting');
     });
 
-    this.requestSub = this.api.ensure(this.propertyId, this.language).subscribe({
+    this.requestSub = this.api.ensure(this.propertyId, this.language, this.kind).subscribe({
       next: result => {
         if (this.key !== key) return;
         this.waitSub?.unsubscribe();
@@ -133,7 +136,7 @@ export class ListingTranslationController {
       this.pollSub = timer(seconds * 1000).subscribe(() => {
         if (this.key !== key) return;
         this.requestSub?.unsubscribe();
-        this.requestSub = this.api.ensure(this.propertyId, this.language).subscribe({
+        this.requestSub = this.api.ensure(this.propertyId, this.language, this.kind).subscribe({
           next: next => { if (this.key === key) this.handle(next); },
           error: () => { if (this.key === key) this.view.set('unavailable'); }
         });

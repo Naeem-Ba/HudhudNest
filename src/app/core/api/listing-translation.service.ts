@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
 
+export type TranslationListingKind = 'property' | 'short-stay';
+
 export type TranslationLanguage = 'ar' | 'de' | 'en';
 
 export type TranslationFieldState = 'ready' | 'pending' | 'same_language' | 'unavailable' | 'empty';
@@ -33,9 +35,10 @@ export interface ListingTranslation {
 export class ListingTranslationService {
   constructor(private readonly api: BackendApiService) {}
 
-  ensure(propertyId: string, language: TranslationLanguage): Observable<ListingTranslation> {
+  ensure(listingId: string, language: TranslationLanguage, kind: TranslationListingKind = 'property'): Observable<ListingTranslation> {
+    const base = kind === 'short-stay' ? '/short-stay/listings' : '/properties';
     return this.api.post<ListingTranslation>(
-      `/properties/${encodeURIComponent(propertyId)}/translation?lang=${language}`
+      `${base}/${encodeURIComponent(listingId)}/translation?lang=${language}`
     );
   }
 }

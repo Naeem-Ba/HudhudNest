@@ -26,6 +26,9 @@ import { ImageFallbackDirective } from '../../../shared/directives/image-fallbac
 import { PageMetaService } from '../../../core/services/page-meta.service';
 import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
 import { apiErrorText } from '../../../core/api/api-error-text';
+import { ListingTranslationService } from '../../../core/api/listing-translation.service';
+import { ListingTranslationController } from '../../property-detail/listing-translation.controller';
+import { TranslationNoticeComponent } from '../../property-detail/translation-notice.component';
 import { ShortStayReviewsSectionComponent } from '../short-stay-reviews-section/short-stay-reviews-section.component';
 
 // حالات UnitBookingRange التي تُعتبر فعلياً "محجوزة" أمام ضيف جديد. Pending
@@ -36,7 +39,7 @@ const BLOCKING_STATUSES = new Set(['Reserved', 'CheckedIn', 'Blocked']);
 @Component({
   selector: 'app-short-stay-detail-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, DateRangePickerComponent, ImageFallbackDirective, AmenityLabelPipe, ShortStayReviewsSectionComponent],
+  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, DateRangePickerComponent, ImageFallbackDirective, AmenityLabelPipe, ShortStayReviewsSectionComponent, TranslationNoticeComponent],
   templateUrl: './short-stay-detail.page.html',
   styleUrls: ['./short-stay-detail.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -54,6 +57,16 @@ export class ShortStayDetailPage implements OnInit {
   private readonly pageMeta = inject(PageMetaService);
 
   readonly listing = signal<ShortStayListing | null>(null);
+
+  // Automatic translation of title/description: additive, the original text always renders first.
+  readonly translation = new ListingTranslationController(inject(ListingTranslationService));
+  displayTitle(l: ShortStayListing): string {
+    return (!this.translation.showOriginal() && this.translation.title()) || l.title;
+  }
+  displayDescription(l: ShortStayListing): string {
+    return (!this.translation.showOriginal() && this.translation.description()) || l.description;
+  }
+
   readonly loading = signal(false);
   readonly error = signal('');
   readonly fallbackImage = '/images/no-image.svg';
@@ -107,7 +120,13 @@ export class ShortStayDetailPage implements OnInit {
   });
 
   ngOnInit(): void {
-    this.destroyRef.onDestroy(() => this.pageMeta.clear());
+    this.destroyRef.onDestroy(() => { this.pageMeta.clear(); this.translation.reset(); });
+    this.translate.onLangChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(event => {
+        const current = this.listing();
+        if (current) this.translation.start(current.id, event.lang as 'ar' | 'de' | 'en', 'short-stay');
+      });
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) { this.error.set('SHORTSTAY.DETAIL.NOT_FOUND'); this.pageMeta.markNotFound(); return; }
     this.load(id);
@@ -124,6 +143,7 @@ export class ShortStayDetailPage implements OnInit {
     this.listingsApi.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: listing => {
         this.listing.set(listing);
+        this.translation.start(listing.id, (this.translate.currentLang || 'ar') as 'ar' | 'de' | 'en', 'short-stay');
         this.pageMeta.applyDynamic({ title: listing.title, description: listing.description, path: `/short-stay/${listing.id}` });
         this.loading.set(false);
         this.loadAvailability();

@@ -155,4 +155,26 @@ describe('ListingTranslationService', () => {
     service.ensure('abc-123', 'de').subscribe();
     expect(post).toHaveBeenCalledWith('/properties/abc-123/translation?lang=de');
   });
+
+  it('posts to the short-stay endpoint for short-stay listings', () => {
+    const post = jasmine.createSpy('post').and.returnValue(of(ready()));
+    const service = new ListingTranslationService({ post } as never);
+    service.ensure('s-1', 'en', 'short-stay').subscribe();
+    expect(post).toHaveBeenCalledWith('/short-stay/listings/s-1/translation?lang=en');
+  });
+});
+
+describe('ListingTranslationController (listing kinds)', () => {
+  it('passes the kind through and never mixes a sale listing with a short-stay one that has the same id', () => {
+    const api = jasmine.createSpyObj<ListingTranslationService>('ListingTranslationService', ['ensure']);
+    api.ensure.and.returnValue(of(ready()));
+    const controller = new ListingTranslationController(api, { waitBudgetMs: 8000, maxPolls: 3 });
+
+    controller.start('same-id', 'en', 'short-stay');
+    expect(api.ensure).toHaveBeenCalledWith('same-id', 'en', 'short-stay');
+
+    controller.start('same-id', 'en', 'property');
+    expect(api.ensure).toHaveBeenCalledTimes(2);
+    expect(api.ensure).toHaveBeenCalledWith('same-id', 'en', 'property');
+  });
 });
