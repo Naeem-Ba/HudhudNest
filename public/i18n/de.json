@@ -858,6 +858,27 @@
     "FEATURE_EXTEND": "Hervorhebung verlängern",
     "FEATURE_PENDING": "Ihre Hervorhebungsanfrage wartet auf die Zahlungsbestätigung durch einen Administrator."
   },
+  "VIEW_COUNT": {
+    "LABEL": "Aufrufe",
+    "ARIA": "Aufrufe: {{count}}"
+  },
+  "VIEW_STATS": {
+    "TITLE": "Anzeigenaufrufe",
+    "HELP": "Wie oft die Detailseite jeder Anzeige geöffnet wurde. Wiederholte Aufrufe desselben Besuchers innerhalb von 24 Stunden sowie Aufrufe durch den Inserenten, sein Büro-Team, Administratoren und Bots werden nicht gezählt.",
+    "SCOPE": "Umfang der Statistik",
+    "SCOPE_MINE": "Meine Anzeigen",
+    "SCOPE_AGENCY": "Anzeigen des Büros",
+    "ERROR": "Die Aufrufstatistik konnte nicht geladen werden.",
+    "TOTAL": "Aufrufe gesamt",
+    "LAST_7": "Letzte 7 Tage",
+    "LAST_30": "Letzte 30 Tage",
+    "UNIQUE_30": "Verschiedene Besucher (30 Tage)",
+    "LISTING": "Anzeige",
+    "TREND": "Tägliche Aufrufe, letzte {{days}} Tage",
+    "TREND_ARIA": "Balkendiagramm der täglichen Aufrufe der letzten {{days}} Tage, insgesamt {{count}}",
+    "EMPTY": "Sie haben noch keine Anzeigen, für die Aufrufe angezeigt werden könnten.",
+    "NOTE": "Die Gesamtzahl umfasst alle gezählten Aufrufe seit Einführung des Zählers; die 7/30-Tage-Werte und das Tagesdiagramm werden nur {{days}} Tage lang gespeichert. „Verschiedene Besucher“ ist eine Schätzung auf Basis einer anonymen Browser- oder Konto-Kennung."
+  },
   "FAVORITE_TOGGLE": {
     "ADD": "Zu Favoriten hinzufügen",
     "REMOVE": "Aus Favoriten entfernen",

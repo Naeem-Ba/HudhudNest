@@ -72,6 +72,7 @@
           {{ listing.city || '—' }} · {{ listing.capacity }} {{ 'SHORTSTAY.LIST.GUESTS_SHORT' | translate }}
           · {{ listing.bedrooms }} {{ 'SHORTSTAY.LIST.BEDROOMS_SHORT' | translate }}
         </p>
+        <app-listing-view-count class="card-views" [compact]="true" [count]="listing.viewCount"></app-listing-view-count>
         <div class="ssl__card-footer">
           <span class="ssl__card-price">{{ formatPrice(listing) }} / {{ 'SHORTSTAY.LIST.NIGHT' | translate }}</span>
           <span class="ssl__card-rating" *ngIf="listing.averageRating">

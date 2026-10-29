@@ -29,6 +29,14 @@ describe('BackendApiService', () => {
 
   afterEach(() => httpMock.verify());
 
+  it('forwards extra request headers on POST (the view counter sends X-Visitor-Id this way)', () => {
+    service.post('/properties/p1/views', undefined, { headers: { 'X-Visitor-Id': 'abc' } }).subscribe();
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/properties/p1/views`);
+    expect(req.request.headers.get('X-Visitor-Id')).toBe('abc');
+    req.flush({});
+  });
+
   it('✅ مسار /auth/... يُبنى عبر authBaseUrl (نفس apiBaseUrl هنا، لأن environmentName=local)', () => {
     service.post('/auth/login', { email: 'a@b.com' }).subscribe();
 

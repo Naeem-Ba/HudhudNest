@@ -133,6 +133,9 @@
             </div>
 
             <div class="summary-card__quick" role="group" [attr.aria-label]="'PROPERTY_DETAIL.QUICK_ACTIONS' | translate">
+              <!-- View counter: information, not an action (a span, no click). First in the group so
+                   the action buttons keep their place at the end of the row. -->
+              <app-listing-view-count [count]="viewCountOf(p)"></app-listing-view-count>
               <app-favorite-toggle-button
                 *ngIf="p.id"
                 [propertyId]="p.id"

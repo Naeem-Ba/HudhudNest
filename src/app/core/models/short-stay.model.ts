@@ -95,6 +95,8 @@ export interface ShortStayListingSummary {
   mainPhotoUrl: string | null;
   averageRating: number | null;
   reviewCount: number;
+  /** Counted detail-page views from the server; absent from an older API. */
+  viewCount?: number;
 }
 
 export interface ShortStayListing {
@@ -146,6 +148,8 @@ export interface ShortStayListing {
   depositPercentage: number | null;
   isPublished: boolean;
   publishedAt: string | null;
+  /** Counted detail-page views from the server; absent from an older API. */
+  viewCount?: number;
   /** Set by an administrator's take-down (QA Phase 9); the reason is shown to the owner. */
   isTakenDown?: boolean;
   takenDownReason?: string | null;

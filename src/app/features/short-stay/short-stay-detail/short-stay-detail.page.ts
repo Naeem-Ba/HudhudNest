@@ -26,6 +26,9 @@ import { ImageFallbackDirective } from '../../../shared/directives/image-fallbac
 import { PageMetaService } from '../../../core/services/page-meta.service';
 import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
 import { apiErrorText } from '../../../core/api/api-error-text';
+import { mergeViewCount } from '../../../shared/utils/view-count';
+import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count.component';
+import { ListingViewTrackingService } from '../../../core/listing-views/listing-view-tracking.service';
 import { ShortStayReviewsSectionComponent } from '../short-stay-reviews-section/short-stay-reviews-section.component';
 
 // حالات UnitBookingRange التي تُعتبر فعلياً "محجوزة" أمام ضيف جديد. Pending
@@ -36,7 +39,7 @@ const BLOCKING_STATUSES = new Set(['Reserved', 'CheckedIn', 'Blocked']);
 @Component({
   selector: 'app-short-stay-detail-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, DateRangePickerComponent, ImageFallbackDirective, AmenityLabelPipe, ShortStayReviewsSectionComponent],
+  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, DateRangePickerComponent, ImageFallbackDirective, AmenityLabelPipe, ShortStayReviewsSectionComponent, ListingViewCountComponent],
   templateUrl: './short-stay-detail.page.html',
   styleUrls: ['./short-stay-detail.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -52,6 +55,10 @@ export class ShortStayDetailPage implements OnInit {
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly pageMeta = inject(PageMetaService);
+  private readonly listingViews = inject(ListingViewTrackingService);
+
+  /** The total from the last POST .../views, when it is newer than the one in the loaded listing. */
+  readonly liveViewCount = signal<number | null>(null);
 
   readonly listing = signal<ShortStayListing | null>(null);
   readonly loading = signal(false);
@@ -120,6 +127,7 @@ export class ShortStayDetailPage implements OnInit {
   private load(id: string): void {
     this.loading.set(true);
     this.error.set('');
+    this.liveViewCount.set(null);
 
     this.listingsApi.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: listing => {
@@ -127,6 +135,7 @@ export class ShortStayDetailPage implements OnInit {
         this.pageMeta.applyDynamic({ title: listing.title, description: listing.description, path: `/short-stay/${listing.id}` });
         this.loading.set(false);
         this.loadAvailability();
+        this.recordView(listing.id);
       },
       error: (err: unknown) => {
         this.error.set('SHORTSTAY.DETAIL.LOAD_ERROR');
@@ -137,6 +146,23 @@ export class ShortStayDetailPage implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  /** View counter: the detail page is on screen, so tell the server once (never blocks or surfaces an error). */
+  private recordView(listingId: string): void {
+    this.listingViews
+      .record('shortstay', listingId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(result => {
+        if (result && this.listing()?.id === listingId) {
+          this.liveViewCount.set(result.viewCount);
+        }
+      });
+  }
+
+  /** The number to show: the loaded listing's, or the newer total the server returned when the view was recorded. */
+  viewCountOf(listing: ShortStayListing): number | null {
+    return mergeViewCount(listing.viewCount, this.liveViewCount());
   }
 
   private loadAvailability(): void {
