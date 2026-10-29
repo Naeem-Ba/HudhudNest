@@ -2380,7 +2380,7 @@
       "WATCHLIST_ADDED": "Zur Merkliste hinzugefügt.",
       "WATCHLIST_REMOVED": "Von der Merkliste entfernt.",
       "WATCHLIST_ERROR": "Merkliste konnte nicht aktualisiert werden.",
-      "EXPRESS_INTEREST": "Ich habe Interesse an einer Investition",
+      "EXPRESS_INTEREST": "Interesse bekunden",
       "WITHDRAW_INTEREST": "Interesse zurückziehen",
       "INTEREST_REGISTERED": "Interesse erfolgreich registriert. Unser Team kann Sie kontaktieren — dies ist keine Zahlung oder Verpflichtung.",
       "INTEREST_WITHDRAWN": "Ihr Interesse wurde zurückgezogen.",
@@ -2428,7 +2428,8 @@
       "CONSERVATIVE": "Konservativ",
       "BASE": "Basis",
       "OPTIMISTIC": "Optimistisch",
-      "ERROR": "Schätzung konnte nicht berechnet werden."
+      "ERROR": "Schätzung konnte nicht berechnet werden.",
+      "RANGE_ERROR": "Der Betrag darf {{maxAmount}} und die Laufzeit {{maxTerm}} Monate nicht überschreiten."
     },
     "WATCHLIST": {
       "TITLE": "Meine Investment-Merkliste",
@@ -2436,7 +2437,8 @@
       "LOAD_ERROR": "Merkliste konnte nicht geladen werden.",
       "EMPTY_TITLE": "Ihre Merkliste ist leer",
       "EMPTY_MESSAGE": "Gespeicherte Projekte werden hier angezeigt."
-    }
+    },
+    "GENERAL_DISCLAIMER": "Die Angaben auf diesen Seiten stellen Investitionsmöglichkeiten lediglich vor. Sie sind keine Anlage-, Finanz- oder Rechtsberatung, kein verbindliches Angebot und keine Zusage einer Rendite. Jede Investition birgt Risiken bis hin zum Verlust eines Teils oder des gesamten Kapitals. Holen Sie vor einer Entscheidung fachlichen Rat ein."
   },
   "ADMIN_INVESTMENTS": {
     "LIST": {
@@ -2455,7 +2457,8 @@
       "VIEW": "Anzeigen",
       "LOAD_ERROR": "Investitionsprojekte konnten nicht geladen werden.",
       "EMPTY_TITLE": "Noch keine Investitionsprojekte",
-      "EMPTY_MESSAGE": "Erstellen Sie das erste Investitionsprojekt, um zu beginnen."
+      "EMPTY_MESSAGE": "Erstellen Sie das erste Investitionsprojekt, um zu beginnen.",
+      "COL_INTERESTS": "Interessenten"
     },
     "FORM": {
       "CREATE_TITLE": "Neues Investitionsprojekt",
@@ -2488,7 +2491,8 @@
       "ACTION_SCHEDULE": "Veröffentlichung planen",
       "ACTION_PUBLISH": "Veröffentlichen",
       "ACTION_SUSPEND": "Aussetzen",
-      "ACTION_CLOSE": "Schließen"
+      "ACTION_CLOSE": "Schließen",
+      "ACTION_RESUME": "Veröffentlichung fortsetzen"
     },
     "FINANCIALS": {
       "NOTARY_COST": "Notarkosten",
@@ -2519,7 +2523,7 @@
       "CONFIRM_ACTION_INTRO": "Aktueller Status: {{status}}. Diese Aktion bestätigen?",
       "REJECT_REASON_LABEL": "Grund (dem Projektinhaber angezeigt)",
       "SCHEDULE_AT_LABEL": "Geplanter Veröffentlichungszeitpunkt (optional)",
-      "SCHEDULE_HINT": "Leer lassen, um sofortige Veröffentlichung nach Erreichen von \"Geplant\" zu erlauben.",
+      "SCHEDULE_HINT": "Leer lassen, um sofortige Veröffentlichung nach Erreichen von \"Geplant\" zu erlauben. Die Zeit gilt in der Zeitzone Ihres Geräts. Das Projekt wird zur geplanten Zeit automatisch veröffentlicht, sofern die Voraussetzungen erfüllt sind.",
       "OVERVIEW_TITLE": "Übersicht",
       "NON_GUARANTEED_NOTE": "Die erwartete Rendite ist rein indikativ — niemals eine Garantie.",
       "FINANCIALS_TITLE": "Finanzen",
@@ -2543,7 +2547,25 @@
       "UPDATE_CONTENT": "Inhalt",
       "ADD_UPDATE": "Update hinzufügen",
       "UPDATE_ADDED": "Update veröffentlicht.",
-      "CONFIRM_DELETE": "Sind Sie sicher?"
+      "CONFIRM_DELETE": "Sind Sie sicher?",
+      "PROGRESS_TITLE": "Finanzierungsstand",
+      "PROGRESS_NOTE": "Ein vom Team eingetragener Richtwert; er wird nicht aus echten Zahlungen berechnet. Er darf den Zielbetrag nicht überschreiten.",
+      "PROGRESS_LABEL": "Eingesammelter Betrag",
+      "PROGRESS_SAVED": "Finanzierungsstand aktualisiert.",
+      "PROGRESS_ERROR": "Der Finanzierungsstand konnte nicht aktualisiert werden.",
+      "INTERESTS_TITLE": "Interessenten für dieses Projekt",
+      "INTERESTS_NOTE": "Personen, die nur Interesse bekundet haben; kein Betrag, keine Verpflichtung. Kontaktieren Sie sie über die angezeigte E-Mail oder Telefonnummer.",
+      "INTERESTS_EMPTY": "Noch hat niemand Interesse bekundet.",
+      "INTERESTS_LOAD_ERROR": "Die Liste der Interessenten konnte nicht geladen werden.",
+      "INTEREST_COL_NAME": "Name",
+      "INTEREST_COL_EMAIL": "E-Mail",
+      "INTEREST_COL_PHONE": "Telefon",
+      "INTEREST_COL_STATUS": "Status",
+      "INTEREST_COL_DATE": "Datum",
+      "INTEREST_STATUS_ACTIVE": "Aktiv",
+      "INTEREST_STATUS_WITHDRAWN": "Zurückgezogen",
+      "INTEREST_STATUS_CONTACTED": "Kontaktiert",
+      "DOCUMENT_PRIVACY_WARNING": "Hinweis: „Privat“ heißt nur, dass das Dokument nicht auf der Projektseite aufgeführt wird; es ist nicht vertraulich. Wer den Dateilink kennt, kann es öffnen. Laden Sie hier keine sensiblen Dokumente hoch (Ausweise, unterschriebene Verträge, Bankdaten)."
     }
   },
   "LANDING": {

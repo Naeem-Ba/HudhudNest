@@ -200,6 +200,20 @@ export interface AdminInvestmentProjectListItem {
   raisedAmount: number;
   createdAt: string;
   publishedAt: string | null;
+  /** People whose expression of interest is currently Active (P10-D01). */
+  activeInterestCount: number;
+}
+
+/** One person who expressed interest in a project (staff view). Not an investment: no amount, no commitment. */
+export interface AdminInvestmentInterest {
+  id: string;
+  userId: string;
+  userName: string;
+  email: string | null;
+  phoneNumber: string | null;
+  status: InvestmentInterestStatus;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AdminInvestmentProjectFilter {
@@ -244,6 +258,7 @@ export type InvestmentWorkflowAction =
   | 'schedule'
   | 'publish'
   | 'suspend'
+  | 'resume'
   | 'close';
 
 export interface CreateInvestmentProjectRequest {

@@ -1022,3 +1022,25 @@ transaction الحصّة/القفل الاستشاري — فحوصات رخيص
 | `ShortStayListingDto` / `SummaryDto` | حقل `isTakenDown`؛ والتفاصيل فيها `takenDownReason`. النشر لموقوف إداريًا `409`، والواجهة تخفي زر النشر (`canPublishShortStay`). |
 
 الواجهة: لوحة «الإتاحة» داخل نموذج الإعلان لكل وحدة، سطر «يجب التأكيد قبل …» في حجوزاتي، زر «قيّم إقامتك» للحجز المكتمل، قسم التقييمات في صفحة التفاصيل، وصفحة `/admin/short-stay` مع رابط في القائمة للمدير.
+
+## 18. الاستثمار: اهتمام المهتمين والاستئناف والتقدّم والجدولة — 2026-10-29 (QA المرحلة 10)
+
+التصميم والقرارات: `docs/investment/PHASE-10-FIXES.md` في مستودع الخلفية. تُنشر الخلفية **قبل** هذه الواجهة. لا ترحيل (Migration) في هذه الدفعة.
+
+| النقطة | السلوك |
+|---|---|
+| `GET /admin/investments/projects/{id}/interests` | مدير فقط. `[{ id, userId, userName, email, phoneNumber, status: 'Active' \| 'Withdrawn' \| 'Contacted', createdAt, updatedAt }]` الأحدث أولًا. `404` لمشروع غير موجود. |
+| `GET /admin/investments/projects` | حقل جديد في كل صف: `activeInterestCount: number`. |
+| `POST /admin/investments/projects/{id}/resume` | `204` من «معلّق» إلى «منشور». `400` من أي حالة أخرى. |
+| `PUT /admin/investments/projects/{id}/progress` `{ raisedAmount }` | `204` للحالات معتمد/مجدول/منشور/معلّق. `400` خارج هذه الحالات أو إن تجاوز المبلغ المستهدف؛ `422` لقيمة سالبة أو أكبر من 1e12. رقم إرشادي لا يُحسب من دفعة. |
+| `POST /admin/investments/projects/{id}/schedule` `{ scheduledPublishAt }` | يجب إرسال الموعد **كلحظة UTC** (`toISOString()`)، لا كنص محلي بلا منطقة، لأن المشروع يُنشر تلقائيًا عند حلوله (مهمة كل 5 دقائق). |
+| `POST /admin/investments/projects/{id}/publish` | `400` برسالة عربية إن كان الموعد المجدول لم يحلّ بعد. دون موعد يبقى يدويًا. |
+| حذف/إخفاء مستند (`DELETE`/`PUT …/documents/{id}`) | `400` إن كان آخر «خطة مشروع» أو «بيان مالي» عام لمشروع مجدول/منشور/معلّق. إضافة تحديث لمشروع مغلق: `400`. |
+| `GET /investments/watchlist`، `GET /investments/interests` | يُظهران المشاريع المنشورة الظاهرة علنًا فقط؛ المعلّق/المغلق يختفي ويعود إن أُعيد نشره. |
+| `GET /investments/projects?search=&city=` | `422` لحرف NUL؛ `%` و`_` نصّ عادي لا حروف بدل. |
+| `POST /investments/projects/{id}/calculator` | `422` إن تجاوز المبلغ 1e12 أو المدة 600 شهر. |
+| `POST/PUT` للمشروع | `422` لعملة غير مدعومة، حدّ أدنى > المستهدف، عائد > 100%، مدة خارج 1..600، عنوان يَعِد بربح مؤكد، أو حرف NUL. |
+| `POST …/watchlist` و`…/interest` المتوازيان | لا `500` بعد الآن؛ مكرَّرة تعطي `409`. |
+| إشعار جديد `InvestmentInterestReceived` | للمدراء فقط؛ `target.kind = 'admin-investment'` و`target.id` = معرّف المشروع (يفتح `/admin/investments/:id`). |
+
+الواجهة: قسم «المهتمون بالمشروع» وقسم «تقدّم التمويل» وزر «استئناف النشر» في `/admin/investments/:id`، عمود «المهتمون» في القائمة، زر المستخدم «أبدِ اهتمامي»، إخلاء مسؤولية عام في قائمة المشاريع وأعلى صفحة المشروع، تحذير «خاص ليس سرّيًا» عند رفع مستند، وسقف الحاسبة (1e12 و600 شهر).

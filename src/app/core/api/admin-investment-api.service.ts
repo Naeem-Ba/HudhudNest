@@ -12,6 +12,9 @@
 //   POST   /api/admin/investments/projects/{id}/schedule  { scheduledPublishAt } ← workflow
 //   POST   /api/admin/investments/projects/{id}/publish                       ← workflow
 //   POST   /api/admin/investments/projects/{id}/suspend                       ← workflow
+//   POST   /api/admin/investments/projects/{id}/resume                        ← workflow (Suspended -> Published)
+//   PUT    /api/admin/investments/projects/{id}/progress   { raisedAmount }   ← informational raised amount after the editing stage
+//   GET    /api/admin/investments/projects/{id}/interests                     ← who expressed interest
 //   POST   /api/admin/investments/projects/{id}/close                         ← workflow
 //   PUT    /api/admin/investments/projects/{id}/financials                    ← financials
 //   PUT    /api/admin/investments/projects/{id}/risk                          ← risk
@@ -21,8 +24,8 @@
 //   DELETE /api/admin/investments/projects/{id}/documents/{docId}             ← remove
 //   POST   /api/admin/investments/projects/{id}/updates                      ← add update
 //
-// No "resume" action exists here: the backend's InvestmentProject state machine has no
-// Suspended -> Published transition (only -> Closed). See docs/investment/PHASE-2-IMPLEMENTATION-REPORT.md.
+// "resume" (Suspended -> Published), "progress" and "interests" were added by the QA Phase 10 fixes
+// (P10-D04, D12, D01); see docs/investment/PHASE-10-FIXES.md in the API repository.
 
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
@@ -31,6 +34,7 @@ import { ApiPagedResult, normalizePagedResult, PagedResult } from '../models/api
 import {
   AddInvestmentUpdateRequest,
   AdminInvestmentDocument,
+  AdminInvestmentInterest,
   AdminInvestmentProjectFilter,
   AdminInvestmentProjectListItem,
   CreateInvestmentProjectRequest,
@@ -101,6 +105,19 @@ export class AdminInvestmentApiService {
 
   suspend(id: string): Observable<void> {
     return this.api.post<void>(`${this.endpoint}/projects/${id}/suspend`);
+  }
+
+  resume(id: string): Observable<void> {
+    return this.api.post<void>(`${this.endpoint}/projects/${id}/resume`);
+  }
+
+  /** Corrects the informational raised amount of a project past the editing stage. */
+  updateProgress(id: string, raisedAmount: number): Observable<void> {
+    return this.api.put<void>(`${this.endpoint}/projects/${id}/progress`, { raisedAmount });
+  }
+
+  getInterests(id: string): Observable<AdminInvestmentInterest[]> {
+    return this.api.get<AdminInvestmentInterest[]>(`${this.endpoint}/projects/${id}/interests`);
   }
 
   close(id: string): Observable<void> {
