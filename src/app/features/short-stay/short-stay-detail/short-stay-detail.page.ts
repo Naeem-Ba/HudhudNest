@@ -13,6 +13,8 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import {
   AccommodationUnitDto,
+  INSTANT_BOOKING_MAX_ADVANCE_DAYS,
+  INSTANT_BOOKING_MAX_NIGHTS,
   PaymentMethod,
   PricingBreakdown,
   RoomTypeDto,
@@ -23,6 +25,8 @@ import { DateRangePickerComponent, DateRangeValue } from '../../../shared/ui/dat
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
 import { PageMetaService } from '../../../core/services/page-meta.service';
 import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
+import { apiErrorText } from '../../../core/api/api-error-text';
+import { ShortStayReviewsSectionComponent } from '../short-stay-reviews-section/short-stay-reviews-section.component';
 
 // حالات UnitBookingRange التي تُعتبر فعلياً "محجوزة" أمام ضيف جديد. Pending
 // مستثناة عمداً — طلبات متعددة يمكن أن تتنافس على نفس التاريخ إلى أن يختار
@@ -32,7 +36,7 @@ const BLOCKING_STATUSES = new Set(['Reserved', 'CheckedIn', 'Blocked']);
 @Component({
   selector: 'app-short-stay-detail-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, DateRangePickerComponent, ImageFallbackDirective, AmenityLabelPipe],
+  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, DateRangePickerComponent, ImageFallbackDirective, AmenityLabelPipe, ShortStayReviewsSectionComponent],
   templateUrl: './short-stay-detail.page.html',
   styleUrls: ['./short-stay-detail.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -53,6 +57,8 @@ export class ShortStayDetailPage implements OnInit {
   readonly loading = signal(false);
   readonly error = signal('');
   readonly fallbackImage = '/images/no-image.svg';
+  /** Values for the instant-booking hint; the API enforces the same limits (400/409 with its own message). */
+  readonly instantLimits = { days: INSTANT_BOOKING_MAX_ADVANCE_DAYS, nights: INSTANT_BOOKING_MAX_NIGHTS };
 
   readonly blockedRanges = signal<Array<{ checkIn: string; checkOut: string }>>([]);
   private readonly allAmenities = signal<LookupAmenity[]>([]);
@@ -218,10 +224,12 @@ export class ShortStayDetailPage implements OnInit {
       },
       error: err => {
         this.submitting.set(false);
+        // The API explains a refusal in Arabic (instant-booking limits, dates taken, ...); show that
+        // sentence, and only fall back to the generic text when it sent none.
         const message = err?.status === 409
           ? 'SHORTSTAY.DETAIL.BOOKING_CONFLICT'
           : 'SHORTSTAY.DETAIL.BOOKING_ERROR';
-        this.toast.show(this.translate.instant(message), 'error');
+        this.toast.show(apiErrorText(err) ?? this.translate.instant(message), 'error');
         // التواريخ لم تعد متاحة على الأرجح — أعد تحميل التوفر ليعكس ذلك فوراً.
         if (err?.status === 409) this.loadAvailability();
       }

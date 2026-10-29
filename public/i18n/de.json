@@ -101,6 +101,7 @@
     "ADMIN_SERVICE_PROVIDERS": "Dienstleister verwalten",
     "PROVIDER_OFFERINGS": "Meine Angebote",
     "ADMIN_SERVICES": "Leistungsübersicht",
+    "ADMIN_SHORT_STAY": "Kurzzeitmiete (Admin)",
     "ADMIN_LISTING_REPORTS": "Anzeigenmeldungen",
     "MY_REPORTS": "Meine Meldungen"
   },
@@ -2067,7 +2068,9 @@
       "OWNER_CANNOT_BOOK": "Sie können Ihre eigene Anzeige nicht buchen.",
       "BOOKING_SUCCESS": "Buchung erfolgreich gesendet.",
       "BOOKING_ERROR": "Buchung konnte nicht abgeschlossen werden.",
-      "BOOKING_CONFLICT": "Diese Daten sind nicht mehr verfügbar, bitte andere Daten wählen."
+      "BOOKING_CONFLICT": "Diese Daten sind nicht mehr verfügbar, bitte andere Daten wählen.",
+      "INSTANT_HINT": "Sofortbuchung: Der Aufenthalt muss innerhalb von {{days}} Tagen ab heute beginnen und höchstens {{nights}} Nächte dauern.",
+      "UNAVAILABLE_NOW": "Diese Einheit ist derzeit nicht buchbar."
     },
     "BOOKINGS": {
       "EYEBROW": "Kurzaufenthalt",
@@ -2103,7 +2106,9 @@
         "CANCELLED": "Storniert",
         "EXPIRED": "Abgelaufen",
         "NO_SHOW": "Nicht erschienen"
-      }
+      },
+      "CONFIRM_BEFORE": "Muss vor dem {{date}} bestätigt werden, sonst läuft die Buchung automatisch ab",
+      "RATE_STAY": "Aufenthalt bewerten"
     },
     "MY_LISTINGS": {
       "TITLE": "Meine Anzeigen",
@@ -2229,6 +2234,47 @@
       "LOAD_ERROR": "Anzeige konnte nicht geladen werden.",
       "PUBLISH_TOGGLE_SUCCESS": "Veröffentlichungsstatus aktualisiert.",
       "PUBLISH_TOGGLE_ERROR": "Status konnte nicht aktualisiert werden."
+    },
+    "AVAILABILITY": {
+      "TITLE": "Verfügbarkeit und gesperrte Zeiträume",
+      "HINT": "Markieren Sie pro Einheit Tage oder Zeiträume als gebucht / nicht verfügbar oder schalten Sie eine Einheit vorübergehend ab. Bestehende Buchungen bleiben unberührt.",
+      "AVAILABLE_NOW": "Derzeit verfügbar",
+      "UNAVAILABLE_NOW": "Derzeit nicht verfügbar",
+      "UNAVAILABLE_HINT": "Diese Einheit ist in der Suche ausgeblendet und nimmt keine neuen Buchungen an, bis Sie sie wieder aktivieren.",
+      "TOGGLE_SUCCESS": "Verfügbarkeit der Einheit aktualisiert.",
+      "TOGGLE_ERROR": "Die Verfügbarkeit der Einheit konnte nicht aktualisiert werden.",
+      "BLOCKS_TITLE": "Gesperrte Zeiträume",
+      "LOADING": "Wird geladen...",
+      "LOAD_ERROR": "Die gesperrten Zeiträume konnten nicht geladen werden.",
+      "NO_BLOCKS": "Keine gesperrten Zeiträume.",
+      "FROM": "Von",
+      "TO": "Bis",
+      "TO_HINT": "Das Datum „Bis“ ist der Morgen, an dem die Einheit wieder verfügbar ist.",
+      "ADD": "Zeitraum sperren",
+      "ADD_SUCCESS": "Der Zeitraum wurde gesperrt.",
+      "ADD_ERROR": "Der Zeitraum konnte nicht gesperrt werden.",
+      "REMOVE_ERROR": "Der gesperrte Zeitraum konnte nicht entfernt werden.",
+      "ERR_DATES_REQUIRED": "Wählen Sie beide Daten.",
+      "ERR_ORDER": "„Bis“ muss nach „Von“ liegen.",
+      "ERR_PAST": "Ein Zeitraum darf nicht in der Vergangenheit beginnen."
+    },
+    "REVIEWS": {
+      "TITLE": "Bewertungen",
+      "COUNT": "{{count}} Bewertungen",
+      "EMPTY": "Noch keine Bewertungen.",
+      "LOADING": "Bewertungen werden geladen...",
+      "LOAD_ERROR": "Die Bewertungen konnten nicht geladen werden.",
+      "LOAD_MORE": "Mehr anzeigen",
+      "DIALOG_TITLE": "Aufenthalt bewerten",
+      "COMMENT_LABEL": "Ihr Kommentar (optional, bis 1000 Zeichen)",
+      "SUBMIT": "Bewertung senden",
+      "THANKS": "Vielen Dank, Ihre Bewertung wurde gespeichert.",
+      "SUBMIT_ERROR": "Die Bewertung konnte nicht gesendet werden."
+    },
+    "TAKEN_DOWN": {
+      "BANNER": "Die Verwaltung hat diese Anzeige gesperrt; sie ist für Besucher ausgeblendet und kann erst nach Freigabe wieder veröffentlicht werden.",
+      "REASON": "Grund: {{reason}}",
+      "SEE_REASON": "Grund anzeigen"
     }
   },
   "INVESTMENTS": {
@@ -3412,6 +3458,31 @@
     "storage-room": "Abstellraum",
     "pets-allowed": "Haustiere erlaubt",
     "wheelchair-access": "Rollstuhlgerechter Zugang"
+  },
+  "ADMIN_SHORT_STAY": {
+    "TITLE": "Verwaltung Kurzzeitmiete",
+    "SUBTITLE": "Kurzzeitmiet-Anzeigen prüfen, verstoßende Anzeigen mit Begründung sperren oder wieder freigeben.",
+    "SEARCH_PLACEHOLDER": "Nach Titel oder Stadt suchen",
+    "TAKEN_DOWN_ONLY": "Nur gesperrte",
+    "LOAD_ERROR": "Die Anzeigen konnten nicht geladen werden.",
+    "EMPTY_TITLE": "Keine Anzeigen",
+    "EMPTY_MESSAGE": "Keine Kurzzeitmiet-Anzeigen entsprechen der Suche.",
+    "PUBLISHED": "Veröffentlicht",
+    "NOT_PUBLISHED": "Nicht veröffentlicht",
+    "TAKEN_DOWN": "Von der Verwaltung gesperrt",
+    "TAKEN_DOWN_AT": "Gesperrt am {{date}}",
+    "CREATED_AT": "Erstellt am {{date}}",
+    "TAKE_DOWN": "Sperren",
+    "TAKE_DOWN_MODAL_TITLE": "Kurzzeitmiet-Anzeige sperren",
+    "TAKE_DOWN_HINT": "Die Anzeige verschwindet aus der Suche und kann vom Inhaber nicht erneut veröffentlicht werden; bestehende Buchungen bleiben. Der Inhaber wird mit der Begründung benachrichtigt.",
+    "TAKE_DOWN_REASON": "Begründung (erforderlich, bis 500 Zeichen)",
+    "TAKE_DOWN_SUCCESS": "Die Anzeige wurde gesperrt.",
+    "RESTORE": "Wiederherstellen",
+    "RESTORE_MODAL_TITLE": "Anzeige wiederherstellen",
+    "RESTORE_HINT": "Die Anzeige wird wieder veröffentlicht und der Inhaber benachrichtigt.",
+    "REASON_OPTIONAL": "Notiz (optional)",
+    "RESTORE_SUCCESS": "Die Anzeige wurde wiederhergestellt.",
+    "ACTION_ERROR": "Die Aktion konnte nicht ausgeführt werden."
   },
   "REPORT": {
     "TITLE": "Diese Anzeige melden",

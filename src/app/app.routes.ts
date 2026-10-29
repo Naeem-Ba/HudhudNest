@@ -470,6 +470,14 @@ export const routes: Routes = [
       },
 
       {
+        // إدارة الإقامات القصيرة: بحث، وإيقاف إعلان بسبب إلزامي (يراه المالك) واستعادته. Role Admin على الخادم لكل نقطة.
+        path: 'admin/short-stay',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/short-stay/admin-short-stay.page')
+            .then(m => m.AdminShortStayPage)
+      },
+      {
         // إدارة مزوّدي الخدمات: طلبات الانضمام ثم المزوّدون المعتمدون. Role Admin على الخادم لكل نقطة.
         path: 'admin/service-providers',
         canActivate: [AdminGuard],

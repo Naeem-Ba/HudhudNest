@@ -10,6 +10,16 @@
     margin-bottom: 1.5rem;
   }
 
+  &__taken-down {
+    margin: 0 0 1rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--danger, #dc2626);
+    background: var(--danger-soft, #fee2e2);
+  }
+
   &__section {
     margin-bottom: 2rem;
     padding-bottom: 1.5rem;

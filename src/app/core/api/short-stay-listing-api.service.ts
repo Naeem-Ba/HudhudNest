@@ -10,23 +10,34 @@
 //   POST   /api/short-stay/listings/room-types/{roomTypeId}/units      ← إضافة وحدة
 //   PUT    /api/short-stay/listings/room-types/{roomTypeId}/pricing-rules
 //   PUT    /api/short-stay/listings/room-types/{roomTypeId}/minimum-stay-rules
+//   GET    /api/short-stay/listings/units/{unitId}/blocks              ← فترات المضيف المحجوبة
+//   POST   /api/short-stay/listings/units/{unitId}/blocks              ← حجب فترة (409 تقاطع / 422 نطاق غير صالح)
+//   DELETE /api/short-stay/listings/units/{unitId}/blocks/{blockId}    ← فك الحجب
+//   PUT    /api/short-stay/listings/units/{unitId}/availability        ← «غير متاح حاليًا» / «متاح»
+//   GET    /api/short-stay/listings/{id}/reviews?page=&pageSize=       ← تقييمات الإعلان (anonymous)
 
+import { HttpContext } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { BackendApiService, QueryValue } from './backend-api.service';
+import { SKIP_ERROR_TOAST } from '../interceptors/api-error.interceptor';
 import { ApiPagedResult, normalizePagedResult, PagedResult, unwrapItems } from '../models/api.model';
 import {
   AccommodationTypeDto,
   AddAccommodationUnitRequest,
   AddRoomTypeRequest,
+  AddUnitBlockRequest,
   AccommodationUnitDto,
   CreateShortStayListingRequest,
   MinimumStayRuleDto,
   PricingRuleDto,
   RoomTypeDto,
   ShortStayListing,
+  ShortStayReviewItem,
+  ShortStayReviewSummary,
   ShortStayListingSearchFilter,
   ShortStayListingSummary,
+  UnitBlockDto,
   UpdateShortStayListingRequest
 } from '../models/short-stay.model';
 
@@ -118,5 +129,40 @@ export class ShortStayListingApiService {
     rules: Array<Pick<MinimumStayRuleDto, 'minimumNights' | 'dateRangeStart' | 'dateRangeEnd'>>
   ): Observable<void> {
     return this.api.put<void>(`${this.endpoint}/room-types/${roomTypeId}/minimum-stay-rules`, rules);
+  }
+
+  // ── إتاحة الوحدة (المضيف) ────────────────────────────────────────────
+  getUnitBlocks(unitId: string): Observable<UnitBlockDto[]> {
+    return this.api
+      .get<UnitBlockDto[] | ApiPagedResult<UnitBlockDto>>(`${this.endpoint}/units/${unitId}/blocks`)
+      .pipe(map(response => unwrapItems(response)));
+  }
+
+  addUnitBlock(unitId: string, request: AddUnitBlockRequest): Observable<UnitBlockDto> {
+    return this.api.post<UnitBlockDto>(`${this.endpoint}/units/${unitId}/blocks`, request);
+  }
+
+  removeUnitBlock(unitId: string, blockId: string): Observable<void> {
+    return this.api.delete<void>(`${this.endpoint}/units/${unitId}/blocks/${blockId}`);
+  }
+
+  setUnitAvailability(unitId: string, isActive: boolean): Observable<AccommodationUnitDto> {
+    return this.api.put<AccommodationUnitDto>(`${this.endpoint}/units/${unitId}/availability`, { isActive });
+  }
+
+  // ── التقييمات (عامة) ────────────────────────────────────────────────
+  /** The section on the detail page shows its own state, so a failure here must not add a toast. */
+  getReviews(listingId: string, page = 1, pageSize = 10): Observable<ShortStayReviewSummary> {
+    return this.api
+      .get<Partial<ShortStayReviewSummary> | null>(
+        `${this.endpoint}/${listingId}/reviews`,
+        { page, pageSize },
+        { context: new HttpContext().set(SKIP_ERROR_TOAST, true) }
+      )
+      .pipe(map(response => ({
+        averageRating: Number(response?.averageRating ?? 0),
+        totalCount: Number(response?.totalCount ?? response?.reviews?.length ?? 0),
+        reviews: (response?.reviews ?? []) as ShortStayReviewItem[]
+      })));
   }
 }
