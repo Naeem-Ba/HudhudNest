@@ -42,6 +42,7 @@ import { ScrollLockService } from '../../../core/services/scroll-lock.service';
 import { UrlService } from '../../../core/services/url.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { FavoriteToggleButtonComponent } from '../../../shared/ui/favorite-toggle-button.component';
+import { ReportListingButtonComponent } from '../../../shared/ui/report-listing-button.component';
 import { StructuredDataService, BREADCRUMB_JSON_LD_ID } from '../../../core/services/structured-data.service';
 import { PropertyShareUrlService } from '../../../core/sharing/property-share-url.service';
 import { PageMetaService } from '../../../core/services/page-meta.service';
@@ -67,7 +68,8 @@ import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count
     EmptyStateComponent,
     SkeletonCardGridComponent,
     ImageFallbackDirective,
-    FavoriteToggleButtonComponent
+    FavoriteToggleButtonComponent,
+    ReportListingButtonComponent
   ],
   templateUrl: './property-list.page.html',
   styleUrls: ['./property-list.page.scss']

@@ -143,6 +143,13 @@
               <!-- Social Sharing & Distribution — hides itself when the property has no usable
                    share channel (e.g. not public); see PropertyShareButtonComponent. -->
               <app-property-share-button [property]="p"></app-property-share-button>
+              <!-- Report this listing: signed-in users; the server re-checks everything. Hidden for the owner. -->
+              <app-report-listing-button
+                *ngIf="p.id"
+                [propertyId]="p.id"
+                [ownerId]="p.ownerId"
+                [listingTitle]="p.title"
+              ></app-report-listing-button>
             </div>
           </div>
 
@@ -151,8 +158,8 @@
           </div>
 
           <!-- Title -->
-          <h1 class="summary-card__title line-clamp-3">
-            {{ safe(p.title, ('PROPERTY_LIST.NO_TITLE' | translate)) }}
+          <h1 class="summary-card__title line-clamp-3" dir="auto">
+            {{ safe(displayTitle(p), ('PROPERTY_LIST.NO_TITLE' | translate)) }}
           </h1>
 
           <!-- Location -->
@@ -629,7 +636,12 @@
           <!-- Description -->
           <div class="detail-card" *ngIf="p.description">
             <h2 class="detail-card__title">{{ 'PROPERTY_DETAIL.DESCRIPTION' | translate }}</h2>
-            <p class="detail-description">{{ p.description }}</p>
+            <app-translation-notice
+              [view]="translation.view()"
+              [showOriginal]="translation.showOriginal()"
+              (toggle)="translation.toggleOriginal()"
+              (retry)="translation.retry()" />
+            <p class="detail-description" dir="auto">{{ displayDescription(p) }}</p>
           </div>
 
           <!-- Property Info -->
