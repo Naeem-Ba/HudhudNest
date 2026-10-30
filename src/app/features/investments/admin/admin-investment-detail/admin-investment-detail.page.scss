@@ -39,6 +39,7 @@
 }
 
 .section-note { color: var(--gray-500); font-size: .85rem; margin: -.5rem 0 1rem; }
+.section-note--warning { color: var(--danger, #b42318); font-weight: 600; }
 .non-guaranteed-note { color: var(--gray-500); font-size: .78rem; margin: -.6rem 0 .8rem; }
 
 .status-chip {

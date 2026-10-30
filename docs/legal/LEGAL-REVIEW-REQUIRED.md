@@ -25,6 +25,9 @@ deliberately not invented:
    no private contact data is included.
 9. **Payments / plans / refunds**: text says the Platform collects no card data today. Revisit when payments exist.
 10. **Short-stay and valuation/investment disclaimers**, listing-verification wording ("unless marked verified").
+    Investment: the new general disclaimer (`INVESTMENTS.GENERAL_DISCLAIMER`, shown on the list and at the top of a project;
+    ar/en/de, added 2026-10-29) and the button wording "Express my interest" are product wording, not legal advice.
+    Also confirm whether showing investment opportunities needs any licence or notice in the target markets.
 11. **Minimum age 18** is stated; the sign-up form has no age check beyond the consent.
 12. **German text** should be checked by a German-qualified lawyer (AGB-Recht, DSGVO terminology); Arabic by a lawyer in
     the target Arab jurisdiction(s). Translations are meaning-aligned, not literal.

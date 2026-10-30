@@ -25,6 +25,8 @@
 
     <div class="invd__layout">
       <div class="invd__main">
+        <p class="invd__disclaimer">⚠️ {{ 'INVESTMENTS.GENERAL_DISCLAIMER' | translate }}</p>
+
         <!-- Funding -->
         <section class="invd__card">
           <h2>{{ 'INVESTMENTS.DETAILS.FUNDING' | translate }}</h2>
@@ -139,18 +141,18 @@
           <form class="invd__calculator-form" (ngSubmit)="runCalculator()">
             <div class="invd__field">
               <label>{{ 'INVESTMENTS.CALCULATOR.AMOUNT' | translate }}</label>
-              <input type="number" [min]="p.minimumInvestment" [(ngModel)]="calculatorAmount" name="amount" required />
+              <input type="number" [min]="p.minimumInvestment" [max]="calculatorMaxAmount" [(ngModel)]="calculatorAmount" name="amount" required />
             </div>
             <div class="invd__field">
               <label>{{ 'INVESTMENTS.CALCULATOR.TERM_MONTHS' | translate }}</label>
-              <input type="number" min="1" [(ngModel)]="calculatorTermMonths" name="term" />
+              <input type="number" min="1" [max]="calculatorMaxTermMonths" [(ngModel)]="calculatorTermMonths" name="term" />
             </div>
             <button type="submit" class="btn btn--primary btn--sm" [disabled]="calculatorLoading()">
               {{ 'INVESTMENTS.CALCULATOR.CALCULATE' | translate }}
             </button>
           </form>
 
-          <p *ngIf="calculatorError()" class="invd__error-text">{{ calculatorError() | translate }}</p>
+          <p *ngIf="calculatorError()" class="invd__error-text">{{ calculatorError() | translate:{ maxAmount: (calculatorMaxAmount | number:'1.0-0'), maxTerm: calculatorMaxTermMonths } }}</p>
 
           <div class="invd__calculator-results" *ngIf="calculatorResult() as result">
             <div class="invd__scenario">

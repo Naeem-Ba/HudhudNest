@@ -2380,7 +2380,7 @@
       "WATCHLIST_ADDED": "Added to your watchlist.",
       "WATCHLIST_REMOVED": "Removed from your watchlist.",
       "WATCHLIST_ERROR": "Could not update your watchlist.",
-      "EXPRESS_INTEREST": "I'm interested in investing",
+      "EXPRESS_INTEREST": "Express my interest",
       "WITHDRAW_INTEREST": "Withdraw my interest",
       "INTEREST_REGISTERED": "Interest registered successfully. Our team may reach out to you — this is not a payment or commitment.",
       "INTEREST_WITHDRAWN": "Your interest has been withdrawn.",
@@ -2428,7 +2428,8 @@
       "CONSERVATIVE": "Conservative",
       "BASE": "Base",
       "OPTIMISTIC": "Optimistic",
-      "ERROR": "Could not calculate an estimate."
+      "ERROR": "Could not calculate an estimate.",
+      "RANGE_ERROR": "The amount must not exceed {{maxAmount}} and the term must not exceed {{maxTerm}} months."
     },
     "WATCHLIST": {
       "TITLE": "My Investment Watchlist",
@@ -2436,7 +2437,8 @@
       "LOAD_ERROR": "Could not load your watchlist.",
       "EMPTY_TITLE": "Your watchlist is empty",
       "EMPTY_MESSAGE": "Projects you save will appear here."
-    }
+    },
+    "GENERAL_DISCLAIMER": "The information on these pages only introduces investment opportunities. It is not investment, financial or legal advice, not a binding offer, and not a guarantee of any return. Every investment carries risk, up to the loss of part or all of the capital. Seek professional advice before deciding."
   },
   "ADMIN_INVESTMENTS": {
     "LIST": {
@@ -2455,7 +2457,8 @@
       "VIEW": "View",
       "LOAD_ERROR": "Could not load investment projects.",
       "EMPTY_TITLE": "No investment projects yet",
-      "EMPTY_MESSAGE": "Create the first investment project to get started."
+      "EMPTY_MESSAGE": "Create the first investment project to get started.",
+      "COL_INTERESTS": "Interested"
     },
     "FORM": {
       "CREATE_TITLE": "New Investment Project",
@@ -2488,7 +2491,8 @@
       "ACTION_SCHEDULE": "Schedule for publishing",
       "ACTION_PUBLISH": "Publish",
       "ACTION_SUSPEND": "Suspend",
-      "ACTION_CLOSE": "Close"
+      "ACTION_CLOSE": "Close",
+      "ACTION_RESUME": "Resume publication"
     },
     "FINANCIALS": {
       "NOTARY_COST": "Notary cost",
@@ -2519,7 +2523,7 @@
       "CONFIRM_ACTION_INTRO": "Current status: {{status}}. Confirm this action?",
       "REJECT_REASON_LABEL": "Reason (shown to the project owner)",
       "SCHEDULE_AT_LABEL": "Scheduled publish date/time (optional)",
-      "SCHEDULE_HINT": "Leave empty to allow publishing immediately once Scheduled.",
+      "SCHEDULE_HINT": "Leave empty to allow publishing immediately once Scheduled. Time is in your device's time zone. The project is published automatically when the time comes, provided the publish requirements are met.",
       "OVERVIEW_TITLE": "Overview",
       "NON_GUARANTEED_NOTE": "Expected return is indicative only — never a guarantee.",
       "FINANCIALS_TITLE": "Financials",
@@ -2543,7 +2547,25 @@
       "UPDATE_CONTENT": "Content",
       "ADD_UPDATE": "Add update",
       "UPDATE_ADDED": "Update published.",
-      "CONFIRM_DELETE": "Are you sure?"
+      "CONFIRM_DELETE": "Are you sure?",
+      "PROGRESS_TITLE": "Funding progress",
+      "PROGRESS_NOTE": "An indicative figure entered by the team; it is not calculated from any real payment. It must not exceed the target amount.",
+      "PROGRESS_LABEL": "Raised amount",
+      "PROGRESS_SAVED": "Progress updated.",
+      "PROGRESS_ERROR": "Could not update the progress.",
+      "INTERESTS_TITLE": "People interested in this project",
+      "INTERESTS_NOTE": "People who only expressed interest; no amount, no commitment. Contact them using the email or phone shown.",
+      "INTERESTS_EMPTY": "Nobody has expressed interest yet.",
+      "INTERESTS_LOAD_ERROR": "Could not load the list of interested people.",
+      "INTEREST_COL_NAME": "Name",
+      "INTEREST_COL_EMAIL": "Email",
+      "INTEREST_COL_PHONE": "Phone",
+      "INTEREST_COL_STATUS": "Status",
+      "INTEREST_COL_DATE": "Date",
+      "INTEREST_STATUS_ACTIVE": "Active",
+      "INTEREST_STATUS_WITHDRAWN": "Withdrawn",
+      "INTEREST_STATUS_CONTACTED": "Contacted",
+      "DOCUMENT_PRIVACY_WARNING": "Note: \"Private\" means not listed on the project page; it is not confidential. Anyone with the file link can open it. Do not upload sensitive documents here (IDs, signed contracts, bank details)."
     }
   },
   "LANDING": {
