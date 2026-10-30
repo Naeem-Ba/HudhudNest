@@ -361,6 +361,11 @@
               {{ 'NAVBAR.FAVORITES' | translate }}
             </a>
 
+            <a routerLink="/my-reports" routerLinkActive="account__item--active" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+              <span aria-hidden="true">🚩</span>
+              {{ 'NAVBAR.MY_REPORTS' | translate }}
+            </a>
+
             <a routerLink="/messages" routerLinkActive="account__item--active" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
               <span aria-hidden="true">💬</span>
               {{ 'NAVBAR.MY_MESSAGES' | translate }}
@@ -627,6 +632,10 @@
           {{ 'NAVBAR.FAVORITES' | translate }}
         </a>
 
+        <a routerLink="/my-reports" routerLinkActive="mobile-drawer__link--active" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
+          {{ 'NAVBAR.MY_REPORTS' | translate }}
+        </a>
+
         <!-- ✅ إضافة: نفس جرس الإشعارات بنسخة القائمة الجانبية للجوال -->
         <a routerLink="/notifications" routerLinkActive="mobile-drawer__link--active" ariaCurrentWhenActive="page" class="mobile-drawer__link mobile-drawer__link--notif" (click)="closeMobileMenu()">
           <span>{{ 'NAVBAR.NOTIFICATIONS' | translate }}</span>
@@ -835,6 +844,7 @@
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/services', label: 'NAVBAR.ADMIN_SERVICES', icon: '📈' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/short-stay', label: 'NAVBAR.ADMIN_SHORT_STAY', icon: '🏡' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/service-providers', label: 'NAVBAR.ADMIN_SERVICE_PROVIDERS', icon: '🧰' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/listing-reports', label: 'NAVBAR.ADMIN_LISTING_REPORTS', icon: '🚩' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/payment-requests', label: 'NAVBAR.ADMIN_PAYMENT_REQUESTS', icon: '💳' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/investments', label: 'NAVBAR.ADMIN_INVESTMENTS', icon: '💼' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/location-suggestions', label: 'NAVBAR.ADMIN_LOCATION_SUGGESTIONS', icon: '📍' }"></ng-container>
