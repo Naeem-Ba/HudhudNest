@@ -2429,7 +2429,9 @@
       "BASE": "Base",
       "OPTIMISTIC": "Optimistic",
       "ERROR": "Could not calculate an estimate.",
-      "RANGE_ERROR": "The amount must not exceed {{maxAmount}} and the term must not exceed {{maxTerm}} months."
+      "RANGE_ERROR": "The amount must not exceed {{maxAmount}} and the term must not exceed {{maxTerm}} months.",
+      "BELOW_PROJECT_MIN": "The amount is below this project's minimum investment ({{minAmount}}).",
+      "ABOVE_PROJECT_MAX": "The amount is above this project's maximum investment ({{projectMax}})."
     },
     "WATCHLIST": {
       "TITLE": "My Investment Watchlist",

@@ -129,6 +129,16 @@ export class AdminInvestmentDetailPage implements OnInit {
   selectedDocumentType: InvestmentDocumentType = 'ProjectPlan';
   documentIsPublic = false;
 
+  /** Mirror of the API's plausible start-date window (P10-D09): 5 years back, 10 years ahead. */
+  readonly startDateMin = AdminInvestmentDetailPage.isoDateFromToday(-5);
+  readonly startDateMax = AdminInvestmentDetailPage.isoDateFromToday(10);
+
+  private static isoDateFromToday(years: number): string {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() + years);
+    return d.toISOString().slice(0, 10);
+  }
+
   readonly overviewForm = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.maxLength(200)]],
     shortDescription: ['', [Validators.maxLength(300)]],

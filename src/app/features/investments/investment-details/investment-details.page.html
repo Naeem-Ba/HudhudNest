@@ -152,7 +152,7 @@
             </button>
           </form>
 
-          <p *ngIf="calculatorError()" class="invd__error-text">{{ calculatorError() | translate:{ maxAmount: (calculatorMaxAmount | number:'1.0-0'), maxTerm: calculatorMaxTermMonths } }}</p>
+          <p *ngIf="calculatorError()" class="invd__error-text">{{ calculatorError() | translate:calculatorErrorParams() }}</p>
 
           <div class="invd__calculator-results" *ngIf="calculatorResult() as result">
             <div class="invd__scenario">

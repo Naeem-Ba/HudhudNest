@@ -2429,7 +2429,9 @@
       "BASE": "Basis",
       "OPTIMISTIC": "Optimistisch",
       "ERROR": "Schätzung konnte nicht berechnet werden.",
-      "RANGE_ERROR": "Der Betrag darf {{maxAmount}} und die Laufzeit {{maxTerm}} Monate nicht überschreiten."
+      "RANGE_ERROR": "Der Betrag darf {{maxAmount}} und die Laufzeit {{maxTerm}} Monate nicht überschreiten.",
+      "BELOW_PROJECT_MIN": "Der Betrag liegt unter der Mindestanlage dieses Projekts ({{minAmount}}).",
+      "ABOVE_PROJECT_MAX": "Der Betrag liegt über der Höchstanlage dieses Projekts ({{projectMax}})."
     },
     "WATCHLIST": {
       "TITLE": "Meine Investment-Merkliste",
