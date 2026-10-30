@@ -179,6 +179,7 @@
                 </svg>
                 {{ p.area }} {{ 'COMMON.area_unit' | translate }}
               </span>
+              <app-listing-view-count class="card-views" [compact]="true" [count]="p.viewCount"></app-listing-view-count>
             </div>
             <p class="prop-card__price">
               {{ getPrice(p) }}

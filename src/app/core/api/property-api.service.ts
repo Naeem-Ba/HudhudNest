@@ -291,12 +291,20 @@ export class PropertyApiService {
         id: image['id'] === undefined || image['id'] === null ? undefined : String(image['id']),
         url: String(image['url'] ?? ''),
         isMain: Boolean(image['isMain']),
-        altText: image['altText'] === undefined || image['altText'] === null ? undefined : String(image['altText'])
+        altText: image['altText'] === undefined || image['altText'] === null ? undefined : String(image['altText']),
+        sortOrder: typeof image['sortOrder'] === 'number' ? image['sortOrder'] : undefined
       }))
       .filter(image => !!image.url);
 
+    if (normalized.some(image => image.sortOrder !== undefined)) {
+      normalized.sort((left, right) =>
+        (left.sortOrder ?? Number.MAX_SAFE_INTEGER) - (right.sortOrder ?? Number.MAX_SAFE_INTEGER)
+      );
+    }
+
     const mainImageUrl = property['mainImageUrl'];
-    if (typeof mainImageUrl === 'string' && mainImageUrl.trim()) {
+    if (typeof mainImageUrl === 'string' && mainImageUrl.trim()
+      && !normalized.some(image => image.url === mainImageUrl)) {
       normalized.unshift({ url: mainImageUrl, isMain: true });
     }
 

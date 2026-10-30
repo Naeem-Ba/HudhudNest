@@ -47,6 +47,10 @@
     overflow: hidden;
     background: rgba(255,255,255,.08);
     user-select: none;
+    touch-action: pan-y pinch-zoom;
+    cursor: grab;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
 
     &--zoom { cursor: zoom-in; }
   }
@@ -62,6 +66,8 @@
     object-fit: contain;
     object-position: center;
     transition: transform .3s ease;
+    pointer-events: none;
+    -webkit-user-drag: none;
   }
 
   &__arrow {
@@ -187,6 +193,28 @@
     flex-wrap: wrap;
     align-items: center;
     gap: .5rem;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  /* Header row: badges lead, the icon pair trails. space-between + logical flow = mirrored in RTL;
+     wrap keeps the pair on its own line, still at the trailing edge, when the badges are wide. */
+  &__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem .75rem;
+    --icon-btn-size: 44px;
+  }
+
+  /* One group, one size, one gap: both buttons are the same 44px circle (a real touch target). */
+  &__quick {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    flex: none;
+    margin-inline-start: auto;
   }
 
   &__title {
@@ -570,6 +598,23 @@
   padding: 2rem;
 }
 
+.map-external-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin-top: .75rem;
+  padding-inline: .9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover { background: var(--gray-50); }
+  &:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+}
+
 /* ── Lightbox ── */
 .lightbox {
   position: fixed;
@@ -605,6 +650,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    touch-action: pan-y pinch-zoom;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   &__img {
@@ -612,6 +660,8 @@
     max-height: 85vh;
     border-radius: var(--r-md);
     object-fit: contain;
+    pointer-events: none;
+    -webkit-user-drag: none;
     box-shadow: 0 20px 60px rgba(0,0,0,.5);
   }
 
@@ -650,6 +700,15 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .gallery__img,
+  .gallery__arrow,
+  .lightbox__nav,
+  .lightbox__close {
+    transition-duration: 0.01ms !important;
+  }
+}
+
 .lightbox-overlay {
   position: fixed;
   inset: 0;
@@ -674,15 +733,6 @@
 }
 
 /* زر المفضلة داخل شريط إجراءات صفحة التفاصيل */
-.detail-fav-btn {
-  display: inline-flex;
-  align-self: center;
-}
-
-/* Favorite + Share share one circular size here (44px touch target). */
-.summary-card__actions {
-  --icon-btn-size: 44px;
-}
 
 /* بطاقة المكتب العقاري */
 .agency-card__body {

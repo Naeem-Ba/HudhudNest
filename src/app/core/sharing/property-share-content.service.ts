@@ -6,24 +6,24 @@
 // every provider gets the same ShareableContent from here, so a WhatsApp message and a
 // Telegram message never drift apart.
 //
-// Content stays Arabic-first, matching how the rest of property-detail.page.html already
-// renders property facts today (e.g. "🏡 شرفة" / "🛗 مصعد" are hardcoded Arabic, not run
-// through TranslateModule) — this is what actually gets sent to WhatsApp/Telegram, i.e. it
-// travels with the listing, not with the visitor's UI language. The share SHEET around it
-// (buttons, aria-labels, toasts) is fully translated separately — see
-// PropertyShareButtonComponent.
+// The message follows the sender's UI language (ar / en / de) through the app's own translation
+// keys (SHARE.MSG.*). It used to be hard-coded Arabic, so someone sharing from the German or English
+// UI sent an Arabic sentence. The listing's own title/description are still sent as written.
 // =============================================================
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 import { Property } from '../models/property.model';
 import { PropertyShareUrlService } from './property-share-url.service';
-import { ShareableContent } from './share.model';
+import { ShareableContent, SharePreview } from './share.model';
 import { uiNumberLocale } from '../i18n/ui-language';
 
 const MAX_SUMMARY_LENGTH = 160;
 
 @Injectable({ providedIn: 'root' })
 export class PropertyShareContentService {
+  private readonly translate = inject(TranslateService);
+
   constructor(private readonly shareUrl: PropertyShareUrlService) {}
 
   /**
@@ -44,11 +44,31 @@ export class PropertyShareContentService {
 
     const title = this.buildTitle(property);
     const summary = this.buildSummary(property);
+    const viewOn = this.translate.instant('SHARE.MSG.VIEW_ON');
     const text = summary
-      ? `${title}\n${summary}\nشاهد الإعلان على هدهد نيست:\n${url}`
-      : `${title}\nشاهد الإعلان على هدهد نيست:\n${url}`;
+      ? `${title}\n${summary}\n${viewOn}\n${url}`
+      : `${title}\n${viewOn}\n${url}`;
 
     return { title, text, url };
+  }
+
+  /**
+   * What the share sheet shows above the options: public facts only (title, one price line, location,
+   * first photo). Never the owner's name, phone or e-mail.
+   */
+  buildPreview(property: Property): SharePreview {
+    const image = property.images?.find(img => img.isMain && img.url)?.url
+      ?? property.images?.find(img => !!img.url)?.url
+      ?? property.mainImageUrl
+      ?? property.imageUrls?.[0]
+      ?? null;
+
+    return {
+      title: this.buildTitle(property),
+      price: this.formatPrice(property),
+      location: [property.city?.trim(), property.region?.trim()].filter(Boolean).join('، ') || null,
+      imageUrl: image
+    };
   }
 
   /** Short OG/Twitter description (independent of the WhatsApp/Telegram message above, but
@@ -68,19 +88,23 @@ export class PropertyShareContentService {
     // rather than sharing an empty string.
     const mode = this.listingModeLabel(property);
     const city = property.city?.trim();
-    return city ? `عقار ${mode} في ${city}` : `عقار ${mode}`;
+    return city
+      ? this.translate.instant('SHARE.MSG.FALLBACK_TITLE_CITY', { mode, city })
+      : this.translate.instant('SHARE.MSG.FALLBACK_TITLE', { mode });
   }
 
   private buildSummary(property: Property): string {
     const parts: string[] = [];
 
     if (property.area) {
-      const unit = property.areaUnit === 'SquareMeter' || !property.areaUnit ? 'م²' : property.areaUnit;
+      const unit = property.areaUnit === 'SquareMeter' || !property.areaUnit
+        ? this.translate.instant('COMMON.area_unit')
+        : property.areaUnit;
       parts.push(`${this.formatNumber(property.area)} ${unit}`);
     }
 
     if (property.rooms) {
-      parts.push(`${this.formatNumber(property.rooms)} غرف`);
+      parts.push(this.translate.instant('SHARE.MSG.ROOMS', { count: this.formatNumber(property.rooms) }));
     }
 
     const price = this.formatPrice(property);
@@ -100,10 +124,10 @@ export class PropertyShareContentService {
 
   private listingModeLabel(property: Property): string {
     switch (property.listingType) {
-      case 'ForSale': return 'للبيع';
-      case 'ForRentAndSale': return 'للبيع أو الإيجار';
+      case 'ForSale': return this.translate.instant('SHARE.MSG.MODE_SALE');
+      case 'ForRentAndSale': return this.translate.instant('SHARE.MSG.MODE_BOTH');
       case 'ForRent':
-      default: return 'للإيجار';
+      default: return this.translate.instant('SHARE.MSG.MODE_RENT');
     }
   }
 

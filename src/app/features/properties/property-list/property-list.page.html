@@ -199,7 +199,7 @@
               *ngFor="let amenity of amenities()"
               [class.amenity-chip--active]="isAmenitySelected(amenity.id)"
               (click)="toggleAmenityFilter(amenity.id)"
-            >{{ amenity.name }}</button>
+            >{{ amenity | amenityLabel }}</button>
           </div>
         </div>
 
@@ -285,8 +285,8 @@
         class="properties-grid"
         *ngIf="!loading() && !error() && properties().length > 0"
       >
+        <ng-container *ngFor="let property of properties(); trackBy: trackById; let i = index">
         <a
-          *ngFor="let property of properties(); trackBy: trackById"
           [routerLink]="['/properties', property.id]"
           class="property-card"
           [class.property-card--featured]="property.isFeatured"
@@ -330,6 +330,14 @@
               class="fav-btn-wrapper"
               [propertyId]="property.id!"
             ></app-favorite-toggle-button>
+            <!-- Report: a small, quiet button at the opposite corner, so the card stays uncluttered. -->
+            <app-report-listing-button
+              class="report-btn-wrapper"
+              variant="compact"
+              [propertyId]="property.id!"
+              [ownerId]="property.ownerId"
+              [listingTitle]="property.title"
+            ></app-report-listing-button>
           </div>
 
           <!-- Body -->
@@ -350,6 +358,7 @@
               <span *ngIf="property.area">
                 📐 {{ property.area }} {{ 'COMMON.area_unit' | translate }}
               </span>
+              <app-listing-view-count class="card-views" [compact]="true" [count]="property.viewCount"></app-listing-view-count>
             </div>
             <div class="property-card__footer">
               <span class="property-card__price">
@@ -361,6 +370,9 @@
             </div>
           </div>
         </a>
+        <!-- Monetization: one labelled slot after the 10th card; renders nothing unless every ads layer allows it. -->
+        <app-ad-slot *ngIf="i === 9" class="properties-grid__ad" placement="search-results" />
+        </ng-container>
       </div>
 
       <!-- Pagination -->

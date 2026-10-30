@@ -6,7 +6,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { ShortStayListingApiService } from '../../../core/api/short-stay-listing-api.service';
 import { ToastService } from '../../../shared/services/toast.service';
-import { ShortStayListingSummary } from '../../../core/models/short-stay.model';
+import { ShortStayListingSummary, canPublishShortStay } from '../../../core/models/short-stay.model';
+import { apiErrorText } from '../../../core/api/api-error-text';
 import { EmptyStateComponent } from '../../../shared/ui/empty-state.component';
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
 
@@ -52,7 +53,18 @@ export class MyShortStayListingsPage implements OnInit {
     this.router.navigate(['/short-stay/manage', id]);
   }
 
+  /** Publishing is refused (409) for a listing an administrator took down; the owner sees the notice instead. */
+  canPublish(listing: ShortStayListingSummary): boolean {
+    return canPublishShortStay(listing);
+  }
+
+  /** The button flips publication: unpublishing is always possible, publishing only when not taken down. */
+  canToggle(listing: ShortStayListingSummary): boolean {
+    return listing.isPublished || this.canPublish(listing);
+  }
+
   togglePublish(listing: ShortStayListingSummary): void {
+    if (!this.canToggle(listing)) return;
     this.togglingId.set(listing.id);
     const action$ = listing.isPublished ? this.api.unpublish(listing.id) : this.api.publish(listing.id);
 
@@ -63,9 +75,9 @@ export class MyShortStayListingsPage implements OnInit {
         this.togglingId.set(null);
         this.toast.show(this.translate.instant('SHORTSTAY.MY_LISTINGS.TOGGLE_SUCCESS'), 'success');
       },
-      error: () => {
+      error: err => {
         this.togglingId.set(null);
-        this.toast.show(this.translate.instant('SHORTSTAY.MY_LISTINGS.TOGGLE_ERROR'), 'error');
+        this.toast.show(apiErrorText(err) ?? this.translate.instant('SHORTSTAY.MY_LISTINGS.TOGGLE_ERROR'), 'error');
       }
     });
   }

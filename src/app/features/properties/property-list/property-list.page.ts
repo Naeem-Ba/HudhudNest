@@ -42,6 +42,7 @@ import { ScrollLockService } from '../../../core/services/scroll-lock.service';
 import { UrlService } from '../../../core/services/url.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { FavoriteToggleButtonComponent } from '../../../shared/ui/favorite-toggle-button.component';
+import { ReportListingButtonComponent } from '../../../shared/ui/report-listing-button.component';
 import { StructuredDataService, BREADCRUMB_JSON_LD_ID } from '../../../core/services/structured-data.service';
 import { PropertyShareUrlService } from '../../../core/sharing/property-share-url.service';
 import { PageMetaService } from '../../../core/services/page-meta.service';
@@ -50,12 +51,18 @@ import { isReservedListing } from '../../../shared/utils/listing-status';
 import { CurrencyRatesService } from '../../../core/pricing/currency-rates.service';
 import { isMarketCurrency } from '../../../core/pricing/market-currencies';
 import { PreferencesService } from '../../../core/services/preferences.service';
+import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
+import { AdSlotComponent } from '../../../core/ads/ad-slot.component';
+import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count.component';
 
 @Component({
   selector: 'app-property-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AdSlotComponent,
+    ListingViewCountComponent,
+    AmenityLabelPipe,
     CommonModule,
     RouterModule,
     FormsModule,
@@ -63,7 +70,8 @@ import { PreferencesService } from '../../../core/services/preferences.service';
     EmptyStateComponent,
     SkeletonCardGridComponent,
     ImageFallbackDirective,
-    FavoriteToggleButtonComponent
+    FavoriteToggleButtonComponent,
+    ReportListingButtonComponent
   ],
   templateUrl: './property-list.page.html',
   styleUrls: ['./property-list.page.scss']

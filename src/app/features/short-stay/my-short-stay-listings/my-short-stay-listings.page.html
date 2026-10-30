@@ -27,13 +27,20 @@
         <span class="msl__status" [class.msl__status--published]="listing.isPublished">
           {{ (listing.isPublished ? 'SHORTSTAY.MY_LISTINGS.PUBLISHED' : 'SHORTSTAY.MY_LISTINGS.DRAFT') | translate }}
         </span>
+        <!-- أوقفته الإدارة: لا يمكن نشره حتى تُعيده؛ التفاصيل والسبب داخل صفحة التعديل -->
+        <p class="msl__taken-down" role="alert" data-testid="taken-down-note" *ngIf="listing.isTakenDown">
+          🚫 {{ 'SHORTSTAY.TAKEN_DOWN.BANNER' | translate }}
+          <a [routerLink]="['/short-stay/manage', listing.id]">{{ 'SHORTSTAY.TAKEN_DOWN.SEE_REASON' | translate }}</a>
+        </p>
       </div>
       <div class="msl__actions">
         <button type="button" class="btn btn--sm btn--outline" (click)="edit(listing.id)">
           {{ 'SHORTSTAY.MY_LISTINGS.EDIT' | translate }}
         </button>
         <button
+          *ngIf="canToggle(listing)"
           type="button"
+          data-testid="publish-toggle"
           class="btn btn--sm"
           [class.btn--primary]="!listing.isPublished"
           [class.btn--outline]="listing.isPublished"

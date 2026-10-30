@@ -1,3 +1,5 @@
+import { Capacitor } from '@capacitor/core';
+import { environment } from '../../../environments/environment';
 import { TranslateService } from '@ngx-translate/core';
 
 import { AuthApiService } from './auth-api.service';
@@ -24,5 +26,20 @@ describe('SocialAuthService.getSocialErrorMessage', () => {
   it('falls back to the status-based keys', () => {
     expect(service.getSocialErrorMessage({ status: 401 })).toBe('AUTH.ERRORS.SOCIAL_TOKEN_REJECTED');
     expect(service.getSocialErrorMessage({})).toBe('AUTH.ERRORS.SOCIAL_GENERIC_FAILED');
+  });
+});
+
+describe('SocialAuthService.isAppleAvailable (launch audit A7-001)', () => {
+  const translate = { instant: (key: string) => key } as unknown as TranslateService;
+  const service = new SocialAuthService({} as AuthApiService, translate);
+
+  it('is never offered on the Android app, where the Apple plugin has no implementation', () => {
+    spyOn(Capacitor, 'getPlatform').and.returnValue('android');
+    expect(service.isAppleAvailable).toBeFalse();
+  });
+
+  it('follows the configured client id on the web', () => {
+    spyOn(Capacitor, 'getPlatform').and.returnValue('web');
+    expect(service.isAppleAvailable).toBe(Boolean(environment.appleClientId?.trim()));
   });
 });

@@ -8,6 +8,15 @@ const content: ShareableContent = {
   url: 'https://hudhudnest.com/properties/1'
 };
 
+/** Captures the link the provider hands over (the anchor click) without navigating anywhere. */
+function captureLink(): { href: () => string | null } {
+  let href: string | null = null;
+  spyOn(HTMLAnchorElement.prototype, 'click').and.callFake(function (this: HTMLAnchorElement) {
+    href = this.href;
+  });
+  return { href: () => href };
+}
+
 describe('WhatsAppShareProvider', () => {
   let provider: WhatsAppShareProvider;
 
@@ -19,35 +28,35 @@ describe('WhatsAppShareProvider', () => {
   it('declares the WhatsApp platform', () => {
     expect(provider.platform).toBe(SharePlatform.WhatsApp);
   });
-
-  it('opens wa.me with the full message URL-encoded as `text`', async () => {
-    const openSpy = spyOn(window, 'open').and.returnValue({} as Window);
+  it('hands the share link over by an anchor click and never trusts window.open', async () => {
+    const openSpy = spyOn(window, 'open');
+    const link = captureLink();
 
     const result = await provider.share(content);
 
-    expect(openSpy).toHaveBeenCalledWith(
-      `https://wa.me/?text=${encodeURIComponent(content.text)}`,
-      '_blank',
-      'noopener,noreferrer'
-    );
+    expect(openSpy).not.toHaveBeenCalled();
+    expect(link.href()).toContain('wa.me');
+    expect(decodeURIComponent(link.href() ?? '')).toContain(content.text);
     expect(result.success).toBeTrue();
   });
 
-  it('includes the canonical URL inside the encoded text (WhatsApp has no separate url param)', async () => {
-    spyOn(window, 'open').and.callFake((url?: string | URL) => {
-      expect(decodeURIComponent(String(url))).toContain(content.url);
-      return {} as Window;
-    });
+  it('does NOT report a pop-up failure for a normal share (the old noopener false error)', async () => {
+    captureLink();
 
-    await provider.share(content);
+    const result = await provider.share(content);
+
+    expect(result.success).toBeTrue();
+    expect(result.errorCode).toBeUndefined();
+    expect(result.message).toBeUndefined();
   });
 
-  it('reports a failure result when the popup is blocked', async () => {
-    spyOn(window, 'open').and.returnValue(null);
+  it('reports a real failure only when the hand-over itself throws', async () => {
+    spyOn(HTMLAnchorElement.prototype, 'click').and.throwError('blocked');
 
     const result = await provider.share(content);
 
     expect(result.success).toBeFalse();
-    expect(result.errorCode).toBe('POPUP_BLOCKED');
+    expect(result.errorCode).toBe('OPEN_FAILED');
+    expect(result.message).toBe('SHARE.ERROR_OPEN_FAILED');
   });
 });

@@ -10,6 +10,16 @@
     margin-bottom: 1.5rem;
   }
 
+  &__taken-down {
+    margin: 0 0 1rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--danger, #dc2626);
+    background: var(--danger-soft, #fee2e2);
+  }
+
   &__section {
     margin-bottom: 2rem;
     padding-bottom: 1.5rem;
@@ -177,3 +187,16 @@
 }
 
 .ssf__map .ssf__error { margin-top: 0.5rem; }
+
+.ssf__link-btn {
+  border: 0; background: none; padding: 0 .35rem; min-height: 0;
+  color: var(--primary-text, var(--navy)); font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer;
+}
+
+.ssf__camera-btn {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin-top: 8px; padding: 0 14px;
+  border: 1px solid var(--border); border-radius: var(--r-md, 12px); background: var(--surface);
+  color: var(--gold-dark, var(--navy)); font-weight: 700; cursor: pointer;
+}
+.ssf__camera-btn:disabled { opacity: .6; cursor: default; }
+.ssf__camera-btn:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }

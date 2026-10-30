@@ -13,12 +13,14 @@ import { ImageFallbackDirective } from '../../../shared/directives/image-fallbac
 import { DateRangePickerComponent, DateRangeValue } from '../../../shared/ui/date-range-picker.component';
 import { PageMetaService } from '../../../core/services/page-meta.service';
 import { uiNumberLocale } from '../../../core/i18n/ui-language';
+import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count.component';
 
 @Component({
   selector: 'app-short-stay-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    ListingViewCountComponent,
     CommonModule,
     RouterModule,
     FormsModule,

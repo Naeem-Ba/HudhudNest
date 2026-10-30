@@ -86,6 +86,9 @@
 
           <dt>{{ 'PROPERTY_DETAIL.ROOMS' | translate }}</dt>
           <dd>{{ p.rooms ?? '—' }}</dd>
+
+          <dt>{{ 'VIEW_COUNT.LABEL' | translate }}</dt>
+          <dd><app-listing-view-count [count]="p.viewCount"></app-listing-view-count></dd>
         </dl>
 
         <!-- التمييز المدفوع: المالك دفع ثمنه، فيجب أن يرى ما اشتراه ومتى ينتهي.

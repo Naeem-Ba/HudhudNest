@@ -51,6 +51,42 @@
     </div>
   </section>
 
+  <!-- ── Progress after the editing stage (P10-D12) ───────── -->
+  <section class="card" *ngIf="canEditProgress()">
+    <h2>{{ 'ADMIN_INVESTMENTS.DETAIL.PROGRESS_TITLE' | translate }}</h2>
+    <p class="section-note">{{ 'ADMIN_INVESTMENTS.DETAIL.PROGRESS_NOTE' | translate }}</p>
+    <form class="form" (ngSubmit)="saveProgress()">
+      <div class="field">
+        <label for="progress-raised">{{ 'ADMIN_INVESTMENTS.DETAIL.PROGRESS_LABEL' | translate }}</label>
+        <input id="progress-raised" type="number" step="0.01" min="0" name="progressRaised" [(ngModel)]="progressRaisedAmount" />
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn--primary" [disabled]="savingProgress()">
+          {{ savingProgress() ? ('COMMON.SAVING' | translate) : ('COMMON.SAVE' | translate) }}
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ── Interested people (P10-D01) ──────────────────────── -->
+  <section class="card">
+    <h2>{{ 'ADMIN_INVESTMENTS.DETAIL.INTERESTS_TITLE' | translate }} ({{ interests().length }})</h2>
+    <p class="section-note">{{ 'ADMIN_INVESTMENTS.DETAIL.INTERESTS_NOTE' | translate }}</p>
+    <p class="empty-note" *ngIf="interestsError()">{{ 'ADMIN_INVESTMENTS.DETAIL.INTERESTS_LOAD_ERROR' | translate }}</p>
+    <p class="empty-note" *ngIf="!interestsError() && interests().length === 0">{{ 'ADMIN_INVESTMENTS.DETAIL.INTERESTS_EMPTY' | translate }}</p>
+    <ul class="document-list" *ngIf="interests().length > 0">
+      <li *ngFor="let item of interests(); trackBy: trackByInterestId">
+        <span class="doc-name">{{ item.userName }}</span>
+        <span class="doc-type">{{ item.email || '—' }}</span>
+        <span class="doc-type" dir="ltr">{{ item.phoneNumber || '—' }}</span>
+        <span class="visibility-chip" [class.visibility-chip--public]="item.status === 'Active'">
+          {{ interestStatusKey(item.status) | translate }}
+        </span>
+        <span class="doc-type">{{ item.createdAt | date:'mediumDate' }}</span>
+      </li>
+    </ul>
+  </section>
+
   <!-- ── Overview / edit ──────────────────────────────────── -->
   <section class="card">
     <h2>{{ 'ADMIN_INVESTMENTS.DETAIL.OVERVIEW_TITLE' | translate }}</h2>
@@ -134,7 +170,7 @@
       <div class="field-row">
         <div class="field">
           <label for="ov-start">{{ 'ADMIN_INVESTMENTS.FORM.START_DATE' | translate }}</label>
-          <input id="ov-start" type="date" formControlName="startDate" />
+          <input id="ov-start" type="date" formControlName="startDate" [min]="startDateMin" [max]="startDateMax" />
         </div>
         <div class="field">
           <label for="ov-end">{{ 'ADMIN_INVESTMENTS.FORM.END_DATE' | translate }}</label>
@@ -288,6 +324,8 @@
   <!-- ── Documents ────────────────────────────────────────── -->
   <section class="card">
     <h2>{{ 'ADMIN_INVESTMENTS.DETAIL.DOCUMENTS_TITLE' | translate }}</h2>
+
+    <p class="section-note section-note--warning">⚠️ {{ 'ADMIN_INVESTMENTS.DETAIL.DOCUMENT_PRIVACY_WARNING' | translate }}</p>
 
     <div class="upload-row">
       <input type="file" (change)="onFileSelected($event)" accept=".pdf,.png,.jpg,.jpeg" />

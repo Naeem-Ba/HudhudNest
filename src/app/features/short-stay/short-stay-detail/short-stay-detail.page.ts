@@ -13,6 +13,8 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import {
   AccommodationUnitDto,
+  INSTANT_BOOKING_MAX_ADVANCE_DAYS,
+  INSTANT_BOOKING_MAX_NIGHTS,
   PaymentMethod,
   PricingBreakdown,
   RoomTypeDto,
@@ -22,6 +24,15 @@ import {
 import { DateRangePickerComponent, DateRangeValue } from '../../../shared/ui/date-range-picker.component';
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
 import { PageMetaService } from '../../../core/services/page-meta.service';
+import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
+import { apiErrorText } from '../../../core/api/api-error-text';
+import { ListingTranslationService } from '../../../core/api/listing-translation.service';
+import { ListingTranslationController } from '../../property-detail/listing-translation.controller';
+import { TranslationNoticeComponent } from '../../property-detail/translation-notice.component';
+import { mergeViewCount } from '../../../shared/utils/view-count';
+import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count.component';
+import { ListingViewTrackingService } from '../../../core/listing-views/listing-view-tracking.service';
+import { ShortStayReviewsSectionComponent } from '../short-stay-reviews-section/short-stay-reviews-section.component';
 
 // حالات UnitBookingRange التي تُعتبر فعلياً "محجوزة" أمام ضيف جديد. Pending
 // مستثناة عمداً — طلبات متعددة يمكن أن تتنافس على نفس التاريخ إلى أن يختار
@@ -31,7 +42,7 @@ const BLOCKING_STATUSES = new Set(['Reserved', 'CheckedIn', 'Blocked']);
 @Component({
   selector: 'app-short-stay-detail-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, DateRangePickerComponent, ImageFallbackDirective],
+  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, DateRangePickerComponent, ImageFallbackDirective, AmenityLabelPipe, ShortStayReviewsSectionComponent, ListingViewCountComponent, TranslationNoticeComponent],
   templateUrl: './short-stay-detail.page.html',
   styleUrls: ['./short-stay-detail.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -47,11 +58,27 @@ export class ShortStayDetailPage implements OnInit {
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly pageMeta = inject(PageMetaService);
+  private readonly listingViews = inject(ListingViewTrackingService);
+
+  /** The total from the last POST .../views, when it is newer than the one in the loaded listing. */
+  readonly liveViewCount = signal<number | null>(null);
 
   readonly listing = signal<ShortStayListing | null>(null);
+
+  // Automatic translation of title/description: additive, the original text always renders first.
+  readonly translation = new ListingTranslationController(inject(ListingTranslationService));
+  displayTitle(l: ShortStayListing): string {
+    return (!this.translation.showOriginal() && this.translation.title()) || l.title;
+  }
+  displayDescription(l: ShortStayListing): string {
+    return (!this.translation.showOriginal() && this.translation.description()) || l.description;
+  }
+
   readonly loading = signal(false);
   readonly error = signal('');
   readonly fallbackImage = '/images/no-image.svg';
+  /** Values for the instant-booking hint; the API enforces the same limits (400/409 with its own message). */
+  readonly instantLimits = { days: INSTANT_BOOKING_MAX_ADVANCE_DAYS, nights: INSTANT_BOOKING_MAX_NIGHTS };
 
   readonly blockedRanges = signal<Array<{ checkIn: string; checkOut: string }>>([]);
   private readonly allAmenities = signal<LookupAmenity[]>([]);
@@ -100,7 +127,13 @@ export class ShortStayDetailPage implements OnInit {
   });
 
   ngOnInit(): void {
-    this.destroyRef.onDestroy(() => this.pageMeta.clear());
+    this.destroyRef.onDestroy(() => { this.pageMeta.clear(); this.translation.reset(); });
+    this.translate.onLangChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(event => {
+        const current = this.listing();
+        if (current) this.translation.start(current.id, event.lang as 'ar' | 'de' | 'en', 'short-stay');
+      });
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) { this.error.set('SHORTSTAY.DETAIL.NOT_FOUND'); this.pageMeta.markNotFound(); return; }
     this.load(id);
@@ -113,13 +146,16 @@ export class ShortStayDetailPage implements OnInit {
   private load(id: string): void {
     this.loading.set(true);
     this.error.set('');
+    this.liveViewCount.set(null);
 
     this.listingsApi.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: listing => {
         this.listing.set(listing);
+        this.translation.start(listing.id, (this.translate.currentLang || 'ar') as 'ar' | 'de' | 'en', 'short-stay');
         this.pageMeta.applyDynamic({ title: listing.title, description: listing.description, path: `/short-stay/${listing.id}` });
         this.loading.set(false);
         this.loadAvailability();
+        this.recordView(listing.id);
       },
       error: (err: unknown) => {
         this.error.set('SHORTSTAY.DETAIL.LOAD_ERROR');
@@ -130,6 +166,23 @@ export class ShortStayDetailPage implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  /** View counter: the detail page is on screen, so tell the server once (never blocks or surfaces an error). */
+  private recordView(listingId: string): void {
+    this.listingViews
+      .record('shortstay', listingId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(result => {
+        if (result && this.listing()?.id === listingId) {
+          this.liveViewCount.set(result.viewCount);
+        }
+      });
+  }
+
+  /** The number to show: the loaded listing's, or the newer total the server returned when the view was recorded. */
+  viewCountOf(listing: ShortStayListing): number | null {
+    return mergeViewCount(listing.viewCount, this.liveViewCount());
   }
 
   private loadAvailability(): void {
@@ -217,10 +270,12 @@ export class ShortStayDetailPage implements OnInit {
       },
       error: err => {
         this.submitting.set(false);
+        // The API explains a refusal in Arabic (instant-booking limits, dates taken, ...); show that
+        // sentence, and only fall back to the generic text when it sent none.
         const message = err?.status === 409
           ? 'SHORTSTAY.DETAIL.BOOKING_CONFLICT'
           : 'SHORTSTAY.DETAIL.BOOKING_ERROR';
-        this.toast.show(this.translate.instant(message), 'error');
+        this.toast.show(apiErrorText(err) ?? this.translate.instant(message), 'error');
         // التواريخ لم تعد متاحة على الأرجح — أعد تحميل التوفر ليعكس ذلك فوراً.
         if (err?.status === 409) this.loadAvailability();
       }

@@ -214,10 +214,14 @@
               </p>
               <app-map-picker
                 [lang]="currentLang()"
+                [center]="mapCenter()"
                 (locationChange)="onLocationSelected($event)">
               </app-map-picker>
-              <p class="location-preview" *ngIf="f.latitude.value && f.longitude.value">
+              <p class="location-preview" *ngIf="f.latitude.value !== null && f.latitude.value !== undefined && f.longitude.value !== null && f.longitude.value !== undefined">
                 ✓ {{ 'property_add.location_selected' | translate }}: {{ f.latitude.value | number:'1.4-4' }}, {{ f.longitude.value | number:'1.4-4' }}
+              </p>
+              <p class="field-error" *ngIf="form.errors?.['invalidCoordinates'] && (f.latitude.touched || f.longitude.touched)">
+                {{ 'PROPERTY_FORM.INVALID_COORDINATES' | translate }}
               </p>
             </div>
           </div>
@@ -425,11 +429,14 @@
                    البيانات دون أي واجهة اختيار فعلية. -->
               <div class="form-group form-group--full">
                 <label class="section-sublabel">{{ 'PROPERTY_FORM.AMENITIES' | translate }}</label>
-                <p class="field-hint" *ngIf="amenitiesLoadFailed()">
+                <p class="field-hint" *ngIf="amenitiesLoading()">{{ 'COMMON.LOADING' | translate }}</p>
+                <p class="field-hint field-hint--error" *ngIf="amenitiesLoadFailed() && !amenitiesLoading()" role="alert">
                   {{ 'PROPERTY_FORM.AMENITIES_LOAD_ERROR' | translate }}
+                  <button type="button" class="link-btn" (click)="loadAmenities()">{{ 'COMMON.RETRY' | translate }}</button>
                 </p>
-                <p class="field-hint" *ngIf="!amenitiesLoadFailed() && amenities().length === 0">
+                <p class="field-hint" *ngIf="!amenitiesLoading() && !amenitiesLoadFailed() && amenities().length === 0">
                   {{ 'PROPERTY_FORM.AMENITIES_EMPTY' | translate }}
+                  <button type="button" class="link-btn" (click)="loadAmenities()">{{ 'COMMON.RETRY' | translate }}</button>
                 </p>
                 <div class="checkbox-grid" *ngIf="amenities().length > 0">
                   <label class="checkbox-item" *ngFor="let amenity of amenities()">
@@ -437,7 +444,7 @@
                       [checked]="isAmenitySelected(amenity.id)"
                       (change)="toggleAmenity(amenity.id)" />
                     <span class="checkbox-box"></span>
-                    <span>{{ amenity.name }}</span>
+                    <span>{{ amenity | amenityLabel }}</span>
                   </label>
                 </div>
               </div>
@@ -470,6 +477,12 @@
                 <strong>{{ 'property_add.upload_click' | translate }}</strong>
                 <span>{{ 'property_add.upload_hint' | translate }}</span>
               </label>
+              <button type="button" class="camera-btn" [disabled]="isSaving() || processingPhotos()" (click)="cameraInput.click()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 012-2h2l1.5-2h7L17 6h2a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/><circle cx="12" cy="13" r="3.5"/></svg>
+                {{ 'LISTING_PHOTOS.TAKE_PHOTO' | translate }}
+              </button>
+              <!-- accept must stay exactly "image/*": the Android WebView only opens the system camera for that value. -->
+              <input #cameraInput type="file" accept="image/*" capture="environment" (change)="onFileSelected($event)" hidden />
               <div class="upload-progress" *ngIf="processingPhotos()" role="status">
                 <span class="spinner-ring" style="width:28px;height:28px;border-width:3px"></span>
                 <p>{{ 'PROPERTY_FORM.PHOTOS_PROCESSING' | translate }}</p>
@@ -491,7 +504,7 @@
               <p class="existing-images__label">{{ 'PROPERTY_FORM.CURRENT_IMAGES' | translate }}</p>
               <div class="image-previews">
                 <div *ngFor="let img of existingImages(); let i = index" class="image-preview" [class.image-preview--main]="img.isMain">
-                  <img [src]="img.url" [alt]="'صورة ' + (i+1)" appImageFallback="/images/no-image.svg" />
+                  <img [src]="img.url" [alt]="'LISTING_PHOTOS.IMAGE_N' | translate:{ n: i + 1 }" appImageFallback="/images/no-image.svg" />
                   <span class="main-badge" *ngIf="img.isMain">{{ 'PROPERTY_FORM.COVER_IMAGE' | translate }}</span>
                   <div class="image-preview__actions">
                     <button
@@ -507,7 +520,7 @@
                       class="remove-img-btn"
                       [disabled]="imageActionBusyId() === img.id"
                       (click)="deleteExistingImage(img.id)"
-                      aria-label="حذف الصورة"
+                      [attr.aria-label]="'LISTING_PHOTOS.REMOVE_N' | translate:{ n: i + 1 }"
                     >×</button>
                   </div>
                 </div>
@@ -517,8 +530,8 @@
             <!-- Preview (صور جديدة قيد الرفع) -->
             <div class="image-previews" *ngIf="previews().length > 0">
               <div *ngFor="let url of previews(); let i = index" class="image-preview">
-                <img [src]="url" [alt]="'صورة ' + (i+1)" appImageFallback="/images/no-image.svg" />
-                <button type="button" class="remove-img-btn" (click)="removeImage(i)" aria-label="حذف الصورة">×</button>
+                <img [src]="url" [alt]="'LISTING_PHOTOS.IMAGE_N' | translate:{ n: i + 1 }" appImageFallback="/images/no-image.svg" />
+                <button type="button" class="remove-img-btn" (click)="removeImage(i)" [attr.aria-label]="'LISTING_PHOTOS.REMOVE_N' | translate:{ n: i + 1 }">×</button>
               </div>
             </div>
           </div>

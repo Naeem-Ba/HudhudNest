@@ -4,4 +4,6 @@
     <string name="title_activity_main">HudhudNest</string>
     <string name="package_name">com.hudhudnest.app</string>
     <string name="custom_url_scheme">com.hudhudnest.app</string>
+    <!-- Google's official sample AdMob app ID. Not a real account. See AndroidManifest.xml and docs/MONETIZATION.md. -->
+    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
 </resources>

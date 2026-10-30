@@ -54,6 +54,12 @@
 /my-services/*
   X-Robots-Tag: noindex, nofollow
 
+/my-reports
+  X-Robots-Tag: noindex, nofollow
+
+/my-reports/*
+  X-Robots-Tag: noindex, nofollow
+
 /checkout/*
   X-Robots-Tag: noindex, nofollow
 

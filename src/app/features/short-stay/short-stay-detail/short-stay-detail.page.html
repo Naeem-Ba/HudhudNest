@@ -17,17 +17,24 @@
     />
   </div>
 
+  <p class="ssd__taken-down" role="alert" data-testid="taken-down-banner" *ngIf="l.isTakenDown">
+    🚫 {{ 'SHORTSTAY.TAKEN_DOWN.BANNER' | translate }}
+    <span *ngIf="l.takenDownReason">— {{ 'SHORTSTAY.TAKEN_DOWN.REASON' | translate:{ reason: l.takenDownReason } }}</span>
+  </p>
+
   <div class="ssd__layout">
     <div class="ssd__main">
       <header class="ssd__header">
         <p class="ssd__type">{{ l.accommodationTypeCode }}</p>
-        <h1>{{ l.title }}</h1>
+        <h1 dir="auto">{{ displayTitle(l) }}</h1>
         <p class="ssd__meta">
           {{ l.city || '—' }} ·
           {{ l.capacity }} {{ 'SHORTSTAY.DETAIL.GUESTS_SHORT' | translate }} ·
           {{ l.bedrooms }} {{ 'SHORTSTAY.DETAIL.BEDROOMS_SHORT' | translate }} ·
           {{ l.bathrooms }} {{ 'SHORTSTAY.DETAIL.BATHROOMS_SHORT' | translate }}
         </p>
+        <!-- View counter: information, not an action. -->
+        <app-listing-view-count class="ssd__views" [count]="viewCountOf(l)"></app-listing-view-count>
         <a *ngIf="mapsUrl(l) as url" [href]="url" target="_blank" rel="noopener" class="ssd__map-link">
           {{ 'SHORTSTAY.DETAIL.VIEW_MAP' | translate }}
           <span *ngIf="l.locationVisibility === 'Approximate'" class="ssd__approx-note">
@@ -38,13 +45,18 @@
 
       <section class="ssd__section">
         <h2>{{ 'SHORTSTAY.DETAIL.DESCRIPTION' | translate }}</h2>
-        <p class="ssd__description">{{ l.description }}</p>
+        <app-translation-notice
+          [view]="translation.view()"
+          [showOriginal]="translation.showOriginal()"
+          (toggle)="translation.toggleOriginal()"
+          (retry)="translation.retry()" />
+        <p class="ssd__description" dir="auto">{{ displayDescription(l) }}</p>
       </section>
 
       <section class="ssd__section" *ngIf="listingAmenities().length > 0">
         <h2>{{ 'SHORTSTAY.DETAIL.AMENITIES' | translate }}</h2>
         <ul class="ssd__amenities">
-          <li *ngFor="let amenity of listingAmenities()">{{ amenity.name }}</li>
+          <li *ngFor="let amenity of listingAmenities()">{{ amenity | amenityLabel }}</li>
         </ul>
       </section>
 
@@ -66,6 +78,10 @@
           {{ 'SHORTSTAY.DETAIL.FREE_CANCELLATION' | translate:{ days: l.cancellationFreeCancellationDays } }}
         </p>
       </section>
+
+      <section class="ssd__section">
+        <app-short-stay-reviews-section [listingId]="l.id" />
+      </section>
     </div>
 
     <aside class="ssd__booking" *ngIf="bookableUnit() as unit">
@@ -85,6 +101,10 @@
 
         <p class="ssd__min-nights" *ngIf="minNights() > 1">
           {{ 'SHORTSTAY.DETAIL.MIN_NIGHTS' | translate:{ nights: minNights() } }}
+        </p>
+
+        <p class="ssd__instant-hint" data-testid="instant-hint" *ngIf="l.instantBookingEnabled">
+          ⚡ {{ 'SHORTSTAY.DETAIL.INSTANT_HINT' | translate:instantLimits }}
         </p>
 
         <div class="ssd__guest-fields">
@@ -146,6 +166,11 @@
       <ng-template #ownerNotice>
         <p class="ssd__owner-notice">{{ 'SHORTSTAY.DETAIL.OWNER_CANNOT_BOOK' | translate }}</p>
       </ng-template>
+    </aside>
+
+    <!-- كل وحدات الإعلان «غير متاحة حاليًا» (قرّر المضيف إيقافها مؤقتًا) -->
+    <aside class="ssd__booking" *ngIf="!bookableUnit() && !isOwner()">
+      <p class="ssd__owner-notice" data-testid="unavailable-now">{{ 'SHORTSTAY.DETAIL.UNAVAILABLE_NOW' | translate }}</p>
     </aside>
   </div>
 </div>

@@ -36,6 +36,30 @@ export interface AppEnvironment {
 
   /** Apple redirect URI. Required for Apple Sign In popup flow. */
   appleRedirectUri: string;
+
+  /** Monetization switches and public ad identifiers. Everything is off/empty unless set at build time. */
+  ads: AdsEnvironment;
+}
+
+/**
+ * Raw ad settings baked in at build time (see docs/MONETIZATION.md). Flags are independent layers: `enabled`
+ * is the master switch, the three platform flags select where ads may run. Ids are never defaulted or invented;
+ * empty means "no ad is requested for that slot". Publisher/ad-unit ids are public by design (they appear in
+ * every page that shows an ad), so keeping them in the client is correct; nothing here is a secret.
+ */
+export interface AdsEnvironment {
+  enabled: boolean;
+  webEnabled: boolean;
+  androidEnabled: boolean;
+  iosEnabled: boolean;
+  /** AdSense publisher id ("ca-pub-" followed by digits). */
+  adsensePublisherId: string;
+  /** AdSense ad unit (slot) ids, numeric strings. */
+  adsenseSlotSearch: string;
+  adsenseSlotDetail: string;
+  /** AdMob banner ad unit ids, "ca-app-pub-xxx/yyy". Empty in dev falls back to Google's test units. */
+  admobBannerAndroid: string;
+  admobBannerIos: string;
 }
 
 // BUG-20: `process` does not exist in the browser bundle produced by
@@ -81,6 +105,37 @@ export function readSiteUrlFromProcessEnv(): string | undefined {
   return readProcessEnv('SITE_URL');
 }
 
+/** Only the exact string "true" switches a flag on, so a typo or an unset variable can never enable ads. */
+function flag(key: keyof typeof generatedEnv): boolean {
+  return readProcessEnv(key)?.toLowerCase() === 'true';
+}
+
+export function readAdsFromProcessEnv(): AdsEnvironment {
+  return {
+    enabled: flag('ADS_ENABLED'),
+    webEnabled: flag('WEB_ADS_ENABLED'),
+    androidEnabled: flag('ANDROID_ADS_ENABLED'),
+    iosEnabled: flag('IOS_ADS_ENABLED'),
+    adsensePublisherId: readProcessEnv('ADSENSE_PUBLISHER_ID') ?? '',
+    adsenseSlotSearch: readProcessEnv('ADSENSE_SLOT_SEARCH') ?? '',
+    adsenseSlotDetail: readProcessEnv('ADSENSE_SLOT_DETAIL') ?? '',
+    admobBannerAndroid: readProcessEnv('ADMOB_BANNER_ANDROID') ?? '',
+    admobBannerIos: readProcessEnv('ADMOB_BANNER_IOS') ?? ''
+  };
+}
+
+export const ADS_DISABLED: AdsEnvironment = {
+  enabled: false,
+  webEnabled: false,
+  androidEnabled: false,
+  iosEnabled: false,
+  adsensePublisherId: '',
+  adsenseSlotSearch: '',
+  adsenseSlotDetail: '',
+  admobBannerAndroid: '',
+  admobBannerIos: ''
+};
+
 export function withoutTrailingSlash(value: string): string {
   return value.trim().replace(/\/+$/, '');
 }
@@ -104,6 +159,7 @@ export function createAppEnvironment(config: {
   googleClientId?: string;
   appleClientId?: string;
   appleRedirectUri?: string;
+  ads?: AdsEnvironment;
 }): AppEnvironment {
   const apiBaseUrl = normalizeApiBaseUrl(config.apiBaseUrl);
   const baseUrl = withoutTrailingSlash(config.baseUrl ?? backendOriginFromApiBaseUrl(apiBaseUrl));
@@ -120,6 +176,7 @@ export function createAppEnvironment(config: {
     signalRUrl,
     googleClientId: config.googleClientId ?? '',
     appleClientId: config.appleClientId ?? '',
-    appleRedirectUri: config.appleRedirectUri ?? ''
+    appleRedirectUri: config.appleRedirectUri ?? '',
+    ads: config.ads ?? ADS_DISABLED
   };
 }
