@@ -56,3 +56,29 @@ describe('toNotificationItem (target, category, priority)', () => {
     expect(item.target).toBeNull();
   });
 });
+
+describe('routeForNotification (listing reports)', () => {
+  it('sends admins to the report and reporters to their own list', () => {
+    expect(routeForNotification({ type: 'ListingReportSubmitted', target: { kind: 'admin-listing-report', id: ENTITY, propertyId: null }, propertyId: null, relatedEntityId: ENTITY }))
+      .toEqual(['/admin/listing-reports', ENTITY]);
+    expect(routeForNotification({ type: 'ListingReportInfoRequested', target: { kind: 'my-listing-report', id: ENTITY, propertyId: null }, propertyId: null, relatedEntityId: ENTITY }))
+      .toEqual(['/my-reports']);
+  });
+
+  it('never puts a malformed id into the path', () => {
+    expect(routeForNotification({ type: 'ListingReportSubmitted', target: { kind: 'admin-listing-report', id: '../x', propertyId: null }, propertyId: null, relatedEntityId: '../x' }))
+      .toEqual(['/admin/listing-reports']);
+  });
+});
+
+describe('routeForNotification (investment interest)', () => {
+  it('sends admins to the project that received the interest', () => {
+    expect(routeForNotification({ type: 'InvestmentInterestReceived', target: { kind: 'admin-investment', id: ENTITY, propertyId: null }, propertyId: null, relatedEntityId: ENTITY }))
+      .toEqual(['/admin/investments', ENTITY]);
+  });
+
+  it('falls back to the project list when the id is not an id', () => {
+    expect(routeForNotification({ type: 'InvestmentInterestReceived', target: { kind: 'admin-investment', id: '../x', propertyId: null }, propertyId: null, relatedEntityId: '../x' }))
+      .toEqual(['/admin/investments']);
+  });
+});

@@ -18,8 +18,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AdminInvestmentApiService } from '../../../../core/api/admin-investment-api.service';
+import { apiErrorText } from '../../../../core/api/api-error-text';
 import {
   AdminInvestmentDocument,
+  AdminInvestmentInterest,
   InvestmentDocumentType,
   InvestmentProjectReview,
   InvestmentProjectStatus,
@@ -53,10 +55,14 @@ const VALID_ACTIONS: Record<InvestmentProjectStatus, InvestmentWorkflowAction[]>
   Approved: ['schedule'],
   Scheduled: ['publish'],
   Published: ['suspend', 'close'],
-  Suspended: ['close'],
+  Suspended: ['resume', 'close'],
   Closed: [],
   Rejected: ['submit-review']
 };
+
+/** Statuses where the raised amount can no longer be edited with the overview form (the API only edits Draft/Rejected)
+ * but staff still keep the informational figure current (P10-D12). */
+const PROGRESS_STATUSES: InvestmentProjectStatus[] = ['Approved', 'Scheduled', 'Published', 'Suspended'];
 
 interface PendingWorkflowAction {
   action: InvestmentWorkflowAction;
@@ -88,6 +94,10 @@ export class AdminInvestmentDetailPage implements OnInit {
   readonly review = signal<InvestmentProjectReview | null>(null);
   readonly documents = signal<AdminInvestmentDocument[]>([]);
   readonly updates = signal<InvestmentUpdateItem[]>([]);
+  readonly interests = signal<AdminInvestmentInterest[]>([]);
+  readonly interestsError = signal(false);
+  readonly savingProgress = signal(false);
+  progressRaisedAmount = 0;
 
   readonly projectTypes = PROJECT_TYPES;
   readonly riskLevels = RISK_LEVELS;
@@ -96,6 +106,7 @@ export class AdminInvestmentDetailPage implements OnInit {
 
   readonly currentStatus = computed<InvestmentProjectStatus>(() => this.review()?.project.status ?? 'Draft');
   readonly availableActions = computed<InvestmentWorkflowAction[]>(() => VALID_ACTIONS[this.currentStatus()] ?? []);
+  readonly canEditProgress = computed(() => PROGRESS_STATUSES.includes(this.currentStatus()));
 
   readonly overviewSubmitted = signal(false);
   readonly savingOverview = signal(false);
@@ -188,6 +199,7 @@ export class AdminInvestmentDetailPage implements OnInit {
       next: review => {
         this.review.set(review);
         this.hydrateOverviewForm(review);
+        this.progressRaisedAmount = review.project.raisedAmount;
         if (review.financials) this.financialsForm.patchValue(review.financials);
         if (review.risk) this.riskForm.patchValue(review.risk);
         this.loading.set(false);
@@ -199,6 +211,17 @@ export class AdminInvestmentDetailPage implements OnInit {
     });
 
     this.reloadDocuments();
+    this.reloadInterests();
+  }
+
+  private reloadInterests(): void {
+    this.api.getInterests(this.projectId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: list => {
+        this.interests.set(list);
+        this.interestsError.set(false);
+      },
+      error: () => this.interestsError.set(true)
+    });
   }
 
   private hydrateOverviewForm(review: InvestmentProjectReview): void {
@@ -242,7 +265,7 @@ export class AdminInvestmentDetailPage implements OnInit {
         this.loadAll();
       },
       error: err => {
-        this.toast.error(err?.error?.message || this.translate.instant('ADMIN_INVESTMENTS.DETAIL.SAVE_ERROR'));
+        this.toast.error(apiErrorText(err) || this.translate.instant('ADMIN_INVESTMENTS.DETAIL.SAVE_ERROR'));
         this.savingOverview.set(false);
       }
     });
@@ -273,8 +296,7 @@ export class AdminInvestmentDetailPage implements OnInit {
     };
     const fail = (err: unknown) => {
       this.workflowBusy.set(false);
-      const message = (err as { error?: { message?: string } })?.error?.message;
-      this.toast.error(message || this.translate.instant('ADMIN_INVESTMENTS.DETAIL.WORKFLOW_ERROR'));
+      this.toast.error(apiErrorText(err) || this.translate.instant('ADMIN_INVESTMENTS.DETAIL.WORKFLOW_ERROR'));
     };
 
     switch (pending.action) {
@@ -288,13 +310,18 @@ export class AdminInvestmentDetailPage implements OnInit {
         this.api.reject(this.projectId, this.rejectReason.trim()).subscribe({ next: done, error: fail });
         break;
       case 'schedule':
-        this.api.schedule(this.projectId, this.scheduledPublishAt || null).subscribe({ next: done, error: fail });
+        // datetime-local has no zone: send the instant in UTC so the server publishes at the time the admin meant.
+        this.api.schedule(this.projectId, this.scheduledPublishAt ? new Date(this.scheduledPublishAt).toISOString() : null)
+          .subscribe({ next: done, error: fail });
         break;
       case 'publish':
         this.api.publish(this.projectId).subscribe({ next: done, error: fail });
         break;
       case 'suspend':
         this.api.suspend(this.projectId).subscribe({ next: done, error: fail });
+        break;
+      case 'resume':
+        this.api.resume(this.projectId).subscribe({ next: done, error: fail });
         break;
       case 'close':
         this.api.close(this.projectId).subscribe({ next: done, error: fail });
@@ -304,6 +331,37 @@ export class AdminInvestmentDetailPage implements OnInit {
 
   actionLabelKey(action: InvestmentWorkflowAction): string {
     return `ADMIN_INVESTMENTS.WORKFLOW.ACTION_${action.toUpperCase().replace('-', '_')}`;
+  }
+
+  // ── Progress (after the editing stage) ────────────────────────
+
+  saveProgress(): void {
+    const value = Number(this.progressRaisedAmount);
+    if (!Number.isFinite(value) || value < 0) {
+      this.toast.error(this.translate.instant('ADMIN_INVESTMENTS.DETAIL.PROGRESS_ERROR'));
+      return;
+    }
+
+    this.savingProgress.set(true);
+    this.api.updateProgress(this.projectId, value).subscribe({
+      next: () => {
+        this.toast.success(this.translate.instant('ADMIN_INVESTMENTS.DETAIL.PROGRESS_SAVED'));
+        this.savingProgress.set(false);
+        this.loadAll();
+      },
+      error: err => {
+        this.toast.error(apiErrorText(err) || this.translate.instant('ADMIN_INVESTMENTS.DETAIL.PROGRESS_ERROR'));
+        this.savingProgress.set(false);
+      }
+    });
+  }
+
+  interestStatusKey(status: AdminInvestmentInterest['status']): string {
+    return `ADMIN_INVESTMENTS.DETAIL.INTEREST_STATUS_${status.toUpperCase()}`;
+  }
+
+  trackByInterestId(_: number, item: AdminInvestmentInterest): string {
+    return item.id;
   }
 
   // ── Financials ────────────────────────────────────────────────
@@ -320,7 +378,7 @@ export class AdminInvestmentDetailPage implements OnInit {
         this.loadAll();
       },
       error: err => {
-        this.toast.error(err?.error?.message || this.translate.instant('ADMIN_INVESTMENTS.DETAIL.SAVE_ERROR'));
+        this.toast.error(apiErrorText(err) || this.translate.instant('ADMIN_INVESTMENTS.DETAIL.SAVE_ERROR'));
         this.savingFinancials.set(false);
       }
     });
@@ -340,7 +398,7 @@ export class AdminInvestmentDetailPage implements OnInit {
         this.loadAll();
       },
       error: err => {
-        this.toast.error(err?.error?.message || this.translate.instant('ADMIN_INVESTMENTS.DETAIL.SAVE_ERROR'));
+        this.toast.error(apiErrorText(err) || this.translate.instant('ADMIN_INVESTMENTS.DETAIL.SAVE_ERROR'));
         this.savingRisk.set(false);
       }
     });
@@ -365,7 +423,7 @@ export class AdminInvestmentDetailPage implements OnInit {
         this.reloadDocuments();
       },
       error: err => {
-        this.toast.error(err?.error?.message || this.translate.instant('ADMIN_INVESTMENTS.DETAIL.UPLOAD_ERROR'));
+        this.toast.error(apiErrorText(err) || this.translate.instant('ADMIN_INVESTMENTS.DETAIL.UPLOAD_ERROR'));
         this.uploadingDocument.set(false);
       }
     });
@@ -378,8 +436,8 @@ export class AdminInvestmentDetailPage implements OnInit {
         this.togglingDocumentId.set(null);
         this.reloadDocuments();
       },
-      error: () => {
-        this.toast.error(this.translate.instant('ADMIN_INVESTMENTS.DETAIL.VISIBILITY_ERROR'));
+      error: err => {
+        this.toast.error(apiErrorText(err) || this.translate.instant('ADMIN_INVESTMENTS.DETAIL.VISIBILITY_ERROR'));
         this.togglingDocumentId.set(null);
       }
     });
@@ -395,8 +453,8 @@ export class AdminInvestmentDetailPage implements OnInit {
         this.deletingDocumentId.set(null);
         this.reloadDocuments();
       },
-      error: () => {
-        this.toast.error(this.translate.instant('ADMIN_INVESTMENTS.DETAIL.DELETE_ERROR'));
+      error: err => {
+        this.toast.error(apiErrorText(err) || this.translate.instant('ADMIN_INVESTMENTS.DETAIL.DELETE_ERROR'));
         this.deletingDocumentId.set(null);
       }
     });
@@ -417,7 +475,7 @@ export class AdminInvestmentDetailPage implements OnInit {
         this.updateSubmitted.set(false);
       },
       error: err => {
-        this.toast.error(err?.error?.message || this.translate.instant('ADMIN_INVESTMENTS.DETAIL.SAVE_ERROR'));
+        this.toast.error(apiErrorText(err) || this.translate.instant('ADMIN_INVESTMENTS.DETAIL.SAVE_ERROR'));
         this.savingUpdate.set(false);
       }
     });

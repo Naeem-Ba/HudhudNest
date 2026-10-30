@@ -33,6 +33,8 @@
           {{ l.bedrooms }} {{ 'SHORTSTAY.DETAIL.BEDROOMS_SHORT' | translate }} ·
           {{ l.bathrooms }} {{ 'SHORTSTAY.DETAIL.BATHROOMS_SHORT' | translate }}
         </p>
+        <!-- View counter: information, not an action. -->
+        <app-listing-view-count class="ssd__views" [count]="viewCountOf(l)"></app-listing-view-count>
         <a *ngIf="mapsUrl(l) as url" [href]="url" target="_blank" rel="noopener" class="ssd__map-link">
           {{ 'SHORTSTAY.DETAIL.VIEW_MAP' | translate }}
           <span *ngIf="l.locationVisibility === 'Approximate'" class="ssd__approx-note">

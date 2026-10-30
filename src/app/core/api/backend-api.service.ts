@@ -10,6 +10,8 @@ export type QueryValue = QueryScalar | readonly QueryScalar[] | null | undefined
 /** Per-request HttpContext, e.g. SKIP_ERROR_TOAST for a failure the caller treats as normal. */
 export interface RequestOptions {
   context?: HttpContext;
+  /** Extra request headers (e.g. the anonymous visitor id of the view counter). */
+  headers?: Record<string, string>;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -35,7 +37,7 @@ export class BackendApiService {
   }
 
   post<T>(path: string, body?: unknown, options?: RequestOptions): Observable<T> {
-    return this.http.post<T>(this.url(path), body ?? {}, { withCredentials: true, context: options?.context });
+    return this.http.post<T>(this.url(path), body ?? {}, { withCredentials: true, context: options?.context, headers: options?.headers });
   }
 
   put<T>(path: string, body?: unknown): Observable<T> {

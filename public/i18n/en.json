@@ -51,7 +51,8 @@
     "CLICK_TO_ZOOM": "Click to zoom",
     "MONTH": "month",
     "CLEAR": "Clear",
-    "SEARCH": "Search"
+    "SEARCH": "Search",
+    "PAGINATION": "Pagination"
   },
   "NAVBAR": {
     "HOME": "Home",
@@ -100,7 +101,9 @@
     "ADMIN_SERVICE_PROVIDERS": "Service providers",
     "PROVIDER_OFFERINGS": "My offerings",
     "ADMIN_SERVICES": "Services overview",
-    "ADMIN_SHORT_STAY": "Short stays (admin)"
+    "ADMIN_SHORT_STAY": "Short stays (admin)",
+    "ADMIN_LISTING_REPORTS": "Listing reports",
+    "MY_REPORTS": "My reports"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -867,6 +870,27 @@
     "FEATURE": "Feature listing",
     "FEATURE_EXTEND": "Extend featuring",
     "FEATURE_PENDING": "Your featuring request is waiting for an administrator to confirm payment."
+  },
+  "VIEW_COUNT": {
+    "LABEL": "Views",
+    "ARIA": "Views: {{count}}"
+  },
+  "VIEW_STATS": {
+    "TITLE": "Listing views",
+    "HELP": "How many times each listing's detail page was opened. Repeat opens by the same visitor within 24 hours, and views by the listing's owner, their agency staff, administrators and bots, are not counted.",
+    "SCOPE": "Statistics scope",
+    "SCOPE_MINE": "My listings",
+    "SCOPE_AGENCY": "Agency listings",
+    "ERROR": "Unable to load view statistics.",
+    "TOTAL": "Total views",
+    "LAST_7": "Last 7 days",
+    "LAST_30": "Last 30 days",
+    "UNIQUE_30": "Distinct visitors (30 days)",
+    "LISTING": "Listing",
+    "TREND": "Daily views, last {{days}} days",
+    "TREND_ARIA": "Bar chart of daily views over the last {{days}} days, {{count}} in total",
+    "EMPTY": "You have no listings to show views for yet.",
+    "NOTE": "The total covers every counted view since the counter was introduced; the 7/30-day figures and the daily chart are only kept for {{days}} days. \"Distinct visitors\" is an estimate based on an anonymous browser or account identifier."
   },
   "FAVORITE_TOGGLE": {
     "ADD": "Add to favorites",
@@ -2356,7 +2380,7 @@
       "WATCHLIST_ADDED": "Added to your watchlist.",
       "WATCHLIST_REMOVED": "Removed from your watchlist.",
       "WATCHLIST_ERROR": "Could not update your watchlist.",
-      "EXPRESS_INTEREST": "I'm interested in investing",
+      "EXPRESS_INTEREST": "Express my interest",
       "WITHDRAW_INTEREST": "Withdraw my interest",
       "INTEREST_REGISTERED": "Interest registered successfully. Our team may reach out to you — this is not a payment or commitment.",
       "INTEREST_WITHDRAWN": "Your interest has been withdrawn.",
@@ -2404,7 +2428,8 @@
       "CONSERVATIVE": "Conservative",
       "BASE": "Base",
       "OPTIMISTIC": "Optimistic",
-      "ERROR": "Could not calculate an estimate."
+      "ERROR": "Could not calculate an estimate.",
+      "RANGE_ERROR": "The amount must not exceed {{maxAmount}} and the term must not exceed {{maxTerm}} months."
     },
     "WATCHLIST": {
       "TITLE": "My Investment Watchlist",
@@ -2412,7 +2437,8 @@
       "LOAD_ERROR": "Could not load your watchlist.",
       "EMPTY_TITLE": "Your watchlist is empty",
       "EMPTY_MESSAGE": "Projects you save will appear here."
-    }
+    },
+    "GENERAL_DISCLAIMER": "The information on these pages only introduces investment opportunities. It is not investment, financial or legal advice, not a binding offer, and not a guarantee of any return. Every investment carries risk, up to the loss of part or all of the capital. Seek professional advice before deciding."
   },
   "ADMIN_INVESTMENTS": {
     "LIST": {
@@ -2431,7 +2457,8 @@
       "VIEW": "View",
       "LOAD_ERROR": "Could not load investment projects.",
       "EMPTY_TITLE": "No investment projects yet",
-      "EMPTY_MESSAGE": "Create the first investment project to get started."
+      "EMPTY_MESSAGE": "Create the first investment project to get started.",
+      "COL_INTERESTS": "Interested"
     },
     "FORM": {
       "CREATE_TITLE": "New Investment Project",
@@ -2464,7 +2491,8 @@
       "ACTION_SCHEDULE": "Schedule for publishing",
       "ACTION_PUBLISH": "Publish",
       "ACTION_SUSPEND": "Suspend",
-      "ACTION_CLOSE": "Close"
+      "ACTION_CLOSE": "Close",
+      "ACTION_RESUME": "Resume publication"
     },
     "FINANCIALS": {
       "NOTARY_COST": "Notary cost",
@@ -2495,7 +2523,7 @@
       "CONFIRM_ACTION_INTRO": "Current status: {{status}}. Confirm this action?",
       "REJECT_REASON_LABEL": "Reason (shown to the project owner)",
       "SCHEDULE_AT_LABEL": "Scheduled publish date/time (optional)",
-      "SCHEDULE_HINT": "Leave empty to allow publishing immediately once Scheduled.",
+      "SCHEDULE_HINT": "Leave empty to allow publishing immediately once Scheduled. Time is in your device's time zone. The project is published automatically when the time comes, provided the publish requirements are met.",
       "OVERVIEW_TITLE": "Overview",
       "NON_GUARANTEED_NOTE": "Expected return is indicative only — never a guarantee.",
       "FINANCIALS_TITLE": "Financials",
@@ -2519,7 +2547,25 @@
       "UPDATE_CONTENT": "Content",
       "ADD_UPDATE": "Add update",
       "UPDATE_ADDED": "Update published.",
-      "CONFIRM_DELETE": "Are you sure?"
+      "CONFIRM_DELETE": "Are you sure?",
+      "PROGRESS_TITLE": "Funding progress",
+      "PROGRESS_NOTE": "An indicative figure entered by the team; it is not calculated from any real payment. It must not exceed the target amount.",
+      "PROGRESS_LABEL": "Raised amount",
+      "PROGRESS_SAVED": "Progress updated.",
+      "PROGRESS_ERROR": "Could not update the progress.",
+      "INTERESTS_TITLE": "People interested in this project",
+      "INTERESTS_NOTE": "People who only expressed interest; no amount, no commitment. Contact them using the email or phone shown.",
+      "INTERESTS_EMPTY": "Nobody has expressed interest yet.",
+      "INTERESTS_LOAD_ERROR": "Could not load the list of interested people.",
+      "INTEREST_COL_NAME": "Name",
+      "INTEREST_COL_EMAIL": "Email",
+      "INTEREST_COL_PHONE": "Phone",
+      "INTEREST_COL_STATUS": "Status",
+      "INTEREST_COL_DATE": "Date",
+      "INTEREST_STATUS_ACTIVE": "Active",
+      "INTEREST_STATUS_WITHDRAWN": "Withdrawn",
+      "INTEREST_STATUS_CONTACTED": "Contacted",
+      "DOCUMENT_PRIVACY_WARNING": "Note: \"Private\" means not listed on the project page; it is not confidential. Anyone with the file link can open it. Do not upload sensitive documents here (IDs, signed contracts, bank details)."
     }
   },
   "LANDING": {
@@ -3490,5 +3536,236 @@
     "REASON_OPTIONAL": "Note (optional)",
     "RESTORE_SUCCESS": "The listing was restored.",
     "ACTION_ERROR": "The action could not be completed."
+  },
+  "REPORT": {
+    "TITLE": "Report this listing",
+    "BUTTON": "Report",
+    "BUTTON_ARIA": "Report this listing",
+    "INTRO": "Tell us what is wrong with this listing. Our team reviews every report. Nothing is removed automatically.",
+    "LISTING": "Listing",
+    "REASON_LABEL": "Reason",
+    "OPTIONAL": "optional",
+    "DETAILS_LABEL": "Details",
+    "DETAILS_PLACEHOLDER": "Describe the problem so the team can verify it (do not include passwords or payment details).",
+    "PRIVACY": "Your report is confidential. The listing owner is never told who reported it.",
+    "SUBMIT": "Send report",
+    "SENDING": "Sending…",
+    "SUCCESS": "Thank you. Your report {{ref}} was received and will be reviewed.",
+    "SUCCESS_HINT": "You can follow its status under “My reports”.",
+    "ALREADY_OPEN": "You already have an open report on this listing ({{ref}}).",
+    "ALREADY_OPEN_HINT": "Follow it under “My reports”. We will not review it twice.",
+    "LOGIN_REQUIRED": "Please sign in to report a listing.",
+    "ERR_REASON": "Please choose a reason.",
+    "ERR_DETAILS": "Details are required for this reason.",
+    "ERR_GENERIC": "The report could not be sent. Please try again.",
+    "ERR_INVALID": "Some of the information is not valid. Please check and try again.",
+    "ERR_LISTING_GONE": "This listing is no longer available.",
+    "ERR_NETWORK": "No connection. Check your internet and try again.",
+    "ERR_OWN_LISTING": "You cannot report your own listing.",
+    "ERR_RATE": "You sent too many reports recently. Please try again later.",
+    "ERR_RECENTLY_REVIEWED": "A report from you on this listing was reviewed recently. Please wait before reporting again.",
+    "ERR_SESSION": "Your session expired. Please sign in again.",
+    "ERR_ALREADY_OPEN": "You already have an open report on this listing.",
+    "REASON": {
+      "Fraud": "Fraud or scam",
+      "IncorrectDetails": "Incorrect details",
+      "FakeListing": "Fake listing",
+      "MisleadingPrice": "Misleading price",
+      "FakePhotos": "Fake or misleading photos",
+      "CopyrightViolation": "Copyright violation",
+      "Duplicate": "Duplicate listing",
+      "NoLongerAvailable": "No longer available",
+      "MisleadingContact": "Misleading contact details",
+      "Impersonation": "Impersonation",
+      "IllegalContent": "Illegal content",
+      "OffensiveContent": "Offensive content",
+      "OffPlatformPayment": "Payment outside the platform",
+      "Other": "Other"
+    }
+  },
+  "MY_REPORTS": {
+    "TITLE": "My reports",
+    "SUBTITLE": "The listing reports you sent and where they stand.",
+    "EMPTY": "No reports yet",
+    "EMPTY_TEXT": "When you report a listing, you can follow it here.",
+    "LOAD_ERROR": "Could not load your reports.",
+    "QUESTION": "The team asked you:",
+    "YOUR_ANSWER": "Your answer",
+    "SEND_ANSWER": "Send answer",
+    "ANSWER_SENT": "Your answer was sent.",
+    "ANSWER_FAILED": "Could not send your answer.",
+    "event": {
+      "Created": "Report received",
+      "InfoRequested": "Information requested",
+      "ReporterResponded": "You replied",
+      "Closed": "Report closed",
+      "Reopened": "Report reopened"
+    },
+    "STATUS": {
+      "Submitted": "Received",
+      "InReview": "In review",
+      "NeedsYourInfo": "We need your information",
+      "Closed": "Closed"
+    },
+    "OUTCOME": {
+      "ActionTaken": "Action was taken. Thank you.",
+      "NoViolationFound": "We reviewed the listing and found no violation."
+    },
+    "EVENT": {
+      "Created": "Report received",
+      "InfoRequested": "Information requested",
+      "ReporterResponded": "You replied",
+      "Closed": "Report closed",
+      "Reopened": "Report reopened"
+    }
+  },
+  "ADMIN_REPORTS": {
+    "TITLE": "Listing reports",
+    "SUBTITLE": "Review reports on listings. A report count is a signal, never an automatic removal.",
+    "STAT_OPEN": "Open",
+    "STAT_OVERDUE": "Overdue",
+    "STAT_HIGH": "High priority",
+    "STAT_AVG_HOURS": "Avg. hours to close ({{n}} reports)",
+    "SEARCH": "Search by reference, listing, reporter…",
+    "F_STATUS": "Status",
+    "ALL_STATUSES": "All statuses",
+    "F_REASON": "Reason",
+    "ALL_REASONS": "All reasons",
+    "F_PRIORITY": "Priority",
+    "ALL_PRIORITIES": "All priorities",
+    "F_ASSIGNEE": "Assigned to",
+    "ALL_ASSIGNEES": "Anyone",
+    "UNASSIGNED": "Unassigned",
+    "F_FROM": "From",
+    "F_TO": "To",
+    "F_SORT": "Sort",
+    "TAKEN_DOWN": "Taken down",
+    "LISTING_DELETED": "Listing deleted",
+    "OVERDUE": "Overdue",
+    "LOAD_ERROR": "Could not load reports.",
+    "EMPTY": "No reports found",
+    "EMPTY_TEXT": "Nothing matches the current filters.",
+    "BACK": "All reports",
+    "SIGNAL": "{{reporters}} different people have open reports on this listing ({{reports}} reports). This is a signal to look closer, not proof.",
+    "REPORT": "Report",
+    "REASON": "Reason",
+    "DETAILS": "Details",
+    "NO_DETAILS": "No details provided",
+    "TITLE_AT_REPORT": "Title when reported",
+    "REVIEW_DUE": "Review due",
+    "INFO_ASKED": "Information requested",
+    "REOPENED": "Times reopened",
+    "LISTING": "Listing",
+    "CURRENT_TITLE": "Current title",
+    "OWNER": "Owner",
+    "VISIBILITY": "Visibility",
+    "VISIBLE": "Publicly visible",
+    "NOT_VISIBLE": "Not visible",
+    "TAKEDOWN_REASON": "Take-down reason",
+    "PRICE": "Price",
+    "CITY": "City",
+    "PUBLISHED": "Published",
+    "LISTING_GONE": "The listing no longer exists.",
+    "REPORTER": "Reporter",
+    "REPORTER_STATS": "{{total}} reports sent, {{dismissed}} dismissed",
+    "REPORTER_PRIVATE": "Visible to admins only. Never shown to the listing owner.",
+    "RELATED": "Other reports on this listing",
+    "SAME_REPORTER": "Same reporter",
+    "ACTIONS": "Actions",
+    "ASSIGNEE": "Assigned admin",
+    "A_START": "Start review",
+    "A_NOTE": "Add internal note",
+    "A_INFO": "Ask reporter for information",
+    "A_ACTION_REQUIRED": "Mark action required",
+    "A_CLOSE": "Close report",
+    "A_REOPEN": "Reopen",
+    "A_TAKEDOWN": "Take listing down",
+    "A_RESTORE": "Restore listing",
+    "NOTE_LABEL": "Internal note",
+    "NOTE_HINT": "Only admins see this note.",
+    "INFO_LABEL": "Question for the reporter",
+    "INFO_HINT": "The reporter will see this text.",
+    "SEND": "Send",
+    "ACTION_LABEL": "What action is needed?",
+    "OUTCOME_LABEL": "Decision",
+    "OUTCOME_PICK": "Choose a decision",
+    "CLOSE_NOTE": "Closing note (internal)",
+    "CLOSE_HINT": "The reporter only learns “action taken” or “no violation found”. This note stays internal.",
+    "TAKEDOWN_LABEL": "Reason (shown to the listing owner)",
+    "TAKEDOWN_HINT": "The listing is hidden from the public until you restore it. This is reversible.",
+    "RESTORE_LABEL": "Reason for restoring",
+    "REOPEN_LABEL": "Why is it reopened?",
+    "TIMELINE": "Timeline",
+    "INTERNAL": "Internal",
+    "DONE_START": "Review started.",
+    "DONE_ASSIGN": "Assignment updated.",
+    "DONE_PRIORITY": "Priority updated.",
+    "DONE_NOTE": "Note saved.",
+    "DONE_INFO": "Question sent to the reporter.",
+    "DONE_ACTION": "Marked as action required.",
+    "DONE_REOPEN": "Report reopened.",
+    "DONE_TAKEDOWN": "Listing taken down.",
+    "DONE_RESTORE": "Listing restored.",
+    "DONE_CLOSE": "Report closed.",
+    "STATUS": {
+      "New": "New",
+      "UnderReview": "Under review",
+      "WaitingForInformation": "Waiting for information",
+      "ActionRequired": "Action required",
+      "Resolved": "Resolved",
+      "Dismissed": "Dismissed"
+    },
+    "PRIORITY": {
+      "Low": "Low",
+      "Normal": "Normal",
+      "High": "High",
+      "Urgent": "Urgent"
+    },
+    "OUTCOME": {
+      "NoViolation": "No violation found",
+      "InsufficientEvidence": "Insufficient evidence",
+      "DuplicateReport": "Duplicate report",
+      "ListingCorrected": "Listing corrected by owner",
+      "CorrectionRequested": "Correction requested from owner",
+      "ListingTakenDown": "Listing taken down",
+      "AccountActioned": "Action taken on the account",
+      "OtherAction": "Other action"
+    },
+    "EVENT": {
+      "Created": "Report created",
+      "StatusChanged": "Status changed",
+      "PriorityChanged": "Priority changed",
+      "Assigned": "Assigned",
+      "Unassigned": "Unassigned",
+      "NoteAdded": "Note added",
+      "InfoRequested": "Information requested",
+      "ReporterResponded": "Reporter replied",
+      "ListingTakenDown": "Listing taken down",
+      "ListingRestored": "Listing restored",
+      "Closed": "Report closed",
+      "Reopened": "Report reopened"
+    },
+    "SORT": {
+      "Newest": "Newest first",
+      "Oldest": "Oldest first",
+      "Priority": "Priority",
+      "RecentlyUpdated": "Recently updated"
+    },
+    "CONFIRM": {
+      "TAKEDOWN_TITLE": "Take this listing down?",
+      "TAKEDOWN_TEXT": "The listing disappears from public search and the owner is notified with your reason. You can restore it later.",
+      "RESTORE_TITLE": "Restore this listing?",
+      "RESTORE_TEXT": "The listing becomes visible again and the owner is notified.",
+      "CLOSE_TITLE": "Close this report?",
+      "CLOSE_TEXT": "The decision is recorded and the reporter is told the general result. Closing does not change the listing."
+    }
+  },
+  "ADS": {
+    "LABEL": "Ad",
+    "CHOICES": "Ad choices",
+    "CONSENT_TITLE": "Ads on HudhudNest",
+    "CONSENT_TEXT": "We would like to show a few clearly labelled ads to help cover running costs. They are non-personalised and never replace or reorder listings. Choose \"Allow ads\" to see them, or \"No ads\" to keep the site ad-free. You can change this any time under \"Ad choices\".",
+    "ACCEPT": "Allow ads",
+    "DECLINE": "No ads"
   }
 }

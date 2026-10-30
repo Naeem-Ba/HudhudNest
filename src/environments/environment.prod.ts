@@ -1,6 +1,7 @@
 import {
   AppEnvironment,
   createAppEnvironment,
+  readAdsFromProcessEnv,
   readApiUrlFromProcessEnv,
   readBaseUrlFromProcessEnv,
   readProcessEnv,
@@ -33,4 +34,5 @@ export const environment: AppEnvironment = createAppEnvironment({
   googleClientId: readProcessEnv('GOOGLE_CLIENT_ID') ?? '',
   appleClientId: readProcessEnv('APPLE_CLIENT_ID') ?? '',
   appleRedirectUri,
+  ads: readAdsFromProcessEnv(),
 });

@@ -31,12 +31,14 @@ import {
   listingLifecycle,
   listingStatusTagKey
 } from '../../shared/utils/listing-status';
+import { ListingViewCountComponent } from '../../shared/ui/listing-view-count.component';
 
 @Component({
   selector: 'app-my-listings',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    ListingViewCountComponent,
     CommonModule,
     RouterModule,
     TranslateModule,

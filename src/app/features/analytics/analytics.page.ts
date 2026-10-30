@@ -8,8 +8,9 @@ import { AnalyticsService } from '../../core/api/analytics.service';
 import { PropertyApiService } from '../../core/api/property-api.service';
 import { MarketInsightsDto, PropertyStatsDto } from '../../core/models/analytics.model';
 import { Property } from '../../core/models/property.model';
+import { ListingViewsPanelComponent } from './listing-views-panel.component';
 
-@Component({selector:'app-analytics-page',standalone:true,imports:[CommonModule,ReactiveFormsModule,TranslateModule],templateUrl:'./analytics.page.html',styleUrls:['./analytics.page.scss'],changeDetection:ChangeDetectionStrategy.OnPush})
+@Component({selector:'app-analytics-page',standalone:true,imports:[CommonModule,ReactiveFormsModule,TranslateModule,ListingViewsPanelComponent],templateUrl:'./analytics.page.html',styleUrls:['./analytics.page.scss'],changeDetection:ChangeDetectionStrategy.OnPush})
 export class AnalyticsPage implements OnInit{
  private readonly analytics=inject(AnalyticsService);private readonly propertiesApi=inject(PropertyApiService);private readonly destroyRef=inject(DestroyRef);
  readonly countryControl=new FormControl('SY',{nonNullable:true});readonly selectedPropertyId=new FormControl('',{nonNullable:true});readonly market=signal<MarketInsightsDto|null>(null);readonly properties=signal<Property[]>([]);readonly propertyStats=signal<PropertyStatsDto|null>(null);readonly loadingMarket=signal(false);readonly loadingProperties=signal(false);readonly error=signal('');

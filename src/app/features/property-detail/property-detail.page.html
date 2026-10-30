@@ -133,6 +133,9 @@
             </div>
 
             <div class="summary-card__quick" role="group" [attr.aria-label]="'PROPERTY_DETAIL.QUICK_ACTIONS' | translate">
+              <!-- View counter: information, not an action (a span, no click). First in the group so
+                   the action buttons keep their place at the end of the row. -->
+              <app-listing-view-count [count]="viewCountOf(p)"></app-listing-view-count>
               <app-favorite-toggle-button
                 *ngIf="p.id"
                 [propertyId]="p.id"
@@ -140,6 +143,13 @@
               <!-- Social Sharing & Distribution — hides itself when the property has no usable
                    share channel (e.g. not public); see PropertyShareButtonComponent. -->
               <app-property-share-button [property]="p"></app-property-share-button>
+              <!-- Report this listing: signed-in users; the server re-checks everything. Hidden for the owner. -->
+              <app-report-listing-button
+                *ngIf="p.id"
+                [propertyId]="p.id"
+                [ownerId]="p.ownerId"
+                [listingTitle]="p.title"
+              ></app-report-listing-button>
             </div>
           </div>
 
@@ -754,6 +764,9 @@
               </li>
             </ul>
           </div>
+
+          <!-- Monetization: one labelled slot below all listing content; renders nothing unless every ads layer allows it. -->
+          <app-ad-slot placement="property-detail" />
         </div>
 
         <!-- ── Right Column (Map) ── -->
