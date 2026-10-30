@@ -26,7 +26,7 @@
     <div class="ssd__main">
       <header class="ssd__header">
         <p class="ssd__type">{{ l.accommodationTypeCode }}</p>
-        <h1>{{ l.title }}</h1>
+        <h1 dir="auto">{{ displayTitle(l) }}</h1>
         <p class="ssd__meta">
           {{ l.city || '—' }} ·
           {{ l.capacity }} {{ 'SHORTSTAY.DETAIL.GUESTS_SHORT' | translate }} ·
@@ -45,7 +45,12 @@
 
       <section class="ssd__section">
         <h2>{{ 'SHORTSTAY.DETAIL.DESCRIPTION' | translate }}</h2>
-        <p class="ssd__description">{{ l.description }}</p>
+        <app-translation-notice
+          [view]="translation.view()"
+          [showOriginal]="translation.showOriginal()"
+          (toggle)="translation.toggleOriginal()"
+          (retry)="translation.retry()" />
+        <p class="ssd__description" dir="auto">{{ displayDescription(l) }}</p>
       </section>
 
       <section class="ssd__section" *ngIf="listingAmenities().length > 0">
