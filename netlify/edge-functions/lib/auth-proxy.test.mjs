@@ -6,6 +6,7 @@ import {
   shouldProxyPath,
   buildTargetUrl,
   pickForwardableRequestHeaders,
+  addClientIdentityHeaders,
   buildProxiedResponseHeaders,
   fetchWithTimeout
 } from './auth-proxy.mjs';
@@ -165,4 +166,25 @@ test('fetchWithTimeout propagates the fetch implementation\'s own rejection unch
     () => fetchWithTimeout(failingFetch, 'https://example.test/x', {}, 1000),
     TypeError
   );
+});
+
+test('addClientIdentityHeaders forwards the visitor IP with the shared secret (launch audit A4-001)', () => {
+  const headers = addClientIdentityHeaders(new Headers(), '203.0.113.7', 's3cret');
+  assert.equal(headers.get('x-hn-client-ip'), '203.0.113.7');
+  assert.equal(headers.get('x-hn-edge-secret'), 's3cret');
+});
+
+test('addClientIdentityHeaders adds nothing while the secret or the IP is missing', () => {
+  for (const [ip, secret] of [['203.0.113.7', undefined], ['203.0.113.7', '  '], [undefined, 's3cret'], ['', 's3cret']]) {
+    const headers = addClientIdentityHeaders(new Headers(), ip, secret);
+    assert.equal(headers.get('x-hn-client-ip'), null);
+    assert.equal(headers.get('x-hn-edge-secret'), null);
+  }
+});
+
+test('a client cannot smuggle its own X-HN-Client-IP through the proxy', () => {
+  const incoming = new Headers({ 'x-hn-client-ip': '1.2.3.4', 'x-hn-edge-secret': 'guess', 'content-type': 'application/json' });
+  const forwarded = pickForwardableRequestHeaders(incoming);
+  assert.equal(forwarded.get('x-hn-client-ip'), null);
+  assert.equal(forwarded.get('x-hn-edge-secret'), null);
 });
