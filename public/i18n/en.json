@@ -3759,5 +3759,13 @@
       "CLOSE_TITLE": "Close this report?",
       "CLOSE_TEXT": "The decision is recorded and the reporter is told the general result. Closing does not change the listing."
     }
+  },
+  "ADS": {
+    "LABEL": "Ad",
+    "CHOICES": "Ad choices",
+    "CONSENT_TITLE": "Ads on HudhudNest",
+    "CONSENT_TEXT": "We would like to show a few clearly labelled ads to help cover running costs. They are non-personalised and never replace or reorder listings. Choose \"Allow ads\" to see them, or \"No ads\" to keep the site ad-free. You can change this any time under \"Ad choices\".",
+    "ACCEPT": "Allow ads",
+    "DECLINE": "No ads"
   }
 }

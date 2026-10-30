@@ -52,6 +52,7 @@ import { CurrencyRatesService } from '../../../core/pricing/currency-rates.servi
 import { isMarketCurrency } from '../../../core/pricing/market-currencies';
 import { PreferencesService } from '../../../core/services/preferences.service';
 import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
+import { AdSlotComponent } from '../../../core/ads/ad-slot.component';
 import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count.component';
 
 @Component({
@@ -59,6 +60,7 @@ import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AdSlotComponent,
     ListingViewCountComponent,
     AmenityLabelPipe,
     CommonModule,

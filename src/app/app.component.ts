@@ -19,16 +19,18 @@ import { ToastService } from './shared/services/toast.service';
 import { AttributionContextService } from './core/sharing/attribution-context.service';
 import { ConfirmModalComponent } from './shared/ui/confirm-modal.component';
 import { EnvironmentBadgeComponent } from './shared/ui/environment-badge.component';
+import { AdsConsentBannerComponent } from './core/ads/ads-consent-banner.component';
 import { MetaService } from './core/services/meta.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, ToastContainerComponent, ConfirmModalComponent, EnvironmentBadgeComponent, TranslateModule],
+  imports: [RouterOutlet, CommonModule, ToastContainerComponent, ConfirmModalComponent, EnvironmentBadgeComponent, AdsConsentBannerComponent, TranslateModule],
   template: `
     <router-outlet></router-outlet>
     <app-toast-container></app-toast-container>
     <app-environment-badge></app-environment-badge>
+    <app-ads-consent-banner></app-ads-consent-banner>
 
     <!-- App Update Management: تحديث اختياري — قابل للتجاهل، مرة واحدة لكل إقلاع تطبيق. -->
     <app-confirm-modal

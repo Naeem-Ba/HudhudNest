@@ -3759,5 +3759,13 @@
       "CLOSE_TITLE": "Diese Meldung schließen?",
       "CLOSE_TEXT": "Die Entscheidung wird festgehalten und die meldende Person erfährt das allgemeine Ergebnis. Das Schließen ändert die Anzeige nicht."
     }
+  },
+  "ADS": {
+    "LABEL": "Anzeige",
+    "CHOICES": "Werbeeinstellungen",
+    "CONSENT_TITLE": "Werbung auf HudhudNest",
+    "CONSENT_TEXT": "Wir möchten einige klar gekennzeichnete Anzeigen einblenden, um die Betriebskosten zu decken. Sie sind nicht personalisiert und ersetzen oder sortieren keine Inserate um. Mit „Werbung zulassen“ siehst du sie, mit „Keine Werbung“ bleibt die Seite werbefrei. Du kannst das jederzeit unter „Werbeeinstellungen“ ändern.",
+    "ACCEPT": "Werbung zulassen",
+    "DECLINE": "Keine Werbung"
   }
 }
