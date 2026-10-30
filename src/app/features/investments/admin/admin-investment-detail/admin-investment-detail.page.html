@@ -170,7 +170,7 @@
       <div class="field-row">
         <div class="field">
           <label for="ov-start">{{ 'ADMIN_INVESTMENTS.FORM.START_DATE' | translate }}</label>
-          <input id="ov-start" type="date" formControlName="startDate" />
+          <input id="ov-start" type="date" formControlName="startDate" [min]="startDateMin" [max]="startDateMax" />
         </div>
         <div class="field">
           <label for="ov-end">{{ 'ADMIN_INVESTMENTS.FORM.END_DATE' | translate }}</label>
