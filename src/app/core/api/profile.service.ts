@@ -75,6 +75,14 @@ export interface UserProfile {
   PendingPlanTier?: string | null;
 
   /**
+   * الحالة الفعلية للخطة كما يحسبها الخادم (UserDto.PlanStatus): NoPlan | Active | Expired | Cancelled،
+   * وتاريخ انتهائها (UserDto.PlanExpiresAt). PlanTier وحده لا يكفي: خطة منتهية أو ملغاة تبقى مسجّلة
+   * لكنها لا تمنح شيئاً، والخادم يعاملها كالمجانية.
+   */
+  PlanStatus?: string | null;
+  PlanExpiresAt?: string | null;
+
+  /**
    * ✅ إضافة: نبذة تعريفية + عنوان/معلومات تواصل تُعرض علنًا بالملف الشخصي
    * العام (UserDto.Bio / UserDto.ContactInfo بالباك اند).
    */
@@ -162,6 +170,10 @@ interface BackendUserProfile {
   PlanSelectedAt?: string | null;
   pendingPlanTier?: string | null;
   PendingPlanTier?: string | null;
+  planStatus?: string | null;
+  PlanStatus?: string | null;
+  planExpiresAt?: string | null;
+  PlanExpiresAt?: string | null;
 
   bio?: string;
   Bio?: string;
@@ -432,6 +444,8 @@ export class ProfileService {
       PlanTier: user.planTier ?? user.PlanTier ?? null,
       PlanSelectedAt: user.planSelectedAt ?? user.PlanSelectedAt ?? null,
       PendingPlanTier: user.pendingPlanTier ?? user.PendingPlanTier ?? null,
+      PlanStatus: user.planStatus ?? user.PlanStatus ?? null,
+      PlanExpiresAt: user.planExpiresAt ?? user.PlanExpiresAt ?? null,
 
       Bio: user.bio ?? user.Bio ?? '',
       ContactInfo: user.contactInfo ?? user.ContactInfo ?? '',

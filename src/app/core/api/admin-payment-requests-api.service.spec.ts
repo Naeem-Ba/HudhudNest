@@ -29,12 +29,17 @@ describe('AdminPaymentRequestsApiService', () => {
       ],
       featured: [
         { transactionId: 't1', propertyId: 'pr1', propertyTitle: 'Villa', ownerId: 'u2', ownerName: 'Sam', ownerEmail: null, amountUsd: 10, requestedAt: '2026-10-02T10:00:00Z' }
+      ],
+      extensions: [
+        { transactionId: 'x1', propertyId: 'pr3', propertyTitle: 'Flat', ownerId: 'u3', ownerName: 'Lea', ownerEmail: 'l@x.de', amountUsd: 1, requestedAt: '2026-10-03T10:00:00Z', listingExpiresAt: '2026-10-01T00:00:00Z' },
+        { propertyTitle: 'no id' }
       ]
     });
 
     expect(result).toEqual({
       plans: [{ requestId: 'p1', userId: 'u1', userName: 'Ali', email: 'a@x.de', tier: 'premium', priceUsd: 49, requestedAt: '2026-10-01T10:00:00Z' }],
-      featured: [{ transactionId: 't1', propertyId: 'pr1', propertyTitle: 'Villa', ownerId: 'u2', ownerName: 'Sam', ownerEmail: null, amountUsd: 10, requestedAt: '2026-10-02T10:00:00Z' }]
+      featured: [{ transactionId: 't1', propertyId: 'pr1', propertyTitle: 'Villa', ownerId: 'u2', ownerName: 'Sam', ownerEmail: null, amountUsd: 10, requestedAt: '2026-10-02T10:00:00Z' }],
+      extensions: [{ transactionId: 'x1', propertyId: 'pr3', propertyTitle: 'Flat', ownerId: 'u3', ownerName: 'Lea', ownerEmail: 'l@x.de', amountUsd: 1, requestedAt: '2026-10-03T10:00:00Z', listingExpiresAt: '2026-10-01T00:00:00Z' }]
     });
   });
 
@@ -42,7 +47,7 @@ describe('AdminPaymentRequestsApiService', () => {
     let result: unknown;
     service.getPending().subscribe(r => (result = r));
     httpMock.expectOne(base).flush(null);
-    expect(result).toEqual({ plans: [], featured: [] });
+    expect(result).toEqual({ plans: [], featured: [], extensions: [] });
   });
 
   it('approvePlan يرسل durationDays إلى مسار الطلب', () => {
@@ -65,5 +70,18 @@ describe('AdminPaymentRequestsApiService', () => {
     expect(approve.request.method).toBe('POST');
     expect(rejectF.request.body).toEqual({ reason: null });
     [reject, approve, rejectF].forEach(r => r.flush({}));
+  });
+
+  it('approveExtension / rejectExtension: المسارات الصحيحة', () => {
+    service.approveExtension('x1').subscribe();
+    service.rejectExtension('x1', 'no payment').subscribe();
+
+    const approve = httpMock.expectOne(`${base}/extensions/x1/approve`);
+    expect(approve.request.method).toBe('POST');
+    approve.flush({});
+
+    const reject = httpMock.expectOne(`${base}/extensions/x1/reject`);
+    expect(reject.request.body).toEqual({ reason: 'no payment' });
+    reject.flush({});
   });
 });

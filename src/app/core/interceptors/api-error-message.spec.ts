@@ -126,7 +126,8 @@ describe('getFriendlyApiErrorMessage — agency eligibility codes are translated
   [
     'AGENCY_ACCOUNT_NOT_VERIFIED',
     'AGENCY_PAID_PLAN_REQUIRED',
-    'AGENCY_FREE_PLAN_NOT_ALLOWED'
+    'AGENCY_FREE_PLAN_NOT_ALLOWED',
+    'PAID_PLAN_ACTIVE'
   ].forEach(code => {
     it(`${code} maps to its own API_ERRORS key whatever Arabic message the server sent`, () => {
       const message = getFriendlyApiErrorMessage(

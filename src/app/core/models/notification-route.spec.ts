@@ -82,3 +82,14 @@ describe('routeForNotification (investment interest)', () => {
       .toEqual(['/admin/investments']);
   });
 });
+
+describe('routeForNotification (plans and contact)', () => {
+  it('plan and fee notices open the pricing page; a contact alert opens the admin message', () => {
+    expect(routeForNotification({ type: 'PlanRequestApproved', target: { kind: 'pricing', id: null, propertyId: null }, propertyId: null, relatedEntityId: null }))
+      .toEqual(['/pricing']);
+    expect(routeForNotification({ type: 'ContactMessageReceived', target: { kind: 'admin-contact', id: ENTITY, propertyId: null }, propertyId: null, relatedEntityId: ENTITY }))
+      .toEqual(['/admin/messages', ENTITY]);
+    expect(routeForNotification({ type: 'ContactMessageReceived', target: { kind: 'admin-contact', id: '../x', propertyId: null }, propertyId: null, relatedEntityId: '../x' }))
+      .toEqual(['/admin/messages']);
+  });
+});
