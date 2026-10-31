@@ -128,4 +128,16 @@ describe('AdminUsersService', () => {
     expect(req.request.body).toEqual({ reason: 'طلب المستخدم' });
     req.flush({ message: 'Cancelled.' });
   });
+
+  it('✅ enableUser: يرسل السبب إلى مسار إعادة التفعيل', done => {
+    service.enableUser('u1', 'تم التحقق من الهوية').subscribe(r => {
+      expect(r.message).toContain('enabled');
+      done();
+    });
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/Admin/users/u1/enable`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ reason: 'تم التحقق من الهوية' });
+    req.flush({ message: 'User enabled.' });
+  });
 });

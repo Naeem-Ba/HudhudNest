@@ -81,11 +81,16 @@ describe('InvestmentDetailsPage calculator (QA phase 10, D07)', () => {
   });
 
   it('gives the error text both project limits as formatted money', () => {
+    // The number format follows <html lang>, which other specs leave behind: pin it so the test
+    // does not depend on spec order.
+    const previousLang = document.documentElement.lang;
+    document.documentElement.lang = 'en';
     const page = create(50000);
 
     const params = page.calculatorErrorParams();
 
     expect(String(params['minAmount'])).toContain('1,000');
     expect(String(params['projectMax'])).toContain('50,000');
+    document.documentElement.lang = previousLang;
   });
 });

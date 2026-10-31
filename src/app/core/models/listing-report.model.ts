@@ -97,6 +97,8 @@ export interface AdminListingReportSummaryDto {
   assignedAdminName: string | null;
   createdAt: string;
   updatedAt: string;
+  /** أول 200 حرف من رسالة المبلّغ (المرحلة 14): يراها المشرف في القائمة دون فتح البلاغ. */
+  detailsPreview?: string | null;
 }
 
 export interface AdminListingReportStatsDto {
