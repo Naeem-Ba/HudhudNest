@@ -567,6 +567,15 @@ export const routes: Routes = [
             .then(m => m.AdminAppUpdatesPage)
       },
 
+      // سجل التدقيق (المرحلة 14، D06): قراءة فقط. AdminAuditLogsController — Admin على الصنف.
+      {
+        path: 'admin/audit-logs',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/audit-logs/admin-audit-logs.page')
+            .then(m => m.AdminAuditLogsPage)
+      },
+
       // إدارة النشر التلقائي على وسائل التواصل الاجتماعي — نطاق تشغيلي أساسي (قنوات،
       // حسابات + ربط/فصل بيانات الاعتماد، ملخص لوحة التحكم، منشورات للعرض فقط).
       // SocialDistributionController — [Authorize(Roles = "Admin")] على كل نقطة.

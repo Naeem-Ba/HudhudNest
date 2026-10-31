@@ -10,6 +10,7 @@ import { AdminListingReportsService } from '../../core/api/admin-listing-reports
 import {
   AdminAssigneeDto,
   AdminListingReportDetailDto,
+  AdminListingReportEventDto,
   ListingReportOutcome,
   ListingReportPriority,
   REPORT_OUTCOMES,
@@ -75,6 +76,11 @@ type Mode = 'note' | 'info' | 'action' | 'close' | 'takedown' | 'restore' | 'reo
                 <ng-container *ngIf="d.infoRequest"><dt>{{ 'ADMIN_REPORTS.INFO_ASKED' | translate }}</dt><dd class="pre">{{ d.infoRequest }}</dd></ng-container>
                 <ng-container *ngIf="d.reopenCount > 0"><dt>{{ 'ADMIN_REPORTS.REOPENED' | translate }}</dt><dd>{{ d.reopenCount }}</dd></ng-container>
               </dl>
+              <div class="reply" *ngIf="latestReply(d) as reply" data-testid="reporter-reply">
+                <strong>{{ 'ADMIN_REPORTS.REPORTER_REPLY' | translate }}</strong>
+                <span class="muted">{{ reply.createdAt | date:'medium' }}</span>
+                <p class="pre">{{ reply.note }}</p>
+              </div>
               <div class="decision" *ngIf="d.outcome" data-testid="decision">
                 <strong>{{ 'ADMIN_REPORTS.OUTCOME.' + d.outcome | translate }}</strong>
                 <p class="pre" *ngIf="d.resolutionNote">{{ d.resolutionNote }}</p>
@@ -238,6 +244,8 @@ type Mode = 'note' | 'info' | 'action' | 'close' | 'takedown' | 'restore' | 'reo
     </section>
   `,
   styles: [`
+    .reply{margin-top:.8rem;padding:.7rem .9rem;border-inline-start:4px solid var(--primary);background:var(--gold-soft,#fef3c7);border-radius:var(--r-sm)}
+    .reply p{margin:.3rem 0 0}
     .page{padding:clamp(1rem,3vw,2rem);max-width:1200px;margin:0 auto}
     .back{display:inline-block;margin-bottom:.75rem;color:var(--primary-text);text-decoration:none;font-weight:700}
     .head{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
@@ -398,6 +406,15 @@ export class AdminListingReportDetailPage implements OnInit {
     if (type === 'StatusChanged') return this.translate.instant(`ADMIN_REPORTS.STATUS.${value}`);
     if (type === 'PriorityChanged') return this.translate.instant(`ADMIN_REPORTS.PRIORITY.${value}`);
     return value;
+  }
+
+  /** The reporter's most recent answer to the admin's question: shown above the timeline so it is not missed. */
+  latestReply(d: AdminListingReportDetailDto): AdminListingReportEventDto | null {
+    for (let i = d.timeline.length - 1; i >= 0; i--) {
+      const e = d.timeline[i]!;
+      if (e.type === 'ReporterResponded' && e.note) return e;
+    }
+    return null;
   }
 
   trackById(_: number, item: { id: string }): string { return item.id; }

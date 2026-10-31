@@ -26,7 +26,7 @@ import { ConfirmModalComponent } from '../../shared/ui/confirm-modal.component';
 
 const DURATION_PRESETS = [30, 90, 180, 365];
 
-type ModalKind = 'activate' | 'extend' | 'cancel' | null;
+type ModalKind = 'activate' | 'extend' | 'cancel' | 'disable' | 'enable' | null;
 
 @Component({
   selector: 'app-admin-user-detail',
@@ -57,6 +57,16 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | null;
                 {{ ('ADMIN_USERS.STATUS_' + u.accountStatus.toUpperCase()) | translate }}
               </span>
             </div>
+          </div>
+
+          <!-- حالة الحساب: تعطيل مع إخفاء الإعلانات، وإعادة تفعيل بسبب (المرحلة 14) -->
+          <div class="plan-actions" data-testid="account-actions">
+            <button type="button" class="btn btn--danger" *ngIf="u.accountStatus !== 'Disabled'" (click)="openDisableModal()">
+              {{ 'ADMIN_USER_DETAIL.DISABLE_ACCOUNT' | translate }}
+            </button>
+            <button type="button" class="btn btn--primary" *ngIf="u.accountStatus === 'Disabled'" (click)="openEnableModal()">
+              {{ 'ADMIN_USER_DETAIL.ENABLE_ACCOUNT' | translate }}
+            </button>
           </div>
         </div>
 
@@ -160,6 +170,42 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | null;
         </div>
       </ng-container>
     </section>
+
+    <!-- نافذة تعطيل الحساب -->
+    <app-confirm-modal
+      [open]="activeModal() === 'disable'"
+      [title]="'ADMIN_USER_DETAIL.DISABLE_MODAL_TITLE' | translate"
+      [confirmLabel]="'ADMIN_USER_DETAIL.DISABLE_ACCOUNT' | translate"
+      [danger]="true"
+      [loading]="saving()"
+      (confirmed)="submitDisable()"
+      (cancelled)="closeModal()"
+    >
+      <div class="modal-form">
+        <p>{{ 'ADMIN_USER_DETAIL.DISABLE_EXPLANATION' | translate }}</p>
+      </div>
+    </app-confirm-modal>
+
+    <!-- نافذة إعادة تفعيل الحساب -->
+    <app-confirm-modal
+      [open]="activeModal() === 'enable'"
+      [title]="'ADMIN_USER_DETAIL.ENABLE_MODAL_TITLE' | translate"
+      [confirmLabel]="'ADMIN_USER_DETAIL.ENABLE_ACCOUNT' | translate"
+      [confirmDisabled]="!enableReason.trim()"
+      [loading]="saving()"
+      (confirmed)="submitEnable()"
+      (cancelled)="closeModal()"
+    >
+      <div class="modal-form">
+        <p>{{ 'ADMIN_USER_DETAIL.ENABLE_EXPLANATION' | translate }}</p>
+        <textarea
+          rows="2"
+          maxlength="500"
+          [placeholder]="'ADMIN_USER_DETAIL.ENABLE_REASON' | translate"
+          [(ngModel)]="enableReason"
+        ></textarea>
+      </div>
+    </app-confirm-modal>
 
     <!-- نافذة تفعيل خطة -->
     <app-confirm-modal
@@ -371,6 +417,8 @@ export class AdminUserDetailPage implements OnInit {
 
   cancelReason = '';
 
+  enableReason = '';
+
   private userId = '';
 
   ngOnInit(): void {
@@ -440,7 +488,9 @@ export class AdminUserDetailPage implements OnInit {
         this.user.update(current => current && { ...current, roles: current.roles.filter(r => r !== role) });
         this.toast.success(this.translate.instant('ADMIN_USERS.ROLE_REMOVED'));
       },
-      error: () => this.toast.error(this.translate.instant('ADMIN_USERS.ROLE_ERROR'))
+      // 409: لا يُسحب دور Admin من النفس ولا من آخر مشرف فعّال.
+      error: err => this.toast.error(this.translate.instant(
+        err?.status === 409 ? 'ADMIN_USERS.ROLE_LAST_ADMIN' : 'ADMIN_USERS.ROLE_ERROR'))
     });
   }
 
@@ -467,6 +517,68 @@ export class AdminUserDetailPage implements OnInit {
   closeModal(): void {
     if (this.saving()) return;
     this.activeModal.set(null);
+  }
+
+  // -- حالة الحساب (المرحلة 14) --------------------------------
+
+  openDisableModal(): void {
+    this.activeModal.set('disable');
+  }
+
+  openEnableModal(): void {
+    this.enableReason = '';
+    this.activeModal.set('enable');
+  }
+
+  submitDisable(): void {
+    const u = this.user();
+    if (!u) return;
+
+    this.saving.set(true);
+    this.adminUsers
+      .disableUser(u.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.toast.success(this.translate.instant('ADMIN_USER_DETAIL.DISABLE_SUCCESS'));
+          this.saving.set(false);
+          this.activeModal.set(null);
+          this.load();
+        },
+        error: err => {
+          this.saving.set(false);
+          // 409: آخر مشرف فعّال لا يُعطَّل.
+          this.toast.error(this.translate.instant(err?.status === 409
+            ? 'ADMIN_USER_DETAIL.DISABLE_LAST_ADMIN'
+            : 'ADMIN_USER_DETAIL.ACTION_ERROR'));
+        }
+      });
+  }
+
+  submitEnable(): void {
+    const u = this.user();
+    const reason = this.enableReason.trim();
+    if (!u || !reason) return;
+
+    this.saving.set(true);
+    this.adminUsers
+      .enableUser(u.id, reason)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.toast.success(this.translate.instant('ADMIN_USER_DETAIL.ENABLE_SUCCESS'));
+          this.saving.set(false);
+          this.activeModal.set(null);
+          this.load();
+        },
+        error: err => {
+          this.saving.set(false);
+          // 409: الحساب حذفه صاحبه (لا رجعة) أو ليس معطّلاً.
+          this.toast.error(this.translate.instant(err?.status === 409
+            ? 'ADMIN_USER_DETAIL.ENABLE_NOT_POSSIBLE'
+            : 'ADMIN_USER_DETAIL.ACTION_ERROR'));
+        }
+      });
   }
 
   activateEndPreview(): Date {

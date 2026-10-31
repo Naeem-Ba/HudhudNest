@@ -224,7 +224,7 @@ describe('NavbarComponent (Phase 6)', () => {
     expect(hrefs).toEqual(jasmine.arrayContaining([
       '/admin/messages', '/admin/users', '/admin/investments',
       '/admin/location-suggestions', '/admin/marketing', '/admin/app-updates',
-      '/admin/social-distribution'
+      '/admin/social-distribution', '/admin/audit-logs'
     ]));
   });
 

@@ -9,8 +9,8 @@ import { AdminListingReportsService } from '../../core/api/admin-listing-reports
 describe('AdminListingReportsPage', () => {
   let api: jasmine.SpyObj<AdminListingReportsService>;
 
-  function create(query: Record<string, string> = {}) {
-    api.search.and.returnValue(of({ items: [], total: 45, page: 1, pageSize: 20 }));
+  function create(query: Record<string, string> = {}, items: any[] = []) {
+    api.search.and.returnValue(of({ items, total: 45, page: 1, pageSize: 20 }));
     api.stats.and.returnValue(of({
       total: 0, new: 0, underReview: 0, waitingForInformation: 0, actionRequired: 0, open: 0, resolved: 0,
       dismissed: 0, highPriorityOpen: 0, overdue: 0, averageResolutionHours: null, resolvedSampleSize: 0
@@ -26,7 +26,7 @@ describe('AdminListingReportsPage', () => {
     });
     const fixture = TestBed.createComponent(AdminListingReportsPage);
     fixture.detectChanges();
-    return fixture.componentInstance;
+    return Object.assign(fixture.componentInstance, { fixture });
   }
 
   beforeEach(() => { api = jasmine.createSpyObj('AdminListingReportsService', ['search', 'stats', 'assignees']); });
@@ -57,5 +57,18 @@ describe('AdminListingReportsPage', () => {
     page.reason = 'Fraud';
     page.applyFilters();
     expect(api.search.calls.mostRecent().args[0]).toEqual(jasmine.objectContaining({ reason: 'Fraud', page: 1 }));
+  });
+
+  it('shows an excerpt of what the reporter wrote on the row, so the admin does not open every report', () => {
+    const row = {
+      id: 'r1', referenceNumber: 'RPT-000001', propertyId: 'p1', listingTitle: 'Flat', listingType: 'ForRent', listingDeleted: false,
+      listingTakenDown: false, reason: 'Fraud', status: 'New', priority: 'High', isOverdue: false, reporterUserId: 'u1',
+      reporterName: 'Sami', assignedAdminId: null, assignedAdminName: null, createdAt: '2026-10-29T10:00:00Z',
+      updatedAt: '2026-10-29T10:00:00Z', detailsPreview: 'the photos belong to another listing'
+    };
+    const page = create({}, [row]);
+    page.fixture.detectChanges();
+    expect((page.fixture.nativeElement as HTMLElement).querySelector('[data-testid="report-preview"]')?.textContent)
+      .toContain('the photos belong to another listing');
   });
 });

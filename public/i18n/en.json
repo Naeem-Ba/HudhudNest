@@ -104,7 +104,8 @@
     "ADMIN_SERVICES": "Services overview",
     "ADMIN_SHORT_STAY": "Short stays (admin)",
     "ADMIN_LISTING_REPORTS": "Listing reports",
-    "MY_REPORTS": "My reports"
+    "MY_REPORTS": "My reports",
+    "ADMIN_AUDIT_LOGS": "Audit log"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -1032,7 +1033,8 @@
       "Cancelled": "Cancelled"
     },
     "ADS_SUMMARY": "{{total}} total · {{active}} active · {{featured}} featured",
-    "VIEW_DETAILS": "View details"
+    "VIEW_DETAILS": "View details",
+    "ROLE_LAST_ADMIN": "You cannot remove your own admin role, or leave the system without an active admin."
   },
   "ADMIN_USER_DETAIL": {
     "TITLE": "User details",
@@ -1070,7 +1072,18 @@
     "ACTIVATE_SUCCESS": "The plan was activated.",
     "EXTEND_SUCCESS": "The subscription was extended.",
     "CANCEL_SUCCESS": "The subscription was cancelled.",
-    "ACTION_ERROR": "Could not complete the action."
+    "ACTION_ERROR": "Could not complete the action.",
+    "DISABLE_ACCOUNT": "Disable account",
+    "DISABLE_MODAL_TITLE": "Disable this account?",
+    "DISABLE_EXPLANATION": "The owner can no longer sign in and their listings are taken off the public site. You can re-enable the account later; listings that the disabling itself took down come back.",
+    "DISABLE_SUCCESS": "Account disabled and its listings taken down.",
+    "DISABLE_LAST_ADMIN": "The last active admin cannot be disabled.",
+    "ENABLE_ACCOUNT": "Re-enable account",
+    "ENABLE_MODAL_TITLE": "Re-enable this account?",
+    "ENABLE_EXPLANATION": "The owner can sign in again and listings that the disabling took down come back. Listings taken down for another reason stay down.",
+    "ENABLE_REASON": "Reason for re-enabling (required)",
+    "ENABLE_SUCCESS": "Account re-enabled.",
+    "ENABLE_NOT_POSSIBLE": "This account cannot be re-enabled: the owner deleted it themselves (irreversible) or it is not disabled."
   },
   "ADMIN_USER_PROPERTIES": {
     "TAKEN_DOWN": "Taken down",
@@ -3771,7 +3784,8 @@
       "RESTORE_TEXT": "The listing becomes visible again and the owner is notified.",
       "CLOSE_TITLE": "Close this report?",
       "CLOSE_TEXT": "The decision is recorded and the reporter is told the general result. Closing does not change the listing."
-    }
+    },
+    "REPORTER_REPLY": "Reporter replied to your question"
   },
   "ADS": {
     "LABEL": "Ad",
@@ -3780,5 +3794,20 @@
     "CONSENT_TEXT": "We would like to show a few clearly labelled ads to help cover running costs. They are non-personalised and never replace or reorder listings. Choose \"Allow ads\" to see them, or \"No ads\" to keep the site ad-free. You can change this any time under \"Ad choices\".",
     "ACCEPT": "Allow ads",
     "DECLINE": "No ads"
+  },
+  "ADMIN_AUDIT": {
+    "TITLE": "Audit log",
+    "SUBTITLE": "Admin actions and sign-ins, newest first. Read-only.",
+    "SEARCH": "Search (actor, id, action)",
+    "ACTION": "Action (e.g. UserDisabled)",
+    "FROM": "From",
+    "TO": "To",
+    "APPLY": "Apply",
+    "EMPTY": "No matching entries.",
+    "LOAD_ERROR": "Could not load the audit log.",
+    "BY": "By",
+    "DETAILS": "Details",
+    "BEFORE": "Before",
+    "AFTER": "After"
   }
 }

@@ -120,6 +120,7 @@ type Sort = NonNullable<ListingReportFilter['sort']>;
               <span class="muted" dir="ltr">{{ r.referenceNumber }}</span>
               <span class="tag tag--warn" *ngIf="r.listingTakenDown">{{ 'ADMIN_REPORTS.TAKEN_DOWN' | translate }}</span>
               <span class="tag tag--warn" *ngIf="r.listingDeleted">{{ 'ADMIN_REPORTS.LISTING_DELETED' | translate }}</span>
+              <span class="preview" *ngIf="r.detailsPreview" data-testid="report-preview">{{ r.detailsPreview }}</span>
             </div>
             <div class="cell">{{ 'REPORT.REASON.' + r.reason | translate }}</div>
             <div class="cell muted">{{ r.reporterName }}</div>
@@ -142,6 +143,7 @@ type Sort = NonNullable<ListingReportFilter['sort']>;
     </section>
   `,
   styles: [`
+    .preview { display:block; flex-basis:100%; color:var(--gray-600, #52606d); font-size:var(--text-sm); line-height:1.5; overflow-wrap:anywhere; }
     .page{padding:clamp(1rem,3vw,2rem);max-width:1300px;margin:0 auto}
     .page-header h1{margin:0 0 .3rem;color:var(--navy);font-family:var(--font-display);font-size:clamp(1.5rem,2.6vw,2rem)}
     .page-header p{margin:0 0 1rem;color:var(--gray-500)}
