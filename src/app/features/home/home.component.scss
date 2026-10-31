@@ -387,7 +387,10 @@
   &__specs {
     display: flex;
     align-items: center;
-    gap: .85rem;
+    flex-wrap: wrap;
+    gap: .35rem .85rem;
+
+    .card-views { margin-inline-start: auto; }
 
     span {
       display: flex;

@@ -39,6 +39,10 @@
         </span>
       </div>
 
+      <p class="ssb__deadline" data-testid="confirmation-deadline" *ngIf="confirmationDeadline(booking) as deadline">
+        ⏳ {{ 'SHORTSTAY.BOOKINGS.CONFIRM_BEFORE' | translate:{ date: (deadline | date:'d MMM y, HH:mm') } }}
+      </p>
+
       <div class="ssb__amounts">
         <span>{{ 'SHORTSTAY.BOOKINGS.TOTAL' | translate }}: {{ booking.totalAmount | number:'1.0-2' }} {{ booking.currencyCode }}</span>
         <span *ngIf="booking.depositAmount > 0">
@@ -83,6 +87,11 @@
           {{ 'SHORTSTAY.BOOKINGS.CHECK_OUT' | translate }}
         </button>
 
+        <button type="button" class="btn btn--sm btn--primary" data-testid="review-open" *ngIf="canReview(booking)"
+          (click)="openReview(booking)">
+          {{ 'SHORTSTAY.BOOKINGS.RATE_STAY' | translate }}
+        </button>
+
         <button type="button" class="btn btn--sm btn--primary" *ngIf="canComplete(booking)"
           [disabled]="processingId() === booking.id" (click)="complete(booking)">
           {{ 'SHORTSTAY.BOOKINGS.COMPLETE' | translate }}
@@ -91,3 +100,9 @@
     </li>
   </ul>
 </div>
+
+<app-short-stay-review-dialog
+  [booking]="reviewing()"
+  (reviewed)="onReviewed($event)"
+  (closed)="closeReview()"
+/>

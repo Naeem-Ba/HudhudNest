@@ -1,0 +1,45 @@
+.page { padding: clamp(1rem, 3vw, 2rem); max-width: 920px; margin: 0 auto; }
+.page-header { margin-bottom: 1rem; }
+.page-header h1 { margin: 0 0 .3rem; color: var(--navy); font-family: var(--font-display); font-size: clamp(1.4rem, 2.4vw, 1.8rem); }
+.page-header p { margin: 0; color: var(--gray-500); }
+
+.filters { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; margin-bottom: 1rem; }
+.search-input {
+  flex: 1 1 240px; min-width: 180px; border: 1px solid var(--border); border-radius: var(--r-md);
+  padding: .5rem .8rem; background: var(--surface); font-size: 16px;
+}
+.check { display: inline-flex; align-items: center; gap: .4rem; font-size: .9rem; cursor: pointer; }
+
+.error { color: var(--danger); }
+.link-btn { background: none; border: 0; color: var(--primary-text); cursor: pointer; font-weight: 600; padding: 0; }
+
+.listings { display: flex; flex-direction: column; gap: .75rem; }
+.listing-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg, 14px);
+  padding: 1rem 1.15rem; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+}
+.listing-card__main { flex: 1 1 260px; min-width: 0; }
+.title { display: block; font-weight: 700; color: var(--navy); margin-bottom: .35rem; overflow-wrap: anywhere; text-decoration: none; }
+.badges { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .35rem; }
+.badge {
+  display: inline-flex; align-items: center; background: var(--gray-100); color: var(--gray-700);
+  border-radius: var(--r-pill); padding: .15rem .6rem; font-size: var(--text-xs); font-weight: 600;
+}
+.badge--published { background: var(--success-soft, #dcfce7); color: var(--success, #16a34a); }
+.badge--taken-down { background: var(--danger-soft); color: var(--danger); }
+.taken-down-reason { margin: 0 0 .35rem; font-size: var(--text-sm); color: var(--gray-700); overflow-wrap: anywhere; }
+.meta { display: flex; gap: .8rem; flex-wrap: wrap; font-size: .78rem; color: var(--gray-500); }
+
+.listing-card__actions { display: flex; align-items: flex-start; gap: .4rem; flex-wrap: wrap; }
+.btn { border-radius: var(--r-sm); padding: .4rem .75rem; font-size: var(--text-sm); cursor: pointer; border: 1px solid transparent; font-weight: 600; }
+.btn--outline { background: var(--surface); border-color: var(--border); color: var(--navy); }
+
+.pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1.25rem; }
+.pagination button { border: 1px solid var(--border); background: var(--surface); border-radius: var(--r-sm); width: 34px; height: 34px; cursor: pointer; }
+.pagination button:disabled { opacity: .4; cursor: not-allowed; }
+
+.modal-form { display: flex; flex-direction: column; gap: .8rem; }
+.modal-form textarea {
+  border: 1px solid var(--border); border-radius: var(--r-sm); padding: .5rem .6rem; font: inherit; font-size: 16px;
+}
+.preview { background: var(--gold-soft); border-radius: var(--r-sm); padding: .6rem .75rem; font-size: var(--text-sm); color: var(--navy); margin: 0; }

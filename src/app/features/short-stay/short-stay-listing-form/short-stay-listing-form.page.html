@@ -1,18 +1,28 @@
 <div class="ssf">
   <header class="ssf__header">
     <h1>{{ isEditMode ? ('SHORTSTAY.FORM.EDIT_TITLE' | translate) : ('SHORTSTAY.FORM.CREATE_TITLE' | translate) }}</h1>
-    <button
-      *ngIf="isEditMode && listing() as l"
-      type="button"
-      class="btn btn--sm"
-      [class.btn--outline]="l.isPublished"
-      [class.btn--primary]="!l.isPublished"
-      [disabled]="togglingPublish()"
-      (click)="togglePublish()"
-    >
-      {{ (l.isPublished ? 'SHORTSTAY.FORM.UNPUBLISH' : 'SHORTSTAY.FORM.PUBLISH') | translate }}
-    </button>
+    <ng-container *ngIf="isEditMode && listing() as l">
+      <!-- النشر غير معروض لإعلان أوقفته الإدارة (الخادم يرفضه بـ 409)؛ إلغاء نشر منشور يبقى متاحًا -->
+      <button
+        *ngIf="l.isPublished || canPublish(l)"
+        type="button"
+        data-testid="publish-toggle"
+        class="btn btn--sm"
+        [class.btn--outline]="l.isPublished"
+        [class.btn--primary]="!l.isPublished"
+        [disabled]="togglingPublish()"
+        (click)="togglePublish()"
+      >
+        {{ (l.isPublished ? 'SHORTSTAY.FORM.UNPUBLISH' : 'SHORTSTAY.FORM.PUBLISH') | translate }}
+      </button>
+    </ng-container>
   </header>
+
+  <!-- أوقفته الإدارة: السبب يظهر للمالك، ولا يمكنه النشر حتى تُعيده الإدارة -->
+  <p class="ssf__taken-down" role="alert" data-testid="taken-down-banner" *ngIf="isEditMode && listing()?.isTakenDown">
+    🚫 {{ 'SHORTSTAY.TAKEN_DOWN.BANNER' | translate }}
+    <span *ngIf="listing()?.takenDownReason">— {{ 'SHORTSTAY.TAKEN_DOWN.REASON' | translate:{ reason: listing()?.takenDownReason } }}</span>
+  </p>
 
   <p *ngIf="loading()">{{ 'SHORTSTAY.FORM.LOADING' | translate }}</p>
 
@@ -300,4 +310,17 @@
       </button>
     </div>
   </form>
+
+  <!-- خارج <form> عمدًا: كل تغيير هنا يُحفظ فورًا ولا يمرّ بزر «حفظ»، ولا يجوز أن يرسل Enter في حقل التاريخ النموذج -->
+  <section class="ssf__section" data-testid="availability-section" *ngIf="isEditMode && !loading() && listing() as l">
+    <h2>{{ 'SHORTSTAY.AVAILABILITY.TITLE' | translate }}</h2>
+    <p class="ssf__hint">{{ 'SHORTSTAY.AVAILABILITY.HINT' | translate }}</p>
+    <ng-container *ngFor="let roomType of l.roomTypes">
+      <app-unit-availability-panel
+        *ngFor="let unit of roomType.units"
+        [unit]="unit"
+        [roomTypeName]="l.roomTypes.length > 1 ? roomType.name : null"
+      />
+    </ng-container>
+  </section>
 </div>

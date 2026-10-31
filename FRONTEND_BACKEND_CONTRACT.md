@@ -1000,3 +1000,47 @@ transaction الحصّة/القفل الاستشاري — فحوصات رخيص
 | إشعارات جديدة | `ListingTakenDown=44`، `ListingRestored=45`، `VisitCancelledByHost=46` (إلغاء طلب زيارة عند حذف الإعلان). النص يأتي مترجمًا من الخادم. |
 
 لوحة الإدارة: في «إعلانات المستخدم» (`/admin/users/:id/properties`) زر «إيقاف الإعلان» (نافذة بسبب إلزامي) و«استعادة» للموقوف.
+
+## 17. الإقامة القصيرة: الحجز الفوري وفترات الإتاحة والمهل والتقييمات والإيقاف الإداري — 2026-10-18 (QA المرحلة 9)
+
+التصميم والقرارات: `docs/operations/listing-lifecycle-currency-search.md` §7 في مستودع الخلفية. تُنشر الخلفية **قبل** هذه الواجهة (الواجهة تستدعي نقاطًا جديدة).
+
+| النقطة | السلوك |
+|---|---|
+| إنشاء حجز فوري (`POST /short-stay/bookings` لوحدة بحجز فوري) | `400` برسالة عربية جاهزة إن تجاوز: بدء الإقامة > 30 يومًا من اليوم، أو > 30 ليلة، أو للضيف 3 حجوزات فورية نشطة. وضع «طلب» يبقى بحدّه القديم. |
+| `GET /short-stay/listings/units/{unitId}/blocks` | فترات الحجب التي وضعها المضيف: `[{ id, unitId, from, to }]` (`from` شاملة، `to` حصرية، `yyyy-MM-dd`). المالك فقط. |
+| `POST /short-stay/listings/units/{unitId}/blocks` `{ from, to }` | `201`. `422` لتاريخ ماضٍ أو `to <= from` أو أكثر من 366 ليلة أو أبعد من 730 يومًا أو بعد 100 فترة للوحدة؛ `409` إن تقاطعت مع حجز قائم. |
+| `DELETE …/blocks/{blockId}` | فك الحجب. |
+| `PUT …/units/{unitId}/availability` `{ isActive }` | «غير متاح حاليًا» (`false`) أو «متاح»؛ لا يلغي الحجوزات القائمة. |
+| `BookingDto` | حقلان جديدان: `confirmationDeadline: string \| null` (آخر موعد للرد/التأكيد) و`reviewed: boolean`. |
+| انتهاء المهلة | الطلب المعلّق يُلغى تلقائيًا بعد 3 أيام، والمعتمد غير المؤكَّد بعد 3 أيام من الاعتماد، وبحدٍّ أقصى 7 أيام من الطلب (حالة `Expired`). يعمل المنظّف كل 15 دقيقة. |
+| `POST /short-stay/bookings/{id}/check-in` | `400` قبل تاريخ الوصول. |
+| `POST /short-stay/reviews` `{ bookingId, rating 1-5, comment? ≤ 1000 }` | `201`. `400` برسالة عربية إن لم يكتمل الحجز/لم يحن تاريخ المغادرة/قُيّم سابقًا/لا خطة فعّالة للمضيف. الضيف لا يحتاج خطة. التقييم ممكن بعد حذف الإعلان. |
+| `GET /short-stay/listings/{id}/reviews?page=&pageSize=` | عام (بلا تسجيل دخول): `{ averageRating, totalCount, reviews: [{ id, reviewerId, reviewerName, reviewerImageUrl, rating, comment, createdAt }] }`. |
+| `GET /admin/short-stay?search=&takenDown=&page=&pageSize=` | مدير فقط. قائمة مقسّمة بـ `AdminShortStayListingDto` (`isTakenDown`, `takenDownAt`, `takenDownReason`…). |
+| `POST /admin/short-stay/{id}/take-down` `{ reason }` | سبب إلزامي (≤ 500). يخفي الإعلان علنًا ويُشعر المالك. `POST …/restore` `{ reason? }` يعيده. |
+| `ShortStayListingDto` / `SummaryDto` | حقل `isTakenDown`؛ والتفاصيل فيها `takenDownReason`. النشر لموقوف إداريًا `409`، والواجهة تخفي زر النشر (`canPublishShortStay`). |
+
+الواجهة: لوحة «الإتاحة» داخل نموذج الإعلان لكل وحدة، سطر «يجب التأكيد قبل …» في حجوزاتي، زر «قيّم إقامتك» للحجز المكتمل، قسم التقييمات في صفحة التفاصيل، وصفحة `/admin/short-stay` مع رابط في القائمة للمدير.
+
+## 18. الاستثمار: اهتمام المهتمين والاستئناف والتقدّم والجدولة — 2026-10-29 (QA المرحلة 10)
+
+التصميم والقرارات: `docs/investment/PHASE-10-FIXES.md` في مستودع الخلفية. تُنشر الخلفية **قبل** هذه الواجهة. لا ترحيل (Migration) في هذه الدفعة.
+
+| النقطة | السلوك |
+|---|---|
+| `GET /admin/investments/projects/{id}/interests` | مدير فقط. `[{ id, userId, userName, email, phoneNumber, status: 'Active' \| 'Withdrawn' \| 'Contacted', createdAt, updatedAt }]` الأحدث أولًا. `404` لمشروع غير موجود. |
+| `GET /admin/investments/projects` | حقل جديد في كل صف: `activeInterestCount: number`. |
+| `POST /admin/investments/projects/{id}/resume` | `204` من «معلّق» إلى «منشور». `400` من أي حالة أخرى. |
+| `PUT /admin/investments/projects/{id}/progress` `{ raisedAmount }` | `204` للحالات معتمد/مجدول/منشور/معلّق. `400` خارج هذه الحالات أو إن تجاوز المبلغ المستهدف؛ `422` لقيمة سالبة أو أكبر من 1e12. رقم إرشادي لا يُحسب من دفعة. |
+| `POST /admin/investments/projects/{id}/schedule` `{ scheduledPublishAt }` | يجب إرسال الموعد **كلحظة UTC** (`toISOString()`)، لا كنص محلي بلا منطقة، لأن المشروع يُنشر تلقائيًا عند حلوله (مهمة كل 5 دقائق). |
+| `POST /admin/investments/projects/{id}/publish` | `400` برسالة عربية إن كان الموعد المجدول لم يحلّ بعد. دون موعد يبقى يدويًا. |
+| حذف/إخفاء مستند (`DELETE`/`PUT …/documents/{id}`) | `400` إن كان آخر «خطة مشروع» أو «بيان مالي» عام لمشروع مجدول/منشور/معلّق. إضافة تحديث لمشروع مغلق: `400`. |
+| `GET /investments/watchlist`، `GET /investments/interests` | يُظهران المشاريع المنشورة الظاهرة علنًا فقط؛ المعلّق/المغلق يختفي ويعود إن أُعيد نشره. |
+| `GET /investments/projects?search=&city=` | `422` لحرف NUL؛ `%` و`_` نصّ عادي لا حروف بدل. |
+| `POST /investments/projects/{id}/calculator` | `422` إن تجاوز المبلغ 1e12 أو المدة 600 شهر، أو كان المبلغ خارج الحد الأدنى/الأقصى للمشروع نفسه (الرسالة تذكر الحد). |
+| `POST/PUT` للمشروع | `422` لعملة غير مدعومة، حدّ أدنى > المستهدف، عائد > 100%، مدة خارج 1..600، عنوان يَعِد بربح مؤكد، حرف NUL، تاريخ بدء أقدم من 5 سنوات أو أبعد من 10 سنوات، أو تاريخ انتهاء بعد أكثر من 60 سنة. |
+| `POST …/watchlist` و`…/interest` المتوازيان | لا `500` بعد الآن؛ مكرَّرة تعطي `409`. |
+| إشعار جديد `InvestmentInterestReceived` | للمدراء فقط؛ `target.kind = 'admin-investment'` و`target.id` = معرّف المشروع (يفتح `/admin/investments/:id`). |
+
+الواجهة: قسم «المهتمون بالمشروع» وقسم «تقدّم التمويل» وزر «استئناف النشر» في `/admin/investments/:id`، عمود «المهتمون» في القائمة، زر المستخدم «أبدِ اهتمامي»، إخلاء مسؤولية عام في قائمة المشاريع وأعلى صفحة المشروع، تحذير «خاص ليس سرّيًا» عند رفع مستند، وسقف الحاسبة (1e12 و600 شهر).

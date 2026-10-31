@@ -84,6 +84,7 @@ const ALL_TYPES: InvestmentProjectType[] = [
           <span>{{ 'ADMIN_INVESTMENTS.LIST.COL_TYPE' | translate }}</span>
           <span>{{ 'ADMIN_INVESTMENTS.LIST.COL_STATUS' | translate }}</span>
           <span>{{ 'ADMIN_INVESTMENTS.LIST.COL_FUNDING' | translate }}</span>
+          <span>{{ 'ADMIN_INVESTMENTS.LIST.COL_INTERESTS' | translate }}</span>
           <span>{{ 'ADMIN_INVESTMENTS.LIST.COL_CREATED' | translate }}</span>
           <span>{{ 'ADMIN_INVESTMENTS.LIST.COL_ACTIONS' | translate }}</span>
         </div>
@@ -103,6 +104,9 @@ const ALL_TYPES: InvestmentProjectType[] = [
           </span>
           <span [attr.data-label]="'ADMIN_INVESTMENTS.LIST.COL_FUNDING' | translate" class="muted">
             {{ formatAmount(project.raisedAmount) }} / {{ formatAmount(project.targetAmount) }}
+          </span>
+          <span [attr.data-label]="'ADMIN_INVESTMENTS.LIST.COL_INTERESTS' | translate" class="muted">
+            {{ project.activeInterestCount }}
           </span>
           <span [attr.data-label]="'ADMIN_INVESTMENTS.LIST.COL_CREATED' | translate" class="muted">
             {{ project.createdAt | date:'mediumDate' }}
@@ -138,7 +142,7 @@ const ALL_TYPES: InvestmentProjectType[] = [
 
     .projects-table { display:flex; flex-direction:column; gap:.5rem; }
     .row {
-      display:grid; grid-template-columns: 1.8fr 1.1fr 1fr 1.3fr 1fr 1fr; gap:1rem; align-items:center;
+      display:grid; grid-template-columns: 1.8fr 1.1fr 1fr 1.3fr .7fr 1fr 1fr; gap:1rem; align-items:center;
       background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md);
       padding:.85rem 1rem;
     }

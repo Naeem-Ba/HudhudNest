@@ -51,7 +51,8 @@
     "CLICK_TO_ZOOM": "Klicken zum Vergrößern",
     "MONTH": "Monat",
     "CLEAR": "Löschen",
-    "SEARCH": "Suchen"
+    "SEARCH": "Suchen",
+    "PAGINATION": "Seitennavigation"
   },
   "NAVBAR": {
     "HOME": "Startseite",
@@ -99,7 +100,10 @@
     "SERVICES": "HudhudNest-Services",
     "ADMIN_SERVICE_PROVIDERS": "Dienstleister verwalten",
     "PROVIDER_OFFERINGS": "Meine Angebote",
-    "ADMIN_SERVICES": "Leistungsübersicht"
+    "ADMIN_SERVICES": "Leistungsübersicht",
+    "ADMIN_SHORT_STAY": "Kurzzeitmiete (Admin)",
+    "ADMIN_LISTING_REPORTS": "Anzeigenmeldungen",
+    "MY_REPORTS": "Meine Meldungen"
   },
   "AUTH": {
     "LOGIN_TITLE": "Willkommen",
@@ -562,6 +566,16 @@
     "PAGE": "Seite"
   },
   "PROPERTY_DETAIL": {
+    "TRANSLATION": {
+      "LOADING": "Text wird übersetzt …",
+      "WAITING": "Die Übersetzung dauert länger. Vorerst wird der Originaltext angezeigt.",
+      "AUTO_LABEL": "Automatisch übersetzt",
+      "SHOWING_ORIGINAL": "Originaltext des Anbieters",
+      "SHOW_ORIGINAL": "Original anzeigen",
+      "SHOW_TRANSLATION": "Übersetzung anzeigen",
+      "UNAVAILABLE": "Die Übersetzung ist derzeit nicht verfügbar. Der Originaltext wird angezeigt.",
+      "RETRY": "Erneut versuchen"
+    },
     "AGENCY": {
       "TITLE": "Immobilienbüro",
       "NOT_RATED": "Noch nicht bewertet",
@@ -856,6 +870,27 @@
     "FEATURE": "Inserat hervorheben",
     "FEATURE_EXTEND": "Hervorhebung verlängern",
     "FEATURE_PENDING": "Ihre Hervorhebungsanfrage wartet auf die Zahlungsbestätigung durch einen Administrator."
+  },
+  "VIEW_COUNT": {
+    "LABEL": "Aufrufe",
+    "ARIA": "Aufrufe: {{count}}"
+  },
+  "VIEW_STATS": {
+    "TITLE": "Anzeigenaufrufe",
+    "HELP": "Wie oft die Detailseite jeder Anzeige geöffnet wurde. Wiederholte Aufrufe desselben Besuchers innerhalb von 24 Stunden sowie Aufrufe durch den Inserenten, sein Büro-Team, Administratoren und Bots werden nicht gezählt.",
+    "SCOPE": "Umfang der Statistik",
+    "SCOPE_MINE": "Meine Anzeigen",
+    "SCOPE_AGENCY": "Anzeigen des Büros",
+    "ERROR": "Die Aufrufstatistik konnte nicht geladen werden.",
+    "TOTAL": "Aufrufe gesamt",
+    "LAST_7": "Letzte 7 Tage",
+    "LAST_30": "Letzte 30 Tage",
+    "UNIQUE_30": "Verschiedene Besucher (30 Tage)",
+    "LISTING": "Anzeige",
+    "TREND": "Tägliche Aufrufe, letzte {{days}} Tage",
+    "TREND_ARIA": "Balkendiagramm der täglichen Aufrufe der letzten {{days}} Tage, insgesamt {{count}}",
+    "EMPTY": "Sie haben noch keine Anzeigen, für die Aufrufe angezeigt werden könnten.",
+    "NOTE": "Die Gesamtzahl umfasst alle gezählten Aufrufe seit Einführung des Zählers; die 7/30-Tage-Werte und das Tagesdiagramm werden nur {{days}} Tage lang gespeichert. „Verschiedene Besucher“ ist eine Schätzung auf Basis einer anonymen Browser- oder Konto-Kennung."
   },
   "FAVORITE_TOGGLE": {
     "ADD": "Zu Favoriten hinzufügen",
@@ -2064,7 +2099,9 @@
       "OWNER_CANNOT_BOOK": "Sie können Ihre eigene Anzeige nicht buchen.",
       "BOOKING_SUCCESS": "Buchung erfolgreich gesendet.",
       "BOOKING_ERROR": "Buchung konnte nicht abgeschlossen werden.",
-      "BOOKING_CONFLICT": "Diese Daten sind nicht mehr verfügbar, bitte andere Daten wählen."
+      "BOOKING_CONFLICT": "Diese Daten sind nicht mehr verfügbar, bitte andere Daten wählen.",
+      "INSTANT_HINT": "Sofortbuchung: Der Aufenthalt muss innerhalb von {{days}} Tagen ab heute beginnen und höchstens {{nights}} Nächte dauern.",
+      "UNAVAILABLE_NOW": "Diese Einheit ist derzeit nicht buchbar."
     },
     "BOOKINGS": {
       "EYEBROW": "Kurzaufenthalt",
@@ -2100,7 +2137,9 @@
         "CANCELLED": "Storniert",
         "EXPIRED": "Abgelaufen",
         "NO_SHOW": "Nicht erschienen"
-      }
+      },
+      "CONFIRM_BEFORE": "Muss vor dem {{date}} bestätigt werden, sonst läuft die Buchung automatisch ab",
+      "RATE_STAY": "Aufenthalt bewerten"
     },
     "MY_LISTINGS": {
       "TITLE": "Meine Anzeigen",
@@ -2226,6 +2265,47 @@
       "LOAD_ERROR": "Anzeige konnte nicht geladen werden.",
       "PUBLISH_TOGGLE_SUCCESS": "Veröffentlichungsstatus aktualisiert.",
       "PUBLISH_TOGGLE_ERROR": "Status konnte nicht aktualisiert werden."
+    },
+    "AVAILABILITY": {
+      "TITLE": "Verfügbarkeit und gesperrte Zeiträume",
+      "HINT": "Markieren Sie pro Einheit Tage oder Zeiträume als gebucht / nicht verfügbar oder schalten Sie eine Einheit vorübergehend ab. Bestehende Buchungen bleiben unberührt.",
+      "AVAILABLE_NOW": "Derzeit verfügbar",
+      "UNAVAILABLE_NOW": "Derzeit nicht verfügbar",
+      "UNAVAILABLE_HINT": "Diese Einheit ist in der Suche ausgeblendet und nimmt keine neuen Buchungen an, bis Sie sie wieder aktivieren.",
+      "TOGGLE_SUCCESS": "Verfügbarkeit der Einheit aktualisiert.",
+      "TOGGLE_ERROR": "Die Verfügbarkeit der Einheit konnte nicht aktualisiert werden.",
+      "BLOCKS_TITLE": "Gesperrte Zeiträume",
+      "LOADING": "Wird geladen...",
+      "LOAD_ERROR": "Die gesperrten Zeiträume konnten nicht geladen werden.",
+      "NO_BLOCKS": "Keine gesperrten Zeiträume.",
+      "FROM": "Von",
+      "TO": "Bis",
+      "TO_HINT": "Das Datum „Bis“ ist der Morgen, an dem die Einheit wieder verfügbar ist.",
+      "ADD": "Zeitraum sperren",
+      "ADD_SUCCESS": "Der Zeitraum wurde gesperrt.",
+      "ADD_ERROR": "Der Zeitraum konnte nicht gesperrt werden.",
+      "REMOVE_ERROR": "Der gesperrte Zeitraum konnte nicht entfernt werden.",
+      "ERR_DATES_REQUIRED": "Wählen Sie beide Daten.",
+      "ERR_ORDER": "„Bis“ muss nach „Von“ liegen.",
+      "ERR_PAST": "Ein Zeitraum darf nicht in der Vergangenheit beginnen."
+    },
+    "REVIEWS": {
+      "TITLE": "Bewertungen",
+      "COUNT": "{{count}} Bewertungen",
+      "EMPTY": "Noch keine Bewertungen.",
+      "LOADING": "Bewertungen werden geladen...",
+      "LOAD_ERROR": "Die Bewertungen konnten nicht geladen werden.",
+      "LOAD_MORE": "Mehr anzeigen",
+      "DIALOG_TITLE": "Aufenthalt bewerten",
+      "COMMENT_LABEL": "Ihr Kommentar (optional, bis 1000 Zeichen)",
+      "SUBMIT": "Bewertung senden",
+      "THANKS": "Vielen Dank, Ihre Bewertung wurde gespeichert.",
+      "SUBMIT_ERROR": "Die Bewertung konnte nicht gesendet werden."
+    },
+    "TAKEN_DOWN": {
+      "BANNER": "Die Verwaltung hat diese Anzeige gesperrt; sie ist für Besucher ausgeblendet und kann erst nach Freigabe wieder veröffentlicht werden.",
+      "REASON": "Grund: {{reason}}",
+      "SEE_REASON": "Grund anzeigen"
     }
   },
   "INVESTMENTS": {
@@ -2300,7 +2380,7 @@
       "WATCHLIST_ADDED": "Zur Merkliste hinzugefügt.",
       "WATCHLIST_REMOVED": "Von der Merkliste entfernt.",
       "WATCHLIST_ERROR": "Merkliste konnte nicht aktualisiert werden.",
-      "EXPRESS_INTEREST": "Ich habe Interesse an einer Investition",
+      "EXPRESS_INTEREST": "Interesse bekunden",
       "WITHDRAW_INTEREST": "Interesse zurückziehen",
       "INTEREST_REGISTERED": "Interesse erfolgreich registriert. Unser Team kann Sie kontaktieren — dies ist keine Zahlung oder Verpflichtung.",
       "INTEREST_WITHDRAWN": "Ihr Interesse wurde zurückgezogen.",
@@ -2348,7 +2428,10 @@
       "CONSERVATIVE": "Konservativ",
       "BASE": "Basis",
       "OPTIMISTIC": "Optimistisch",
-      "ERROR": "Schätzung konnte nicht berechnet werden."
+      "ERROR": "Schätzung konnte nicht berechnet werden.",
+      "RANGE_ERROR": "Der Betrag darf {{maxAmount}} und die Laufzeit {{maxTerm}} Monate nicht überschreiten.",
+      "BELOW_PROJECT_MIN": "Der Betrag liegt unter der Mindestanlage dieses Projekts ({{minAmount}}).",
+      "ABOVE_PROJECT_MAX": "Der Betrag liegt über der Höchstanlage dieses Projekts ({{projectMax}})."
     },
     "WATCHLIST": {
       "TITLE": "Meine Investment-Merkliste",
@@ -2356,7 +2439,8 @@
       "LOAD_ERROR": "Merkliste konnte nicht geladen werden.",
       "EMPTY_TITLE": "Ihre Merkliste ist leer",
       "EMPTY_MESSAGE": "Gespeicherte Projekte werden hier angezeigt."
-    }
+    },
+    "GENERAL_DISCLAIMER": "Die Angaben auf diesen Seiten stellen Investitionsmöglichkeiten lediglich vor. Sie sind keine Anlage-, Finanz- oder Rechtsberatung, kein verbindliches Angebot und keine Zusage einer Rendite. Jede Investition birgt Risiken bis hin zum Verlust eines Teils oder des gesamten Kapitals. Holen Sie vor einer Entscheidung fachlichen Rat ein."
   },
   "ADMIN_INVESTMENTS": {
     "LIST": {
@@ -2375,7 +2459,8 @@
       "VIEW": "Anzeigen",
       "LOAD_ERROR": "Investitionsprojekte konnten nicht geladen werden.",
       "EMPTY_TITLE": "Noch keine Investitionsprojekte",
-      "EMPTY_MESSAGE": "Erstellen Sie das erste Investitionsprojekt, um zu beginnen."
+      "EMPTY_MESSAGE": "Erstellen Sie das erste Investitionsprojekt, um zu beginnen.",
+      "COL_INTERESTS": "Interessenten"
     },
     "FORM": {
       "CREATE_TITLE": "Neues Investitionsprojekt",
@@ -2408,7 +2493,8 @@
       "ACTION_SCHEDULE": "Veröffentlichung planen",
       "ACTION_PUBLISH": "Veröffentlichen",
       "ACTION_SUSPEND": "Aussetzen",
-      "ACTION_CLOSE": "Schließen"
+      "ACTION_CLOSE": "Schließen",
+      "ACTION_RESUME": "Veröffentlichung fortsetzen"
     },
     "FINANCIALS": {
       "NOTARY_COST": "Notarkosten",
@@ -2439,7 +2525,7 @@
       "CONFIRM_ACTION_INTRO": "Aktueller Status: {{status}}. Diese Aktion bestätigen?",
       "REJECT_REASON_LABEL": "Grund (dem Projektinhaber angezeigt)",
       "SCHEDULE_AT_LABEL": "Geplanter Veröffentlichungszeitpunkt (optional)",
-      "SCHEDULE_HINT": "Leer lassen, um sofortige Veröffentlichung nach Erreichen von \"Geplant\" zu erlauben.",
+      "SCHEDULE_HINT": "Leer lassen, um sofortige Veröffentlichung nach Erreichen von \"Geplant\" zu erlauben. Die Zeit gilt in der Zeitzone Ihres Geräts. Das Projekt wird zur geplanten Zeit automatisch veröffentlicht, sofern die Voraussetzungen erfüllt sind.",
       "OVERVIEW_TITLE": "Übersicht",
       "NON_GUARANTEED_NOTE": "Die erwartete Rendite ist rein indikativ — niemals eine Garantie.",
       "FINANCIALS_TITLE": "Finanzen",
@@ -2463,7 +2549,25 @@
       "UPDATE_CONTENT": "Inhalt",
       "ADD_UPDATE": "Update hinzufügen",
       "UPDATE_ADDED": "Update veröffentlicht.",
-      "CONFIRM_DELETE": "Sind Sie sicher?"
+      "CONFIRM_DELETE": "Sind Sie sicher?",
+      "PROGRESS_TITLE": "Finanzierungsstand",
+      "PROGRESS_NOTE": "Ein vom Team eingetragener Richtwert; er wird nicht aus echten Zahlungen berechnet. Er darf den Zielbetrag nicht überschreiten.",
+      "PROGRESS_LABEL": "Eingesammelter Betrag",
+      "PROGRESS_SAVED": "Finanzierungsstand aktualisiert.",
+      "PROGRESS_ERROR": "Der Finanzierungsstand konnte nicht aktualisiert werden.",
+      "INTERESTS_TITLE": "Interessenten für dieses Projekt",
+      "INTERESTS_NOTE": "Personen, die nur Interesse bekundet haben; kein Betrag, keine Verpflichtung. Kontaktieren Sie sie über die angezeigte E-Mail oder Telefonnummer.",
+      "INTERESTS_EMPTY": "Noch hat niemand Interesse bekundet.",
+      "INTERESTS_LOAD_ERROR": "Die Liste der Interessenten konnte nicht geladen werden.",
+      "INTEREST_COL_NAME": "Name",
+      "INTEREST_COL_EMAIL": "E-Mail",
+      "INTEREST_COL_PHONE": "Telefon",
+      "INTEREST_COL_STATUS": "Status",
+      "INTEREST_COL_DATE": "Datum",
+      "INTEREST_STATUS_ACTIVE": "Aktiv",
+      "INTEREST_STATUS_WITHDRAWN": "Zurückgezogen",
+      "INTEREST_STATUS_CONTACTED": "Kontaktiert",
+      "DOCUMENT_PRIVACY_WARNING": "Hinweis: „Privat“ heißt nur, dass das Dokument nicht auf der Projektseite aufgeführt wird; es ist nicht vertraulich. Wer den Dateilink kennt, kann es öffnen. Laden Sie hier keine sensiblen Dokumente hoch (Ausweise, unterschriebene Verträge, Bankdaten)."
     }
   },
   "LANDING": {
@@ -3409,5 +3513,261 @@
     "storage-room": "Abstellraum",
     "pets-allowed": "Haustiere erlaubt",
     "wheelchair-access": "Rollstuhlgerechter Zugang"
+  },
+  "ADMIN_SHORT_STAY": {
+    "TITLE": "Verwaltung Kurzzeitmiete",
+    "SUBTITLE": "Kurzzeitmiet-Anzeigen prüfen, verstoßende Anzeigen mit Begründung sperren oder wieder freigeben.",
+    "SEARCH_PLACEHOLDER": "Nach Titel oder Stadt suchen",
+    "TAKEN_DOWN_ONLY": "Nur gesperrte",
+    "LOAD_ERROR": "Die Anzeigen konnten nicht geladen werden.",
+    "EMPTY_TITLE": "Keine Anzeigen",
+    "EMPTY_MESSAGE": "Keine Kurzzeitmiet-Anzeigen entsprechen der Suche.",
+    "PUBLISHED": "Veröffentlicht",
+    "NOT_PUBLISHED": "Nicht veröffentlicht",
+    "TAKEN_DOWN": "Von der Verwaltung gesperrt",
+    "TAKEN_DOWN_AT": "Gesperrt am {{date}}",
+    "CREATED_AT": "Erstellt am {{date}}",
+    "TAKE_DOWN": "Sperren",
+    "TAKE_DOWN_MODAL_TITLE": "Kurzzeitmiet-Anzeige sperren",
+    "TAKE_DOWN_HINT": "Die Anzeige verschwindet aus der Suche und kann vom Inhaber nicht erneut veröffentlicht werden; bestehende Buchungen bleiben. Der Inhaber wird mit der Begründung benachrichtigt.",
+    "TAKE_DOWN_REASON": "Begründung (erforderlich, bis 500 Zeichen)",
+    "TAKE_DOWN_SUCCESS": "Die Anzeige wurde gesperrt.",
+    "RESTORE": "Wiederherstellen",
+    "RESTORE_MODAL_TITLE": "Anzeige wiederherstellen",
+    "RESTORE_HINT": "Die Anzeige wird wieder veröffentlicht und der Inhaber benachrichtigt.",
+    "REASON_OPTIONAL": "Notiz (optional)",
+    "RESTORE_SUCCESS": "Die Anzeige wurde wiederhergestellt.",
+    "ACTION_ERROR": "Die Aktion konnte nicht ausgeführt werden."
+  },
+  "REPORT": {
+    "TITLE": "Diese Anzeige melden",
+    "BUTTON": "Melden",
+    "BUTTON_ARIA": "Diese Anzeige melden",
+    "INTRO": "Sagen Sie uns, was mit dieser Anzeige nicht stimmt. Unser Team prüft jede Meldung. Nichts wird automatisch entfernt.",
+    "LISTING": "Anzeige",
+    "REASON_LABEL": "Grund",
+    "OPTIONAL": "optional",
+    "DETAILS_LABEL": "Details",
+    "DETAILS_PLACEHOLDER": "Beschreiben Sie das Problem, damit das Team es prüfen kann (keine Passwörter oder Zahlungsdaten angeben).",
+    "PRIVACY": "Ihre Meldung ist vertraulich. Der Inhaber der Anzeige erfährt nie, wer sie gemeldet hat.",
+    "SUBMIT": "Meldung senden",
+    "SENDING": "Wird gesendet…",
+    "SUCCESS": "Danke. Ihre Meldung {{ref}} ist eingegangen und wird geprüft.",
+    "SUCCESS_HINT": "Den Status sehen Sie unter „Meine Meldungen“.",
+    "ALREADY_OPEN": "Sie haben bereits eine offene Meldung zu dieser Anzeige ({{ref}}).",
+    "ALREADY_OPEN_HINT": "Verfolgen Sie sie unter „Meine Meldungen“. Sie wird nicht doppelt geprüft.",
+    "LOGIN_REQUIRED": "Bitte melden Sie sich an, um eine Anzeige zu melden.",
+    "ERR_REASON": "Bitte wählen Sie einen Grund.",
+    "ERR_DETAILS": "Für diesen Grund sind Details erforderlich.",
+    "ERR_GENERIC": "Die Meldung konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+    "ERR_INVALID": "Einige Angaben sind ungültig. Bitte prüfen und erneut versuchen.",
+    "ERR_LISTING_GONE": "Diese Anzeige ist nicht mehr verfügbar.",
+    "ERR_NETWORK": "Keine Verbindung. Prüfen Sie Ihr Internet und versuchen Sie es erneut.",
+    "ERR_OWN_LISTING": "Sie können Ihre eigene Anzeige nicht melden.",
+    "ERR_RATE": "Sie haben kürzlich zu viele Meldungen gesendet. Bitte später erneut versuchen.",
+    "ERR_RECENTLY_REVIEWED": "Eine Meldung von Ihnen zu dieser Anzeige wurde kürzlich geprüft. Bitte warten Sie, bevor Sie erneut melden.",
+    "ERR_SESSION": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.",
+    "ERR_ALREADY_OPEN": "Sie haben bereits eine offene Meldung zu dieser Anzeige.",
+    "REASON": {
+      "Fraud": "Betrug",
+      "IncorrectDetails": "Falsche Angaben",
+      "FakeListing": "Gefälschte Anzeige",
+      "MisleadingPrice": "Irreführender Preis",
+      "FakePhotos": "Gefälschte oder irreführende Fotos",
+      "CopyrightViolation": "Urheberrechtsverletzung",
+      "Duplicate": "Doppelte Anzeige",
+      "NoLongerAvailable": "Nicht mehr verfügbar",
+      "MisleadingContact": "Irreführende Kontaktdaten",
+      "Impersonation": "Identitätsmissbrauch",
+      "IllegalContent": "Illegale Inhalte",
+      "OffensiveContent": "Anstößige Inhalte",
+      "OffPlatformPayment": "Zahlung außerhalb der Plattform",
+      "Other": "Sonstiges"
+    }
+  },
+  "MY_REPORTS": {
+    "TITLE": "Meine Meldungen",
+    "SUBTITLE": "Die von Ihnen gesendeten Anzeigenmeldungen und ihr Stand.",
+    "EMPTY": "Noch keine Meldungen",
+    "EMPTY_TEXT": "Wenn Sie eine Anzeige melden, können Sie sie hier verfolgen.",
+    "LOAD_ERROR": "Ihre Meldungen konnten nicht geladen werden.",
+    "QUESTION": "Das Team hat Sie gefragt:",
+    "YOUR_ANSWER": "Ihre Antwort",
+    "SEND_ANSWER": "Antwort senden",
+    "ANSWER_SENT": "Ihre Antwort wurde gesendet.",
+    "ANSWER_FAILED": "Die Antwort konnte nicht gesendet werden.",
+    "event": {
+      "Created": "Meldung eingegangen",
+      "InfoRequested": "Informationen angefordert",
+      "ReporterResponded": "Sie haben geantwortet",
+      "Closed": "Meldung geschlossen",
+      "Reopened": "Meldung wieder geöffnet"
+    },
+    "STATUS": {
+      "Submitted": "Eingegangen",
+      "InReview": "In Prüfung",
+      "NeedsYourInfo": "Wir brauchen Ihre Informationen",
+      "Closed": "Geschlossen"
+    },
+    "OUTCOME": {
+      "ActionTaken": "Es wurde eine Maßnahme ergriffen. Danke.",
+      "NoViolationFound": "Wir haben die Anzeige geprüft und keinen Verstoß festgestellt."
+    },
+    "EVENT": {
+      "Created": "Meldung eingegangen",
+      "InfoRequested": "Informationen angefordert",
+      "ReporterResponded": "Sie haben geantwortet",
+      "Closed": "Meldung geschlossen",
+      "Reopened": "Meldung wieder geöffnet"
+    }
+  },
+  "ADMIN_REPORTS": {
+    "TITLE": "Anzeigenmeldungen",
+    "SUBTITLE": "Meldungen zu Anzeigen prüfen. Die Anzahl der Meldungen ist ein Signal, nie eine automatische Entfernung.",
+    "STAT_OPEN": "Offen",
+    "STAT_OVERDUE": "Überfällig",
+    "STAT_HIGH": "Hohe Priorität",
+    "STAT_AVG_HOURS": "Ø Stunden bis Abschluss ({{n}} Meldungen)",
+    "SEARCH": "Suche nach Referenz, Anzeige, Meldender Person…",
+    "F_STATUS": "Status",
+    "ALL_STATUSES": "Alle Status",
+    "F_REASON": "Grund",
+    "ALL_REASONS": "Alle Gründe",
+    "F_PRIORITY": "Priorität",
+    "ALL_PRIORITIES": "Alle Prioritäten",
+    "F_ASSIGNEE": "Zugewiesen an",
+    "ALL_ASSIGNEES": "Alle",
+    "UNASSIGNED": "Nicht zugewiesen",
+    "F_FROM": "Von",
+    "F_TO": "Bis",
+    "F_SORT": "Sortierung",
+    "TAKEN_DOWN": "Entfernt",
+    "LISTING_DELETED": "Anzeige gelöscht",
+    "OVERDUE": "Überfällig",
+    "LOAD_ERROR": "Meldungen konnten nicht geladen werden.",
+    "EMPTY": "Keine Meldungen gefunden",
+    "EMPTY_TEXT": "Nichts entspricht den aktuellen Filtern.",
+    "BACK": "Alle Meldungen",
+    "SIGNAL": "{{reporters}} verschiedene Personen haben offene Meldungen zu dieser Anzeige ({{reports}} Meldungen). Das ist ein Hinweis zum genaueren Hinsehen, kein Beweis.",
+    "REPORT": "Meldung",
+    "REASON": "Grund",
+    "DETAILS": "Details",
+    "NO_DETAILS": "Keine Details angegeben",
+    "TITLE_AT_REPORT": "Titel bei der Meldung",
+    "REVIEW_DUE": "Prüfung fällig",
+    "INFO_ASKED": "Angeforderte Informationen",
+    "REOPENED": "Wie oft wieder geöffnet",
+    "LISTING": "Anzeige",
+    "CURRENT_TITLE": "Aktueller Titel",
+    "OWNER": "Inhaber",
+    "VISIBILITY": "Sichtbarkeit",
+    "VISIBLE": "Öffentlich sichtbar",
+    "NOT_VISIBLE": "Nicht sichtbar",
+    "TAKEDOWN_REASON": "Grund der Entfernung",
+    "PRICE": "Preis",
+    "CITY": "Stadt",
+    "PUBLISHED": "Veröffentlicht",
+    "LISTING_GONE": "Die Anzeige existiert nicht mehr.",
+    "REPORTER": "Meldende Person",
+    "REPORTER_STATS": "{{total}} Meldungen gesendet, {{dismissed}} abgewiesen",
+    "REPORTER_PRIVATE": "Nur für Admins sichtbar. Wird dem Anzeigeninhaber nie gezeigt.",
+    "RELATED": "Weitere Meldungen zu dieser Anzeige",
+    "SAME_REPORTER": "Gleiche Person",
+    "ACTIONS": "Aktionen",
+    "ASSIGNEE": "Zugewiesener Admin",
+    "A_START": "Prüfung starten",
+    "A_NOTE": "Interne Notiz hinzufügen",
+    "A_INFO": "Meldende Person um Informationen bitten",
+    "A_ACTION_REQUIRED": "Maßnahme erforderlich markieren",
+    "A_CLOSE": "Meldung schließen",
+    "A_REOPEN": "Wieder öffnen",
+    "A_TAKEDOWN": "Anzeige entfernen",
+    "A_RESTORE": "Anzeige wiederherstellen",
+    "NOTE_LABEL": "Interne Notiz",
+    "NOTE_HINT": "Nur Admins sehen diese Notiz.",
+    "INFO_LABEL": "Frage an die meldende Person",
+    "INFO_HINT": "Die meldende Person sieht diesen Text.",
+    "SEND": "Senden",
+    "ACTION_LABEL": "Welche Maßnahme ist nötig?",
+    "OUTCOME_LABEL": "Entscheidung",
+    "OUTCOME_PICK": "Entscheidung wählen",
+    "CLOSE_NOTE": "Abschlussnotiz (intern)",
+    "CLOSE_HINT": "Die meldende Person erfährt nur „Maßnahme ergriffen“ oder „kein Verstoß festgestellt“. Diese Notiz bleibt intern.",
+    "TAKEDOWN_LABEL": "Grund (dem Anzeigeninhaber angezeigt)",
+    "TAKEDOWN_HINT": "Die Anzeige ist öffentlich unsichtbar, bis Sie sie wiederherstellen. Das ist umkehrbar.",
+    "RESTORE_LABEL": "Grund der Wiederherstellung",
+    "REOPEN_LABEL": "Warum wird wieder geöffnet?",
+    "TIMELINE": "Verlauf",
+    "INTERNAL": "Intern",
+    "DONE_START": "Prüfung gestartet.",
+    "DONE_ASSIGN": "Zuweisung aktualisiert.",
+    "DONE_PRIORITY": "Priorität aktualisiert.",
+    "DONE_NOTE": "Notiz gespeichert.",
+    "DONE_INFO": "Frage an die meldende Person gesendet.",
+    "DONE_ACTION": "Als „Maßnahme erforderlich“ markiert.",
+    "DONE_REOPEN": "Meldung wieder geöffnet.",
+    "DONE_TAKEDOWN": "Anzeige entfernt.",
+    "DONE_RESTORE": "Anzeige wiederhergestellt.",
+    "DONE_CLOSE": "Meldung geschlossen.",
+    "STATUS": {
+      "New": "Neu",
+      "UnderReview": "In Prüfung",
+      "WaitingForInformation": "Warten auf Informationen",
+      "ActionRequired": "Maßnahme erforderlich",
+      "Resolved": "Erledigt",
+      "Dismissed": "Abgewiesen"
+    },
+    "PRIORITY": {
+      "Low": "Niedrig",
+      "Normal": "Normal",
+      "High": "Hoch",
+      "Urgent": "Dringend"
+    },
+    "OUTCOME": {
+      "NoViolation": "Kein Verstoß festgestellt",
+      "InsufficientEvidence": "Unzureichende Beweise",
+      "DuplicateReport": "Doppelte Meldung",
+      "ListingCorrected": "Anzeige vom Inhaber korrigiert",
+      "CorrectionRequested": "Korrektur vom Inhaber angefordert",
+      "ListingTakenDown": "Anzeige entfernt",
+      "AccountActioned": "Maßnahme am Konto",
+      "OtherAction": "Sonstige Maßnahme"
+    },
+    "EVENT": {
+      "Created": "Meldung erstellt",
+      "StatusChanged": "Status geändert",
+      "PriorityChanged": "Priorität geändert",
+      "Assigned": "Zugewiesen",
+      "Unassigned": "Zuweisung aufgehoben",
+      "NoteAdded": "Notiz hinzugefügt",
+      "InfoRequested": "Informationen angefordert",
+      "ReporterResponded": "Meldende Person hat geantwortet",
+      "ListingTakenDown": "Anzeige entfernt",
+      "ListingRestored": "Anzeige wiederhergestellt",
+      "Closed": "Meldung geschlossen",
+      "Reopened": "Meldung wieder geöffnet"
+    },
+    "SORT": {
+      "Newest": "Neueste zuerst",
+      "Oldest": "Älteste zuerst",
+      "Priority": "Priorität",
+      "RecentlyUpdated": "Zuletzt aktualisiert"
+    },
+    "CONFIRM": {
+      "TAKEDOWN_TITLE": "Diese Anzeige entfernen?",
+      "TAKEDOWN_TEXT": "Die Anzeige verschwindet aus der öffentlichen Suche und der Inhaber wird mit Ihrem Grund benachrichtigt. Sie können sie später wiederherstellen.",
+      "RESTORE_TITLE": "Diese Anzeige wiederherstellen?",
+      "RESTORE_TEXT": "Die Anzeige ist wieder sichtbar und der Inhaber wird benachrichtigt.",
+      "CLOSE_TITLE": "Diese Meldung schließen?",
+      "CLOSE_TEXT": "Die Entscheidung wird festgehalten und die meldende Person erfährt das allgemeine Ergebnis. Das Schließen ändert die Anzeige nicht."
+    }
+  },
+  "ADS": {
+    "LABEL": "Anzeige",
+    "CHOICES": "Werbeeinstellungen",
+    "CONSENT_TITLE": "Werbung auf HudhudNest",
+    "CONSENT_TEXT": "Wir möchten einige klar gekennzeichnete Anzeigen einblenden, um die Betriebskosten zu decken. Sie sind nicht personalisiert und ersetzen oder sortieren keine Inserate um. Mit „Werbung zulassen“ siehst du sie, mit „Keine Werbung“ bleibt die Seite werbefrei. Du kannst das jederzeit unter „Werbeeinstellungen“ ändern.",
+    "ACCEPT": "Werbung zulassen",
+    "DECLINE": "Keine Werbung"
   }
 }

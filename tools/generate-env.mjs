@@ -40,7 +40,17 @@ const values = {
   API_URL: readEnv('API_URL'),
   BASE_URL: readEnv('BASE_URL', 'API_ORIGIN'),
   SIGNALR_URL: readEnv('SIGNALR_URL', 'NOTIFICATION_HUB_URL'),
-  SITE_URL: readEnv('SITE_URL')
+  SITE_URL: readEnv('SITE_URL'),
+  // Monetization (docs/MONETIZATION.md). Every flag is OFF unless exactly "true"; ids are never defaulted.
+  ADS_ENABLED: readEnv('ADS_ENABLED'),
+  WEB_ADS_ENABLED: readEnv('WEB_ADS_ENABLED'),
+  ANDROID_ADS_ENABLED: readEnv('ANDROID_ADS_ENABLED'),
+  IOS_ADS_ENABLED: readEnv('IOS_ADS_ENABLED'),
+  ADSENSE_PUBLISHER_ID: readEnv('ADSENSE_PUBLISHER_ID'),
+  ADSENSE_SLOT_SEARCH: readEnv('ADSENSE_SLOT_SEARCH'),
+  ADSENSE_SLOT_DETAIL: readEnv('ADSENSE_SLOT_DETAIL'),
+  ADMOB_BANNER_ANDROID: readEnv('ADMOB_BANNER_ANDROID'),
+  ADMOB_BANNER_IOS: readEnv('ADMOB_BANNER_IOS')
 };
 
 const contextProblems = checkDeployContext(

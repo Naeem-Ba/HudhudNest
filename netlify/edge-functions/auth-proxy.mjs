@@ -34,7 +34,7 @@
 // assume it works just because it deployed without errors, the same as the two before it.
 // =============================================================
 
-import { shouldProxyPath, buildTargetUrl, pickForwardableRequestHeaders, buildProxiedResponseHeaders, fetchWithTimeout, BACKEND_FETCH_TIMEOUT_MS } from './lib/auth-proxy.mjs';
+import { shouldProxyPath, buildTargetUrl, pickForwardableRequestHeaders, addClientIdentityHeaders, buildProxiedResponseHeaders, fetchWithTimeout, BACKEND_FETCH_TIMEOUT_MS } from './lib/auth-proxy.mjs';
 
 const DEFAULT_API_BASE_URL = 'https://api.hudhudnest.com/api';
 
@@ -55,7 +55,9 @@ export default async (request, context) => {
       targetUrl,
       {
         method: request.method,
-        headers: pickForwardableRequestHeaders(request.headers),
+        // context.ip is the visitor's address as Netlify saw it; EDGE_PROXY_SECRET must equal the
+        // API's EdgeProxy__SharedSecret (launch audit A4-001).
+        headers: addClientIdentityHeaders(pickForwardableRequestHeaders(request.headers), context.ip, Netlify.env.get('EDGE_PROXY_SECRET')),
         body: isBodylessMethod ? undefined : await request.text()
       },
       BACKEND_FETCH_TIMEOUT_MS

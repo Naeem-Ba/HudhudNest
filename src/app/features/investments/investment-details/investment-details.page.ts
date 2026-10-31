@@ -58,6 +58,9 @@ export class InvestmentDetailsPage implements OnInit {
   readonly interestStatus = signal<InvestmentInterestStatus | null>(null);
   readonly interestBusy = signal(false);
 
+  /** Mirror of the API caps (P10-D07: 1e12 for money, 600 months), so absurd input is stopped before the request. */
+  readonly calculatorMaxAmount = 1_000_000_000_000;
+  readonly calculatorMaxTermMonths = 600;
   calculatorAmount: number | null = null;
   calculatorTermMonths: number | null = null;
   readonly calculatorResult = signal<InvestmentCalculatorResult | null>(null);
@@ -203,6 +206,21 @@ export class InvestmentDetailsPage implements OnInit {
 
   runCalculator(): void {
     if (!this.calculatorAmount || this.calculatorAmount <= 0) return;
+    if (this.calculatorAmount > this.calculatorMaxAmount ||
+        (this.calculatorTermMonths ?? 0) > this.calculatorMaxTermMonths) {
+      this.calculatorError.set('INVESTMENTS.CALCULATOR.RANGE_ERROR');
+      return;
+    }
+    // P10-D07 (rest): the API refuses amounts outside the project's own minimum/maximum, so say so before the request.
+    const project = this.project();
+    if (project && this.calculatorAmount < project.minimumInvestment) {
+      this.calculatorError.set('INVESTMENTS.CALCULATOR.BELOW_PROJECT_MIN');
+      return;
+    }
+    if (project?.maximumInvestment != null && this.calculatorAmount > project.maximumInvestment) {
+      this.calculatorError.set('INVESTMENTS.CALCULATOR.ABOVE_PROJECT_MAX');
+      return;
+    }
 
     this.calculatorLoading.set(true);
     this.calculatorError.set('');
@@ -217,6 +235,17 @@ export class InvestmentDetailsPage implements OnInit {
         this.calculatorLoading.set(false);
       }
     });
+  }
+
+  /** Interpolation values for whichever calculator error is showing. */
+  calculatorErrorParams(): Record<string, string | number> {
+    const project = this.project();
+    return {
+      maxAmount: new Intl.NumberFormat(uiNumberLocale(), { maximumFractionDigits: 0 }).format(this.calculatorMaxAmount),
+      maxTerm: this.calculatorMaxTermMonths,
+      minAmount: project ? this.formatAmount(project.minimumInvestment, project.currency) : '',
+      projectMax: project?.maximumInvestment != null ? this.formatAmount(project.maximumInvestment, project.currency) : ''
+    };
   }
 
   formatAmount(value: number, currency: string): string {
