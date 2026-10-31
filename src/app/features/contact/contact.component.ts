@@ -12,6 +12,8 @@ import { ToastService } from '../../shared/services/toast.service';
 import { PlanTier } from '../../core/models/subscription-plan.model';
 import { PageMetaService } from '../../core/services/page-meta.service';
 
+const REQUEST_REF = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /** Tiers accepted from ?plan=. Anything else is ignored rather than echoed back. */
 const PLAN_TIERS: readonly PlanTier[] = ['free', 'basic', 'premium', 'elite'];
 
@@ -77,6 +79,7 @@ export class KontaktComponent implements OnInit {
   ngOnInit(): void {
     this.pageMeta.applyTranslated('SEO.CONTACT', '/kontakt', this.destroyRef);
     this.applyQueryParamPrefill();
+    this.prefillPlanReference();
 
     this.translate.onLangChange
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -114,6 +117,25 @@ export class KontaktComponent implements OnInit {
       this.setAutoSubject(
         this.translate.instant('KONTAKT.PLAN_SUBJECT', { plan: values[planKey] })
       );
+    });
+  }
+
+  /**
+   * /pricing hands over ?ref=<planRequestId> after a paid plan was recorded. Quote it as the first
+   * line of the (still empty) message so whoever reads the enquiry can match it to the pending
+   * request. Written once -- never over text the visitor typed -- and only when it is a real GUID,
+   * so a crafted link cannot plant arbitrary text in the form.
+   */
+  private prefillPlanReference(): void {
+    const ref = this.route.snapshot.queryParamMap.get('ref') ?? '';
+    if (!REQUEST_REF.test(ref) || this.model.Message !== '') {
+      return;
+    }
+
+    this.translate.get('KONTAKT.PLAN_REF_LINE', { ref }).subscribe(line => {
+      if (this.model.Message === '') {
+        this.model.Message = `${line}\n\n`;
+      }
     });
   }
 

@@ -1,7 +1,7 @@
 // =============================================================
 // src/app/admin/payment-requests/payment-requests.page.ts
 //
-// طابور المشرف: طلبات الخطط المدفوعة وطلبات تمييز الإعلانات. لا توجد بوابة دفع،
+// طابور المشرف: طلبات الخطط المدفوعة وطلبات تمييز الإعلانات وتمديدها. لا توجد بوابة دفع،
 // فلا شيء يُفعَّل تلقائياً — المستخدم يقدّم الطلب، ويؤكد المشرف الدفع هنا فتُفعَّل
 // الخطة أو يُميَّز الإعلان. الرفض يُغلق الطلب دون تفعيل.
 // =============================================================
@@ -14,6 +14,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AdminPaymentRequestsApiService } from '../../core/api/admin-payment-requests-api.service';
 import {
+  PendingExtensionPayment,
   PendingFeaturedPayment,
   PendingPlanRequest
 } from '../../core/models/payment-request.model';
@@ -39,7 +40,7 @@ export const DEFAULT_PLAN_DURATION_DAYS = 30;
       <app-loading-spinner *ngIf="loading()" [label]="'COMMON.LOADING' | translate"></app-loading-spinner>
 
       <app-empty-state
-        *ngIf="!loading() && plans().length === 0 && featured().length === 0"
+        *ngIf="!loading() && plans().length === 0 && featured().length === 0 && extensions().length === 0"
         icon="💳"
         [title]="'ADMIN_PAYMENTS.EMPTY_TITLE' | translate"
         [message]="'ADMIN_PAYMENTS.EMPTY_MESSAGE' | translate"
@@ -97,6 +98,27 @@ export const DEFAULT_PLAN_DURATION_DAYS = 30;
             </button>
           </div>
         </div>
+
+        <h2 class="group-title" *ngIf="extensions().length > 0">
+          {{ 'ADMIN_PAYMENTS.EXTENSIONS_TITLE' | translate }} ({{ extensions().length }})
+        </h2>
+        <div class="card" *ngFor="let e of extensions(); trackBy: trackExtension" data-testid="extension-request">
+          <div class="card__info">
+            <a class="link" [routerLink]="['/properties', e.propertyId]"><strong>{{ e.propertyTitle }}</strong></a>
+            <span class="muted">{{ e.ownerName }}<ng-container *ngIf="e.ownerEmail"> · {{ e.ownerEmail }}</ng-container></span>
+            <span class="chip">{{ e.amountUsd }} USD</span>
+            <span class="muted">{{ e.requestedAt | date: 'short' }}</span>
+            <span class="muted" dir="ltr">{{ 'ADMIN_PAYMENTS.REFERENCE' | translate }}: {{ e.transactionId }}</span>
+          </div>
+          <div class="card__actions">
+            <button type="button" class="btn btn--primary" [disabled]="busyId() === e.transactionId" (click)="approveExtension(e)">
+              {{ 'ADMIN_PAYMENTS.APPROVE_EXTENSION' | translate }}
+            </button>
+            <button type="button" class="btn btn--danger" [disabled]="busyId() === e.transactionId" (click)="rejectExtension(e)">
+              {{ 'ADMIN_PAYMENTS.REJECT' | translate }}
+            </button>
+          </div>
+        </div>
       </ng-container>
     </section>
   `,
@@ -131,6 +153,7 @@ export class AdminPaymentRequestsPage implements OnInit {
 
   readonly plans = signal<PendingPlanRequest[]>([]);
   readonly featured = signal<PendingFeaturedPayment[]>([]);
+  readonly extensions = signal<PendingExtensionPayment[]>([]);
   readonly loading = signal(true);
   readonly busyId = signal<string | null>(null);
 
@@ -149,6 +172,7 @@ export class AdminPaymentRequestsPage implements OnInit {
         next: r => {
           this.plans.set(r.plans);
           this.featured.set(r.featured);
+          this.extensions.set(r.extensions);
           this.loading.set(false);
         },
         error: () => {
@@ -199,7 +223,22 @@ export class AdminPaymentRequestsPage implements OnInit {
       () => this.featured.update(list => list.filter(x => x.transactionId !== f.transactionId)));
   }
 
+  approveExtension(e: PendingExtensionPayment): void {
+    if (!confirm(this.translate.instant('ADMIN_PAYMENTS.CONFIRM_APPROVE_EXTENSION', { title: e.propertyTitle }))) return;
+
+    this.run(e.transactionId, this.api.approveExtension(e.transactionId), 'ADMIN_PAYMENTS.EXTENSION_APPROVED',
+      () => this.extensions.update(list => list.filter(x => x.transactionId !== e.transactionId)));
+  }
+
+  rejectExtension(e: PendingExtensionPayment): void {
+    if (!confirm(this.translate.instant('ADMIN_PAYMENTS.CONFIRM_REJECT', { name: e.propertyTitle }))) return;
+
+    this.run(e.transactionId, this.api.rejectExtension(e.transactionId), 'ADMIN_PAYMENTS.REJECTED',
+      () => this.extensions.update(list => list.filter(x => x.transactionId !== e.transactionId)));
+  }
+
   trackPlan(_: number, p: PendingPlanRequest): string { return p.requestId; }
+  trackExtension(_: number, e: PendingExtensionPayment): string { return e.transactionId; }
   trackFeatured(_: number, f: PendingFeaturedPayment): string { return f.transactionId; }
 
   private run(id: string, call: ReturnType<AdminPaymentRequestsApiService['approvePlan']>, successKey: string, onDone: () => void): void {
