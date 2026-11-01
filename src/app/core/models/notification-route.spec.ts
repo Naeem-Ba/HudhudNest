@@ -11,6 +11,8 @@ describe('routeForNotification', () => {
 
   it('opens the property page for property events', () => {
     expect(routeForNotification({ type: 'SavedSearchMatch', target: { kind: 'property', propertyId: PROPERTY } })).toEqual(['/properties', PROPERTY]);
+    expect(routeForNotification({ type: 'ListingDemandMatch', target: { kind: 'listing-demand', propertyId: PROPERTY } })).toEqual(['/search-requests/for-listing', PROPERTY]);
+    expect(routeForNotification({ type: 'ListingDemandMatch', target: { kind: 'listing-demand', propertyId: '../x' } })).toEqual(['/search-requests/board']);
   });
 
   it('sends provider-side service events to the provider request and requester events to my services', () => {

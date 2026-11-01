@@ -22,6 +22,8 @@ export function routeForNotification(item: Pick<NotificationItem, 'type' | 'targ
       return propertyId ? ['/properties', propertyId] : null;
     case 'my-listings':
       return ['/my-listings'];
+    case 'listing-demand':
+      return propertyId ? ['/search-requests/for-listing', propertyId] : ['/search-requests/board'];
     case 'visit':
       return ['/visits'];
     case 'short-stay-booking':

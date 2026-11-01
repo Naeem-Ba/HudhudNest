@@ -217,6 +217,29 @@ export const routes: Routes = [
             .then(m => m.MyListingReportsPage)
       },
       {
+        // Growth engine P2: property search requests (buyer/renter side).
+        path: 'search-requests',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/search-requests/my-search-requests.page')
+            .then(m => m.MySearchRequestsPage)
+      },
+      {
+        // Growth engine P2: anonymous request board (advertiser side).
+        path: 'search-requests/board',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/search-requests/search-request-board.page')
+            .then(m => m.SearchRequestBoardPage)
+      },
+      {
+        path: 'search-requests/for-listing/:propertyId',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/search-requests/search-request-board.page')
+            .then(m => m.SearchRequestBoardPage)
+      },
+      {
         // Phase-0, Task 3.
         path: 'saved-searches',
         canActivate: [AuthGuard],

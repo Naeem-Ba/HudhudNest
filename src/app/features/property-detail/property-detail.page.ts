@@ -50,6 +50,7 @@ import { LangCode } from '../../core/services/language.service';
 import { ListingTranslationService } from '../../core/api/listing-translation.service';
 import { ListingTranslationController } from './listing-translation.controller';
 import { TranslationNoticeComponent } from './translation-notice.component';
+import { PriceHistoryComponent } from './price-history.component';
 import { getGallerySwipeNavigation } from './gallery-swipe';
 import { REVIEW_COMMENT_MAX_LENGTH, ReviewDto, validateCreateReview } from '../../core/models/review.model';
 import { CreateVisitRequest, validateCreateVisit } from '../../core/models/visit.model';
@@ -95,6 +96,7 @@ const LIGHTBOX_IMAGE_WIDTH = 2048;
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdSlotComponent,
+    PriceHistoryComponent,
     AmenityLabelPipe,
     CommonModule,
     RouterModule,
