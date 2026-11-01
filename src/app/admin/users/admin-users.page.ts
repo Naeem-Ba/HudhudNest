@@ -151,7 +151,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
   styles: [`
     .page { padding: clamp(1rem, 3vw, 2rem); }
     .page-header { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap; }
-    .page-header h1 { margin:0 0 .3rem; color:var(--navy); font-family:var(--font-display); font-size:clamp(1.5rem,2.6vw,2rem); }
+    .page-header h1 { margin:0 0 .3rem; color: var(--text-strong); font-family:var(--font-display); font-size:clamp(1.5rem,2.6vw,2rem); }
     .page-header p { margin:0; color:var(--gray-500); }
 
     .filters { display:flex; flex-wrap:wrap; gap:.6rem; margin-bottom:1rem; }
@@ -173,7 +173,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
     .user-id { display:block; font-size: .7rem; color: var(--gray-400); margin-top: .15rem; }
 
     .plan-chip {
-      display:inline-flex; align-items:center; background:var(--gold-soft); color:var(--navy);
+      display:inline-flex; align-items:center; background:var(--gold-soft); color: var(--text-strong);
       border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600;
     }
     .plan-chip--expired, .plan-chip--cancelled { background: var(--danger-soft); color: var(--danger); }
@@ -190,7 +190,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 
     .actions { display:flex; gap:.4rem; align-items:center; flex-wrap:wrap; }
     .btn { border-radius:var(--r-sm); padding:.4rem .75rem; font-size:var(--text-sm); cursor:pointer; border:1px solid transparent; font-weight:600; }
-    .btn--outline { background:var(--surface); border-color:var(--border); color:var(--navy); }
+    .btn--outline { background:var(--surface); border-color:var(--border); color: var(--text-strong); }
     .btn--primary { background: var(--primary); color: var(--on-primary); }
     .btn--danger { background:var(--danger-soft); color:var(--danger); border-color:rgba(220,38,38,.2); }
     .btn:disabled { opacity:.6; cursor:not-allowed; }

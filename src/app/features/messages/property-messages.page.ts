@@ -162,8 +162,8 @@ import { ConversationListComponent } from './conversation-list.component';
     .page { padding: clamp(1rem, 3vw, 2rem); max-width: 760px; margin: 0 auto; width: 100%; box-sizing: border-box; }
     .page-header { display:flex; align-items:center; gap:.75rem; margin-bottom:1.25rem; min-width:0; }
     .page-header__text { min-width:0; }
-    .back-btn { width:40px;height:40px;border-radius:var(--r-pill);border:1px solid var(--border);background:var(--surface);display:grid;place-items:center;cursor:pointer;color:var(--navy); flex-shrink:0; }
-    .page-header h1 { margin:0;font-size:clamp(1.4rem,2.6vw,1.9rem);color:var(--navy); font-family: var(--font-display); }
+    .back-btn { width:40px;height:40px;border-radius:var(--r-pill);border:1px solid var(--border);background:var(--surface);display:grid;place-items:center;cursor:pointer;color: var(--text-strong); flex-shrink:0; }
+    .page-header h1 { margin:0;font-size:clamp(1.4rem,2.6vw,1.9rem);color: var(--text-strong); font-family: var(--font-display); }
     .subtitle { display:block; margin:.15rem 0 0;color:var(--gray-500);font-size:var(--text-sm); }
     .subtitle:hover { color:var(--primary-text); text-decoration:underline; }
 
@@ -182,7 +182,7 @@ import { ConversationListComponent } from './conversation-list.component';
       align-self:flex-start; box-shadow:var(--shadow-xs); min-width:0;
     }
     .bubble--mine { align-self:flex-end; background:var(--primary-soft); border:1px solid rgba(214,168,79,.25); }
-    .bubble__sender { display:block; font-size:var(--text-xs); font-weight:700; color:var(--navy); margin-bottom:.15rem; }
+    .bubble__sender { display:block; font-size:var(--text-xs); font-weight:700; color: var(--text-strong); margin-bottom:.15rem; }
     .bubble p { margin:0 0 .25rem; color:var(--gray-800); line-height:1.6; white-space:pre-wrap; overflow-wrap:anywhere; }
     .bubble time { font-size:var(--text-xs); color:var(--gray-400); }
 

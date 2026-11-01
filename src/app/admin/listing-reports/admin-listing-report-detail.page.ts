@@ -249,14 +249,14 @@ type Mode = 'note' | 'info' | 'action' | 'close' | 'takedown' | 'restore' | 'reo
     .page{padding:clamp(1rem,3vw,2rem);max-width:1200px;margin:0 auto}
     .back{display:inline-block;margin-bottom:.75rem;color:var(--primary-text);text-decoration:none;font-weight:700}
     .head{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
-    .head h1{margin:.1rem 0;color:var(--navy);font-family:var(--font-display);font-size:clamp(1.4rem,2.4vw,1.9rem)}
+    .head h1{margin:.1rem 0;color: var(--text-strong);font-family:var(--font-display);font-size:clamp(1.4rem,2.4vw,1.9rem)}
     .head p{margin:0}
     .chips{display:flex;gap:.4rem;align-items:start;flex-wrap:wrap}
     .signal{background:var(--warning-soft,#fef3c7);color:var(--warning,#92400e);border-radius:var(--r-md);padding:.7rem 1rem;margin-bottom:1rem;font-weight:700}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start}
     .col{display:grid;gap:1rem;min-width:0}
     .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:1rem 1.15rem;min-width:0}
-    .card h2{margin:0 0 .6rem;font-size:1.05rem;color:var(--navy)}
+    .card h2{margin:0 0 .6rem;font-size:1.05rem;color: var(--text-strong)}
     dl{display:grid;grid-template-columns:max-content 1fr;gap:.35rem .9rem;margin:0}
     dt{color:var(--gray-500);font-size:var(--text-sm)}
     dd{margin:0;overflow-wrap:anywhere}

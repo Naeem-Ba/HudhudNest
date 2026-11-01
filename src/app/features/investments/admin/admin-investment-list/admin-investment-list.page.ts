@@ -129,7 +129,7 @@ const ALL_TYPES: InvestmentProjectType[] = [
   styles: [`
     .page { padding: clamp(1rem, 3vw, 2rem); max-width: 1280px; margin: 0 auto; }
     .page-header { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap; }
-    .page-header h1 { margin:0 0 .3rem; color:var(--navy); font-family:var(--font-display); font-size:clamp(1.5rem,2.6vw,2rem); }
+    .page-header h1 { margin:0 0 .3rem; color: var(--text-strong); font-family:var(--font-display); font-size:clamp(1.5rem,2.6vw,2rem); }
     .page-header p { margin:0; color:var(--gray-500); }
 
     .filters { display:flex; flex-wrap:wrap; gap:.6rem; margin-bottom:1rem; }
@@ -163,7 +163,7 @@ const ALL_TYPES: InvestmentProjectType[] = [
 
     .actions { display:flex; gap:.4rem; align-items:center; flex-wrap:wrap; }
     .btn { border-radius:var(--r-sm); padding:.4rem .75rem; font-size:var(--text-sm); cursor:pointer; border:1px solid transparent; font-weight:600; }
-    .btn--outline { background:var(--surface); border-color:var(--border); color:var(--navy); }
+    .btn--outline { background:var(--surface); border-color:var(--border); color: var(--text-strong); }
     .btn--primary { background: var(--primary); color: var(--on-primary); }
     .btn:disabled { opacity:.6; cursor:not-allowed; }
 

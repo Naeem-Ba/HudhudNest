@@ -156,7 +156,7 @@ import { ScrollLockService } from '../../core/services/scroll-lock.service';
       box-shadow: var(--shadow-sm, 0 2px 8px rgba(15,23,42,.08));
       transition: color .15s, transform .1s;
     }
-    .share-trigger:hover:not(:disabled) { color: var(--navy, #0f2742); }
+    .share-trigger:hover:not(:disabled) { color: var(--text-strong); }
     .share-trigger:active:not(:disabled) { transform: scale(.92); }
     .share-trigger:focus-visible { outline: 2px solid var(--navy, #0f2742); outline-offset: 2px; }
     .share-trigger:disabled { opacity: .6; cursor: default; }
@@ -185,7 +185,7 @@ import { ScrollLockService } from '../../core/services/scroll-lock.service';
     .share-sheet__grab { display: block; width: 40px; height: 4px; border-radius: 4px; background: var(--border); margin: 0 auto .5rem; }
 
     .share-sheet__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .5rem; }
-    .share-sheet__header h2 { margin: 0; font-family: var(--font-display); font-size: 1.15rem; color: var(--navy); }
+    .share-sheet__header h2 { margin: 0; font-family: var(--font-display); font-size: 1.15rem; color: var(--text-strong); }
     .share-sheet__close {
       border: none; background: transparent; color: var(--gray-500); cursor: pointer;
       display: grid; place-items: center; border-radius: var(--r-pill, 999px);
@@ -232,7 +232,7 @@ import { ScrollLockService } from '../../core/services/scroll-lock.service';
     .share-option:hover:not(:disabled) { background: var(--gray-100, var(--border)); }
     .share-option:active:not(:disabled) { transform: scale(.97); }
     .share-option:disabled { opacity: .55; cursor: not-allowed; }
-    .share-option__icon { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--gray-100, #f1f5f9); color: var(--navy, #0f2742); }
+    .share-option__icon { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--gray-100, #f1f5f9); color: var(--text-strong); }
     .share-option__icon svg { width: 22px; height: 22px; }
     .share-option__icon--whatsapp { background: #25d366; color: #fff; }
     .share-option__icon--telegram { background: #229ed9; color: #fff; }

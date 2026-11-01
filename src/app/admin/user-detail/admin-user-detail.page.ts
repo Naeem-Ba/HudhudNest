@@ -317,21 +317,21 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | 'disable' | 'enable' | null;
   styles: [`
     .page { padding: clamp(1rem, 3vw, 2rem); max-width: 860px; margin: 0 auto; }
     .page-header { margin-bottom: 1rem; }
-    .page-header h1 { margin: .4rem 0 0; color:var(--navy); font-family:var(--font-display); font-size:clamp(1.4rem,2.4vw,1.9rem); }
+    .page-header h1 { margin: .4rem 0 0; color: var(--text-strong); font-family:var(--font-display); font-size:clamp(1.4rem,2.4vw,1.9rem); }
     .link-btn { background:none; border:0; color:var(--primary-text); cursor:pointer; font-weight:600; padding:0; }
 
     .card {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg, 14px);
       padding: 1.1rem 1.25rem; margin-bottom: 1rem;
     }
-    .card h2 { margin: 0 0 .75rem; font-size: 1.05rem; color: var(--navy); }
+    .card h2 { margin: 0 0 .75rem; font-size: 1.05rem; color: var(--text-strong); }
 
     .identity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .8rem; }
     .field-label { display:block; font-size: .72rem; color: var(--gray-500); margin-bottom: .15rem; }
 
     .roles { display:flex; flex-wrap:wrap; gap:.35rem; margin-bottom: .6rem; }
     .role-chip {
-      display:inline-flex; align-items:center; gap:.3rem; background:var(--gold-soft); color:var(--navy);
+      display:inline-flex; align-items:center; gap:.3rem; background:var(--gold-soft); color: var(--text-strong);
       border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600;
     }
     .role-chip__remove { border:0; background:none; cursor:pointer; color:var(--danger); font-size:1rem; line-height:1; padding:0; }
@@ -349,7 +349,7 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | 'disable' | 'enable' | null;
     .status-chip--disabled { background: var(--danger-soft); color: var(--danger); }
 
     .plan-chip {
-      display:inline-flex; align-items:center; background:var(--gold-soft); color:var(--navy);
+      display:inline-flex; align-items:center; background:var(--gold-soft); color: var(--text-strong);
       border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600;
     }
     .plan-chip--expired, .plan-chip--cancelled { background: var(--danger-soft); color: var(--danger); }
@@ -357,14 +357,14 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | 'disable' | 'enable' | null;
     .ads-summary { color: var(--gray-700); margin: 0 0 .8rem; }
 
     .btn { border-radius:var(--r-sm); padding:.5rem .9rem; font-size:var(--text-sm); cursor:pointer; border:1px solid transparent; font-weight:600; text-decoration:none; display:inline-block; }
-    .btn--outline { background:var(--surface); border-color:var(--border); color:var(--navy); }
+    .btn--outline { background:var(--surface); border-color:var(--border); color: var(--text-strong); }
     .btn--primary { background: var(--primary); color: var(--on-primary); }
     .btn--danger { background:var(--danger-soft); color:var(--danger); border-color:rgba(220,38,38,.2); }
     .btn:disabled { opacity:.6; cursor:not-allowed; }
     .muted { color: var(--gray-400); }
 
     .modal-form { display:flex; flex-direction:column; gap:.8rem; }
-    .modal-form label { display:flex; flex-direction:column; gap:.35rem; font-size: var(--text-sm); font-weight:600; color: var(--navy); }
+    .modal-form label { display:flex; flex-direction:column; gap:.35rem; font-size: var(--text-sm); font-weight:600; color: var(--text-strong); }
     .modal-form select, .modal-form input, .modal-form textarea {
       /* font-size مضبوط صراحة بـ 16px (لا inherit من .modal-form label الأصغر) — أقل من
          16px يُشغّل تكبير iOS Safari التلقائي عند تركيز أي حقل إدخال، مؤكَّد حيّاً على
@@ -377,7 +377,7 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | 'disable' | 'enable' | null;
       padding:.25rem .7rem; font-size:var(--text-xs); cursor:pointer;
     }
     .preset-chip--active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
-    .preview { background: var(--gold-soft); border-radius: var(--r-sm); padding: .6rem .75rem; font-size: var(--text-sm); color: var(--navy); margin:0; }
+    .preview { background: var(--gold-soft); border-radius: var(--r-sm); padding: .6rem .75rem; font-size: var(--text-sm); color: var(--text-strong); margin:0; }
   `]
 })
 export class AdminUserDetailPage implements OnInit {

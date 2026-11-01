@@ -93,7 +93,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
   styles: [`
     .page { padding: clamp(1rem, 3vw, 2rem); }
     .page-header { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap; }
-    .page-header h1 { margin:0 0 .3rem; color:var(--navy); font-family:var(--font-display); font-size:clamp(1.5rem,2.6vw,2rem); }
+    .page-header h1 { margin:0 0 .3rem; color: var(--text-strong); font-family:var(--font-display); font-size:clamp(1.5rem,2.6vw,2rem); }
     .page-header p { margin:0; color:var(--gray-500); }
     .link-btn { background:none; border:0; color:var(--primary-text); cursor:pointer; font-weight:600; }
 
@@ -107,7 +107,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
     .muted { color:var(--gray-400); }
 
     .type-chip {
-      display:inline-flex; align-items:center; background:var(--gold-soft); color:var(--navy);
+      display:inline-flex; align-items:center; background:var(--gold-soft); color: var(--text-strong);
       border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600;
     }
     .type-chip--district { background:var(--primary-soft, var(--gold-soft)); }

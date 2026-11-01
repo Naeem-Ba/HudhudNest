@@ -101,7 +101,7 @@ const PROJECT_TYPES: InvestmentProjectType[] = [
   `,
   styles: [`
     .page { padding: clamp(1rem, 3vw, 2rem); max-width: 720px; margin: 0 auto; }
-    .page-header h1 { margin:0 0 .3rem; color:var(--navy); font-family:var(--font-display); font-size:clamp(1.4rem,2.4vw,1.8rem); }
+    .page-header h1 { margin:0 0 .3rem; color: var(--text-strong); font-family:var(--font-display); font-size:clamp(1.4rem,2.4vw,1.8rem); }
     .page-header p { margin:0 0 1.5rem; color:var(--gray-500); }
 
     .form { display:flex; flex-direction:column; gap:1.1rem; }
@@ -125,7 +125,7 @@ const PROJECT_TYPES: InvestmentProjectType[] = [
 
     .form-actions { display:flex; justify-content:flex-end; gap:.75rem; margin-top:.5rem; }
     .btn { border-radius:var(--r-sm); padding:.55rem 1.1rem; font-size:.9rem; cursor:pointer; border:1px solid transparent; font-weight:600; }
-    .btn--outline { background:var(--surface); border-color:var(--border); color:var(--navy); }
+    .btn--outline { background:var(--surface); border-color:var(--border); color: var(--text-strong); }
     .btn--primary { background: var(--primary); color: var(--on-primary); }
     .btn:disabled { opacity:.6; cursor:not-allowed; }
   `]
