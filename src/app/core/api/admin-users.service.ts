@@ -9,6 +9,7 @@
 //   POST   /api/Admin/users/{id}/roles/{role}
 //   DELETE /api/Admin/users/{id}/roles/{role}
 //   DELETE /api/Admin/users/{id}             ← تعطيل (Disable) وليس حذفاً نهائياً
+//   POST   /api/Admin/users/{id}/enable      { reason } ← إعادة التفعيل (المرحلة 14)
 //
 // لوحة الإدارة — الخطة/الاشتراك (لا دفع فعلي، تفعيل/تمديد/إلغاء إداري فقط):
 //   POST /api/Admin/users/{id}/subscription/activate  { tier, durationDays, reason? }
@@ -130,6 +131,14 @@ export class AdminUsersService {
   /** تحذير: يُعطِّل الحساب (Soft-disable) على الخادم، وليس حذفاً نهائياً. */
   disableUser(userId: string): Observable<void> {
     return this.api.delete<void>(`/Admin/users/${userId}`);
+  }
+
+  /**
+   * يعيد تفعيل حساب عطّله مشرف (السبب مطلوب). يعيد أيضاً إعلاناته التي أوقفها التعطيل نفسه،
+   * ولا يعمل على حساب حذفه صاحبه بنفسه (409).
+   */
+  enableUser(userId: string, reason: string): Observable<AdminOperationResult> {
+    return this.api.post<AdminOperationResult>(`/Admin/users/${userId}/enable`, { reason });
   }
 
   /** تفعيل خطة مدفوعة للمستخدم يدوياً — بلا أي عملية دفع فعلية. */

@@ -16,6 +16,7 @@
     "AGENCY_ACCOUNT_NOT_VERIFIED": "Verify your account first: confirm your email or phone number in your account settings, then try again.",
     "AGENCY_PAID_PLAN_REQUIRED": "A real-estate office needs a paid plan in force. The free plan does not include offices.",
     "AGENCY_FREE_PLAN_NOT_ALLOWED": "You own a real-estate office, and the free plan does not include offices. Choose a paid plan.",
+    "PAID_PLAN_ACTIVE": "You have an active paid subscription, and choosing the free plan would end it. Contact us if you want it cancelled.",
     "SERVICE_CATEGORY_NOT_APPROVED": "This category is not approved for your provider account. Contact the team to have it added.",
     "FILTER_PRICE_RANGE": "The minimum price is higher than the maximum.",
     "FILTER_ROOMS_RANGE": "The minimum number of rooms is higher than the maximum.",
@@ -103,7 +104,8 @@
     "ADMIN_SERVICES": "Services overview",
     "ADMIN_SHORT_STAY": "Short stays (admin)",
     "ADMIN_LISTING_REPORTS": "Listing reports",
-    "MY_REPORTS": "My reports"
+    "MY_REPORTS": "My reports",
+    "ADMIN_AUDIT_LOGS": "Audit log"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -443,6 +445,7 @@
   },
   "KONTAKT": {
     "PLAN_SUBJECT": "Subscription plan enquiry: {{plan}}",
+    "PLAN_REF_LINE": "Plan request reference: {{ref}}",
     "SERVICE_PROVIDER_SUBJECT": "Request to join as a service provider",
     "SERVICE_PROVIDER_MESSAGE_PLACEHOLDER": "Tell us about your business: business name, service type (moving, cleaning, photography...), a phone number, and your service area. Our team will reach out to review and activate your account.",
     "title": "Contact us",
@@ -1030,7 +1033,8 @@
       "Cancelled": "Cancelled"
     },
     "ADS_SUMMARY": "{{total}} total · {{active}} active · {{featured}} featured",
-    "VIEW_DETAILS": "View details"
+    "VIEW_DETAILS": "View details",
+    "ROLE_LAST_ADMIN": "You cannot remove your own admin role, or leave the system without an active admin."
   },
   "ADMIN_USER_DETAIL": {
     "TITLE": "User details",
@@ -1068,7 +1072,18 @@
     "ACTIVATE_SUCCESS": "The plan was activated.",
     "EXTEND_SUCCESS": "The subscription was extended.",
     "CANCEL_SUCCESS": "The subscription was cancelled.",
-    "ACTION_ERROR": "Could not complete the action."
+    "ACTION_ERROR": "Could not complete the action.",
+    "DISABLE_ACCOUNT": "Disable account",
+    "DISABLE_MODAL_TITLE": "Disable this account?",
+    "DISABLE_EXPLANATION": "The owner can no longer sign in and their listings are taken off the public site. You can re-enable the account later; listings that the disabling itself took down come back.",
+    "DISABLE_SUCCESS": "Account disabled and its listings taken down.",
+    "DISABLE_LAST_ADMIN": "The last active admin cannot be disabled.",
+    "ENABLE_ACCOUNT": "Re-enable account",
+    "ENABLE_MODAL_TITLE": "Re-enable this account?",
+    "ENABLE_EXPLANATION": "The owner can sign in again and listings that the disabling took down come back. Listings taken down for another reason stay down.",
+    "ENABLE_REASON": "Reason for re-enabling (required)",
+    "ENABLE_SUCCESS": "Account re-enabled.",
+    "ENABLE_NOT_POSSIBLE": "This account cannot be re-enabled: the owner deleted it themselves (irreversible) or it is not disabled."
   },
   "ADMIN_USER_PROPERTIES": {
     "TAKEN_DOWN": "Taken down",
@@ -1881,7 +1896,11 @@
     },
     "REASON_AGENCY_PLAN_REQUIRED": "Choose a paid plan to create a real-estate office or invite members to it — the free plan does not include offices.",
     "AGENCY_NO_FREE": "Not available to a real-estate office owner: the free plan does not include offices.",
-    "PENDING_NOTE": "Your request for this plan is waiting for an administrator to confirm payment."
+    "PENDING_NOTE": "Your request for this plan is waiting for an administrator to confirm payment.",
+    "CURRENT_PLAN": "Your current plan: {{plan}}.",
+    "CURRENT_PLAN_UNTIL": "Valid until {{date}}.",
+    "CURRENT_BADGE": "This is your current plan.",
+    "PAID_ACTIVE_NO_FREE": "You have an active paid subscription. Choosing the free plan would end it, so our team cancels it for you if you want that."
   },
   "NOT_AUTHORIZED": {
     "TITLE": "You are not authorised",
@@ -3011,6 +3030,11 @@
     "EMPTY_MESSAGE": "All payment requests have been handled.",
     "PLANS_TITLE": "Plan requests",
     "FEATURED_TITLE": "Featured-listing requests",
+    "EXTENSIONS_TITLE": "Listing extension fees",
+    "APPROVE_EXTENSION": "Confirm payment & extend listing",
+    "CONFIRM_APPROVE_EXTENSION": "Confirm payment arrived and extend \"{{title}}\" by 30 days?",
+    "EXTENSION_APPROVED": "Listing extended.",
+    "REFERENCE": "Reference",
     "DURATION_DAYS": "Subscription length (days)",
     "APPROVE_PLAN": "Confirm payment & activate plan",
     "APPROVE_FEATURED": "Confirm payment & feature listing",
@@ -3760,7 +3784,8 @@
       "RESTORE_TEXT": "The listing becomes visible again and the owner is notified.",
       "CLOSE_TITLE": "Close this report?",
       "CLOSE_TEXT": "The decision is recorded and the reporter is told the general result. Closing does not change the listing."
-    }
+    },
+    "REPORTER_REPLY": "Reporter replied to your question"
   },
   "ADS": {
     "LABEL": "Ad",
@@ -3769,5 +3794,20 @@
     "CONSENT_TEXT": "We would like to show a few clearly labelled ads to help cover running costs. They are non-personalised and never replace or reorder listings. Choose \"Allow ads\" to see them, or \"No ads\" to keep the site ad-free. You can change this any time under \"Ad choices\".",
     "ACCEPT": "Allow ads",
     "DECLINE": "No ads"
+  },
+  "ADMIN_AUDIT": {
+    "TITLE": "Audit log",
+    "SUBTITLE": "Admin actions and sign-ins, newest first. Read-only.",
+    "SEARCH": "Search (actor, id, action)",
+    "ACTION": "Action (e.g. UserDisabled)",
+    "FROM": "From",
+    "TO": "To",
+    "APPLY": "Apply",
+    "EMPTY": "No matching entries.",
+    "LOAD_ERROR": "Could not load the audit log.",
+    "BY": "By",
+    "DETAILS": "Details",
+    "BEFORE": "Before",
+    "AFTER": "After"
   }
 }

@@ -77,7 +77,7 @@ describe('PricingPage', () => {
   let routerSpy: jasmine.SpyObj<Router>;
   let toastSpy: jasmine.SpyObj<ToastService>;
   let agenciesApiSpy: jasmine.SpyObj<AgenciesApiService>;
-  let profile$: BehaviorSubject<{ PendingPlanTier?: string | null } | null>;
+  let profile$: BehaviorSubject<{ PendingPlanTier?: string | null; PlanTier?: string | null; PlanStatus?: string | null; PlanExpiresAt?: string | null } | null>;
 
   function createComponent(
     accessToken: string | null,
@@ -94,7 +94,7 @@ describe('PricingPage', () => {
         ? { status: 'activated' as const, tier, requestId: null }
         : { status: 'pending' as const, tier, requestId: 'req-1' }));
 
-    profile$ = new BehaviorSubject<{ PendingPlanTier?: string | null } | null>(null);
+    profile$ = new BehaviorSubject<{ PendingPlanTier?: string | null; PlanTier?: string | null; PlanStatus?: string | null; PlanExpiresAt?: string | null } | null>(null);
     profileServiceSpy = jasmine.createSpyObj('ProfileService', ['refresh'], { profile$ });
     profileServiceSpy.refresh.and.returnValue(of({}));
 
@@ -173,6 +173,18 @@ describe('PricingPage', () => {
     expect(toastSpy.success).not.toHaveBeenCalled();
     expect(toastSpy.info).toHaveBeenCalled();
     expect(routerSpy.navigate).toHaveBeenCalled();
+  });
+
+  it('خطة مدفوعة ⇐ رقم الطلب يُمرَّر إلى نموذج التواصل، والمجانية بلا مرجع', () => {
+    const component = createComponent('token-123');
+
+    component.onSelectPlan(PLANS[1]);
+    const [, paidOptions] = routerSpy.navigate.calls.mostRecent().args as [unknown, { queryParams: Record<string, string> }];
+    expect(paidOptions.queryParams['ref']).toBe('req-1');
+
+    component.onSelectPlan(PLANS[0]);
+    const [, freeOptions] = routerSpy.navigate.calls.mostRecent().args as [unknown, { queryParams: Record<string, string> }];
+    expect(freeOptions.queryParams['ref']).toBeUndefined();
   });
 
   it('فشل حفظ اختيار الخطة في الخادم يمنع الانتقال ويعرض رسالة خطأ', () => {
@@ -323,6 +335,34 @@ describe('PricingPage', () => {
 
     profile$.next({ PendingPlanTier: null });
     expect(component.pendingTier()).toBeNull();
+  });
+
+  describe('an active paid plan', () => {
+    it('الخطة السارية تُعرض مع تاريخها، وبطاقة المجانية معطّلة ولا يُرسَل طلبها', () => {
+      const component = createComponent('token-123');
+      profile$.next({ PlanTier: 'premium', PlanStatus: 'Active', PlanExpiresAt: '2026-12-01T00:00:00Z' });
+
+      expect(component.currentPaidTier()).toBe('premium');
+      expect(component.currentPlanExpiresAt()).toBe('2026-12-01T00:00:00Z');
+      expect(component.isBlockedByPaidPlan(PLANS[0])).toBeTrue();
+
+      component.onSelectPlan(PLANS[0]);
+      expect(plansApiSpy.selectPlan).not.toHaveBeenCalled();
+    });
+
+    it('خطة منتهية أو ملغاة أو مجانية ليست «سارية»: المجانية تبقى متاحة', () => {
+      const component = createComponent('token-123');
+
+      profile$.next({ PlanTier: 'premium', PlanStatus: 'Expired', PlanExpiresAt: '2026-01-01T00:00:00Z' });
+      expect(component.currentPaidTier()).toBeNull();
+      expect(component.isBlockedByPaidPlan(PLANS[0])).toBeFalse();
+
+      profile$.next({ PlanTier: 'premium', PlanStatus: 'Cancelled' });
+      expect(component.currentPaidTier()).toBeNull();
+
+      profile$.next({ PlanTier: 'free', PlanStatus: 'Active' });
+      expect(component.currentPaidTier()).toBeNull();
+    });
   });
 
   describe('agency owners and the free plan', () => {

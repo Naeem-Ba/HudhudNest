@@ -113,4 +113,17 @@ describe('AdminListingReportDetailPage', () => {
     page.submit();
     expect(api.takeDownListing).toHaveBeenCalledOnceWith('r1', 'fake photos');
   });
+
+  it('shows the reporter\'s latest reply to the admin\'s question, not only the timeline', () => {
+    const ev = (id: string, type: 'InfoRequested' | 'ReporterResponded', note: string) =>
+      ({ id, type, actorUserId: null, actorName: null, fromValue: null, toValue: null, note, isInternal: false, createdAt: '2026-10-29T12:00:00Z' });
+    expect((create(detail()).nativeElement as HTMLElement).querySelector('[data-testid="reporter-reply"]')).toBeNull();
+
+    TestBed.resetTestingModule();
+    const d = detail({ timeline: [ev('e1', 'InfoRequested', 'Which floor?'), ev('e2', 'ReporterResponded', 'first answer'), ev('e3', 'ReporterResponded', 'second floor, photos are old')] });
+    const fixture = create(d);
+    const el = fixture.nativeElement as HTMLElement;
+    expect(fixture.componentInstance.latestReply(d)?.id).toBe('e3');
+    expect(el.querySelector('[data-testid="reporter-reply"]')?.textContent).toContain('second floor, photos are old');
+  });
 });

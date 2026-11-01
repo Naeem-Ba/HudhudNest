@@ -48,6 +48,10 @@ export function routeForNotification(item: Pick<NotificationItem, 'type' | 'targ
       return entityId ? ['/users', entityId] : null;
     case 'phone-verify':
       return ['/profile/phone-reverify'];
+    case 'pricing':
+      return ['/pricing'];
+    case 'admin-contact':
+      return entityId ? ['/admin/messages', entityId] : ['/admin/messages'];
     case 'notifications':
       return ['/notifications'];
     default:
