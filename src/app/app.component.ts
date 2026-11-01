@@ -107,7 +107,7 @@ export class AppComponent {
     this.router.events
       .pipe(filter((event): event is NavigationStart => event instanceof NavigationStart))
       .subscribe(event => {
-        const nextPath = event.url.split(/[?#]/)[0];
+        const nextPath = event.url.split(/[?#]/)[0] ?? event.url;
         if (nextPath !== currentPath) {
           currentPath = nextPath;
           this.pageMeta.resetToDefault();
