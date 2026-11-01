@@ -113,7 +113,8 @@
     "ADMIN_REFERRALS": "Empfehlungen",
     "PRICE_ESTIMATE": "Preise nach Gegend",
     "ADMIN_GROWTH": "Wachstum & Kampagnen",
-    "MAP": "Karte"
+    "MAP": "Karte",
+    "EXPATS": "Für Syrer im Ausland"
   },
   "AUTH": {
     "LOGIN_TITLE": "Willkommen",
@@ -4087,5 +4088,31 @@
     "ZOOM_IN": "{{count}} Anzeigen, zoomen Sie hinein, um sie einzeln zu sehen",
     "PRIVACY_NOTE": "Kreise bedeuten, dass der Anbieter den genauen Ort ausgeblendet hat: Die Immobilie liegt irgendwo im Kreis.",
     "APPROXIMATE": "ungefährer Standort"
+  },
+  "EXPATS": {
+    "TITLE": "Sie verwalten eine Immobilie oder suchen ein Zuhause von außerhalb Syriens?",
+    "LEAD": "Beginnen Sie hier. Wir zeigen die Schritte, die es auf HudhudNest wirklich gibt, und nur die Dienste, die zugelassene Anbieter gerade anbieten.",
+    "QUESTION": "Was möchten Sie tun?",
+    "GOAL": {
+      "own": "Ich besitze eine Immobilie in Syrien und möchte sie vermieten, verkaufen oder verwalten lassen",
+      "find": "Ich suche vor meiner Ankunft ein Zuhause zur Miete oder zum Kauf",
+      "invest": "Ich möchte in ein Immobilienprojekt investieren"
+    },
+    "STEPS_TITLE": "Schritte",
+    "STEP": {
+      "OWN_LIST": "Inserieren Sie Ihre Immobilie (der genaue Standort lässt sich ausblenden)",
+      "OWN_PRICE": "Sehen Sie die Angebotspreise in Ihrer Gegend",
+      "OWN_SERVICES": "Fordern Sie einen Dienst auf der Seite Ihrer Immobilie an",
+      "FIND_REQUEST": "Erstellen Sie eine Suchanfrage, damit Anbieter passende Wohnungen vorschlagen",
+      "FIND_MAP": "Anzeigen auf der Karte ansehen",
+      "FIND_ALERTS": "Suche speichern und neue Anzeigen erhalten",
+      "FIND_PRICE": "Mit der Preisspanne der Gegend vergleichen",
+      "INVEST_PROJECTS": "Veröffentlichte Investitionsprojekte ansehen",
+      "INVEST_PRICE": "Mit der Preisspanne der Gegend vergleichen"
+    },
+    "SERVICES_TITLE": "Jetzt verfügbare Dienste zugelassener Anbieter",
+    "SERVICES_HINT": "Ein Dienst wird auf der Seite der betreffenden Immobilie angefordert.",
+    "NO_SERVICES": "Für diese Dienste gibt es noch keinen zugelassenen Anbieter. Sie erscheinen hier, sobald Anbieter dazukommen.",
+    "FOOTNOTE": "HudhudNest ist eine Plattform für Anzeigen und Dienste, kein rechtlicher oder finanzieller Vermittler. Prüfen Sie Unterlagen, bevor Sie etwas bezahlen."
   }
 }

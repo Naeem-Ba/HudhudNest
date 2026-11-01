@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -28,6 +28,7 @@ export class ServicesCatalogPage implements OnInit {
   private readonly offeringsApi = inject(ServiceOfferingService);
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute, { optional: true });
   readonly governorates = inject(GovernorateDirectory);
   private readonly cache = new Map<ServiceCategory, ServiceOfferingDto[]>();
 
@@ -42,6 +43,11 @@ export class ServicesCatalogPage implements OnInit {
 
   ngOnInit(): void {
     this.governorates.ensureLoaded();
+    // Growth engine P11: /services?category=Legal opens that category (links from the expat page).
+    const requested = this.route?.snapshot?.queryParamMap?.get('category');
+    if (requested && (SERVICE_CATEGORIES as readonly string[]).includes(requested)) {
+      this.selectedCategory.set(requested as ServiceCategory);
+    }
     this.load();
     this.offeringsApi.getAvailability()
       .pipe(takeUntilDestroyed(this.destroyRef))

@@ -113,7 +113,8 @@
     "ADMIN_REFERRALS": "Referrals",
     "PRICE_ESTIMATE": "Area prices",
     "ADMIN_GROWTH": "Growth & campaigns",
-    "MAP": "Map"
+    "MAP": "Map",
+    "EXPATS": "For Syrians abroad"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -4087,5 +4088,31 @@
     "ZOOM_IN": "{{count}} listings, zoom in to see them one by one",
     "PRIVACY_NOTE": "Circles mean the advertiser hid the exact spot: the property is somewhere inside the circle.",
     "APPROXIMATE": "approximate location"
+  },
+  "EXPATS": {
+    "TITLE": "Managing a property or looking for a home from outside Syria?",
+    "LEAD": "Start here. We show the steps that really exist on HudhudNest, and only the services approved providers offer right now.",
+    "QUESTION": "What do you want to do?",
+    "GOAL": {
+      "own": "I own a property in Syria and want to rent it out, sell or manage it",
+      "find": "I am looking for a home to rent or buy before I arrive",
+      "invest": "I want to invest in a real-estate project"
+    },
+    "STEPS_TITLE": "Steps",
+    "STEP": {
+      "OWN_LIST": "List your property (you can hide the exact location)",
+      "OWN_PRICE": "See the asking-price range in your area",
+      "OWN_SERVICES": "Request a service for your property from its own page",
+      "FIND_REQUEST": "Create a search request so advertisers can propose matching homes",
+      "FIND_MAP": "Browse listings on the map",
+      "FIND_ALERTS": "Save your search to get new listings",
+      "FIND_PRICE": "Compare with the price range in the area",
+      "INVEST_PROJECTS": "Browse published investment projects",
+      "INVEST_PRICE": "Compare with the price range in the area"
+    },
+    "SERVICES_TITLE": "Services available now from approved providers",
+    "SERVICES_HINT": "A service is requested from the page of the property it is for.",
+    "NO_SERVICES": "No approved provider offers these services yet. They appear here when providers join.",
+    "FOOTNOTE": "HudhudNest is a listings and services platform, not a legal or financial intermediary. Check documents before paying anything."
   }
 }

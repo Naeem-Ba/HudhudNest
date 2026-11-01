@@ -363,6 +363,13 @@ export const routes: Routes = [
             .then(m => m.AnalyticsPage)
       },
       {
+        // Growth engine P11: guided start for Syrians abroad (only services that real providers offer).
+        path: 'expats',
+        loadComponent: () =>
+          import('./features/expats/expat-journey.page')
+            .then(m => m.ExpatJourneyPage)
+      },
+      {
         // Growth engine P8: browse listings on a map (server-side clusters).
         path: 'map',
         loadComponent: () =>
