@@ -3580,6 +3580,8 @@
     "SUCCESS_HINT": "Den Status sehen Sie unter „Meine Meldungen“.",
     "ALREADY_OPEN": "Sie haben bereits eine offene Meldung zu dieser Anzeige ({{ref}}).",
     "ALREADY_OPEN_HINT": "Verfolgen Sie sie unter „Meine Meldungen“. Sie wird nicht doppelt geprüft.",
+    "NEEDS_REPLY": "Das Team braucht weitere Informationen von Ihnen, um diese Meldung zu bearbeiten.",
+    "REPLY_NOW": "Jetzt antworten",
     "LOGIN_REQUIRED": "Bitte melden Sie sich an, um eine Anzeige zu melden.",
     "ERR_REASON": "Bitte wählen Sie einen Grund.",
     "ERR_DETAILS": "Für diesen Grund sind Details erforderlich.",
@@ -3619,6 +3621,7 @@
     "YOUR_ANSWER": "Ihre Antwort",
     "SEND_ANSWER": "Antwort senden",
     "ANSWER_SENT": "Ihre Antwort wurde gesendet.",
+    "WAITING_BANNER": "{{count}} Meldung wartet auf Ihre Antwort auf eine Frage des Teams.",
     "ANSWER_FAILED": "Die Antwort konnte nicht gesendet werden.",
     "event": {
       "Created": "Meldung eingegangen",

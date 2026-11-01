@@ -330,14 +330,11 @@
               class="fav-btn-wrapper"
               [propertyId]="property.id!"
             ></app-favorite-toggle-button>
-            <!-- Report: a small, quiet button at the opposite corner, so the card stays uncluttered. -->
-            <app-report-listing-button
-              class="report-btn-wrapper"
-              variant="compact"
-              [propertyId]="property.id!"
-              [ownerId]="property.ownerId"
-              [listingTitle]="property.title"
-            ></app-report-listing-button>
+            <!-- Share, right under the heart. The card is a link: a tap here (and inside the share sheet)
+                 must not open the listing, same as the heart. -->
+            <div class="share-btn-wrapper" (click)="$event.preventDefault(); $event.stopPropagation()">
+              <app-property-share-button [property]="property"></app-property-share-button>
+            </div>
           </div>
 
           <!-- Body -->

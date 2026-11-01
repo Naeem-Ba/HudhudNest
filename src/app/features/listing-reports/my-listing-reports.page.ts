@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, forkJoin, of } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { ListingReportsService } from '../../core/api/listing-reports.service';
@@ -30,6 +31,10 @@ import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.compone
         <p>{{ 'MY_REPORTS.SUBTITLE' | translate }}</p>
       </header>
 
+      <div class="banner" *ngIf="!loading() && !failed() && waitingCount() > 0" role="status" data-testid="my-reports-waiting">
+        {{ 'MY_REPORTS.WAITING_BANNER' | translate: { count: waitingCount() } }}
+      </div>
+
       <app-loading-spinner *ngIf="loading()" [label]="'COMMON.LOADING' | translate"></app-loading-spinner>
 
       <div class="state error" *ngIf="!loading() && failed()" role="alert">
@@ -41,7 +46,8 @@ import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.compone
                        [title]="'MY_REPORTS.EMPTY' | translate" [message]="'MY_REPORTS.EMPTY_TEXT' | translate"></app-empty-state>
 
       <ul class="list" *ngIf="!loading() && !failed() && reports().length > 0">
-        <li class="card" *ngFor="let r of reports(); trackBy: trackById" [attr.data-testid]="'my-report-' + r.referenceNumber">
+        <li class="card" *ngFor="let r of reports(); trackBy: trackById" [attr.data-testid]="'my-report-' + r.referenceNumber"
+            [attr.id]="'report-' + r.id" [class.card--focus]="r.id === focusId">
           <div class="card__head">
             <div>
               <span class="ref" dir="ltr">{{ r.referenceNumber }}</span>
@@ -90,6 +96,8 @@ import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.compone
     .page-header p { margin: 0 0 1rem; color: var(--gray-500); }
     .list { list-style: none; margin: 0; padding: 0; display: grid; gap: .8rem; }
     .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1rem; display: grid; gap: .5rem; }
+    .banner { margin: 0 0 1rem; padding: .7rem .9rem; border-radius: 12px; font-weight: 700; background: var(--warning-soft, #fef3c7); color: var(--warning, #92400e); }
+    .card--focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-soft, rgba(99,102,241,.25)); }
     .card__head { display: flex; justify-content: space-between; gap: .8rem; align-items: flex-start; }
     .card h2 { margin: .1rem 0 0; font-size: 1.05rem; overflow-wrap: anywhere; }
     .card h2 a { color: var(--navy); text-decoration: none; }
@@ -120,6 +128,10 @@ export class MyListingReportsPage implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
+
+  /** The report a notification opened this page on; shown first even if it is not on page 1. */
+  readonly focusId = this.route.snapshot.paramMap.get('id');
 
   readonly pageSize = 10;
   readonly reports = signal<MyListingReportDto[]>([]);
@@ -129,6 +141,7 @@ export class MyListingReportsPage implements OnInit {
   readonly failed = signal(false);
   readonly busyId = signal<string | null>(null);
   readonly answers = signal<Record<string, string>>({});
+  readonly waitingCount = computed(() => this.reports().filter(r => r.status === 'NeedsYourInfo').length);
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize)));
 
   ngOnInit(): void { this.load(); }
@@ -136,14 +149,33 @@ export class MyListingReportsPage implements OnInit {
   load(): void {
     this.loading.set(true);
     this.failed.set(false);
-    this.api.mine(this.page(), this.pageSize).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: result => {
-        this.reports.set(result.items);
-        this.total.set(result.total);
-        this.loading.set(false);
-      },
-      error: () => { this.loading.set(false); this.failed.set(true); }
-    });
+    const focus$ = this.focusId && this.page() === 1
+      ? this.api.get(this.focusId).pipe(catchError(() => of(null)))
+      : of(null);
+    forkJoin({ list: this.api.mine(this.page(), this.pageSize), focus: focus$ })
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: ({ list, focus }) => {
+          // Waiting-for-answer reports come first, then the one the notification opened, then the rest.
+          const rest = focus ? list.items.filter(r => r.id !== focus.id) : list.items;
+          const items = focus ? [focus, ...rest] : [...rest];
+          this.reports.set(items.sort((a, b) => Number(b.id === this.focusId) - Number(a.id === this.focusId)
+            || Number(b.status === 'NeedsYourInfo') - Number(a.status === 'NeedsYourInfo')));
+          this.total.set(list.total);
+          this.loading.set(false);
+          this.scrollToFocus();
+        },
+        error: () => { this.loading.set(false); this.failed.set(true); }
+      });
+  }
+
+  /** After render: bring the opened report into view and put the cursor in its answer box. */
+  private scrollToFocus(): void {
+    if (!this.focusId) return;
+    setTimeout(() => {
+      const card = document.getElementById('report-' + this.focusId);
+      card?.scrollIntoView?.({ block: 'start', behavior: 'smooth' });
+      (document.getElementById('ans-' + this.focusId) as HTMLTextAreaElement | null)?.focus({ preventScroll: true });
+    }, 0);
   }
 
   goTo(page: number): void {

@@ -36,13 +36,13 @@ import { Property, PropertyFilterDto } from '../../../core/models/property.model
 import { HttpErrorResponse } from '@angular/common/http';
 import { EmptyStateComponent } from '../../../shared/ui/empty-state.component';
 import { SkeletonCardGridComponent } from '../../../shared/ui/skeleton-card-grid.component';
+import { PropertyShareButtonComponent } from '../../../shared/ui/property-share-button.component';
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
 import { OverlayBackHandlerService } from '../../../core/services/overlay-back-handler.service';
 import { ScrollLockService } from '../../../core/services/scroll-lock.service';
 import { UrlService } from '../../../core/services/url.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { FavoriteToggleButtonComponent } from '../../../shared/ui/favorite-toggle-button.component';
-import { ReportListingButtonComponent } from '../../../shared/ui/report-listing-button.component';
 import { StructuredDataService, BREADCRUMB_JSON_LD_ID } from '../../../core/services/structured-data.service';
 import { PropertyShareUrlService } from '../../../core/sharing/property-share-url.service';
 import { PageMetaService } from '../../../core/services/page-meta.service';
@@ -71,7 +71,7 @@ import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count
     SkeletonCardGridComponent,
     ImageFallbackDirective,
     FavoriteToggleButtonComponent,
-    ReportListingButtonComponent
+    PropertyShareButtonComponent
   ],
   templateUrl: './property-list.page.html',
   styleUrls: ['./property-list.page.scss']
