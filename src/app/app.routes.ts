@@ -241,6 +241,13 @@ export const routes: Routes = [
       },
       {
         // Phase-0, Task 3.
+        path: 'referrals',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/referrals/referrals.page')
+            .then(m => m.ReferralsPage)
+      },
+      {
         path: 'saved-searches',
         canActivate: [AuthGuard],
         loadComponent: () =>
@@ -439,6 +446,13 @@ export const routes: Routes = [
             .then(m => m.MessageDetailComponent)
       },
 
+      {
+        path: 'admin/referrals',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/referrals/admin-referrals.page')
+            .then(m => m.AdminReferralsPage)
+      },
       {
         path: 'admin/users',
         canActivate: [AdminGuard],

@@ -5,6 +5,7 @@ import { BackendApiService } from '../api/backend-api.service';
 import { withUiLanguage } from '../i18n/ui-language';
 import { TokenStorageService } from '../services/token-storage.service';
 import { AttributionContextService } from '../sharing/attribution-context.service';
+import { ReferralCodeService } from '../sharing/referral-code.service';
 import {
   AppleLoginRequest,
   AuthTokenResponse,
@@ -20,6 +21,7 @@ import {
 @Injectable({ providedIn: 'root' })
 export class AuthApiService {
   private readonly attribution = inject(AttributionContextService);
+  private readonly referralCode = inject(ReferralCodeService);
 
   constructor(
     private readonly api: BackendApiService,
@@ -108,6 +110,10 @@ export class AuthApiService {
    * the sign-up, so the API can count where new accounts come from. Nothing is added for a direct visit.
    */
   private withAcquisition(request: RegisterRequest): RegisterRequest {
+    const referralCode = this.referralCode.current();
+    if (referralCode) {
+      request = { ...request, referralCode };
+    }
     const first = this.attribution.getFirstTouchContext();
     if (!first?.source) {
       return request;

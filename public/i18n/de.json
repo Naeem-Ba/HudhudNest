@@ -108,7 +108,9 @@
     "MY_REPORTS": "Meine Meldungen",
     "ADMIN_AUDIT_LOGS": "Prüfprotokoll",
     "SEARCH_REQUESTS": "Meine Suchaufträge",
-    "SEARCH_REQUEST_BOARD": "Anfragen von Käufern und Mietern"
+    "SEARCH_REQUEST_BOARD": "Anfragen von Käufern und Mietern",
+    "REFERRALS": "Freunde einladen",
+    "ADMIN_REFERRALS": "Empfehlungen"
   },
   "AUTH": {
     "LOGIN_TITLE": "Willkommen",
@@ -3927,5 +3929,50 @@
       "furnished_unknown": "Möblierung nicht angegeben",
       "no_longer_fits": "Passt nicht mehr"
     }
+  },
+  "REFERRALS": {
+    "TITLE": "Freunde einladen",
+    "SUBTITLE": "Teilen Sie Ihren Link. Eine Einladung zählt erst, wenn das neue Konto wirklich aktiv ist.",
+    "LOAD_ERROR": "Ihre Einladungen konnten nicht geladen werden.",
+    "YOUR_CODE": "Ihr Code",
+    "YOUR_LINK": "Ihr Einladungslink",
+    "COPY": "Link kopieren",
+    "COPIED": "Link kopiert.",
+    "COPY_FAILED": "Kopieren nicht möglich. Bitte markieren und von Hand kopieren.",
+    "SHARE": "Teilen",
+    "SHARE_TITLE": "Entdecken Sie HudhudNest",
+    "HOW_TITLE": "Wann zählt eine Einladung?",
+    "HOW_1": "Die Person registriert sich über Ihren Link (oder gibt Ihren Code ein).",
+    "HOW_PHONE": "Sie bestätigt ihre Telefonnummer.",
+    "HOW_LISTING": "Sie veröffentlicht ein Inserat, das mindestens {{days}} Tage online bleibt.",
+    "NO_REWARD": "Derzeit ist keine Prämie angekündigt. Gezählte Einladungen bleiben gespeichert, damit eine spätere Prämie sie einschließen kann.",
+    "NOT_COUNTED": "Nicht gezählt",
+    "EMPTY": "Noch hat sich niemand über Ihren Link registriert.",
+    "REWARDED": "Prämie erhalten",
+    "STATUS": {
+      "Pending": "Ausstehend",
+      "Qualified": "Gezählt",
+      "Rejected": "Nicht anerkannt",
+      "Expired": "Abgelaufen"
+    }
+  },
+  "ADMIN_REFERRALS": {
+    "TITLE": "Empfehlungen",
+    "SUBTITLE": "Einladungen werden automatisch durch echte Aktivität anerkannt. Prämien werden hier von Hand erfasst.",
+    "FILTER": "Status",
+    "ALL": "Alle",
+    "LOAD_ERROR": "Empfehlungen konnten nicht geladen werden.",
+    "DATE": "Registriert",
+    "REFERRER": "Eingeladen von",
+    "INVITED": "Eingeladenes Konto",
+    "STATUS": "Status",
+    "ACTIONS": "Aktionen",
+    "MARK_REWARDED": "Prämie vergeben",
+    "REJECT": "Ablehnen",
+    "EMPTY": "Keine Empfehlungen.",
+    "CONFIRM_REWARDED": "Erfassen, dass die Prämie vergeben wurde? Das lässt sich nicht rückgängig machen.",
+    "REJECT_REASON": "Grund der Ablehnung (Pflicht):",
+    "SAVED": "Gespeichert.",
+    "SAVE_ERROR": "Speichern nicht möglich."
   }
 }

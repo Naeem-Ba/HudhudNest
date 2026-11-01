@@ -58,6 +58,8 @@ export function routeForNotification(item: Pick<NotificationItem, 'type' | 'targ
       return ['/notifications'];
     case 'saved-searches':
       return ['/saved-searches'];
+    case 'referrals':
+      return ['/referrals'];
     default:
       return null;
   }

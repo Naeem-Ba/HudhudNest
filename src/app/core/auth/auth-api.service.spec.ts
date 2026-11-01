@@ -7,6 +7,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { AttributionContextService } from '../sharing/attribution-context.service';
+import { ReferralCodeService } from '../sharing/referral-code.service';
 
 import { environment } from '../../../environments/environment';
 import { AuthApiService } from './auth-api.service';
@@ -29,6 +30,9 @@ describe('AuthApiService.resendConfirmationEmail', () => {
     service = TestBed.inject(AuthApiService);
     httpMock = TestBed.inject(HttpTestingController);
     TestBed.inject(AttributionContextService).clear();
+    TestBed.inject(ReferralCodeService).clear();
+    TestBed.inject(AttributionContextService).clear();
+    TestBed.inject(ReferralCodeService).clear();
   });
 
   afterEach(() => {

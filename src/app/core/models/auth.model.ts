@@ -19,6 +19,8 @@ export interface RegisterRequest {
   acquisitionSource?: string;
   acquisitionMedium?: string;
   acquisitionCampaign?: string;
+  // Growth engine P5: invitation code from a "?ref=" link, sent only when one was kept.
+  referralCode?: string;
 }
 
 export interface RegisterResponse {

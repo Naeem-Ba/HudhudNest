@@ -108,7 +108,9 @@
     "MY_REPORTS": "My reports",
     "ADMIN_AUDIT_LOGS": "Audit log",
     "SEARCH_REQUESTS": "My property requests",
-    "SEARCH_REQUEST_BOARD": "Buyer and renter requests"
+    "SEARCH_REQUEST_BOARD": "Buyer and renter requests",
+    "REFERRALS": "Invite friends",
+    "ADMIN_REFERRALS": "Referrals"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -3927,5 +3929,50 @@
       "furnished_unknown": "Furnishing not stated",
       "no_longer_fits": "No longer fits"
     }
+  },
+  "REFERRALS": {
+    "TITLE": "Invite friends",
+    "SUBTITLE": "Share your link. An invitation counts only after the new account shows real activity.",
+    "LOAD_ERROR": "Could not load your invitations.",
+    "YOUR_CODE": "Your code",
+    "YOUR_LINK": "Your invitation link",
+    "COPY": "Copy link",
+    "COPIED": "Link copied.",
+    "COPY_FAILED": "Could not copy. Select the link and copy it by hand.",
+    "SHARE": "Share",
+    "SHARE_TITLE": "Join me on HudhudNest",
+    "HOW_TITLE": "When does an invitation count?",
+    "HOW_1": "The person signs up through your link (or enters your code).",
+    "HOW_PHONE": "They confirm their phone number.",
+    "HOW_LISTING": "They publish a listing that stays live for at least {{days}} days.",
+    "NO_REWARD": "No reward is announced at the moment. Counted invitations are kept, so any future reward can include them.",
+    "NOT_COUNTED": "Not counted",
+    "EMPTY": "Nobody has signed up with your link yet.",
+    "REWARDED": "Reward given",
+    "STATUS": {
+      "Pending": "Waiting",
+      "Qualified": "Counted",
+      "Rejected": "Not accepted",
+      "Expired": "Expired"
+    }
+  },
+  "ADMIN_REFERRALS": {
+    "TITLE": "Referrals",
+    "SUBTITLE": "Invitations are qualified automatically by real activity. Rewards are recorded here by hand.",
+    "FILTER": "Status",
+    "ALL": "All",
+    "LOAD_ERROR": "Could not load referrals.",
+    "DATE": "Signed up",
+    "REFERRER": "Invited by",
+    "INVITED": "Invited account",
+    "STATUS": "Status",
+    "ACTIONS": "Actions",
+    "MARK_REWARDED": "Reward given",
+    "REJECT": "Reject",
+    "EMPTY": "No referrals.",
+    "CONFIRM_REWARDED": "Record that the reward was given? This cannot be undone.",
+    "REJECT_REASON": "Reason for rejecting (required):",
+    "SAVED": "Saved.",
+    "SAVE_ERROR": "Could not save."
   }
 }

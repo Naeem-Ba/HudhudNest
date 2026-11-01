@@ -394,6 +394,12 @@
               {{ 'NAVBAR.SAVED_SEARCHES' | translate }}
             </a>
 
+            <!-- Growth engine P5. -->
+            <a routerLink="/referrals" routerLinkActive="account__item--active" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+              <span aria-hidden="true">🎁</span>
+              {{ 'NAVBAR.REFERRALS' | translate }}
+            </a>
+
             <!-- Growth engine P2. -->
             <a routerLink="/search-requests" routerLinkActive="account__item--active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
               <span aria-hidden="true">🔎</span>
@@ -691,6 +697,10 @@
           {{ 'NAVBAR.SAVED_SEARCHES' | translate }}
         </a>
 
+        <a routerLink="/referrals" routerLinkActive="mobile-drawer__link--active" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
+          {{ 'NAVBAR.REFERRALS' | translate }}
+        </a>
+
         <a routerLink="/search-requests" routerLinkActive="mobile-drawer__link--active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
           {{ 'NAVBAR.SEARCH_REQUESTS' | translate }}
         </a>
@@ -883,6 +893,7 @@
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/investments', label: 'NAVBAR.ADMIN_INVESTMENTS', icon: '💼' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/location-suggestions', label: 'NAVBAR.ADMIN_LOCATION_SUGGESTIONS', icon: '📍' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/marketing', label: 'NAVBAR.ADMIN_MARKETING', icon: '📣' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/referrals', label: 'NAVBAR.ADMIN_REFERRALS', icon: '🎁' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/app-updates', label: 'NAVBAR.ADMIN_APP_UPDATES', icon: '📲' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/social-distribution', label: 'NAVBAR.ADMIN_SOCIAL_DISTRIBUTION', icon: '📡' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/audit-logs', label: 'NAVBAR.ADMIN_AUDIT_LOGS', icon: '🧾' }"></ng-container>
