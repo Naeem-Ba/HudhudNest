@@ -14,6 +14,15 @@ const estimate = (over: Partial<PriceEstimate> = {}): PriceEstimate => ({
 
 describe('PriceEstimatePage', () => {
   let api: jasmine.SpyObj<PriceEstimateApiService>;
+  let originalLang: string;
+
+  // Place names follow <html lang>, which other specs change; pin it so the Arabic-name check does not
+  // depend on test order.
+  beforeEach(() => {
+    originalLang = document.documentElement.lang;
+    document.documentElement.lang = 'ar';
+  });
+  afterEach(() => { document.documentElement.lang = originalLang; });
 
   function create() {
     api = jasmine.createSpyObj<PriceEstimateApiService>('PriceEstimateApiService', ['estimate', 'areas']);
