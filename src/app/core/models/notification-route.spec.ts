@@ -62,7 +62,7 @@ describe('routeForNotification (listing reports)', () => {
     expect(routeForNotification({ type: 'ListingReportSubmitted', target: { kind: 'admin-listing-report', id: ENTITY, propertyId: null }, propertyId: null, relatedEntityId: ENTITY }))
       .toEqual(['/admin/listing-reports', ENTITY]);
     expect(routeForNotification({ type: 'ListingReportInfoRequested', target: { kind: 'my-listing-report', id: ENTITY, propertyId: null }, propertyId: null, relatedEntityId: ENTITY }))
-      .toEqual(['/my-reports']);
+      .toEqual(['/my-reports', ENTITY]);
   });
 
   it('never puts a malformed id into the path', () => {

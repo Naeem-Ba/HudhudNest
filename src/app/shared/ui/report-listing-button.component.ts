@@ -91,10 +91,23 @@ const FALLBACK_REASONS: ListingReportReasonDto[] = LISTING_REPORT_REASONS.map(co
             <p class="report-notice report-notice--info" role="status">
               {{ 'REPORT.ALREADY_OPEN' | translate: { ref: open()?.referenceNumber } }}
             </p>
-            <p class="report-muted">{{ 'REPORT.ALREADY_OPEN_HINT' | translate }}</p>
-            <div class="report-actions">
-              <button type="button" class="report-btn report-btn--primary" (click)="close()">{{ 'COMMON.CLOSE' | translate }}</button>
-            </div>
+            <ng-container *ngIf="needsReply(); else plainHint">
+              <p class="report-notice report-notice--warn" role="alert" data-testid="report-needs-reply">
+                {{ 'REPORT.NEEDS_REPLY' | translate }}
+              </p>
+              <div class="report-actions">
+                <button type="button" class="report-btn" (click)="close()">{{ 'COMMON.CLOSE' | translate }}</button>
+                <button type="button" class="report-btn report-btn--primary" (click)="goReply()" data-testid="report-reply-now">
+                  {{ 'REPORT.REPLY_NOW' | translate }}
+                </button>
+              </div>
+            </ng-container>
+            <ng-template #plainHint>
+              <p class="report-muted">{{ 'REPORT.ALREADY_OPEN_HINT' | translate }}</p>
+              <div class="report-actions">
+                <button type="button" class="report-btn report-btn--primary" (click)="close()">{{ 'COMMON.CLOSE' | translate }}</button>
+              </div>
+            </ng-template>
           </div>
 
           <!-- Result -->
@@ -223,6 +236,7 @@ const FALLBACK_REASONS: ListingReportReasonDto[] = LISTING_REPORT_REASONS.map(co
     .report-error { color: var(--danger, #dc2626); font-size: var(--text-sm, .875rem); margin: .2rem 0; }
     .report-notice { padding: .7rem .9rem; border-radius: var(--r-md, 12px); margin: .5rem 0; overflow-wrap: anywhere; }
     .report-notice--ok { background: var(--success-soft, #dcfce7); color: var(--success, #15803d); }
+    .report-notice--warn { background: var(--warning-soft, #fef3c7); color: var(--warning, #92400e); }
     .report-notice--info { background: var(--primary-soft, #e0e7ff); color: var(--primary-text, #1e3a8a); }
     .report-notice--error { background: var(--danger-soft, #fee2e2); color: var(--danger, #b91c1c); }
     .report-actions { display: flex; gap: .6rem; justify-content: flex-end; margin-top: .9rem; flex-wrap: wrap; }
@@ -345,6 +359,17 @@ export class ReportListingButtonComponent implements OnDestroy {
       // If the check fails the form still works: the server enforces the rule on submit.
       error: () => this.phase.set('form')
     });
+  }
+
+  /** The team asked this person a question and is waiting: the dialog must lead them to the answer box. */
+  needsReply(): boolean {
+    return this.open()?.status === 'NeedsYourInfo' && !!this.open()?.reportId;
+  }
+
+  goReply(): void {
+    const id = this.open()?.reportId;
+    this.close();
+    if (id) void this.router.navigate(['/my-reports', id]);
   }
 
   close(): void {
