@@ -605,6 +605,14 @@
       </a>
 
       <a
+        routerLink="/price-estimate"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ 'NAVBAR.PRICE_ESTIMATE' | translate }}
+      </a>
+
+      <a
         *ngIf="canAddProperty$ | async"
         routerLink="/property-form"
         class="mobile-drawer__link mobile-drawer__link--highlight"

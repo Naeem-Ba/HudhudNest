@@ -110,7 +110,8 @@
     "SEARCH_REQUESTS": "Meine Suchaufträge",
     "SEARCH_REQUEST_BOARD": "Anfragen von Käufern und Mietern",
     "REFERRALS": "Freunde einladen",
-    "ADMIN_REFERRALS": "Empfehlungen"
+    "ADMIN_REFERRALS": "Empfehlungen",
+    "PRICE_ESTIMATE": "Preise nach Gegend"
   },
   "AUTH": {
     "LOGIN_TITLE": "Willkommen",
@@ -2911,7 +2912,8 @@
       "NEIGHBORHOOD_NEEDS_DISTRICT": "Ein Viertel kann nicht ohne Bezirk ausgewählt werden.",
       "AREA_INVALID": "Die Fläche muss größer als null sein.",
       "ROOMS_INVALID": "Ungültige Zimmeranzahl."
-    }
+    },
+    "QUICK_RANGE_LINK": "Erst einen schnellen Überblick? Sehen Sie die Angebotspreise in Ihrer Gegend"
   },
   "PROVIDER": {
     "INBOX": {
@@ -3974,5 +3976,50 @@
     "REJECT_REASON": "Grund der Ablehnung (Pflicht):",
     "SAVED": "Gespeichert.",
     "SAVE_ERROR": "Speichern nicht möglich."
+  },
+  "PRICE_ESTIMATE": {
+    "TITLE": "Preisspanne in Ihrer Gegend",
+    "LEAD": "Eine Spanne aus den Angebotspreisen der Anzeigen, die gerade auf HudhudNest online sind. Sie ist keine Bewertung Ihrer Immobilie.",
+    "KIND": "Preisart",
+    "KIND_SALE": "Kauf",
+    "KIND_RENT": "Monatsmiete",
+    "GOVERNORATE": "Gouvernement",
+    "DISTRICT": "Bezirk",
+    "PROPERTY_TYPE": "Immobilienart",
+    "ANY": "Alle",
+    "AREA": "Fläche (m²)",
+    "CURRENCY": "Währung",
+    "SUBMIT": "Spanne anzeigen",
+    "ERROR": "Die Spanne konnte gerade nicht geladen werden. Bitte versuchen Sie es später erneut.",
+    "RESULT_SALE": "Angebotspreise (Kauf) für vergleichbare Immobilien",
+    "RESULT_RENT": "Angebotsmieten pro Monat für vergleichbare Immobilien",
+    "MIDDLE": "Mittlerer Wert: {{value}}",
+    "SAMPLE": "Grundlage: {{count}} Anzeigen nach Entfernen von Duplikaten und Ausreißern",
+    "BASIS": {
+      "DistrictAndType": "Ebene: gleicher Bezirk, gleiche Immobilienart",
+      "District": "Ebene: gleicher Bezirk, alle Immobilienarten",
+      "GovernorateAndType": "Ebene: ganzes Gouvernement, gleiche Immobilienart",
+      "Governorate": "Ebene: ganzes Gouvernement, alle Immobilienarten"
+    },
+    "CONFIDENCE": {
+      "Low": "Geringe Aussagekraft",
+      "Medium": "Mittlere Aussagekraft",
+      "High": "Hohe Aussagekraft"
+    },
+    "DATES": "Anzeigen vom {{from}} bis {{to}}, zuletzt berechnet am {{at}}",
+    "NO_RESULT": "Hier wird keine Zahl angezeigt",
+    "REASON": {
+      "not_enough_data": "In dieser Gegend gibt es noch nicht genug vergleichbare Anzeigen für eine verlässliche Spanne. Eine Spanne erscheint erst ab 8 Anzeigen von 3 verschiedenen Anbietern.",
+      "area_out_of_range": "Die Fläche liegt außerhalb des berechneten Bereichs (15 bis 5.000 m²).",
+      "currency_rate_missing": "Für diese Währung ist gerade kein Wechselkurs verfügbar. Wählen Sie USD."
+    },
+    "DISCLAIMER": "Dies sind Angebotspreise aus Anzeigen, keine tatsächlichen Verkaufspreise, und sie berücksichtigen weder Zustand noch Etage oder Alter. Verlassen Sie sich beim Kauf oder Verkauf nicht allein darauf.",
+    "VALUATION_LINK": "Sie brauchen eine Bewertung einer bestimmten Immobilie? Jetzt anfragen",
+    "AREAS_TITLE": "Preis pro m² im Gouvernement und seinen Bezirken",
+    "AREA_NAME": "Gegend",
+    "MEDIAN_SQM": "Median pro m²",
+    "MIDDLE_HALF": "Mittlere Hälfte pro m²",
+    "LISTINGS": "Anzeigen",
+    "METHOD": "Methode: Unplausible Flächen, doppelte Anzeigen und Ausreißer werden entfernt, dann werden unteres Quartil, Median und oberes Quartil des Preises pro m² berechnet. Die Daten werden alle 6 Stunden aktualisiert."
   }
 }

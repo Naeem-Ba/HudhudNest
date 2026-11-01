@@ -363,6 +363,13 @@ export const routes: Routes = [
             .then(m => m.AnalyticsPage)
       },
       {
+        // Growth engine P6: public asking-price ranges per area (never a valuation).
+        path: 'price-estimate',
+        loadComponent: () =>
+          import('./features/price-estimate/price-estimate.page')
+            .then(m => m.PriceEstimatePage)
+      },
+      {
         // Public pricing page - Basic / Premium / Elite agency plans.
         path: 'pricing',
         loadComponent: () =>
