@@ -512,6 +512,17 @@
   z-index: 2;
 }
 
+/* Share button — right under the favorite heart (same 40px circle, same corner). */
+.share-btn-wrapper {
+  --icon-btn-size: 40px;
+  display: block;
+  line-height: 0;
+  position: absolute;
+  top: calc(.6rem + 40px + .5rem);
+  inset-inline-end: .6rem;
+  z-index: 2;
+}
+
 /* ── Pagination ── */
 .pagination {
   display: flex;

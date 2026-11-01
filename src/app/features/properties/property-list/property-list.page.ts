@@ -36,6 +36,7 @@ import { Property, PropertyFilterDto } from '../../../core/models/property.model
 import { HttpErrorResponse } from '@angular/common/http';
 import { EmptyStateComponent } from '../../../shared/ui/empty-state.component';
 import { SkeletonCardGridComponent } from '../../../shared/ui/skeleton-card-grid.component';
+import { PropertyShareButtonComponent } from '../../../shared/ui/property-share-button.component';
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
 import { OverlayBackHandlerService } from '../../../core/services/overlay-back-handler.service';
 import { ScrollLockService } from '../../../core/services/scroll-lock.service';
@@ -69,7 +70,8 @@ import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count
     EmptyStateComponent,
     SkeletonCardGridComponent,
     ImageFallbackDirective,
-    FavoriteToggleButtonComponent
+    FavoriteToggleButtonComponent,
+    PropertyShareButtonComponent
   ],
   templateUrl: './property-list.page.html',
   styleUrls: ['./property-list.page.scss']
