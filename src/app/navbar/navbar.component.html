@@ -605,6 +605,14 @@
       </a>
 
       <a
+        routerLink="/map"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ 'NAVBAR.MAP' | translate }}
+      </a>
+
+      <a
         routerLink="/price-estimate"
         class="mobile-drawer__link"
         (click)="closeMobileMenu()"

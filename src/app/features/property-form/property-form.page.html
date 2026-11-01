@@ -223,6 +223,11 @@
               <p class="field-error" *ngIf="form.errors?.['invalidCoordinates'] && (f.latitude.touched || f.longitude.touched)">
                 {{ 'PROPERTY_FORM.INVALID_COORDINATES' | translate }}
               </p>
+              <label class="hide-location" data-testid="hide-exact-location">
+                <input type="checkbox" formControlName="hideExactLocation">
+                <span>{{ 'PROPERTY_FORM.HIDE_EXACT_LOCATION' | translate }}</span>
+              </label>
+              <small class="hide-location__hint">{{ 'PROPERTY_FORM.HIDE_EXACT_LOCATION_HINT' | translate }}</small>
             </div>
           </div>
         </div>

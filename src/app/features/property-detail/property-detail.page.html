@@ -782,6 +782,9 @@
               [interactive]="false"
               [enableLocate]="false">
             </app-map-picker>
+            <p class="map-approximate" *ngIf="validLocation() && property()?.isLocationApproximate" data-testid="approximate-location">
+              {{ 'PROPERTY_DETAIL.APPROXIMATE_LOCATION' | translate }}
+            </p>
             <a *ngIf="validLocation() as location"
               class="map-external-link"
               [href]="'https://www.google.com/maps/search/?api=1&query=' + location.lat + ',' + location.lng"

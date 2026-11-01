@@ -642,3 +642,8 @@
   &:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
   &:disabled { opacity: .6; cursor: default; }
 }
+
+/* Growth engine P8: hide the exact spot from the public. */
+.hide-location { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; margin-top: .5rem; cursor: pointer; }
+.hide-location input { width: 1.1rem; height: 1.1rem; }
+.hide-location__hint { display: block; color: var(--text-muted, #5b6470); font-size: .85rem; }

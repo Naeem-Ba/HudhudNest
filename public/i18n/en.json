@@ -112,7 +112,8 @@
     "REFERRALS": "Invite friends",
     "ADMIN_REFERRALS": "Referrals",
     "PRICE_ESTIMATE": "Area prices",
-    "ADMIN_GROWTH": "Growth & campaigns"
+    "ADMIN_GROWTH": "Growth & campaigns",
+    "MAP": "Map"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -567,7 +568,8 @@
     "SORT_PRICE_NEEDS_TYPE": "Choose “For rent” or “For sale” to sort by price.",
     "GEO_UNSUPPORTED": "Your browser does not support location.",
     "GEO_CONSENT_NOTE": "We use your current location only to show properties near you.",
-    "GEO_DENIED": "Could not get your location. Check the location permission."
+    "GEO_DENIED": "Could not get your location. Check the location permission.",
+    "MAP_VIEW": "Map view"
   },
   "PAGINATION": {
     "NAV_LABEL": "Page navigation",
@@ -626,7 +628,8 @@
       "TITLE": "Price history",
       "TO": "to",
       "NOTE": "Changes the advertiser made after the listing went live. An asking price is not the price of a completed sale."
-    }
+    },
+    "APPROXIMATE_LOCATION": "Approximate location (about 500 m). The advertiser hid the exact spot."
   },
   "SHARE": {
     "BUTTON_LABEL": "Share",
@@ -778,7 +781,9 @@
     "FURNISHING_STATUS": "Furnishing",
     "FURNISHING_UNFURNISHED": "Unfurnished",
     "FURNISHING_SEMIFURNISHED": "Semi-Furnished",
-    "FURNISHING_FURNISHED": "Furnished"
+    "FURNISHING_FURNISHED": "Furnished",
+    "HIDE_EXACT_LOCATION": "Hide my exact location from the public",
+    "HIDE_EXACT_LOCATION_HINT": "Visitors see an approximate area of about 500 m instead of the pin, and no street name. You and the admins still see the exact spot."
   },
   "property_add": {
     "title": "Add property",
@@ -4068,5 +4073,19 @@
     "COPY": "Copy link",
     "COPIED": "Link copied.",
     "COPY_FAILED": "Copying failed. Copy the link by hand."
+  },
+  "PROPERTY_MAP": {
+    "TITLE": "Listings on the map",
+    "TYPE": "Type",
+    "ALL": "All",
+    "RENT": "Rent",
+    "SALE": "Sale",
+    "MIN_ROOMS": "Min. rooms",
+    "LIST_VIEW": "List view",
+    "ERROR": "The map could not be loaded right now.",
+    "COUNT": "{{count}} listings in this area",
+    "ZOOM_IN": "{{count}} listings, zoom in to see them one by one",
+    "PRIVACY_NOTE": "Circles mean the advertiser hid the exact spot: the property is somewhere inside the circle.",
+    "APPROXIMATE": "approximate location"
   }
 }

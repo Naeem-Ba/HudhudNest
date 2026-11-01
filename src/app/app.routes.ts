@@ -363,6 +363,13 @@ export const routes: Routes = [
             .then(m => m.AnalyticsPage)
       },
       {
+        // Growth engine P8: browse listings on a map (server-side clusters).
+        path: 'map',
+        loadComponent: () =>
+          import('./features/property-map/property-map.page')
+            .then(m => m.PropertyMapPage)
+      },
+      {
         // Growth engine P6: public asking-price ranges per area (never a valuation).
         path: 'price-estimate',
         loadComponent: () =>

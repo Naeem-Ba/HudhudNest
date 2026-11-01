@@ -109,6 +109,22 @@ describe('PropertyFormPage heating type', () => {
     expect(propertyApi.getPropertyForManagement).toHaveBeenCalled();
     expect(fixture.componentInstance.form.get('heatingType')?.value).toBe(2);
   });
+
+  it('edit mode keeps the owner\'s "hide exact location" choice (growth engine P8)', async () => {
+    setup('11111111-1111-1111-1111-111111111111');
+    propertyApi.getPropertyForManagement.and.returnValue(of({
+      id: '11111111-1111-1111-1111-111111111111', title: 'Edit me', description: 'd', listingType: 'ForRent',
+      countryCode: 'SY', latitude: 33.51, longitude: 36.29, hideExactLocation: true
+    } as never));
+    const fixture = TestBed.createComponent(PropertyFormPage);
+    fixture.detectChanges();
+    flushEnums();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.form.get('hideExactLocation')?.value).toBeTrue();
+    expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="hide-exact-location"] input')).not.toBeNull();
+  });
 });
 
 describe('PropertyFormPage heating type in the save payload', () => {

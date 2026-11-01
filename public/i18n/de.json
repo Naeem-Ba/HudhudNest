@@ -112,7 +112,8 @@
     "REFERRALS": "Freunde einladen",
     "ADMIN_REFERRALS": "Empfehlungen",
     "PRICE_ESTIMATE": "Preise nach Gegend",
-    "ADMIN_GROWTH": "Wachstum & Kampagnen"
+    "ADMIN_GROWTH": "Wachstum & Kampagnen",
+    "MAP": "Karte"
   },
   "AUTH": {
     "LOGIN_TITLE": "Willkommen",
@@ -567,7 +568,8 @@
     "SORT_PRICE_NEEDS_TYPE": "Wählen Sie „Zur Miete“ oder „Zum Kauf“, um nach Preis zu sortieren.",
     "GEO_UNSUPPORTED": "Ihr Browser unterstützt keine Standortbestimmung.",
     "GEO_CONSENT_NOTE": "Wir verwenden Ihren aktuellen Standort nur, um Immobilien in Ihrer Nähe anzuzeigen.",
-    "GEO_DENIED": "Ihr Standort konnte nicht ermittelt werden. Bitte prüfen Sie die Standortfreigabe."
+    "GEO_DENIED": "Ihr Standort konnte nicht ermittelt werden. Bitte prüfen Sie die Standortfreigabe.",
+    "MAP_VIEW": "Kartenansicht"
   },
   "PAGINATION": {
     "NAV_LABEL": "Seitennavigation",
@@ -626,7 +628,8 @@
       "TITLE": "Preisverlauf",
       "TO": "auf",
       "NOTE": "Änderungen, die der Anbieter nach der Veröffentlichung vorgenommen hat. Ein Angebotspreis ist kein tatsächlich erzielter Verkaufspreis."
-    }
+    },
+    "APPROXIMATE_LOCATION": "Ungefährer Standort (etwa 500 m). Der Anbieter hat den genauen Ort ausgeblendet."
   },
   "SHARE": {
     "BUTTON_LABEL": "Teilen",
@@ -778,7 +781,9 @@
     "FURNISHING_STATUS": "Möblierung",
     "FURNISHING_UNFURNISHED": "Unmöbliert",
     "FURNISHING_SEMIFURNISHED": "Teilmöbliert",
-    "FURNISHING_FURNISHED": "Möbliert"
+    "FURNISHING_FURNISHED": "Möbliert",
+    "HIDE_EXACT_LOCATION": "Meinen genauen Standort öffentlich ausblenden",
+    "HIDE_EXACT_LOCATION_HINT": "Besucher sehen statt der Stecknadel einen ungefähren Bereich von etwa 500 m und keinen Straßennamen. Sie und die Administration sehen den genauen Ort."
   },
   "property_add": {
     "title": "Immobilie hinzufügen",
@@ -4068,5 +4073,19 @@
     "COPY": "Link kopieren",
     "COPIED": "Link kopiert.",
     "COPY_FAILED": "Kopieren fehlgeschlagen. Bitte den Link von Hand kopieren."
+  },
+  "PROPERTY_MAP": {
+    "TITLE": "Anzeigen auf der Karte",
+    "TYPE": "Art",
+    "ALL": "Alle",
+    "RENT": "Miete",
+    "SALE": "Kauf",
+    "MIN_ROOMS": "Mind. Zimmer",
+    "LIST_VIEW": "Listenansicht",
+    "ERROR": "Die Karte konnte gerade nicht geladen werden.",
+    "COUNT": "{{count}} Anzeigen in dieser Gegend",
+    "ZOOM_IN": "{{count}} Anzeigen, zoomen Sie hinein, um sie einzeln zu sehen",
+    "PRIVACY_NOTE": "Kreise bedeuten, dass der Anbieter den genauen Ort ausgeblendet hat: Die Immobilie liegt irgendwo im Kreis.",
+    "APPROXIMATE": "ungefährer Standort"
   }
 }
