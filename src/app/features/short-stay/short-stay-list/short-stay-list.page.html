@@ -6,8 +6,8 @@
 
   <form class="ssl__filters" (ngSubmit)="applyFilters()">
     <div class="ssl__field">
-      <label>{{ 'SHORTSTAY.LIST.CITY' | translate }}</label>
-      <input type="text" [(ngModel)]="cityFilter" name="city" [placeholder]="'SHORTSTAY.LIST.CITY_PLACEHOLDER' | translate" />
+      <label for="ssl-city">{{ 'SHORTSTAY.LIST.CITY' | translate }}</label>
+      <input id="ssl-city" type="text" [(ngModel)]="cityFilter" name="city" [placeholder]="'SHORTSTAY.LIST.CITY_PLACEHOLDER' | translate" />
     </div>
 
     <div class="ssl__field ssl__field--dates">
@@ -26,18 +26,18 @@
     </div>
 
     <div class="ssl__field">
-      <label>{{ 'SHORTSTAY.LIST.GUESTS' | translate }}</label>
-      <input type="number" min="1" [(ngModel)]="guests" name="guests" />
+      <label for="ssl-guests">{{ 'SHORTSTAY.LIST.GUESTS' | translate }}</label>
+      <input id="ssl-guests" type="number" min="1" [(ngModel)]="guests" name="guests" />
     </div>
 
     <div class="ssl__field">
-      <label>{{ 'SHORTSTAY.LIST.MIN_PRICE' | translate }}</label>
-      <input type="number" min="0" [(ngModel)]="minPrice" name="minPrice" />
+      <label for="ssl-minPrice">{{ 'SHORTSTAY.LIST.MIN_PRICE' | translate }}</label>
+      <input id="ssl-minPrice" type="number" min="0" [(ngModel)]="minPrice" name="minPrice" />
     </div>
 
     <div class="ssl__field">
-      <label>{{ 'SHORTSTAY.LIST.MAX_PRICE' | translate }}</label>
-      <input type="number" min="0" [(ngModel)]="maxPrice" name="maxPrice" />
+      <label for="ssl-maxPrice">{{ 'SHORTSTAY.LIST.MAX_PRICE' | translate }}</label>
+      <input id="ssl-maxPrice" type="number" min="0" [(ngModel)]="maxPrice" name="maxPrice" />
     </div>
 
     <div class="ssl__filter-actions">

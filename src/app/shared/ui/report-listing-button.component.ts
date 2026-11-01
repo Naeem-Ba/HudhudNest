@@ -205,7 +205,7 @@ const FALLBACK_REASONS: ListingReportReasonDto[] = LISTING_REPORT_REASONS.map(co
     }
     .report-sheet__grab { display: block; width: 40px; height: 4px; border-radius: 4px; background: var(--border); margin: 0 auto .5rem; }
     .report-sheet__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .4rem; }
-    .report-sheet__header h2 { margin: 0; font-family: var(--font-display); font-size: 1.15rem; color: var(--navy); }
+    .report-sheet__header h2 { margin: 0; font-family: var(--font-display); font-size: 1.15rem; color: var(--text-strong); }
     .report-sheet__close {
       border: none; background: transparent; color: var(--gray-500); cursor: pointer; display: grid; place-items: center;
       border-radius: var(--r-pill, 999px); width: 44px; height: 44px; padding: 0;
@@ -242,7 +242,7 @@ const FALLBACK_REASONS: ListingReportReasonDto[] = LISTING_REPORT_REASONS.map(co
     .report-actions { display: flex; gap: .6rem; justify-content: flex-end; margin-top: .9rem; flex-wrap: wrap; }
     .report-btn {
       min-height: 44px; padding: 0 1.2rem; border-radius: var(--r-md, 12px); border: 1px solid var(--border);
-      background: var(--surface); color: var(--navy, #0f2742); font: inherit; font-weight: 700; cursor: pointer;
+      background: var(--surface); color: var(--text-strong); font: inherit; font-weight: 700; cursor: pointer;
     }
     .report-btn--primary { background: var(--primary, #0f2742); color: var(--on-primary, #fff); border-color: transparent; }
     .report-btn:disabled { opacity: .6; cursor: not-allowed; }

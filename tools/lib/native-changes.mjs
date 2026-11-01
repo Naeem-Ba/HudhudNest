@@ -17,6 +17,9 @@ const NATIVE_FILES = new Set([
   'tools/setup-ios.mjs',
   'tools/fix-ios-spm-paths.mjs',
   'tools/validate-ios-config.mjs',
+  'tools/add-ios-firebase-config.mjs',
+  'tools/lib/ios-config.mjs',
+  'tools/lib/ios-firebase-config.mjs',
   // Editing the job itself must exercise it.
   '.github/workflows/frontend-ci.yml',
 ]);

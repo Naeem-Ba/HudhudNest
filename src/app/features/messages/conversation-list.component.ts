@@ -86,7 +86,7 @@ import { ImageFallbackDirective } from '../../shared/directives/image-fallback.d
     }
     .conversation-row__body { flex:1; min-width:0; display:flex; flex-direction:column; gap:.15rem; }
     .conversation-row__top { display:flex; align-items:center; gap:.4rem; flex-wrap:wrap; min-width:0; }
-    .conversation-row__name { color:var(--navy); overflow-wrap:anywhere; }
+    .conversation-row__name { color: var(--text-strong); overflow-wrap:anywhere; }
     .conversation-row__role {
       font-size:var(--text-xs); color:var(--gray-500); background:var(--gray-100);
       border-radius:var(--r-pill); padding:.05rem .45rem; white-space:nowrap;

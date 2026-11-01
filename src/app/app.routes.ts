@@ -333,12 +333,6 @@ export const routes: Routes = [
             .then(m => m.AnalyticsPage)
       },
       {
-        path: 'offline',
-        loadComponent: () =>
-          import('./features/offline/offline.page')
-            .then(m => m.OfflinePage)
-      },
-      {
         // Public pricing page - Basic / Premium / Elite agency plans.
         path: 'pricing',
         loadComponent: () =>

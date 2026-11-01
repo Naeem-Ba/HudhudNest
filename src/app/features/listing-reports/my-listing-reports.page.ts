@@ -92,7 +92,7 @@ import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.compone
   `,
   styles: [`
     .page { padding: clamp(1rem, 3vw, 2rem); max-width: 860px; margin: 0 auto; }
-    .page-header h1 { margin: 0 0 .3rem; color: var(--navy); font-family: var(--font-display); font-size: clamp(1.5rem, 2.6vw, 2rem); }
+    .page-header h1 { margin: 0 0 .3rem; color: var(--text-strong); font-family: var(--font-display); font-size: clamp(1.5rem, 2.6vw, 2rem); }
     .page-header p { margin: 0 0 1rem; color: var(--gray-500); }
     .list { list-style: none; margin: 0; padding: 0; display: grid; gap: .8rem; }
     .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1rem; display: grid; gap: .5rem; }
@@ -100,7 +100,7 @@ import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.compone
     .card--focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-soft, rgba(99,102,241,.25)); }
     .card__head { display: flex; justify-content: space-between; gap: .8rem; align-items: flex-start; }
     .card h2 { margin: .1rem 0 0; font-size: 1.05rem; overflow-wrap: anywhere; }
-    .card h2 a { color: var(--navy); text-decoration: none; }
+    .card h2 a { color: var(--text-strong); text-decoration: none; }
     .ref { font-size: .8rem; color: var(--gray-500); }
     .muted { margin: 0; color: var(--gray-500); font-size: var(--text-sm, .875rem); }
     .pre { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; color: var(--gray-700); }

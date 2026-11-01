@@ -145,11 +145,11 @@ type Sort = NonNullable<ListingReportFilter['sort']>;
   styles: [`
     .preview { display:block; flex-basis:100%; color:var(--gray-600, #52606d); font-size:var(--text-sm); line-height:1.5; overflow-wrap:anywhere; }
     .page{padding:clamp(1rem,3vw,2rem);max-width:1300px;margin:0 auto}
-    .page-header h1{margin:0 0 .3rem;color:var(--navy);font-family:var(--font-display);font-size:clamp(1.5rem,2.6vw,2rem)}
+    .page-header h1{margin:0 0 .3rem;color: var(--text-strong);font-family:var(--font-display);font-size:clamp(1.5rem,2.6vw,2rem)}
     .page-header p{margin:0 0 1rem;color:var(--gray-500)}
     .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.6rem;margin-bottom:1rem}
     .stat{display:grid;gap:.1rem;text-align:start;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:.7rem .85rem;cursor:pointer;font:inherit;color:inherit}
-    .stat strong{font-size:1.4rem;color:var(--navy)}
+    .stat strong{font-size:1.4rem;color: var(--text-strong)}
     .stat span{font-size:var(--text-sm);color:var(--gray-600)}
     .stat.on{border-color:var(--primary);background:var(--primary-soft)}
     .stat--warn strong{color:var(--danger)}

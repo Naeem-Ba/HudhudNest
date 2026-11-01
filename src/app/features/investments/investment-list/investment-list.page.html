@@ -8,13 +8,13 @@
 
   <form class="invl__filters" (ngSubmit)="applyFilters()">
     <div class="invl__field">
-      <label>{{ 'INVESTMENTS.LIST.SEARCH' | translate }}</label>
-      <input type="text" [(ngModel)]="search" name="search" [placeholder]="'INVESTMENTS.LIST.SEARCH_PLACEHOLDER' | translate" />
+      <label for="inv-search">{{ 'INVESTMENTS.LIST.SEARCH' | translate }}</label>
+      <input id="inv-search" type="text" [(ngModel)]="search" name="search" [placeholder]="'INVESTMENTS.LIST.SEARCH_PLACEHOLDER' | translate" />
     </div>
 
     <div class="invl__field">
-      <label>{{ 'INVESTMENTS.LIST.PROJECT_TYPE' | translate }}</label>
-      <select [(ngModel)]="projectType" name="projectType">
+      <label for="inv-projectType">{{ 'INVESTMENTS.LIST.PROJECT_TYPE' | translate }}</label>
+      <select id="inv-projectType" [(ngModel)]="projectType" name="projectType">
         <option value="">{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
         <option value="Residential">{{ 'INVESTMENTS.PROJECT_TYPE.RESIDENTIAL' | translate }}</option>
         <option value="Commercial">{{ 'INVESTMENTS.PROJECT_TYPE.COMMERCIAL' | translate }}</option>
@@ -27,8 +27,8 @@
     </div>
 
     <div class="invl__field">
-      <label>{{ 'INVESTMENTS.RISK.LABEL' | translate }}</label>
-      <select [(ngModel)]="riskLevel" name="riskLevel">
+      <label for="inv-riskLevel">{{ 'INVESTMENTS.RISK.LABEL' | translate }}</label>
+      <select id="inv-riskLevel" [(ngModel)]="riskLevel" name="riskLevel">
         <option value="">{{ 'COMMON.PLEASE_SELECT' | translate }}</option>
         <option value="Low">{{ 'INVESTMENTS.RISK.LOW' | translate }}</option>
         <option value="Medium">{{ 'INVESTMENTS.RISK.MEDIUM' | translate }}</option>
@@ -38,13 +38,13 @@
     </div>
 
     <div class="invl__field">
-      <label>{{ 'INVESTMENTS.LIST.MIN_RETURN' | translate }}</label>
-      <input type="number" min="0" [(ngModel)]="minExpectedReturn" name="minExpectedReturn" />
+      <label for="inv-minExpectedReturn">{{ 'INVESTMENTS.LIST.MIN_RETURN' | translate }}</label>
+      <input id="inv-minExpectedReturn" type="number" min="0" [(ngModel)]="minExpectedReturn" name="minExpectedReturn" />
     </div>
 
     <div class="invl__field">
-      <label>{{ 'INVESTMENTS.LIST.MAX_TERM' | translate }}</label>
-      <input type="number" min="1" [(ngModel)]="maxTermMonths" name="maxTermMonths" />
+      <label for="inv-maxTermMonths">{{ 'INVESTMENTS.LIST.MAX_TERM' | translate }}</label>
+      <input id="inv-maxTermMonths" type="number" min="1" [(ngModel)]="maxTermMonths" name="maxTermMonths" />
     </div>
 
     <div class="invl__filter-actions">

@@ -79,7 +79,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
   `,
   styles: [`
     .page { padding: clamp(1rem, 3vw, 2rem); max-width: 1000px; margin: 0 auto; }
-    .page-header h1 { margin: 0 0 .3rem; color: var(--navy); font-family: var(--font-display); font-size: clamp(1.5rem, 2.6vw, 2rem); }
+    .page-header h1 { margin: 0 0 .3rem; color: var(--text-strong); font-family: var(--font-display); font-size: clamp(1.5rem, 2.6vw, 2rem); }
     .page-header p { margin: 0 0 1rem; color: var(--gray-500); }
     .filters { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1rem; align-items: flex-end; }
     .field { border: 1px solid var(--border); border-radius: var(--r-md); padding: .5rem .8rem; background: var(--surface); font-size: 16px; }
@@ -87,7 +87,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
     .rows { display: grid; gap: .5rem; }
     .row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: .8rem 1rem; display: grid; gap: .3rem; }
     .row__main, .row__meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1rem; }
-    .action { color: var(--navy); word-break: break-all; }
+    .action { color: var(--text-strong); word-break: break-all; }
     .muted { color: var(--gray-400); font-size: var(--text-sm); }
     pre { margin: .3rem 0 0; white-space: pre-wrap; word-break: break-word; font-size: var(--text-xs); background: var(--gray-100); padding: .5rem; border-radius: var(--r-sm); }
     .error { color: var(--danger); }

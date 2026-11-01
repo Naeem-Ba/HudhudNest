@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  AfterViewInit,
   ChangeDetectorRef,
   Component,
   DestroyRef,
@@ -59,6 +60,29 @@ const MANAGEMENT_ROUTE_PREFIXES = [
   '/admin'
 ];
 
+/** Widths (px) the navbar needs to decide between the link row and the menu button. */
+export interface NavMeasure {
+  /** Room inside the navbar. */
+  available: number;
+  brand: number;
+  /** Natural width of the link row. */
+  nav: number;
+  /** Width of the button group; includes the menu button while it is shown. */
+  actions: number;
+  /** Extra width the menu button adds to `actions` while it is shown (0 when it is hidden). */
+  menuButtonExtra: number;
+  /** Gap between brand, links and buttons. */
+  gap: number;
+}
+
+/**
+ * The link row fits only when brand + links + buttons (without the menu button) + the two gaps between them
+ * fit in the room available. Independent of the current state, so the answer cannot flip back and forth.
+ */
+export function navNeedsMenuButton(m: NavMeasure): boolean {
+  return m.brand + m.nav + (m.actions - m.menuButtonExtra) + 2 * m.gap > m.available;
+}
+
 @Component({
   selector: 'app-navbar',
   standalone: true,
@@ -73,7 +97,7 @@ const MANAGEMENT_ROUTE_PREFIXES = [
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.scss']
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent implements OnInit, AfterViewInit {
   /** يطابق $bp-tablet في _breakpoints.scss — نقطة الكسر التي يختفي عندها
    *  .mobile-toggle ويظهر .navbar__nav الثابت (navbar.component.scss). */
   private static readonly DESKTOP_BREAKPOINT_PX = 980;
@@ -108,6 +132,21 @@ export class NavbarComponent implements OnInit {
 
   @ViewChild('mobileToggleRef')
   private mobileToggleRef?: ElementRef<HTMLElement>;
+
+  @ViewChild('innerRef')
+  private innerRef?: ElementRef<HTMLElement>;
+
+  @ViewChild('brandRef')
+  private brandRef?: ElementRef<HTMLElement>;
+
+  @ViewChild('navRef')
+  private navRef?: ElementRef<HTMLElement>;
+
+  @ViewChild('actionsRef')
+  private actionsRef?: ElementRef<HTMLElement>;
+
+  @ViewChild('drawerCloseRef')
+  private drawerCloseRef?: ElementRef<HTMLElement>;
 
   /**
    * "Download the app" points at the static /download page (not an Angular route, see public/_redirects), so it is a
@@ -144,6 +183,14 @@ export class NavbarComponent implements OnInit {
   dropdownOpen = false;
   langMenuOpen = false;
   mobileMenuOpen = false;
+
+  /**
+   * The links do not fit on one line next to the logo and the buttons, so the menu button takes their place.
+   * Measured, not a fixed width: the same eight links need 895px in Arabic, 1023px in English and 1085px in German
+   * (more when signed in), so no single breakpoint is right for all three. Below the 980px CSS breakpoint the menu
+   * button is always used.
+   */
+  compactNav = false;
 
   currentLang: AppLang = 'ar';
 
@@ -203,7 +250,7 @@ export class NavbarComponent implements OnInit {
     fromEvent(window, 'resize')
       .pipe(debounceTime(150), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
-        if (this.mobileMenuOpen && window.innerWidth > NavbarComponent.DESKTOP_BREAKPOINT_PX) {
+        if (this.mobileMenuOpen && !this.menuButtonShown()) {
           this.closeMobileMenu();
         }
       });
@@ -258,6 +305,24 @@ export class NavbarComponent implements OnInit {
       .subscribe(() => {
         this.serviceProviderService.refresh().subscribe({ error: () => undefined });
       });
+  }
+
+  ngAfterViewInit(): void {
+    this.updateCompactNav();
+    if (typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    const observer = new ResizeObserver(() => this.updateCompactNav());
+    for (const ref of [this.innerRef, this.brandRef, this.navRef, this.actionsRef]) {
+      if (ref) {
+        observer.observe(ref.nativeElement);
+      }
+    }
+    this.destroyRef.onDestroy(() => observer.disconnect());
+
+    // Web fonts change the text width after the first measurement.
+    void document.fonts?.ready.then(() => this.updateCompactNav());
   }
 
   @HostListener('document:click', ['$event'])
@@ -333,11 +398,90 @@ export class NavbarComponent implements OnInit {
 
     if (open) {
       this.scrollLock.lock();
+      // The drawer is out of the tab order until it opens: move the keyboard / screen reader into it.
+      // A beat later: while the drawer is still `visibility: hidden` (its first frame) the browser refuses focus.
+      setTimeout(() => this.drawerCloseRef?.nativeElement.focus(), 60);
     } else {
       this.scrollLock.unlock();
+      const drawer = this.mobileDrawerRef?.nativeElement;
+      if (drawer?.contains(document.activeElement)) {
+        this.mobileToggleRef?.nativeElement.focus();
+      }
     }
 
     this.cd.markForCheck();
+  }
+
+  /** Keeps Tab / Shift+Tab inside the open drawer instead of walking through the page behind it. */
+  onDrawerKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'Tab' || !this.mobileMenuOpen) {
+      return;
+    }
+
+    const drawer = this.mobileDrawerRef?.nativeElement;
+    const focusable = drawer
+      ? Array.from(drawer.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+          .filter(el => el.offsetParent !== null || el === document.activeElement)
+      : [];
+    if (focusable.length === 0) {
+      return;
+    }
+
+    const first = focusable[0]!;
+    const last = focusable[focusable.length - 1]!;
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  /** True when the menu button (and not the link row) is what the visitor sees at this width. */
+  private menuButtonShown(): boolean {
+    return this.compactNav || window.innerWidth <= NavbarComponent.DESKTOP_BREAKPOINT_PX;
+  }
+
+  /**
+   * Decides between the link row and the menu button. The link row is kept in the layout (hidden) while the
+   * button is shown, so its natural width can still be measured; the width needed is brand + links + buttons
+   * (without the menu button, which only exists in compact mode) + the gaps between them.
+   */
+  private updateCompactNav(): void {
+    const inner = this.innerRef?.nativeElement;
+    const brand = this.brandRef?.nativeElement;
+    const nav = this.navRef?.nativeElement;
+    const actions = this.actionsRef?.nativeElement;
+    const toggle = this.mobileToggleRef?.nativeElement;
+    if (!inner || !brand || !nav || !actions) {
+      return;
+    }
+
+    if (window.innerWidth <= NavbarComponent.DESKTOP_BREAKPOINT_PX) {
+      // The stylesheet already shows the menu button here, and the link row is display:none (not measurable).
+      if (!this.compactNav) {
+        this.compactNav = true;
+        this.cd.markForCheck();
+      }
+      return;
+    }
+
+    const gap = parseFloat(getComputedStyle(inner).columnGap) || 0;
+    const actionsGap = parseFloat(getComputedStyle(actions).columnGap) || 0;
+    const compact = navNeedsMenuButton({
+      available: inner.clientWidth,
+      brand: brand.offsetWidth,
+      nav: nav.scrollWidth,
+      actions: actions.offsetWidth,
+      menuButtonExtra: this.compactNav && toggle ? toggle.offsetWidth + actionsGap : 0,
+      gap
+    });
+
+    if (compact !== this.compactNav) {
+      this.compactNav = compact;
+      this.cd.markForCheck();
+    }
   }
 
   logout(): void {

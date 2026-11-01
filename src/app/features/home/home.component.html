@@ -49,8 +49,8 @@
         <div class="hero-search__divider" aria-hidden="true"></div>
 
         <div class="hero-search__field">
-          <label>{{ 'HOME.search.max_price' | translate }}</label>
-          <select [(ngModel)]="searchMaxPrice" name="searchMaxPrice">
+          <label for="home-searchMaxPrice">{{ 'HOME.search.max_price' | translate }}</label>
+          <select id="home-searchMaxPrice" [(ngModel)]="searchMaxPrice" name="searchMaxPrice">
             <option *ngFor="let p of priceOptions" [ngValue]="p.value">{{ p.labelKey | translate }}</option>
           </select>
         </div>
@@ -58,8 +58,8 @@
         <div class="hero-search__divider" aria-hidden="true"></div>
 
         <div class="hero-search__field">
-          <label>{{ 'HOME.search.listing_type' | translate }}</label>
-          <select [(ngModel)]="searchListingType" name="searchListingType">
+          <label for="home-searchListingType">{{ 'HOME.search.listing_type' | translate }}</label>
+          <select id="home-searchListingType" [(ngModel)]="searchListingType" name="searchListingType">
             <option value="">{{ 'HOME.search.listing_type_any' | translate }}</option>
             <option value="ForRent">{{ 'PROPERTY.MODE_RENT' | translate }}</option>
             <option value="ForSale">{{ 'PROPERTY.MODE_SALE' | translate }}</option>

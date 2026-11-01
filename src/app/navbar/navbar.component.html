@@ -1,8 +1,9 @@
-<header class="navbar" role="banner">
-  <div class="navbar__inner">
+<header class="navbar" role="banner" [class.navbar--compact]="compactNav">
+  <div class="navbar__inner" #innerRef>
 
     <!-- Logo -->
     <a
+      #brandRef
       routerLink="/home"
       class="navbar__brand"
       aria-label="HudhudNest"
@@ -25,9 +26,10 @@
 
     <!-- Desktop Navigation -->
     <nav
+      #navRef
       class="navbar__nav"
       role="navigation"
-      aria-label="التنقل الرئيسي"
+      [attr.aria-label]="'NAVBAR.MAIN_NAV' | translate"
     >
       <a
         routerLink="/home"
@@ -123,7 +125,7 @@
     </nav>
 
     <!-- Actions -->
-    <div class="navbar__actions">
+    <div class="navbar__actions" #actionsRef>
 
       <!-- Theme Toggle (Dark/Light) -->
       <button
@@ -517,11 +519,26 @@
     class="mobile-drawer"
     [class.mobile-drawer--open]="mobileMenuOpen"
     [attr.aria-hidden]="!mobileMenuOpen"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="'NAVBAR.OPEN_MENU' | translate"
+    (keydown)="onDrawerKeydown($event)"
   >
+    <button
+      #drawerCloseRef
+      type="button"
+      class="mobile-drawer__close"
+      [attr.aria-label]="'NAVBAR.CLOSE_MENU' | translate"
+      (click)="closeMobileMenu()"
+    >
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+        <path d="M3 3l12 12M15 3L3 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+    </button>
     <nav
       class="mobile-drawer__nav"
       role="navigation"
-      aria-label="التنقل الرئيسي"
+      [attr.aria-label]="'NAVBAR.MAIN_NAV' | translate"
     >
       <a
         routerLink="/home"
