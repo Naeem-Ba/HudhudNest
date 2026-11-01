@@ -43,6 +43,7 @@ import { LISTING_PHOTO_COMPRESSION, compressImagesForUpload } from '../../shared
 import { PhotoGuideSheetComponent } from '../../shared/ui/photo-guide/photo-guide-sheet.component';
 import { AmenityLabelPipe } from '../../pipes/amenity-label.pipe';
 import { PhotoGuideKind, photoGuideKindForListingType } from '../../shared/ui/photo-guide/photo-guide.data';
+import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
 
 interface PropertySavePayload {
   Title: string;
@@ -204,7 +205,7 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
   selector: 'app-property-form',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [ LocalizedNumberPipe,
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,

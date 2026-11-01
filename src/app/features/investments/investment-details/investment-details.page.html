@@ -48,7 +48,7 @@
             </div>
             <div>
               <span class="invd__stat-label">{{ 'INVESTMENTS.DETAILS.PROGRESS' | translate }}</span>
-              <strong>{{ p.fundingProgressPercent | number:'1.0-0' }}%</strong>
+              <strong>{{ p.fundingProgressPercent | localNumber:'1.0-0' }}%</strong>
             </div>
           </div>
         </section>
@@ -128,7 +128,7 @@
           <h2>{{ 'INVESTMENTS.UPDATES.TITLE' | translate }}</h2>
           <ol class="invd__timeline">
             <li *ngFor="let update of updates(); trackBy: trackUpdateById">
-              <span class="invd__timeline-date">{{ update.publishedAt | date:'d MMM y' }}</span>
+              <span class="invd__timeline-date">{{ update.publishedAt | localDate:'d MMM y' }}</span>
               <h3>{{ update.title }}</h3>
               <p>{{ update.content }}</p>
             </li>

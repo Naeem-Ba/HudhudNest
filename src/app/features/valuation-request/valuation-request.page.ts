@@ -38,11 +38,13 @@ import {
 import { LanguageService, LangCode } from '../../core/services/language.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { PageMetaService } from '../../core/services/page-meta.service';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
+import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
 
 @Component({
   selector: 'app-valuation-request-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, RouterLink],
+  imports: [LocalizedDatePipe, LocalizedNumberPipe, CommonModule, ReactiveFormsModule, TranslateModule, RouterLink],
   templateUrl: './valuation-request.page.html',
   styleUrls: ['./valuation-request.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

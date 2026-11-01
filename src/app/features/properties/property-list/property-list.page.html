@@ -34,7 +34,7 @@
           </svg>
           {{ 'PROPERTY_LIST.FILTERS' | translate }}
         </h2>
-        <button type="button" class="filter-sidebar__close" (click)="closeFilters()" aria-label="إغلاق">✕</button>
+        <button type="button" class="filter-sidebar__close" (click)="closeFilters()" [attr.aria-label]="'COMMON.CLOSE' | translate">✕</button>
       </div>
 
       <!-- بحث جغرافي "بالقرب مني" — يستخدم /properties/geo-search (PostGIS) -->

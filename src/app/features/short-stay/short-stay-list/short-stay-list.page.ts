@@ -14,12 +14,14 @@ import { DateRangePickerComponent, DateRangeValue } from '../../../shared/ui/dat
 import { PageMetaService } from '../../../core/services/page-meta.service';
 import { uiNumberLocale } from '../../../core/i18n/ui-language';
 import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count.component';
+import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
+import { LocalizedNumberPipe } from '../../../shared/pipes/localized-number.pipe';
 
 @Component({
   selector: 'app-short-stay-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [ LocalizedDatePipe, LocalizedNumberPipe,
     ListingViewCountComponent,
     CommonModule,
     RouterModule,

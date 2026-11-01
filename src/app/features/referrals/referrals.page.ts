@@ -1,5 +1,6 @@
 // Growth engine P5: "Invite friends". Shows the user's code and link, the conditions, and the status of each
 // invitation (dates and statuses only; the API never says who signed up).
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -14,7 +15,7 @@ import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.compone
   selector: 'app-referrals',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslateModule, LoadingSpinnerComponent],
+  imports: [LocalizedDatePipe, CommonModule, TranslateModule, LoadingSpinnerComponent],
   template: `
     <section class="referrals-page">
       <header>
@@ -54,7 +55,7 @@ import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.compone
 
         <ul class="items" *ngIf="d.items.length > 0; else empty">
           <li *ngFor="let item of d.items" data-testid="ref-item">
-            <span>{{ item.joinedAt | date:'dd/MM/yyyy' }}</span>
+            <span>{{ item.joinedAt | localDate:'dd/MM/yyyy' }}</span>
             <span class="chip">{{ ('REFERRALS.STATUS.' + item.status) | translate }}</span>
             <span *ngIf="item.rewarded" class="chip chip--ok">{{ 'REFERRALS.REWARDED' | translate }}</span>
           </li>

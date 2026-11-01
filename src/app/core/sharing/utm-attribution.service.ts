@@ -12,6 +12,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Property } from '../models/property.model';
 import { PropertyShareUrlService } from './property-share-url.service';
+import { currentUiLanguage } from '../i18n/ui-language';
 import { AttributionContext, AttributionUrlOptions } from './utm-attribution.model';
 import { UTM_CAMPAIGN_PROPERTY_SHARE, UTM_MEDIUM_BY_SOURCE } from './utm-platform-mapping';
 
@@ -82,6 +83,13 @@ export class UtmAttributionService {
     url.searchParams.set('utm_medium', context.medium);
     url.searchParams.set('utm_campaign', context.campaign);
     url.searchParams.set('utm_content', context.content);
+
+    // The sharer's language travels with the link: the preview a crawler builds and the page a
+    // first-time visitor opens are shown in it. Only on this shared copy, never on the canonical URL.
+    const language = currentUiLanguage();
+    if (language) {
+      url.searchParams.set('lang', language);
+    }
 
     return url.toString();
   }

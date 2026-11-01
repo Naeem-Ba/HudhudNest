@@ -13,6 +13,7 @@ import { ToastService } from '../../shared/services/toast.service';
 import { ConfirmModalComponent } from '../../shared/ui/confirm-modal.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 type ModalKind = 'takedown' | 'restore' | null;
 
@@ -25,7 +26,7 @@ type ModalKind = 'takedown' | 'restore' | null;
   selector: 'app-admin-short-stay-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [ LocalizedDatePipe,
     CommonModule, FormsModule, RouterLink, TranslateModule,
     ConfirmModalComponent, EmptyStateComponent, LoadingSpinnerComponent
   ],

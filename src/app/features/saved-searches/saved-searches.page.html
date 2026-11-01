@@ -48,7 +48,7 @@
         </p>
 
         <p class="search-card__matched" *ngIf="s.lastNotifiedAt">
-          {{ 'SAVED_SEARCHES.LAST_ALERT' | translate }}: {{ s.lastNotifiedAt | date:'dd/MM/yyyy' }}
+          {{ 'SAVED_SEARCHES.LAST_ALERT' | translate }}: {{ s.lastNotifiedAt | localDate:'dd/MM/yyyy' }}
           · {{ 'SAVED_SEARCHES.ALERTED_COUNT' | translate: { count: s.notifiedCount } }}
         </p>
         <p class="search-card__matched" *ngIf="!s.lastNotifiedAt">

@@ -1,4 +1,5 @@
 // Growth engine P5: admin list of referrals with reject and "reward given" actions.
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -13,7 +14,7 @@ import { ToastService } from '../../shared/services/toast.service';
   selector: 'app-admin-referrals',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
+  imports: [LocalizedDatePipe, CommonModule, FormsModule, RouterModule, TranslateModule],
   template: `
     <section class="admin-referrals">
       <h1>{{ 'ADMIN_REFERRALS.TITLE' | translate }}</h1>
@@ -42,7 +43,7 @@ import { ToastService } from '../../shared/services/toast.service';
           </thead>
           <tbody>
             <tr *ngFor="let r of items()" data-testid="admin-ref-row">
-              <td>{{ r.createdAt | date:'dd/MM/yyyy' }}</td>
+              <td>{{ r.createdAt | localDate:'dd/MM/yyyy' }}</td>
               <td><a [routerLink]="['/admin/users', r.referrerUserId]">{{ r.referrerName || '—' }}</a></td>
               <td><a [routerLink]="['/admin/users', r.referredUserId]">{{ r.referredName || '—' }}</a></td>
               <td>

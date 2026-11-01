@@ -246,3 +246,66 @@ test('buildNotFoundHtml never includes property-specific data and is marked noin
   assert.match(html, /noindex/);
   assert.ok(!html.includes('og:title'));
 });
+
+// ── the sharer's language (QA Phase 16, D10) ───────────────────────────────
+
+import { resolveShareLanguage, buildOfferMetaHtml } from './social-crawler.mjs';
+
+test('resolveShareLanguage accepts ar/en/de (also regional forms) and falls back to Arabic', () => {
+  assert.equal(resolveShareLanguage('de'), 'de');
+  assert.equal(resolveShareLanguage('EN-us'), 'en');
+  assert.equal(resolveShareLanguage('ar'), 'ar');
+  assert.equal(resolveShareLanguage('fr'), 'ar');
+  assert.equal(resolveShareLanguage(null), 'ar');
+  assert.equal(resolveShareLanguage(undefined), 'ar');
+});
+
+const sample = { title: 'Wohnung', rooms: 3, area: 85, areaUnit: 'SquareMeter', city: 'Damascus', purchasePrice: 90000, currencyCode: 'USD' };
+const ctx = { canonicalUrl: 'https://hudhudnest.com/properties/p1', fallbackImageUrl: 'https://hudhudnest.com/images/og-default.png' };
+
+test('buildPropertyMetaHtml without a language keeps the original Arabic document', () => {
+  const html = buildPropertyMetaHtml({ property: sample, ...ctx });
+  assert.match(html, /<html lang="ar" dir="rtl">/);
+  assert.match(html, /og:locale" content="ar_SY"/);
+  assert.match(html, /og:site_name" content="هدهد نيست"/);
+  assert.match(html, /85 م² • 3 غرف/);
+});
+
+test('buildPropertyMetaHtml in German: lang, locale, site name and summary words are German/Latin', () => {
+  const html = buildPropertyMetaHtml({ property: sample, ...ctx, lang: 'de' });
+  assert.match(html, /<html lang="de" dir="ltr">/);
+  assert.match(html, /og:locale" content="de_DE"/);
+  assert.match(html, /og:site_name" content="HudhudNest"/);
+  assert.match(html, /<title>Wohnung \| HudhudNest<\/title>/);
+  assert.match(html, /85 m² • 3 Zimmer/);
+  assert.doesNotMatch(html, /[؀-ۿ]/);
+});
+
+test('buildPropertyMetaHtml in English uses "rooms" and en_US, and keeps the canonical URL untouched', () => {
+  const html = buildPropertyMetaHtml({ property: sample, ...ctx, lang: 'en' });
+  assert.match(html, /<html lang="en" dir="ltr">/);
+  assert.match(html, /og:locale" content="en_US"/);
+  assert.match(html, /3 rooms/);
+  assert.match(html, /rel="canonical" href="https:\/\/hudhudnest.com\/properties\/p1"/);
+  assert.doesNotMatch(html, /lang=en/);
+});
+
+test('buildPropertyMetaHtml uses a translated fallback title when the property has none', () => {
+  assert.match(buildPropertyMetaHtml({ property: { ...sample, title: '' }, ...ctx, lang: 'en' }), /Property details \| HudhudNest/);
+});
+
+test('buildOfferMetaHtml describes the discount in the preview language', () => {
+  const offer = { name: 'Spring', discountType: 'Percentage', discountValue: 20 };
+  assert.match(buildOfferMetaHtml({ offer, ...ctx, lang: 'de' }), /20 % Rabatt/);
+  assert.match(buildOfferMetaHtml({ offer, ...ctx, lang: 'en' }), /20% off/);
+  assert.match(buildOfferMetaHtml({ offer, ...ctx }), /خصم 20%/);
+  assert.match(buildOfferMetaHtml({ offer: { ...offer, discountType: 'FreeMonths', discountValue: 1 }, ...ctx, lang: 'de' }), /1 Monat gratis/);
+});
+
+test('buildNotFoundHtml is translated and still noindex', () => {
+  const html = buildNotFoundHtml('de');
+  assert.match(html, /<html lang="de" dir="ltr">/);
+  assert.match(html, /Anzeige nicht verfügbar \| HudhudNest/);
+  assert.match(html, /noindex/);
+  assert.match(buildNotFoundHtml(), /الإعلان غير متاح \| هدهد نيست/);
+});

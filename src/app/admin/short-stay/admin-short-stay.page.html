@@ -50,9 +50,9 @@
         <p class="taken-down-reason" *ngIf="l.isTakenDown && l.takenDownReason">{{ l.takenDownReason }}</p>
         <div class="meta">
           <span *ngIf="l.isTakenDown && l.takenDownAt">
-            {{ 'ADMIN_SHORT_STAY.TAKEN_DOWN_AT' | translate:{ date: (l.takenDownAt | date:'mediumDate') } }}
+            {{ 'ADMIN_SHORT_STAY.TAKEN_DOWN_AT' | translate:{ date: (l.takenDownAt | localDate:'mediumDate') } }}
           </span>
-          <span>{{ 'ADMIN_SHORT_STAY.CREATED_AT' | translate:{ date: (l.createdAt | date:'mediumDate') } }}</span>
+          <span>{{ 'ADMIN_SHORT_STAY.CREATED_AT' | translate:{ date: (l.createdAt | localDate:'mediumDate') } }}</span>
         </div>
       </div>
 

@@ -16,6 +16,8 @@ import {
 import { SERVICE_CATEGORIES, ServiceCategory, ServiceRequestStatus } from '../../core/models/service.model';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
+import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
 
 type Tab = 'overview' | 'requests';
 type Breakdown = 'offering' | 'category' | 'provider';
@@ -34,7 +36,7 @@ const ALL_STATUSES: ServiceRequestStatus[] = [
   selector: 'app-admin-services-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
+  imports: [ LocalizedDatePipe, LocalizedNumberPipe,CommonModule, FormsModule, RouterLink, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
   templateUrl: './admin-services.page.html',
   styleUrls: ['./admin-services.page.scss']
 })

@@ -20,6 +20,7 @@ import { ToastService } from '../../../../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner.component';
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state.component';
 import { uiNumberLocale } from '../../../../core/i18n/ui-language';
+import { LocalizedDatePipe } from '../../../../shared/pipes/localized-date.pipe';
 
 const ALL_STATUSES: InvestmentProjectStatus[] = [
   'Draft', 'UnderReview', 'Approved', 'Scheduled', 'Published', 'Closed', 'Rejected', 'Suspended'
@@ -32,7 +33,7 @@ const ALL_TYPES: InvestmentProjectType[] = [
   selector: 'app-admin-investment-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
+  imports: [ LocalizedDatePipe,CommonModule, RouterModule, FormsModule, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
   template: `
     <section class="page">
       <header class="page-header">
@@ -109,7 +110,7 @@ const ALL_TYPES: InvestmentProjectType[] = [
             {{ project.activeInterestCount }}
           </span>
           <span [attr.data-label]="'ADMIN_INVESTMENTS.LIST.COL_CREATED' | translate" class="muted">
-            {{ project.createdAt | date:'mediumDate' }}
+            {{ project.createdAt | localDate:'mediumDate' }}
           </span>
           <span [attr.data-label]="'ADMIN_INVESTMENTS.LIST.COL_ACTIONS' | translate" class="actions">
             <button type="button" class="btn btn--outline" (click)="openDetails(project)">

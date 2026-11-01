@@ -57,7 +57,7 @@ describe('PropertyFormPage heating type', () => {
         { provide: LookupsApiService, useValue: lookups },
         { provide: PropertyApiService, useValue: propertyApi },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap(editId ? { id: editId } : {}) } } },
-        { provide: LanguageService, useValue: { getCurrentLang: () => 'ar', currentLang$: of('ar') } }
+        { provide: LanguageService, useValue: { getCurrentLang: () => 'ar', getCurrent: () => 'ar', currentLang$: of('ar') } }
       ]
     });
     TestBed.overrideComponent(PropertyFormPage, {
@@ -144,7 +144,7 @@ describe('PropertyFormPage heating type in the save payload', () => {
         { provide: LookupsApiService, useValue: lookups },
         { provide: PropertyApiService, useValue: api },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap(editId ? { id: editId } : {}) } } },
-        { provide: LanguageService, useValue: { getCurrentLang: () => 'ar', currentLang$: of('ar') } }
+        { provide: LanguageService, useValue: { getCurrentLang: () => 'ar', getCurrent: () => 'ar', currentLang$: of('ar') } }
       ]
     });
     TestBed.overrideComponent(PropertyFormPage, {

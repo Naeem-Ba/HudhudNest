@@ -35,6 +35,8 @@ import { ToastService } from '../../../../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner.component';
 import { FormErrorComponent } from '../../../../shared/ui/form-error.component';
 import { ConfirmModalComponent } from '../../../../shared/ui/confirm-modal.component';
+import { LocalizedDatePipe } from '../../../../shared/pipes/localized-date.pipe';
+import { LocalizedNumberPipe } from '../../../../shared/pipes/localized-number.pipe';
 
 const PROJECT_TYPES: InvestmentProjectType[] = [
   'Residential', 'Commercial', 'Mixed', 'Industrial', 'Land', 'Renovation', 'NewConstruction'
@@ -73,7 +75,7 @@ interface PendingWorkflowAction {
   selector: 'app-admin-investment-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [ LocalizedDatePipe, LocalizedNumberPipe,
     CommonModule, RouterModule, ReactiveFormsModule, FormsModule, TranslateModule,
     LoadingSpinnerComponent, FormErrorComponent, ConfirmModalComponent
   ],

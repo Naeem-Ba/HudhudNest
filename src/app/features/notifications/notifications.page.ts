@@ -39,11 +39,12 @@ import { routeForNotification } from '../../core/models/notification-route';
 // الإشعار — بدل الاكتفاء بـ "تحديد كمقروء"/"تجاهل" فقط، ما كان يجبر
 // المعلن على الانتقال يدويًا لصفحة /visits لإيجاد الطلب والرد عليه.
 import { VisitService } from '../../core/api/visit.service';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 @Component({
   selector: 'app-notifications-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule, EmptyStateComponent, LoadingSpinnerComponent, PushOptInComponent],
+  imports: [ LocalizedDatePipe,CommonModule, RouterLink, TranslateModule, EmptyStateComponent, LoadingSpinnerComponent, PushOptInComponent],
   template: `
     <section class="page">
       <header class="page-header">
@@ -114,7 +115,7 @@ import { VisitService } from '../../core/api/visit.service';
           <div>
             <!-- ✅ الحقول محددة النوع — TypeScript يكتشف الأخطاء compile-time -->
             <h2 class="line-clamp-2">{{ notification.message }}</h2>
-            <small *ngIf="notification.createdAt">{{ notification.createdAt | date:'short' }}</small>
+            <small *ngIf="notification.createdAt">{{ notification.createdAt | localDate:'short' }}</small>
 
             <a *ngIf="notification.type === 'PhoneVerification'" class="phone-verify-link" routerLink="/profile/phone-reverify">
               {{ 'AUTH.PHONE_VERIFY_NOW' | translate }}

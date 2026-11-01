@@ -87,7 +87,7 @@
           </div>
           <div class="invl__progress-labels">
             <span>{{ formatAmount(project.raisedAmount, project.currency) }} {{ 'INVESTMENTS.DETAILS.RAISED' | translate }}</span>
-            <span>{{ project.fundingProgressPercent | number:'1.0-0' }}%</span>
+            <span>{{ project.fundingProgressPercent | localNumber:'1.0-0' }}%</span>
           </div>
         </div>
 

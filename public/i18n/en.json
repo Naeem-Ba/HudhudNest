@@ -26,7 +26,10 @@
     "FILTER_SORT_PRICE_NEEDS_TYPE": "Choose “For rent” or “For sale” to sort by price.",
     "GEO_COORDS_REQUIRED": "Share your location first to search nearby.",
     "GEO_COORDS_INVALID": "The location coordinates are not valid.",
-    "UNSUPPORTED_MEDIA": "The request could not be sent in a format the server accepts. Refresh the page and try again; if it keeps happening, contact support."
+    "UNSUPPORTED_MEDIA": "The request could not be sent in a format the server accepts. Refresh the page and try again; if it keeps happening, contact support.",
+    "CONCURRENCY_CONFLICT": "This item was changed by someone else at the same moment. Refresh the page and try again.",
+    "CSRF_VALIDATION_FAILED": "The request could not be verified as safe. Reload the page and try again.",
+    "LISTING_QUOTA_REACHED": "You've reached the active-listing limit of your plan. Delete an existing listing or upgrade your plan to add a new one."
   },
   "COMMON": {
     "SAVE": "Save",
@@ -53,7 +56,13 @@
     "MONTH": "month",
     "CLEAR": "Clear",
     "SEARCH": "Search",
-    "PAGINATION": "Pagination"
+    "PAGINATION": "Pagination",
+    "USER_MENU": "User menu",
+    "ACCOUNT_OPTIONS": "Account options",
+    "AVATAR_ALT": "User photo",
+    "COUNTRY_CODE": "Country code",
+    "PICK_RATING": "Choose a rating",
+    "IMAGE_VIEWER": "Image viewer"
   },
   "NAVBAR": {
     "HOME": "Home",
@@ -1597,7 +1606,15 @@
     "EMAIL": "Enter a valid email address.",
     "FIX_FIELDS": "Please correct the specified fields.",
     "IMAGE_TYPE": "Unsupported image type. Use PNG, JPG, or WebP.",
-    "IMAGE_SIZE": "The image is too large. The maximum size is 5 MB."
+    "IMAGE_SIZE": "The image is too large. The maximum size is 5 MB.",
+    "INVALID": "This value is not valid.",
+    "TOO_SHORT": "This value is too short.",
+    "TOO_LONG": "This value is too long.",
+    "MIN_LENGTH": "Enter at least {{n}} characters.",
+    "MAX_LENGTH": "The value must not exceed {{n}} characters.",
+    "MIN_VALUE": "The value must be at least {{n}}.",
+    "MAX_VALUE": "The value must be at most {{n}}.",
+    "PATTERN": "The format is not valid."
   },
   "ENUM": {
     "STADT": {
@@ -3071,6 +3088,10 @@
     "PROPERTIES": {
       "TITLE": "Properties for sale and rent in Syria",
       "DESCRIPTION": "Browse apartments and houses for sale and rent in Syria, in Damascus, Aleppo, Tartus and more, with photos, full details and direct contact with the owner or agency."
+    },
+    "HOME": {
+      "TITLE": "Digital real-estate platform in Syria",
+      "DESCRIPTION": "Find apartments and properties for sale and rent in Syria with ease: clear photos, organised details and direct contact with the owner or agency."
     }
   },
   "ADMIN_PAYMENTS": {

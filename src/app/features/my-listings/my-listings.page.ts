@@ -32,12 +32,13 @@ import {
   listingStatusTagKey
 } from '../../shared/utils/listing-status';
 import { ListingViewCountComponent } from '../../shared/ui/listing-view-count.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 @Component({
   selector: 'app-my-listings',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [ LocalizedDatePipe,
     ListingViewCountComponent,
     CommonModule,
     RouterModule,

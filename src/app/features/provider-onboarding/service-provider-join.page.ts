@@ -20,6 +20,7 @@ import { SERVICE_CATEGORIES, ServiceCategory, ServiceProviderDto } from '../../c
 import { ChoiceChipOption, ChoiceChipsComponent } from '../../shared/ui/choice-chips.component';
 import { ConfirmModalComponent } from '../../shared/ui/confirm-modal.component';
 import { ToastService } from '../../shared/services/toast.service';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 type FormMode = 'submit' | 'respond';
 
@@ -54,7 +55,7 @@ const emptyDraft = (): Draft => ({
 @Component({
   selector: 'app-service-provider-join-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, ChoiceChipsComponent, ConfirmModalComponent],
+  imports: [ LocalizedDatePipe,CommonModule, FormsModule, RouterLink, TranslateModule, ChoiceChipsComponent, ConfirmModalComponent],
   templateUrl: './service-provider-join.page.html',
   styleUrls: ['./service-provider-join.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

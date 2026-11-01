@@ -21,7 +21,7 @@
         <span class="bubble__role">· {{ ('SERVICE_CONVERSATION.PARTY.' + message.senderParty) | translate }}</span>
       </span>
       <p class="bubble__body">{{ message.body }}</p>
-      <time class="bubble__time" [attr.datetime]="message.createdAt">{{ message.createdAt | date:'short' }}</time>
+      <time class="bubble__time" [attr.datetime]="message.createdAt">{{ message.createdAt | localDate:'short' }}</time>
     </li>
   </ul>
 

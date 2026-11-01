@@ -65,7 +65,7 @@ export class AuthApiService {
   }
 
   forgotPassword(request: ForgotPasswordRequest): Observable<unknown> {
-    return this.api.post('/auth/forgot-password', request);
+    return this.api.post('/auth/forgot-password', withUiLanguage(request));
   }
 
   /**

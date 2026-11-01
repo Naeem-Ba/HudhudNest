@@ -21,11 +21,11 @@
         <div><dt>{{ 'SERVICE_REQUESTS.CATEGORY' | translate }}</dt><dd>{{ ('SERVICES.CATEGORY.' + r.category) | translate }}</dd></div>
         <div><dt>{{ 'SERVICE_REQUESTS.OFFERING' | translate }}</dt><dd>{{ r.serviceOfferingTitle }}</dd></div>
         <div><dt>{{ 'PROVIDER.INBOX.REQUESTER' | translate }}</dt><dd>{{ r.requesterName }}</dd></div>
-        <div><dt>{{ 'PROVIDER.DETAIL.SUBMITTED_AT' | translate }}</dt><dd>{{ r.createdAt | date:'medium' }}</dd></div>
+        <div><dt>{{ 'PROVIDER.DETAIL.SUBMITTED_AT' | translate }}</dt><dd>{{ r.createdAt | localDate:'medium' }}</dd></div>
         <div *ngIf="r.requesterNote"><dt>{{ 'PROVIDER.DETAIL.REQUESTER_NOTE' | translate }}</dt><dd>{{ r.requesterNote }}</dd></div>
         <div *ngIf="r.providerNote"><dt>{{ 'PROVIDER.DETAIL.PROVIDER_NOTE' | translate }}</dt><dd>{{ r.providerNote }}</dd></div>
         <div *ngIf="r.quotedPrice != null"><dt>{{ 'PROVIDER.DETAIL.QUOTED_PRICE' | translate }}</dt><dd>{{ r.quotedPrice }}</dd></div>
-        <div *ngIf="r.scheduledAt"><dt>{{ 'SERVICE_REQUESTS.SCHEDULED_AT' | translate }}</dt><dd>{{ r.scheduledAt | date:'medium' }}</dd></div>
+        <div *ngIf="r.scheduledAt"><dt>{{ 'SERVICE_REQUESTS.SCHEDULED_AT' | translate }}</dt><dd>{{ r.scheduledAt | localDate:'medium' }}</dd></div>
         <div *ngIf="r.finalPrice != null"><dt>{{ 'PROVIDER.DETAIL.FINAL_PRICE' | translate }}</dt><dd>{{ r.finalPrice }}</dd></div>
         <div *ngIf="r.rejectionReason"><dt>{{ 'SERVICE_REQUESTS.REJECTION_REASON' | translate }}</dt><dd>{{ r.rejectionReason }}</dd></div>
         <div *ngIf="r.cancellationReason"><dt>{{ 'SERVICE_REQUESTS.CANCELLATION_REASON' | translate }}</dt><dd>{{ r.cancellationReason }}</dd></div>
@@ -148,7 +148,7 @@
       <ul class="documents" *ngIf="documents().length > 0">
         <li *ngFor="let doc of documents(); trackBy: trackByDocId">
           <a [href]="doc.fileUrl" target="_blank" rel="noopener">{{ doc.fileName }}</a>
-          <span class="doc-date">{{ doc.createdAt | date:'short' }}</span>
+          <span class="doc-date">{{ doc.createdAt | localDate:'short' }}</span>
         </li>
       </ul>
       <p *ngIf="documents().length === 0" class="empty-hint">{{ 'PROVIDER.DETAIL.NO_DOCUMENTS' | translate }}</p>
@@ -167,7 +167,7 @@
           <span class="timeline-dot" [attr.data-status]="item.toStatus"></span>
           <div>
             <p class="timeline-status">{{ ('SERVICE_REQUESTS.STATUS.' + item.toStatus.toUpperCase()) | translate }}</p>
-            <p class="timeline-date">{{ item.createdAt | date:'medium' }}</p>
+            <p class="timeline-date">{{ item.createdAt | localDate:'medium' }}</p>
             <p class="timeline-note" *ngIf="item.note">{{ item.note }}</p>
           </div>
         </li>

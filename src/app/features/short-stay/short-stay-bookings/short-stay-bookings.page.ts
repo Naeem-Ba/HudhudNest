@@ -16,6 +16,8 @@ import {
 } from '../../../core/models/short-stay.model';
 import { apiErrorText } from '../../../core/api/api-error-text';
 import { ShortStayReviewDialogComponent } from '../short-stay-review-dialog/short-stay-review-dialog.component';
+import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
+import { LocalizedNumberPipe } from '../../../shared/pipes/localized-number.pipe';
 
 type Tab = 'mine' | 'host';
 
@@ -25,7 +27,7 @@ const NON_CANCELLABLE: BookingStatus[] = ['Completed', 'Cancelled', 'Rejected', 
 @Component({
   selector: 'app-short-stay-bookings-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule, ShortStayReviewDialogComponent],
+  imports: [ LocalizedDatePipe, LocalizedNumberPipe,CommonModule, RouterLink, TranslateModule, ShortStayReviewDialogComponent],
   templateUrl: './short-stay-bookings.page.html',
   styleUrls: ['./short-stay-bookings.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
