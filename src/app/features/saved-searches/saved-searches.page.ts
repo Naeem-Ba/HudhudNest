@@ -8,13 +8,14 @@ import {
   signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { SavedSearchApiService } from '../../core/api/saved-search-api.service';
 import { ToastService } from '../../shared/services/toast.service';
-import { SavedSearch } from '../../core/models/saved-search.model';
+import { CreateSavedSearchPayload, SavedSearch, SavedSearchFrequency } from '../../core/models/saved-search.model';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 
@@ -24,6 +25,7 @@ import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.compone
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
+    FormsModule,
     RouterModule,
     TranslateModule,
     EmptyStateComponent,
@@ -43,6 +45,13 @@ export class SavedSearchesPage implements OnInit {
   readonly loading = signal(false);
   readonly error = signal('');
   readonly deletingId = signal<string | null>(null);
+
+  // Growth engine P3: edit, pause/resume, frequency.
+  readonly editingId = signal<string | null>(null);
+  readonly savingId = signal<string | null>(null);
+  readonly togglingId = signal<string | null>(null);
+  readonly currencies = ['USD', 'EUR', 'SYP'] as const;
+  draft: SavedSearchDraft = emptyDraft();
 
   ngOnInit(): void {
     this.load();
@@ -126,13 +135,144 @@ export class SavedSearchesPage implements OnInit {
       parts.push(`${search.minPrice ?? '…'} - ${search.maxPrice ?? '…'} ${currency}`.trim());
     }
     if (search.minRooms != null || search.maxRooms != null) {
-      parts.push(`${search.minRooms ?? '…'}-${search.maxRooms ?? '…'} rooms`);
+      parts.push(this.translate.instant('SAVED_SEARCHES.ROOMS_RANGE', {
+        min: search.minRooms ?? '…',
+        max: search.maxRooms ?? '…'
+      }));
     }
+    if (search.minArea != null || search.maxArea != null) {
+      parts.push(`${search.minArea ?? '…'}-${search.maxArea ?? '…'} m²`);
+    }
+    if (search.hasBalcony) parts.push(this.translate.instant('PROPERTY.HAS_BALCONY'));
+    if (search.hasElevator) parts.push(this.translate.instant('PROPERTY.HAS_ELEVATOR'));
+    if (search.hasParkingSpace) parts.push(this.translate.instant('PROPERTY.HAS_PARKING'));
 
     return parts.length > 0 ? parts.join(' · ') : '—';
+  }
+
+  startEdit(search: SavedSearch): void {
+    this.draft = {
+      name: search.name ?? '',
+      frequency: search.frequency,
+      minPrice: search.minPrice ?? null,
+      maxPrice: search.maxPrice ?? null,
+      currencyCode: search.currencyCode ?? 'USD',
+      minRooms: search.minRooms ?? null,
+      maxRooms: search.maxRooms ?? null,
+      minArea: search.minArea ?? null,
+      maxArea: search.maxArea ?? null,
+      hasBalcony: search.hasBalcony === true,
+      hasElevator: search.hasElevator === true,
+      hasParkingSpace: search.hasParkingSpace === true
+    };
+    this.editingId.set(search.id);
+  }
+
+  cancelEdit(): void {
+    this.editingId.set(null);
+  }
+
+  saveEdit(search: SavedSearch): void {
+    const d = this.draft;
+    const hasPrice = d.minPrice != null || d.maxPrice != null;
+    // PUT replaces every criterion, so the ones this form does not edit (location, type) are sent unchanged.
+    const payload: CreateSavedSearchPayload = {
+      Name: d.name.trim() || null,
+      CountryCode: search.countryCode ?? null,
+      City: search.city ?? null,
+      Region: search.region ?? null,
+      GovernorateId: search.governorateId ?? null,
+      DistrictId: search.districtId ?? null,
+      NeighborhoodId: search.neighborhoodId ?? null,
+      PropertyTypeId: search.propertyTypeId ?? null,
+      ListingType: search.listingType ?? null,
+      MinPrice: d.minPrice,
+      MaxPrice: d.maxPrice,
+      CurrencyCode: hasPrice ? d.currencyCode : null,
+      MinRooms: d.minRooms,
+      MaxRooms: d.maxRooms,
+      MinArea: d.minArea,
+      MaxArea: d.maxArea,
+      HasBalcony: d.hasBalcony || null,
+      HasElevator: d.hasElevator || null,
+      HasParkingSpace: d.hasParkingSpace || null,
+      Frequency: d.frequency
+    };
+
+    this.savingId.set(search.id);
+    this.api
+      .update(search.id, payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.searches.update(prev => prev.map(s => s.id !== search.id ? s : {
+            ...s,
+            name: payload.Name,
+            minPrice: payload.MinPrice,
+            maxPrice: payload.MaxPrice,
+            currencyCode: payload.CurrencyCode,
+            minRooms: payload.MinRooms,
+            maxRooms: payload.MaxRooms,
+            minArea: payload.MinArea,
+            maxArea: payload.MaxArea,
+            hasBalcony: payload.HasBalcony,
+            hasElevator: payload.HasElevator,
+            hasParkingSpace: payload.HasParkingSpace,
+            frequency: d.frequency
+          }));
+          this.savingId.set(null);
+          this.editingId.set(null);
+          this.toast.success(this.translate.instant('SAVED_SEARCHES.SAVE_SUCCESS'));
+        },
+        error: () => {
+          this.savingId.set(null);
+          this.toast.error(this.translate.instant('SAVED_SEARCHES.SAVE_ERROR'));
+        }
+      });
+  }
+
+  togglePause(search: SavedSearch): void {
+    const pausing = !search.isPaused;
+    this.togglingId.set(search.id);
+    (pausing ? this.api.pause(search.id) : this.api.resume(search.id))
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.searches.update(prev => prev.map(s => s.id === search.id ? { ...s, isPaused: pausing } : s));
+          this.togglingId.set(null);
+          this.toast.success(this.translate.instant(pausing ? 'SAVED_SEARCHES.PAUSED_OK' : 'SAVED_SEARCHES.RESUMED_OK'));
+        },
+        error: () => {
+          this.togglingId.set(null);
+          this.toast.error(this.translate.instant('SAVED_SEARCHES.SAVE_ERROR'));
+        }
+      });
   }
 
   trackById(_: number, search: SavedSearch): string {
     return search.id;
   }
+}
+
+interface SavedSearchDraft {
+  name: string;
+  frequency: SavedSearchFrequency;
+  minPrice: number | null;
+  maxPrice: number | null;
+  currencyCode: string;
+  minRooms: number | null;
+  maxRooms: number | null;
+  minArea: number | null;
+  maxArea: number | null;
+  hasBalcony: boolean;
+  hasElevator: boolean;
+  hasParkingSpace: boolean;
+}
+
+function emptyDraft(): SavedSearchDraft {
+  return {
+    name: '', frequency: 'Instant', minPrice: null, maxPrice: null, currencyCode: 'USD',
+    minRooms: null, maxRooms: null, minArea: null, maxArea: null,
+    hasBalcony: false, hasElevator: false, hasParkingSpace: false
+  };
 }

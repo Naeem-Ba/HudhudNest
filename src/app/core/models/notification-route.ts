@@ -56,6 +56,8 @@ export function routeForNotification(item: Pick<NotificationItem, 'type' | 'targ
       return entityId ? ['/admin/messages', entityId] : ['/admin/messages'];
     case 'notifications':
       return ['/notifications'];
+    case 'saved-searches':
+      return ['/saved-searches'];
     default:
       return null;
   }

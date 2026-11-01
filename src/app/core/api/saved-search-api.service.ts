@@ -4,7 +4,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
-import { CreateSavedSearchPayload, SavedSearch } from '../models/saved-search.model';
+import { CreateSavedSearchPayload, SavedSearch, SavedSearchFrequency } from '../models/saved-search.model';
 
 @Injectable({ providedIn: 'root' })
 export class SavedSearchApiService {
@@ -27,6 +27,21 @@ export class SavedSearchApiService {
         const result = (item as Record<string, unknown>);
         return { id: String(result['id'] ?? '') };
       }));
+  }
+
+  /** PUT /api/savedsearch/{id} — replaces all criteria (send the unchanged ones too). */
+  update(id: string, payload: CreateSavedSearchPayload): Observable<void> {
+    return this.api.put<void>(`${this.endpoint}/${id}`, payload);
+  }
+
+  /** POST /api/savedsearch/{id}/pause */
+  pause(id: string): Observable<void> {
+    return this.api.post<void>(`${this.endpoint}/${id}/pause`, {});
+  }
+
+  /** POST /api/savedsearch/{id}/resume — new listings are counted from now on. */
+  resume(id: string): Observable<void> {
+    return this.api.post<void>(`${this.endpoint}/${id}/resume`, {});
   }
 
   /** DELETE /api/savedsearch/{id} */
@@ -58,7 +73,14 @@ export class SavedSearchApiService {
         minArea: item['minArea'] === undefined || item['minArea'] === null ? null : Number(item['minArea']),
         maxArea: item['maxArea'] === undefined || item['maxArea'] === null ? null : Number(item['maxArea']),
         createdAt: String(item['createdAt'] ?? ''),
-        lastMatchedAt: (item['lastMatchedAt'] as string | null | undefined) ?? null
+        lastMatchedAt: (item['lastMatchedAt'] as string | null | undefined) ?? null,
+        hasBalcony: item['hasBalcony'] === true ? true : null,
+        hasElevator: item['hasElevator'] === true ? true : null,
+        hasParkingSpace: item['hasParkingSpace'] === true ? true : null,
+        frequency: (item['frequency'] === 'Daily' ? 'Daily' : 'Instant') as SavedSearchFrequency,
+        isPaused: item['isPaused'] === true,
+        lastNotifiedAt: (item['lastNotifiedAt'] as string | null | undefined) ?? null,
+        notifiedCount: Number(item['notifiedCount'] ?? 0) || 0
       }))
       .filter(item => !!item.id);
   }
