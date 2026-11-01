@@ -208,10 +208,23 @@
     --icon-btn-size: 44px;
   }
 
+  /* The favorite button with the report button directly under it. */
+  &__fav-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  &__report {
+    display: block;
+    line-height: 0;
+  }
+
   /* One group, one size, one gap: both buttons are the same 44px circle (a real touch target). */
   &__quick {
     display: inline-flex;
-    align-items: center;
+    align-items: flex-start;
     gap: .5rem;
     flex: none;
     margin-inline-start: auto;

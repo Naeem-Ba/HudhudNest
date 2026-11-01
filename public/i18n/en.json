@@ -3580,6 +3580,8 @@
     "SUCCESS_HINT": "You can follow its status under “My reports”.",
     "ALREADY_OPEN": "You already have an open report on this listing ({{ref}}).",
     "ALREADY_OPEN_HINT": "Follow it under “My reports”. We will not review it twice.",
+    "NEEDS_REPLY": "The team needs more information from you to continue with this report.",
+    "REPLY_NOW": "Reply now",
     "LOGIN_REQUIRED": "Please sign in to report a listing.",
     "ERR_REASON": "Please choose a reason.",
     "ERR_DETAILS": "Details are required for this reason.",
@@ -3619,6 +3621,7 @@
     "YOUR_ANSWER": "Your answer",
     "SEND_ANSWER": "Send answer",
     "ANSWER_SENT": "Your answer was sent.",
+    "WAITING_BANNER": "{{count}} report is waiting for your answer to the team's question.",
     "ANSWER_FAILED": "Could not send your answer.",
     "event": {
       "Created": "Report received",

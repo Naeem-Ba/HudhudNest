@@ -136,20 +136,25 @@
               <!-- View counter: information, not an action (a span, no click). First in the group so
                    the action buttons keep their place at the end of the row. -->
               <app-listing-view-count [count]="viewCountOf(p)"></app-listing-view-count>
-              <app-favorite-toggle-button
-                *ngIf="p.id"
-                [propertyId]="p.id"
-              ></app-favorite-toggle-button>
+              <!-- Favorite, with the report button right under it. The report button lives only here,
+                   never on a card; same round button as share. Signed-in users; the server re-checks
+                   everything, and it is hidden for the owner. -->
+              <div class="summary-card__fav-col">
+                <app-favorite-toggle-button
+                  *ngIf="p.id"
+                  [propertyId]="p.id"
+                ></app-favorite-toggle-button>
+                <app-report-listing-button
+                  *ngIf="p.id"
+                  class="summary-card__report"
+                  [propertyId]="p.id"
+                  [ownerId]="p.ownerId"
+                  [listingTitle]="p.title"
+                ></app-report-listing-button>
+              </div>
               <!-- Social Sharing & Distribution — hides itself when the property has no usable
                    share channel (e.g. not public); see PropertyShareButtonComponent. -->
               <app-property-share-button [property]="p"></app-property-share-button>
-              <!-- Report this listing: signed-in users; the server re-checks everything. Hidden for the owner. -->
-              <app-report-listing-button
-                *ngIf="p.id"
-                [propertyId]="p.id"
-                [ownerId]="p.ownerId"
-                [listingTitle]="p.title"
-              ></app-report-listing-button>
             </div>
           </div>
 

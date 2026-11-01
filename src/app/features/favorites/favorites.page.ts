@@ -13,7 +13,6 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { FavoriteToggleButtonComponent } from '../../shared/ui/favorite-toggle-button.component';
-import { ReportListingButtonComponent } from '../../shared/ui/report-listing-button.component';
 import { uiNumberLocale } from '../../core/i18n/ui-language';
 
 // ✅ FIX #9: Interface محددة بدلاً من any
@@ -86,8 +85,7 @@ interface FavoritePropertyNested {
     EmptyStateComponent,
     LoadingSpinnerComponent,
     ImageFallbackDirective,
-    FavoriteToggleButtonComponent,
-    ReportListingButtonComponent
+    FavoriteToggleButtonComponent
   ],
   template: `
     <section class="page">
@@ -139,13 +137,6 @@ interface FavoritePropertyNested {
               [propertyId]="id"
               (changed)="onFavoriteChanged(id, $event)"
             ></app-favorite-toggle-button>
-            <app-report-listing-button
-              *ngIf="getPropertyId(favorite) as id"
-              class="card-report"
-              variant="compact"
-              [propertyId]="id"
-              [listingTitle]="getTitle(favorite)"
-            ></app-report-listing-button>
           </div>
 
           <div class="card-body">
@@ -186,14 +177,6 @@ interface FavoritePropertyNested {
       aspect-ratio: 16/10;
       object-fit: cover;
       background: var(--gray-100);
-    }
-    .card-report {
-      display: block;
-      line-height: 0;
-      position: absolute;
-      bottom: .6rem;
-      inset-inline-end: .6rem;
-      z-index: 1;
     }
     .card-fav {
       --icon-btn-size: 40px;

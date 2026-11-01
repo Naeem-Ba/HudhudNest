@@ -512,16 +512,6 @@
   z-index: 2;
 }
 
-/* Report button — bottom corner of the card image, quiet next to the favorite heart. */
-.report-btn-wrapper {
-  display: block;
-  line-height: 0;
-  position: absolute;
-  bottom: .6rem;
-  inset-inline-end: .6rem;
-  z-index: 2;
-}
-
 /* ── Pagination ── */
 .pagination {
   display: flex;

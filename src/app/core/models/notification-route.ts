@@ -38,7 +38,7 @@ export function routeForNotification(item: Pick<NotificationItem, 'type' | 'targ
     case 'admin-investment':
       return entityId ? ['/admin/investments', entityId] : ['/admin/investments'];
     case 'my-listing-report':
-      return ['/my-reports'];
+      return entityId ? ['/my-reports', entityId] : ['/my-reports'];
     case 'agency-invitation':
     case 'agency':
       return ['/my-agency'];
