@@ -33,20 +33,20 @@
       </div>
 
       <div class="ssb__dates">
-        <span>{{ booking.checkIn | date:'d MMM y' }} → {{ booking.checkOut | date:'d MMM y' }}</span>
+        <span>{{ booking.checkIn | localDate:'d MMM y' }} → {{ booking.checkOut | localDate:'d MMM y' }}</span>
         <span class="ssb__guests">
           {{ 'SHORTSTAY.BOOKINGS.GUESTS' | translate:{ count: booking.adults + booking.children } }}
         </span>
       </div>
 
       <p class="ssb__deadline" data-testid="confirmation-deadline" *ngIf="confirmationDeadline(booking) as deadline">
-        ⏳ {{ 'SHORTSTAY.BOOKINGS.CONFIRM_BEFORE' | translate:{ date: (deadline | date:'d MMM y, HH:mm') } }}
+        ⏳ {{ 'SHORTSTAY.BOOKINGS.CONFIRM_BEFORE' | translate:{ date: (deadline | localDate:'d MMM y, HH:mm') } }}
       </p>
 
       <div class="ssb__amounts">
-        <span>{{ 'SHORTSTAY.BOOKINGS.TOTAL' | translate }}: {{ booking.totalAmount | number:'1.0-2' }} {{ booking.currencyCode }}</span>
+        <span>{{ 'SHORTSTAY.BOOKINGS.TOTAL' | translate }}: {{ booking.totalAmount | localNumber:'1.0-2' }} {{ booking.currencyCode }}</span>
         <span *ngIf="booking.depositAmount > 0">
-          {{ 'SHORTSTAY.BOOKINGS.DEPOSIT' | translate }}: {{ booking.depositAmount | number:'1.0-2' }} {{ booking.currencyCode }}
+          {{ 'SHORTSTAY.BOOKINGS.DEPOSIT' | translate }}: {{ booking.depositAmount | localNumber:'1.0-2' }} {{ booking.currencyCode }}
         </span>
       </div>
 

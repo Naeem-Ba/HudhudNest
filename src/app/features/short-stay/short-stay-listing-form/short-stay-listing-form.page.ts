@@ -26,6 +26,7 @@ import {
   canPublishShortStay
 } from '../../../core/models/short-stay.model';
 import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
+import { LocalizedNumberPipe } from '../../../shared/pipes/localized-number.pipe';
 
 /** Same limits the backend enforces in AddShortStayListingPhotosCommandHandler. */
 const PHOTO_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -78,7 +79,7 @@ type PricingRuleForm = {
 @Component({
   selector: 'app-short-stay-listing-form-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, PhotoGuideSheetComponent, MapPickerComponent, AmenityLabelPipe, UnitAvailabilityPanelComponent],
+  imports: [ LocalizedNumberPipe,CommonModule, RouterModule, FormsModule, TranslateModule, PhotoGuideSheetComponent, MapPickerComponent, AmenityLabelPipe, UnitAvailabilityPanelComponent],
   templateUrl: './short-stay-listing-form.page.html',
   styleUrls: ['./short-stay-listing-form.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

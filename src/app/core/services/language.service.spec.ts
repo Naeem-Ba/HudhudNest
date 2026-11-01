@@ -86,6 +86,43 @@ describe('LanguageService first-visit behaviour', () => {
     expect(fetchCountryCode).not.toHaveBeenCalled();
   });
 
+  describe('a shared link with ?lang= (QA Phase 16, D10)', () => {
+    afterEach(() => history.replaceState(null, '', location.pathname));
+
+    it('decides the language of a visitor who never chose one, without a lookup and without storing it', async () => {
+      history.replaceState(null, '', `${location.pathname}?lang=de`);
+      const fetchCountryCode = jasmine.createSpy('fetchCountryCode').and.resolveTo('SY');
+      const service = TestBed.inject(LanguageService);
+
+      await resolveInitialLanguage(service, { fetchCountryCode } as unknown as GeoCountryService)();
+
+      expect(service.getCurrent()).toBe('de');
+      expect(fetchCountryCode).not.toHaveBeenCalled();
+      expect(localStorage.getItem('lang')).toBeNull();
+      expect(localStorage.getItem('lang_auto')).toBeNull();
+    });
+
+    it('never overrides a language the visitor picked themselves', async () => {
+      localStorage.setItem('lang', 'ar');
+      history.replaceState(null, '', `${location.pathname}?lang=de`);
+      const service = TestBed.inject(LanguageService);
+
+      await resolveInitialLanguage(service, geo('SY'))();
+
+      expect(service.getCurrent()).toBe('ar');
+    });
+
+    it('ignores a value that is not a supported language', async () => {
+      history.replaceState(null, '', `${location.pathname}?lang=xx`);
+      const service = TestBed.inject(LanguageService);
+
+      await resolveInitialLanguage(service, geo('CH'))();
+
+      expect(service.getCurrent()).toBe('de');
+      expect(localStorage.getItem('lang_auto')).toBe('de');
+    });
+  });
+
   it('reuses an earlier automatic choice without another lookup', async () => {
     localStorage.setItem('lang_auto', 'de');
     const fetchCountryCode = jasmine.createSpy('fetchCountryCode').and.resolveTo('SY');

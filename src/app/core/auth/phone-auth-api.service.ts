@@ -206,7 +206,7 @@ export class PhoneAuthApiService {
 
   private sendChallenge(path: string, phoneNumber: string, channel?: OtpChannel): Observable<PhoneWorkflowResponse> {
     return this.api
-      .post<unknown>(path, { phoneNumber: normalizePhoneInput(phoneNumber), ...channelField(channel) })
+      .post<unknown>(path, withUiLanguage({ phoneNumber: normalizePhoneInput(phoneNumber), ...channelField(channel) }))
       .pipe(map(response => normalizePhoneWorkflowResult(response)));
   }
 

@@ -18,12 +18,13 @@ import { AdminAuditLogEntry, AdminAuditLogsService } from '../../core/api/admin-
 import { ToastService } from '../../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 @Component({
   selector: 'app-admin-audit-logs',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
+  imports: [ LocalizedDatePipe,CommonModule, RouterModule, FormsModule, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
   template: `
     <section class="page">
       <header class="page-header">
@@ -56,7 +57,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
         <article class="row" *ngFor="let e of items(); trackBy: trackById">
           <div class="row__main">
             <strong class="action">{{ e.action }}</strong>
-            <span class="muted">{{ e.timestamp | date:'medium' }}</span>
+            <span class="muted">{{ e.timestamp | localDate:'medium' }}</span>
           </div>
           <div class="row__meta">
             <span>{{ 'ADMIN_AUDIT.BY' | translate }}: <strong>{{ e.userName || e.userId || '—' }}</strong></span>

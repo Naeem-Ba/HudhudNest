@@ -33,6 +33,7 @@ import {
   starsFor
 } from '../../core/models/user-profile.model';
 import { PageMetaService } from '../../core/services/page-meta.service';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 /** تعليق اختياري — لكن إن كُتب فلا يكون مسافات فقط. */
 function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
@@ -43,7 +44,7 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
 @Component({
   selector: 'app-user-profile-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, EmptyStateComponent, ImageFallbackDirective],
+  imports: [ LocalizedDatePipe,CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, EmptyStateComponent, ImageFallbackDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="container profile-page" *ngIf="!loading(); else loadingTpl">
@@ -70,7 +71,7 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
               <span class="profile-header__agent-badge" *ngIf="p.isAgent">{{ 'PUBLIC_PROFILE.AGENT_BADGE' | translate }}</span>
             </h1>
             <p class="profile-header__member-since">
-              {{ 'PUBLIC_PROFILE.MEMBER_SINCE' | translate }} {{ p.memberSince | date:'dd/MM/yyyy' }}
+              {{ 'PUBLIC_PROFILE.MEMBER_SINCE' | translate }} {{ p.memberSince | localDate:'dd/MM/yyyy' }}
             </p>
           </div>
 
@@ -255,7 +256,7 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
                   <div class="stars stars--sm">
                     <span *ngFor="let filled of starsFn(r.overallScore)" [class.star--filled]="filled">★</span>
                   </div>
-                  <time class="rating-item__date">{{ r.createdAt | date:'dd/MM/yyyy' }}</time>
+                  <time class="rating-item__date">{{ r.createdAt | localDate:'dd/MM/yyyy' }}</time>
                 </div>
                 <p class="rating-item__comment" *ngIf="r.comment">{{ r.comment }}</p>
               </div>

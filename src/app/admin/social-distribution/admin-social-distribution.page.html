@@ -41,7 +41,7 @@
         <div class="stat-card"><span class="stat-value">{{ s.queued }}</span><span class="stat-label">في الطابور</span></div>
         <div class="stat-card"><span class="stat-value">{{ s.retrying }}</span><span class="stat-label">إعادة محاولة</span></div>
         <div class="stat-card stat-card--danger"><span class="stat-value">{{ s.deadLetterUnresolved }}</span><span class="stat-label">Dead Letters غير محلولة</span></div>
-        <div class="stat-card"><span class="stat-value">{{ s.successRatePercent | number:'1.0-1' }}%</span><span class="stat-label">معدّل النجاح</span></div>
+        <div class="stat-card"><span class="stat-value">{{ s.successRatePercent | localNumber:'1.0-1' }}%</span><span class="stat-label">معدّل النجاح</span></div>
       </div>
 
       <div class="panel" *ngIf="s.byPlatform.length > 0">
@@ -272,7 +272,7 @@
           <a *ngIf="pub.externalPostUrl; else noLink" [href]="pub.externalPostUrl" target="_blank" rel="noopener" class="ltr-inline">{{ pub.externalPostId }}</a>
           <ng-template #noLink><span class="ltr-inline">{{ pub.externalPostId || '—' }}</span></ng-template>
         </span>
-        <span data-label="تاريخ النشر">{{ (pub.publishedAt || pub.failedAt) | date:'short' }}</span>
+        <span data-label="تاريخ النشر">{{ (pub.publishedAt || pub.failedAt) | localDate:'short' }}</span>
         <span data-label="خطأ">{{ pub.errorMessage || '—' }}</span>
       </div>
     </div>
@@ -451,7 +451,7 @@
           <small class="block muted">{{ letter.lastErrorMessage }}</small>
         </span>
         <span data-label="المحاولات">{{ letter.attempts }}</span>
-        <span data-label="تاريخ الفشل">{{ letter.failedAt | date:'short' }}</span>
+        <span data-label="تاريخ الفشل">{{ letter.failedAt | localDate:'short' }}</span>
         <span data-label="الحالة">
           <span class="status-chip" [class.status-chip--active]="letter.resolvedAt" [class.status-chip--danger]="!letter.resolvedAt">
             {{ letter.resolvedAt ? 'محلول' : 'معلّق' }}

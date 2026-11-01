@@ -82,7 +82,7 @@
         <span class="visibility-chip" [class.visibility-chip--public]="item.status === 'Active'">
           {{ interestStatusKey(item.status) | translate }}
         </span>
-        <span class="doc-type">{{ item.createdAt | date:'mediumDate' }}</span>
+        <span class="doc-type">{{ item.createdAt | localDate:'mediumDate' }}</span>
       </li>
     </ul>
   </section>
@@ -233,7 +233,7 @@
 
       <div class="calculated-total">
         {{ 'INVESTMENTS.FINANCIALS.TOTAL_COST' | translate }}:
-        <strong>{{ totalProjectCost() | number:'1.0-2' }}</strong>
+        <strong>{{ totalProjectCost() | localNumber:'1.0-2' }}</strong>
         <span class="calculated-badge">{{ 'ADMIN_INVESTMENTS.FINANCIALS.CALCULATED' | translate }}</span>
       </div>
 

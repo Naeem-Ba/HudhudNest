@@ -23,6 +23,8 @@ export function numberLocaleFor(language: string | null | undefined): string {
     case 'en':
       return 'en-US';
     default:
-      return 'ar';
+      // Latin digits on purpose: plain 'ar' gives Western digits in one engine and Arabic-Indic in
+      // another, so one page could show both (QA Phase 16, P16-D11).
+      return 'ar-u-nu-latn';
   }
 }

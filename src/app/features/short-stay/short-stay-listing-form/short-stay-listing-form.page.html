@@ -128,7 +128,7 @@
             {{ (locating() ? 'SHORTSTAY.FORM.LOCATING' : 'SHORTSTAY.FORM.USE_MY_LOCATION') | translate }}
           </button>
           <span class="ssf__pin-status" *ngIf="pin() as p">
-            ✓ {{ 'SHORTSTAY.FORM.PIN_SELECTED' | translate }}: {{ p.lat | number:'1.4-4' }}, {{ p.lng | number:'1.4-4' }}
+            ✓ {{ 'SHORTSTAY.FORM.PIN_SELECTED' | translate }}: {{ p.lat | localNumber:'1.4-4' }}, {{ p.lng | localNumber:'1.4-4' }}
           </span>
         </div>
         <p class="ssf__error ssf__location-error" role="alert" *ngIf="submitAttempted() && !governorateId">

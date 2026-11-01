@@ -18,7 +18,7 @@ import { readSessionHint, writeSessionHint } from './core/auth/session-hint';
 import { CsrfTokenService } from './core/services/csrf-token.service';
 import { GeoCountryService } from './core/services/geo-country.service';
 import { LanguageService } from './core/services/language.service';
-import { resolveFirstVisitLanguage } from './core/i18n/first-visit-language';
+import { resolveFirstVisitLanguage, toSupportedLanguage } from './core/i18n/first-visit-language';
 import { browserStaleChunkReloadDeps, reloadForStaleChunk } from './core/services/stale-chunk-reload';
 import { TokenStorageService } from './core/services/token-storage.service';
 import { environment } from '../environments/environment';
@@ -57,6 +57,16 @@ export function resolveInitialLanguage(
   geoCountry: GeoCountryService
 ): () => Promise<void> {
   return async () => {
+    // A shared link carries the language of the person who shared it (?lang=de): it decides what a
+    // visitor who never picked a language sees, for this page load only (nothing is stored).
+    const linked = toSupportedLanguage(
+      typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('lang')
+    );
+    if (linked && !languageService.hasUserChoice()) {
+      languageService.use(linked, 'ephemeral');
+      return;
+    }
+
     if (languageService.hasStoredPreference()) {
       return;
     }

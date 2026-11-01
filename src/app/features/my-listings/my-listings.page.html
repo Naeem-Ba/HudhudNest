@@ -95,7 +95,7 @@
              p.isFeatured هي القيمة الفعّالة من الخادم، فلا تظهر بعد انقضاء المدة. -->
         <p class="featured-note" *ngIf="p.isFeatured">
           ⭐ {{ 'MY_LISTINGS.FEATURED_UNTIL' | translate }}:
-          {{ p.featuredUntil | date:'dd/MM/yyyy' }}
+          {{ p.featuredUntil | localDate:'dd/MM/yyyy' }}
         </p>
 
         <!-- طلب تمييز بانتظار تأكيد المشرف للدفع: لا تمييز قبل ذلك. -->
@@ -117,7 +117,7 @@
         <!-- Created At -->
         <time class="created-at" *ngIf="p.createdAt">
           {{ 'MY_LISTINGS.CREATED_AT' | translate }}:
-          {{ p.createdAt | date:'dd/MM/yyyy' }}
+          {{ p.createdAt | localDate:'dd/MM/yyyy' }}
         </time>
 
         <!-- حالة الإعلان: متاح / محجوز / مباع / مؤجر / مؤرشف. المحجوز يبقى معروضًا؛ المباع والمؤجر يخرجان من البحث. -->

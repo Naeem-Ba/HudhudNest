@@ -20,7 +20,7 @@
 
     <div class="avatar-container">
       <div class="img-wrapper" [class.uploading]="isUploading()">
-        <img [src]="avatarPreview() || fallbackAvatar" alt="User Avatar" appImageFallback="/images/default-avatar.svg">
+        <img [src]="avatarPreview() || fallbackAvatar" [alt]="'COMMON.AVATAR_ALT' | translate" appImageFallback="/images/default-avatar.svg">
         <span class="avatar-loading" *ngIf="isUploading()">⏳</span>
       </div>
       <label class="upload-badge" [class.disabled]="isUploading()">

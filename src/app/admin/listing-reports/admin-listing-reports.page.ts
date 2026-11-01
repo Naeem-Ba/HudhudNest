@@ -21,6 +21,8 @@ import {
 } from '../../core/models/listing-report.model';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
+import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
 
 type Sort = NonNullable<ListingReportFilter['sort']>;
 
@@ -33,7 +35,7 @@ type Sort = NonNullable<ListingReportFilter['sort']>;
   selector: 'app-admin-listing-reports-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
+  imports: [ LocalizedDatePipe, LocalizedNumberPipe,CommonModule, FormsModule, RouterLink, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
   template: `
     <section class="page">
       <header class="page-header">
@@ -67,7 +69,7 @@ type Sort = NonNullable<ListingReportFilter['sort']>;
           <strong>{{ s.dismissed }}</strong><span>{{ 'ADMIN_REPORTS.STATUS.Dismissed' | translate }}</span>
         </button>
         <div class="stat stat--static" *ngIf="s.averageResolutionHours !== null">
-          <strong>{{ s.averageResolutionHours | number:'1.0-1' }}</strong>
+          <strong>{{ s.averageResolutionHours | localNumber:'1.0-1' }}</strong>
           <span>{{ 'ADMIN_REPORTS.STAT_AVG_HOURS' | translate:{ n: s.resolvedSampleSize } }}</span>
         </div>
       </div>
@@ -130,7 +132,7 @@ type Sort = NonNullable<ListingReportFilter['sort']>;
             </div>
             <div class="cell"><span class="chip" [attr.data-priority]="r.priority">{{ 'ADMIN_REPORTS.PRIORITY.' + r.priority | translate }}</span></div>
             <div class="cell muted">{{ r.assignedAdminName || ('ADMIN_REPORTS.UNASSIGNED' | translate) }}</div>
-            <div class="cell muted">{{ r.createdAt | date:'mediumDate' }}</div>
+            <div class="cell muted">{{ r.createdAt | localDate:'mediumDate' }}</div>
           </a>
         </div>
 

@@ -52,7 +52,8 @@ import {
   resolveCanonicalOrigin,
   buildPropertyMetaHtml,
   buildOfferMetaHtml,
-  buildNotFoundHtml
+  buildNotFoundHtml,
+  resolveShareLanguage
 } from './lib/social-crawler.mjs';
 
 const DEFAULT_API_BASE_URL = 'https://api.hudhudnest.com/api';
@@ -91,6 +92,8 @@ async function respondForSearchEngine(propertyId, apiBaseUrl, context) {
 async function respondForLandingCrawler(request, context) {
   const apiBaseUrl = (Netlify.env.get('API_URL') || DEFAULT_API_BASE_URL).replace(/\/+$/, '');
   const canonicalOrigin = resolveCanonicalOrigin(request.url);
+  // The sharer's language (?lang=de on the shared link); Arabic when the link names none.
+  const lang = resolveShareLanguage(new URL(request.url).searchParams.get('lang'));
 
   try {
     const response = await fetch(`${apiBaseUrl}/offers/active`, {
@@ -105,7 +108,8 @@ async function respondForLandingCrawler(request, context) {
     const html = buildOfferMetaHtml({
       offer: await response.json(),
       canonicalUrl: `${canonicalOrigin}/landing`,
-      fallbackImageUrl: `${canonicalOrigin}${FALLBACK_IMAGE_PATH}`
+      fallbackImageUrl: `${canonicalOrigin}${FALLBACK_IMAGE_PATH}`,
+      lang
     });
 
     if (!html) {
@@ -165,6 +169,7 @@ export default async (request, context) => {
   // one canonical, matching PropertyShareUrlService.getPropertyPublicUrl on the Angular side.
   const canonicalUrl = `${canonicalOrigin}/properties/${encodeURIComponent(propertyId)}`;
   const fallbackImageUrl = `${canonicalOrigin}${FALLBACK_IMAGE_PATH}`;
+  const lang = resolveShareLanguage(url.searchParams.get('lang'));
 
   try {
     // The public GET already only ever returns a published, unexpired listing (404 otherwise —
@@ -175,14 +180,14 @@ export default async (request, context) => {
     });
 
     if (!response.ok) {
-      return new Response(buildNotFoundHtml(), {
+      return new Response(buildNotFoundHtml(lang), {
         status: response.status === 404 ? 404 : 502,
         headers: { 'content-type': 'text/html; charset=utf-8' }
       });
     }
 
     const property = await response.json();
-    const html = buildPropertyMetaHtml({ property, canonicalUrl, fallbackImageUrl });
+    const html = buildPropertyMetaHtml({ property, canonicalUrl, fallbackImageUrl, lang });
 
     return new Response(html, {
       status: 200,

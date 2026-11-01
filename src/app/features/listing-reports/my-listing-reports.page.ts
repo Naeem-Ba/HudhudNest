@@ -12,6 +12,7 @@ import { isRateLimited } from '../../core/api/rate-limited';
 import { ToastService } from '../../shared/services/toast.service';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 /**
  * "بلاغاتي": the reports the signed-in person sent, their general state, the question an admin
@@ -23,7 +24,7 @@ import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.compone
   selector: 'app-my-listing-reports-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
+  imports: [ LocalizedDatePipe,CommonModule, FormsModule, RouterLink, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
   template: `
     <section class="page">
       <header class="page-header">
@@ -55,7 +56,7 @@ import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.compone
             </div>
             <span class="chip" [attr.data-status]="r.status">{{ 'MY_REPORTS.STATUS.' + r.status | translate }}</span>
           </div>
-          <p class="muted">{{ 'REPORT.REASON.' + r.reason | translate }} · {{ r.createdAt | date:'mediumDate' }}</p>
+          <p class="muted">{{ 'REPORT.REASON.' + r.reason | translate }} · {{ r.createdAt | localDate:'mediumDate' }}</p>
           <p class="pre" *ngIf="r.details">{{ r.details }}</p>
 
           <p class="result" *ngIf="r.status === 'Closed' && r.outcome">
@@ -76,7 +77,7 @@ import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.compone
 
           <ul class="thread" *ngIf="r.timeline.length > 0">
             <li *ngFor="let e of r.timeline">
-              <span class="when">{{ e.createdAt | date:'medium' }} · {{ 'MY_REPORTS.EVENT.' + e.type | translate }}</span>
+              <span class="when">{{ e.createdAt | localDate:'medium' }} · {{ 'MY_REPORTS.EVENT.' + e.type | translate }}</span>
               <span class="pre">{{ e.note }}</span>
             </li>
           </ul>

@@ -16,7 +16,7 @@
       {{ ('PROVIDER.PROFILE.VERIFICATION.' + p.verificationLevel.toUpperCase()) | translate }}
     </div>
     <p class="rating" *ngIf="p.reviewCount > 0">
-      ⭐ {{ p.averageRating | number:'1.1-1' }} · {{ 'PROVIDER.PROFILE.REVIEW_COUNT' | translate:{ count: p.reviewCount } }}
+      ⭐ {{ p.averageRating | localNumber:'1.1-1' }} · {{ 'PROVIDER.PROFILE.REVIEW_COUNT' | translate:{ count: p.reviewCount } }}
     </p>
 
     <form class="panel" (ngSubmit)="save()">

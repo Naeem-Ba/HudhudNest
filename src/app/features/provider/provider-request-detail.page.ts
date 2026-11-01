@@ -30,13 +30,14 @@ import {
 } from '../../core/models/service.model';
 import { ToastService } from '../../shared/services/toast.service';
 import { ServiceConversationComponent } from '../services/service-conversation.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 const MAX_DOCUMENT_SIZE = 5_000_000; // يطابق ServiceRequestsController.MaxDocumentSize بالباك اند.
 
 @Component({
   selector: 'app-provider-request-detail-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, ServiceConversationComponent],
+  imports: [ LocalizedDatePipe,CommonModule, FormsModule, RouterLink, TranslateModule, ServiceConversationComponent],
   templateUrl: './provider-request-detail.page.html',
   styleUrls: ['./provider-request-detail.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

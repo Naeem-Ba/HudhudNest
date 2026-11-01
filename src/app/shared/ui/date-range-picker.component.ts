@@ -10,6 +10,7 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { LocalizedDatePipe } from '../pipes/localized-date.pipe';
 
 export interface DateRangeValue {
   checkIn: string | null;
@@ -41,7 +42,7 @@ function startOfDay(date: Date): Date {
 @Component({
   selector: 'app-date-range-picker',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [ LocalizedDatePipe,CommonModule, TranslateModule],
   templateUrl: './date-range-picker.component.html',
   styleUrls: ['./date-range-picker.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

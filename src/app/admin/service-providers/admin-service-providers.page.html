@@ -66,7 +66,7 @@
         </div>
         <div class="cell muted">{{ governorates.names(app.requestedGovernorateIds) }}</div>
         <div class="cell"><span class="chip" [attr.data-status]="app.status">{{ ('PROVIDER_ONBOARDING.APP_STATUS.' + app.status) | translate }}</span></div>
-        <div class="cell muted">{{ app.updatedAt | date:'mediumDate' }}</div>
+        <div class="cell muted">{{ app.updatedAt | localDate:'mediumDate' }}</div>
       </a>
     </div>
   </ng-container>
@@ -92,7 +92,7 @@
         </div>
         <div class="cell muted">{{ governorates.names(p.coverageGovernorateIds) }}</div>
         <div class="cell"><span class="chip" [attr.data-pstatus]="p.status">{{ ('PROVIDER_ONBOARDING.PROVIDER_STATUS.' + p.status) | translate }}</span></div>
-        <div class="cell muted">{{ p.updatedAt | date:'mediumDate' }}</div>
+        <div class="cell muted">{{ p.updatedAt | localDate:'mediumDate' }}</div>
       </a>
     </div>
   </ng-container>

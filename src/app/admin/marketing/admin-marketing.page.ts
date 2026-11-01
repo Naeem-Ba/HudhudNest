@@ -27,6 +27,8 @@ import {
 import { ToastService } from '../../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
+import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
 
 type Tab = 'offers' | 'leads' | 'surveys' | 'analytics';
 
@@ -87,7 +89,7 @@ const PAYMENT_MODEL_LABELS: Record<string, string> = {
   selector: 'app-admin-marketing',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, LoadingSpinnerComponent, EmptyStateComponent, OfferSharePanelComponent],
+  imports: [ LocalizedDatePipe, LocalizedNumberPipe,CommonModule, FormsModule, ReactiveFormsModule, LoadingSpinnerComponent, EmptyStateComponent, OfferSharePanelComponent],
   templateUrl: './admin-marketing.page.html',
   styleUrls: ['./admin-marketing.page.scss'],
 })

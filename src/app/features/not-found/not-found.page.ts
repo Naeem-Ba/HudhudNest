@@ -21,6 +21,8 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Title } from '@angular/platform-browser';
+import { currentUiLanguage } from '../../core/i18n/ui-language';
+import { siteNameFor } from '../../core/services/meta.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MetaService } from '../../core/services/meta.service';
 
@@ -100,7 +102,7 @@ export class NotFoundPage {
   private readonly translate = inject(TranslateService);
 
   constructor() {
-    this.title.setTitle(`${this.translate.instant('NOT_FOUND.TITLE')} | هدهد نيست`);
+    this.title.setTitle(`${this.translate.instant('NOT_FOUND.TITLE')} | ${siteNameFor(currentUiLanguage())}`);
     this.meta.setPageRobots('noindex, nofollow');
 
     inject(DestroyRef).onDestroy(() => this.meta.setPageRobots(null));

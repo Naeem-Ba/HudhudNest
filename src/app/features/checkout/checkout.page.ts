@@ -40,12 +40,13 @@ import {
   isListingFeeKind
 } from '../../core/models/listing-fee.model';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 @Component({
   selector: 'app-checkout',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, TranslateModule, LoadingSpinnerComponent],
+  imports: [ LocalizedDatePipe,CommonModule, RouterModule, TranslateModule, LoadingSpinnerComponent],
   templateUrl: './checkout.page.html'
 })
 export class CheckoutPage implements OnInit {

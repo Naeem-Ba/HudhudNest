@@ -9,6 +9,7 @@ import { ServiceOfferingService } from '../../core/api/service-offering.service'
 import { AuthService } from '../../core/auth/auth.service';
 import { ServiceCategoryAvailabilityDto } from '../../core/models/provider-onboarding.model';
 import { SERVICE_CATEGORIES, ServiceCategory, ServiceOfferingDto } from '../../core/models/service.model';
+import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
 
 /**
  * "خدمات هدهد نيست" — الكتالوج العام لعروض الخدمات (GET /api/ServiceOfferings?category=…،
@@ -19,7 +20,7 @@ import { SERVICE_CATEGORIES, ServiceCategory, ServiceOfferingDto } from '../../c
 @Component({
   selector: 'app-services-catalog-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule],
+  imports: [ LocalizedNumberPipe,CommonModule, RouterLink, TranslateModule],
   templateUrl: './services-catalog.page.html',
   styleUrls: ['./services-catalog.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

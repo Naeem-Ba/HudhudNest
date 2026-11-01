@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, inject } from '@angular/core';
-import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { NavigationEnd, NavigationStart, Router, RouterOutlet } from '@angular/router';
 import { Observable, filter } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -21,6 +21,7 @@ import { ConfirmModalComponent } from './shared/ui/confirm-modal.component';
 import { EnvironmentBadgeComponent } from './shared/ui/environment-badge.component';
 import { AdsConsentBannerComponent } from './core/ads/ads-consent-banner.component';
 import { MetaService } from './core/services/meta.service';
+import { PageMetaService } from './core/services/page-meta.service';
 
 @Component({
   selector: 'app-root',
@@ -77,6 +78,7 @@ export class AppComponent {
   private readonly translate = inject(TranslateService);
   private readonly attributionContext = inject(AttributionContextService);
   private readonly metaService = inject(MetaService);
+  private readonly pageMeta = inject(PageMetaService);
   private readonly preferences = inject(PreferencesService);
   private readonly push = inject(PushRegistrationService);
 
@@ -97,6 +99,23 @@ export class AppComponent {
     this.appUpdate.initialize();
     this.metaService.applyGlobalRobotsPolicy();
     void themeService; // يُطبَّق الوضع الداكن/الفاتح فور إنشاء الخدمة (constructor)
+
+    // Every page starts from the generic title/description in the UI language and replaces it with its
+    // own; one that sets none no longer keeps the previous page's title or the Arabic one (QA P16-D06).
+    // Only a change of PATH counts: filtering /properties changes the query string, not the page.
+    let currentPath = '';
+    this.router.events
+      .pipe(filter((event): event is NavigationStart => event instanceof NavigationStart))
+      .subscribe(event => {
+        const nextPath = event.url.split(/[?#]/)[0];
+        if (nextPath !== currentPath) {
+          currentPath = nextPath;
+          this.pageMeta.resetToDefault();
+        }
+      });
+    this.translate.onLangChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.pageMeta.refreshDefaultOnLanguageChange());
 
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))

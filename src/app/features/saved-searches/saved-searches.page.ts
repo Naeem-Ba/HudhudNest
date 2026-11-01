@@ -17,12 +17,13 @@ import { ToastService } from '../../shared/services/toast.service';
 import { SavedSearch } from '../../core/models/saved-search.model';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 @Component({
   selector: 'app-saved-searches',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [ LocalizedDatePipe,
     CommonModule,
     RouterModule,
     TranslateModule,

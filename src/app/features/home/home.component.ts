@@ -16,8 +16,7 @@ import {
   pickLocalizedName
 } from '../../core/api/lookups-api.service';
 import { LanguageService } from '../../core/services/language.service';
-import { MetaService } from '../../core/services/meta.service';
-import { PropertyShareUrlService } from '../../core/sharing/property-share-url.service';
+import { PageMetaService } from '../../core/services/page-meta.service';
 import { formatListingPrice, primaryListingPrice } from '../../shared/utils/listing-price';
 import { isReservedListing } from '../../shared/utils/listing-status';
 import { ListingViewCountComponent } from '../../shared/ui/listing-view-count.component';
@@ -53,8 +52,7 @@ export class HomeComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly urlService = inject(UrlService);
-  private readonly meta = inject(MetaService);
-  private readonly shareUrl = inject(PropertyShareUrlService);
+  private readonly pageMeta = inject(PageMetaService);
 
   private readonly propertyImageWidths = [320, 480, 640, 800] as const;
 
@@ -81,7 +79,7 @@ export class HomeComponent implements OnInit {
     // Session audit (2026-10): this was the one gap missing from every other page -- '/home' is
     // what '/' actually redirects to, yet it set no title/description/canonical at all and
     // inherited whatever index.html's static shell happened to say.
-    this.meta.setHomeMeta(`${this.shareUrl.getSiteOrigin()}/`);
+    this.pageMeta.applyTranslated('SEO.HOME', '/', this.destroyRef);
     this.loadLatestProperties();
     this.loadHeroLookups();
   }

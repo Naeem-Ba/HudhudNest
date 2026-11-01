@@ -22,6 +22,7 @@ describe('PhoneAuthApiService', () => {
   const base = environment.apiBaseUrl;
 
   beforeEach(() => {
+    document.documentElement.lang = ''; // the body only carries `language` when the page language is known
     tokenStorage = jasmine.createSpyObj('TokenStorageService', ['storeTokens']);
     TestBed.configureTestingModule({
       providers: [
@@ -36,6 +37,16 @@ describe('PhoneAuthApiService', () => {
   });
 
   afterEach(() => httpMock.verify());
+
+  it('sends the page language with every OTP send so the SMS is written in it (QA Phase 16, D03)', () => {
+    document.documentElement.lang = 'de';
+
+    service.sendRegistrationOtp('+963944111222').subscribe();
+
+    const req = httpMock.expectOne(`${base}/auth/phone/registration/send-otp`);
+    expect(req.request.body.language).toBe('de');
+    req.flush({ succeeded: true });
+  });
 
   describe('addEmail — language of the confirmation mail', () => {
     let originalLang: string;

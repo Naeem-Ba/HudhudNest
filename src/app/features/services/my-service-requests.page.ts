@@ -25,11 +25,12 @@ import {
 } from '../../core/models/service.model';
 import { ToastService } from '../../shared/services/toast.service';
 import { ServiceConversationActivity, ServiceConversationComponent } from './service-conversation.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 @Component({
   selector: 'app-my-service-requests-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, ServiceConversationComponent],
+  imports: [ LocalizedDatePipe,CommonModule, FormsModule, RouterLink, TranslateModule, ServiceConversationComponent],
   templateUrl: './my-service-requests.page.html',
   styleUrls: ['./my-service-requests.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

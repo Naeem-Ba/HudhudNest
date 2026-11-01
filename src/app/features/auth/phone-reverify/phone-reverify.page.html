@@ -28,11 +28,11 @@
           </p>
           <p *ngSwitchCase="VerificationState.DueSoon">
             ⏰ {{ 'AUTH.PHONE_REVERIFY.STATE_DUE_SOON' | translate }}
-            <span *ngIf="dueAtUtc()">— {{ dueAtUtc() | date:'dd/MM/yyyy' }}</span>
+            <span *ngIf="dueAtUtc()">— {{ dueAtUtc() | localDate:'dd/MM/yyyy' }}</span>
           </p>
           <p *ngSwitchCase="VerificationState.GracePeriod">
             ⚠️ {{ 'AUTH.PHONE_REVERIFY.STATE_GRACE' | translate }}
-            <span *ngIf="graceEndsAtUtc()">— {{ graceEndsAtUtc() | date:'dd/MM/yyyy' }}</span>
+            <span *ngIf="graceEndsAtUtc()">— {{ graceEndsAtUtc() | localDate:'dd/MM/yyyy' }}</span>
           </p>
           <p *ngSwitchCase="VerificationState.Restricted">
             🚫 {{ 'AUTH.PHONE_REVERIFY.STATE_RESTRICTED' | translate }}
