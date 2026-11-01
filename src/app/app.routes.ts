@@ -208,6 +208,15 @@ export const routes: Routes = [
             .then(m => m.MyListingReportsPage)
       },
       {
+        // The same page, opened on one report (a notification about it): that report is shown first
+        // and, when the team asked a question, the answer box is focused.
+        path: 'my-reports/:id',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/listing-reports/my-listing-reports.page')
+            .then(m => m.MyListingReportsPage)
+      },
+      {
         // Phase-0, Task 3.
         path: 'saved-searches',
         canActivate: [AuthGuard],

@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 
@@ -84,5 +84,29 @@ describe('ReportListingButtonComponent', () => {
     const c = create().componentInstance;
     c.onTrigger(new Event('click'));
     expect(c.sheetOpen()).toBeFalse();
+  });
+
+  it('when the team is waiting for an answer, the open-report dialog leads to the answer box', () => {
+    api.openFor.and.returnValue(of({ hasOpenReport: true, reportId: 'r9', referenceNumber: 'RPT-000009', status: 'NeedsYourInfo' }));
+    const fixture = create();
+    const c = fixture.componentInstance;
+    const router = TestBed.inject(Router);
+    const nav = spyOn(router, 'navigate').and.resolveTo(true);
+    c.onTrigger(new Event('click'));
+    fixture.detectChanges();
+    expect(c.needsReply()).toBeTrue();
+    expect(fixture.nativeElement.querySelector('[data-testid="report-reply-now"]')).not.toBeNull();
+    c.goReply();
+    expect(nav).toHaveBeenCalledWith(['/my-reports', 'r9']);
+    expect(c.sheetOpen()).toBeFalse();
+  });
+
+  it('an open report that is not waiting for an answer shows no reply button', () => {
+    api.openFor.and.returnValue(of({ hasOpenReport: true, reportId: 'r9', referenceNumber: 'RPT-000009', status: 'InReview' }));
+    const fixture = create();
+    fixture.componentInstance.onTrigger(new Event('click'));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.needsReply()).toBeFalse();
+    expect(fixture.nativeElement.querySelector('[data-testid="report-reply-now"]')).toBeNull();
   });
 });
