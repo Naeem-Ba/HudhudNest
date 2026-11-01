@@ -7,6 +7,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { MyReferrals, ReferralApiService } from '../../core/api/referral-api.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { PropertyShareUrlService } from '../../core/sharing/property-share-url.service';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 
 @Component({
@@ -90,6 +91,7 @@ export class ReferralsPage implements OnInit {
   private readonly translate = inject(TranslateService);
   private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly shareUrl = inject(PropertyShareUrlService);
 
   readonly data = signal<MyReferrals | null>(null);
   readonly loading = signal(false);
@@ -98,7 +100,8 @@ export class ReferralsPage implements OnInit {
 
   readonly link = computed(() => {
     const code = this.data()?.code;
-    return code ? `${window.location.origin}/auth/register?ref=${encodeURIComponent(code)}` : '';
+    // The public site origin, not window.location.origin: inside the native app that is capacitor://localhost.
+    return code ? `${this.shareUrl.getSiteOrigin()}/auth/register?ref=${encodeURIComponent(code)}` : '';
   });
 
   readonly reward = computed(() => {

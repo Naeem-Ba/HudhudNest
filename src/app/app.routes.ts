@@ -454,6 +454,13 @@ export const routes: Routes = [
       },
 
       {
+        path: 'admin/growth',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/growth/admin-growth.page')
+            .then(m => m.AdminGrowthPage)
+      },
+      {
         path: 'admin/referrals',
         canActivate: [AdminGuard],
         loadComponent: () =>
