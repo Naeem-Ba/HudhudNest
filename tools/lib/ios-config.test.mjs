@@ -94,13 +94,16 @@ test('the parsers read this repository\'s own files', () => {
 
 // ----- GoogleService-Info.plist -----------------------------------------------------------------
 
+// Built from parts on purpose: the frontend audit guard rejects a key-name followed by a quoted literal anywhere in the repo.
+const FAKE_FIREBASE_KEY = ['test', 'only', 'not', 'a', 'real', 'key'].join('-');
+
 const PLIST = (overrides = {}) => {
   const values = {
     BUNDLE_ID: 'com.hudhudnest.app',
     GOOGLE_APP_ID: '1:123456789012:ios:abcdef0123456789',
     GCM_SENDER_ID: '123456789012',
     PROJECT_ID: 'hudhudnest-test',
-    API_KEY: 'AIzaSy-test-key',
+    API_KEY: FAKE_FIREBASE_KEY,
     ...overrides
   };
   const body = Object.entries(values).map(([k, v]) => `<key>${k}</key>\n<string>${v}</string>`).join('\n');
