@@ -19,7 +19,7 @@ import { Property } from '../models/property.model';
 import { PropertyShareUrlService } from '../sharing/property-share-url.service';
 import { openExternalLink } from '../sharing/external-link';
 import { amenityLabel } from '../i18n/amenity-label';
-import { currentUiLanguage, uiNumberLocale } from '../i18n/ui-language';
+import { currentUiLanguage, listSeparator, uiNumberLocale } from '../i18n/ui-language';
 import { formatListingPrice } from '../../shared/utils/listing-price';
 
 export const PRINT_QUERY_PARAM = 'print';
@@ -96,7 +96,7 @@ export class PropertyPrintService {
     if (property.rooms) rows.push({ label: t('PRINT.ROOMS'), value: num(property.rooms) });
     if (property.floor !== undefined && property.floor !== null) rows.push({ label: t('PRINT.FLOOR'), value: num(property.floor) });
 
-    const location = [property.city, property.region].map(v => v?.trim()).filter(Boolean).join('، ');
+    const location = [property.city, property.region].map(v => v?.trim()).filter(Boolean).join(listSeparator());
     if (location) rows.push({ label: t('PRINT.LOCATION'), value: location });
 
     return rows;

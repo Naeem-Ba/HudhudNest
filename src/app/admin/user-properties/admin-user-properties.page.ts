@@ -22,6 +22,7 @@ import { ToastService } from '../../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { ConfirmModalComponent } from '../../shared/ui/confirm-modal.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 const DURATION_PRESETS = [30, 90, 180, 365];
 
@@ -31,7 +32,7 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | 'takedown' | 'restore' | n
   selector: 'app-admin-user-properties',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent, ConfirmModalComponent],
+  imports: [ LocalizedDatePipe,CommonModule, RouterModule, FormsModule, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent, ConfirmModalComponent],
   template: `
     <section class="page">
       <header class="page-header">
@@ -63,13 +64,13 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | 'takedown' | 'restore' | n
               <span class="badge" [class]="'badge--' + p.status.toLowerCase()">{{ ('ADMIN_USER_PROPERTIES.STATUS.' + p.status) | translate }}</span>
               <span class="badge badge--taken-down" *ngIf="p.isTakenDown">{{ 'ADMIN_USER_PROPERTIES.TAKEN_DOWN' | translate }}</span>
               <span class="badge badge--featured" *ngIf="p.isFeatured">
-                {{ 'ADMIN_USER_PROPERTIES.FEATURED_UNTIL' | translate:{ date: (p.featuredUntil | date:'mediumDate') } }}
+                {{ 'ADMIN_USER_PROPERTIES.FEATURED_UNTIL' | translate:{ date: (p.featuredUntil | localDate:'mediumDate') } }}
               </span>
             </div>
             <p class="taken-down-reason" *ngIf="p.isTakenDown && p.takenDownReason">{{ p.takenDownReason }}</p>
             <div class="meta">
-              <span *ngIf="p.expiresAt">{{ 'ADMIN_USER_PROPERTIES.EXPIRES_AT' | translate:{ date: (p.expiresAt | date:'mediumDate') } }}</span>
-              <span>{{ 'ADMIN_USER_PROPERTIES.CREATED_AT' | translate:{ date: (p.createdAt | date:'mediumDate') } }}</span>
+              <span *ngIf="p.expiresAt">{{ 'ADMIN_USER_PROPERTIES.EXPIRES_AT' | translate:{ date: (p.expiresAt | localDate:'mediumDate') } }}</span>
+              <span>{{ 'ADMIN_USER_PROPERTIES.CREATED_AT' | translate:{ date: (p.createdAt | localDate:'mediumDate') } }}</span>
             </div>
           </div>
 
@@ -125,7 +126,7 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | 'takedown' | 'restore' | n
         </label>
         <textarea rows="2" [placeholder]="'ADMIN_USER_DETAIL.REASON_OPTIONAL' | translate" [(ngModel)]="actionReason"></textarea>
         <p class="preview">
-          {{ 'ADMIN_USER_PROPERTIES.FEATURE_PREVIEW' | translate:{ title: p.title, end: (featureEndPreview() | date:'mediumDate') } }}
+          {{ 'ADMIN_USER_PROPERTIES.FEATURE_PREVIEW' | translate:{ title: p.title, end: (featureEndPreview() | localDate:'mediumDate') } }}
         </p>
       </div>
     </app-confirm-modal>
@@ -195,7 +196,7 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | 'takedown' | 'restore' | n
         </label>
         <textarea rows="2" [placeholder]="'ADMIN_USER_DETAIL.REASON_OPTIONAL' | translate" [(ngModel)]="actionReason"></textarea>
         <p class="preview">
-          {{ 'ADMIN_USER_PROPERTIES.EXTEND_PREVIEW' | translate:{ title: p.title, end: (extendEndPreview() | date:'mediumDate') } }}
+          {{ 'ADMIN_USER_PROPERTIES.EXTEND_PREVIEW' | translate:{ title: p.title, end: (extendEndPreview() | localDate:'mediumDate') } }}
         </p>
       </div>
     </app-confirm-modal>

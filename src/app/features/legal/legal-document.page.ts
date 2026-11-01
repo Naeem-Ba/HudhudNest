@@ -15,6 +15,7 @@ import { PRIVACY_POLICY_META, TERMS_OF_SERVICE_META } from '../../core/models/co
 import { LanguageService, LangCode } from '../../core/services/language.service';
 import { MetaService } from '../../core/services/meta.service';
 import { LegalDocKind, LegalDocumentContent, parseLegalText } from './legal-document.model';
+import { numberLocaleFor } from '../../core/i18n/supported-preferences';
 
 @Component({
   selector: 'app-legal-document',
@@ -199,7 +200,7 @@ export class LegalDocumentPage {
   }
 
   private formatDate(iso: string): string {
-    return new Intl.DateTimeFormat(this.lang(), { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(iso));
+    return new Intl.DateTimeFormat(numberLocaleFor(this.lang()), { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(iso));
   }
 
   private load(lang: LangCode) {

@@ -12,12 +12,13 @@ import { SkeletonCardGridComponent } from '../../../shared/ui/skeleton-card-grid
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
 import { PageMetaService } from '../../../core/services/page-meta.service';
 import { uiNumberLocale } from '../../../core/i18n/ui-language';
+import { LocalizedNumberPipe } from '../../../shared/pipes/localized-number.pipe';
 
 @Component({
   selector: 'app-investment-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [ LocalizedNumberPipe,
     CommonModule,
     RouterModule,
     FormsModule,

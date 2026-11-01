@@ -23,6 +23,7 @@ import { computeExtendedExpiry } from '../../core/services/admin-subscription-da
 import { ToastService } from '../../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { ConfirmModalComponent } from '../../shared/ui/confirm-modal.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 const DURATION_PRESETS = [30, 90, 180, 365];
 
@@ -32,7 +33,7 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | 'disable' | 'enable' | null;
   selector: 'app-admin-user-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, LoadingSpinnerComponent, ConfirmModalComponent],
+  imports: [ LocalizedDatePipe,CommonModule, RouterModule, FormsModule, TranslateModule, LoadingSpinnerComponent, ConfirmModalComponent],
   template: `
     <section class="page">
       <header class="page-header">
@@ -50,7 +51,7 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | 'disable' | 'enable' | null;
             <div><span class="field-label">{{ 'ADMIN_USERS.EMAIL' | translate }}</span><strong>{{ u.email || '—' }}</strong></div>
             <div><span class="field-label">{{ 'ADMIN_USER_DETAIL.PHONE' | translate }}</span><strong>{{ u.phoneNumber || '—' }}</strong></div>
             <div><span class="field-label">{{ 'ADMIN_USER_DETAIL.USER_ID' | translate }}</span><code>{{ u.id }}</code></div>
-            <div><span class="field-label">{{ 'ADMIN_USER_DETAIL.REGISTERED_AT' | translate }}</span><strong>{{ u.createdAt | date:'medium' }}</strong></div>
+            <div><span class="field-label">{{ 'ADMIN_USER_DETAIL.REGISTERED_AT' | translate }}</span><strong>{{ u.createdAt | localDate:'medium' }}</strong></div>
             <div>
               <span class="field-label">{{ 'ADMIN_USERS.STATUS' | translate }}</span>
               <span class="status-chip" [class.status-chip--disabled]="u.accountStatus === 'Disabled'">
@@ -113,11 +114,11 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | 'disable' | 'enable' | null;
             </div>
             <div class="plan-summary__row">
               <span class="field-label">{{ 'ADMIN_USER_DETAIL.PLAN_STARTED_AT' | translate }}</span>
-              <strong>{{ u.planStartedAt ? (u.planStartedAt | date:'medium') : '—' }}</strong>
+              <strong>{{ u.planStartedAt ? (u.planStartedAt | localDate:'medium') : '—' }}</strong>
             </div>
             <div class="plan-summary__row">
               <span class="field-label">{{ 'ADMIN_USER_DETAIL.PLAN_EXPIRES_AT' | translate }}</span>
-              <strong>{{ u.planExpiresAt ? (u.planExpiresAt | date:'medium') : ('ADMIN_USER_DETAIL.NO_EXPIRY' | translate) }}</strong>
+              <strong>{{ u.planExpiresAt ? (u.planExpiresAt | localDate:'medium') : ('ADMIN_USER_DETAIL.NO_EXPIRY' | translate) }}</strong>
             </div>
             <div class="plan-summary__row" *ngIf="remainingDays() !== null">
               <span class="field-label">{{ 'ADMIN_USER_DETAIL.REMAINING' | translate }}</span>
@@ -133,7 +134,7 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | 'disable' | 'enable' | null;
             </div>
             <div class="plan-summary__row" *ngIf="u.planCancelledAt">
               <span class="field-label">{{ 'ADMIN_USER_DETAIL.CANCELLED_AT' | translate }}</span>
-              <strong>{{ u.planCancelledAt | date:'medium' }}</strong>
+              <strong>{{ u.planCancelledAt | localDate:'medium' }}</strong>
             </div>
           </div>
           <ng-template #noPlan>
@@ -250,8 +251,8 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | 'disable' | 'enable' | null;
           {{ 'ADMIN_USER_DETAIL.ACTIVATE_PREVIEW' | translate:{
               user: userDisplayName(),
               plan: (planNameKey(activateTier) | translate),
-              start: (today | date:'mediumDate'),
-              end: (activateEndPreview() | date:'mediumDate')
+              start: (today | localDate:'mediumDate'),
+              end: (activateEndPreview() | localDate:'mediumDate')
             } }}
         </p>
       </div>
@@ -289,7 +290,7 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | 'disable' | 'enable' | null;
         ></textarea>
 
         <p class="preview" *ngIf="extendDays > 0">
-          {{ 'ADMIN_USER_DETAIL.EXTEND_PREVIEW' | translate:{ end: (extendEndPreview() | date:'mediumDate') } }}
+          {{ 'ADMIN_USER_DETAIL.EXTEND_PREVIEW' | translate:{ end: (extendEndPreview() | localDate:'mediumDate') } }}
         </p>
       </div>
     </app-confirm-modal>

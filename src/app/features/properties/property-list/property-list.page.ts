@@ -54,6 +54,7 @@ import { PreferencesService } from '../../../core/services/preferences.service';
 import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
 import { AdSlotComponent } from '../../../core/ads/ad-slot.component';
 import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count.component';
+import { listSeparator } from '../../../core/i18n/ui-language';
 
 @Component({
   selector: 'app-property-list',
@@ -870,7 +871,7 @@ export class PropertyListPage implements OnInit {
   }
 
   getLocation(property: Property): string {
-    return [property.street, property.city, property.postalCode].filter(Boolean).join('، ') || '—';
+    return [property.street, property.city, property.postalCode].filter(Boolean).join(listSeparator()) || '—';
   }
 
   private mapSort(): Pick<PropertyFilterDto, 'sortBy' | 'sortDescending'> {

@@ -167,7 +167,7 @@
             <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
               <path d="M7.5 1C5.29 1 3.5 2.79 3.5 5c0 2.62 4 9 4 9s4-6.38 4-9c0-2.21-1.79-4-4-4z" fill="var(--danger)" opacity=".8"/>
             </svg>
-            {{ safe(p.street) }}، {{ safe(p.city) }}
+            {{ safe(p.street) }}{{ locationSeparator() }}{{ safe(p.city) }}
             <span *ngIf="p.region"> · {{ p.region }}</span>
           </p>
 
@@ -382,7 +382,7 @@
       <div class="detail-card" id="message-form-section" *ngIf="showMessageForm()">
         <div class="detail-card__header">
           <h2>{{ 'MESSAGES.CONTACT_OWNER' | translate }}</h2>
-          <button type="button" class="card-close-btn" (click)="showMessageForm.set(false)" aria-label="إغلاق">
+          <button type="button" class="card-close-btn" (click)="showMessageForm.set(false)" [attr.aria-label]="'COMMON.CLOSE' | translate">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
           </button>
         </div>
@@ -432,7 +432,7 @@
       <div class="detail-card" id="service-form-section" *ngIf="showServiceForm()">
         <div class="detail-card__header">
           <h2>{{ 'SERVICE_REQUEST.CTA' | translate }}</h2>
-          <button type="button" class="card-close-btn" (click)="showServiceForm.set(false)" aria-label="إغلاق">
+          <button type="button" class="card-close-btn" (click)="showServiceForm.set(false)" [attr.aria-label]="'COMMON.CLOSE' | translate">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
           </button>
         </div>
@@ -485,7 +485,7 @@
                 <strong>{{ offering.title }}</strong>
                 <span *ngIf="offering.description"> — {{ offering.description }}</span>
                 <small class="offering-provider">{{ 'SERVICE_REQUEST.PROVIDER' | translate }}: {{ offering.serviceProviderDisplayName }}</small>
-                <small class="offering-rating" *ngIf="offering.averageRating != null && (offering.reviewCount ?? 0) > 0">★ {{ offering.averageRating | number:'1.1-1' }} ({{ offering.reviewCount }})</small>
+                <small class="offering-rating" *ngIf="offering.averageRating != null && (offering.reviewCount ?? 0) > 0">★ {{ offering.averageRating | localNumber:'1.1-1' }} ({{ offering.reviewCount }})</small>
                 <small class="offering-rating offering-rating--none" *ngIf="!offering.reviewCount">{{ 'SERVICE_REQUEST.NO_REVIEWS_YET' | translate }}</small>
               </span>
             </label>
@@ -526,7 +526,7 @@
       <div class="detail-card" id="visit-form-section" *ngIf="showVisitForm()">
         <div class="detail-card__header">
           <h2>{{ 'VISIT.REQUEST' | translate }}</h2>
-          <button type="button" class="card-close-btn" (click)="showVisitForm.set(false)" aria-label="إغلاق">
+          <button type="button" class="card-close-btn" (click)="showVisitForm.set(false)" [attr.aria-label]="'COMMON.CLOSE' | translate">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
           </button>
         </div>
@@ -588,7 +588,7 @@
       <div class="detail-card" *ngIf="showReviewForm()">
         <div class="detail-card__header">
           <h2>{{ 'REVIEW.ADD_PROPERTY' | translate }}</h2>
-          <button type="button" class="card-close-btn" (click)="showReviewForm.set(false)" aria-label="إغلاق">
+          <button type="button" class="card-close-btn" (click)="showReviewForm.set(false)" [attr.aria-label]="'COMMON.CLOSE' | translate">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
           </button>
         </div>
@@ -602,7 +602,7 @@
         <form class="detail-form" [formGroup]="reviewForm" (ngSubmit)="submitReview()" novalidate>
           <div class="form-group">
             <label>{{ 'REVIEW.RATING' | translate }}</label>
-            <div class="star-selector" role="group" aria-label="اختر التقييم">
+            <div class="star-selector" role="group" [attr.aria-label]="'COMMON.PICK_RATING' | translate">
               <button *ngFor="let star of starsRange" type="button"
                 class="star-btn"
                 [class.star-btn--active]="reviewForm.value.rating! >= star"
@@ -674,7 +674,7 @@
               </div>
               <div class="info-row" *ngIf="p.availableFrom">
                 <dt>{{ 'PROPERTY_DETAIL.AVAILABLE_FROM' | translate }}</dt>
-                <dd>{{ p.availableFrom | date:'dd/MM/yyyy' }}</dd>
+                <dd>{{ p.availableFrom | localDate:'dd/MM/yyyy' }}</dd>
               </div>
               <div class="info-row" *ngIf="p.condition">
                 <dt>{{ 'PROPERTY_DETAIL.CONDITION' | translate }}</dt>
@@ -751,7 +751,7 @@
                     <span class="reviewer-avatar">{{ (r.reviewerName || '?').charAt(0).toUpperCase() }}</span>
                     <div>
                       <strong>{{ r.reviewerName || ('REVIEW.ANONYMOUS' | translate) }}</strong>
-                      <time class="review-date" *ngIf="r.createdAt">{{ r.createdAt | date:'dd/MM/yyyy' }}</time>
+                      <time class="review-date" *ngIf="r.createdAt">{{ r.createdAt | localDate:'dd/MM/yyyy' }}</time>
                     </div>
                   </div>
                   <div class="review-stars">
@@ -796,8 +796,8 @@
   </ng-container>
 
   <!-- ── Image Modal (Lightbox) ── -->
-  <div class="lightbox" [class.lightbox--open]="modalOpen()" role="dialog" aria-modal="true" aria-label="عارض الصور" tabindex="-1" (keydown)="onLightboxKeydown($event)" *ngIf="modalOpen()">
-    <button #lightboxClose type="button" class="lightbox__close" (click)="closeModal()" aria-label="إغلاق">
+  <div class="lightbox" [class.lightbox--open]="modalOpen()" role="dialog" aria-modal="true" [attr.aria-label]="'COMMON.IMAGE_VIEWER' | translate" tabindex="-1" (keydown)="onLightboxKeydown($event)" *ngIf="modalOpen()">
+    <button #lightboxClose type="button" class="lightbox__close" (click)="closeModal()" [attr.aria-label]="'COMMON.CLOSE' | translate">
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 3l16 16M19 3L3 19" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
     </button>
     <div class="lightbox__img-wrap"

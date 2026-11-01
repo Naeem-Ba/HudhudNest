@@ -39,7 +39,7 @@
         <p class="search-card__summary">{{ summary(s) }}</p>
 
         <p class="search-card__matched" *ngIf="s.lastMatchedAt">
-          {{ 'SAVED_SEARCHES.LAST_MATCHED' | translate }}: {{ s.lastMatchedAt | date:'dd/MM/yyyy' }}
+          {{ 'SAVED_SEARCHES.LAST_MATCHED' | translate }}: {{ s.lastMatchedAt | localDate:'dd/MM/yyyy' }}
         </p>
         <p class="search-card__matched" *ngIf="!s.lastMatchedAt">
           {{ 'SAVED_SEARCHES.NO_MATCHES_YET' | translate }}

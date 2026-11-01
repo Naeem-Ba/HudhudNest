@@ -84,6 +84,11 @@ export class LanguageService {
     this.init();
   }
 
+  /** True only when the visitor picked a language themselves (not an earlier automatic detection). */
+  hasUserChoice(): boolean {
+    return this.readStored()?.persistence === 'user';
+  }
+
   /** True when the visitor (or an earlier visit's detection) already settled on a language. */
   hasStoredPreference(): boolean {
     return this.readStored() !== null;

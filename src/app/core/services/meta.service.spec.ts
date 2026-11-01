@@ -116,48 +116,54 @@ describe('MetaService.clearCanonical', () => {
   });
 });
 
-describe('MetaService.setHomeMeta / setPropertiesListMeta', () => {
+describe('MetaService.setMeta language and ownership', () => {
   let service: MetaService;
   let meta: Meta;
   let title: Title;
+  let originalLang: string;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(MetaService);
     meta = TestBed.inject(Meta);
     title = TestBed.inject(Title);
+    originalLang = document.documentElement.lang;
     document.querySelector('link[rel="canonical"]')?.remove();
   });
 
   afterEach(() => {
+    document.documentElement.lang = originalLang;
     document.querySelector('link[rel="canonical"]')?.remove();
   });
 
-  it('setHomeMeta sets a real title, description, and the given canonical', () => {
-    service.setHomeMeta('https://hudhudnest.com/');
+  it('suffixes the title with the Arabic brand in Arabic and HudhudNest in English and German', () => {
+    document.documentElement.lang = 'ar';
+    service.setMeta({ title: 'عقارات', description: 'd' });
+    expect(title.getTitle()).toBe('عقارات | هدهد نيست');
+    expect(meta.getTag('property="og:locale"')?.content).toBe('ar_SY');
 
-    expect(title.getTitle()).not.toBe('HudhudNest');
-    expect(title.getTitle().length).toBeGreaterThan(0);
-    expect(meta.getTag('name="description"')?.content.length).toBeGreaterThan(0);
-    expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe('https://hudhudnest.com/');
+    document.documentElement.lang = 'de';
+    service.setMeta({ title: 'Immobilien', description: 'd' });
+    expect(title.getTitle()).toBe('Immobilien | HudhudNest');
+    expect(meta.getTag('property="og:locale"')?.content).toBe('de_DE');
+
+    document.documentElement.lang = 'en';
+    service.setMeta({ title: 'Properties', description: 'd' });
+    expect(meta.getTag('property="og:locale"')?.content).toBe('en_US');
   });
 
-  it('setPropertiesListMeta sets a real title, description, and the given canonical', () => {
-    service.setPropertiesListMeta('https://hudhudnest.com/properties');
+  it('a page owns the title until releasePage(); a default never takes ownership', () => {
+    service.setMeta({ title: 'Page', description: 'd' });
+    expect(service.isPageOwned).toBeTrue();
 
-    expect(title.getTitle().length).toBeGreaterThan(0);
-    expect(meta.getTag('name="description"')?.content.length).toBeGreaterThan(0);
-    expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe('https://hudhudnest.com/properties');
+    service.releasePage();
+    service.setMeta({ title: 'Default', description: 'd', isDefault: true });
+    expect(service.isPageOwned).toBeFalse();
   });
 
-  it('setPropertiesListMeta always receives the clean base canonical, never a filtered query string', () => {
-    // Guards the actual duplicate-content fix: whatever filters are active in the real URL,
-    // the canonical passed in must be the bare path -- this is enforced by the caller
-    // (property-list.page.ts builds it from siteOrigin + '/properties' with no queryParams),
-    // so this test documents the contract rather than re-deriving it.
-    service.setPropertiesListMeta('https://hudhudnest.com/properties');
-
-    const canonical = document.querySelector('link[rel="canonical"]')?.getAttribute('href') ?? '';
-    expect(canonical).not.toContain('?');
+  it('setLandingMeta describes the live offer', () => {
+    service.setLandingMeta({ offerName: 'Early offer', offerDescription: '25% off' });
+    expect(title.getTitle()).toContain('Early offer');
+    expect(meta.getTag('name="description"')?.content).toBe('Early offer — 25% off');
   });
 });

@@ -23,6 +23,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { catchError, throwError } from 'rxjs';
 import { ToastService } from '../../shared/services/toast.service';
 import { isServerFailure } from '../api/server-failure';
+import { currentUiLanguage } from '../i18n/ui-language';
 import { environment } from '../../../environments/environment';
 import {
   currentRouteRequiresAuth,
@@ -151,6 +152,48 @@ function extractBackendMessage(error: HttpErrorResponse, translate: TranslateSer
 }
 
 /**
+ * True when a server message is clearly written in a script the reader's page is not in: Arabic
+ * letters on an English or German page, or Latin-only text on an Arabic page. Short or mixed text
+ * (a name, a code) is left alone. An English sentence on a German page is recognised by its common
+ * words; any other Latin text stays as is, and the stable codes cover the cases that matter.
+ */
+export function isInOtherScript(message: string, language: string | null = currentUiLanguage()): boolean {
+  if (!language) {
+    return false;
+  }
+
+  const arabic = (message.match(/[\u0600-\u06FF]/g) ?? []).length;
+  const latin = (message.match(/[A-Za-z]/g) ?? []).length;
+
+  if (language === 'ar') {
+    return arabic === 0 && latin >= 4;
+  }
+
+  if (arabic > 0 && arabic >= latin) {
+    return true;
+  }
+
+  // On a German page an English sentence is Latin too; it is recognised by its common words.
+  return language === 'de' && arabic === 0 && looksEnglish(message);
+}
+
+const ENGLISH_WORDS = new Set([
+  'the', 'you', 'your', 'is', 'are', 'was', 'not', 'cannot', 'can', 'must', 'has', 'have', 'this', 'that',
+  'to', 'of', 'and', 'or', 'for', 'with', 'only', 'be', 'been', 'it', 'an', 'in', 'on', 'already', 'please'
+]);
+const GERMAN_WORDS = new Set([
+  'der', 'die', 'das', 'und', 'nicht', 'ist', 'sie', 'ein', 'eine', 'zu', 'für', 'mit', 'ihre', 'ihr', 'den',
+  'dem', 'des', 'oder', 'kann', 'können', 'müssen', 'wurde', 'wird', 'bitte', 'bereits', 'von'
+]);
+
+function looksEnglish(message: string): boolean {
+  const words = message.toLowerCase().match(/[a-zäöüß]+/g) ?? [];
+  const english = new Set(words.filter(word => ENGLISH_WORDS.has(word)));
+  const german = words.filter(word => GERMAN_WORDS.has(word)).length;
+  return english.size >= 2 && german === 0;
+}
+
+/**
  * كانت هذه الرسائل نصوصاً عربية ثابتة غير مُمرَّرة عبر ngx-translate، فكان
  * مستخدم إنجليزي أو ألماني يرى نصاً عربياً لأي فشل API لا يحمل حقل
  * message/errors في جسمه (مثال: 404 بلا جسم، أو انقطاع شبكة). الآن تُقرأ
@@ -179,14 +222,18 @@ export function getFriendlyApiErrorMessage(error: HttpErrorResponse, translate: 
 
   const backendMessage = extractBackendMessage(error, translate);
 
-  if (backendMessage) {
+  // The API writes most of its business-rule messages in one fixed language (about 700 Arabic, 575
+  // English). A reader whose page is in another script gets the translated generic text for the
+  // status instead of a sentence they cannot read (QA Phase 16, P16-D04).
+  if (backendMessage && !isInOtherScript(backendMessage)) {
     return backendMessage;
   }
 
   const key = ((): string => {
     switch (error.status) {
       case 0: return 'API_ERRORS.NETWORK';
-      case 400: return 'API_ERRORS.BAD_REQUEST';
+      case 400:
+      case 422: return 'API_ERRORS.BAD_REQUEST';
       case 401: return 'API_ERRORS.UNAUTHORIZED';
       case 403: return 'API_ERRORS.FORBIDDEN';
       case 404: return 'API_ERRORS.NOT_FOUND';
@@ -208,7 +255,10 @@ const KNOWN_ERROR_CODE_KEYS: Readonly<Record<string, string>> = {
   AGENCY_PAID_PLAN_REQUIRED: 'API_ERRORS.AGENCY_PAID_PLAN_REQUIRED',
   AGENCY_FREE_PLAN_NOT_ALLOWED: 'API_ERRORS.AGENCY_FREE_PLAN_NOT_ALLOWED',
   PAID_PLAN_ACTIVE: 'API_ERRORS.PAID_PLAN_ACTIVE',
-  SERVICE_CATEGORY_NOT_APPROVED: 'API_ERRORS.SERVICE_CATEGORY_NOT_APPROVED'
+  SERVICE_CATEGORY_NOT_APPROVED: 'API_ERRORS.SERVICE_CATEGORY_NOT_APPROVED',
+  CONCURRENCY_CONFLICT: 'API_ERRORS.CONCURRENCY_CONFLICT',
+  CSRF_VALIDATION_FAILED: 'API_ERRORS.CSRF_VALIDATION_FAILED',
+  LISTING_QUOTA_REACHED: 'API_ERRORS.LISTING_QUOTA_REACHED'
 };
 
 /** The i18n key for a refusal's stable `code`, or null when there is none we translate. */

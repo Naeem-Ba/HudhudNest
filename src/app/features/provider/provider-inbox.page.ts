@@ -15,11 +15,12 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { ServiceRequestService } from '../../core/api/service-request.service';
 import { ServiceRequestDto, ServiceRequestStatus } from '../../core/models/service.model';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 @Component({
   selector: 'app-provider-inbox-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule],
+  imports: [ LocalizedDatePipe,CommonModule, RouterLink, TranslateModule],
   templateUrl: './provider-inbox.page.html',
   styleUrls: ['./provider-inbox.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

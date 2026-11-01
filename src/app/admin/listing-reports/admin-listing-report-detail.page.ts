@@ -20,6 +20,8 @@ import {
 import { ToastService } from '../../shared/services/toast.service';
 import { ConfirmModalComponent } from '../../shared/ui/confirm-modal.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
+import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
 
 type Mode = 'note' | 'info' | 'action' | 'close' | 'takedown' | 'restore' | 'reopen' | null;
 
@@ -34,7 +36,7 @@ type Mode = 'note' | 'info' | 'action' | 'close' | 'takedown' | 'restore' | 'reo
   selector: 'app-admin-listing-report-detail-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, ConfirmModalComponent, LoadingSpinnerComponent],
+  imports: [ LocalizedDatePipe, LocalizedNumberPipe,CommonModule, FormsModule, RouterLink, TranslateModule, ConfirmModalComponent, LoadingSpinnerComponent],
   template: `
     <section class="page">
       <a class="back" routerLink="/admin/listing-reports">{{ 'ADMIN_REPORTS.BACK' | translate }}</a>
@@ -50,7 +52,7 @@ type Mode = 'note' | 'info' | 'action' | 'close' | 'takedown' | 'restore' | 'reo
           <div>
             <span class="muted" dir="ltr">{{ d.summary.referenceNumber }}</span>
             <h1>{{ d.summary.listingTitle }}</h1>
-            <p class="muted">{{ 'REPORT.REASON.' + d.summary.reason | translate }} · {{ d.summary.createdAt | date:'medium' }}</p>
+            <p class="muted">{{ 'REPORT.REASON.' + d.summary.reason | translate }} · {{ d.summary.createdAt | localDate:'medium' }}</p>
           </div>
           <div class="chips">
             <span class="chip" [attr.data-status]="d.summary.status">{{ 'ADMIN_REPORTS.STATUS.' + d.summary.status | translate }}</span>
@@ -72,19 +74,19 @@ type Mode = 'note' | 'info' | 'action' | 'close' | 'takedown' | 'restore' | 'reo
                 <dt>{{ 'ADMIN_REPORTS.DETAILS' | translate }}</dt>
                 <dd class="pre">{{ d.details || ('ADMIN_REPORTS.NO_DETAILS' | translate) }}</dd>
                 <dt>{{ 'ADMIN_REPORTS.TITLE_AT_REPORT' | translate }}</dt><dd>{{ d.listingTitleAtReport }}</dd>
-                <dt>{{ 'ADMIN_REPORTS.REVIEW_DUE' | translate }}</dt><dd>{{ d.reviewDueAt | date:'medium' }}</dd>
+                <dt>{{ 'ADMIN_REPORTS.REVIEW_DUE' | translate }}</dt><dd>{{ d.reviewDueAt | localDate:'medium' }}</dd>
                 <ng-container *ngIf="d.infoRequest"><dt>{{ 'ADMIN_REPORTS.INFO_ASKED' | translate }}</dt><dd class="pre">{{ d.infoRequest }}</dd></ng-container>
                 <ng-container *ngIf="d.reopenCount > 0"><dt>{{ 'ADMIN_REPORTS.REOPENED' | translate }}</dt><dd>{{ d.reopenCount }}</dd></ng-container>
               </dl>
               <div class="reply" *ngIf="latestReply(d) as reply" data-testid="reporter-reply">
                 <strong>{{ 'ADMIN_REPORTS.REPORTER_REPLY' | translate }}</strong>
-                <span class="muted">{{ reply.createdAt | date:'medium' }}</span>
+                <span class="muted">{{ reply.createdAt | localDate:'medium' }}</span>
                 <p class="pre">{{ reply.note }}</p>
               </div>
               <div class="decision" *ngIf="d.outcome" data-testid="decision">
                 <strong>{{ 'ADMIN_REPORTS.OUTCOME.' + d.outcome | translate }}</strong>
                 <p class="pre" *ngIf="d.resolutionNote">{{ d.resolutionNote }}</p>
-                <span class="muted" *ngIf="d.resolvedByName">{{ d.resolvedByName }} · {{ d.resolvedAt | date:'medium' }}</span>
+                <span class="muted" *ngIf="d.resolvedByName">{{ d.resolvedByName }} · {{ d.resolvedAt | localDate:'medium' }}</span>
               </div>
             </section>
 
@@ -103,9 +105,9 @@ type Mode = 'note' | 'info' | 'action' | 'close' | 'takedown' | 'restore' | 'reo
                   <span class="tag tag--warn" *ngIf="l.isDeleted">{{ 'ADMIN_REPORTS.LISTING_DELETED' | translate }}</span>
                 </dd>
                 <ng-container *ngIf="l.takenDownReason"><dt>{{ 'ADMIN_REPORTS.TAKEDOWN_REASON' | translate }}</dt><dd class="pre">{{ l.takenDownReason }}</dd></ng-container>
-                <ng-container *ngIf="l.price !== null"><dt>{{ 'ADMIN_REPORTS.PRICE' | translate }}</dt><dd dir="ltr">{{ l.price | number }} {{ l.currencyCode }}</dd></ng-container>
+                <ng-container *ngIf="l.price !== null"><dt>{{ 'ADMIN_REPORTS.PRICE' | translate }}</dt><dd dir="ltr">{{ l.price | localNumber }} {{ l.currencyCode }}</dd></ng-container>
                 <ng-container *ngIf="l.city"><dt>{{ 'ADMIN_REPORTS.CITY' | translate }}</dt><dd>{{ l.city }}</dd></ng-container>
-                <ng-container *ngIf="l.publishedAt"><dt>{{ 'ADMIN_REPORTS.PUBLISHED' | translate }}</dt><dd>{{ l.publishedAt | date:'mediumDate' }}</dd></ng-container>
+                <ng-container *ngIf="l.publishedAt"><dt>{{ 'ADMIN_REPORTS.PUBLISHED' | translate }}</dt><dd>{{ l.publishedAt | localDate:'mediumDate' }}</dd></ng-container>
               </dl>
             </section>
             <section class="card" *ngIf="!d.listing">
@@ -223,7 +225,7 @@ type Mode = 'note' | 'info' | 'action' | 'close' | 'takedown' | 'restore' | 'reo
               <h2>{{ 'ADMIN_REPORTS.TIMELINE' | translate }}</h2>
               <ol class="timeline">
                 <li *ngFor="let e of d.timeline; trackBy: trackById" [class.internal]="e.isInternal">
-                  <span class="when">{{ e.createdAt | date:'medium' }}</span>
+                  <span class="when">{{ e.createdAt | localDate:'medium' }}</span>
                   <strong>{{ 'ADMIN_REPORTS.EVENT.' + e.type | translate }}</strong>
                   <span class="tag tag--internal" *ngIf="e.isInternal">{{ 'ADMIN_REPORTS.INTERNAL' | translate }}</span>
                   <span class="muted" *ngIf="e.actorName">{{ e.actorName }}</span>

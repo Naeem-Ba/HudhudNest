@@ -34,3 +34,8 @@ export function withUiLanguage<T extends object>(body: T): T & { language?: Supp
 export function uiNumberLocale(): string {
   return numberLocaleFor(currentUiLanguage());
 }
+
+/** The separator for a list of places or parts of an address: the Arabic comma only in Arabic. */
+export function listSeparator(): string {
+  return currentUiLanguage() === 'ar' ? '، ' : ', ';
+}

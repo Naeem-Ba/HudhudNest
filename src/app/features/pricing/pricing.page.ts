@@ -32,6 +32,7 @@ import { MetaService } from '../../core/services/meta.service';
 import { SubscriptionPlan } from '../../core/models/subscription-plan.model';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { ToastService } from '../../shared/services/toast.service';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 /**
  * F-22: /pricing?autoSelect=<tier> used to POST the plan for any signed-in visitor who merely
@@ -48,7 +49,7 @@ const PENDING_AUTO_SELECT_MAX_AGE_MS = 15 * 60 * 1000;
   selector: 'app-pricing',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslateModule, LoadingSpinnerComponent],
+  imports: [ LocalizedDatePipe,CommonModule, TranslateModule, LoadingSpinnerComponent],
   templateUrl: './pricing.page.html',
   styleUrls: ['./pricing.page.scss']
 })

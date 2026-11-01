@@ -157,7 +157,7 @@
           (click)="toggleLangMenu($event)"
           [attr.aria-expanded]="langMenuOpen"
           aria-haspopup="menu"
-          aria-label="تغيير اللغة"
+          [attr.aria-label]="'COMMON.CHANGE_LANGUAGE' | translate"
         >
           <svg
             width="16"
@@ -276,7 +276,7 @@
             (click)="toggleDropdown($event)"
             [attr.aria-expanded]="dropdownOpen"
             aria-haspopup="menu"
-            aria-label="قائمة المستخدم"
+            [attr.aria-label]="'COMMON.USER_MENU' | translate"
           >
             <ng-container *ngTemplateOutlet="avatarTpl; context: { $implicit: 'sm' }"></ng-container>
 
@@ -302,7 +302,7 @@
             *ngIf="dropdownOpen"
             class="account__dropdown"
             role="menu"
-            aria-label="خيارات الحساب"
+            [attr.aria-label]="'COMMON.ACCOUNT_OPTIONS' | translate"
           >
             <div class="account__user-info">
               <ng-container *ngTemplateOutlet="avatarTpl; context: { $implicit: 'lg' }"></ng-container>

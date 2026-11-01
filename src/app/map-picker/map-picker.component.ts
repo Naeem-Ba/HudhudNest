@@ -79,7 +79,8 @@ export class MapPickerComponent implements AfterViewInit, OnChanges, OnDestroy {
     const lng = hasInitial ? initial!.lng : 36.2765;
     const zoom = this.marker ? 15 : (this.center?.zoom ?? (hasInitial ? 15 : 6));
     const map = L.map(this.mapElement.nativeElement, {
-      zoomControl: true,
+      // Added below with titles in the page language (Leaflet's own are English only).
+      zoomControl: false,
       dragging: this.interactive,
       touchZoom: this.interactive,
       scrollWheelZoom: false,
@@ -87,6 +88,11 @@ export class MapPickerComponent implements AfterViewInit, OnChanges, OnDestroy {
       boxZoom: this.interactive,
       keyboard: this.interactive
     }).setView([lat, lng], zoom);
+
+    const controls = this.controlTitles();
+    L.control.zoom({ zoomInTitle: controls.zoomIn, zoomOutTitle: controls.zoomOut }).addTo(map);
+    // The default prefix is a link titled "A JavaScript library for interactive maps" (English).
+    map.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener" title="Leaflet">Leaflet</a>');
 
     this.map = map;
     this.tileLayer = L.tileLayer(MAP_TILE_LAYER.url, { ...MAP_TILE_LAYER.options });
@@ -187,6 +193,15 @@ export class MapPickerComponent implements AfterViewInit, OnChanges, OnDestroy {
       )),
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
     );
+  }
+
+  private controlTitles(): { zoomIn: string; zoomOut: string } {
+    const titles = {
+      ar: { zoomIn: 'تكبير', zoomOut: 'تصغير' },
+      de: { zoomIn: 'Vergrößern', zoomOut: 'Verkleinern' },
+      en: { zoomIn: 'Zoom in', zoomOut: 'Zoom out' }
+    } as const;
+    return titles[this.lang] ?? titles.ar;
   }
 
   private message(key: 'locationDenied' | 'locationUnavailable'): string {

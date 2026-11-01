@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ContactMessageDto, ContactService } from '../../core/api/contact.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 @Component({
   selector: 'app-message-detail',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [ LocalizedDatePipe,CommonModule, TranslateModule],
   templateUrl: './message-details.component.html',
   styleUrls: ['./message-details.component.scss']
 })
