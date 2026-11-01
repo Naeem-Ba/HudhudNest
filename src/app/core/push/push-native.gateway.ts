@@ -11,6 +11,12 @@ import { Capacitor } from '@capacitor/core';
 
 export type PushPlatform = 'android' | 'ios';
 
+/** What the operating system says about notifications for this app. */
+export type PushPermissionState = 'granted' | 'prompt' | 'denied';
+
+/** The notification channel the API's pushes arrive on (also named in AndroidManifest.xml). */
+export const ANDROID_PUSH_CHANNEL_ID = 'hudhudnest_default';
+
 @Injectable({ providedIn: 'root' })
 export class PushNativeGateway {
   isNativePlatform(): boolean {
@@ -20,6 +26,25 @@ export class PushNativeGateway {
   platform(): PushPlatform | null {
     const platform = Capacitor.getPlatform();
     return platform === 'android' || platform === 'ios' ? platform : null;
+  }
+
+  /**
+   * Where the permission stands, WITHOUT showing the system dialog. Android 12 and older never ask (granted by
+   * default); Android 13+ and iOS ask once, and 'denied' can only be changed in the system settings afterwards.
+   */
+  async checkPermission(): Promise<PushPermissionState> {
+    const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
+    const result = await FirebaseMessaging.checkPermissions();
+    return result.receive === 'granted' ? 'granted' : result.receive === 'denied' ? 'denied' : 'prompt';
+  }
+
+  /** Android only: the channel must exist before the first push, or Android files it under "Miscellaneous". */
+  async ensureAndroidChannel(name: string): Promise<void> {
+    if (this.platform() !== 'android') {
+      return;
+    }
+    const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
+    await FirebaseMessaging.createChannel({ id: ANDROID_PUSH_CHANNEL_ID, name, importance: 4 });
   }
 
   /** True when the person allowed notifications (asks once; the OS remembers the answer). */

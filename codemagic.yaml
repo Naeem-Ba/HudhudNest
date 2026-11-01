@@ -45,7 +45,7 @@ workflows:
   #      - Environment variable group باسم "frontend_env" فيه:
   #        API_URL, BASE_URL (أو API_ORIGIN), SIGNALR_URL (أو
   #        NOTIFICATION_HUB_URL), GOOGLE_CLIENT_ID, APPLE_CLIENT_ID,
-  #        APPLE_REDIRECT_URI, SITE_URL
+  #        APPLE_REDIRECT_URI, SITE_URL, GOOGLE_SERVICE_INFO_PLIST_BASE64
   #      - مخطط (scheme) "App" مشترك (Shared) في Xcode ومضاف لِلـ git —
   #        راجع الملاحظة المهمة في الرد قبل هذا الملف.
   # -------------------------------------------------------------------------
@@ -99,6 +99,11 @@ workflows:
             *staging*) echo "API_URL points at Staging; a store build must use the Production API." >&2; exit 1 ;;
           esac
           echo "COMMIT_REF=$CM_COMMIT" >> "$CM_ENV"
+      - name: Add GoogleService-Info.plist (push notifications, fails closed)
+        # The iOS counterpart of Android's google-services.json: without it the app installs fine and never
+        # receives a push. Store the Base64 of the file in the frontend_env group as GOOGLE_SERVICE_INFO_PLIST_BASE64
+        # (docs/IOS_RELEASE.md). The step checks the file belongs to com.hudhudnest.app before using it.
+        script: node tools/add-ios-firebase-config.mjs
       - name: Validate iOS config
         script: npm run ios:check
       - name: Build Angular (prod) + cap sync ios + fix SPM paths

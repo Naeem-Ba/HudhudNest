@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 
+import { writeSessionHint } from '../auth/session-hint';
+
 export interface AuthTokenResponse {
   accessToken?: string | null;
   AccessToken?: string | null;
@@ -31,11 +33,16 @@ export class TokenStorageService {
 
     if (accessToken) {
       this.accessToken = accessToken;
+      // Every sign-in path stores its token here, so this is the one place that knows a session exists.
+      writeSessionHint('yes');
     }
   }
 
   setAccessToken(token: string | null): void {
     this.accessToken = token;
+    if (token) {
+      writeSessionHint('yes');
+    }
   }
 
   getAccessToken(): string | null {

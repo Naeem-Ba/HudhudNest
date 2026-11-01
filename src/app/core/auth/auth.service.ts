@@ -3,6 +3,7 @@ import { BehaviorSubject, catchError, combineLatest, map, Observable, of, Subjec
 
 import { AuthApiService } from './auth-api.service';
 import { LOGIN_METHOD_STORAGE_KEY, LoginMethod } from './login-identifier';
+import { writeSessionHint } from './session-hint';
 import { CsrfTokenService } from '../services/csrf-token.service';
 import { ProfileService } from '../api/profile.service';
 import { ServiceProviderService } from '../api/service-provider.service';
@@ -348,6 +349,7 @@ export class AuthService {
     } catch {
       // Nothing to clean up if storage is unavailable.
     }
+    writeSessionHint('no');
     this.setAnonymousState();
   }
 

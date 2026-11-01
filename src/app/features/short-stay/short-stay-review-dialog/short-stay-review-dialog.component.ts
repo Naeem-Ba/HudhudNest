@@ -69,7 +69,7 @@ import {
   `,
   styles: [`
     .srd { display: flex; flex-direction: column; gap: .5rem; }
-    .srd__listing { margin: 0; font-weight: 700; color: var(--navy); }
+    .srd__listing { margin: 0; font-weight: 700; color: var(--text-strong); }
     .srd__stars { display: flex; gap: .25rem; direction: ltr; justify-content: center; }
     .srd__star {
       background: none; border: 0; cursor: pointer; padding: .1rem .2rem;

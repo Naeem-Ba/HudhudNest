@@ -124,9 +124,9 @@ export const DEFAULT_PLAN_DURATION_DAYS = 30;
   `,
   styles: [`
     .page { padding: clamp(1rem, 3vw, 2rem); }
-    .page-header h1 { margin:0 0 .3rem; color:var(--navy); font-family:var(--font-display); font-size:clamp(1.5rem,2.6vw,2rem); }
+    .page-header h1 { margin:0 0 .3rem; color: var(--text-strong); font-family:var(--font-display); font-size:clamp(1.5rem,2.6vw,2rem); }
     .page-header p { margin:0 0 1.25rem; color:var(--gray-500); }
-    .group-title { margin:1.25rem 0 .6rem; font-size:1.1rem; color:var(--navy); }
+    .group-title { margin:1.25rem 0 .6rem; font-size:1.1rem; color: var(--text-strong); }
     .card {
       display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;
       background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md);
@@ -135,7 +135,7 @@ export const DEFAULT_PLAN_DURATION_DAYS = 30;
     .card__info { display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; }
     .card__actions { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; }
     .muted { color:var(--gray-500); font-size:var(--text-sm); }
-    .chip { background:var(--gold-soft); color:var(--navy); border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600; }
+    .chip { background:var(--gold-soft); color: var(--text-strong); border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600; }
     .link { color:var(--primary); font-size:var(--text-sm); }
     .days { display:flex; align-items:center; gap:.4rem; font-size:var(--text-sm); color:var(--gray-500); }
     .days input { width:5rem; padding:.3rem .4rem; border:1px solid var(--border); border-radius:var(--r-sm); }

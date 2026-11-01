@@ -52,8 +52,8 @@
         </button>
 
         <div class="radius-control" *ngIf="geoModeActive()">
-          <label class="filter-label">{{ 'PROPERTY_LIST.RADIUS' | translate }}: {{ radiusKm }} {{ 'PROPERTY_LIST.KM' | translate }}</label>
-          <input type="range" min="1" max="50" step="1" [(ngModel)]="radiusKm" name="radiusKm" (change)="onRadiusChange()" />
+          <label for="pl-radiusKm" class="filter-label">{{ 'PROPERTY_LIST.RADIUS' | translate }}: {{ radiusKm }} {{ 'PROPERTY_LIST.KM' | translate }}</label>
+          <input id="pl-radiusKm" type="range" min="1" max="50" step="1" [(ngModel)]="radiusKm" name="radiusKm" (change)="onRadiusChange()" />
         </div>
       </div>
 
@@ -61,13 +61,13 @@
 
         <!-- Search -->
         <div class="filter-group">
-          <label class="filter-label">{{ 'PROPERTY_LIST.SEARCH' | translate }}</label>
+          <label for="pl-search" class="filter-label">{{ 'PROPERTY_LIST.SEARCH' | translate }}</label>
           <div class="search-input-wrapper">
             <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/>
               <path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
-            <input
+            <input id="pl-search"
               type="search"
               class="search-input"
               [(ngModel)]="searchText"
@@ -162,6 +162,7 @@
               type="number"
               [(ngModel)]="minPrice"
               name="minPrice"
+              [attr.aria-label]="('PROPERTY_LIST.PRICE_RANGE' | translate) + ': ' + ('PROPERTY_LIST.MIN' | translate)"
               [placeholder]="'PROPERTY_LIST.MIN' | translate"
               min="0"
             />
@@ -170,6 +171,7 @@
               type="number"
               [(ngModel)]="maxPrice"
               name="maxPrice"
+              [attr.aria-label]="('PROPERTY_LIST.PRICE_RANGE' | translate) + ': ' + ('PROPERTY_LIST.MAX' | translate)"
               [placeholder]="'PROPERTY_LIST.MAX' | translate"
               min="0"
             />

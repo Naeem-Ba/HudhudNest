@@ -29,6 +29,7 @@ import { NotificationsApiService } from '../../core/api/notifications-api.servic
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { ToastService } from '../../shared/services/toast.service';
+import { PushOptInComponent } from '../../shared/ui/push-opt-in.component';
 
 // ✅ استيراد النموذج المُحدَّد بدلاً من any
 import { NotificationItem, toNotificationItem } from '../../core/models/notification.model';
@@ -42,7 +43,7 @@ import { VisitService } from '../../core/api/visit.service';
 @Component({
   selector: 'app-notifications-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule, EmptyStateComponent, LoadingSpinnerComponent],
+  imports: [CommonModule, RouterLink, TranslateModule, EmptyStateComponent, LoadingSpinnerComponent, PushOptInComponent],
   template: `
     <section class="page">
       <header class="page-header">
@@ -62,6 +63,8 @@ import { VisitService } from '../../core/api/visit.service';
               : ('NOTIFICATIONS.MARK_ALL_READ' | translate) }}
         </button>
       </header>
+
+      <app-push-opt-in></app-push-opt-in>
 
       <div class="filters" role="group" [attr.aria-label]="'NOTIFICATIONS.FILTER_LABEL' | translate" *ngIf="categories().length > 1">
         <button type="button" class="chip" [class.active]="filter() === 'all'" [attr.aria-pressed]="filter() === 'all'" (click)="filter.set('all')">

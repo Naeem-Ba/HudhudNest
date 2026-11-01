@@ -51,13 +51,16 @@ import { TranslateModule } from '@ngx-translate/core';
       font-size: var(--text-sm, 0.875rem);
       color: var(--gray-600, #4b5563);
       line-height: 1.6;
+      /* A finger needs a 44px row, and the box itself must not be a 17px speck (WCAG 2.5.8 / Apple HIG). */
+      min-height: 44px;
+      padding-block: 0.25rem;
     }
 
     .consent-checkbox__input {
-      margin-top: 0.2rem;
+      margin-top: 0.1rem;
       flex-shrink: 0;
-      width: 1.05rem;
-      height: 1.05rem;
+      width: 1.5rem;
+      height: 1.5rem;
       cursor: pointer;
     }
 
@@ -69,7 +72,7 @@ import { TranslateModule } from '@ngx-translate/core';
     }
 
     .consent-checkbox__label a {
-      color: var(--primary, #D6A84F);
+      color: var(--primary-text, #8a6414);
       font-weight: 600;
       text-decoration: underline;
     }

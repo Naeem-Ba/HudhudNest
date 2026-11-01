@@ -1,6 +1,7 @@
 import { HttpContext } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 
 import { BackendApiService } from '../api/backend-api.service';
@@ -23,8 +24,11 @@ describe('PushRegistrationService', () => {
     api = jasmine.createSpyObj<BackendApiService>('BackendApiService', ['post']);
     api.post.and.returnValue(of(void 0));
     native = jasmine.createSpyObj<PushNativeGateway>('PushNativeGateway', [
-      'isNativePlatform', 'platform', 'requestPermission', 'getToken', 'deleteToken', 'onTokenRefresh', 'onNotificationTapped'
+      'isNativePlatform', 'platform', 'checkPermission', 'requestPermission', 'ensureAndroidChannel', 'getToken',
+      'deleteToken', 'onTokenRefresh', 'onNotificationTapped'
     ]);
+    native.checkPermission.and.resolveTo('granted');
+    native.ensureAndroidChannel.and.resolveTo();
     native.isNativePlatform.and.returnValue(true);
     native.platform.and.returnValue('android');
     native.requestPermission.and.resolveTo(true);
@@ -41,7 +45,8 @@ describe('PushRegistrationService', () => {
         { provide: BackendApiService, useValue: api },
         { provide: PushNativeGateway, useValue: native },
         { provide: AuthService, useValue: { isLoggedIn$: loggedIn.asObservable() } },
-        { provide: Router, useValue: router }
+        { provide: Router, useValue: router },
+        { provide: TranslateService, useValue: { instant: (key: string) => key } }
       ]
     });
   });
@@ -54,6 +59,7 @@ describe('PushRegistrationService', () => {
     loggedIn.next(true);
     await flush();
 
+    expect(native.checkPermission).not.toHaveBeenCalled();
     expect(native.requestPermission).not.toHaveBeenCalled();
     expect(api.post).not.toHaveBeenCalled();
   });
@@ -74,8 +80,83 @@ describe('PushRegistrationService', () => {
     expect(options.context.get(SKIP_ERROR_TOAST)).toBeTrue();
   });
 
-  it('registers nothing when the person refuses notifications', async () => {
+  it('creates the Android channel before it asks Firebase for the token', async () => {
+    const order: string[] = [];
+    native.ensureAndroidChannel.and.callFake(async () => { order.push('channel'); });
+    native.getToken.and.callFake(async () => { order.push('token'); return 'fcm-token-1'; });
+    TestBed.inject(PushRegistrationService).start();
+
+    loggedIn.next(true);
+    await flush();
+
+    expect(order).toEqual(['channel', 'token']);
+  });
+
+  it('still registers when creating the channel fails', async () => {
+    native.ensureAndroidChannel.and.rejectWith(new Error('no channel'));
+    TestBed.inject(PushRegistrationService).start();
+
+    loggedIn.next(true);
+    await flush();
+
+    expect(api.post).toHaveBeenCalledWith('/devices/push-token', { token: 'fcm-token-1', platform: 'android' }, jasmine.anything());
+  });
+
+  it('never shows the system dialog at sign-in: not yet asked means the person is offered a button instead', async () => {
+    native.checkPermission.and.resolveTo('prompt');
+    const service = TestBed.inject(PushRegistrationService);
+    service.start();
+
+    loggedIn.next(true);
+    await flush();
+
+    expect(native.requestPermission).not.toHaveBeenCalled();
+    expect(native.getToken).not.toHaveBeenCalled();
+    expect(api.post).not.toHaveBeenCalled();
+    expect(service.permission()).toBe('prompt');
+  });
+
+  it('enable() shows the system dialog and registers the device when the person agrees', async () => {
+    native.checkPermission.and.resolveTo('prompt');
+    const service = TestBed.inject(PushRegistrationService);
+    service.start();
+    loggedIn.next(true);
+    await flush();
+
+    const granted = await service.enable();
+
+    expect(granted).toBeTrue();
+    expect(native.requestPermission).toHaveBeenCalledTimes(1);
+    expect(service.permission()).toBe('granted');
+    expect(api.post).toHaveBeenCalledWith('/devices/push-token', { token: 'fcm-token-1', platform: 'android' }, jasmine.anything());
+  });
+
+  it('enable() registers nothing and remembers the refusal when the person says no', async () => {
+    native.checkPermission.and.resolveTo('prompt');
     native.requestPermission.and.resolveTo(false);
+    const service = TestBed.inject(PushRegistrationService);
+    service.start();
+    loggedIn.next(true);
+    await flush();
+
+    const granted = await service.enable();
+
+    expect(granted).toBeFalse();
+    expect(service.permission()).toBe('denied');
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it('enable() does nothing on the web', async () => {
+    native.isNativePlatform.and.returnValue(false);
+    const service = TestBed.inject(PushRegistrationService);
+
+    expect(await service.enable()).toBeFalse();
+    expect(native.requestPermission).not.toHaveBeenCalled();
+    expect(service.permission()).toBe('unknown');
+  });
+
+  it('registers nothing when notifications are refused in the system settings', async () => {
+    native.checkPermission.and.resolveTo('denied');
     TestBed.inject(PushRegistrationService).start();
 
     loggedIn.next(true);

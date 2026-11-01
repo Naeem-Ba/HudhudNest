@@ -203,7 +203,7 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | 'takedown' | 'restore' | n
   styles: [`
     .page { padding: clamp(1rem, 3vw, 2rem); max-width: 920px; margin: 0 auto; }
     .page-header { margin-bottom: 1rem; }
-    .page-header h1 { margin: .4rem 0 0; color:var(--navy); font-family:var(--font-display); font-size:clamp(1.3rem,2.2vw,1.7rem); }
+    .page-header h1 { margin: .4rem 0 0; color: var(--text-strong); font-family:var(--font-display); font-size:clamp(1.3rem,2.2vw,1.7rem); }
     .link-btn { background:none; border:0; color:var(--primary-text); cursor:pointer; font-weight:600; padding:0; }
 
     .filters { margin-bottom: 1rem; }
@@ -215,7 +215,7 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | 'takedown' | 'restore' | n
       padding: 1rem 1.15rem; display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap;
     }
     .listing-card__main { flex: 1 1 260px; }
-    .listing-card__main strong { display:block; color: var(--navy); margin-bottom:.35rem; }
+    .listing-card__main strong { display:block; color: var(--text-strong); margin-bottom:.35rem; }
     .badges { display:flex; gap:.4rem; flex-wrap:wrap; margin-bottom:.35rem; }
     .badge {
       display:inline-flex; align-items:center; background: var(--gray-100); color: var(--gray-700);
@@ -223,14 +223,14 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | 'takedown' | 'restore' | n
     }
     .badge--expired, .badge--archived { background: var(--danger-soft); color: var(--danger); }
     .badge--available { background: var(--success-soft, #dcfce7); color: var(--success, #16a34a); }
-    .badge--featured { background: var(--gold-soft); color: var(--navy); }
+    .badge--featured { background: var(--gold-soft); color: var(--text-strong); }
     .badge--taken-down { background: var(--danger-soft); color: var(--danger); }
     .taken-down-reason { margin:0 0 .35rem; font-size:var(--text-sm); color: var(--gray-700); }
     .meta { display:flex; gap:.8rem; flex-wrap:wrap; font-size: .78rem; color: var(--gray-500); }
 
     .listing-card__actions { display:flex; align-items:flex-start; gap:.4rem; flex-wrap:wrap; }
     .btn { border-radius:var(--r-sm); padding:.4rem .75rem; font-size:var(--text-sm); cursor:pointer; border:1px solid transparent; font-weight:600; text-decoration:none; }
-    .btn--outline { background:var(--surface); border-color:var(--border); color:var(--navy); }
+    .btn--outline { background:var(--surface); border-color:var(--border); color: var(--text-strong); }
     .btn--primary { background: var(--primary); color: var(--on-primary); }
 
     .pagination { display:flex; justify-content:center; align-items:center; gap:1rem; margin-top:1.25rem; }
@@ -238,7 +238,7 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | 'takedown' | 'restore' | n
     .pagination button:disabled { opacity:.4; cursor:not-allowed; }
 
     .modal-form { display:flex; flex-direction:column; gap:.8rem; }
-    .modal-form label { display:flex; flex-direction:column; gap:.35rem; font-size: var(--text-sm); font-weight:600; color: var(--navy); }
+    .modal-form label { display:flex; flex-direction:column; gap:.35rem; font-size: var(--text-sm); font-weight:600; color: var(--text-strong); }
     .modal-form input, .modal-form textarea {
       /* 16px صريح — أقل من ذلك يُشغّل تكبير iOS Safari التلقائي عند التركيز، انظر نفس
          الإصلاح في admin-user-detail.page.ts. */
@@ -250,7 +250,7 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | 'takedown' | 'restore' | n
       padding:.25rem .7rem; font-size:var(--text-xs); cursor:pointer;
     }
     .preset-chip--active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
-    .preview { background: var(--gold-soft); border-radius: var(--r-sm); padding: .6rem .75rem; font-size: var(--text-sm); color: var(--navy); margin:0; }
+    .preview { background: var(--gold-soft); border-radius: var(--r-sm); padding: .6rem .75rem; font-size: var(--text-sm); color: var(--text-strong); margin:0; }
   `]
 })
 export class AdminUserPropertiesPage implements OnInit {
