@@ -258,6 +258,7 @@
       "OTP_SMS_FAILED": "Failed to send the SMS. Check the phone number or try again later.",
       "OTP_CHANNEL_UNAVAILABLE": "This method is not available right now. Choose another one.",
       "OTP_PROVIDER_UNAVAILABLE": "The code could not be sent this way right now. Try another method or try again later.",
+      "OTP_DAILY_LIMIT_REACHED": "We cannot send a new verification code right now because of heavy demand. Please try again later.",
       "OTP_STORE_FAILED": "The message was sent, but an error occurred while saving the code. Request a new code.",
       "OTP_NOT_FOUND": "No valid verification code was found. Request a new code.",
       "OTP_INVALID": "The code is invalid or has expired.",

@@ -28,6 +28,8 @@ const ERROR_CODE_TO_KEY: Record<string, string> = {
   // Multi-channel: the chosen channel is off or unsupported for this number, or its provider failed (never the raw provider error).
   OTP_CHANNEL_UNAVAILABLE: 'AUTH.ERRORS.OTP_CHANNEL_UNAVAILABLE',
   OTP_PROVIDER_UNAVAILABLE: 'AUTH.ERRORS.OTP_PROVIDER_UNAVAILABLE',
+  // Global daily ceiling on codes for NEW numbers (QA phase 17, P17-D01).
+  OTP_DAILY_LIMIT_REACHED: 'AUTH.ERRORS.OTP_DAILY_LIMIT_REACHED',
 
   // Verify-time OTP outcomes (registration / reverification / phone-number-change) — the
   // backend used to collapse wrong/expired/already-used/too-many-attempts into one generic

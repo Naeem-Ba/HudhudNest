@@ -54,7 +54,7 @@
             "Your approximate current location, only if you press the \"near me\" search: your browser or device asks for permission first, and we use the coordinates only to run that search; we do not store them."
           ]
         },
-        { "p": "At the date of this Policy we do not use advertising trackers, third-party analytics or crash-reporting services, device fingerprinting, device identifiers or push-notification tokens. If that changes, we will update this Policy first." }
+        { "p": "At the date of this Policy we do not use advertising trackers, third-party analytics or crash-reporting services, or device fingerprinting. We do use two device-bound identifiers, described in section 9 (an anonymous visitor id kept in your browser's local storage) and in section 13 (a push-notification token, only if you switch notifications on). If that changes, we will update this Policy first." }
       ]
     },
     {
@@ -84,8 +84,8 @@
       "heading": "Cookies and similar technologies",
       "blocks": [
         { "p": "We use one strictly necessary, HttpOnly cookie that keeps you signed in. We do not use advertising or tracking cookies." },
-        { "p": "We also use your browser's local storage for functions you ask for or that the Platform needs: your language and theme choice, your session state, and (if you open a tracked link) the campaign parameters of that link so we can attribute a later action to it. You can clear this data in your browser settings; some features may then stop working or reset." },
-        { "p": "Some third-party resources load directly in your browser (fonts and map tiles, see section 13) and receive your IP address when they do." }
+        { "p": "We also use your browser's local storage for functions you ask for or that the Platform needs: your language and theme choice, your session state, and (if you open a tracked link) the campaign parameters of that link so we can attribute a later action to it. We also keep one random anonymous visitor id there, so that opening the same listing again is not counted as a second view; the server stores only a keyed hash of it, it is not linked to your name or device hardware, and it is never used for advertising. You can clear this data in your browser settings; some features may then stop working or reset, and the visitor id is created anew." },
+        { "p": "Map tiles load directly in your browser from OpenStreetMap (see section 13) and receive your IP address when they do. Page fonts are served from our own servers." }
       ]
     },
     {
@@ -150,8 +150,8 @@
             "Telegram and WhatsApp (Meta): delivering verification codes when you choose those channels.",
             "Telegram, Facebook and Instagram (Meta): publishing public listing content to HudhudNest's own channels, as described in section 6.",
             "Google and Apple: sign-in, if you choose it. Google Identity Services is loaded in your browser on sign-in pages.",
-            "Google Fonts: page fonts, loaded from Google, which may see your IP address.",
-            "CARTO: map tiles shown when you view or pick a location, which may see your IP address.",
+            "OpenStreetMap (OpenStreetMap Foundation tile servers): map tiles shown when you view or pick a location; the tile server can see your IP address.",
+            "Google Firebase Cloud Messaging (and Apple Push Notification service on iPhone): delivery of push notifications, only if you switch notifications on; your device's push token is stored with your account until you switch them off or delete the account.",
             "Cloud hosting providers (currently Render for the API and database and Netlify for the web app): infrastructure on which the Platform runs.",
             "Have I Been Pwned (k-anonymity range lookup): breached-password check, see section 8."
           ]

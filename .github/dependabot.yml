@@ -1,0 +1,34 @@
+# Dependency updates for the web/mobile app (QA phase 17, P17-D06). The API repository already has one.
+# Grouped so a framework bump arrives as ONE pull request: Angular packages pin each other's exact version in
+# their peer dependencies, so updating them one by one cannot resolve (npm reports ERESOLVE).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+    open-pull-requests-limit: 5
+    groups:
+      angular:
+        patterns:
+          - "@angular/*"
+          - "@angular-devkit/*"
+          - "zone.js"
+      capacitor:
+        patterns:
+          - "@capacitor/*"
+          - "@capacitor-community/*"
+          - "@capacitor-firebase/*"
+          - "@capgo/*"
+    ignore:
+      # Angular majors are planned migrations, not routine updates.
+      - dependency-name: "@angular/*"
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
