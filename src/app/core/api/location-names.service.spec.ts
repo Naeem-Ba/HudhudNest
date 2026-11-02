@@ -3,10 +3,10 @@ import { Subject, of } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 
 import { LocationNamesService, normalizePlaceName } from './location-names.service';
-import { LookupsApiService, StructuredLocationLookup } from './lookups-api.service';
+import { LookupsApiService, StructuredLocationLookup, pickLocalizedName } from './lookups-api.service';
 
 const governorates: StructuredLocationLookup[] = [
-  { id: 1, nameAr: 'دمشق', nameEn: 'Damascus' },
+  { id: 1, nameAr: 'دمشق', nameEn: 'Damascus', nameDe: 'Damaskus' },
   { id: 2, nameAr: 'حلب', nameEn: 'Aleppo' }
 ];
 const districts: StructuredLocationLookup[] = [
@@ -49,10 +49,17 @@ describe('LocationNamesService', () => {
     expect(service.city({ city: 'Damascus', governorateId: 2 })).toBe('Aleppo');
   });
 
-  it('falls back to English for German, and shows unknown places exactly as stored', () => {
+  it('uses the German name where there is one, English where there is not, and matches stored German text', () => {
     const service = create('de');
     service.city({ city: 'حلب' });
+    expect(service.city({ city: 'دمشق' })).toBe('Damaskus');
+    expect(service.city({ city: 'Damaskus' })).toBe('Damaskus');
     expect(service.city({ city: 'حلب' })).toBe('Aleppo');
+  });
+
+  it('shows unknown places exactly as stored', () => {
+    const service = create('de');
+    service.city({ city: 'حلب' });
     expect(service.city({ city: 'Kleinstadt' })).toBe('Kleinstadt');
     expect(service.city({ city: null })).toBe('');
   });
@@ -76,5 +83,15 @@ describe('LocationNamesService', () => {
   it('normalizes spelling variants', () => {
     expect(normalizePlaceName('  الإِسكندريّة ')).toBe(normalizePlaceName('الاسكندريه'.replace('ه', 'ة')));
     expect(normalizePlaceName('Damascus ')).toBe('damascus');
+  });
+});
+
+describe('pickLocalizedName', () => {
+  it('uses the German name for German only when present, otherwise English, and Arabic for Arabic', () => {
+    expect(pickLocalizedName({ nameAr: 'دمشق', nameEn: 'Damascus', nameDe: 'Damaskus' }, 'de')).toBe('Damaskus');
+    expect(pickLocalizedName({ nameAr: 'حلب', nameEn: 'Aleppo', nameDe: null }, 'de')).toBe('Aleppo');
+    expect(pickLocalizedName({ nameAr: 'حلب', nameEn: 'Aleppo' }, 'en')).toBe('Aleppo');
+    expect(pickLocalizedName({ nameAr: 'دمشق', nameEn: 'Damascus', nameDe: 'Damaskus' }, 'ar')).toBe('دمشق');
+    expect(pickLocalizedName({ nameAr: 'دمشق', nameEn: 'Damascus', nameDe: 'Damaskus' }, 'en')).toBe('Damascus');
   });
 });

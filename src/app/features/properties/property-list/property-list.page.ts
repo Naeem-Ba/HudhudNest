@@ -482,7 +482,7 @@ export class PropertyListPage implements OnInit {
     if (!typed) return;
 
     const named = this.governorates().find(
-      g => g.nameAr?.trim().toLowerCase() === typed || g.nameEn?.trim().toLowerCase() === typed
+      g => g.nameAr?.trim().toLowerCase() === typed || g.nameEn?.trim().toLowerCase() === typed || g.nameDe?.trim().toLowerCase() === typed
     );
     if (!named) return;
 

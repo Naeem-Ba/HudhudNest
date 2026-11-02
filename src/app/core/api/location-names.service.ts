@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 
-import { LookupsApiService, StructuredLocationLookup } from './lookups-api.service';
+import { LookupsApiService, StructuredLocationLookup, pickLocalizedName } from './lookups-api.service';
 
 /** What a listing stores about where it is: the structured ids plus the text typed/derived when it was created. */
 export interface ListingLocationFields {
@@ -29,9 +29,9 @@ export function normalizePlaceName(value: string | null | undefined): string {
  *
  * A listing stores `city` (the governorate) and `region` (the district) as plain text in whatever language
  * its owner had selected, so an English visitor saw "دمشق" and an Arabic visitor "Damascus". The lookup
- * tables carry a fixed Arabic and English name for every place; this service re-resolves the stored ids
- * (or, for older listings without ids, the stored text) against them. German falls back to English
- * because the tables have no German column. Unknown places are shown exactly as stored.
+ * tables carry a fixed Arabic and English name (and, where entered, a German name) for every place; this service re-resolves the stored ids
+ * (or, for older listings without ids, the stored text) against them. German uses the
+ * German name where the table has one and falls back to English. Unknown places are shown exactly as stored.
  */
 @Injectable({ providedIn: 'root' })
 export class LocationNamesService {
@@ -80,12 +80,14 @@ export class LocationNamesService {
   private byText(list: StructuredLocationLookup[], text: string | null | undefined): StructuredLocationLookup | undefined {
     const wanted = normalizePlaceName(text);
     if (!wanted) return undefined;
-    return list.find(item => normalizePlaceName(item.nameAr) === wanted || normalizePlaceName(item.nameEn) === wanted);
+    return list.find(item =>
+      normalizePlaceName(item.nameAr) === wanted ||
+      normalizePlaceName(item.nameEn) === wanted ||
+      normalizePlaceName(item.nameDe) === wanted);
   }
 
   private label(item: StructuredLocationLookup): string {
-    const arabic = this.lang() === 'ar';
-    return (arabic ? item.nameAr || item.nameEn : item.nameEn || item.nameAr);
+    return pickLocalizedName(item, this.lang());
   }
 
   private ensureGovernorates(): void {
