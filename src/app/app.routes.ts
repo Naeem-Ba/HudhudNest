@@ -217,7 +217,37 @@ export const routes: Routes = [
             .then(m => m.MyListingReportsPage)
       },
       {
+        // Growth engine P2: property search requests (buyer/renter side).
+        path: 'search-requests',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/search-requests/my-search-requests.page')
+            .then(m => m.MySearchRequestsPage)
+      },
+      {
+        // Growth engine P2: anonymous request board (advertiser side).
+        path: 'search-requests/board',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/search-requests/search-request-board.page')
+            .then(m => m.SearchRequestBoardPage)
+      },
+      {
+        path: 'search-requests/for-listing/:propertyId',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/search-requests/search-request-board.page')
+            .then(m => m.SearchRequestBoardPage)
+      },
+      {
         // Phase-0, Task 3.
+        path: 'referrals',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/referrals/referrals.page')
+            .then(m => m.ReferralsPage)
+      },
+      {
         path: 'saved-searches',
         canActivate: [AuthGuard],
         loadComponent: () =>
@@ -333,6 +363,27 @@ export const routes: Routes = [
             .then(m => m.AnalyticsPage)
       },
       {
+        // Growth engine P11: guided start for Syrians abroad (only services that real providers offer).
+        path: 'expats',
+        loadComponent: () =>
+          import('./features/expats/expat-journey.page')
+            .then(m => m.ExpatJourneyPage)
+      },
+      {
+        // Growth engine P8: browse listings on a map (server-side clusters).
+        path: 'map',
+        loadComponent: () =>
+          import('./features/property-map/property-map.page')
+            .then(m => m.PropertyMapPage)
+      },
+      {
+        // Growth engine P6: public asking-price ranges per area (never a valuation).
+        path: 'price-estimate',
+        loadComponent: () =>
+          import('./features/price-estimate/price-estimate.page')
+            .then(m => m.PriceEstimatePage)
+      },
+      {
         // Public pricing page - Basic / Premium / Elite agency plans.
         path: 'pricing',
         loadComponent: () =>
@@ -416,6 +467,20 @@ export const routes: Routes = [
             .then(m => m.MessageDetailComponent)
       },
 
+      {
+        path: 'admin/growth',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/growth/admin-growth.page')
+            .then(m => m.AdminGrowthPage)
+      },
+      {
+        path: 'admin/referrals',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/referrals/admin-referrals.page')
+            .then(m => m.AdminReferralsPage)
+      },
       {
         path: 'admin/users',
         canActivate: [AdminGuard],

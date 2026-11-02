@@ -15,6 +15,12 @@ export interface RegisterRequest {
   consentSource?: string;
   termsAccepted?: boolean;
   termsVersion?: string;
+  // Growth engine P4: first UTM touch (tags only), sent only when one was captured.
+  acquisitionSource?: string;
+  acquisitionMedium?: string;
+  acquisitionCampaign?: string;
+  // Growth engine P5: invitation code from a "?ref=" link, sent only when one was kept.
+  referralCode?: string;
 }
 
 export interface RegisterResponse {

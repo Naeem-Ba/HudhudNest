@@ -51,6 +51,8 @@
                   : ('PROPERTY_LIST.NEAR_ME' | translate)) }}
         </button>
 
+        <a routerLink="/map" class="geo-btn geo-btn--map" data-testid="open-map">{{ 'PROPERTY_LIST.MAP_VIEW' | translate }}</a>
+
         <div class="radius-control" *ngIf="geoModeActive()">
           <label for="pl-radiusKm" class="filter-label">{{ 'PROPERTY_LIST.RADIUS' | translate }}: {{ radiusKm }} {{ 'PROPERTY_LIST.KM' | translate }}</label>
           <input id="pl-radiusKm" type="range" min="1" max="50" step="1" [(ngModel)]="radiusKm" name="radiusKm" (change)="onRadiusChange()" />

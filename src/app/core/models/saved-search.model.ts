@@ -20,7 +20,17 @@ export interface SavedSearch {
   maxArea?: number | null;
   createdAt: string;
   lastMatchedAt?: string | null;
+  // Growth engine P3
+  hasBalcony?: boolean | null;
+  hasElevator?: boolean | null;
+  hasParkingSpace?: boolean | null;
+  frequency: SavedSearchFrequency;
+  isPaused: boolean;
+  lastNotifiedAt?: string | null;
+  notifiedCount: number;
 }
+
+export type SavedSearchFrequency = 'Instant' | 'Daily';
 
 /** Payload for POST /savedsearch. UserId is set server-side from the JWT — not sent here. */
 export interface CreateSavedSearchPayload {
@@ -40,4 +50,8 @@ export interface CreateSavedSearchPayload {
   MaxRooms?: number | null;
   MinArea?: number | null;
   MaxArea?: number | null;
+  HasBalcony?: boolean | null;
+  HasElevator?: boolean | null;
+  HasParkingSpace?: boolean | null;
+  Frequency?: SavedSearchFrequency | null;
 }

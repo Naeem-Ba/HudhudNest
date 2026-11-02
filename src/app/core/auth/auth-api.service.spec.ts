@@ -6,6 +6,8 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { AttributionContextService } from '../sharing/attribution-context.service';
+import { ReferralCodeService } from '../sharing/referral-code.service';
 
 import { environment } from '../../../environments/environment';
 import { AuthApiService } from './auth-api.service';
@@ -27,11 +29,29 @@ describe('AuthApiService.resendConfirmationEmail', () => {
 
     service = TestBed.inject(AuthApiService);
     httpMock = TestBed.inject(HttpTestingController);
+    TestBed.inject(AttributionContextService).clear();
+    TestBed.inject(ReferralCodeService).clear();
+    TestBed.inject(AttributionContextService).clear();
+    TestBed.inject(ReferralCodeService).clear();
   });
 
   afterEach(() => {
     httpMock.verify();
     document.documentElement.lang = originalLang;
+    TestBed.inject(AttributionContextService).clear();
+  });
+
+  it('✅ sends the first UTM touch with the sign-up (growth engine P4)', () => {
+    document.documentElement.lang = '';
+    TestBed.inject(AttributionContextService).captureFromUrl('https://hudhudnest.com/?utm_source=facebook&utm_medium=social&utm_campaign=launch');
+
+    service.register({ firstName: 'A', lastName: 'B', email: 'a@example.com', password: FAKE_TEST_CREDENTIAL }).subscribe();
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/auth/register`);
+    expect(req.request.body.acquisitionSource).toBe('facebook');
+    expect(req.request.body.acquisitionMedium).toBe('social');
+    expect(req.request.body.acquisitionCampaign).toBe('launch');
+    req.flush({ message: 'ok', userId: 'u1' });
   });
 
   it('✅ يرسل لغة الصفحة الحالية ليصل البريد بها', () => {

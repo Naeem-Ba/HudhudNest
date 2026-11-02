@@ -56,6 +56,7 @@ interface PropertySavePayload {
   PostalCode?: string | null;
   Latitude?: number | null;
   Longitude?: number | null;
+  HideExactLocation?: boolean;
   ColdRent?: number | null;
   WarmRent?: number | null;
   PurchasePrice?: number | null;
@@ -387,6 +388,7 @@ export class PropertyFormPage implements OnInit {
     propertyTypeId: [null as number | null, Validators.required],
     latitude: [null as number | null, [Validators.min(-90), Validators.max(90)]],
     longitude: [null as number | null, [Validators.min(-180), Validators.max(180)]],
+    hideExactLocation: [false],
     currencyCode: ['SYP', [Validators.required, Validators.minLength(3), Validators.maxLength(3)]],
     coldRent: [null as number | null, positiveNumber],
     warmRent: [null as number | null, positiveNumber],
@@ -814,6 +816,7 @@ export class PropertyFormPage implements OnInit {
             countryCode: property.countryCode ?? 'SY',
             latitude: property.latitude ?? null,
             longitude: property.longitude ?? null,
+            hideExactLocation: property.hideExactLocation ?? false,
             currencyCode: property.currencyCode ?? 'SYP',
             coldRent: property.coldRent ?? null,
             warmRent: property.warmRent ?? null,
@@ -1142,6 +1145,7 @@ export class PropertyFormPage implements OnInit {
       PostalCode: f.postalCode?.trim() ?? null,
       Latitude: f.latitude ?? null,
       Longitude: f.longitude ?? null,
+      HideExactLocation: !!f.hideExactLocation,
       CurrencyCode: f.currencyCode!.trim().toUpperCase(),
       ColdRent: isRent ? (f.coldRent ?? null) : null,
       WarmRent: isRent ? (f.warmRent ?? null) : null,

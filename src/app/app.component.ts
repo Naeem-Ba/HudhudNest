@@ -16,6 +16,7 @@ import { ThemeService } from './core/services/theme.service';
 import { NotificationsApiService } from './core/api/notifications-api.service';
 import { AppUpdateService, isTrustedStoreUrl } from './core/api/app-update.service';
 import { ToastService } from './shared/services/toast.service';
+import { ReferralCodeService } from './core/sharing/referral-code.service';
 import { AttributionContextService } from './core/sharing/attribution-context.service';
 import { ConfirmModalComponent } from './shared/ui/confirm-modal.component';
 import { EnvironmentBadgeComponent } from './shared/ui/environment-badge.component';
@@ -77,6 +78,7 @@ export class AppComponent {
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly attributionContext = inject(AttributionContextService);
+  private readonly referralCode = inject(ReferralCodeService);
   private readonly metaService = inject(MetaService);
   private readonly pageMeta = inject(PageMetaService);
   private readonly preferences = inject(PreferencesService);
@@ -129,6 +131,7 @@ export class AppComponent {
         // keeps this entirely out of any single feature component (same separation-of-concerns
         // rule Phase 1 applied to the share button itself). See AttributionContextService.
         this.attributionContext.captureFromUrl(window.location.href);
+        this.referralCode.captureFromUrl(window.location.href);
         this.attributionContext.stripUtmParamsFromVisibleUrl();
       });
 

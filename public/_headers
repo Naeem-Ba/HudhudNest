@@ -111,6 +111,18 @@
 /investments/watchlist/*
   X-Robots-Tag: noindex, nofollow
 
+/search-requests
+  X-Robots-Tag: noindex, nofollow
+
+/search-requests/*
+  X-Robots-Tag: noindex, nofollow
+
+/referrals
+  X-Robots-Tag: noindex, nofollow
+
+/referrals/*
+  X-Robots-Tag: noindex, nofollow
+
 /login
   X-Robots-Tag: noindex, nofollow
 

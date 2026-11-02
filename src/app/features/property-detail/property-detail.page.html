@@ -718,6 +718,9 @@
             </dl>
           </div>
 
+          <!-- Price history (growth engine P1): renders nothing until a real change exists -->
+          <app-price-history [propertyId]="p.id" />
+
           <!-- Amenities -->
           <div class="detail-card" *ngIf="p.amenities?.length">
             <h2 class="detail-card__title">{{ 'PROPERTY_DETAIL.AMENITIES' | translate }}</h2>
@@ -779,6 +782,9 @@
               [interactive]="false"
               [enableLocate]="false">
             </app-map-picker>
+            <p class="map-approximate" *ngIf="validLocation() && property()?.isLocationApproximate" data-testid="approximate-location">
+              {{ 'PROPERTY_DETAIL.APPROXIMATE_LOCATION' | translate }}
+            </p>
             <a *ngIf="validLocation() as location"
               class="map-external-link"
               [href]="'https://www.google.com/maps/search/?api=1&query=' + location.lat + ',' + location.lng"

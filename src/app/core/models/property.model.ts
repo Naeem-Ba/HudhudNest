@@ -73,6 +73,10 @@ export interface Property {
   lastConfirmedAvailableAt?: string | null;
   latitude?: number;
   longitude?: number;
+  /** Growth engine P8: the public sees an approximate point (about 500 m) and no street. */
+  isLocationApproximate?: boolean;
+  /** The owner's choice; only present in the owner's and admins' management views. */
+  hideExactLocation?: boolean | null;
   listingType?: ListingType;
   status?: PropertyStatus;
   condition?: PropertyCondition;
