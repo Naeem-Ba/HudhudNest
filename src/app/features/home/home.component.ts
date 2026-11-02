@@ -1,4 +1,5 @@
 ﻿import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { LocationNamesService } from '../../core/api/location-names.service';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -48,6 +49,7 @@ export class HomeComponent implements OnInit {
 
   private readonly propertyApiService = inject(PropertyApiService);
   private readonly lookupsApi = inject(LookupsApiService);
+  readonly locations = inject(LocationNamesService);
   private readonly langService = inject(LanguageService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
