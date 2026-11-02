@@ -57,6 +57,7 @@ interface PropertySavePayload {
   Latitude?: number | null;
   Longitude?: number | null;
   HideExactLocation?: boolean;
+  IsPriceNegotiable?: boolean;
   ColdRent?: number | null;
   WarmRent?: number | null;
   PurchasePrice?: number | null;
@@ -389,6 +390,7 @@ export class PropertyFormPage implements OnInit {
     latitude: [null as number | null, [Validators.min(-90), Validators.max(90)]],
     longitude: [null as number | null, [Validators.min(-180), Validators.max(180)]],
     hideExactLocation: [false],
+    isPriceNegotiable: [false],
     currencyCode: ['SYP', [Validators.required, Validators.minLength(3), Validators.maxLength(3)]],
     coldRent: [null as number | null, positiveNumber],
     warmRent: [null as number | null, positiveNumber],
@@ -817,6 +819,7 @@ export class PropertyFormPage implements OnInit {
             latitude: property.latitude ?? null,
             longitude: property.longitude ?? null,
             hideExactLocation: property.hideExactLocation ?? false,
+            isPriceNegotiable: property.isPriceNegotiable ?? false,
             currencyCode: property.currencyCode ?? 'SYP',
             coldRent: property.coldRent ?? null,
             warmRent: property.warmRent ?? null,
@@ -1146,6 +1149,7 @@ export class PropertyFormPage implements OnInit {
       Latitude: f.latitude ?? null,
       Longitude: f.longitude ?? null,
       HideExactLocation: !!f.hideExactLocation,
+      IsPriceNegotiable: (isRent || isSale) && !!f.isPriceNegotiable,
       CurrencyCode: f.currencyCode!.trim().toUpperCase(),
       ColdRent: isRent ? (f.coldRent ?? null) : null,
       WarmRent: isRent ? (f.warmRent ?? null) : null,

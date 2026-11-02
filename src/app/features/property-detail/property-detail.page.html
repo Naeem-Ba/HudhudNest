@@ -188,6 +188,10 @@
               <small>/{{ 'COMMON.MONTH' | translate }}</small>
             </strong>
           </div>
+          <p class="summary-card__negotiable" data-testid="price-negotiable-badge"
+             *ngIf="p.isPriceNegotiable && (isSaleListing() || isRentListing())">
+            {{ 'PROPERTY_DETAIL.PRICE_NEGOTIABLE' | translate }}
+          </p>
 
           <!-- Quick Specs -->
           <div class="summary-card__specs">

@@ -588,6 +588,7 @@
     "PAGE": "Seite"
   },
   "PROPERTY_DETAIL": {
+    "PRICE_NEGOTIABLE": "Preis verhandelbar",
     "TRANSLATION": {
       "LOADING": "Text wird übersetzt …",
       "WAITING": "Die Übersetzung dauert länger. Vorerst wird der Originaltext angezeigt.",
@@ -793,7 +794,9 @@
     "FURNISHING_SEMIFURNISHED": "Teilmöbliert",
     "FURNISHING_FURNISHED": "Möbliert",
     "HIDE_EXACT_LOCATION": "Meinen genauen Standort öffentlich ausblenden",
-    "HIDE_EXACT_LOCATION_HINT": "Besucher sehen statt der Stecknadel einen ungefähren Bereich von etwa 500 m und keinen Straßennamen. Sie und die Administration sehen den genauen Ort."
+    "HIDE_EXACT_LOCATION_HINT": "Besucher sehen statt der Stecknadel einen ungefähren Bereich von etwa 500 m und keinen Straßennamen. Sie und die Administration sehen den genauen Ort.",
+    "PRICE_NEGOTIABLE": "Preis verhandelbar",
+    "PRICE_NEGOTIABLE_HINT": "Aktivieren Sie dies, wenn Sie über den Preis verhandeln möchten. Besucher sehen es nur auf der Detailseite der Anzeige."
   },
   "property_add": {
     "title": "Immobilie hinzufügen",

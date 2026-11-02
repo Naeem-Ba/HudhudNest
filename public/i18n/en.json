@@ -588,6 +588,7 @@
     "PAGE": "Page"
   },
   "PROPERTY_DETAIL": {
+    "PRICE_NEGOTIABLE": "Price negotiable",
     "TRANSLATION": {
       "LOADING": "Translating the description…",
       "WAITING": "The translation is taking longer. Showing the original text for now.",
@@ -793,7 +794,9 @@
     "FURNISHING_SEMIFURNISHED": "Semi-Furnished",
     "FURNISHING_FURNISHED": "Furnished",
     "HIDE_EXACT_LOCATION": "Hide my exact location from the public",
-    "HIDE_EXACT_LOCATION_HINT": "Visitors see an approximate area of about 500 m instead of the pin, and no street name. You and the admins still see the exact spot."
+    "HIDE_EXACT_LOCATION_HINT": "Visitors see an approximate area of about 500 m instead of the pin, and no street name. You and the admins still see the exact spot.",
+    "PRICE_NEGOTIABLE": "The price is negotiable",
+    "PRICE_NEGOTIABLE_HINT": "Turn this on if you are open to negotiating the price. Visitors see it on the listing details page only."
   },
   "property_add": {
     "title": "Add property",
