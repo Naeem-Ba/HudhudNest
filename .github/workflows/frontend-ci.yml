@@ -59,6 +59,13 @@ jobs:
       - name: Frontend audit guard
         run: npm run audit:frontend
 
+      # QA phase 17, P17-D06. Report only for now: the remaining "high" findings are transitive packages of the
+      # Firebase push plugin that have no compatible fix yet, so a hard gate would keep CI red. Read the log; make it
+      # blocking (remove continue-on-error) once `npm audit --omit=dev --audit-level=high` is clean.
+      - name: Dependency vulnerabilities (report only)
+        continue-on-error: true
+        run: npm audit --omit=dev --audit-level=high
+
       - name: Native app version check
         run: |
           npm run test:tools

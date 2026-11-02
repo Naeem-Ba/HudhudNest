@@ -258,6 +258,7 @@
       "OTP_SMS_FAILED": "Die SMS konnte nicht gesendet werden. Prüfen Sie die Telefonnummer oder versuchen Sie es später erneut.",
       "OTP_CHANNEL_UNAVAILABLE": "Diese Methode ist derzeit nicht verfügbar. Wählen Sie eine andere.",
       "OTP_PROVIDER_UNAVAILABLE": "Der Code konnte auf diesem Weg gerade nicht gesendet werden. Versuchen Sie eine andere Methode oder es später erneut.",
+      "OTP_DAILY_LIMIT_REACHED": "Wir können momentan keinen neuen Bestätigungscode senden, weil die Nachfrage zu hoch ist. Bitte versuchen Sie es später erneut.",
       "OTP_STORE_FAILED": "Die Nachricht wurde gesendet, aber beim Speichern des Codes ist ein Fehler aufgetreten. Fordern Sie einen neuen Code an.",
       "OTP_NOT_FOUND": "Es wurde kein gültiger Bestätigungscode gefunden. Fordern Sie einen neuen Code an.",
       "OTP_INVALID": "Der Code ist ungültig oder abgelaufen.",
