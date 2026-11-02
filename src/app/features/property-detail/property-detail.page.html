@@ -167,8 +167,8 @@
             <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
               <path d="M7.5 1C5.29 1 3.5 2.79 3.5 5c0 2.62 4 9 4 9s4-6.38 4-9c0-2.21-1.79-4-4-4z" fill="var(--danger)" opacity=".8"/>
             </svg>
-            {{ safe(p.street) }}{{ locationSeparator() }}{{ safe(p.city) }}
-            <span *ngIf="p.region"> · {{ p.region }}</span>
+            <span dir="auto">{{ safe(displayStreet(p)) }}</span>{{ locationSeparator() }}{{ safe(locations.city(p)) }}
+            <span *ngIf="p.region"> · {{ locations.region(p) }}</span>
           </p>
 
           <!-- ✅ إضافة: معرف الإعلان الحقيقي القادم من الـ Backend (p.id) -->
@@ -650,15 +650,15 @@
             <dl class="info-grid">
               <div class="info-row">
                 <dt>{{ 'PROPERTY_DETAIL.CITY' | translate }}</dt>
-                <dd>{{ safe(p.city) }}</dd>
+                <dd>{{ safe(locations.city(p)) }}</dd>
               </div>
               <div class="info-row">
                 <dt>{{ 'PROPERTY_DETAIL.STREET' | translate }}</dt>
-                <dd>{{ safe(p.street) }}</dd>
+                <dd dir="auto">{{ safe(displayStreet(p)) }}</dd>
               </div>
               <div class="info-row" *ngIf="p.region">
                 <dt>{{ 'PROPERTY_DETAIL.REGION' | translate }}</dt>
-                <dd>{{ p.region }}</dd>
+                <dd>{{ locations.region(p) }}</dd>
               </div>
               <div class="info-row" *ngIf="p.area">
                 <dt>{{ 'PROPERTY_DETAIL.AREA' | translate }}</dt>

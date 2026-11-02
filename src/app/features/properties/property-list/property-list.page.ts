@@ -13,6 +13,7 @@ import {
   signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LocationNamesService } from '../../../core/api/location-names.service';
 import { ActivatedRoute, ParamMap, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -88,6 +89,7 @@ export class PropertyListPage implements OnInit {
   private readonly api = inject(PropertyApiService);
   private readonly savedSearchApi = inject(SavedSearchApiService);
   private readonly lookupsApi = inject(LookupsApiService);
+  private readonly locations = inject(LocationNamesService);
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
@@ -871,7 +873,7 @@ export class PropertyListPage implements OnInit {
   }
 
   getLocation(property: Property): string {
-    return [property.street, property.city, property.postalCode].filter(Boolean).join(listSeparator()) || '—';
+    return [property.street, this.locations.city(property), property.postalCode].filter(Boolean).join(listSeparator()) || '—';
   }
 
   private mapSort(): Pick<PropertyFilterDto, 'sortBy' | 'sortDescending'> {

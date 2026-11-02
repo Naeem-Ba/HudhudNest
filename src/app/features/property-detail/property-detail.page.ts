@@ -27,6 +27,7 @@ import {
   signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LocationNamesService } from '../../core/api/location-names.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subscription, map } from 'rxjs';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -179,6 +180,12 @@ export class PropertyDetailPage implements OnInit {
   // Automatic translation of title/description into the active language. Purely additive: the listing
   // renders from the original text first, and this only swaps text in when a stored translation exists.
   readonly translation = new ListingTranslationController(inject(ListingTranslationService));
+  readonly locations = inject(LocationNamesService);
+
+  /** Street to show: the translation when ready and the visitor has not asked for the original. */
+  displayStreet(p: Property): string {
+    return (!this.translation.showOriginal() && this.translation.street()) || p.street || '';
+  }
 
   /** Title to show: the translation when it is ready and the visitor has not asked for the original. */
   displayTitle(p: Property): string {

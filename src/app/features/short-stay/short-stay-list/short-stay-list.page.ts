@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { LocationNamesService } from '../../../core/api/location-names.service';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -37,6 +38,7 @@ import { LocalizedNumberPipe } from '../../../shared/pipes/localized-number.pipe
 })
 export class ShortStayListPage implements OnInit {
   private readonly api = inject(ShortStayListingApiService);
+  readonly locations = inject(LocationNamesService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly pageMeta = inject(PageMetaService);

@@ -28,7 +28,7 @@
         <p class="ssd__type">{{ l.accommodationTypeCode }}</p>
         <h1 dir="auto">{{ displayTitle(l) }}</h1>
         <p class="ssd__meta">
-          {{ l.city || '—' }} ·
+          {{ locations.city(l) || '—' }} ·
           {{ l.capacity }} {{ 'SHORTSTAY.DETAIL.GUESTS_SHORT' | translate }} ·
           {{ l.bedrooms }} {{ 'SHORTSTAY.DETAIL.BEDROOMS_SHORT' | translate }} ·
           {{ l.bathrooms }} {{ 'SHORTSTAY.DETAIL.BATHROOMS_SHORT' | translate }}
