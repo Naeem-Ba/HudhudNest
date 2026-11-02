@@ -16,7 +16,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { Property } from '../models/property.model';
 import { PropertyShareUrlService } from './property-share-url.service';
 import { ShareableContent, SharePreview } from './share.model';
-import { uiNumberLocale } from '../i18n/ui-language';
+import { listSeparator, uiNumberLocale } from '../i18n/ui-language';
 
 const MAX_SUMMARY_LENGTH = 160;
 
@@ -66,7 +66,7 @@ export class PropertyShareContentService {
     return {
       title: this.buildTitle(property),
       price: this.formatPrice(property),
-      location: [property.city?.trim(), property.region?.trim()].filter(Boolean).join('، ') || null,
+      location: [property.city?.trim(), property.region?.trim()].filter(Boolean).join(listSeparator()) || null,
       imageUrl: image
     };
   }

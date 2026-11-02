@@ -7,6 +7,8 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { ShortStayListingApiService } from '../../../core/api/short-stay-listing-api.service';
 import { ShortStayReviewItem } from '../../../core/models/short-stay.model';
+import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
+import { LocalizedNumberPipe } from '../../../shared/pipes/localized-number.pipe';
 
 const PAGE_SIZE = 10;
 
@@ -14,13 +16,13 @@ const PAGE_SIZE = 10;
   selector: 'app-short-stay-reviews-section',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslateModule],
+  imports: [ LocalizedDatePipe, LocalizedNumberPipe,CommonModule, TranslateModule],
   template: `
     <section class="ssr" data-testid="reviews-section">
       <h2>{{ 'SHORTSTAY.REVIEWS.TITLE' | translate }}</h2>
 
       <p class="ssr__summary" *ngIf="totalCount() > 0" data-testid="reviews-summary">
-        <strong>{{ average() | number:'1.1-1' }}</strong>
+        <strong>{{ average() | localNumber:'1.1-1' }}</strong>
         <span class="ssr__stars" aria-hidden="true">★</span>
         · {{ 'SHORTSTAY.REVIEWS.COUNT' | translate:{ count: totalCount() } }}
       </p>
@@ -39,7 +41,7 @@ const PAGE_SIZE = 10;
               <span *ngFor="let filled of starsOf(review.rating)" [class.ssr__muted]="!filled">★</span>
             </span>
           </div>
-          <p class="ssr__date">{{ review.createdAt | date:'mediumDate' }}</p>
+          <p class="ssr__date">{{ review.createdAt | localDate:'mediumDate' }}</p>
           <p class="ssr__comment" *ngIf="review.comment">{{ review.comment }}</p>
         </li>
       </ul>

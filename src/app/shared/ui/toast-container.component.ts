@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { ToastMessage, ToastService } from '../services/toast.service';
 
 @Component({
   selector: 'app-toast-container',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   template: `
     <section class="toast-stack" aria-live="polite" aria-atomic="true">
       <article
@@ -24,7 +25,7 @@ import { ToastMessage, ToastService } from '../services/toast.service';
           <p>{{ toast.message }}</p>
         </div>
 
-        <button type="button" class="toast-close" (click)="toastService.remove(toast.id)" aria-label="إغلاق">
+        <button type="button" class="toast-close" (click)="toastService.remove(toast.id)" [attr.aria-label]="'COMMON.CLOSE' | translate">
           ×
         </button>
       </article>

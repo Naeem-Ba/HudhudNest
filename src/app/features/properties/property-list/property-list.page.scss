@@ -640,3 +640,6 @@
 .properties-grid__ad {
   grid-column: 1 / -1;
 }
+
+/* Growth engine P8: link to the map view. */
+.geo-btn--map { text-decoration: none; margin-inline-start: .5rem; }

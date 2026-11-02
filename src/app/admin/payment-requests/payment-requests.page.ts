@@ -21,6 +21,7 @@ import {
 import { ToastService } from '../../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 /** Default subscription length offered when approving a plan request. */
 export const DEFAULT_PLAN_DURATION_DAYS = 30;
@@ -29,7 +30,7 @@ export const DEFAULT_PLAN_DURATION_DAYS = 30;
   selector: 'app-admin-payment-requests',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
+  imports: [ LocalizedDatePipe,CommonModule, RouterModule, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
   template: `
     <section class="page">
       <header class="page-header">
@@ -56,7 +57,7 @@ export const DEFAULT_PLAN_DURATION_DAYS = 30;
             <span class="muted" *ngIf="p.email">{{ p.email }}</span>
             <span class="chip">{{ 'PRICING.' + p.tier.toUpperCase() + '.NAME' | translate }}</span>
             <span class="muted" *ngIf="p.priceUsd !== null">{{ p.priceUsd }} USD</span>
-            <span class="muted">{{ p.requestedAt | date: 'short' }}</span>
+            <span class="muted">{{ p.requestedAt | localDate: 'short' }}</span>
             <a class="link" [routerLink]="['/admin/users', p.userId]">{{ 'ADMIN_PAYMENTS.OPEN_USER' | translate }}</a>
           </div>
           <div class="card__actions">
@@ -87,7 +88,7 @@ export const DEFAULT_PLAN_DURATION_DAYS = 30;
             <a class="link" [routerLink]="['/properties', f.propertyId]"><strong>{{ f.propertyTitle }}</strong></a>
             <span class="muted">{{ f.ownerName }}<ng-container *ngIf="f.ownerEmail"> · {{ f.ownerEmail }}</ng-container></span>
             <span class="chip">{{ f.amountUsd }} USD</span>
-            <span class="muted">{{ f.requestedAt | date: 'short' }}</span>
+            <span class="muted">{{ f.requestedAt | localDate: 'short' }}</span>
           </div>
           <div class="card__actions">
             <button type="button" class="btn btn--primary" [disabled]="busyId() === f.transactionId" (click)="approveFeatured(f)">
@@ -107,7 +108,7 @@ export const DEFAULT_PLAN_DURATION_DAYS = 30;
             <a class="link" [routerLink]="['/properties', e.propertyId]"><strong>{{ e.propertyTitle }}</strong></a>
             <span class="muted">{{ e.ownerName }}<ng-container *ngIf="e.ownerEmail"> · {{ e.ownerEmail }}</ng-container></span>
             <span class="chip">{{ e.amountUsd }} USD</span>
-            <span class="muted">{{ e.requestedAt | date: 'short' }}</span>
+            <span class="muted">{{ e.requestedAt | localDate: 'short' }}</span>
             <span class="muted" dir="ltr">{{ 'ADMIN_PAYMENTS.REFERENCE' | translate }}: {{ e.transactionId }}</span>
           </div>
           <div class="card__actions">

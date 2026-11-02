@@ -22,12 +22,13 @@ import { SubscriptionPlan } from '../../core/models/subscription-plan.model';
 import { ToastService } from '../../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 @Component({
   selector: 'app-admin-users',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
+  imports: [ LocalizedDatePipe,CommonModule, RouterModule, FormsModule, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
   template: `
     <section class="page">
       <header class="page-header">
@@ -111,7 +112,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
             </span>
             <div class="plan-meta" *ngIf="user.planTier">
               {{ ('ADMIN_USERS.PLAN_STATUS.' + user.planStatus) | translate }}
-              <span *ngIf="user.planExpiresAt"> · {{ user.planExpiresAt | date:'mediumDate' }}</span>
+              <span *ngIf="user.planExpiresAt"> · {{ user.planExpiresAt | localDate:'mediumDate' }}</span>
             </div>
           </span>
           <span [attr.data-label]="'ADMIN_USERS.ADS' | translate" class="ads-counts">

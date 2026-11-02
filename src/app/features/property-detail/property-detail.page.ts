@@ -50,6 +50,7 @@ import { LangCode } from '../../core/services/language.service';
 import { ListingTranslationService } from '../../core/api/listing-translation.service';
 import { ListingTranslationController } from './listing-translation.controller';
 import { TranslationNoticeComponent } from './translation-notice.component';
+import { PriceHistoryComponent } from './price-history.component';
 import { getGallerySwipeNavigation } from './gallery-swipe';
 import { REVIEW_COMMENT_MAX_LENGTH, ReviewDto, validateCreateReview } from '../../core/models/review.model';
 import { CreateVisitRequest, validateCreateVisit } from '../../core/models/visit.model';
@@ -81,6 +82,9 @@ import { listingLifecycle, listingStatusTagKey } from '../../shared/utils/listin
 import { StructuredDataService, BREADCRUMB_JSON_LD_ID } from '../../core/services/structured-data.service';
 import { AmenityLabelPipe } from '../../pipes/amenity-label.pipe';
 import { AdSlotComponent } from '../../core/ads/ad-slot.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
+import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
+import { listSeparator } from '../../core/i18n/ui-language';
 
 const LISTING_JSON_LD_ID = 'ld-real-estate-listing';
 
@@ -93,8 +97,9 @@ const LIGHTBOX_IMAGE_WIDTH = 2048;
   selector: 'app-property-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [ LocalizedDatePipe, LocalizedNumberPipe,
     AdSlotComponent,
+    PriceHistoryComponent,
     AmenityLabelPipe,
     CommonModule,
     RouterModule,
@@ -1116,6 +1121,10 @@ export class PropertyDetailPage implements OnInit {
   // ── Price Helpers ─────────────────────────────────────────────────────
   formatPrice(value: number | null | undefined): string {
     return formatListingPrice(value, this.property()?.currencyCode);
+  }
+
+  locationSeparator(): string {
+    return listSeparator();
   }
 
   safe(value: unknown, fallback = '—'): string {

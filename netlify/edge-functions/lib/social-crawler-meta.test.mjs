@@ -296,3 +296,30 @@ test('the edge function is mounted on /landing as well as /properties/*', async 
   const { config } = await import('../social-crawler-meta.mjs');
   assert.deepEqual(config.path, ['/properties/*', '/landing']);
 });
+
+test('a crawler on a link with ?lang=de gets the German preview, with the canonical URL untouched', async () => {
+  const request = new Request('https://hudhudnest.com/properties/p1?utm_source=whatsapp&lang=de', {
+    headers: { 'user-agent': 'WhatsApp/2.23.20.0' }
+  });
+  const property = { title: 'Wohnung in Damaskus', rooms: 2, city: 'Damaskus' };
+
+  const response = await withNetlifyEnvStub({}, () =>
+    withFetchStub(async () => new Response(JSON.stringify(property), { status: 200 }), () => handler(request, makeNextContext()))
+  );
+  const html = await response.text();
+
+  assert.match(html, /<html lang="de" dir="ltr">/);
+  assert.match(html, /og:locale" content="de_DE"/);
+  assert.match(html, /2 Zimmer/);
+  assert.match(html, /rel="canonical" href="https:\/\/hudhudnest.com\/properties\/p1"/);
+});
+
+test('a crawler on a link without ?lang= still gets the Arabic preview', async () => {
+  const request = new Request('https://hudhudnest.com/properties/p1', { headers: { 'user-agent': 'WhatsApp/2.23.20.0' } });
+
+  const response = await withNetlifyEnvStub({}, () =>
+    withFetchStub(async () => new Response(JSON.stringify({ title: 'شقة', rooms: 2 }), { status: 200 }), () => handler(request, makeNextContext()))
+  );
+
+  assert.match(await response.text(), /<html lang="ar" dir="rtl">/);
+});

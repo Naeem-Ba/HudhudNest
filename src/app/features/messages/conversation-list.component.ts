@@ -12,12 +12,13 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { ConversationSummaryDto } from '../../core/models/message.model';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 @Component({
   selector: 'app-conversation-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslateModule, ImageFallbackDirective],
+  imports: [ LocalizedDatePipe,CommonModule, TranslateModule, ImageFallbackDirective],
   template: `
     <ul class="conversation-list">
       <li *ngFor="let convo of conversations; trackBy: trackByConversation">
@@ -53,7 +54,7 @@ import { ImageFallbackDirective } from '../../shared/directives/image-fallback.d
           </span>
 
           <span class="conversation-row__meta">
-            <time [attr.datetime]="convo.lastMessageAt">{{ convo.lastMessageAt | date:'short' }}</time>
+            <time [attr.datetime]="convo.lastMessageAt">{{ convo.lastMessageAt | localDate:'short' }}</time>
             <span class="conversation-row__unread" *ngIf="convo.unreadCount > 0"
               [attr.aria-label]="'MESSAGES.UNREAD_ARIA' | translate: { count: convo.unreadCount }">
               {{ convo.unreadCount }}

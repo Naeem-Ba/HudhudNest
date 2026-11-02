@@ -14,11 +14,12 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ServiceProviderService } from '../../core/api/service-provider.service';
 import { ServiceProviderDto } from '../../core/models/service.model';
 import { ToastService } from '../../shared/services/toast.service';
+import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
 
 @Component({
   selector: 'app-provider-profile-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule],
+  imports: [ LocalizedNumberPipe,CommonModule, FormsModule, RouterLink, TranslateModule],
   templateUrl: './provider-profile.page.html',
   styleUrls: ['./provider-profile.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

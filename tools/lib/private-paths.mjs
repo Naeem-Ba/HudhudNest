@@ -38,6 +38,8 @@ export const PRIVATE_PATHS = [
   '/short-stay/bookings',
   '/short-stay/manage',
   '/investments/watchlist',
+  '/search-requests',
+  '/referrals',
   '/login',
   '/auth/',
   '/language',

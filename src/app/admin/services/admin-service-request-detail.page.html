@@ -30,7 +30,7 @@
           <div><dt>{{ 'SERVICE_REQUESTS.PROVIDER' | translate }}</dt><dd><a [routerLink]="['/admin/service-providers', d.request.serviceProviderId]">{{ d.request.serviceProviderDisplayName }}</a></dd></div>
           <div><dt>{{ 'PROVIDER.INBOX.REQUESTER' | translate }}</dt><dd>{{ d.request.requesterName }}</dd></div>
           <div *ngIf="d.request.providerContact as c"><dt>{{ 'ADMIN_SERVICES.D_PROVIDER_CONTACT' | translate }}</dt><dd dir="ltr">{{ c.phone }}<ng-container *ngIf="c.phone && c.email"> · </ng-container>{{ c.email }}</dd></div>
-          <div><dt>{{ 'SERVICE_REQUESTS.CREATED_AT' | translate }}</dt><dd>{{ d.request.createdAt | date:'medium' }}</dd></div>
+          <div><dt>{{ 'SERVICE_REQUESTS.CREATED_AT' | translate }}</dt><dd>{{ d.request.createdAt | localDate:'medium' }}</dd></div>
           <div *ngIf="d.request.requesterNote"><dt>{{ 'SERVICE_REQUESTS.NOTE' | translate }}</dt><dd>{{ d.request.requesterNote }}</dd></div>
           <div *ngIf="d.request.providerNote"><dt>{{ 'PROVIDER.DETAIL.PROVIDER_NOTE' | translate }}</dt><dd>{{ d.request.providerNote }}</dd></div>
           <div *ngIf="d.request.finalPrice != null"><dt>{{ 'PROVIDER.DETAIL.FINAL_PRICE' | translate }}</dt><dd>{{ d.request.finalPrice }}</dd></div>
@@ -106,7 +106,7 @@
       <h2>{{ 'PROVIDER.DETAIL.HISTORY' | translate }}</h2>
       <ol class="timeline">
         <li *ngFor="let h of d.history; trackBy: trackById">
-          <span class="when">{{ h.createdAt | date:'medium' }}</span>
+          <span class="when">{{ h.createdAt | localDate:'medium' }}</span>
           <strong>{{ ('SERVICE_REQUESTS.STATUS.' + h.toStatus.toUpperCase()) | translate }}</strong>
           <span class="text" *ngIf="h.note">{{ h.note }}</span>
         </li>

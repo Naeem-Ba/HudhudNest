@@ -48,7 +48,7 @@
         <div class="kpi"><strong>{{ s.totals.rejected + s.totals.cancelled }}</strong><span>{{ 'ADMIN_SERVICES.K_REJECTED_CANCELLED' | translate }}</span></div>
         <div class="kpi kpi--warn"><strong>{{ s.totals.disputed }}</strong><span>{{ 'ADMIN_SERVICES.K_DISPUTED' | translate }}</span></div>
         <div class="kpi"><strong>{{ percent(s.totals.completionRate) }}</strong><span>{{ 'ADMIN_SERVICES.K_RATE' | translate }}</span></div>
-        <div class="kpi"><strong>{{ s.totals.averageRating != null ? (s.totals.averageRating | number:'1.1-1') : '—' }}</strong><span>{{ 'ADMIN_SERVICES.K_RATING' | translate }}</span></div>
+        <div class="kpi"><strong>{{ s.totals.averageRating != null ? (s.totals.averageRating | localNumber:'1.1-1') : '—' }}</strong><span>{{ 'ADMIN_SERVICES.K_RATING' | translate }}</span></div>
       </div>
 
       <p class="note-line" *ngIf="neverRequested() > 0">{{ 'ADMIN_SERVICES.NEVER_REQUESTED' | translate: { count: neverRequested() } }}</p>
@@ -101,7 +101,7 @@
               <td class="num">{{ row.expired ?? 0 }}</td>
               <td class="num warn">{{ row.disputed }}</td>
               <td class="num">{{ percent(row.completionRate) }}</td>
-              <td class="num" dir="ltr">{{ row.averageRating != null ? ('★ ' + (row.averageRating | number:'1.1-1') + ' (' + row.ratingCount + ')') : '—' }}</td>
+              <td class="num" dir="ltr">{{ row.averageRating != null ? ('★ ' + (row.averageRating | localNumber:'1.1-1') + ' (' + row.ratingCount + ')') : '—' }}</td>
             </tr>
           </tbody>
         </table>
@@ -203,7 +203,7 @@
             <span *ngIf="r.expiredWaitingOn">{{ ('ADMIN_SERVICES.EXPIRY.' + r.expiredWaitingOn) | translate }}</span>
             <span *ngIf="(r.messageCount ?? 0) > 0">💬 {{ r.messageCount }}</span>
           </div>
-          <div class="cell muted">{{ (r.updatedAt || r.createdAt) | date:'mediumDate' }}</div>
+          <div class="cell muted">{{ (r.updatedAt || r.createdAt) | localDate:'mediumDate' }}</div>
         </a>
       </div>
     </ng-container>

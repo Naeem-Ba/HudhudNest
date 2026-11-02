@@ -12,6 +12,7 @@ import { CANCELLABLE_STATUSES, SERVICE_OUTCOME_REASONS, ServiceOutcomeReason } f
 import { ToastService } from '../../shared/services/toast.service';
 import { ServiceConversationComponent } from '../../features/services/service-conversation.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 type Action = 'done' | 'notdone' | 'cancel' | 'hide' | null;
 
@@ -24,7 +25,7 @@ type Action = 'done' | 'notdone' | 'cancel' | 'hide' | null;
   selector: 'app-admin-service-request-detail-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, LoadingSpinnerComponent, ServiceConversationComponent],
+  imports: [ LocalizedDatePipe,CommonModule, FormsModule, RouterLink, TranslateModule, LoadingSpinnerComponent, ServiceConversationComponent],
   templateUrl: './admin-service-request-detail.page.html',
   styleUrls: ['./admin-service-request-detail.page.scss']
 })

@@ -23,7 +23,7 @@
     <p>
       {{ 'PRICING.CURRENT_PLAN' | translate: { plan: ('PRICING.' + currentPaidTier()!.toUpperCase() + '.NAME' | translate) } }}
       <ng-container *ngIf="currentPlanExpiresAt()">
-        {{ 'PRICING.CURRENT_PLAN_UNTIL' | translate: { date: (currentPlanExpiresAt() | date: 'mediumDate') } }}
+        {{ 'PRICING.CURRENT_PLAN_UNTIL' | translate: { date: (currentPlanExpiresAt() | localDate: 'mediumDate') } }}
       </ng-container>
     </p>
   </div>

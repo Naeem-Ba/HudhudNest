@@ -35,6 +35,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { isReservedListing, listingLifecycle, listingStatusTagKey } from '../../shared/utils/listing-status';
 import { ListingViewCountComponent } from '../../shared/ui/listing-view-count.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 const LISTINGS_PAGE_SIZE = 12;
 
@@ -50,7 +51,7 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
   selector: 'app-agency-public-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ListingViewCountComponent, CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, EmptyStateComponent, ImageFallbackDirective],
+  imports: [ LocalizedDatePipe,ListingViewCountComponent, CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, EmptyStateComponent, ImageFallbackDirective],
   template: `
     <section class="container agency-page" *ngIf="!loading(); else loadingTpl">
       <app-empty-state
@@ -207,7 +208,7 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
                   <div class="stars stars--sm">
                     <span *ngFor="let filled of starsFn(r.overallScore)" [class.star--filled]="filled">★</span>
                   </div>
-                  <time class="rating-item__date">{{ r.createdAt | date: 'dd/MM/yyyy' }}</time>
+                  <time class="rating-item__date">{{ r.createdAt | localDate: 'dd/MM/yyyy' }}</time>
                 </div>
                 <p class="rating-item__comment" *ngIf="r.comment">{{ r.comment }}</p>
               </div>

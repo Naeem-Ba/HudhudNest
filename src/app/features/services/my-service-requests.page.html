@@ -29,9 +29,9 @@
           <p class="request-number">{{ request.requestNumber }}</p>
           <a class="property-link" [routerLink]="['/properties', request.propertyId]">{{ request.propertyTitle }}</a>
           <p class="date">
-            {{ 'SERVICE_REQUESTS.CREATED_AT' | translate }}: {{ request.createdAt | date:'medium' }}
+            {{ 'SERVICE_REQUESTS.CREATED_AT' | translate }}: {{ request.createdAt | localDate:'medium' }}
             <ng-container *ngIf="request.updatedAt && request.updatedAt !== request.createdAt">
-              · {{ 'SERVICE_REQUESTS.UPDATED_AT' | translate }}: {{ request.updatedAt | date:'medium' }}
+              · {{ 'SERVICE_REQUESTS.UPDATED_AT' | translate }}: {{ request.updatedAt | localDate:'medium' }}
             </ng-container>
           </p>
         </div>
@@ -46,7 +46,7 @@
         <div><dt>{{ 'SERVICE_REQUESTS.PROVIDER' | translate }}</dt><dd>{{ request.serviceProviderDisplayName }}</dd></div>
         <div><dt>{{ 'SERVICE_REQUESTS.OFFERING' | translate }}</dt><dd>{{ request.serviceOfferingTitle }}</dd></div>
         <div *ngIf="request.requesterNote"><dt>{{ 'SERVICE_REQUESTS.NOTE' | translate }}</dt><dd>{{ request.requesterNote }}</dd></div>
-        <div *ngIf="request.scheduledAt"><dt>{{ 'SERVICE_REQUESTS.SCHEDULED_AT' | translate }}</dt><dd>{{ request.scheduledAt | date:'medium' }}</dd></div>
+        <div *ngIf="request.scheduledAt"><dt>{{ 'SERVICE_REQUESTS.SCHEDULED_AT' | translate }}</dt><dd>{{ request.scheduledAt | localDate:'medium' }}</dd></div>
         <div *ngIf="request.rejectionReason"><dt>{{ 'SERVICE_REQUESTS.REJECTION_REASON' | translate }}</dt><dd>{{ request.rejectionReason }}</dd></div>
         <div *ngIf="request.cancellationReason"><dt>{{ 'SERVICE_REQUESTS.CANCELLATION_REASON' | translate }}</dt><dd>{{ request.cancellationReason }}</dd></div>
         <div *ngIf="request.outcomeReason && request.status === 'Rejected'"><dt>{{ 'SERVICE_REQUESTS.REJECTION_CODE' | translate }}</dt><dd>{{ ('SERVICE_OUTCOME.PROVIDER.' + request.outcomeReason) | translate }}</dd></div>

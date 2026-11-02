@@ -27,7 +27,7 @@
           <td>{{ msg.Name }}</td>
           <td>{{ msg.Email }}</td>
           <td>{{ msg.Message }}</td>
-          <td>{{ msg.SentAt | date:'medium' }}</td>
+          <td>{{ msg.SentAt | localDate:'medium' }}</td>
           <td>{{ msg.IsRead ? ('ADMIN_MSG.status.read' | translate) : ('ADMIN_MSG.status.unread' | translate) }}</td>
         </tr>
       </tbody>

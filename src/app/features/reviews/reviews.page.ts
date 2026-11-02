@@ -7,8 +7,10 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { ReviewService } from '../../core/api/review.service';
 import { PropertyReviewSummaryDto } from '../../core/models/review.model';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
+import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
 
-@Component({ selector:'app-reviews-page', standalone:true, imports:[CommonModule,ReactiveFormsModule,TranslateModule], templateUrl:'./reviews.page.html', styleUrls:['./reviews.page.scss'], changeDetection:ChangeDetectionStrategy.OnPush })
+@Component({ selector:'app-reviews-page', standalone:true, imports:[ LocalizedDatePipe, LocalizedNumberPipe,CommonModule,ReactiveFormsModule,TranslateModule], templateUrl:'./reviews.page.html', styleUrls:['./reviews.page.scss'], changeDetection:ChangeDetectionStrategy.OnPush })
 export class ReviewsPage implements OnInit {
   private readonly api=inject(ReviewService); private readonly route=inject(ActivatedRoute); private readonly router=inject(Router); private readonly destroyRef=inject(DestroyRef);
   readonly propertyIdControl=new FormControl('',{nonNullable:true,validators:[Validators.required]});

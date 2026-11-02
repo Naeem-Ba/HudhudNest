@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -9,6 +9,7 @@ import { ServiceOfferingService } from '../../core/api/service-offering.service'
 import { AuthService } from '../../core/auth/auth.service';
 import { ServiceCategoryAvailabilityDto } from '../../core/models/provider-onboarding.model';
 import { SERVICE_CATEGORIES, ServiceCategory, ServiceOfferingDto } from '../../core/models/service.model';
+import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
 
 /**
  * "خدمات هدهد نيست" — الكتالوج العام لعروض الخدمات (GET /api/ServiceOfferings?category=…،
@@ -19,7 +20,7 @@ import { SERVICE_CATEGORIES, ServiceCategory, ServiceOfferingDto } from '../../c
 @Component({
   selector: 'app-services-catalog-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule],
+  imports: [ LocalizedNumberPipe,CommonModule, RouterLink, TranslateModule],
   templateUrl: './services-catalog.page.html',
   styleUrls: ['./services-catalog.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -28,6 +29,7 @@ export class ServicesCatalogPage implements OnInit {
   private readonly offeringsApi = inject(ServiceOfferingService);
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute, { optional: true });
   readonly governorates = inject(GovernorateDirectory);
   private readonly cache = new Map<ServiceCategory, ServiceOfferingDto[]>();
 
@@ -42,6 +44,11 @@ export class ServicesCatalogPage implements OnInit {
 
   ngOnInit(): void {
     this.governorates.ensureLoaded();
+    // Growth engine P11: /services?category=Legal opens that category (links from the expat page).
+    const requested = this.route?.snapshot?.queryParamMap?.get('category');
+    if (requested && (SERVICE_CATEGORIES as readonly string[]).includes(requested)) {
+      this.selectedCategory.set(requested as ServiceCategory);
+    }
     this.load();
     this.offeringsApi.getAvailability()
       .pipe(takeUntilDestroyed(this.destroyRef))

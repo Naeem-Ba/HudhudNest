@@ -34,7 +34,7 @@
           </svg>
           {{ 'PROPERTY_LIST.FILTERS' | translate }}
         </h2>
-        <button type="button" class="filter-sidebar__close" (click)="closeFilters()" aria-label="إغلاق">✕</button>
+        <button type="button" class="filter-sidebar__close" (click)="closeFilters()" [attr.aria-label]="'COMMON.CLOSE' | translate">✕</button>
       </div>
 
       <!-- بحث جغرافي "بالقرب مني" — يستخدم /properties/geo-search (PostGIS) -->
@@ -50,6 +50,8 @@
                   ? ('PROPERTY_LIST.NEAR_ME_ACTIVE' | translate)
                   : ('PROPERTY_LIST.NEAR_ME' | translate)) }}
         </button>
+
+        <a routerLink="/map" class="geo-btn geo-btn--map" data-testid="open-map">{{ 'PROPERTY_LIST.MAP_VIEW' | translate }}</a>
 
         <div class="radius-control" *ngIf="geoModeActive()">
           <label for="pl-radiusKm" class="filter-label">{{ 'PROPERTY_LIST.RADIUS' | translate }}: {{ radiusKm }} {{ 'PROPERTY_LIST.KM' | translate }}</label>

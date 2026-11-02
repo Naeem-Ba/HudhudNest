@@ -157,7 +157,7 @@
           (click)="toggleLangMenu($event)"
           [attr.aria-expanded]="langMenuOpen"
           aria-haspopup="menu"
-          aria-label="تغيير اللغة"
+          [attr.aria-label]="'COMMON.CHANGE_LANGUAGE' | translate"
         >
           <svg
             width="16"
@@ -276,7 +276,7 @@
             (click)="toggleDropdown($event)"
             [attr.aria-expanded]="dropdownOpen"
             aria-haspopup="menu"
-            aria-label="قائمة المستخدم"
+            [attr.aria-label]="'COMMON.USER_MENU' | translate"
           >
             <ng-container *ngTemplateOutlet="avatarTpl; context: { $implicit: 'sm' }"></ng-container>
 
@@ -302,7 +302,7 @@
             *ngIf="dropdownOpen"
             class="account__dropdown"
             role="menu"
-            aria-label="خيارات الحساب"
+            [attr.aria-label]="'COMMON.ACCOUNT_OPTIONS' | translate"
           >
             <div class="account__user-info">
               <ng-container *ngTemplateOutlet="avatarTpl; context: { $implicit: 'lg' }"></ng-container>
@@ -392,6 +392,22 @@
             <a routerLink="/saved-searches" routerLinkActive="account__item--active" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
               <span aria-hidden="true">🔔</span>
               {{ 'NAVBAR.SAVED_SEARCHES' | translate }}
+            </a>
+
+            <!-- Growth engine P5. -->
+            <a routerLink="/referrals" routerLinkActive="account__item--active" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+              <span aria-hidden="true">🎁</span>
+              {{ 'NAVBAR.REFERRALS' | translate }}
+            </a>
+
+            <!-- Growth engine P2. -->
+            <a routerLink="/search-requests" routerLinkActive="account__item--active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+              <span aria-hidden="true">🔎</span>
+              {{ 'NAVBAR.SEARCH_REQUESTS' | translate }}
+            </a>
+            <a routerLink="/search-requests/board" routerLinkActive="account__item--active" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+              <span aria-hidden="true">📋</span>
+              {{ 'NAVBAR.SEARCH_REQUEST_BOARD' | translate }}
             </a>
 
             <a routerLink="/investments/watchlist" routerLinkActive="account__item--active" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
@@ -589,6 +605,30 @@
       </a>
 
       <a
+        routerLink="/expats"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ 'NAVBAR.EXPATS' | translate }}
+      </a>
+
+      <a
+        routerLink="/map"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ 'NAVBAR.MAP' | translate }}
+      </a>
+
+      <a
+        routerLink="/price-estimate"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ 'NAVBAR.PRICE_ESTIMATE' | translate }}
+      </a>
+
+      <a
         *ngIf="canAddProperty$ | async"
         routerLink="/property-form"
         class="mobile-drawer__link mobile-drawer__link--highlight"
@@ -679,6 +719,17 @@
 
         <a routerLink="/saved-searches" routerLinkActive="mobile-drawer__link--active" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
           {{ 'NAVBAR.SAVED_SEARCHES' | translate }}
+        </a>
+
+        <a routerLink="/referrals" routerLinkActive="mobile-drawer__link--active" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
+          {{ 'NAVBAR.REFERRALS' | translate }}
+        </a>
+
+        <a routerLink="/search-requests" routerLinkActive="mobile-drawer__link--active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
+          {{ 'NAVBAR.SEARCH_REQUESTS' | translate }}
+        </a>
+        <a routerLink="/search-requests/board" routerLinkActive="mobile-drawer__link--active" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
+          {{ 'NAVBAR.SEARCH_REQUEST_BOARD' | translate }}
         </a>
 
         <a routerLink="/investments/watchlist" routerLinkActive="mobile-drawer__link--active" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
@@ -866,6 +917,8 @@
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/investments', label: 'NAVBAR.ADMIN_INVESTMENTS', icon: '💼' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/location-suggestions', label: 'NAVBAR.ADMIN_LOCATION_SUGGESTIONS', icon: '📍' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/marketing', label: 'NAVBAR.ADMIN_MARKETING', icon: '📣' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/growth', label: 'NAVBAR.ADMIN_GROWTH', icon: '📈' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/referrals', label: 'NAVBAR.ADMIN_REFERRALS', icon: '🎁' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/app-updates', label: 'NAVBAR.ADMIN_APP_UPDATES', icon: '📲' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/social-distribution', label: 'NAVBAR.ADMIN_SOCIAL_DISTRIBUTION', icon: '📡' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/audit-logs', label: 'NAVBAR.ADMIN_AUDIT_LOGS', icon: '🧾' }"></ng-container>

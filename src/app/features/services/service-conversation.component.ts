@@ -15,6 +15,7 @@ import {
   canExchangeMessages
 } from '../../core/models/service.model';
 import { ToastService } from '../../shared/services/toast.service';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 export type ServiceConversationRole = 'requester' | 'provider' | 'admin';
 
@@ -35,7 +36,7 @@ export interface ServiceConversationActivity {
 @Component({
   selector: 'app-service-conversation',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [ LocalizedDatePipe,CommonModule, FormsModule, TranslateModule],
   templateUrl: './service-conversation.component.html',
   styleUrls: ['./service-conversation.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

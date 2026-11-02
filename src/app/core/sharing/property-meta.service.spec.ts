@@ -25,6 +25,7 @@ describe('PropertyMetaService', () => {
   let title: Title;
 
   let originalEnvironmentName: string;
+  let originalLang: string;
 
   beforeEach(() => {
     TestBed.configureTestingModule({ imports: [TranslateModule.forRoot()] });
@@ -35,6 +36,10 @@ describe('PropertyMetaService', () => {
     originalEnvironmentName = environment.environmentName;
     (environment as { environmentName: string }).environmentName = 'production';
 
+    // The default site name follows the page language (Arabic here).
+    originalLang = document.documentElement.lang;
+    document.documentElement.lang = 'ar';
+
     // Clean slate — Meta.updateTag persists into the real document between tests otherwise.
     meta.removeTag('property="og:title"');
     meta.removeTag('property="og:url"');
@@ -43,6 +48,7 @@ describe('PropertyMetaService', () => {
   });
 
   afterEach(() => {
+    document.documentElement.lang = originalLang;
     (environment as { environmentName: string }).environmentName = originalEnvironmentName;
     meta.removeTag('name="robots"');
     document.querySelector('link[rel="canonical"]')?.remove();

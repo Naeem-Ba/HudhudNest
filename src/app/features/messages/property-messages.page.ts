@@ -48,12 +48,13 @@ import { Property } from '../../core/models/property.model';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { ConversationListComponent } from './conversation-list.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 @Component({
   selector: 'app-property-messages',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [ LocalizedDatePipe,
     CommonModule, RouterModule, FormsModule, TranslateModule,
     LoadingSpinnerComponent, EmptyStateComponent, ConversationListComponent
   ],
@@ -127,7 +128,7 @@ import { ConversationListComponent } from './conversation-list.component';
               {{ message.senderDisplayName }}
             </span>
             <p>{{ message.content }}</p>
-            <time [attr.datetime]="message.createdAt">{{ message.createdAt | date:'short' }}</time>
+            <time [attr.datetime]="message.createdAt">{{ message.createdAt | localDate:'short' }}</time>
           </div>
         </div>
 

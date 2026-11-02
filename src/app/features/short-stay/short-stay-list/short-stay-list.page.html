@@ -14,7 +14,7 @@
       <label>{{ 'SHORTSTAY.LIST.DATES' | translate }}</label>
       <button type="button" class="ssl__date-trigger" (click)="toggleDatePicker()">
         <ng-container *ngIf="checkIn && checkOut; else noDates">
-          {{ checkIn | date:'d MMM' }} → {{ checkOut | date:'d MMM' }}
+          {{ checkIn | localDate:'d MMM' }} → {{ checkOut | localDate:'d MMM' }}
         </ng-container>
         <ng-template #noDates>{{ 'SHORTSTAY.LIST.SELECT_DATES' | translate }}</ng-template>
       </button>
@@ -76,7 +76,7 @@
         <div class="ssl__card-footer">
           <span class="ssl__card-price">{{ formatPrice(listing) }} / {{ 'SHORTSTAY.LIST.NIGHT' | translate }}</span>
           <span class="ssl__card-rating" *ngIf="listing.averageRating">
-            ⭐ {{ listing.averageRating | number:'1.1-1' }} ({{ listing.reviewCount }})
+            ⭐ {{ listing.averageRating | localNumber:'1.1-1' }} ({{ listing.reviewCount }})
           </span>
         </div>
       </div>
