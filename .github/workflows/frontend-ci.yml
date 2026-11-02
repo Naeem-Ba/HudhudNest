@@ -425,7 +425,7 @@ jobs:
           set -euo pipefail
           version_name="$(sed -n 's/^[[:space:]]*versionName[[:space:]]*"\([^"]*\)".*/\1/p' android/app/build.gradle | head -1)"
           draft="$PWD/android/app/build/outputs/apk-publish/android-release.draft.json"
-          branch="release/android-apk-${version_name}"
+          branch="chore/android-apk-${version_name}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch --depth=1 origin main:refs/remotes/origin/main

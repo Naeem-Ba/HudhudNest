@@ -20,7 +20,7 @@
 عند دفع وسم `vX.Y.Z` يتولى Frontend CI كل ما كان يدويًا:
 1. يرفع `HudhudNest-X.Y.Z.apk` و`.sha256` إلى Release بالوسم `vX.Y.Z` في `HudhudNest-Releases` (لا يستبدل إصدارًا موجودًا).
 2. ينزّل الملف من العنوان العلني ويقارن SHA-256 بما بناه؛ أي اختلاف يُفشل المهمة ولا يُقترح الاعتماد.
-3. يفتح PR باسم `release/android-apk-X.Y.Z` فيه `downloads/android-release.json` (`approved: true`) وكتلة `/download/android` المولَّدة.
+3. يفتح PR باسم `chore/android-apk-X.Y.Z` فيه `downloads/android-release.json` (`approved: true`) وكتلة `/download/android` المولَّدة.
 4. **أنت تدمج الـ PR فقط**؛ هذا هو الاعتماد. بعد نشر الموقع شغّل `npm run android-release -- check-remote` للتحقق.
 
 إعداد لمرة واحدة:
