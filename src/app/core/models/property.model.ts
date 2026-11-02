@@ -77,6 +77,8 @@ export interface Property {
   isLocationApproximate?: boolean;
   /** The owner's choice; only present in the owner's and admins' management views. */
   hideExactLocation?: boolean | null;
+  /** Owner is open to negotiating the price. Returned by the detail and management views only (null in lists). */
+  isPriceNegotiable?: boolean | null;
   listingType?: ListingType;
   status?: PropertyStatus;
   condition?: PropertyCondition;

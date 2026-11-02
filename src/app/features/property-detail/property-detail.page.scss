@@ -934,3 +934,15 @@ a.owner-card__name--link {
 
 /* Growth engine P8: the owner hid the exact spot. */
 .map-approximate { margin: .5rem 0 0; font-size: .85rem; color: var(--text-muted, #5b6470); }
+
+// "Price negotiable" note — shown on the details page only, never on cards.
+.summary-card__negotiable {
+  display: inline-block;
+  margin: .35rem 0 0;
+  padding: .2rem .65rem;
+  border-radius: 999px;
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--success);
+  background: var(--success-soft);
+}

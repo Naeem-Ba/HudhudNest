@@ -298,6 +298,15 @@
                   </p>
                 </div>
               </ng-container>
+
+              <!-- السعر قابل للتفاوض (بيع أو إيجار) — يظهر في تفاصيل الإعلان فقط -->
+              <div class="form-group form-group--full" *ngIf="isRent || isSale">
+                <label class="hide-location" data-testid="price-negotiable">
+                  <input type="checkbox" formControlName="isPriceNegotiable">
+                  <span>{{ 'PROPERTY_FORM.PRICE_NEGOTIABLE' | translate }}</span>
+                </label>
+                <small class="hide-location__hint">{{ 'PROPERTY_FORM.PRICE_NEGOTIABLE_HINT' | translate }}</small>
+              </div>
             </div>
 
             <!-- تفاصيل الإيجار — تُعرض فقط عند اختيار إيجار؛ الإيجار حالياً محدَّد
