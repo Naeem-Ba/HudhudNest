@@ -100,8 +100,11 @@ jobs:
     if: (github.event_name == 'push' && github.ref_type == 'tag') || github.event_name == 'workflow_dispatch'
     # contents: write لنشر الـ AAB كـ Release asset (خطوة "Publish signed AAB" أدناه) بدل الاعتماد
     # وحده على حصة Actions artifacts.
+    # pull-requests: write لخطوة فتح PR اعتماد الـ APK أدناه (يتطلب أيضًا تفعيل
+    # Settings > Actions > General > "Allow GitHub Actions to create and approve pull requests").
     permissions:
       contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout repository
@@ -369,6 +372,78 @@ jobs:
         run: |
           set -euo pipefail
           gh release upload android-latest android/app/build/outputs/apk-publish/* --clobber --repo "$GITHUB_REPOSITORY"
+
+      # النشر العلني للـ APK (كان يدويًا). يعمل على tag إصدار فقط (لا على workflow_dispatch) ويحتاج السر
+      # RELEASES_REPO_TOKEN: fine-grained token محصور في المستودع العام للإصدارات فقط بصلاحية Contents: read/write،
+      # فلا يملك CI أي صلاحية كتابة على غيره. بلا السر تُتخطّى الخطوتان ويبقى المسار اليدوي في
+      # docs/ANDROID-DIRECT-DOWNLOAD-AR.md. الإصدار المنشور لا يُستبدل أبدًا (الإصدارات ثابتة)، وبعد الرفع يُنزَّل الملف من
+      # العنوان العلني نفسه ويُقارَن SHA-256 بما بناه CI قبل أن يُقترح اعتماده.
+      - name: Publish the APK to the public releases repository
+        id: publish
+        if: steps.signing.outputs.enabled == 'true' && github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+          RELEASES_REPO: Naeem-Ba/HudhudNest-Releases
+        run: |
+          set -euo pipefail
+          if [ -z "$GH_TOKEN" ]; then
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::RELEASES_REPO_TOKEN is not set: the APK was NOT published. Follow docs/ANDROID-DIRECT-DOWNLOAD-AR.md or add the secret."
+            exit 0
+          fi
+          version_name="$(sed -n 's/^[[:space:]]*versionName[[:space:]]*"\([^"]*\)".*/\1/p' android/app/build.gradle | head -1)"
+          tag="v${version_name}"
+          out="android/app/build/outputs/apk-publish"
+          if gh release view "$tag" --repo "$RELEASES_REPO" >/dev/null 2>&1; then
+            echo "::notice::$RELEASES_REPO already has $tag; not replacing it (published releases are immutable)."
+          else
+            gh release create "$tag" \
+              "$out/HudhudNest-${version_name}.apk" "$out/HudhudNest-${version_name}.apk.sha256" \
+              --repo "$RELEASES_REPO" \
+              --title "HudhudNest ${version_name}" \
+              --notes "Official HudhudNest ${version_name} Android installer. Verify with SHA-256 (see the .sha256 file) or at https://hudhudnest.com/download" \
+              --latest
+          fi
+          url="https://github.com/${RELEASES_REPO}/releases/download/${tag}/HudhudNest-${version_name}.apk"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/published.apk" "$url"
+          expected="$(cut -d' ' -f1 "$out/HudhudNest-${version_name}.apk.sha256")"
+          actual="$(sha256sum "$RUNNER_TEMP/published.apk" | cut -d' ' -f1)"
+          if [ "$expected" != "$actual" ]; then
+            echo "::error::The file served at $url has SHA-256 $actual, expected $expected."
+            exit 1
+          fi
+          echo "published=true" >> "$GITHUB_OUTPUT"
+          echo "Published and verified: $url" >> "$GITHUB_STEP_SUMMARY"
+
+      # يفتح PR يحوّل المسودة إلى بيان معتمد (approved:true) ويعيد توليد كتلة /download/android في public/_redirects.
+      # دمج هذا الـ PR هو الاعتماد: عندها فقط يظهر الزر للجمهور. لا يُدمج تلقائيًا عمدًا.
+      - name: Open a PR that approves the APK on /download
+        if: steps.publish.outputs.published == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version_name="$(sed -n 's/^[[:space:]]*versionName[[:space:]]*"\([^"]*\)".*/\1/p' android/app/build.gradle | head -1)"
+          draft="$PWD/android/app/build/outputs/apk-publish/android-release.draft.json"
+          branch="chore/android-apk-${version_name}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch --depth=1 origin main:refs/remotes/origin/main
+          git checkout -f -B "$branch" origin/main
+          mkdir -p downloads
+          jq '.approved = true' "$draft" > downloads/android-release.json
+          node tools/android-release.mjs check
+          npm run generate:download
+          git add downloads/android-release.json public/_redirects
+          git commit -m "chore(download): approve direct APK ${version_name}"
+          git push --force origin "$branch"
+          if gh pr view "$branch" >/dev/null 2>&1; then
+            echo "A PR for $branch already exists."
+          else
+            gh pr create --base main --head "$branch" \
+              --title "chore(download): approve direct APK ${version_name}" \
+              --body "The signed APK ${version_name} was uploaded to the public releases repository by CI and its SHA-256 was verified against the file served from the public URL. Merging this PR makes the direct-download button appear on /download (after the site publishes). After the site is published run: npm run android-release -- check-remote"
+          fi
 
   ios-build:
     name: iOS Unsigned Simulator Build
