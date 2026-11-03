@@ -69,7 +69,7 @@ const PAGE_SIZE = 20;
     .page-header { margin-bottom: 1.25rem; }
     .page-header h1 { margin:0; font-size:clamp(1.4rem,2.6vw,1.9rem); color: var(--text-strong); font-family:var(--font-display); }
     .subtitle { margin:.25rem 0 0; color:var(--gray-500); font-size:var(--text-sm); }
-    .state-card.error { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; color:var(--danger); background:var(--danger-soft);
+    .state-card.error { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; color:var(--danger-text); background:var(--danger-soft);
       border:1px solid rgba(220,38,38,.2); border-radius:var(--r-lg); padding:1rem; }
     .state-card.error p { margin:0; flex:1; }
     .link-btn { background:none; border:0; color:var(--primary-text); font-weight:600; cursor:pointer; }

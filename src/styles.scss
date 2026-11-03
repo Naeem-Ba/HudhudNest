@@ -4,6 +4,8 @@
    ================================================================ */
 
 @use 'styles/breakpoints' as bp;
+/* Design tokens (colors, type, spacing, shadows): styles/_tokens.scss is the single source of truth. */
+@use 'styles/tokens';
 
 @import "leaflet/dist/leaflet.css";
 
@@ -14,207 +16,6 @@
    stylesheet, and @import must be first — removing the redundant import removes that warning
    too. */
 
-/* ================================================================
-   CSS Custom Properties — Design Tokens
-   وضع افتراضي فاتح (Light) — يُطبَّق دومًا ما لم يُفعَّل [data-theme="dark"]
-   على <html> (يتم ذلك تلقائيًا عبر ThemeService حسب اختيار المستخدم
-   أو تفضيل نظام التشغيل عند أول زيارة).
-   ================================================================ */
-:root {
-  /* Brand Colors — هوية HudhudNest / هدهد نيست */
-  --navy:          #0F2742;
-  --navy-80:       rgba(15, 39, 66, .80);
-  --navy-600:      #1a3a5c;
-  /* لون العناوين والأرقام والأسعار فوق سطح الصفحة: كحلي فاتحًا، وأبيض مائل داكنًا.
-     لا يُستعمل --navy نصًا على سطح متغيّر الوضع (كان يُنتج تباين 1.2 في الداكن)؛ يبقى --navy
-     للخلفيات الكحلية الثابتة ولنص فوق خلفية ذهبية صلبة. */
-  --text-strong:   var(--navy);
-  --gold:          #D6A84F;
-  --gold-light:    #e8c47a;
-  --gold-dark:     #b5872e;
-  --gold-soft:     rgba(214, 168, 79, .12);
-  /* نص ذهبي بتباين كافٍ حسب الوضع: غامق على خلفية فاتحة، فاتح على خلفية داكنة.
-     يُعاد تعريفه بكتلة [data-theme="dark"] أدناه. */
-  --gold-text:     #8a6414;
-
-  /* لوحة معرض الصور — محايدة دافئة (رمادي فحمي دافئ) بدل الأزرق الملاحظ
-     سابقًا (كان var(--navy) وهو أزرق داكن). هذه القيمة ثابتة عمدًا بكلا
-     الوضعين لأن أدوات التنقل بالمعرض (الأسهم/العدّاد) بيضاء اللون ثابتة،
-     ومحايدة دافئة كهذه أكثر راحة للعين من الأزرق البارد عند تصفّح صور
-     عقارات لفترة طويلة، وتُبقي تركيز المستخدم على الصورة نفسها لا الخلفية. */
-  --gallery-canvas: #1b1a18;
-
-  /* شارات "إيجار/بيع" — درجات هادئة مائلة للأخضر-الفيروزي (إيجار) والكهرماني
-     الدافئ (بيع) بدل الأزرق/الأخضر الفاتح القديم، لتمييز بصري أوضح وأهدأ
-     يساعد على اتخاذ القرار بسرعة دون تنافر مع هوية الذهبي/الأسود. */
-  --badge-rent-bg:   rgba(13, 148, 136, .12);
-  --badge-rent-text: #0d6b64;
-  --badge-sale-bg:   rgba(180, 83, 9, .14);
-  --badge-sale-text: #9a5313;
-
-  /* شارة الإعلان المميّز (المدفوع). ذهبي هوية التطبيق نفسه لا لون ثالث جديد:
-     التمييز منتج مدفوع، ويجب أن يُقرأ فوراً كشيء مختلف عن شارتَي الإيجار/البيع
-     الوصفيتين، لا كتصنيف ثالث لنوع العرض. */
-  --badge-featured-bg:   rgba(214, 168, 79, .20);
-  --badge-featured-text: var(--gold-text);
-
-  /* UI Colors */
-  /* اللون الأساسي = ذهبي الهوية (كان أزرق). --on-primary: نص أسود فوق أي خلفية ذهبية.
-     --primary-text: نسخة غامقة من الذهبي للنص/الروابط على خلفية فاتحة (تباين ≥ 4.5:1). */
-  --primary:       var(--gold);
-  --primary-dark:  var(--gold-dark);
-  --primary-soft:  var(--gold-soft);
-  --on-primary:    #111111;
-  --primary-text:  #8a6414;
-  --success:       #16a34a;
-  --success-soft:  #f0fdf4;
-  --danger:        #dc2626;
-  --danger-soft:   #fef2f2;
-  --warning:       #d97706;
-  --warning-soft:  #fffbeb;
-  --info:          #0891b2;
-  --info-soft:     #ecfeff;
-
-  /* Neutral Scale */
-  --gray-50:    #f8fafc;
-  --gray-100:   #f1f5f9;
-  --gray-200:   #e2e8f0;
-  --gray-300:   #cbd5e1;
-  --gray-400:   #94a3b8;
-  --gray-500:   #64748b;
-  --gray-600:   #475569;
-  --gray-700:   #334155;
-  --gray-800:   #1e293b;
-  --gray-900:   #0f172a;
-
-  /* Surface */
-  --surface:    #ffffff;
-  --page-bg:    #f8fafc;
-  --border:     #e2e8f0;
-  --border-focus: var(--gold);
-
-  /* Typography
-     -----------------------------------------------------------------
-     Roboto أولاً ثم IBM Plex Sans Arabic — والترتيب هو الآلية نفسها لا تفضيلاً
-     جمالياً: Roboto لا يحتوي محرفاً عربياً واحداً، فالمتصفح يسقط لكل محرف عربي
-     إلى الخط التالي في القائمة. النتيجة أن اللاتينية تُعرض بـ Roboto والعربية
-     بـ IBM Plex Sans Arabic دون أي منطق في الكود ودون :lang().
-
-     ولذلك يجب ألا يتقدّم أي خط عربي على Roboto هنا: لو تقدّم، لالتقط اللاتينية
-     أيضاً وضاع نصف القرار. وCairo يبقى في آخر القائمة احتياطاً لأن كل صفحة قائمة
-     رُسمت عليه، فلو تعذّر تحميل IBM Plex لا يسقط النص إلى خط النظام مباشرة.
-     ----------------------------------------------------------------- */
-  --font-display: 'Roboto', 'IBM Plex Sans Arabic', 'Cairo', system-ui, sans-serif;
-  --font-body:    'Roboto', 'IBM Plex Sans Arabic', 'Cairo', system-ui, sans-serif;
-  --font-mono:    'Courier New', monospace;
-
-  /* Type Scale */
-  --text-xs:   0.75rem;   /* 12px */
-  --text-sm:   0.875rem;  /* 14px */
-  --text-base: 1rem;      /* 16px */
-  --text-lg:   1.125rem;  /* 18px */
-  --text-xl:   1.25rem;   /* 20px */
-  --text-2xl:  1.5rem;    /* 24px */
-  --text-3xl:  1.875rem;  /* 30px */
-  --text-4xl:  2.25rem;   /* 36px */
-
-  /* Spacing */
-  --space-1:  0.25rem;
-  --space-2:  0.5rem;
-  --space-3:  0.75rem;
-  --space-4:  1rem;
-  --space-5:  1.25rem;
-  --space-6:  1.5rem;
-  --space-8:  2rem;
-  --space-10: 2.5rem;
-  --space-12: 3rem;
-  --space-16: 4rem;
-
-  /* Border Radius */
-  --r-sm:   6px;
-  --r-md:   10px;
-  --r-lg:   16px;
-  --r-xl:   24px;
-  --r-2xl:  32px;
-  --r-pill: 9999px;
-
-  /* Shadows */
-  --shadow-xs: 0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
-  --shadow-sm: 0 2px 8px rgba(15,23,42,.08);
-  --shadow-md: 0 4px 16px rgba(15,23,42,.10);
-  --shadow-lg: 0 8px 30px rgba(15,23,42,.12);
-  --shadow-xl: 0 16px 50px rgba(15,23,42,.16);
-
-  /* Transitions */
-  --ease-out: cubic-bezier(.22, 1, .36, 1);
-  --ease-in:  cubic-bezier(.64, 0, .78, 0);
-
-  /* Navbar */
-  --navbar-height: 68px;
-
-  /* Z-Index */
-  --z-dropdown: 100;
-  --z-sticky:   200;
-  --z-overlay:  300;
-  --z-modal:    400;
-  --z-toast:    500;
-}
-
-/* ================================================================
-   الوضع الداكن — HudhudNest Dark Theme
-   أسود فاخر + ذهبي، مطابق للهوية البصرية المرجعية (Luxora/Luxe).
-   كل مكوّن يستخدم var(--surface) / var(--gray-*) / var(--border) —
-   بلا استثناء — يتحوّل تلقائيًا هنا بدون أي تعديل بملفه الخاص.
-   ================================================================ */
-html[data-theme="dark"] {
-  --surface:      #15161a;
-  --page-bg:      #0a0a0c;
-  --border:       #2a2b31;
-  --border-focus: var(--gold);
-
-  --gray-50:    #1c1d22;
-  --gray-100:   #23242a;
-  --gray-200:   #2a2b31;
-  --gray-300:   #383a42;
-  --gray-400:   #6b6d78;
-  --gray-500:   #9497a3;
-  --gray-600:   #b7b9c3;
-  --gray-700:   #d4d6dd;
-  --gray-800:   #eceef2;
-  --gray-900:   #f7f8fa;
-
-  --text-strong:   var(--gray-900);
-  --primary:       var(--gold);
-  --primary-dark:  var(--gold-light);
-  --primary-soft:  rgba(214, 168, 79, .14);
-  --primary-text:  var(--gold-light);
-  --gold-text:     var(--gold-light);
-
-  --success-soft:  rgba(22, 163, 74, .16);
-  --danger-soft:   rgba(220, 38, 38, .16);
-  --warning-soft:  rgba(217, 119, 6, .16);
-  --info-soft:     rgba(8, 145, 178, .16);
-
-  /* شارات إيجار/بيع بالوضع الداكن — تشبّع أعلى قليلاً وشفافية أكبر عشان
-     تظل الشارة واضحة فوق الخلفيات الداكنة بدل الباستيل الفاتح اللي كان
-     يبدو غير مناسب (منخفض التباين/غير متناغم) على الخلفية الداكنة. */
-  --badge-rent-bg:   rgba(45, 212, 191, .18);
-  --badge-rent-text: #5eead4;
-  --badge-sale-bg:   rgba(251, 146, 60, .20);
-  --badge-sale-text: #fdba74;
-
-  /* الذهبي على الداكن يحتاج نصاً أفتح لا أغمق — gold-dark يختفي هنا. */
-  --badge-featured-bg:   rgba(214, 168, 79, .24);
-  --badge-featured-text: var(--gold-light);
-
-  --shadow-xs: 0 1px 3px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.25);
-  --shadow-sm: 0 2px 10px rgba(0,0,0,.40);
-  --shadow-md: 0 6px 20px rgba(0,0,0,.45);
-  --shadow-lg: 0 10px 34px rgba(0,0,0,.55);
-  --shadow-xl: 0 18px 55px rgba(0,0,0,.60);
-
-  color-scheme: dark;
-}
 
 /* انتقال ناعم عند تبديل الوضع بدل قفزة لونية مفاجئة */
 body,
@@ -267,15 +68,21 @@ img {
 }
 
 /* Links */
-a {
-  color: inherit;
-  text-decoration: none;
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 }
 
-/* Form elements inherit font */
-button, input, select, textarea {
-  font: inherit;
-  color: inherit;
+/* Base resets live in the Tailwind `base` layer. Un-layered rules always beat layered ones, so as plain rules
+   these `color` declarations overrode utilities such as `text-white` on a <button>/<h2> and produced dark text on
+   navy (checkout: 1.03:1). Un-layered component styles still win over the base layer, as before. */
+@layer base {
+  button, input, select, textarea {
+    font: inherit;
+    color: inherit;
+  }
 }
 
 /* Remove default list styles */
@@ -286,11 +93,13 @@ ul, ol {
 /* ================================================================
    Typography Classes
    ================================================================ */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
-  font-weight: 700;
-  line-height: 1.3;
-  color: var(--gray-900);
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--gray-900);
+  }
 }
 
 /* ================================================================
@@ -422,12 +231,13 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   &--danger {
-    background: var(--danger);
+    background: var(--danger-solid);
     color: #fff;
-    border-color: var(--danger);
+    border-color: var(--danger-solid);
 
     &:hover:not(:disabled) {
-      background: #b91c1c;
+      background: var(--danger-solid-hover);
+      border-color: var(--danger-solid-hover);
     }
   }
 
@@ -499,12 +309,12 @@ select,
 textarea {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 1.5px solid var(--border);
+  border: 1.5px solid var(--input-border);
   border-radius: var(--r-md);
   font-family: var(--font-body);
   font-size: var(--text-base);
-  color: var(--gray-800);
-  background: var(--surface);
+  color: var(--text-primary);
+  background: var(--input-bg);
   transition: border-color .15s, box-shadow .15s;
   min-height: 44px;
   appearance: none;
@@ -512,12 +322,13 @@ textarea {
 
   &:focus {
     outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(214,168,79,.12);
+    border-color: var(--focus-border);
+    box-shadow: 0 0 0 3px var(--primary-soft);
   }
 
   &::placeholder {
-    color: var(--gray-400);
+    color: var(--text-placeholder);
+    opacity: 1;
   }
 }
 
@@ -549,7 +360,7 @@ textarea.ng-valid.ng-touched {
 
 .field-error {
   font-size: var(--text-xs);
-  color: var(--danger);
+  color: var(--danger-text);
   font-weight: 500;
 }
 
@@ -572,14 +383,14 @@ textarea.ng-valid.ng-touched {
     /* حدّ خفيف: الشارة تجلس فوق صورة العقار مباشرة، وبعض الصور ذهبية اللون. */
     box-shadow: inset 0 0 0 1px rgba(181, 135, 46, .35);
   }
-  &--draft  { background: var(--gray-100); color: var(--gray-500); }
-  &--live   { background: var(--success-soft); color: var(--success); }
-  &--warning { background: var(--warning-soft); color: var(--warning); }
+  &--draft  { background: var(--gray-100); color: var(--text-muted); }
+  &--live   { background: var(--success-soft); color: var(--success-text); }
+  &--warning { background: var(--warning-soft); color: var(--warning-text); }
 
   /* حالات الإعلان (QA Phase 7، P7-D08): محجوز ما زال معروضًا، ومباع/مؤجر صفقة منتهية للتوثيق. */
-  &--reserved { background: var(--warning-soft); color: var(--warning); box-shadow: inset 0 0 0 1px rgba(217, 119, 6, .35); }
+  &--reserved { background: var(--warning-soft); color: var(--warning-text); box-shadow: inset 0 0 0 1px rgba(217, 119, 6, .35); }
   &--sold,
-  &--rented   { background: var(--gray-800); color: var(--surface); }
+  &--rented   { background: var(--inverse-bg); color: var(--inverse-text); }
   &--archived { background: var(--gray-100); color: var(--gray-600); }
 }
 
@@ -604,21 +415,21 @@ textarea.ng-valid.ng-touched {
   font-weight: 500;
 
   &--success {
-    background: var(--success-soft);
-    color: var(--success);
-    border: 1px solid rgba(22,163,74,.2);
+    background: var(--success-bg);
+    color: var(--success-text);
+    border: 1px solid var(--success-border);
   }
 
   &--danger {
-    background: var(--danger-soft);
-    color: var(--danger);
-    border: 1px solid rgba(220,38,38,.2);
+    background: var(--error-bg);
+    color: var(--error-text);
+    border: 1px solid var(--error-border);
   }
 
   &--info {
     background: var(--primary-soft);
     color: var(--primary-text);
-    border: 1px solid rgba(214,168,79,.2);
+    border: 1px solid var(--primary-soft);
   }
 }
 
@@ -713,7 +524,7 @@ textarea.ng-valid.ng-touched {
   &.error-state {
     background: var(--danger-soft);
     border-color: rgba(220,38,38,.2);
-    color: var(--danger);
+    color: var(--danger-text);
   }
 
   p {
@@ -775,8 +586,8 @@ textarea.ng-valid.ng-touched {
    Focus Visible
    ================================================================ */
 :focus-visible {
-  /* --gold-text, not --primary: the bright gold is 2.1:1 on white, the ring must reach 3:1 (WCAG 1.4.11). */
-  outline: 2px solid var(--gold-text);
+  /* --focus-ring, not --primary: the bright gold is 2.1:1 on white, the ring must reach 3:1 (WCAG 1.4.11). */
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -813,4 +624,25 @@ img, video, canvas, svg { max-width: 100%; }
 button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 @media (pointer: coarse) {
   button, [role='button'], a.btn { min-height: 44px; }
+}
+
+/* Leaflet third-party chrome follows the theme (attribution, zoom buttons, popups). */
+.leaflet-container .leaflet-control-attribution {
+  background: var(--map-attribution-bg);
+  color: var(--map-attribution-text);
+
+  a { color: var(--map-attribution-link); }
+}
+
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background-color: var(--surface);
+  color: var(--text-primary);
+  border-bottom-color: var(--border);
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--surface);
+  color: var(--text-primary);
 }

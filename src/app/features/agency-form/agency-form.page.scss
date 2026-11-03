@@ -180,14 +180,14 @@
 }
 
 .required {
-  color: var(--danger);
+  color: var(--danger-text);
   margin-inline-start: .15rem;
 }
 
 .field-error {
   margin: 0;
   font-size: .78rem;
-  color: var(--danger);
+  color: var(--danger-text);
 }
 
 .field-hint {

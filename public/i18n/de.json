@@ -1168,6 +1168,11 @@
     "MY_LOCATION": "Meinen Standort bestimmen"
   },
   "PREFERENCES": {
+    "THEME_LABEL": "Darstellung",
+    "THEME_SYSTEM": "Wie das Gerät",
+    "THEME_LIGHT": "Hell",
+    "THEME_DARK": "Dunkel",
+    "THEME_NOTE": "„Wie das Gerät“ folgt Ihrem Telefon oder Computer, auch wenn es abends umschaltet.",
     "TITLE": "Sprache & Währung",
     "DESC": "Diese Einstellungen gehören zu Ihrem Konto und folgen Ihnen auf jedes Gerät.",
     "LANGUAGE_LABEL": "Sprache",

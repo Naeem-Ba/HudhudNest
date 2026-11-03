@@ -4,7 +4,7 @@
   padding: var(--space-6, 1.5rem) var(--space-4, 1rem);
 
   &__eyebrow {
-    color: var(--primary, #D6A84F);
+    color: var(--primary-text);
     font-weight: 600;
     font-size: 0.8125rem;
     text-transform: uppercase;
@@ -28,7 +28,7 @@
     border-bottom: 2px solid transparent;
 
     &--active {
-      color: var(--primary, #D6A84F);
+      color: var(--primary-text);
       border-bottom-color: var(--primary, #D6A84F);
     }
   }
@@ -39,7 +39,7 @@
     color: var(--gray-500, #6b7280);
   }
 
-  &__error { color: var(--danger, #dc2626); }
+  &__error { color: var(--danger-text); }
 
   &__list {
     display: flex;
@@ -76,9 +76,9 @@
     color: var(--gray-700, #374151);
     white-space: nowrap;
 
-    &--confirmed, &--checkedin, &--completed { background: #dcfce7; color: #15803d; }
-    &--pending, &--approved, &--depositpaid { background: #fef9c3; color: #a16207; }
-    &--rejected, &--cancelled, &--expired, &--noshow { background: #fee2e2; color: #b91c1c; }
+    &--confirmed, &--checkedin, &--completed { background: var(--success-bg); color: var(--success-text); }
+    &--pending, &--approved, &--depositpaid { background: var(--warning-bg); color: var(--warning-text); }
+    &--rejected, &--cancelled, &--expired, &--noshow { background: var(--error-bg); color: var(--error-text); }
   }
 
   &__dates, &__amounts {
@@ -94,7 +94,7 @@
     margin: 0.5rem 0 0;
     font-size: 0.8125rem;
     font-weight: 600;
-    color: #a16207;
+    color: var(--warning-text);
   }
 
   &__actions {

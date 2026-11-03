@@ -120,8 +120,8 @@ const PROJECT_TYPES: InvestmentProjectType[] = [
 
     .property-lookup { display:flex; gap:.5rem; }
     .property-lookup input { flex: 1; }
-    .property-preview { margin:.2rem 0 0; font-size:.85rem; color: var(--success, #16a34a); }
-    .property-preview--error { color: var(--danger); }
+    .property-preview { margin:.2rem 0 0; font-size:.85rem; color: var(--success-text); }
+    .property-preview--error { color: var(--danger-text); }
 
     .form-actions { display:flex; justify-content:flex-end; gap:.75rem; margin-top:.5rem; }
     .btn { border-radius:var(--r-sm); padding:.55rem 1.1rem; font-size:.9rem; cursor:pointer; border:1px solid transparent; font-weight:600; }

@@ -75,15 +75,15 @@ import {
       background: none; border: 0; cursor: pointer; padding: .1rem .2rem;
       font-size: 2rem; line-height: 1; color: var(--gray-300);
     }
-    .srd__star--on { color: var(--warning, #f59e0b); }
+    .srd__star--on { color: var(--warning-text); }
     .srd__label { font-size: .8125rem; font-weight: 600; }
     .srd__comment {
       border: 1px solid var(--border); border-radius: var(--r-sm, 8px); padding: .5rem .6rem;
       font: inherit; font-size: 16px; resize: vertical;
     }
     .srd__counter { margin: 0; font-size: .75rem; color: var(--gray-500); text-align: end; }
-    .srd__counter--over { color: var(--danger); }
-    .srd__error { margin: 0; color: var(--danger); font-size: .875rem; }
+    .srd__counter--over { color: var(--danger-text); }
+    .srd__error { margin: 0; color: var(--danger-text); font-size: .875rem; }
   `]
 })
 export class ShortStayReviewDialogComponent {

@@ -137,12 +137,12 @@ export const DEFAULT_PLAN_DURATION_DAYS = 30;
     .card__actions { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; }
     .muted { color:var(--gray-500); font-size:var(--text-sm); }
     .chip { background:var(--gold-soft); color: var(--text-strong); border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600; }
-    .link { color:var(--primary); font-size:var(--text-sm); }
+    .link { color:var(--primary-text); font-size:var(--text-sm); }
     .days { display:flex; align-items:center; gap:.4rem; font-size:var(--text-sm); color:var(--gray-500); }
     .days input { width:5rem; padding:.3rem .4rem; border:1px solid var(--border); border-radius:var(--r-sm); }
     .btn { border-radius:var(--r-sm); padding:.4rem .75rem; font-size:var(--text-sm); cursor:pointer; border:1px solid transparent; }
-    .btn--primary { background:var(--primary); color:#fff; }
-    .btn--danger { background:var(--danger-soft); color:var(--danger); border-color:rgba(220,38,38,.2); }
+    .btn--primary { background: var(--primary); color: var(--on-primary); }
+    .btn--danger { background:var(--danger-soft); color:var(--danger-text); border-color:rgba(220,38,38,.2); }
     .btn:disabled { opacity:.6; cursor:not-allowed; }
   `]
 })

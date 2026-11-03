@@ -168,7 +168,7 @@ import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
     .subtitle { display:block; margin:.15rem 0 0;color:var(--gray-500);font-size:var(--text-sm); }
     .subtitle:hover { color:var(--primary-text); text-decoration:underline; }
 
-    .state-card.error { display:flex;align-items:center;gap:.75rem;color:var(--danger);background:var(--danger-soft);border:1px solid rgba(220,38,38,.2);border-radius:var(--r-lg);padding:1rem; }
+    .state-card.error { display:flex;align-items:center;gap:.75rem;color:var(--danger-text);background:var(--danger-soft);border:1px solid rgba(220,38,38,.2);border-radius:var(--r-lg);padding:1rem; }
 
     .thread { display:flex; flex-direction:column; gap:1rem; min-width:0; }
     .thread-bar { display:flex; align-items:center; gap:.5rem 1rem; flex-wrap:wrap; }
@@ -176,7 +176,7 @@ import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
     .thread-with { color:var(--gray-700); font-weight:600; overflow-wrap:anywhere; }
     .thread-profile-link { color:var(--gray-600,#6b7280); font-size:.8rem; text-decoration:none; }
     .thread-profile-link:hover { text-decoration:underline; color:var(--primary-text); }
-    .thread-older-hint { margin:0; font-size:var(--text-xs); color:var(--gray-400); text-align:center; }
+    .thread-older-hint { margin:0; font-size:var(--text-xs); color:var(--text-muted); text-align:center; }
     .thread-messages { display:flex; flex-direction:column; gap:.6rem; max-height:55vh; max-height:55dvh; overflow-y:auto; padding:.25rem; }
     .bubble {
       max-width:min(78%, 34rem); background:var(--gray-100); border-radius:var(--r-lg); padding:.6rem .9rem;
@@ -185,13 +185,13 @@ import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
     .bubble--mine { align-self:flex-end; background:var(--primary-soft); border:1px solid rgba(214,168,79,.25); }
     .bubble__sender { display:block; font-size:var(--text-xs); font-weight:700; color: var(--text-strong); margin-bottom:.15rem; }
     .bubble p { margin:0 0 .25rem; color:var(--gray-800); line-height:1.6; white-space:pre-wrap; overflow-wrap:anywhere; }
-    .bubble time { font-size:var(--text-xs); color:var(--gray-400); }
+    .bubble time { font-size:var(--text-xs); color:var(--text-muted); }
 
     .rate-prompt {
       display:flex; align-items:center; justify-content:space-between; gap:.5rem 1rem; flex-wrap:wrap;
       background:var(--warning-soft); border-radius:var(--r-md); padding:.6rem .9rem; font-size:var(--text-sm); color:var(--gray-700);
     }
-    .rate-prompt__link { color:var(--warning); font-weight:700; white-space:nowrap; }
+    .rate-prompt__link { color:var(--warning-text); font-weight:700; white-space:nowrap; }
 
     .composer { display:flex; gap:.6rem; align-items:flex-end; position:sticky; bottom:0; background:var(--page-bg); padding-block:.5rem; }
     .composer textarea {

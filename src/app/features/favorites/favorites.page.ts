@@ -216,14 +216,14 @@ interface FavoritePropertyNested {
       align-items: center;
       gap: .75rem;
       padding: 1rem;
-      color: var(--danger);
+      color: var(--danger-text);
       background: var(--danger-soft);
       border-color: rgba(220,38,38,.2);
     }
     .state-card p { flex: 1; color: inherit; }
     .state-card button {
       border: 0;
-      background: var(--danger);
+      background: var(--danger-solid);
       color: #fff;
       border-radius: 10px;
       padding: .6rem .9rem;

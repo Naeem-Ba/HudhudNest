@@ -165,7 +165,7 @@
   inset-block-start: 50%;
   inset-inline-start: .75rem;
   transform: translateY(-50%);
-  color: var(--gray-400);
+  color: var(--text-muted);
   pointer-events: none;
 }
 
@@ -219,7 +219,7 @@
   margin: .35rem 0 0;
   font-size: .8rem;
   font-weight: 600;
-  color: var(--danger);
+  color: var(--danger-text);
 }
 
 .range-inputs {
@@ -256,7 +256,7 @@
 }
 
 .range-sep {
-  color: var(--gray-400);
+  color: var(--text-muted);
   font-size: .85rem;
   flex-shrink: 0;
 }
@@ -455,7 +455,7 @@
     small {
       font-size: .72rem;
       font-weight: 500;
-      color: var(--gray-400);
+      color: var(--text-muted);
       margin-inline-start: .2rem;
     }
   }

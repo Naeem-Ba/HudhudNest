@@ -43,8 +43,8 @@
 .btn--sm { padding: .35rem .7rem; font-size: .8rem; }
 .btn--primary { background: var(--navy); color: #fff; }
 .btn--outline { background: var(--surface); border-color: var(--border); color: var(--text-strong); }
-.btn--success { background: var(--success-soft, #dcfce7); color: var(--success, #16a34a); }
-.btn--danger { background: var(--danger-soft); color: var(--danger); }
+.btn--success { background: var(--success-soft, #dcfce7); color: var(--success-text); }
+.btn--danger { background: var(--danger-soft); color: var(--danger-text); }
 .btn:disabled { opacity: .6; cursor: not-allowed; }
 
 /* ─── Offer form ─── */
@@ -73,17 +73,17 @@
 .offer-tile__discount { font-weight: 700; color: var(--gold-text); margin: 0; }
 .offer-tile__desc { margin: 0; font-size: .85rem; color: var(--gray-600); }
 .offer-tile__meta { display: flex; flex-wrap: wrap; gap: .6rem; font-size: .78rem; color: var(--gray-500); }
-.offer-tile__visibility { margin: 0; font-size: .82rem; color: var(--warning, #b45309); }
-.offer-tile__visibility--on { color: var(--success, #16a34a); font-weight: 600; }
+.offer-tile__visibility { margin: 0; font-size: .82rem; color: var(--warning-text); }
+.offer-tile__visibility--on { color: var(--success-text); font-weight: 600; }
 .offer-tile__actions { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .4rem; }
 
 .status-chip {
   display: inline-flex; align-items: center; background: var(--gray-100); color: var(--gray-600);
   border-radius: var(--r-pill); padding: .15rem .6rem; font-size: .72rem; font-weight: 600; white-space: nowrap;
 }
-.status-chip--active { background: var(--success-soft, #dcfce7); color: var(--success, #16a34a); }
-.status-chip--paused { background: var(--warning-soft, #fef3c7); color: var(--warning, #b45309); }
-.status-chip--ended { background: var(--danger-soft); color: var(--danger); }
+.status-chip--active { background: var(--success-soft, #dcfce7); color: var(--success-text); }
+.status-chip--paused { background: var(--warning-soft, #fef3c7); color: var(--warning-text); }
+.status-chip--ended { background: var(--danger-soft); color: var(--danger-text); }
 .status-chip--draft { background: var(--gray-100); color: var(--gray-500); }
 
 /* ─── Tables (leads / surveys) ─── */
@@ -96,7 +96,7 @@
 .leads-table .row { grid-template-columns: 1.2fr 1.3fr .9fr 1.1fr .8fr 1fr; }
 .surveys-table .row { grid-template-columns: 1fr 1.2fr 1.4fr 1.4fr 1fr; }
 .row--head { background: transparent; border: 0; color: var(--gray-500); font-size: .8rem; font-weight: 600; padding: 0 1rem; }
-.muted { color: var(--gray-400); font-size: .85rem; }
+.muted { color: var(--text-muted); font-size: .85rem; }
 .ltr-inline { direction: ltr; text-align: right; }
 
 .pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: .5rem; }

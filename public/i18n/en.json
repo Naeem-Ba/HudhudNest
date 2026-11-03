@@ -1168,6 +1168,11 @@
     "MY_LOCATION": "Find my location"
   },
   "PREFERENCES": {
+    "THEME_LABEL": "Appearance",
+    "THEME_SYSTEM": "Match device setting",
+    "THEME_LIGHT": "Light",
+    "THEME_DARK": "Dark",
+    "THEME_NOTE": "\"Match device\" follows your phone or computer, including when it switches at night.",
     "TITLE": "Language & currency",
     "DESC": "These settings belong to your account and follow you to every device.",
     "LANGUAGE_LABEL": "Language",

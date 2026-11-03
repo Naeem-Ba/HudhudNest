@@ -104,7 +104,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
       padding:.85rem 1rem;
     }
     .row--head { background:transparent; border:0; color:var(--gray-500); font-size:var(--text-sm); font-weight:600; padding:0 1rem; }
-    .muted { color:var(--gray-400); }
+    .muted { color:var(--text-muted); }
 
     .type-chip {
       display:inline-flex; align-items:center; background:var(--gold-soft); color: var(--text-strong);
@@ -117,7 +117,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
     .actions { display:flex; gap:.4rem; align-items:center; flex-wrap:wrap; }
     .btn { border-radius:var(--r-sm); padding:.4rem .75rem; font-size:var(--text-sm); cursor:pointer; border:1px solid transparent; }
     .btn--primary { background:var(--primary); color: var(--on-primary); }
-    .btn--danger { background:var(--danger-soft); color:var(--danger); border-color:rgba(220,38,38,.2); }
+    .btn--danger { background:var(--danger-soft); color:var(--danger-text); border-color:rgba(220,38,38,.2); }
     .btn:disabled { opacity:.6; cursor:not-allowed; }
 
     @media (max-width: 900px) {

@@ -298,7 +298,7 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
     .listing-card__body { padding: .6rem; }
     .listing-card__title { margin: 0; font-size: .9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--gray-800); }
     .listing-card__city { margin: .15rem 0; font-size: .78rem; color: var(--gray-500); }
-    .listing-card__price { margin: 0; font-size: .85rem; font-weight: 600; color: var(--primary); }
+    .listing-card__price { margin: 0; font-size: .85rem; font-weight: 600; color: var(--primary-text); }
     .more-link { margin-top: 1rem; }
     .listing-tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .75rem; }
     .listing-tabs__tab { padding: .4rem .9rem; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--gray-700); font: inherit; font-size: .85rem; font-weight: 600; cursor: pointer; }
@@ -311,13 +311,13 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
     .detail-card__header h2 { margin: 0 0 1rem; font-size: 1.05rem; color: var(--gray-800); }
     .agency-header__overall { display: flex; flex-direction: column; align-items: center; gap: .15rem; background: var(--warning-soft); border-radius: 10px; padding: .75rem 1.25rem; min-width: 140px; margin-inline-start: auto; }
     .agency-header__overall--empty { background: var(--gray-100); color: var(--gray-500); font-size: .85rem; padding: 1rem 1.25rem; }
-    .agency-header__overall-score { font-size: 1.8rem; font-weight: 700; color: var(--warning); }
+    .agency-header__overall-score { font-size: 1.8rem; font-weight: 700; color: var(--warning-text); }
     .agency-header__overall-max { font-size: .95rem; color: var(--gray-500); margin-inline-start: -.35rem; }
     .agency-header__overall-count { font-size: .75rem; color: var(--gray-500); }
     .agency-header__rate-cta { flex: 0 0 auto; white-space: nowrap; }
     .stars { color: var(--gray-300); font-size: 1.1rem; line-height: 1; }
     .stars--sm { font-size: .85rem; }
-    .stars .star--filled { color: var(--warning); }
+    .stars .star--filled { color: var(--warning-text); }
     .rating-breakdown__row { display: flex; align-items: center; gap: .75rem; margin-bottom: .6rem; }
     .rating-breakdown__label { flex: 0 0 130px; font-size: .85rem; color: var(--gray-700); }
     .rating-breakdown__bar { flex: 1; height: 8px; background: var(--gray-100); border-radius: 999px; overflow: hidden; }
@@ -328,17 +328,17 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
     .rate-card__login { display: inline-flex; margin-top: .75rem; }
     .rating-form { display: flex; flex-direction: column; gap: 1rem; }
     .rating-form__question { margin: 0 0 .25rem; font-weight: 700; color: var(--gray-800); }
-    .rating-form__edit-hint { margin: 0; font-size: .85rem; color: var(--warning); background: var(--warning-soft); padding: .5rem .75rem; border-radius: 8px; }
+    .rating-form__edit-hint { margin: 0; font-size: .85rem; color: var(--warning-text); background: var(--warning-soft); padding: .5rem .75rem; border-radius: 8px; }
     .rating-form__criterion { display: flex; align-items: center; justify-content: space-between; gap: .35rem 1rem; flex-wrap: wrap; padding: .45rem .5rem; border-radius: 8px; border: 1px solid transparent; }
     .rating-form__criterion--missing { border-color: rgba(220, 38, 38, .35); background: var(--danger-soft); }
     .rating-form__criterion-text { display: flex; flex-direction: column; min-width: 0; flex: 1 1 12rem; }
     .rating-form__criterion-label { font-weight: 600; color: var(--gray-800); }
     .rating-form__criterion-hint { font-size: .75rem; color: var(--gray-500); }
-    .rating-form__error { margin: .25rem 0 0; color: var(--danger); font-size: .85rem; }
-    .rating-form__counter { align-self: flex-end; font-size: .72rem; color: var(--gray-400); }
+    .rating-form__error { margin: .25rem 0 0; color: var(--danger-text); font-size: .85rem; }
+    .rating-form__counter { align-self: flex-end; font-size: .72rem; color: var(--text-muted); }
     .star-input { display: flex; gap: .25rem; }
     .star-input button { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--gray-300); line-height: 1; padding: 0; min-width: 32px; min-height: 32px; }
-    .star-input__btn--filled { color: var(--warning); }
+    .star-input__btn--filled { color: var(--warning-text); }
     .rating-form textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .6rem; font-family: inherit; resize: vertical; background: var(--surface); color: var(--gray-800); }
     .rating-list { display: flex; flex-direction: column; gap: 1rem; }
     .rating-item { display: flex; gap: .75rem; }
