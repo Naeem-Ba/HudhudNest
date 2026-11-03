@@ -72,8 +72,7 @@ import { formatDeletionDate } from '../utils/deletion-date';
     .pending-deletion__cancel {
       border: none;
       border-radius: 10px;
-      background: var(--primary);
-      color: #fff;
+      background: var(--primary); color: var(--on-primary);
       cursor: pointer;
       font-weight: 700;
       font-size: 0.85rem;
@@ -86,7 +85,7 @@ import { formatDeletionDate } from '../utils/deletion-date';
     }
 
     .pending-deletion__details {
-      color: var(--primary);
+      color: var(--primary-text);
       font-size: 0.85rem;
       font-weight: 600;
     }

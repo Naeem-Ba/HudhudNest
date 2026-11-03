@@ -154,7 +154,7 @@ type Sort = NonNullable<ListingReportFilter['sort']>;
     .stat strong{font-size:1.4rem;color: var(--text-strong)}
     .stat span{font-size:var(--text-sm);color:var(--gray-600)}
     .stat.on{border-color:var(--primary);background:var(--primary-soft)}
-    .stat--warn strong{color:var(--danger)}
+    .stat--warn strong{color:var(--danger-text)}
     .stat--static{cursor:default}
     .filters{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:1rem;align-items:end}
     .filters select,.filters input{width:auto;min-width:150px}
@@ -168,14 +168,14 @@ type Sort = NonNullable<ListingReportFilter['sort']>;
     .cell--main{display:grid;gap:.15rem}
     .muted{color:var(--gray-500);font-size:var(--text-sm)}
     .tag{display:inline-block;width:fit-content;border-radius:999px;padding:.1rem .5rem;font-size:.75rem;background:var(--gray-100)}
-    .tag--warn{background:var(--danger-soft);color:var(--danger)}
+    .tag--warn{background:var(--danger-soft);color:var(--danger-text)}
     .chip{font-size:.78rem;font-weight:700;border-radius:999px;padding:.25rem .6rem;background:var(--gray-100);color:var(--gray-700);white-space:nowrap;margin-inline-end:.25rem}
     .chip[data-status='New']{background:var(--primary-soft);color:var(--primary-text)}
-    .chip[data-status='WaitingForInformation'],.chip[data-status='ActionRequired']{background:var(--warning-soft,#fef3c7);color:var(--warning,#92400e)}
-    .chip[data-status='Resolved']{background:var(--success-soft);color:var(--success)}
-    .chip[data-priority='High'],.chip[data-priority='Urgent'],.chip--overdue{background:var(--danger-soft);color:var(--danger)}
+    .chip[data-status='WaitingForInformation'],.chip[data-status='ActionRequired']{background:var(--warning-soft,#fef3c7);color:var(--warning-text)}
+    .chip[data-status='Resolved']{background:var(--success-soft);color:var(--success-text)}
+    .chip[data-priority='High'],.chip[data-priority='Urgent'],.chip--overdue{background:var(--danger-soft);color:var(--danger-text)}
     .state{padding:2rem;text-align:center;background:var(--surface);border:1px dashed var(--gray-300);border-radius:16px}
-    .state.error{color:var(--danger)}
+    .state.error{color:var(--danger-text)}
     .btn{border:0;border-radius:10px;padding:.55rem 1rem;font-weight:700;cursor:pointer;background:var(--gray-100)}
     .pagination{display:flex;justify-content:center;align-items:center;gap:1rem;margin-top:1.25rem}
     .pagination button{border:1px solid var(--border);background:var(--surface);border-radius:var(--r-sm);width:34px;height:34px;cursor:pointer}

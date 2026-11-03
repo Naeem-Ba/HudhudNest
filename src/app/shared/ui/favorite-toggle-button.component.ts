@@ -64,7 +64,7 @@ import { ToastService } from '../services/toast.service';
       transition: color .15s, transform .1s;
     }
     .fav-btn:active { transform: scale(.92); }
-    .fav-btn--active { color: var(--danger, #dc2626); }
+    .fav-btn--active { color: var(--danger-text); }
     .fav-btn:focus-visible { outline: 2px solid var(--navy, #0f2742); outline-offset: 2px; }
     .fav-btn:disabled { opacity: .6; cursor: default; }
     .fav-btn svg { flex: none; width: 20px; height: 20px; }

@@ -19,9 +19,9 @@
 .muted{color:var(--gray-500);font-size:.85rem;margin:0}
 .chip{font-size:.8rem;font-weight:700;border-radius:999px;padding:.35rem .7rem;background:var(--gray-100);color:var(--gray-700);white-space:nowrap;height:max-content}
 .chip[data-status='Pending']{background:var(--primary-soft);color:var(--primary-text)}
-.chip[data-status='NeedsInfo']{background:var(--warning-soft,#fef3c7);color:var(--warning,#92400e)}
-.chip[data-status='Approved']{background:var(--success-soft);color:var(--success)}
-.chip[data-status='Rejected']{background:var(--danger-soft);color:var(--danger)}
+.chip[data-status='NeedsInfo']{background:var(--warning-soft,#fef3c7);color:var(--warning-text)}
+.chip[data-status='Approved']{background:var(--success-soft);color:var(--success-text)}
+.chip[data-status='Rejected']{background:var(--danger-soft);color:var(--danger-text)}
 
 .callout{border-radius:12px;padding:.8rem 1rem;margin:.8rem 0;display:grid;gap:.4rem}
 .callout p{margin:0;overflow-wrap:anywhere}
@@ -49,7 +49,7 @@ dd{margin:0;overflow-wrap:anywhere;color:var(--gray-800)}
 .radio,.check{display:flex!important;gap:.5rem;align-items:flex-start;font-weight:400!important}
 .radio{display:inline-flex!important;margin-inline-end:1rem}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-.err{color:var(--danger);font-size:.85rem;margin:0}
+.err{color:var(--danger-text);font-size:.85rem;margin:0}
 
 .actions{display:flex;gap:.6rem;flex-wrap:wrap}
 .btn{border:0;border-radius:10px;padding:.65rem 1rem;font-weight:700;cursor:pointer;text-decoration:none;font:inherit;font-weight:700}
@@ -57,7 +57,7 @@ dd{margin:0;overflow-wrap:anywhere;color:var(--gray-800)}
 .primary{background:var(--primary);color:var(--on-primary)}
 .secondary{background:var(--gray-100);color:var(--gray-700)}
 .state{padding:2rem;text-align:center;background:var(--surface);border:1px dashed var(--gray-300);border-radius:16px}
-.state.error{color:var(--danger)}
+.state.error{color:var(--danger-text)}
 .previous{list-style:none;margin:0;padding:0;display:grid;gap:.5rem}
 .previous li{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap}
 

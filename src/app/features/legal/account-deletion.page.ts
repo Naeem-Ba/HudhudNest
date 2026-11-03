@@ -196,7 +196,7 @@ export function parseInline(input: string): InlineSegment[] {
     .legal__lang[aria-pressed='true'] {
       background: var(--primary);
       border-color: var(--primary);
-      color: var(--white, #fff);
+      color: var(--on-primary);
     }
 
     .legal__lang:focus-visible {

@@ -157,20 +157,20 @@
 
   &--success {
     background: var(--success-soft);
-    color: var(--success);
+    color: var(--success-text);
     border: 1px solid rgba(22, 163, 74, .2);
   }
 
   &--error {
     background: var(--danger-soft);
-    color: var(--danger);
+    color: var(--danger-text);
     border: 1px solid rgba(220, 38, 38, .2);
   }
 
   /* عدّاد المحاولات المتبقية: أخفّ من الخطأ، فهو تحذير وليس فشلاً بذاته. */
   &--warning {
     background: var(--warning-soft);
-    color: var(--warning);
+    color: var(--warning-text);
     border: 1px solid rgba(217, 119, 6, .25);
   }
 }
@@ -220,7 +220,7 @@
       box-shadow: 0 0 0 3px var(--gold-soft);
     }
 
-    &::placeholder { color: var(--gray-400); }
+    &::placeholder { color: var(--text-muted); }
 
     &.ng-invalid.ng-touched {
       border-color: var(--danger) !important;
@@ -244,7 +244,7 @@
   align-items: center;
   gap: .35rem;
   font-size: .78rem;
-  color: var(--danger, #dc2626);
+  color: var(--danger-text);
 }
 
 /* ── Password Field ── */
@@ -264,7 +264,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--gray-400);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -364,7 +364,7 @@
   display: flex;
   align-items: center;
   gap: .75rem;
-  color: var(--gray-400);
+  color: var(--text-muted);
   font-size: .8rem;
 
   &::before, &::after {

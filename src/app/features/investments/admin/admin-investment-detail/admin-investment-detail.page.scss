@@ -39,7 +39,7 @@
 }
 
 .section-note { color: var(--gray-500); font-size: .85rem; margin: -.5rem 0 1rem; }
-.section-note--warning { color: var(--danger, #b42318); font-weight: 600; }
+.section-note--warning { color: var(--danger-text); font-weight: 600; }
 .non-guaranteed-note { color: var(--gray-500); font-size: .78rem; margin: -.6rem 0 .8rem; }
 
 .status-chip {
@@ -52,11 +52,11 @@
   background: var(--gray-100);
   color: var(--gray-600);
 
-  &--published { background: var(--success-soft, #dcfce7); color: var(--success, #16a34a); }
+  &--published { background: var(--success-soft, #dcfce7); color: var(--success-text); }
   &--draft { background: var(--gray-100); color: var(--gray-500); }
-  &--underreview, &--scheduled { background: #fef3c7; color: #b45309; }
+  &--underreview, &--scheduled { background: var(--warning-bg); color: var(--warning-text); }
   &--approved { background: var(--primary-soft); color: var(--primary-text); }
-  &--rejected, &--suspended { background: var(--danger-soft); color: var(--danger); }
+  &--rejected, &--suspended { background: var(--danger-soft); color: var(--danger-text); }
   &--closed { background: var(--gray-200, #e5e7eb); color: var(--gray-600); }
 }
 
@@ -70,14 +70,14 @@
   font-size: .85rem;
 
   li::before { content: '○ '; }
-  &--ok { color: var(--success, #16a34a); }
+  &--ok { color: var(--success-text); }
   &--ok::before { content: '✓ '; }
   &--missing { color: var(--gray-500); }
 }
 
 .rejection-reason {
   background: var(--danger-soft);
-  color: var(--danger);
+  color: var(--danger-text);
   border-radius: var(--r-md);
   padding: .6rem .85rem;
   font-size: .85rem;
@@ -158,7 +158,7 @@ textarea { resize: vertical; }
 .btn--small { padding: .3rem .65rem; font-size: .8rem; }
 .btn--outline { background: var(--surface); border-color: var(--border); color: var(--text-strong); }
 .btn--primary { background: var(--primary); color: var(--on-primary); }
-.btn--danger { background: var(--danger-soft); color: var(--danger); border-color: rgba(220,38,38,.2); }
+.btn--danger { background: var(--danger-soft); color: var(--danger-text); border-color: rgba(220,38,38,.2); }
 .btn:disabled { opacity: .6; cursor: not-allowed; }
 
 .upload-row {
@@ -200,7 +200,7 @@ textarea { resize: vertical; }
   background: var(--gray-100);
   color: var(--gray-500);
 
-  &--public { background: var(--success-soft, #dcfce7); color: var(--success, #16a34a); }
+  &--public { background: var(--success-soft, #dcfce7); color: var(--success-text); }
 }
 
 .empty-note { color: var(--gray-500); font-size: .85rem; }

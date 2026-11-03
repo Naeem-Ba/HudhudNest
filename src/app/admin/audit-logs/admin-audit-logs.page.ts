@@ -89,9 +89,9 @@ import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
     .row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: .8rem 1rem; display: grid; gap: .3rem; }
     .row__main, .row__meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1rem; }
     .action { color: var(--text-strong); word-break: break-all; }
-    .muted { color: var(--gray-400); font-size: var(--text-sm); }
+    .muted { color: var(--text-muted); font-size: var(--text-sm); }
     pre { margin: .3rem 0 0; white-space: pre-wrap; word-break: break-word; font-size: var(--text-xs); background: var(--gray-100); padding: .5rem; border-radius: var(--r-sm); }
-    .error { color: var(--danger); }
+    .error { color: var(--danger-text); }
     .btn { border-radius: var(--r-sm); padding: .5rem .9rem; font-size: var(--text-sm); cursor: pointer; border: 1px solid transparent; font-weight: 600; }
     .btn--primary { background: var(--primary); color: var(--on-primary); }
     .pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1.25rem; }

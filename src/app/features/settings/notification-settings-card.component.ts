@@ -120,7 +120,7 @@ const DEFAULT_END = 7 * 60;
     .ns__times label { display: grid; gap: 0.25rem; }
     .ns select, .ns input[type='time'] { padding: 0.55rem 0.7rem; border-radius: 8px; border: 1px solid var(--border-color, #cfcfcf); background: var(--surface, #fff); color: inherit; font: inherit; min-height: 44px; }
     .ns__status { margin: 0; min-height: 1.2em; font-size: 0.9rem; }
-    .ns__error { color: var(--danger, #b3261e); }
+    .ns__error { color: var(--danger-text); }
   `]
 })
 export class NotificationSettingsCardComponent implements OnInit {

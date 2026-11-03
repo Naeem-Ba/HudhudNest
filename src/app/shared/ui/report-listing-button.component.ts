@@ -177,7 +177,7 @@ const FALLBACK_REASONS: ListingReportReasonDto[] = LISTING_REPORT_REASONS.map(co
       box-shadow: var(--shadow-sm, 0 2px 8px rgba(15,23,42,.08));
       transition: color .15s, transform .1s;
     }
-    .report-trigger:hover { color: var(--danger, #dc2626); }
+    .report-trigger:hover { color: var(--danger-text); }
     .report-trigger:active { transform: scale(.92); }
     .report-trigger:focus-visible { outline: 2px solid var(--navy, #0f2742); outline-offset: 2px; }
     .report-trigger--compact { width: 36px; height: 36px; min-width: 36px; min-height: 36px; background: rgba(255,255,255,.92); }
@@ -233,12 +233,12 @@ const FALLBACK_REASONS: ListingReportReasonDto[] = LISTING_REPORT_REASONS.map(co
     textarea:focus-visible { outline: 2px solid var(--navy, #0f2742); outline-offset: 1px; }
     .report-counter { text-align: end; margin-top: .15rem; }
     .report-privacy { margin-top: .5rem; }
-    .report-error { color: var(--danger, #dc2626); font-size: var(--text-sm, .875rem); margin: .2rem 0; }
+    .report-error { color: var(--danger-text); font-size: var(--text-sm, .875rem); margin: .2rem 0; }
     .report-notice { padding: .7rem .9rem; border-radius: var(--r-md, 12px); margin: .5rem 0; overflow-wrap: anywhere; }
-    .report-notice--ok { background: var(--success-soft, #dcfce7); color: var(--success, #15803d); }
-    .report-notice--warn { background: var(--warning-soft, #fef3c7); color: var(--warning, #92400e); }
+    .report-notice--ok { background: var(--success-soft, #dcfce7); color: var(--success-text); }
+    .report-notice--warn { background: var(--warning-soft, #fef3c7); color: var(--warning-text); }
     .report-notice--info { background: var(--primary-soft, #e0e7ff); color: var(--primary-text, #1e3a8a); }
-    .report-notice--error { background: var(--danger-soft, #fee2e2); color: var(--danger, #b91c1c); }
+    .report-notice--error { background: var(--danger-soft, #fee2e2); color: var(--danger-text); }
     .report-actions { display: flex; gap: .6rem; justify-content: flex-end; margin-top: .9rem; flex-wrap: wrap; }
     .report-btn {
       min-height: 44px; padding: 0 1.2rem; border-radius: var(--r-md, 12px); border: 1px solid var(--border);

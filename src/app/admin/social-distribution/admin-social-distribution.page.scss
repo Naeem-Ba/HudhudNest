@@ -21,8 +21,8 @@
 .btn--sm { padding: .35rem .7rem; font-size: .8rem; }
 .btn--primary { background: var(--navy); color: #fff; }
 .btn--outline { background: var(--surface); border-color: var(--border); color: var(--text-strong); }
-.btn--success { background: var(--success-soft, #dcfce7); color: var(--success, #16a34a); }
-.btn--danger { background: var(--danger-soft); color: var(--danger); }
+.btn--success { background: var(--success-soft, #dcfce7); color: var(--success-text); }
+.btn--danger { background: var(--danger-soft); color: var(--danger-text); }
 .btn:disabled { opacity: .6; cursor: not-allowed; }
 
 /* ─── Dashboard stat cards ─── */
@@ -33,8 +33,8 @@
 }
 .stat-value { font-size: 1.6rem; font-weight: 700; color: var(--text-strong); }
 .stat-label { font-size: .8rem; color: var(--gray-500); }
-.stat-card--success .stat-value { color: var(--success, #16a34a); }
-.stat-card--danger .stat-value { color: var(--danger); }
+.stat-card--success .stat-value { color: var(--success-text); }
+.stat-card--danger .stat-value { color: var(--danger-text); }
 
 .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg, 16px); padding: 1.25rem; }
 .panel h3 { margin: 0 0 .75rem; color: var(--text-strong); }
@@ -80,9 +80,9 @@
   display: inline-flex; align-items: center; background: var(--gray-100); color: var(--gray-600);
   border-radius: var(--r-pill); padding: .15rem .6rem; font-size: .72rem; font-weight: 600; white-space: nowrap;
 }
-.status-chip--active { background: var(--success-soft, #dcfce7); color: var(--success, #16a34a); }
+.status-chip--active { background: var(--success-soft, #dcfce7); color: var(--success-text); }
 .status-chip--muted { background: var(--gray-100); color: var(--gray-500); }
-.status-chip--danger { background: var(--danger-soft); color: var(--danger); }
+.status-chip--danger { background: var(--danger-soft); color: var(--danger-text); }
 
 .pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1rem; }
 .pagination button { border: 1px solid var(--border); background: var(--surface); border-radius: var(--r-sm); width: 34px; height: 34px; cursor: pointer; }

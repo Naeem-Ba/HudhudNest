@@ -11,7 +11,7 @@
   border: 1px solid var(--border, #e5e7eb);
   border-radius: 12px;
   overflow: hidden;
-  background: #eef2f3;
+  background: var(--gray-100);
 }
 
 .map-canvas {
@@ -36,8 +36,8 @@
   padding: 0 14px;
   border: 1px solid rgba(15, 23, 42, .2);
   border-radius: 8px;
-  background: #fff;
-  color: #172554;
+  background: var(--surface);
+  color: var(--text-primary);
   font: inherit;
   font-size: .875rem;
   font-weight: 600;
@@ -54,8 +54,9 @@
   margin: 0;
   padding: 9px 12px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, .95);
-  color: #7f1d1d;
+  background: var(--surface);
+  border: 1px solid var(--error-border);
+  color: var(--danger-text);
   font-size: .85rem;
   text-align: center;
 }

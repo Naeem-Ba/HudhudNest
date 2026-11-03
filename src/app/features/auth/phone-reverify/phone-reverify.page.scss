@@ -75,8 +75,8 @@
 
   p { margin: 0; }
 
-  &--verified   { background: var(--success-soft); color: var(--success); }
-  &--due        { background: var(--warning-soft); color: var(--warning); }
-  &--grace      { background: var(--warning-soft); color: var(--warning); }
-  &--restricted { background: var(--danger-soft); color: var(--danger); }
+  &--verified   { background: var(--success-soft); color: var(--success-text); }
+  &--due        { background: var(--warning-soft); color: var(--warning-text); }
+  &--grace      { background: var(--warning-soft); color: var(--warning-text); }
+  &--restricted { background: var(--danger-soft); color: var(--danger-text); }
 }

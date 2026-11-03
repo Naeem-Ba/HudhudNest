@@ -218,7 +218,7 @@ import { ScrollLockService } from '../../core/services/scroll-lock.service';
     .share-link__copy:active:not(:disabled) { transform: scale(.97); }
     .share-link__copy--done { background: var(--success, #15803d); }
     .share-link__copy:disabled { opacity: .6; cursor: default; }
-    .share-sheet__live { min-height: 1.1rem; margin: .25rem 0 0; font-size: var(--text-sm, .875rem); color: var(--success, #15803d); }
+    .share-sheet__live { min-height: 1.1rem; margin: .25rem 0 0; font-size: var(--text-sm, .875rem); color: var(--success-text); }
 
     .share-sheet__hint { color: var(--gray-500); font-size: var(--text-sm, .875rem); margin: .4rem 0 .5rem; }
     .share-sheet__list { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: .5rem; list-style: none; margin: 0; padding: 0; }

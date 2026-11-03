@@ -328,7 +328,7 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
       background: var(--warning-soft); border-radius: 10px; padding: .75rem 1.25rem; min-width: 140px;
     }
     .profile-header__overall--empty { background: var(--gray-100); color: var(--gray-500); font-size: .85rem; padding: 1rem 1.25rem; }
-    .profile-header__overall-score { font-size: 1.8rem; font-weight: 700; color: var(--warning); }
+    .profile-header__overall-score { font-size: 1.8rem; font-weight: 700; color: var(--warning-text); }
     .profile-header__overall-max { font-size: .95rem; color: var(--gray-500); margin-inline-start: -.35rem; }
     .profile-header__overall-count { font-size: .75rem; color: var(--gray-500); }
     .profile-header__rate-cta { flex: 0 0 auto; white-space: nowrap; }
@@ -337,11 +337,11 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
     .about-contact { margin: 0; font-size: .9rem; color: var(--gray-700); }
 
     .rate-card__loading { display: flex; justify-content: center; padding: 1.5rem 0; }
-    .rating-form__edit-hint { margin: 0 0 .5rem; font-size: .85rem; color: var(--warning); background: var(--warning-soft); padding: .5rem .75rem; border-radius: 8px; }
+    .rating-form__edit-hint { margin: 0 0 .5rem; font-size: .85rem; color: var(--warning-text); background: var(--warning-soft); padding: .5rem .75rem; border-radius: 8px; }
 
     .stars { color: var(--gray-300); font-size: 1.1rem; line-height: 1; }
     .stars--sm { font-size: .85rem; }
-    .stars .star--filled { color: var(--warning); }
+    .stars .star--filled { color: var(--warning-text); }
 
     .stat-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: .75rem; }
     .stat-tile {
@@ -368,13 +368,13 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
     .rating-form__criterion-text { display: flex; flex-direction: column; min-width: 0; flex: 1 1 12rem; }
     .rating-form__criterion-label { font-weight: 600; color: var(--gray-800); }
     .rating-form__criterion-hint { font-size: .75rem; color: var(--gray-500); }
-    .rating-form__error { margin: .25rem 0 0; color: var(--danger); font-size: .85rem; }
-    .rating-form__counter { align-self: flex-end; font-size: .72rem; color: var(--gray-400); }
+    .rating-form__error { margin: .25rem 0 0; color: var(--danger-text); font-size: .85rem; }
+    .rating-form__counter { align-self: flex-end; font-size: .72rem; color: var(--text-muted); }
     .star-input { display: flex; gap: .25rem; }
     .star-input button {
       background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--gray-300); line-height: 1; padding: 0;
     }
-    .star-input__btn--filled { color: var(--warning); }
+    .star-input__btn--filled { color: var(--warning-text); }
     .rating-form textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .6rem; font-family: inherit; resize: vertical; background: var(--surface); color: var(--gray-800); }
 
     .rating-list { display: flex; flex-direction: column; gap: 1rem; }
