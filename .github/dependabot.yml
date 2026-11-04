@@ -34,6 +34,11 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "@types/jasmine"
         update-types: ["version-update:semver-major"]
+      # @angular/core 20.x declares zone.js as peerOptional "~0.15.0". zone.js is in the angular group, so a
+      # 0.16 bump put an unsatisfiable peer into the group PR (#205: ERESOLVE, red CI). While zone.js is 0.x a
+      # minor is the breaking step, so both are ignored; patches still arrive. Lift this with the Angular 21 upgrade.
+      - dependency-name: "zone.js"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
