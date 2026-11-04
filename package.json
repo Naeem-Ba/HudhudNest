@@ -101,6 +101,6 @@
     "postcss": "^8.5.26",
     "qrcode-generator": "2.0.4",
     "tailwindcss": "^4.3.3",
-    "typescript": "~5.9.2"
+    "typescript": "~7.0.2"
   }
 }
