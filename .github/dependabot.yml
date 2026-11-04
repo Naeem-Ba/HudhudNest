@@ -26,6 +26,14 @@ updates:
       # Angular majors are planned migrations, not routine updates.
       - dependency-name: "@angular/*"
         update-types: ["version-update:semver-major"]
+      # Karma loads the jasmine-core nested inside karma-jasmine@5 (4.6.x), never the top-level one, so a
+      # jasmine-core or @types/jasmine major changes nothing at runtime, and jasmine-core 7 does not install
+      # next to karma-jasmine-html-reporter@2.1 (peer ^4 || ^5, ERESOLVE). Revisit when the test runner is
+      # replaced (Karma is deprecated); minors and patches still arrive.
+      - dependency-name: "jasmine-core"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/jasmine"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
