@@ -8,7 +8,7 @@ import { AbstractControl } from '@angular/forms';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <p class="form-error" *ngIf="shouldShow()">
+    <p class="form-error" data-form-error *ngIf="shouldShow()" [attr.id]="errorId">
       <span aria-hidden="true">⚠️</span>
       {{ getMessage() }}
     </p>
@@ -31,6 +31,8 @@ export class FormErrorComponent {
   @Input() control: AbstractControl | null | undefined;
   @Input() submitted = false;
   @Input() messages: Record<string, string> = {};
+  /** id for `aria-describedby` on the control. */
+  @Input() errorId: string | null = null;
 
   shouldShow(): boolean {
     return !!this.control && this.control.invalid && (this.control.touched || this.control.dirty || this.submitted);
@@ -46,6 +48,11 @@ export class FormErrorComponent {
 
     if (this.messages[firstKey]) {
       return this.messages[firstKey];
+    }
+
+    // A sentence the server's answer put on the field (see applyAuthFieldErrors): already translated.
+    if (firstKey === 'server' && typeof errors['server'] === 'string') {
+      return errors['server'];
     }
 
     switch (firstKey) {

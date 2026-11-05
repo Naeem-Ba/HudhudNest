@@ -70,7 +70,7 @@ describe('restoreSession (app.config.ts)', () => {
   // ────────────── زائر حقيقي: لا كوكي refresh_token على الإطلاق ──────────────
 
   it('✅ زائر حقيقي (401 بلا errorCode) ⇒ يبقى صامتاً بلا sessionExpired$', fakeAsync(() => {
-    const reasons: Array<'expired' | 'revoked'> = [];
+    const reasons: Array<'expired' | 'revoked' | 'superseded'> = [];
     authService.sessionExpired$.subscribe(r => reasons.push(r));
 
     run();
@@ -144,7 +144,7 @@ describe('restoreSession (app.config.ts)', () => {
   // ────────────── جلسة انتهت فعلاً (الخادم أعاد errorCode محدَّداً) ──────────────
 
   it('✅ REFRESH_TOKEN_EXPIRED ⇒ يُطلِق sessionExpired$ بسبب expired', fakeAsync(() => {
-    const reasons: Array<'expired' | 'revoked'> = [];
+    const reasons: Array<'expired' | 'revoked' | 'superseded'> = [];
     authService.sessionExpired$.subscribe(r => reasons.push(r));
 
     run();
@@ -162,7 +162,7 @@ describe('restoreSession (app.config.ts)', () => {
   }));
 
   it('✅ REFRESH_TOKEN_REUSE_DETECTED ⇒ يُطلِق sessionExpired$ بسبب revoked', fakeAsync(() => {
-    const reasons: Array<'expired' | 'revoked'> = [];
+    const reasons: Array<'expired' | 'revoked' | 'superseded'> = [];
     authService.sessionExpired$.subscribe(r => reasons.push(r));
 
     run();

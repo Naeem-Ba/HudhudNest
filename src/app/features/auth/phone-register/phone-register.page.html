@@ -31,7 +31,11 @@
         <app-form-error
           [control]="phoneForm.controls.phoneNumber"
           [submitted]="submitted()"
-          [messages]="{ pattern: ('AUTH.ERRORS.PHONE_INVALID' | translate) }"
+          [messages]="{
+            required: ('AUTH.ERRORS.PHONE_REQUIRED' | translate),
+            pattern: ('AUTH.ERRORS.PHONE_INVALID' | translate),
+            phoneNumber: ('AUTH.ERRORS.PHONE_INVALID' | translate)
+          }"
         ></app-form-error>
       </div>
 
@@ -43,7 +47,7 @@
           (selectedChange)="channels.select($event)"
         ></app-otp-channel-picker>
 
-      <p class="alert alert--error" role="alert" *ngIf="error()">⚠️ {{ error() }}</p>
+      <p class="alert alert--error" role="alert" data-auth-form-error *ngIf="error()">⚠️ {{ error() }}</p>
 
       <button type="submit" class="btn-primary" [disabled]="loading()">
         <span class="spinner" *ngIf="loading()"></span>
@@ -64,7 +68,13 @@
       <div class="form-group">
         <label for="code">{{ 'AUTH.OTP_CODE' | translate }}</label>
         <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="otp-input" formControlName="code" dir="ltr" />
-        <app-form-error [control]="detailsForm.controls.code" [submitted]="submitted()"></app-form-error>
+        <app-form-error
+          [control]="detailsForm.controls.code"
+          [submitted]="submitted()"
+          [messages]="{
+            required: ('AUTH.ERRORS.OTP_REQUIRED' | translate),
+            pattern: ('AUTH.ERRORS.OTP_FORMAT' | translate)
+          }"></app-form-error>
       </div>
 
       <p class="field-hint no-code-hint">{{ 'AUTH.PHONE_NO_CODE_HINT' | translate }}</p>
@@ -73,34 +83,55 @@
         <div class="form-group">
           <label for="firstName">{{ 'AUTH.FIRST_NAME' | translate }}</label>
           <input id="firstName" type="text" formControlName="firstName" autocomplete="given-name" />
-          <app-form-error [control]="detailsForm.controls.firstName" [submitted]="submitted()"></app-form-error>
+          <app-form-error
+            [control]="detailsForm.controls.firstName"
+            [submitted]="submitted()"
+            [messages]="{
+              required: ('AUTH.ERRORS.FIRST_NAME_REQUIRED' | translate),
+              minlength: ('AUTH.ERRORS.FIRST_NAME_MIN' | translate)
+            }"></app-form-error>
         </div>
         <div class="form-group">
           <label for="lastName">{{ 'AUTH.LAST_NAME' | translate }}</label>
           <input id="lastName" type="text" formControlName="lastName" autocomplete="family-name" />
-          <app-form-error [control]="detailsForm.controls.lastName" [submitted]="submitted()"></app-form-error>
+          <app-form-error
+            [control]="detailsForm.controls.lastName"
+            [submitted]="submitted()"
+            [messages]="{
+              required: ('AUTH.ERRORS.LAST_NAME_REQUIRED' | translate),
+              minlength: ('AUTH.ERRORS.LAST_NAME_MIN' | translate)
+            }"></app-form-error>
         </div>
       </div>
 
       <div class="form-group">
         <label for="password">{{ 'AUTH.PASSWORD' | translate }}</label>
-        <input id="password" type="password" formControlName="password" autocomplete="new-password" />
-        <p class="field-hint">{{ 'AUTH.PASSWORD_MIN_HINT' | translate }}</p>
+        <input id="password" type="password" formControlName="password" autocomplete="new-password" aria-describedby="phone-register-password-rules" />
         <app-form-error
           [control]="detailsForm.controls.password"
           [submitted]="submitted()"
-          [messages]="{ minlength: ('AUTH.ERRORS.PASSWORD_MIN' | translate) }"
+          [messages]="{
+            required: ('AUTH.ERRORS.PASSWORD_REQUIRED' | translate),
+            passwordPolicy: ('AUTH.ERRORS.PASSWORD_POLICY_UNMET' | translate)
+          }"
         ></app-form-error>
+        <app-password-rules
+          listId="phone-register-password-rules"
+          [password]="detailsForm.controls.password.value"
+          [context]="personalContext()"
+          [personal]="true"
+        ></app-password-rules>
       </div>
 
       <app-consent-checkbox
         [checked]="privacyConsentAccepted()"
-        (checkedChange)="privacyConsentAccepted.set($event)">
+        [error]="consentError()"
+        (checkedChange)="privacyConsentAccepted.set($event); consentError.set('')">
       </app-consent-checkbox>
 
-      <p class="alert alert--error" role="alert" *ngIf="error()">⚠️ {{ error() }}</p>
+      <p class="alert alert--error" role="alert" data-auth-form-error *ngIf="error()">⚠️ {{ error() }}</p>
 
-      <button type="submit" class="btn-primary" [disabled]="loading() || !privacyConsentAccepted()">
+      <button type="submit" class="btn-primary" [disabled]="loading()">
         <span class="spinner" *ngIf="loading()"></span>
         {{ loading() ? ('AUTH.PHONE_REGISTER.CREATING' | translate) : ('AUTH.PHONE_REGISTER.CREATE_ACCOUNT' | translate) }}
       </button>
