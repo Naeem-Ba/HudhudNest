@@ -68,7 +68,7 @@ import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.compone
     .referrals-page { width: min(760px, 100%); margin-inline: auto; padding: clamp(1rem, 3vw, 2rem); display: grid; gap: 1rem; }
     h1 { margin: 0 0 .25rem; font-size: clamp(1.4rem, 3vw, 2rem); color: var(--gray-900); }
     header p, .muted { margin: 0; color: var(--gray-500); }
-    .card { border: 1px solid var(--gray-200); border-radius: 12px; padding: 1rem; background: var(--white, #fff); }
+    .card { border: 1px solid var(--gray-200); border-radius: 12px; padding: 1rem; background: var(--card-bg); }
     .card h2 { margin: 0 0 .5rem; font-size: 1.1rem; }
     .code-card { display: grid; gap: .5rem; }
     .label { color: var(--gray-500); font-size: .9rem; }

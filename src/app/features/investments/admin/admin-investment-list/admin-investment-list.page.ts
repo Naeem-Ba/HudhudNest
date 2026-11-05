@@ -55,14 +55,14 @@ const ALL_TYPES: InvestmentProjectType[] = [
           (ngModelChange)="onSearchChange($event)"
         />
 
-        <select [(ngModel)]="statusFilter" (change)="applyFilters()">
+        <select [(ngModel)]="statusFilter" (change)="applyFilters()" [attr.aria-label]="'ADMIN_INVESTMENTS.LIST.ALL_STATUSES' | translate">
           <option value="">{{ 'ADMIN_INVESTMENTS.LIST.ALL_STATUSES' | translate }}</option>
           <option *ngFor="let status of statuses" [value]="status">
             {{ ('INVESTMENTS.STATUS.' + status.toUpperCase()) | translate }}
           </option>
         </select>
 
-        <select [(ngModel)]="typeFilter" (change)="applyFilters()">
+        <select [(ngModel)]="typeFilter" (change)="applyFilters()" [attr.aria-label]="'ADMIN_INVESTMENTS.LIST.ALL_TYPES' | translate">
           <option value="">{{ 'ADMIN_INVESTMENTS.LIST.ALL_TYPES' | translate }}</option>
           <option *ngFor="let type of types" [value]="type">
             {{ ('INVESTMENTS.PROJECT_TYPE.' + type.toUpperCase()) | translate }}
@@ -148,18 +148,18 @@ const ALL_TYPES: InvestmentProjectType[] = [
       padding:.85rem 1rem;
     }
     .row--head { background:transparent; border:0; color:var(--gray-500); font-size:var(--text-sm); font-weight:600; padding:0 1rem; }
-    .muted { color:var(--gray-400); font-size: var(--text-sm); }
-    .project-id { display:block; font-size: .7rem; color: var(--gray-400); margin-top: .15rem; }
+    .muted { color:var(--text-muted); font-size: var(--text-sm); }
+    .project-id { display:block; font-size: .7rem; color: var(--text-muted); margin-top: .15rem; }
 
     .status-chip {
       display:inline-flex; align-items:center; border-radius:var(--r-pill); padding:.15rem .6rem;
       font-size:var(--text-xs); font-weight:600; background: var(--gray-100); color: var(--gray-600);
     }
-    .status-chip--published { background: var(--success-soft, #dcfce7); color: var(--success, #16a34a); }
+    .status-chip--published { background: var(--success-soft, #dcfce7); color: var(--success-text); }
     .status-chip--draft { background: var(--gray-100); color: var(--gray-500); }
-    .status-chip--underreview, .status-chip--scheduled { background: #fef3c7; color: #b45309; }
+    .status-chip--underreview, .status-chip--scheduled { background: var(--warning-bg); color: var(--warning-text); }
     .status-chip--approved { background: var(--primary-soft); color: var(--primary-text); }
-    .status-chip--rejected, .status-chip--suspended { background: var(--danger-soft); color: var(--danger); }
+    .status-chip--rejected, .status-chip--suspended { background: var(--danger-soft); color: var(--danger-text); }
     .status-chip--closed { background: var(--gray-200, #e5e7eb); color: var(--gray-600); }
 
     .actions { display:flex; gap:.4rem; align-items:center; flex-wrap:wrap; }

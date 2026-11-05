@@ -20,7 +20,7 @@
 .sr-card__actions { display: flex; flex-wrap: wrap; gap: .25rem .75rem; margin-block-start: .5rem; }
 .sr-card__actions .btn-link { min-block-size: 44px; }
 .sr-status { padding: .1rem .5rem; border-radius: 999px; background: var(--muted-bg, #f1f5f9); font-weight: 600; }
-.sr-status--active { background: var(--success-bg, #e7f6ec); color: var(--success, #1e7d3c); }
+.sr-status--active { background: var(--success-bg, #e7f6ec); color: var(--success-text); }
 .sr-status--paused { background: var(--warning-bg, #fff4e5); color: var(--warning-text, #8a4b00); }
 .sr-matches { list-style: none; margin: .75rem 0 0; padding: .75rem 0 0; border-block-start: 1px solid var(--border, #e5e7eb); display: grid; gap: .75rem; }
 .sr-match { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .75rem; }

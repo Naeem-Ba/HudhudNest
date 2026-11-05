@@ -97,7 +97,7 @@ import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
     .page-header p { margin: 0 0 1rem; color: var(--gray-500); }
     .list { list-style: none; margin: 0; padding: 0; display: grid; gap: .8rem; }
     .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1rem; display: grid; gap: .5rem; }
-    .banner { margin: 0 0 1rem; padding: .7rem .9rem; border-radius: 12px; font-weight: 700; background: var(--warning-soft, #fef3c7); color: var(--warning, #92400e); }
+    .banner { margin: 0 0 1rem; padding: .7rem .9rem; border-radius: 12px; font-weight: 700; background: var(--warning-soft, #fef3c7); color: var(--warning-text); }
     .card--focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-soft, rgba(99,102,241,.25)); }
     .card__head { display: flex; justify-content: space-between; gap: .8rem; align-items: flex-start; }
     .card h2 { margin: .1rem 0 0; font-size: 1.05rem; overflow-wrap: anywhere; }
@@ -106,8 +106,8 @@ import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
     .muted { margin: 0; color: var(--gray-500); font-size: var(--text-sm, .875rem); }
     .pre { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; color: var(--gray-700); }
     .chip { font-size: .78rem; font-weight: 700; border-radius: 999px; padding: .3rem .65rem; background: var(--gray-100); color: var(--gray-700); white-space: nowrap; }
-    .chip[data-status='NeedsYourInfo'] { background: var(--warning-soft, #fef3c7); color: var(--warning, #92400e); }
-    .chip[data-status='Closed'] { background: var(--success-soft); color: var(--success); }
+    .chip[data-status='NeedsYourInfo'] { background: var(--warning-soft, #fef3c7); color: var(--warning-text); }
+    .chip[data-status='Closed'] { background: var(--success-soft); color: var(--success-text); }
     .result { margin: 0; padding: .6rem .8rem; border-radius: 12px; background: var(--gray-100); color: var(--gray-800, inherit); }
     .ask { display: grid; gap: .45rem; border-top: 1px solid var(--border); padding-top: .7rem; }
     .ask textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--border); border-radius: 10px; padding: .55rem; font: inherit; font-size: 16px; background: var(--surface); color: var(--gray-900, inherit); }
@@ -118,7 +118,7 @@ import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
     .btn.primary { background: var(--primary); color: var(--on-primary); }
     .btn:disabled { opacity: .5; cursor: not-allowed; }
     .state { padding: 2rem; text-align: center; background: var(--surface); border: 1px dashed var(--gray-300); border-radius: 16px; }
-    .state.error { color: var(--danger); }
+    .state.error { color: var(--danger-text); }
     .pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1.25rem; }
     .pagination button { border: 1px solid var(--border); background: var(--surface); border-radius: var(--r-sm); width: 36px; height: 36px; cursor: pointer; }
     .pagination button:disabled { opacity: .4; cursor: not-allowed; }

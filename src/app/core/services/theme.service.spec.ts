@@ -152,4 +152,88 @@ describe('ThemeService', () => {
     expect(service.theme()).toBe('dark');
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
   });
+
+  // ────────────── وضع «تلقائي» الحي + المظهر الأصلي للمتصفح ──────────────
+
+  /** matchMedia whose result can change after creation, like an OS switching to dark at night. */
+  function controllableMatchMedia(initialDark: boolean): { setDark: (v: boolean) => void } {
+    let dark = initialDark;
+    const listeners: Array<(e: { matches: boolean }) => void> = [];
+    spyOn(window, 'matchMedia').and.callFake(() => ({
+      get matches() { return dark; },
+      media: '',
+      onchange: null,
+      addEventListener: (_: string, fn: (e: { matches: boolean }) => void) => listeners.push(fn),
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false
+    }) as unknown as MediaQueryList);
+    return { setDark: v => { dark = v; listeners.forEach(fn => fn({ matches: v })); } };
+  }
+
+  it('✅ بلا اختيار محفوظ: التطبيق يتبع تغيّر إعداد الجهاز مباشرةً دون إعادة تحميل', () => {
+    const os = controllableMatchMedia(false);
+    const service = TestBed.inject(ThemeService);
+    expect(service.preference()).toBe('system');
+    expect(service.theme()).toBe('light');
+
+    os.setDark(true);
+
+    expect(service.theme()).toBe('dark');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+  });
+
+  it('✅ اختيار المستخدم الصريح لا يُلغى بتغيّر إعداد الجهاز', () => {
+    const os = controllableMatchMedia(false);
+    const service = TestBed.inject(ThemeService);
+    service.setPreference('light');
+
+    os.setDark(true);
+
+    expect(service.theme()).toBe('light');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+  });
+
+  it('✅ setPreference("system") يمسح الاختيار المحفوظ ويعود لتتبّع الجهاز', () => {
+    const os = controllableMatchMedia(true);
+    const service = TestBed.inject(ThemeService);
+    service.setPreference('light');
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('light');
+
+    service.setPreference('system');
+
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+    expect(service.theme()).toBe('dark');
+    os.setDark(false);
+    expect(service.theme()).toBe('light');
+  });
+
+  it('✅ يضبط color-scheme و meta theme-color مع كل تغيير', () => {
+    stubMatchMedia(false);
+    const meta = document.createElement('meta');
+    meta.setAttribute('name', 'theme-color');
+    meta.setAttribute('content', '#000');
+    document.head.appendChild(meta);
+    const service = TestBed.inject(ThemeService);
+
+    service.setPreference('dark');
+    expect(document.documentElement.style.colorScheme).toBe('dark');
+    expect(meta.getAttribute('content')).toBe('#0a0a0c');
+
+    service.setPreference('light');
+    expect(document.documentElement.style.colorScheme).toBe('light');
+    expect(meta.getAttribute('content')).toBe('#0F2742');
+    meta.remove();
+  });
+
+  it('✅ اختيار تم في تبويب آخر (حدث storage) يُطبَّق هنا أيضاً', () => {
+    stubMatchMedia(false);
+    const service = TestBed.inject(ThemeService);
+
+    window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY, newValue: 'dark' }));
+
+    expect(service.preference()).toBe('dark');
+    expect(service.theme()).toBe('dark');
+  });
 });

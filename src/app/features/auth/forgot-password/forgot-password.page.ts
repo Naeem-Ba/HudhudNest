@@ -18,8 +18,8 @@ import { ToastService } from '../../../shared/services/toast.service';
         <h1>{{ 'AUTH.FORGOT_TITLE' | translate }}</h1>
         <p>{{ 'AUTH.FORGOT_SUBTITLE' | translate }}</p>
 
-        <label>{{ 'AUTH.EMAIL' | translate }}</label>
-        <input formControlName="email" [placeholder]="'AUTH.EMAIL_PLACEHOLDER' | translate" autocomplete="email">
+        <label for="forgot-password-f1">{{ 'AUTH.EMAIL' | translate }}</label>
+        <input id="forgot-password-f1" formControlName="email" [placeholder]="'AUTH.EMAIL_PLACEHOLDER' | translate" autocomplete="email">
         <app-form-error [control]="form.controls.email" [submitted]="submitted()"></app-form-error>
 
         <button [disabled]="form.invalid || loading()">
@@ -33,7 +33,7 @@ import { ToastService } from '../../../shared/services/toast.service';
     </section>
   `,
   styles: [`
-    .auth-page{min-height:70vh;display:grid;place-items:center;background:var(--page-bg);padding:2rem}.auth-card{width:min(450px,100%);background:var(--surface);padding:2rem;border-radius:16px;box-shadow:var(--shadow-lg);display:grid;gap:.55rem}h1,p{margin:0}p{line-height:1.7}label{font-weight:700;margin-top:.5rem}input,button{width:100%;box-sizing:border-box;padding:.85rem 1rem;border-radius:10px}input{border:1px solid var(--border);background:var(--surface)}button{margin-top:1rem;border:0;background:var(--primary);color:var(--on-primary);font-weight:700;cursor:pointer}button:hover:not(:disabled){background:var(--primary-dark)}button:disabled{opacity:.6;cursor:not-allowed}.error{color:var(--danger)}.success{color:var(--success)}
+    .auth-page{min-height:70vh;display:grid;place-items:center;background:var(--page-bg);padding:2rem}.auth-card{width:min(450px,100%);background:var(--surface);padding:2rem;border-radius:16px;box-shadow:var(--shadow-lg);display:grid;gap:.55rem}h1,p{margin:0}p{line-height:1.7}label{font-weight:700;margin-top:.5rem}input,button{width:100%;box-sizing:border-box;padding:.85rem 1rem;border-radius:10px}input{border:1px solid var(--border);background:var(--surface)}button{margin-top:1rem;border:0;background:var(--primary);color:var(--on-primary);font-weight:700;cursor:pointer}button:hover:not(:disabled){background:var(--primary-dark)}button:disabled{opacity:.6;cursor:not-allowed}.error{color:var(--danger-text)}.success{color:var(--success-text)}
   `]
 })
 export class ForgotPasswordPage {

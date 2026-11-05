@@ -22,7 +22,7 @@
 }
 
 .unread {
-  color: var(--danger);
+  color: var(--danger-text);
   font-weight: bold;
 }
 
@@ -40,16 +40,16 @@ button {
 }
 
 .read-btn {
-  background: #4caf50;
+  background: var(--success-solid);
   color: white;
 }
 
 .delete-btn {
-  background: #e53935;
+  background: var(--danger-solid);
   color: white;
 }
 
 .back-btn {
-  background: #9e9e9e;
+  background: var(--neutral-solid);
   color: white;
 }

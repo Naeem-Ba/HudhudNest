@@ -222,10 +222,10 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | 'takedown' | 'restore' | n
       display:inline-flex; align-items:center; background: var(--gray-100); color: var(--gray-700);
       border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600;
     }
-    .badge--expired, .badge--archived { background: var(--danger-soft); color: var(--danger); }
-    .badge--available { background: var(--success-soft, #dcfce7); color: var(--success, #16a34a); }
+    .badge--expired, .badge--archived { background: var(--danger-soft); color: var(--danger-text); }
+    .badge--available { background: var(--success-soft, #dcfce7); color: var(--success-text); }
     .badge--featured { background: var(--gold-soft); color: var(--text-strong); }
-    .badge--taken-down { background: var(--danger-soft); color: var(--danger); }
+    .badge--taken-down { background: var(--danger-soft); color: var(--danger-text); }
     .taken-down-reason { margin:0 0 .35rem; font-size:var(--text-sm); color: var(--gray-700); }
     .meta { display:flex; gap:.8rem; flex-wrap:wrap; font-size: .78rem; color: var(--gray-500); }
 

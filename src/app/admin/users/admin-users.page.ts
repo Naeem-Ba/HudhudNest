@@ -47,17 +47,17 @@ import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
           (ngModelChange)="onSearchChange($event)"
         />
 
-        <select [(ngModel)]="roleFilter" (change)="load()">
+        <select [(ngModel)]="roleFilter" (change)="load()" [attr.aria-label]="'ADMIN_USERS.ALL_ROLES' | translate">
           <option value="">{{ 'ADMIN_USERS.ALL_ROLES' | translate }}</option>
           <option *ngFor="let role of roles()" [value]="role">{{ role }}</option>
         </select>
 
-        <select [(ngModel)]="planFilter" (change)="load()">
+        <select [(ngModel)]="planFilter" (change)="load()" [attr.aria-label]="'ADMIN_USERS.ALL_PLANS' | translate">
           <option value="">{{ 'ADMIN_USERS.ALL_PLANS' | translate }}</option>
           <option *ngFor="let plan of plans()" [value]="plan.tier">{{ plan.nameKey | translate }}</option>
         </select>
 
-        <select [(ngModel)]="accountStatusFilter" (change)="load()">
+        <select [(ngModel)]="accountStatusFilter" (change)="load()" [attr.aria-label]="'ADMIN_USERS.ALL_STATUSES' | translate">
           <option value="">{{ 'ADMIN_USERS.ALL_STATUSES' | translate }}</option>
           <option value="Active">{{ 'ADMIN_USERS.STATUS_ACTIVE' | translate }}</option>
           <option value="Disabled">{{ 'ADMIN_USERS.STATUS_DISABLED' | translate }}</option>
@@ -170,30 +170,30 @@ import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
       padding:.85rem 1rem;
     }
     .row--head { background:transparent; border:0; color:var(--gray-500); font-size:var(--text-sm); font-weight:600; padding:0 1rem; }
-    .muted { color:var(--gray-400); font-size: var(--text-sm); }
-    .user-id { display:block; font-size: .7rem; color: var(--gray-400); margin-top: .15rem; }
+    .muted { color:var(--text-muted); font-size: var(--text-sm); }
+    .user-id { display:block; font-size: .7rem; color: var(--text-muted); margin-top: .15rem; }
 
     .plan-chip {
       display:inline-flex; align-items:center; background:var(--gold-soft); color: var(--text-strong);
       border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600;
     }
-    .plan-chip--expired, .plan-chip--cancelled { background: var(--danger-soft); color: var(--danger); }
+    .plan-chip--expired, .plan-chip--cancelled { background: var(--danger-soft); color: var(--danger-text); }
     .plan-chip--noplan { background: var(--gray-100); color: var(--gray-500); }
     .plan-meta { font-size: .72rem; color: var(--gray-500); margin-top:.2rem; }
 
     .ads-counts { font-size: var(--text-sm); color: var(--gray-700); }
 
     .status-chip {
-      display:inline-flex; align-items:center; background: var(--success-soft, #dcfce7); color: var(--success, #16a34a);
+      display:inline-flex; align-items:center; background: var(--success-soft, #dcfce7); color: var(--success-text);
       border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600;
     }
-    .status-chip--disabled { background: var(--danger-soft); color: var(--danger); }
+    .status-chip--disabled { background: var(--danger-soft); color: var(--danger-text); }
 
     .actions { display:flex; gap:.4rem; align-items:center; flex-wrap:wrap; }
     .btn { border-radius:var(--r-sm); padding:.4rem .75rem; font-size:var(--text-sm); cursor:pointer; border:1px solid transparent; font-weight:600; }
     .btn--outline { background:var(--surface); border-color:var(--border); color: var(--text-strong); }
     .btn--primary { background: var(--primary); color: var(--on-primary); }
-    .btn--danger { background:var(--danger-soft); color:var(--danger); border-color:rgba(220,38,38,.2); }
+    .btn--danger { background:var(--danger-soft); color:var(--danger-text); border-color:rgba(220,38,38,.2); }
     .btn:disabled { opacity:.6; cursor:not-allowed; }
 
     .pagination { display:flex; justify-content:center; align-items:center; gap:1rem; margin-top:1.25rem; }

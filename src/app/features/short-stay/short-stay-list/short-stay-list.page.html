@@ -69,7 +69,7 @@
         <p class="ssl__card-type">{{ listing.accommodationTypeNameAr }}</p>
         <h3 class="ssl__card-title">{{ listing.title }}</h3>
         <p class="ssl__card-meta">
-          {{ listing.city || '—' }} · {{ listing.capacity }} {{ 'SHORTSTAY.LIST.GUESTS_SHORT' | translate }}
+          {{ locations.city({ city: listing.city }) || '—' }} · {{ listing.capacity }} {{ 'SHORTSTAY.LIST.GUESTS_SHORT' | translate }}
           · {{ listing.bedrooms }} {{ 'SHORTSTAY.LIST.BEDROOMS_SHORT' | translate }}
         </p>
         <app-listing-view-count class="card-views" [compact]="true" [count]="listing.viewCount"></app-listing-view-count>

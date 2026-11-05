@@ -168,7 +168,7 @@
     line-height: 1.7;
     color: var(--gray-800);
 
-    &::before { content: '✓'; position: absolute; inset-inline-start: 0; color: var(--success); font-weight: 700; }
+    &::before { content: '✓'; position: absolute; inset-inline-start: 0; color: var(--success-text); font-weight: 700; }
   }
 
   .pg__tips-kind { font-weight: 600; color: var(--text-strong); }

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { LocationNamesService } from '../../../core/api/location-names.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -53,6 +54,7 @@ export class ShortStayDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly listingsApi = inject(ShortStayListingApiService);
+  readonly locations = inject(LocationNamesService);
   private readonly bookingsApi = inject(ShortStayBookingApiService);
   private readonly lookupsApi = inject(LookupsApiService);
   private readonly auth = inject(AuthService);

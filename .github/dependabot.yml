@@ -1,0 +1,72 @@
+# Dependency updates for the web/mobile app (QA phase 17, P17-D06). The API repository already has one.
+# Grouped so a framework bump arrives as ONE pull request: Angular packages pin each other's exact version in
+# their peer dependencies, so updating them one by one cannot resolve (npm reports ERESOLVE).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    # Monthly, not weekly: version updates are routine maintenance and a weekly cadence produced a standing
+    # queue of 9+ open PRs that nobody could review. SECURITY updates are a separate Dependabot feature
+    # (Settings > Code security > Dependabot security updates) and are not delayed by this schedule.
+    schedule:
+      interval: monthly
+      time: "06:00"
+    open-pull-requests-limit: 5
+    groups:
+      angular:
+        patterns:
+          - "@angular/*"
+          - "@angular-devkit/*"
+          - "zone.js"
+      capacitor:
+        patterns:
+          - "@capacitor/*"
+          - "@capacitor-community/*"
+          - "@capacitor-firebase/*"
+          - "@capgo/*"
+      # The translate packages are versioned together; bumping one alone leaves an unsatisfiable peer.
+      ngx-translate:
+        patterns:
+          - "@ngx-translate/*"
+    ignore:
+      # Angular majors are planned migrations, not routine updates.
+      - dependency-name: "@angular/*"
+        update-types: ["version-update:semver-major"]
+      # @angular/compiler-cli 20.x declares typescript ">=5.8 <6.0", so TypeScript 6 and 7 cannot install next to it
+      # (#213 proposed 7.0.2). Patches still arrive. Lift with the Angular upgrade that widens the range.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      # Karma loads the jasmine-core nested inside karma-jasmine@5 (4.6.x), never the top-level one, so a
+      # jasmine-core or @types/jasmine major changes nothing at runtime, and jasmine-core 7 does not install
+      # next to karma-jasmine-html-reporter@2.1 (peer ^4 || ^5, ERESOLVE). Revisit when the test runner is
+      # replaced (Karma is deprecated); minors and patches still arrive.
+      - dependency-name: "jasmine-core"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/jasmine"
+        update-types: ["version-update:semver-major"]
+      # @angular/core 20.x declares zone.js as peerOptional "~0.15.0". zone.js is in the angular group, so a
+      # 0.16 bump put an unsatisfiable peer into the group PR (#205: ERESOLVE, red CI). While zone.js is 0.x a
+      # minor is the breaking step, so both are ignored; patches still arrive. Lift this with the Angular 21 upgrade.
+      - dependency-name: "zone.js"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      # ngx-translate 18 removes TranslateModule (imported in 179 files) and turns currentLang into a Signal:
+      # #220 failed the TypeScript check with 100+ errors. It is a planned migration, not a routine bump.
+      # Minors and patches still arrive.
+      - dependency-name: "@ngx-translate/core"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@ngx-translate/http-loader"
+        update-types: ["version-update:semver-major"]
+      # firebase 13 cannot install next to @capacitor-firebase/messaging (peerOptional firebase ^12.6, also in
+      # 8.6.0): `npm ci` fails with ERESOLVE (#223). It does not fix the audit findings either: firebase 13.1.0
+      # still depends on @grpc/grpc-js ~1.9.0. Lift when the messaging plugin accepts firebase 13.
+      - dependency-name: "firebase"
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+      time: "06:00"
+    groups:
+      github-actions:
+        patterns:
+          - "*"

@@ -88,7 +88,7 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | 'disable' | 'enable' | null;
             <span *ngIf="u.roles.length === 0" class="muted">—</span>
           </div>
           <div class="role-add">
-            <select #roleSelect class="role-select">
+            <select #roleSelect class="role-select" [attr.aria-label]="'ADMIN_USERS.ADD_ROLE' | translate">
               <option *ngFor="let role of roles()" [value]="role">{{ role }}</option>
             </select>
             <button type="button" class="btn btn--outline" (click)="assignRole(roleSelect.value)">
@@ -335,7 +335,7 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | 'disable' | 'enable' | null;
       display:inline-flex; align-items:center; gap:.3rem; background:var(--gold-soft); color: var(--text-strong);
       border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600;
     }
-    .role-chip__remove { border:0; background:none; cursor:pointer; color:var(--danger); font-size:1rem; line-height:1; padding:0; }
+    .role-chip__remove { border:0; background:none; cursor:pointer; color:var(--danger-text); font-size:1rem; line-height:1; padding:0; }
     .role-add { display:flex; gap:.5rem; align-items:center; }
     .role-select { border:1px solid var(--border); border-radius:var(--r-sm); padding:.35rem .5rem; font-size:var(--text-sm); }
 
@@ -344,25 +344,25 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | 'disable' | 'enable' | null;
     .plan-actions { display:flex; flex-wrap:wrap; gap:.6rem; margin-top: 1rem; }
 
     .status-chip {
-      display:inline-flex; align-items:center; background: var(--success-soft, #dcfce7); color: var(--success, #16a34a);
+      display:inline-flex; align-items:center; background: var(--success-soft, #dcfce7); color: var(--success-text);
       border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600;
     }
-    .status-chip--disabled { background: var(--danger-soft); color: var(--danger); }
+    .status-chip--disabled { background: var(--danger-soft); color: var(--danger-text); }
 
     .plan-chip {
       display:inline-flex; align-items:center; background:var(--gold-soft); color: var(--text-strong);
       border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600;
     }
-    .plan-chip--expired, .plan-chip--cancelled { background: var(--danger-soft); color: var(--danger); }
+    .plan-chip--expired, .plan-chip--cancelled { background: var(--danger-soft); color: var(--danger-text); }
 
     .ads-summary { color: var(--gray-700); margin: 0 0 .8rem; }
 
     .btn { border-radius:var(--r-sm); padding:.5rem .9rem; font-size:var(--text-sm); cursor:pointer; border:1px solid transparent; font-weight:600; text-decoration:none; display:inline-block; }
     .btn--outline { background:var(--surface); border-color:var(--border); color: var(--text-strong); }
     .btn--primary { background: var(--primary); color: var(--on-primary); }
-    .btn--danger { background:var(--danger-soft); color:var(--danger); border-color:rgba(220,38,38,.2); }
+    .btn--danger { background:var(--danger-soft); color:var(--danger-text); border-color:rgba(220,38,38,.2); }
     .btn:disabled { opacity:.6; cursor:not-allowed; }
-    .muted { color: var(--gray-400); }
+    .muted { color: var(--text-muted); }
 
     .modal-form { display:flex; flex-direction:column; gap:.8rem; }
     .modal-form label { display:flex; flex-direction:column; gap:.35rem; font-size: var(--text-sm); font-weight:600; color: var(--text-strong); }

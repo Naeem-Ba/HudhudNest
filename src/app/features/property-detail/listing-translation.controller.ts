@@ -39,6 +39,7 @@ export class ListingTranslationController {
   readonly showOriginal = signal(false);
   readonly title = signal<string | null>(null);
   readonly description = signal<string | null>(null);
+  readonly street = signal<string | null>(null);
 
   private readonly cache = new Map<string, ListingTranslation>();
   private requestSub?: Subscription;
@@ -71,6 +72,7 @@ export class ListingTranslationController {
     this.showOriginal.set(false);
     this.title.set(null);
     this.description.set(null);
+    this.street.set(null);
 
     const cached = this.cache.get(key);
     if (cached) {
@@ -102,6 +104,7 @@ export class ListingTranslationController {
     this.showOriginal.set(false);
     this.title.set(null);
     this.description.set(null);
+    this.street.set(null);
   }
 
   private request(): void {
@@ -151,10 +154,12 @@ export class ListingTranslationController {
   private apply(result: ListingTranslation): void {
     const title = result.title?.state === 'ready' ? result.title.text ?? null : null;
     const description = result.description?.state === 'ready' ? result.description.text ?? null : null;
+    const street = result.street?.state === 'ready' ? result.street.text ?? null : null;
     this.title.set(title);
     this.description.set(description);
+    this.street.set(street);
 
-    if (title || description) {
+    if (title || description || street) {
       this.view.set('ready');
     } else if (result.status === 'same_language') {
       this.view.set('none');
