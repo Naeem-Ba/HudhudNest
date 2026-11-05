@@ -2669,40 +2669,77 @@
     }
   },
   "LANDING": {
+    "TOP": {
+      "HOME_LINK": "Zur Website",
+      "LANG_ARIA": "Sprache"
+    },
     "HERO": {
       "ARIA": "Startseite",
       "BADGE": "Beta — Start in Syrien in Kürze",
       "TITLE_MAIN": "Jedes Zuhause hat eine Geschichte.",
       "TITLE_ACCENT": "Lassen Sie uns Ihre Geschichte in Syrien beginnen.",
       "TAGLINE_1": "Eine kleine Plattform mit großem Herz, die Familien hilft, ein Zuhause zu finden — echte Fotos und direkter Kontakt, ohne doppelte oder gefälschte Anzeigen.",
-      "TAGLINE_2": "Eine Plattform, die Immobilienanzeigen in Syrien zu einem einheitlichen Verzeichnis bündelt: echte Fotos, präzise Daten und eine einzige verlässliche Quelle statt Dutzender verstreuter Facebook- und WhatsApp-Gruppen.",
-      "TAGLINE_3": "Präzise Filter, vergleichbare Preise und live aktualisierte Ergebnisse aus allen syrischen Städten — kein zufälliges Durchscrollen verstreuter Beiträge mehr.",
-      "CTA_PRIMARY": "Warteliste beitreten",
-      "CTA_PRIMARY_ARIA": "Der HudhudNest-Warteliste beitreten",
-      "CTA_GHOST": "Bald eigene Immobilie anbieten",
-      "CTA_GHOST_ARIA": "Ihre Immobilie auf HudhudNest anbieten",
-      "STATS_ARIA": "Kurzübersicht",
-      "STAT_CITIES_VALUE": "5+",
-      "STAT_CITIES_LABEL": "syrische Städte",
-      "STAT_FREE_VALUE": "Kostenlos",
-      "STAT_FREE_LABEL": "zum Start",
-      "STAT_MVP_VALUE": "MVP",
-      "STAT_MVP_LABEL": "in Kürze"
+      "CTA_EXPLORE": "Immobilien entdecken",
+      "CTA_EXPLORE_ARIA": "Immobilien auf HudhudNest entdecken",
+      "CTA_PUBLISH": "Immobilie inserieren",
+      "CTA_PUBLISH_ARIA": "Ihre Immobilienanzeige auf HudhudNest veröffentlichen",
+      "CHIPS_ARIA": "Auf einen Blick",
+      "CHIP_FREE": "Zum Start kostenlos",
+      "CHIP_REAL": "Echte Fotos, direkter Kontakt",
+      "CHIP_LANGS": "عربي · English · Deutsch",
+      "VISUAL_ARIA": "Illustration der Suchansicht der Plattform – keine echten Anzeigen",
+      "VISUAL_TITLE": "Finden Sie Ihre Immobilie",
+      "VISUAL_SALE": "Kauf",
+      "VISUAL_RENT": "Miete",
+      "VISUAL_LOCATION": "Gouvernement · Gebiet",
+      "VISUAL_TYPE": "Immobilientyp",
+      "VISUAL_PRICE": "Preisspanne",
+      "VISUAL_BTN": "Ergebnisse anzeigen",
+      "VISUAL_NOTE": "Illustration der Oberfläche"
     },
-    "OFFER": {
-      "EYEBROW": "Sonderangebot für Immobilienbüros",
-      "PROGRESS_ARIA": "{{count}} von {{max}} beigetreten",
-      "PROGRESS_LABEL": "{{count}} von {{max}} Büros sind bereits beigetreten",
-      "CTA": "Büro jetzt registrieren",
-      "CTA_ARIA": "Ihr Immobilienbüro für dieses Angebot registrieren",
-      "ENDS_ON": "Angebot endet am {{date}}",
-      "LOADING_ARIA": "Angebote werden geladen",
-      "EMPTY_TITLE": "Derzeit sind keine Angebote veröffentlicht",
-      "EMPTY_TEXT": "Melden Sie Ihr Interesse an – wir informieren Sie, sobald das erste Angebot startet.",
-      "EMPTY_CTA": "Interesse anmelden",
-      "ERROR_TITLE": "Die Angebote konnten gerade nicht geladen werden",
-      "ERROR_TEXT": "Der Rest der Seite funktioniert normal. Sie können es erneut versuchen.",
-      "RETRY": "Erneut versuchen"
+    "VISION": {
+      "EYEBROW": "Unsere Vision",
+      "TITLE": "Eine Immobilienplattform für ganz Syrien",
+      "TEXT": "Eine Plattform, die Syriens Immobilienanzeigen in einem einheitlichen Register bündelt: echte Fotos, genaue Angaben und eine verlässliche Quelle statt Dutzender verstreuter Facebook- und WhatsApp-Gruppen.",
+      "PATH_ARIA": "Phasen des Starts",
+      "STEP1_TAG": "Der Anfang",
+      "STEP1_TITLE": "Damaskus und Umland Damaskus",
+      "STEP1_DESC": "Hier beginnt voraussichtlich unser schrittweiser Start, damit wir ein geordnetes Register aufbauen und aus der realen Nutzung lernen.",
+      "STEP2_TAG": "Danach",
+      "STEP2_TITLE": "Die übrigen Gouvernements Syriens",
+      "STEP2_DESC": "Unsere Vision umfasst ganz Syrien, und wir erweitern Phase für Phase.",
+      "NOTE": "Der Start erfolgt schrittweise: Das Angebot an Anzeigen und Services unterscheidet sich je nach Gebiet und wächst mit der Zeit."
+    },
+    "USES": {
+      "EYEBROW": "Hier starten",
+      "TITLE": "Was können Sie mit HudhudNest tun?",
+      "ITEMS": {
+        "BUY": {
+          "TITLE": "Immobilie kaufen",
+          "DESC": "Stöbern Sie in Immobilien zum Kauf mit Fotos und strukturierten Angaben und vergleichen Sie Optionen an einem Ort."
+        },
+        "RENT": {
+          "TITLE": "Wohnung mieten",
+          "DESC": "Suchen Sie Mietobjekte nach Gouvernement, Gebiet, Preis und Ausstattung."
+        },
+        "SHORT": {
+          "TITLE": "Kurzzeitaufenthalte",
+          "DESC": "Entdecken Sie Kurzzeitunterkünfte und senden Sie eine Buchungsanfrage an den Gastgeber."
+        },
+        "INVEST": {
+          "TITLE": "Investmentchancen",
+          "DESC": "Entdecken Sie Immobilien-Investitionsprojekte und behalten Sie die für Sie interessanten im Blick."
+        },
+        "PUBLISH": {
+          "TITLE": "Immobilie inserieren",
+          "DESC": "Veröffentlichen Sie Ihre Anzeige mit klaren Fotos und Angaben, damit Suchende Sie direkt erreichen."
+        },
+        "SERVICES": {
+          "TITLE": "Immobilienservice anfragen",
+          "DESC": "Entdecken Sie Services von Anbietern, die von der Plattform zugelassen wurden."
+        }
+      },
+      "GO": "Entdecken"
     },
     "PROBLEM_SOLUTION": {
       "EYEBROW": "Warum HudhudNest?",
@@ -2737,15 +2774,124 @@
           "TITLE": "Klarere Informationen",
           "DESC": "Fotos, ausführliche Beschreibung, ungefähre Lage, Fläche, Etagen und übersichtliche Kontaktdaten — alles an seinem Platz."
         },
+        "PRICE": {
+          "TITLE": "Preise Ihrer Gegend kennen",
+          "DESC": "Eine Preisspanne auf Basis tatsächlich veröffentlichter Anzeigen – und bei Bedarf eine Bewertungsanfrage für Ihre Immobilie."
+        },
+        "LANGS": {
+          "TITLE": "In drei Sprachen",
+          "DESC": "Eine vollständige Oberfläche auf Arabisch, Englisch und Deutsch – für Besucher in Syrien und im Ausland."
+        },
+        "SERVICES": {
+          "TITLE": "Immobilienservices",
+          "DESC": "Verifizierung, Besichtigung, Fotografie und mehr – von Anbietern, die das Plattform-Team zulässt."
+        },
+        "SAVE": {
+          "TITLE": "Merken und teilen",
+          "DESC": "Favoriten anlegen, Suchen speichern und Anzeigen mit anderen teilen."
+        },
+        "MAP": {
+          "TITLE": "Auf der Karte",
+          "DESC": "Stöbern Sie in Immobilien auf der Karte und sehen Sie ungefähre Lage und Umgebung."
+        },
         "CONTACT": {
           "TITLE": "Direkter Kontakt",
           "DESC": "Kontaktieren Sie Eigentümer oder Immobilienbüro direkt, ohne komplizierte Schritte oder unnötige Mittelsmänner."
-        },
-        "SCALE": {
-          "TITLE": "Für Wachstum gebaut",
-          "DESC": "Wir starten in Syrien für Großstädte und im Ausland lebende Syrer, mit einem Design, das die Expansion in arabische und globale Märkte unterstützt."
         }
       }
+    },
+    "SEARCH": {
+      "EYEBROW": "Suche und Filter",
+      "TITLE": "Suchen Sie klug … und finden Sie die Immobilie, die zu Ihnen passt.",
+      "TEXT": "Präzise Filter, vergleichbare Preise und Ergebnisse, die sich mit jeder neuen Anzeige aktualisieren – statt wahllosem Scrollen durch verstreute Beiträge.",
+      "POINTS": {
+        "1": "Gouvernement, dann Gebiet und Viertel",
+        "2": "Kauf oder Miete",
+        "3": "Immobilientyp, Preisspanne und Währung",
+        "4": "Ausstattung und Merkmale",
+        "5": "Sortierung und Umkreissuche auf der Karte"
+      },
+      "POINTS_ARIA": "Wichtigste Suchoptionen",
+      "CTA": "Suche jetzt ausprobieren",
+      "CTA_MAP": "Karte öffnen"
+    },
+    "VALUE": {
+      "EYEBROW": "Preiseinschätzung",
+      "TITLE": "Was ist Ihre Immobilie wert? Entdecken Sie eine Einschätzung.",
+      "TEXT": "Zwei Wege zu einer Preiseinschätzung – je nachdem, was Sie brauchen.",
+      "RANGE_TAG": "Sofort",
+      "RANGE_TITLE": "Preisspanne in Ihrer Gegend",
+      "RANGE_DESC": "Wählen Sie Gouvernement, Gebiet, Immobilientyp und Fläche und sehen Sie die Angebotspreisspanne aktuell veröffentlichter Anzeigen. Die Spanne zeigt, auf wie vielen Anzeigen sie beruht – und reichen die Daten nicht, sagen wir das offen.",
+      "RANGE_CTA": "Preisspanne anzeigen",
+      "REQ_TAG": "Für Ihre Immobilie",
+      "REQ_TITLE": "Bewertung Ihrer Immobilie anfragen",
+      "REQ_DESC": "Geben Sie Gouvernement, Gebiet, Viertel, Immobilientyp, Fläche und Zimmerzahl an. Sie erhalten eine schnelle Einschätzung auf Basis ähnlicher Anzeigen – oder wir leiten Ihre Anfrage an Immobilienbüros in Ihrer Gegend weiter.",
+      "REQ_CTA": "Einschätzung anfragen",
+      "DISCLAIMER": "Eine Einschätzung ist eine Orientierung, keine offizielle Bewertung und keine Preisgarantie. Für wichtige finanzielle Entscheidungen ziehen Sie Fachleute hinzu und prüfen Sie selbst."
+    },
+    "LANGS": {
+      "EYEBROW": "Mehrsprachig",
+      "TITLE": "Syriens Immobilien in Ihrer Sprache.",
+      "TEXT": "Die Plattform spricht Arabisch, Englisch und Deutsch – so entdecken Sie syrische Immobilien mühelos, ob in Syrien oder im Ausland.",
+      "TILES_ARIA": "Unterstützte Sprachen",
+      "NOTE": "Die automatische Übersetzung von Anzeigentexten ist in Vorbereitung und noch nicht als fertig angekündigt; derzeit erscheint eine Anzeige in der Sprache ihres Verfassers.",
+      "CTA_EXPATS": "Leitfaden für Auslandssyrer"
+    },
+    "SERVICES": {
+      "EYEBROW": "Immobilienservices",
+      "TITLE": "Suchen Sie nicht nur eine Immobilie … entdecken Sie die Services, die Sie auf Ihrem Weg brauchen.",
+      "TEXT": "Immobilienservices von Anbietern, die von der Plattform zugelassen sind. Kategorien und Anbieter wachsen schrittweise, und der Katalog zeigt, was tatsächlich verfügbar ist.",
+      "CHIPS_ARIA": "Beispiele für Servicekategorien",
+      "C_VERIFICATION": "Verifizierung",
+      "C_VALUATION": "Bewertung",
+      "C_INSPECTION": "Technische Besichtigung",
+      "C_PHOTOGRAPHY": "Professionelle Fotografie",
+      "C_MANAGEMENT": "Immobilienverwaltung",
+      "C_LEGAL": "Rechtliche Services",
+      "C_ENGINEERING": "Ingenieurleistungen",
+      "C_MAINTENANCE": "Instandhaltung",
+      "CTA": "Services ansehen",
+      "CTA_JOIN": "Als Anbieter beitreten"
+    },
+    "OFFICES": {
+      "EYEBROW": "Für Büros und Anbieter",
+      "TITLE": "Bringen Sie Ihre Immobilien zu den Suchenden",
+      "TEXT": "Ob Eigentümer oder Immobilienbüro: Die Plattform bietet Ihnen einen geordneten Weg, Ihre Anzeigen zu präsentieren und mit Interessenten in Kontakt zu treten.",
+      "POINTS": {
+        "1": {
+          "TITLE": "Eine öffentliche Seite für Ihr Büro",
+          "DESC": "Stellen Sie Ihr Büro vor und zeigen Sie dessen Anzeigen auf einer Seite mit eigenem Link."
+        },
+        "2": {
+          "TITLE": "Ihr Team und Ihre Anzeigen an einem Ort",
+          "DESC": "Fügen Sie Makler und Mitarbeitende hinzu und verwalten Sie die Anzeigen des Büros – je nach Tarif."
+        },
+        "3": {
+          "TITLE": "Berichte und Auswertungen",
+          "DESC": "Verfolgen Sie die Leistung Ihrer Anzeigen – je nach gewähltem Tarif."
+        },
+        "4": {
+          "TITLE": "Direkter Kontakt zu Interessenten",
+          "DESC": "Nachrichten, Anfragen und Besichtigungswünsche erreichen Sie direkt in der Plattform."
+        }
+      },
+      "CTA_PLANS": "Tarife ansehen",
+      "CTA_REGISTER": "Büro registrieren"
+    },
+    "OFFER": {
+      "EYEBROW": "Sonderangebot für Immobilienbüros",
+      "PROGRESS_ARIA": "{{count}} von {{max}} beigetreten",
+      "PROGRESS_LABEL": "{{count}} von {{max}} Büros sind bereits beigetreten",
+      "CTA": "Büro jetzt registrieren",
+      "CTA_ARIA": "Ihr Immobilienbüro für dieses Angebot registrieren",
+      "ENDS_ON": "Angebot endet am {{date}}",
+      "LOADING_ARIA": "Angebote werden geladen",
+      "EMPTY_TITLE": "Derzeit sind keine Angebote veröffentlicht",
+      "EMPTY_TEXT": "Melden Sie Ihr Interesse an – wir informieren Sie, sobald das erste Angebot startet.",
+      "EMPTY_CTA": "Interesse anmelden",
+      "ERROR_TITLE": "Die Angebote konnten gerade nicht geladen werden",
+      "ERROR_TEXT": "Der Rest der Seite funktioniert normal. Sie können es erneut versuchen.",
+      "RETRY": "Erneut versuchen"
     },
     "HOW": {
       "EYEBROW": "In wenigen einfachen Schritten",
@@ -2761,8 +2907,8 @@
           "DESC": "Entdecken Sie Immobilien mit klaren Fotos, Preisen und Informationen und vergleichen Sie Optionen mühelos."
         },
         "STEP_3": {
-          "TITLE": "Kontakt aufnehmen oder Warteliste beitreten",
-          "DESC": "Kontaktieren Sie den Anzeigenersteller direkt, oder treten Sie jetzt der Warteliste bei, um als Erste:r über den Start informiert zu werden."
+          "TITLE": "Anbieter kontaktieren",
+          "DESC": "Nehmen Sie direkt Kontakt zu Eigentümer oder Immobilienbüro auf und merken Sie sich Favoriten für später."
         }
       }
     },
@@ -2858,7 +3004,7 @@
       "ITEMS": {
         "LAUNCH": {
           "Q": "Wann startet die Plattform?",
-          "A": "Wir befinden uns aktuell im Aufbau des MVP. Mitglieder der Warteliste erhalten als Erste eine Einladung zum Start."
+          "A": "Die Plattform läuft als Beta und startet schrittweise – voraussichtlich zunächst in Damaskus und im Umland Damaskus, danach in den übrigen Gouvernements. Registrieren Sie Ihr Interesse im Formular, und wir informieren Sie, sobald sie Ihr Gebiet erreicht."
         },
         "FREE": {
           "Q": "Ist der Dienst zu Beginn kostenlos?",
@@ -2886,14 +3032,21 @@
       "TITLE": "Seien Sie unter den ersten Nutzer:innen von HudhudNest",
       "DESC": "Helfen Sie uns, eine besser organisierte Immobilienerfahrung in Syrien aufzubauen. Ihre Stimme prägt die kommende Plattform mit.",
       "BTN": "Jetzt der Warteliste beitreten",
-      "BTN_ARIA": "Der HudhudNest-Warteliste beitreten"
+      "BTN_ARIA": "Der HudhudNest-Warteliste beitreten",
+      "EXPLORE": "Immobilien entdecken",
+      "PUBLISH": "Sie haben eine Immobilie? Inserieren Sie"
     },
     "FOOTER": {
       "TAGLINE": "Eine digitale Immobilienplattform · Syrien zuerst",
       "RIGHTS": "Alle Rechte vorbehalten",
       "PRIVACY": "Datenschutzerklärung",
       "TERMS": "Nutzungsbedingungen",
-      "DOWNLOAD": "App herunterladen"
+      "DOWNLOAD": "App herunterladen",
+      "CONTACT": "Kontakt"
+    },
+    "SEO": {
+      "TITLE": "Digitale Immobilienplattform für Syrien",
+      "DESCRIPTION": "Immobilien zum Kauf und zur Miete in Syrien suchen, Preise Ihrer Gegend prüfen, eine Bewertung anfragen und Immobilienservices entdecken. Auf Arabisch, Englisch und Deutsch."
     }
   },
   "VALUATION": {

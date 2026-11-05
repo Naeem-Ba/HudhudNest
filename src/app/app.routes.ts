@@ -25,14 +25,6 @@ export const routes: Routes = [
             .then(m => m.HomeComponent)
       },
 
-       {
-    path: 'landing',
-    loadComponent: () =>
-      import('./features/landing/landing-page.component')
-        .then(m => m.LandingPageComponent),
-    title: 'منصة عقارية رقمية في سوريا'
-  },
-
       // /wohnungen duplicated /properties (same component, two URLs for identical content --
       // a duplicate-content SEO problem). /properties is canonical (it's what
       // PropertyShareUrlService/MetaService/the social-crawler edge function already build), so
@@ -657,6 +649,15 @@ export const routes: Routes = [
     ]
   },
 
+  {
+    // Marketing landing page: deliberately a top-level route (a sibling of LayoutComponent, like
+    // /login) so the main Navbar is not rendered here. Nothing else changes: the Navbar and every
+    // other page keep using LayoutComponent. The page brings its own slim brand strip and footer.
+    path: 'landing',
+    loadComponent: () =>
+      import('./features/landing/landing-page.component')
+        .then(m => m.LandingPageComponent)
+  },
   {
     path: 'login',
     loadComponent: () =>
