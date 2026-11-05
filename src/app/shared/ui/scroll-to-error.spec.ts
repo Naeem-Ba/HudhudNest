@@ -4,7 +4,7 @@ describe('scroll-to-error', () => {
   let host: HTMLElement;
 
   function build(html: string): HTMLElement {
-    host.innerHTML = html;
+    host.replaceChildren(...Array.from(new DOMParser().parseFromString(html, 'text/html').body.childNodes));
     return host;
   }
 

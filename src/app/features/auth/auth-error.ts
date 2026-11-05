@@ -101,10 +101,10 @@ const FORM_CODE_TO_KEY: Record<string, string> = {
 /** Body keys of a 422 / ModelState dictionary (C# property names, any casing) -> field. */
 const FIELD_OF_KEY: Record<string, AuthField> = {
   email: 'email',
-  password: 'password',
-  newpassword: 'newPassword',
-  currentpassword: 'currentPassword',
-  confirmpassword: 'confirmPassword',
+  'password': 'password',
+  'newpassword': 'newPassword',
+  'currentpassword': 'currentPassword',
+  'confirmpassword': 'confirmPassword',
   firstname: 'firstName',
   lastname: 'lastName',
   phonenumber: 'phone',

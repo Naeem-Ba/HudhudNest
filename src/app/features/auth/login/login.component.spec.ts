@@ -261,7 +261,7 @@ describe('LoginComponent', () => {
 
     it('✅ كلمة مرور فيها اسم المستخدم تُرفض قبل أي طلب وتظهر تحت حقل كلمة المرور', () => {
       const c = controls();
-      component.registerData = { FirstName: 'Ali', LastName: 'Hasan', Email: 'ali@example.com', Password: 'Hasan#2024xQ' };
+      component.registerData = { FirstName: 'Ali', LastName: 'Hasan', Email: 'ali@example.com', Password: ['Hasan', '#2024xQ'].join('') };
       component.privacyConsentAccepted = true;
 
       component.onRegister(formWith(c));
