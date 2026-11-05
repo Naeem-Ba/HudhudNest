@@ -5,9 +5,11 @@ version: 2
 updates:
   - package-ecosystem: npm
     directory: /
+    # Monthly, not weekly: version updates are routine maintenance and a weekly cadence produced a standing
+    # queue of 9+ open PRs that nobody could review. SECURITY updates are a separate Dependabot feature
+    # (Settings > Code security > Dependabot security updates) and are not delayed by this schedule.
     schedule:
-      interval: weekly
-      day: monday
+      interval: monthly
       time: "06:00"
     open-pull-requests-limit: 5
     groups:
@@ -22,10 +24,18 @@ updates:
           - "@capacitor-community/*"
           - "@capacitor-firebase/*"
           - "@capgo/*"
+      # The translate packages are versioned together; bumping one alone leaves an unsatisfiable peer.
+      ngx-translate:
+        patterns:
+          - "@ngx-translate/*"
     ignore:
       # Angular majors are planned migrations, not routine updates.
       - dependency-name: "@angular/*"
         update-types: ["version-update:semver-major"]
+      # @angular/compiler-cli 20.x declares typescript ">=5.8 <6.0", so TypeScript 6 and 7 cannot install next to it
+      # (#213 proposed 7.0.2). Patches still arrive. Lift with the Angular upgrade that widens the range.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
       # Karma loads the jasmine-core nested inside karma-jasmine@5 (4.6.x), never the top-level one, so a
       # jasmine-core or @types/jasmine major changes nothing at runtime, and jasmine-core 7 does not install
       # next to karma-jasmine-html-reporter@2.1 (peer ^4 || ^5, ERESOLVE). Revisit when the test runner is
@@ -42,6 +52,9 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
-      day: monday
+      interval: monthly
       time: "06:00"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
