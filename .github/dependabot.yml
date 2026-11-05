@@ -49,6 +49,18 @@ updates:
       # minor is the breaking step, so both are ignored; patches still arrive. Lift this with the Angular 21 upgrade.
       - dependency-name: "zone.js"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      # ngx-translate 18 removes TranslateModule (imported in 179 files) and turns currentLang into a Signal:
+      # #220 failed the TypeScript check with 100+ errors. It is a planned migration, not a routine bump.
+      # Minors and patches still arrive.
+      - dependency-name: "@ngx-translate/core"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@ngx-translate/http-loader"
+        update-types: ["version-update:semver-major"]
+      # firebase 13 cannot install next to @capacitor-firebase/messaging (peerOptional firebase ^12.6, also in
+      # 8.6.0): `npm ci` fails with ERESOLVE (#223). It does not fix the audit findings either: firebase 13.1.0
+      # still depends on @grpc/grpc-js ~1.9.0. Lift when the messaging plugin accepts firebase 13.
+      - dependency-name: "firebase"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
