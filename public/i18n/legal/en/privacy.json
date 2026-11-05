@@ -242,7 +242,7 @@
     {
       "heading": "Automated processing and profiling",
       "blocks": [
-        { "p": "We do not use automated decision-making that produces legal or similarly significant effects on you, and we do not build advertising profiles. Search results and listing ordering are generated from your filters and listing attributes; our systems also automatically apply rate limits and security checks to block abuse." }
+        { "p": "We do not use automated decision-making that produces legal or similarly significant effects on you, and we do not build advertising profiles. Search results and listing ordering are generated from your filters and listing attributes. Paid featured listings are shown first. To show the paid listings of your area first, the app can send up to three region identifiers with the list request: the region you chose as your home area in Settings (stored in your account), the regions you searched for last and the regions of your saved searches. The last searched regions stay on your device only, in local storage, and are deleted when you sign out; the server does not store a search history for this purpose and the identifiers are not combined with other data. Our systems also automatically apply rate limits and security checks to block abuse." }
       ]
     },
     {

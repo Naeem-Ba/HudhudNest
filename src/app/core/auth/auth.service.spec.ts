@@ -15,6 +15,7 @@ import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
 import { AuthApiService } from './auth-api.service';
 import { TokenStorageService } from '../services/token-storage.service';
+import { RECENT_AREAS_STORAGE_KEY, RecentAreasService } from '../services/recent-areas.service';
 
 /**
  * يبني توكن JWT شكليًا صالحًا للاختبار (header.payload.signature)،
@@ -232,6 +233,21 @@ describe('AuthService', () => {
     expect(service.currentUserSnapshot).toBeNull();
     expect(tokenStorage.getAccessToken()).toBeNull();
     expect(authApiSpy.logout).not.toHaveBeenCalled();
+  });
+
+  it('✅ تسجيل الخروج يمسح المناطق الأخيرة المحفوظة على الجهاز (ترتيب القائمة)', () => {
+    const token = makeJwt({ sub: 'u1', exp: Math.floor(Date.now() / 1000) + 3600 });
+    tokenStorage.setAccessToken(token);
+    service = TestBed.inject(AuthService);
+    const recent = TestBed.inject(RecentAreasService);
+    recent.record(3);
+    recent.record(7);
+    expect(localStorage.getItem(RECENT_AREAS_STORAGE_KEY)).not.toBeNull();
+
+    service.logoutLocal();
+
+    expect(recent.list()).toEqual([]);
+    expect(localStorage.getItem(RECENT_AREAS_STORAGE_KEY)).toBeNull();
   });
 
   // ────────────── logout() — Phase 1: يمسح الحالة المحلية حتى عند فشل نداء API ──────────────

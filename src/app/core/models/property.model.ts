@@ -133,6 +133,8 @@ export interface Property {
   // كنس إنهاء التمييز يعمل كل ست ساعات، فبين دورتين قد يبقى العمود true لنافذة انقضت.
   // featuredUntil هو سجلّ ما دُفِع ثمنه ومتى ينتهي.
   isFeatured?: boolean;
+  // True on a featured ad in one of the governorates sent as interestGovernorateIds: drives the "in your area" badge.
+  matchesInterestArea?: boolean;
   featuredUntil?: string | null;
   createdAt?: string;
   updatedAt?: string;
@@ -187,6 +189,10 @@ export interface PropertyFilterDto {
   // Agency filter — PropertyFilterDto.AgencyId بالباك اند: إعلانات مكتب واحد
   // (صفحة المكتب العامة). فلتر عرض عام، لا حدّ صلاحيات.
   agencyId?: string;
+
+  // Governorates to favour in the default order, as one comma-separated list of at most three ids ("3,7").
+  // Built by InterestAreasService; the server ranks featured ads of these areas first and keeps no record of it.
+  interestGovernorateIds?: string;
 
   // Sorting
   // Values: 'CreatedAt' | 'PurchasePrice' | 'ColdRent' | 'Area'

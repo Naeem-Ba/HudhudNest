@@ -52,6 +52,8 @@ import { isReservedListing } from '../../../shared/utils/listing-status';
 import { CurrencyRatesService } from '../../../core/pricing/currency-rates.service';
 import { isMarketCurrency } from '../../../core/pricing/market-currencies';
 import { PreferencesService } from '../../../core/services/preferences.service';
+import { InterestAreasService } from '../../../core/services/interest-areas.service';
+import { RecentAreasService } from '../../../core/services/recent-areas.service';
 import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
 import { AdSlotComponent } from '../../../core/ads/ad-slot.component';
 import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count.component';
@@ -105,6 +107,8 @@ export class PropertyListPage implements OnInit {
   private readonly pageMeta = inject(PageMetaService);
   private readonly currencyRates = inject(CurrencyRatesService);
   private readonly preferences = inject(PreferencesService);
+  private readonly interestAreas = inject(InterestAreasService);
+  private readonly recentAreas = inject(RecentAreasService);
 
   readonly properties = signal<Property[]>([]);
   readonly loading = signal(false);
@@ -236,6 +240,8 @@ export class PropertyListPage implements OnInit {
       .pipe(
         tap(params => {
           this.applyParamsToState(params);
+          // A governorate the person searched in is remembered on this device (never sent to the server as a log).
+          this.recentAreas.record(this.governorateId);
           this.loading.set(true);
           this.error.set('');
         }),
@@ -431,6 +437,9 @@ export class PropertyListPage implements OnInit {
       amenityIds: this.selectedAmenityIds.length > 0 ? this.selectedAmenityIds : undefined,
       sortBy: sort.sortBy,
       sortDescending: sort.sortDescending,
+      // Only the default order is ranked, and only without a governorate filter (inside one governorate there
+      // is nothing to favour); sending it otherwise would only split the shared response cache.
+      interestGovernorateIds: sort.sortBy === 'CreatedAt' && !this.governorateId ? this.interestAreas.current() : undefined,
       governorateId: this.governorateId ?? undefined,
       districtId: this.districtId ?? undefined,
       neighborhoodId: this.neighborhoodId ?? undefined,

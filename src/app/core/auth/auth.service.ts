@@ -7,6 +7,7 @@ import { writeSessionHint } from './session-hint';
 import { CsrfTokenService } from '../services/csrf-token.service';
 import { ProfileService } from '../api/profile.service';
 import { ServiceProviderService } from '../api/service-provider.service';
+import { RecentAreasService } from '../services/recent-areas.service';
 import { TokenStorageService } from '../services/token-storage.service';
 
 /**
@@ -48,6 +49,7 @@ export class AuthService {
   private readonly csrfTokenService = inject(CsrfTokenService);
   private readonly profileService = inject(ProfileService);
   private readonly serviceProviderService = inject(ServiceProviderService);
+  private readonly recentAreas = inject(RecentAreasService);
 
   private readonly loggedIn = new BehaviorSubject<boolean>(false);
   readonly isLoggedIn$ = this.loggedIn.asObservable();
@@ -344,6 +346,8 @@ export class AuthService {
     // نفس السبب بالضبط — لا نريد لحالة "مزوّد خدمة" من الجلسة المنتهية أن تُصوَّر لحساب
     // مختلف قد يسجّل دخوله بعدها في نفس تبويب المتصفح قبل إعادة تحميل كاملة للصفحة.
     this.serviceProviderService.clearCache();
+    // The areas this person searched last live on the device for ranking only; they end with the session.
+    this.recentAreas.clear();
     try {
       localStorage.removeItem(LOGIN_METHOD_STORAGE_KEY);
     } catch {

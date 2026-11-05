@@ -5,11 +5,13 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
+import { catchError, of, switchMap, tap } from 'rxjs';
 
 import { PropertyApiService } from '../../core/api/property-api.service';
 import type { Property } from '../../core/models/property.model';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { UrlService } from '../../core/services/url.service';
+import { InterestAreasService } from '../../core/services/interest-areas.service';
 import {
   LookupsApiService,
   LookupItem,
@@ -55,6 +57,7 @@ export class HomeComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly urlService = inject(UrlService);
   private readonly pageMeta = inject(PageMetaService);
+  private readonly interestAreas = inject(InterestAreasService);
 
   private readonly propertyImageWidths = [320, 480, 640, 800] as const;
 
@@ -134,30 +137,25 @@ export class HomeComponent implements OnInit {
   }
 
   private loadLatestProperties(): void {
-    this.propertyApiService
-      .getProperties()
+    // The server decides the order and the six shown: featured ads of the visitor's own areas first, then
+    // other featured ads (a few at most), then the newest listings. Re-sorting here by date threw the ads away.
+    // The areas (profile, recent searches, saved searches) can arrive after the page, so the list follows them.
+    this.interestAreas.param$
       .pipe(
+        switchMap(interestGovernorateIds =>
+          this.propertyApiService
+            .getProperties({ page: 1, pageSize: 6, interestGovernorateIds })
+            .pipe(
+              catchError(err => {
+                console.error('Error fetching latest properties', err);
+                return of([] as Property[]);
+              })
+            )
+        ),
+        tap(data => (this.properties = data.slice(0, 6))),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe({
-        next: data => {
-          this.properties = [...data]
-            .sort(
-              (a, b) =>
-                this.dateValue(b.createdAt) -
-                this.dateValue(a.createdAt)
-            )
-            .slice(0, 6);
-        },
-        error: err => {
-          console.error(
-            'Error fetching latest properties',
-            err
-          );
-
-          this.properties = [];
-        }
-      });
+      .subscribe();
   }
 
   /** Same price rule and format as the list and detail pages (see shared/utils/listing-price.ts). */
@@ -183,15 +181,5 @@ export class HomeComponent implements OnInit {
 
   private propertyImageSource(property: Property): string | undefined {
     return property.images?.[0]?.url || property.mainImageUrl;
-  }
-
-  private dateValue(value?: string): number {
-    if (!value) {
-      return 0;
-    }
-
-    const time = new Date(value).getTime();
-
-    return Number.isFinite(time) ? time : 0;
   }
 }
