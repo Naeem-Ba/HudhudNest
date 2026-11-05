@@ -1,20 +1,12 @@
 // ─────────────────────────────────────────────────────────
 // landing-page.component.ts
 //
-// [هذه الجولة] تبنّي هوية "دفتر العائلة" + دعم عربي/إنكليزي/ألماني كامل:
-// - كل نصوص القالب صارت مفاتيح ترجمة (translate pipe) تحت مساحة LANDING
-//   في public/i18n/{ar,de,en}.json، بدل نص عربي ثابت.
-// - رسائل الأخطاء وaria-label الديناميكية (تحتوي أرقامًا/متغيرات) تُبنى هنا
-//   عبر TranslateService.instant مع params بدل تجميع نص خام.
-// - قوائم "نوع المستخدم"/"المدينة" تستخدم LabeledOption (قيمة ثابتة تُرسَل
-//   للباك-إند + مفتاح ترجمة للعرض) من lead.model.ts بدل نص عربي مباشر.
-// - ميزة تبديل الشعار الفرعي أسفل العنوان الرئيسي: 3 صيغ تدور تلقائيًا
-//   (taglineIndex)، مع إيقاف الدوران بالكامل إذا كان المستخدم يفضّل تقليل
-//   الحركة (prefers-reduced-motion) بدل الاكتفاء بتسريع الانتقال فقط.
-//
-// [الجولة السابقة] قسم "أول 100 مكتب عقاري" مبني على GET /api/offers/active
-// (OffersApiService) — لا عرض ثابت في الكود، القسم يختفي تلقائيًا إن لم
-// يوجد عرض نشط.
+// إعادة تصميم صفحة الهبوط التسويقية (2026-11-05):
+// - الصفحة مسار مستقل خارج LayoutComponent (انظر app.routes.ts) فلا يظهر الـ Navbar الرئيسي؛
+//   شريط علوي نحيف يحمل الشعار وزر «تصفّح الموقع» ومبدّل اللغة فقط.
+// - كل النصوص مفاتيح ترجمة تحت LANDING في public/i18n/{ar,de,en}.json.
+// - لا أرقام ولا عدّادات جغرافية ولا أعداد مدن: الرؤية سوريا كلّها والانطلاق تدريجي.
+// - قسم عرض «أول 100 مكتب» (GET /api/offers/active) والنموذج وتتبّع الأحداث كما كانت دون تغيير منطقي.
 // ─────────────────────────────────────────────────────────
 import {
   ChangeDetectionStrategy,
@@ -29,7 +21,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { interval } from 'rxjs';
 import {
   AbstractControl,
   FormBuilder,
@@ -38,6 +29,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { isNativeApp } from '../../core/native/is-native-app';
+import { LangCode, LanguageService } from '../../core/services/language.service';
 
 import { LeadService } from '../../core/services/lead.service';
 import { OffersApiService } from '../../core/api/offers-api.service';
@@ -55,10 +47,30 @@ function phoneValidator(ctrl: AbstractControl): ValidationErrors | null {
   return valid ? null : { phone: true };
 }
 
-/** عدد صيغ الشعار الفرعي المتوفرة تحت LANDING.HERO.TAGLINE_1..3 — يُبقي
- *  التدوير في .ts متزامنًا مع عدد المفاتيح الفعلي في ملفات الترجمة. */
-const TAGLINE_COUNT = 3;
-const TAGLINE_ROTATE_MS = 5200;
+/** دائرة كمسار SVG واحد (لتبقى كل الأيقونات مصفوفات مسارات بسيطة). */
+const circle = (cx: number, cy: number, r: number): string =>
+  `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0`;
+
+/** أيقونات خطية 24×24 (stroke) — لا مكتبة أيقونات إضافية. */
+export const LANDING_ICONS = {
+  home:     ['M3 11 12 4l9 7v9H3z', 'M9 20v-6h6v6'],
+  key:      [circle(8, 15, 4), 'm11 12 9-9M16 7l3 3'],
+  bed:      ['M3 18V7M3 14h18v4M21 14v-3a3 3 0 0 0-3-3h-7v6'],
+  trend:    ['M3 17l6-6 4 4 8-8M15 7h6v6'],
+  plus:     ['M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4z', 'M12 8v8M8 12h8'],
+  briefcase:['M5 7h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z', 'M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18'],
+  search:   [circle(11, 11, 7), 'm20 20-3.5-3.5'],
+  list:     ['M6 4h12a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z', 'M3 10h18M8 15h5'],
+  chat:     ['M4 5h16v11H9l-5 4z'],
+  tag:      ['M3 12V4h8l9 9-8 8z', circle(7.5, 8.5, 1.2)],
+  globe:    [circle(12, 12, 9), 'M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18'],
+  heart:    ['M12 20s-8-4.7-8-10.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 2.5C20 15.3 12 20 12 20z'],
+  pin:      ['M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z', circle(12, 10, 2.5)],
+  check:    ['M5 12.5l4.5 4.5L19 7.5'],
+} as const;
+export type LandingIcon = keyof typeof LANDING_ICONS;
+
+interface LandingLink { key: string; icon: LandingIcon; link?: string; query?: Record<string, string> }
 
 @Component({
   selector:        'app-landing-page',
@@ -69,6 +81,7 @@ const TAGLINE_ROTATE_MS = 5200;
   styleUrls:       ['./landing-page.component.scss'],
 })
 export class LandingPageComponent implements OnInit {
+  readonly icons = LANDING_ICONS;
   private readonly fb         = inject(FormBuilder);
   private readonly leadSvc    = inject(LeadService);
   private readonly offersApi  = inject(OffersApiService);
@@ -79,6 +92,7 @@ export class LandingPageComponent implements OnInit {
   private readonly translate  = inject(TranslateService);
   private readonly cd         = inject(ChangeDetectorRef);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly language   = inject(LanguageService);
 
   // ── قوائم مساعدة للـ Template (قيمة ثابتة للباك-إند + مفتاح ترجمة للعرض) ──
   readonly userTypeOptions = USER_TYPE_OPTIONS;
@@ -103,9 +117,6 @@ export class LandingPageComponent implements OnInit {
   // ── تتبع FAQ المفتوح ──
   readonly openFaqIndex = signal<number | null>(null);
 
-  // ── تبديل الشعار الفرعي في الـ Hero ──
-  readonly taglineIndex = signal(0);
-
   // ── منع الإرسال المتكرر ──
   private submitting = false;
   private viewTracked = false;
@@ -126,29 +137,49 @@ export class LandingPageComponent implements OnInit {
    *  5 عناصر لكل عمود، النص الفعلي في LANDING.PROBLEM_SOLUTION.*_ITEMS. */
   readonly psItemIndices = [1, 2, 3, 4, 5];
 
-  ngOnInit(): void {
-    this.pageMeta.applyTranslated('SEO.HOME', '/landing', this.destroyRef);
+  /** «ماذا يمكنك أن تفعل؟» — كل بطاقة تقود إلى المسار الفعلي المقابل لها في التطبيق. */
+  readonly uses: readonly LandingLink[] = [
+    { key: 'BUY',      icon: 'home',      link: '/properties', query: { listingType: 'ForSale' } },
+    { key: 'RENT',     icon: 'key',       link: '/properties', query: { listingType: 'ForRent' } },
+    { key: 'SHORT',    icon: 'bed',       link: '/short-stay' },
+    { key: 'INVEST',   icon: 'trend',     link: '/investments' },
+    { key: 'PUBLISH',  icon: 'plus',      link: '/property-form' },
+    { key: 'SERVICES', icon: 'briefcase', link: '/services' },
+  ];
 
-    this.loadOffer();
+  /** بطاقات الميزات — كلها ميزات موجودة فعلًا (تحقق في الكود، انظر تقرير landing-page/). */
+  readonly features: readonly LandingLink[] = [
+    { key: 'SEARCH',   icon: 'search', link: '/properties' },
+    { key: 'INFO',     icon: 'list' },
+    { key: 'PRICE',    icon: 'tag',    link: '/price-estimate' },
+    { key: 'LANGS',    icon: 'globe' },
+    { key: 'SERVICES', icon: 'briefcase', link: '/services' },
+    { key: 'SAVE',     icon: 'heart' },
+    { key: 'MAP',      icon: 'pin',    link: '/map' },
+    { key: 'CONTACT',  icon: 'chat' },
+  ];
 
-    this.startTaglineRotation();
+  readonly serviceChips = ['VERIFICATION', 'VALUATION', 'INSPECTION', 'PHOTOGRAPHY', 'MANAGEMENT', 'LEGAL', 'ENGINEERING', 'MAINTENANCE'];
+  readonly officePoints = [1, 2, 3, 4];
+  readonly searchPoints = [1, 2, 3, 4, 5];
+
+  readonly languages = this.language.getLanguages();
+  readonly currentLang = signal<LangCode>(this.language.getCurrent());
+
+  setLanguage(code: LangCode): void {
+    this.language.use(code);
+    this.currentLang.set(code);
   }
 
-  /** لا تدوير على الإطلاق إذا فضّل المستخدم تقليل الحركة — وليس فقط
-   *  انتقالًا أسرع بينها؛ تغيّر محتوى متكرر بلا داعٍ يبقى غير مرغوب. */
-  private startTaglineRotation(): void {
-    const prefersReducedMotion =
-      typeof window !== 'undefined' &&
-      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  /** نقرة CTA عامة (غير مرتبطة بعرض): حدث CtaClick الموجود أصلًا — بلا بيانات شخصية. */
+  trackCta(): void {
+    this.events.track('CtaClick', { campaign: this.campaign() });
+  }
 
-    if (prefersReducedMotion) return;
+  ngOnInit(): void {
+    this.pageMeta.applyTranslated('LANDING.SEO', '/landing', this.destroyRef);
 
-    interval(TAGLINE_ROTATE_MS)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        this.taglineIndex.update(i => (i + 1) % TAGLINE_COUNT);
-        this.cd.markForCheck();
-      });
+    this.loadOffer();
   }
 
   /** فشل التحميل لا يكسر بقية الصفحة: يظهر قسم العروض فقط بحالة خطأ وزر إعادة محاولة. */

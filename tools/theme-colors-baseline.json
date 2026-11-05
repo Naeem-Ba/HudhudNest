@@ -24,7 +24,7 @@
   "src/app/features/investments/investment-details/investment-details.page.scss": 4,
   "src/app/features/investments/investment-list/investment-list.page.scss": 2,
   "src/app/features/investments/investment-watchlist/investment-watchlist.page.scss": 2,
-  "src/app/features/landing/landing-page.component.scss": 53,
+  "src/app/features/landing/landing-page.component.scss": 6,
   "src/app/features/messages/conversation-list.component.ts": 1,
   "src/app/features/messages/messages-inbox.page.ts": 1,
   "src/app/features/messages/property-messages.page.ts": 5,
