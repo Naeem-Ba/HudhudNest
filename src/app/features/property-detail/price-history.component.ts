@@ -62,7 +62,7 @@ const FIELD_KEYS: Record<string, string> = {
     .price-history__field { font-size: .875rem; }
     .price-history__old { text-decoration: line-through; color: var(--text-muted, #5b6470); }
     .price-history__badge { font-size: .8rem; font-weight: 600; padding: .1rem .45rem; border-radius: 999px; }
-    .price-history__badge--down { background: var(--success-bg, #e7f6ec); color: var(--success, #1e7d3c); }
+    .price-history__badge--down { background: var(--success-bg, #e7f6ec); color: var(--success-text); }
     .price-history__badge--up { background: var(--warning-bg, #fff4e5); color: var(--warning-text, #8a4b00); }
     .price-history__note { margin: .5rem 0 0; font-size: .8rem; color: var(--text-muted, #5b6470); }
     .sr-only { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

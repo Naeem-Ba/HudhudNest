@@ -140,12 +140,12 @@
           <h2>{{ 'INVESTMENTS.CALCULATOR.TITLE' | translate }}</h2>
           <form class="invd__calculator-form" (ngSubmit)="runCalculator()">
             <div class="invd__field">
-              <label>{{ 'INVESTMENTS.CALCULATOR.AMOUNT' | translate }}</label>
-              <input type="number" [min]="p.minimumInvestment" [max]="calculatorMaxAmount" [(ngModel)]="calculatorAmount" name="amount" required />
+              <label for="invd-calc-amount">{{ 'INVESTMENTS.CALCULATOR.AMOUNT' | translate }}</label>
+              <input id="invd-calc-amount" type="number" [min]="p.minimumInvestment" [max]="calculatorMaxAmount" [(ngModel)]="calculatorAmount" name="amount" required />
             </div>
             <div class="invd__field">
-              <label>{{ 'INVESTMENTS.CALCULATOR.TERM_MONTHS' | translate }}</label>
-              <input type="number" min="1" [max]="calculatorMaxTermMonths" [(ngModel)]="calculatorTermMonths" name="term" />
+              <label for="invd-calc-term">{{ 'INVESTMENTS.CALCULATOR.TERM_MONTHS' | translate }}</label>
+              <input id="invd-calc-term" type="number" min="1" [max]="calculatorMaxTermMonths" [(ngModel)]="calculatorTermMonths" name="term" />
             </div>
             <button type="submit" class="btn btn--primary btn--sm" [disabled]="calculatorLoading()">
               {{ 'INVESTMENTS.CALCULATOR.CALCULATE' | translate }}

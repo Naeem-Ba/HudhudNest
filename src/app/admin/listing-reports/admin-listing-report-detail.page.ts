@@ -254,7 +254,7 @@ type Mode = 'note' | 'info' | 'action' | 'close' | 'takedown' | 'restore' | 'reo
     .head h1{margin:.1rem 0;color: var(--text-strong);font-family:var(--font-display);font-size:clamp(1.4rem,2.4vw,1.9rem)}
     .head p{margin:0}
     .chips{display:flex;gap:.4rem;align-items:start;flex-wrap:wrap}
-    .signal{background:var(--warning-soft,#fef3c7);color:var(--warning,#92400e);border-radius:var(--r-md);padding:.7rem 1rem;margin-bottom:1rem;font-weight:700}
+    .signal{background:var(--warning-soft,#fef3c7);color:var(--warning-text);border-radius:var(--r-md);padding:.7rem 1rem;margin-bottom:1rem;font-weight:700}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start}
     .col{display:grid;gap:1rem;min-width:0}
     .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:1rem 1.15rem;min-width:0}
@@ -267,21 +267,21 @@ type Mode = 'note' | 'info' | 'action' | 'close' | 'takedown' | 'restore' | 'reo
     .decision{margin-top:.8rem;padding:.7rem .9rem;background:var(--gray-100);border-radius:var(--r-sm)}
     .chip{font-size:.78rem;font-weight:700;border-radius:999px;padding:.25rem .6rem;background:var(--gray-100);color:var(--gray-700);white-space:nowrap}
     .chip[data-status='New']{background:var(--primary-soft);color:var(--primary-text)}
-    .chip[data-status='WaitingForInformation'],.chip[data-status='ActionRequired']{background:var(--warning-soft,#fef3c7);color:var(--warning,#92400e)}
-    .chip[data-status='Resolved']{background:var(--success-soft);color:var(--success)}
-    .chip[data-priority='High'],.chip[data-priority='Urgent'],.chip--overdue{background:var(--danger-soft);color:var(--danger)}
+    .chip[data-status='WaitingForInformation'],.chip[data-status='ActionRequired']{background:var(--warning-soft,#fef3c7);color:var(--warning-text)}
+    .chip[data-status='Resolved']{background:var(--success-soft);color:var(--success-text)}
+    .chip[data-priority='High'],.chip[data-priority='Urgent'],.chip--overdue{background:var(--danger-soft);color:var(--danger-text)}
     .tag{display:inline-block;border-radius:999px;padding:.1rem .5rem;font-size:.75rem;background:var(--gray-100);margin-inline-end:.3rem}
-    .tag--ok{background:var(--success-soft);color:var(--success)}
-    .tag--warn{background:var(--danger-soft);color:var(--danger)}
-    .tag--internal{background:var(--warning-soft,#fef3c7);color:var(--warning,#92400e)}
+    .tag--ok{background:var(--success-soft);color:var(--success-text)}
+    .tag--warn{background:var(--danger-soft);color:var(--danger-text)}
+    .tag--internal{background:var(--warning-soft,#fef3c7);color:var(--warning-text)}
     .row-ctl{display:grid;gap:.25rem;margin-bottom:.7rem}
     .row-ctl label,.panel label{font-weight:700;font-size:var(--text-sm)}
     select,textarea{border:1px solid var(--border);border-radius:var(--r-md);padding:.5rem .8rem;background:var(--surface);font:inherit;font-size:16px;width:100%}
     .btns{display:flex;flex-wrap:wrap;gap:.5rem;margin:.6rem 0}
     .btns--danger{border-top:1px dashed var(--border);padding-top:.8rem}
     .btn{border:0;border-radius:10px;padding:.55rem 1rem;font-weight:700;cursor:pointer;background:var(--gray-100);color:var(--gray-800)}
-    .btn.primary{background:var(--primary);color:#fff}
-    .btn.danger{background:var(--danger);color:#fff}
+    .btn.primary{background:var(--primary);color:var(--on-primary)}
+    .btn.danger{background: var(--danger-solid);color: #fff}
     .btn:disabled{opacity:.5;cursor:not-allowed}
     .panel{display:grid;gap:.5rem;margin-top:.8rem;padding:.9rem;background:var(--gray-50,var(--gray-100));border-radius:var(--r-md)}
     .related{list-style:none;margin:0;padding:0;display:grid;gap:.45rem}
@@ -291,7 +291,7 @@ type Mode = 'note' | 'info' | 'action' | 'close' | 'takedown' | 'restore' | 'reo
     .timeline li.internal{border-inline-start-color:var(--warning,#f59e0b)}
     .when{font-size:.78rem;color:var(--gray-500)}
     .state{padding:2rem;text-align:center;background:var(--surface);border:1px dashed var(--gray-300);border-radius:16px}
-    .state.error{color:var(--danger)}
+    .state.error{color:var(--danger-text)}
     @media (max-width:900px){.grid{grid-template-columns:1fr}dl{grid-template-columns:1fr}}
   `]
 })

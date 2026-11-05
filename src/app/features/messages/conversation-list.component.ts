@@ -95,7 +95,7 @@ import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
     .conversation-row__property { color:var(--gray-600); font-size:var(--text-sm); }
     .conversation-row__preview { color:var(--gray-500); font-size:var(--text-sm); }
     .conversation-row__meta { display:flex; flex-direction:column; align-items:flex-end; gap:.3rem; flex-shrink:0; }
-    .conversation-row__meta time { color:var(--gray-400); font-size:var(--text-xs); white-space:nowrap; }
+    .conversation-row__meta time { color:var(--text-muted); font-size:var(--text-xs); white-space:nowrap; }
     .conversation-row__unread {
       background:var(--primary); color: var(--on-primary); border-radius:var(--r-pill); font-size:var(--text-xs);
       min-width:20px; height:20px; display:grid; place-items:center; padding:0 .35rem;

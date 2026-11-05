@@ -43,7 +43,7 @@ import { TranslationView } from './listing-translation.controller';
     }
     .translation-notice__action {
       background: none; border: 0; padding: 0; font: inherit; cursor: pointer;
-      color: var(--primary, #0b6b5d); text-decoration: underline;
+      color: var(--primary-text); text-decoration: underline;
     }
   `]
 })

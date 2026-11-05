@@ -328,6 +328,10 @@
                 <span aria-hidden="true">⭐</span>
                 {{ 'PROPERTY.FEATURED' | translate }}
               </span>
+              <span class="badge badge--area" *ngIf="property.matchesInterestArea">
+                <span aria-hidden="true">📍</span>
+                {{ 'PROPERTY.IN_YOUR_AREA' | translate }}
+              </span>
             </div>
             <!-- القلب أحمر عندما يكون العقار في المفضلة — الحالة مصدرها FavoritesApiService المشترك. -->
             <app-favorite-toggle-button

@@ -32,25 +32,25 @@
 
     <form class="custom-form" #profileForm="ngForm" novalidate>
       <div class="field">
-        <label>{{ 'PROFILE.FIRST_NAME' | translate }} *</label>
-        <input type="text" [ngModel]="user()?.Vorname" (ngModelChange)="patchUserField('Vorname', $event)" name="fn" #fn="ngModel" required minlength="2">
+        <label for="profile-f1">{{ 'PROFILE.FIRST_NAME' | translate }} *</label>
+        <input id="profile-f1" type="text" [ngModel]="user()?.Vorname" (ngModelChange)="patchUserField('Vorname', $event)" name="fn" #fn="ngModel" required minlength="2">
         <div class="field-error" *ngIf="fn.invalid && (fn.touched || submitted)">⚠️ {{ 'VALIDATION.REQUIRED' | translate }}</div>
       </div>
 
       <div class="field">
-        <label>{{ 'PROFILE.LAST_NAME' | translate }} *</label>
-        <input type="text" [ngModel]="user()?.Name" (ngModelChange)="patchUserField('Name', $event)" name="ln" #ln="ngModel" required minlength="2">
+        <label for="profile-f2">{{ 'PROFILE.LAST_NAME' | translate }} *</label>
+        <input id="profile-f2" type="text" [ngModel]="user()?.Name" (ngModelChange)="patchUserField('Name', $event)" name="ln" #ln="ngModel" required minlength="2">
         <div class="field-error" *ngIf="ln.invalid && (ln.touched || submitted)">⚠️ {{ 'VALIDATION.REQUIRED' | translate }}</div>
       </div>
 
       <div class="field">
-        <label>{{ 'PROFILE.DISPLAY_NAME' | translate }}</label>
-        <input type="text" [ngModel]="user()?.DisplayName" (ngModelChange)="patchUserField('DisplayName', $event)" name="dn" maxlength="80">
+        <label for="profile-f3">{{ 'PROFILE.DISPLAY_NAME' | translate }}</label>
+        <input id="profile-f3" type="text" [ngModel]="user()?.DisplayName" (ngModelChange)="patchUserField('DisplayName', $event)" name="dn" maxlength="80">
       </div>
 
       <div class="field">
-        <label>{{ 'PROFILE.EMAIL_LOCKED' | translate }}</label>
-        <input type="email" [value]="user()!.Email" disabled>
+        <label for="profile-f4">{{ 'PROFILE.EMAIL_LOCKED' | translate }}</label>
+        <input id="profile-f4" type="email" [value]="user()!.Email" disabled>
       </div>
 
       <!-- ✅ إضافة: قسم البريد الإلكتروني الثانوي (email/add + email/verify) -->
@@ -82,8 +82,8 @@
         </ng-container>
 
         <div class="email-form" *ngIf="showEmailForm() && !emailLinkSent()">
-          <label>{{ 'PROFILE.EMAIL_SECTION.INPUT_LABEL' | translate }}</label>
-          <input
+          <label for="profile-f5">{{ 'PROFILE.EMAIL_SECTION.INPUT_LABEL' | translate }}</label>
+          <input id="profile-f5"
             type="email"
             [(ngModel)]="secondaryEmail"
             name="secondaryEmail"
@@ -151,8 +151,8 @@
            الشخصي العام (/users/:id) كي يعرّف صاحب الحساب بنفسه وعمله. -->
       <div class="about-section">
         <div class="field">
-          <label>{{ 'PROFILE.ABOUT.BIO_LABEL' | translate }}</label>
-          <textarea
+          <label for="profile-f6">{{ 'PROFILE.ABOUT.BIO_LABEL' | translate }}</label>
+          <textarea id="profile-f6"
             [ngModel]="user()?.Bio"
             (ngModelChange)="patchUserField('Bio', $event)"
             name="bio"
@@ -164,8 +164,8 @@
         </div>
 
         <div class="field">
-          <label>{{ 'PROFILE.ABOUT.CONTACT_INFO_LABEL' | translate }}</label>
-          <textarea
+          <label for="profile-f7">{{ 'PROFILE.ABOUT.CONTACT_INFO_LABEL' | translate }}</label>
+          <textarea id="profile-f7"
             [ngModel]="user()?.ContactInfo"
             (ngModelChange)="patchUserField('ContactInfo', $event)"
             name="contactInfo"
@@ -186,20 +186,20 @@
 
         <div class="password-fields" *ngIf="showPasswordForm()">
           <div class="field">
-            <label>{{ 'PROFILE.CURRENT_PASS' | translate }} *</label>
-            <input type="password" [(ngModel)]="passwordData.currentPassword" name="currentPassword" autocomplete="new-password" placeholder="••••••••">
+            <label for="profile-f8">{{ 'PROFILE.CURRENT_PASS' | translate }} *</label>
+            <input id="profile-f8" type="password" [(ngModel)]="passwordData.currentPassword" name="currentPassword" autocomplete="new-password" placeholder="••••••••">
             <div class="field-error" *ngIf="passwordSubmitted && !passwordData.currentPassword">⚠️ {{ 'VALIDATION.REQUIRED' | translate }}</div>
           </div>
 
           <div class="field">
-            <label>{{ 'PROFILE.NEW_PASS' | translate }} *</label>
-            <input type="password" [(ngModel)]="passwordData.newPassword" name="newPassword" autocomplete="new-password" placeholder="••••••••">
+            <label for="profile-f9">{{ 'PROFILE.NEW_PASS' | translate }} *</label>
+            <input id="profile-f9" type="password" [(ngModel)]="passwordData.newPassword" name="newPassword" autocomplete="new-password" placeholder="••••••••">
             <div class="field-error" *ngIf="passwordSubmitted && passwordData.newPassword.length < 8">⚠️ {{ 'AUTH.ERRORS.PASSWORD_MIN' | translate }}</div>
           </div>
 
           <div class="field">
-            <label>{{ 'PROFILE.CONFIRM_PASS' | translate }} *</label>
-            <input type="password" [(ngModel)]="passwordData.confirmPassword" name="confirmPassword" autocomplete="new-password" placeholder="••••••••">
+            <label for="profile-f10">{{ 'PROFILE.CONFIRM_PASS' | translate }} *</label>
+            <input id="profile-f10" type="password" [(ngModel)]="passwordData.confirmPassword" name="confirmPassword" autocomplete="new-password" placeholder="••••••••">
             <div class="field-error" *ngIf="passwordSubmitted && passwordMismatch()">⚠️ {{ 'PROFILE.MESSAGES.PASS_MISMATCH' | translate }}</div>
           </div>
 
@@ -296,8 +296,8 @@
       <p class="delete-modal__final-warning">{{ 'PROFILE.DELETE_MODAL.FINAL_WARNING' | translate }}</p>
 
       <div class="field" *ngIf="user()?.HasPassword">
-        <label>{{ 'PROFILE.DELETE_MODAL.PASSWORD_LABEL' | translate }}</label>
-        <input
+        <label for="profile-f11">{{ 'PROFILE.DELETE_MODAL.PASSWORD_LABEL' | translate }}</label>
+        <input id="profile-f11"
           type="password"
           [(ngModel)]="deletePassword"
           name="deletePassword"
@@ -307,8 +307,8 @@
       </div>
 
       <div class="field">
-        <label>{{ 'PROFILE.DELETE_MODAL.TYPE_TO_CONFIRM' | translate: { keyword: deleteConfirmKeyword } }}</label>
-        <input
+        <label for="profile-f12">{{ 'PROFILE.DELETE_MODAL.TYPE_TO_CONFIRM' | translate: { keyword: deleteConfirmKeyword } }}</label>
+        <input id="profile-f12"
           type="text"
           [(ngModel)]="deleteConfirmText"
           name="deleteConfirmText"

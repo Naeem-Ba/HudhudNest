@@ -73,6 +73,22 @@
       </a>
 
       <a
+        routerLink="/price-estimate"
+        routerLinkActive="navbar__link--active"
+        class="navbar__link"
+      >
+        {{ 'NAVBAR.PRICE_ESTIMATE' | translate }}
+      </a>
+
+      <a
+        routerLink="/valuation"
+        routerLinkActive="navbar__link--active"
+        class="navbar__link"
+      >
+        {{ 'NAVBAR.VALUATION' | translate }}
+      </a>
+
+      <a
         routerLink="/pricing"
         routerLinkActive="navbar__link--active"
         class="navbar__link"
@@ -626,6 +642,14 @@
         (click)="closeMobileMenu()"
       >
         {{ 'NAVBAR.PRICE_ESTIMATE' | translate }}
+      </a>
+
+      <a
+        routerLink="/valuation"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ 'NAVBAR.VALUATION' | translate }}
       </a>
 
       <a

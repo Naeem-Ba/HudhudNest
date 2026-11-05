@@ -54,7 +54,7 @@
             "Ihr ungefährer aktueller Standort, nur wenn Sie die Suche „in meiner Nähe“ auslösen: Ihr Browser oder Gerät fragt zuvor nach Ihrer Erlaubnis; wir nutzen die Koordinaten nur, um diese Suche auszuführen, und speichern sie nicht."
           ]
         },
-        { "p": "Zum Datum dieser Erklärung setzen wir keine Werbe-Tracker, keine Analyse- oder Absturzberichtsdienste Dritter, kein Device-Fingerprinting, keine Gerätekennungen und keine Push-Benachrichtigungs-Token ein. Ändert sich das, aktualisieren wir zuvor diese Erklärung." }
+        { "p": "Zum Datum dieser Erklärung setzen wir keine Werbe-Tracker, keine Analyse- oder Absturzberichtsdienste Dritter und kein Device-Fingerprinting ein. Wir verwenden zwei gerätegebundene Kennungen, die in Abschnitt 9 (eine anonyme Besucher-ID im lokalen Speicher Ihres Browsers) und Abschnitt 13 (ein Push-Benachrichtigungs-Token, nur wenn Sie Benachrichtigungen einschalten) beschrieben sind. Ändert sich das, aktualisieren wir zuvor diese Erklärung." }
       ]
     },
     {
@@ -84,8 +84,8 @@
       "heading": "Cookies und ähnliche Technologien",
       "blocks": [
         { "p": "Wir verwenden ein einziges unbedingt erforderliches HttpOnly-Cookie, das Sie angemeldet hält. Wir verwenden keine Werbe- oder Tracking-Cookies." },
-        { "p": "Außerdem nutzen wir den lokalen Speicher Ihres Browsers für Funktionen, die Sie wünschen oder die die Plattform benötigt: Ihre Sprach- und Designauswahl, Ihren Sitzungsstatus und – wenn Sie einen nachverfolgten Link öffnen – dessen Kampagnenparameter, damit wir eine spätere Aktion diesem Link zuordnen können. Sie können diese Daten in den Browsereinstellungen löschen; manche Funktionen funktionieren dann nicht mehr oder werden zurückgesetzt." },
-        { "p": "Einige Ressourcen Dritter werden direkt in Ihrem Browser geladen (Schriften und Kartenkacheln, siehe Abschnitt 13) und erhalten dabei Ihre IP-Adresse." }
+        { "p": "Außerdem nutzen wir den lokalen Speicher Ihres Browsers für Funktionen, die Sie wünschen oder die die Plattform benötigt: Ihre Sprach- und Designauswahl, Ihren Sitzungsstatus und – wenn Sie einen nachverfolgten Link öffnen – dessen Kampagnenparameter, damit wir eine spätere Aktion diesem Link zuordnen können. Dort speichern wir außerdem eine zufällige, anonyme Besucher-ID, damit das erneute Öffnen derselben Anzeige nicht als zweiter Aufruf gezählt wird; der Server speichert nur einen Hash mit Schlüssel davon, sie ist weder mit Ihrem Namen noch mit der Gerätehardware verknüpft und wird nie für Werbung genutzt. Sie können diese Daten in den Browsereinstellungen löschen; manche Funktionen funktionieren dann nicht mehr oder werden zurückgesetzt, und die Besucher-ID wird neu erzeugt." },
+        { "p": "Kartenkacheln werden direkt in Ihrem Browser von OpenStreetMap geladen (siehe Abschnitt 13) und erhalten dabei Ihre IP-Adresse. Die Schriften der Seiten liefern unsere eigenen Server aus." }
       ]
     },
     {
@@ -150,8 +150,8 @@
             "Telegram und WhatsApp (Meta): Zustellung von Verifizierungscodes, wenn Sie diese Kanäle wählen.",
             "Telegram, Facebook und Instagram (Meta): Veröffentlichung öffentlicher Anzeigeninhalte in den eigenen Kanälen von HudhudNest, wie in Abschnitt 6 beschrieben.",
             "Google und Apple: Anmeldung, wenn Sie sie wählen. Google Identity Services wird auf Anmeldeseiten in Ihrem Browser geladen.",
-            "Google Fonts: Schriften der Seiten, von Google geladen; Google kann dabei Ihre IP-Adresse sehen.",
-            "CARTO: Kartenkacheln, die beim Anzeigen oder Auswählen eines Standorts geladen werden; CARTO kann dabei Ihre IP-Adresse sehen.",
+            "OpenStreetMap (Kachelserver der OpenStreetMap Foundation): Kartenkacheln, die beim Anzeigen oder Auswählen eines Standorts geladen werden; der Kachelserver kann dabei Ihre IP-Adresse sehen.",
+            "Google Firebase Cloud Messaging (auf dem iPhone der Apple Push Notification Service): Zustellung von Push-Benachrichtigungen, nur wenn Sie Benachrichtigungen einschalten; das Push-Token Ihres Geräts wird bis zum Ausschalten oder Löschen des Kontos mit Ihrem Konto gespeichert.",
             "Cloud-Hosting-Anbieter (derzeit Render für API und Datenbank und Netlify für die Web-App): Infrastruktur, auf der die Plattform läuft.",
             "Have I Been Pwned (k-Anonymitäts-Bereichsabfrage): Prüfung auf kompromittierte Passwörter, siehe Abschnitt 8."
           ]
@@ -242,7 +242,7 @@
     {
       "heading": "Automatisierte Verarbeitung und Profiling",
       "blocks": [
-        { "p": "Wir treffen keine automatisierten Entscheidungen mit rechtlicher oder ähnlich erheblicher Wirkung für Sie und erstellen keine Werbeprofile. Suchergebnisse und die Reihenfolge von Anzeigen ergeben sich aus Ihren Filtern und den Merkmalen der Anzeigen; unsere Systeme wenden zudem automatisch Ratenbegrenzungen und Sicherheitsprüfungen an, um Missbrauch zu verhindern." }
+        { "p": "Wir treffen keine automatisierten Entscheidungen mit rechtlicher oder ähnlich erheblicher Wirkung für Sie und erstellen keine Werbeprofile. Suchergebnisse und die Reihenfolge von Anzeigen ergeben sich aus Ihren Filtern und den Merkmalen der Anzeigen. Bezahlte hervorgehobene Anzeigen werden zuerst gezeigt. Damit die hervorgehobenen Anzeigen Ihrer Region zuerst erscheinen, kann die App mit der Listenanfrage bis zu drei Regionskennungen senden: die Region, die Sie in den Einstellungen als Wohnregion gewählt haben (in Ihrem Konto gespeichert), die zuletzt gesuchten Regionen und die Regionen Ihrer gespeicherten Suchen. Die zuletzt gesuchten Regionen bleiben ausschließlich auf Ihrem Gerät im lokalen Speicher und werden beim Abmelden gelöscht; der Server führt dafür keinen Suchverlauf, und die Kennungen werden nicht mit anderen Daten verknüpft. Unsere Systeme wenden zudem automatisch Ratenbegrenzungen und Sicherheitsprüfungen an, um Missbrauch zu verhindern." }
       ]
     },
     {

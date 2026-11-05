@@ -542,11 +542,11 @@
 }
 
 .account__item--danger {
-  color: var(--danger);
+  color: var(--danger-text);
 }
 
 .account__item--danger:hover {
-  color: var(--danger);
+  color: var(--danger-text);
   background: rgba(220, 38, 38, 0.08);
 }
 
@@ -809,7 +809,7 @@
 }
 
 .mobile-drawer__link--danger {
-  color: var(--danger);
+  color: var(--danger-text);
 }
 
 .mobile-drawer__user {

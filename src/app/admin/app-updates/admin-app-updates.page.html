@@ -12,12 +12,12 @@
     </button>
 
     <div class="filters">
-      <select [(ngModel)]="platformFilter" (ngModelChange)="applyFilters()">
+      <select [(ngModel)]="platformFilter" (ngModelChange)="applyFilters()" aria-label="المنصة">
         <option value="">كل المنصات</option>
         <option *ngFor="let platform of platforms" [value]="platform">{{ platformLabel(platform) }}</option>
       </select>
 
-      <select [(ngModel)]="enabledFilter" (ngModelChange)="applyFilters()">
+      <select [(ngModel)]="enabledFilter" (ngModelChange)="applyFilters()" aria-label="الحالة">
         <option value="">كل الحالات</option>
         <option value="true">مُفعَّل فقط</option>
         <option value="false">معطَّل فقط</option>

@@ -177,4 +177,15 @@ describe('ListingTranslationController (listing kinds)', () => {
     expect(api.ensure).toHaveBeenCalledTimes(2);
     expect(api.ensure).toHaveBeenCalledWith('same-id', 'en', 'property');
   });
+
+  it('exposes the translated street and reset clears it', () => {
+    const api = jasmine.createSpyObj<ListingTranslationService>('ListingTranslationService', ['ensure']);
+    api.ensure.and.returnValue(of(ready({ street: { state: 'ready', text: 'Baghdad Street' } })));
+    const controller = new ListingTranslationController(api, { waitBudgetMs: 8000, maxPolls: 3 });
+
+    controller.start('p1', 'en');
+    expect(controller.street()).toBe('Baghdad Street');
+    controller.reset();
+    expect(controller.street()).toBeNull();
+  });
 });

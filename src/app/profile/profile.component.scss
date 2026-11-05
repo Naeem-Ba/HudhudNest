@@ -28,14 +28,14 @@
   &.error {
     background: var(--danger-soft);
     border: 1px solid rgba(220,38,38,.2);
-    color: var(--danger);
+    color: var(--danger-text);
   }
 
   button {
     margin-inline-start: auto;
     border: 0;
     border-radius: 10px;
-    background: var(--danger);
+    background: var(--danger-solid);
     color: #fff;
     padding: .55rem .85rem;
     cursor: pointer;
@@ -201,7 +201,7 @@
 }
 
 .required-note {
-  color: var(--danger);
+  color: var(--danger-text);
   font-size: .8rem;
   margin-inline-start: .35rem;
 }
@@ -210,7 +210,7 @@
   display: flex;
   align-items: center;
   gap: .35rem;
-  color: var(--danger);
+  color: var(--danger-text);
   font-size: .85rem;
   margin-top: .35rem;
   line-height: 1.45;
@@ -241,13 +241,13 @@
 
   &--confirmed {
     background: var(--success-soft);
-    color: var(--success);
+    color: var(--success-text);
     border: 1px solid rgba(22,163,74,.25);
   }
 
   &--pending {
     background: var(--warning-soft);
-    color: var(--warning);
+    color: var(--warning-text);
     border: 1px solid rgba(217,119,6,.25);
   }
 }
@@ -302,13 +302,13 @@
 
   &--confirmed {
     background: var(--success-soft);
-    color: var(--success);
+    color: var(--success-text);
     border: 1px solid rgba(22,163,74,.25);
   }
 
   &--pending {
     background: var(--warning-soft);
-    color: var(--warning);
+    color: var(--warning-text);
     border: 1px solid rgba(217,119,6,.25);
   }
 }
@@ -456,11 +456,11 @@
 .btn-delete {
   background: transparent;
   border: 1px solid var(--danger);
-  color: var(--danger);
+  color: var(--danger-text);
   font-size: 0.9rem;
   padding: 0.65rem 1.1rem;
 
-  &:hover { background: var(--danger); color: #fff; }
+  &:hover { background: var(--danger-solid); color: #fff; }
 }
 
 // Danger Zone — deliberately its own bordered/tinted section, separated from the
@@ -476,7 +476,7 @@
 
 .danger-zone__title {
   margin: 0 0 0.35rem;
-  color: var(--danger);
+  color: var(--danger-text);
   font-size: 1rem;
   font-weight: 700;
 }
@@ -499,8 +499,7 @@
   border-radius: 12px;
   cursor: pointer;
   font-weight: 700;
-  background: var(--primary);
-  color: #fff;
+  background: var(--primary); color: var(--on-primary);
   font-size: 0.9rem;
   padding: 0.65rem 1.1rem;
 
@@ -540,7 +539,7 @@
   padding: 0.65rem 1.1rem;
 
   // --surface (not #fff): --gray-800 turns near-white in the dark theme, so white text vanished.
-  &:hover:not(:disabled) { background: var(--gray-800); color: var(--surface); }
+  &:hover:not(:disabled) { background: var(--inverse-bg); color: var(--inverse-text); }
   &:disabled { opacity: .6; cursor: default; }
 }
 
@@ -554,7 +553,7 @@
 
 .delete-modal__final-warning {
   font-weight: 700;
-  color: var(--danger);
+  color: var(--danger-text);
 }
 
 .delete-modal__section-title {
@@ -570,7 +569,7 @@
   line-height: 1.7;
 }
 
-.delete-modal__list--delete li { color: var(--danger); }
+.delete-modal__list--delete li { color: var(--danger-text); }
 .delete-modal__list--retain li { color: var(--gray-600); }
 
 .delete-modal__note {

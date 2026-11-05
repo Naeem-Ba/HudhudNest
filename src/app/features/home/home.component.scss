@@ -163,9 +163,9 @@
       cursor: text;
 
       &::placeholder {
-        color: var(--gray-500);
+        color: var(--text-placeholder);
         font-weight: 600;
-        opacity: .55;
+        opacity: 1;
       }
     }
   }
@@ -416,7 +416,7 @@
     span {
       font-size: .78rem;
       font-weight: 500;
-      color: var(--gray-400);
+      color: var(--text-muted);
       margin-inline-start: .2rem;
     }
   }

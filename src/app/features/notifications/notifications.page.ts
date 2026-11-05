@@ -245,7 +245,7 @@ import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
     .mark-all-btn:disabled { opacity:.6;cursor:default; }
     .state,.card,.state-card { background:var(--surface);padding:1rem;border-radius:16px;box-shadow:var(--shadow-md);border:1px solid var(--border);margin-bottom:1rem; }
     .state { display:flex;gap:.5rem;align-items:center;color:var(--gray-600); }
-    .state span { color:var(--success); }
+    .state span { color:var(--success-text); }
     .notifications-list { display:grid;gap:.85rem; }
     .card { display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:start; }
     .card.unread { border-inline-start:5px solid var(--primary); }
@@ -257,7 +257,7 @@ import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
     .load-more { display:flex;justify-content:center;margin-top:1rem; }
     h2 { margin:0 0 .35rem;font-size:1.05rem;color:var(--gray-800); }
     p { margin:0;color:var(--gray-600);line-height:1.7; }
-    small { display:inline-block;margin-top:.45rem;color:var(--gray-400); }
+    small { display:inline-block;margin-top:.45rem;color:var(--text-muted); }
     .card-actions { display:flex;flex-direction:column;gap:.4rem; }
     /* ✅ إصلاح: كان اللون النصي #fff ثابتًا بينما --gray-800 ينعكس بالوضع
        الداكن ليصبح فاتحًا تقريبًا (styles.scss) — فيصبح نص أبيض فوق خلفية
@@ -269,19 +269,19 @@ import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
     button:disabled { background:var(--gray-300);color:var(--gray-600); }
     .dismiss-btn { background:var(--gray-100);color:var(--gray-600); }
     .dismiss-btn:hover:not(:disabled) { background:var(--gray-200); }
-    .state-card.error { display:flex;align-items:center;gap:.75rem;color:var(--danger);background:var(--danger-soft);border-color:rgba(220,38,38,.2); }
+    .state-card.error { display:flex;align-items:center;gap:.75rem;color:var(--danger-text);background:var(--danger-soft);border-color:rgba(220,38,38,.2); }
     .state-card p { flex:1;color:inherit; }
     /* --danger لا يُعاد تعريفه بالوضع الداكن (يبقى نفس الأحمر بكلا الوضعين)،
        فنصه يبقى أبيض ثابتًا بدل وراثة color:var(--page-bg) من قاعدة button
        العامة أعلاه (والتي تعكس نفسها حسب الوضع ولا تناسب خلفية ثابتة اللون). */
-    .state-card button { background:var(--danger);color:#fff; }
+    .state-card button { background: var(--danger-solid);color: #fff; }
     /* ✅ إضافة: أزرار تأكيد/رفض/موعد بديل + نموذج اقتراح الموعد المصغّر */
     .visit-actions { margin-top:.75rem;display:grid;gap:.5rem; }
     .visit-actions__row { display:flex;flex-wrap:wrap;gap:.5rem; }
     .visit-actions__row button { flex:1 1 auto; }
-    .confirm-btn { background:var(--success-soft);color:var(--success);border:1px solid rgba(22,163,74,.35); }
+    .confirm-btn { background:var(--success-soft);color:var(--success-text);border:1px solid rgba(22,163,74,.35); }
     .confirm-btn:hover:not(:disabled) { background:rgba(22,163,74,.24); }
-    .decline-btn { background:var(--danger-soft);color:var(--danger);border:1px solid rgba(220,38,38,.35); }
+    .decline-btn { background:var(--danger-soft);color:var(--danger-text);border:1px solid rgba(220,38,38,.35); }
     .decline-btn:hover:not(:disabled) { background:rgba(220,38,38,.24); }
     .propose-form { display:grid;gap:.5rem;padding:.75rem;border-radius:10px;background:var(--gray-50);border:1px solid var(--border); }
     .propose-form input,.propose-form textarea { border:1px solid var(--border);border-radius:8px;padding:.5rem;background:var(--surface);color:var(--gray-800);font:inherit;resize:vertical; }

@@ -19,7 +19,7 @@ import { AbstractControl } from '@angular/forms';
       align-items: center;
       gap: .35rem;
       margin: .35rem 0 0;
-      color: var(--danger);
+      color: var(--danger-text);
       font-size: .875rem;
       line-height: 1.45;
     }

@@ -125,6 +125,37 @@ describe('PropertyFormPage heating type', () => {
     expect(fixture.componentInstance.form.get('hideExactLocation')?.value).toBeTrue();
     expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="hide-exact-location"] input')).not.toBeNull();
   });
+
+  it('edit mode keeps the "price negotiable" choice and shows the checkbox for rent', async () => {
+    setup('11111111-1111-1111-1111-111111111111');
+    propertyApi.getPropertyForManagement.and.returnValue(of({
+      id: '11111111-1111-1111-1111-111111111111', title: 'Edit me', description: 'd', listingType: 'ForRent',
+      countryCode: 'SY', isPriceNegotiable: true
+    } as never));
+    const fixture = TestBed.createComponent(PropertyFormPage);
+    fixture.detectChanges();
+    flushEnums();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.form.get('isPriceNegotiable')?.value).toBeTrue();
+    expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="price-negotiable"] input')).not.toBeNull();
+  });
+
+  it('edit mode defaults "price negotiable" to off when the listing never set it', async () => {
+    setup('11111111-1111-1111-1111-111111111111');
+    propertyApi.getPropertyForManagement.and.returnValue(of({
+      id: '11111111-1111-1111-1111-111111111111', title: 'Edit me', description: 'd', listingType: 'ForSale', countryCode: 'SY'
+    } as never));
+    const fixture = TestBed.createComponent(PropertyFormPage);
+    fixture.detectChanges();
+    flushEnums();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.form.get('isPriceNegotiable')?.value).toBeFalse();
+    expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="price-negotiable"] input')).not.toBeNull();
+  });
 });
 
 describe('PropertyFormPage heating type in the save payload', () => {
