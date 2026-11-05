@@ -689,7 +689,8 @@
     "ADDITIONAL_COSTS": "Nebenkosten",
     "DEPOSIT": "Kaution",
     "PURCHASE_PRICE": "Kaufpreis",
-    "FEATURED": "Hervorgehoben"
+    "FEATURED": "Hervorgehoben",
+    "IN_YOUR_AREA": "In Ihrer Region"
   },
   "PROPERTY_FORM": {
     "LOAD_ERROR": "Die Immobiliendaten konnten nicht geladen werden.",
@@ -3531,6 +3532,15 @@
       "Requester": "Kunde",
       "Provider": "Anbieter"
     }
+  },
+  "HOME_AREA": {
+    "TITLE": "Meine Region",
+    "DESC": "Wählen Sie das Gouvernement, in dem Sie wohnen. Hervorgehobene Anzeigen aus dieser Region sehen Sie zuerst. Nur Sie sehen diese Einstellung.",
+    "LABEL": "Gouvernement",
+    "NONE": "Nicht festgelegt",
+    "SAVING": "Wird gespeichert…",
+    "SAVED": "Gespeichert",
+    "SAVE_FAILED": "Speichern fehlgeschlagen. Bitte erneut versuchen."
   },
   "NOTIFICATION_SETTINGS": {
     "TITLE": "Benachrichtigungseinstellungen",

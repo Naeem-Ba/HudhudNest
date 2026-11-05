@@ -689,7 +689,8 @@
     "ADDITIONAL_COSTS": "Additional costs",
     "DEPOSIT": "Deposit",
     "PURCHASE_PRICE": "Purchase price",
-    "FEATURED": "Featured"
+    "FEATURED": "Featured",
+    "IN_YOUR_AREA": "In your area"
   },
   "PROPERTY_FORM": {
     "LOAD_ERROR": "Unable to load property data.",
@@ -3531,6 +3532,15 @@
       "Requester": "Customer",
       "Provider": "Provider"
     }
+  },
+  "HOME_AREA": {
+    "TITLE": "My area",
+    "DESC": "Choose the governorate you live in. Featured listings of this area are shown to you first. Only you can see this setting.",
+    "LABEL": "Governorate",
+    "NONE": "Not set",
+    "SAVING": "Saving…",
+    "SAVED": "Saved",
+    "SAVE_FAILED": "Could not save. Try again."
   },
   "NOTIFICATION_SETTINGS": {
     "TITLE": "Notification settings",

@@ -155,6 +155,11 @@
                 <span aria-hidden="true">⭐</span>
                 {{ 'PROPERTY.FEATURED' | translate }}
               </span>
+              <!-- Featured ad in one of the visitor's own areas (the server decides, from interestGovernorateIds). -->
+              <span class="badge badge--area" *ngIf="p.matchesInterestArea">
+                <span aria-hidden="true">📍</span>
+                {{ 'PROPERTY.IN_YOUR_AREA' | translate }}
+              </span>
             </div>
           </div>
           <div class="prop-card__body listing-muted__text">

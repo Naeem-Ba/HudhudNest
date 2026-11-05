@@ -110,6 +110,9 @@ export interface UserProfile {
   PreferredCurrency?: string | null;
   HasChosenLanguage?: boolean;
   HasChosenCurrency?: boolean;
+
+  /** The governorate the person chose in Settings as where they live (UserDto.HomeGovernorateId); used only to rank the property list. */
+  HomeGovernorateId?: number | null;
 }
 
 /** 202 body of DELETE /api/Users/me (UsersController.DeleteAccount). */
@@ -194,6 +197,9 @@ interface BackendUserProfile {
   HasChosenLanguage?: boolean;
   hasChosenCurrency?: boolean;
   HasChosenCurrency?: boolean;
+
+  homeGovernorateId?: number | null;
+  HomeGovernorateId?: number | null;
 }
 
 /**
@@ -341,6 +347,17 @@ export class ProfileService {
       .pipe(switchMap(() => this.getMe()));
   }
 
+  /**
+   * Sets (a governorate id) or clears (null) the home area. Only this field is sent: the server leaves every
+   * other profile field alone when it is missing, and 0 means "clear". The cached profile is refreshed from the
+   * server's answer, so the Settings card and the property list agree on what was stored.
+   */
+  setHomeGovernorate(governorateId: number | null): Observable<UserProfile> {
+    return this.api
+      .put<void>('/users/me', { homeGovernorateId: governorateId ?? 0 })
+      .pipe(switchMap(() => this.getMe()));
+  }
+
   changePassword(data: ChangePasswordRequest): Observable<void> {
     return this.api.post<void>('/users/me/change-password', data);
   }
@@ -457,7 +474,9 @@ export class ProfileService {
       PreferredLanguage: user.preferredLanguage ?? user.PreferredLanguage ?? null,
       PreferredCurrency: user.preferredCurrency ?? user.PreferredCurrency ?? null,
       HasChosenLanguage: user.hasChosenLanguage ?? user.HasChosenLanguage ?? false,
-      HasChosenCurrency: user.hasChosenCurrency ?? user.HasChosenCurrency ?? false
+      HasChosenCurrency: user.hasChosenCurrency ?? user.HasChosenCurrency ?? false,
+
+      HomeGovernorateId: user.homeGovernorateId ?? user.HomeGovernorateId ?? null
     };
   }
 
