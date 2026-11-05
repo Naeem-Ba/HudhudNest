@@ -82,7 +82,7 @@
       >
         <dt class="text-sm text-ink-600">{{ 'CHECKOUT.GRACE_ENDS' | translate }}</dt>
         <dd class="text-sm font-semibold tabular-nums text-ink-900">
-          {{ graceEndsAt | date: 'yyyy-MM-dd' }}
+          {{ graceEndsAt | localDate: 'yyyy-MM-dd' }}
         </dd>
       </div>
 
@@ -93,7 +93,7 @@
       >
         <dt class="text-sm text-ink-600">{{ 'CHECKOUT.FEATURED_UNTIL' | translate }}</dt>
         <dd class="text-sm font-semibold tabular-nums text-ink-900">
-          {{ projectedUntil | date: 'yyyy-MM-dd' }}
+          {{ projectedUntil | localDate: 'yyyy-MM-dd' }}
         </dd>
       </div>
     </dl>

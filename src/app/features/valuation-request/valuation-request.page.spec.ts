@@ -18,6 +18,7 @@
 // already established for a comparably form-heavy page — not a placeholder
 // for real E2E coverage, but the closest equivalent this project has.
 // =====================================================================
+import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
@@ -53,6 +54,7 @@ describe('ValuationRequestPage', () => {
     TestBed.configureTestingModule({
       imports: [ValuationRequestPage],
       providers: [
+        provideRouter([]),
         { provide: ValuationApiService, useValue: valuationApiSpy },
         { provide: LookupsApiService, useValue: lookupsApiSpy },
         { provide: LanguageService, useValue: { getCurrent: () => 'ar', currentLang$: of('ar') } },

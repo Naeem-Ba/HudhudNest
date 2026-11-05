@@ -4,11 +4,13 @@
 // راجع docs/app-update-management.md (repo الخلفية) قسم "Web" لهذا القرار. لا تُعطِّل
 // إقلاع التطبيق أبداً: فشل الشبكة/الخادم يُبتلَع بصمت (catchError) تماماً كما يتطلب عقد
 // GET /api/app-updates/check نفسه على الخلفية (fail-closed إلى "لا يوجد تحديث").
+import { HttpContext } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { catchError, defer, finalize, from, of, switchMap } from 'rxjs';
 
 import { AppUpdateNativeGateway } from './app-update-native.gateway';
+import { SKIP_ERROR_TOAST } from '../interceptors/api-error.interceptor';
 import { BackendApiService } from './backend-api.service';
 
 export interface AppUpdateCheckDto {
@@ -111,11 +113,13 @@ export class AppUpdateService {
       .pipe(
         switchMap(version => {
           const platform = this.native.getPlatform() === 'ios' ? 'IOS' : 'Android';
+          // Silent on purpose (see catchError below): a failing update check must not put a "server error"
+          // toast on the first screen the person sees.
           return this.api.get<AppUpdateCheckDto>('/app-updates/check', {
             platform,
             currentVersion: normalizeAppVersion(version),
             lang: this.translate.currentLang || this.translate.defaultLang || 'ar'
-          });
+          }, { context: new HttpContext().set(SKIP_ERROR_TOAST, true) });
         }),
         catchError(() => of(null)),
         finalize(() => (this.inFlight = false))

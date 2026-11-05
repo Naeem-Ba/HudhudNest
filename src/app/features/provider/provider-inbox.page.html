@@ -33,14 +33,17 @@
         <div>
           <p class="request-number">{{ request.requestNumber }}</p>
           <p class="property-title">{{ request.propertyTitle }}</p>
-          <p class="date">{{ request.createdAt | date:'medium' }}</p>
+          <p class="date">{{ request.createdAt | localDate:'medium' }}</p>
         </div>
         <span class="status" [attr.data-status]="request.status">{{ ('SERVICE_REQUESTS.STATUS.' + request.status.toUpperCase()) | translate }}</span>
       </div>
+      <p class="unread" *ngIf="(request.unreadMessageCount ?? 0) > 0">
+        {{ 'PROVIDER.INBOX.UNREAD_MESSAGES' | translate: { count: request.unreadMessageCount } }}
+      </p>
       <dl>
         <div><dt>{{ 'SERVICE_REQUESTS.CATEGORY' | translate }}</dt><dd>{{ ('SERVICES.CATEGORY.' + request.category) | translate }}</dd></div>
         <div><dt>{{ 'PROVIDER.INBOX.REQUESTER' | translate }}</dt><dd>{{ request.requesterName }}</dd></div>
-        <div *ngIf="request.scheduledAt"><dt>{{ 'SERVICE_REQUESTS.SCHEDULED_AT' | translate }}</dt><dd>{{ request.scheduledAt | date:'medium' }}</dd></div>
+        <div *ngIf="request.scheduledAt"><dt>{{ 'SERVICE_REQUESTS.SCHEDULED_AT' | translate }}</dt><dd>{{ request.scheduledAt | localDate:'medium' }}</dd></div>
       </dl>
       <span class="chevron" aria-hidden="true">←</span>
     </a>

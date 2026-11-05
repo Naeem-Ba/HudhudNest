@@ -44,23 +44,30 @@ import { ToastService } from '../services/toast.service';
       [attr.aria-pressed]="isFavorite()"
       [attr.aria-label]="(isFavorite() ? 'FAVORITE_TOGGLE.REMOVE' : 'FAVORITE_TOGGLE.ADD') | translate"
     >
-      <svg width="18" height="18" viewBox="0 0 18 18" [attr.fill]="isFavorite() ? 'currentColor' : 'none'" aria-hidden="true">
+      <svg width="20" height="20" viewBox="0 0 18 18" [attr.fill]="isFavorite() ? 'currentColor' : 'none'" aria-hidden="true">
         <path d="M9 15.5S2 11 2 6.5a4 4 0 018-1.36A4 4 0 0118 6.5c0 4.5-7 9-9 9z" stroke="currentColor" stroke-width="1.5"/>
       </svg>
     </button>
   `,
   styles: [`
+    /* A circle by construction: width, height and both minimums are the one --icon-btn-size.
+       styles.scss gives every button min-height: 44px on touch screens; with only a 36px width that
+       turned the heart into an oval, so the minimums are pinned here and the size itself is 44px. */
     .fav-btn {
-      width: var(--icon-btn-size, 36px); height: var(--icon-btn-size, 36px); border-radius: var(--r-pill, 9999px);
+      --_size: var(--icon-btn-size, 44px);
+      box-sizing: border-box; aspect-ratio: 1 / 1;
+      width: var(--_size); height: var(--_size); min-width: var(--_size); min-height: var(--_size);
+      border-radius: var(--r-pill, 9999px);
       border: 1px solid var(--border, transparent); padding: 0; flex: none; background: rgba(255,255,255,.92); color: var(--gray-500, #64748b);
       display: grid; place-items: center; cursor: pointer;
       box-shadow: var(--shadow-sm, 0 2px 8px rgba(15,23,42,.08));
       transition: color .15s, transform .1s;
     }
     .fav-btn:active { transform: scale(.92); }
-    .fav-btn--active { color: var(--danger, #dc2626); }
+    .fav-btn--active { color: var(--danger-text); }
     .fav-btn:focus-visible { outline: 2px solid var(--navy, #0f2742); outline-offset: 2px; }
     .fav-btn:disabled { opacity: .6; cursor: default; }
+    .fav-btn svg { flex: none; width: 20px; height: 20px; }
   `]
 })
 export class FavoriteToggleButtonComponent {

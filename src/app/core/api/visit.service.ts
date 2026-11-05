@@ -140,7 +140,9 @@ export class VisitService {
       id: String(v['id'] ?? ''),
       propertyId: String(v['propertyId'] ?? ''),
       propertyTitle: v['propertyTitle'] as string | undefined,
-      visitorId: v['visitorId'] as string | undefined,
+      // The API names the requester `requesterId` (VisitDto). Reading only `visitorId` left it
+      // undefined, so the visitor never saw Cancel or the reschedule answer buttons (launch audit A2-001).
+      visitorId: (v['requesterId'] ?? v['visitorId']) as string | undefined,
       visitorName: String(v['visitorName'] ?? ''),
       visitorPhone: String(v['visitorPhone'] ?? ''),
       visitorNote: v['visitorNote'] as string | null | undefined,

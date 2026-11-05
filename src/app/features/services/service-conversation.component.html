@@ -1,0 +1,50 @@
+<section class="conversation" [attr.aria-label]="'SERVICE_CONVERSATION.TITLE' | translate">
+  <header class="conversation__head">
+    <strong>{{ 'SERVICE_CONVERSATION.TITLE' | translate }}</strong>
+    <span class="muted" *ngIf="messages().length">{{ 'SERVICE_CONVERSATION.COUNT' | translate: { count: messages().length } }}</span>
+  </header>
+
+  <p class="hint" *ngIf="hintKey() as key">{{ key | translate }}</p>
+
+  <div class="state" *ngIf="loading()">{{ 'COMMON.LOADING' | translate }}</div>
+  <div class="state error" *ngIf="!loading() && loadFailed()">
+    <p>{{ 'SERVICE_CONVERSATION.LOAD_ERROR' | translate }}</p>
+    <button type="button" class="btn secondary" (click)="refresh()">{{ 'COMMON.RETRY' | translate }}</button>
+  </div>
+
+  <ul class="thread" *ngIf="!loading() && !loadFailed()" aria-live="polite">
+    <li class="empty" *ngIf="messages().length === 0">{{ 'SERVICE_CONVERSATION.EMPTY' | translate }}</li>
+    <li *ngFor="let message of messages(); trackBy: trackById" class="bubble"
+        [class.bubble--mine]="message.isMine" [class.bubble--theirs]="!message.isMine"
+        [attr.data-party]="message.senderParty">
+      <span class="bubble__who">{{ message.senderName }}
+        <span class="bubble__role">· {{ ('SERVICE_CONVERSATION.PARTY.' + message.senderParty) | translate }}</span>
+      </span>
+      <p class="bubble__body">{{ message.body }}</p>
+      <time class="bubble__time" [attr.datetime]="message.createdAt">{{ message.createdAt | localDate:'short' }}</time>
+    </li>
+  </ul>
+
+  <form class="composer" *ngIf="canWrite()" (ngSubmit)="send()">
+    <label>
+      <span class="sr-only">{{ 'SERVICE_CONVERSATION.PLACEHOLDER' | translate }}</span>
+      <textarea rows="3" name="message" [maxlength]="maxLength"
+                [ngModel]="draft()" (ngModelChange)="onDraft($event)"
+                [placeholder]="'SERVICE_CONVERSATION.PLACEHOLDER' | translate"></textarea>
+    </label>
+    <div class="composer__row">
+      <span class="muted">{{ draft().length }}/{{ maxLength }}</span>
+      <div class="composer__actions">
+        <button type="submit" class="btn primary" [disabled]="!canSend()">{{ 'SERVICE_CONVERSATION.SEND' | translate }}</button>
+      </div>
+    </div>
+    <p class="safety">{{ 'SERVICE_CONVERSATION.SAFETY' | translate }}</p>
+  </form>
+
+  <div class="confirm-box" *ngIf="canConfirm()">
+    <p>{{ 'SERVICE_CONVERSATION.CONFIRM_HELP' | translate }}</p>
+    <button type="button" class="btn success" (click)="confirm()" [disabled]="confirming()">
+      {{ 'SERVICE_CONVERSATION.CONFIRM' | translate }}
+    </button>
+  </div>
+</section>

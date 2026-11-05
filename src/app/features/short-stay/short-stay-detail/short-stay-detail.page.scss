@@ -5,7 +5,7 @@
   margin: 0 auto;
   padding: var(--space-6, 1.5rem) var(--space-4, 1rem);
 
-  &__error { color: var(--danger, #dc2626); }
+  &__error { color: var(--danger-text); }
 
   &__gallery {
     display: grid;
@@ -40,7 +40,7 @@
   }
 
   &__type {
-    color: var(--primary, #D6A84F);
+    color: var(--primary-text);
     font-weight: 600;
     font-size: 0.8125rem;
     text-transform: uppercase;
@@ -51,10 +51,16 @@
     margin-top: 0.35rem;
   }
 
+  &__views {
+    margin-top: 0.5rem;
+    margin-inline-end: 0.75rem;
+    vertical-align: middle;
+  }
+
   &__map-link {
     display: inline-block;
     margin-top: 0.5rem;
-    color: var(--primary, #D6A84F);
+    color: var(--primary-text);
     font-size: 0.875rem;
     text-decoration: underline;
   }
@@ -92,7 +98,26 @@
     border-radius: var(--r-md, 12px);
     padding: 1.25rem;
     box-shadow: var(--shadow-md, 0 6px 20px rgba(0,0,0,.08));
-    background: #fff;
+    background: var(--surface);
+  }
+
+  &__taken-down {
+    margin: 0 0 1rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--danger-text);
+    background: var(--danger-soft, #fee2e2);
+  }
+
+  &__instant-hint {
+    margin: 0.5rem 0;
+    padding: 0.45rem 0.65rem;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    color: var(--primary-text, #92651a);
+    background: var(--gold-soft, #fdf6e3);
   }
 
   &__owner-notice {

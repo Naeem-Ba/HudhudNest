@@ -1,7 +1,7 @@
 <div class="drp">
   <div class="drp__header">
     <button type="button" class="drp__nav" (click)="prevMonth()" [attr.aria-label]="'DATE_RANGE.PREV_MONTH' | translate">‹</button>
-    <span class="drp__month">{{ viewMonth() | date:'MMMM yyyy' }}</span>
+    <span class="drp__month">{{ viewMonth() | localDate:'MMMM yyyy' }}</span>
     <button type="button" class="drp__nav" (click)="nextMonth()" [attr.aria-label]="'DATE_RANGE.NEXT_MONTH' | translate">›</button>
   </div>
 

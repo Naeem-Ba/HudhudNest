@@ -101,6 +101,27 @@ export function pickForwardableRequestHeaders(incomingHeaders) {
   return headers;
 }
 
+/** Header names shared with the API (HudhudNestApi EdgeClientIpMiddleware). */
+export const CLIENT_IP_HEADER = 'x-hn-client-ip';
+export const EDGE_SECRET_HEADER = 'x-hn-edge-secret';
+
+/**
+ * Launch audit A4-001: every /api/auth/* call reaches the API from a Netlify address, and the
+ * API keys its per-IP rate limits (login, register, OTP, refresh, reset) on the connecting
+ * address. Without the visitor's IP all web users shared one bucket per edge node. The API
+ * trusts X-HN-Client-IP only together with the shared secret, so a client cannot spoof it by
+ * sending the header itself (the allowlist above never forwards incoming values for these).
+ * Adds nothing when either value is missing, so the proxy keeps working before the secret is
+ * configured.
+ */
+export function addClientIdentityHeaders(headers, clientIp, edgeSecret) {
+  if (typeof clientIp === 'string' && clientIp.trim() && typeof edgeSecret === 'string' && edgeSecret.trim()) {
+    headers.set(CLIENT_IP_HEADER, clientIp.trim());
+    headers.set(EDGE_SECRET_HEADER, edgeSecret.trim());
+  }
+  return headers;
+}
+
 /** Response headers that must NOT be copied verbatim from the backend's response onto the new
  *  Response this function returns: the backend's fetch() already transparently decoded any
  *  compressed body, and the new Response is a fresh object with its own framing — keeping the

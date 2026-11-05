@@ -20,6 +20,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
 
 import { PropertyApiService } from '../../core/api/property-api.service';
+import { hasCompleteCoordinates, isValidCoordinates } from '../../core/models/property-location';
 import {
   LookupsApiService,
   LookupAmenity,
@@ -40,7 +41,9 @@ import { EnumItem, EnumService } from '../../core/services/enum.service';
 import { ScrollLockService } from '../../core/services/scroll-lock.service';
 import { LISTING_PHOTO_COMPRESSION, compressImagesForUpload } from '../../shared/utils/image-compression';
 import { PhotoGuideSheetComponent } from '../../shared/ui/photo-guide/photo-guide-sheet.component';
+import { AmenityLabelPipe } from '../../pipes/amenity-label.pipe';
 import { PhotoGuideKind, photoGuideKindForListingType } from '../../shared/ui/photo-guide/photo-guide.data';
+import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
 
 interface PropertySavePayload {
   Title: string;
@@ -53,6 +56,8 @@ interface PropertySavePayload {
   PostalCode?: string | null;
   Latitude?: number | null;
   Longitude?: number | null;
+  HideExactLocation?: boolean;
+  IsPriceNegotiable?: boolean;
   ColdRent?: number | null;
   WarmRent?: number | null;
   PurchasePrice?: number | null;
@@ -188,6 +193,12 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
     errors['districtRequired'] = true;
   }
 
+  const latitude = group.get('latitude')?.value;
+  const longitude = group.get('longitude')?.value;
+  if (!hasCompleteCoordinates(latitude, longitude)) {
+    errors['invalidCoordinates'] = true;
+  }
+
   return Object.keys(errors).length ? errors : null;
 }
 
@@ -195,7 +206,7 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
   selector: 'app-property-form',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [ LocalizedNumberPipe,
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
@@ -203,7 +214,8 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
     MapPickerComponent,
     ImageFallbackDirective,
     LocationComboComponent,
-    PhotoGuideSheetComponent
+    PhotoGuideSheetComponent,
+    AmenityLabelPipe
   ],
   templateUrl: './property-form.page.html',
   styleUrls: ['./property-form.page.scss']
@@ -228,6 +240,7 @@ export class PropertyFormPage implements OnInit {
   readonly propertyId = signal('');
   readonly currentLang = signal<LangCode>('ar');
   readonly submitError = signal('');
+  readonly mapCenter = signal<{ lat: number; lng: number } | undefined>(undefined);
 
   readonly selectedFiles = signal<File[]>([]);
   readonly previews = signal<string[]>([]);
@@ -249,6 +262,7 @@ export class PropertyFormPage implements OnInit {
    */
   readonly amenities = signal<LookupAmenity[]>([]);
   readonly amenitiesLoadFailed = signal(false);
+  readonly amenitiesLoading = signal(false);
   readonly selectedAmenityIds = signal<Set<string>>(new Set());
   readonly citySuggestions = signal<LookupItem[]>([]);
 
@@ -375,6 +389,8 @@ export class PropertyFormPage implements OnInit {
     propertyTypeId: [null as number | null, Validators.required],
     latitude: [null as number | null, [Validators.min(-90), Validators.max(90)]],
     longitude: [null as number | null, [Validators.min(-180), Validators.max(180)]],
+    hideExactLocation: [false],
+    isPriceNegotiable: [false],
     currencyCode: ['SYP', [Validators.required, Validators.minLength(3), Validators.maxLength(3)]],
     coldRent: [null as number | null, positiveNumber],
     warmRent: [null as number | null, positiveNumber],
@@ -404,6 +420,16 @@ export class PropertyFormPage implements OnInit {
   }, { validators: [propertyFormValidator, this.conditionalFieldsValidator] });
 
   ngOnInit(): void {
+    this.form.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(value => {
+        const latitude = value.latitude;
+        const longitude = value.longitude;
+        this.mapCenter.set(isValidCoordinates(latitude, longitude)
+          ? { lat: latitude as number, lng: longitude as number }
+          : undefined);
+      });
+
     const id = this.route.snapshot.paramMap.get('id') ?? '';
 
     if (id) {
@@ -706,13 +732,21 @@ export class PropertyFormPage implements OnInit {
   }
 
   /** GET /api/lookups/amenities — كانت غير مستخدمة إطلاقاً في الواجهة. */
-  private loadAmenities(): void {
+  loadAmenities(): void {
+    this.amenitiesLoading.set(true);
+    this.amenitiesLoadFailed.set(false);
     this.lookupsApi
       .getAmenities()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: amenities => this.amenities.set(amenities),
-        error: () => this.amenitiesLoadFailed.set(true)
+        next: amenities => {
+          this.amenities.set(amenities);
+          this.amenitiesLoading.set(false);
+        },
+        error: () => {
+          this.amenitiesLoadFailed.set(true);
+          this.amenitiesLoading.set(false);
+        }
       });
   }
 
@@ -784,6 +818,8 @@ export class PropertyFormPage implements OnInit {
             countryCode: property.countryCode ?? 'SY',
             latitude: property.latitude ?? null,
             longitude: property.longitude ?? null,
+            hideExactLocation: property.hideExactLocation ?? false,
+            isPriceNegotiable: property.isPriceNegotiable ?? false,
             currencyCode: property.currencyCode ?? 'SYP',
             coldRent: property.coldRent ?? null,
             warmRent: property.warmRent ?? null,
@@ -863,6 +899,7 @@ export class PropertyFormPage implements OnInit {
   }
 
   onLocationSelected(location: { lat: number; lng: number }): void {
+    if (!isValidCoordinates(location.lat, location.lng)) return;
     this.form.patchValue({ latitude: location.lat, longitude: location.lng });
   }
 
@@ -1111,6 +1148,8 @@ export class PropertyFormPage implements OnInit {
       PostalCode: f.postalCode?.trim() ?? null,
       Latitude: f.latitude ?? null,
       Longitude: f.longitude ?? null,
+      HideExactLocation: !!f.hideExactLocation,
+      IsPriceNegotiable: (isRent || isSale) && !!f.isPriceNegotiable,
       CurrencyCode: f.currencyCode!.trim().toUpperCase(),
       ColdRent: isRent ? (f.coldRent ?? null) : null,
       WarmRent: isRent ? (f.warmRent ?? null) : null,
@@ -1260,6 +1299,7 @@ export class PropertyFormPage implements OnInit {
     if (errors['invalidCountryCode']) return 'PROPERTY_FORM.INVALID_COUNTRY_CODE';
     if (errors['invalidCurrencyCode']) return 'PROPERTY_FORM.INVALID_CURRENCY_CODE';
     if (errors['districtRequired']) return 'PROPERTY_FORM.DISTRICT_REQUIRED';
+    if (errors['invalidCoordinates']) return 'PROPERTY_FORM.INVALID_COORDINATES';
 
     // Dynamic listing form (ListingType × PropertyType redesign, Syrian market).
     if (errors['ownershipTypeRequired']) return 'PROPERTY_FORM.OWNERSHIP_TYPE_REQUIRED';

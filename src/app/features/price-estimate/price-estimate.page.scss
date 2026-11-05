@@ -1,0 +1,25 @@
+:host { display: block; }
+.pe-page { padding-block: 1.5rem 3rem; max-inline-size: 960px; margin-inline: auto; padding-inline: 16px; display: grid; gap: 1rem; }
+.pe-page__header h1 { margin: 0 0 .5rem; }
+.pe-page__lead, .pe-method, .pe-disclaimer { margin: 0; color: var(--text-muted, #5b6470); font-size: .9rem; }
+.card { background: var(--surface, #fff); border: 1px solid var(--border, #e5e7eb); border-radius: 12px; padding: 1rem; }
+.pe-form { display: grid; gap: 1rem; }
+.pe-form__grid { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+.pe-form__grid label { display: grid; gap: .25rem; font-size: .9rem; }
+.pe-form input, .pe-form select { inline-size: 100%; min-block-size: 44px; padding: .5rem; border: 1px solid var(--border, #d1d5db); border-radius: 8px; font: inherit; background: var(--surface, #fff); color: inherit; }
+.pe-form input[type='radio'] { inline-size: auto; min-block-size: auto; }
+.pe-form__row { display: flex; flex-wrap: wrap; gap: .5rem 1rem; border: 0; padding: 0; margin: 0; }
+.pe-form__row legend { font-weight: 600; margin-block-end: .25rem; inline-size: 100%; }
+.pe-form__row label { display: inline-flex; align-items: center; gap: .35rem; min-block-size: 44px; }
+.pe-result { display: grid; gap: .5rem; }
+.pe-result h2, .pe-areas h2 { margin: 0; font-size: 1.15rem; }
+.pe-range { margin: 0; font-size: 1.6rem; font-weight: 700; text-align: start; }
+.pe-persqm { margin: 0; color: var(--text-muted, #5b6470); text-align: start; }
+.pe-facts { margin: 0; padding-inline-start: 1.1rem; display: grid; gap: .25rem; }
+.pe-confidence { padding: .1rem .5rem; border-radius: 999px; font-weight: 600; background: var(--muted-bg, #f1f5f9); }
+.pe-confidence--high { background: var(--success-bg, #e7f6ec); color: var(--success-text); }
+.pe-confidence--low { background: var(--warning-bg, #fff4e5); color: var(--warning-text, #8a4b00); }
+.pe-error { color: var(--danger-text); }
+.pe-table-wrap { overflow-x: auto; }
+.pe-areas table { inline-size: 100%; border-collapse: collapse; font-size: .9rem; }
+.pe-areas th, .pe-areas td { text-align: start; padding: .5rem; border-block-end: 1px solid var(--border, #e5e7eb); white-space: nowrap; }

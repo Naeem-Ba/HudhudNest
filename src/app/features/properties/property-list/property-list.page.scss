@@ -165,7 +165,7 @@
   inset-block-start: 50%;
   inset-inline-start: .75rem;
   transform: translateY(-50%);
-  color: var(--gray-400);
+  color: var(--text-muted);
   pointer-events: none;
 }
 
@@ -219,7 +219,7 @@
   margin: .35rem 0 0;
   font-size: .8rem;
   font-weight: 600;
-  color: var(--danger);
+  color: var(--danger-text);
 }
 
 .range-inputs {
@@ -256,7 +256,7 @@
 }
 
 .range-sep {
-  color: var(--gray-400);
+  color: var(--text-muted);
   font-size: .85rem;
   flex-shrink: 0;
 }
@@ -419,7 +419,11 @@
   &__specs {
     display: flex;
     align-items: center;
-    gap: .85rem;
+    flex-wrap: wrap;
+    gap: .35rem .85rem;
+
+    // View counter pushed to the trailing edge (mirrors in RTL); wraps under the specs on narrow cards.
+    .card-views { margin-inline-start: auto; }
 
     span {
       font-size: .8rem;
@@ -451,7 +455,7 @@
     small {
       font-size: .72rem;
       font-weight: 500;
-      color: var(--gray-400);
+      color: var(--text-muted);
       margin-inline-start: .2rem;
     }
   }
@@ -499,8 +503,22 @@
 /* Favorite Button — app-favorite-toggle-button يحمل تصميمه الخاص داخلياً؛
    هذا فقط يتحكم بموضعه فوق صورة البطاقة. */
 .fav-btn-wrapper {
+  --icon-btn-size: 40px;
+  display: block;
+  line-height: 0;
   position: absolute;
   top: .6rem;
+  inset-inline-end: .6rem;
+  z-index: 2;
+}
+
+/* Share button — right under the favorite heart (same 40px circle, same corner). */
+.share-btn-wrapper {
+  --icon-btn-size: 40px;
+  display: block;
+  line-height: 0;
+  position: absolute;
+  top: calc(.6rem + 40px + .5rem);
   inset-inline-end: .6rem;
   z-index: 2;
 }
@@ -617,3 +635,11 @@
   font-size: .8rem;
   color: var(--gray-500);
 }
+
+/* Monetization slot spans the whole grid row so it never sits inside a card column. */
+.properties-grid__ad {
+  grid-column: 1 / -1;
+}
+
+/* Growth engine P8: link to the map view. */
+.geo-btn--map { text-decoration: none; margin-inline-start: .5rem; }

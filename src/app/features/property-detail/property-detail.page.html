@@ -34,18 +34,19 @@
       <div class="container detail-hero__inner">
 
         <!-- Gallery -->
-        <div class="gallery"
-          (mousedown)="onDragStart($event)"
-          (mouseup)="onDragEnd($event)"
-          (touchstart)="onDragStart($event)"
-          (touchend)="onDragEnd($event)"
-        >
-          <div class="gallery__window" [class.gallery__window--zoom]="hasImages()" (click)="openModal()">
+        <div class="gallery">
+          <div class="gallery__window" [class.gallery__window--zoom]="hasImages()"
+            (pointerdown)="onGalleryPointerDown($event)"
+            (pointerup)="onGalleryPointerUp($event)"
+            (pointercancel)="onGalleryPointerCancel()"
+            (lostpointercapture)="onGalleryPointerCancel()"
+            (click)="onGalleryClick($event)">
             <img
               [src]="currentImageDisplayUrl()"
               [attr.srcset]="currentImageSrcSet()"
               sizes="(max-width: 980px) 100vw, 55vw"
               [alt]="currentImageAlt()"
+              draggable="false"
               class="gallery__img"
               appImageFallback="/images/no-image.svg"
             />
@@ -84,14 +85,15 @@
               type="button"
               class="gallery__thumb"
               [class.gallery__thumb--active]="currentIndex() === i"
+              [attr.aria-pressed]="currentIndex() === i"
               (click)="currentIndex.set(i)"
             >
-              <img [src]="thumbnailUrl(img.url)" [alt]="thumbnailAlt(img, i)" loading="lazy" />
+              <img [src]="thumbnailUrl(img.url)" [alt]="thumbnailAlt(img, i)" loading="lazy" appImageFallback="/images/no-image.svg" />
             </button>
           </div>
 
           <!-- Counter -->
-          <p class="gallery__counter" *ngIf="hasImages()">
+          <p class="gallery__counter" *ngIf="hasImages()" aria-live="polite" aria-atomic="true">
             {{ currentIndex() + 1 }} / {{ images().length }}
           </p>
         </div>
@@ -106,25 +108,49 @@
             {{ 'PROPERTY_DETAIL.STALE_BANNER' | translate: { days: daysSinceFreshnessSignal() } }}
           </div>
 
-          <!-- Badges -->
-          <div class="summary-card__badges">
-            <span class="badge"
-              [class.badge--rent]="isRentListing()"
-              [class.badge--sale]="isSaleListing()">
-              {{ isSaleListing()
-                  ? ('PROPERTY.MODE_SALE' | translate)
-                  : ('PROPERTY.MODE_RENT' | translate) }}
-            </span>
-            <!-- إعلان مميّز مدفوع. مرئي لكل زائر لا للمالك وحده — التمييز يُشترى
-                 ليراه الباحثون، وشارة يراها المالك فقط ليست المنتج المدفوع. -->
-            <span class="badge badge--featured" *ngIf="p.isFeatured">
-              <span aria-hidden="true">⭐</span>
-              {{ 'PROPERTY.FEATURED' | translate }}
-            </span>
-            <!-- حالة الإعلان: محجوز / مباع / مؤجر (لا يظهر شيء لإعلان متاح). -->
-            <span class="badge" *ngIf="statusTagKey(p) as tagKey" [ngClass]="statusBadgeClass(p)" data-testid="status-badge">
-              {{ tagKey | translate }}
-            </span>
+          <!-- Header row: the listing badges on the leading side, the favorite + share pair on the
+               trailing side. Flex with logical alignment, so it mirrors by itself in RTL and wraps
+               (pair below the badges) instead of overlapping when the badges are wide. -->
+          <div class="summary-card__top">
+            <div class="summary-card__badges">
+              <span class="badge"
+                [class.badge--rent]="isRentListing()"
+                [class.badge--sale]="isSaleListing()">
+                {{ isSaleListing()
+                    ? ('PROPERTY.MODE_SALE' | translate)
+                    : ('PROPERTY.MODE_RENT' | translate) }}
+              </span>
+              <!-- إعلان مميّز مدفوع. مرئي لكل زائر لا للمالك وحده — التمييز يُشترى
+                   ليراه الباحثون، وشارة يراها المالك فقط ليست المنتج المدفوع. -->
+              <span class="badge badge--featured" *ngIf="p.isFeatured">
+                <span aria-hidden="true">⭐</span>
+                {{ 'PROPERTY.FEATURED' | translate }}
+              </span>
+              <!-- حالة الإعلان: محجوز / مباع / مؤجر (لا يظهر شيء لإعلان متاح). -->
+              <span class="badge" *ngIf="statusTagKey(p) as tagKey" [ngClass]="statusBadgeClass(p)" data-testid="status-badge">
+                {{ tagKey | translate }}
+              </span>
+            </div>
+
+            <div class="summary-card__quick" role="group" [attr.aria-label]="'PROPERTY_DETAIL.QUICK_ACTIONS' | translate">
+              <!-- View counter: information, not an action (a span, no click). First in the group so
+                   the action buttons keep their place at the end of the row. -->
+              <app-listing-view-count [count]="viewCountOf(p)"></app-listing-view-count>
+              <app-favorite-toggle-button
+                *ngIf="p.id"
+                [propertyId]="p.id"
+              ></app-favorite-toggle-button>
+              <!-- Social Sharing & Distribution — hides itself when the property has no usable
+                   share channel (e.g. not public); see PropertyShareButtonComponent. -->
+              <app-property-share-button [property]="p"></app-property-share-button>
+              <!-- Report this listing: signed-in users; the server re-checks everything. Hidden for the owner. -->
+              <app-report-listing-button
+                *ngIf="p.id"
+                [propertyId]="p.id"
+                [ownerId]="p.ownerId"
+                [listingTitle]="p.title"
+              ></app-report-listing-button>
+            </div>
           </div>
 
           <div class="status-notice" *ngIf="statusNoticeKey(p) as noticeKey" role="status" data-testid="status-notice">
@@ -132,8 +158,8 @@
           </div>
 
           <!-- Title -->
-          <h1 class="summary-card__title line-clamp-3">
-            {{ safe(p.title, ('PROPERTY_LIST.NO_TITLE' | translate)) }}
+          <h1 class="summary-card__title line-clamp-3" dir="auto">
+            {{ safe(displayTitle(p), ('PROPERTY_LIST.NO_TITLE' | translate)) }}
           </h1>
 
           <!-- Location -->
@@ -141,8 +167,8 @@
             <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
               <path d="M7.5 1C5.29 1 3.5 2.79 3.5 5c0 2.62 4 9 4 9s4-6.38 4-9c0-2.21-1.79-4-4-4z" fill="var(--danger)" opacity=".8"/>
             </svg>
-            {{ safe(p.street) }}، {{ safe(p.city) }}
-            <span *ngIf="p.region"> · {{ p.region }}</span>
+            <span dir="auto">{{ safe(displayStreet(p)) }}</span>{{ locationSeparator() }}{{ safe(locations.city(p)) }}
+            <span *ngIf="p.region"> · {{ locations.region(p) }}</span>
           </p>
 
           <!-- ✅ إضافة: معرف الإعلان الحقيقي القادم من الـ Backend (p.id) -->
@@ -162,6 +188,10 @@
               <small>/{{ 'COMMON.MONTH' | translate }}</small>
             </strong>
           </div>
+          <p class="summary-card__negotiable" data-testid="price-negotiable-badge"
+             *ngIf="p.isPriceNegotiable && (isSaleListing() || isRentListing())">
+            {{ 'PROPERTY_DETAIL.PRICE_NEGOTIABLE' | translate }}
+          </p>
 
           <!-- Quick Specs -->
           <div class="summary-card__specs">
@@ -199,14 +229,6 @@
 
           <!-- CTA Actions -->
           <div class="summary-card__actions">
-            <app-favorite-toggle-button
-              *ngIf="p.id"
-              class="detail-fav-btn"
-              [propertyId]="p.id"
-            ></app-favorite-toggle-button>
-            <!-- Social Sharing & Distribution — hides itself when the property has no usable
-                 share channel (e.g. not public); see PropertyShareButtonComponent. -->
-            <app-property-share-button [property]="p"></app-property-share-button>
             <!-- Phase-0, Task 2: owner-only "still available?" confirmation.
                  Backend also enforces ownership (403 for anyone else) — this
                  *ngIf is a UX convenience, not the actual security boundary. -->
@@ -364,7 +386,7 @@
       <div class="detail-card" id="message-form-section" *ngIf="showMessageForm()">
         <div class="detail-card__header">
           <h2>{{ 'MESSAGES.CONTACT_OWNER' | translate }}</h2>
-          <button type="button" class="card-close-btn" (click)="showMessageForm.set(false)" aria-label="إغلاق">
+          <button type="button" class="card-close-btn" (click)="showMessageForm.set(false)" [attr.aria-label]="'COMMON.CLOSE' | translate">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
           </button>
         </div>
@@ -414,22 +436,38 @@
       <div class="detail-card" id="service-form-section" *ngIf="showServiceForm()">
         <div class="detail-card__header">
           <h2>{{ 'SERVICE_REQUEST.CTA' | translate }}</h2>
-          <button type="button" class="card-close-btn" (click)="showServiceForm.set(false)" aria-label="إغلاق">
+          <button type="button" class="card-close-btn" (click)="showServiceForm.set(false)" [attr.aria-label]="'COMMON.CLOSE' | translate">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
           </button>
         </div>
 
-        <div *ngIf="loadingServiceCategories()" class="state">{{ 'COMMON.LOADING' | translate }}</div>
+        <!-- After the first message the two sides talk here; the customer confirms when ready. The provider's phone appears only after a confirmed request is accepted. -->
+        <div class="service-sent" *ngIf="createdServiceRequest() as created">
+          <p class="service-sent__title">
+            {{ (created.status === 'Inquiry' ? 'SERVICE_REQUEST.INQUIRY_SENT_TITLE' : 'SERVICE_REQUEST.SENT_TITLE') | translate: { number: created.requestNumber } }}
+          </p>
+          <p>
+            {{ (created.status === 'Inquiry' ? 'SERVICE_REQUEST.INQUIRY_SENT_BODY' : 'SERVICE_REQUEST.SENT_BODY') | translate: { provider: created.serviceProviderDisplayName } }}
+          </p>
+          <app-service-conversation [request]="created" role="requester"
+            (activity)="onCreatedActivity($event)" (requestChange)="onCreatedConfirmed($event)" />
+          <div class="form-actions">
+            <a class="btn btn--primary" routerLink="/my-services">{{ 'SERVICE_REQUEST.OPEN_MY_REQUESTS' | translate }}</a>
+            <button type="button" class="btn btn--outline" (click)="closeServiceForm()">{{ 'COMMON.CLOSE' | translate }}</button>
+          </div>
+        </div>
 
-        <div *ngIf="!loadingServiceCategories() && serviceLoadFailed() && !serviceCategory()" class="state">
+        <div *ngIf="!createdServiceRequest() && loadingServiceCategories()" class="state">{{ 'COMMON.LOADING' | translate }}</div>
+
+        <div *ngIf="!createdServiceRequest() && !loadingServiceCategories() && serviceLoadFailed() && !serviceCategory()" class="state">
           {{ 'SERVICE_REQUEST.LOAD_ERROR' | translate }}
         </div>
 
-        <div *ngIf="!loadingServiceCategories() && !serviceLoadFailed() && availableServiceCategories().length === 0" class="state">
+        <div *ngIf="!createdServiceRequest() && !loadingServiceCategories() && !serviceLoadFailed() && availableServiceCategories().length === 0" class="state">
           {{ 'SERVICE_REQUEST.UNAVAILABLE' | translate }}
         </div>
 
-        <form class="detail-form" *ngIf="!loadingServiceCategories() && availableServiceCategories().length > 0" (ngSubmit)="submitServiceRequest()" novalidate>
+        <form class="detail-form" *ngIf="!createdServiceRequest() && !loadingServiceCategories() && availableServiceCategories().length > 0" (ngSubmit)="submitServiceRequest('Request')" novalidate>
           <div class="form-group">
             <label for="serviceCategory">{{ 'SERVICE_REQUEST.CATEGORY' | translate }}</label>
             <select id="serviceCategory" name="serviceCategory" [ngModel]="serviceCategory()" (ngModelChange)="selectServiceCategory($event)">
@@ -451,13 +489,15 @@
                 <strong>{{ offering.title }}</strong>
                 <span *ngIf="offering.description"> — {{ offering.description }}</span>
                 <small class="offering-provider">{{ 'SERVICE_REQUEST.PROVIDER' | translate }}: {{ offering.serviceProviderDisplayName }}</small>
+                <small class="offering-rating" *ngIf="offering.averageRating != null && (offering.reviewCount ?? 0) > 0">★ {{ offering.averageRating | localNumber:'1.1-1' }} ({{ offering.reviewCount }})</small>
+                <small class="offering-rating offering-rating--none" *ngIf="!offering.reviewCount">{{ 'SERVICE_REQUEST.NO_REVIEWS_YET' | translate }}</small>
               </span>
             </label>
           </fieldset>
 
           <ng-container *ngIf="selectedOffering()">
             <div class="form-group">
-              <label for="serviceRequestNote">{{ 'SERVICE_REQUEST.NOTE' | translate }}</label>
+              <label for="serviceRequestNote">{{ 'SERVICE_REQUEST.NOTE' | translate }} *</label>
               <textarea
                 id="serviceRequestNote"
                 [(ngModel)]="serviceRequestNote"
@@ -468,10 +508,15 @@
               ></textarea>
             </div>
 
+            <p class="form-hint">{{ 'SERVICE_REQUEST.MESSAGE_HINT' | translate }}</p>
+
             <div class="form-actions">
-              <button type="submit" class="btn btn--primary" [disabled]="savingServiceRequest()">
+              <button type="submit" class="btn btn--primary" [disabled]="savingServiceRequest() || !serviceRequestNote.trim()">
                 <span *ngIf="savingServiceRequest()" class="spinner-ring"></span>
                 {{ savingServiceRequest() ? ('COMMON.SAVING' | translate) : ('SERVICE_REQUEST.SUBMIT' | translate) }}
+              </button>
+              <button type="button" class="btn btn--outline" (click)="submitServiceRequest('Inquire')" [disabled]="savingServiceRequest() || !serviceRequestNote.trim()">
+                {{ 'SERVICE_REQUEST.INQUIRE' | translate }}
               </button>
               <button type="button" class="btn btn--outline" (click)="showServiceForm.set(false)">
                 {{ 'COMMON.CANCEL' | translate }}
@@ -485,7 +530,7 @@
       <div class="detail-card" id="visit-form-section" *ngIf="showVisitForm()">
         <div class="detail-card__header">
           <h2>{{ 'VISIT.REQUEST' | translate }}</h2>
-          <button type="button" class="card-close-btn" (click)="showVisitForm.set(false)" aria-label="إغلاق">
+          <button type="button" class="card-close-btn" (click)="showVisitForm.set(false)" [attr.aria-label]="'COMMON.CLOSE' | translate">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
           </button>
         </div>
@@ -547,7 +592,7 @@
       <div class="detail-card" *ngIf="showReviewForm()">
         <div class="detail-card__header">
           <h2>{{ 'REVIEW.ADD_PROPERTY' | translate }}</h2>
-          <button type="button" class="card-close-btn" (click)="showReviewForm.set(false)" aria-label="إغلاق">
+          <button type="button" class="card-close-btn" (click)="showReviewForm.set(false)" [attr.aria-label]="'COMMON.CLOSE' | translate">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
           </button>
         </div>
@@ -561,7 +606,7 @@
         <form class="detail-form" [formGroup]="reviewForm" (ngSubmit)="submitReview()" novalidate>
           <div class="form-group">
             <label>{{ 'REVIEW.RATING' | translate }}</label>
-            <div class="star-selector" role="group" aria-label="اختر التقييم">
+            <div class="star-selector" role="group" [attr.aria-label]="'COMMON.PICK_RATING' | translate">
               <button *ngFor="let star of starsRange" type="button"
                 class="star-btn"
                 [class.star-btn--active]="reviewForm.value.rating! >= star"
@@ -595,7 +640,12 @@
           <!-- Description -->
           <div class="detail-card" *ngIf="p.description">
             <h2 class="detail-card__title">{{ 'PROPERTY_DETAIL.DESCRIPTION' | translate }}</h2>
-            <p class="detail-description">{{ p.description }}</p>
+            <app-translation-notice
+              [view]="translation.view()"
+              [showOriginal]="translation.showOriginal()"
+              (toggle)="translation.toggleOriginal()"
+              (retry)="translation.retry()" />
+            <p class="detail-description" dir="auto">{{ displayDescription(p) }}</p>
           </div>
 
           <!-- Property Info -->
@@ -604,15 +654,15 @@
             <dl class="info-grid">
               <div class="info-row">
                 <dt>{{ 'PROPERTY_DETAIL.CITY' | translate }}</dt>
-                <dd>{{ safe(p.city) }}</dd>
+                <dd>{{ safe(locations.city(p)) }}</dd>
               </div>
               <div class="info-row">
                 <dt>{{ 'PROPERTY_DETAIL.STREET' | translate }}</dt>
-                <dd>{{ safe(p.street) }}</dd>
+                <dd dir="auto">{{ safe(displayStreet(p)) }}</dd>
               </div>
               <div class="info-row" *ngIf="p.region">
                 <dt>{{ 'PROPERTY_DETAIL.REGION' | translate }}</dt>
-                <dd>{{ p.region }}</dd>
+                <dd>{{ locations.region(p) }}</dd>
               </div>
               <div class="info-row" *ngIf="p.area">
                 <dt>{{ 'PROPERTY_DETAIL.AREA' | translate }}</dt>
@@ -628,7 +678,7 @@
               </div>
               <div class="info-row" *ngIf="p.availableFrom">
                 <dt>{{ 'PROPERTY_DETAIL.AVAILABLE_FROM' | translate }}</dt>
-                <dd>{{ p.availableFrom | date:'dd/MM/yyyy' }}</dd>
+                <dd>{{ p.availableFrom | localDate:'dd/MM/yyyy' }}</dd>
               </div>
               <div class="info-row" *ngIf="p.condition">
                 <dt>{{ 'PROPERTY_DETAIL.CONDITION' | translate }}</dt>
@@ -672,6 +722,9 @@
             </dl>
           </div>
 
+          <!-- Price history (growth engine P1): renders nothing until a real change exists -->
+          <app-price-history [propertyId]="p.id" />
+
           <!-- Amenities -->
           <div class="detail-card" *ngIf="p.amenities?.length">
             <h2 class="detail-card__title">{{ 'PROPERTY_DETAIL.AMENITIES' | translate }}</h2>
@@ -680,7 +733,7 @@
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
                   <path d="M2 6l3 3 5-5" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round"/>
                 </svg>
-                {{ a.name }}
+                {{ a | amenityLabel }}
               </li>
             </ul>
           </div>
@@ -705,7 +758,7 @@
                     <span class="reviewer-avatar">{{ (r.reviewerName || '?').charAt(0).toUpperCase() }}</span>
                     <div>
                       <strong>{{ r.reviewerName || ('REVIEW.ANONYMOUS' | translate) }}</strong>
-                      <time class="review-date" *ngIf="r.createdAt">{{ r.createdAt | date:'dd/MM/yyyy' }}</time>
+                      <time class="review-date" *ngIf="r.createdAt">{{ r.createdAt | localDate:'dd/MM/yyyy' }}</time>
                     </div>
                   </div>
                   <div class="review-stars">
@@ -718,14 +771,31 @@
               </li>
             </ul>
           </div>
+
+          <!-- Monetization: one labelled slot below all listing content; renders nothing unless every ads layer allows it. -->
+          <app-ad-slot placement="property-detail" />
         </div>
 
         <!-- ── Right Column (Map) ── -->
         <aside class="detail-right">
           <div class="detail-card detail-card--sticky">
             <h2 class="detail-card__title">{{ 'PROPERTY_DETAIL.LOCATION_MAP' | translate }}</h2>
-            <div class="no-map" *ngIf="p.latitude && p.longitude">📍 {{ p.latitude }}, {{ p.longitude }}</div>
-            <p class="no-map" *ngIf="!p.latitude || !p.longitude">
+            <app-map-picker *ngIf="validLocation() as location"
+              [lang]="currentLang()"
+              [center]="location"
+              [interactive]="false"
+              [enableLocate]="false">
+            </app-map-picker>
+            <p class="map-approximate" *ngIf="validLocation() && property()?.isLocationApproximate" data-testid="approximate-location">
+              {{ 'PROPERTY_DETAIL.APPROXIMATE_LOCATION' | translate }}
+            </p>
+            <a *ngIf="validLocation() as location"
+              class="map-external-link"
+              [href]="'https://www.google.com/maps/search/?api=1&query=' + location.lat + ',' + location.lng"
+              target="_blank" rel="noopener noreferrer">
+              {{ 'MAP.OPEN_GOOGLE' | translate }}
+            </a>
+            <p class="no-map" *ngIf="!validLocation()">
               {{ 'PROPERTY_DETAIL.NO_MAP' | translate }}
             </p>
           </div>
@@ -736,12 +806,16 @@
   </ng-container>
 
   <!-- ── Image Modal (Lightbox) ── -->
-  <div class="lightbox" [class.lightbox--open]="modalOpen()" role="dialog" aria-modal="true" aria-label="عارض الصور" *ngIf="modalOpen()">
-    <button type="button" class="lightbox__close" (click)="closeModal()" aria-label="إغلاق">
+  <div class="lightbox" [class.lightbox--open]="modalOpen()" role="dialog" aria-modal="true" [attr.aria-label]="'COMMON.IMAGE_VIEWER' | translate" tabindex="-1" (keydown)="onLightboxKeydown($event)" *ngIf="modalOpen()">
+    <button #lightboxClose type="button" class="lightbox__close" (click)="closeModal()" [attr.aria-label]="'COMMON.CLOSE' | translate">
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 3l16 16M19 3L3 19" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
     </button>
-    <div class="lightbox__img-wrap">
-      <img [src]="currentImageLightboxUrl()" [alt]="currentImageAlt()" class="lightbox__img" />
+    <div class="lightbox__img-wrap"
+      (pointerdown)="onGalleryPointerDown($event)"
+      (pointerup)="onGalleryPointerUp($event)"
+      (pointercancel)="onGalleryPointerCancel()"
+      (lostpointercapture)="onGalleryPointerCancel()">
+      <img [src]="currentImageLightboxUrl()" [alt]="currentImageAlt()" class="lightbox__img" draggable="false" appImageFallback="/images/no-image.svg" />
     </div>
     <button *ngIf="currentIndex() > 0" class="lightbox__nav lightbox__nav--prev" type="button"
       (click)="isRTL() ? next() : prev(); $event.stopPropagation()" [attr.aria-label]="'COMMON.PREVIOUS' | translate">

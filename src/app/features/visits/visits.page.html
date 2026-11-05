@@ -25,7 +25,7 @@
       <div class="card-main">
         <div>
           <a class="property-link" [routerLink]="['/properties', visit.propertyId]">{{ visit.propertyTitle || ('VISITS.PROPERTY' | translate) }}</a>
-          <p class="date">{{ visit.proposedAt | date:'medium' }}</p>
+          <p class="date">{{ visit.proposedAt | localDate:'medium' }}</p>
         </div>
         <span class="status" [attr.data-status]="visit.status">{{ ('VISITS.STATUS.' + visit.status.toUpperCase()) | translate }}</span>
       </div>

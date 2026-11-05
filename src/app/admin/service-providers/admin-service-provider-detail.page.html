@@ -87,7 +87,7 @@
         <li *ngFor="let a of d.applications; trackBy: trackById">
           <a [routerLink]="['/admin/service-providers/applications', a.id]" dir="ltr">{{ a.referenceNumber }}</a>
           <span class="tag">{{ ('PROVIDER_ONBOARDING.APP_STATUS.' + a.status) | translate }}</span>
-          <span class="muted">{{ a.createdAt | date:'mediumDate' }}</span>
+          <span class="muted">{{ a.createdAt | localDate:'mediumDate' }}</span>
         </li>
       </ul>
     </section>
@@ -97,7 +97,7 @@
       <p class="muted" *ngIf="d.timeline.length === 0">{{ 'ADMIN_PROVIDERS.NO_HISTORY' | translate }}</p>
       <ol class="timeline">
         <li *ngFor="let e of d.timeline; trackBy: trackById" [class.internal]="e.isInternal">
-          <span class="when">{{ e.createdAt | date:'medium' }}</span>
+          <span class="when">{{ e.createdAt | localDate:'medium' }}</span>
           <strong>{{ ('PROVIDER_ONBOARDING.EVENT.' + e.type) | translate }}</strong>
           <span class="tag tag--internal" *ngIf="e.isInternal">{{ 'ADMIN_PROVIDERS.INTERNAL' | translate }}</span>
           <span class="text" *ngIf="e.note">{{ e.note }}</span>

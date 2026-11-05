@@ -12,5 +12,20 @@
   <array>
     <string>applinks:hudhudnest.com</string>
   </array>
+  <!--
+    Push notifications: the Push Notifications capability must be enabled on the App ID (Apple Developer portal)
+    and an APNs key uploaded to Firebase (docs/IOS_RELEASE.md). "development" is what the file carries;
+    signing with a distribution profile (TestFlight / App Store) makes Xcode put "production" into the build.
+  -->
+  <key>aps-environment</key>
+  <string>development</string>
+  <!--
+    Sign in with Apple (@capacitor-community/apple-sign-in). Apple's rule 4.8 requires it because the app offers
+    Google sign-in. The capability must also be enabled on the App ID.
+  -->
+  <key>com.apple.developer.applesignin</key>
+  <array>
+    <string>Default</string>
+  </array>
 </dict>
 </plist>

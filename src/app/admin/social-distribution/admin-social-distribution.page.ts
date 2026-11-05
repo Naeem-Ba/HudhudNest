@@ -33,6 +33,8 @@ import { ToastService } from '../../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { ConfirmModalComponent } from '../../shared/ui/confirm-modal.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
+import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
 
 type AdminTab = 'dashboard' | 'channels' | 'accounts' | 'publications' | 'rules' | 'deadLetters';
 type DeadLetterView = 'unresolved' | 'resolved' | 'all';
@@ -104,7 +106,7 @@ const PUBLICATION_STATUS_LABELS: Record<SocialPublicationStatus, string> = {
   selector: 'app-admin-social-distribution',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, LoadingSpinnerComponent, EmptyStateComponent, ConfirmModalComponent],
+  imports: [ LocalizedDatePipe, LocalizedNumberPipe,CommonModule, FormsModule, ReactiveFormsModule, LoadingSpinnerComponent, EmptyStateComponent, ConfirmModalComponent],
   templateUrl: './admin-social-distribution.page.html',
   styleUrl: './admin-social-distribution.page.scss',
 })

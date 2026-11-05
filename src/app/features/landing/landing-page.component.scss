@@ -39,7 +39,7 @@
   --gold:        #D6A84F;
   --gold-light:  #e8c47a;
   --white:       #FFFFFF;
-  --error:       var(--danger);
+  --error:       var(--danger-text);
   --error-bg:    var(--danger-soft);
   --success-bg:  var(--success-soft);
 
@@ -698,8 +698,8 @@
   margin-bottom: var(--space-md);
 }
 
-.ps-label--problem  { background: var(--error-bg); color: var(--error); }
-.ps-label--solution { background: var(--success-bg); color: var(--success); }
+.ps-label--problem  { background: var(--error-bg); color: var(--error-text); }
+.ps-label--solution { background: var(--success-bg); color: var(--success-text); }
 
 .ps-list {
   list-style: none;
@@ -740,7 +740,7 @@
 
 .ps-item--solution .ps-icon {
   background: var(--success-bg);
-  color: var(--success);
+  color: var(--success-text);
 }
 
 .ps-item:hover .ps-icon {
@@ -936,7 +936,7 @@
 }
 
 .required { color: var(--error); margin-inline-start: 0.15rem; }
-.field-optional { font-weight: 400; color: var(--gray-400); margin-inline-start: 0.3rem; }
+.field-optional { font-weight: 400; color: var(--text-muted); margin-inline-start: 0.3rem; }
 
 .field-input,
 .field-select,
@@ -990,7 +990,7 @@
   box-shadow: 0 0 0 3px rgba(192,57,43,.1) !important;
 }
 
-.field-hint  { font-size: 0.78rem; color: var(--gray-400); }
+.field-hint  { font-size: 0.78rem; color: var(--text-muted); }
 .field-error { font-size: 0.82rem; color: var(--error); font-weight: 500; }
 
 /* Form states */
@@ -1036,7 +1036,7 @@
   font-family: var(--font-display);
   font-size: 1.4rem;
   font-weight: 800;
-  color: var(--success);
+  color: var(--success-text);
 }
 
 .form-success__msg {
@@ -1048,7 +1048,7 @@
 
 .form-privacy {
   font-size: 0.78rem;
-  color: var(--gray-400);
+  color: var(--text-muted);
   text-align: center;
 }
 

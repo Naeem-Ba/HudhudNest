@@ -29,33 +29,116 @@
           <p class="request-number">{{ request.requestNumber }}</p>
           <a class="property-link" [routerLink]="['/properties', request.propertyId]">{{ request.propertyTitle }}</a>
           <p class="date">
-            {{ 'SERVICE_REQUESTS.CREATED_AT' | translate }}: {{ request.createdAt | date:'medium' }}
+            {{ 'SERVICE_REQUESTS.CREATED_AT' | translate }}: {{ request.createdAt | localDate:'medium' }}
             <ng-container *ngIf="request.updatedAt && request.updatedAt !== request.createdAt">
-              · {{ 'SERVICE_REQUESTS.UPDATED_AT' | translate }}: {{ request.updatedAt | date:'medium' }}
+              · {{ 'SERVICE_REQUESTS.UPDATED_AT' | translate }}: {{ request.updatedAt | localDate:'medium' }}
             </ng-container>
           </p>
         </div>
         <span class="status" [attr.data-status]="request.status">{{ ('SERVICE_REQUESTS.STATUS.' + request.status.toUpperCase()) | translate }}</span>
       </div>
+      <p class="stage-note" *ngIf="request.status === 'Inquiry'">{{ 'SERVICE_REQUESTS.INQUIRY_NOTE' | translate }}</p>
+      <p class="stage-note stage-note--expired" *ngIf="request.status === 'Expired'">
+        {{ (request.expiredWaitingOn === 'Provider' ? 'SERVICE_REQUESTS.EXPIRED_PROVIDER' : 'SERVICE_REQUESTS.EXPIRED_REQUESTER') | translate }}
+      </p>
       <dl>
         <div><dt>{{ 'SERVICE_REQUESTS.CATEGORY' | translate }}</dt><dd>{{ ('SERVICES.CATEGORY.' + request.category) | translate }}</dd></div>
         <div><dt>{{ 'SERVICE_REQUESTS.PROVIDER' | translate }}</dt><dd>{{ request.serviceProviderDisplayName }}</dd></div>
         <div><dt>{{ 'SERVICE_REQUESTS.OFFERING' | translate }}</dt><dd>{{ request.serviceOfferingTitle }}</dd></div>
         <div *ngIf="request.requesterNote"><dt>{{ 'SERVICE_REQUESTS.NOTE' | translate }}</dt><dd>{{ request.requesterNote }}</dd></div>
-        <div *ngIf="request.scheduledAt"><dt>{{ 'SERVICE_REQUESTS.SCHEDULED_AT' | translate }}</dt><dd>{{ request.scheduledAt | date:'medium' }}</dd></div>
+        <div *ngIf="request.scheduledAt"><dt>{{ 'SERVICE_REQUESTS.SCHEDULED_AT' | translate }}</dt><dd>{{ request.scheduledAt | localDate:'medium' }}</dd></div>
         <div *ngIf="request.rejectionReason"><dt>{{ 'SERVICE_REQUESTS.REJECTION_REASON' | translate }}</dt><dd>{{ request.rejectionReason }}</dd></div>
         <div *ngIf="request.cancellationReason"><dt>{{ 'SERVICE_REQUESTS.CANCELLATION_REASON' | translate }}</dt><dd>{{ request.cancellationReason }}</dd></div>
+        <div *ngIf="request.outcomeReason && request.status === 'Rejected'"><dt>{{ 'SERVICE_REQUESTS.REJECTION_CODE' | translate }}</dt><dd>{{ ('SERVICE_OUTCOME.PROVIDER.' + request.outcomeReason) | translate }}</dd></div>
+        <div *ngIf="request.status === 'NotCompleted' && request.outcomeReason"><dt>{{ 'SERVICE_REQUESTS.NOT_COMPLETED_REASON' | translate }}</dt><dd>{{ ('SERVICE_OUTCOME.PROVIDER.' + request.outcomeReason) | translate }}<ng-container *ngIf="request.outcomeNote"> — {{ request.outcomeNote }}</ng-container></dd></div>
+        <div *ngIf="request.requesterAnswer"><dt>{{ 'SERVICE_REQUESTS.MY_ANSWER' | translate }}</dt><dd>
+          {{ ('SERVICE_REQUESTS.ANSWER.' + request.requesterAnswer) | translate }}<ng-container *ngIf="request.requesterReason"> · {{ ('SERVICE_OUTCOME.REQUESTER.' + request.requesterReason) | translate }}</ng-container>
+        </dd></div>
       </dl>
+
+      <!-- The provider's contact appears only here, after the provider accepted a confirmed request. -->
+      <div class="contact-card" *ngIf="request.providerContact as contact; else noContactYet">
+        <strong>{{ 'SERVICE_REQUESTS.CONTACT_TITLE' | translate: { provider: request.serviceProviderDisplayName } }}</strong>
+        <ul>
+          <li *ngIf="contact.phone"><span>{{ 'SERVICE_REQUEST.CONTACT_PHONE' | translate }}</span> <a [href]="'tel:' + contact.phone" dir="ltr">{{ contact.phone }}</a></li>
+          <li *ngIf="contact.email"><span>{{ 'SERVICE_REQUEST.CONTACT_EMAIL' | translate }}</span> <a [href]="'mailto:' + contact.email" dir="ltr">{{ contact.email }}</a></li>
+        </ul>
+      </div>
+      <ng-template #noContactYet>
+        <p class="muted contact-missing" *ngIf="request.status === 'UnderReview'">
+          {{ 'SERVICE_REQUEST.CONTACT_AFTER_ACCEPT' | translate }}
+        </p>
+        <p class="muted contact-missing" *ngIf="request.status === 'Accepted' || request.status === 'Scheduled' || request.status === 'InProgress'">
+          {{ 'SERVICE_REQUEST.NO_CONTACT_YET' | translate }}
+        </p>
+      </ng-template>
+
+      <!-- The provider closed the request: ask the customer once whether that is right. -->
+      <!-- In-app conversation: inquiries open it by themselves, other requests fold it away. -->
+      <div class="thread-toggle" *ngIf="hasThread(request)">
+        <button type="button" class="btn secondary" (click)="toggleThread(request)" [attr.aria-expanded]="isThreadOpen(request)">
+          {{ (isThreadOpen(request) ? 'SERVICE_CONVERSATION.HIDE' : 'SERVICE_CONVERSATION.SHOW') | translate }}
+          <span class="badge" *ngIf="(request.unreadMessageCount ?? 0) > 0">{{ request.unreadMessageCount }}</span>
+        </button>
+      </div>
+      <app-service-conversation *ngIf="hasThread(request) && isThreadOpen(request)"
+        [request]="request" role="requester"
+        (activity)="onThreadActivity($event)" (requestChange)="onRequestConfirmed($event)" />
+
+      <div class="feedback-prompt" *ngIf="canAnswer(request) && feedbackId() !== request.id">
+        <p>{{ (request.status === 'Completed' ? 'SERVICE_REQUESTS.ASK_COMPLETED' : 'SERVICE_REQUESTS.ASK_NOT_COMPLETED') | translate }}</p>
+        <button type="button" class="btn success" (click)="openFeedbackForm(request)">{{ 'SERVICE_REQUESTS.ANSWER_NOW' | translate }}</button>
+      </div>
 
       <div class="actions">
         <a class="btn secondary" [routerLink]="['/properties', request.propertyId]">{{ 'SERVICE_REQUESTS.VIEW_PROPERTY' | translate }}</a>
-        <button *ngIf="canCancel(request)" type="button" class="btn secondary" (click)="cancel(request)" [disabled]="processingId() === request.id">
+        <button *ngIf="canCancel(request) && cancelingId() !== request.id" type="button" class="btn secondary" (click)="openCancelForm(request)" [disabled]="processingId() === request.id">
           {{ 'SERVICE_REQUESTS.CANCEL' | translate }}
         </button>
         <button *ngIf="canReview(request)" type="button" class="btn success" (click)="openReviewForm(request)" [disabled]="processingId() === request.id">
           {{ 'SERVICE_REQUESTS.ADD_REVIEW' | translate }}
         </button>
       </div>
+
+      <form class="review-form" *ngIf="cancelingId() === request.id" (ngSubmit)="cancel(request)">
+        <label>
+          {{ 'SERVICE_REQUESTS.CANCEL_REASON_LABEL' | translate }}
+          <select [ngModel]="cancelReason()" (ngModelChange)="cancelReason.set($event)" name="cancelReason">
+            <option value="">{{ 'SERVICE_REQUESTS.REASON_OPTIONAL' | translate }}</option>
+            <option *ngFor="let reason of requesterReasons" [value]="reason">{{ ('SERVICE_OUTCOME.REQUESTER.' + reason) | translate }}</option>
+          </select>
+        </label>
+        <div class="form-actions">
+          <button type="submit" class="btn danger" [disabled]="processingId() === request.id">{{ 'SERVICE_REQUESTS.CANCEL_CONFIRM' | translate }}</button>
+          <button type="button" class="btn secondary" (click)="closeCancelForm()">{{ 'COMMON.CANCEL' | translate }}</button>
+        </div>
+      </form>
+
+      <form class="review-form" *ngIf="feedbackId() === request.id" (ngSubmit)="submitFeedback(request)">
+        <fieldset class="answer-choices">
+          <legend>{{ (request.status === 'Completed' ? 'SERVICE_REQUESTS.ASK_COMPLETED' : 'SERVICE_REQUESTS.ASK_NOT_COMPLETED') | translate }}</legend>
+          <label><input type="radio" name="answer" value="Confirmed" [ngModel]="feedbackAnswer()" (ngModelChange)="feedbackAnswer.set($event)" />
+            {{ (request.status === 'Completed' ? 'SERVICE_REQUESTS.ANSWER_DONE_YES' : 'SERVICE_REQUESTS.ANSWER_NOT_DONE_YES') | translate }}</label>
+          <label><input type="radio" name="answer" value="Disputed" [ngModel]="feedbackAnswer()" (ngModelChange)="feedbackAnswer.set($event)" />
+            {{ (request.status === 'Completed' ? 'SERVICE_REQUESTS.ANSWER_DONE_NO' : 'SERVICE_REQUESTS.ANSWER_NOT_DONE_NO') | translate }}</label>
+        </fieldset>
+        <label *ngIf="feedbackNeedsReason(request)">
+          {{ 'SERVICE_REQUESTS.FEEDBACK_REASON_LABEL' | translate }}
+          <select required [ngModel]="feedbackReason()" (ngModelChange)="feedbackReason.set($event)" name="feedbackReason">
+            <option value="" disabled>{{ 'SERVICE_REQUESTS.REASON_CHOOSE' | translate }}</option>
+            <option *ngFor="let reason of requesterReasons" [value]="reason">{{ ('SERVICE_OUTCOME.REQUESTER.' + reason) | translate }}</option>
+          </select>
+        </label>
+        <label>
+          {{ 'SERVICE_REQUESTS.FEEDBACK_NOTE_LABEL' | translate }}
+          <textarea rows="2" maxlength="500" [ngModel]="feedbackNote()" (ngModelChange)="feedbackNote.set($event)" name="feedbackNote"></textarea>
+        </label>
+        <p class="muted">{{ 'SERVICE_REQUESTS.FEEDBACK_PRIVACY' | translate }}</p>
+        <div class="form-actions">
+          <button type="submit" class="btn success" [disabled]="!canSubmitFeedback(request)">{{ 'SERVICE_REQUESTS.FEEDBACK_SUBMIT' | translate }}</button>
+          <button type="button" class="btn secondary" (click)="closeFeedbackForm()">{{ 'COMMON.CANCEL' | translate }}</button>
+        </div>
+      </form>
 
       <form class="review-form" *ngIf="reviewingId() === request.id" (ngSubmit)="submitReview(request)">
         <label>

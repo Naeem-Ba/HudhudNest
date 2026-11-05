@@ -38,17 +38,101 @@
         <h2 class="line-clamp-1">{{ s.name || ('SAVED_SEARCHES.UNNAMED' | translate) }}</h2>
         <p class="search-card__summary">{{ summary(s) }}</p>
 
-        <p class="search-card__matched" *ngIf="s.lastMatchedAt">
-          {{ 'SAVED_SEARCHES.LAST_MATCHED' | translate }}: {{ s.lastMatchedAt | date:'dd/MM/yyyy' }}
+        <p class="search-card__meta">
+          <span class="chip" [class.chip--muted]="s.isPaused">
+            {{ (s.isPaused ? 'SAVED_SEARCHES.STATUS_PAUSED' : 'SAVED_SEARCHES.STATUS_ACTIVE') | translate }}
+          </span>
+          <span class="chip">
+            {{ (s.frequency === 'Daily' ? 'SAVED_SEARCHES.FREQ_DAILY' : 'SAVED_SEARCHES.FREQ_INSTANT') | translate }}
+          </span>
         </p>
-        <p class="search-card__matched" *ngIf="!s.lastMatchedAt">
+
+        <p class="search-card__matched" *ngIf="s.lastNotifiedAt">
+          {{ 'SAVED_SEARCHES.LAST_ALERT' | translate }}: {{ s.lastNotifiedAt | localDate:'dd/MM/yyyy' }}
+          · {{ 'SAVED_SEARCHES.ALERTED_COUNT' | translate: { count: s.notifiedCount } }}
+        </p>
+        <p class="search-card__matched" *ngIf="!s.lastNotifiedAt">
           {{ 'SAVED_SEARCHES.NO_MATCHES_YET' | translate }}
         </p>
+
+        <form *ngIf="editingId() === s.id" class="search-edit" (ngSubmit)="saveEdit(s)" #f="ngForm">
+          <label class="field field--wide">
+            <span>{{ 'SAVED_SEARCHES.NAME' | translate }}</span>
+            <input type="text" name="name" maxlength="150" [(ngModel)]="draft.name" />
+          </label>
+
+          <fieldset class="field field--wide">
+            <legend>{{ 'SAVED_SEARCHES.FREQUENCY' | translate }}</legend>
+            <label class="inline">
+              <input type="radio" name="frequency" value="Instant" [(ngModel)]="draft.frequency" />
+              {{ 'SAVED_SEARCHES.FREQ_INSTANT' | translate }}
+            </label>
+            <label class="inline">
+              <input type="radio" name="frequency" value="Daily" [(ngModel)]="draft.frequency" />
+              {{ 'SAVED_SEARCHES.FREQ_DAILY_HINT' | translate }}
+            </label>
+          </fieldset>
+
+          <label class="field">
+            <span>{{ 'SAVED_SEARCHES.MIN_PRICE' | translate }}</span>
+            <input type="number" name="minPrice" min="0" [(ngModel)]="draft.minPrice" />
+          </label>
+          <label class="field">
+            <span>{{ 'SAVED_SEARCHES.MAX_PRICE' | translate }}</span>
+            <input type="number" name="maxPrice" min="0" [(ngModel)]="draft.maxPrice" />
+          </label>
+          <label class="field">
+            <span>{{ 'SAVED_SEARCHES.CURRENCY' | translate }}</span>
+            <select name="currencyCode" [(ngModel)]="draft.currencyCode">
+              <option *ngFor="let c of currencies" [value]="c">{{ c }}</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>{{ 'SAVED_SEARCHES.MIN_ROOMS' | translate }}</span>
+            <input type="number" name="minRooms" min="0" max="50" [(ngModel)]="draft.minRooms" />
+          </label>
+          <label class="field">
+            <span>{{ 'SAVED_SEARCHES.MAX_ROOMS' | translate }}</span>
+            <input type="number" name="maxRooms" min="0" max="50" [(ngModel)]="draft.maxRooms" />
+          </label>
+          <label class="field">
+            <span>{{ 'SAVED_SEARCHES.MIN_AREA' | translate }}</span>
+            <input type="number" name="minArea" min="0" [(ngModel)]="draft.minArea" />
+          </label>
+          <label class="field">
+            <span>{{ 'SAVED_SEARCHES.MAX_AREA' | translate }}</span>
+            <input type="number" name="maxArea" min="0" [(ngModel)]="draft.maxArea" />
+          </label>
+
+          <fieldset class="field field--wide">
+            <legend>{{ 'SAVED_SEARCHES.MUST_HAVE' | translate }}</legend>
+            <label class="inline"><input type="checkbox" name="hasBalcony" [(ngModel)]="draft.hasBalcony" /> {{ 'PROPERTY.HAS_BALCONY' | translate }}</label>
+            <label class="inline"><input type="checkbox" name="hasElevator" [(ngModel)]="draft.hasElevator" /> {{ 'PROPERTY.HAS_ELEVATOR' | translate }}</label>
+            <label class="inline"><input type="checkbox" name="hasParkingSpace" [(ngModel)]="draft.hasParkingSpace" /> {{ 'PROPERTY.HAS_PARKING' | translate }}</label>
+          </fieldset>
+
+          <p class="search-edit__note field--wide">{{ 'SAVED_SEARCHES.EDIT_NOTE' | translate }}</p>
+
+          <div class="search-edit__actions field--wide">
+            <button type="submit" class="btn btn--primary" [disabled]="savingId() === s.id">
+              {{ 'COMMON.SAVE' | translate }}
+            </button>
+            <button type="button" class="btn btn--secondary" (click)="cancelEdit()">
+              {{ 'COMMON.CANCEL' | translate }}
+            </button>
+          </div>
+        </form>
       </div>
 
       <div class="search-card__actions">
         <button type="button" class="btn btn--secondary" (click)="runSearch(s)">
           🔍 {{ 'SAVED_SEARCHES.RUN' | translate }}
+        </button>
+        <button type="button" class="btn btn--secondary" *ngIf="editingId() !== s.id" (click)="startEdit(s)">
+          {{ 'SAVED_SEARCHES.EDIT' | translate }}
+        </button>
+        <button type="button" class="btn btn--secondary" [disabled]="togglingId() === s.id" (click)="togglePause(s)">
+          {{ (s.isPaused ? 'SAVED_SEARCHES.RESUME' : 'SAVED_SEARCHES.PAUSE') | translate }}
         </button>
         <button
           type="button"

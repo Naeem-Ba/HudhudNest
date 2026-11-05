@@ -120,19 +120,19 @@ import { PasswordValidatorService, PasswordRequirements } from '../../core/servi
     }
 
     .strength-label.weak {
-      color: var(--danger, #dc3545);
+      color: var(--danger-text);
     }
 
     .strength-label.fair {
-      color: var(--warning, #ffc107);
+      color: var(--warning-text);
     }
 
     .strength-label.good {
-      color: var(--info);
+      color: var(--info-text);
     }
 
     .strength-label.strong {
-      color: var(--success, #28a745);
+      color: var(--success-text);
     }
 
     .requirements-list {
@@ -152,7 +152,7 @@ import { PasswordValidatorService, PasswordRequirements } from '../../core/servi
     }
 
     .requirement.met {
-      color: var(--success, #28a745);
+      color: var(--success-text);
       font-weight: 500;
     }
 
@@ -167,11 +167,11 @@ import { PasswordValidatorService, PasswordRequirements } from '../../core/servi
     }
 
     .requirement.met .requirement-icon {
-      color: var(--success, #28a745);
+      color: var(--success-text);
     }
 
     .requirement:not(.met) .requirement-icon {
-      color: var(--gray-400);
+      color: var(--text-muted);
     }
 
     .error-messages {
@@ -187,7 +187,7 @@ import { PasswordValidatorService, PasswordRequirements } from '../../core/servi
       align-items: center;
       gap: 6px;
       font-size: 12px;
-      color: var(--danger, #dc3545);
+      color: var(--danger-text);
     }
 
     .error-icon {

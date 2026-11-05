@@ -7,6 +7,7 @@ import { LandingPageComponent } from './landing-page.component';
 import { ActiveOfferState, OffersApiService } from '../../core/api/offers-api.service';
 import { MarketingEventsApiService } from '../../core/api/marketing-events-api.service';
 import { MetaService } from '../../core/services/meta.service';
+import { PageMetaService } from '../../core/services/page-meta.service';
 import { LeadService } from '../../core/services/lead.service';
 import { Offer } from '../../core/models/offer.model';
 
@@ -30,6 +31,7 @@ describe('LandingPageComponent — marketing offer section', () => {
         { provide: OffersApiService, useValue: offersApi },
         { provide: MarketingEventsApiService, useValue: events },
         { provide: MetaService, useValue: meta },
+        { provide: PageMetaService, useValue: jasmine.createSpyObj('PageMetaService', ['applyTranslated']) },
         { provide: LeadService, useValue: jasmine.createSpyObj('LeadService', ['submitLead']) },
         { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: { get: (k: string) => (k === 'utm_campaign' ? campaign : null) } } } },
       ],

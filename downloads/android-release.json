@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "packageName": "com.hudhudnest.app",
+  "versionName": "1.1.1",
+  "versionCode": 4,
+  "minSdk": 24,
+  "targetSdk": 36,
+  "sizeBytes": 11340809,
+  "sha256": "f7eb1492e5e37bd31076c6a70ce519e00585b42d26c2f54129ea5d64e9d241b0",
+  "signingCertSha256": "7D:30:B4:CB:E7:24:2F:C5:CC:50:2A:FA:B5:87:C7:67:38:3B:3D:0D:4E:D8:7A:6F:B4:F4:8E:2B:9C:64:F7:50",
+  "releasedAt": "2026-10-17",
+  "commit": "c5461b565ce11058a0328c799f2c2b85249b70fa",
+  "url": "https://github.com/Naeem-Ba/HudhudNest-Releases/releases/download/v1.1.1/HudhudNest-1.1.1.apk"
+}

@@ -90,9 +90,13 @@ export interface ShortStayListingSummary {
   latitude: number | null;
   longitude: number | null;
   isPublished: boolean;
+  /** True while an administrator has taken the listing down; the owner cannot publish it again. */
+  isTakenDown?: boolean;
   mainPhotoUrl: string | null;
   averageRating: number | null;
   reviewCount: number;
+  /** Counted detail-page views from the server; absent from an older API. */
+  viewCount?: number;
 }
 
 export interface ShortStayListing {
@@ -144,6 +148,11 @@ export interface ShortStayListing {
   depositPercentage: number | null;
   isPublished: boolean;
   publishedAt: string | null;
+  /** Counted detail-page views from the server; absent from an older API. */
+  viewCount?: number;
+  /** Set by an administrator's take-down (QA Phase 9); the reason is shown to the owner. */
+  isTakenDown?: boolean;
+  takenDownReason?: string | null;
   roomTypes: RoomTypeDto[];
   photoUrls: string[];
   amenityIds: string[];
@@ -206,6 +215,10 @@ export interface BookingDto {
   createdAt: string;
   respondedAt: string | null;
   cancelledAt: string | null;
+  /** When an unconfirmed (Pending/Approved/DepositPaid) booking lapses; null once confirmed or finished. */
+  confirmationDeadline?: string | null;
+  /** Guest side only: true once a Completed stay has been reviewed. Absent on host requests. */
+  reviewed?: boolean | null;
 }
 
 export interface CreateBookingRequest {
@@ -302,3 +315,120 @@ export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
   Expired: 'SHORTSTAY.BOOKINGS.STATUS.EXPIRED',
   NoShow: 'SHORTSTAY.BOOKINGS.STATUS.NO_SHOW'
 };
+
+// ── الحجز الفوري (قرار المالك 2026-10-18) ─────────────────────────────
+/** An instant booking must start within this many days from today (the API enforces it). */
+export const INSTANT_BOOKING_MAX_ADVANCE_DAYS = 30;
+/** ...and cover at most this many nights. */
+export const INSTANT_BOOKING_MAX_NIGHTS = 30;
+
+// ── تأكيد الحجز خلال مهلة ────────────────────────────────────────────
+/** Statuses in which a booking still waits for confirmation and therefore carries a deadline. */
+const AWAITING_CONFIRMATION: readonly BookingStatus[] = ['Pending', 'Approved', 'DepositPaid'];
+
+/** The deadline to show for a booking ("يجب التأكيد قبل ..."), or null when none applies. */
+export function confirmationDeadlineOf(booking: Pick<BookingDto, 'status' | 'confirmationDeadline'>): string | null {
+  if (!AWAITING_CONFIRMATION.includes(booking.status)) return null;
+  return booking.confirmationDeadline || null;
+}
+
+// ── التقييمات ─────────────────────────────────────────────────────────
+export const SHORT_STAY_REVIEW_COMMENT_MAX_LENGTH = 1000;
+
+/** The "قيّم إقامتك" button shows only for the guest's Completed stays that are not reviewed yet. */
+export function canReviewBooking(booking: Pick<BookingDto, 'status' | 'reviewed'>): boolean {
+  return booking.status === 'Completed' && booking.reviewed === false;
+}
+
+export interface CreateShortStayReviewRequest {
+  bookingId: string;
+  rating: number;
+  comment?: string | null;
+}
+
+/** An i18n key describing why the review cannot be sent, or null when it can. */
+export function validateShortStayReview(rating: number, comment: string | null | undefined): string | null {
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) return 'REVIEW.RATING_RANGE';
+  if ((comment ?? '').length > SHORT_STAY_REVIEW_COMMENT_MAX_LENGTH) return 'REVIEW.COMMENT_TOO_LONG';
+  return null;
+}
+
+export interface ShortStayReviewDto {
+  id: string;
+  bookingId: string;
+  reviewerId: string;
+  shortStayListingId: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+}
+
+export interface ShortStayReviewItem {
+  id: string;
+  reviewerId: string;
+  reviewerName: string;
+  reviewerImageUrl: string | null;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+}
+
+export interface ShortStayReviewSummary {
+  averageRating: number;
+  totalCount: number;
+  reviews: ShortStayReviewItem[];
+}
+
+// ── إتاحة الوحدة التي يتحكم بها المضيف ─────────────────────────────────
+/** A period the host marked as not available. `from` is inclusive, `to` is exclusive (the morning it is free again). */
+export interface UnitBlockDto {
+  id: string;
+  unitId: string;
+  from: string; // "yyyy-MM-dd"
+  to: string;
+}
+
+export interface AddUnitBlockRequest {
+  from: string; // "yyyy-MM-dd"
+  to: string;
+}
+
+/**
+ * An i18n key describing why a blocked period cannot be sent, or null when it can. `today` is "yyyy-MM-dd".
+ * The API checks the same rules (422) and the overlap with bookings (409); this only spares the round trip.
+ */
+export function validateUnitBlockRange(from: string, to: string, today: string): string | null {
+  if (!from || !to) return 'SHORTSTAY.AVAILABILITY.ERR_DATES_REQUIRED';
+  if (from < today) return 'SHORTSTAY.AVAILABILITY.ERR_PAST';
+  if (to <= from) return 'SHORTSTAY.AVAILABILITY.ERR_ORDER';
+  return null;
+}
+
+// ── إيقاف الإدارة ─────────────────────────────────────────────────────
+/** Publishing is refused (409) for a listing an administrator took down, so the action is not offered. */
+export function canPublishShortStay(listing: { isPublished: boolean; isTakenDown?: boolean }): boolean {
+  return !listing.isPublished && !listing.isTakenDown;
+}
+
+export interface AdminShortStayListing {
+  id: string;
+  title: string;
+  city: string | null;
+  ownerId: string;
+  accommodationTypeNameAr: string;
+  isPublished: boolean;
+  isTakenDown: boolean;
+  takenDownAt: string | null;
+  takenDownReason: string | null;
+  createdAt: string;
+}
+
+export interface AdminShortStayFilter {
+  search?: string;
+  /** true = only taken-down listings; omit for all. */
+  takenDown?: boolean;
+  page?: number;
+  pageSize?: number;
+}
+
+export const ADMIN_SHORT_STAY_REASON_MAX_LENGTH = 500;

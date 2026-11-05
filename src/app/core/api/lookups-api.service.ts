@@ -31,14 +31,16 @@ export interface LookupItem {
  * Phase-0, Task 0 follow-up: the real, DB-backed structured-location catalog
  * (Governorate/District/Neighborhood). Distinct from LookupItem above — these
  * carry numeric ids (matching Property.GovernorateId/DistrictId/NeighborhoodId,
- * which are `int?` on the backend) and bilingual names, since the backend has
- * no German name column — see language.service.ts's LangCode ('en'|'ar'|'de');
- * `de` falls back to `nameEn` (see pickLocalizedName below).
+ * which are `int?` on the backend) and Arabic/English names plus an optional
+ * German name — see language.service.ts's LangCode ('en'|'ar'|'de');
+ * `de` uses `nameDe` and falls back to `nameEn` (see pickLocalizedName below).
  */
 export interface StructuredLocationLookup {
   id: number;
   nameAr: string;
   nameEn: string;
+  /** German name; empty/absent where none was entered (the English name is shown then). */
+  nameDe?: string | null;
   parentId?: number | null;
 }
 
@@ -69,12 +71,15 @@ export interface CurrencyLookup {
 }
 
 /**
- * Picks the display name matching the current UI language for a bilingual
- * lookup item. No German column exists on the backend for these tables, so
- * 'de' (like any unrecognized code) falls back to English.
+ * Picks the display name matching the current UI language for a lookup item.
+ * Governorates/districts/neighborhoods may carry a German name (`nameDe`); where
+ * it is missing, and for every other lookup, German falls back to English, and
+ * anything unrecognized to English too.
  */
-export function pickLocalizedName(item: { nameAr: string; nameEn: string }, lang: string): string {
-  return lang === 'ar' ? (item.nameAr || item.nameEn) : (item.nameEn || item.nameAr);
+export function pickLocalizedName(item: { nameAr: string; nameEn: string; nameDe?: string | null }, lang: string): string {
+  if (lang === 'ar') return item.nameAr || item.nameEn;
+  if (lang === 'de' && item.nameDe) return item.nameDe;
+  return item.nameEn || item.nameAr;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -198,6 +203,7 @@ export class LookupsApiService {
         id: Number(item['id']),
         nameAr: String(item['nameAr'] ?? ''),
         nameEn: String(item['nameEn'] ?? ''),
+        nameDe: item['nameDe'] ? String(item['nameDe']) : null,
         parentId: item['parentId'] === undefined || item['parentId'] === null ? null : Number(item['parentId'])
       }))
       .filter(item => Number.isFinite(item.id));

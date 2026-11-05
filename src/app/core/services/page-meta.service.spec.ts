@@ -19,6 +19,8 @@ describe('PageMetaService', () => {
 
   const canonical = () => document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.href ?? null;
 
+  let originalLang: string;
+
   beforeEach(() => {
     TestBed.configureTestingModule({ imports: [TranslateModule.forRoot()] });
     service = TestBed.inject(PageMetaService);
@@ -31,6 +33,8 @@ describe('PageMetaService', () => {
       SEO: { CONTACT: { TITLE: 'Contact us', DESCRIPTION: 'Get in touch <b>with</b> us' } }
     });
     translate.use('en');
+    originalLang = document.documentElement.lang;
+    document.documentElement.lang = 'en';
 
     destroyCallbacks = [];
     destroyRef = { onDestroy: (cb: () => void) => { destroyCallbacks.push(cb); return () => undefined; } } as DestroyRef;
@@ -43,6 +47,7 @@ describe('PageMetaService', () => {
   });
 
   afterEach(() => {
+    document.documentElement.lang = originalLang;
     (environment as { environmentName: string }).environmentName = originalEnvironmentName;
     meta.removeTag('name="robots"');
     document.head.querySelector('link[rel="canonical"]')?.remove();

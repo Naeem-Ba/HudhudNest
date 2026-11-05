@@ -4,7 +4,7 @@
   padding: var(--space-6, 1.5rem) var(--space-4, 1rem);
 
   &__eyebrow {
-    color: var(--primary, #D6A84F);
+    color: var(--primary-text);
     font-weight: 600;
     font-size: 0.8125rem;
     text-transform: uppercase;
@@ -42,7 +42,7 @@
     padding: 0.5rem 0.65rem;
     border: 1px solid var(--border, #e5e7eb);
     border-radius: 8px;
-    background: #fff;
+    background: var(--surface);
     cursor: pointer;
     min-width: 180px;
     text-align: start;
@@ -54,7 +54,7 @@
     inset-inline-start: 0;
     z-index: 20;
     margin-top: 0.35rem;
-    background: #fff;
+    background: var(--surface);
     border: 1px solid var(--border, #e5e7eb);
     border-radius: 10px;
     padding: 0.75rem;
@@ -65,7 +65,7 @@
     margin-top: 0.5rem;
     background: none;
     border: none;
-    color: var(--primary, #D6A84F);
+    color: var(--primary-text);
     cursor: pointer;
     font-size: 0.8125rem;
   }
@@ -76,7 +76,7 @@
   }
 
   &__error {
-    color: var(--danger, #dc2626);
+    color: var(--danger-text);
     padding: 1rem 0;
   }
 
@@ -91,7 +91,7 @@
     border-radius: var(--r-md, 12px);
     overflow: hidden;
     cursor: pointer;
-    background: #fff;
+    background: var(--surface);
     transition: box-shadow .2s ease, transform .2s ease;
 
     &:hover {
@@ -128,6 +128,8 @@
     color: var(--gray-600, #4b5563);
     margin-bottom: 0.5rem;
   }
+
+  .card-views { margin-bottom: 0.4rem; }
 
   &__card-footer {
     display: flex;

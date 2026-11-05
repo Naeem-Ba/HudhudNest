@@ -6,7 +6,7 @@
   padding: var(--space-6, 1.5rem) var(--space-4, 1rem);
 
   &__error, &__error-text {
-    color: var(--danger, #dc2626);
+    color: var(--danger-text);
     padding: 1rem 0;
   }
 
@@ -44,9 +44,9 @@
     font-weight: 700;
     background: var(--primary, #D6A84F);
 
-    &--Published { background: #16a34a; }
-    &--Suspended { background: #d97706; }
-    &--Closed { background: #6b7280; }
+    &--Published { background: var(--success-solid); }
+    &--Suspended { background: var(--warning-solid); }
+    &--Closed { background: var(--neutral-solid); }
   }
 
   &__layout {
@@ -98,7 +98,7 @@
   }
 
   &__financial-total {
-    dt, dd { color: var(--primary, #D6A84F); font-weight: 700; }
+    dt, dd { color: var(--primary-text); font-weight: 700; }
   }
 
   &__risk-overall { font-weight: 600; margin-bottom: 0.85rem; }
@@ -112,13 +112,17 @@
     font-weight: 700;
     background: var(--gray-500, #6b7280);
 
-    &--Low { background: #16a34a; }
-    &--Medium { background: #d97706; }
+    &--Low { background: var(--success-solid); }
+    &--Medium { background: var(--warning-solid); }
     &--High { background: #dc2626; }
-    &--VeryHigh { background: #991b1b; }
+    &--VeryHigh { background: var(--danger-solid-hover); }
   }
 
   &__risk-summary { margin: 0.85rem 0; line-height: 1.7; color: var(--gray-700, #374151); }
+
+  &__main > &__disclaimer {
+    margin: 0 0 1rem;
+  }
 
   &__disclaimer {
     font-size: 0.78rem;
@@ -223,7 +227,7 @@
 
     h4 { margin: 0 0 0.35rem; font-size: 0.8rem; color: var(--gray-500, #6b7280); }
     strong { display: block; font-size: 1.1rem; }
-    span { font-size: 0.78rem; color: #16a34a; }
+    span { font-size: 0.78rem; color: var(--success-text); }
 
     &--base { border-color: var(--primary, #D6A84F); background: var(--gray-50, #f9fafb); }
   }

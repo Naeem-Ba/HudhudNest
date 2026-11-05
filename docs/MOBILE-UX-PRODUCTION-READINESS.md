@@ -63,7 +63,7 @@ exercised).
 - **i18n:** `@ngx-translate`, three locales (ar/en/de). Default document is
   `<html lang="ar" dir="rtl">`; the app also auto-detects/allows switching, confirmed live
   switching to German (LTR) and back to Arabic (RTL) with the whole shell re-mirroring.
-- **State/PWA:** `@angular/service-worker` present (`ngsw-config.json`).
+- **State/PWA:** no Service Worker is registered, on purpose (decision of QA Phase 15, D07): the site needs the network anyway, and a worker would add a stale-build and cached-private-data risk before launch. The unused `ngsw-config.json` and the unreachable Arabic-only `/offline` page were removed. Revisit after launch if offline use is wanted.
 - **Capacitor:** `@capacitor/core` `@capacitor/android` `@capacitor/ios` all `8.5.0`,
   `@capacitor/app` (back button, app state), native Google/Apple sign-in plugins. No
   `@capacitor/keyboard` or `@capacitor/status-bar` package — both are superseded by the

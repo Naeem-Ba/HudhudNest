@@ -80,4 +80,39 @@ describe('AdminPropertiesService', () => {
     expect(Object.keys(req.request.body as object)).not.toContain('plan');
     req.flush({ message: 'Extended.' });
   });
+
+  it('✅ takeDownListing: يرسل السبب إلى مسار الإيقاف', done => {
+    service.takeDownListing('p1', 'صور لا تخص العقار').subscribe(() => done());
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/Admin/properties/p1/take-down`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ reason: 'صور لا تخص العقار' });
+    req.flush({ message: 'Taken down.' });
+  });
+
+  it('✅ restoreListing: السبب اختياري', done => {
+    service.restoreListing('p1').subscribe(() => done());
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/Admin/properties/p1/restore`);
+    expect(req.request.body).toEqual({ reason: null });
+    req.flush({ message: 'Restored.' });
+  });
+
+  it('✅ getUserProperties: يطبّع isTakenDown/takenDownReason ويتسامح مع خادم أقدم', done => {
+    service.getUserProperties('u1').subscribe(result => {
+      expect(result.items[0].isTakenDown).toBeTrue();
+      expect(result.items[0].takenDownReason).toBe('مخالف');
+      expect(result.items[1].isTakenDown).toBeFalse();
+      expect(result.items[1].takenDownReason).toBeNull();
+      done();
+    });
+
+    httpMock.expectOne(r => r.url === `${environment.apiBaseUrl}/Admin/users/u1/properties`).flush({
+      total: 2,
+      data: [
+        { id: 'a', title: 'أ', isTakenDown: true, takenDownReason: 'مخالف', createdAt: '2026-07-01T00:00:00Z' },
+        { id: 'b', title: 'ب', createdAt: '2026-07-01T00:00:00Z' }
+      ]
+    });
+  });
 });

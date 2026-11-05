@@ -109,7 +109,7 @@
   font-size: .78rem;
   font-weight: 700;
 
-  &--published { background: var(--success-soft); color: var(--success); }
+  &--published { background: var(--success-soft); color: var(--success-text); }
   &--draft     { background: var(--gray-100); color: var(--gray-600); }
 }
 
@@ -131,10 +131,20 @@
   dd { margin: 0; color: var(--gray-900); }
 }
 
+.taken-down-note {
+  margin: 0;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--danger-text);
+  background: var(--danger-soft);
+  padding: .35rem .6rem;
+  border-radius: 8px;
+}
+
 .expiry-warning {
   margin: 0;
   font-size: .85rem;
-  color: var(--warning);
+  color: var(--warning-text);
   background: var(--warning-soft);
   padding: .35rem .6rem;
   border-radius: 8px;
@@ -161,7 +171,7 @@
 
 .created-at {
   font-size: .82rem;
-  color: var(--gray-400);
+  color: var(--text-muted);
 }
 
 .card-actions {
@@ -192,10 +202,10 @@
 
   &--primary   { background: var(--primary); color: var(--on-primary); &:hover:not(:disabled) { background: var(--primary-dark); } }
   &--secondary { background: var(--gray-100); color: var(--gray-700); &:hover:not(:disabled) { background: var(--gray-200); } }
-  &--danger    { background: #ef4444; color: #fff; &:hover:not(:disabled) { background: var(--danger); } }
+  &--danger    { background: var(--danger-solid); color: #fff; &:hover:not(:disabled) { background: var(--danger); } }
   &--ghost     { background: transparent; color: var(--gray-500); border: 1px solid var(--border); }
   &--gold      { background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%); color: var(--navy); &:hover:not(:disabled) { opacity: .9; } }
-  &--publish   { background: var(--success); color: #fff; &:hover:not(:disabled) { background: #15803d; } }
+  &--publish   { background: var(--success-solid); color: #fff; &:hover:not(:disabled) { background: #15803d; } }
 }
 
 /* ── State Cards ─────────────────────────────────────────── */
@@ -214,5 +224,5 @@
 .error-state {
   border: 1px solid rgba(220,38,38,.2);
   background: var(--danger-soft);
-  color: var(--danger);
+  color: var(--danger-text);
 }

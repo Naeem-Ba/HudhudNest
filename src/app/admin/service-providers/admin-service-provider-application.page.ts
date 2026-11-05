@@ -17,6 +17,7 @@ import { ToastService } from '../../shared/services/toast.service';
 import { ChoiceChipOption, ChoiceChipsComponent } from '../../shared/ui/choice-chips.component';
 import { ConfirmModalComponent } from '../../shared/ui/confirm-modal.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 type ActionMode = 'note' | 'info' | 'approve' | 'reject' | null;
 
@@ -30,7 +31,7 @@ type ActionMode = 'note' | 'info' | 'approve' | 'reject' | null;
   selector: 'app-admin-service-provider-application-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, ChoiceChipsComponent, ConfirmModalComponent, LoadingSpinnerComponent],
+  imports: [ LocalizedDatePipe,CommonModule, FormsModule, RouterLink, TranslateModule, ChoiceChipsComponent, ConfirmModalComponent, LoadingSpinnerComponent],
   templateUrl: './admin-service-provider-application.page.html',
   styleUrls: ['./admin-service-provider-application.page.scss']
 })

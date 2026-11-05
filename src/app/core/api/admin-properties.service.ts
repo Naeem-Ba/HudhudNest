@@ -9,6 +9,8 @@
 //   POST /api/Admin/properties/{propertyId}/feature    { days?, reason? }
 //   POST /api/Admin/properties/{propertyId}/unfeature  { reason? }
 //   POST /api/Admin/properties/{propertyId}/extend     { days, reason? }
+//   POST /api/Admin/properties/{propertyId}/take-down  { reason }  (السبب إلزامي ويراه المالك)
+//   POST /api/Admin/properties/{propertyId}/restore    { reason? }
 //
 // تمديد الإعلان هنا يعمل حتى لو كان صاحب الإعلان على الخطة المجانية — لا يوجد أي
 // فحص للخطة/الحصة على هذا المسار إطلاقاً (القاعدة صريحة في المواصفة).
@@ -80,6 +82,16 @@ export class AdminPropertiesService {
     });
   }
 
+  takeDownListing(propertyId: string, reason: string): Observable<AdminOperationResult> {
+    return this.api.post<AdminOperationResult>(`/Admin/properties/${propertyId}/take-down`, { reason });
+  }
+
+  restoreListing(propertyId: string, reason?: string): Observable<AdminOperationResult> {
+    return this.api.post<AdminOperationResult>(`/Admin/properties/${propertyId}/restore`, {
+      reason: reason || null
+    });
+  }
+
   private toSummary(item: unknown): AdminPropertySummary {
     const p = item as Record<string, unknown>;
 
@@ -90,6 +102,8 @@ export class AdminPropertiesService {
       isPublished: Boolean(p['isPublished']),
       publishedAt: (p['publishedAt'] as string) ?? null,
       expiresAt: (p['expiresAt'] as string) ?? null,
+      isTakenDown: Boolean(p['isTakenDown']),
+      takenDownReason: (p['takenDownReason'] as string) ?? null,
       isFeatured: Boolean(p['isFeatured']),
       featuredUntil: (p['featuredUntil'] as string) ?? null,
       createdAt: String(p['createdAt'] ?? '')

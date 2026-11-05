@@ -1,5 +1,5 @@
 .drp {
-  --drp-accent: #ff385c;
+  --drp-accent: var(--gold);
   width: 100%;
   max-width: 360px;
   font-size: 0.875rem;
@@ -72,7 +72,7 @@
     &--start,
     &--end {
       background: var(--drp-accent);
-      color: #fff;
+      color: var(--on-primary);
     }
 
     &--start {
@@ -111,7 +111,7 @@
     display: inline-block;
 
     &--blocked {
-      background: repeating-linear-gradient(45deg, #ccc, #ccc 2px, transparent 2px, transparent 4px);
+      background: repeating-linear-gradient(45deg, var(--gray-300), var(--gray-300) 2px, transparent 2px, transparent 4px);
     }
 
     &--selected {

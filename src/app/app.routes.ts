@@ -200,7 +200,54 @@ export const routes: Routes = [
             .then(m => m.FavoritesPage)
       },
       {
+        // بلاغاتي: البلاغات التي أرسلها المستخدم وحالتها العامة (لا يرى ملاحظات الإدارة).
+        path: 'my-reports',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/listing-reports/my-listing-reports.page')
+            .then(m => m.MyListingReportsPage)
+      },
+      {
+        // The same page, opened on one report (a notification about it): that report is shown first
+        // and, when the team asked a question, the answer box is focused.
+        path: 'my-reports/:id',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/listing-reports/my-listing-reports.page')
+            .then(m => m.MyListingReportsPage)
+      },
+      {
+        // Growth engine P2: property search requests (buyer/renter side).
+        path: 'search-requests',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/search-requests/my-search-requests.page')
+            .then(m => m.MySearchRequestsPage)
+      },
+      {
+        // Growth engine P2: anonymous request board (advertiser side).
+        path: 'search-requests/board',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/search-requests/search-request-board.page')
+            .then(m => m.SearchRequestBoardPage)
+      },
+      {
+        path: 'search-requests/for-listing/:propertyId',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/search-requests/search-request-board.page')
+            .then(m => m.SearchRequestBoardPage)
+      },
+      {
         // Phase-0, Task 3.
+        path: 'referrals',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/referrals/referrals.page')
+            .then(m => m.ReferralsPage)
+      },
+      {
         path: 'saved-searches',
         canActivate: [AuthGuard],
         loadComponent: () =>
@@ -316,10 +363,25 @@ export const routes: Routes = [
             .then(m => m.AnalyticsPage)
       },
       {
-        path: 'offline',
+        // Growth engine P11: guided start for Syrians abroad (only services that real providers offer).
+        path: 'expats',
         loadComponent: () =>
-          import('./features/offline/offline.page')
-            .then(m => m.OfflinePage)
+          import('./features/expats/expat-journey.page')
+            .then(m => m.ExpatJourneyPage)
+      },
+      {
+        // Growth engine P8: browse listings on a map (server-side clusters).
+        path: 'map',
+        loadComponent: () =>
+          import('./features/property-map/property-map.page')
+            .then(m => m.PropertyMapPage)
+      },
+      {
+        // Growth engine P6: public asking-price ranges per area (never a valuation).
+        path: 'price-estimate',
+        loadComponent: () =>
+          import('./features/price-estimate/price-estimate.page')
+            .then(m => m.PriceEstimatePage)
       },
       {
         // Public pricing page - Basic / Premium / Elite agency plans.
@@ -406,6 +468,20 @@ export const routes: Routes = [
       },
 
       {
+        path: 'admin/growth',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/growth/admin-growth.page')
+            .then(m => m.AdminGrowthPage)
+      },
+      {
+        path: 'admin/referrals',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/referrals/admin-referrals.page')
+            .then(m => m.AdminReferralsPage)
+      },
+      {
         path: 'admin/users',
         canActivate: [AdminGuard],
         loadComponent: () =>
@@ -429,6 +505,46 @@ export const routes: Routes = [
             .then(m => m.AdminUserPropertiesPage)
       },
 
+      {
+        // إدارة الخدمات: أي خدمة مفعّلة ومطلوبة، كم مرة، هل أُنجزت ولماذا لا. Role Admin على الخادم لكل نقطة.
+        path: 'admin/services',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/services/admin-services.page')
+            .then(m => m.AdminServicesPage)
+      },
+      {
+        path: 'admin/services/:id',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/services/admin-service-request-detail.page')
+            .then(m => m.AdminServiceRequestDetailPage)
+      },
+
+      {
+        // إدارة البلاغات عن الإعلانات. Role Admin على الخادم لكل نقطة.
+        path: 'admin/listing-reports',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/listing-reports/admin-listing-reports.page')
+            .then(m => m.AdminListingReportsPage)
+      },
+      {
+        path: 'admin/listing-reports/:id',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/listing-reports/admin-listing-report-detail.page')
+            .then(m => m.AdminListingReportDetailPage)
+      },
+
+      {
+        // إدارة الإقامات القصيرة: بحث، وإيقاف إعلان بسبب إلزامي (يراه المالك) واستعادته. Role Admin على الخادم لكل نقطة.
+        path: 'admin/short-stay',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/short-stay/admin-short-stay.page')
+            .then(m => m.AdminShortStayPage)
+      },
       {
         // إدارة مزوّدي الخدمات: طلبات الانضمام ثم المزوّدون المعتمدون. Role Admin على الخادم لكل نقطة.
         path: 'admin/service-providers',
@@ -517,6 +633,15 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./admin/app-updates/admin-app-updates.page')
             .then(m => m.AdminAppUpdatesPage)
+      },
+
+      // سجل التدقيق (المرحلة 14، D06): قراءة فقط. AdminAuditLogsController — Admin على الصنف.
+      {
+        path: 'admin/audit-logs',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/audit-logs/admin-audit-logs.page')
+            .then(m => m.AdminAuditLogsPage)
       },
 
       // إدارة النشر التلقائي على وسائل التواصل الاجتماعي — نطاق تشغيلي أساسي (قنوات،

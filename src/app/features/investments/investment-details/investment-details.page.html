@@ -25,6 +25,8 @@
 
     <div class="invd__layout">
       <div class="invd__main">
+        <p class="invd__disclaimer">⚠️ {{ 'INVESTMENTS.GENERAL_DISCLAIMER' | translate }}</p>
+
         <!-- Funding -->
         <section class="invd__card">
           <h2>{{ 'INVESTMENTS.DETAILS.FUNDING' | translate }}</h2>
@@ -46,7 +48,7 @@
             </div>
             <div>
               <span class="invd__stat-label">{{ 'INVESTMENTS.DETAILS.PROGRESS' | translate }}</span>
-              <strong>{{ p.fundingProgressPercent | number:'1.0-0' }}%</strong>
+              <strong>{{ p.fundingProgressPercent | localNumber:'1.0-0' }}%</strong>
             </div>
           </div>
         </section>
@@ -126,7 +128,7 @@
           <h2>{{ 'INVESTMENTS.UPDATES.TITLE' | translate }}</h2>
           <ol class="invd__timeline">
             <li *ngFor="let update of updates(); trackBy: trackUpdateById">
-              <span class="invd__timeline-date">{{ update.publishedAt | date:'d MMM y' }}</span>
+              <span class="invd__timeline-date">{{ update.publishedAt | localDate:'d MMM y' }}</span>
               <h3>{{ update.title }}</h3>
               <p>{{ update.content }}</p>
             </li>
@@ -138,19 +140,19 @@
           <h2>{{ 'INVESTMENTS.CALCULATOR.TITLE' | translate }}</h2>
           <form class="invd__calculator-form" (ngSubmit)="runCalculator()">
             <div class="invd__field">
-              <label>{{ 'INVESTMENTS.CALCULATOR.AMOUNT' | translate }}</label>
-              <input type="number" [min]="p.minimumInvestment" [(ngModel)]="calculatorAmount" name="amount" required />
+              <label for="invd-calc-amount">{{ 'INVESTMENTS.CALCULATOR.AMOUNT' | translate }}</label>
+              <input id="invd-calc-amount" type="number" [min]="p.minimumInvestment" [max]="calculatorMaxAmount" [(ngModel)]="calculatorAmount" name="amount" required />
             </div>
             <div class="invd__field">
-              <label>{{ 'INVESTMENTS.CALCULATOR.TERM_MONTHS' | translate }}</label>
-              <input type="number" min="1" [(ngModel)]="calculatorTermMonths" name="term" />
+              <label for="invd-calc-term">{{ 'INVESTMENTS.CALCULATOR.TERM_MONTHS' | translate }}</label>
+              <input id="invd-calc-term" type="number" min="1" [max]="calculatorMaxTermMonths" [(ngModel)]="calculatorTermMonths" name="term" />
             </div>
             <button type="submit" class="btn btn--primary btn--sm" [disabled]="calculatorLoading()">
               {{ 'INVESTMENTS.CALCULATOR.CALCULATE' | translate }}
             </button>
           </form>
 
-          <p *ngIf="calculatorError()" class="invd__error-text">{{ calculatorError() | translate }}</p>
+          <p *ngIf="calculatorError()" class="invd__error-text">{{ calculatorError() | translate:calculatorErrorParams() }}</p>
 
           <div class="invd__calculator-results" *ngIf="calculatorResult() as result">
             <div class="invd__scenario">

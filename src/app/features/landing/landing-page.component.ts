@@ -37,13 +37,16 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
+import { isNativeApp } from '../../core/native/is-native-app';
 
 import { LeadService } from '../../core/services/lead.service';
 import { OffersApiService } from '../../core/api/offers-api.service';
 import { MarketingEventsApiService } from '../../core/api/marketing-events-api.service';
 import { MetaService } from '../../core/services/meta.service';
+import { PageMetaService } from '../../core/services/page-meta.service';
 import { SYRIA_CITY_OPTIONS, USER_TYPE_OPTIONS, UserType } from '../../core/models/lead.model';
 import { Offer } from '../../core/models/offer.model';
+import { numberLocaleFor } from '../../core/i18n/supported-preferences';
 
 // ── Validator: رقم هاتف مرن يقبل سوريا والدول العربية ──
 function phoneValidator(ctrl: AbstractControl): ValidationErrors | null {
@@ -72,6 +75,7 @@ export class LandingPageComponent implements OnInit {
   private readonly events     = inject(MarketingEventsApiService);
   private readonly route      = inject(ActivatedRoute);
   private readonly metaSvc    = inject(MetaService);
+  private readonly pageMeta   = inject(PageMetaService);
   private readonly translate  = inject(TranslateService);
   private readonly cd         = inject(ChangeDetectorRef);
   private readonly destroyRef = inject(DestroyRef);
@@ -80,6 +84,8 @@ export class LandingPageComponent implements OnInit {
   readonly userTypeOptions = USER_TYPE_OPTIONS;
   readonly cityOptions     = SYRIA_CITY_OPTIONS;
   readonly currentYear     = new Date().getFullYear();
+  /** Hidden inside the installed app, where "download the app" would be pointless. */
+  readonly showDownloadLink = !isNativeApp();
 
   // ── عرض "أول 100 مكتب عقاري" — null يعني: لا عرض نشط، أخفِ القسم بالكامل ──
   readonly activeOffer = signal<Offer | null>(null);
@@ -121,7 +127,7 @@ export class LandingPageComponent implements OnInit {
   readonly psItemIndices = [1, 2, 3, 4, 5];
 
   ngOnInit(): void {
-    this.metaSvc.setLandingMeta();
+    this.pageMeta.applyTranslated('SEO.HOME', '/landing', this.destroyRef);
 
     this.loadOffer();
 
@@ -213,7 +219,7 @@ export class LandingPageComponent implements OnInit {
     const lang = this.translate.currentLang || this.translate.defaultLang || 'ar';
     let date: string;
     try {
-      date = new Intl.DateTimeFormat(lang, { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(offer.endsAtUtc));
+      date = new Intl.DateTimeFormat(numberLocaleFor(lang), { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(offer.endsAtUtc));
     } catch {
       date = offer.endsAtUtc.slice(0, 10);
     }

@@ -47,9 +47,22 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<!-- arm64 only: every iPhone that can run iOS 15 (the deployment target) is 64-bit; armv7 matched no device. -->
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
-		<string>armv7</string>
+		<string>arm64</string>
+	</array>
+	<!-- Lets a push wake the app in the background so the notification reaches the notification plugin. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+	<!-- Languages of InfoPlist.strings (permission dialogs); CFBundleDevelopmentRegion stays English. -->
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>ar</string>
+		<string>de</string>
 	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
@@ -72,5 +85,19 @@
 	<string>HudhudNest needs camera access so you can take photos to attach to a property listing.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>HudhudNest needs access to your photo library so you can attach existing photos to a property listing.</string>
+	<!-- AdMob. GADApplicationIdentifier below is Google's official SAMPLE app ID (no real ads, no earnings);
+	     replace it with the real AdMob app ID once the owner's AdMob account is approved. See docs/MONETIZATION.md.
+	     The SDK stays idle while ads are disabled; the app never calls it unless ANDROID/IOS ads are switched on. -->
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<key>SKAdNetworkItems</key>
+	<array>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>cstr6suwn9.skadnetwork</string>
+		</dict>
+	</array>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>HudhudNest asks for this only if you choose personalised ads. You can decline and still see non-personalised ads.</string>
 </dict>
 </plist>

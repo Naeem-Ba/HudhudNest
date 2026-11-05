@@ -1,0 +1,378 @@
+/* ================================================================
+   HudhudNest design tokens — THE single source of truth for colour.
+   Docs: docs/design/color-system.md
+   ================================================================ */
+
+/* ================================================================
+   CSS Custom Properties — Design Tokens
+   وضع افتراضي فاتح (Light) — يُطبَّق دومًا ما لم يُفعَّل [data-theme="dark"]
+   على <html> (يتم ذلك تلقائيًا عبر ThemeService حسب اختيار المستخدم
+   أو تفضيل نظام التشغيل عند أول زيارة).
+   ================================================================ */
+/* 1) PRIMITIVES + BASE ROLES (light). Component code should prefer the SEMANTIC tokens in section 2. */
+:root {
+  /* Brand Colors — هوية HudhudNest / هدهد نيست */
+  --navy:          #0F2742;
+  --navy-80:       rgba(15, 39, 66, .80);
+  --navy-600:      #1a3a5c;
+  /* لون العناوين والأرقام والأسعار فوق سطح الصفحة: كحلي فاتحًا، وأبيض مائل داكنًا.
+     لا يُستعمل --navy نصًا على سطح متغيّر الوضع (كان يُنتج تباين 1.2 في الداكن)؛ يبقى --navy
+     للخلفيات الكحلية الثابتة ولنص فوق خلفية ذهبية صلبة. */
+  --text-strong:   var(--navy);
+  --gold:          #D6A84F;
+  --gold-light:    #e8c47a;
+  --gold-dark:     #b5872e;
+  --gold-soft:     rgba(214, 168, 79, .12);
+  /* نص ذهبي بتباين كافٍ حسب الوضع: غامق على خلفية فاتحة، فاتح على خلفية داكنة.
+     يُعاد تعريفه بكتلة [data-theme="dark"] أدناه. */
+  --gold-text:     #8a6414;
+
+  /* لوحة معرض الصور — محايدة دافئة (رمادي فحمي دافئ) بدل الأزرق الملاحظ
+     سابقًا (كان var(--navy) وهو أزرق داكن). هذه القيمة ثابتة عمدًا بكلا
+     الوضعين لأن أدوات التنقل بالمعرض (الأسهم/العدّاد) بيضاء اللون ثابتة،
+     ومحايدة دافئة كهذه أكثر راحة للعين من الأزرق البارد عند تصفّح صور
+     عقارات لفترة طويلة، وتُبقي تركيز المستخدم على الصورة نفسها لا الخلفية. */
+  --gallery-canvas: #1b1a18;
+
+  /* شارات "إيجار/بيع" — درجات هادئة مائلة للأخضر-الفيروزي (إيجار) والكهرماني
+     الدافئ (بيع) بدل الأزرق/الأخضر الفاتح القديم، لتمييز بصري أوضح وأهدأ
+     يساعد على اتخاذ القرار بسرعة دون تنافر مع هوية الذهبي/الأسود. */
+  --badge-rent-bg:   rgba(13, 148, 136, .12);
+  --badge-rent-text: #0b5f59;
+  --badge-sale-bg:   rgba(180, 83, 9, .14);
+  --badge-sale-text: #84450f;
+
+  /* شارة الإعلان المميّز (المدفوع). ذهبي هوية التطبيق نفسه لا لون ثالث جديد:
+     التمييز منتج مدفوع، ويجب أن يُقرأ فوراً كشيء مختلف عن شارتَي الإيجار/البيع
+     الوصفيتين، لا كتصنيف ثالث لنوع العرض. */
+  --badge-featured-bg:   rgba(214, 168, 79, .20);
+  --badge-featured-text: #7a5710;
+
+  /* UI Colors */
+  /* اللون الأساسي = ذهبي الهوية (كان أزرق). --on-primary: نص أسود فوق أي خلفية ذهبية.
+     --primary-text: نسخة غامقة من الذهبي للنص/الروابط على خلفية فاتحة (تباين ≥ 4.5:1). */
+  --primary:       var(--gold);
+  --primary-dark:  var(--gold-dark);
+  --primary-soft:  var(--gold-soft);
+  --on-primary:    #111111;
+  --primary-text:  #8a6414;
+  --success:       #16a34a;
+  --success-soft:  #f0fdf4;
+  --danger:        #dc2626;
+  --danger-soft:   #fef2f2;
+  --warning:       #d97706;
+  --warning-soft:  #fffbeb;
+  --info:          #0891b2;
+  --info-soft:     #ecfeff;
+
+  /* Neutral Scale */
+  --gray-50:    #f8fafc;
+  --gray-100:   #f1f5f9;
+  --gray-200:   #e2e8f0;
+  --gray-300:   #cbd5e1;
+  --gray-400:   #94a3b8;
+  --gray-500:   #5a6678;   /* ≥ 4.5:1 on white, page, gray-100 (was #64748b = 4.3 on gray-100) */
+  --gray-600:   #475569;
+  --gray-700:   #334155;
+  --gray-800:   #1e293b;
+  --gray-900:   #0f172a;
+
+  /* Surface */
+  --surface:    #ffffff;
+  --page-bg:    #f8fafc;
+  --border:     #e2e8f0;
+  --border-focus: var(--gold);
+
+  /* Typography
+     -----------------------------------------------------------------
+     Roboto أولاً ثم IBM Plex Sans Arabic — والترتيب هو الآلية نفسها لا تفضيلاً
+     جمالياً: Roboto لا يحتوي محرفاً عربياً واحداً، فالمتصفح يسقط لكل محرف عربي
+     إلى الخط التالي في القائمة. النتيجة أن اللاتينية تُعرض بـ Roboto والعربية
+     بـ IBM Plex Sans Arabic دون أي منطق في الكود ودون :lang().
+
+     ولذلك يجب ألا يتقدّم أي خط عربي على Roboto هنا: لو تقدّم، لالتقط اللاتينية
+     أيضاً وضاع نصف القرار. وCairo يبقى في آخر القائمة احتياطاً لأن كل صفحة قائمة
+     رُسمت عليه، فلو تعذّر تحميل IBM Plex لا يسقط النص إلى خط النظام مباشرة.
+     ----------------------------------------------------------------- */
+  --font-display: 'Roboto', 'IBM Plex Sans Arabic', 'Cairo', system-ui, sans-serif;
+  --font-body:    'Roboto', 'IBM Plex Sans Arabic', 'Cairo', system-ui, sans-serif;
+  --font-mono:    'Courier New', monospace;
+
+  /* Type Scale */
+  --text-xs:   0.75rem;   /* 12px */
+  --text-sm:   0.875rem;  /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg:   1.125rem;  /* 18px */
+  --text-xl:   1.25rem;   /* 20px */
+  --text-2xl:  1.5rem;    /* 24px */
+  --text-3xl:  1.875rem;  /* 30px */
+  --text-4xl:  2.25rem;   /* 36px */
+
+  /* Spacing */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Border Radius */
+  --r-sm:   6px;
+  --r-md:   10px;
+  --r-lg:   16px;
+  --r-xl:   24px;
+  --r-2xl:  32px;
+  --r-pill: 9999px;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+  --shadow-sm: 0 2px 8px rgba(15,23,42,.08);
+  --shadow-md: 0 4px 16px rgba(15,23,42,.10);
+  --shadow-lg: 0 8px 30px rgba(15,23,42,.12);
+  --shadow-xl: 0 16px 50px rgba(15,23,42,.16);
+
+  /* Transitions */
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --ease-in:  cubic-bezier(.64, 0, .78, 0);
+
+  /* Navbar */
+  --navbar-height: 68px;
+
+  /* Z-Index */
+  --z-dropdown: 100;
+  --z-sticky:   200;
+  --z-overlay:  300;
+  --z-modal:    400;
+  --z-toast:    500;
+
+  color-scheme: light;
+}
+
+
+/* ================================================================
+   2) SEMANTIC TOKENS — what components should use.
+   Every token is defined for light (here) and dark (block below).
+   Rule: never write a hex/rgb colour in a component; pick the role.
+   Contrast contract (checked by tools/lib/theme-tokens.test.mjs): every
+   *-text / text-* token ≥ 4.5:1 on the surfaces it is meant to sit on.
+   ================================================================ */
+:root {
+  /* — Backgrounds — */
+  --bg-primary:      var(--page-bg);
+  --bg-secondary:    var(--gray-50);
+  --bg-tertiary:     var(--gray-100);
+  --surface-elevated: var(--surface);
+  --card-bg:         var(--surface);
+  --modal-bg:        var(--surface);
+  --input-bg:        var(--surface);
+  --muted-bg:        var(--gray-100);
+  --overlay-scrim:   rgba(15, 23, 42, .55);
+
+  /* — Text — */
+  --text-primary:    var(--gray-900);
+  --text-secondary:  var(--gray-700);
+  --text-tertiary:   var(--gray-600);
+  --text-muted:      var(--gray-500);
+  --text-placeholder: #627084;
+  --text-disabled:   #8190a5;          /* exempt from AA (disabled), still legible */
+  --text-inverse:    #ffffff;           /* on --navy / --danger-solid / dark photos */
+  --text-on-primary: var(--on-primary);
+  --text-on-accent:  var(--navy);
+  --text-on-navy:    #ffffff;
+  --text-on-navy-muted: rgba(255, 255, 255, .78);   /* ≥ 4.5:1 on --navy */
+  --inverse-bg:      var(--gray-900);   /* selected chips, tooltips, strong buttons */
+  --inverse-text:    #ffffff;
+  --text-on-image:   #ffffff;           /* only on top of a --scrim-image layer */
+  --scrim-image:     linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.25) 60%, transparent);
+
+  /* — Interactive — */
+  --primary-hover:   var(--gold-dark);
+  --primary-active:  #9c7424;
+  --primary-disabled: var(--gray-300);
+  --secondary:       var(--navy);
+  --accent:          var(--gold);
+  --link:            #1d4ed8;
+  --link-hover:      #1e40af;
+  --focus-ring:      var(--gold-text);
+  --danger-solid:    #b91c1c;           /* background for white text */
+  --success-solid:   #15803d;           /* white text ≥ 4.5:1 */
+  --warning-solid:   #b45309;           /* white text ≥ 4.5:1 */
+  --neutral-solid:   #4b5563;           /* white text ≥ 4.5:1 */
+  --danger-solid-hover: #991b1b;
+
+  /* — Borders — */
+  --border-primary:   var(--border);
+  --border-secondary: var(--gray-300);
+  --border-subtle:    var(--gray-100);
+  --divider:          var(--gray-200);
+  --input-border:     #8794a8;          /* ≥ 3:1 on white (WCAG 1.4.11) */
+  --focus-border:     var(--gold-text);
+
+  /* — Status: bg / text / border / icon — */
+  --success-bg:     var(--success-soft);
+  --success-text:   #15803d;
+  --success-border: rgba(22, 163, 74, .35);
+  --success-icon:   #16a34a;
+  --warning-bg:     var(--warning-soft);
+  --warning-text:   #92400e;
+  --warning-border: rgba(217, 119, 6, .4);
+  --warning-icon:   #d97706;
+  --warning-dark:   var(--warning-text);
+  --error-bg:       var(--danger-soft);
+  --danger-text:    #b91c1c;
+  --error-text:     var(--danger-text);
+  --error-border:   rgba(220, 38, 38, .35);
+  --error-icon:     #dc2626;
+  --info-bg:        var(--info-soft);
+  --info-text:      #0e7490;
+  --info-border:    rgba(8, 145, 178, .35);
+  --info-icon:      #0891b2;
+
+  /* — Specialised components — */
+  --nav-bg:          var(--surface);
+  --nav-text:        var(--gray-700);
+  --sidebar-bg:      var(--surface);
+  --table-header-bg: var(--gray-50);
+  --table-row-hover: var(--gray-50);
+  --table-border:    var(--border);
+  --skeleton-base:   var(--gray-100);
+  --skeleton-shine:  var(--gray-200);
+  --tooltip-bg:      var(--gray-900);
+  --tooltip-text:    var(--surface);
+  --dropdown-bg:     var(--surface);
+  --dropdown-hover:  var(--gray-50);
+  --notification-unread-bg: var(--primary-soft);
+  --map-attribution-bg:   rgba(255, 255, 255, .85);
+  --map-attribution-text: #333333;
+  --map-attribution-link: #0b5cad;
+  --chart-1: #0f2742;
+  --chart-2: #b5872e;
+  --chart-3: #0d6b64;
+  --chart-4: #9a5313;
+  --chart-5: #5a6678;
+
+  /* Legacy names used by older components; kept as aliases so they follow the theme. */
+  --border-color: var(--border);
+  --red-600:   var(--danger-text);
+  --green-100: var(--success-soft);
+  --green-700: var(--success-text);
+  --green-800: var(--success-text);
+}
+
+/* ================================================================
+   الوضع الداكن — HudhudNest Dark Theme
+   أسود فاخر + ذهبي، مطابق للهوية البصرية المرجعية (Luxora/Luxe).
+   كل مكوّن يستخدم var(--surface) / var(--gray-*) / var(--border) —
+   بلا استثناء — يتحوّل تلقائيًا هنا بدون أي تعديل بملفه الخاص.
+   ================================================================ */
+html[data-theme="dark"] {
+  --surface:      #15161a;
+  --page-bg:      #0a0a0c;
+  --border:       #2a2b31;
+  --border-focus: var(--gold);
+
+  --gray-50:    #1c1d22;
+  --gray-100:   #23242a;
+  --gray-200:   #2a2b31;
+  --gray-300:   #383a42;
+  --gray-400:   #6b6d78;
+  --gray-500:   #9497a3;
+  --gray-600:   #b7b9c3;
+  --gray-700:   #d4d6dd;
+  --gray-800:   #eceef2;
+  --gray-900:   #f7f8fa;
+
+  --text-strong:   var(--gray-900);
+  --primary:       var(--gold);
+  --primary-dark:  var(--gold-light);
+  --primary-soft:  rgba(214, 168, 79, .14);
+  --primary-text:  var(--gold-light);
+  --gold-text:     var(--gold-light);
+
+  --success-soft:  rgba(22, 163, 74, .16);
+  --danger-soft:   rgba(220, 38, 38, .16);
+  --warning-soft:  rgba(217, 119, 6, .16);
+  --info-soft:     rgba(8, 145, 178, .16);
+
+  /* شارات إيجار/بيع بالوضع الداكن — تشبّع أعلى قليلاً وشفافية أكبر عشان
+     تظل الشارة واضحة فوق الخلفيات الداكنة بدل الباستيل الفاتح اللي كان
+     يبدو غير مناسب (منخفض التباين/غير متناغم) على الخلفية الداكنة. */
+  --badge-rent-bg:   rgba(45, 212, 191, .18);
+  --badge-rent-text: #5eead4;
+  --badge-sale-bg:   rgba(251, 146, 60, .20);
+  --badge-sale-text: #fdba74;
+
+  /* الذهبي على الداكن يحتاج نصاً أفتح لا أغمق — gold-dark يختفي هنا. */
+  --badge-featured-bg:   rgba(214, 168, 79, .24);
+  --badge-featured-text: var(--gold-light);
+
+  --shadow-xs: 0 1px 3px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.25);
+  --shadow-sm: 0 2px 10px rgba(0,0,0,.40);
+  --shadow-md: 0 6px 20px rgba(0,0,0,.45);
+  --shadow-lg: 0 10px 34px rgba(0,0,0,.55);
+  --shadow-xl: 0 18px 55px rgba(0,0,0,.60);
+
+  color-scheme: dark;
+}
+
+/* Dark palette for the semantic layer — designed, not inverted. */
+html[data-theme="dark"] {
+  --bg-secondary:    var(--gray-50);
+  --overlay-scrim:   rgba(0, 0, 0, .65);
+
+  --text-muted:      #a3a6b2;
+  --text-placeholder: #8b8e9b;
+  --text-disabled:   #6b6d78;
+  --text-inverse:    #0a0a0c;
+  --inverse-text:    #0a0a0c;
+  --text-on-accent:  #111111;
+  --text-on-navy:    #ffffff;
+
+  --primary-hover:   var(--gold-light);
+  --primary-active:  #f0d59c;
+  --primary-disabled: #383a42;
+  --secondary:       var(--gold-light);
+  --link:            #8ab4ff;
+  --link-hover:      #b3cdff;
+  --focus-ring:      var(--gold-light);
+  --danger-solid:    #dc2626;
+  --danger-solid-hover: #b91c1c;
+
+  --border-secondary: var(--gray-300);
+  --border-subtle:    #1f2025;
+  --divider:          #2a2b31;
+  --input-border:     #6b6d78;          /* ≥ 3:1 on --surface */
+  --focus-border:     var(--gold-light);
+
+  --success-text:   #4ade80;
+  --success-border: rgba(74, 222, 128, .4);
+  --success-icon:   #4ade80;
+  --warning-text:   #fbbf24;
+  --warning-border: rgba(251, 191, 36, .4);
+  --warning-icon:   #fbbf24;
+  --danger-text:    #f87171;
+  --error-border:   rgba(248, 113, 113, .45);
+  --error-icon:     #f87171;
+  --info-text:      #22d3ee;
+  --info-border:    rgba(34, 211, 238, .4);
+  --info-icon:      #22d3ee;
+
+  --nav-text:        var(--gray-700);
+  --tooltip-bg:      #2a2b31;
+  --tooltip-text:    #f7f8fa;
+  --skeleton-base:   #1c1d22;
+  --skeleton-shine:  #2a2b31;
+  --map-attribution-bg:   rgba(21, 22, 26, .88);
+  --map-attribution-text: #d4d6dd;
+  --map-attribution-link: #8ab4ff;
+  --chart-1: #8ab4ff;
+  --chart-2: #e8c47a;
+  --chart-3: #5eead4;
+  --chart-4: #fdba74;
+  --chart-5: #b7b9c3;
+}
+

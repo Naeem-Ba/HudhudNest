@@ -44,6 +44,7 @@ Netlify ← Deploys ← اختر آخر deploy سليم ← Publish deploy (مج
 - يفشل إن غاب `GOOGLE_CLIENT_ID` أو `GOOGLE_SERVICES_JSON_BASE64` (إلا مع `ANDROID_PUSH_DISABLED=true`)؛
 - يبني الويب إنتاجًا ويتحقق أن `build-info.json` إنتاج ومن الـ commit نفسه؛
 - يوقّع AAB ويحفظه في Release باسم `android-latest` (مع الإصدار ورقم البناء في العنوان).
+- بعد نشر الـ AAB يبني أيضًا **APK موقّعًا** للتنزيل المباشر من `/download`، ويفحصه (`apksigner` و`aapt2` وSHA-256) ويرفقه مع مسودة بيان بنفس الـ Release. النشر العلني لهذا الملف يدوي وبموافقتك: `docs/ANDROID-DIRECT-DOWNLOAD-AR.md`.
 ثم تنزّله وترفعه **يدويًا** إلى Google Play Console ← Internal testing. الرفع الآلي غير مفعّل عمدًا.
 
 ### ج. iOS (Codemagic)

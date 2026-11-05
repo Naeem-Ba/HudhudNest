@@ -25,6 +25,7 @@ import { FacebookShareProvider } from './providers/facebook-share.provider';
 import { WhatsAppShareProvider } from './providers/whatsapp-share.provider';
 import { TelegramShareProvider } from './providers/telegram-share.provider';
 import { NativeShareProvider } from './providers/native-share.provider';
+import { numberLocaleFor } from '../i18n/supported-preferences';
 import { CopyLinkProvider } from './providers/copy-link.provider';
 
 export type OfferShareLanguage = 'ar' | 'en' | 'de';
@@ -151,7 +152,7 @@ export class OfferShareService {
 
   private formatDate(iso: string, language: OfferShareLanguage): string {
     try {
-      return new Intl.DateTimeFormat(language, { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(iso));
+      return new Intl.DateTimeFormat(numberLocaleFor(language), { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(iso));
     } catch {
       return iso.slice(0, 10);
     }

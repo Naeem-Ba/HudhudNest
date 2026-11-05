@@ -18,6 +18,16 @@
     <p>{{ 'PRICING.REASON_AGENCY_PLAN_REQUIRED' | translate }}</p>
   </div>
 
+  <div *ngIf="currentPaidTier()" class="state-card" role="status" data-testid="current-plan">
+    <span aria-hidden="true">✅</span>
+    <p>
+      {{ 'PRICING.CURRENT_PLAN' | translate: { plan: ('PRICING.' + currentPaidTier()!.toUpperCase() + '.NAME' | translate) } }}
+      <ng-container *ngIf="currentPlanExpiresAt()">
+        {{ 'PRICING.CURRENT_PLAN_UNTIL' | translate: { date: (currentPlanExpiresAt() | localDate: 'mediumDate') } }}
+      </ng-container>
+    </p>
+  </div>
+
   <app-loading-spinner *ngIf="loading()" [label]="'COMMON.LOADING' | translate" />
 
   <div *ngIf="!loading() && error()" class="state-card error-state" role="alert">
@@ -83,7 +93,7 @@
         class="btn plan-card__cta"
         [class.btn--gold]="selectedTier() === plan.tier"
         [class.btn--outline]="selectedTier() !== plan.tier"
-        [disabled]="selecting() === plan.tier || isBlockedForAgencyOwner(plan)"
+        [disabled]="selecting() === plan.tier || isBlockedForAgencyOwner(plan) || isBlockedByPaidPlan(plan)"
         (click)="onSelectPlan(plan); $event.stopPropagation()"
       >
         {{ plan.ctaKey | translate }}
@@ -91,6 +101,14 @@
       <p class="plan-card__note" *ngIf="pendingTier() === plan.tier" data-testid="plan-pending">
         <span class="plan-card__note-icon" aria-hidden="true">⏳</span>
         <span>{{ 'PRICING.PENDING_NOTE' | translate }}</span>
+      </p>
+      <p class="plan-card__note" *ngIf="currentPaidTier() === plan.tier" data-testid="plan-current">
+        <span class="plan-card__note-icon" aria-hidden="true">✓</span>
+        <span>{{ 'PRICING.CURRENT_BADGE' | translate }}</span>
+      </p>
+      <p class="plan-card__note" *ngIf="isBlockedByPaidPlan(plan)" data-testid="plan-free-blocked">
+        <span class="plan-card__note-icon" aria-hidden="true">!</span>
+        <span>{{ 'PRICING.PAID_ACTIVE_NO_FREE' | translate }}</span>
       </p>
       <p class="plan-card__note" *ngIf="isBlockedForAgencyOwner(plan)">
         <span class="plan-card__note-icon" aria-hidden="true">!</span>

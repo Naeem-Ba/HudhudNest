@@ -229,7 +229,7 @@ import { ToastService } from '../../../shared/services/toast.service';
     }
 
     .error {
-      color: var(--danger);
+      color: var(--danger-text);
     }
 
     .hint {
@@ -263,7 +263,7 @@ import { ToastService } from '../../../shared/services/toast.service';
     }
 
     .password-rules li.is-met {
-      color: var(--success, #16a34a);
+      color: var(--success-text);
     }
 
     a {

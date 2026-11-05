@@ -4,6 +4,7 @@
       <span class="eyebrow">🏠 {{ 'VALUATION.EYEBROW' | translate }}</span>
       <h1>{{ 'VALUATION.TITLE' | translate }}</h1>
       <p>{{ 'VALUATION.SUBTITLE' | translate }}</p>
+      <p><a routerLink="/price-estimate">{{ 'VALUATION.QUICK_RANGE_LINK' | translate }}</a></p>
     </header>
 
     <!-- ── النموذج ── -->
@@ -96,19 +97,19 @@
       <div class="price-card" *ngIf="r.fastPath.hasComparableListings">
         <div class="price-card__row">
           <span>{{ 'VALUATION.MIN_PRICE' | translate }}</span>
-          <strong>{{ r.fastPath.minPrice | number }}</strong>
+          <strong>{{ r.fastPath.minPrice | localNumber }}</strong>
         </div>
         <div class="price-card__row">
           <span>{{ 'VALUATION.MAX_PRICE' | translate }}</span>
-          <strong>{{ r.fastPath.maxPrice | number }}</strong>
+          <strong>{{ r.fastPath.maxPrice | localNumber }}</strong>
         </div>
         <div class="price-card__row price-card__row--highlight">
           <span>{{ 'VALUATION.AVERAGE_PRICE' | translate }}</span>
-          <strong>{{ r.fastPath.averagePrice | number }}</strong>
+          <strong>{{ r.fastPath.averagePrice | localNumber }}</strong>
         </div>
         <div class="price-card__row">
           <span>{{ 'VALUATION.MEDIAN_PRICE' | translate }}</span>
-          <strong>{{ r.fastPath.medianPrice | number }}</strong>
+          <strong>{{ r.fastPath.medianPrice | localNumber }}</strong>
         </div>
         <p class="price-card__source" *ngIf="r.fastPath.source">{{ r.fastPath.source }}</p>
         <p class="price-card__disclaimer" *ngIf="r.fastPath.disclaimer">{{ r.fastPath.disclaimer }}</p>
@@ -132,7 +133,7 @@
           <p>{{ 'VALUATION.OFFICE_PATH.INSUFFICIENT_COVERAGE' | translate }}</p>
         </div>
 
-        <p class="expiry-note">{{ 'VALUATION.OFFICE_PATH.EXPIRES_AT' | translate: { date: (r.expiresAt | date: 'short') } }}</p>
+        <p class="expiry-note">{{ 'VALUATION.OFFICE_PATH.EXPIRES_AT' | translate: { date: (r.expiresAt | localDate: 'short') } }}</p>
 
         <button type="button" class="valuation-refresh" (click)="checkStatus()" [disabled]="checkingStatus()">
           <span class="spinner" *ngIf="checkingStatus()"></span>
@@ -146,7 +147,7 @@
 
           <ng-container *ngIf="s.estimates.length; else noEstimates">
             <div class="estimate-row" *ngFor="let e of s.estimates">
-              <strong>{{ e.estimatedPrice | number }}</strong>
+              <strong>{{ e.estimatedPrice | localNumber }}</strong>
               <span *ngIf="e.notes">{{ e.notes }}</span>
             </div>
           </ng-container>

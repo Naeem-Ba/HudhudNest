@@ -57,7 +57,7 @@
   &__matched {
     margin: 0;
     font-size: .8rem;
-    color: var(--gray-400);
+    color: var(--text-muted);
   }
 
   &__actions {
@@ -85,7 +85,7 @@
 
   &--primary   { background: var(--primary); color: var(--on-primary); &:hover:not(:disabled) { background: var(--primary-dark); } }
   &--secondary { background: var(--gray-100); color: var(--gray-700); &:hover:not(:disabled) { background: var(--gray-200); } }
-  &--danger    { background: #ef4444; color: #fff; &:hover:not(:disabled) { background: var(--danger); } }
+  &--danger    { background: var(--danger-solid); color: #fff; &:hover:not(:disabled) { background: var(--danger); } }
 }
 
 .state-card {
@@ -101,7 +101,7 @@
 
   button {
     border: 0;
-    background: var(--danger);
+    background: var(--danger-solid);
     color: #fff;
     border-radius: 10px;
     padding: .6rem .9rem;
@@ -112,5 +112,92 @@
 .error-state {
   border: 1px solid rgba(220,38,38,.2);
   background: var(--danger-soft);
-  color: var(--danger);
+  color: var(--danger-text);
+}
+
+/* Growth engine P3: status chips and inline edit form. */
+.search-card__body {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+.search-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  margin: .25rem 0;
+}
+
+.chip {
+  display: inline-block;
+  padding: .1rem .6rem;
+  border-radius: 999px;
+  font-size: .8rem;
+  background: var(--gray-100);
+  color: var(--gray-700);
+}
+
+.chip--muted {
+  background: var(--gray-200);
+  color: var(--gray-500);
+}
+
+.search-edit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: .75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--gray-200);
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    min-width: 0;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font-size: .9rem;
+    color: var(--gray-700);
+  }
+
+  .field--wide {
+    grid-column: 1 / -1;
+  }
+
+  legend {
+    padding: 0;
+    margin-bottom: .25rem;
+  }
+
+  input[type='text'],
+  input[type='number'],
+  select {
+    width: 100%;
+    padding: .45rem .6rem;
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--gray-900);
+  }
+
+  .inline {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    margin-inline-end: 1rem;
+  }
+}
+
+.search-edit__note {
+  margin: 0;
+  font-size: .85rem;
+  color: var(--gray-500);
+}
+
+.search-edit__actions {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
 }

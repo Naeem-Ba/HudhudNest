@@ -36,7 +36,7 @@
       <div>
         <p class="ref">{{ 'PROVIDER_JOIN.REFERENCE' | translate }}: <strong dir="ltr">{{ app.referenceNumber }}</strong></p>
         <h2>{{ app.displayName }}</h2>
-        <p class="muted">{{ 'PROVIDER_JOIN.SUBMITTED_ON' | translate }} {{ app.createdAt | date:'medium' }}</p>
+        <p class="muted">{{ 'PROVIDER_JOIN.SUBMITTED_ON' | translate }} {{ app.createdAt | localDate:'medium' }}</p>
       </div>
       <span class="chip" [attr.data-status]="app.status">{{ ('PROVIDER_ONBOARDING.APP_STATUS.' + app.status) | translate }}</span>
     </div>
@@ -78,7 +78,7 @@
       <summary>{{ 'PROVIDER_JOIN.TIMELINE' | translate }}</summary>
       <ol>
         <li *ngFor="let event of timeline(); trackBy: trackById">
-          <span class="when">{{ event.createdAt | date:'medium' }}</span>
+          <span class="when">{{ event.createdAt | localDate:'medium' }}</span>
           <strong>{{ ('PROVIDER_ONBOARDING.EVENT.' + event.type) | translate }}</strong>
           <span class="note" *ngIf="event.note">{{ event.note }}</span>
         </li>
@@ -199,7 +199,7 @@
       <li *ngFor="let app of history(); trackBy: trackById">
         <span dir="ltr">{{ app.referenceNumber }}</span>
         <span class="chip" [attr.data-status]="app.status">{{ ('PROVIDER_ONBOARDING.APP_STATUS.' + app.status) | translate }}</span>
-        <span class="muted">{{ app.createdAt | date:'mediumDate' }}</span>
+        <span class="muted">{{ app.createdAt | localDate:'mediumDate' }}</span>
       </li>
     </ul>
   </section>

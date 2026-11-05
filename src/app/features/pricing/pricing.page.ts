@@ -21,7 +21,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { switchMap } from 'rxjs';
+import { map, switchMap } from 'rxjs';
 
 import { PlansApiService } from '../../core/api/plans-api.service';
 import { AgenciesApiService } from '../../core/api/agencies-api.service';
@@ -32,6 +32,7 @@ import { MetaService } from '../../core/services/meta.service';
 import { SubscriptionPlan } from '../../core/models/subscription-plan.model';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { ToastService } from '../../shared/services/toast.service';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 /**
  * F-22: /pricing?autoSelect=<tier> used to POST the plan for any signed-in visitor who merely
@@ -48,7 +49,7 @@ const PENDING_AUTO_SELECT_MAX_AGE_MS = 15 * 60 * 1000;
   selector: 'app-pricing',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslateModule, LoadingSpinnerComponent],
+  imports: [ LocalizedDatePipe,CommonModule, TranslateModule, LoadingSpinnerComponent],
   templateUrl: './pricing.page.html',
   styleUrls: ['./pricing.page.scss']
 })
@@ -104,6 +105,16 @@ export class PricingPage implements OnInit {
    */
   readonly pendingTier = signal<string | null>(null);
 
+  /**
+   * The plan that is IN FORCE right now, or null when the visitor has none that grants anything
+   * (never chose one, expired, cancelled, or just the free tier). Taken from the server's
+   * effective status, not from PlanTier alone: an expired plan keeps its tier but benefits nothing.
+   */
+  readonly currentPaidTier = signal<string | null>(null);
+
+  /** When the plan in force ends (ISO), or null for no fixed end. */
+  readonly currentPlanExpiresAt = signal<string | null>(null);
+
   ngOnInit(): void {
     this.applyMeta();
     this.load();
@@ -121,7 +132,14 @@ export class PricingPage implements OnInit {
   private trackPendingPlan(): void {
     this.profileService.profile$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(profile => this.pendingTier.set(profile?.PendingPlanTier ?? null));
+      .subscribe(profile => {
+        this.pendingTier.set(profile?.PendingPlanTier ?? null);
+
+        const tier = profile?.PlanTier ?? null;
+        const inForce = !!tier && tier !== 'free' && profile?.PlanStatus === 'Active';
+        this.currentPaidTier.set(inForce ? tier : null);
+        this.currentPlanExpiresAt.set(inForce ? profile?.PlanExpiresAt ?? null : null);
+      });
   }
 
   private loadAgencyOwnership(): void {
@@ -144,6 +162,15 @@ export class PricingPage implements OnInit {
 
   isBlockedForAgencyOwner(plan: SubscriptionPlan): boolean {
     return this.ownsAgency() && plan.tier === 'free';
+  }
+
+  /**
+   * The free card is disabled while a paid plan is in force: the server refuses it
+   * (PAID_PLAN_ACTIVE) because it would silently end what the visitor paid for. Only an
+   * administrator can cancel a paid plan, so the card explains that instead of failing on click.
+   */
+  isBlockedByPaidPlan(plan: SubscriptionPlan): boolean {
+    return plan.tier === 'free' && this.currentPaidTier() !== null;
   }
 
   load(): void {
@@ -261,14 +288,18 @@ export class PricingPage implements OnInit {
     // The CTA button is itself a selection control — clicking it must move the gold
     // highlight to this plan (and only this plan) before submitting it, so the visual
     // state and the plan actually sent to the backend can never disagree.
-    if (this.isBlockedForAgencyOwner(plan)) {
+    if (this.isBlockedForAgencyOwner(plan) || this.isBlockedByPaidPlan(plan)) {
       return;
     }
 
     this.selectedTier.set(plan.tier);
 
-    const destination = () =>
-      void this.router.navigate([plan.ctaRoute], { queryParams: plan.ctaQueryParams });
+    const destination = (requestId?: string | null) =>
+      void this.router.navigate([plan.ctaRoute], {
+        // A paid plan is a pending request: carry its id to the contact form so the message
+        // quotes the reference an administrator can match to the request.
+        queryParams: requestId ? { ...plan.ctaQueryParams, ref: requestId } : plan.ctaQueryParams
+      });
 
     if (!this.auth.getAccessToken()) {
       if (plan.ctaRoute === '/property-form') {
@@ -296,11 +327,11 @@ export class PricingPage implements OnInit {
         // Keep the shared profile$ (navbar, guard) in sync immediately rather than
         // waiting for their next independent load. A paid plan only becomes a pending
         // request here, so the refresh is what makes the "awaiting confirmation" note appear.
-        switchMap(() => this.profileService.refresh()),
+        switchMap(result => this.profileService.refresh().pipe(map(() => result))),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
-        next: () => {
+        next: result => {
           this.selecting.set(null);
           // Only the free plan is a finished action. A paid tier is merely recorded as a
           // pending request here; the visitor still has to write and send the contact
@@ -311,7 +342,7 @@ export class PricingPage implements OnInit {
           } else {
             this.toast.info(this.translate.instant('PRICING.MESSAGES.PLAN_NEXT_STEP'));
           }
-          destination();
+          destination(result?.requestId);
         },
         error: err => {
           this.selecting.set(null);
