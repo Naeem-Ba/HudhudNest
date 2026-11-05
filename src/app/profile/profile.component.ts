@@ -1,5 +1,8 @@
 // Profile page: handles user data, password changes, data export and account deletion.
 // ✅ Avatar upload is now live — POST /users/me/avatar (UsersController.UploadAvatar).
+import { getPasswordPolicyViolations } from '../core/auth/password-policy';
+import { translatePasswordViolations } from '../features/auth/password-errors';
+import { resolveAuthError } from '../features/auth/auth-error';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
@@ -254,8 +257,10 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    if (newPassword.length < 8) {
-      this.toast.error(this.translate.instant('AUTH.ERRORS.PASSWORD_MIN'));
+    // The server's rules, so the person hears the real reason (not only "at least 8") before the round trip.
+    const violations = getPasswordPolicyViolations(newPassword);
+    if (violations.length > 0) {
+      this.toast.error(translatePasswordViolations(this.translate, violations)[0] ?? this.translate.instant('AUTH.ERRORS.PASSWORD_POLICY_UNMET'));
       return;
     }
 
@@ -275,9 +280,18 @@ export class ProfileComponent implements OnInit {
       error: error => {
         this.isSaving.set(false);
         // 429: the hourly limit on password changes -- say so instead of "could not change".
-        this.toast.error(this.translate.instant(
-          isRateLimited(error) ? 'PROFILE.MESSAGES.PASS_RATE_LIMITED' : 'PROFILE.MESSAGES.PASS_ERROR'
-        ));
+        if (isRateLimited(error)) {
+          this.toast.error(this.translate.instant('PROFILE.MESSAGES.PASS_RATE_LIMITED'));
+          return;
+        }
+
+        // The server's reason when it sent one (a password built from the person's own details, a breached
+        // one), a connection / server sentence when the request itself failed, otherwise the generic text.
+        const resolved = resolveAuthError(this.translate, error, {
+          passwordField: 'newPassword',
+          fallbackKey: 'PROFILE.MESSAGES.PASS_ERROR'
+        });
+        this.toast.error(resolved.fields[0]?.message ?? resolved.message ?? this.translate.instant('PROFILE.MESSAGES.PASS_ERROR'));
       }
     });
   }

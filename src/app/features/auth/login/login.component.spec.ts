@@ -1,3 +1,4 @@
+import { FormControl } from '@angular/forms';
 // =====================================================================
 // ✅ Unit Tests – login.component.spec.ts
 // اختبار مباشر (بدون TestBed/DOM) عبر تمرير Spy objects يدوياً للمُنشئ —
@@ -12,11 +13,11 @@
 // أُزيل من هذا المكوّن — كان يستدعي /auth/phone/send-otp و/auth/phone/verify،
 // وهما 410 Gone الآن في الباك (راجع PhoneAuthController.cs)؛ الصفحة البديلة
 // /auth/phone-register هي المسار الحي الوحيد اليوم.
-import { of, throwError } from 'rxjs';
+import { NEVER, of, throwError } from 'rxjs';
 import { LoginComponent } from './login.component';
 
 function fakeForm(invalid = false): any {
-  return { control: { markAllAsTouched: jasmine.createSpy('markAllAsTouched') }, invalid };
+  return { control: { markAllAsTouched: jasmine.createSpy('markAllAsTouched') }, controls: {}, invalid };
 }
 
 function httpError(status: number, body: Record<string, unknown> = {}): any {
@@ -27,7 +28,7 @@ function httpError(status: number, body: Record<string, unknown> = {}): any {
 // `password: '...'` مباشرة، لأن tools/frontend-audit-guard.mjs يرصد شكل
 // النص password[:=]'8+ محارف' بغضّ النظر عن محتواه الفعلي. تبقى 8 محارف
 // فأكثر لأن onVerifyPhoneOtp في login.component.ts يرفض ما دون ذلك.
-const FAKE_TEST_CREDENTIAL = 'Passw0rd!';
+const FAKE_TEST_CREDENTIAL = 'Zq7!rLm2Xw';
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
@@ -40,6 +41,7 @@ describe('LoginComponent', () => {
   let route: any;
   let translate: jasmine.SpyObj<any>;
   let toast: jasmine.SpyObj<any>;
+  let errorFocus: jasmine.SpyObj<any>;
 
   beforeEach(() => {
     authApi = jasmine.createSpyObj('AuthApiService', ['login', 'register']);
@@ -57,6 +59,7 @@ describe('LoginComponent', () => {
     translate = jasmine.createSpyObj('TranslateService', ['instant']);
     translate.instant.and.callFake((key: string) => key);
     toast = jasmine.createSpyObj('ToastService', ['success', 'error']);
+    errorFocus = jasmine.createSpyObj('AuthErrorFocusService', ['request']);
 
     component = new LoginComponent(
       authApi,
@@ -67,7 +70,8 @@ describe('LoginComponent', () => {
       router,
       route,
       translate,
-      toast
+      toast,
+      errorFocus
     );
   });
 
@@ -142,7 +146,62 @@ describe('LoginComponent', () => {
       component.onLogin(fakeForm(true));
 
       expect(authApi.login).not.toHaveBeenCalled();
-      expect(component.message).toBe('AUTH.ERRORS.FIX_FIELDS');
+      // The reasons are shown next to the fields (no generic banner), and the page goes to the first one.
+      expect(component.message).toBe('');
+      expect(errorFocus.request).toHaveBeenCalled();
+    });
+
+    it('✅ إرسال ثانٍ أثناء تحميل الأول لا يُرسل طلباً ثانياً', () => {
+      authApi.login.and.returnValue(NEVER);
+      component.loginData = { Email: 'user@example.com', Password: FAKE_TEST_CREDENTIAL };
+
+      component.onLogin(fakeForm());
+      component.onLogin(fakeForm());
+
+      expect(authApi.login).toHaveBeenCalledTimes(1);
+    });
+
+    it('✅ انقطاع المهلة يعطي رسالة المهلة لا رسالة كلمة سر خاطئة', () => {
+      authApi.login.and.returnValue(throwError(() => ({ name: 'TimeoutError' })));
+      component.loginData = { Email: 'user@example.com', Password: FAKE_TEST_CREDENTIAL };
+
+      component.onLogin(fakeForm());
+
+      expect(component.message).toBe('AUTH.ERRORS.TIMEOUT');
+      expect(component.credentialsFailed).toBeFalse();
+    });
+
+    it('✅ 503 من الوسيط أثناء استيقاظ الخادم ليس "كلمة سر خاطئة"', () => {
+      authApi.login.and.returnValue(throwError(() => httpError(503, {})));
+      component.loginData = { Email: 'user@example.com', Password: FAKE_TEST_CREDENTIAL };
+
+      component.onLogin(fakeForm());
+
+      expect(component.message).toBe('AUTH.ERRORS.SERVER_ERROR');
+    });
+
+    it('✅ كلمة سر خاطئة تعرض الخطوة التالية، وتعديل الحقل يزيل الرسالة ولا يمسح ما كُتب', () => {
+      authApi.login.and.returnValue(throwError(() => httpError(401, {})));
+      component.loginData = { Email: 'user@example.com', Password: 'wrong' };
+
+      component.onLogin(fakeForm());
+      expect(component.credentialsFailed).toBeTrue();
+
+      component.clearFormMessage();
+
+      expect(component.message).toBe('');
+      expect(component.credentialsFailed).toBeFalse();
+      expect(component.loginData.Email).toBe('user@example.com');
+      expect(component.loginData.Password).toBe('wrong');
+    });
+
+    it('✅ لا يبقى كلمة سر مطلوبة بطول 8: حساب قديم بكلمة أقصر يصل للخادم', () => {
+      authApi.login.and.returnValue(NEVER);
+      component.loginData = { Email: 'user@example.com', Password: 'short' };
+
+      component.onLogin(fakeForm());
+
+      expect(authApi.login).toHaveBeenCalled();
     });
   });
 
@@ -171,6 +230,64 @@ describe('LoginComponent', () => {
       // translate.instant يُعيد المفتاح نفسه في هذا الاختبار — يكفي للتأكد من أن
       // المسار مرّ عبر ترجمة الكود، لا عبر نص الخادم الخام أو الرسالة العامة.
       expect(component.message).toBe('AUTH.ERRORS.PASSWORD_BREACHED');
+    });
+  });
+
+  describe('onRegister — الأسباب على الحقول', () => {
+    const controls = () => ({
+      firstName: new FormControl('Ali'),
+      lastName: new FormControl('Hasan'),
+      emailReg: new FormControl('ali@example.com'),
+      passReg: new FormControl(FAKE_TEST_CREDENTIAL)
+    });
+    const formWith = (c: ReturnType<typeof controls>): any => ({ ...fakeForm(), controls: c });
+    const fill = () => {
+      component.registerData = { FirstName: 'Ali', LastName: 'Hasan', Email: 'ali@example.com', Password: FAKE_TEST_CREDENTIAL };
+      component.privacyConsentAccepted = true;
+    };
+
+    it('✅ البريد المسجّل يظهر تحت حقل البريد لا في شريط عام، ويُحفظ ما كُتب', () => {
+      authApi.register.and.returnValue(throwError(() => httpError(409, { code: 'EMAIL_ALREADY_REGISTERED' })));
+      const c = controls();
+      fill();
+
+      component.onRegister(formWith(c));
+
+      expect(c.emailReg.errors).toEqual({ server: 'AUTH.ERRORS.EMAIL_ALREADY_EXISTS' });
+      expect(component.message).toBe('');
+      expect(component.registerData.Password).toBe(FAKE_TEST_CREDENTIAL);
+      expect(errorFocus.request).toHaveBeenCalled();
+    });
+
+    it('✅ كلمة مرور فيها اسم المستخدم تُرفض قبل أي طلب وتظهر تحت حقل كلمة المرور', () => {
+      const c = controls();
+      component.registerData = { FirstName: 'Ali', LastName: 'Hasan', Email: 'ali@example.com', Password: 'Hasan#2024xQ' };
+      component.privacyConsentAccepted = true;
+
+      component.onRegister(formWith(c));
+
+      expect(authApi.register).not.toHaveBeenCalled();
+      expect(c.passReg.errors).toEqual({ server: 'AUTH.ERRORS.PASSWORD_POLICY_UNMET' });
+    });
+
+    it('✅ بدون الموافقة لا يُرسل شيء ويظهر سبب الموافقة', () => {
+      fill();
+      component.privacyConsentAccepted = false;
+
+      component.onRegister(fakeForm());
+
+      expect(authApi.register).not.toHaveBeenCalled();
+      expect(component.consentError).toBe('AUTH.ERRORS.CONSENT_REQUIRED');
+    });
+
+    it('✅ إرسال ثانٍ أثناء تحميل الأول لا يُرسل طلباً ثانياً', () => {
+      authApi.register.and.returnValue(NEVER);
+      fill();
+
+      component.onRegister(fakeForm());
+      component.onRegister(fakeForm());
+
+      expect(authApi.register).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -275,10 +392,13 @@ describe('LoginComponent', () => {
       component.phoneLoginNumber = '12345'; // لا يمكن تحويله إلى E.164
       component.phoneLoginPassword = FAKE_TEST_CREDENTIAL;
 
-      component.onPhoneLogin(fakeForm());
+      const numberControl = new FormControl('12345');
+      component.onPhoneLogin({ ...fakeForm(), controls: { phoneLoginNumber: numberControl } } as any);
 
       expect(phoneAuthApi.login).not.toHaveBeenCalled();
-      expect(component.message).toBe('AUTH.ERRORS.PHONE_INVALID');
+      // The reason sits on the number field itself (not in a banner), and the page goes to it.
+      expect(numberControl.errors).toEqual({ server: 'AUTH.ERRORS.PHONE_INVALID' });
+      expect(errorFocus.request).toHaveBeenCalled();
     });
   });
 });

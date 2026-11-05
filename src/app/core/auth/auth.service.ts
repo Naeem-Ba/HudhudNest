@@ -70,7 +70,7 @@ export class AuthService {
    * 'expired' يغطي كل حالة انتهاء أخرى (بما فيها تعارض تجديد متزامن نادر).
    * AppComponent هو المشترك الوحيد حالياً — يعرض رسالة toast مترجَمة مطابقة.
    */
-  private readonly sessionExpiredEvent = new Subject<'expired' | 'revoked'>();
+  private readonly sessionExpiredEvent = new Subject<'expired' | 'revoked' | 'superseded'>();
   readonly sessionExpired$ = this.sessionExpiredEvent.asObservable();
 
   readonly authStatus$: Observable<AuthStatus> = combineLatest([
@@ -328,7 +328,7 @@ export class AuthService {
    * وليس لكل 401 عابر. راجع currentRouteRequiresAuth في refresh-auth.interceptor.ts،
    * وهو المستدعي الوحيد لهذه الدالة.
    */
-  notifySessionExpired(reason: 'expired' | 'revoked' = 'expired'): void {
+  notifySessionExpired(reason: 'expired' | 'revoked' | 'superseded' = 'expired'): void {
     this.refreshingSession.next(false);
     this.sessionExpiredEvent.next(reason);
   }

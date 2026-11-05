@@ -90,10 +90,24 @@
         class="auth-alert"
         [ngClass]="success ? 'auth-alert--success' : 'auth-alert--error'"
         role="alert"
+        data-auth-form-error
       >
         <span aria-hidden="true">{{ success ? '✅' : '⚠️' }}</span>
         {{ message }}
       </div>
+
+      <!-- After a rejected sign-in: what to do next. The sentence above is the same whether or not the
+           account exists; these links are the next step for either case. -->
+      <p *ngIf="credentialsFailed && !success" class="auth-alert__help">
+        {{ (authMode === 'phone' ? 'AUTH.ERRORS.PHONE_LOGIN_HELP' : 'AUTH.ERRORS.LOGIN_HELP') | translate }}
+        <a [routerLink]="authMode === 'phone' ? '/auth/phone-password-reset' : '/auth/forgot-password'" class="auth-switch__btn">
+          {{ 'AUTH.FORGOT_PASSWORD' | translate }}
+        </a>
+        ·
+        <button type="button" class="auth-switch__btn" (click)="toggleRegister()">
+          {{ 'AUTH.CREATE_ACCOUNT' | translate }}
+        </button>
+      </p>
 
       <!-- عدّاد المحاولات المتبقية قبل قفل الحساب — يرسله الخادم مع رد 401 -->
       <div
@@ -144,15 +158,21 @@
             id="login-email"
             type="email"
             [(ngModel)]="loginData.Email"
+            (ngModelChange)="clearFormMessage()"
             name="email"
             #loginEmail="ngModel"
             required
             email
             autocomplete="email"
+            inputmode="email"
+            autocapitalize="none"
+            [attr.aria-invalid]="loginEmail.invalid && (loginEmail.touched || submitted) ? true : null"
+            [attr.aria-describedby]="loginEmail.invalid && (loginEmail.touched || submitted) ? 'login-email-error' : null"
             [placeholder]="'AUTH.EMAIL_PLACEHOLDER' | translate"
           />
           <div
             class="field-error"
+            id="login-email-error"
             *ngIf="loginEmail.invalid && (loginEmail.touched || submitted)"
           >
             ⚠️
@@ -177,11 +197,13 @@
               id="login-password"
               [type]="showPass ? 'text' : 'password'"
               [(ngModel)]="loginData.Password"
+              (ngModelChange)="clearFormMessage()"
               name="password"
               #loginPassword="ngModel"
               required
-              minlength="8"
               autocomplete="current-password"
+              [attr.aria-invalid]="loginPassword.invalid && (loginPassword.touched || submitted) ? true : null"
+              [attr.aria-describedby]="loginPassword.invalid && (loginPassword.touched || submitted) ? 'login-password-error' : null"
               placeholder="••••••••"
             />
             <button
@@ -196,21 +218,17 @@
 
           <div
             class="field-error"
+            id="login-password-error"
             *ngIf="loginPassword.invalid && (loginPassword.touched || submitted)"
           >
-            ⚠️
-            {{
-              loginPassword.errors?.['required']
-                ? ('AUTH.ERRORS.PASSWORD_REQUIRED' | translate)
-                : ('AUTH.ERRORS.PASSWORD_MIN' | translate)
-            }}
+            ⚠️ {{ 'AUTH.ERRORS.PASSWORD_REQUIRED' | translate }}
           </div>
         </div>
 
         <button
           type="submit"
           class="auth-submit"
-          [disabled]="loginForm.invalid || loading || isLockedOut"
+          [disabled]="loading || isLockedOut"
         >
           <span *ngIf="loading">⏳ {{ 'AUTH.LOADING' | translate }}</span>
           <span *ngIf="!loading">{{ 'AUTH.LOGIN_BUTTON' | translate }}</span>
@@ -238,18 +256,26 @@
             id="phone-login-number"
             type="tel"
             [(ngModel)]="phoneLoginNumber"
+            (ngModelChange)="clearFormMessage()"
             name="phoneLoginNumber"
             #phoneLoginNumberField="ngModel"
             required
             autocomplete="tel"
             inputmode="tel"
+            [attr.aria-invalid]="phoneLoginNumberField.invalid && (phoneLoginNumberField.touched || submitted) ? true : null"
+            [attr.aria-describedby]="phoneLoginNumberField.invalid && (phoneLoginNumberField.touched || submitted) ? 'phone-login-number-error' : null"
             [placeholder]="'AUTH.PHONE_PLACEHOLDER' | translate"
           />
           <div
             class="field-error"
+            id="phone-login-number-error"
             *ngIf="phoneLoginNumberField.invalid && (phoneLoginNumberField.touched || submitted)"
           >
-            ⚠️ {{ 'AUTH.ERRORS.PHONE_REQUIRED' | translate }}
+            ⚠️
+            {{
+              phoneLoginNumberField.errors?.['server'] ??
+                ('AUTH.ERRORS.PHONE_REQUIRED' | translate)
+            }}
           </div>
         </div>
 
@@ -261,10 +287,13 @@
               id="phone-login-password"
               [type]="showPhoneLoginPass ? 'text' : 'password'"
               [(ngModel)]="phoneLoginPassword"
+              (ngModelChange)="clearFormMessage()"
               name="phoneLoginPassword"
               #phoneLoginPasswordField="ngModel"
               required
               autocomplete="current-password"
+              [attr.aria-invalid]="phoneLoginPasswordField.invalid && (phoneLoginPasswordField.touched || submitted) ? true : null"
+              [attr.aria-describedby]="phoneLoginPasswordField.invalid && (phoneLoginPasswordField.touched || submitted) ? 'phone-login-password-error' : null"
               placeholder="••••••••"
             />
             <button
@@ -279,13 +308,14 @@
 
           <div
             class="field-error"
+            id="phone-login-password-error"
             *ngIf="phoneLoginPasswordField.invalid && (phoneLoginPasswordField.touched || submitted)"
           >
             ⚠️ {{ 'AUTH.ERRORS.PASSWORD_REQUIRED' | translate }}
           </div>
         </div>
 
-        <button type="submit" class="auth-submit" [disabled]="phoneLoginForm.invalid || loading">
+        <button type="submit" class="auth-submit" [disabled]="loading">
           <span *ngIf="loading">⏳ {{ 'AUTH.LOADING' | translate }}</span>
           <span *ngIf="!loading">{{ 'AUTH.LOGIN_BUTTON' | translate }}</span>
         </button>
@@ -338,6 +368,7 @@
             id="register-first-name"
             type="text"
             [(ngModel)]="registerData.FirstName"
+            (ngModelChange)="clearFormMessage()"
             name="firstName"
             #registerFirstName="ngModel"
             required
@@ -351,9 +382,10 @@
           >
             ⚠️
             {{
-              registerFirstName.errors?.['required']
-                ? ('AUTH.ERRORS.FIRST_NAME_REQUIRED' | translate)
-                : ('AUTH.ERRORS.FIRST_NAME_MIN' | translate)
+              registerFirstName.errors?.['server'] ??
+                (registerFirstName.errors?.['required']
+                  ? ('AUTH.ERRORS.FIRST_NAME_REQUIRED' | translate)
+                  : ('AUTH.ERRORS.FIRST_NAME_MIN' | translate))
             }}
           </div>
         </div>
@@ -364,6 +396,7 @@
             id="register-last-name"
             type="text"
             [(ngModel)]="registerData.LastName"
+            (ngModelChange)="clearFormMessage()"
             name="lastName"
             #registerLastName="ngModel"
             required
@@ -377,9 +410,10 @@
           >
             ⚠️
             {{
-              registerLastName.errors?.['required']
-                ? ('AUTH.ERRORS.LAST_NAME_REQUIRED' | translate)
-                : ('AUTH.ERRORS.LAST_NAME_MIN' | translate)
+              registerLastName.errors?.['server'] ??
+                (registerLastName.errors?.['required']
+                  ? ('AUTH.ERRORS.LAST_NAME_REQUIRED' | translate)
+                  : ('AUTH.ERRORS.LAST_NAME_MIN' | translate))
             }}
           </div>
         </div>
@@ -390,6 +424,7 @@
             id="register-email"
             type="email"
             [(ngModel)]="registerData.Email"
+            (ngModelChange)="clearFormMessage()"
             name="emailReg"
             #registerEmail="ngModel"
             required
@@ -403,9 +438,10 @@
           >
             ⚠️
             {{
-              registerEmail.errors?.['required']
-                ? ('AUTH.ERRORS.EMAIL_REQUIRED' | translate)
-                : ('AUTH.ERRORS.INVALID_EMAIL' | translate)
+              registerEmail.errors?.['server'] ??
+                (registerEmail.errors?.['required']
+                  ? ('AUTH.ERRORS.EMAIL_REQUIRED' | translate)
+                  : ('AUTH.ERRORS.INVALID_EMAIL' | translate))
             }}
           </div>
         </div>
@@ -418,11 +454,13 @@
               id="register-password"
               [type]="showPassReg ? 'text' : 'password'"
               [(ngModel)]="registerData.Password"
+              (ngModelChange)="clearFormMessage()"
               name="passReg"
               #registerPassword="ngModel"
               required
-              minlength="8"
               autocomplete="new-password"
+              aria-describedby="register-password-rules"
+              [attr.aria-invalid]="registerPassword.invalid && (registerPassword.touched || submitted) ? true : null"
               placeholder="••••••••"
               (focus)="onRegisterPasswordFocus()"
               (blur)="onRegisterPasswordBlur()"
@@ -437,31 +475,34 @@
             </button>
           </div>
 
-          <!-- ✨ جديد: عرض تعليمات قوة كلمة المرور -->
-          <app-password-strength-indicator
-            *ngIf="showPasswordStrengthReg"
-            [password]="registerData.Password"
-          ></app-password-strength-indicator>
-
           <div
             class="field-error"
             *ngIf="registerPassword.invalid && (registerPassword.touched || submitted)"
           >
             ⚠️
             {{
-              registerPassword.errors?.['required']
-                ? ('AUTH.ERRORS.PASSWORD_REQUIRED' | translate)
-                : ('AUTH.ERRORS.PASSWORD_MIN' | translate)
+              registerPassword.errors?.['server'] ??
+                ('AUTH.ERRORS.PASSWORD_REQUIRED' | translate)
             }}
           </div>
+
+          <!-- The server's rules, ticked off as the person types -->
+          <app-password-rules
+            *ngIf="showPasswordStrengthReg || submitted"
+            listId="register-password-rules"
+            [password]="registerData.Password"
+            [context]="{ firstName: registerData.FirstName, lastName: registerData.LastName, email: registerData.Email }"
+            [personal]="true"
+          ></app-password-rules>
         </div>
 
         <app-consent-checkbox
           [checked]="privacyConsentAccepted"
-          (checkedChange)="privacyConsentAccepted = $event">
+          [error]="consentError"
+          (checkedChange)="privacyConsentAccepted = $event; consentError = ''">
         </app-consent-checkbox>
 
-        <button type="submit" class="auth-submit" [disabled]="regForm.invalid || loading || !privacyConsentAccepted">
+        <button type="submit" class="auth-submit" [disabled]="loading">
           <span *ngIf="loading">⏳ {{ 'AUTH.LOADING' | translate }}</span>
           <span *ngIf="!loading">{{ 'AUTH.REGISTER_BUTTON' | translate }}</span>
         </button>

@@ -140,3 +140,95 @@ describe('RefreshAuthInterceptor — logout must carry the Bearer token', () => 
     req.flush({});
   });
 });
+
+/** A well-formed, unexpired token: AuthService drops anything it cannot decode as soon as it is created. */
+function liveAccessToken(): string {
+  const encode = (value: object) => btoa(JSON.stringify(value)).replace(/=+$/, '');
+  return `${encode({ alg: 'none' })}.${encode({ sub: 'u1', exp: Math.floor(Date.now() / 1000) + 3600 })}.sig`;
+}
+
+describe('RefreshAuthInterceptor — a connection problem is not a sign-out', () => {
+  const LIVE = liveAccessToken();
+  let http: HttpClient;
+  let httpMock: HttpTestingController;
+  let tokenStorage: TokenStorageService;
+  let csrf: CsrfTokenService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        provideHttpClient(withInterceptors([RefreshAuthInterceptor])),
+        provideHttpClientTesting()
+      ]
+    });
+
+    http = TestBed.inject(HttpClient);
+    httpMock = TestBed.inject(HttpTestingController);
+    tokenStorage = TestBed.inject(TokenStorageService);
+    csrf = TestBed.inject(CsrfTokenService);
+    (csrf as unknown as { token: string | null }).token = 'cached';
+    tokenStorage.setAccessToken(LIVE);
+  });
+
+  afterEach(() => httpMock.verify());
+
+  function failFirstRequestWith401(): void {
+    http.get(`${environment.apiUrl}/listings/mine`).subscribe({ next: () => {}, error: () => {} });
+    httpMock.expectOne(`${environment.apiUrl}/listings/mine`)
+      .flush({ message: 'unauthorized' }, { status: 401, statusText: 'Unauthorized' });
+  }
+
+  it('keeps the session when the refresh never reaches the server (status 0)', () => {
+    failFirstRequestWith401();
+
+    httpMock.expectOne(`${environment.apiUrl}/auth/refresh`)
+      .error(new ProgressEvent('error'), { status: 0, statusText: 'Unknown Error' });
+
+    expect(tokenStorage.getAccessToken()).toBe(LIVE);
+    expect(csrf.getToken()).toBe('cached');
+  });
+
+  it('keeps the session when the server is down or waking up (503)', () => {
+    failFirstRequestWith401();
+
+    httpMock.expectOne(`${environment.apiUrl}/auth/refresh`)
+      .flush({ message: 'unavailable' }, { status: 503, statusText: 'Service Unavailable' });
+
+    expect(tokenStorage.getAccessToken()).toBe(LIVE);
+  });
+
+  it('keeps the session on a rate limit (429)', () => {
+    failFirstRequestWith401();
+
+    httpMock.expectOne(`${environment.apiUrl}/auth/refresh`)
+      .flush({ message: 'slow down' }, { status: 429, statusText: 'Too Many Requests' });
+
+    expect(tokenStorage.getAccessToken()).toBe(LIVE);
+  });
+
+  it('ends the session only when the server says the refresh token is no good (401)', () => {
+    failFirstRequestWith401();
+
+    httpMock.expectOne(`${environment.apiUrl}/auth/refresh`)
+      .flush({ message: 'no', errorCode: 'REFRESH_TOKEN_REVOKED' }, { status: 401, statusText: 'Unauthorized' });
+
+    expect(tokenStorage.getAccessToken()).toBeNull();
+  });
+
+  it('a stale anti-forgery token (403 CSRF_VALIDATION_FAILED) is replaced and the refresh retried once', () => {
+    failFirstRequestWith401();
+
+    httpMock.expectOne(`${environment.apiUrl}/auth/refresh`)
+      .flush({ code: 'CSRF_VALIDATION_FAILED' }, { status: 403, statusText: 'Forbidden' });
+
+    httpMock.expectOne(`${environment.apiUrl}/security/csrf-token`).flush({ csrfToken: 'renewed' });
+
+    const retry = httpMock.expectOne(`${environment.apiUrl}/auth/refresh`);
+    expect(retry.request.headers.get('X-XSRF-TOKEN')).toBe('renewed');
+    retry.flush({ accessToken: 'new-access-token', refreshToken: '', expiresIn: 900 });
+
+    httpMock.expectOne(`${environment.apiUrl}/listings/mine`).flush({ items: [] });
+    expect(tokenStorage.getAccessToken()).toBe('new-access-token');
+  });
+});

@@ -295,7 +295,17 @@
       "PASSWORD_COMMON_WORD": "This password is based on a commonly used word. Adding digits or symbols to it does not make it harder to guess.",
       "PASSWORD_LONG_RUN": "Password contains more than four sequential or repeated characters.",
       "PASSWORD_BREACHED": "This password has appeared in known data breaches. Please choose a different one.",
-      "PASSWORD_POLICY_UNMET": "This password does not meet the requirements listed below."
+      "PASSWORD_POLICY_UNMET": "This password does not meet all the requirements in the checklist.",
+      "CONSENT_REQUIRED": "To create an account, accept the Privacy Policy and Terms of Use.",
+      "EMAIL_TOO_LONG": "The email address is too long (up to 254 characters).",
+      "NAME_TOO_LONG": "The name is too long (up to 100 characters).",
+      "GENERIC": "Something went wrong. Please try again.",
+      "TIMEOUT": "The server took too long to answer. Check your connection and try again.",
+      "PASSWORD_PERSONAL_INFO": "The password must not contain your name, email address or phone number. Choose one that is not based on your personal details.",
+      "SESSION_SUPERSEDED": "This device was signed out because the account was signed in on more devices than allowed. Please sign in again.",
+      "LOGIN_HELP": "Check the spelling (upper and lower case matter), reset your password, or create an account if you are new.",
+      "PHONE_LOGIN_HELP": "Check the number (with country code) and the password, reset your password, or create an account if you are new.",
+      "OTP_FORMAT": "The code has 6 digits."
     },
     "FIRST_NAME_PLACEHOLDER": "Enter first name",
     "LAST_NAME_PLACEHOLDER": "Enter last name",
@@ -391,8 +401,11 @@
       "PASSWORD_NO_DIGIT": "One digit (0-9)",
       "PASSWORD_NO_SPECIAL": "One symbol (! @ # $ %)",
       "PASSWORD_COMMON_WORD": "Not a common word such as «password» or «qwerty»",
-      "PASSWORD_LONG_RUN": "No more than four sequential or repeated characters"
-    }
+      "PASSWORD_LONG_RUN": "No more than four sequential or repeated characters",
+      "PASSWORD_CONTAINS_PERSONAL_INFO": "Not your name, email or phone number"
+    },
+    "PASSWORD_RULE_MET": "met",
+    "PASSWORD_RULE_UNMET": "not met yet"
   },
   "ERRORS": {
     "EMAIL_REQUIRED": "Email is required.",
