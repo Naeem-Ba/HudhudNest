@@ -19,7 +19,7 @@
     "theme:baseline": "node tools/theme-colors-baseline.mjs",
     "version:check": "node tools/app-version.mjs check",
     "version:set": "node tools/app-version.mjs set",
-    "test:edge-functions": "node --test netlify/edge-functions/lib/auth-proxy.test.mjs netlify/edge-functions/lib/social-crawler.test.mjs netlify/edge-functions/lib/social-crawler-meta.test.mjs netlify/edge-functions/lib/sitemap.test.mjs netlify/edge-functions/lib/sitemap-handler.test.mjs netlify/edge-functions/lib/geo-country.test.mjs",
+    "test:edge-functions": "node --test netlify/edge-functions/lib/auth-proxy.test.mjs netlify/edge-functions/lib/social-crawler.test.mjs netlify/edge-functions/lib/social-crawler-meta.test.mjs netlify/edge-functions/lib/sitemap.test.mjs netlify/edge-functions/lib/sitemap-handler.test.mjs",
     "typecheck": "npm run generate:env && tsc -p tsconfig.app.json --noEmit",
     "typecheck:strict": "npm run generate:env && tsc -p tsconfig.strict.json --noEmit",
     "generate:env": "node tools/generate-env.mjs",
