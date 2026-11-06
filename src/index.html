@@ -28,12 +28,15 @@
   <meta name="theme-color" content="#0F2742">
   <script>
     // Theme before first paint (no flash). Same rule as ThemeService: an explicit choice stored under
-    // hudhudnest-theme wins; otherwise follow the OS. ThemeService takes over once Angular boots.
+    // hudhudnest-theme wins ('system' = follow the OS); otherwise light, the default.
+    // ThemeService takes over once Angular boots.
     (function () {
       var t = null;
       try { t = localStorage.getItem('hudhudnest-theme') || localStorage.getItem('aqar-tech-theme'); } catch (e) {}
-      if (t !== 'dark' && t !== 'light') {
+      if (t === 'system') {
         t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      } else if (t !== 'dark') {
+        t = 'light';
       }
       var root = document.documentElement;
       root.setAttribute('data-theme', t);
