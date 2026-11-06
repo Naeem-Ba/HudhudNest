@@ -50,10 +50,6 @@ describe('LandingPageComponent — marketing offer section', () => {
     return fixture;
   }
 
-  // Arabic is the default display language; these cases read the English copy, as a visitor who chose English.
-  beforeEach(() => localStorage.setItem('lang', 'en'));
-  afterEach(() => localStorage.removeItem('lang'));
-
   beforeEach(() => {
     offersApi = jasmine.createSpyObj('OffersApiService', ['getActiveOfferState']);
     events = jasmine.createSpyObj('MarketingEventsApiService', ['track']);

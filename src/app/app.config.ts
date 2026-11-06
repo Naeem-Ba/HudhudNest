@@ -16,8 +16,9 @@ import { normalizeAuthTokenResponse } from './core/models/auth.model';
 import { resolveAuthApiBaseUrl } from './core/auth/auth-api-base-url';
 import { readSessionHint, writeSessionHint } from './core/auth/session-hint';
 import { CsrfTokenService } from './core/services/csrf-token.service';
+import { GeoCountryService } from './core/services/geo-country.service';
 import { LanguageService } from './core/services/language.service';
-import { toSupportedLanguage } from './core/i18n/first-visit-language';
+import { resolveFirstVisitLanguage, toSupportedLanguage } from './core/i18n/first-visit-language';
 import { browserStaleChunkReloadDeps, reloadForStaleChunk } from './core/services/stale-chunk-reload';
 import { TokenStorageService } from './core/services/token-storage.service';
 import { environment } from '../environments/environment';
@@ -43,12 +44,18 @@ export function httpLoaderFactory(http: HttpClient): TranslateHttpLoader {
 }
 
 /**
- * The language a visitor who never picked one sees. Arabic is the default for everyone: LanguageService
- * already applies it (or the visitor's own stored choice) in its constructor, so the only thing left here
- * is a shared link. No country or device detection runs (product decision 2026-11-06: Arabic is the
- * default display language); the visitor switches with the language selector, and that choice is kept.
+ * First-time visitors only (nothing stored by the language selector or an earlier visit): pick the
+ * starting language from the visitor's country, falling back to the device language. See
+ * first-visit-language.ts for the exact rules and geo-country.service.ts for where the country comes from.
+ *
+ * Runs inside APP_INITIALIZER so the language is settled before anything renders (no visible flip from one
+ * language/direction to another). It cannot delay or break startup: the lookup is capped at
+ * GEO_COUNTRY_TIMEOUT_MS and every failure resolves to "country unknown".
  */
-export function resolveInitialLanguage(languageService: LanguageService): () => Promise<void> {
+export function resolveInitialLanguage(
+  languageService: LanguageService,
+  geoCountry: GeoCountryService
+): () => Promise<void> {
   return async () => {
     // A shared link carries the language of the person who shared it (?lang=de): it decides what a
     // visitor who never picked a language sees, for this page load only (nothing is stored).
@@ -57,7 +64,22 @@ export function resolveInitialLanguage(languageService: LanguageService): () => 
     );
     if (linked && !languageService.hasUserChoice()) {
       languageService.use(linked, 'ephemeral');
+      return;
     }
+
+    if (languageService.hasStoredPreference()) {
+      return;
+    }
+
+    const country = await geoCountry.fetchCountryCode();
+    const lang = resolveFirstVisitLanguage({
+      country,
+      deviceLanguages: languageService.getDeviceLanguages()
+    });
+
+    // Remember the answer only when it came from a real country; with no country the same
+    // lookup is simply tried again on the next visit.
+    languageService.use(lang, country ? 'auto' : 'ephemeral');
   };
 }
 
@@ -169,7 +191,7 @@ export const appConfig: ApplicationConfig = {
     {
       provide: APP_INITIALIZER,
       useFactory: resolveInitialLanguage,
-      deps: [LanguageService],
+      deps: [LanguageService, GeoCountryService],
       multi: true
     },
     // No enum preload here (performance audit 2026-10-03, B5): it fired 10 GET /api/enums/* requests

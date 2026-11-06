@@ -2,25 +2,23 @@ import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject } from 'rxjs';
 
+import { pickDeviceLanguage } from '../i18n/first-visit-language';
+
 export type LangCode = 'en' | 'ar' | 'de';
 
 /**
  * How a language change is remembered:
  *  - 'user'      the visitor chose it (language selector): stored under `lang`, overrides everything, forever;
- *  - 'ephemeral' applied for this page load only (the Arabic default, or a shared link's ?lang=);
+ *  - 'auto'      detected for a first-time visitor (country / device): stored under `lang_auto` so the next
+ *                visit does not repeat the lookup, but a later explicit choice still replaces it;
+ *  - 'ephemeral' applied for this page load only (the device-language baseline while the country is looked up);
  *  - 'account'   the signed-in account's own language (PreferencesService): shown, but NEVER written to the
  *                device-wide keys above, so it cannot leak to the next visitor or account on this device.
  */
-export type LangPersistence = 'user' | 'ephemeral' | 'account';
+export type LangPersistence = 'user' | 'auto' | 'ephemeral' | 'account';
 
 const USER_LANG_KEY = 'lang';
-/**
- * Earlier builds stored a country/device-detected language here. Arabic is now the default for everyone
- * who has not picked a language, so this key is no longer read; it is removed on start-up.
- */
-const LEGACY_AUTO_LANG_KEY = 'lang_auto';
-/** What a visitor sees until they pick a language themselves. */
-export const DEFAULT_LANG: LangCode = 'ar';
+const AUTO_LANG_KEY = 'lang_auto';
 
 interface LanguageOption {
   code: LangCode;
@@ -43,7 +41,7 @@ export class LanguageService {
 
   constructor(private readonly translate: TranslateService) {
     this.translate.addLangs(this.languages.map(language => language.code));
-    this.setFallbackLanguage(DEFAULT_LANG);
+    this.setFallbackLanguage('ar');
     this.init();
   }
 
@@ -58,6 +56,9 @@ export class LanguageService {
 
     if (persistence === 'user') {
       localStorage.setItem(USER_LANG_KEY, normalizedLang);
+      localStorage.removeItem(AUTO_LANG_KEY);
+    } else if (persistence === 'auto') {
+      localStorage.setItem(AUTO_LANG_KEY, normalizedLang);
     }
 
     document.documentElement.dir = dir;
@@ -75,43 +76,58 @@ export class LanguageService {
   }
 
   /**
-   * Back to what this device would show with nobody signed in: the visitor's own choice, else Arabic.
-   * Called on sign-out so an account's language never
+   * Back to what this device would show with nobody signed in: the visitor's own choice, else an earlier
+   * automatic detection, else the device language. Called on sign-out so an account's language never
    * outlives its session.
    */
   restoreGuestLanguage(): void {
     this.init();
   }
 
-  /** True only when the visitor picked a language themselves. */
+  /** True only when the visitor picked a language themselves (not an earlier automatic detection). */
   hasUserChoice(): boolean {
+    return this.readStored()?.persistence === 'user';
+  }
+
+  /** True when the visitor (or an earlier visit's detection) already settled on a language. */
+  hasStoredPreference(): boolean {
     return this.readStored() !== null;
   }
 
-  /** Same as {@link hasUserChoice}: the only language this device remembers is the visitor's own choice. */
-  hasStoredPreference(): boolean {
-    return this.hasUserChoice();
+  /** The browser/device language tags in preference order, e.g. ["ar-SY", "en-US"]. */
+  getDeviceLanguages(): readonly string[] {
+    if (typeof navigator === 'undefined') {
+      return [];
+    }
+
+    return navigator.languages?.length ? navigator.languages : navigator.language ? [navigator.language] : [];
   }
 
   private init(): void {
-    this.forgetLegacyAutoLanguage();
     const stored = this.readStored();
 
-    // Nobody picked a language on this device: Arabic, whatever the browser, device or country says.
-    this.use(stored ?? DEFAULT_LANG, stored ? 'user' : 'ephemeral');
-  }
-
-  private readStored(): LangCode | null {
-    const userLang = localStorage.getItem(USER_LANG_KEY);
-    return this.isSupported(userLang) ? userLang : null;
-  }
-
-  private forgetLegacyAutoLanguage(): void {
-    try {
-      localStorage.removeItem(LEGACY_AUTO_LANG_KEY);
-    } catch {
-      /* storage unavailable (private mode): nothing to clean */
+    if (stored) {
+      this.use(stored.lang, stored.persistence);
+      return;
     }
+
+    // First visit: show the device's own language right away. The country-based decision
+    // (see resolveInitialLanguage in app.config.ts) replaces it before the first render when it differs.
+    this.use(pickDeviceLanguage(this.getDeviceLanguages()) ?? 'ar', 'ephemeral');
+  }
+
+  private readStored(): { lang: LangCode; persistence: 'user' | 'auto' } | null {
+    const userLang = localStorage.getItem(USER_LANG_KEY);
+    if (this.isSupported(userLang)) {
+      return { lang: userLang, persistence: 'user' };
+    }
+
+    const autoLang = localStorage.getItem(AUTO_LANG_KEY);
+    if (this.isSupported(autoLang)) {
+      return { lang: autoLang, persistence: 'auto' };
+    }
+
+    return null;
   }
 
   private isSupported(lang: string | null | undefined): lang is LangCode {
