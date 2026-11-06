@@ -1,4 +1,8 @@
-// Decides the UI language for a visitor who has never chosen one.
+// NOT WIRED since 2026-11-06: Arabic is now the default display language for every visitor who has not
+// picked one (see resolveInitialLanguage in app.config.ts). Only toSupportedLanguage is still used.
+// The country rules below are kept, with their tests, until the owner confirms they are not coming back.
+//
+// Decided the UI language for a visitor who has never chosen one.
 //
 // Rules, in order (the product owner's rules, kept in one pure function so they are testable):
 //   1. A language the user picked, or one detected on an earlier visit, is handled by LanguageService
