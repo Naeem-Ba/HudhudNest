@@ -4,7 +4,8 @@ import {
   getPasswordPolicyViolations,
   passwordPolicyValidator,
   PASSWORD_ERROR_CODES,
-  PASSWORD_POLICY_RULES
+  PASSWORD_POLICY_RULES,
+  PASSWORD_POLICY_RULES_WITH_PERSONAL
 } from './password-policy';
 
 /**
@@ -70,6 +71,67 @@ describe('passwordPolicy', () => {
       code => code !== PASSWORD_ERROR_CODES.required && code !== PASSWORD_ERROR_CODES.breached
     );
 
-    expect(PASSWORD_POLICY_RULES.slice().sort()).toEqual(localCodes.slice().sort());
+    // personalInfo is listed only on forms that know who is registering (PASSWORD_POLICY_RULES_WITH_PERSONAL).
+    expect(PASSWORD_POLICY_RULES_WITH_PERSONAL.slice().sort()).toEqual(localCodes.slice().sort());
+    expect(PASSWORD_POLICY_RULES).not.toContain(PASSWORD_ERROR_CODES.personalInfo);
+  });
+});
+
+
+/**
+ * "The password must not contain who you are". The same vectors as the server's
+ * PasswordPersonalInformationTests: the two implementations must agree, and the server is the reference.
+ */
+describe('passwordPolicy — personal information (mirror of the server tests)', () => {
+  const holder = {
+    firstName: 'Mohammad',
+    lastName: 'Al-Khatib',
+    email: 'm.alkhatib@example.com',
+    phoneNumber: '+963944123456'
+  };
+  const personal = (password: string, context = holder): boolean =>
+    getPasswordPolicyViolations(password, context).includes(PASSWORD_ERROR_CODES.personalInfo);
+
+  [
+    'Mohammad#2024x',
+    'MOHAMMAD!secure9',
+    'M0hammad!Secure',
+    'Khatib#Strong9',
+    'Alkhatib!2025x',
+    'Abc!944123Zq',
+    'Zz9!٩٤٤١٢٣Qq'
+  ].forEach(password =>
+    it(`rejects ${password}`, () => expect(personal(password)).toBeTrue())
+  );
+
+  ['Tr!ckyHorse1x', 'Abc!9441x2Z', 'Mo#hammZ9xKq', 'Alpha#Mango91x'].forEach(password =>
+    it(`accepts ${password}`, () => expect(personal(password)).toBeFalse())
+  );
+
+  it('matches an Arabic name ignoring diacritics and alef forms', () => {
+    const context = { firstName: 'أحمد', lastName: 'الخطيب' };
+    expect(personal('احمد#Abc12xZ', context as typeof holder)).toBeTrue();
+    expect(personal('Qw!الخَطِيب9xk', context as typeof holder)).toBeTrue();
+  });
+
+  it('matches an accented name without the accent', () => {
+    expect(personal('JOSE#Fox91zz', { firstName: 'José' } as typeof holder)).toBeTrue();
+  });
+
+  it('a three-letter name only counts when it is the whole password', () => {
+    const context = { firstName: 'Ali' } as typeof holder;
+    expect(personal('Ali@2468@2468', context)).toBeTrue();
+    expect(personal('Channali#Fox91', context)).toBeFalse();
+    expect(personal('Ali#Fox91zzKl', context)).toBeFalse();
+  });
+
+  it('checks nothing personal without a context', () => {
+    expect(getPasswordPolicyViolations('Mohammad#2024x')).toEqual([]);
+  });
+
+  it('lists every broken rule at once (the checklist shows them all), basics included', () => {
+    const codes = getPasswordPolicyViolations('mohammad', holder);
+    expect(codes).toContain(PASSWORD_ERROR_CODES.noUppercase);
+    expect(codes).toContain(PASSWORD_ERROR_CODES.personalInfo);
   });
 });

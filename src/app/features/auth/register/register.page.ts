@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -7,14 +8,10 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthApiService } from '../../../core/auth/auth-api.service';
 import { ConsentApiService } from '../../../core/api/consent-api.service';
 import { PRIVACY_POLICY_VERSION, TERMS_OF_SERVICE_VERSION } from '../../../core/models/consent-versions';
-import {
-  getPasswordPolicyViolations,
-  passwordPolicyValidator,
-  PASSWORD_POLICY_RULES
-} from '../../../core/auth/password-policy';
-import { isServerFailure } from '../../../core/api/server-failure';
-import { getPasswordRejectionMessages } from '../password-errors';
-import { isEmailAlreadyRegistered } from '../register-errors';
+import { passwordPolicyValidator } from '../../../core/auth/password-policy';
+import { AuthErrorFocusService } from '../../../core/auth/auth-error-focus.service';
+import { applyAuthFieldErrors, resolveAuthError } from '../auth-error';
+import { PasswordRulesComponent } from '../../../shared/ui/password-rules.component';
 import { FormErrorComponent } from '../../../shared/ui/form-error.component';
 import { ConsentCheckboxComponent } from '../../../shared/components/consent-checkbox/consent-checkbox.component';
 import { ToastService } from '../../../shared/services/toast.service';
@@ -28,6 +25,7 @@ import { ToastService } from '../../../shared/services/toast.service';
     RouterModule,
     TranslateModule,
     FormErrorComponent,
+    PasswordRulesComponent,
     ConsentCheckboxComponent
   ],
   template: `
@@ -104,7 +102,8 @@ import { ToastService } from '../../../shared/services/toast.service';
         />
         <app-form-error
           [control]="form.controls.email"
-          [submitted]="submitted()">
+          [submitted]="submitted()"
+          [messages]="emailMessages">
         </app-form-error>
 
         <label for="password">{{ 'AUTH.PASSWORD' | translate }}</label>
@@ -114,7 +113,8 @@ import { ToastService } from '../../../shared/services/toast.service';
           formControlName="password"
           placeholder="••••••••"
           autocomplete="new-password"
-          (input)="syncPasswordRules()"
+          aria-describedby="register-password-rules"
+          [attr.aria-invalid]="form.controls.password.invalid && (form.controls.password.touched || submitted()) ? true : null"
         />
         <app-form-error
           [control]="form.controls.password"
@@ -122,21 +122,20 @@ import { ToastService } from '../../../shared/services/toast.service';
           [messages]="passwordMessages">
         </app-form-error>
 
-        <ul class="password-rules" aria-live="polite">
-          <li
-            *ngFor="let rule of passwordRules"
-            [class.is-met]="isRuleMet(rule)">
-            <span class="mark" aria-hidden="true">{{ isRuleMet(rule) ? '✓' : '•' }}</span>
-            {{ 'AUTH.PASSWORD_RULES.' + rule | translate }}
-          </li>
-        </ul>
+        <app-password-rules
+          listId="register-password-rules"
+          [password]="form.controls.password.value"
+          [context]="personalContext()"
+          [personal]="true">
+        </app-password-rules>
 
         <app-consent-checkbox
           [checked]="privacyConsentAccepted()"
-          (checkedChange)="privacyConsentAccepted.set($event)">
+          [error]="consentError()"
+          (checkedChange)="privacyConsentAccepted.set($event); consentError.set('')">
         </app-consent-checkbox>
 
-        <button type="submit" [disabled]="form.invalid || !privacyConsentAccepted() || loading()">
+        <button type="submit" [disabled]="loading()">
           <ng-container *ngIf="loading(); else registerText">
             ⏳ {{ 'AUTH.LOADING' | translate }}
           </ng-container>
@@ -146,7 +145,7 @@ import { ToastService } from '../../../shared/services/toast.service';
           </ng-template>
         </button>
 
-        <p class="error" *ngIf="error()">⚠️ {{ error() }}</p>
+        <p class="error" role="alert" data-auth-form-error *ngIf="error()">⚠️ {{ error() }}</p>
 
         <a routerLink="/auth/login">
           {{ 'AUTH.GO_LOGIN' | translate }}
@@ -238,34 +237,6 @@ import { ToastService } from '../../../shared/services/toast.service';
       text-align: center;
     }
 
-    /* القواعد كانت غير معروفة للمستخدم إطلاقاً: النموذج يفرض 8 أحرف والخادم يفرض ثمانياً
-       من القواعد. عرضها أثناء الكتابة يحوّل الرفض بعد الإرسال إلى إرشاد قبله. */
-    .password-rules {
-      list-style: none;
-      margin: .5rem 0 0;
-      padding: 0;
-      display: grid;
-      gap: .2rem;
-      font-size: var(--text-xs, .75rem);
-      color: var(--gray-500, #64748b);
-    }
-
-    .password-rules li {
-      display: flex;
-      align-items: center;
-      gap: .4rem;
-    }
-
-    .password-rules .mark {
-      flex: 0 0 auto;
-      width: 1em;
-      text-align: center;
-    }
-
-    .password-rules li.is-met {
-      color: var(--success-text);
-    }
-
     a {
       color: var(--primary-text);
       text-decoration: none;
@@ -281,10 +252,13 @@ export class RegisterPage {
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
   private readonly toast = inject(ToastService);
+  private readonly errorFocus = inject(AuthErrorFocusService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal(false);
   readonly submitted = signal(false);
   readonly error = signal('');
+  readonly consentError = signal('');
 
   // مربّع الموافقة على سياسة الخصوصية وشروط الاستخدام — غير محدَّد افتراضياً،
   // ومطلوب فعلياً (الزر معطَّل بدونه)، انظر docs/privacy/privacy-gaps.md (P1).
@@ -299,32 +273,44 @@ export class RegisterPage {
   readonly resendMessage = signal('');
   private resendTimer: ReturnType<typeof setInterval> | null = null;
 
-  readonly passwordRules = PASSWORD_POLICY_RULES;
-
-  /**
-   * القواعد غير المستوفاة. تبدأ بالقائمة كاملة لأن حقلاً فارغاً لم يستوفِ شيئاً --
-   * getPasswordPolicyViolations('') يُعيد PASSWORD_REQUIRED وحده، ولو استُخدم كما هو
-   * لظهرت كل القواعد «مستوفاة» قبل أن يكتب المستخدم حرفاً.
-   */
-  private readonly passwordViolations = signal<readonly string[]>(PASSWORD_POLICY_RULES);
-
   readonly form = this.fb.nonNullable.group({
     firstName: ['', [Validators.required, Validators.minLength(2)]],
     lastName: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
 
-    // minLength(8) سقط لأن passwordPolicyValidator يغطّي الطول ضمن PASSWORD_TOO_SHORT،
-    // وإبقاؤهما معاً يعني رسالتين لسببٍ واحد.
-    password: ['', [Validators.required, passwordPolicyValidator()]]
+    // The length rule lives inside passwordPolicyValidator (PASSWORD_TOO_SHORT), so there is no
+    // separate minLength(8): two validators would mean two messages for one cause. The validator also
+    // knows the name and e-mail typed above, because the server refuses a password built from them.
+    password: ['', [Validators.required, passwordPolicyValidator(() => this.personalContext())]]
   });
 
-  syncPasswordRules(): void {
-    const value = this.form.controls.password.value;
-    this.passwordViolations.set(value ? getPasswordPolicyViolations(value) : PASSWORD_POLICY_RULES);
+  constructor() {
+    // The password rule "not your name / e-mail" depends on the other fields, so it is re-checked when
+    // they change. A message about the previous attempt is no longer true once anything is edited.
+    const { firstName, lastName, email, password } = this.form.controls;
+    [firstName, lastName, email].forEach(control =>
+      control.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+        password.updateValueAndValidity({ emitEvent: false });
+      })
+    );
+
+    this.form.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      if (this.error()) {
+        this.error.set('');
+      }
+    });
   }
 
-  isRuleMet(rule: string): boolean {
-    return !this.passwordViolations().includes(rule);
+  personalContext(): { firstName: string; lastName: string; email: string } {
+    const { firstName, lastName, email } = this.form?.getRawValue() ?? { firstName: '', lastName: '', email: '' };
+    return { firstName, lastName, email };
+  }
+
+  get emailMessages(): Record<string, string> {
+    return {
+      required: this.translate.instant('AUTH.ERRORS.EMAIL_REQUIRED'),
+      email: this.translate.instant('AUTH.ERRORS.INVALID_EMAIL')
+    };
   }
 
   get firstNameMessages(): Record<string, string> {
@@ -349,23 +335,27 @@ export class RegisterPage {
   }
 
   submit(): void {
-    this.submitted.set(true);
-
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      this.error.set(this.translate.instant('AUTH.ERRORS.FIX_FIELDS'));
+    if (this.loading()) {
       return;
     }
 
-    // دفاع إضافي: زر الإرسال معطَّل بدون الموافقة أصلاً، لكن Enter داخل حقل النموذج
-    // قد يُطلق (ngSubmit) في بعض المتصفحات حتى مع تعطيل الزر.
+    this.submitted.set(true);
+    this.consentError.set('');
+    this.error.set('');
+    this.form.markAllAsTouched();
+
     if (!this.privacyConsentAccepted()) {
-      this.error.set(this.translate.instant('AUTH.ERRORS.FIX_FIELDS'));
+      this.consentError.set(this.translate.instant('AUTH.ERRORS.CONSENT_REQUIRED'));
+    }
+
+    // Nothing is sent, and nothing the person typed is touched: the first problem is scrolled into
+    // view with its own message, instead of one generic "fix the fields" line at the bottom.
+    if (this.form.invalid || this.consentError()) {
+      this.errorFocus.request();
       return;
     }
 
     this.loading.set(true);
-    this.error.set('');
 
     const raw = this.form.getRawValue();
 
@@ -394,7 +384,7 @@ export class RegisterPage {
       },
       error: error => {
         this.loading.set(false);
-        this.error.set(this.getRegisterErrorMessage(error));
+        this.handleFailure(error);
       }
     });
   }
@@ -443,66 +433,25 @@ export class RegisterPage {
     }
   }
 
-  private getRegisterErrorMessage(error: unknown): string {
-    const response = error as {
-      error?: {
-        message?: string;
-        title?: string;
-        detail?: string;
-        errors?: Record<string, string[]>;
-      } | string;
-      status?: number;
-    };
+  /** Each reason on the field it belongs to; what belongs to no field goes under the button. */
+  private handleFailure(error: unknown): void {
+    const resolved = resolveAuthError(this.translate, error, {
+      conflictMeansEmailTaken: true,
+      allowServerMessage: true,
+      fallbackKey: 'AUTH.ERRORS.REGISTER_FAILED'
+    });
+    const { firstName, lastName, email, password } = this.form.controls;
 
-    // خطأ الخادم (5xx) أولاً: جسمه دائماً "An unexpected error occurred..." بالإنجليزية، ولا
-    // يفيد القارئ بشيء. كان فحصه بعد response.error.message فلا يُبلَغ أبداً، فيرى المستخدم
-    // العربي والألماني نصاً إنجليزياً (POST /api/auth/register، 2026-10-05).
-    if (isServerFailure(error)) {
-      return this.translate.instant('AUTH.ERRORS.SERVER_ERROR');
+    if (resolved.fields.some(item => item.field === 'consent')) {
+      this.consentError.set(this.translate.instant('AUTH.ERRORS.CONSENT_REQUIRED'));
     }
 
-    // "البريد مسجّل": جسم 409 يحمل message إنجليزياً ثابتاً، وكان فحص status === 409 أدناه
-    // لا يُبلَغ أبداً لأن response.error.message يسبقه (2026-10-07). يُترجَم هنا قبل قراءة النص.
-    if (isEmailAlreadyRegistered(error)) {
-      return this.translate.instant('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
-    }
+    const leftovers = applyAuthFieldErrors(
+      { ...resolved, fields: resolved.fields.filter(item => item.field !== 'consent') },
+      { firstName, lastName, email, password }
+    );
 
-    if (typeof response.error === 'string' && response.error.trim()) {
-      return response.error;
-    }
-
-    // كلمة المرور أولاً: هي السبب الوحيد الذي لا يستطيع النموذج توقّعه محلياً (فحص
-    // التسريبات يجري على الخادم)، وهي التي كانت تصل بالإنجليزية.
-    const passwordReasons = getPasswordRejectionMessages(this.translate, error);
-
-    if (passwordReasons.length > 0) {
-      return passwordReasons.join(' ');
-    }
-
-    if (typeof response.error === 'object') {
-      if (response.error?.message) {
-        return response.error.message;
-      }
-
-      if (response.error?.detail) {
-        return response.error.detail;
-      }
-
-      // أخطاء الحقول تسبق title: جسم 422 يحمل title = "Validation Error" دائماً، وفحصه
-      // أولاً كان يحجب السبب الفعلي خلف عنوان عام لا يقول للمستخدم شيئاً.
-      if (response.error?.errors) {
-        const messages = Object.values(response.error.errors).flat();
-
-        if (messages.length > 0) {
-          return messages.join(' ');
-        }
-      }
-
-      if (response.error?.title) {
-        return response.error.title;
-      }
-    }
-
-    return this.translate.instant('AUTH.ERRORS.REGISTER_FAILED');
+    this.error.set(leftovers.join(' '));
+    this.errorFocus.request();
   }
 }

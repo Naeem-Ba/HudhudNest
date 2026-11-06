@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Observable, map, tap } from 'rxjs';
+import { Observable, map, tap, timeout } from 'rxjs';
 import { BackendApiService } from '../api/backend-api.service';
+import { AUTH_REQUEST_TIMEOUT_MS } from './auth-api.service';
 import { withUiLanguage } from '../i18n/ui-language';
 import { TokenStorageService } from '../services/token-storage.service';
 import { normalizePhoneInput } from './phone-number';
@@ -85,6 +86,7 @@ export class PhoneAuthApiService {
     };
 
     return this.api.post<unknown>('/auth/phone/login', payload).pipe(
+      timeout(AUTH_REQUEST_TIMEOUT_MS),
       map(response => normalizeAuthTokenResponse(response)),
       tap(response => this.tokenStorage.storeTokens(response))
     );
