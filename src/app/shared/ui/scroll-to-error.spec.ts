@@ -73,10 +73,26 @@ describe('scroll-to-error', () => {
     const far = host.querySelector<HTMLElement>('#far-error')!;
     expect(revealElement(far, null, { smooth: false })).toBeTrue();
 
-    // The element is now inside the visible area: a second call must not move anything.
-    return new Promise<void>(resolve => setTimeout(() => {
-      expect(revealElement(far, null, { smooth: false })).toBeFalse();
-      resolve();
-    }, 50));
+    // An 'instant' scroll has happened by the time revealElement returns, so the second call can run right
+    // away. It used to wait 50 ms, and a stray scroll-to-top from an unrelated spec (router scroll
+    // restoration after a test navigation) that landed in that gap made the CI run fail at random.
+    expect(revealElement(far, null, { smooth: false })).toBeFalse();
+  });
+
+  it('scrolls inside a scrollable container instead of the page, and then leaves it alone', () => {
+    // Fixed, so neither the page scroll nor whatever earlier specs left in the document can move it.
+    build(`
+      <div id="box" style="position:fixed;top:0;left:0;width:320px;height:300px;overflow-y:auto">
+        <div style="height:3000px"></div>
+        <div id="deep-error" class="field-error">deep</div>
+        <div style="height:1500px"></div>
+      </div>`);
+
+    const box = host.querySelector<HTMLElement>('#box')!;
+    const deep = host.querySelector<HTMLElement>('#deep-error')!;
+
+    expect(revealElement(deep, null, { smooth: false })).toBeTrue();
+    expect(box.scrollTop).toBeGreaterThan(2000);
+    expect(revealElement(deep, null, { smooth: false })).toBeFalse();
   });
 });
