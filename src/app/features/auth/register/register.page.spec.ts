@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { of, throwError } from 'rxjs';
+import { NEVER, of, throwError } from 'rxjs';
 
 import { AuthApiService } from '../../../core/auth/auth-api.service';
 import { ToastService } from '../../../shared/services/toast.service';
@@ -76,7 +76,8 @@ describe('RegisterPage — error shown for a failed sign-up', () => {
 
     page.submit();
 
-    expect(page.error()).toBe('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
+    expect(page.form.controls.email.errors?.['server']).toBe('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
+    expect(page.error()).toBe('');
   });
 
   it('translates the 409 body that carries the English sentence instead of printing it (2026-10-07)', () => {
@@ -84,7 +85,8 @@ describe('RegisterPage — error shown for a failed sign-up', () => {
 
     page.submit();
 
-    expect(page.error()).toBe('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
+    expect(page.form.controls.email.errors?.['server']).toBe('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
+    expect(page.error()).toBe('');
     expect(page.error()).not.toContain('Email already registered');
   });
 
@@ -93,7 +95,8 @@ describe('RegisterPage — error shown for a failed sign-up', () => {
 
     page.submit();
 
-    expect(page.error()).toBe('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
+    expect(page.form.controls.email.errors?.['server']).toBe('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
+    expect(page.error()).toBe('');
   });
 
   it('translates on the code alone, whatever the status', () => {
@@ -101,7 +104,72 @@ describe('RegisterPage — error shown for a failed sign-up', () => {
 
     page.submit();
 
-    expect(page.error()).toBe('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
+    expect(page.form.controls.email.errors?.['server']).toBe('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
+    expect(page.error()).toBe('');
+  });
+
+  it('puts a rejected password under the password field, keeps what was typed, and clears it on the next edit', () => {
+    failWith(422, {
+      errors: { Password: ['English'] },
+      errorCodes: { Password: ['PASSWORD_BREACHED'] }
+    });
+
+    page.submit();
+
+    expect(page.form.controls.password.errors?.['server']).toBe('AUTH.ERRORS.PASSWORD_BREACHED');
+    expect(page.form.controls.password.value).toBe(FAKE_TEST_CREDENTIAL);
+    expect(page.form.controls.email.value).toBe('naeem@example.com');
+
+    page.form.controls.password.setValue(FAKE_TEST_CREDENTIAL + '9');
+    expect(page.form.controls.password.errors?.['server']).toBeUndefined();
+  });
+
+  it('a lost connection or a timeout is shown as such and the form keeps its data', () => {
+    authApi.register.and.returnValue(throwError(() => ({ status: 0 })));
+    page.submit();
+    expect(page.error()).toBe('AUTH.ERRORS.NETWORK_ERROR');
+    expect(page.form.controls.password.value).toBe(FAKE_TEST_CREDENTIAL);
+
+    authApi.register.and.returnValue(throwError(() => ({ name: 'TimeoutError' })));
+    page.submit();
+    expect(page.error()).toBe('AUTH.ERRORS.TIMEOUT');
+  });
+
+  it('editing any field removes the message about the previous attempt', () => {
+    authApi.register.and.returnValue(throwError(() => ({ status: 0 })));
+    page.submit();
+    expect(page.error()).not.toBe('');
+
+    page.form.controls.firstName.setValue('Naeem2');
+
+    expect(page.error()).toBe('');
+  });
+
+  it('does not send anything when the agreement box is not ticked, and says why', () => {
+    page.privacyConsentAccepted.set(false);
+
+    page.submit();
+
+    expect(authApi.register).not.toHaveBeenCalled();
+    expect(page.consentError()).toBe('AUTH.ERRORS.CONSENT_REQUIRED');
+  });
+
+  it('refuses a password built from the name or the e-mail before any request', () => {
+    page.form.controls.password.setValue('Naeem#2024x');
+    expect(page.form.controls.password.errors?.['passwordPolicy']?.violations).toContain('PASSWORD_CONTAINS_PERSONAL_INFO');
+
+    page.submit();
+
+    expect(authApi.register).not.toHaveBeenCalled();
+  });
+
+  it('ignores a second submit while the first is still running', () => {
+    authApi.register.and.returnValue(NEVER);
+
+    page.submit();
+    page.submit();
+
+    expect(authApi.register).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -10,7 +10,7 @@ import { routes } from './app.routes';
 import { ApiErrorInterceptor } from './core/interceptors/api-error.interceptor';
 import { AuthInterceptor } from './core/interceptors/auth-interceptor';
 import { CsrfInterceptor } from './core/interceptors/csrf.interceptor';
-import { readRefreshErrorCode, REUSE_DETECTED_CODE } from './core/interceptors/refresh-auth.interceptor';
+import { isCsrfFailure, readRefreshErrorCode, sessionEndReason } from './core/interceptors/refresh-auth.interceptor';
 import { AuthService } from './core/auth/auth.service';
 import { normalizeAuthTokenResponse } from './core/models/auth.model';
 import { resolveAuthApiBaseUrl } from './core/auth/auth-api-base-url';
@@ -144,10 +144,15 @@ export function restoreSession(
       try {
         result = await attemptRefresh();
       } catch (firstAttemptError) {
-        if (!isNetworkOrTimeoutError(firstAttemptError)) {
+        if (isCsrfFailure(firstAttemptError)) {
+          // Stale anti-forgery token: a new one, then one more try (not a verdict on the session).
+          await firstValueFrom(csrfTokenService.fetchToken());
+          result = await attemptRefresh();
+        } else if (!isNetworkOrTimeoutError(firstAttemptError)) {
           throw firstAttemptError;
+        } else {
+          result = await attemptRefresh();
         }
-        result = await attemptRefresh();
       }
 
       const normalizedToken = normalizeAuthTokenResponse(result);
@@ -165,8 +170,7 @@ export function restoreSession(
 
       const errorCode = readRefreshErrorCode(error);
       if (errorCode) {
-        const reason = errorCode === REUSE_DETECTED_CODE ? 'revoked' : 'expired';
-        authService.notifySessionExpired(reason);
+        authService.notifySessionExpired(sessionEndReason(error));
       }
     } finally {
       authService.endSessionRefresh();

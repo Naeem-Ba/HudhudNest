@@ -295,7 +295,17 @@
       "PASSWORD_COMMON_WORD": "Das Passwort basiert auf einem häufig verwendeten Wort. Ziffern oder Sonderzeichen anzuhängen macht es nicht schwerer zu erraten.",
       "PASSWORD_LONG_RUN": "Das Passwort enthält mehr als vier aufeinanderfolgende oder wiederholte Zeichen.",
       "PASSWORD_BREACHED": "Dieses Passwort ist in bekannten Datenlecks aufgetaucht. Bitte wählen Sie ein anderes.",
-      "PASSWORD_POLICY_UNMET": "Das Passwort erfüllt die unten aufgeführten Anforderungen nicht."
+      "PASSWORD_POLICY_UNMET": "Dieses Passwort erfüllt nicht alle Anforderungen der Checkliste.",
+      "CONSENT_REQUIRED": "Um ein Konto zu erstellen, stimme der Datenschutzerklärung und den Nutzungsbedingungen zu.",
+      "EMAIL_TOO_LONG": "Die E-Mail-Adresse ist zu lang (höchstens 254 Zeichen).",
+      "NAME_TOO_LONG": "Der Name ist zu lang (höchstens 100 Zeichen).",
+      "GENERIC": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+      "TIMEOUT": "Der Server hat zu lange gebraucht. Prüfe deine Verbindung und versuche es erneut.",
+      "PASSWORD_PERSONAL_INFO": "Das Passwort darf weder deinen Namen noch deine E-Mail-Adresse oder Telefonnummer enthalten. Wähle eines, das nicht auf deinen persönlichen Daten beruht.",
+      "SESSION_SUPERSEDED": "Dieses Gerät wurde abgemeldet, weil das Konto auf mehr Geräten angemeldet war als erlaubt. Bitte melde dich erneut an.",
+      "LOGIN_HELP": "Prüfe die Schreibweise (Groß- und Kleinschreibung zählt), setze dein Passwort zurück oder erstelle ein Konto, falls du neu bist.",
+      "PHONE_LOGIN_HELP": "Prüfe die Nummer (mit Ländervorwahl) und das Passwort, setze das Passwort zurück oder erstelle ein Konto, falls du neu bist.",
+      "OTP_FORMAT": "Der Code besteht aus 6 Ziffern."
     },
     "FIRST_NAME_PLACEHOLDER": "Vorname eingeben",
     "LAST_NAME_PLACEHOLDER": "Nachname eingeben",
@@ -391,8 +401,11 @@
       "PASSWORD_NO_DIGIT": "Eine Ziffer (0-9)",
       "PASSWORD_NO_SPECIAL": "Ein Sonderzeichen (! @ # $ %)",
       "PASSWORD_COMMON_WORD": "Kein häufiges Wort wie «password» oder «qwerty»",
-      "PASSWORD_LONG_RUN": "Höchstens vier aufeinanderfolgende oder wiederholte Zeichen"
-    }
+      "PASSWORD_LONG_RUN": "Höchstens vier aufeinanderfolgende oder wiederholte Zeichen",
+      "PASSWORD_CONTAINS_PERSONAL_INFO": "Nicht dein Name, deine E-Mail oder Telefonnummer"
+    },
+    "PASSWORD_RULE_MET": "erfüllt",
+    "PASSWORD_RULE_UNMET": "noch nicht erfüllt"
   },
   "ERRORS": {
     "EMAIL_REQUIRED": "Die E-Mail-Adresse ist erforderlich.",

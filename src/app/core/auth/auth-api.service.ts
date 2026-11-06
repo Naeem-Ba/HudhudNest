@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { catchError, finalize, map, Observable, of, tap } from 'rxjs';
+import { catchError, finalize, map, Observable, of, tap, timeout } from 'rxjs';
 
 import { BackendApiService } from '../api/backend-api.service';
 import { withUiLanguage } from '../i18n/ui-language';
@@ -18,6 +18,13 @@ import {
   normalizeAuthTokenResponse
 } from '../models/auth.model';
 
+/**
+ * How long a sign-in / sign-up request may take before the form gives up and says so. Without a limit a
+ * request that never answers (a phone that lost signal mid-request) left the button spinning forever.
+ * Long enough for a cold-started API (free hosting sleeps), short enough that nobody stares at a spinner.
+ */
+export const AUTH_REQUEST_TIMEOUT_MS = 45_000;
+
 @Injectable({ providedIn: 'root' })
 export class AuthApiService {
   private readonly attribution = inject(AttributionContextService);
@@ -29,11 +36,14 @@ export class AuthApiService {
   ) {}
 
   register(request: RegisterRequest): Observable<RegisterResponse> {
-    return this.api.post<RegisterResponse>('/auth/register', withUiLanguage(this.withAcquisition(request)));
+    return this.api
+      .post<RegisterResponse>('/auth/register', withUiLanguage(this.withAcquisition(request)))
+      .pipe(timeout(AUTH_REQUEST_TIMEOUT_MS));
   }
 
   login(request: LoginRequest): Observable<AuthTokenResponse> {
     return this.api.post<unknown>('/auth/login', request).pipe(
+      timeout(AUTH_REQUEST_TIMEOUT_MS),
       map(response => normalizeAuthTokenResponse(response)),
       tap(response => this.tokenStorage.storeTokens(response))
     );

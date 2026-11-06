@@ -13,9 +13,9 @@ describe('ResetPasswordPage — the page the reset email link opens', () => {
   let linkParams: Record<string, string> = {};
 
   // Test-only values held in constants (not real credentials) so the audit guard's password[:=]'..' pattern stays quiet.
-  const NEW_VALUE = 'Newpass123';
-  const OTHER_VALUE = 'Different123';
-  const SHORT_VALUE = 'short1A';
+  const NEW_VALUE = 'Tq7!vX2#mLp9';
+  const OTHER_VALUE = 'Rz4$wK8%nBd3';
+  const SHORT_VALUE = 'sh0rt!A';
 
   const create = (params: Record<string, string>): ResetPasswordPage => {
     linkParams = params;
@@ -91,7 +91,7 @@ describe('ResetPasswordPage — the page the reset email link opens', () => {
     const page = create({ email: 'a@b.com', token: 't' });
     page.form.setValue({ newPassword: SHORT_VALUE, confirmPassword: SHORT_VALUE });
 
-    expect(page.form.controls.newPassword.errors?.['minlength']).toBeTruthy();
+    expect(page.form.controls.newPassword.errors?.['passwordPolicy']?.violations).toContain('PASSWORD_TOO_SHORT');
   });
 
   it('sends the link token untouched together with the new password and confirmation', () => {

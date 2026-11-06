@@ -33,6 +33,8 @@ import { TranslateModule } from '@ngx-translate/core';
         [checked]="checked"
         (change)="onToggle($event)"
         [attr.aria-required]="true"
+        [attr.aria-invalid]="error ? true : null"
+        [attr.aria-describedby]="error ? 'consent-error' : null"
       />
       <span class="consent-checkbox__label">
         {{ 'CONSENT.LEAD' | translate }}
@@ -41,6 +43,11 @@ import { TranslateModule } from '@ngx-translate/core';
         <a routerLink="/privacy-policy" target="_blank" rel="noopener">{{ 'CONSENT.PRIVACY' | translate }}<span class="consent-checkbox__sr"> {{ 'CONSENT.OPENS_NEW_TAB' | translate }}</span></a>{{ 'CONSENT.TRAIL' | translate }}
       </span>
     </label>
+    @if (error) {
+      <p class="consent-checkbox__error" id="consent-error" data-form-error>
+        <span aria-hidden="true">⚠️</span> {{ error }}
+      </p>
+    }
   `,
   styles: [`
     .consent-checkbox {
@@ -77,6 +84,15 @@ import { TranslateModule } from '@ngx-translate/core';
       text-decoration: underline;
     }
 
+    .consent-checkbox__error {
+      display: flex;
+      gap: .35rem;
+      margin: .15rem 0 .5rem;
+      color: var(--danger-text);
+      font-size: var(--text-sm, .875rem);
+      line-height: 1.45;
+    }
+
     .consent-checkbox__sr {
       position: absolute;
       width: 1px;
@@ -89,6 +105,8 @@ import { TranslateModule } from '@ngx-translate/core';
 })
 export class ConsentCheckboxComponent {
   @Input() checked = false;
+  /** Sentence shown under the box when the form was submitted without agreeing (already translated). */
+  @Input() error: string | null = null;
   @Output() checkedChange = new EventEmitter<boolean>();
 
   onToggle(event: Event): void {

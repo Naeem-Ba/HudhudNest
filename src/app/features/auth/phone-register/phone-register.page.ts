@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -12,7 +12,10 @@ import { PRIVACY_POLICY_VERSION, TERMS_OF_SERVICE_VERSION } from '../../../core/
 import { ToastService } from '../../../shared/services/toast.service';
 import { FormErrorComponent } from '../../../shared/ui/form-error.component';
 import { ConsentCheckboxComponent } from '../../../shared/components/consent-checkbox/consent-checkbox.component';
-import { getPhoneWorkflowErrorMessage } from '../phone-auth-errors';
+import { AuthErrorFocusService } from '../../../core/auth/auth-error-focus.service';
+import { passwordPolicyValidator } from '../../../core/auth/password-policy';
+import { PasswordRulesComponent } from '../../../shared/ui/password-rules.component';
+import { AuthField, applyAuthFieldErrors, resolveAuthError } from '../auth-error';
 import { phoneNumberValidator } from '../../../core/auth/phone-number';
 import { OtpChannelState } from '../../../core/auth/otp-channel-state';
 import { OtpChannel } from '../../../core/models/auth.model';
@@ -35,6 +38,7 @@ type Step = 'phone' | 'details';
     RouterModule,
     TranslateModule,
     FormErrorComponent,
+    PasswordRulesComponent,
     ConsentCheckboxComponent,
     OtpChannelPickerComponent,
     OtpChannelFallbackComponent
@@ -52,11 +56,13 @@ export class PhoneRegisterPage {
   private readonly toast = inject(ToastService);
   private readonly consentApi = inject(ConsentApiService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly errorFocus = inject(AuthErrorFocusService);
 
   readonly step = signal<Step>('phone');
   readonly loading = signal(false);
   readonly submitted = signal(false);
   readonly error = signal('');
+  readonly consentError = signal('');
 
   // مربّع الموافقة على سياسة الخصوصية وشروط الاستخدام — غير محدَّد افتراضياً،
   // ومطلوب فعلياً، انظر docs/privacy/privacy-gaps.md (P1).
@@ -75,11 +81,38 @@ export class PhoneRegisterPage {
     code: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
     firstName: ['', [Validators.required, Validators.minLength(2)]],
     lastName: ['', [Validators.required, Validators.minLength(2)]],
-    password: ['', [Validators.required, Validators.minLength(8)]]
+    // Same rules as the server (length, character classes, common words, not built from the name or
+    // the phone number); the length is part of the policy, so there is no separate minLength.
+    password: ['', [Validators.required, passwordPolicyValidator(() => this.personalContext())]]
   });
 
   constructor() {
     this.channels.watch(this.phoneForm.controls.phoneNumber);
+
+    const { firstName, lastName, password } = this.detailsForm.controls;
+    [firstName, lastName].forEach(control =>
+      control.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() =>
+        password.updateValueAndValidity({ emitEvent: false })
+      )
+    );
+
+    // A message about the previous attempt stops being true as soon as something is edited.
+    const clear = (): void => {
+      if (this.error()) {
+        this.error.set('');
+      }
+    };
+    this.detailsForm.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(clear);
+    this.phoneForm.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(clear);
+  }
+
+  personalContext(): { firstName: string; lastName: string; phoneNumber: string } {
+    const details = this.detailsForm?.getRawValue();
+    return {
+      firstName: details?.firstName ?? '',
+      lastName: details?.lastName ?? '',
+      phoneNumber: this.phoneForm?.controls.phoneNumber.value ?? ''
+    };
   }
 
   get maskedPhone(): string {
@@ -92,10 +125,15 @@ export class PhoneRegisterPage {
   }
 
   sendOtp(): void {
+    if (this.loading()) {
+      return;
+    }
+
     this.submitted.set(true);
 
-    if (this.phoneForm.invalid || this.loading()) {
+    if (this.phoneForm.invalid) {
       this.phoneForm.markAllAsTouched();
+      this.errorFocus.request();
       return;
     }
 
@@ -112,7 +150,7 @@ export class PhoneRegisterPage {
           this.loading.set(false);
 
           if (!result.succeeded || !result.challengeId) {
-            this.setError(getPhoneWorkflowErrorMessage(this.translate, result.errorCode, 'AUTH.ERRORS.SEND_OTP_FAILED'));
+            this.handleFailure({ status: 400, error: { code: result.errorCode } }, 'AUTH.ERRORS.SEND_OTP_FAILED');
             return;
           }
 
@@ -125,7 +163,7 @@ export class PhoneRegisterPage {
         },
         error: error => {
           this.loading.set(false);
-          this.setError(getPhoneWorkflowErrorMessage(this.translate, this.readErrorCode(error), 'AUTH.ERRORS.SEND_OTP_FAILED', error));
+          this.handleFailure(error, 'AUTH.ERRORS.SEND_OTP_FAILED');
         }
       });
   }
@@ -158,21 +196,26 @@ export class PhoneRegisterPage {
   }
 
   submitDetails(): void {
-    this.submitted.set(true);
-
-    if (this.detailsForm.invalid || this.loading()) {
-      this.detailsForm.markAllAsTouched();
+    if (this.loading()) {
       return;
     }
 
-    // دفاع إضافي: زر الإرسال معطَّل بدون الموافقة أصلاً، لكن Enter داخل حقل النموذج
-    // قد يُطلق (ngSubmit) في بعض المتصفحات حتى مع تعطيل الزر.
+    this.submitted.set(true);
+    this.consentError.set('');
+    this.error.set('');
+    this.detailsForm.markAllAsTouched();
+
     if (!this.privacyConsentAccepted()) {
+      this.consentError.set(this.translate.instant('AUTH.ERRORS.CONSENT_REQUIRED'));
+    }
+
+    // Nothing is sent and nothing typed is lost; the first problem is shown next to its field.
+    if (this.detailsForm.invalid || this.consentError()) {
+      this.errorFocus.request();
       return;
     }
 
     this.loading.set(true);
-    this.error.set('');
 
     const { code, firstName, lastName, password } = this.detailsForm.getRawValue();
 
@@ -184,7 +227,7 @@ export class PhoneRegisterPage {
           this.loading.set(false);
 
           if (!result.succeeded || !result.accessToken) {
-            this.setError(getPhoneWorkflowErrorMessage(this.translate, result.errorCode, 'AUTH.ERRORS.VERIFY_OTP_FAILED'));
+            this.handleFailure({ status: 400, error: { code: result.errorCode } }, 'AUTH.ERRORS.VERIFY_OTP_FAILED');
             return;
           }
 
@@ -209,7 +252,7 @@ export class PhoneRegisterPage {
         },
         error: error => {
           this.loading.set(false);
-          this.setError(getPhoneWorkflowErrorMessage(this.translate, this.readErrorCode(error), 'AUTH.ERRORS.VERIFY_OTP_FAILED', error));
+          this.handleFailure(error, 'AUTH.ERRORS.VERIFY_OTP_FAILED');
         }
       });
   }
@@ -234,16 +277,28 @@ export class PhoneRegisterPage {
     this.resendCooldown.set(0);
   }
 
-  private readErrorCode(error: unknown): string | undefined {
-    const response = error as { status?: number; error?: { code?: string; Code?: string } };
-    if (response.status === 429) {
-      return 'RATE_LIMITED';
-    }
-    return response.error?.code ?? response.error?.Code;
-  }
+  /**
+   * One routine for every failed step: the reason goes on the field it is about (a wrong code under the
+   * code box, a weak password under the password), anything else in the alert, and the page scrolls to
+   * whichever comes first. Nothing the person typed is cleared.
+   */
+  private handleFailure(error: unknown, fallbackKey: string): void {
+    // A bare 429 here is the shared hourly limit on codes.
+    const status = (error as { status?: number } | null)?.status;
+    const source = status === 429 && !(error as { error?: { code?: string } }).error?.code
+      ? { status: 429, error: { code: 'RATE_LIMITED' } }
+      : error;
+    const resolved = resolveAuthError(this.translate, source, { fallbackKey });
+    const { code, firstName, lastName, password } = this.detailsForm.controls;
+    const controls: Partial<Record<AuthField, AbstractControl | null>> =
+      this.step() === 'phone'
+        ? { phone: this.phoneForm.controls.phoneNumber }
+        : { code, firstName, lastName, password, phone: null };
 
-  private setError(message: string): void {
+    const leftovers = applyAuthFieldErrors(resolved, controls);
+
     // toast.error() removed on purpose — see phone-change.page.ts's setError comment.
-    this.error.set(message);
+    this.error.set(leftovers.join(' '));
+    this.errorFocus.request();
   }
 }

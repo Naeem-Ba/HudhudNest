@@ -6,6 +6,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AuthService } from './core/auth/auth.service';
+import { SessionRecoveryService } from './core/auth/session-recovery.service';
 import { LanguageService } from './core/services/language.service';
 import { PreferencesService } from './core/services/preferences.service';
 import { PushRegistrationService } from './core/push/push-registration.service';
@@ -83,6 +84,7 @@ export class AppComponent {
   private readonly pageMeta = inject(PageMetaService);
   private readonly preferences = inject(PreferencesService);
   private readonly push = inject(PushRegistrationService);
+  private readonly sessionRecovery = inject(SessionRecoveryService);
 
   constructor(
     private readonly authService: AuthService,
@@ -96,6 +98,8 @@ export class AppComponent {
     this.languageService.getCurrent();
     this.preferences.start();
     this.push.start();
+    // A bad connection at start-up or on return from the background must not look like a sign-out.
+    this.sessionRecovery.start();
     nativeBackButton.initialize();
     deepLinks.initialize();
     this.appUpdate.initialize();
@@ -187,7 +191,10 @@ export class AppComponent {
     this.authService.sessionExpired$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(reason => {
-        const key = reason === 'revoked' ? 'AUTH.ERRORS.SESSION_REVOKED' : 'AUTH.ERRORS.SESSION_EXPIRED';
+        const key =
+          reason === 'revoked' ? 'AUTH.ERRORS.SESSION_REVOKED'
+          : reason === 'superseded' ? 'AUTH.ERRORS.SESSION_SUPERSEDED'
+          : 'AUTH.ERRORS.SESSION_EXPIRED';
         this.toast.info(this.translate.instant(key));
       });
   }

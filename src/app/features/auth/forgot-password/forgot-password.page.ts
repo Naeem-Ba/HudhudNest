@@ -1,10 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { isRateLimited } from '../../../core/api/rate-limited';
 import { AuthApiService } from '../../../core/auth/auth-api.service';
+import { AuthErrorFocusService } from '../../../core/auth/auth-error-focus.service';
+import { resolveAuthError } from '../auth-error';
 import { FormErrorComponent } from '../../../shared/ui/form-error.component';
 import { ToastService } from '../../../shared/services/toast.service';
 
@@ -20,15 +23,15 @@ import { ToastService } from '../../../shared/services/toast.service';
 
         <label for="forgot-password-f1">{{ 'AUTH.EMAIL' | translate }}</label>
         <input id="forgot-password-f1" formControlName="email" [placeholder]="'AUTH.EMAIL_PLACEHOLDER' | translate" autocomplete="email">
-        <app-form-error [control]="form.controls.email" [submitted]="submitted()"></app-form-error>
+        <app-form-error [control]="form.controls.email" [submitted]="submitted()" [messages]="emailMessages"></app-form-error>
 
-        <button [disabled]="form.invalid || loading()">
+        <button [disabled]="loading()">
           <ng-container *ngIf="loading(); else sendText">⏳ {{ 'AUTH.SENDING' | translate }}</ng-container>
           <ng-template #sendText>{{ 'AUTH.SEND_RESET_LINK' | translate }}</ng-template>
         </button>
 
         <p class="success" *ngIf="success()">✅ {{ success() }}</p>
-        <p class="error" *ngIf="error()">⚠️ {{ error() }}</p>
+        <p class="error" role="alert" data-auth-form-error *ngIf="error()">⚠️ {{ error() }}</p>
       </form>
     </section>
   `,
@@ -47,15 +50,37 @@ export class ForgotPasswordPage {
   readonly error = signal('');
   readonly success = signal('');
 
+  private readonly errorFocus = inject(AuthErrorFocusService);
+
   readonly form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]]
   });
 
+  constructor() {
+    this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+      if (this.error()) {
+        this.error.set('');
+      }
+    });
+  }
+
+  get emailMessages(): Record<string, string> {
+    return {
+      required: this.translate.instant('AUTH.ERRORS.EMAIL_REQUIRED'),
+      email: this.translate.instant('AUTH.ERRORS.INVALID_EMAIL')
+    };
+  }
+
   submit(): void {
+    if (this.loading()) {
+      return;
+    }
+
     this.submitted.set(true);
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.errorFocus.request();
       return;
     }
 
@@ -73,9 +98,13 @@ export class ForgotPasswordPage {
       error: error => {
         this.loading.set(false);
         // 429: say it is the limit (3 requests per hour), not that sending failed.
-        this.error.set(this.translate.instant(
-          isRateLimited(error) ? 'AUTH.ERRORS.PASSWORD_RESET_LIMIT' : 'AUTH.ERRORS.FORGOT_FAILED'
-        ));
+        this.error.set(
+          isRateLimited(error)
+            ? this.translate.instant('AUTH.ERRORS.PASSWORD_RESET_LIMIT')
+            : (resolveAuthError(this.translate, error, { fallbackKey: 'AUTH.ERRORS.FORGOT_FAILED' }).message ??
+                this.translate.instant('AUTH.ERRORS.FORGOT_FAILED'))
+        );
+        this.errorFocus.request();
       }
     });
   }

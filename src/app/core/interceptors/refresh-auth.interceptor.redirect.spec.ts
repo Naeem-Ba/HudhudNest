@@ -111,7 +111,7 @@ describe('RefreshAuthInterceptor — redirect only when the CURRENT route requir
   // انتهاء جلسة عادي آخر — بدل حدث واحد بلا سبب كان بلا أي مشترك أصلاً.
   it('✅ REFRESH_TOKEN_REUSE_DETECTED يُطلِق sessionExpired$ بسبب "revoked"', fakeAsync(() => {
     const authService = TestBed.inject(AuthService);
-    const reasons: Array<'expired' | 'revoked'> = [];
+    const reasons: Array<'expired' | 'revoked' | 'superseded'> = [];
     authService.sessionExpired$.subscribe(reason => reasons.push(reason));
 
     tokenStorage.setAccessToken(fakeJwt(3600));
@@ -132,7 +132,7 @@ describe('RefreshAuthInterceptor — redirect only when the CURRENT route requir
 
   it('✅ REFRESH_TOKEN_EXPIRED (أو أي كود آخر) يُطلِق sessionExpired$ بسبب "expired"', fakeAsync(() => {
     const authService = TestBed.inject(AuthService);
-    const reasons: Array<'expired' | 'revoked'> = [];
+    const reasons: Array<'expired' | 'revoked' | 'superseded'> = [];
     authService.sessionExpired$.subscribe(reason => reasons.push(reason));
 
     tokenStorage.setAccessToken(fakeJwt(3600));

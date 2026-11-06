@@ -18,7 +18,7 @@ import { OtpChannelOption, PhoneWorkflowResponse } from '../../../core/models/au
 import { PhoneRegisterPage } from './phone-register.page';
 
 // Dummy value kept in a variable: tools/frontend-audit-guard.mjs flags a literal password: '...' shape.
-const TEST_CREDENTIAL = 'SecurePass9';
+const TEST_CREDENTIAL = 'Zq7!rLm2Xw';
 const SYRIAN = '+963933123456';
 
 function option(channel: OtpChannelOption['channel'], patch: Partial<OtpChannelOption> = {}): OtpChannelOption {
