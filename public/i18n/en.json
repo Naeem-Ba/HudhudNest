@@ -1505,7 +1505,7 @@
   },
   "AGENCY_GRACE": {
     "TITLE": "The renewal period ends in {{days}} days",
-    "DESC": "The office owner's paid plan has ended, so the office is temporarily suspended: neither you nor your team can add new listings, but messages, enquiries and appointments still reach you. Renew the plan within {{days}} days to restore it; otherwise adding stays blocked and the office may be deactivated.",
+    "DESC": "The office owner's paid plan has ended, so the office is temporarily suspended: neither you nor your team can add new listings, but messages, enquiries and appointments still reach you. Renew the plan within {{days}} days to restore it; otherwise the office's listings are hidden from the public until the plan is renewed.",
     "CTA": "Renew the plan"
   },
   "AGENCY_FORM": {
