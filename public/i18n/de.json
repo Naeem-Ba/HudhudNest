@@ -1936,8 +1936,6 @@
     }
   },
   "PRICING": {
-    "META_TITLE": "Abo-Pakete für Eigentümer und Immobilienbüros",
-    "META_DESCRIPTION": "Starten Sie kostenlos mit der Anzeige Ihrer eigenen Immobilie oder wählen Sie ein Büro-Paket: Basic 49 $, Premium 99 $ oder Elite — höhere Anzeigengrenzen, Makler- und Mitarbeiterkonten, Berichte und Analysen sowie hervorgehobene Platzierung in den Suchergebnissen.",
     "EYEBROW": "Abo-Pakete",
     "TITLE": "Wählen Sie das passende Paket",
     "SUBTITLE": "Das kostenlose Paket ist für Privatpersonen, die ihre eigene Immobilie inserieren. Die Büro-Pakete ergänzen Makler- und Mitarbeiterkonten sowie Leistungsberichte — wechseln oder upgraden können Sie jederzeit.",
@@ -3277,6 +3275,26 @@
     "HOME": {
       "TITLE": "Digitale Immobilienplattform in Syrien",
       "DESCRIPTION": "Finden Sie Wohnungen und Immobilien zum Kauf und zur Miete in Syrien: klare Fotos, übersichtliche Angaben und direkter Kontakt zum Eigentümer oder Büro."
+    },
+    "SERVICES": {
+      "TITLE": "Vertrauenswürdige Immobilien-Dienstleistungen",
+      "DESCRIPTION": "Entdecken Sie geprüfte Dienstleister auf HudhudNest: Recht, Technik, Umzug, Fotografie und mehr. Dienstleistung anfragen und direkt verfolgen."
+    },
+    "EXPATS": {
+      "TITLE": "Ratgeber für Auslandssyrer zum Immobilienkauf",
+      "DESCRIPTION": "Klare Schritte für Auslandssyrer, die eine Immobilie erwerben, eine Wohnung suchen oder in Syrien investieren möchten, mit passenden Zusatzleistungen."
+    },
+    "MAP": {
+      "TITLE": "Immobilienkarte",
+      "DESCRIPTION": "Entdecken Sie Immobilien zum Kauf und zur Miete auf der Karte und wählen Sie die passende Gegend."
+    },
+    "PRICE_ESTIMATE": {
+      "TITLE": "Immobilienpreis schätzen",
+      "DESCRIPTION": "Schätzen Sie den Immobilienpreis in Ihrer Gegend nach Gouvernement, Typ und Fläche und vergleichen Sie Durchschnittspreise der Bezirke."
+    },
+    "PRICING": {
+      "TITLE": "Abo-Pakete für Eigentümer und Immobilienbüros",
+      "DESCRIPTION": "Starten Sie kostenlos mit der Anzeige Ihrer eigenen Immobilie oder wählen Sie ein Büro-Paket: Basic 49 $, Premium 99 $ oder Elite — höhere Anzeigengrenzen, Makler- und Mitarbeiterkonten, Berichte und Analysen sowie hervorgehobene Platzierung in den Suchergebnissen."
     }
   },
   "ADMIN_PAYMENTS": {

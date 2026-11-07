@@ -27,7 +27,7 @@ import { AgenciesApiService } from '../../core/api/agencies-api.service';
 import { Agency } from '../../core/models/agency.model';
 import { ProfileService } from '../../core/api/profile.service';
 import { AuthService } from '../../core/auth/auth.service';
-import { MetaService } from '../../core/services/meta.service';
+import { PageMetaService } from '../../core/services/page-meta.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { SubscriptionPlan } from '../../core/models/subscription-plan.model';
 
@@ -117,7 +117,7 @@ describe('PricingPage', () => {
           provide: ActivatedRoute,
           useValue: { snapshot: { queryParamMap: convertToParamMap(queryParams) } }
         },
-        { provide: MetaService, useValue: jasmine.createSpyObj('MetaService', ['setMeta']) },
+        { provide: PageMetaService, useValue: jasmine.createSpyObj('PageMetaService', ['applyTranslated']) },
         { provide: ToastService, useValue: toastSpy },
         {
           provide: TranslateService,

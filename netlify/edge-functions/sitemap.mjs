@@ -22,8 +22,10 @@
 // when the request itself was made to the production hostname (so a missing or build-only-scoped
 // SITE_URL can no longer silently blank the sitemap).
 //
-// SCALE: paginates the backend at its own max page size (100) with a 50,000-URL hard cap (the
-// sitemap protocol's own per-file limit) -- see fetchAllPublishedProperties in ./lib/sitemap.mjs.
+// SCALE: paginates three public lists (properties, short-stay listings, investment projects) at the
+// backend's own max page size (100), each with a 50,000-URL hard cap, and the file as a whole is cut at
+// the sitemap protocol's own per-file limit of 50,000 URLs -- see fetchAllPublishedProperties in
+// ./lib/sitemap.mjs.
 // A backend outage mid-fetch degrades to whatever pages were already gathered rather than
 // failing the whole response, so a transient hiccup never takes the sitemap to empty.
 //
@@ -44,6 +46,8 @@ import {
   buildEmptySitemapXml,
   buildStaticUrlEntries,
   buildPropertyUrlEntries,
+  buildShortStayUrlEntries,
+  buildInvestmentUrlEntries,
   fetchAllPublishedProperties
 } from './lib/sitemap.mjs';
 
@@ -70,20 +74,30 @@ export default async (request) => {
 
   const apiBaseUrl = (Netlify.env.get('API_URL') || DEFAULT_API_BASE_URL).replace(/\/+$/, '');
 
-  const properties = await fetchAllPublishedProperties(async (page, pageSize) => {
-    const response = await fetch(
-      `${apiBaseUrl}/properties?page=${page}&pageSize=${pageSize}`,
-      { headers: { accept: 'application/json' } }
-    );
-    if (!response.ok) {
-      throw new Error(`properties page ${page} responded ${response.status}`);
-    }
-    return response.json();
-  });
+  // Each list is fetched independently: if one endpoint is down or rate-limited the others still
+  // make it into the sitemap (fetchAllPublishedProperties keeps whatever pages it already has).
+  const fetchList = path =>
+    fetchAllPublishedProperties(async (page, pageSize) => {
+      const response = await fetch(`${apiBaseUrl}${path}?page=${page}&pageSize=${pageSize}`, {
+        headers: { accept: 'application/json' }
+      });
+      if (!response.ok) {
+        throw new Error(`${path} page ${page} responded ${response.status}`);
+      }
+      return response.json();
+    });
+
+  const [properties, shortStayListings, investmentProjects] = await Promise.all([
+    fetchList('/properties'),
+    fetchList('/short-stay/listings'),
+    fetchList('/investments/projects')
+  ]);
 
   const xml = buildSitemapXml([
     ...buildStaticUrlEntries(siteUrl),
-    ...buildPropertyUrlEntries(siteUrl, properties)
+    ...buildPropertyUrlEntries(siteUrl, properties),
+    ...buildShortStayUrlEntries(siteUrl, shortStayListings),
+    ...buildInvestmentUrlEntries(siteUrl, investmentProjects)
   ]);
 
   return new Response(xml, {

@@ -25,6 +25,13 @@ http://realestateworld.world/*       https://hudhudnest.com/:splat   301!
 https://www.realestateworld.world/*  https://hudhudnest.com/:splat   301!
 http://www.realestateworld.world/*   https://hudhudnest.com/:splat   301!
 #
+# Legacy German-named listing URLs (/wohnungen, /wohnungen/:id). Angular used to redirect these in the
+# browser only (200, then a client-side route change), so a crawler saw a duplicate page and a social
+# crawler got an empty preview. A real 301 here consolidates them onto /properties. Must stay above the
+# SPA catch-all. (QA Phase 20, P20-D05.)
+/wohnungen        /properties         301!
+/wohnungen/:id    /properties/:id     301!
+#
 # /download is NOT an Angular route: it is a static page generated at build time
 # (tools/generate-download-page.mjs -> public/download/index.html) so it works without the app shell
 # and the QR code can point at one stable address. The explicit forced rewrite keeps `/download`
