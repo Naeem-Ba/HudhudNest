@@ -215,6 +215,32 @@ describe('NavbarComponent (Phase 6)', () => {
     expect(el().querySelector('.navbar__nav a[href^="/admin"]')).toBeNull();
   });
 
+  describe('«مكتبي العقاري» يظهر فقط لمن لديه خطة مدفوعة سارية', () => {
+    function managementHrefs(planFields: Partial<UserProfile>): (string | null)[] {
+      auth.signIn({ email: 'owner@example.com' });
+      profile.profileSubject.next({ Id: 'u1', ...planFields } as UserProfile);
+      fixture.detectChanges();
+      openAccountMenu();
+      return Array.from(el().querySelectorAll('#account-management-group a')).map(a => a.getAttribute('href'));
+    }
+
+    it('بلا خطة ⇒ لا رابط', () => {
+      expect(managementHrefs({})).not.toContain('/my-agency');
+    });
+
+    it('خطة مجانية ⇒ لا رابط', () => {
+      expect(managementHrefs({ PlanTier: 'free', PlanStatus: 'Active' })).not.toContain('/my-agency');
+    });
+
+    it('خطة مدفوعة منتهية أو ملغاة ⇒ لا رابط', () => {
+      expect(managementHrefs({ PlanTier: 'pro', PlanStatus: 'Expired' })).not.toContain('/my-agency');
+    });
+
+    it('خطة مدفوعة سارية ⇒ الرابط ظاهر', () => {
+      expect(managementHrefs({ PlanTier: 'pro', PlanStatus: 'Active' })).toContain('/my-agency');
+    });
+  });
+
   it('✅ Admin ⇒ أدوات المشرف داخل قسم الإدارة (بما فيها اقتراحات المواقع)', () => {
     auth.signIn({ email: 'admin@example.com' }, true);
     fixture.detectChanges();

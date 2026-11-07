@@ -29,7 +29,7 @@ import { ScrollLockService } from '../core/services/scroll-lock.service';
 import { ThemeService } from '../core/services/theme.service';
 import { isNativeApp } from '../core/native/is-native-app';
 import { NotificationsApiService } from '../core/api/notifications-api.service';
-import { ProfileService, UserProfile, isEligibleForListing } from '../core/api/profile.service';
+import { ProfileService, UserProfile, hasActivePaidPlan, isEligibleForListing } from '../core/api/profile.service';
 import { ServiceProviderService } from '../core/api/service-provider.service';
 
 type AppLang = 'ar' | 'en' | 'de';
@@ -168,6 +168,16 @@ export class NavbarComponent implements OnInit, AfterViewInit {
     this.isLoggedIn$,
     this.profileService.profile$
   ]).pipe(map(([loggedIn, profile]) => loggedIn && isEligibleForListing(profile)));
+
+  /**
+   * "مكتبي العقاري" is shown only to an account whose paid plan is in force (product decision
+   * 2026-11-07). Offices need a paid plan anyway, so a free account would only land on a page that
+   * tells it to upgrade; the plan page stays reachable from the pricing link.
+   */
+  readonly showMyAgency$: Observable<boolean> = combineLatest([
+    this.isLoggedIn$,
+    this.profileService.profile$
+  ]).pipe(map(([loggedIn, profile]) => loggedIn && hasActivePaidPlan(profile)));
 
   /**
    * "لوحة مزوّد الخدمة" — تظهر فقط لحساب لديه ملف ServiceProvider فعلي (ليس دور Identity؛
