@@ -234,6 +234,19 @@ export function hasPaidPlan(profile: UserProfile | null): boolean {
   return !!tier && tier !== 'free';
 }
 
+/**
+ * A paid plan that is in force right now: a non-free tier whose status is Active. An expired or
+ * cancelled plan stays recorded in PlanTier but gives nothing, so it does not count. An older API
+ * that does not send PlanStatus yet is judged by the tier alone.
+ */
+export function hasActivePaidPlan(profile: UserProfile | null): boolean {
+  if (!hasPaidPlan(profile)) {
+    return false;
+  }
+  const status = profile?.PlanStatus;
+  return status == null || status === 'Active';
+}
+
 export function agencyEligibility(profile: UserProfile | null): AgencyEligibility {
   if (!profile || !(profile.EmailConfirmed || profile.PhoneConfirmed)) {
     return 'unverified';

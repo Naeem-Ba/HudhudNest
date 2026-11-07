@@ -129,6 +129,7 @@ describe('getFriendlyApiErrorMessage — agency eligibility codes are translated
   [
     'AGENCY_ACCOUNT_NOT_VERIFIED',
     'AGENCY_PAID_PLAN_REQUIRED',
+    'AGENCY_PLAN_EXPIRED',
     'AGENCY_FREE_PLAN_NOT_ALLOWED',
     'PAID_PLAN_ACTIVE'
   ].forEach(code => {

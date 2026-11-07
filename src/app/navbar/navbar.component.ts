@@ -13,7 +13,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { NavigationEnd, NavigationStart, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Observable, combineLatest, debounceTime, distinctUntilChanged, filter, fromEvent, map, switchMap } from 'rxjs';
+import { Observable, catchError, combineLatest, debounceTime, distinctUntilChanged, filter, fromEvent, map, of, switchMap } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AuthService, AuthenticatedUser } from '../core/auth/auth.service';
@@ -29,8 +29,10 @@ import { ScrollLockService } from '../core/services/scroll-lock.service';
 import { ThemeService } from '../core/services/theme.service';
 import { isNativeApp } from '../core/native/is-native-app';
 import { NotificationsApiService } from '../core/api/notifications-api.service';
-import { ProfileService, UserProfile, isEligibleForListing } from '../core/api/profile.service';
+import { ProfileService, UserProfile, hasActivePaidPlan, isEligibleForListing } from '../core/api/profile.service';
 import { ServiceProviderService } from '../core/api/service-provider.service';
+import { AgenciesApiService } from '../core/api/agencies-api.service';
+import { agencyGrace } from '../core/api/agency-grace';
 
 type AppLang = 'ar' | 'en' | 'de';
 
@@ -120,6 +122,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
   readonly notificationsApi = inject(NotificationsApiService);
   private readonly profileService = inject(ProfileService);
   private readonly serviceProviderService = inject(ServiceProviderService);
+  private readonly agenciesApi = inject(AgenciesApiService);
 
   @ViewChild('accountRef')
   private accountRef?: ElementRef<HTMLElement>;
@@ -168,6 +171,30 @@ export class NavbarComponent implements OnInit, AfterViewInit {
     this.isLoggedIn$,
     this.profileService.profile$
   ]).pipe(map(([loggedIn, profile]) => loggedIn && isEligibleForListing(profile)));
+
+  /**
+   * "مكتبي العقاري" is shown only to an account whose paid plan is in force (product decision
+   * 2026-11-07). Offices need a paid plan anyway, so a free account would only land on a page that
+   * tells it to upgrade; the plan page stays reachable from the pricing link.
+   */
+  readonly showMyAgency$: Observable<boolean> = combineLatest([
+    this.isLoggedIn$,
+    this.profileService.profile$
+  ]).pipe(
+    distinctUntilChanged(
+      ([l1, p1], [l2, p2]) => l1 === l2 && p1?.Id === p2?.Id && p1?.PlanTier === p2?.PlanTier && p1?.PlanStatus === p2?.PlanStatus
+    ),
+    switchMap(([loggedIn, profile]) => {
+      if (!loggedIn || !profile) return of(false);
+      if (hasActivePaidPlan(profile)) return of(true);
+      // Plan ended: the link stays for 30 more days for the owner and the members of the office
+      // (the owner's plan decides), so they can renew. Checked only for accounts without a paid plan.
+      return this.agenciesApi.getMine().pipe(
+        map(agency => agencyGrace(agency).active),
+        catchError(() => of(false))
+      );
+    })
+  );
 
   /**
    * "لوحة مزوّد الخدمة" — تظهر فقط لحساب لديه ملف ServiceProvider فعلي (ليس دور Identity؛
