@@ -1,3 +1,4 @@
+import { PageMetaService } from '../../core/services/page-meta.service';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -131,6 +132,7 @@ export class PriceEstimatePage implements OnInit {
   private readonly api = inject(PriceEstimateApiService);
   private readonly lookups = inject(LookupsApiService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly pageMeta = inject(PageMetaService);
 
   readonly governorates = signal<StructuredLocationLookup[]>([]);
   readonly districts = signal<StructuredLocationLookup[]>([]);
@@ -148,6 +150,7 @@ export class PriceEstimatePage implements OnInit {
   currency = 'USD';
 
   ngOnInit(): void {
+    this.pageMeta.applyTranslated('SEO.PRICE_ESTIMATE', '/price-estimate', this.destroyRef);
     this.lookups.getGovernorates().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({ next: g => this.governorates.set(g ?? []), error: () => undefined });
     this.lookups.getPropertyTypeCatalog().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({ next: t => this.propertyTypes.set(t ?? []), error: () => undefined });
   }

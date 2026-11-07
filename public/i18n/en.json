@@ -1936,8 +1936,6 @@
     }
   },
   "PRICING": {
-    "META_TITLE": "Subscription plans for owners and agencies",
-    "META_DESCRIPTION": "Start free by listing your own property, or pick an agency plan: Basic $49, Premium $99, or Elite — higher listing limits, agent and staff accounts, reports and analytics, and featured placement in search results.",
     "EYEBROW": "Subscription plans",
     "TITLE": "Choose the plan that fits you",
     "SUBTITLE": "The free plan is for individuals listing their own property. The agency plans add agent and staff accounts and performance reporting, and you can upgrade or switch at any time.",
@@ -3277,6 +3275,26 @@
     "HOME": {
       "TITLE": "Digital real-estate platform in Syria",
       "DESCRIPTION": "Find apartments and properties for sale and rent in Syria with ease: clear photos, organised details and direct contact with the owner or agency."
+    },
+    "SERVICES": {
+      "TITLE": "Trusted real estate services",
+      "DESCRIPTION": "Browse approved service providers on HudhudNest: legal, engineering, moving, photography and more. Request a service and follow it directly."
+    },
+    "EXPATS": {
+      "TITLE": "Expat guide to buying property in Syria",
+      "DESCRIPTION": "Clear steps for expats who want to own a property, find a home or invest in Syria, with the supporting services available."
+    },
+    "MAP": {
+      "TITLE": "Property map",
+      "DESCRIPTION": "Explore properties for sale and rent on the map and pick the area that suits you."
+    },
+    "PRICE_ESTIMATE": {
+      "TITLE": "Property price estimate",
+      "DESCRIPTION": "Estimate a property price in your area by governorate, type and size, and compare average prices across districts."
+    },
+    "PRICING": {
+      "TITLE": "Subscription plans for owners and agencies",
+      "DESCRIPTION": "Start free by listing your own property, or pick an agency plan: Basic $49, Premium $99, or Elite — higher listing limits, agent and staff accounts, reports and analytics, and featured placement in search results."
     }
   },
   "ADMIN_PAYMENTS": {

@@ -28,7 +28,7 @@ import { AgenciesApiService } from '../../core/api/agencies-api.service';
 import { knownErrorCodeKey } from '../../core/interceptors/api-error.interceptor';
 import { ProfileService } from '../../core/api/profile.service';
 import { AuthService } from '../../core/auth/auth.service';
-import { MetaService } from '../../core/services/meta.service';
+import { PageMetaService } from '../../core/services/page-meta.service';
 import { SubscriptionPlan } from '../../core/models/subscription-plan.model';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { ToastService } from '../../shared/services/toast.service';
@@ -60,7 +60,7 @@ export class PricingPage implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
-  private readonly meta = inject(MetaService);
+  private readonly pageMeta = inject(PageMetaService);
   private readonly translate = inject(TranslateService);
   private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
@@ -116,7 +116,8 @@ export class PricingPage implements OnInit {
   readonly currentPlanExpiresAt = signal<string | null>(null);
 
   ngOnInit(): void {
-    this.applyMeta();
+    // Public marketing page: own title/description and a canonical (SEO.PRICING in the i18n files).
+    this.pageMeta.applyTranslated('SEO.PRICING', '/pricing', this.destroyRef);
     this.load();
 
     this.showPlanRequiredBanner.set(
@@ -354,22 +355,6 @@ export class PricingPage implements OnInit {
           // Stay on /pricing — a failed save must not send the visitor on to a route
           // that assumes a plan was actually recorded.
         }
-      });
-  }
-
-  /**
-   * Public marketing page, so it sets its own meta tags — same precedent as the
-   * landing page. Uses translate.get() rather than instant() because the ngx-translate
-   * HTTP loader may not have resolved yet on a cold navigation.
-   */
-  private applyMeta(): void {
-    this.translate.get(['PRICING.META_TITLE', 'PRICING.META_DESCRIPTION'])
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(values => {
-        this.meta.setMeta({
-          title: values['PRICING.META_TITLE'],
-          description: values['PRICING.META_DESCRIPTION']
-        });
       });
   }
 }

@@ -127,7 +127,7 @@ available, so the Deno/Netlify runtime glue (`context.next()`, `Netlify.env.get`
 routing) could not be executed against the actual Netlify edge runtime. What *was* verified for
 real:
 - `netlify/edge-functions/lib/social-crawler.mjs` (crawler detection, HTML building, sanitization)
-  — plain JS, run with `node --test netlify/edge-functions/lib` (17 tests, all passing).
+  — plain JS, run with `npm run test:edge-functions` (the bare directory form `node --test netlify/edge-functions/lib` does not work on Node 22; the npm script lists the files explicitly).
 - `netlify/edge-functions/social-crawler-meta.mjs`'s actual handler — run under plain Node with
   only the one Netlify-specific global (`Netlify.env.get`) stubbed; everything else
   (`Request`/`Response`/`URL`/`fetch`) is standard Fetch API, so this genuinely exercises the
