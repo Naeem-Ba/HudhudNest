@@ -15,6 +15,7 @@
     "FIELD_INVALID": "The field “{{field}}” is empty or invalid.",
     "AGENCY_ACCOUNT_NOT_VERIFIED": "Verify your account first: confirm your email or phone number in your account settings, then try again.",
     "AGENCY_PAID_PLAN_REQUIRED": "A real-estate office needs a paid plan in force. The free plan does not include offices.",
+    "AGENCY_PLAN_EXPIRED": "The office owner's paid plan has ended, so no new listings can be added until it is renewed. Your existing listings, messages and appointments are unchanged.",
     "AGENCY_FREE_PLAN_NOT_ALLOWED": "You own a real-estate office, and the free plan does not include offices. Choose a paid plan.",
     "PAID_PLAN_ACTIVE": "You have an active paid subscription, and choosing the free plan would end it. Contact us if you want it cancelled.",
     "SERVICE_CATEGORY_NOT_APPROVED": "This category is not approved for your provider account. Contact the team to have it added.",
@@ -1503,8 +1504,8 @@
     "PROPERTY_HINT": "Property reviews are available after a completed visit. To rate the owner after messaging them:"
   },
   "AGENCY_GRACE": {
-    "TITLE": "The office will be deleted in {{days}} days unless the plan is renewed",
-    "DESC": "The office owner's paid plan has ended. The office stays available to you and your team for {{days}} more days so it can be renewed; if the plan is not renewed in that time, the office will be deleted.",
+    "TITLE": "The renewal period ends in {{days}} days",
+    "DESC": "The office owner's paid plan has ended, so the office is temporarily suspended: neither you nor your team can add new listings, but messages, enquiries and appointments still reach you. Renew the plan within {{days}} days to restore it; otherwise adding stays blocked and the office may be deactivated.",
     "CTA": "Renew the plan"
   },
   "AGENCY_FORM": {

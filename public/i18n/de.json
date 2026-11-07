@@ -15,6 +15,7 @@
     "FIELD_INVALID": "Das Feld „{{field}}“ ist leer oder ungültig.",
     "AGENCY_ACCOUNT_NOT_VERIFIED": "Bestätigen Sie zuerst Ihr Konto: Bestätigen Sie in den Kontoeinstellungen Ihre E-Mail-Adresse oder Telefonnummer und versuchen Sie es erneut.",
     "AGENCY_PAID_PLAN_REQUIRED": "Ein Maklerbüro erfordert ein aktives kostenpflichtiges Paket. Das kostenlose Paket enthält keine Büros.",
+    "AGENCY_PLAN_EXPIRED": "Der kostenpflichtige Tarif des Büro-Inhabers ist abgelaufen, neue Inserate können erst nach der Verlängerung hinzugefügt werden. Bestehende Inserate, Nachrichten und Termine bleiben unverändert.",
     "AGENCY_FREE_PLAN_NOT_ALLOWED": "Sie besitzen ein Maklerbüro, und das kostenlose Paket enthält keine Büros. Wählen Sie ein kostenpflichtiges Paket.",
     "PAID_PLAN_ACTIVE": "Sie haben ein aktives kostenpflichtiges Abo, und das kostenlose Paket würde es beenden. Kontaktieren Sie uns, wenn Sie es kündigen möchten.",
     "SERVICE_CATEGORY_NOT_APPROVED": "Diese Kategorie ist für Ihr Anbieterkonto nicht freigegeben. Wenden Sie sich an das Team.",
@@ -1503,8 +1504,8 @@
     "PROPERTY_HINT": "Immobilienbewertungen sind nach einer abgeschlossenen Besichtigung möglich. Um den Eigentümer nach dem Nachrichtenaustausch zu bewerten:"
   },
   "AGENCY_GRACE": {
-    "TITLE": "Das Büro wird in {{days}} Tagen gelöscht, wenn der Tarif nicht verlängert wird",
-    "DESC": "Der kostenpflichtige Tarif des Büro-Inhabers ist abgelaufen. Das Büro bleibt für Sie und Ihr Team noch {{days}} Tage verfügbar, damit es verlängert werden kann; wird der Tarif in dieser Zeit nicht verlängert, wird das Büro gelöscht.",
+    "TITLE": "Die Verlängerungsfrist endet in {{days}} Tagen",
+    "DESC": "Der kostenpflichtige Tarif des Büro-Inhabers ist abgelaufen, das Büro ist daher vorübergehend gesperrt: Sie und Ihr Team können keine neuen Inserate hinzufügen, Nachrichten, Anfragen und Termine erreichen Sie weiterhin. Verlängern Sie den Tarif innerhalb von {{days}} Tagen, um es wiederherzustellen; andernfalls bleibt das Hinzufügen gesperrt und das Büro kann deaktiviert werden.",
     "CTA": "Tarif verlängern"
   },
   "AGENCY_FORM": {
