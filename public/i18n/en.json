@@ -1502,6 +1502,11 @@
     "ADD_PROPERTY": "Review the property",
     "PROPERTY_HINT": "Property reviews are available after a completed visit. To rate the owner after messaging them:"
   },
+  "AGENCY_GRACE": {
+    "TITLE": "The office will be deleted in {{days}} days unless the plan is renewed",
+    "DESC": "The office owner's paid plan has ended. The office stays available to you and your team for {{days}} more days so it can be renewed; if the plan is not renewed in that time, the office will be deleted.",
+    "CTA": "Renew the plan"
+  },
   "AGENCY_FORM": {
     "CREATE_TITLE": "Register your agency",
     "EDIT_TITLE": "Edit agency",

@@ -12,6 +12,8 @@ import { NavbarComponent, navNeedsMenuButton } from './navbar.component';
 import { AuthService, AuthenticatedUser } from '../core/auth/auth.service';
 import { LoginMethod } from '../core/auth/login-identifier';
 import { ProfileService, UserProfile } from '../core/api/profile.service';
+import { AgenciesApiService } from '../core/api/agencies-api.service';
+import { Agency } from '../core/models/agency.model';
 import { ServiceProviderService } from '../core/api/service-provider.service';
 import { NotificationsApiService } from '../core/api/notifications-api.service';
 import { LanguageService } from '../core/services/language.service';
@@ -58,10 +60,12 @@ describe('NavbarComponent (Phase 6)', () => {
   let profile: ProfileStub;
   let providerRefresh: jasmine.Spy;
   let router: Router;
+  let myAgency: Agency | null;
 
   const el = () => fixture.nativeElement as HTMLElement;
 
   beforeEach(async () => {
+    myAgency = null;
     auth = new AuthStub();
     profile = new ProfileStub();
     providerRefresh = jasmine.createSpy('refresh').and.returnValue(of(null));
@@ -77,6 +81,7 @@ describe('NavbarComponent (Phase 6)', () => {
         ]),
         { provide: AuthService, useValue: auth },
         { provide: ProfileService, useValue: profile },
+        { provide: AgenciesApiService, useValue: { getMine: () => of(myAgency) } },
         {
           provide: ServiceProviderService,
           useValue: { myProvider$: of(null), refresh: providerRefresh }
@@ -234,6 +239,18 @@ describe('NavbarComponent (Phase 6)', () => {
 
     it('خطة مدفوعة منتهية أو ملغاة ⇒ لا رابط', () => {
       expect(managementHrefs({ PlanTier: 'pro', PlanStatus: 'Expired' })).not.toContain('/my-agency');
+    });
+
+    const expiredDaysAgo = (days: number) => new Date(Date.now() - days * 86_400_000).toISOString();
+
+    it('خطة منتهية منذ أقل من 30 يومًا ⇒ الرابط ظاهر لصاحب المكتب أو عضوه', () => {
+      myAgency = { ownerPlanStatus: 'Expired', ownerPlanExpiresAt: expiredDaysAgo(5) } as Agency;
+      expect(managementHrefs({ PlanTier: 'free', PlanStatus: 'Expired' })).toContain('/my-agency');
+    });
+
+    it('خطة منتهية منذ أكثر من 30 يومًا ⇒ لا رابط', () => {
+      myAgency = { ownerPlanStatus: 'Expired', ownerPlanExpiresAt: expiredDaysAgo(31) } as Agency;
+      expect(managementHrefs({ PlanTier: 'free', PlanStatus: 'Expired' })).not.toContain('/my-agency');
     });
 
     it('خطة مدفوعة سارية ⇒ الرابط ظاهر', () => {

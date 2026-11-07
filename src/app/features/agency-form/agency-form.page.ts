@@ -36,6 +36,7 @@ import { map } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AgenciesApiService } from '../../core/api/agencies-api.service';
+import { agencyGrace } from '../../core/api/agency-grace';
 import {
   LookupsApiService,
   StructuredLocationLookup,
@@ -83,6 +84,8 @@ export class AgencyFormPage implements OnInit {
   private existingAgencyId: string | null = null;
 
   readonly agency = signal<Agency | null>(null);
+  /** Owner's plan ended less than 30 days ago: show the renew-or-lose-it warning. */
+  readonly grace = computed(() => agencyGrace(this.agency()));
   readonly currentUserId = toSignal(
     this.auth.currentUser$.pipe(map(user => user?.id || user?.Id || null)),
     { initialValue: this.auth.getCurrentUserId() }

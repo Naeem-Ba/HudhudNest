@@ -1502,6 +1502,11 @@
     "ADD_PROPERTY": "Immobilie bewerten",
     "PROPERTY_HINT": "Immobilienbewertungen sind nach einer abgeschlossenen Besichtigung möglich. Um den Eigentümer nach dem Nachrichtenaustausch zu bewerten:"
   },
+  "AGENCY_GRACE": {
+    "TITLE": "Das Büro wird in {{days}} Tagen gelöscht, wenn der Tarif nicht verlängert wird",
+    "DESC": "Der kostenpflichtige Tarif des Büro-Inhabers ist abgelaufen. Das Büro bleibt für Sie und Ihr Team noch {{days}} Tage verfügbar, damit es verlängert werden kann; wird der Tarif in dieser Zeit nicht verlängert, wird das Büro gelöscht.",
+    "CTA": "Tarif verlängern"
+  },
   "AGENCY_FORM": {
     "CREATE_TITLE": "Immobilienbüro registrieren",
     "EDIT_TITLE": "Immobilienbüro bearbeiten",

@@ -23,6 +23,20 @@
       <p class="or-create" *ngIf="canCreate()">{{ 'AGENCY_MANAGE.OR_CREATE' | translate }}</p>
     </div>
 
+    <!-- خطة المالك منتهية: مهلة 30 يومًا للتجديد قبل حذف المكتب -->
+    <div class="page-block" *ngIf="!loading() && agency() && grace().active">
+      <div class="state-card" role="status" data-testid="agency-grace">
+        <span aria-hidden="true">⏳</span>
+        <div>
+          <h2>{{ 'AGENCY_GRACE.TITLE' | translate: { days: grace().daysLeft } }}</h2>
+          <p>{{ 'AGENCY_GRACE.DESC' | translate: { days: grace().daysLeft } }}</p>
+          <a class="btn btn--primary" routerLink="/pricing" [queryParams]="{ reason: 'agency-plan-required' }">
+            {{ 'AGENCY_GRACE.CTA' | translate }}
+          </a>
+        </div>
+      </div>
+    </div>
+
     <!-- حساب غير مؤهَّل: يُشرح السبب ويُعرض الحل بدل نموذج سيرفضه الخادم -->
     <div class="page-block" *ngIf="!loading() && !agency() && eligibility() && !canCreate()">
       <div class="state-card" role="status" data-testid="agency-gate">
