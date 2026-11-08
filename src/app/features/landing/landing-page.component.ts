@@ -39,6 +39,7 @@ import { PageMetaService } from '../../core/services/page-meta.service';
 import { SYRIA_CITY_OPTIONS, USER_TYPE_OPTIONS, UserType } from '../../core/models/lead.model';
 import { Offer } from '../../core/models/offer.model';
 import { numberLocaleFor } from '../../core/i18n/supported-preferences';
+import { imprintEntity } from '../legal/legal-entity';
 
 // ── Validator: رقم هاتف مرن يقبل سوريا والدول العربية ──
 function phoneValidator(ctrl: AbstractControl): ValidationErrors | null {
@@ -82,6 +83,8 @@ interface LandingLink { key: string; icon: LandingIcon; link?: string; query?: R
 })
 export class LandingPageComponent implements OnInit {
   readonly icons = LANDING_ICONS;
+  /** The imprint link appears once the operator's details are filled in (features/legal/legal-entity.ts). */
+  readonly showImprintLink = imprintEntity() !== null;
   private readonly fb         = inject(FormBuilder);
   private readonly leadSvc    = inject(LeadService);
   private readonly offersApi  = inject(OffersApiService);

@@ -24,6 +24,9 @@ import { EnvironmentBadgeComponent } from './shared/ui/environment-badge.compone
 import { AdsConsentBannerComponent } from './core/ads/ads-consent-banner.component';
 import { MetaService } from './core/services/meta.service';
 import { PageMetaService } from './core/services/page-meta.service';
+import { ClientErrorReporterService } from './core/diagnostics/client-error-reporter.service';
+import { installWindowErrorListeners } from './core/diagnostics/client-error-handler';
+import { AppUpdateNativeGateway } from './core/api/app-update-native.gateway';
 
 @Component({
   selector: 'app-root',
@@ -85,6 +88,8 @@ export class AppComponent {
   private readonly preferences = inject(PreferencesService);
   private readonly push = inject(PushRegistrationService);
   private readonly sessionRecovery = inject(SessionRecoveryService);
+  private readonly errorReporter = inject(ClientErrorReporterService);
+  private readonly nativeGateway = inject(AppUpdateNativeGateway);
 
   constructor(
     private readonly authService: AuthService,
@@ -104,6 +109,11 @@ export class AppComponent {
     deepLinks.initialize();
     this.appUpdate.initialize();
     this.metaService.applyGlobalRobotsPolicy();
+    // Errors outside Angular's zone, plus the real app version on native builds (QA phase 21, D07).
+    installWindowErrorListeners(this.errorReporter);
+    if (this.nativeGateway.isNativePlatform()) {
+      this.nativeGateway.getAppVersion().then(version => this.errorReporter.setAppVersion(version)).catch(() => undefined);
+    }
     void themeService; // يُطبَّق الوضع الداكن/الفاتح فور إنشاء الخدمة (constructor)
 
     // Every page starts from the generic title/description in the UI language and replaces it with its

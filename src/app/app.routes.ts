@@ -399,6 +399,13 @@ export const routes: Routes = [
             .then(m => m.LegalDocumentPage)
       },
       {
+        // Impressum (QA phase 22, LEG-004): shows the operator's details once legal-entity.ts is filled in.
+        path: 'imprint',
+        loadComponent: () =>
+          import('./features/legal/imprint.page')
+            .then(m => m.ImprintPage)
+      },
+      {
         // Phase 5 (Account Deletion) — public, no AuthGuard: Google Play/Apple App
         // Store both require a web path to account deletion reachable without
         // installing the app. See account-deletion.page.ts's doc comment.

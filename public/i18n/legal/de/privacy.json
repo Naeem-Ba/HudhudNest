@@ -51,10 +51,13 @@
             "Technische und Fehlerprotokolle: Betriebsprotokolle, die Anfragedetails und Fehlerinformationen enthalten können und dem Betrieb des Dienstes sowie der Fehleranalyse dienen.",
             "Teilen- und Zuordnungsereignisse: Wenn eine Anzeige geteilt oder über einen nachverfolgten Link geöffnet wird, erfassen wir die Anzeige, die Art des Ereignisses und die Kampagnenparameter (UTM) des Links sowie – falls Sie angemeldet sind – Ihre Nutzer-ID. IP-Adresse und Nachrichteninhalte speichern wir in diesen Ereignissen nicht.",
             "Trichter-Ereignisse der Startseite: aggregierte Ereignisse (z. B. dass ein Formular angezeigt oder abgesendet wurde), verknüpft mit einer zufälligen Sitzungskennung, nicht mit Ihrer Identität oder IP-Adresse.",
+            "Kontobezogene Aktivitätsereignisse (wenn Sie angemeldet sind): Einlade-, Prämien- und Nutzungsmeilenstein-Ereignisse sowie höchstens eine tägliche Aktivitätsmarkierung pro Konto. Wir nutzen sie, um das Einladungsprogramm zu betreiben und zu verstehen, welche Funktionen genutzt werden. Die einladende Person sieht nur aggregierte Zahlen; Administratoren können die Ereignisse sehen.",
+            "Fehlerberichte der App: Wenn die App auf einen unerwarteten Fehler stößt, sendet sie einen kurzen Bericht an unseren eigenen Server (nicht an einen externen Dienst) mit Fehlerart, Plattform, App-Version, Seite (ohne Abfrageparameter), Fehlermeldung und den ersten Zeilen des Stack-Traces, nachdem E-Mail-Adressen, lange Zahlen und Tokens entfernt wurden. Er wird nicht mit Ihrem Konto, Ihrer IP-Adresse oder einer Gerätekennung verknüpft, nicht in der Datenbank gespeichert und verbleibt nur in den Betriebsprotokollen.",
+            "Aggregierte Nutzungszähler: Auf dem Server zählen wir, wie viele Suchen und Anzeigen-Shares stattfinden, ohne Kennung oder Identität, für die Kapazitätsplanung und zur Verbesserung der Suche.",
             "Ihr ungefährer aktueller Standort, nur wenn Sie die Suche „in meiner Nähe“ auslösen: Ihr Browser oder Gerät fragt zuvor nach Ihrer Erlaubnis; wir nutzen die Koordinaten nur, um diese Suche auszuführen, und speichern sie nicht."
           ]
         },
-        { "p": "Zum Datum dieser Erklärung setzen wir keine Werbe-Tracker, keine Analyse- oder Absturzberichtsdienste Dritter und kein Device-Fingerprinting ein. Wir verwenden zwei gerätegebundene Kennungen, die in Abschnitt 9 (eine anonyme Besucher-ID im lokalen Speicher Ihres Browsers) und Abschnitt 13 (ein Push-Benachrichtigungs-Token, nur wenn Sie Benachrichtigungen einschalten) beschrieben sind. Ändert sich das, aktualisieren wir zuvor diese Erklärung." }
+        { "p": "Zum Datum dieser Erklärung setzen wir keine Werbe-Tracker, keine Analyse- oder Absturzberichtsdienste Dritter und kein Device-Fingerprinting ein; die oben genannten Fehlerberichte und Zähler werden auf unseren eigenen Servern verarbeitet. Wir verwenden zwei gerätegebundene Kennungen, die in Abschnitt 9 (eine anonyme Besucher-ID im lokalen Speicher Ihres Browsers) und Abschnitt 13 (ein Push-Benachrichtigungs-Token, nur wenn Sie Benachrichtigungen einschalten) beschrieben sind. Ändert sich das, aktualisieren wir zuerst diese Erklärung." }
       ]
     },
     {
@@ -152,7 +155,7 @@
             "Google und Apple: Anmeldung, wenn Sie sie wählen. Google Identity Services wird auf Anmeldeseiten in Ihrem Browser geladen.",
             "OpenStreetMap (Kachelserver der OpenStreetMap Foundation): Kartenkacheln, die beim Anzeigen oder Auswählen eines Standorts geladen werden; der Kachelserver kann dabei Ihre IP-Adresse sehen.",
             "Google Firebase Cloud Messaging (auf dem iPhone der Apple Push Notification Service): Zustellung von Push-Benachrichtigungen, nur wenn Sie Benachrichtigungen einschalten; das Push-Token Ihres Geräts wird bis zum Ausschalten oder Löschen des Kontos mit Ihrem Konto gespeichert.",
-            "Cloud-Hosting-Anbieter (derzeit Render für API und Datenbank und Netlify für die Web-App): Infrastruktur, auf der die Plattform läuft.",
+            "Cloud-Hosting-Anbieter (derzeit Render für die API, Supabase für die Datenbank, Netlify für die Web-App und ein Anbieter für verschlüsselten Speicher von Backups): Infrastruktur, auf der die Plattform läuft.",
             "Have I Been Pwned (k-Anonymitäts-Bereichsabfrage): Prüfung auf kompromittierte Passwörter, siehe Abschnitt 8."
           ]
         },

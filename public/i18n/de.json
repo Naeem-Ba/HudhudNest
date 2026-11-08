@@ -3249,7 +3249,10 @@
     "MIDDLE": "zu und bestätige, dass ich die",
     "PRIVACY": "Datenschutzerklärung",
     "TRAIL": "gelesen habe.",
-    "OPENS_NEW_TAB": "(öffnet in neuem Tab)"
+    "OPENS_NEW_TAB": "(öffnet in neuem Tab)",
+    "SOCIAL_LEAD": "Mit der Fortsetzung über Google oder Apple stimmen Sie den",
+    "SOCIAL_MIDDLE": "zu und bestätigen, die",
+    "SOCIAL_TRAIL": "gelesen zu haben."
   },
   "SEO": {
     "SHORT_STAY": {
@@ -3295,6 +3298,10 @@
     "PRICING": {
       "TITLE": "Abo-Pakete für Eigentümer und Immobilienbüros",
       "DESCRIPTION": "Starten Sie kostenlos mit der Anzeige Ihrer eigenen Immobilie oder wählen Sie ein Büro-Paket: Basic 49 $, Premium 99 $ oder Elite — höhere Anzeigengrenzen, Makler- und Mitarbeiterkonten, Berichte und Analysen sowie hervorgehobene Platzierung in den Suchergebnissen."
+    },
+    "IMPRINT": {
+      "TITLE": "Impressum | HudhudNest",
+      "DESCRIPTION": "Name, Anschrift und Kontaktdaten des Betreibers der Plattform HudhudNest."
     }
   },
   "ADMIN_PAYMENTS": {
@@ -4347,5 +4354,24 @@
     "SERVICES_HINT": "Ein Dienst wird auf der Seite der betreffenden Immobilie angefordert.",
     "NO_SERVICES": "Für diese Dienste gibt es noch keinen zugelassenen Anbieter. Sie erscheinen hier, sobald Anbieter dazukommen.",
     "FOOTNOTE": "HudhudNest ist eine Plattform für Anzeigen und Dienste, kein rechtlicher oder finanzieller Vermittler. Prüfen Sie Unterlagen, bevor Sie etwas bezahlen."
+  },
+  "LEGAL_LINKS": {
+    "TITLE": "Rechtliches und Datenschutz",
+    "PRIVACY": "Datenschutzerklärung",
+    "TERMS": "Nutzungsbedingungen",
+    "DELETION": "Konto und Daten löschen",
+    "IMPRINT": "Impressum",
+    "CONTACT": "Support kontaktieren"
+  },
+  "IMPRINT": {
+    "TITLE": "Impressum",
+    "PROVIDER": "Anbieter",
+    "CONTACT": "Kontakt",
+    "EMAIL": "E-Mail",
+    "PHONE": "Telefon",
+    "REGISTER": "Handelsregister",
+    "VAT": "Umsatzsteuer-Identifikationsnummer",
+    "RESPONSIBLE": "Verantwortlich für den Inhalt",
+    "NOT_AVAILABLE": "Die Angaben zum Betreiber sind noch nicht veröffentlicht. Schreiben Sie uns an support@hudhudnest.com."
   }
 }

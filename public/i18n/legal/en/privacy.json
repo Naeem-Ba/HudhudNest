@@ -51,10 +51,13 @@
             "Technical and error logs: operational logs that may include request details and error information, used to keep the service running and to investigate faults.",
             "Sharing and attribution events: when a listing is shared or opened through a tracked link, we record the listing, the type of event and the campaign parameters (UTM) of the link, and your user ID if you are signed in. We do not store your IP address or message content in these events.",
             "Landing-page funnel events: aggregate events (for example that a form was viewed or submitted) tied to a random session identifier, not to your identity or IP address.",
+            "Account-linked activity events (if you are signed in): invite, reward and usage-milestone events, and at most one daily activity marker per account. We use them to run the invitation programme and to understand which features are used. The person who invited you sees aggregate counts only; administrators can see the events.",
+            "App error reports: when the app hits an unexpected error it sends a short report to our own server (not to an outside service) with the kind of error, the platform, the app version, the page (without query parameters), the error message and the first lines of the stack trace, after removing e-mail addresses, long numbers and tokens. It is not linked to your account, IP address or device identifier, is not stored in the database and stays in operational logs only.",
+            "Aggregate usage counters: on the server we count how many searches and listing shares happen, with no identifier or identity, for capacity planning and to improve search.",
             "Your approximate current location, only if you press the \"near me\" search: your browser or device asks for permission first, and we use the coordinates only to run that search; we do not store them."
           ]
         },
-        { "p": "At the date of this Policy we do not use advertising trackers, third-party analytics or crash-reporting services, or device fingerprinting. We do use two device-bound identifiers, described in section 9 (an anonymous visitor id kept in your browser's local storage) and in section 13 (a push-notification token, only if you switch notifications on). If that changes, we will update this Policy first." }
+        { "p": "At the date of this Policy we do not use advertising trackers, third-party analytics or crash-reporting services, or device fingerprinting; the error reports and counters above are handled on our own servers. We do use two device-bound identifiers, described in section 9 (an anonymous visitor id kept in your browser's local storage) and in section 13 (a push-notification token, only if you switch notifications on). If that changes, we will update this Policy first." }
       ]
     },
     {
@@ -152,7 +155,7 @@
             "Google and Apple: sign-in, if you choose it. Google Identity Services is loaded in your browser on sign-in pages.",
             "OpenStreetMap (OpenStreetMap Foundation tile servers): map tiles shown when you view or pick a location; the tile server can see your IP address.",
             "Google Firebase Cloud Messaging (and Apple Push Notification service on iPhone): delivery of push notifications, only if you switch notifications on; your device's push token is stored with your account until you switch them off or delete the account.",
-            "Cloud hosting providers (currently Render for the API and database and Netlify for the web app): infrastructure on which the Platform runs.",
+            "Cloud hosting providers (currently Render for the API, Supabase for the database, Netlify for the web app, and an encrypted storage provider for backups): infrastructure on which the Platform runs.",
             "Have I Been Pwned (k-anonymity range lookup): breached-password check, see section 8."
           ]
         },

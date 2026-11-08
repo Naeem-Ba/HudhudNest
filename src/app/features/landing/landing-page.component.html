@@ -689,6 +689,7 @@
       <p class="footer__links">
         <a routerLink="/privacy-policy" class="footer__link">{{ 'LANDING.FOOTER.PRIVACY' | translate }}</a>
         <a routerLink="/terms-of-service" class="footer__link">{{ 'LANDING.FOOTER.TERMS' | translate }}</a>
+        @if (showImprintLink) { <a routerLink="/imprint" class="footer__link">{{ 'LEGAL_LINKS.IMPRINT' | translate }}</a> }
         <a routerLink="/kontakt" class="footer__link">{{ 'LANDING.FOOTER.CONTACT' | translate }}</a>
         @if (showDownloadLink) { <a href="/download" class="footer__link">{{ 'LANDING.FOOTER.DOWNLOAD' | translate }}</a> }
       </p>

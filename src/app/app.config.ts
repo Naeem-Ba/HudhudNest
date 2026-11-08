@@ -1,4 +1,4 @@
-import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom } from '@angular/core';
+import { APP_INITIALIZER, ApplicationConfig, ErrorHandler, importProvidersFrom } from '@angular/core';
 import { HttpErrorResponse, provideHttpClient, withInterceptors, HttpBackend, HttpClient } from '@angular/common/http';
 import { provideRouter, withNavigationErrorHandler } from '@angular/router';
 import { firstValueFrom, timeout, TimeoutError } from 'rxjs';
@@ -7,6 +7,7 @@ import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import { routes } from './app.routes';
+import { ClientErrorHandler } from './core/diagnostics/client-error-handler';
 import { ApiErrorInterceptor } from './core/interceptors/api-error.interceptor';
 import { AuthInterceptor } from './core/interceptors/auth-interceptor';
 import { CsrfInterceptor } from './core/interceptors/csrf.interceptor';
@@ -188,6 +189,8 @@ export const appConfig: ApplicationConfig = {
       })
     ),
     provideHttpClient(withInterceptors([CsrfInterceptor, AuthInterceptor, ApiErrorInterceptor])),
+    // Unhandled errors also go to our own API (no third party), see core/diagnostics.
+    { provide: ErrorHandler, useClass: ClientErrorHandler },
     {
       provide: APP_INITIALIZER,
       useFactory: resolveInitialLanguage,
