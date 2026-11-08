@@ -118,17 +118,14 @@
   &.alert { border-color: var(--danger); }
 }
 
-/* Invoice: a plain white sheet, readable in dark mode too, and printable. */
+/* Invoice: a bordered sheet in the page's own tokens (readable in light and dark), printed in the system's print colours. */
 .invoice-sheet {
-  background: #fff; color: #111; border: 1px solid var(--border); border-radius: var(--r-md); padding: clamp(1rem, 4vw, 2.5rem);
-
-  h1, h2, strong, bdi { color: #111; }
-  .pay-row span:first-child { color: #555; }
-  .pay-row { border-color: #ddd; }
+  background: var(--surface); color: var(--text-strong); border: 1px solid var(--border); border-radius: var(--r-md); padding: clamp(1rem, 4vw, 2.5rem);
 }
 
 @media print {
   .no-print { display: none !important; }
   .pay-page { padding: 0; width: 100%; }
-  .invoice-sheet { border: 0; padding: 0; }
+  .invoice-sheet { border: 0; padding: 0; background: Canvas; color: CanvasText; }
+  .invoice-sheet h1, .invoice-sheet h2, .invoice-sheet strong, .invoice-sheet bdi, .invoice-sheet .pay-row span { color: CanvasText; }
 }

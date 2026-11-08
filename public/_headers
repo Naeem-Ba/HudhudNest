@@ -63,6 +63,12 @@
 /checkout/*
   X-Robots-Tag: noindex, nofollow
 
+/payments
+  X-Robots-Tag: noindex, nofollow
+
+/payments/*
+  X-Robots-Tag: noindex, nofollow
+
 /profile
   X-Robots-Tag: noindex, nofollow
 
