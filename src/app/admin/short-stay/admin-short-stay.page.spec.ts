@@ -89,6 +89,9 @@ describe('AdminShortStayPage', () => {
   it('shows the API sentence when the action is refused and keeps the dialog open', () => {
     api.takeDown.and.returnValue(throwError(() => new HttpErrorResponse({ status: 409, error: { message: 'الإعلان موقوف مسبقًا' } })));
     const page = create().componentInstance;
+    // The sentence is Arabic, shown as written only on an Arabic page (QA phase 25, P16-D04 stopgap). Set after create():
+    // building the page initialises the language service, which writes <html lang>.
+    document.documentElement.lang = 'ar';
     page.openTakeDown(listing());
     page.reason = 'spam';
 

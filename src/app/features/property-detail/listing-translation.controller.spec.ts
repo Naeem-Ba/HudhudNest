@@ -111,10 +111,41 @@ describe('ListingTranslationController', () => {
     expect(controller.description()).toBeNull();
 
     api.ensure.and.returnValue(of({
-      targetLanguage: 'de', status: 'unavailable', reason: 'quota',
-      title: { state: 'unavailable' }, description: { state: 'unavailable' }
+      targetLanguage: 'de', status: 'unavailable', reason: 'provider_error',
+      title: { state: 'unavailable', reason: 'provider_error' }, description: { state: 'unavailable', reason: 'provider_error' }
     } as ListingTranslation));
     controller.start('p2', 'de');
+    expect(controller.view()).toBe('unavailable');
+  });
+
+  // QA phase 25 (P25-D01): no "try again" bar when trying again cannot help.
+  for (const reason of ['disabled', 'quota']) {
+    it(`shows no notice when translation is unavailable for a permanent reason (${reason})`, () => {
+      api.ensure.and.returnValue(of({
+        targetLanguage: 'de', status: 'unavailable', reason,
+        title: { state: 'unavailable', reason }, description: { state: 'unavailable', reason }
+      } as ListingTranslation));
+      controller.start('p3', 'de');
+      expect(controller.view()).toBe('none');
+    });
+  }
+
+  it('shows no notice when the source language cannot be told (an English listing on an English page)', () => {
+    api.ensure.and.returnValue(of({
+      targetLanguage: 'en', status: 'unavailable', reason: 'unknown_source_language',
+      title: { state: 'unavailable', reason: 'unknown_source_language' },
+      description: { state: 'unavailable', reason: 'unknown_source_language' }
+    } as ListingTranslation));
+    controller.start('p4', 'en');
+    expect(controller.view()).toBe('none');
+  });
+
+  it('keeps the retry notice when only some fields are permanently untranslatable but another failure is retryable', () => {
+    api.ensure.and.returnValue(of({
+      targetLanguage: 'de', status: 'unavailable', reason: 'too_long',
+      title: { state: 'unavailable', reason: 'cooldown' }, description: { state: 'unavailable', reason: 'too_long' }
+    } as ListingTranslation));
+    controller.start('p5', 'de');
     expect(controller.view()).toBe('unavailable');
   });
 

@@ -93,6 +93,10 @@ export class LoginComponent implements OnDestroy {
    * account exists, so this does not tell an attacker which addresses are registered.
    */
   credentialsFailed = false;
+  /** كلمة السر صحيحة لكن البريد غير مؤكَّد: يظهر زر إعادة إرسال الرابط (P4-D11). */
+  emailNotConfirmed = false;
+  resendingConfirmation = false;
+  private unconfirmedEmail = '';
   consentError = '';
   showPass = false;
   showPassReg = false;
@@ -165,6 +169,7 @@ export class LoginComponent implements OnDestroy {
     this.loading = true;
     this.message = '';
     this.credentialsFailed = false;
+    this.emailNotConfirmed = false;
 
     const request = {
       email: this.loginData.Email.trim().toLowerCase(),
@@ -184,12 +189,39 @@ export class LoginComponent implements OnDestroy {
     });
   }
 
+  /** يعيد إرسال رابط تأكيد البريد (الخادم يطبّق حدّ 3 رسائل/24 ساعة ويردّ بالرد نفسه دائمًا). */
+  resendConfirmation(): void {
+    if (this.resendingConfirmation || !this.unconfirmedEmail) {
+      return;
+    }
+
+    this.resendingConfirmation = true;
+    this.authApi.resendConfirmationEmail(this.unconfirmedEmail).subscribe({
+      next: () => {
+        this.resendingConfirmation = false;
+        this.emailNotConfirmed = false;
+        this.message = this.t('AUTH.CONFIRMATION_RESENT');
+        this.success = true;
+      },
+      error: error => {
+        this.resendingConfirmation = false;
+        this.setError(
+          this.t((error as { status?: number } | null)?.status === 429
+            ? 'AUTH.RESEND_CONFIRMATION.TOO_MANY'
+            : 'AUTH.ERRORS.SERVER_ERROR')
+        );
+        this.emailNotConfirmed = true;
+      }
+    });
+  }
+
   /** Called when the person edits a field: the message about the previous attempt is no longer true. */
   clearFormMessage(): void {
     if (this.success || this.isLockedOut || (!this.message && !this.loginAttemptWarning)) {
       return;
     }
 
+    this.emailNotConfirmed = false;
     this.message = '';
     this.credentialsFailed = false;
     this.loginAttemptWarning = '';
@@ -226,6 +258,13 @@ export class LoginComponent implements OnDestroy {
 
       case LOGIN_ERROR_CODES.SERVER_ERROR:
         this.setError(this.t('AUTH.ERRORS.SERVER_ERROR'));
+        return;
+
+      case LOGIN_ERROR_CODES.EMAIL_NOT_CONFIRMED:
+        // The server already sent a fresh link (within its 3-per-24h limit); say so and offer one more.
+        this.setError(this.t('AUTH.ERRORS.EMAIL_NOT_CONFIRMED'));
+        this.emailNotConfirmed = true;
+        this.unconfirmedEmail = this.loginData.Email.trim().toLowerCase();
         return;
 
       default:
@@ -576,6 +615,7 @@ export class LoginComponent implements OnDestroy {
     this.loading = false;
     this.success = false;
     this.credentialsFailed = false;
+    this.emailNotConfirmed = false;
     this.message = message;
     // No toast here: the alert in the template is the one place the message is shown. The page then
     // scrolls to it (or to the field it belongs to) so it is never left below the fold or the keyboard.

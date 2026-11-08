@@ -32,6 +32,8 @@ import {
 import { Property, DuplicateCandidate } from '../../core/models/property.model';
 import { isMarketCurrency } from '../../core/pricing/market-currencies';
 import { ToastService } from '../../shared/services/toast.service';
+import { HttpContext } from '@angular/common/http';
+import { SKIP_ERROR_TOAST } from '../../core/interceptors/api-error.interceptor';
 import { MapPickerComponent } from '../../map-picker/map-picker.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { LocationComboComponent } from '../../shared/ui/location-combo.component';
@@ -1245,26 +1247,31 @@ export class PropertyFormPage implements OnInit {
     }
 
     this.propertyApi
-      .uploadImages(propertyId, formData)
+      // QA phase 25 (P25-D05): the interceptor's generic error toast is skipped here. A failed photo upload used to
+      // raise three toasts at once (the generic error, this warning and "saved successfully"); now it is one
+      // sentence that says both things: the listing is saved, the photos are not.
+      .uploadImages(propertyId, formData, { context: new HttpContext().set(SKIP_ERROR_TOAST, true) })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => this.onSaveSuccess(propertyId),
         error: () => {
           this.showToast(this.translate.instant('PROPERTY_FORM.IMAGE_UPLOAD_WARNING'), 'error');
-          this.onSaveSuccess(propertyId);
+          this.onSaveSuccess(propertyId, false);
         }
       });
   }
 
-  private onSaveSuccess(id: string): void {
+  private onSaveSuccess(id: string, announce = true): void {
     this.isSaving.set(false);
 
-    this.showToast(
-      this.translate.instant(
-        this.isEditMode() ? 'PROPERTY_FORM.UPDATE_SUCCESS' : 'PROPERTY_FORM.CREATE_SUCCESS'
-      ),
-      'success'
-    );
+    if (announce) {
+      this.showToast(
+        this.translate.instant(
+          this.isEditMode() ? 'PROPERTY_FORM.UPDATE_SUCCESS' : 'PROPERTY_FORM.CREATE_SUCCESS'
+        ),
+        'success'
+      );
+    }
 
     if (id) {
       void this.router.navigate(['/properties', id]);
