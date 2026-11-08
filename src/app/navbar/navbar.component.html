@@ -918,6 +918,7 @@
       [hidden]="!managementOpen"
     >
       <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/my-listings', label: 'PROFILE.MY_ADS', icon: '📋' }"></ng-container>
+      <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/payments', label: 'NAVBAR.MY_PAYMENTS', icon: '🧾' }"></ng-container>
       <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/short-stay/manage', label: 'NAVBAR.SHORT_STAY_LISTINGS', icon: '🏡' }"></ng-container>
       <ng-container *ngIf="showMyAgency$ | async">
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/my-agency', label: 'NAVBAR.MY_AGENCY', icon: '🏢' }"></ng-container>
@@ -940,6 +941,7 @@
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/service-providers', label: 'NAVBAR.ADMIN_SERVICE_PROVIDERS', icon: '🧰' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/listing-reports', label: 'NAVBAR.ADMIN_LISTING_REPORTS', icon: '🚩' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/payment-requests', label: 'NAVBAR.ADMIN_PAYMENT_REQUESTS', icon: '💳' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/payments', label: 'NAVBAR.ADMIN_PAYMENTS', icon: '🏦' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/investments', label: 'NAVBAR.ADMIN_INVESTMENTS', icon: '💼' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/location-suggestions', label: 'NAVBAR.ADMIN_LOCATION_SUGGESTIONS', icon: '📍' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/marketing', label: 'NAVBAR.ADMIN_MARKETING', icon: '📣' }"></ng-container>

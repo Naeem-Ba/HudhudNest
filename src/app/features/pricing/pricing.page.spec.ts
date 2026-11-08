@@ -23,6 +23,7 @@ import { BehaviorSubject, of, throwError } from 'rxjs';
 
 import { PricingPage } from './pricing.page';
 import { PlansApiService } from '../../core/api/plans-api.service';
+import { PaymentsApiService } from '../../core/api/payments-api.service';
 import { AgenciesApiService } from '../../core/api/agencies-api.service';
 import { Agency } from '../../core/models/agency.model';
 import { ProfileService } from '../../core/api/profile.service';
@@ -72,6 +73,7 @@ describe('PricingPage', () => {
   afterEach(() => sessionStorage.removeItem(MARKER_KEY));
 
   let plansApiSpy: jasmine.SpyObj<PlansApiService>;
+  let paymentsApiSpy: jasmine.SpyObj<PaymentsApiService>;
   let profileServiceSpy: jasmine.SpyObj<ProfileService>;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
   let routerSpy: jasmine.SpyObj<Router>;
@@ -82,10 +84,14 @@ describe('PricingPage', () => {
   function createComponent(
     accessToken: string | null,
     queryParams: Record<string, string> = {},
-    ownedAgency: Agency | null = null
+    ownedAgency: Agency | null = null,
+    onlinePayments = false
   ): PricingPage {
     agenciesApiSpy = jasmine.createSpyObj('AgenciesApiService', ['getMine']);
     agenciesApiSpy.getMine.and.returnValue(of(ownedAgency));
+
+    paymentsApiSpy = jasmine.createSpyObj('PaymentsApiService', ['catalog']);
+    paymentsApiSpy.catalog.and.returnValue(of({ enabled: onlinePayments, providers: onlinePayments ? [{ code: 'test' }] : [], termsVersion: 'v1', refundRequestWindowDays: 14 } as never));
 
     plansApiSpy = jasmine.createSpyObj('PlansApiService', ['getPlans', 'selectPlan']);
     plansApiSpy.getPlans.and.returnValue(of(PLANS));
@@ -109,6 +115,7 @@ describe('PricingPage', () => {
       imports: [PricingPage],
       providers: [
         { provide: PlansApiService, useValue: plansApiSpy },
+        { provide: PaymentsApiService, useValue: paymentsApiSpy },
         { provide: ProfileService, useValue: profileServiceSpy },
         { provide: AuthService, useValue: authServiceSpy },
         { provide: AgenciesApiService, useValue: agenciesApiSpy },
@@ -419,5 +426,44 @@ describe('PricingPage', () => {
 
       expect(component.showAgencyPlanBanner()).toBeTrue();
     });
+  });
+
+  describe('with online payments switched on', () => {
+    it('sends a signed-in visitor choosing a priced plan to the payment checkout, without recording a pending request', () => {
+      const component = createComponent('token', {}, null, true);
+      expect(component.onlinePayments()).toBeTrue();
+
+      component.onSelectPlan(PLANS[1]);
+
+      expect(plansApiSpy.selectPlan).not.toHaveBeenCalled();
+      expect(routerSpy.navigate).toHaveBeenCalledWith(['/payments/checkout'], { queryParams: { product: 'plan', plan: 'premium' } });
+    });
+
+    it('sends a signed-out visitor through login and back to the checkout', () => {
+      const component = createComponent(null, {}, null, true);
+
+      component.onSelectPlan(PLANS[1]);
+
+      expect(routerSpy.navigate).toHaveBeenCalledWith(['/auth/login'], {
+        queryParams: { returnUrl: '/payments/checkout?product=plan&plan=premium' }
+      });
+    });
+
+    it('keeps the free plan on the old flow', () => {
+      const component = createComponent('token', {}, null, true);
+
+      component.onSelectPlan(PLANS[0]);
+
+      expect(plansApiSpy.selectPlan).toHaveBeenCalledWith('free');
+    });
+  });
+
+  it('keeps the request-and-contact flow while online payments are off', () => {
+    const component = createComponent('token');
+    expect(component.onlinePayments()).toBeFalse();
+
+    component.onSelectPlan(PLANS[1]);
+
+    expect(plansApiSpy.selectPlan).toHaveBeenCalledWith('premium');
   });
 });
