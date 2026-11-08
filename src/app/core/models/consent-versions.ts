@@ -18,9 +18,9 @@ export interface LegalDocumentMeta {
 }
 
 export const PRIVACY_POLICY_META: LegalDocumentMeta = {
-  version: '2026-11-02',
-  effectiveDate: '2026-11-02',
-  lastUpdated: '2026-11-02'
+  version: '2026-11-08',
+  effectiveDate: '2026-11-08',
+  lastUpdated: '2026-11-08'
 };
 
 export const TERMS_OF_SERVICE_META: LegalDocumentMeta = {

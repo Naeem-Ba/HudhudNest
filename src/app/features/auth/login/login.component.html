@@ -83,6 +83,17 @@
         </button>
       </div>
 
+      <!-- Google/Apple have no checkbox: continuing with them is the acceptance, so say so right here and record it
+           after the sign-in (ConsentApiService.ensureCurrentAcceptance). -->
+      @if (googleAvailable || appleAvailable) {
+        <p class="social-consent">
+          {{ 'CONSENT.SOCIAL_LEAD' | translate }}
+          <a routerLink="/terms-of-service" target="_blank" rel="noopener">{{ 'CONSENT.TERMS' | translate }}</a>
+          {{ 'CONSENT.SOCIAL_MIDDLE' | translate }}
+          <a routerLink="/privacy-policy" target="_blank" rel="noopener">{{ 'CONSENT.PRIVACY' | translate }}</a>{{ 'CONSENT.SOCIAL_TRAIL' | translate }}
+        </p>
+      }
+
       <div class="auth-divider">{{ 'AUTH.OR' | translate }}</div>
 
       <div

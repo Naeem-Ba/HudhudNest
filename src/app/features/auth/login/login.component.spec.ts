@@ -42,6 +42,7 @@ describe('LoginComponent', () => {
   let translate: jasmine.SpyObj<any>;
   let toast: jasmine.SpyObj<any>;
   let errorFocus: jasmine.SpyObj<any>;
+  let consentApi: jasmine.SpyObj<any>;
 
   beforeEach(() => {
     authApi = jasmine.createSpyObj('AuthApiService', ['login', 'register']);
@@ -60,6 +61,8 @@ describe('LoginComponent', () => {
     translate.instant.and.callFake((key: string) => key);
     toast = jasmine.createSpyObj('ToastService', ['success', 'error']);
     errorFocus = jasmine.createSpyObj('AuthErrorFocusService', ['request']);
+    consentApi = jasmine.createSpyObj('ConsentApiService', ['ensureCurrentAcceptance']);
+    consentApi.ensureCurrentAcceptance.and.returnValue(of([]));
 
     component = new LoginComponent(
       authApi,
@@ -71,11 +74,32 @@ describe('LoginComponent', () => {
       route,
       translate,
       toast,
-      errorFocus
+      errorFocus,
+      consentApi
     );
   });
 
   afterEach(() => component.ngOnDestroy());
+
+  describe('الدخول الاجتماعي — إثبات الموافقة (LEG-002)', () => {
+    const response = { accessToken: 'a', refreshToken: 'r', expiresIn: 3600 };
+
+    it('✅ يسجّل قبول النسخة الحالية ثم يكمل الدخول', () => {
+      (component as any).completeSocialLogin(response);
+
+      expect(consentApi.ensureCurrentAcceptance).toHaveBeenCalled();
+      expect(tokenStorage.storeTokens).toHaveBeenCalledWith(response);
+      expect(router.navigateByUrl).toHaveBeenCalledWith('/home');
+    });
+
+    it('✅ فشل تسجيل الموافقة لا يمنع الدخول', () => {
+      consentApi.ensureCurrentAcceptance.and.returnValue(throwError(() => httpError(500)));
+
+      (component as any).completeSocialLogin(response);
+
+      expect(router.navigateByUrl).toHaveBeenCalledWith('/home');
+    });
+  });
 
   describe('onLogin — البريد الإلكتروني', () => {
     it('✅ ينجح الدخول ويستعيد الجلسة وينتقل إلى returnUrl', () => {

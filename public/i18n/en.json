@@ -3249,7 +3249,10 @@
     "MIDDLE": "and acknowledge that I have read the",
     "PRIVACY": "Privacy Policy",
     "TRAIL": ".",
-    "OPENS_NEW_TAB": "(opens in a new tab)"
+    "OPENS_NEW_TAB": "(opens in a new tab)",
+    "SOCIAL_LEAD": "By continuing with Google or Apple you agree to the",
+    "SOCIAL_MIDDLE": "and confirm that you have read the",
+    "SOCIAL_TRAIL": "."
   },
   "SEO": {
     "SHORT_STAY": {
@@ -3295,6 +3298,10 @@
     "PRICING": {
       "TITLE": "Subscription plans for owners and agencies",
       "DESCRIPTION": "Start free by listing your own property, or pick an agency plan: Basic $49, Premium $99, or Elite — higher listing limits, agent and staff accounts, reports and analytics, and featured placement in search results."
+    },
+    "IMPRINT": {
+      "TITLE": "Legal notice | HudhudNest",
+      "DESCRIPTION": "Name, address and contact details of the operator of the HudhudNest platform."
     }
   },
   "ADMIN_PAYMENTS": {
@@ -4347,5 +4354,24 @@
     "SERVICES_HINT": "A service is requested from the page of the property it is for.",
     "NO_SERVICES": "No approved provider offers these services yet. They appear here when providers join.",
     "FOOTNOTE": "HudhudNest is a listings and services platform, not a legal or financial intermediary. Check documents before paying anything."
+  },
+  "LEGAL_LINKS": {
+    "TITLE": "Legal and privacy",
+    "PRIVACY": "Privacy Policy",
+    "TERMS": "Terms of Use",
+    "DELETION": "Delete account and data",
+    "IMPRINT": "Legal notice (Impressum)",
+    "CONTACT": "Contact support"
+  },
+  "IMPRINT": {
+    "TITLE": "Legal notice (Impressum)",
+    "PROVIDER": "Provider",
+    "CONTACT": "Contact",
+    "EMAIL": "Email",
+    "PHONE": "Phone",
+    "REGISTER": "Commercial register",
+    "VAT": "VAT ID",
+    "RESPONSIBLE": "Responsible for content",
+    "NOT_AVAILABLE": "The operator's details have not been published yet. Write to us at support@hudhudnest.com."
   }
 }

@@ -50,7 +50,9 @@ const values = {
   ADSENSE_SLOT_SEARCH: readEnv('ADSENSE_SLOT_SEARCH'),
   ADSENSE_SLOT_DETAIL: readEnv('ADSENSE_SLOT_DETAIL'),
   ADMOB_BANNER_ANDROID: readEnv('ADMOB_BANNER_ANDROID'),
-  ADMOB_BANNER_IOS: readEnv('ADMOB_BANNER_IOS')
+  ADMOB_BANNER_IOS: readEnv('ADMOB_BANNER_IOS'),
+  // Error reports to our own API (docs/privacy in the API repo: analytics-inventory). On unless exactly "true" here.
+  CLIENT_ERROR_REPORTING_DISABLED: readEnv('CLIENT_ERROR_REPORTING_DISABLED')
 };
 
 const contextProblems = checkDeployContext(

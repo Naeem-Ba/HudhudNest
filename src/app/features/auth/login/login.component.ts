@@ -121,7 +121,8 @@ export class LoginComponent implements OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly translate: TranslateService,
     private readonly toast: ToastService,
-    private readonly errorFocus: AuthErrorFocusService
+    private readonly errorFocus: AuthErrorFocusService,
+    private readonly consentApi: ConsentApiService
   ) {}
 
   get googleAvailable(): boolean {
@@ -541,6 +542,8 @@ export class LoginComponent implements OnDestroy {
 
   private completeSocialLogin(response: AuthTokenResponse): void {
     this.tokenStorage.storeTokens(response);
+    // The notice under the social buttons is the consent on this path; keep the proof (best-effort).
+    this.consentApi.ensureCurrentAcceptance().subscribe({ error: () => undefined });
     this.refreshAuthState('email');
     this.completeLoginSuccess();
   }
