@@ -92,7 +92,7 @@ function firstFrame(stack: string): { source: string; line: number; column: numb
   if (!match) {
     return null;
   }
-  return { source: pathOnly(match[1]), line: Number(match[2]), column: Number(match[3]) };
+  return { source: pathOnly(match[1] ?? ''), line: Number(match[2]), column: Number(match[3]) };
 }
 
 /** Same error, same place: one report is enough. Message digits are dropped so "item 12" and "item 13" collapse. */
