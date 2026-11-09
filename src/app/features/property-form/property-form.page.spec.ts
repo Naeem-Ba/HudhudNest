@@ -217,7 +217,8 @@ describe('PropertyFormPage', () => {
 
   // ────────────── Rent: تفاصيل الإيجار ──────────────
   describe('whole-number rooms and floor (P26-D02)', () => {
-    // Without its own component these three only passed when another test had created one first (random order).
+    // Jasmine runs specs in random order. These specs read the shared `component` but never created it, so
+    // they only passed when an earlier spec had happened to assign it (TypeError on `form` otherwise).
     beforeEach(() => {
       component = createComponent();
     });
