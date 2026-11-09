@@ -121,7 +121,7 @@ const PIN_SETTLE_MS = 800;
     .geo-picker { display: flex; flex-direction: column; gap: .75rem; }
     .geo-picker__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: .9rem 1rem; }
     .geo-picker__cell label { display: block; margin-bottom: .35rem; font-size: .85rem; font-weight: 600; color: var(--gray-900); }
-    .geo-picker__req { color: var(--error, #c0392b); }
+    .geo-picker__req { color: var(--danger-text); }
     .geo-picker__opt { font-weight: 400; color: var(--gray-500); font-size: .76rem; }
     .geo-picker__select {
       width: 100%; box-sizing: border-box; padding: .72rem .9rem; border: 1.5px solid var(--border);
@@ -130,7 +130,7 @@ const PIN_SETTLE_MS = 800;
     .geo-picker__select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
     .geo-picker__select:disabled { opacity: .6; cursor: not-allowed; }
     .geo-picker__hint { margin: .35rem 0 0; font-size: .76rem; color: var(--gray-500); line-height: 1.5; }
-    .geo-picker__error { margin: .35rem 0 0; font-size: .8rem; color: var(--error, #c0392b); }
+    .geo-picker__error { margin: .35rem 0 0; font-size: .8rem; color: var(--danger-text); }
     .geo-picker__warn {
       margin: 0; padding: .6rem .8rem; font-size: .82rem; line-height: 1.5; color: var(--gold-text);
       background: var(--gold-soft); border-radius: var(--r-md);

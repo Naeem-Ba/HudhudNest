@@ -280,7 +280,7 @@ const NEXT_LEVEL: Partial<Record<GeoLocationType, GeoLocationType>> = {
     .item--off { opacity: .65; }
     .item__main { flex: 1; display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; background: none; border: 0; text-align: start; cursor: pointer; color: inherit; padding: .25rem; }
     .chip { background: var(--gold-soft); color: var(--text-strong); border-radius: var(--r-pill); padding: .1rem .55rem; font-size: var(--text-xs); font-weight: 600; }
-    .chip--status { background: var(--surface-2, var(--gold-soft)); }
+    .chip--status { background: var(--surface-elevated); }
     .muted { color: var(--text-muted); }
     .small { font-size: var(--text-xs); }
     .detail { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: 1rem; display: flex; flex-direction: column; gap: .6rem; }
