@@ -72,7 +72,7 @@ import { ScrollLockService } from '../../core/services/scroll-lock.service';
     }
     .modal__header { padding: 1.1rem 1.25rem .5rem; }
     .modal__header h2 {
-      margin: 0; color: var(--navy); font-family: var(--font-display); font-size: 1.15rem;
+      margin: 0; color: var(--text-strong); font-family: var(--font-display); font-size: 1.15rem;
     }
     .modal__body { padding: .5rem 1.25rem 1rem; color: var(--gray-700); line-height: 1.7; }
     .modal__footer {
@@ -84,9 +84,9 @@ import { ScrollLockService } from '../../core/services/scroll-lock.service';
       font-weight: 600; cursor: pointer; border: 1px solid transparent;
     }
     .btn:disabled { opacity: .6; cursor: not-allowed; }
-    .btn--outline { background: var(--surface); border-color: var(--border); color: var(--navy); }
+    .btn--outline { background: var(--surface); border-color: var(--border); color: var(--text-strong); }
     .btn--primary { background: var(--primary); color: var(--on-primary); }
-    .btn--danger { background: var(--danger-soft); color: var(--danger); border-color: rgba(220,38,38,.25); }
+    .btn--danger { background: var(--danger-soft); color: var(--danger-text); border-color: rgba(220,38,38,.25); }
   `]
 })
 export class ConfirmModalComponent implements OnChanges, OnDestroy {

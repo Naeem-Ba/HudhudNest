@@ -1,14 +1,17 @@
 ﻿import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { LocationNamesService } from '../../core/api/location-names.service';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
+import { catchError, of, switchMap, tap } from 'rxjs';
 
 import { PropertyApiService } from '../../core/api/property-api.service';
 import type { Property } from '../../core/models/property.model';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { UrlService } from '../../core/services/url.service';
+import { InterestAreasService } from '../../core/services/interest-areas.service';
 import {
   LookupsApiService,
   LookupItem,
@@ -16,10 +19,10 @@ import {
   pickLocalizedName
 } from '../../core/api/lookups-api.service';
 import { LanguageService } from '../../core/services/language.service';
-import { MetaService } from '../../core/services/meta.service';
-import { PropertyShareUrlService } from '../../core/sharing/property-share-url.service';
+import { PageMetaService } from '../../core/services/page-meta.service';
 import { formatListingPrice, primaryListingPrice } from '../../shared/utils/listing-price';
 import { isReservedListing } from '../../shared/utils/listing-status';
+import { ListingViewCountComponent } from '../../shared/ui/listing-view-count.component';
 
 /** خيارات سقف السعر بحقل البحث — تُرسَل كـ maxPrice لصفحة النتائج. */
 interface HeroPriceOption {
@@ -31,6 +34,7 @@ interface HeroPriceOption {
   selector: 'app-home',
   standalone: true,
   imports: [
+    ListingViewCountComponent,
     CommonModule,
     RouterLink,
     FormsModule,
@@ -47,12 +51,13 @@ export class HomeComponent implements OnInit {
 
   private readonly propertyApiService = inject(PropertyApiService);
   private readonly lookupsApi = inject(LookupsApiService);
+  readonly locations = inject(LocationNamesService);
   private readonly langService = inject(LanguageService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly urlService = inject(UrlService);
-  private readonly meta = inject(MetaService);
-  private readonly shareUrl = inject(PropertyShareUrlService);
+  private readonly pageMeta = inject(PageMetaService);
+  private readonly interestAreas = inject(InterestAreasService);
 
   private readonly propertyImageWidths = [320, 480, 640, 800] as const;
 
@@ -79,7 +84,7 @@ export class HomeComponent implements OnInit {
     // Session audit (2026-10): this was the one gap missing from every other page -- '/home' is
     // what '/' actually redirects to, yet it set no title/description/canonical at all and
     // inherited whatever index.html's static shell happened to say.
-    this.meta.setHomeMeta(`${this.shareUrl.getSiteOrigin()}/`);
+    this.pageMeta.applyTranslated('SEO.HOME', '/', this.destroyRef);
     this.loadLatestProperties();
     this.loadHeroLookups();
   }
@@ -132,30 +137,25 @@ export class HomeComponent implements OnInit {
   }
 
   private loadLatestProperties(): void {
-    this.propertyApiService
-      .getProperties()
+    // The server decides the order and the six shown: featured ads of the visitor's own areas first, then
+    // other featured ads (a few at most), then the newest listings. Re-sorting here by date threw the ads away.
+    // The areas (profile, recent searches, saved searches) can arrive after the page, so the list follows them.
+    this.interestAreas.param$
       .pipe(
+        switchMap(interestGovernorateIds =>
+          this.propertyApiService
+            .getProperties({ page: 1, pageSize: 6, interestGovernorateIds })
+            .pipe(
+              catchError(err => {
+                console.error('Error fetching latest properties', err);
+                return of([] as Property[]);
+              })
+            )
+        ),
+        tap(data => (this.properties = data.slice(0, 6))),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe({
-        next: data => {
-          this.properties = [...data]
-            .sort(
-              (a, b) =>
-                this.dateValue(b.createdAt) -
-                this.dateValue(a.createdAt)
-            )
-            .slice(0, 6);
-        },
-        error: err => {
-          console.error(
-            'Error fetching latest properties',
-            err
-          );
-
-          this.properties = [];
-        }
-      });
+      .subscribe();
   }
 
   /** Same price rule and format as the list and detail pages (see shared/utils/listing-price.ts). */
@@ -181,15 +181,5 @@ export class HomeComponent implements OnInit {
 
   private propertyImageSource(property: Property): string | undefined {
     return property.images?.[0]?.url || property.mainImageUrl;
-  }
-
-  private dateValue(value?: string): number {
-    if (!value) {
-      return 0;
-    }
-
-    const time = new Date(value).getTime();
-
-    return Number.isFinite(time) ? time : 0;
   }
 }

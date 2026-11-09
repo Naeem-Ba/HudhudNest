@@ -3,9 +3,11 @@ import { BehaviorSubject, catchError, combineLatest, map, Observable, of, Subjec
 
 import { AuthApiService } from './auth-api.service';
 import { LOGIN_METHOD_STORAGE_KEY, LoginMethod } from './login-identifier';
+import { writeSessionHint } from './session-hint';
 import { CsrfTokenService } from '../services/csrf-token.service';
 import { ProfileService } from '../api/profile.service';
 import { ServiceProviderService } from '../api/service-provider.service';
+import { RecentAreasService } from '../services/recent-areas.service';
 import { TokenStorageService } from '../services/token-storage.service';
 
 /**
@@ -47,6 +49,7 @@ export class AuthService {
   private readonly csrfTokenService = inject(CsrfTokenService);
   private readonly profileService = inject(ProfileService);
   private readonly serviceProviderService = inject(ServiceProviderService);
+  private readonly recentAreas = inject(RecentAreasService);
 
   private readonly loggedIn = new BehaviorSubject<boolean>(false);
   readonly isLoggedIn$ = this.loggedIn.asObservable();
@@ -67,7 +70,7 @@ export class AuthService {
    * 'expired' يغطي كل حالة انتهاء أخرى (بما فيها تعارض تجديد متزامن نادر).
    * AppComponent هو المشترك الوحيد حالياً — يعرض رسالة toast مترجَمة مطابقة.
    */
-  private readonly sessionExpiredEvent = new Subject<'expired' | 'revoked'>();
+  private readonly sessionExpiredEvent = new Subject<'expired' | 'revoked' | 'superseded'>();
   readonly sessionExpired$ = this.sessionExpiredEvent.asObservable();
 
   readonly authStatus$: Observable<AuthStatus> = combineLatest([
@@ -325,7 +328,7 @@ export class AuthService {
    * وليس لكل 401 عابر. راجع currentRouteRequiresAuth في refresh-auth.interceptor.ts،
    * وهو المستدعي الوحيد لهذه الدالة.
    */
-  notifySessionExpired(reason: 'expired' | 'revoked' = 'expired'): void {
+  notifySessionExpired(reason: 'expired' | 'revoked' | 'superseded' = 'expired'): void {
     this.refreshingSession.next(false);
     this.sessionExpiredEvent.next(reason);
   }
@@ -343,11 +346,14 @@ export class AuthService {
     // نفس السبب بالضبط — لا نريد لحالة "مزوّد خدمة" من الجلسة المنتهية أن تُصوَّر لحساب
     // مختلف قد يسجّل دخوله بعدها في نفس تبويب المتصفح قبل إعادة تحميل كاملة للصفحة.
     this.serviceProviderService.clearCache();
+    // The areas this person searched last live on the device for ranking only; they end with the session.
+    this.recentAreas.clear();
     try {
       localStorage.removeItem(LOGIN_METHOD_STORAGE_KEY);
     } catch {
       // Nothing to clean up if storage is unavailable.
     }
+    writeSessionHint('no');
     this.setAnonymousState();
   }
 

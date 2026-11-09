@@ -82,6 +82,38 @@ export class PageMetaService {
     destroyRef.onDestroy(() => this.meta.setPageRobots(null));
   }
 
+  /**
+   * The title/description every page shows until it sets its own: the home wording in the UI language.
+   * Without it a page that never calls setMeta kept the previous page's title, or the Arabic one from
+   * index.html in the English and German UI (QA Phase 16, P16-D06).
+   */
+  applyDefault(): void {
+    const title = this.translate.instant('SEO.HOME.TITLE');
+    const description = this.translate.instant('SEO.HOME.DESCRIPTION');
+    if (!title || title === 'SEO.HOME.TITLE') {
+      return;
+    }
+    this.meta.setMeta({
+      title,
+      description,
+      ogImage: `${this.shareUrl.getSiteOrigin()}${OG_IMAGE_PATH}`,
+      isDefault: true
+    });
+  }
+
+  /** A new page is opening: back to the default until that page sets its own. */
+  resetToDefault(): void {
+    this.meta.releasePage();
+    this.applyDefault();
+  }
+
+  /** The UI language changed: refresh the default only when no page owns the title. */
+  refreshDefaultOnLanguageChange(): void {
+    if (!this.meta.isPageOwned) {
+      this.applyDefault();
+    }
+  }
+
   /** Call when the page goes away: no canonical and no noindex left over for whatever comes next. */
   clear(): void {
     this.meta.clearCanonical();
@@ -102,8 +134,7 @@ export class PageMetaService {
       title,
       description,
       ogImage: opts.image && /^https?:\/\//i.test(opts.image) ? opts.image : `${origin}${OG_IMAGE_PATH}`,
-      canonical: `${origin}${opts.path}`,
-      siteName: this.translate.currentLang && this.translate.currentLang !== 'ar' ? 'HudhudNest' : undefined
+      canonical: `${origin}${opts.path}`
     });
   }
 }

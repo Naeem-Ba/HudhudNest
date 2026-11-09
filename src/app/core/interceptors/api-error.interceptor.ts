@@ -23,6 +23,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { catchError, throwError } from 'rxjs';
 import { ToastService } from '../../shared/services/toast.service';
 import { isServerFailure } from '../api/server-failure';
+import { currentUiLanguage } from '../i18n/ui-language';
 import { environment } from '../../../environments/environment';
 import {
   currentRouteRequiresAuth,
@@ -151,6 +152,48 @@ function extractBackendMessage(error: HttpErrorResponse, translate: TranslateSer
 }
 
 /**
+ * True when a server message is clearly written in a script the reader's page is not in: Arabic
+ * letters on an English or German page, or Latin-only text on an Arabic page. Short or mixed text
+ * (a name, a code) is left alone. An English sentence on a German page is recognised by its common
+ * words; any other Latin text stays as is, and the stable codes cover the cases that matter.
+ */
+export function isInOtherScript(message: string, language: string | null = currentUiLanguage()): boolean {
+  if (!language) {
+    return false;
+  }
+
+  const arabic = (message.match(/[\u0600-\u06FF]/g) ?? []).length;
+  const latin = (message.match(/[A-Za-z]/g) ?? []).length;
+
+  if (language === 'ar') {
+    return arabic === 0 && latin >= 4;
+  }
+
+  if (arabic > 0 && arabic >= latin) {
+    return true;
+  }
+
+  // On a German page an English sentence is Latin too; it is recognised by its common words.
+  return language === 'de' && arabic === 0 && looksEnglish(message);
+}
+
+const ENGLISH_WORDS = new Set([
+  'the', 'you', 'your', 'is', 'are', 'was', 'not', 'cannot', 'can', 'must', 'has', 'have', 'this', 'that',
+  'to', 'of', 'and', 'or', 'for', 'with', 'only', 'be', 'been', 'it', 'an', 'in', 'on', 'already', 'please'
+]);
+const GERMAN_WORDS = new Set([
+  'der', 'die', 'das', 'und', 'nicht', 'ist', 'sie', 'ein', 'eine', 'zu', 'für', 'mit', 'ihre', 'ihr', 'den',
+  'dem', 'des', 'oder', 'kann', 'können', 'müssen', 'wurde', 'wird', 'bitte', 'bereits', 'von'
+]);
+
+function looksEnglish(message: string): boolean {
+  const words = message.toLowerCase().match(/[a-zäöüß]+/g) ?? [];
+  const english = new Set(words.filter(word => ENGLISH_WORDS.has(word)));
+  const german = words.filter(word => GERMAN_WORDS.has(word)).length;
+  return english.size >= 2 && german === 0;
+}
+
+/**
  * كانت هذه الرسائل نصوصاً عربية ثابتة غير مُمرَّرة عبر ngx-translate، فكان
  * مستخدم إنجليزي أو ألماني يرى نصاً عربياً لأي فشل API لا يحمل حقل
  * message/errors في جسمه (مثال: 404 بلا جسم، أو انقطاع شبكة). الآن تُقرأ
@@ -179,14 +222,18 @@ export function getFriendlyApiErrorMessage(error: HttpErrorResponse, translate: 
 
   const backendMessage = extractBackendMessage(error, translate);
 
-  if (backendMessage) {
+  // The API writes most of its business-rule messages in one fixed language (about 700 Arabic, 575
+  // English). A reader whose page is in another script gets the translated generic text for the
+  // status instead of a sentence they cannot read (QA Phase 16, P16-D04).
+  if (backendMessage && !isInOtherScript(backendMessage)) {
     return backendMessage;
   }
 
   const key = ((): string => {
     switch (error.status) {
       case 0: return 'API_ERRORS.NETWORK';
-      case 400: return 'API_ERRORS.BAD_REQUEST';
+      case 400:
+      case 422: return 'API_ERRORS.BAD_REQUEST';
       case 401: return 'API_ERRORS.UNAUTHORIZED';
       case 403: return 'API_ERRORS.FORBIDDEN';
       case 404: return 'API_ERRORS.NOT_FOUND';
@@ -206,8 +253,27 @@ export function getFriendlyApiErrorMessage(error: HttpErrorResponse, translate: 
 const KNOWN_ERROR_CODE_KEYS: Readonly<Record<string, string>> = {
   AGENCY_ACCOUNT_NOT_VERIFIED: 'API_ERRORS.AGENCY_ACCOUNT_NOT_VERIFIED',
   AGENCY_PAID_PLAN_REQUIRED: 'API_ERRORS.AGENCY_PAID_PLAN_REQUIRED',
+  AGENCY_PLAN_EXPIRED: 'API_ERRORS.AGENCY_PLAN_EXPIRED',
   AGENCY_FREE_PLAN_NOT_ALLOWED: 'API_ERRORS.AGENCY_FREE_PLAN_NOT_ALLOWED',
-  SERVICE_CATEGORY_NOT_APPROVED: 'API_ERRORS.SERVICE_CATEGORY_NOT_APPROVED'
+  PAID_PLAN_ACTIVE: 'API_ERRORS.PAID_PLAN_ACTIVE',
+  BOOKING_DUPLICATE_OPEN: 'API_ERRORS.BOOKING_DUPLICATE_OPEN',
+  SERVICE_CATEGORY_NOT_APPROVED: 'API_ERRORS.SERVICE_CATEGORY_NOT_APPROVED',
+  CONCURRENCY_CONFLICT: 'API_ERRORS.CONCURRENCY_CONFLICT',
+  CSRF_VALIDATION_FAILED: 'API_ERRORS.CSRF_VALIDATION_FAILED',
+  LISTING_QUOTA_REACHED: 'API_ERRORS.LISTING_QUOTA_REACHED',
+  PAYMENTS_DISABLED: 'API_ERRORS.PAYMENTS_DISABLED',
+  PAYMENT_PROVIDER_UNAVAILABLE: 'API_ERRORS.PAYMENT_PROVIDER_UNAVAILABLE',
+  PAYMENT_PROVIDER_UNAVAILABLE_FOR_REQUEST: 'API_ERRORS.PAYMENT_PROVIDER_UNAVAILABLE_FOR_REQUEST',
+  PAYMENT_TOO_MANY_OPEN_ORDERS: 'API_ERRORS.PAYMENT_TOO_MANY_OPEN_ORDERS',
+  PAYMENT_ORDER_ALREADY_PAID: 'API_ERRORS.PAYMENT_ORDER_ALREADY_PAID',
+  PAYMENT_ORDER_NOT_CANCELLABLE: 'API_ERRORS.PAYMENT_ORDER_NOT_CANCELLABLE',
+  PAYMENT_TERMS_VERSION_MISMATCH: 'API_ERRORS.PAYMENT_TERMS_VERSION_MISMATCH',
+  PAYMENT_RENEWAL_UNSUPPORTED: 'API_ERRORS.PAYMENT_RENEWAL_UNSUPPORTED',
+  PAYMENT_IDEMPOTENCY_KEY_REUSED: 'API_ERRORS.PAYMENT_IDEMPOTENCY_KEY_REUSED',
+  PAYMENT_CURRENCY_UNSUPPORTED: 'API_ERRORS.PAYMENT_CURRENCY_UNSUPPORTED',
+  REFUND_WINDOW_CLOSED: 'API_ERRORS.REFUND_WINDOW_CLOSED',
+  REFUND_ALREADY_OPEN: 'API_ERRORS.REFUND_ALREADY_OPEN',
+  REFUND_ORDER_NOT_REFUNDABLE: 'API_ERRORS.REFUND_ORDER_NOT_REFUNDABLE'
 };
 
 /** The i18n key for a refusal's stable `code`, or null when there is none we translate. */
@@ -215,6 +281,45 @@ export function knownErrorCodeKey(error: HttpErrorResponse): string | null {
   const body = error.error;
   const code = body && typeof body === 'object' ? (body.code ?? body.Code) : null;
   return typeof code === 'string' ? (KNOWN_ERROR_CODE_KEYS[code] ?? null) : null;
+}
+
+/**
+ * "GET /api/properties/3f2a…/photos?x=1" -> "GET /api/properties/:id/photos". Ids and the query string are
+ * left out: the point is to tell WHICH endpoint failed, not to expose what was asked.
+ */
+export function describeRequest(method: string, rawUrl: string): string {
+  let path = rawUrl;
+  try {
+    path = new URL(rawUrl, 'http://placeholder.invalid').pathname;
+  } catch {
+    path = rawUrl.split(/[?#]/)[0] ?? rawUrl;
+  }
+  const generic = path
+    .split('/')
+    .map(segment => (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(segment) || /^\d+$/.test(segment) ? ':id' : segment))
+    .join('/');
+  return `${method.toUpperCase()} ${generic}`;
+}
+
+/**
+ * The "server error" toast used to say nothing about WHICH request failed, so a tester who saw it on app
+ * open could not tell the update check from the home listings (or an API deployed without its database
+ * migration from a real outage). A 5xx now carries its status and endpoint; other errors are unchanged.
+ */
+export function withServerReference(
+  message: string,
+  error: HttpErrorResponse,
+  req: HttpRequest<unknown>,
+  translate: TranslateService
+): string {
+  if (!isServerFailure(error) || knownErrorCodeKey(error)) {
+    return message;
+  }
+  const reference = translate.instant('API_ERRORS.SERVER_REFERENCE', {
+    status: error.status,
+    request: describeRequest(req.method, req.url)
+  });
+  return `${message} (${reference})`;
 }
 
 function shouldShowToast(reqUrl: string): boolean {
@@ -311,7 +416,7 @@ export const ApiErrorInterceptor: HttpInterceptorFn = (req, next) => {
           !isLogoutRequest(req.url) &&
           shouldShowUnauthorizedToast(error.status, router, req)
         ) {
-          toast.error(friendlyMessage, translate.instant('API_ERRORS.TITLE'));
+          toast.error(withServerReference(friendlyMessage, error, req, translate), translate.instant('API_ERRORS.TITLE'));
         }
 
         // ✅ إصلاح L-3: تقسيم الـ Logging بين Development و Production

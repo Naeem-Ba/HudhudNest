@@ -75,6 +75,14 @@ export interface UserProfile {
   PendingPlanTier?: string | null;
 
   /**
+   * الحالة الفعلية للخطة كما يحسبها الخادم (UserDto.PlanStatus): NoPlan | Active | Expired | Cancelled،
+   * وتاريخ انتهائها (UserDto.PlanExpiresAt). PlanTier وحده لا يكفي: خطة منتهية أو ملغاة تبقى مسجّلة
+   * لكنها لا تمنح شيئاً، والخادم يعاملها كالمجانية.
+   */
+  PlanStatus?: string | null;
+  PlanExpiresAt?: string | null;
+
+  /**
    * ✅ إضافة: نبذة تعريفية + عنوان/معلومات تواصل تُعرض علنًا بالملف الشخصي
    * العام (UserDto.Bio / UserDto.ContactInfo بالباك اند).
    */
@@ -102,6 +110,9 @@ export interface UserProfile {
   PreferredCurrency?: string | null;
   HasChosenLanguage?: boolean;
   HasChosenCurrency?: boolean;
+
+  /** The governorate the person chose in Settings as where they live (UserDto.HomeGovernorateId); used only to rank the property list. */
+  HomeGovernorateId?: number | null;
 }
 
 /** 202 body of DELETE /api/Users/me (UsersController.DeleteAccount). */
@@ -162,6 +173,10 @@ interface BackendUserProfile {
   PlanSelectedAt?: string | null;
   pendingPlanTier?: string | null;
   PendingPlanTier?: string | null;
+  planStatus?: string | null;
+  PlanStatus?: string | null;
+  planExpiresAt?: string | null;
+  PlanExpiresAt?: string | null;
 
   bio?: string;
   Bio?: string;
@@ -182,6 +197,9 @@ interface BackendUserProfile {
   HasChosenLanguage?: boolean;
   hasChosenCurrency?: boolean;
   HasChosenCurrency?: boolean;
+
+  homeGovernorateId?: number | null;
+  HomeGovernorateId?: number | null;
 }
 
 /**
@@ -214,6 +232,19 @@ export type AgencyEligibility = 'ok' | 'unverified' | 'paid-plan-required';
 export function hasPaidPlan(profile: UserProfile | null): boolean {
   const tier = profile?.PlanTier?.toLowerCase();
   return !!tier && tier !== 'free';
+}
+
+/**
+ * A paid plan that is in force right now: a non-free tier whose status is Active. An expired or
+ * cancelled plan stays recorded in PlanTier but gives nothing, so it does not count. An older API
+ * that does not send PlanStatus yet is judged by the tier alone.
+ */
+export function hasActivePaidPlan(profile: UserProfile | null): boolean {
+  if (!hasPaidPlan(profile)) {
+    return false;
+  }
+  const status = profile?.PlanStatus;
+  return status == null || status === 'Active';
 }
 
 export function agencyEligibility(profile: UserProfile | null): AgencyEligibility {
@@ -329,6 +360,17 @@ export class ProfileService {
       .pipe(switchMap(() => this.getMe()));
   }
 
+  /**
+   * Sets (a governorate id) or clears (null) the home area. Only this field is sent: the server leaves every
+   * other profile field alone when it is missing, and 0 means "clear". The cached profile is refreshed from the
+   * server's answer, so the Settings card and the property list agree on what was stored.
+   */
+  setHomeGovernorate(governorateId: number | null): Observable<UserProfile> {
+    return this.api
+      .put<void>('/users/me', { homeGovernorateId: governorateId ?? 0 })
+      .pipe(switchMap(() => this.getMe()));
+  }
+
   changePassword(data: ChangePasswordRequest): Observable<void> {
     return this.api.post<void>('/users/me/change-password', data);
   }
@@ -432,6 +474,8 @@ export class ProfileService {
       PlanTier: user.planTier ?? user.PlanTier ?? null,
       PlanSelectedAt: user.planSelectedAt ?? user.PlanSelectedAt ?? null,
       PendingPlanTier: user.pendingPlanTier ?? user.PendingPlanTier ?? null,
+      PlanStatus: user.planStatus ?? user.PlanStatus ?? null,
+      PlanExpiresAt: user.planExpiresAt ?? user.PlanExpiresAt ?? null,
 
       Bio: user.bio ?? user.Bio ?? '',
       ContactInfo: user.contactInfo ?? user.ContactInfo ?? '',
@@ -443,7 +487,9 @@ export class ProfileService {
       PreferredLanguage: user.preferredLanguage ?? user.PreferredLanguage ?? null,
       PreferredCurrency: user.preferredCurrency ?? user.PreferredCurrency ?? null,
       HasChosenLanguage: user.hasChosenLanguage ?? user.HasChosenLanguage ?? false,
-      HasChosenCurrency: user.hasChosenCurrency ?? user.HasChosenCurrency ?? false
+      HasChosenCurrency: user.hasChosenCurrency ?? user.HasChosenCurrency ?? false,
+
+      HomeGovernorateId: user.homeGovernorateId ?? user.HomeGovernorateId ?? null
     };
   }
 

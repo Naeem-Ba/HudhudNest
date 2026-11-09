@@ -1,1340 +1,271 @@
 // ═══════════════════════════════════════════════════════════
-// landing-page.component.scss
-// صفحة هبوط HudhudNest – أسلوب: Real Estate SaaS · Mobile-first
-//
-// [هذه الجولة — تراجع عن هوية "دفتر العائلة" اللونية + مسافات أوسع]
-// جرّب المستخدم هوية "دفتر العائلة" (ورق/حبر أخضر/طوب محروق) ثم طلب
-// إعادة "الهوية اللونية" إلى تصميم البرنامج نفسه — أي navy #0F2742 /
-// gold #D6A84F، هوية "HudhudNest" المعتمدة عبر ~25 صفحة أخرى في التطبيق.
-// أُعيدت كل قيم التوكِنز أدناه لأصلها، وأُزيل تظليل --surface/--gray-*/
-// --border محليًا: القسم يقرأ الآن توكِنز styles.scss العالمية مباشرة
-// كما كان، فيتكيّف مع الوضع الداكن تلقائيًا دون mixin محلي منفصل.
-// الخطوط عادت أيضًا إلى Cairo/Amiri (عناوين) وNoto Sans Arabic/Cairo
-// (نصوص) لتطابق بقية الصفحات. ما بقي من "دفتر العائلة": خط التحفيز
-// المتقطّع (stitch) أعلى بطاقتَي النموذج والمزايا — لمسة زخرفية لا علاقة
-// لها باللون، ومحاذاة/تموضع FAQ وخط ربط الخطوات المنطقيَين (start/
-// inset-inline-start) اللذان يصلحان دعم الإنكليزية/الألمانية (LTR).
-//
-// المسافات: تكبير كامل لمقياس --space-* (طلب صريح: الحواف والفراغات كانت
-// تبدو "مضغوطة وناقصة") — كل حشوة/فجوة في الملف مبنية على هذا المقياس،
-// فالتغيير هنا وحده يوسّع الصفحة بأكملها (حواف الحاويات، حشوة الأقسام
-// والبطاقات، الفجوات بين العناصر) دون الحاجة لتعديل كل قاعدة يدويًا.
-//
-// [تعديلات الجولات السابقة — محفوظة دون تغيير]
-// - ترحيل breakpoints إلى _breakpoints.scss الموحّد.
-// - أنيميشن FAQ السلس (grid-template-rows) + سهم يدور فعليًا.
-// - [تدقيق الوضع الداكن] --gray-* / --error / --success تُورَث من
-//   html[data-theme] العالمي، ولا تُعاد تعريفها محليًا. --navy/--gold/
-//   --white تبقى ثابتة عمدًا (تُستخدَم فقط داخل قطاعات بخلفية ملاحية ثابتة
-//   حيث النص يجب أن يبقى أبيض دومًا، تمامًا كـ --gallery-canvas العالمي).
+// landing-page.component.scss — صفحة الهبوط التسويقية (إعادة تصميم 2026-11-05)
+// كل الألوان من توكِنز _tokens.scss (لا قيم hex جديدة) فتتكيّف مع الوضع الداكن؛
+// أقسام الـ navy ثابتة عمدًا (نص فاتح دائمًا). خطوط ومسافات من التوكِنز العالمية.
+// خصائص منطقية (inline/start/end) فيعمل RTL وLTR بلا نسخة منفصلة.
 // ═══════════════════════════════════════════════════════════
-
 @use '../../../styles/breakpoints' as bp;
 
-/* ─── Design Tokens (انظر ملاحظة الوضع الداكن أعلى الملف) ─── */
-:host {
-  --navy:        #0F2742;
-  --navy-light:  #1a3a5c;
-  --navy-deep:   #081420; /* أغمق من --navy — لطبقة الخلفية القاعدية في Hero/CTA فقط */
-  --gold:        #D6A84F;
-  --gold-light:  #e8c47a;
-  --white:       #FFFFFF;
-  --error:       var(--danger);
-  --error-bg:    var(--danger-soft);
-  --success-bg:  var(--success-soft);
-
-  /* توهّجات وظلال مشتقة من نفس اللونين — لا ألوان جديدة، فقط شفافيات
-     محسوبة تُستخدَم باتساق بدل قيم rgba مبعثرة داخل القواعد. */
-  --gold-glow-soft:  rgba(214, 168, 79, .16);
-  --gold-glow-mid:   rgba(214, 168, 79, .30);
-  --gold-glow-ring:  rgba(214, 168, 79, .45);
-  --navy-shadow-sm:  rgba(8, 20, 32, .08);
-  --navy-shadow-md:  rgba(8, 20, 32, .16);
-  --navy-shadow-lg:  rgba(8, 20, 32, .28);
-
-  /* Typography */
-  --font-display: 'Cairo', 'Amiri', 'Segoe UI', system-ui, sans-serif;
-  --font-body:    'Noto Sans Arabic', 'Cairo', system-ui, sans-serif;
-
-  /* Spacing scale — [هذه الجولة] موسَّع بالكامل (كان xs:.5/sm:.75/md:1/
-     lg:1.5/xl:2.5/2xl:4rem) لمعالجة إحساس "التضاغط" الذي لاحظه المستخدم؛
-     كل حشوة وفجوة في الملف مبنية على هذه المتغيرات فتتّسع تلقائيًا معها. */
-  --space-xs:  0.625rem;
-  --space-sm:  1rem;
-  --space-md:  1.25rem;
-  --space-lg:  2rem;
-  --space-xl:  3.5rem;
-  --space-2xl: 5.5rem;
-
-  /* Radii */
-  --r-sm:   8px;
-  --r-md:  12px;
-  --r-lg:  20px;
-  --r-pill: 9999px;
-
-  /* Shadows — مبنية من --navy-shadow-* أعلاه: نفس اللون دومًا، شدّة متدرّجة فقط */
-  --shadow-sm:  0 1px 4px var(--navy-shadow-sm);
-  --shadow-md:  0 4px 20px var(--navy-shadow-md);
-  --shadow-lg:  0 16px 48px var(--navy-shadow-lg);
-
-  font-family: var(--font-body);
-}
-
-/* ─── Reset & Base ───
-   [هذه الجولة — إصلاح جذر مشكلة "الكل مضغوط"] كان هنا reset محلي مكرَّر
-   حرفيًا (`.lp-root *, ... { margin:0; padding:0; box-sizing:border-box }`)
-   يطابق reset عالمي موجود أصلاً في styles.scss (`*, *::before, *::after`).
-   المشكلة: الترميز المعزول لأنغولار (ViewEncapsulation) يُلحق
-   `[_ngcontent-xxx]` بكل جزء من المحدِّد، فيتحوّل هذا الـ reset المحلي إلى
-   `.lp-root[_ngcontent] [_ngcontent]` — أي specificity أعلى (3) من كل
-   قاعدة padding/margin أخرى في هذا الملف تقريبًا (`.btn`, `.container`,
-   `.hero__content`, `.section-header`, إلخ — specificity 2 لكل منها) —
-   فكان يفوز عليها *صامتًا* ويصفّر padding/margin الفعلية بغض النظر عن قيمة
-   --space-* المُستخدَمة! هذا هو السبب الحقيقي وراء إحساس "التضاغط"، وليس
-   فقط صغر مقياس المسافات. الحل: حذف النسخة المحلية بالكامل والاعتماد على
-   الـ reset العالمي (specificity صفر) الذي تتفوّق عليه كل قواعد هذا الملف
-   بشكل طبيعي كما هو الحال في بقية صفحات التطبيق. ── */
+:host { display: block; }
 
 .lp-root {
   font-family: var(--font-body);
-  color: var(--gray-800);
-  background: var(--surface);
-  -webkit-font-smoothing: antialiased;
+  color: var(--text-primary);
+  background: var(--page-bg);
+  line-height: 1.65;
+  overflow-x: clip;
 }
 
-/* ─── Container ─── */
-.container {
-  width: 100%;
-  max-width: 1160px;
-  margin-inline: auto;
-  padding-inline: var(--space-lg);
-}
+.container { width: 100%; max-width: 1160px; margin-inline: auto; padding-inline: var(--space-5); }
+.narrow, .container--narrow { max-width: 820px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-.container--narrow {
-  max-width: 760px;
-}
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.25; margin: 0; }
+p { margin: 0; }
+a { color: inherit; }
 
-@include bp.desktop {
-  .container {
-    max-width: 1320px;
-  }
+.ico { width: 1.25em; height: 1.25em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.ico--dir { width: 1em; height: 1em; }
+:host-context([dir='rtl']) .ico--dir { transform: scaleX(-1); }
 
-  .container--narrow {
-    max-width: 860px;
-  }
-}
+:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; border-radius: var(--r-sm); }
 
-/* ─── Section Base ─── */
-.section {
-  padding-block: var(--space-2xl);
-}
-
-/* [تعديل] تدرّج خفيف جدًا بدل لون مسطّح — يضيف عمقًا بصريًا دون كسر
-   الوضع الداكن (كلا الطرفين يقرآن من التوكِنز العالمية المتكيّفة). */
-.section--light  {
-  background: linear-gradient(180deg, var(--gray-50) 0%, var(--surface) 100%);
-}
-.section--white  { background: var(--surface); }
-.section--navy   { background: var(--navy); }
-.section--form   {
-  background: linear-gradient(180deg, var(--surface) 0%, var(--gray-50) 100%);
-}
-.section--cta    {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 55%, var(--navy-light) 100%);
-}
-
-/* [جديد] توهّج ذهبي خفيف خلف محتوى الـ CTA الختامي — نفس أسلوب Hero،
-   بلا حاجة لعناصر HTML إضافية (pseudo-elements فقط). */
-.section--cta::before,
-.section--cta::after {
-  content: '';
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(70px);
-  pointer-events: none;
-}
-
-.section--cta::before {
-  width: 420px;
-  height: 420px;
-  top: -160px;
-  inset-inline-end: -120px;
-  background: var(--gold-glow-mid);
-}
-
-.section--cta::after {
-  width: 320px;
-  height: 320px;
-  bottom: -140px;
-  inset-inline-start: -100px;
-  background: rgba(214, 168, 79, .10);
-}
-
-.section--cta > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* ─── Section Header ─── */
-.section-header {
-  text-align: center;
-  margin-bottom: var(--space-xl);
-}
-
-.section-header--light .section-title { color: var(--white); }
-
-/* [تعديل] --gold-text بدل --gold على خلفيات فاتحة/متكيّفة — توكن عالمي
-   جاهز بالضبط لهذه الحالة: gold-dark في الفاتح (تباين أعلى من --gold
-   المسطّح على الأبيض)، gold-light في الداكن (--gold-dark "يختفي" على
-   خلفية داكنة حسب تعليق styles.scss نفسه — لا نكرر ذلك الخطأ هنا). */
-.section-eyebrow {
-  display: inline-block;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--gold-text, var(--gold));
-  margin-bottom: var(--space-xs);
-}
-
-/* تُستخدَم حصرًا فوق خلفية --navy الغامقة (see section-header--light) —
-   هناك --gold الفاتح يعطي أفضل تباين، بعكس الخلفيات الفاتحة أعلاه. */
-.section-eyebrow--gold { color: var(--gold); }
-
-/* [تعديل] --gray-900 بدل --navy: --gray-900 ينعكس تلقائيًا إلى شبه أبيض
-   في الوضع الداكن (نفس نمط pricing.page.scss)، بينما --navy الثابت كان
-   يبقى كما هو فيصبح شبه غير مقروء فوق خلفية داكنة. */
-.section-title {
-  font-family: var(--font-display);
-  font-size: clamp(1.6rem, 3.5vw, 2.4rem);
-  font-weight: 800;
-  color: var(--gray-900);
-  line-height: 1.3;
-  margin-bottom: var(--space-sm);
-  letter-spacing: -0.01em;
-}
-
-@include bp.desktop {
-  .section-title {
-    font-size: clamp(2rem, 2.8vw, 2.9rem);
-  }
-}
-
-.section-title--white { color: var(--white); }
-
-.section-desc {
-  font-size: 1rem;
-  color: var(--gray-600);
-  max-width: 560px;
-  margin-inline: auto;
-  line-height: 1.75;
-}
-
-/* ══════════════════════════════════════════════════
-   HERO
-   ══════════════════════════════════════════════════ */
-.hero {
-  position: relative;
-  min-height: min(100svh, 720px);
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-}
-
-.hero__bg {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background: linear-gradient(160deg, var(--navy-deep) 0%, var(--navy) 45%, var(--navy-light) 100%);
-  overflow: hidden;
-}
-
-/* [جديد] توهّجان radial-gradient كبيران يعطيان عمقًا "mesh gradient"
-   بدل خلفية ملاحية مسطّحة — نفس أسلوب صفحات SaaS الحديثة، بلا أي صورة. */
-.hero__glow {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(90px);
-  pointer-events: none;
-}
-
-.hero__glow--gold {
-  width: 620px;
-  height: 620px;
-  top: -220px;
-  inset-inline-end: -160px;
-  background: radial-gradient(circle, var(--gold-glow-mid) 0%, transparent 70%);
-}
-
-.hero__glow--navy {
-  width: 520px;
-  height: 520px;
-  bottom: -240px;
-  inset-inline-start: -140px;
-  background: radial-gradient(circle, rgba(26, 58, 92, .55) 0%, transparent 70%);
-}
-
-/* [جديد] شبكة نقاط دقيقة جدًا — نسيج خفيف يكسر رتابة التدرّج المسطّح
-   دون تشتيت الانتباه عن النص (شفافية 5% فقط). */
-.hero__grid {
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(rgba(255, 255, 255, .10) 1px, transparent 1px);
-  background-size: 26px 26px;
-  mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, #000 40%, transparent 90%);
-  opacity: .5;
-}
-
-.hero__overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(8, 20, 32, 0) 0%,
-    rgba(8, 20, 32, .25) 70%,
-    rgba(8, 20, 32, .55) 100%
-  );
-}
-
-.hero__content {
-  position: relative;
-  z-index: 1;
-  padding-block: var(--space-2xl);
-  max-width: 700px;
-}
-
-@include bp.desktop {
-  .hero__content {
-    max-width: 820px;
-  }
-}
-
-/* [تعديل] زجاجية خفيفة (backdrop-blur) بدل خلفية شفافة مسطّحة — إحساس
-   "طبقة عائمة" أكثر حداثة. */
-.hero__badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  background: rgba(214, 168, 79, .12);
-  border: 1px solid rgba(214, 168, 79, .3);
-  color: var(--gold-light);
-  font-size: 0.82rem;
-  font-weight: 600;
-  padding: 0.4rem 0.9rem;
-  border-radius: var(--r-pill);
-  margin-bottom: var(--space-lg);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-.badge-dot {
-  width: 7px;
-  height: 7px;
-  background: var(--gold);
-  border-radius: 50%;
-  box-shadow: 0 0 0 3px var(--gold-glow-soft);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: .4; }
-}
-
-.hero__title {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 5vw, 3.4rem);
-  font-weight: 900;
-  color: var(--white);
-  line-height: 1.25;
-  margin-bottom: var(--space-md);
-  letter-spacing: -0.015em;
-}
-
-@include bp.desktop {
-  .hero__title {
-    font-size: clamp(3rem, 3.6vw, 4.2rem);
-  }
-}
-
-/* [تعديل] نص بتدرّج ذهبي (background-clip) بدل لون ذهبي مسطّح — لمعان
-   أكثر رقيًا على العنوان الأهم في الصفحة. */
-.hero__title-accent {
-  display: block;
-  background: linear-gradient(90deg, var(--gold-light) 0%, var(--gold) 55%, var(--gold-dark, var(--gold)) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.hero__subtitle {
-  font-size: clamp(1rem, 2.2vw, 1.15rem);
-  color: rgba(255,255,255,.82);
-  line-height: 1.85;
-  max-width: 560px;
-  margin-bottom: var(--space-xl);
-}
-
-/* [دفتر العائلة] تبديل الشعار الفرعي: 3 صيغ متراكبة، الظاهرة منها فقط
-   opacity:1 — ارتفاع الحاوية محجوز بأطول صيغة (تقديري عبر min-height)
-   لتفادي قفزة تخطيط عند كل دوران. */
-.hero__tagline {
-  position: relative;
-  min-height: 4.6em;
-}
-
-@include bp.desktop {
-  .hero__tagline { min-height: 3.4em; }
-}
-
-.hero__tagline-item {
-  position: absolute;
-  inset-inline-start: 0;
-  top: 0;
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity .5s ease, transform .5s ease;
-  pointer-events: none;
-}
-
-.hero__tagline-item.is-active {
-  position: relative;
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-.lp-sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.hero__ctas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-md);
-  margin-bottom: var(--space-xl);
-}
-
-.hero__stats {
-  display: flex;
-  align-items: center;
-  gap: var(--space-lg);
-  flex-wrap: wrap;
-}
-
-.hero__stat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-}
-
-.hero__stat strong {
-  font-size: 1.5rem;
-  font-weight: 900;
-  color: var(--gold);
-  font-family: var(--font-display);
-}
-
-.hero__stat span {
-  font-size: 0.78rem;
-  color: rgba(255,255,255,.65);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.hero__stat-divider {
-  width: 1px;
-  height: 36px;
-  background: rgba(255,255,255,.2);
-}
-
-/* ══════════════════════════════════════════════════
-   BUTTONS
-   ══════════════════════════════════════════════════ */
+// ─── Buttons ───────────────────────────────────────────
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0.85rem 1.75rem;
-  border-radius: var(--r-md);
-  font-family: var(--font-body);
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  border: 2px solid transparent;
-  transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease, border-color .2s ease;
-  white-space: nowrap;
-  min-height: 48px; /* accessibility touch target */
-  text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  min-height: 48px; padding: var(--space-3) var(--space-6);
+  border-radius: var(--r-pill); border: 2px solid transparent;
+  font: inherit; font-weight: 700; text-decoration: none; cursor: pointer;
+  transition: transform .2s var(--ease-out), background-color .2s, border-color .2s;
+  &:hover { transform: translateY(-2px); }
+  &:disabled { opacity: .6; cursor: not-allowed; transform: none; }
 }
-
-/* [تعديل] تدرّج داخلي خفيف + ظل ذهبي متعدد الطبقات بدل لون مسطّح وظل واحد */
-.btn--primary {
-  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
-  color: var(--navy);
-  border-color: transparent;
-  box-shadow: 0 1px 0 rgba(255,255,255,.4) inset, 0 6px 16px var(--gold-glow-soft);
-}
-
-.btn--primary:hover {
-  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold-light) 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 10px 28px var(--gold-glow-mid);
-}
-
-.btn--ghost {
-  background: transparent;
-  color: var(--white);
-  border-color: rgba(255,255,255,.45);
-}
-
-.btn--ghost:hover {
-  background: rgba(255,255,255,.1);
-  border-color: var(--white);
-}
-
-.btn--gold {
-  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
-  color: var(--navy);
-  border-color: transparent;
-  font-size: 1.05rem;
-  padding: 1rem 2.2rem;
-  box-shadow: 0 1px 0 rgba(255,255,255,.4) inset, 0 8px 24px var(--gold-glow-mid);
-}
-
-.btn--gold:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 14px 36px var(--gold-glow-ring);
-}
-
-/* [تعديل] --gray-900 بدل --navy لنفس سبب .section-title أعلاه — يظهر هذا
-   الزر داخل .form-success التي تتكيّف خلفيتها مع الوضع الداكن. */
-.btn--outline-navy {
-  background: transparent;
-  color: var(--gray-900);
-  border-color: var(--gray-900);
-}
-
-.btn--outline-navy:hover {
-  background: var(--navy);
-  color: var(--white);
-}
-
+.btn--primary, .btn--gold { background: var(--gold); color: var(--on-primary); &:hover { background: var(--gold-light); } }
+.btn--ghost { background: transparent; color: var(--text-on-navy); border-color: var(--text-on-navy-muted); &:hover { border-color: var(--gold); color: var(--gold); } }
+.btn--outline, .btn--outline-navy { background: transparent; color: var(--text-strong); border-color: var(--text-strong); &:hover { background: var(--text-strong); color: var(--page-bg); } }
 .btn--full { width: 100%; }
 
-.btn:disabled {
-  opacity: .6;
-  cursor: not-allowed;
-  transform: none !important;
-  box-shadow: none !important;
-}
-
-/* ══════════════════════════════════════════════════
-   عرض "أول 100 مكتب عقاري" — يظهر فقط عند وجود عرض نشط فعليًا
-   (GET /api/offers/active). نفس خلفية Hero المصمَّمة (توهّج + شبكة).
-   ══════════════════════════════════════════════════ */
-.section--offer {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 50%, var(--navy-light) 100%);
-}
-
-.section--offer::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(rgba(255, 255, 255, .08) 1px, transparent 1px);
-  background-size: 24px 24px;
-  mask-image: radial-gradient(ellipse 80% 100% at 50% 0%, #000 40%, transparent 90%);
-  pointer-events: none;
-}
-
-.section--offer > .container {
-  position: relative;
-  z-index: 1;
-}
-
-.offer-card {
-  text-align: center;
-}
-
-/* [تعديل] تدرّج + ظل ذهبي بدل خلفية مسطّحة — يطابق زر .btn--gold بصريًا */
-.offer-card__badge {
-  display: inline-block;
-  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
-  color: var(--navy);
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 1.05rem;
-  padding: 0.45rem 1.3rem;
-  border-radius: var(--r-pill);
-  margin-bottom: var(--space-md);
-  box-shadow: 0 8px 24px var(--gold-glow-mid);
-}
-
-.offer-card__desc {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, .8);
-  line-height: 1.75;
-  max-width: 560px;
-  margin-inline: auto;
-  margin-bottom: var(--space-lg);
-}
-
-.offer-progress {
-  max-width: 420px;
-  margin-inline: auto;
-  margin-bottom: var(--space-lg);
-}
-
-.offer-progress__track {
-  height: 8px;
-  background: rgba(255, 255, 255, .15);
-  border-radius: var(--r-pill);
-  overflow: hidden;
-  margin-bottom: var(--space-xs);
-}
-
-.offer-progress__fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--gold-dark, var(--gold)) 0%, var(--gold-light) 100%);
-  border-radius: var(--r-pill);
-  transition: width .3s ease;
-}
-
-.offer-progress__label {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, .7);
-}
-
-.offer-card__cta {
-  margin-bottom: var(--space-md);
-}
-
-.offer-card__ends {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--gold-light);
-  margin-bottom: var(--space-md);
-}
-
-/* حالات التحميل / الفراغ / الخطأ داخل نفس البطاقة */
-.offer-card--message .section-title { margin-bottom: var(--space-sm); }
-
-.offer-card--skeleton {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-sm);
-}
-
-.skeleton {
-  display: block;
-  border-radius: var(--r-pill);
-  background: linear-gradient(90deg, rgba(255, 255, 255, .08) 25%, rgba(255, 255, 255, .18) 50%, rgba(255, 255, 255, .08) 75%);
-  background-size: 200% 100%;
-  animation: offer-skeleton 1.4s ease-in-out infinite;
-}
-.skeleton--badge { width: 140px; height: 32px; }
-.skeleton--title { width: min(320px, 80%); height: 28px; }
-.skeleton--line  { width: min(480px, 90%); height: 14px; }
-.skeleton--short { width: min(260px, 60%); }
-
-@keyframes offer-skeleton {
-  from { background-position: 200% 0; }
-  to   { background-position: -200% 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .skeleton { animation: none; }
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px; height: 1px;
-  margin: -1px; padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.offer-card__terms {
-  font-size: 0.78rem;
-  color: rgba(255, 255, 255, .5);
-  max-width: 480px;
-  margin-inline: auto;
-}
-
-/* ══════════════════════════════════════════════════
-   PROBLEM / SOLUTION
-   ══════════════════════════════════════════════════ */
-.problem-solution {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: var(--space-xl);
-  align-items: center;
-}
-
-.ps-label {
-  display: inline-block;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 0.3rem 0.8rem;
-  border-radius: var(--r-pill);
-  margin-bottom: var(--space-md);
-}
-
-.ps-label--problem  { background: var(--error-bg); color: var(--error); }
-.ps-label--solution { background: var(--success-bg); color: var(--success); }
-
-.ps-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-}
-
-.ps-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.7rem;
-  font-size: 0.95rem;
-  line-height: 1.65;
-}
-
-/* [تعديل] حلقة خفيفة (ring) حول أيقونة ✕/✓ بدل دائرة مسطّحة — تفاصيل
-   أدق تُميّز هذه الصفحة عن نموذج بطاقة إدارية عادي. */
-.ps-icon {
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 900;
-  margin-top: 2px;
-  box-shadow: 0 0 0 3px transparent;
-  transition: box-shadow .2s ease;
-}
-
-.ps-item--problem .ps-icon {
-  background: var(--error-bg);
-  color: var(--error);
-}
-
-.ps-item--solution .ps-icon {
-  background: var(--success-bg);
-  color: var(--success);
-}
-
-.ps-item:hover .ps-icon {
-  box-shadow: 0 0 0 4px currentColor;
-  opacity: .95;
-}
-
-.ps-arrow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: var(--gold);
-}
-
-/* ══════════════════════════════════════════════════
-   FEATURES GRID
-   ══════════════════════════════════════════════════ */
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--space-lg);
-}
-
-/* [تعديل] حد علوي دقيق بلون العلامة يظهر فقط عند التمرير، وارتفاع أوضح */
-.feature-card {
-  position: relative;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: var(--space-xl) var(--space-lg);
-  transition: box-shadow .25s ease, transform .25s ease, border-color .25s ease;
-  text-align: center;
-  overflow: hidden;
-}
-
-/* [دفتر العائلة] خط تحفيز متقطّع بدل الشريط المصمت — إحساس "خياطة دفتر" */
-.feature-card::before {
-  content: '';
-  position: absolute;
-  inset-inline: var(--space-md);
-  top: 0;
-  height: 3px;
-  background-image: repeating-linear-gradient(90deg, var(--gold) 0 10px, transparent 10px 16px);
-  transform: scaleX(0);
-  transform-origin: center;
-  transition: transform .3s ease;
-}
-
-.feature-card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-4px);
-  border-color: transparent;
-}
-
-.feature-card:hover::before {
-  transform: scaleX(1);
-}
-
-/* [تعديل] دائرة بتدرّج ذهبي/ملاحي خفيف بدل صندوق رمادي مسطّح */
-.feature-icon {
-  width: 64px;
-  height: 64px;
-  background: linear-gradient(135deg, var(--gold-soft, rgba(214,168,79,.12)) 0%, rgba(15,39,66,.05) 100%);
-  border: 1px solid rgba(214, 168, 79, .18);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-inline: auto;
-  margin-bottom: var(--space-md);
-}
-
-.feature-title {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--gray-900);
-  margin-bottom: var(--space-xs);
-}
-
-.feature-desc {
-  font-size: 0.9rem;
-  color: var(--gray-600);
-  line-height: 1.7;
-}
-
-/* ══════════════════════════════════════════════════
-   HOW IT WORKS (Steps)
-   ══════════════════════════════════════════════════ */
-.steps-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  max-width: 640px;
-  margin-inline: auto;
-  counter-reset: steps;
-}
-
-.step-item {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-lg);
-  padding-bottom: var(--space-xl);
-  position: relative;
-}
-
-/* [تعديل] الخط الواصل بين الأرقام صار بتدرّج يخفت تدريجيًا بدل لون مسطّح */
-.step-item:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  inset-inline-start: 22px;
-  top: 52px;
-  bottom: 0;
-  width: 2px;
-  background: linear-gradient(180deg, var(--gold-glow-ring) 0%, var(--gold-glow-soft) 100%);
-}
-
-.step-number {
-  flex-shrink: 0;
-  width: 46px;
-  height: 46px;
-  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
-  color: var(--navy);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  font-weight: 900;
-  box-shadow: 0 1px 0 rgba(255,255,255,.4) inset, 0 6px 18px var(--gold-glow-mid);
-  position: relative;
-  z-index: 1;
-}
-
-.step-body { padding-block: var(--space-xs); }
-
-.step-title {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--white);
-  margin-bottom: 0.35rem;
-}
-
-.step-desc {
-  font-size: 0.92rem;
-  color: rgba(255,255,255,.72);
-  line-height: 1.7;
-}
-
-/* ══════════════════════════════════════════════════
-   LEAD FORM
-   ══════════════════════════════════════════════════ */
-/* [تعديل] حد علوي بتدرّج العلامة + ظل أعمق قليلاً — يميّز النموذج كنقطة
-   التحويل الرئيسية في الصفحة بدل بطاقة عادية بحدود مستطيلة صرفة. */
-.lead-form {
-  position: relative;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-top: none;
-  border-radius: var(--r-lg);
-  padding: var(--space-xl) var(--space-lg);
-  box-shadow: var(--shadow-lg);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-  overflow: hidden;
-}
-
-.lead-form::before {
-  content: '';
-  position: absolute;
-  inset-inline: 0;
-  top: 0;
-  height: 4px;
-  background-image: repeating-linear-gradient(90deg, var(--gold) 0 14px, transparent 14px 22px);
-  opacity: .85;
-}
-
-.field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.field-label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--gray-900);
-}
-
-.required { color: var(--error); margin-inline-start: 0.15rem; }
-.field-optional { font-weight: 400; color: var(--gray-400); margin-inline-start: 0.3rem; }
-
-.field-input,
-.field-select,
-.field-textarea {
-  width: 100%;
-  padding: 0.8rem 1rem;
-  border: 1.5px solid var(--border);
-  border-radius: var(--r-sm);
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-  color: var(--gray-800);
-  background: var(--surface);
-  transition: border-color .15s, box-shadow .15s;
-  appearance: none;
-  -webkit-appearance: none;
-  min-height: 48px;
-}
-
-.field-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239BAAB8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: left 0.9rem center;
-  padding-left: 2.5rem;
-  cursor: pointer;
-}
-
-/* Mobile UX audit (Phase 7): chevron icon was hardcoded to the LTR side only,
-   so on this app's default RTL (Arabic) locale it sat on the wrong side of a
-   right-aligned select — same pattern already fixed for the equivalent control
-   in property-form.page.scss, mirrored here. */
-:host-context(html[dir="rtl"]) .field-select {
-  background-position: right 0.9rem center;
-  padding-left: 1rem;
-  padding-right: 2.5rem;
-}
-
-.field-textarea { min-height: 90px; resize: vertical; }
-
-.field-input:focus,
-.field-select:focus,
-.field-textarea:focus {
-  outline: none;
-  /* --border-focus (توكن عالمي = --gold في الوضعين) بدل --navy: يبقى
-     واضحًا في الوضع الداكن، ويطابق حلقة تركيز بقية نماذج التطبيق. */
-  border-color: var(--border-focus, var(--gold));
-  box-shadow: 0 0 0 3px var(--gold-glow-soft);
-}
-
-.field-input--error {
-  border-color: var(--error) !important;
-  box-shadow: 0 0 0 3px rgba(192,57,43,.1) !important;
-}
-
-.field-hint  { font-size: 0.78rem; color: var(--gray-400); }
-.field-error { font-size: 0.82rem; color: var(--error); font-weight: 500; }
-
-/* Form states */
-.form-error-banner {
-  background: var(--error-bg);
-  border: 1px solid rgba(192,57,43,.25);
-  border-radius: var(--r-sm);
-  padding: var(--space-sm) var(--space-md);
-  color: var(--error);
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.form-success {
-  text-align: center;
-  padding: var(--space-xl);
-  background: var(--success-bg);
-  border: 1px solid rgba(31,157,106,.25);
-  border-radius: var(--r-lg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-md);
-}
-
-.form-success__icon {
-  width: 60px;
-  height: 60px;
-  background: var(--success);
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.6rem;
-  font-weight: 900;
-  box-shadow: 0 8px 22px rgba(22, 163, 74, .3);
-}
-
-.form-success__title {
-  font-family: var(--font-display);
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: var(--success);
-}
-
-.form-success__msg {
-  font-size: 0.95rem;
-  color: var(--gray-600);
-  line-height: 1.7;
-  max-width: 460px;
-}
-
-.form-privacy {
-  font-size: 0.78rem;
-  color: var(--gray-400);
-  text-align: center;
-}
-
-/* Spinner */
-.spinner {
-  display: inline-block;
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(15,39,66,.2);
-  border-top-color: var(--navy);
-  border-radius: 50%;
-  animation: spin .65s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* ══════════════════════════════════════════════════
-   TRUST SECTION
-   ══════════════════════════════════════════════════ */
-.trust-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--space-lg);
-}
-
-.trust-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  padding: var(--space-lg);
-  transition: box-shadow .2s ease, transform .2s ease;
-}
-
-.trust-card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-}
-
-/* [تعديل] الإيموجي داخل دائرة بتدرّج خفيف بدل نص مجرّد فوق الخلفية —
-   يوحّد لغة الأيقونات مع .feature-icon أعلاه. */
-.trust-icon {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--gold-soft, rgba(214,168,79,.12)) 0%, rgba(15,39,66,.05) 100%);
-  margin-bottom: var(--space-sm);
-}
-
-.trust-title {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--gray-900);
-  margin-bottom: 0.4rem;
-}
-
-.trust-desc {
-  font-size: 0.88rem;
-  color: var(--gray-600);
-  line-height: 1.7;
-}
-
-/* ══════════════════════════════════════════════════
-   FAQ
-   ══════════════════════════════════════════════════ */
-.faq-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-}
-
-.faq-item {
-  border-bottom: 1px solid var(--border);
-  transition: background-color .2s ease;
-}
-
-.faq-item:last-child { border-bottom: none; }
-.faq-item--open { background: var(--gray-50); }
-
-.faq-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-md);
-  padding: var(--space-lg);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: var(--font-body);
-  font-size: 0.98rem;
-  font-weight: 700;
-  color: var(--gray-900);
-  text-align: start;
-  min-height: 56px;
-  transition: background .15s;
-}
-
-.faq-btn:hover { background: var(--gray-50); }
-
-.faq-chevron {
-  flex-shrink: 0;
-  display: inline-flex;
-  color: var(--gold-text, var(--gold));
-  transition: transform 0.25s ease;
-}
-
-.faq-item--open .faq-chevron {
-  transform: rotate(180deg);
-  color: var(--gold);
-}
-
-.faq-answer-wrapper {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.25s ease;
-}
-
-.faq-item--open .faq-answer-wrapper {
-  grid-template-rows: 1fr;
-}
-
-.faq-answer {
-  overflow: hidden;
-  min-height: 0;
-}
-
-.faq-answer p {
-  padding: 0 var(--space-lg) var(--space-lg);
-  font-size: 0.92rem;
-  color: var(--gray-600);
-  line-height: 1.75;
-}
-
-/* ══════════════════════════════════════════════════
-   FINAL CTA
-   ══════════════════════════════════════════════════ */
-.final-cta__title {
-  font-family: var(--font-display);
-  font-size: clamp(1.6rem, 3.5vw, 2.4rem);
-  font-weight: 900;
-  color: var(--white);
-  text-align: center;
-  margin-bottom: var(--space-md);
-  line-height: 1.3;
-}
-
-.final-cta__desc {
-  font-size: 1rem;
-  color: rgba(255,255,255,.75);
-  text-align: center;
-  line-height: 1.75;
-  max-width: 520px;
-  margin-inline: auto;
-  margin-bottom: var(--space-xl);
-}
-
-.section--cta {
-  text-align: center;
-}
-
-/* ══════════════════════════════════════════════════
-   FOOTER
-   ══════════════════════════════════════════════════ */
-.footer {
-  background: var(--navy-deep);
-  padding-block: var(--space-xl);
-}
-
-.footer__inner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-md);
-}
-
-.footer__brand {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.footer__logo {
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  font-weight: 900;
-  color: var(--gold);
-  letter-spacing: -0.02em;
-}
-
-.footer__tagline {
-  font-size: 0.8rem;
-  color: rgba(255,255,255,.5);
-}
-
-.footer__copy {
-  font-size: 0.8rem;
-  color: rgba(255,255,255,.45);
-}
-
-.footer__link {
-  color: rgba(255,255,255,.6);
-  text-decoration: none;
-  transition: color .15s;
-}
-
-.footer__link:hover { color: var(--gold); }
-
-/* ══════════════════════════════════════════════════
-   RESPONSIVE — [Phase 0] مُرحَّل لمعيار _breakpoints.scss الموحّد
-   كان: @media (max-width: 900px) → الآن: @include bp.tablet (980px)
-   ══════════════════════════════════════════════════ */
+// ─── Hero ──────────────────────────────────────────────
+.hero { position: relative; background: var(--navy); color: var(--text-on-navy); isolation: isolate; overflow: hidden; }
+.hero__bg { position: absolute; inset: 0; z-index: -1; }
+.hero__glow { position: absolute; border-radius: 50%; filter: blur(90px); }
+.hero__glow--gold { width: 420px; height: 420px; inset-block-start: -120px; inset-inline-end: -80px; background: var(--gold); opacity: .22; }
+.hero__glow--blue { width: 520px; height: 520px; inset-block-end: -220px; inset-inline-start: -160px; background: var(--navy-600); opacity: .9; }
+.hero__grid {
+  position: absolute; inset: 0; opacity: .08;
+  background-image: linear-gradient(var(--text-on-navy) 1px, transparent 1px), linear-gradient(90deg, var(--text-on-navy) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(to bottom, #000, transparent 85%);
+}
+
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding-block: var(--space-5); }
+.topbar__brand img { display: block; height: 44px; width: auto; }
+.topbar__tools { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; justify-content: flex-end; }
+.topbar__link { font-weight: 600; font-size: var(--text-sm); text-decoration: none; padding: var(--space-2) var(--space-3); border-radius: var(--r-pill); border: 1px solid var(--text-on-navy-muted); min-height: 44px; display: inline-flex; align-items: center; &:hover { border-color: var(--gold); color: var(--gold); } }
+.lang { display: inline-flex; border: 1px solid var(--text-on-navy-muted); border-radius: var(--r-pill); overflow: hidden; }
+.lang__btn {
+  min-height: 44px; min-width: 44px; padding: 0 var(--space-3); background: transparent; border: 0; cursor: pointer;
+  color: var(--text-on-navy); font: inherit; font-size: var(--text-sm); font-weight: 600;
+  &.is-active { background: var(--gold); color: var(--on-primary); }
+  &:not(.is-active):hover { color: var(--gold); }
+}
+
+.hero__content { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: var(--space-12); align-items: center; padding-block: var(--space-12) var(--space-16); }
+.hero__badge { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border-radius: var(--r-pill); border: 1px solid var(--gold); color: var(--gold-light); font-size: var(--text-sm); font-weight: 600; margin-block-end: var(--space-5); }
+.badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); }
+.hero__title { color: var(--text-on-navy); font-size: clamp(2.1rem, 5.2vw, 3.6rem); font-weight: 800; letter-spacing: -.01em; }
+.hero__title-accent { display: block; color: var(--gold); margin-block-start: var(--space-2); }
+.hero__subtitle { margin-block-start: var(--space-5); font-size: var(--text-lg); color: var(--text-on-navy-muted); max-width: 40em; }
+.hero__ctas { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-block-start: var(--space-8); }
+.hero__chips { list-style: none; padding: 0; margin: var(--space-6) 0 0; display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-3);
+  li { font-size: var(--text-sm); color: var(--text-on-navy-muted); padding: var(--space-1) var(--space-3); border-radius: var(--r-pill); background: rgba(255, 255, 255, .07); } }
+
+.hero__visual { position: relative; display: flex; flex-direction: column; align-items: center; }
+.hero__visual-note { margin-block-start: var(--space-2); font-size: var(--text-xs); color: var(--text-on-navy-muted); text-align: center; }
+
+// واجهة توضيحية للبحث (ليست بيانات حقيقية)
+.mock { position: relative; z-index: 1; width: 100%; max-width: 380px; background: var(--surface); color: var(--text-primary); border-radius: var(--r-xl); padding: var(--space-6); box-shadow: var(--shadow-xl); display: grid; gap: var(--space-3); }
+.mock--wide { max-width: 460px; }
+.mock__title { font-weight: 800; font-size: var(--text-lg); color: var(--text-strong); }
+.mock__toggle { display: grid; grid-template-columns: 1fr 1fr; background: var(--muted-bg); border-radius: var(--r-pill); padding: 4px; font-weight: 700; font-size: var(--text-sm); text-align: center;
+  span { padding: var(--space-2); border-radius: var(--r-pill); color: var(--text-muted); }
+  .is-on { background: var(--gold); color: var(--on-primary); } }
+.mock__field { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4); border: 1px solid var(--border); border-radius: var(--r-md); color: var(--text-secondary); background: var(--bg-secondary); font-size: var(--text-sm); }
+.mock__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.mock__chips { display: flex; flex-wrap: wrap; gap: var(--space-2); span { font-size: var(--text-xs); padding: var(--space-1) var(--space-3); border-radius: var(--r-pill); background: var(--gold-soft); color: var(--gold-text); font-weight: 600; } }
+.mock__btn { text-align: center; padding: var(--space-3); border-radius: var(--r-pill); background: var(--navy); color: var(--text-on-navy); font-weight: 700; }
+
+// ─── Sections ──────────────────────────────────────────
+.section { padding-block: var(--space-16); }
+.section--surface { background: var(--surface); }
+.section--navy { background: var(--navy); color: var(--text-on-navy); }
+.section-header { text-align: center; max-width: 760px; margin: 0 auto var(--space-10); display: grid; gap: var(--space-3); justify-items: center; }
+.section-header--start { text-align: start; margin: 0; justify-items: start; }
+.section-eyebrow { font-size: var(--text-sm); font-weight: 700; letter-spacing: .04em; color: var(--gold-text); }
+.section-eyebrow--gold { color: var(--gold); }
+.section-title { font-size: clamp(1.6rem, 3.4vw, 2.4rem); font-weight: 800; color: var(--text-strong); }
+.section-title--white { color: var(--text-on-navy); }
+.section-desc { font-size: var(--text-lg); color: var(--text-secondary); }
+.section-desc--light { color: var(--text-on-navy-muted); }
+.note { font-size: var(--text-sm); color: var(--text-tertiary); border-inline-start: 3px solid var(--gold); padding-inline-start: var(--space-3); }
+.disclaimer { text-align: center; margin: var(--space-8) auto 0; max-width: 720px; font-size: var(--text-sm); color: var(--text-tertiary); }
+.center-ctas { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: center; margin-block-start: var(--space-8); }
+
+.icon-badge { display: grid; place-items: center; width: 52px; height: 52px; border-radius: var(--r-md); background: var(--gold-soft); color: var(--gold-text); .ico { width: 26px; height: 26px; } }
+
+// الرؤية
+.vision { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-10); align-items: start; }
+.vision__note { grid-column: 1 / -1; font-size: var(--text-sm); color: var(--text-tertiary); text-align: center; }
+.path { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); position: relative; }
+.path__step { position: relative; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--r-lg); padding: var(--space-5) var(--space-6); h3 { font-size: var(--text-xl); color: var(--text-strong); margin-block: var(--space-1) var(--space-2); } p { color: var(--text-secondary); } }
+.path__step--now { border-color: var(--gold); background: var(--gold-soft); }
+.path__tag { font-size: var(--text-xs); font-weight: 800; letter-spacing: .05em; color: var(--gold-text); }
+
+// ماذا يمكنك أن تفعل
+.uses { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-5); }
+.use-card, .feature-card, .office-card, .trust-card, .value-card {
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--r-lg); padding: var(--space-6);
+  display: grid; gap: var(--space-3); align-content: start; text-decoration: none; color: inherit;
+  h3 { font-size: var(--text-xl); color: var(--text-strong); }
+  p { color: var(--text-secondary); }
+}
+.use-card { transition: transform .25s var(--ease-out), box-shadow .25s, border-color .25s; &:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--gold); } }
+.use-card__go, .feature-card__link { display: inline-flex; align-items: center; gap: var(--space-2); font-weight: 700; color: var(--primary-text); margin-block-start: var(--space-1); text-decoration: none; }
+
+// مشكلة/حل
+.problem-solution { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); }
+.ps-col { border-radius: var(--r-lg); padding: var(--space-6); border: 1px solid var(--border); background: var(--bg-secondary); }
+.ps-col--solution { border-color: var(--gold); background: var(--gold-soft); }
+.ps-label { font-weight: 800; margin-block-end: var(--space-4); color: var(--text-strong); }
+.ps-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+.ps-item { display: flex; gap: var(--space-3); align-items: flex-start; color: var(--text-secondary); }
+.ps-icon { flex: none; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; font-size: .75rem; font-weight: 800; }
+.ps-col--problem .ps-icon { background: var(--error-bg); color: var(--danger-text); }
+.ps-col--solution .ps-icon { background: var(--success-bg); color: var(--success-text); }
+
+// ميزات
+.features { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-5); }
+.feature-card h3 { font-size: var(--text-lg); }
+
+// البحث (navy)
+.split { display: grid; grid-template-columns: 1.05fr .95fr; gap: var(--space-12); align-items: center; }
+.split__copy { display: grid; gap: var(--space-4); justify-items: start; }
+.split__ctas { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-block-start: var(--space-3); }
+.split__visual { display: flex; flex-direction: column; align-items: center; }
+.check-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); li { display: flex; gap: var(--space-3); align-items: center; color: var(--text-on-navy); } .ico { color: var(--gold); } }
+
+// تقدير الأسعار
+.value-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); }
+.value-card { padding: var(--space-8); align-content: space-between; .btn { justify-self: start; margin-block-start: var(--space-3); } }
+.value-card--accent { border-color: var(--gold); background: var(--gold-soft); }
+.value-card__tag { justify-self: start; font-size: var(--text-xs); font-weight: 800; padding: var(--space-1) var(--space-3); border-radius: var(--r-pill); background: var(--navy); color: var(--text-on-navy); }
+
+// اللغات
+.langs { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-10); align-items: center; }
+.langs .section-header { justify-items: start; }
+.lang-tiles { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4);
+  li { display: grid; gap: var(--space-1); padding: var(--space-5) var(--space-6); border-radius: var(--r-lg); background: var(--bg-secondary); border: 1px solid var(--border); border-inline-start: 4px solid var(--gold); }
+  strong { font-size: var(--text-xl); color: var(--text-strong); }
+  span { color: var(--text-secondary); } }
+
+// خدمات
+.chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: center; li { padding: var(--space-2) var(--space-5); border-radius: var(--r-pill); border: 1px solid var(--border); background: var(--card-bg); font-weight: 600; color: var(--text-secondary); } }
+
+// مكاتب
+.office-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-5); }
+.office-card h3 { font-size: var(--text-lg); }
+
+// كيف يعمل
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-5); }
+.step { display: flex; gap: var(--space-5); align-items: flex-start; h3 { font-size: var(--text-xl); color: var(--text-strong); margin-block-end: var(--space-1); } p { color: var(--text-secondary); } }
+.step__num { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--gold); color: var(--on-primary); font-weight: 800; }
+
+// ثقة
+.trust-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-5); }
+.trust-card h3 { font-size: var(--text-lg); }
+
+// دعوة أخيرة
+.section--cta { background: var(--navy); color: var(--text-on-navy); text-align: center; }
+.final-cta__title { font-size: clamp(1.7rem, 3.6vw, 2.5rem); font-weight: 800; color: var(--text-on-navy); }
+.final-cta__desc { margin-block-start: var(--space-4); font-size: var(--text-lg); color: var(--text-on-navy-muted); }
+
+// ─── عرض «أول 100 مكتب» (بيانات GET /api/offers/active) ───
+.section--offer { padding-block: var(--space-10); background: var(--page-bg); }
+.offer-card { background: var(--navy); color: var(--text-on-navy); border-radius: var(--r-xl); padding: var(--space-8); display: grid; gap: var(--space-4); justify-items: start; box-shadow: var(--shadow-lg); border: 1px solid var(--gold); }
+.offer-card__badge { padding: var(--space-1) var(--space-4); border-radius: var(--r-pill); background: var(--gold); color: var(--on-primary); font-weight: 800; }
+.offer-card__desc, .offer-card__ends, .offer-card__terms { color: var(--text-on-navy-muted); }
+.offer-card__terms, .offer-card__ends { font-size: var(--text-sm); }
+.offer-progress { width: 100%; display: grid; gap: var(--space-2); }
+.offer-progress__track { height: 10px; border-radius: var(--r-pill); background: rgba(255, 255, 255, .18); overflow: hidden; }
+.offer-progress__fill { height: 100%; background: var(--gold); border-radius: inherit; }
+.offer-progress__label { font-size: var(--text-sm); color: var(--text-on-navy-muted); }
+.offer-card--skeleton { min-height: 160px; }
+.skeleton { display: block; border-radius: var(--r-sm); background: rgba(255, 255, 255, .14); animation: lp-pulse 1.4s ease-in-out infinite; }
+.skeleton--badge { width: 90px; height: 24px; } .skeleton--title { width: 60%; height: 28px; } .skeleton--line { width: 90%; height: 14px; } .skeleton--short { width: 50%; }
+@keyframes lp-pulse { 50% { opacity: .45; } }
+
+// ─── نموذج تسجيل الاهتمام ───
+.section--form { background: var(--surface); }
+.lead-form, .form-success { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--r-xl); padding: var(--space-8); box-shadow: var(--shadow-md); display: grid; gap: var(--space-5); }
+.field-group { display: grid; gap: var(--space-2); }
+.field-label { font-weight: 700; color: var(--text-strong); }
+.required { color: var(--danger-text); margin-inline-start: 2px; }
+.field-optional, .field-hint { font-size: var(--text-sm); color: var(--text-muted); font-weight: 400; }
+.field-input, .field-select, .field-textarea {
+  width: 100%; min-height: 48px; padding: var(--space-3) var(--space-4); font: inherit; color: var(--text-primary);
+  background: var(--input-bg); border: 1.5px solid var(--input-border); border-radius: var(--r-md);
+  &:focus { outline: none; border-color: var(--focus-border); box-shadow: 0 0 0 3px var(--gold-soft); }
+  &::placeholder { color: var(--text-placeholder); }
+}
+.field-input--error { border-color: var(--danger-text); }
+.field-error { color: var(--danger-text); font-size: var(--text-sm); }
+.form-error-banner { padding: var(--space-3) var(--space-4); border-radius: var(--r-md); background: var(--error-bg); color: var(--danger-text); border: 1px solid var(--error-border); }
+.form-privacy { font-size: var(--text-sm); color: var(--text-muted); text-align: center; }
+.form-success { text-align: center; justify-items: center; }
+.form-success__icon { width: 56px; height: 56px; display: grid; place-items: center; border-radius: 50%; background: var(--success-bg); color: var(--success-text); font-size: 1.6rem; font-weight: 800; }
+.form-success__title { font-size: var(--text-2xl); color: var(--text-strong); }
+.form-success__msg { color: var(--text-secondary); }
+.spinner { width: 18px; height: 18px; border: 2px solid currentColor; border-inline-end-color: transparent; border-radius: 50%; display: inline-block; animation: lp-spin .7s linear infinite; }
+@keyframes lp-spin { to { transform: rotate(360deg); } }
+
+// ─── FAQ ───
+.section--white { background: var(--page-bg); }
+.faq-list { margin: 0; display: grid; gap: var(--space-3); }
+.faq-item { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
+.faq-question { margin: 0; }
+.faq-btn { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); padding: var(--space-4) var(--space-5); min-height: 56px; background: transparent; border: 0; font: inherit; font-weight: 700; color: var(--text-strong); text-align: start; cursor: pointer; }
+.faq-chevron { flex: none; transition: transform .25s var(--ease-out); }
+.faq-item--open .faq-chevron { transform: rotate(180deg); }
+.faq-answer-wrapper { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s var(--ease-out); }
+.faq-item--open .faq-answer-wrapper { grid-template-rows: 1fr; }
+.faq-answer { margin: 0; overflow: hidden; min-height: 0; padding-inline: var(--space-5); color: var(--text-secondary); }
+.faq-item--open .faq-answer { padding-block-end: var(--space-5); }
+
+// ─── Footer ───
+.footer { background: var(--navy); color: var(--text-on-navy-muted); padding-block: var(--space-10); border-top: 1px solid rgba(255, 255, 255, .12); }
+.footer__inner { display: grid; gap: var(--space-4); justify-items: center; text-align: center; }
+.footer__brand { display: grid; gap: var(--space-2); justify-items: center; img { height: 40px; width: auto; } }
+.footer__links { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-6); justify-content: center; }
+.footer__link { color: var(--text-on-navy); text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; &:hover { color: var(--gold); text-decoration: underline; } }
+
+// ─── Responsive ───
 @include bp.tablet {
-  .problem-solution {
-    grid-template-columns: 1fr;
-  }
-
-  .ps-arrow {
-    transform: rotate(90deg);
-  }
+  .hero__content, .vision, .split, .langs, .value-grid, .problem-solution { grid-template-columns: 1fr; }
+  .hero__content { gap: var(--space-8); padding-block: var(--space-8) var(--space-12); }
+  .uses { grid-template-columns: repeat(2, 1fr); }
+  .features, .office-grid, .trust-grid { grid-template-columns: repeat(2, 1fr); }
+  .section { padding-block: var(--space-12); }
 }
-
-/* ══════════════════════════════════════════════════
-   RESPONSIVE — [Phase 0] كان: @media (max-width: 640px)
-   الآن: @include bp.mobile — نفس القيمة 640px، مصدر موحّد فقط
-   ══════════════════════════════════════════════════ */
 @include bp.mobile {
-  :host {
-    /* أصغر من --space-2xl الأساسي (5.5rem) لضيق الشاشة، لكن ما زال أوسع
-       من القيمة القديمة (كانت 2.5rem) — نفس منطق تكبير المسافات أعلاه. */
-    --space-2xl: 3.5rem;
-  }
-
-  .hero {
-    min-height: 100svh;
-    align-items: flex-end;
-    padding-bottom: 2rem;
-  }
-
-  .hero__ctas {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .hero__ctas .btn {
-    width: 100%;
-    font-size: 1.05rem;
-    padding: 1rem;
-  }
-
-  .hero__stats {
-    gap: var(--space-md);
-    flex-wrap: wrap;
-    justify-content: flex-start;
-  }
-
-  .lead-form {
-    padding: var(--space-lg) var(--space-md);
-  }
-
-  .footer__inner {
-    flex-direction: column;
-    text-align: center;
-  }
+  .container { padding-inline: var(--space-4); }
+  .uses, .features, .office-grid, .trust-grid { grid-template-columns: 1fr; }
+  .topbar { flex-wrap: wrap; }
+  .topbar__brand img { height: 38px; }
+  .hero__ctas .btn, .center-ctas .btn, .split__ctas .btn { flex: 1 1 100%; }
+  .lead-form, .form-success, .value-card, .offer-card { padding: var(--space-5); }
 }
 
-/* ══════════════════════════════════════════════════
-   ACCESSIBILITY
-   ══════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
-  * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
-}
-
-:focus-visible {
-  outline: 3px solid var(--gold);
-  outline-offset: 2px;
-  border-radius: 4px;
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .btn:hover, .use-card:hover { transform: none; }
 }

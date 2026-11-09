@@ -1,0 +1,5 @@
+/* Shown by iOS in the permission dialogs. Keep in step with Info.plist (English is the fallback there). */
+"NSLocationWhenInUseUsageDescription" = "HudhudNest uses your location to show listings near you on the map and to sort search results by distance.";
+"NSCameraUsageDescription" = "HudhudNest needs camera access so you can take photos to attach to a property listing.";
+"NSPhotoLibraryUsageDescription" = "HudhudNest needs access to your photo library so you can attach existing photos to a property listing.";
+"NSUserTrackingUsageDescription" = "HudhudNest asks for this only if you choose personalised ads. You can decline and still see non-personalised ads.";

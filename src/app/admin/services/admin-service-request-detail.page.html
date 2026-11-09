@@ -1,0 +1,116 @@
+<section class="page">
+  <a class="back" routerLink="/admin/services" [queryParams]="{ tab: 'requests' }">← {{ 'ADMIN_SERVICES.BACK' | translate }}</a>
+
+  <app-loading-spinner *ngIf="loading()" [label]="'COMMON.LOADING' | translate"></app-loading-spinner>
+  <div class="state error" *ngIf="!loading() && failed()">
+    <p>{{ 'ADMIN_SERVICES.LOAD_ERROR' | translate }}</p>
+    <button type="button" class="btn" (click)="load()">{{ 'COMMON.RETRY' | translate }}</button>
+  </div>
+
+  <ng-container *ngIf="!loading() && !failed() && detail() as d">
+    <header class="head">
+      <div>
+        <h1 dir="ltr">{{ d.request.requestNumber }}</h1>
+        <p class="muted"><a [routerLink]="['/properties', d.request.propertyId]">{{ d.request.propertyTitle }}</a></p>
+      </div>
+      <div class="chips">
+        <span class="chip" [attr.data-status]="d.request.status">{{ ('SERVICE_REQUESTS.STATUS.' + d.request.status.toUpperCase()) | translate }}</span>
+        <span class="chip chip--warn" *ngIf="d.needsAttention">⚠ {{ 'ADMIN_SERVICES.ATTENTION' | translate }}</span>
+      </div>
+    </header>
+
+    <p class="note-line" *ngIf="d.needsAttention">{{ (d.request.requesterAnswer === 'Disputed' ? 'ADMIN_SERVICES.ATTENTION_DISPUTED' : 'ADMIN_SERVICES.ATTENTION_STALE') | translate }}</p>
+
+    <div class="grid">
+      <section class="card">
+        <h2>{{ 'ADMIN_SERVICES.D_REQUEST' | translate }}</h2>
+        <dl>
+          <div><dt>{{ 'SERVICE_REQUESTS.CATEGORY' | translate }}</dt><dd>{{ ('SERVICES.CATEGORY.' + d.request.category) | translate }}</dd></div>
+          <div><dt>{{ 'SERVICE_REQUESTS.OFFERING' | translate }}</dt><dd>{{ d.request.serviceOfferingTitle }}</dd></div>
+          <div><dt>{{ 'SERVICE_REQUESTS.PROVIDER' | translate }}</dt><dd><a [routerLink]="['/admin/service-providers', d.request.serviceProviderId]">{{ d.request.serviceProviderDisplayName }}</a></dd></div>
+          <div><dt>{{ 'PROVIDER.INBOX.REQUESTER' | translate }}</dt><dd>{{ d.request.requesterName }}</dd></div>
+          <div *ngIf="d.request.providerContact as c"><dt>{{ 'ADMIN_SERVICES.D_PROVIDER_CONTACT' | translate }}</dt><dd dir="ltr">{{ c.phone }}<ng-container *ngIf="c.phone && c.email"> · </ng-container>{{ c.email }}</dd></div>
+          <div><dt>{{ 'SERVICE_REQUESTS.CREATED_AT' | translate }}</dt><dd>{{ d.request.createdAt | localDate:'medium' }}</dd></div>
+          <div *ngIf="d.request.requesterNote"><dt>{{ 'SERVICE_REQUESTS.NOTE' | translate }}</dt><dd>{{ d.request.requesterNote }}</dd></div>
+          <div *ngIf="d.request.providerNote"><dt>{{ 'PROVIDER.DETAIL.PROVIDER_NOTE' | translate }}</dt><dd>{{ d.request.providerNote }}</dd></div>
+          <div *ngIf="d.request.finalPrice != null"><dt>{{ 'PROVIDER.DETAIL.FINAL_PRICE' | translate }}</dt><dd>{{ d.request.finalPrice }}</dd></div>
+        </dl>
+      </section>
+
+      <div class="side">
+        <section class="card">
+          <h2>{{ 'ADMIN_SERVICES.D_PROVIDER_SIDE' | translate }}</h2>
+          <p class="muted" *ngIf="!d.request.outcomeReason && !d.request.rejectionReason && d.request.status !== 'Completed' && d.request.status !== 'Reviewed'">{{ 'ADMIN_SERVICES.D_NO_OUTCOME' | translate }}</p>
+          <p *ngIf="d.request.status === 'Completed' || d.request.status === 'Reviewed'">✓ {{ 'ADMIN_SERVICES.D_PROVIDER_DONE' | translate }}</p>
+          <p *ngIf="d.request.outcomeReason"><strong>{{ ('SERVICE_OUTCOME.PROVIDER.' + d.request.outcomeReason) | translate }}</strong><ng-container *ngIf="d.request.outcomeNote"> — {{ d.request.outcomeNote }}</ng-container></p>
+          <p *ngIf="d.request.rejectionReason" class="muted">{{ 'SERVICE_REQUESTS.REJECTION_REASON' | translate }}: {{ d.request.rejectionReason }}</p>
+        </section>
+
+        <section class="card">
+          <h2>{{ 'ADMIN_SERVICES.D_CUSTOMER_SIDE' | translate }}</h2>
+          <p class="muted" *ngIf="!d.request.requesterAnswer && !d.request.requesterReason">{{ 'ADMIN_SERVICES.D_NO_ANSWER' | translate }}</p>
+          <p *ngIf="d.request.requesterAnswer"><strong>{{ ('SERVICE_REQUESTS.ANSWER.' + d.request.requesterAnswer) | translate }}</strong></p>
+          <p *ngIf="d.request.requesterReason">{{ ('SERVICE_OUTCOME.REQUESTER.' + d.request.requesterReason) | translate }}</p>
+          <p *ngIf="d.request.requesterFeedbackNote" class="quote">{{ d.request.requesterFeedbackNote }}</p>
+        </section>
+
+        <section class="card" *ngIf="d.review as r">
+          <h2>{{ 'ADMIN_SERVICES.D_REVIEW' | translate }}</h2>
+          <p><strong>★ {{ r.rating }}/5</strong> · {{ r.reviewerName }}</p>
+          <p class="quote" *ngIf="r.comment">{{ r.comment }}</p>
+          <p class="note-line" *ngIf="r.isHidden">{{ 'ADMIN_SERVICES.D_REVIEW_HIDDEN' | translate }}<ng-container *ngIf="r.hiddenReason"> — {{ r.hiddenReason }}</ng-container></p>
+          <div class="actions">
+            <button type="button" class="btn danger" *ngIf="!r.isHidden && action() !== 'hide'" [disabled]="busy()" (click)="open('hide')">{{ 'ADMIN_SERVICES.HIDE_REVIEW' | translate }}</button>
+            <button type="button" class="btn" *ngIf="r.isHidden" [disabled]="busy()" (click)="restoreReview()">{{ 'ADMIN_SERVICES.RESTORE_REVIEW' | translate }}</button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <section class="card" *ngIf="canSetOutcome() || canCancel()">
+      <h2>{{ 'ADMIN_SERVICES.D_ACTIONS' | translate }}</h2>
+      <p class="muted">{{ 'ADMIN_SERVICES.D_ACTIONS_HINT' | translate }}</p>
+      <div class="actions" *ngIf="!action()">
+        <button type="button" class="btn primary" *ngIf="canSetOutcome()" (click)="open('done')">{{ 'ADMIN_SERVICES.SET_DONE' | translate }}</button>
+        <button type="button" class="btn danger" *ngIf="canSetOutcome()" (click)="open('notdone')">{{ 'ADMIN_SERVICES.SET_NOT_DONE' | translate }}</button>
+        <button type="button" class="btn" *ngIf="canCancel()" (click)="open('cancel')">{{ 'ADMIN_SERVICES.CANCEL_REQUEST' | translate }}</button>
+      </div>
+    </section>
+
+    <form class="card form" *ngIf="action() as a" (ngSubmit)="submit()">
+      <h2>{{ ('ADMIN_SERVICES.FORM_' + a.toUpperCase()) | translate }}</h2>
+      <ng-container *ngIf="a === 'notdone'">
+        <label for="ad-reason">{{ 'PROVIDER.DETAIL.NOT_DONE_REASON' | translate }}</label>
+        <select id="ad-reason" name="reason" required [(ngModel)]="outcomeReason">
+          <option value="" disabled>{{ 'SERVICE_REQUESTS.REASON_CHOOSE' | translate }}</option>
+          <option *ngFor="let reason of outcomeReasons" [value]="reason">{{ ('SERVICE_OUTCOME.PROVIDER.' + reason) | translate }}</option>
+        </select>
+        <label for="ad-pnote">{{ 'PROVIDER.DETAIL.NOT_DONE_NOTE' | translate }}</label>
+        <textarea id="ad-pnote" name="providerNote" rows="2" maxlength="500" [(ngModel)]="providerNote"></textarea>
+      </ng-container>
+      <label for="ad-note">{{ 'ADMIN_SERVICES.ADMIN_NOTE' | translate }}</label>
+      <textarea id="ad-note" name="adminNote" rows="3" maxlength="500" required [(ngModel)]="adminNote"></textarea>
+      <div class="actions">
+        <button type="submit" class="btn primary" [disabled]="!canSubmit()">{{ 'ADMIN_SERVICES.CONFIRM' | translate }}</button>
+        <button type="button" class="btn" (click)="close()">{{ 'COMMON.CANCEL' | translate }}</button>
+      </div>
+    </form>
+
+    <section class="card" *ngIf="d.messages as messages">
+      <h2>{{ 'SERVICE_CONVERSATION.ADMIN_TITLE' | translate }}</h2>
+      <p class="muted" *ngIf="d.request.expiredWaitingOn">{{ ('ADMIN_SERVICES.EXPIRY.' + d.request.expiredWaitingOn) | translate }}</p>
+      <app-service-conversation [request]="d.request" role="admin" [preloaded]="messages" [pollMs]="0" />
+    </section>
+
+    <section class="card">
+      <h2>{{ 'PROVIDER.DETAIL.HISTORY' | translate }}</h2>
+      <ol class="timeline">
+        <li *ngFor="let h of d.history; trackBy: trackById">
+          <span class="when">{{ h.createdAt | localDate:'medium' }}</span>
+          <strong>{{ ('SERVICE_REQUESTS.STATUS.' + h.toStatus.toUpperCase()) | translate }}</strong>
+          <span class="text" *ngIf="h.note">{{ h.note }}</span>
+        </li>
+      </ol>
+    </section>
+  </ng-container>
+</section>

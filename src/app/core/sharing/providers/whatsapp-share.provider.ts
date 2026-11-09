@@ -8,6 +8,7 @@
 // =============================================================
 
 import { Injectable } from '@angular/core';
+import { openExternalLink } from '../external-link';
 import { ShareableContent, ShareProvider, ShareResult, SharePlatform } from '../share.model';
 
 @Injectable({ providedIn: 'root' })
@@ -22,13 +23,17 @@ export class WhatsAppShareProvider implements ShareProvider {
   async share(content: ShareableContent): Promise<ShareResult> {
     const shareUrl = `https://wa.me/?text=${encodeURIComponent(content.text)}`;
 
-    const opened = window.open(shareUrl, '_blank', 'noopener,noreferrer');
-    if (!opened) {
+    // The result is "the share link was handed over", never "the post exists": there is no callback
+    // from the other app. A pop-up blocker is not detectable here (see openExternalLink), so the only
+    // real failure is the hand-over itself throwing.
+    try {
+      await openExternalLink(shareUrl);
+    } catch {
       return {
         success: false,
         platform: this.platform,
-        errorCode: 'POPUP_BLOCKED',
-        message: 'SHARE.ERROR_POPUP_BLOCKED'
+        errorCode: 'OPEN_FAILED',
+        message: 'SHARE.ERROR_OPEN_FAILED'
       };
     }
 

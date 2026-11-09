@@ -9,7 +9,7 @@ export { PHONE_E164_PATTERN } from '../../core/auth/phone-number';
  * docs/phone-password-authentication-and-reverification.md (قسم "Error codes")
  * إلى مفاتيح ترجمة AUTH.ERRORS.*
  */
-const ERROR_CODE_TO_KEY: Record<string, string> = {
+export const PHONE_ERROR_CODE_TO_KEY: Record<string, string> = {
   PHONE_ALREADY_REGISTERED: 'AUTH.ERRORS.PHONE_ALREADY_REGISTERED',
   PHONE_AUTH_FAILED: 'AUTH.ERRORS.PHONE_AUTH_FAILED',
   ACCOUNT_UNAVAILABLE: 'AUTH.ERRORS.ACCOUNT_UNAVAILABLE',
@@ -28,6 +28,8 @@ const ERROR_CODE_TO_KEY: Record<string, string> = {
   // Multi-channel: the chosen channel is off or unsupported for this number, or its provider failed (never the raw provider error).
   OTP_CHANNEL_UNAVAILABLE: 'AUTH.ERRORS.OTP_CHANNEL_UNAVAILABLE',
   OTP_PROVIDER_UNAVAILABLE: 'AUTH.ERRORS.OTP_PROVIDER_UNAVAILABLE',
+  // Global daily ceiling on codes for NEW numbers (QA phase 17, P17-D01).
+  OTP_DAILY_LIMIT_REACHED: 'AUTH.ERRORS.OTP_DAILY_LIMIT_REACHED',
 
   // Verify-time OTP outcomes (registration / reverification / phone-number-change) — the
   // backend used to collapse wrong/expired/already-used/too-many-attempts into one generic
@@ -60,7 +62,7 @@ export function getPhoneWorkflowErrorMessage(
   fallbackKey: string,
   httpError?: unknown
 ): string {
-  const key = errorCode ? ERROR_CODE_TO_KEY[errorCode] : undefined;
+  const key = errorCode ? PHONE_ERROR_CODE_TO_KEY[errorCode] : undefined;
   if (key) {
     return translate.instant(key);
   }

@@ -1,7 +1,7 @@
 // =============================================================
 // src/app/admin/payment-requests/payment-requests.page.ts
 //
-// طابور المشرف: طلبات الخطط المدفوعة وطلبات تمييز الإعلانات. لا توجد بوابة دفع،
+// طابور المشرف: طلبات الخطط المدفوعة وطلبات تمييز الإعلانات وتمديدها. لا توجد بوابة دفع،
 // فلا شيء يُفعَّل تلقائياً — المستخدم يقدّم الطلب، ويؤكد المشرف الدفع هنا فتُفعَّل
 // الخطة أو يُميَّز الإعلان. الرفض يُغلق الطلب دون تفعيل.
 // =============================================================
@@ -14,12 +14,14 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AdminPaymentRequestsApiService } from '../../core/api/admin-payment-requests-api.service';
 import {
+  PendingExtensionPayment,
   PendingFeaturedPayment,
   PendingPlanRequest
 } from '../../core/models/payment-request.model';
 import { ToastService } from '../../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 /** Default subscription length offered when approving a plan request. */
 export const DEFAULT_PLAN_DURATION_DAYS = 30;
@@ -28,7 +30,7 @@ export const DEFAULT_PLAN_DURATION_DAYS = 30;
   selector: 'app-admin-payment-requests',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
+  imports: [ LocalizedDatePipe,CommonModule, RouterModule, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
   template: `
     <section class="page">
       <header class="page-header">
@@ -39,7 +41,7 @@ export const DEFAULT_PLAN_DURATION_DAYS = 30;
       <app-loading-spinner *ngIf="loading()" [label]="'COMMON.LOADING' | translate"></app-loading-spinner>
 
       <app-empty-state
-        *ngIf="!loading() && plans().length === 0 && featured().length === 0"
+        *ngIf="!loading() && plans().length === 0 && featured().length === 0 && extensions().length === 0"
         icon="💳"
         [title]="'ADMIN_PAYMENTS.EMPTY_TITLE' | translate"
         [message]="'ADMIN_PAYMENTS.EMPTY_MESSAGE' | translate"
@@ -55,7 +57,7 @@ export const DEFAULT_PLAN_DURATION_DAYS = 30;
             <span class="muted" *ngIf="p.email">{{ p.email }}</span>
             <span class="chip">{{ 'PRICING.' + p.tier.toUpperCase() + '.NAME' | translate }}</span>
             <span class="muted" *ngIf="p.priceUsd !== null">{{ p.priceUsd }} USD</span>
-            <span class="muted">{{ p.requestedAt | date: 'short' }}</span>
+            <span class="muted">{{ p.requestedAt | localDate: 'short' }}</span>
             <a class="link" [routerLink]="['/admin/users', p.userId]">{{ 'ADMIN_PAYMENTS.OPEN_USER' | translate }}</a>
           </div>
           <div class="card__actions">
@@ -86,7 +88,7 @@ export const DEFAULT_PLAN_DURATION_DAYS = 30;
             <a class="link" [routerLink]="['/properties', f.propertyId]"><strong>{{ f.propertyTitle }}</strong></a>
             <span class="muted">{{ f.ownerName }}<ng-container *ngIf="f.ownerEmail"> · {{ f.ownerEmail }}</ng-container></span>
             <span class="chip">{{ f.amountUsd }} USD</span>
-            <span class="muted">{{ f.requestedAt | date: 'short' }}</span>
+            <span class="muted">{{ f.requestedAt | localDate: 'short' }}</span>
           </div>
           <div class="card__actions">
             <button type="button" class="btn btn--primary" [disabled]="busyId() === f.transactionId" (click)="approveFeatured(f)">
@@ -97,14 +99,35 @@ export const DEFAULT_PLAN_DURATION_DAYS = 30;
             </button>
           </div>
         </div>
+
+        <h2 class="group-title" *ngIf="extensions().length > 0">
+          {{ 'ADMIN_PAYMENTS.EXTENSIONS_TITLE' | translate }} ({{ extensions().length }})
+        </h2>
+        <div class="card" *ngFor="let e of extensions(); trackBy: trackExtension" data-testid="extension-request">
+          <div class="card__info">
+            <a class="link" [routerLink]="['/properties', e.propertyId]"><strong>{{ e.propertyTitle }}</strong></a>
+            <span class="muted">{{ e.ownerName }}<ng-container *ngIf="e.ownerEmail"> · {{ e.ownerEmail }}</ng-container></span>
+            <span class="chip">{{ e.amountUsd }} USD</span>
+            <span class="muted">{{ e.requestedAt | localDate: 'short' }}</span>
+            <span class="muted" dir="ltr">{{ 'ADMIN_PAYMENTS.REFERENCE' | translate }}: {{ e.transactionId }}</span>
+          </div>
+          <div class="card__actions">
+            <button type="button" class="btn btn--primary" [disabled]="busyId() === e.transactionId" (click)="approveExtension(e)">
+              {{ 'ADMIN_PAYMENTS.APPROVE_EXTENSION' | translate }}
+            </button>
+            <button type="button" class="btn btn--danger" [disabled]="busyId() === e.transactionId" (click)="rejectExtension(e)">
+              {{ 'ADMIN_PAYMENTS.REJECT' | translate }}
+            </button>
+          </div>
+        </div>
       </ng-container>
     </section>
   `,
   styles: [`
     .page { padding: clamp(1rem, 3vw, 2rem); }
-    .page-header h1 { margin:0 0 .3rem; color:var(--navy); font-family:var(--font-display); font-size:clamp(1.5rem,2.6vw,2rem); }
+    .page-header h1 { margin:0 0 .3rem; color: var(--text-strong); font-family:var(--font-display); font-size:clamp(1.5rem,2.6vw,2rem); }
     .page-header p { margin:0 0 1.25rem; color:var(--gray-500); }
-    .group-title { margin:1.25rem 0 .6rem; font-size:1.1rem; color:var(--navy); }
+    .group-title { margin:1.25rem 0 .6rem; font-size:1.1rem; color: var(--text-strong); }
     .card {
       display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;
       background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md);
@@ -113,13 +136,13 @@ export const DEFAULT_PLAN_DURATION_DAYS = 30;
     .card__info { display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; }
     .card__actions { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; }
     .muted { color:var(--gray-500); font-size:var(--text-sm); }
-    .chip { background:var(--gold-soft); color:var(--navy); border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600; }
-    .link { color:var(--primary); font-size:var(--text-sm); }
+    .chip { background:var(--gold-soft); color: var(--text-strong); border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600; }
+    .link { color:var(--primary-text); font-size:var(--text-sm); }
     .days { display:flex; align-items:center; gap:.4rem; font-size:var(--text-sm); color:var(--gray-500); }
     .days input { width:5rem; padding:.3rem .4rem; border:1px solid var(--border); border-radius:var(--r-sm); }
     .btn { border-radius:var(--r-sm); padding:.4rem .75rem; font-size:var(--text-sm); cursor:pointer; border:1px solid transparent; }
-    .btn--primary { background:var(--primary); color:#fff; }
-    .btn--danger { background:var(--danger-soft); color:var(--danger); border-color:rgba(220,38,38,.2); }
+    .btn--primary { background: var(--primary); color: var(--on-primary); }
+    .btn--danger { background:var(--danger-soft); color:var(--danger-text); border-color:rgba(220,38,38,.2); }
     .btn:disabled { opacity:.6; cursor:not-allowed; }
   `]
 })
@@ -131,6 +154,7 @@ export class AdminPaymentRequestsPage implements OnInit {
 
   readonly plans = signal<PendingPlanRequest[]>([]);
   readonly featured = signal<PendingFeaturedPayment[]>([]);
+  readonly extensions = signal<PendingExtensionPayment[]>([]);
   readonly loading = signal(true);
   readonly busyId = signal<string | null>(null);
 
@@ -149,6 +173,7 @@ export class AdminPaymentRequestsPage implements OnInit {
         next: r => {
           this.plans.set(r.plans);
           this.featured.set(r.featured);
+          this.extensions.set(r.extensions);
           this.loading.set(false);
         },
         error: () => {
@@ -199,7 +224,22 @@ export class AdminPaymentRequestsPage implements OnInit {
       () => this.featured.update(list => list.filter(x => x.transactionId !== f.transactionId)));
   }
 
+  approveExtension(e: PendingExtensionPayment): void {
+    if (!confirm(this.translate.instant('ADMIN_PAYMENTS.CONFIRM_APPROVE_EXTENSION', { title: e.propertyTitle }))) return;
+
+    this.run(e.transactionId, this.api.approveExtension(e.transactionId), 'ADMIN_PAYMENTS.EXTENSION_APPROVED',
+      () => this.extensions.update(list => list.filter(x => x.transactionId !== e.transactionId)));
+  }
+
+  rejectExtension(e: PendingExtensionPayment): void {
+    if (!confirm(this.translate.instant('ADMIN_PAYMENTS.CONFIRM_REJECT', { name: e.propertyTitle }))) return;
+
+    this.run(e.transactionId, this.api.rejectExtension(e.transactionId), 'ADMIN_PAYMENTS.REJECTED',
+      () => this.extensions.update(list => list.filter(x => x.transactionId !== e.transactionId)));
+  }
+
   trackPlan(_: number, p: PendingPlanRequest): string { return p.requestId; }
+  trackExtension(_: number, e: PendingExtensionPayment): string { return e.transactionId; }
   trackFeatured(_: number, f: PendingFeaturedPayment): string { return f.transactionId; }
 
   private run(id: string, call: ReturnType<AdminPaymentRequestsApiService['approvePlan']>, successKey: string, onDone: () => void): void {

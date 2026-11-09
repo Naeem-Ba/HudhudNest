@@ -18,6 +18,7 @@ import {
 import { SERVICE_CATEGORIES, ServiceCategory, ServiceProviderStatus } from '../../core/models/service.model';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 type Tab = 'applications' | 'providers';
 
@@ -30,7 +31,7 @@ type Tab = 'applications' | 'providers';
   selector: 'app-admin-service-providers-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
+  imports: [ LocalizedDatePipe,CommonModule, FormsModule, RouterLink, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
   templateUrl: './admin-service-providers.page.html',
   styleUrls: ['./admin-service-providers.page.scss']
 })

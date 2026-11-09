@@ -1,0 +1,119 @@
+<section class="page">
+  <header class="page-header">
+    <h1>{{ 'ADMIN_SHORT_STAY.TITLE' | translate }}</h1>
+    <p>{{ 'ADMIN_SHORT_STAY.SUBTITLE' | translate }}</p>
+  </header>
+
+  <div class="filters">
+    <input
+      type="search"
+      class="search-input"
+      data-testid="search"
+      [(ngModel)]="search"
+      (ngModelChange)="onSearchChange($event)"
+      [placeholder]="'ADMIN_SHORT_STAY.SEARCH_PLACEHOLDER' | translate"
+    />
+    <label class="check">
+      <input type="checkbox" data-testid="taken-down-only" [(ngModel)]="takenDownOnly" (ngModelChange)="onFilterChange()" />
+      {{ 'ADMIN_SHORT_STAY.TAKEN_DOWN_ONLY' | translate }}
+    </label>
+  </div>
+
+  <app-loading-spinner *ngIf="loading()" [label]="'COMMON.LOADING' | translate"></app-loading-spinner>
+
+  <p class="error" role="alert" *ngIf="failed()">
+    {{ 'ADMIN_SHORT_STAY.LOAD_ERROR' | translate }}
+    <button type="button" class="link-btn" (click)="load()">{{ 'COMMON.RETRY' | translate }}</button>
+  </p>
+
+  <app-empty-state
+    *ngIf="!loading() && !failed() && listings().length === 0"
+    icon="🏡"
+    [title]="'ADMIN_SHORT_STAY.EMPTY_TITLE' | translate"
+    [message]="'ADMIN_SHORT_STAY.EMPTY_MESSAGE' | translate"
+  ></app-empty-state>
+
+  <div class="listings" *ngIf="listings().length > 0">
+    <article class="listing-card" *ngFor="let l of listings(); trackBy: trackById" data-testid="listing-row">
+      <div class="listing-card__main">
+        <a class="title" [routerLink]="['/short-stay', l.id]" target="_blank">{{ l.title }}</a>
+        <div class="badges">
+          <span class="badge">{{ l.accommodationTypeNameAr }}</span>
+          <span class="badge" *ngIf="l.city">{{ l.city }}</span>
+          <span class="badge" [class.badge--published]="l.isPublished">
+            {{ (l.isPublished ? 'ADMIN_SHORT_STAY.PUBLISHED' : 'ADMIN_SHORT_STAY.NOT_PUBLISHED') | translate }}
+          </span>
+          <span class="badge badge--taken-down" *ngIf="l.isTakenDown" data-testid="taken-down-badge">
+            {{ 'ADMIN_SHORT_STAY.TAKEN_DOWN' | translate }}
+          </span>
+        </div>
+        <p class="taken-down-reason" *ngIf="l.isTakenDown && l.takenDownReason">{{ l.takenDownReason }}</p>
+        <div class="meta">
+          <span *ngIf="l.isTakenDown && l.takenDownAt">
+            {{ 'ADMIN_SHORT_STAY.TAKEN_DOWN_AT' | translate:{ date: (l.takenDownAt | localDate:'mediumDate') } }}
+          </span>
+          <span>{{ 'ADMIN_SHORT_STAY.CREATED_AT' | translate:{ date: (l.createdAt | localDate:'mediumDate') } }}</span>
+        </div>
+      </div>
+
+      <div class="listing-card__actions">
+        <button type="button" class="btn btn--outline" *ngIf="!l.isTakenDown" data-testid="take-down" (click)="openTakeDown(l)">
+          {{ 'ADMIN_SHORT_STAY.TAKE_DOWN' | translate }}
+        </button>
+        <button type="button" class="btn btn--outline" *ngIf="l.isTakenDown" data-testid="restore" (click)="openRestore(l)">
+          {{ 'ADMIN_SHORT_STAY.RESTORE' | translate }}
+        </button>
+      </div>
+    </article>
+  </div>
+
+  <div class="pagination" *ngIf="!loading() && totalPages() > 1">
+    <button type="button" [disabled]="page() <= 1" (click)="goToPage(page() - 1)">‹</button>
+    <span>{{ page() }} / {{ totalPages() }}</span>
+    <button type="button" [disabled]="page() >= totalPages()" (click)="goToPage(page() + 1)">›</button>
+  </div>
+</section>
+
+<!-- إيقاف الإعلان: السبب إلزامي ويظهر للمالك -->
+<app-confirm-modal
+  [open]="activeModal() === 'takedown'"
+  [title]="'ADMIN_SHORT_STAY.TAKE_DOWN_MODAL_TITLE' | translate"
+  [confirmLabel]="'ADMIN_SHORT_STAY.TAKE_DOWN' | translate"
+  [confirmDisabled]="!canSubmitTakeDown()"
+  [loading]="saving()"
+  [danger]="true"
+  (confirmed)="submitTakeDown()"
+  (cancelled)="closeModal()"
+>
+  <div class="modal-form" *ngIf="selected() as l">
+    <p class="preview"><strong>{{ l.title }}</strong><br />{{ 'ADMIN_SHORT_STAY.TAKE_DOWN_HINT' | translate }}</p>
+    <textarea
+      rows="3"
+      data-testid="take-down-reason"
+      [attr.maxlength]="reasonMaxLength"
+      [placeholder]="'ADMIN_SHORT_STAY.TAKE_DOWN_REASON' | translate"
+      [(ngModel)]="reason"
+    ></textarea>
+  </div>
+</app-confirm-modal>
+
+<!-- استعادة إعلان موقوف -->
+<app-confirm-modal
+  [open]="activeModal() === 'restore'"
+  [title]="'ADMIN_SHORT_STAY.RESTORE_MODAL_TITLE' | translate"
+  [confirmLabel]="'ADMIN_SHORT_STAY.RESTORE' | translate"
+  [loading]="saving()"
+  (confirmed)="submitRestore()"
+  (cancelled)="closeModal()"
+>
+  <div class="modal-form" *ngIf="selected() as l">
+    <p class="preview"><strong>{{ l.title }}</strong><br />{{ 'ADMIN_SHORT_STAY.RESTORE_HINT' | translate }}</p>
+    <textarea
+      rows="2"
+      data-testid="restore-reason"
+      [attr.maxlength]="reasonMaxLength"
+      [placeholder]="'ADMIN_SHORT_STAY.REASON_OPTIONAL' | translate"
+      [(ngModel)]="reason"
+    ></textarea>
+  </div>
+</app-confirm-modal>

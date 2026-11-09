@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 import { AbstractControl } from '@angular/forms';
 
 @Component({
@@ -7,7 +8,7 @@ import { AbstractControl } from '@angular/forms';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <p class="form-error" *ngIf="shouldShow()">
+    <p class="form-error" data-form-error *ngIf="shouldShow()" [attr.id]="errorId">
       <span aria-hidden="true">⚠️</span>
       {{ getMessage() }}
     </p>
@@ -18,16 +19,20 @@ import { AbstractControl } from '@angular/forms';
       align-items: center;
       gap: .35rem;
       margin: .35rem 0 0;
-      color: var(--danger);
+      color: var(--danger-text);
       font-size: .875rem;
       line-height: 1.45;
     }
   `]
 })
 export class FormErrorComponent {
+  private readonly translate = inject(TranslateService);
+
   @Input() control: AbstractControl | null | undefined;
   @Input() submitted = false;
   @Input() messages: Record<string, string> = {};
+  /** id for `aria-describedby` on the control. */
+  @Input() errorId: string | null = null;
 
   shouldShow(): boolean {
     return !!this.control && this.control.invalid && (this.control.touched || this.control.dirty || this.submitted);
@@ -38,43 +43,39 @@ export class FormErrorComponent {
     const firstKey = Object.keys(errors)[0];
 
     if (!firstKey) {
-      return 'القيمة غير صحيحة.';
+      return this.translate.instant('VALIDATION.INVALID');
     }
 
     if (this.messages[firstKey]) {
       return this.messages[firstKey];
     }
 
-    if (firstKey === 'required') {
-      return 'هذا الحقل مطلوب.';
+    // A sentence the server's answer put on the field (see applyAuthFieldErrors): already translated.
+    if (firstKey === 'server' && typeof errors['server'] === 'string') {
+      return errors['server'];
     }
 
-    if (firstKey === 'email') {
-      return 'البريد الإلكتروني غير صحيح.';
+    switch (firstKey) {
+      case 'required':
+        return this.translate.instant('VALIDATION.REQUIRED');
+      case 'email':
+        return this.translate.instant('VALIDATION.EMAIL');
+      case 'minlength': {
+        const n = errors['minlength']?.requiredLength;
+        return n ? this.translate.instant('VALIDATION.MIN_LENGTH', { n }) : this.translate.instant('VALIDATION.TOO_SHORT');
+      }
+      case 'maxlength': {
+        const n = errors['maxlength']?.requiredLength;
+        return n ? this.translate.instant('VALIDATION.MAX_LENGTH', { n }) : this.translate.instant('VALIDATION.TOO_LONG');
+      }
+      case 'min':
+        return this.translate.instant('VALIDATION.MIN_VALUE', { n: errors['min']?.min });
+      case 'max':
+        return this.translate.instant('VALIDATION.MAX_VALUE', { n: errors['max']?.max });
+      case 'pattern':
+        return this.translate.instant('VALIDATION.PATTERN');
+      default:
+        return this.translate.instant('VALIDATION.INVALID');
     }
-
-    if (firstKey === 'minlength') {
-      const requiredLength = errors['minlength']?.requiredLength;
-      return requiredLength ? `يجب إدخال ${requiredLength} أحرف على الأقل.` : 'القيمة قصيرة جدًا.';
-    }
-
-    if (firstKey === 'maxlength') {
-      const requiredLength = errors['maxlength']?.requiredLength;
-      return requiredLength ? `يجب ألا تتجاوز القيمة ${requiredLength} حرفًا.` : 'القيمة طويلة جدًا.';
-    }
-
-    if (firstKey === 'min') {
-      return `يجب أن تكون القيمة أكبر من أو تساوي ${errors['min']?.min}.`;
-    }
-
-    if (firstKey === 'max') {
-      return `يجب أن تكون القيمة أقل من أو تساوي ${errors['max']?.max}.`;
-    }
-
-    if (firstKey === 'pattern') {
-      return 'الصيغة غير صحيحة.';
-    }
-
-    return 'القيمة غير صحيحة.';
   }
 }

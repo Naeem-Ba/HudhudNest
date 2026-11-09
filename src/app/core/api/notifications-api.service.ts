@@ -10,17 +10,37 @@
 //
 // ✅ الإصلاح: إضافة العناصر المفقودة + إصلاح الـ token.
 
+import { HttpContext } from '@angular/common/http';
 import { Injectable, NgZone, signal } from '@angular/core';
 import { Observable, Subject, map } from 'rxjs';
 // Types only: the SignalR client (~55 kB) is loaded on the first connect(), which only happens for a
 // signed-in user, instead of being part of every visitor's initial bundle.
 import type * as signalR from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
+import { SKIP_ERROR_TOAST } from '../interceptors/api-error.interceptor';
 import { BackendApiService } from './backend-api.service';
 import { TokenStorageService } from '../services/token-storage.service';
 import { LanguageService } from '../services/language.service';
 import { ApiPagedResult, unwrapItems } from '../models/api.model';
 import { NotificationItem, toNotificationItem } from '../models/notification.model';
+
+export interface MessageReceivedEvent {
+  propertyId: string;
+  senderId: string;
+  messageId: string;
+}
+
+/** The hub sends camelCase ids; anything else (an older server, a malformed payload) is ignored. */
+export function toMessageReceivedEvent(payload: unknown): MessageReceivedEvent | null {
+  const raw = (payload ?? {}) as Record<string, unknown>;
+  const propertyId = raw['propertyId'] ?? raw['PropertyId'];
+  const senderId = raw['senderId'] ?? raw['SenderId'];
+  const messageId = raw['messageId'] ?? raw['MessageId'];
+  if (typeof propertyId !== 'string' || typeof senderId !== 'string' || typeof messageId !== 'string') {
+    return null;
+  }
+  return { propertyId, senderId, messageId };
+}
 
 @Injectable({ providedIn: 'root' })
 export class NotificationsApiService {
@@ -30,6 +50,22 @@ export class NotificationsApiService {
   private readonly realtimeSubject = new Subject<NotificationItem>();
 
   readonly realtime$ = this.realtimeSubject.asObservable();
+
+  /** Another tab or device marked notifications as read: ids, or all=true. */
+  private readonly readSyncSubject = new Subject<{ ids: string[] | null; all: boolean }>();
+  readonly readSync$ = this.readSyncSubject.asObservable();
+
+  /**
+   * QA phase 25 (P25-D02): a message just arrived for this user, whether or not it also raised a notice (notices
+   * coalesce while an unread message exists, so the open conversation cannot rely on them). Ids only; the page
+   * that shows the conversation re-fetches it.
+   */
+  private readonly messageReceivedSubject = new Subject<MessageReceivedEvent>();
+  readonly messageReceived$ = this.messageReceivedSubject.asObservable();
+
+  /** The live connection came back after a drop: anything raised meanwhile must be re-fetched. */
+  private readonly resyncSubject = new Subject<void>();
+  readonly resync$ = this.resyncSubject.asObservable();
   readonly unreadCount = signal(0);
   readonly connectionState = signal<'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'error'>('disconnected');
 
@@ -61,7 +97,12 @@ export class NotificationsApiService {
 
   getUnreadCount(): Observable<number> {
     return this.api
-      .get<number | { unreadCount?: number; UnreadCount?: number; count?: number; Count?: number }>('/notifications/unread-count')
+      .get<number | { unreadCount?: number; UnreadCount?: number; count?: number; Count?: number }>(
+        '/notifications/unread-count',
+        undefined,
+        // The badge is a convenience and every caller swallows a failure: no toast for it.
+        { context: new HttpContext().set(SKIP_ERROR_TOAST, true) }
+      )
       .pipe(
         map(response =>
           typeof response === 'number'
@@ -137,6 +178,13 @@ export class NotificationsApiService {
       });
     });
 
+    this.hub.on('MessageReceived', (payload: unknown) => {
+      const event = toMessageReceivedEvent(payload);
+      if (event) {
+        this.zone.run(() => this.messageReceivedSubject.next(event));
+      }
+    });
+
     // ✅ إصلاح: تحديث عداد الإشعارات غير المقروءة عبر SignalR (مواصفات قسم 7.2)
     this.hub.on('UnreadCountChanged', (count: number) => {
       this.zone.run(() => {
@@ -148,8 +196,22 @@ export class NotificationsApiService {
       this.zone.run(() => this.connectionState.set('reconnecting'));
     });
 
+    this.hub.on('NotificationsRead', (payload: { ids?: string[] | null; Ids?: string[] | null; all?: boolean; All?: boolean }) => {
+      this.zone.run(() => {
+        this.readSyncSubject.next({
+          ids: payload?.ids ?? payload?.Ids ?? null,
+          all: Boolean(payload?.all ?? payload?.All)
+        });
+      });
+    });
+
     this.hub.onreconnected(() => {
-      this.zone.run(() => this.connectionState.set('connected'));
+      this.zone.run(() => {
+        this.connectionState.set('connected');
+        // Notifications raised while the connection was down only exist on the server: re-sync.
+        this.getUnreadCount().subscribe({ next: count => this.unreadCount.set(count), error: () => undefined });
+        this.resyncSubject.next();
+      });
     });
 
     this.hub.onclose(() => {

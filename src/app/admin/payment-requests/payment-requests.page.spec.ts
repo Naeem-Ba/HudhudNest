@@ -14,6 +14,9 @@ const QUEUE: PendingPaymentRequests = {
   ],
   featured: [
     { transactionId: 't1', propertyId: 'pr1', propertyTitle: 'Villa', ownerId: 'u2', ownerName: 'Sam', ownerEmail: null, amountUsd: 10, requestedAt: '2026-10-02T10:00:00Z' }
+  ],
+  extensions: [
+    { transactionId: 'x1', propertyId: 'pr3', propertyTitle: 'Flat', ownerId: 'u3', ownerName: 'Lea', ownerEmail: null, amountUsd: 1, requestedAt: '2026-10-03T10:00:00Z', listingExpiresAt: null }
   ]
 };
 
@@ -25,12 +28,14 @@ describe('AdminPaymentRequestsPage', () => {
 
   beforeEach(() => {
     api = jasmine.createSpyObj('AdminPaymentRequestsApiService',
-      ['getPending', 'approvePlan', 'rejectPlan', 'approveFeatured', 'rejectFeatured']);
+      ['getPending', 'approvePlan', 'rejectPlan', 'approveFeatured', 'rejectFeatured', 'approveExtension', 'rejectExtension']);
     api.getPending.and.returnValue(of(QUEUE));
     api.approvePlan.and.returnValue(of({}));
     api.rejectPlan.and.returnValue(of({}));
     api.approveFeatured.and.returnValue(of({}));
     api.rejectFeatured.and.returnValue(of({}));
+    api.approveExtension.and.returnValue(of({}));
+    api.rejectExtension.and.returnValue(of({}));
     toast = jasmine.createSpyObj('ToastService', ['success', 'error']);
     spyOn(window, 'confirm').and.returnValue(true);
 
@@ -52,6 +57,25 @@ describe('AdminPaymentRequestsPage', () => {
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelectorAll('[data-testid="plan-request"]').length).toBe(1);
     expect(el.querySelectorAll('[data-testid="featured-request"]').length).toBe(1);
+    expect(el.querySelectorAll('[data-testid="extension-request"]').length).toBe(1);
+  });
+
+  it('رسوم التمديد: تأكيد يزيل الطلب، ورفض يزيله أيضاً', () => {
+    component.approveExtension(QUEUE.extensions[0]);
+    expect(api.approveExtension).toHaveBeenCalledWith('x1');
+    expect(component.extensions().length).toBe(0);
+
+    component.extensions.set([...QUEUE.extensions]);
+    component.rejectExtension(QUEUE.extensions[0]);
+    expect(api.rejectExtension).toHaveBeenCalledWith('x1');
+    expect(component.extensions().length).toBe(0);
+  });
+
+  it('طابور فيه رسوم تمديد فقط لا يظهر كأنه فارغ', () => {
+    api.getPending.and.returnValue(of({ plans: [], featured: [], extensions: QUEUE.extensions }));
+    component.load();
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-empty-state')).toBeNull();
   });
 
   it('تأكيد خطة: المدة الافتراضية 30 يوماً، ويُزال الطلب من القائمة', () => {

@@ -1,0 +1,64 @@
+<div class="uap">
+  <header class="uap__header">
+    <div>
+      <p class="uap__room" *ngIf="roomTypeName">{{ roomTypeName }}</p>
+      <h3 class="uap__unit">{{ unit.label }}</h3>
+    </div>
+
+    <label class="uap__switch">
+      <input
+        type="checkbox"
+        role="switch"
+        data-testid="availability-switch"
+        [checked]="isActive()"
+        [disabled]="togglingActive()"
+        (click)="$event.preventDefault(); setActive(!isActive())"
+      />
+      <span class="uap__switch-label" [class.uap__switch-label--off]="!isActive()" data-testid="availability-state">
+        {{ (isActive() ? 'SHORTSTAY.AVAILABILITY.AVAILABLE_NOW' : 'SHORTSTAY.AVAILABILITY.UNAVAILABLE_NOW') | translate }}
+      </span>
+    </label>
+  </header>
+
+  <p class="uap__hint" *ngIf="!isActive()">{{ 'SHORTSTAY.AVAILABILITY.UNAVAILABLE_HINT' | translate }}</p>
+
+  <h4 class="uap__subtitle">{{ 'SHORTSTAY.AVAILABILITY.BLOCKS_TITLE' | translate }}</h4>
+
+  <p class="uap__state" *ngIf="loading()">{{ 'SHORTSTAY.AVAILABILITY.LOADING' | translate }}</p>
+  <p class="uap__state uap__state--error" *ngIf="loadFailed()">
+    {{ 'SHORTSTAY.AVAILABILITY.LOAD_ERROR' | translate }}
+    <button type="button" class="uap__link" (click)="loadBlocks()">{{ 'COMMON.RETRY' | translate }}</button>
+  </p>
+  <p class="uap__state" *ngIf="!loading() && !loadFailed() && blocks().length === 0" data-testid="blocks-empty">
+    {{ 'SHORTSTAY.AVAILABILITY.NO_BLOCKS' | translate }}
+  </p>
+
+  <ul class="uap__blocks" *ngIf="blocks().length > 0">
+    <li class="uap__block" *ngFor="let block of blocks(); trackBy: trackById" data-testid="block-row">
+      <span class="uap__range">{{ block.from | localDate:'d MMM y' }} → {{ block.to | localDate:'d MMM y' }}</span>
+      <button type="button" class="btn btn--sm btn--outline" data-testid="block-remove"
+        [disabled]="removingId() !== null" (click)="removeBlock(block)">
+        {{ 'COMMON.DELETE' | translate }}
+      </button>
+    </li>
+  </ul>
+
+  <div class="uap__add">
+    <div class="uap__field">
+      <label [attr.for]="'uap-from-' + unit.id">{{ 'SHORTSTAY.AVAILABILITY.FROM' | translate }}</label>
+      <input type="date" [id]="'uap-from-' + unit.id" data-testid="block-from"
+        [min]="today()" [value]="from()" (input)="onFrom($event)" />
+    </div>
+    <div class="uap__field">
+      <label [attr.for]="'uap-to-' + unit.id">{{ 'SHORTSTAY.AVAILABILITY.TO' | translate }}</label>
+      <input type="date" [id]="'uap-to-' + unit.id" data-testid="block-to"
+        [min]="from() || today()" [value]="to()" (input)="onTo($event)" />
+    </div>
+    <button type="button" class="btn btn--sm btn--primary" data-testid="block-add"
+      [disabled]="adding()" (click)="addBlock()">
+      {{ 'SHORTSTAY.AVAILABILITY.ADD' | translate }}
+    </button>
+  </div>
+  <p class="uap__hint">{{ 'SHORTSTAY.AVAILABILITY.TO_HINT' | translate }}</p>
+  <p class="uap__error" role="alert" data-testid="block-error" *ngIf="addError()">{{ addError() }}</p>
+</div>

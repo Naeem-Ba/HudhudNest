@@ -15,6 +15,12 @@ export interface RegisterRequest {
   consentSource?: string;
   termsAccepted?: boolean;
   termsVersion?: string;
+  // Growth engine P4: first UTM touch (tags only), sent only when one was captured.
+  acquisitionSource?: string;
+  acquisitionMedium?: string;
+  acquisitionCampaign?: string;
+  // Growth engine P5: invitation code from a "?ref=" link, sent only when one was kept.
+  referralCode?: string;
 }
 
 export interface RegisterResponse {
@@ -150,6 +156,7 @@ export const PHONE_WORKFLOW_ERROR_CODES = {
   RECENT_AUTHENTICATION_REQUIRED: 'RECENT_AUTHENTICATION_REQUIRED',
   PASSWORD_RESET_INVALID: 'PASSWORD_RESET_INVALID',
   OTP_CHANNEL_UNAVAILABLE: 'OTP_CHANNEL_UNAVAILABLE',
+  OTP_DAILY_LIMIT_REACHED: 'OTP_DAILY_LIMIT_REACHED',
   OTP_PROVIDER_UNAVAILABLE: 'OTP_PROVIDER_UNAVAILABLE'
 } as const;
 
@@ -165,7 +172,9 @@ export const LOGIN_ERROR_CODES = {
   RATE_LIMITED: 'RATE_LIMITED',
   ACCOUNT_DISABLED: 'ACCOUNT_DISABLED',
   PASSWORD_CHANGE_REQUIRED: 'PASSWORD_CHANGE_REQUIRED',
-  SERVER_ERROR: 'SERVER_ERROR'
+  SERVER_ERROR: 'SERVER_ERROR',
+  /** صحيحة كلمة السر لكن البريد لم يُؤكَّد؛ أُرسل رابط تأكيد جديد (QA المرحلة 4، P4-D11). */
+  EMAIL_NOT_CONFIRMED: 'EMAIL_NOT_CONFIRMED'
 } as const;
 
 export type LoginErrorCode = (typeof LOGIN_ERROR_CODES)[keyof typeof LOGIN_ERROR_CODES];

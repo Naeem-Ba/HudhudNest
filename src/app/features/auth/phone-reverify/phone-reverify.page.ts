@@ -15,6 +15,8 @@ import { OtpChannelState } from '../../../core/auth/otp-channel-state';
 import { OtpChannel } from '../../../core/models/auth.model';
 import { OtpChannelFallbackComponent } from '../../../shared/components/otp-channel-picker/otp-channel-fallback.component';
 import { OtpChannelPickerComponent } from '../../../shared/components/otp-channel-picker/otp-channel-picker.component';
+import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
+import { otpCodeValidator } from '../../../core/auth/otp-code';
 
 type Step = 'status' | 'phone' | 'otp' | 'done';
 
@@ -26,7 +28,7 @@ type Step = 'status' | 'phone' | 'otp' | 'done';
 @Component({
   selector: 'app-phone-reverify-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslateModule, FormErrorComponent, OtpChannelPickerComponent, OtpChannelFallbackComponent],
+  imports: [ LocalizedDatePipe,CommonModule, ReactiveFormsModule, RouterModule, TranslateModule, FormErrorComponent, OtpChannelPickerComponent, OtpChannelFallbackComponent],
   templateUrl: './phone-reverify.page.html',
   styleUrls: ['./phone-reverify.page.scss']
 })
@@ -59,7 +61,7 @@ export class PhoneReverifyPage implements OnInit {
   });
 
   readonly otpForm = this.fb.nonNullable.group({
-    code: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]]
+    code: ['', [Validators.required, otpCodeValidator]]
   });
 
   constructor() {

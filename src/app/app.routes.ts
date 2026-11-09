@@ -25,14 +25,6 @@ export const routes: Routes = [
             .then(m => m.HomeComponent)
       },
 
-       {
-    path: 'landing',
-    loadComponent: () =>
-      import('./features/landing/landing-page.component')
-        .then(m => m.LandingPageComponent),
-    title: 'منصة عقارية رقمية في سوريا'
-  },
-
       // /wohnungen duplicated /properties (same component, two URLs for identical content --
       // a duplicate-content SEO problem). /properties is canonical (it's what
       // PropertyShareUrlService/MetaService/the social-crawler edge function already build), so
@@ -200,7 +192,54 @@ export const routes: Routes = [
             .then(m => m.FavoritesPage)
       },
       {
+        // بلاغاتي: البلاغات التي أرسلها المستخدم وحالتها العامة (لا يرى ملاحظات الإدارة).
+        path: 'my-reports',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/listing-reports/my-listing-reports.page')
+            .then(m => m.MyListingReportsPage)
+      },
+      {
+        // The same page, opened on one report (a notification about it): that report is shown first
+        // and, when the team asked a question, the answer box is focused.
+        path: 'my-reports/:id',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/listing-reports/my-listing-reports.page')
+            .then(m => m.MyListingReportsPage)
+      },
+      {
+        // Growth engine P2: property search requests (buyer/renter side).
+        path: 'search-requests',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/search-requests/my-search-requests.page')
+            .then(m => m.MySearchRequestsPage)
+      },
+      {
+        // Growth engine P2: anonymous request board (advertiser side).
+        path: 'search-requests/board',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/search-requests/search-request-board.page')
+            .then(m => m.SearchRequestBoardPage)
+      },
+      {
+        path: 'search-requests/for-listing/:propertyId',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/search-requests/search-request-board.page')
+            .then(m => m.SearchRequestBoardPage)
+      },
+      {
         // Phase-0, Task 3.
+        path: 'referrals',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/referrals/referrals.page')
+            .then(m => m.ReferralsPage)
+      },
+      {
         path: 'saved-searches',
         canActivate: [AuthGuard],
         loadComponent: () =>
@@ -316,10 +355,25 @@ export const routes: Routes = [
             .then(m => m.AnalyticsPage)
       },
       {
-        path: 'offline',
+        // Growth engine P11: guided start for Syrians abroad (only services that real providers offer).
+        path: 'expats',
         loadComponent: () =>
-          import('./features/offline/offline.page')
-            .then(m => m.OfflinePage)
+          import('./features/expats/expat-journey.page')
+            .then(m => m.ExpatJourneyPage)
+      },
+      {
+        // Growth engine P8: browse listings on a map (server-side clusters).
+        path: 'map',
+        loadComponent: () =>
+          import('./features/property-map/property-map.page')
+            .then(m => m.PropertyMapPage)
+      },
+      {
+        // Growth engine P6: public asking-price ranges per area (never a valuation).
+        path: 'price-estimate',
+        loadComponent: () =>
+          import('./features/price-estimate/price-estimate.page')
+            .then(m => m.PriceEstimatePage)
       },
       {
         // Public pricing page - Basic / Premium / Elite agency plans.
@@ -343,6 +397,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/legal/legal-document.page')
             .then(m => m.LegalDocumentPage)
+      },
+      {
+        // Impressum (QA phase 22, LEG-004): shows the operator's details once legal-entity.ts is filled in.
+        path: 'imprint',
+        loadComponent: () =>
+          import('./features/legal/imprint.page')
+            .then(m => m.ImprintPage)
       },
       {
         // Phase 5 (Account Deletion) — public, no AuthGuard: Google Play/Apple App
@@ -381,6 +442,43 @@ export const routes: Routes = [
           import('./features/checkout/checkout.page')
             .then(m => m.CheckoutPage)
       },
+      {
+        // Online payments (provider-hosted checkout). The return URL the API gives a provider is /payments/orders/:id.
+        path: 'payments/checkout',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/payments/payment-checkout.page')
+            .then(m => m.PaymentCheckoutPage)
+      },
+      {
+        path: 'payments/orders/:id',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/payments/payment-order.page')
+            .then(m => m.PaymentOrderPage)
+      },
+      {
+        path: 'payments/invoices/:id',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/payments/payment-invoice.page')
+            .then(m => m.PaymentInvoicePage)
+      },
+      {
+        // Stand-in for a provider's checkout page: development / staging only (the API refuses it in Production).
+        path: 'payments/sandbox/:orderId',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/payments/payment-sandbox.page')
+            .then(m => m.PaymentSandboxPage)
+      },
+      {
+        path: 'payments',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/payments/payment-history.page')
+            .then(m => m.PaymentHistoryPage)
+      },
       // Account settings and the admin pages render inside the layout too, so they keep the
       // navbar (account menu + its "Administration" group) — before, opening any of them
       // left no navigation on screen at all. Paths and guards are unchanged.
@@ -406,6 +504,20 @@ export const routes: Routes = [
       },
 
       {
+        path: 'admin/growth',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/growth/admin-growth.page')
+            .then(m => m.AdminGrowthPage)
+      },
+      {
+        path: 'admin/referrals',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/referrals/admin-referrals.page')
+            .then(m => m.AdminReferralsPage)
+      },
+      {
         path: 'admin/users',
         canActivate: [AdminGuard],
         loadComponent: () =>
@@ -430,6 +542,46 @@ export const routes: Routes = [
       },
 
       {
+        // إدارة الخدمات: أي خدمة مفعّلة ومطلوبة، كم مرة، هل أُنجزت ولماذا لا. Role Admin على الخادم لكل نقطة.
+        path: 'admin/services',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/services/admin-services.page')
+            .then(m => m.AdminServicesPage)
+      },
+      {
+        path: 'admin/services/:id',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/services/admin-service-request-detail.page')
+            .then(m => m.AdminServiceRequestDetailPage)
+      },
+
+      {
+        // إدارة البلاغات عن الإعلانات. Role Admin على الخادم لكل نقطة.
+        path: 'admin/listing-reports',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/listing-reports/admin-listing-reports.page')
+            .then(m => m.AdminListingReportsPage)
+      },
+      {
+        path: 'admin/listing-reports/:id',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/listing-reports/admin-listing-report-detail.page')
+            .then(m => m.AdminListingReportDetailPage)
+      },
+
+      {
+        // إدارة الإقامات القصيرة: بحث، وإيقاف إعلان بسبب إلزامي (يراه المالك) واستعادته. Role Admin على الخادم لكل نقطة.
+        path: 'admin/short-stay',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/short-stay/admin-short-stay.page')
+            .then(m => m.AdminShortStayPage)
+      },
+      {
         // إدارة مزوّدي الخدمات: طلبات الانضمام ثم المزوّدون المعتمدون. Role Admin على الخادم لكل نقطة.
         path: 'admin/service-providers',
         canActivate: [AdminGuard],
@@ -452,6 +604,14 @@ export const routes: Routes = [
             .then(m => m.AdminServiceProviderDetailPage)
       },
 
+      {
+        // Online payments back office: transactions, subscriptions, refunds, providers, webhooks, reports.
+        path: 'admin/payments',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/payments/admin-payments.page')
+            .then(m => m.AdminPaymentsPage)
+      },
       {
         // طلبات الخطط المدفوعة وتمييز الإعلانات بانتظار تأكيد الدفع — لا تفعيل تلقائي.
         path: 'admin/payment-requests',
@@ -519,6 +679,15 @@ export const routes: Routes = [
             .then(m => m.AdminAppUpdatesPage)
       },
 
+      // سجل التدقيق (المرحلة 14، D06): قراءة فقط. AdminAuditLogsController — Admin على الصنف.
+      {
+        path: 'admin/audit-logs',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/audit-logs/admin-audit-logs.page')
+            .then(m => m.AdminAuditLogsPage)
+      },
+
       // إدارة النشر التلقائي على وسائل التواصل الاجتماعي — نطاق تشغيلي أساسي (قنوات،
       // حسابات + ربط/فصل بيانات الاعتماد، ملخص لوحة التحكم، منشورات للعرض فقط).
       // SocialDistributionController — [Authorize(Roles = "Admin")] على كل نقطة.
@@ -532,6 +701,15 @@ export const routes: Routes = [
     ]
   },
 
+  {
+    // Marketing landing page: deliberately a top-level route (a sibling of LayoutComponent, like
+    // /login) so the main Navbar is not rendered here. Nothing else changes: the Navbar and every
+    // other page keep using LayoutComponent. The page brings its own slim brand strip and footer.
+    path: 'landing',
+    loadComponent: () =>
+      import('./features/landing/landing-page.component')
+        .then(m => m.LandingPageComponent)
+  },
   {
     path: 'login',
     loadComponent: () =>

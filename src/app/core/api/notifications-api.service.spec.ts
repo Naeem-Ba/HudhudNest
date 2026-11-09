@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
-import { NotificationsApiService } from './notifications-api.service';
+import { NotificationsApiService, toMessageReceivedEvent } from './notifications-api.service';
 import { BackendApiService } from './backend-api.service';
 import { TokenStorageService } from '../services/token-storage.service';
 import { LanguageService } from '../services/language.service';
@@ -62,4 +62,24 @@ describe('NotificationsApiService.getNotifications (site language)', () => {
       expect(api.get).toHaveBeenCalledWith('/notifications', { page: 2, pageSize: 10, language: lang });
     });
   }
+});
+
+describe('toMessageReceivedEvent (live chat refresh, P25-D02)', () => {
+  const P = '3f2b8c1e-9d4a-4c55-8f0a-1b2c3d4e5f60';
+  const S = '11111111-2222-4333-8444-555555555555';
+  const M = '99999999-2222-4333-8444-555555555555';
+
+  it('reads the camelCase payload the hub sends', () => {
+    expect(toMessageReceivedEvent({ propertyId: P, senderId: S, messageId: M })).toEqual({ propertyId: P, senderId: S, messageId: M });
+  });
+
+  it('also accepts PascalCase', () => {
+    expect(toMessageReceivedEvent({ PropertyId: P, SenderId: S, MessageId: M })).toEqual({ propertyId: P, senderId: S, messageId: M });
+  });
+
+  it('ignores a malformed payload instead of refreshing on garbage', () => {
+    expect(toMessageReceivedEvent(null)).toBeNull();
+    expect(toMessageReceivedEvent({ propertyId: P })).toBeNull();
+    expect(toMessageReceivedEvent({ propertyId: 1, senderId: S, messageId: M })).toBeNull();
+  });
 });

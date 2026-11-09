@@ -3,6 +3,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject } from 'rxjs';
 
 import { pickDeviceLanguage } from '../i18n/first-visit-language';
+import { safeGetItem, safeRemoveItem, safeSetItem } from './safe-storage';
 
 export type LangCode = 'en' | 'ar' | 'de';
 
@@ -55,10 +56,10 @@ export class LanguageService {
     this.translate.use(normalizedLang);
 
     if (persistence === 'user') {
-      localStorage.setItem(USER_LANG_KEY, normalizedLang);
-      localStorage.removeItem(AUTO_LANG_KEY);
+      safeSetItem(USER_LANG_KEY, normalizedLang);
+      safeRemoveItem(AUTO_LANG_KEY);
     } else if (persistence === 'auto') {
-      localStorage.setItem(AUTO_LANG_KEY, normalizedLang);
+      safeSetItem(AUTO_LANG_KEY, normalizedLang);
     }
 
     document.documentElement.dir = dir;
@@ -82,6 +83,11 @@ export class LanguageService {
    */
   restoreGuestLanguage(): void {
     this.init();
+  }
+
+  /** True only when the visitor picked a language themselves (not an earlier automatic detection). */
+  hasUserChoice(): boolean {
+    return this.readStored()?.persistence === 'user';
   }
 
   /** True when the visitor (or an earlier visit's detection) already settled on a language. */
@@ -112,12 +118,12 @@ export class LanguageService {
   }
 
   private readStored(): { lang: LangCode; persistence: 'user' | 'auto' } | null {
-    const userLang = localStorage.getItem(USER_LANG_KEY);
+    const userLang = safeGetItem(USER_LANG_KEY);
     if (this.isSupported(userLang)) {
       return { lang: userLang, persistence: 'user' };
     }
 
-    const autoLang = localStorage.getItem(AUTO_LANG_KEY);
+    const autoLang = safeGetItem(AUTO_LANG_KEY);
     if (this.isSupported(autoLang)) {
       return { lang: autoLang, persistence: 'auto' };
     }

@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin, of, switchMap } from 'rxjs';
+
+import { PRIVACY_POLICY_VERSION, TERMS_OF_SERVICE_VERSION } from '../models/consent-versions';
 
 import { BackendApiService } from './backend-api.service';
 
@@ -50,5 +52,25 @@ export class ConsentApiService {
 
   withdraw(policyType: ConsentPolicyType): Observable<{ withdrawnCount: number }> {
     return this.api.delete<{ withdrawnCount: number }>(`/users/me/consents/${policyType}`);
+  }
+
+  /**
+   * After a Google or Apple sign-in (no checkbox on that path; the sign-in page shows a notice that continuing means
+   * accepting the terms and the privacy policy): records the CURRENT version of each document for an account that has
+   * no active record of it, so the proof of acceptance exists for every sign-up route (QA phase 22, LEG-002).
+   * Best-effort: callers ignore a failure.
+   */
+  ensureCurrentAcceptance(): Observable<unknown> {
+    return this.getMine().pipe(
+      switchMap(records => {
+        const missing = ([
+          ['PrivacyPolicy', PRIVACY_POLICY_VERSION],
+          ['TermsOfService', TERMS_OF_SERVICE_VERSION]
+        ] as const).filter(
+          ([type, version]) => !records.some(record => record.policyType === type && record.policyVersion === version && record.isActive)
+        );
+        return missing.length > 0 ? forkJoin(missing.map(([type, version]) => this.record(type, version))) : of([]);
+      })
+    );
   }
 }

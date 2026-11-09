@@ -109,13 +109,13 @@
   &__source {
     margin: .5rem 0 0;
     font-size: .78rem;
-    color: var(--gray-400);
+    color: var(--text-muted);
   }
 
   &__disclaimer {
     margin: 0;
     font-size: .76rem;
-    color: var(--gray-400);
+    color: var(--text-muted);
     font-style: italic;
   }
 }
@@ -142,7 +142,7 @@
   }
 
   &__empty {
-    color: var(--gray-400);
+    color: var(--text-muted);
     font-size: .88rem;
   }
 }

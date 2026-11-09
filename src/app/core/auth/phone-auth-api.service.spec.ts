@@ -22,6 +22,7 @@ describe('PhoneAuthApiService', () => {
   const base = environment.apiBaseUrl;
 
   beforeEach(() => {
+    document.documentElement.lang = ''; // the body only carries `language` when the page language is known
     tokenStorage = jasmine.createSpyObj('TokenStorageService', ['storeTokens']);
     TestBed.configureTestingModule({
       providers: [
@@ -36,6 +37,16 @@ describe('PhoneAuthApiService', () => {
   });
 
   afterEach(() => httpMock.verify());
+
+  it('sends the page language with every OTP send so the SMS is written in it (QA Phase 16, D03)', () => {
+    document.documentElement.lang = 'de';
+
+    service.sendRegistrationOtp('+963944111222').subscribe();
+
+    const req = httpMock.expectOne(`${base}/auth/phone/registration/send-otp`);
+    expect(req.request.body.language).toBe('de');
+    req.flush({ succeeded: true });
+  });
 
   describe('addEmail — language of the confirmation mail', () => {
     let originalLang: string;
@@ -111,6 +122,17 @@ describe('PhoneAuthApiService', () => {
     req.flush({ succeeded: true, accessToken: 'jwt' });
 
     expect(tokenStorage.storeTokens).toHaveBeenCalledWith({ accessToken: 'jwt' });
+  });
+
+  it('sends a code typed with Arabic-Indic digits as ASCII digits (P26-D03)', () => {
+    service.register({ challengeId: 'c1', code: '٤٥٦ ٧٨٩', password: TEST_CREDENTIAL, firstName: 'A', lastName: 'B' }).subscribe();
+
+    const req = httpMock.expectOne(`${base}/auth/phone/registration/verify`);
+    expect(req.request.body.code).toBe('456789');
+    req.flush({ succeeded: false, errorCode: 'OTP_WRONG' });
+
+    service.verifyPasswordReset('c1', '۱۲۳۴۵۶').subscribe();
+    expect(httpMock.expectOne(`${base}/auth/phone/password-reset/verify`).request.body.code).toBe('123456');
   });
 
   it('does not store anything when the API reports a failure', () => {

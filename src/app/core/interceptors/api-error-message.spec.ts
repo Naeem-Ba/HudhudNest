@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 
-import { getFriendlyApiErrorMessage } from './api-error.interceptor';
+import { getFriendlyApiErrorMessage, isInOtherScript } from './api-error.interceptor';
 
 // instant() echoes "KEY|param=value" so the assertions can see which key/params were chosen.
 const translate = {
@@ -10,6 +10,9 @@ const translate = {
 } as unknown as TranslateService;
 
 const fail = (status: number, body: unknown) => new HttpErrorResponse({ status, error: body });
+
+// The script check reads <html lang>; other specs switch it, so every test here starts from "unknown".
+beforeEach(() => { document.documentElement.lang = ''; });
 
 describe('getFriendlyApiErrorMessage — shows the real reason, not the generic title', () => {
   it('ASP.NET 400 problem+json "field is required" names the field instead of the generic title', () => {
@@ -126,7 +129,9 @@ describe('getFriendlyApiErrorMessage — agency eligibility codes are translated
   [
     'AGENCY_ACCOUNT_NOT_VERIFIED',
     'AGENCY_PAID_PLAN_REQUIRED',
-    'AGENCY_FREE_PLAN_NOT_ALLOWED'
+    'AGENCY_PLAN_EXPIRED',
+    'AGENCY_FREE_PLAN_NOT_ALLOWED',
+    'PAID_PLAN_ACTIVE'
   ].forEach(code => {
     it(`${code} maps to its own API_ERRORS key whatever Arabic message the server sent`, () => {
       const message = getFriendlyApiErrorMessage(
@@ -136,6 +141,15 @@ describe('getFriendlyApiErrorMessage — agency eligibility codes are translated
 
       expect(message).toBe(`API_ERRORS.${code}`);
     });
+  });
+
+  it('BOOKING_DUPLICATE_OPEN (a 409) is translated too, not shown in Arabic to an English reader', () => {
+    const message = getFriendlyApiErrorMessage(
+      fail(409, { title: 'Conflict', status: 409, message: 'لديك طلب حجز قائم لهذه الوحدة', code: 'BOOKING_DUPLICATE_OPEN' }),
+      translate
+    );
+
+    expect(message).toBe('API_ERRORS.BOOKING_DUPLICATE_OPEN');
   });
 
   it('an unknown 403 code keeps showing the server message', () => {
@@ -174,5 +188,65 @@ describe('getFriendlyApiErrorMessage — search validation sentences are transla
     const message = getFriendlyApiErrorMessage(fail(422, { title: 'Validation Error', errors: { Title: ['عنوان الإعلان مطلوب.'] } }), translate);
 
     expect(message).toBe('عنوان الإعلان مطلوب.');
+  });
+});
+
+describe('getFriendlyApiErrorMessage — a message in another script is replaced (QA Phase 16, D04)', () => {
+  let originalLang: string;
+
+  beforeEach(() => {
+    originalLang = document.documentElement.lang;
+  });
+
+  afterEach(() => {
+    document.documentElement.lang = originalLang;
+  });
+
+  it('isInOtherScript: Arabic text on an English or German page, Latin-only text on an Arabic page', () => {
+    expect(isInOtherScript('خطتكم الحالية تسمح بـ 3 إعلانات.', 'en')).toBeTrue();
+    expect(isInOtherScript('خطتكم الحالية تسمح بـ 3 إعلانات.', 'de')).toBeTrue();
+    expect(isInOtherScript('You have reached the limit.', 'ar')).toBeTrue();
+    expect(isInOtherScript('You have reached the limit.', 'en')).toBeFalse();
+    expect(isInOtherScript('خطتكم الحالية تسمح بـ 3 إعلانات.', 'ar')).toBeFalse();
+    expect(isInOtherScript('Ihr Limit ist erreicht.', 'de')).toBeFalse();
+    expect(isInOtherScript('OK', 'ar')).toBeFalse();
+    // English on a German page is recognised by its words; German and short Latin text are left alone.
+    expect(isInOtherScript('You can only delete your own reviews.', 'de')).toBeTrue();
+    expect(isInOtherScript('This listing is not available.', 'de')).toBeTrue();
+    expect(isInOtherScript('Sie können nur Ihre eigenen Bewertungen löschen.', 'de')).toBeFalse();
+    expect(isInOtherScript('Reference ABC-123', 'de')).toBeFalse();
+    expect(isInOtherScript('anything', null)).toBeFalse();
+  });
+
+  it('an Arabic-only server message on a German page becomes the translated text of the status', () => {
+    document.documentElement.lang = 'de';
+
+    const message = getFriendlyApiErrorMessage(fail(409, { message: 'خطتكم الحالية تسمح بـ 3 إعلانات.' }), translate);
+
+    expect(message).toBe('API_ERRORS.CONFLICT');
+  });
+
+  it('an English server message on an Arabic page becomes the translated text of the status', () => {
+    document.documentElement.lang = 'ar';
+
+    const message = getFriendlyApiErrorMessage(fail(403, { message: 'You can only delete your own reviews.' }), translate);
+
+    expect(message).toBe('API_ERRORS.FORBIDDEN');
+  });
+
+  it('a message in the page script is shown as is', () => {
+    document.documentElement.lang = 'ar';
+
+    expect(getFriendlyApiErrorMessage(fail(409, { message: 'خطتكم الحالية تسمح بـ 3 إعلانات.' }), translate))
+      .toBe('خطتكم الحالية تسمح بـ 3 إعلانات.');
+  });
+
+  it('the new stable codes win over the message', () => {
+    expect(getFriendlyApiErrorMessage(fail(409, { message: 'x', code: 'CONCURRENCY_CONFLICT' }), translate))
+      .toBe('API_ERRORS.CONCURRENCY_CONFLICT');
+    expect(getFriendlyApiErrorMessage(fail(403, { message: 'x', code: 'CSRF_VALIDATION_FAILED' }), translate))
+      .toBe('API_ERRORS.CSRF_VALIDATION_FAILED');
+    expect(getFriendlyApiErrorMessage(fail(409, { message: 'x', code: 'LISTING_QUOTA_REACHED' }), translate))
+      .toBe('API_ERRORS.LISTING_QUOTA_REACHED');
   });
 });

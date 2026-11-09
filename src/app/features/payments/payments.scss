@@ -1,0 +1,131 @@
+/* Shared by every payment page. Colours come only from the global tokens, so dark mode works with no second ruleset,
+   and only logical properties are used, so RTL and LTR need no overrides. */
+
+:host { display: block; }
+
+.pay-page {
+  width: min(960px, 100%);
+  margin-inline: auto;
+  padding: clamp(1rem, 3vw, 2rem);
+  color: var(--text-strong);
+}
+
+.pay-head {
+  margin-block-end: var(--space-6);
+
+  h1 { margin: 0 0 var(--space-2); font-size: clamp(1.4rem, 3.5vw, 2rem); font-weight: 800; color: var(--text-strong); }
+  p { margin: 0; color: var(--gray-500); line-height: 1.7; }
+}
+
+.pay-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-5);
+  margin-block-end: var(--space-5);
+  min-width: 0;
+
+  h2 { margin: 0 0 var(--space-3); font-size: var(--text-lg); font-weight: 700; color: var(--text-strong); }
+}
+
+.pay-grid { display: grid; gap: var(--space-5); grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: start; }
+@media (max-width: 760px) { .pay-grid { grid-template-columns: minmax(0, 1fr); } }
+
+.pay-row {
+  display: flex; justify-content: space-between; gap: var(--space-3); padding-block: var(--space-2);
+  border-block-end: 1px dashed var(--border); font-size: var(--text-sm);
+
+  &:last-child { border-block-end: 0; }
+  span:first-child { color: var(--gray-500); }
+  strong, bdi { color: var(--text-strong); }
+}
+
+.pay-total { font-size: var(--text-lg); font-weight: 800; }
+
+.pay-choice {
+  display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-3) var(--space-4);
+  border: 1.5px solid var(--border); border-radius: var(--r-md); margin-block-end: var(--space-2); cursor: pointer;
+  background: var(--surface);
+
+  &:hover { border-color: var(--gold); }
+  &.is-selected { border-color: var(--gold); background: var(--gold-soft); }
+  input { margin-block-start: .3rem; accent-color: var(--gold-dark); }
+  small { display: block; color: var(--gray-500); margin-block-start: .15rem; }
+}
+
+.pay-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-block-end: var(--space-3); }
+.pay-chip {
+  border: 1.5px solid var(--border); background: var(--surface); color: var(--text-strong); border-radius: var(--r-pill);
+  padding: .35rem .9rem; font-size: var(--text-sm); cursor: pointer;
+
+  &.is-selected { border-color: var(--gold); background: var(--gold-soft); font-weight: 700; }
+}
+
+.pay-badge {
+  display: inline-block; padding: .1rem .55rem; border-radius: var(--r-pill); font-size: var(--text-xs); font-weight: 700;
+  background: var(--gray-100); color: var(--text-strong);
+
+  &.ok { background: var(--success-soft); color: var(--success); }
+  &.bad { background: var(--danger-soft); color: var(--danger); }
+  &.warn { background: var(--warning-soft); color: var(--warning); }
+  &.info { background: var(--info-soft); color: var(--info); }
+  &.sandbox { background: var(--warning-soft); color: var(--warning); border: 1px dashed var(--warning); }
+}
+
+.pay-state { text-align: center; padding: var(--space-8) var(--space-4); }
+.pay-state__icon { font-size: 3rem; line-height: 1; margin-block-end: var(--space-3); }
+.pay-state h1 { margin: 0 0 var(--space-2); font-size: var(--text-xl); }
+.pay-state p { margin: 0 auto var(--space-4); max-width: 46ch; color: var(--gray-500); line-height: 1.7; }
+
+.pay-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+.pay-note {
+  font-size: var(--text-sm); color: var(--gray-500); line-height: 1.7; background: var(--bg-secondary);
+  border-radius: var(--r-md); padding: var(--space-3) var(--space-4); margin-block: var(--space-3);
+}
+.pay-error { color: var(--danger); background: var(--danger-soft); border-radius: var(--r-md); padding: var(--space-3) var(--space-4); margin-block: var(--space-3); }
+
+.pay-consent {
+  display: flex; gap: var(--space-3); align-items: flex-start; font-size: var(--text-sm); line-height: 1.7;
+  padding: var(--space-3) var(--space-4); border: 1px solid var(--border); border-radius: var(--r-md); margin-block: var(--space-3);
+
+  input { margin-block-start: .35rem; accent-color: var(--gold-dark); }
+}
+
+.pay-table-wrap { overflow-x: auto; }
+.pay-table {
+  width: 100%; border-collapse: collapse; font-size: var(--text-sm);
+
+  th, td { text-align: start; padding: var(--space-2) var(--space-3); border-block-end: 1px solid var(--border); white-space: nowrap; }
+  th { color: var(--gray-500); font-weight: 600; }
+  td.num, th.num { text-align: end; font-variant-numeric: tabular-nums; }
+}
+
+.pay-tabs { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-block-end: var(--space-4); }
+
+.pay-field { display: flex; flex-direction: column; gap: .25rem; margin-block-end: var(--space-3); font-size: var(--text-sm);
+
+  input, select, textarea { padding: .55rem .75rem; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); color: var(--text-strong); font: inherit; }
+}
+
+.pay-kpis { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-block-end: var(--space-5); }
+.pay-kpi {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--space-3) var(--space-4);
+
+  small { display: block; color: var(--gray-500); }
+  strong { font-size: var(--text-xl); color: var(--text-strong); }
+  &.alert { border-color: var(--danger); }
+}
+
+/* Invoice: a bordered sheet in the page's own tokens (readable in light and dark), printed in the system's print colours. */
+.invoice-sheet {
+  background: var(--surface); color: var(--text-strong); border: 1px solid var(--border); border-radius: var(--r-md); padding: clamp(1rem, 4vw, 2.5rem);
+}
+
+@media print {
+  .no-print { display: none !important; }
+  .pay-page { padding: 0; width: 100%; }
+  .invoice-sheet { border: 0; padding: 0; background: Canvas; color: CanvasText; }
+  .invoice-sheet h1, .invoice-sheet h2, .invoice-sheet strong, .invoice-sheet bdi, .invoice-sheet .pay-row span { color: CanvasText; }
+}

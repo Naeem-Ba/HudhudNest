@@ -48,3 +48,9 @@ test('the CSP keeps its hard guarantees', () => {
 test('no Cross-Origin-Opener-Policy is set: Google Sign-In needs window.opener', () => {
   assert.equal(headerValue(block, 'Cross-Origin-Opener-Policy'), undefined);
 });
+
+test('violations are reported to the API and no third-party font host is allowed (QA phase 17, D04/D05)', () => {
+  const csp = headerValue(block, 'Content-Security-Policy-Report-Only');
+  assert.ok(csp.includes('report-uri https://api.hudhudnest.com/api/security/csp-report'), 'CSP lost its report-uri');
+  assert.ok(!csp.includes('fonts.googleapis.com') && !csp.includes('fonts.gstatic.com'), 'fonts must stay self-hosted');
+});

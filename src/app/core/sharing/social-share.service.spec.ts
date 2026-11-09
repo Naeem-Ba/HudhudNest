@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { TranslateModule } from '@ngx-translate/core';
 import { SocialShareService } from './social-share.service';
 import { PropertyShareTrackingService } from './property-share-tracking.service';
 import { NativeShareProvider } from './providers/native-share.provider';
@@ -17,6 +18,15 @@ function makeProperty(overrides: Partial<Property> = {}): Property {
   } as Property;
 }
 
+/** The providers open links through an anchor click (see external-link.ts); record the hrefs instead of navigating. */
+function captureOpenedLinks(): string[] {
+  const opened: string[] = [];
+  spyOn(HTMLAnchorElement.prototype, 'click').and.callFake(function (this: HTMLAnchorElement) {
+    opened.push(this.getAttribute('href') ?? '');
+  });
+  return opened;
+}
+
 describe('SocialShareService', () => {
   let service: SocialShareService;
   let tracking: jasmine.SpyObj<PropertyShareTrackingService>;
@@ -25,6 +35,7 @@ describe('SocialShareService', () => {
     tracking = jasmine.createSpyObj('PropertyShareTrackingService', ['recordSuccess']);
 
     TestBed.configureTestingModule({
+      imports: [TranslateModule.forRoot()],
       providers: [{ provide: PropertyShareTrackingService, useValue: tracking }]
     });
 
@@ -121,7 +132,7 @@ describe('SocialShareService', () => {
 
   it('shareToWhatsApp / shareToTelegram / shareToFacebook / copyPropertyLink dispatch to the right provider', async () => {
     const property = makeProperty();
-    spyOn(window, 'open').and.returnValue({} as Window);
+    captureOpenedLinks();
     const writeTextSpy = jasmine.createSpy('writeText').and.resolveTo(undefined);
     Object.defineProperty(navigator, 'clipboard', { value: { writeText: writeTextSpy }, configurable: true });
 
@@ -134,11 +145,11 @@ describe('SocialShareService', () => {
   // ── UTM / Attribution (Phase 2) ─────────────────────────────────────────
 
   it('shares the platform-attributed URL, not the plain canonical URL, to Facebook', async () => {
-    const openSpy = spyOn(window, 'open').and.returnValue({} as Window);
+    const opened = captureOpenedLinks();
 
     await service.shareToFacebook(makeProperty());
 
-    const openedUrl = decodeURIComponent(String(openSpy.calls.mostRecent().args[0]));
+    const openedUrl = decodeURIComponent(opened[opened.length - 1]);
     expect(openedUrl).toContain('u=https://hudhudnest.com/properties/p1?utm_source=facebook');
     expect(openedUrl).toContain('utm_medium=social');
     expect(openedUrl).toContain('utm_campaign=property_share');
@@ -146,11 +157,11 @@ describe('SocialShareService', () => {
   });
 
   it('embeds the WhatsApp-attributed URL (utm_source=whatsapp) in the WhatsApp message text', async () => {
-    const openSpy = spyOn(window, 'open').and.returnValue({} as Window);
+    const opened = captureOpenedLinks();
 
     await service.shareToWhatsApp(makeProperty());
 
-    const openedUrl = decodeURIComponent(String(openSpy.calls.mostRecent().args[0]));
+    const openedUrl = decodeURIComponent(opened[opened.length - 1]);
     expect(openedUrl).toContain('utm_source=whatsapp');
     expect(openedUrl).not.toContain('utm_source=facebook');
   });
@@ -167,11 +178,30 @@ describe('SocialShareService', () => {
   });
 
   it('never attaches UTM parameters when the property is not shareable (no provider call at all)', async () => {
-    const openSpy = spyOn(window, 'open');
+    const opened = captureOpenedLinks();
 
     const result = await service.shareToFacebook(makeProperty({ isPublished: false }));
 
     expect(result.errorCode).toBe('NOT_SHAREABLE');
-    expect(openSpy).not.toHaveBeenCalled();
+    expect(opened.length).toBe(0);
+  });
+
+  it('offers e-mail between the named apps and the device sheet, and keeps copy-link last', () => {
+    const platforms = service.getAvailableProviders(makeProperty()).map(p => p.labelKey);
+    expect(platforms).toContain('SHARE.EMAIL');
+    expect(platforms[platforms.length - 1]).toBe('SHARE.COPY_LINK');
+  });
+
+  it('getCopyLinkUrl is the public, attributed link and null for an unshareable listing', () => {
+    expect(service.getCopyLinkUrl(makeProperty())).toContain('https://hudhudnest.com/properties/p1');
+    expect(service.getCopyLinkUrl(makeProperty())).toContain('utm_source=copy_link');
+    expect(service.getCopyLinkUrl(makeProperty({ isPublished: false }))).toBeNull();
+  });
+
+  it('getPreview exposes only public facts', () => {
+    const preview = service.getPreview(makeProperty({ ownerName: 'سر', purchasePrice: 5000, currencyCode: 'USD' } as Partial<Property>))!;
+    expect(preview.title).toBe('شقة للبيع');
+    expect(JSON.stringify(preview)).not.toContain('سر');
+    expect(service.getPreview(makeProperty({ isPublished: false }))).toBeNull();
   });
 });

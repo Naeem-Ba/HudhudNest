@@ -8,6 +8,9 @@ import {
   toLastmod,
   buildStaticUrlEntries,
   buildPropertyUrlEntries,
+  buildShortStayUrlEntries,
+  buildInvestmentUrlEntries,
+  MAX_SITEMAP_URLS,
   buildSitemapXml,
   buildEmptySitemapXml,
   fetchAllPublishedProperties
@@ -36,12 +39,45 @@ test('toLastmod returns null for missing or unparseable input', () => {
   assert.equal(toLastmod('not-a-date'), null);
 });
 
-test('buildStaticUrlEntries lists home, the bare listing page and the download page', () => {
+test('buildStaticUrlEntries lists every public page, once, and no private route', () => {
   const entries = buildStaticUrlEntries('https://hudhudnest.com');
-  assert.deepEqual(
-    entries.map(e => e.loc),
-    ['https://hudhudnest.com/', 'https://hudhudnest.com/properties', 'https://hudhudnest.com/download']
-  );
+  const locs = entries.map(e => e.loc);
+  for (const path of ['/', '/properties', '/short-stay', '/investments', '/services', '/map', '/price-estimate',
+    '/valuation', '/expats', '/pricing', '/kontakt', '/privacy-policy', '/terms-of-service', '/download']) {
+    assert.ok(locs.includes(`https://hudhudnest.com${path}`), `missing ${path}`);
+  }
+  assert.equal(new Set(locs).size, locs.length, 'duplicate static entries');
+  assert.ok(!locs.some(l => /\/(admin|dashboard|login|my-|account|messages)/.test(l)), 'private route leaked');
+});
+
+test('buildShortStayUrlEntries skips hidden, unpublished and id-less listings', () => {
+  const entries = buildShortStayUrlEntries('https://hudhudnest.com', [
+    { id: 's1', updatedAt: '2026-02-03T00:00:00Z', isPublished: true },
+    { id: 's2', isPublished: false },
+    { id: 's3', isTakenDown: true },
+    { id: 's4' },
+    null,
+    {}
+  ]);
+  assert.deepEqual(entries.map(e => e.loc), [
+    'https://hudhudnest.com/short-stay/s1',
+    'https://hudhudnest.com/short-stay/s4'
+  ]);
+  assert.equal(entries[0].lastmod, '2026-02-03');
+});
+
+test('buildInvestmentUrlEntries builds one /investments/:id entry per project', () => {
+  const entries = buildInvestmentUrlEntries('https://hudhudnest.com', [{ id: 'i1' }, { id: '' }, { id: 'i2' }]);
+  assert.deepEqual(entries.map(e => e.loc), [
+    'https://hudhudnest.com/investments/i1',
+    'https://hudhudnest.com/investments/i2'
+  ]);
+});
+
+test('buildSitemapXml never exceeds the 50000-URL protocol cap', () => {
+  const entries = Array.from({ length: MAX_SITEMAP_URLS + 25 }, (_, i) => ({ loc: `https://hudhudnest.com/properties/${i}` }));
+  const xml = buildSitemapXml(entries);
+  assert.equal((xml.match(/<url>/g) || []).length, MAX_SITEMAP_URLS);
 });
 
 test('buildPropertyUrlEntries builds one /properties/:id entry per property, falling back to publishedAt', () => {

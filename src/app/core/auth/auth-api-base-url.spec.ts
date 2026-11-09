@@ -9,7 +9,7 @@
 import { Capacitor } from '@capacitor/core';
 
 import { resolveAuthApiBaseUrl } from './auth-api-base-url';
-import { AppEnvironment } from '../../../environments/environment.model';
+import { ADS_DISABLED, AppEnvironment } from '../../../environments/environment.model';
 
 function fakeEnv(overrides: Partial<AppEnvironment>): AppEnvironment {
   return {
@@ -23,6 +23,7 @@ function fakeEnv(overrides: Partial<AppEnvironment>): AppEnvironment {
     googleClientId: '',
     appleClientId: '',
     appleRedirectUri: '',
+    ads: ADS_DISABLED,
     ...overrides
   };
 }

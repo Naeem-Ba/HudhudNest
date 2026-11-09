@@ -174,6 +174,13 @@ export class SocialAuthService {
   }
 
   get isAppleAvailable(): boolean {
+    // @capacitor-community/apple-sign-in has no Android implementation (its Java class only
+    // echoes), so on the Android app the button could only ever fail. Apple sign-in stays on
+    // the web and on iOS (launch audit A7-001).
+    if (Capacitor.getPlatform() === 'android') {
+      return false;
+    }
+
     return Boolean(environment.appleClientId?.trim());
   }
 

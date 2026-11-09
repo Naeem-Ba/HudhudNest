@@ -30,6 +30,14 @@ export interface ShareableContent {
   readonly url: string;
 }
 
+/** The public summary shown in the share sheet (and nothing else about the listing). */
+export interface SharePreview {
+  readonly title: string;
+  readonly price: string | null;
+  readonly location: string | null;
+  readonly imageUrl: string | null;
+}
+
 /** Outcome of a single share attempt. Always reflects what actually happened — never claims a
  *  share/publish succeeded when the only thing that happened is a share-intent link was opened. */
 export interface ShareResult {

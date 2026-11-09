@@ -21,7 +21,7 @@ function makeActivatedRoute(queryParams: Record<string, string>): ActivatedRoute
 }
 
 describe('KontaktComponent — query-param prefills', () => {
-  function build(queryParams: Record<string, string>, profile: Partial<UserProfile> | null = null) {
+  function build(queryParams: Record<string, string>, profile: Partial<UserProfile> | null = null, translations: Parameters<TranslateService['setTranslation']>[1] | null = null) {
     const profileSubject = new BehaviorSubject<UserProfile | null>(profile as UserProfile | null);
 
     TestBed.configureTestingModule({
@@ -33,6 +33,12 @@ describe('KontaktComponent — query-param prefills', () => {
         { provide: ProfileService, useValue: { profile$: profileSubject.asObservable() } }
       ]
     });
+
+    if (translations) {
+      const translate = TestBed.inject(TranslateService);
+      translate.setTranslation('en', translations);
+      translate.use('en');
+    }
 
     const fixture = TestBed.createComponent(KontaktComponent);
     fixture.detectChanges();
@@ -55,6 +61,20 @@ describe('KontaktComponent — query-param prefills', () => {
     component.model.Subject = 'كتبته أنا بنفسي';
     translate.use('de');
     expect(component.model.Subject).toBe('كتبته أنا بنفسي');
+  });
+
+  it('✅ "?ref=<guid>": يُكتب مرجع طلب الخطة في أول سطر من الرسالة الفارغة', () => {
+    const component = build(
+      { plan: 'basic', ref: '3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b' },
+      null,
+      { KONTAKT: { PLAN_REF_LINE: 'Plan request reference: {{ref}}' } }
+    );
+    expect(component.model.Message).toBe('Plan request reference: 3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b\n\n');
+  });
+
+  it('✅ "?ref=" غير صالح لا يُكتب في النموذج', () => {
+    const component = build({ plan: 'basic', ref: '<script>alert(1)</script>' });
+    expect(component.model.Message).toBe('');
   });
 
   it('✅ "?intent=service-provider": يملأ العنوان تلقائياً ويغيّر نص التلميح', () => {

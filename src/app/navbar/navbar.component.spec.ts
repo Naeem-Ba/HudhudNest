@@ -8,10 +8,12 @@ import { Router, provideRouter } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { BehaviorSubject, of } from 'rxjs';
 
-import { NavbarComponent } from './navbar.component';
+import { NavbarComponent, navNeedsMenuButton } from './navbar.component';
 import { AuthService, AuthenticatedUser } from '../core/auth/auth.service';
 import { LoginMethod } from '../core/auth/login-identifier';
 import { ProfileService, UserProfile } from '../core/api/profile.service';
+import { AgenciesApiService } from '../core/api/agencies-api.service';
+import { Agency } from '../core/models/agency.model';
 import { ServiceProviderService } from '../core/api/service-provider.service';
 import { NotificationsApiService } from '../core/api/notifications-api.service';
 import { LanguageService } from '../core/services/language.service';
@@ -58,10 +60,12 @@ describe('NavbarComponent (Phase 6)', () => {
   let profile: ProfileStub;
   let providerRefresh: jasmine.Spy;
   let router: Router;
+  let myAgency: Agency | null;
 
   const el = () => fixture.nativeElement as HTMLElement;
 
   beforeEach(async () => {
+    myAgency = null;
     auth = new AuthStub();
     profile = new ProfileStub();
     providerRefresh = jasmine.createSpy('refresh').and.returnValue(of(null));
@@ -77,6 +81,7 @@ describe('NavbarComponent (Phase 6)', () => {
         ]),
         { provide: AuthService, useValue: auth },
         { provide: ProfileService, useValue: profile },
+        { provide: AgenciesApiService, useValue: { getMine: () => of(myAgency) } },
         {
           provide: ServiceProviderService,
           useValue: { myProvider$: of(null), refresh: providerRefresh }
@@ -215,6 +220,44 @@ describe('NavbarComponent (Phase 6)', () => {
     expect(el().querySelector('.navbar__nav a[href^="/admin"]')).toBeNull();
   });
 
+  describe('«مكتبي العقاري» يظهر فقط لمن لديه خطة مدفوعة سارية', () => {
+    function managementHrefs(planFields: Partial<UserProfile>): (string | null)[] {
+      auth.signIn({ email: 'owner@example.com' });
+      profile.profileSubject.next({ Id: 'u1', ...planFields } as UserProfile);
+      fixture.detectChanges();
+      openAccountMenu();
+      return Array.from(el().querySelectorAll('#account-management-group a')).map(a => a.getAttribute('href'));
+    }
+
+    it('بلا خطة ⇒ لا رابط', () => {
+      expect(managementHrefs({})).not.toContain('/my-agency');
+    });
+
+    it('خطة مجانية ⇒ لا رابط', () => {
+      expect(managementHrefs({ PlanTier: 'free', PlanStatus: 'Active' })).not.toContain('/my-agency');
+    });
+
+    it('خطة مدفوعة منتهية أو ملغاة ⇒ لا رابط', () => {
+      expect(managementHrefs({ PlanTier: 'pro', PlanStatus: 'Expired' })).not.toContain('/my-agency');
+    });
+
+    const expiredDaysAgo = (days: number) => new Date(Date.now() - days * 86_400_000).toISOString();
+
+    it('خطة منتهية منذ أقل من 30 يومًا ⇒ الرابط ظاهر لصاحب المكتب أو عضوه', () => {
+      myAgency = { ownerPlanStatus: 'Expired', ownerPlanExpiresAt: expiredDaysAgo(5) } as Agency;
+      expect(managementHrefs({ PlanTier: 'free', PlanStatus: 'Expired' })).toContain('/my-agency');
+    });
+
+    it('خطة منتهية منذ أكثر من 30 يومًا ⇒ لا رابط', () => {
+      myAgency = { ownerPlanStatus: 'Expired', ownerPlanExpiresAt: expiredDaysAgo(31) } as Agency;
+      expect(managementHrefs({ PlanTier: 'free', PlanStatus: 'Expired' })).not.toContain('/my-agency');
+    });
+
+    it('خطة مدفوعة سارية ⇒ الرابط ظاهر', () => {
+      expect(managementHrefs({ PlanTier: 'pro', PlanStatus: 'Active' })).toContain('/my-agency');
+    });
+  });
+
   it('✅ Admin ⇒ أدوات المشرف داخل قسم الإدارة (بما فيها اقتراحات المواقع)', () => {
     auth.signIn({ email: 'admin@example.com' }, true);
     fixture.detectChanges();
@@ -224,7 +267,7 @@ describe('NavbarComponent (Phase 6)', () => {
     expect(hrefs).toEqual(jasmine.arrayContaining([
       '/admin/messages', '/admin/users', '/admin/investments',
       '/admin/location-suggestions', '/admin/marketing', '/admin/app-updates',
-      '/admin/social-distribution'
+      '/admin/social-distribution', '/admin/audit-logs'
     ]));
   });
 
@@ -315,5 +358,105 @@ describe('NavbarComponent (Phase 6)', () => {
     fixture = TestBed.createComponent(NavbarComponent);
     fixture.detectChanges();
     expect(el().querySelector('a[href="/download"]')).toBeNull();
+  });
+
+  // ────────────── Phase 15: قائمة الجوال وملاءمة الروابط ──────────────
+
+  describe('menu button vs link row (P15-D01)', () => {
+    // brand 134 + links 1023 + buttons 228 + 2 gaps of 20 = 1425px needed.
+    const english = { brand: 134, nav: 1023, actions: 228, menuButtonExtra: 0, gap: 20 };
+
+    it('✅ تتسع الروابط تمامًا ⇒ تبقى ظاهرة؛ بكسل أقل ⇒ زر القائمة', () => {
+      expect(navNeedsMenuButton({ ...english, available: 1425 })).toBeFalse();
+      expect(navNeedsMenuButton({ ...english, available: 1424 })).toBeTrue();
+    });
+
+    it('✅ اللغة تغيّر القرار: الألمانية (روابط أعرض) تحتاج مساحة أكبر من العربية على العرض نفسه', () => {
+      const room = 1500;
+      expect(navNeedsMenuButton({ brand: 134, nav: 895, actions: 282, menuButtonExtra: 0, gap: 20, available: room })).toBeFalse();
+      expect(navNeedsMenuButton({ brand: 134, nav: 1085, actions: 259, menuButtonExtra: 0, gap: 20, available: room })).toBeTrue();
+    });
+
+    it('✅ الجواب لا يتأثر بوجود زر القائمة نفسه (لا تذبذب بين الحالتين)', () => {
+      const available = 1500;
+      const withoutButton = navNeedsMenuButton({ ...english, available });
+      const withButton = navNeedsMenuButton({ ...english, actions: english.actions + 52, menuButtonExtra: 52, available });
+      expect(withButton).toBe(withoutButton);
+    });
+  });
+
+  describe('mobile drawer (P15-D05)', () => {
+    const drawer = () => el().querySelector<HTMLElement>('#mobile-navigation-drawer')!;
+
+    // The drawer is `visibility: hidden` for the first frame of its transition, and a hidden element refuses
+    // focus; CSS time does not advance in fakeAsync, so the transition is switched off here.
+    let noTransitions: HTMLStyleElement;
+    beforeEach(() => {
+      noTransitions = document.createElement('style');
+      noTransitions.textContent = '*, *::before, *::after { transition: none !important; animation: none !important; }';
+      document.head.appendChild(noTransitions);
+    });
+    afterEach(() => noTransitions.remove());
+
+    function openDrawer(): void {
+      (el().querySelector('.mobile-toggle') as HTMLButtonElement).click();
+      fixture.detectChanges();
+    }
+
+    it('✅ للدرج زر إغلاق داخله، باسم مترجم، ويُغلق الدرج عند الضغط عليه', () => {
+      openDrawer();
+      const close = drawer().querySelector<HTMLButtonElement>('.mobile-drawer__close')!;
+
+      expect(close).not.toBeNull();
+      expect(close.getAttribute('aria-label')).toBe('NAVBAR.CLOSE_MENU');
+      expect(drawer().classList).toContain('mobile-drawer--open');
+
+      close.click();
+      fixture.detectChanges();
+
+      expect(drawer().classList).not.toContain('mobile-drawer--open');
+    });
+
+    it('✅ الدرج حوار مشروط (dialog + aria-modal) باسم مترجم، لا عربي ثابت', () => {
+      expect(drawer().getAttribute('role')).toBe('dialog');
+      expect(drawer().getAttribute('aria-modal')).toBe('true');
+      expect(el().querySelector('nav.navbar__nav')?.getAttribute('aria-label')).toBe('NAVBAR.MAIN_NAV');
+    });
+
+    it('✅ عند الفتح ينتقل التركيز إلى زر الإغلاق، وعند الإغلاق يعود إلى زر القائمة', fakeAsync(() => {
+      document.body.appendChild(fixture.nativeElement);
+      openDrawer();
+      tick(100);
+
+      expect(document.activeElement).toBe(drawer().querySelector('.mobile-drawer__close'));
+
+      (drawer().querySelector('.mobile-drawer__close') as HTMLButtonElement).click();
+      fixture.detectChanges();
+
+      expect(document.activeElement).toBe(el().querySelector('.mobile-toggle'));
+      fixture.nativeElement.remove();
+    }));
+
+    it('✅ Tab من آخر عنصر يعود إلى أول عنصر، وShift+Tab من الأول يذهب إلى الأخير (حبس التركيز)', fakeAsync(() => {
+      document.body.appendChild(fixture.nativeElement);
+      openDrawer();
+      tick(100);
+      const focusable = Array.from(drawer().querySelectorAll<HTMLElement>('a[href], button:not([disabled])'))
+        .filter(node => node.offsetParent !== null);
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      last.focus();
+      const forward = new KeyboardEvent('keydown', { key: 'Tab', cancelable: true, bubbles: true });
+      drawer().dispatchEvent(forward);
+      expect(forward.defaultPrevented).toBeTrue();
+      expect(document.activeElement).toBe(first);
+
+      const backward = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, cancelable: true, bubbles: true });
+      drawer().dispatchEvent(backward);
+      expect(backward.defaultPrevented).toBeTrue();
+      expect(document.activeElement).toBe(last);
+      fixture.nativeElement.remove();
+    }));
   });
 });

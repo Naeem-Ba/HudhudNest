@@ -21,6 +21,7 @@ import { AuthService } from './core/auth/auth.service';
 import { CsrfTokenService } from './core/services/csrf-token.service';
 import { EnumService } from './core/services/enum.service';
 import { TokenStorageService } from './core/services/token-storage.service';
+import { SESSION_HINT_KEY, readSessionHint, writeSessionHint } from './core/auth/session-hint';
 
 /** Base64url-encodes a JWT payload so AuthService.decodeJwt can parse it. */
 function fakeJwt(expiresInSeconds: number): string {
@@ -36,6 +37,7 @@ describe('restoreSession (app.config.ts)', () => {
   let httpBackend: HttpBackend;
 
   beforeEach(() => {
+    localStorage.removeItem(SESSION_HINT_KEY);
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting()]
     });
@@ -47,7 +49,10 @@ describe('restoreSession (app.config.ts)', () => {
     httpBackend = TestBed.inject(HttpBackend);
   });
 
-  afterEach(() => httpMock.verify());
+  afterEach(() => {
+    httpMock.verify();
+    localStorage.removeItem(SESSION_HINT_KEY);
+  });
 
   function flushCsrf(): void {
     httpMock.expectOne(`${environment.apiUrl}/security/csrf-token`).flush({ csrfToken: 'csrf' });
@@ -65,7 +70,7 @@ describe('restoreSession (app.config.ts)', () => {
   // ────────────── زائر حقيقي: لا كوكي refresh_token على الإطلاق ──────────────
 
   it('✅ زائر حقيقي (401 بلا errorCode) ⇒ يبقى صامتاً بلا sessionExpired$', fakeAsync(() => {
-    const reasons: Array<'expired' | 'revoked'> = [];
+    const reasons: Array<'expired' | 'revoked' | 'superseded'> = [];
     authService.sessionExpired$.subscribe(r => reasons.push(r));
 
     run();
@@ -81,10 +86,65 @@ describe('restoreSession (app.config.ts)', () => {
     expect(reasons).toEqual([]);
   }));
 
+  // ────────────── تلميح الجلسة: لا سؤال للخادم من متصفح يعرف أنه بلا جلسة ──────────────
+
+  it('✅ زائر عرفنا سابقاً أنه بلا جلسة ⇒ لا طلب CSRF ولا /auth/refresh', fakeAsync(() => {
+    writeSessionHint('no');
+
+    run();
+    tick();
+
+    httpMock.expectNone(`${environment.apiUrl}/security/csrf-token`);
+    httpMock.expectNone(`${environment.apiUrl}/auth/refresh`);
+    expect(tokenStorage.getAccessToken()).toBeNull();
+  }));
+
+  it('✅ متصفح بلا تلميح (أول زيارة بعد التحديث) ⇒ يسأل الخادم كالسابق، ثم يتذكر أن لا جلسة', fakeAsync(() => {
+    run();
+    tick();
+    flushCsrf();
+    tick();
+    httpMock.expectOne(`${environment.apiUrl}/auth/refresh`)
+      .flush({ message: 'No refresh token was supplied.' }, { status: 401, statusText: 'Unauthorized' });
+    tick();
+
+    expect(readSessionHint()).toBe('no');
+  }));
+
+  it('✅ تلميح "نعم" ⇒ يسأل الخادم ويستعيد الجلسة', fakeAsync(() => {
+    writeSessionHint('yes');
+
+    run();
+    tick();
+    flushCsrf();
+    tick();
+    httpMock.expectOne(`${environment.apiUrl}/auth/refresh`).flush({ accessToken: fakeJwt(3600) });
+    tick();
+    drainHydrateProfile();
+
+    expect(tokenStorage.getAccessToken()).not.toBeNull();
+    expect(readSessionHint()).toBe('yes');
+  }));
+
+  it('✅ انقطاع شبكة (status 0) لا يُسجَّل كـ"لا جلسة"', fakeAsync(() => {
+    writeSessionHint('yes');
+
+    run();
+    tick();
+    flushCsrf();
+    tick();
+    httpMock.expectOne(`${environment.apiUrl}/auth/refresh`).error(new ProgressEvent('error'), { status: 0, statusText: 'Unknown Error' });
+    tick();
+    httpMock.expectOne(`${environment.apiUrl}/auth/refresh`).error(new ProgressEvent('error'), { status: 0, statusText: 'Unknown Error' });
+    tick();
+
+    expect(readSessionHint()).toBe('yes');
+  }));
+
   // ────────────── جلسة انتهت فعلاً (الخادم أعاد errorCode محدَّداً) ──────────────
 
   it('✅ REFRESH_TOKEN_EXPIRED ⇒ يُطلِق sessionExpired$ بسبب expired', fakeAsync(() => {
-    const reasons: Array<'expired' | 'revoked'> = [];
+    const reasons: Array<'expired' | 'revoked' | 'superseded'> = [];
     authService.sessionExpired$.subscribe(r => reasons.push(r));
 
     run();
@@ -102,7 +162,7 @@ describe('restoreSession (app.config.ts)', () => {
   }));
 
   it('✅ REFRESH_TOKEN_REUSE_DETECTED ⇒ يُطلِق sessionExpired$ بسبب revoked', fakeAsync(() => {
-    const reasons: Array<'expired' | 'revoked'> = [];
+    const reasons: Array<'expired' | 'revoked' | 'superseded'> = [];
     authService.sessionExpired$.subscribe(r => reasons.push(r));
 
     run();

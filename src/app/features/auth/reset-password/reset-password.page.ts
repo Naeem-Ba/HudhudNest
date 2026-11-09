@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
   FormBuilder,
@@ -11,6 +12,10 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { isRateLimited } from '../../../core/api/rate-limited';
 import { AuthApiService } from '../../../core/auth/auth-api.service';
+import { AuthErrorFocusService } from '../../../core/auth/auth-error-focus.service';
+import { passwordPolicyValidator } from '../../../core/auth/password-policy';
+import { PasswordRulesComponent } from '../../../shared/ui/password-rules.component';
+import { applyAuthFieldErrors, resolveAuthError } from '../auth-error';
 import { FormErrorComponent } from '../../../shared/ui/form-error.component';
 import { ToastService } from '../../../shared/services/toast.service';
 
@@ -42,7 +47,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
 @Component({
   selector: 'app-reset-password-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslateModule, FormErrorComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslateModule, FormErrorComponent, PasswordRulesComponent],
   template: `
     <section class="auth-page">
       <div class="auth-card" *ngIf="!linkValid">
@@ -56,8 +61,14 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
         <p class="account" dir="ltr">{{ email }}</p>
 
         <label for="newPassword">{{ 'AUTH.NEW_PASSWORD' | translate }}</label>
-        <input id="newPassword" type="password" formControlName="newPassword" placeholder="••••••••" autocomplete="new-password">
+        <input id="newPassword" type="password" formControlName="newPassword" placeholder="••••••••" autocomplete="new-password" aria-describedby="reset-password-rules">
         <app-form-error [control]="form.controls.newPassword" [submitted]="submitted()" [messages]="passwordMessages"></app-form-error>
+        <app-password-rules
+          listId="reset-password-rules"
+          [password]="form.controls.newPassword.value"
+          [context]="{ email: email }"
+          [personal]="true"
+        ></app-password-rules>
 
         <label for="confirmPassword">{{ 'AUTH.RESET_CONFIRM_PASSWORD' | translate }}</label>
         <input id="confirmPassword" type="password" formControlName="confirmPassword" placeholder="••••••••" autocomplete="new-password">
@@ -69,13 +80,14 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
         </button>
 
         <p class="success" *ngIf="success()">✅ {{ success() }}</p>
-        <p class="error" *ngIf="error()">⚠️ {{ error() }}</p>
+        <p class="error" role="alert" data-auth-form-error *ngIf="error()">⚠️ {{ error() }}</p>
+        <a *ngIf="linkExpired()" routerLink="/auth/forgot-password" class="link-button">{{ 'AUTH.REQUEST_NEW_LINK' | translate }}</a>
         <a *ngIf="success()" routerLink="/auth/login" class="link-button">{{ 'AUTH.LOGIN_BUTTON' | translate }}</a>
       </form>
     </section>
   `,
   styles: [`
-    .auth-page{min-height:70vh;display:grid;place-items:center;background:var(--page-bg);padding:2rem}.auth-card{width:min(450px,100%);background:var(--surface);padding:2rem;border-radius:16px;box-shadow:var(--shadow-lg);display:grid;gap:.55rem}h1,p{margin:0}label{font-weight:700;margin-top:.5rem}input,button,.link-button{width:100%;box-sizing:border-box;padding:.85rem 1rem;border-radius:10px}input{border:1px solid var(--border);background:var(--surface)}button,.link-button{margin-top:1rem;border:0;background:var(--primary);color:var(--on-primary);font-weight:700;cursor:pointer;text-align:center;text-decoration:none}button:hover:not(:disabled),.link-button:hover{background:var(--primary-dark)}button:disabled{opacity:.6;cursor:not-allowed}.account{color:var(--gray-600);overflow-wrap:anywhere}.error{color:var(--danger)}.success{color:var(--success)}
+    .auth-page{min-height:70vh;display:grid;place-items:center;background:var(--page-bg);padding:2rem}.auth-card{width:min(450px,100%);background:var(--surface);padding:2rem;border-radius:16px;box-shadow:var(--shadow-lg);display:grid;gap:.55rem}h1,p{margin:0}label{font-weight:700;margin-top:.5rem}input,button,.link-button{width:100%;box-sizing:border-box;padding:.85rem 1rem;border-radius:10px}input{border:1px solid var(--border);background:var(--surface)}button,.link-button{margin-top:1rem;border:0;background:var(--primary);color:var(--on-primary);font-weight:700;cursor:pointer;text-align:center;text-decoration:none}button:hover:not(:disabled),.link-button:hover{background:var(--primary-dark)}button:disabled{opacity:.6;cursor:not-allowed}.account{color:var(--gray-600);overflow-wrap:anywhere}.error{color:var(--danger-text)}.success{color:var(--success-text)}
   `]
 })
 export class ResetPasswordPage {
@@ -89,6 +101,9 @@ export class ResetPasswordPage {
   readonly submitted = signal(false);
   readonly error = signal('');
   readonly success = signal('');
+  /** The server said the link itself is no good (used, expired): the way out is a new link. */
+  readonly linkExpired = signal(false);
+  private readonly errorFocus = inject(AuthErrorFocusService);
 
   readonly email: string;
   private readonly token: string;
@@ -99,14 +114,15 @@ export class ResetPasswordPage {
 
   get passwordMessages(): Record<string, string> {
     return {
-      minlength: this.translate.instant('AUTH.ERRORS.PASSWORD_MIN'),
+      required: this.translate.instant('AUTH.ERRORS.PASSWORD_REQUIRED'),
+      passwordPolicy: this.translate.instant('AUTH.ERRORS.PASSWORD_POLICY_UNMET'),
       mismatch: this.translate.instant('AUTH.ERRORS.PASSWORD_MISMATCH')
     };
   }
 
   readonly form = this.fb.nonNullable.group(
     {
-      newPassword: ['', [Validators.required, Validators.minLength(8)]],
+      newPassword: ['', [Validators.required, passwordPolicyValidator(() => ({ email: this.email }))]],
       confirmPassword: ['', [Validators.required]]
     },
     { validators: passwordsMatch }
@@ -116,19 +132,31 @@ export class ResetPasswordPage {
     const params = this.route.snapshot.queryParamMap;
     this.email = (params.get('email') ?? '').trim();
     this.token = params.get('token') ?? '';
+
+    this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+      if (this.error()) {
+        this.error.set('');
+      }
+    });
   }
 
   submit(): void {
+    if (this.loading()) {
+      return;
+    }
+
     this.submitted.set(true);
 
-    if (!this.linkValid || this.form.invalid || this.loading()) {
+    if (!this.linkValid || this.form.invalid) {
       this.form.markAllAsTouched();
+      this.errorFocus.request();
       return;
     }
 
     this.loading.set(true);
     this.error.set('');
     this.success.set('');
+    this.linkExpired.set(false);
 
     const raw = this.form.getRawValue();
 
@@ -146,11 +174,36 @@ export class ResetPasswordPage {
       },
       error: error => {
         this.loading.set(false);
-        // 429: the reset limit (3 per hour, shared with "forgot password"), not a wrong link.
-        this.error.set(this.translate.instant(
-          isRateLimited(error) ? 'AUTH.ERRORS.PASSWORD_RESET_LIMIT' : 'AUTH.ERRORS.RESET_FAILED'
-        ));
+        this.handleFailure(error);
       }
     });
+  }
+
+  /** The password's own reasons under the field; a dead link says so and offers a new one. */
+  private handleFailure(error: unknown): void {
+    // 429: the reset limit (3 per hour, shared with "forgot password"), not a wrong link.
+    if (isRateLimited(error)) {
+      this.error.set(this.translate.instant('AUTH.ERRORS.PASSWORD_RESET_LIMIT'));
+      this.errorFocus.request();
+      return;
+    }
+
+    const codes = (error as { error?: { errorCodes?: unknown } } | null)?.error?.errorCodes;
+    if (Array.isArray(codes) && codes.includes('InvalidToken')) {
+      this.linkExpired.set(true);
+      this.error.set(this.translate.instant('AUTH.RESET_LINK_INVALID'));
+      this.errorFocus.request();
+      return;
+    }
+
+    const resolved = resolveAuthError(this.translate, error, {
+      passwordField: 'newPassword',
+      fallbackKey: 'AUTH.ERRORS.RESET_FAILED'
+    });
+    const { newPassword } = this.form.controls;
+    const leftovers = applyAuthFieldErrors(resolved, { newPassword, password: newPassword });
+
+    this.error.set(leftovers.join(' '));
+    this.errorFocus.request();
   }
 }

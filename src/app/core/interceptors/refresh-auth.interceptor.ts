@@ -135,6 +135,37 @@ export function currentRouteRequiresAuth(router: Router): boolean {
  */
 /** Backend code for RefreshTokenCommand's reuse-detection branch — see RefreshTokenCommand.cs. */
 export const REUSE_DETECTED_CODE = 'REFRESH_TOKEN_REUSE_DETECTED';
+/** This device's session was ended because the account has more sessions than allowed. */
+export const SUPERSEDED_CODE = 'REFRESH_TOKEN_SUPERSEDED';
+/** The session was ended on purpose (sign-out from another device, password change). */
+export const REVOKED_CODE = 'REFRESH_TOKEN_REVOKED';
+
+/**
+ * Did the server itself say "this refresh token is no good"? Only then may the app drop the session.
+ * A dropped connection (status 0), a timeout, a 5xx while the host wakes up, or a 429 says nothing about
+ * the session: clearing it there signed people out whenever a phone came back from a tunnel or the
+ * background with a weak signal. The session is kept, the failed request fails on its own, and the next
+ * attempt (or the recovery on reconnect) refreshes normally.
+ */
+export function isDefinitiveSessionEnd(error: unknown): boolean {
+  return error instanceof HttpErrorResponse && (error.status === 401 || error.status === 400);
+}
+
+export function isCsrfFailure(error: unknown): boolean {
+  return (
+    error instanceof HttpErrorResponse &&
+    error.status === 403 &&
+    (error.error as { code?: unknown } | null | undefined)?.code === 'CSRF_VALIDATION_FAILED'
+  );
+}
+
+export function sessionEndReason(error: unknown): 'expired' | 'revoked' | 'superseded' {
+  const code = readRefreshErrorCode(error);
+  if (code === SUPERSEDED_CODE) {
+    return 'superseded';
+  }
+  return code === REUSE_DETECTED_CODE || code === REVOKED_CODE ? 'revoked' : 'expired';
+}
 
 /**
  * Reads the /auth/refresh failure's errorCode (AuthController.cs now includes it on the 401
@@ -158,6 +189,11 @@ function clearAndRedirect(
   authService: AuthService,
   refreshError: unknown
 ): void {
+  // Not an answer about the session: keep it (see isDefinitiveSessionEnd).
+  if (!isDefinitiveSessionEnd(refreshError)) {
+    return;
+  }
+
   tokenStorage.clear();
   csrfTokenService.clear();
 
@@ -169,8 +205,7 @@ function clearAndRedirect(
     // A real expiry: the visitor was on a route that needed a session and the refresh
     // could not restore one — distinct from a background 401 on a public page, which
     // never reaches this branch. See AuthService.notifySessionExpired's doc comment.
-    const reason = readRefreshErrorCode(refreshError) === REUSE_DETECTED_CODE ? 'revoked' : 'expired';
-    authService.notifySessionExpired(reason);
+    authService.notifySessionExpired(sessionEndReason(refreshError));
     void router.navigateByUrl('/auth/login');
   }
 }
@@ -204,13 +239,21 @@ function requestNewAccessToken(
     // Same-origin on the deployed web app — see auth-api-base-url.ts's doc comment (Safari
     // drops this cookie outright as third-party otherwise; stays absolute for local dev and
     // the native Capacitor app, neither of which has this problem or a proxy for it).
+    const post$ = () =>
+      directHttp.post<unknown>(`${resolveAuthApiBaseUrl(environment)}/auth/refresh`, {}, {
+        withCredentials: true,
+        headers: { 'X-XSRF-TOKEN': csrfTokenService.getToken() ?? '' }
+      });
+
     refreshRequest$ = ensureCsrfToken$
       .pipe(
-        switchMap(() =>
-          directHttp.post<unknown>(`${resolveAuthApiBaseUrl(environment)}/auth/refresh`, {}, {
-            withCredentials: true,
-            headers: { 'X-XSRF-TOKEN': csrfTokenService.getToken() ?? '' }
-          })
+        switchMap(() => post$()),
+        // A stale anti-forgery token (the API restarted and lost its keys, or the page was open for
+        // days) is not a verdict on the session: fetch a fresh one and ask once more.
+        catchError(error =>
+          isCsrfFailure(error)
+            ? csrfTokenService.fetchToken().pipe(switchMap(() => post$()))
+            : throwError(() => error)
         ),
         map(response => normalizeAuthTokenResponse(response)),
         switchMap(tokens => {

@@ -8,11 +8,12 @@ import { VisitService } from '../../core/api/visit.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { VisitDto, VisitStatus } from '../../core/models/visit.model';
 import { ToastService } from '../../shared/services/toast.service';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 @Component({
   selector: 'app-visits-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule],
+  imports: [ LocalizedDatePipe,CommonModule, RouterLink, TranslateModule],
   templateUrl: './visits.page.html',
   styleUrls: ['./visits.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

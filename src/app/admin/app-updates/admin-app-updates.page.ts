@@ -29,6 +29,7 @@ import { ToastService } from '../../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { ConfirmModalComponent } from '../../shared/ui/confirm-modal.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 const PLATFORM_LABELS: Record<AppReleasePlatform, string> = {
   Android: 'أندرويد',
@@ -80,7 +81,7 @@ export function minimumNotAboveVersionValidator(group: AbstractControl): Validat
   selector: 'app-admin-app-updates',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [ LocalizedDatePipe,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,

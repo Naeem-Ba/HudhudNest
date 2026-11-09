@@ -18,13 +18,16 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  ElementRef,
   HostListener,
   OnInit,
+  ViewChild,
   computed,
   inject,
   signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LocationNamesService } from '../../core/api/location-names.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subscription, map } from 'rxjs';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -42,9 +45,18 @@ import { ProfileService, PublicUserProfile } from '../../core/api/profile.servic
 import { UserProfileApiService } from '../../core/api/user-profile-api.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { Property, PropertyImage } from '../../core/models/property.model';
+import { isValidCoordinates } from '../../core/models/property-location';
+import { MapPickerComponent } from '../../map-picker/map-picker.component';
+import { LangCode } from '../../core/services/language.service';
+import { ListingTranslationService } from '../../core/api/listing-translation.service';
+import { ListingTranslationController } from './listing-translation.controller';
+import { TranslationNoticeComponent } from './translation-notice.component';
+import { PriceHistoryComponent } from './price-history.component';
+import { getGallerySwipeNavigation } from './gallery-swipe';
 import { REVIEW_COMMENT_MAX_LENGTH, ReviewDto, validateCreateReview } from '../../core/models/review.model';
 import { CreateVisitRequest, validateCreateVisit } from '../../core/models/visit.model';
-import { SERVICE_CATEGORIES, ServiceCategory, ServiceOfferingDto, validateCreateServiceRequest } from '../../core/models/service.model';
+import { SERVICE_CATEGORIES, ServiceCategory, ServiceOfferingDto, ServiceRequestDto, ServiceRequestIntent, validateCreateServiceRequest } from '../../core/models/service.model';
+import { ServiceConversationActivity, ServiceConversationComponent } from '../services/service-conversation.component';
 import { ServiceCategoryAvailabilityDto } from '../../core/models/provider-onboarding.model';
 import { validateMessageContent } from '../../core/models/message.model';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
@@ -52,6 +64,11 @@ import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.compone
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { FavoriteToggleButtonComponent } from '../../shared/ui/favorite-toggle-button.component';
 import { PropertyShareButtonComponent } from '../../shared/ui/property-share-button.component';
+import { mergeViewCount } from '../../shared/utils/view-count';
+import { ListingViewCountComponent } from '../../shared/ui/listing-view-count.component';
+import { ListingViewTrackingService } from '../../core/listing-views/listing-view-tracking.service';
+import { ReportListingButtonComponent } from '../../shared/ui/report-listing-button.component';
+import { PRINT_QUERY_PARAM, PropertyPrintService } from '../../core/print/property-print.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { OverlayBackHandlerService } from '../../core/services/overlay-back-handler.service';
 import { ScrollLockService } from '../../core/services/scroll-lock.service';
@@ -64,6 +81,11 @@ import { isGuid } from '../../shared/utils/guid';
 import { formatListingPrice } from '../../shared/utils/listing-price';
 import { listingLifecycle, listingStatusTagKey } from '../../shared/utils/listing-status';
 import { StructuredDataService, BREADCRUMB_JSON_LD_ID } from '../../core/services/structured-data.service';
+import { AmenityLabelPipe } from '../../pipes/amenity-label.pipe';
+import { AdSlotComponent } from '../../core/ads/ad-slot.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
+import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
+import { listSeparator } from '../../core/i18n/ui-language';
 
 const LISTING_JSON_LD_ID = 'ld-real-estate-listing';
 
@@ -76,22 +98,39 @@ const LIGHTBOX_IMAGE_WIDTH = 2048;
   selector: 'app-property-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [ LocalizedDatePipe, LocalizedNumberPipe,
+    AdSlotComponent,
+    PriceHistoryComponent,
+    AmenityLabelPipe,
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
     FormsModule,
     TranslateModule,
+    MapPickerComponent,
+    ServiceConversationComponent,
     ImageFallbackDirective,
     LoadingSpinnerComponent,
     EmptyStateComponent,
     FavoriteToggleButtonComponent,
-    PropertyShareButtonComponent
+    PropertyShareButtonComponent,
+    ListingViewCountComponent,
+    ReportListingButtonComponent,
+    TranslationNoticeComponent
   ],
   templateUrl: './property-detail.page.html',
   styleUrls: ['./property-detail.page.scss']
 })
 export class PropertyDetailPage implements OnInit {
+  @ViewChild('lightboxClose') private lightboxClose?: ElementRef<HTMLButtonElement>;
+
+  /** The total from the last POST .../views, when it is newer than the one in the loaded listing. */
+  readonly liveViewCount = signal<number | null>(null);
+
+  /** The number to show: the loaded listing's, or the newer total the server returned when the view was recorded. */
+  viewCountOf(p: Property): number | null {
+    return mergeViewCount(p.viewCount, this.liveViewCount());
+  }
 
   // ── Listing status (QA Phase 7, P7-D08) ───────────────────────────────
   /** i18n key of the tag shown for a reserved, sold, rented or archived listing; null for a normal one. */
@@ -131,10 +170,31 @@ export class PropertyDetailPage implements OnInit {
   private readonly scrollLock = inject(ScrollLockService);
   private readonly propertyMeta = inject(PropertyMetaService);
   private readonly attributionTracking = inject(PropertyAttributionTrackingService);
+  private readonly listingViews = inject(ListingViewTrackingService);
   private readonly urlService = inject(UrlService);
   private readonly propertyStructuredData = inject(PropertyStructuredDataService);
   private readonly structuredData = inject(StructuredDataService);
   private readonly shareUrl = inject(PropertyShareUrlService);
+  private readonly printer = inject(PropertyPrintService);
+
+  // Automatic translation of title/description into the active language. Purely additive: the listing
+  // renders from the original text first, and this only swaps text in when a stored translation exists.
+  readonly translation = new ListingTranslationController(inject(ListingTranslationService));
+  readonly locations = inject(LocationNamesService);
+
+  /** Street to show: the translation when ready and the visitor has not asked for the original. */
+  displayStreet(p: Property): string {
+    return (!this.translation.showOriginal() && this.translation.street()) || p.street || '';
+  }
+
+  /** Title to show: the translation when it is ready and the visitor has not asked for the original. */
+  displayTitle(p: Property): string {
+    return (!this.translation.showOriginal() && this.translation.title()) || p.title;
+  }
+
+  displayDescription(p: Property): string {
+    return (!this.translation.showOriginal() && this.translation.description()) || p.description || '';
+  }
 
   // ── State Signals ─────────────────────────────────────────────────────
   readonly property       = signal<Property | null>(null);
@@ -144,6 +204,13 @@ export class PropertyDetailPage implements OnInit {
   readonly error          = signal('');
   readonly currentIndex   = signal(0);
   readonly modalOpen      = signal(false);
+  readonly currentLang    = signal<LangCode>('ar');
+  readonly validLocation  = computed(() => {
+    const property = this.property();
+    return property && isValidCoordinates(property.latitude, property.longitude)
+      ? { lat: property.latitude as number, lng: property.longitude as number }
+      : null;
+  });
   readonly showVisitForm  = signal(false);
   readonly showReviewForm = signal(false);
   readonly showMessageForm = signal(false);
@@ -175,7 +242,7 @@ export class PropertyDetailPage implements OnInit {
     this.images()[this.currentIndex()]?.altText ?? this.property()?.title ?? ''
   );
   readonly isRTL = computed(() =>
-    this.translate.currentLang === 'ar' || document.documentElement.dir === 'rtl'
+    this.currentLang() === 'ar' || document.documentElement.dir === 'rtl'
   );
   readonly averageRating = computed(() => {
     const all = this.reviews();
@@ -249,6 +316,8 @@ export class PropertyDetailPage implements OnInit {
   readonly loadingServiceOfferings = signal(false);
   readonly serviceLoadFailed = signal(false);
   readonly savingServiceRequest = signal(false);
+  /** The request just created: its response carries the provider's contact (shown once, on request). */
+  readonly createdServiceRequest = signal<ServiceRequestDto | null>(null);
   readonly availableServiceCategories = computed(() =>
     this.serviceAvailability().filter(item => item.offeringCount > 0).map(item => item.category));
   readonly selectedOffering = computed(() =>
@@ -320,10 +389,21 @@ export class PropertyDetailPage implements OnInit {
   readonly fallbackImage = '/images/no-image.svg';
 
   // ── Drag/Swipe state ──────────────────────────────────────────────────
-  private startX = 0;
-  private isDragging = false;
+  private pointerStart?: { id: number; x: number; y: number };
+  private suppressGalleryClickUntil = 0;
+  private modalReturnFocus?: HTMLElement;
 
   ngOnInit(): void {
+    this.currentLang.set((this.translate.currentLang || 'ar') as LangCode);
+    this.translate.onLangChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(event => {
+        this.currentLang.set(event.lang as LangCode);
+        const current = this.property();
+        if (current) this.translation.start(current.id, this.currentLang());
+      });
+    this.destroyRef.onDestroy(() => this.translation.reset());
+
     // paramMap (not a one-time snapshot): this component instance is reused by the router when
     // only :id changes (Back/Forward between two listings, an in-app link to another one), so
     // a snapshot read would keep showing the previous listing — or its error state.
@@ -420,6 +500,7 @@ export class PropertyDetailPage implements OnInit {
     if (!category || !this.isLoggedIn()) return;
 
     this.servicePreselect = category;
+    this.createdServiceRequest.set(null);
     this.showServiceForm.set(true);
     this.loadServiceCategoriesIfNeeded();
     if (this.serviceAvailability().length > 0) this.selectServiceCategory(category);
@@ -429,6 +510,7 @@ export class PropertyDetailPage implements OnInit {
   toggleServiceForm(): void {
     const opening = !this.showServiceForm();
     this.showServiceForm.set(opening);
+    if (opening) this.createdServiceRequest.set(null);
 
     if (opening) {
       this.loadServiceCategoriesIfNeeded();
@@ -540,6 +622,7 @@ export class PropertyDetailPage implements OnInit {
     this.serviceOfferings.set([]);
     this.selectedOfferingId.set(null);
     this.property.set(null);
+    this.translation.reset();
     this.reviews.set([]);
     this.error.set('');
     this.currentIndex.set(0);
@@ -567,6 +650,7 @@ export class PropertyDetailPage implements OnInit {
 
   private loadProperty(id: string): void {
     this.loading.set(true);
+    this.liveViewCount.set(null);
     this.propertySub = this.propertyApi
       .getProperty(id)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -586,6 +670,10 @@ export class PropertyDetailPage implements OnInit {
           // Share button was tapped. Deduplicated per property per page session internally
           // (see PropertyAttributionTrackingService.trackView).
           this.attributionTracking.trackView(data.id);
+          this.recordView(data.id);
+          this.printFromQueryOnce(data);
+          // After everything the visitor needs is on screen; a failure here changes nothing above.
+          this.translation.start(data.id, this.currentLang());
         },
         error: (err: unknown) => {
           // A definitive 404 means the listing doesn't exist / isn't public: show the "not
@@ -598,6 +686,22 @@ export class PropertyDetailPage implements OnInit {
             this.error.set('PROPERTY_DETAIL.LOAD_ERROR');
           }
           this.loading.set(false);
+        }
+      });
+  }
+
+  /**
+   * View counter: the listing page is on screen, so tell the server once. The cached detail
+   * response can be older than the latest views, so the answer (the server's total) replaces the
+   * number shown; a failure leaves the number from the listing and is otherwise invisible.
+   */
+  private recordView(propertyId: string): void {
+    this.listingViews
+      .record('property', propertyId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(result => {
+        if (result && this.property()?.id === propertyId) {
+          this.liveViewCount.set(result.viewCount);
         }
       });
   }
@@ -701,9 +805,12 @@ export class PropertyDetailPage implements OnInit {
 
   openModal(): void {
     if (!this.hasImages()) return;
-
+    this.modalReturnFocus = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : undefined;
     this.modalOpen.set(true);
     this.scrollLock.lock();
+    setTimeout(() => this.lightboxClose?.nativeElement.focus(), 0);
   }
 
   closeModal(): void {
@@ -711,27 +818,73 @@ export class PropertyDetailPage implements OnInit {
 
     this.modalOpen.set(false);
     this.scrollLock.unlock();
+    this.modalReturnFocus?.focus();
+    this.modalReturnFocus = undefined;
   }
 
-  onDragStart(event: MouseEvent | TouchEvent): void {
-    // A touch event can arrive with an empty list (e.g. a cancelled multi-touch); ignore it
-    // instead of throwing on touches[0].
-    const startX = 'touches' in event ? event.touches[0]?.clientX : event.pageX;
-    if (startX === undefined) return;
-    this.isDragging = true;
-    this.startX = startX;
+  onGalleryPointerDown(event: PointerEvent): void {
+    this.suppressGalleryClickUntil = 0;
+    if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) return;
+    if (event.target instanceof Element && event.target.closest('button, a, input, textarea, select')) return;
+
+    this.pointerStart = { id: event.pointerId, x: event.clientX, y: event.clientY };
+    try {
+      (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+    } catch {
+      // Pointer capture is unavailable in a few embedded browser implementations.
+    }
   }
 
-  onDragEnd(event: MouseEvent | TouchEvent): void {
-    if (!this.isDragging) return;
-    this.isDragging = false;
-    const endX = 'changedTouches' in event
-      ? event.changedTouches[0]?.clientX
-      : (event as MouseEvent).pageX;
-    if (endX === undefined) return;
-    const diff = endX - this.startX;
-    if (diff > 60)       { this.isRTL() ? this.next() : this.prev(); }
-    else if (diff < -60) { this.isRTL() ? this.prev() : this.next(); }
+  onGalleryPointerUp(event: PointerEvent): void {
+    const start = this.pointerStart;
+    this.pointerStart = undefined;
+    if (!start || start.id !== event.pointerId) return;
+
+    const navigation = getGallerySwipeNavigation(
+      event.clientX - start.x,
+      event.clientY - start.y,
+      this.isRTL()
+    );
+    if (!navigation) return;
+
+    this.suppressGalleryClickUntil = Date.now() + 500;
+    if (navigation === 'next') this.next();
+    else this.prev();
+  }
+
+  onGalleryPointerCancel(): void {
+    this.pointerStart = undefined;
+  }
+
+  onGalleryClick(event: MouseEvent): void {
+    if (Date.now() < this.suppressGalleryClickUntil) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    this.openModal();
+  }
+
+  onLightboxKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Tab') this.trapLightboxFocus(event);
+  }
+
+  private trapLightboxFocus(event: KeyboardEvent): void {
+    const lightbox = event.currentTarget as HTMLElement;
+    const focusable = Array.from(lightbox.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+    ));
+    const first = focusable.at(0);
+    const last = focusable.at(-1);
+    if (!first || !last) return;
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
   }
 
   // ── Availability confirmation (Phase-0, Task 2) ──────────────────────
@@ -820,7 +973,16 @@ export class PropertyDetailPage implements OnInit {
   }
 
   // ── Service request ────────────────────────────────────────────────────
-  submitServiceRequest(): void {
+  closeServiceForm(): void {
+    this.showServiceForm.set(false);
+    this.createdServiceRequest.set(null);
+  }
+
+  /**
+   * Both buttons open the same in-app conversation: "ask more" and "request the service" differ only in the
+   * intent that is recorded for the statistics. It becomes a real request when the customer confirms it.
+   */
+  submitServiceRequest(intent: ServiceRequestIntent = 'Request'): void {
     const property = this.property();
     const offering = this.selectedOffering();
     if (!property || !offering) return;
@@ -828,7 +990,8 @@ export class PropertyDetailPage implements OnInit {
     const payload = {
       propertyId: property.id,
       serviceOfferingId: offering.id,
-      requesterNote: this.serviceRequestNote.trim() || null
+      requesterNote: this.serviceRequestNote.trim() || null,
+      intent
     };
 
     const validationError = validateCreateServiceRequest(payload);
@@ -841,9 +1004,9 @@ export class PropertyDetailPage implements OnInit {
     this.serviceRequestApi.create(payload)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => {
+        next: created => {
           this.toast.show(this.translate.instant('SERVICE_REQUEST.SUCCESS'), 'success');
-          this.showServiceForm.set(false);
+          this.createdServiceRequest.set(created);
           this.serviceRequestNote = '';
           this.savingServiceRequest.set(false);
         },
@@ -852,6 +1015,22 @@ export class PropertyDetailPage implements OnInit {
           this.savingServiceRequest.set(false);
         }
       });
+  }
+
+  /** The embedded thread reports its size so the confirm button appears after the first message. */
+  onCreatedActivity(activity: ServiceConversationActivity): void {
+    this.createdServiceRequest.update(created => created && created.id === activity.requestId
+      ? { ...created, messageCount: activity.messageCount, unreadMessageCount: activity.unreadMessageCount, lastMessageAt: activity.lastMessageAt }
+      : created);
+  }
+
+  onCreatedConfirmed(updated: ServiceRequestDto): void {
+    this.createdServiceRequest.update(created => ({
+      ...updated,
+      messageCount: updated.messageCount ?? created?.messageCount,
+      unreadMessageCount: updated.unreadMessageCount ?? created?.unreadMessageCount,
+      lastMessageAt: updated.lastMessageAt ?? created?.lastMessageAt
+    }));
   }
 
   // ── Message Owner (يستخدم MessagesController — كان بدون أي واجهة إطلاقاً) ──
@@ -937,9 +1116,22 @@ export class PropertyDetailPage implements OnInit {
       });
   }
 
+  /** The native app opens `<public url>?print=1` in the system browser to print (a WebView cannot print
+   *  an iframe); the listing is then printed once it has loaded. */
+  private printRequested = false;
+  private printFromQueryOnce(data: Property): void {
+    if (this.printRequested || this.route.snapshot.queryParamMap.get(PRINT_QUERY_PARAM) !== '1') return;
+    this.printRequested = true;
+    void this.printer.print(data);
+  }
+
   // ── Price Helpers ─────────────────────────────────────────────────────
   formatPrice(value: number | null | undefined): string {
     return formatListingPrice(value, this.property()?.currencyCode);
+  }
+
+  locationSeparator(): string {
+    return listSeparator();
   }
 
   safe(value: unknown, fallback = '—'): string {
@@ -953,7 +1145,9 @@ export class PropertyDetailPage implements OnInit {
 
   thumbnailAlt(img: PropertyImage, index: number): string {
     const descriptive = img.altText?.trim() || this.property()?.title?.trim();
-    return descriptive ? `${descriptive} - صورة ${index + 1}` : `صورة ${index + 1}`;
+    return descriptive
+      ? this.translate.instant('PROPERTY_DETAIL.IMAGE_ALT', { title: descriptive, n: index + 1 })
+      : this.translate.instant('PROPERTY_DETAIL.IMAGE_N', { n: index + 1 });
   }
 
   /** رانج النجوم 1-5 للعرض */

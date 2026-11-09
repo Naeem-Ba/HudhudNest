@@ -23,11 +23,12 @@ import { BehaviorSubject, of, throwError } from 'rxjs';
 
 import { PricingPage } from './pricing.page';
 import { PlansApiService } from '../../core/api/plans-api.service';
+import { PaymentsApiService } from '../../core/api/payments-api.service';
 import { AgenciesApiService } from '../../core/api/agencies-api.service';
 import { Agency } from '../../core/models/agency.model';
 import { ProfileService } from '../../core/api/profile.service';
 import { AuthService } from '../../core/auth/auth.service';
-import { MetaService } from '../../core/services/meta.service';
+import { PageMetaService } from '../../core/services/page-meta.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { SubscriptionPlan } from '../../core/models/subscription-plan.model';
 
@@ -72,20 +73,25 @@ describe('PricingPage', () => {
   afterEach(() => sessionStorage.removeItem(MARKER_KEY));
 
   let plansApiSpy: jasmine.SpyObj<PlansApiService>;
+  let paymentsApiSpy: jasmine.SpyObj<PaymentsApiService>;
   let profileServiceSpy: jasmine.SpyObj<ProfileService>;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
   let routerSpy: jasmine.SpyObj<Router>;
   let toastSpy: jasmine.SpyObj<ToastService>;
   let agenciesApiSpy: jasmine.SpyObj<AgenciesApiService>;
-  let profile$: BehaviorSubject<{ PendingPlanTier?: string | null } | null>;
+  let profile$: BehaviorSubject<{ PendingPlanTier?: string | null; PlanTier?: string | null; PlanStatus?: string | null; PlanExpiresAt?: string | null } | null>;
 
   function createComponent(
     accessToken: string | null,
     queryParams: Record<string, string> = {},
-    ownedAgency: Agency | null = null
+    ownedAgency: Agency | null = null,
+    onlinePayments = false
   ): PricingPage {
     agenciesApiSpy = jasmine.createSpyObj('AgenciesApiService', ['getMine']);
     agenciesApiSpy.getMine.and.returnValue(of(ownedAgency));
+
+    paymentsApiSpy = jasmine.createSpyObj('PaymentsApiService', ['catalog']);
+    paymentsApiSpy.catalog.and.returnValue(of({ enabled: onlinePayments, providers: onlinePayments ? [{ code: 'test' }] : [], termsVersion: 'v1', refundRequestWindowDays: 14 } as never));
 
     plansApiSpy = jasmine.createSpyObj('PlansApiService', ['getPlans', 'selectPlan']);
     plansApiSpy.getPlans.and.returnValue(of(PLANS));
@@ -94,7 +100,7 @@ describe('PricingPage', () => {
         ? { status: 'activated' as const, tier, requestId: null }
         : { status: 'pending' as const, tier, requestId: 'req-1' }));
 
-    profile$ = new BehaviorSubject<{ PendingPlanTier?: string | null } | null>(null);
+    profile$ = new BehaviorSubject<{ PendingPlanTier?: string | null; PlanTier?: string | null; PlanStatus?: string | null; PlanExpiresAt?: string | null } | null>(null);
     profileServiceSpy = jasmine.createSpyObj('ProfileService', ['refresh'], { profile$ });
     profileServiceSpy.refresh.and.returnValue(of({}));
 
@@ -109,6 +115,7 @@ describe('PricingPage', () => {
       imports: [PricingPage],
       providers: [
         { provide: PlansApiService, useValue: plansApiSpy },
+        { provide: PaymentsApiService, useValue: paymentsApiSpy },
         { provide: ProfileService, useValue: profileServiceSpy },
         { provide: AuthService, useValue: authServiceSpy },
         { provide: AgenciesApiService, useValue: agenciesApiSpy },
@@ -117,7 +124,7 @@ describe('PricingPage', () => {
           provide: ActivatedRoute,
           useValue: { snapshot: { queryParamMap: convertToParamMap(queryParams) } }
         },
-        { provide: MetaService, useValue: jasmine.createSpyObj('MetaService', ['setMeta']) },
+        { provide: PageMetaService, useValue: jasmine.createSpyObj('PageMetaService', ['applyTranslated']) },
         { provide: ToastService, useValue: toastSpy },
         {
           provide: TranslateService,
@@ -173,6 +180,18 @@ describe('PricingPage', () => {
     expect(toastSpy.success).not.toHaveBeenCalled();
     expect(toastSpy.info).toHaveBeenCalled();
     expect(routerSpy.navigate).toHaveBeenCalled();
+  });
+
+  it('خطة مدفوعة ⇐ رقم الطلب يُمرَّر إلى نموذج التواصل، والمجانية بلا مرجع', () => {
+    const component = createComponent('token-123');
+
+    component.onSelectPlan(PLANS[1]);
+    const [, paidOptions] = routerSpy.navigate.calls.mostRecent().args as [unknown, { queryParams: Record<string, string> }];
+    expect(paidOptions.queryParams['ref']).toBe('req-1');
+
+    component.onSelectPlan(PLANS[0]);
+    const [, freeOptions] = routerSpy.navigate.calls.mostRecent().args as [unknown, { queryParams: Record<string, string> }];
+    expect(freeOptions.queryParams['ref']).toBeUndefined();
   });
 
   it('فشل حفظ اختيار الخطة في الخادم يمنع الانتقال ويعرض رسالة خطأ', () => {
@@ -325,6 +344,34 @@ describe('PricingPage', () => {
     expect(component.pendingTier()).toBeNull();
   });
 
+  describe('an active paid plan', () => {
+    it('الخطة السارية تُعرض مع تاريخها، وبطاقة المجانية معطّلة ولا يُرسَل طلبها', () => {
+      const component = createComponent('token-123');
+      profile$.next({ PlanTier: 'premium', PlanStatus: 'Active', PlanExpiresAt: '2026-12-01T00:00:00Z' });
+
+      expect(component.currentPaidTier()).toBe('premium');
+      expect(component.currentPlanExpiresAt()).toBe('2026-12-01T00:00:00Z');
+      expect(component.isBlockedByPaidPlan(PLANS[0])).toBeTrue();
+
+      component.onSelectPlan(PLANS[0]);
+      expect(plansApiSpy.selectPlan).not.toHaveBeenCalled();
+    });
+
+    it('خطة منتهية أو ملغاة أو مجانية ليست «سارية»: المجانية تبقى متاحة', () => {
+      const component = createComponent('token-123');
+
+      profile$.next({ PlanTier: 'premium', PlanStatus: 'Expired', PlanExpiresAt: '2026-01-01T00:00:00Z' });
+      expect(component.currentPaidTier()).toBeNull();
+      expect(component.isBlockedByPaidPlan(PLANS[0])).toBeFalse();
+
+      profile$.next({ PlanTier: 'premium', PlanStatus: 'Cancelled' });
+      expect(component.currentPaidTier()).toBeNull();
+
+      profile$.next({ PlanTier: 'free', PlanStatus: 'Active' });
+      expect(component.currentPaidTier()).toBeNull();
+    });
+  });
+
   describe('agency owners and the free plan', () => {
     const ownedAgency = { id: 'a1', ownerUserId: 'owner-1' } as Agency;
 
@@ -379,5 +426,44 @@ describe('PricingPage', () => {
 
       expect(component.showAgencyPlanBanner()).toBeTrue();
     });
+  });
+
+  describe('with online payments switched on', () => {
+    it('sends a signed-in visitor choosing a priced plan to the payment checkout, without recording a pending request', () => {
+      const component = createComponent('token', {}, null, true);
+      expect(component.onlinePayments()).toBeTrue();
+
+      component.onSelectPlan(PLANS[1]);
+
+      expect(plansApiSpy.selectPlan).not.toHaveBeenCalled();
+      expect(routerSpy.navigate).toHaveBeenCalledWith(['/payments/checkout'], { queryParams: { product: 'plan', plan: 'premium' } });
+    });
+
+    it('sends a signed-out visitor through login and back to the checkout', () => {
+      const component = createComponent(null, {}, null, true);
+
+      component.onSelectPlan(PLANS[1]);
+
+      expect(routerSpy.navigate).toHaveBeenCalledWith(['/auth/login'], {
+        queryParams: { returnUrl: '/payments/checkout?product=plan&plan=premium' }
+      });
+    });
+
+    it('keeps the free plan on the old flow', () => {
+      const component = createComponent('token', {}, null, true);
+
+      component.onSelectPlan(PLANS[0]);
+
+      expect(plansApiSpy.selectPlan).toHaveBeenCalledWith('free');
+    });
+  });
+
+  it('keeps the request-and-contact flow while online payments are off', () => {
+    const component = createComponent('token');
+    expect(component.onlinePayments()).toBeFalse();
+
+    component.onSelectPlan(PLANS[1]);
+
+    expect(plansApiSpy.selectPlan).toHaveBeenCalledWith('premium');
   });
 });

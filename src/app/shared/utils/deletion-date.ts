@@ -1,3 +1,5 @@
+import { numberLocaleFor } from '../../core/i18n/supported-preferences';
+
 /**
  * Formats UserProfile.DeletionScheduledFor (an ISO date from the API) as a long, localized
  * date for the account-deletion notices. The app registers no Angular locale data, so this
@@ -11,7 +13,7 @@ export function formatDeletionDate(value: string | null | undefined, lang?: stri
   if (Number.isNaN(date.getTime())) return '';
 
   try {
-    return new Intl.DateTimeFormat(lang || 'ar', { dateStyle: 'long' }).format(date);
+    return new Intl.DateTimeFormat(numberLocaleFor(lang || 'ar'), { dateStyle: 'long' }).format(date);
   } catch {
     return date.toISOString().slice(0, 10);
   }

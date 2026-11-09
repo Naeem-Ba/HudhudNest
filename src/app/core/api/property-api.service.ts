@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { BackendApiService, QueryValue } from '../api/backend-api.service';
+import { BackendApiService, QueryValue, RequestOptions } from '../api/backend-api.service';
 import { ApiPagedResult, normalizePagedResult, PagedResult, unwrapItems } from '../models/api.model';
 import { DuplicateCheckResult, Property, PropertyFilterDto } from '../models/property.model';
 import { OwnerSelectableStatus } from '../../shared/utils/listing-status';
@@ -104,10 +104,11 @@ export class PropertyApiService {
     return this.api.put<unknown>(`/properties/${id}`, { status });
   }
 
-  uploadImages(propertyId: string, formData: FormData): Observable<unknown[]> {
+  uploadImages(propertyId: string, formData: FormData, options?: RequestOptions): Observable<unknown[]> {
     return this.api.postFormData<unknown[]>(
       `/properties/${propertyId}/images`,
-      formData
+      formData,
+      options
     );
   }
 
@@ -119,8 +120,7 @@ export class PropertyApiService {
   // ظهرت شاشة تحتاج تحديث الصور دون إعادة تحميل بيانات العقار كاملة.
 
   /**
-   * ينشر إعلاناً في وضع مسودة. الخادم يوفر PUBLISH فقط (نشر لمرة واحدة) —
-   * لا يوجد endpoint "unpublish" للتراجع عن النشر (تحقق مباشر من الكود).
+   * ينشر إعلاناً في وضع مسودة أو مخفيّ. الإخفاء له `unpublishProperty` (QA المرحلة 8، P8-D06a).
    *
    * 📌 قرار معماري موثَّق: الباك اند (PropertiesController) يقبل هذا المسار
    * نفسه عبر PATCH و POST معاً (نفس الـ handler بالضبط) — الأرجح أن POST كان
@@ -130,6 +130,11 @@ export class PropertyApiService {
    */
   publishProperty(id: string): Observable<void> {
     return this.api.patch<void>(`/properties/${id}/publish`);
+  }
+
+  /** يُخفي إعلاناً عن الموقع دون حذفه (للمالك). الإظهار من جديد عبر `publishProperty`. */
+  unpublishProperty(id: string): Observable<void> {
+    return this.api.post<void>(`/properties/${id}/unpublish`, {});
   }
 
   /**
@@ -291,12 +296,20 @@ export class PropertyApiService {
         id: image['id'] === undefined || image['id'] === null ? undefined : String(image['id']),
         url: String(image['url'] ?? ''),
         isMain: Boolean(image['isMain']),
-        altText: image['altText'] === undefined || image['altText'] === null ? undefined : String(image['altText'])
+        altText: image['altText'] === undefined || image['altText'] === null ? undefined : String(image['altText']),
+        sortOrder: typeof image['sortOrder'] === 'number' ? image['sortOrder'] : undefined
       }))
       .filter(image => !!image.url);
 
+    if (normalized.some(image => image.sortOrder !== undefined)) {
+      normalized.sort((left, right) =>
+        (left.sortOrder ?? Number.MAX_SAFE_INTEGER) - (right.sortOrder ?? Number.MAX_SAFE_INTEGER)
+      );
+    }
+
     const mainImageUrl = property['mainImageUrl'];
-    if (typeof mainImageUrl === 'string' && mainImageUrl.trim()) {
+    if (typeof mainImageUrl === 'string' && mainImageUrl.trim()
+      && !normalized.some(image => image.url === mainImageUrl)) {
       normalized.unshift({ url: mainImageUrl, isMain: true });
     }
 

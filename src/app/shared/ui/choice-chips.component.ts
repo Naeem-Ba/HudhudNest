@@ -36,7 +36,7 @@ export interface ChoiceChipOption<T extends string | number> {
       border: 1px solid var(--gray-300); background: var(--surface); color: var(--gray-800);
       border-radius: 999px; padding: .45rem .85rem; font: inherit; font-size: .9rem; cursor: pointer;
     }
-    .chip--on { background: var(--gray-900); color: #fff; border-color: var(--gray-900); }
+    .chip--on { background:var(--inverse-bg);color:var(--inverse-text);border-color:var(--inverse-bg); }
     .chip:disabled { opacity: .55; cursor: not-allowed; }
   `]
 })

@@ -7,7 +7,17 @@ import { Observable } from 'rxjs';
 
 import { ShortStayBookingApiService } from '../../../core/api/short-stay-booking-api.service';
 import { ToastService } from '../../../shared/services/toast.service';
-import { BOOKING_STATUS_LABELS, BookingDto, BookingStatus } from '../../../core/models/short-stay.model';
+import {
+  BOOKING_STATUS_LABELS,
+  BookingDto,
+  BookingStatus,
+  canReviewBooking,
+  confirmationDeadlineOf
+} from '../../../core/models/short-stay.model';
+import { apiErrorText } from '../../../core/api/api-error-text';
+import { ShortStayReviewDialogComponent } from '../short-stay-review-dialog/short-stay-review-dialog.component';
+import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
+import { LocalizedNumberPipe } from '../../../shared/pipes/localized-number.pipe';
 
 type Tab = 'mine' | 'host';
 
@@ -17,7 +27,7 @@ const NON_CANCELLABLE: BookingStatus[] = ['Completed', 'Cancelled', 'Rejected', 
 @Component({
   selector: 'app-short-stay-bookings-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule],
+  imports: [ LocalizedDatePipe, LocalizedNumberPipe,CommonModule, RouterLink, TranslateModule, ShortStayReviewDialogComponent],
   templateUrl: './short-stay-bookings.page.html',
   styleUrls: ['./short-stay-bookings.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -33,6 +43,8 @@ export class ShortStayBookingsPage implements OnInit {
   readonly loading = signal(false);
   readonly error = signal('');
   readonly processingId = signal<string | null>(null);
+  /** The Completed booking whose «قيّم إقامتك» dialog is open. */
+  readonly reviewing = signal<BookingDto | null>(null);
 
   readonly statusLabel = (status: BookingStatus) => BOOKING_STATUS_LABELS[status];
 
@@ -107,6 +119,29 @@ export class ShortStayBookingsPage implements OnInit {
   checkOut(booking: BookingDto): void { this.run(booking.id, () => this.api.checkOut(booking.id)); }
   complete(booking: BookingDto): void { this.run(booking.id, () => this.api.complete(booking.id)); }
 
+  // ── مهلة التأكيد: الطلب غير المؤكَّد ينتهي تلقائيًا بعد المهلة (3 أيام، 7 كحد أقصى) ──
+  confirmationDeadline(booking: BookingDto): string | null {
+    return confirmationDeadlineOf(booking);
+  }
+
+  // ── تقييم الإقامة: للضيف فقط، لحجز مكتمل لم يُقيَّم بعد ──
+  canReview(booking: BookingDto): boolean {
+    return this.tab() === 'mine' && canReviewBooking(booking);
+  }
+
+  openReview(booking: BookingDto): void {
+    if (this.canReview(booking)) this.reviewing.set(booking);
+  }
+
+  closeReview(): void {
+    this.reviewing.set(null);
+  }
+
+  onReviewed(bookingId: string): void {
+    this.bookings.update(items => items.map(item => item.id === bookingId ? { ...item, reviewed: true } : item));
+    this.reviewing.set(null);
+  }
+
   trackById(_: number, item: BookingDto): string { return item.id; }
 
   private run(id: string, action: () => Observable<BookingDto>): void {
@@ -117,9 +152,9 @@ export class ShortStayBookingsPage implements OnInit {
         this.processingId.set(null);
         this.toast.show(this.translate.instant('SHORTSTAY.BOOKINGS.ACTION_SUCCESS'), 'success');
       },
-      error: () => {
+      error: err => {
         this.processingId.set(null);
-        this.toast.show(this.translate.instant('SHORTSTAY.BOOKINGS.ACTION_ERROR'), 'error');
+        this.toast.show(apiErrorText(err) ?? this.translate.instant('SHORTSTAY.BOOKINGS.ACTION_ERROR'), 'error');
       }
     });
   }

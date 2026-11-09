@@ -44,6 +44,7 @@ import { ToastService } from '../../shared/services/toast.service';
 import { ConfirmModalComponent } from '../../shared/ui/confirm-modal.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { PropertyShareUrlService } from '../../core/sharing/property-share-url.service';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 /** نفس قيود SetAgencyLogoCommandHandler تقريبًا؛ الخادم هو الحكم النهائي. */
 const LOGO_MAX_BYTES = 2 * 1024 * 1024;
@@ -59,7 +60,7 @@ type PendingAction =
   selector: 'app-agency-team-panel',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, ConfirmModalComponent, ImageFallbackDirective],
+  imports: [ LocalizedDatePipe,CommonModule, FormsModule, RouterLink, TranslateModule, ConfirmModalComponent, ImageFallbackDirective],
   styleUrl: './agency-panels.scss',
   template: `
     <div class="panels">
@@ -131,7 +132,7 @@ type PendingAction =
                   <span class="badge" *ngIf="m.userId === currentUserId">{{ 'AGENCY_MANAGE.YOU_BADGE' | translate }}</span>
                 </a>
                 <span class="row__meta" *ngIf="m.joinedAt">
-                  {{ 'AGENCY_MANAGE.JOINED_AT' | translate }} {{ m.joinedAt | date:'dd/MM/yyyy' }}
+                  {{ 'AGENCY_MANAGE.JOINED_AT' | translate }} {{ m.joinedAt | localDate:'dd/MM/yyyy' }}
                 </span>
               </div>
               <div class="row__actions" *ngIf="isOwner && !m.isOwner">
@@ -195,7 +196,7 @@ type PendingAction =
                 <div class="row__main">
                   <a class="row__name" [routerLink]="['/users', inv.targetUserId]">{{ inv.targetName }}</a>
                   <span class="row__meta">
-                    {{ 'AGENCY_INVITES.EXPIRES' | translate }} {{ inv.expiresAt | date:'dd/MM/yyyy' }}
+                    {{ 'AGENCY_INVITES.EXPIRES' | translate }} {{ inv.expiresAt | localDate:'dd/MM/yyyy' }}
                   </span>
                 </div>
               </li>

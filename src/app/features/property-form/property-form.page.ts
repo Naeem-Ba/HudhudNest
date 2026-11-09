@@ -20,6 +20,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
 
 import { PropertyApiService } from '../../core/api/property-api.service';
+import { hasCompleteCoordinates, isValidCoordinates } from '../../core/models/property-location';
 import {
   LookupsApiService,
   LookupAmenity,
@@ -31,6 +32,8 @@ import {
 import { Property, DuplicateCandidate } from '../../core/models/property.model';
 import { isMarketCurrency } from '../../core/pricing/market-currencies';
 import { ToastService } from '../../shared/services/toast.service';
+import { HttpContext } from '@angular/common/http';
+import { SKIP_ERROR_TOAST } from '../../core/interceptors/api-error.interceptor';
 import { MapPickerComponent } from '../../map-picker/map-picker.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { LocationComboComponent } from '../../shared/ui/location-combo.component';
@@ -40,7 +43,9 @@ import { EnumItem, EnumService } from '../../core/services/enum.service';
 import { ScrollLockService } from '../../core/services/scroll-lock.service';
 import { LISTING_PHOTO_COMPRESSION, compressImagesForUpload } from '../../shared/utils/image-compression';
 import { PhotoGuideSheetComponent } from '../../shared/ui/photo-guide/photo-guide-sheet.component';
+import { AmenityLabelPipe } from '../../pipes/amenity-label.pipe';
 import { PhotoGuideKind, photoGuideKindForListingType } from '../../shared/ui/photo-guide/photo-guide.data';
+import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
 
 interface PropertySavePayload {
   Title: string;
@@ -53,6 +58,8 @@ interface PropertySavePayload {
   PostalCode?: string | null;
   Latitude?: number | null;
   Longitude?: number | null;
+  HideExactLocation?: boolean;
+  IsPriceNegotiable?: boolean;
   ColdRent?: number | null;
   WarmRent?: number | null;
   PurchasePrice?: number | null;
@@ -127,6 +134,12 @@ function positiveNumber(control: AbstractControl): ValidationErrors | null {
   return value === null || value > 0 ? null : { positiveNumber: true };
 }
 
+/** `rooms` and `floor` are whole numbers on the server (int); a half room used to end in a bare 400. */
+function wholeNumber(control: AbstractControl): ValidationErrors | null {
+  const value = toNumberOrNull(control.value);
+  return value === null || Number.isInteger(value) ? null : { wholeNumber: true };
+}
+
 function nonNegativeNumber(control: AbstractControl): ValidationErrors | null {
   const value = toNumberOrNull(control.value);
   return value === null || value >= 0 ? null : { nonNegativeNumber: true };
@@ -188,6 +201,12 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
     errors['districtRequired'] = true;
   }
 
+  const latitude = group.get('latitude')?.value;
+  const longitude = group.get('longitude')?.value;
+  if (!hasCompleteCoordinates(latitude, longitude)) {
+    errors['invalidCoordinates'] = true;
+  }
+
   return Object.keys(errors).length ? errors : null;
 }
 
@@ -195,7 +214,7 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
   selector: 'app-property-form',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [ LocalizedNumberPipe,
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
@@ -203,7 +222,8 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
     MapPickerComponent,
     ImageFallbackDirective,
     LocationComboComponent,
-    PhotoGuideSheetComponent
+    PhotoGuideSheetComponent,
+    AmenityLabelPipe
   ],
   templateUrl: './property-form.page.html',
   styleUrls: ['./property-form.page.scss']
@@ -228,6 +248,7 @@ export class PropertyFormPage implements OnInit {
   readonly propertyId = signal('');
   readonly currentLang = signal<LangCode>('ar');
   readonly submitError = signal('');
+  readonly mapCenter = signal<{ lat: number; lng: number } | undefined>(undefined);
 
   readonly selectedFiles = signal<File[]>([]);
   readonly previews = signal<string[]>([]);
@@ -249,6 +270,7 @@ export class PropertyFormPage implements OnInit {
    */
   readonly amenities = signal<LookupAmenity[]>([]);
   readonly amenitiesLoadFailed = signal(false);
+  readonly amenitiesLoading = signal(false);
   readonly selectedAmenityIds = signal<Set<string>>(new Set());
   readonly citySuggestions = signal<LookupItem[]>([]);
 
@@ -375,16 +397,18 @@ export class PropertyFormPage implements OnInit {
     propertyTypeId: [null as number | null, Validators.required],
     latitude: [null as number | null, [Validators.min(-90), Validators.max(90)]],
     longitude: [null as number | null, [Validators.min(-180), Validators.max(180)]],
+    hideExactLocation: [false],
+    isPriceNegotiable: [false],
     currencyCode: ['SYP', [Validators.required, Validators.minLength(3), Validators.maxLength(3)]],
     coldRent: [null as number | null, positiveNumber],
     warmRent: [null as number | null, positiveNumber],
     purchasePrice: [null as number | null, positiveNumber],
     deposit: [null as number | null, nonNegativeNumber],
     additionalCosts: [null as number | null, nonNegativeNumber],
-    rooms: [null as number | null, [Validators.min(1), Validators.max(50)]],
+    rooms: [null as number | null, [Validators.min(1), Validators.max(50), wholeNumber]],
     area: [null as number | null, areaGreaterThanTen],
     areaUnit: [AREA_UNIT_SQUARE_METER, Validators.required],
-    floor: [null as number | null, Validators.min(0)],
+    floor: [null as number | null, [Validators.min(0), wholeNumber]],
     availableFrom: [null as string | null],
     heatingType: [0],
     hasBalcony: [false],
@@ -404,6 +428,16 @@ export class PropertyFormPage implements OnInit {
   }, { validators: [propertyFormValidator, this.conditionalFieldsValidator] });
 
   ngOnInit(): void {
+    this.form.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(value => {
+        const latitude = value.latitude;
+        const longitude = value.longitude;
+        this.mapCenter.set(isValidCoordinates(latitude, longitude)
+          ? { lat: latitude as number, lng: longitude as number }
+          : undefined);
+      });
+
     const id = this.route.snapshot.paramMap.get('id') ?? '';
 
     if (id) {
@@ -706,13 +740,21 @@ export class PropertyFormPage implements OnInit {
   }
 
   /** GET /api/lookups/amenities — كانت غير مستخدمة إطلاقاً في الواجهة. */
-  private loadAmenities(): void {
+  loadAmenities(): void {
+    this.amenitiesLoading.set(true);
+    this.amenitiesLoadFailed.set(false);
     this.lookupsApi
       .getAmenities()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: amenities => this.amenities.set(amenities),
-        error: () => this.amenitiesLoadFailed.set(true)
+        next: amenities => {
+          this.amenities.set(amenities);
+          this.amenitiesLoading.set(false);
+        },
+        error: () => {
+          this.amenitiesLoadFailed.set(true);
+          this.amenitiesLoading.set(false);
+        }
       });
   }
 
@@ -784,6 +826,8 @@ export class PropertyFormPage implements OnInit {
             countryCode: property.countryCode ?? 'SY',
             latitude: property.latitude ?? null,
             longitude: property.longitude ?? null,
+            hideExactLocation: property.hideExactLocation ?? false,
+            isPriceNegotiable: property.isPriceNegotiable ?? false,
             currencyCode: property.currencyCode ?? 'SYP',
             coldRent: property.coldRent ?? null,
             warmRent: property.warmRent ?? null,
@@ -863,6 +907,7 @@ export class PropertyFormPage implements OnInit {
   }
 
   onLocationSelected(location: { lat: number; lng: number }): void {
+    if (!isValidCoordinates(location.lat, location.lng)) return;
     this.form.patchValue({ latitude: location.lat, longitude: location.lng });
   }
 
@@ -1111,6 +1156,8 @@ export class PropertyFormPage implements OnInit {
       PostalCode: f.postalCode?.trim() ?? null,
       Latitude: f.latitude ?? null,
       Longitude: f.longitude ?? null,
+      HideExactLocation: !!f.hideExactLocation,
+      IsPriceNegotiable: (isRent || isSale) && !!f.isPriceNegotiable,
       CurrencyCode: f.currencyCode!.trim().toUpperCase(),
       ColdRent: isRent ? (f.coldRent ?? null) : null,
       WarmRent: isRent ? (f.warmRent ?? null) : null,
@@ -1206,26 +1253,31 @@ export class PropertyFormPage implements OnInit {
     }
 
     this.propertyApi
-      .uploadImages(propertyId, formData)
+      // QA phase 25 (P25-D05): the interceptor's generic error toast is skipped here. A failed photo upload used to
+      // raise three toasts at once (the generic error, this warning and "saved successfully"); now it is one
+      // sentence that says both things: the listing is saved, the photos are not.
+      .uploadImages(propertyId, formData, { context: new HttpContext().set(SKIP_ERROR_TOAST, true) })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => this.onSaveSuccess(propertyId),
         error: () => {
           this.showToast(this.translate.instant('PROPERTY_FORM.IMAGE_UPLOAD_WARNING'), 'error');
-          this.onSaveSuccess(propertyId);
+          this.onSaveSuccess(propertyId, false);
         }
       });
   }
 
-  private onSaveSuccess(id: string): void {
+  private onSaveSuccess(id: string, announce = true): void {
     this.isSaving.set(false);
 
-    this.showToast(
-      this.translate.instant(
-        this.isEditMode() ? 'PROPERTY_FORM.UPDATE_SUCCESS' : 'PROPERTY_FORM.CREATE_SUCCESS'
-      ),
-      'success'
-    );
+    if (announce) {
+      this.showToast(
+        this.translate.instant(
+          this.isEditMode() ? 'PROPERTY_FORM.UPDATE_SUCCESS' : 'PROPERTY_FORM.CREATE_SUCCESS'
+        ),
+        'success'
+      );
+    }
 
     if (id) {
       void this.router.navigate(['/properties', id]);
@@ -1260,6 +1312,7 @@ export class PropertyFormPage implements OnInit {
     if (errors['invalidCountryCode']) return 'PROPERTY_FORM.INVALID_COUNTRY_CODE';
     if (errors['invalidCurrencyCode']) return 'PROPERTY_FORM.INVALID_CURRENCY_CODE';
     if (errors['districtRequired']) return 'PROPERTY_FORM.DISTRICT_REQUIRED';
+    if (errors['invalidCoordinates']) return 'PROPERTY_FORM.INVALID_COORDINATES';
 
     // Dynamic listing form (ListingType × PropertyType redesign, Syrian market).
     if (errors['ownershipTypeRequired']) return 'PROPERTY_FORM.OWNERSHIP_TYPE_REQUIRED';
@@ -1271,6 +1324,8 @@ export class PropertyFormPage implements OnInit {
 
     if (this.f.governorateId.errors?.['required']) return 'PROPERTY_FORM.GOVERNORATE_REQUIRED';
     if (this.f.propertyTypeId.errors?.['required']) return 'PROPERTY_FORM.PROPERTY_TYPE_REQUIRED';
+    if (this.f.rooms.errors?.['wholeNumber']) return 'PROPERTY_FORM.ROOMS_WHOLE_NUMBER';
+    if (this.f.floor.errors?.['wholeNumber']) return 'PROPERTY_FORM.FLOOR_WHOLE_NUMBER';
     if (this.f.area.errors?.['areaGreaterThanTen']) return 'PROPERTY_FORM.AREA_TOO_SMALL';
     if (this.f.coldRent.errors?.['positiveNumber']) return 'PROPERTY_FORM.COLD_RENT_REQUIRED';
     if (this.f.warmRent.errors?.['positiveNumber']) return 'PROPERTY_FORM.WARM_RENT_REQUIRED';

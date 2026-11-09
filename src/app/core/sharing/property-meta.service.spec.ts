@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { TranslateModule } from '@ngx-translate/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { PropertyMetaService } from './property-meta.service';
 import { Property } from '../models/property.model';
@@ -24,15 +25,20 @@ describe('PropertyMetaService', () => {
   let title: Title;
 
   let originalEnvironmentName: string;
+  let originalLang: string;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ imports: [TranslateModule.forRoot()] });
     service = TestBed.inject(PropertyMetaService);
     meta = TestBed.inject(Meta);
     title = TestBed.inject(Title);
     (environment as { siteUrl: string }).siteUrl = 'https://hudhudnest.com';
     originalEnvironmentName = environment.environmentName;
     (environment as { environmentName: string }).environmentName = 'production';
+
+    // The default site name follows the page language (Arabic here).
+    originalLang = document.documentElement.lang;
+    document.documentElement.lang = 'ar';
 
     // Clean slate — Meta.updateTag persists into the real document between tests otherwise.
     meta.removeTag('property="og:title"');
@@ -42,6 +48,7 @@ describe('PropertyMetaService', () => {
   });
 
   afterEach(() => {
+    document.documentElement.lang = originalLang;
     (environment as { environmentName: string }).environmentName = originalEnvironmentName;
     meta.removeTag('name="robots"');
     document.querySelector('link[rel="canonical"]')?.remove();

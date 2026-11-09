@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, inject } from '@angular/core';
-import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { NavigationEnd, NavigationStart, Router, RouterOutlet } from '@angular/router';
 import { Observable, filter } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AuthService } from './core/auth/auth.service';
+import { SessionRecoveryService } from './core/auth/session-recovery.service';
 import { LanguageService } from './core/services/language.service';
 import { PreferencesService } from './core/services/preferences.service';
 import { PushRegistrationService } from './core/push/push-registration.service';
@@ -16,19 +17,26 @@ import { ThemeService } from './core/services/theme.service';
 import { NotificationsApiService } from './core/api/notifications-api.service';
 import { AppUpdateService, isTrustedStoreUrl } from './core/api/app-update.service';
 import { ToastService } from './shared/services/toast.service';
+import { ReferralCodeService } from './core/sharing/referral-code.service';
 import { AttributionContextService } from './core/sharing/attribution-context.service';
 import { ConfirmModalComponent } from './shared/ui/confirm-modal.component';
 import { EnvironmentBadgeComponent } from './shared/ui/environment-badge.component';
+import { AdsConsentBannerComponent } from './core/ads/ads-consent-banner.component';
 import { MetaService } from './core/services/meta.service';
+import { PageMetaService } from './core/services/page-meta.service';
+import { ClientErrorReporterService } from './core/diagnostics/client-error-reporter.service';
+import { installWindowErrorListeners } from './core/diagnostics/client-error-handler';
+import { AppUpdateNativeGateway } from './core/api/app-update-native.gateway';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, ToastContainerComponent, ConfirmModalComponent, EnvironmentBadgeComponent, TranslateModule],
+  imports: [RouterOutlet, CommonModule, ToastContainerComponent, ConfirmModalComponent, EnvironmentBadgeComponent, AdsConsentBannerComponent, TranslateModule],
   template: `
     <router-outlet></router-outlet>
     <app-toast-container></app-toast-container>
     <app-environment-badge></app-environment-badge>
+    <app-ads-consent-banner></app-ads-consent-banner>
 
     <!-- App Update Management: تحديث اختياري — قابل للتجاهل، مرة واحدة لكل إقلاع تطبيق. -->
     <app-confirm-modal
@@ -74,9 +82,14 @@ export class AppComponent {
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly attributionContext = inject(AttributionContextService);
+  private readonly referralCode = inject(ReferralCodeService);
   private readonly metaService = inject(MetaService);
+  private readonly pageMeta = inject(PageMetaService);
   private readonly preferences = inject(PreferencesService);
   private readonly push = inject(PushRegistrationService);
+  private readonly sessionRecovery = inject(SessionRecoveryService);
+  private readonly errorReporter = inject(ClientErrorReporterService);
+  private readonly nativeGateway = inject(AppUpdateNativeGateway);
 
   constructor(
     private readonly authService: AuthService,
@@ -90,11 +103,35 @@ export class AppComponent {
     this.languageService.getCurrent();
     this.preferences.start();
     this.push.start();
+    // A bad connection at start-up or on return from the background must not look like a sign-out.
+    this.sessionRecovery.start();
     nativeBackButton.initialize();
     deepLinks.initialize();
     this.appUpdate.initialize();
     this.metaService.applyGlobalRobotsPolicy();
+    // Errors outside Angular's zone, plus the real app version on native builds (QA phase 21, D07).
+    installWindowErrorListeners(this.errorReporter);
+    if (this.nativeGateway.isNativePlatform()) {
+      this.nativeGateway.getAppVersion().then(version => this.errorReporter.setAppVersion(version)).catch(() => undefined);
+    }
     void themeService; // يُطبَّق الوضع الداكن/الفاتح فور إنشاء الخدمة (constructor)
+
+    // Every page starts from the generic title/description in the UI language and replaces it with its
+    // own; one that sets none no longer keeps the previous page's title or the Arabic one (QA P16-D06).
+    // Only a change of PATH counts: filtering /properties changes the query string, not the page.
+    let currentPath = '';
+    this.router.events
+      .pipe(filter((event): event is NavigationStart => event instanceof NavigationStart))
+      .subscribe(event => {
+        const nextPath = event.url.split(/[?#]/)[0] ?? event.url;
+        if (nextPath !== currentPath) {
+          currentPath = nextPath;
+          this.pageMeta.resetToDefault();
+        }
+      });
+    this.translate.onLangChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.pageMeta.refreshDefaultOnLanguageChange());
 
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
@@ -108,6 +145,7 @@ export class AppComponent {
         // keeps this entirely out of any single feature component (same separation-of-concerns
         // rule Phase 1 applied to the share button itself). See AttributionContextService.
         this.attributionContext.captureFromUrl(window.location.href);
+        this.referralCode.captureFromUrl(window.location.href);
         this.attributionContext.stripUtmParamsFromVisibleUrl();
       });
 
@@ -141,6 +179,14 @@ export class AppComponent {
     this.notificationsApi.realtime$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(notification => {
+        // The conversation is open on screen: the message is already visible, no toast on top of it.
+        if (this.isViewingConversationOf(notification)) {
+          // Seen as it arrived: mark it read (the server then syncs the badge on every device).
+          if (notification.id) {
+            this.notificationsApi.markAsRead(notification.id).subscribe({ error: () => undefined });
+          }
+          return;
+        }
         this.toast.info(
           notification.message,
           this.translate.instant('NOTIFICATIONS.NEW_TOAST_TITLE')
@@ -155,7 +201,10 @@ export class AppComponent {
     this.authService.sessionExpired$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(reason => {
-        const key = reason === 'revoked' ? 'AUTH.ERRORS.SESSION_REVOKED' : 'AUTH.ERRORS.SESSION_EXPIRED';
+        const key =
+          reason === 'revoked' ? 'AUTH.ERRORS.SESSION_REVOKED'
+          : reason === 'superseded' ? 'AUTH.ERRORS.SESSION_SUPERSEDED'
+          : 'AUTH.ERRORS.SESSION_EXPIRED';
         this.toast.info(this.translate.instant(key));
       });
   }
@@ -166,5 +215,14 @@ export class AppComponent {
 
   protected onUpdateNow(storeUrl: string | null | undefined): void {
     void this.appUpdate.openStore(storeUrl);
+  }
+
+  /** True when a new-message notification belongs to the chat thread the person is looking at right now. */
+  private isViewingConversationOf(notification: { type?: string; propertyId?: string | null }): boolean {
+    if (notification.type !== 'NewMessage' || !notification.propertyId) {
+      return false;
+    }
+    const path = this.router.url.split(/[?#]/)[0];
+    return path === `/messages/${notification.propertyId}`;
   }
 }

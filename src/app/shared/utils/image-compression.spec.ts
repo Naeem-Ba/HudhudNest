@@ -26,6 +26,34 @@ async function noisyJpeg(width: number, height: number, name = 'IMG_0001.jpg'): 
   return new File([blob], name, { type: 'image/jpeg', lastModified: 1_700_000_000_000 });
 }
 
+/** A small valid JPEG with an APP1 "Exif" segment spliced in right after the SOI marker. */
+async function jpegWithExif(width: number, height: number): Promise<File> {
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  canvas.getContext('2d')!.fillRect(0, 0, width, height);
+  const plain = new Uint8Array(await (await new Promise<Blob>(resolve => canvas.toBlob(b => resolve(b!), 'image/jpeg', 0.9))).arrayBuffer());
+  const payload = new TextEncoder().encode('Exif\0\0GPS-LATITUDE-33.5');
+  const segment = new Uint8Array([0xff, 0xe1, (payload.length + 2) >> 8, (payload.length + 2) & 0xff, ...payload]);
+  const bytes = new Uint8Array(plain.length + segment.length);
+  bytes.set(plain.subarray(0, 2), 0);
+  bytes.set(segment, 2);
+  bytes.set(plain.subarray(2), 2 + segment.length);
+  return new File([bytes], 'IMG_small.jpg', { type: 'image/jpeg' });
+}
+
+async function containsAscii(file: File, text: string): Promise<boolean> {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const needle = new TextEncoder().encode(text);
+  outer: for (let i = 0; i <= bytes.length - needle.length; i += 1) {
+    for (let j = 0; j < needle.length; j += 1) {
+      if (bytes[i + j] !== needle[j]) continue outer;
+    }
+    return true;
+  }
+  return false;
+}
+
 async function dimensionsOf(file: File): Promise<{ width: number; height: number }> {
   const bitmap = await createImageBitmap(file);
   const size = { width: bitmap.width, height: bitmap.height };
@@ -55,6 +83,26 @@ describe('compressImageForUpload', () => {
     const small = new File([new Uint8Array(1000)], 'a.jpg', { type: 'image/jpeg' });
 
     expect(await compressImageForUpload(small, LISTING_PHOTO_COMPRESSION)).toBe(small);
+  });
+
+  it('re-encodes a small decodable photo so its EXIF block (GPS) does not reach the listing', async () => {
+    const photo = await jpegWithExif(64, 48);
+    expect(await containsAscii(photo, 'Exif')).toBeTrue();
+    expect(photo.size).toBeLessThan(LISTING_PHOTO_COMPRESSION.maxBytes);
+
+    const result = await compressImageForUpload(photo, LISTING_PHOTO_COMPRESSION);
+
+    expect(result).not.toBe(photo);
+    expect(result.type).toBe('image/jpeg');
+    expect(await containsAscii(result, 'Exif')).toBeFalse();
+    const { width, height } = await dimensionsOf(result);
+    expect([width, height]).toEqual([64, 48]);
+  });
+
+  it('leaves a small non-photo image type (svg) untouched', async () => {
+    const svg = new File(['<svg xmlns="http://www.w3.org/2000/svg"/>'], 'a.svg', { type: 'image/svg+xml' });
+
+    expect(await compressImageForUpload(svg, LISTING_PHOTO_COMPRESSION)).toBe(svg);
   });
 
   it('does not touch non-image files even when they are large', async () => {

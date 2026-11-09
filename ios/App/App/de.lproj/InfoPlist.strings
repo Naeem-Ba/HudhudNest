@@ -1,0 +1,5 @@
+/* Texte der iOS-Berechtigungsdialoge auf Deutsch. */
+"NSLocationWhenInUseUsageDescription" = "HudhudNest verwendet Ihren Standort, um Inserate in Ihrer Nähe auf der Karte zu zeigen und Suchergebnisse nach Entfernung zu sortieren.";
+"NSCameraUsageDescription" = "HudhudNest benötigt Zugriff auf die Kamera, damit Sie Fotos für ein Immobilieninserat aufnehmen können.";
+"NSPhotoLibraryUsageDescription" = "HudhudNest benötigt Zugriff auf Ihre Fotomediathek, damit Sie vorhandene Fotos an ein Immobilieninserat anhängen können.";
+"NSUserTrackingUsageDescription" = "HudhudNest fragt dies nur, wenn Sie personalisierte Werbung wählen. Sie können ablehnen und sehen dann nicht personalisierte Werbung.";

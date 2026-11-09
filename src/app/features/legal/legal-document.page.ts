@@ -14,7 +14,9 @@ import { catchError, map, of, switchMap, tap } from 'rxjs';
 import { PRIVACY_POLICY_META, TERMS_OF_SERVICE_META } from '../../core/models/consent-versions';
 import { LanguageService, LangCode } from '../../core/services/language.service';
 import { MetaService } from '../../core/services/meta.service';
+import { PropertyShareUrlService } from '../../core/sharing/property-share-url.service';
 import { LegalDocKind, LegalDocumentContent, parseLegalText } from './legal-document.model';
+import { numberLocaleFor } from '../../core/i18n/supported-preferences';
 
 @Component({
   selector: 'app-legal-document',
@@ -149,6 +151,7 @@ export class LegalDocumentPage {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly metaService = inject(MetaService);
+  private readonly shareUrl = inject(PropertyShareUrlService);
   private readonly languages = inject(LanguageService);
 
   private readonly kind: LegalDocKind = this.route.snapshot.data['doc'] === 'terms' ? 'terms' : 'privacy';
@@ -169,6 +172,8 @@ export class LegalDocumentPage {
   readonly updatedLabel = computed(() => this.formatDate(this.meta.lastUpdated));
 
   constructor() {
+    // Own clean canonical (this page lives at one URL whatever the language); removed again on leave.
+    this.destroyRef.onDestroy(() => this.metaService.clearCanonical());
     toObservable(this.lang)
       .pipe(
         tap(() => {
@@ -193,13 +198,14 @@ export class LegalDocumentPage {
         this.metaService.setMeta({
           title: result.doc.title,
           description: result.doc.metaDescription,
-          siteName: result.lang === 'ar' ? 'هدهد نيست' : 'HudhudNest'
+          siteName: result.lang === 'ar' ? 'هدهد نيست' : 'HudhudNest',
+          canonical: `${this.shareUrl.getSiteOrigin()}${this.kind === 'terms' ? '/terms-of-service' : '/privacy-policy'}`
         });
       });
   }
 
   private formatDate(iso: string): string {
-    return new Intl.DateTimeFormat(this.lang(), { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(iso));
+    return new Intl.DateTimeFormat(numberLocaleFor(this.lang()), { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(iso));
   }
 
   private load(lang: LangCode) {

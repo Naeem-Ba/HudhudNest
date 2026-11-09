@@ -206,4 +206,28 @@ describe('UtmAttributionService', () => {
   it('returns null for a malformed URL string', () => {
     expect(service.parseAttributionFromUrl('not a url at all')).toBeNull();
   });
+
+  // ── the sharer's language (QA Phase 16, D10) ─────────────────────────────
+
+  describe('lang parameter', () => {
+    let originalLang: string;
+
+    beforeEach(() => { originalLang = document.documentElement.lang; });
+    afterEach(() => { document.documentElement.lang = originalLang; });
+
+    it('adds the page language to the shared copy of the link', () => {
+      document.documentElement.lang = 'de';
+      const url = new URL(service.buildAttributedPropertyUrl({ property: makeProperty(), source: 'facebook' })!);
+
+      expect(url.searchParams.get('lang')).toBe('de');
+      expect(url.searchParams.get('utm_source')).toBe('facebook');
+    });
+
+    it('leaves it out when the page language is unknown', () => {
+      document.documentElement.lang = '';
+      const url = new URL(service.buildAttributedPropertyUrl({ property: makeProperty(), source: 'facebook' })!);
+
+      expect(url.searchParams.has('lang')).toBeFalse();
+    });
+  });
 });

@@ -69,7 +69,7 @@
       font-size: .78rem;
       font-weight: 800;
       background: var(--gray-100);
-      color: var(--gray-400);
+      color: var(--text-muted);
       border: 2px solid var(--gray-200);
       transition: all .2s var(--ease-out);
     }
@@ -142,13 +142,13 @@
   .field-hint {
     margin: 0;
     font-size: .76rem;
-    color: var(--gray-400);
+    color: var(--text-muted);
   }
 
   .field-error {
     margin: 0;
     font-size: .78rem;
-    color: var(--danger);
+    color: var(--danger-text);
   }
 }
 
@@ -197,9 +197,9 @@
   font-size: .85rem;
   line-height: 1.6;
 
-  &--error { background: var(--danger-soft); color: var(--danger); }
-  &--success { background: var(--success-soft); color: var(--success); }
-  &--warning { background: var(--warning-soft); color: var(--warning); }
+  &--error { background: var(--danger-soft); color: var(--danger-text); }
+  &--success { background: var(--success-soft); color: var(--success-text); }
+  &--warning { background: var(--warning-soft); color: var(--warning-text); }
   &--info { background: var(--gold-soft); color: var(--gold-text); }
 }
 

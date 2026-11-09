@@ -5,6 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CurrencyCode, SUPPORTED_CURRENCIES, toSupportedCurrency } from '../../core/i18n/supported-preferences';
 import { LangCode, LanguageService } from '../../core/services/language.service';
 import { PreferencesService } from '../../core/services/preferences.service';
+import { ThemePreference, ThemeService } from '../../core/services/theme.service';
 
 /**
  * Language and display-currency pickers. Works signed in (saved to the account, follows the person
@@ -51,6 +52,16 @@ import { PreferencesService } from '../../core/services/preferences.service';
         <p class="prefs__hint">{{ 'PREFERENCES.PRICES_NOTE' | translate }}</p>
       </div>
 
+      <div class="prefs__field">
+        <label for="prefs-theme">{{ 'PREFERENCES.THEME_LABEL' | translate }}</label>
+        <select id="prefs-theme" [value]="theme.preference()" (change)="onTheme($any($event.target).value)">
+          <option value="system" [selected]="theme.preference() === 'system'">{{ 'PREFERENCES.THEME_SYSTEM' | translate }}</option>
+          <option value="light" [selected]="theme.preference() === 'light'">{{ 'PREFERENCES.THEME_LIGHT' | translate }}</option>
+          <option value="dark" [selected]="theme.preference() === 'dark'">{{ 'PREFERENCES.THEME_DARK' | translate }}</option>
+        </select>
+        <p class="prefs__hint">{{ 'PREFERENCES.THEME_NOTE' | translate }}</p>
+      </div>
+
       <p class="prefs__hint">{{ 'PREFERENCES.NOTIFICATIONS_NOTE' | translate }}</p>
       @if (!preferences.isSignedIn) {
         <p class="prefs__hint">{{ 'PREFERENCES.GUEST_NOTE' | translate }}</p>
@@ -72,12 +83,13 @@ import { PreferencesService } from '../../core/services/preferences.service';
     .prefs select { padding: 0.55rem 0.7rem; border-radius: 8px; border: 1px solid var(--border-color, #cfcfcf); background: var(--surface, #fff); color: inherit; font: inherit; min-height: 44px; }
     .prefs__hint { margin: 0; font-size: 0.85rem; opacity: 0.75; }
     .prefs__status { margin: 0; min-height: 1.2em; font-size: 0.9rem; }
-    .prefs__error { color: var(--danger, #b3261e); }
+    .prefs__error { color: var(--danger-text); }
   `]
 })
 export class PreferencesCardComponent {
   protected readonly preferences = inject(PreferencesService);
   private readonly languageService = inject(LanguageService);
+  protected readonly theme = inject(ThemeService);
 
   protected readonly languages = this.languageService.getLanguages();
   protected readonly currencies = SUPPORTED_CURRENCIES;
@@ -114,6 +126,10 @@ export class PreferencesCardComponent {
         this.currentLangRefresh();
       }
     });
+  }
+
+  protected onTheme(value: string): void {
+    this.theme.setPreference((value === 'light' || value === 'dark' ? value : 'system') as ThemePreference);
   }
 
   protected onCurrency(value: string): void {

@@ -1,13 +1,66 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
 .map-wrapper {
+  position: relative;
   width: 100%;
-  /* A host can shorten the map (e.g. inside a long form on a phone) via --map-picker-height. */
-  height: var(--map-picker-height, 400px);
+  height: var(--map-picker-height, clamp(260px, 42vw, 400px));
+  min-height: 260px;
+  border: 1px solid var(--border, #e5e7eb);
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid var(--border);
+  background: var(--gray-100);
 }
 
 .map-canvas {
   width: 100%;
   height: 100%;
+  touch-action: pan-y;
+}
+
+.map-wrapper--readonly .map-canvas {
+  touch-action: auto;
+}
+
+.map-actions {
+  position: absolute;
+  z-index: 500;
+  inset-block-start: 12px;
+  inset-inline-end: 12px;
+}
+
+.map-action {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(15, 23, 42, .2);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: .875rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, .2);
+  cursor: pointer;
+}
+
+.map-status,
+.map-location-message {
+  position: absolute;
+  z-index: 600;
+  inset-inline: 12px;
+  bottom: 12px;
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--error-border);
+  color: var(--danger-text);
+  font-size: .85rem;
+  text-align: center;
+}
+
+.map-location-message {
+  bottom: 56px;
 }
