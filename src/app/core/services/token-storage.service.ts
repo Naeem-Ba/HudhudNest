@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { writeSessionHint } from '../auth/session-hint';
+import { safeRemoveItem } from './safe-storage';
 
 export interface AuthTokenResponse {
   accessToken?: string | null;
@@ -59,8 +60,8 @@ export class TokenStorageService {
       'wohnungsapp_refresh', 'wohnungsapp_remember',
       'loggedUser', 'user'
     ]) {
-      localStorage.removeItem(key);
-      sessionStorage.removeItem(key);
+      safeRemoveItem(key, 'local');
+      safeRemoveItem(key, 'session');
     }
   }
 }

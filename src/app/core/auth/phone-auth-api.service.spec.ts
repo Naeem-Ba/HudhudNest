@@ -124,6 +124,17 @@ describe('PhoneAuthApiService', () => {
     expect(tokenStorage.storeTokens).toHaveBeenCalledWith({ accessToken: 'jwt' });
   });
 
+  it('sends a code typed with Arabic-Indic digits as ASCII digits (P26-D03)', () => {
+    service.register({ challengeId: 'c1', code: '٤٥٦ ٧٨٩', password: TEST_CREDENTIAL, firstName: 'A', lastName: 'B' }).subscribe();
+
+    const req = httpMock.expectOne(`${base}/auth/phone/registration/verify`);
+    expect(req.request.body.code).toBe('456789');
+    req.flush({ succeeded: false, errorCode: 'OTP_WRONG' });
+
+    service.verifyPasswordReset('c1', '۱۲۳۴۵۶').subscribe();
+    expect(httpMock.expectOne(`${base}/auth/phone/password-reset/verify`).request.body.code).toBe('123456');
+  });
+
   it('does not store anything when the API reports a failure', () => {
     service.register({ challengeId: 'c1', code: '123456', password: TEST_CREDENTIAL, firstName: 'A', lastName: 'B' }).subscribe();
     httpMock.expectOne(`${base}/auth/phone/registration/verify`).flush({ succeeded: false, errorCode: 'OTP_WRONG' });

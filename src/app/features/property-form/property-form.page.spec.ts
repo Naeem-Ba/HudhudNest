@@ -145,6 +145,27 @@ describe('PropertyFormPage', () => {
   }
 
   // ────────────── Rent: تفاصيل الإيجار ──────────────
+  describe('whole-number rooms and floor (P26-D02)', () => {
+    it('rejects half rooms: the server stores rooms as an integer', () => {
+      component.form.patchValue({ rooms: 2.5 });
+      expect(component.f.rooms.errors?.['wholeNumber']).toBeTrue();
+    });
+
+    it('accepts whole rooms and an empty value', () => {
+      component.form.patchValue({ rooms: 3 });
+      expect(component.f.rooms.errors).toBeFalsy();
+      component.form.patchValue({ rooms: null });
+      expect(component.f.rooms.errors).toBeFalsy();
+    });
+
+    it('rejects a fractional floor', () => {
+      component.form.patchValue({ floor: 1.5 });
+      expect(component.f.floor.errors?.['wholeNumber']).toBeTrue();
+      component.form.patchValue({ floor: 2 });
+      expect(component.f.floor.errors).toBeFalsy();
+    });
+  });
+
   describe('Rent', () => {
     beforeEach(() => {
       component = createComponent();
