@@ -442,6 +442,43 @@ export const routes: Routes = [
           import('./features/checkout/checkout.page')
             .then(m => m.CheckoutPage)
       },
+      {
+        // Online payments (provider-hosted checkout). The return URL the API gives a provider is /payments/orders/:id.
+        path: 'payments/checkout',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/payments/payment-checkout.page')
+            .then(m => m.PaymentCheckoutPage)
+      },
+      {
+        path: 'payments/orders/:id',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/payments/payment-order.page')
+            .then(m => m.PaymentOrderPage)
+      },
+      {
+        path: 'payments/invoices/:id',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/payments/payment-invoice.page')
+            .then(m => m.PaymentInvoicePage)
+      },
+      {
+        // Stand-in for a provider's checkout page: development / staging only (the API refuses it in Production).
+        path: 'payments/sandbox/:orderId',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/payments/payment-sandbox.page')
+            .then(m => m.PaymentSandboxPage)
+      },
+      {
+        path: 'payments',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/payments/payment-history.page')
+            .then(m => m.PaymentHistoryPage)
+      },
       // Account settings and the admin pages render inside the layout too, so they keep the
       // navbar (account menu + its "Administration" group) — before, opening any of them
       // left no navigation on screen at all. Paths and guards are unchanged.
@@ -567,6 +604,14 @@ export const routes: Routes = [
             .then(m => m.AdminServiceProviderDetailPage)
       },
 
+      {
+        // Online payments back office: transactions, subscriptions, refunds, providers, webhooks, reports.
+        path: 'admin/payments',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/payments/admin-payments.page')
+            .then(m => m.AdminPaymentsPage)
+      },
       {
         // طلبات الخطط المدفوعة وتمييز الإعلانات بانتظار تأكيد الدفع — لا تفعيل تلقائي.
         path: 'admin/payment-requests',

@@ -21,9 +21,11 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { map, switchMap } from 'rxjs';
+import { catchError, map, of, switchMap } from 'rxjs';
 
 import { PlansApiService } from '../../core/api/plans-api.service';
+import { PaymentsApiService } from '../../core/api/payments-api.service';
+import { isNativeApp } from '../../core/native/is-native-app';
 import { AgenciesApiService } from '../../core/api/agencies-api.service';
 import { knownErrorCodeKey } from '../../core/interceptors/api-error.interceptor';
 import { ProfileService } from '../../core/api/profile.service';
@@ -55,6 +57,7 @@ const PENDING_AUTO_SELECT_MAX_AGE_MS = 15 * 60 * 1000;
 })
 export class PricingPage implements OnInit {
   private readonly api = inject(PlansApiService);
+  private readonly payments = inject(PaymentsApiService);
   private readonly profileService = inject(ProfileService);
   private readonly agenciesApi = inject(AgenciesApiService);
   private readonly auth = inject(AuthService);
@@ -115,6 +118,13 @@ export class PricingPage implements OnInit {
   /** When the plan in force ends (ISO), or null for no fixed end. */
   readonly currentPlanExpiresAt = signal<string | null>(null);
 
+  /**
+   * True when the server says online payments are switched on and at least one provider can be offered. Only then does a paid
+   * plan lead to the payment checkout; otherwise the older request-and-contact flow is unchanged. Never true inside the
+   * installed iOS/Android app: store rules require the store's own billing there, which is not implemented.
+   */
+  readonly onlinePayments = signal(false);
+
   ngOnInit(): void {
     // Public marketing page: own title/description and a canonical (SEO.PRICING in the i18n files).
     this.pageMeta.applyTranslated('SEO.PRICING', '/pricing', this.destroyRef);
@@ -128,6 +138,16 @@ export class PricingPage implements OnInit {
     );
     this.loadAgencyOwnership();
     this.trackPendingPlan();
+    this.loadPaymentAvailability();
+  }
+
+  private loadPaymentAvailability(): void {
+    if (isNativeApp()) {
+      return;
+    }
+    this.payments.catalog()
+      .pipe(catchError(() => of(null)), takeUntilDestroyed(this.destroyRef))
+      .subscribe(catalog => this.onlinePayments.set(catalog?.enabled === true && catalog.providers.length > 0));
   }
 
   private trackPendingPlan(): void {
@@ -294,6 +314,21 @@ export class PricingPage implements OnInit {
     }
 
     this.selectedTier.set(plan.tier);
+
+    // Online payment: a priced plan goes to the payment checkout, where the server quotes the price. The old request flow
+    // below (record a pending request, then contact an administrator) stays as it was for when payments are switched off.
+    if (this.onlinePayments() && plan.priceKind === 'monthly') {
+      const checkout = ['/payments/checkout'];
+      const queryParams = { product: 'plan', plan: plan.tier };
+      if (!this.auth.getAccessToken()) {
+        void this.router.navigate(['/auth/login'], {
+          queryParams: { returnUrl: `/payments/checkout?product=plan&plan=${encodeURIComponent(plan.tier)}` }
+        });
+        return;
+      }
+      void this.router.navigate(checkout, { queryParams });
+      return;
+    }
 
     const destination = (requestId?: string | null) =>
       void this.router.navigate([plan.ctaRoute], {
