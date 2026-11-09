@@ -19,6 +19,9 @@ import { of, throwError } from 'rxjs';
 import { PropertyFormPage, addMonthsToDateString } from './property-form.page';
 import { PropertyApiService } from '../../core/api/property-api.service';
 import { LookupsApiService, PropertyTypeLookup } from '../../core/api/lookups-api.service';
+import { LocationsApiService } from '../../core/api/locations-api.service';
+import { EMPTY_GEO_VALUE, GeoPickerValue } from '../../shared/ui/geo/geo-picker.models';
+import { locationsApiStub } from '../../shared/ui/geo/locations-api.stub.spec';
 import { EnumService, EnumItem } from '../../core/services/enum.service';
 import { LanguageService } from '../../core/services/language.service';
 import { ToastService } from '../../shared/services/toast.service';
@@ -80,6 +83,7 @@ describe('PropertyFormPage', () => {
       providers: [
         { provide: PropertyApiService, useValue: propertyApiSpy },
         { provide: LookupsApiService, useValue: lookupsApiSpy },
+        { provide: LocationsApiService, useValue: locationsApiStub() },
         { provide: EnumService, useValue: enumServiceSpy },
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
         {
@@ -144,8 +148,80 @@ describe('PropertyFormPage', () => {
     component.form.patchValue({ propertyTypeId: 2 });
   }
 
+  describe('Location (hybrid catalog)', () => {
+    const value = (over: Partial<GeoPickerValue> = {}): GeoPickerValue => ({ ...EMPTY_GEO_VALUE, ...over });
+
+    beforeEach(() => {
+      component = createComponent();
+    });
+
+    it('only the governorate is mandatory: no street, city, district or neighborhood is needed', () => {
+      expect(component.form.controls.governorateId.errors?.['required']).toBeTrue();
+      expect(component.form.controls.street.errors).toBeNull();
+
+      component.onGeoChange(value({ governorateId: 3, locationId: 2, city: 'دمشق' }));
+      expect(component.form.controls.governorateId.errors).toBeNull();
+      expect(component.form.controls.districtId.errors).toBeNull();
+      expect(component.form.controls.neighborhoodId.errors).toBeNull();
+    });
+
+    it('the picker value fills the catalog place, the old ids and the readable address', () => {
+      component.onGeoChange(value({
+        locationId: 5, governorateId: 3, districtId: 30, neighborhoodId: 300, city: 'مدينة دمشق', region: 'المزة', street: 'شارع الأمين'
+      }));
+
+      expect(component.form.getRawValue()).toEqual(jasmine.objectContaining({
+        locationId: 5, governorateId: 3, districtId: 30, neighborhoodId: 300, city: 'مدينة دمشق', region: 'المزة', street: 'شارع الأمين'
+      }));
+    });
+
+    it('emptying the picker clears the place, so a stale one is never sent', () => {
+      component.onGeoChange(value({ locationId: 5, governorateId: 3, districtId: 30 }));
+      component.onGeoChange(value());
+      expect(component.form.controls.locationId.value).toBeNull();
+      expect(component.form.controls.governorateId.value).toBeNull();
+      expect(component.form.controls.districtId.value).toBeNull();
+    });
+
+    it('typed places the catalog lacks are proposed after the listing is saved, never before', () => {
+      const locations = TestBed.inject(LocationsApiService) as jasmine.SpyObj<LocationsApiService>;
+      locations.submitRequest.and.returnValue(of({ id: 'r', status: 'Pending' } as never));
+      component.onGeoChange(value({
+        locationId: 4, governorateId: 3,
+        proposals: [{ type: 'Street', parentLocationId: 4, name: 'شارع جديد', proof: 'signed', latitude: null, longitude: null }]
+      }));
+      expect(locations.submitRequest).not.toHaveBeenCalled();
+
+      component.form.patchValue({ latitude: 33.5, longitude: 36.3 });
+      (component as unknown as { submitGeoProposals(id: string): void }).submitGeoProposals('prop-1');
+
+      expect(locations.submitRequest).toHaveBeenCalledOnceWith({
+        type: 'Street', parentLocationId: 4, name: 'شارع جديد', proof: 'signed', latitude: 33.5, longitude: 36.3, propertyId: 'prop-1'
+      });
+    });
+
+    it('a failing proposal does not break the save, and each proposal is sent once', () => {
+      const locations = TestBed.inject(LocationsApiService) as jasmine.SpyObj<LocationsApiService>;
+      locations.submitRequest.and.returnValue(throwError(() => new Error('403')));
+      component.onGeoChange(value({
+        locationId: 4, governorateId: 3,
+        proposals: [{ type: 'Street', parentLocationId: 4, name: 'شارع', proof: null, latitude: null, longitude: null }]
+      }));
+
+      const run = () => (component as unknown as { submitGeoProposals(id: string): void }).submitGeoProposals('prop-1');
+      expect(run).not.toThrow();
+      run();
+      expect(locations.submitRequest).toHaveBeenCalledTimes(1);
+    });
+  });
+
   // ────────────── Rent: تفاصيل الإيجار ──────────────
   describe('whole-number rooms and floor (P26-D02)', () => {
+    // Without its own component these three only passed when another test had created one first (random order).
+    beforeEach(() => {
+      component = createComponent();
+    });
+
     it('rejects half rooms: the server stores rooms as an integer', () => {
       component.form.patchValue({ rooms: 2.5 });
       expect(component.f.rooms.errors?.['wholeNumber']).toBeTrue();
@@ -381,6 +457,7 @@ describe('PropertyFormPage amenities loading', () => {
       providers: [
         { provide: PropertyApiService, useValue: jasmine.createSpyObj('PropertyApiService', ['checkDuplicate']) },
         { provide: LookupsApiService, useValue: lookups },
+        { provide: LocationsApiService, useValue: locationsApiStub() },
         { provide: EnumService, useValue: enumSvc },
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({}) } } },

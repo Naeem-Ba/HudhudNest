@@ -6,6 +6,9 @@ import { of, throwError } from 'rxjs';
 import { ShortStayListingFormPage, cityMapFor, toApiTime } from './short-stay-listing-form.page';
 import { ShortStayListingApiService } from '../../../core/api/short-stay-listing-api.service';
 import { LookupsApiService } from '../../../core/api/lookups-api.service';
+import { LocationsApiService } from '../../../core/api/locations-api.service';
+import { locationsApiStub } from '../../../shared/ui/geo/locations-api.stub.spec';
+import { EMPTY_GEO_VALUE } from '../../../shared/ui/geo/geo-picker.models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../shared/services/toast.service';
 
@@ -34,6 +37,7 @@ describe('ShortStayListingFormPage — local validation before POST', () => {
         provideRouter([]),
         { provide: ShortStayListingApiService, useValue: api },
         { provide: LookupsApiService, useValue: lookupsStub() },
+        { provide: LocationsApiService, useValue: locationsApiStub() },
         { provide: AuthService, useValue: {} },
         { provide: ToastService, useValue: toast },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({}) } } }
@@ -131,6 +135,7 @@ describe('ShortStayListingFormPage — photos picked on the create form', () => 
         provideRouter([]),
         { provide: ShortStayListingApiService, useValue: api },
         { provide: LookupsApiService, useValue: lookupsStub() },
+        { provide: LocationsApiService, useValue: locationsApiStub() },
         { provide: AuthService, useValue: {} },
         { provide: ToastService, useValue: toast },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({}) } } }
@@ -264,6 +269,7 @@ describe('ShortStayListingFormPage — edit mode times', () => {
         provideRouter([]),
         { provide: ShortStayListingApiService, useValue: api },
         { provide: LookupsApiService, useValue: lookupsStub() },
+        { provide: LocationsApiService, useValue: locationsApiStub() },
         { provide: AuthService, useValue: {} },
         { provide: ToastService, useValue: toast },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ id: 'l1' }) } } }
@@ -307,6 +313,7 @@ describe('ShortStayListingFormPage — location', () => {
   let api: jasmine.SpyObj<ShortStayListingApiService>;
   let toast: jasmine.SpyObj<ToastService>;
   let lookups: ReturnType<typeof lookupsStub>;
+  let locationsApi: jasmine.SpyObj<LocationsApiService>;
 
   const listing = (over: Record<string, unknown> = {}) => ({
     id: 'l1', currencyCode: 'SYP', title: 't', description: 'd', capacity: 2, bedrooms: 1, bathrooms: 1,
@@ -330,6 +337,8 @@ describe('ShortStayListingFormPage — location', () => {
     api.publish.and.returnValue(of(undefined as never));
     toast = jasmine.createSpyObj('ToastService', ['show']);
     lookups = lookupsStub();
+    locationsApi = locationsApiStub();
+    locationsApi.submitRequest.and.returnValue(of({ id: 'r1', status: 'Pending' } as never));
 
     TestBed.configureTestingModule({
       imports: [ShortStayListingFormPage, TranslateModule.forRoot()],
@@ -337,6 +346,7 @@ describe('ShortStayListingFormPage — location', () => {
         provideRouter([]),
         { provide: ShortStayListingApiService, useValue: api },
         { provide: LookupsApiService, useValue: lookups },
+        { provide: LocationsApiService, useValue: locationsApi },
         { provide: AuthService, useValue: {} },
         { provide: ToastService, useValue: toast },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap(id ? { id } : {}) } } }
@@ -347,26 +357,19 @@ describe('ShortStayListingFormPage — location', () => {
     page.ngOnInit();
   };
 
-  it('loads the governorates and cascades districts then neighborhoods, clearing children on change', () => {
+  it('takes the structured location from the picker and clears it when the picker is emptied', () => {
     setup(null);
-    expect(page.governorates().length).toBe(1);
 
-    page.onGovernorateChange(3);
-    expect(lookups.getDistricts).toHaveBeenCalledWith(3);
-    expect(page.districts().length).toBe(1);
+    page.onGeoChange({ ...EMPTY_GEO_VALUE, governorateId: 3, districtId: 30, neighborhoodId: 300, city: 'دمشق' });
+    expect(page.governorateId).toBe(3);
+    expect(page.districtId).toBe(30);
+    expect(page.neighborhoodId).toBe(300);
+    expect(page.city).toBe('دمشق');
 
-    page.onDistrictChange(30);
-    expect(lookups.getNeighborhoods).toHaveBeenCalledWith(30);
-    page.neighborhoodId = 300;
-
-    page.onDistrictChange(null);
-    expect(page.neighborhoodId).toBeNull();
-    expect(page.neighborhoods()).toEqual([]);
-
-    page.onDistrictChange(30);
-    page.onGovernorateChange(null);
+    page.onGeoChange({ ...EMPTY_GEO_VALUE, governorateId: null });
+    expect(page.governorateId).toBeNull();
     expect(page.districtId).toBeNull();
-    expect(page.districts()).toEqual([]);
+    expect(page.neighborhoodId).toBeNull();
   });
 
   it('restores the saved pin and structured location when editing', () => {
@@ -374,8 +377,8 @@ describe('ShortStayListingFormPage — location', () => {
 
     expect(page.pin()).toEqual({ lat: 33.5, lng: 36.3 });
     expect(page.governorateId).toBe(3);
-    expect(lookups.getDistricts).toHaveBeenCalledWith(3);
-    expect(lookups.getNeighborhoods).toHaveBeenCalledWith(30);
+    // The picker restores the names from these ids (legacy ids: short stay has no catalog place column).
+    expect(page.geoInitial()).toEqual(jasmine.objectContaining({ governorateId: 3, districtId: 30 }));
   });
 
   it('keeps a listing without a location as "no pin" instead of inventing 0,0', () => {

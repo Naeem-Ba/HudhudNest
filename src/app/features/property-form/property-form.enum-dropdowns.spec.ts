@@ -12,6 +12,8 @@ import { of } from 'rxjs';
 import { PropertyFormPage } from './property-form.page';
 import { EnumService } from '../../core/services/enum.service';
 import { LookupsApiService } from '../../core/api/lookups-api.service';
+import { LocationsApiService } from '../../core/api/locations-api.service';
+import { locationsApiStub } from '../../shared/ui/geo/locations-api.stub.spec';
 import { PropertyApiService } from '../../core/api/property-api.service';
 import { LanguageService } from '../../core/services/language.service';
 import { MapPickerComponent } from '../../map-picker/map-picker.component';
@@ -56,6 +58,7 @@ describe('PropertyFormPage enum dropdowns', () => {
       providers: [
         provideHttpClient(), provideHttpClientTesting(), provideRouter([]),
         { provide: LookupsApiService, useValue: lookups },
+        { provide: LocationsApiService, useValue: locationsApiStub() },
         { provide: PropertyApiService, useValue: jasmine.createSpyObj('PropertyApiService', ['checkDuplicate']) },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({}) } } },
         { provide: LanguageService, useValue: { getCurrentLang: () => 'ar', currentLang$: of('ar') } }

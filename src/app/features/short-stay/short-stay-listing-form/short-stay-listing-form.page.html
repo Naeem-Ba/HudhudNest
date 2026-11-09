@@ -93,35 +93,17 @@
     <section class="ssf__section ssf__location">
       <h2>{{ 'SHORTSTAY.FORM.LOCATION' | translate }}</h2>
       <p class="ssf__hint">{{ 'SHORTSTAY.FORM.LOCATION_HINT' | translate }}</p>
-      <p class="ssf__error" role="alert" *ngIf="locationLoadFailed()">{{ 'SHORTSTAY.FORM.LOCATION_LOAD_ERROR' | translate }}</p>
-
-      <div class="ssf__field">
-        <label for="short-stay-listing-form-f9">{{ 'SHORTSTAY.FORM.GOVERNORATE' | translate }} <span class="ssf__required" aria-hidden="true">*</span></label>
-        <select id="short-stay-listing-form-f9" [ngModel]="governorateId" (ngModelChange)="onGovernorateChange($event)" name="governorateId" required>
-          <option [ngValue]="null" disabled>{{ 'SHORTSTAY.FORM.SELECT_GOVERNORATE' | translate }}</option>
-          <option *ngFor="let g of governorates()" [ngValue]="g.id">{{ locationLabel(g) }}</option>
-        </select>
-      </div>
-      <div class="ssf__row">
-        <div class="ssf__field">
-          <label for="ssf2-f2">{{ 'SHORTSTAY.FORM.DISTRICT' | translate }}</label>
-          <select id="ssf2-f2" [ngModel]="districtId" (ngModelChange)="onDistrictChange($event)" name="districtId" [disabled]="!governorateId">
-            <option [ngValue]="null">{{ 'SHORTSTAY.FORM.OPTIONAL_SELECT' | translate }}</option>
-            <option *ngFor="let d of districts()" [ngValue]="d.id">{{ locationLabel(d) }}</option>
-          </select>
-        </div>
-        <div class="ssf__field">
-          <label for="ssf2-f3">{{ 'SHORTSTAY.FORM.NEIGHBORHOOD' | translate }}</label>
-          <select id="ssf2-f3" [(ngModel)]="neighborhoodId" name="neighborhoodId" [disabled]="!districtId">
-            <option [ngValue]="null">{{ 'SHORTSTAY.FORM.OPTIONAL_SELECT' | translate }}</option>
-            <option *ngFor="let n of neighborhoods()" [ngValue]="n.id">{{ locationLabel(n) }}</option>
-          </select>
-        </div>
-      </div>
+      <app-geo-picker
+        idPrefix="ssf-geo"
+        [lang]="mapLang"
+        [initial]="geoInitial()"
+        [coordinates]="geoPin()"
+        (valueChange)="onGeoChange($event)"
+      ></app-geo-picker>
 
       <div class="ssf__map">
         <p class="ssf__map-label">{{ 'SHORTSTAY.FORM.MAP_HINT' | translate }}</p>
-        <app-map-picker [lang]="mapLang" [marker]="pin()" (locationChange)="onMapPinSelected($event)"></app-map-picker>
+        <app-map-picker [lang]="mapLang" [marker]="pin()" [searchable]="true" (locationChange)="onMapPinSelected($event)" (placeSelected)="onMapPlaceSelected($event)"></app-map-picker>
         <div class="ssf__map-actions">
           <button type="button" class="btn btn--sm btn--outline" [disabled]="locating()" (click)="useMyLocation()">
             <span aria-hidden="true">📍</span>
