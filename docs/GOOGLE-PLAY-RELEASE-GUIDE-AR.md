@@ -112,7 +112,10 @@ npm run version:check            # يعرض الحالي: Android 1.1.1 (code 4)
 3. ملاحظات الإصدار (ستحتاجها في القسم 6): اكتبها الآن بالعربية والإنجليزية والألمانية، **بحد أقصى 500 حرف للغة** (⚠ حد Play الحالي).
 4. التزم وادفع وافتح PR:
    ```bash
-   git commit -am "chore(release): 1.2.0 (build 5)"
+   # لا تستخدم commit -am: يضم أي تعديل محلي غير مرتبط (حدث فعلًا في PR #242 حيث تسرّب منفذ API محلي)
+   git add android/app/build.gradle ios/App/App.xcodeproj/project.pbxproj
+   git status --short                          # لا شيء غير هذين الملفين في الـ staged
+   git commit -m "chore(release): 1.2.0 (build 5)"
    git push -u origin chore/release-1.2.0
    ```
 5. انتظر **Frontend CI أخضر** على الـ PR، ثم ادمجه إلى `main`.
