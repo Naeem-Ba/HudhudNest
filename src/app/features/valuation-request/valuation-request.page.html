@@ -24,20 +24,36 @@
 
           <div class="form-group">
             <label for="districtId">{{ 'VALUATION.DISTRICT' | translate }}</label>
-            <select id="districtId" formControlName="districtId" [disabled]="!form.controls.governorateId.value">
-              <option [ngValue]="null">{{ 'VALUATION.SELECT_PLACEHOLDER' | translate }}</option>
-              <option *ngFor="let d of districts()" [ngValue]="d.id">{{ localizedName(d) }}</option>
-            </select>
+            <app-combo-box
+              inputId="districtId"
+              formControlName="districtId"
+              [options]="districtOptions()"
+              [allowCustom]="true"
+              [customValue]="districtText"
+              [locked]="!form.controls.governorateId.value"
+              [placeholder]="'VALUATION.SELECT_PLACEHOLDER' | translate"
+              (customText)="onDistrictTyped($event)"
+            ></app-combo-box>
           </div>
 
           <div class="form-group">
             <label for="neighborhoodId">{{ 'VALUATION.NEIGHBORHOOD' | translate }}</label>
-            <select id="neighborhoodId" formControlName="neighborhoodId" [disabled]="!form.controls.districtId.value">
-              <option [ngValue]="null">{{ 'VALUATION.SELECT_PLACEHOLDER' | translate }}</option>
-              <option *ngFor="let n of neighborhoods()" [ngValue]="n.id">{{ localizedName(n) }}</option>
-            </select>
+            <app-combo-box
+              inputId="neighborhoodId"
+              formControlName="neighborhoodId"
+              [options]="neighborhoodOptions()"
+              [allowCustom]="true"
+              [customValue]="neighborhoodText"
+              [locked]="!form.controls.governorateId.value"
+              [placeholder]="'VALUATION.SELECT_PLACEHOLDER' | translate"
+              (customText)="onNeighborhoodTyped($event)"
+            ></app-combo-box>
           </div>
         </div>
+
+        <p class="field-hint" *ngIf="districtText.trim() || neighborhoodText.trim()" role="status">
+          {{ (canProposePlaces ? 'GEO.TYPED_PLACE_PROPOSED' : 'GEO.TYPED_PLACE_NOT_SAVED') | translate: { value: (districtText.trim() || neighborhoodText.trim()) } }}
+        </p>
 
         <div class="form-row">
           <div class="form-group">

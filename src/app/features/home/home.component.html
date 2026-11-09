@@ -14,36 +14,28 @@
       <form class="hero-search" (ngSubmit)="submitHeroSearch()">
         <div class="hero-search__field">
           <label for="heroSearchCity">{{ 'HOME.search.location' | translate }}</label>
-          <input
-            id="heroSearchCity"
-            type="text"
-            [(ngModel)]="searchCity"
-            name="searchCity"
-            list="heroCitySuggestions"
-            autocomplete="off"
+          <app-combo-box
+            inputId="heroSearchCity"
+            [plain]="true"
+            name="searchGovernorateId"
+            [options]="governorateOptions"
+            [(ngModel)]="searchGovernorateId"
             [placeholder]="'HOME.search.location_any' | translate"
-          />
-          <datalist id="heroCitySuggestions">
-            <option *ngFor="let c of cities" [value]="c.name"></option>
-          </datalist>
+          ></app-combo-box>
         </div>
 
         <div class="hero-search__divider" aria-hidden="true"></div>
 
         <div class="hero-search__field">
           <label for="heroSearchType">{{ 'HOME.search.type' | translate }}</label>
-          <input
-            id="heroSearchType"
-            type="text"
-            [(ngModel)]="searchPropertyTypeText"
-            name="searchPropertyTypeText"
-            list="heroPropertyTypeSuggestions"
-            autocomplete="off"
+          <app-combo-box
+            inputId="heroSearchType"
+            [plain]="true"
+            name="searchPropertyTypeId"
+            [options]="propertyTypeOptions"
+            [(ngModel)]="searchPropertyTypeId"
             [placeholder]="'HOME.search.type_any' | translate"
-          />
-          <datalist id="heroPropertyTypeSuggestions">
-            <option *ngFor="let t of propertyTypes" [value]="localizedTypeName(t)"></option>
-          </datalist>
+          ></app-combo-box>
         </div>
 
         <div class="hero-search__divider" aria-hidden="true"></div>

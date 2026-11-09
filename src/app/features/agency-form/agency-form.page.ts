@@ -27,7 +27,8 @@ import {
   OnInit,
   computed,
   inject,
-  signal
+  signal,
+  Injector
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -53,6 +54,8 @@ import { knownErrorCodeKey } from '../../core/interceptors/api-error.interceptor
 import { RouterLink } from '@angular/router';
 import { AgencyTeamPanelComponent } from './agency-team-panel.component';
 import { AgencyInvitationsComponent } from './agency-invitations.component';
+import { ComboBoxComponent, ComboOption } from '../../shared/ui/combo-box.component';
+import { PlaceProposalService } from '../../core/api/place-proposal.service';
 
 /** نفس قائمة رموز الدول المدعومة في CreatePropertyCommandValidator (الباك اند). */
 const SUPPORTED_COUNTRY_CODES = ['SY', 'DE', 'US', 'GB', 'FR', 'AE', 'SA', 'TR', 'EG', 'JO', 'LB'];
@@ -61,7 +64,7 @@ const SUPPORTED_COUNTRY_CODES = ['SY', 'DE', 'US', 'GB', 'FR', 'AE', 'SA', 'TR',
   selector: 'app-agency-form',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, AgencyTeamPanelComponent, AgencyInvitationsComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, ComboBoxComponent, AgencyTeamPanelComponent, AgencyInvitationsComponent],
   templateUrl: './agency-form.page.html',
   styleUrl: './agency-form.page.scss'
 })
@@ -109,6 +112,23 @@ export class AgencyFormPage implements OnInit {
   readonly districts = signal<StructuredLocationLookup[]>([]);
   readonly neighborhoods = signal<StructuredLocationLookup[]>([]);
 
+  /** Resolved on first use: only a typed place needs it, and the page renders without the catalog otherwise. */
+  private readonly injector = inject(Injector);
+  private get placeProposals(): PlaceProposalService {
+    return this.injector.get(PlaceProposalService);
+  }
+  private readonly langSignal = signal<LangCode>(this.lang.getCurrent());
+  readonly districtOptions = computed<ComboOption[]>(() =>
+    this.districts().map(d => ({ value: d.id, label: pickLocalizedName(d, this.langSignal()) })));
+  readonly neighborhoodOptions = computed<ComboOption[]>(() =>
+    this.neighborhoods().map(n => ({ value: n.id, label: pickLocalizedName(n, this.langSignal()) })));
+  /**
+   * A district / neighborhood typed because it is not in the lists. The office record only holds ids, so the name is
+   * proposed to the administrators and the office keeps the nearest known area.
+   */
+  districtText = '';
+  neighborhoodText = '';
+
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(200)]],
     // Slug قابل للتعديل عند الإنشاء فقط — غير قابل للتغيير بعده (انظر
@@ -127,6 +147,7 @@ export class AgencyFormPage implements OnInit {
   });
 
   ngOnInit(): void {
+    this.lang.currentLang$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(l => this.langSignal.set(l));
     this.loadGovernorates();
     this.bindCascadingLocationChanges();
     this.loadEligibility();
@@ -281,6 +302,8 @@ export class AgencyFormPage implements OnInit {
       .subscribe(governorateId => {
         this.districts.set([]);
         this.neighborhoods.set([]);
+        this.districtText = '';
+        this.neighborhoodText = '';
         this.form.patchValue({ districtId: null, neighborhoodId: null }, { emitEvent: false });
 
         if (governorateId) {
@@ -335,6 +358,7 @@ export class AgencyFormPage implements OnInit {
 
     request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: agency => {
+        this.proposeTypedPlaces(f.governorateId, f.districtId);
         const wasEditMode = this.isEditMode();
         this.toast.success(this.translate.instant(
           wasEditMode ? 'AGENCY_FORM.UPDATE_SUCCESS' : 'AGENCY_FORM.CREATE_SUCCESS'
@@ -362,6 +386,32 @@ export class AgencyFormPage implements OnInit {
         }
       }
     });
+  }
+
+  onDistrictTyped(text: string | null): void {
+    this.districtText = text ?? '';
+  }
+
+  onNeighborhoodTyped(text: string | null): void {
+    this.neighborhoodText = text ?? '';
+  }
+
+  get canProposePlaces(): boolean {
+    return this.placeProposals.canPropose();
+  }
+
+  private proposeTypedPlaces(governorateId: number | null, districtId: number | null): void {
+    const district = this.districtText.trim();
+    const neighborhood = this.neighborhoodText.trim();
+    if (!governorateId) return;
+    if (district) {
+      this.placeProposals.propose({ governorateId, type: 'District', name: district }).subscribe();
+    }
+    if (neighborhood) {
+      this.placeProposals.propose({ governorateId, districtId, type: 'Neighborhood', name: neighborhood }).subscribe();
+    }
+    this.districtText = '';
+    this.neighborhoodText = '';
   }
 
   private toCreateRequest(f: ReturnType<typeof this.form.getRawValue>): CreateAgencyRequest {

@@ -27,7 +27,8 @@
   min-height: clamp(520px, 68vw, 680px);
   display: flex;
   align-items: center;
-  overflow: hidden;
+  /* Not hidden: the dropdown of the search fields opens below the card and must not be cut off at the hero's edge. */
+  overflow: visible;
   padding-bottom: 4.5rem;
 
   &__bg {
@@ -100,6 +101,9 @@
 
 /* ── Hero Search Card (بطاقة البحث الزجاجية) ── */
 .hero-search {
+  /* Above the quick links that follow it, so an open dropdown is not drawn under them. */
+  position: relative;
+  z-index: 5;
   width: 100%;
   display: flex;
   align-items: stretch;

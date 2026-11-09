@@ -7,14 +7,16 @@ import {
   Component,
   DestroyRef,
   HostListener,
+  ElementRef,
   Injector,
   OnInit,
+  ViewChild,
   computed,
   inject,
   signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LocationNamesService } from '../../../core/api/location-names.service';
+import { LocationNamesService, normalizePlaceName } from '../../../core/api/location-names.service';
 import { ActivatedRoute, ParamMap, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -62,6 +64,7 @@ import { listSeparator } from '../../../core/i18n/ui-language';
 import { GeoPlaceFilterComponent } from '../../../shared/ui/geo/geo-place-filter.component';
 import { LocationsApiService } from '../../../core/api/locations-api.service';
 import { GeoLocation } from '../../../core/models/geo-location.model';
+import { ComboBoxComponent, ComboOption } from '../../../shared/ui/combo-box.component';
 
 @Component({
   selector: 'app-property-list',
@@ -69,6 +72,7 @@ import { GeoLocation } from '../../../core/models/geo-location.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdSlotComponent,
+    ComboBoxComponent,
     ListingViewCountComponent,
     AmenityLabelPipe,
     CommonModule,
@@ -161,7 +165,58 @@ export class PropertyListPage implements OnInit {
   readonly locationPlace = signal<GeoLocation | null>(null);
   districtId: number | null = null;
   neighborhoodId: number | null = null;
+  /**
+   * A district / neighborhood the person typed because it is not in the lists. There is no id to filter by, so
+   * the words go through the keyword search, which already looks at the stored city, district and neighborhood
+   * text of every listing (Arabic spellings folded together).
+   */
+  districtText = '';
+  neighborhoodText = '';
   propertyTypeId: number | null = null;
+
+  @ViewChild('plResults') private resultsRegion?: ElementRef<HTMLElement>;
+  /** Set by "apply filters": the next answer (results, nothing found, or an error) is brought into view. */
+  private scrollToResultsWhenLoaded = false;
+
+  private readonly lang = signal<LangCode>(this.langService.getCurrent());
+
+  /** The lists shown in the language of the page, rebuilt when the language or the lookups change. */
+  readonly districtOptions = computed<ComboOption[]>(() =>
+    this.districts().map(d => ({ value: d.id, label: pickLocalizedName(d, this.lang()) })));
+  readonly neighborhoodOptions = computed<ComboOption[]>(() =>
+    this.neighborhoods().map(n => ({ value: n.id, label: pickLocalizedName(n, this.lang()) })));
+
+  /**
+   * Cities that exist on listings. The stored text holds whatever language its owner used, so the same city can
+   * appear as "حلب" and "Aleppo": a governorate is shown once under its catalog name in the page language, and
+   * any other name is listed only when it is written in the script of the page language.
+   */
+  readonly cityOptions = computed<ComboOption[]>(() => {
+    const lang = this.lang();
+    const governorates = this.governorates();
+    const all = this.citySuggestions().map(c => c.name).filter(n => !!n?.trim());
+    const arabicPage = lang === 'ar';
+    const options = new Map<string, ComboOption>();
+
+    const add = (label: string) => {
+      const key = normalizePlaceName(label);
+      if (key && !options.has(key)) options.set(key, { value: label, label });
+    };
+
+    for (const name of all) {
+      const key = normalizePlaceName(name);
+      const governorate = governorates.find(g =>
+        [g.nameAr, g.nameEn, g.nameDe].some(n => normalizePlaceName(n) === key));
+      if (governorate) {
+        add(pickLocalizedName(governorate, lang));
+      } else if (/[\u0600-\u06FF]/.test(name) === arabicPage) {
+        add(name);
+      }
+    }
+    // Nothing written in the page language: better the other spelling than an empty list.
+    if (!options.size) all.forEach(add);
+    return [...options.values()];
+  });
 
   /** Phase-0, Task 3 — "save this search" button state. */
   readonly savingSearch = signal(false);
@@ -234,6 +289,10 @@ export class PropertyListPage implements OnInit {
         }
       });
 
+    this.langService.currentLang$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(lang => this.lang.set(lang));
+
     this.bindCitySuggestions();
     this.loadCurrencies();
     this.loadAmenities();
@@ -260,6 +319,7 @@ export class PropertyListPage implements OnInit {
             catchError(err => {
               this.error.set(this.loadErrorKey(err));
               this.loading.set(false);
+              this.revealResultsIfRequested();
               return EMPTY;
             })
           )
@@ -269,6 +329,7 @@ export class PropertyListPage implements OnInit {
       .subscribe(result => {
         if (!this.redirectToLastPageIfBeyond(result)) {
           this.applyResult(result);
+          this.revealResultsIfRequested();
         }
       });
   }
@@ -358,6 +419,8 @@ export class PropertyListPage implements OnInit {
       this.governorateId = null;
       this.districtId = null;
       this.neighborhoodId = null;
+      this.districtText = '';
+      this.neighborhoodText = '';
       this.cityFilter = '';
       this.districts.set([]);
       this.neighborhoods.set([]);
@@ -386,6 +449,8 @@ export class PropertyListPage implements OnInit {
     this.cityFilter = '';
     this.districtId = null;
     this.neighborhoodId = null;
+    this.districtText = '';
+    this.neighborhoodText = '';
     this.locationId = null;
     this.locationPlace.set(null);
     this.districts.set([]);
@@ -408,6 +473,33 @@ export class PropertyListPage implements OnInit {
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({ next: items => this.neighborhoods.set(items), error: () => this.neighborhoods.set([]) });
     }
+  }
+
+  /** The city combo shows an option when the text is one of them; anything else is kept as typed text. */
+  get cityComboValue(): string | null {
+    const key = normalizePlaceName(this.cityFilter);
+    return key && this.cityOptions().some(o => normalizePlaceName(o.label) === key) ? this.cityFilter : null;
+  }
+
+  onCityPicked(value: string | number | null): void {
+    this.cityFilter = value === null ? '' : String(value);
+  }
+
+  /** Typed text that is not a listed city (null when it matches a city, or when the box was emptied). */
+  onCityTyped(text: string | null): void {
+    if (text !== null) this.cityFilter = text;
+    else if (this.cityComboValue === null) this.cityFilter = '';
+  }
+
+  // The typed words are kept exactly as typed (a space between two words must survive); they are trimmed where used.
+  onDistrictTyped(text: string | null): void {
+    this.districtText = text ?? '';
+    if (this.districtText.trim()) this.districtId = null;
+  }
+
+  onNeighborhoodTyped(text: string | null): void {
+    this.neighborhoodText = text ?? '';
+    if (this.neighborhoodText.trim()) this.neighborhoodId = null;
   }
 
   /** Localized label for a bilingual lookup item, matching the current UI language. */
@@ -441,6 +533,8 @@ export class PropertyListPage implements OnInit {
     this.applyLocationFromUrl(params.get('locationId'));
     this.districtId = params.get('districtId') ? Number(params.get('districtId')) : null;
     this.neighborhoodId = params.get('neighborhoodId') ? Number(params.get('neighborhoodId')) : null;
+    this.districtText = params.get('districtText') ?? '';
+    this.neighborhoodText = params.get('neighborhoodText') ?? '';
     this.propertyTypeId = params.get('propertyTypeId') ? Number(params.get('propertyTypeId')) : null;
     this.citySuggestionScope.next(this.governorateId);
 
@@ -465,6 +559,11 @@ export class PropertyListPage implements OnInit {
     }
   }
 
+  /** The keyword box plus the district / neighborhood names typed by hand (all must be found on the listing). */
+  private keywordSearch(): string {
+    return [this.searchText, this.districtText, this.neighborhoodText].map(t => t.trim()).filter(Boolean).join(' ');
+  }
+
   /** Builds the request DTO sent to the API from the filter panel's current UI-bound state. */
   private buildFilterFromState(page: number): PropertyFilterDto {
     const sort = this.mapSort();
@@ -472,7 +571,7 @@ export class PropertyListPage implements OnInit {
     return {
       page,
       pageSize: this.pageSize(),
-      searchTerm: this.searchText.trim() || undefined,
+      searchTerm: this.keywordSearch() || undefined,
       city: this.cityFilter.trim() || undefined,
       listingType: this.selectedListingType || undefined,
       minPrice: this.minPrice ?? undefined,
@@ -513,6 +612,8 @@ export class PropertyListPage implements OnInit {
       governorateId: this.governorateId ?? null,
       districtId: this.districtId ?? null,
       neighborhoodId: this.neighborhoodId ?? null,
+      districtText: this.districtText.trim() || null,
+      neighborhoodText: this.neighborhoodText.trim() || null,
       locationId: this.locationId ?? null,
       propertyTypeId: this.propertyTypeId ?? null,
       page: page > 1 ? page : null,
@@ -704,6 +805,24 @@ export class PropertyListPage implements OnInit {
       });
   }
 
+  /**
+   * After "apply filters" the person is looking at the filter panel (a drawer on a phone, the sidebar on a
+   * desktop): once the answer is in, the top of the results - or the "nothing matches" message - is brought into
+   * view and focused, so the effect of the button is never out of sight.
+   */
+  private revealResultsIfRequested(): void {
+    if (!this.scrollToResultsWhenLoaded) return;
+    this.scrollToResultsWhenLoaded = false;
+    // One macrotask later: the change detection that paints the new results (or the empty message) has run by then.
+    const timer = setTimeout(() => {
+      const region = this.resultsRegion?.nativeElement;
+      if (!region) return;
+      region.scrollIntoView({ block: 'start' });
+      region.focus({ preventScroll: true });
+    }, 0);
+    this.destroyRef.onDestroy(() => clearTimeout(timer));
+  }
+
   private applyResult(result: PagedResult<Property>): void {
     this.properties.set(result.items);
     this.totalCount.set(result.totalCount);
@@ -725,6 +844,8 @@ export class PropertyListPage implements OnInit {
     if (this.governorateId) count++;
     if (this.districtId) count++;
     if (this.neighborhoodId) count++;
+    if (this.districtText.trim()) count++;
+    if (this.neighborhoodText.trim()) count++;
     if (this.locationId) count++;
     if (this.propertyTypeId) count++;
 
@@ -788,6 +909,7 @@ export class PropertyListPage implements OnInit {
 
     this.filterError.set('');
     this.setFiltersOpen(false);
+    this.scrollToResultsWhenLoaded = true;
     // Applying filters runs the normal (URL-driven) search, so a previously active "near me"
     // result set must not stay flagged as active while it is no longer what is shown.
     this.geoModeActive.set(false);
@@ -810,6 +932,8 @@ export class PropertyListPage implements OnInit {
     this.governorateId = null;
     this.districtId = null;
     this.neighborhoodId = null;
+    this.districtText = '';
+    this.neighborhoodText = '';
     this.locationId = null;
     this.locationPlace.set(null);
     this.propertyTypeId = null;

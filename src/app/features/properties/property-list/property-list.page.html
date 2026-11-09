@@ -129,35 +129,49 @@
 
         <div class="filter-group">
           <label class="filter-label" for="filter-city">{{ 'PROPERTY_LIST.CITY' | translate }}</label>
-          <!-- Suggestions come from GET /api/lookups/cities, scoped to the governorate above when one is chosen. -->
-          <input
-            id="filter-city"
-            type="text"
-            list="propertyListCitySuggestions"
-            [(ngModel)]="cityFilter"
+          <!-- Cities of existing listings (one spelling, in the page language), scoped to the governorate above;
+               a city that is not listed can still be typed. -->
+          <app-combo-box
+            inputId="filter-city"
             name="city"
-            autocomplete="off"
+            [options]="cityOptions()"
+            [allowCustom]="true"
+            [customValue]="cityFilter"
+            [ngModel]="cityComboValue"
+            (ngModelChange)="onCityPicked($event)"
+            (customText)="onCityTyped($event)"
             [placeholder]="'PROPERTY_LIST.CITY_PLACEHOLDER' | translate"
-          />
-          <datalist id="propertyListCitySuggestions">
-            <option *ngFor="let city of citySuggestions()" [value]="city.name"></option>
-          </datalist>
+          ></app-combo-box>
         </div>
 
         <div class="filter-group" *ngIf="governorateId">
           <label class="filter-label" for="filter-district">{{ 'PROPERTY_LIST.DISTRICT' | translate }}</label>
-          <select id="filter-district" [(ngModel)]="districtId" name="districtId" (ngModelChange)="onDistrictChange()">
-            <option [ngValue]="null">{{ 'PROPERTY_LIST.SELECT_OPTIONAL' | translate }}</option>
-            <option *ngFor="let d of districts()" [ngValue]="d.id">{{ localizedName(d) }}</option>
-          </select>
+          <app-combo-box
+            inputId="filter-district"
+            name="districtId"
+            [options]="districtOptions()"
+            [allowCustom]="true"
+            [customValue]="districtText"
+            [(ngModel)]="districtId"
+            (ngModelChange)="onDistrictChange()"
+            (customText)="onDistrictTyped($event)"
+            [placeholder]="'PROPERTY_LIST.SELECT_OPTIONAL' | translate"
+          ></app-combo-box>
+          <small class="filter-hint">{{ 'PROPERTY_LIST.TYPE_PLACE_HINT' | translate }}</small>
         </div>
 
-        <div class="filter-group" *ngIf="districtId">
+        <div class="filter-group" *ngIf="governorateId">
           <label class="filter-label" for="filter-neighborhood">{{ 'PROPERTY_LIST.NEIGHBORHOOD' | translate }}</label>
-          <select id="filter-neighborhood" [(ngModel)]="neighborhoodId" name="neighborhoodId">
-            <option [ngValue]="null">{{ 'PROPERTY_LIST.SELECT_OPTIONAL' | translate }}</option>
-            <option *ngFor="let n of neighborhoods()" [ngValue]="n.id">{{ localizedName(n) }}</option>
-          </select>
+          <app-combo-box
+            inputId="filter-neighborhood"
+            name="neighborhoodId"
+            [options]="neighborhoodOptions()"
+            [allowCustom]="true"
+            [customValue]="neighborhoodText"
+            [(ngModel)]="neighborhoodId"
+            (customText)="onNeighborhoodTyped($event)"
+            [placeholder]="'PROPERTY_LIST.SELECT_OPTIONAL' | translate"
+          ></app-combo-box>
         </div>
 
         <div class="filter-group">
@@ -258,7 +272,7 @@
     <div class="filter-overlay" [class.filter-overlay--visible]="filtersOpen" (click)="closeFilters()" aria-hidden="true"></div>
 
     <!-- ── Main Content ── -->
-    <main class="prop-list-main">
+    <main class="prop-list-main" #plResults tabindex="-1">
 
       <!-- Mobile Filter Bar -->
       <div class="mobile-filter-bar">

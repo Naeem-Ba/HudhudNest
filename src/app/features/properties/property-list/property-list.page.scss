@@ -643,3 +643,12 @@
 
 /* Growth engine P8: link to the map view. */
 .geo-btn--map { text-decoration: none; margin-inline-start: .5rem; }
+
+/* The results region is scrolled to and focused after "apply filters"; keep it clear of a sticky header and do not draw a ring on it. */
+.prop-list-main {
+  scroll-margin-top: 4.5rem;
+
+  &:focus {
+    outline: none;
+  }
+}

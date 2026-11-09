@@ -77,7 +77,11 @@
     "AVATAR_ALT": "Nutzerfoto",
     "COUNTRY_CODE": "Ländercode",
     "PICK_RATING": "Bewertung wählen",
-    "IMAGE_VIEWER": "Bildbetrachter"
+    "IMAGE_VIEWER": "Bildbetrachter",
+    "OPEN_LIST": "Liste öffnen",
+    "CLOSE_LIST": "Liste schließen",
+    "COMBO_NO_OPTIONS": "Keine passenden Optionen",
+    "COMBO_KEEP_TYPED": "Nicht in der Liste. Ihre Eingabe wird verwendet: „{{value}}“"
   },
   "NAVBAR": {
     "HOME": "Startseite",
@@ -616,7 +620,8 @@
     "GEO_UNSUPPORTED": "Ihr Browser unterstützt keine Standortbestimmung.",
     "GEO_CONSENT_NOTE": "Wir verwenden Ihren aktuellen Standort nur, um Immobilien in Ihrer Nähe anzuzeigen.",
     "GEO_DENIED": "Ihr Standort konnte nicht ermittelt werden. Bitte prüfen Sie die Standortfreigabe.",
-    "MAP_VIEW": "Kartenansicht"
+    "MAP_VIEW": "Kartenansicht",
+    "TYPE_PLACE_HINT": "Nicht in der Liste? Namen eintippen."
   },
   "PAGINATION": {
     "NAV_LABEL": "Seitennavigation",
@@ -4666,7 +4671,10 @@
     "FILTER_PLACEHOLDER": "Stadtviertel, Straße oder Stadt suchen…",
     "FILTER_NO_MATCH": "Keine Treffer. Versuchen Sie eine andere Schreibweise.",
     "FILTER_LABEL": "Bestimmter Ort",
-    "FILTER_HINT": "Umfasst alles darin."
+    "FILTER_HINT": "Umfasst alles darin.",
+    "TYPED_PLACE_PROPOSED": "„{{value}}“ steht nicht in unserer Liste. Wir senden den Namen zur Prüfung an die Moderation; hier wird der nächste bekannte Bereich verwendet.",
+    "TYPED_PLACE_NOT_SAVED": "„{{value}}“ steht nicht in unserer Liste, und ein neuer Name kann ohne Anmeldung nicht gespeichert werden; hier wird der nächste bekannte Bereich verwendet.",
+    "TYPED_PLACE_HINT": "Aus der Liste wählen oder den Namen eintippen, falls er fehlt."
   },
   "ADMIN_GEO": {
     "TITLE": "Standortverwaltung",
