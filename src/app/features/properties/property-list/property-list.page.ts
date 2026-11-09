@@ -7,6 +7,7 @@ import {
   Component,
   DestroyRef,
   HostListener,
+  Injector,
   OnInit,
   computed,
   inject,
@@ -31,7 +32,7 @@ import {
   pickLocalizedName
 } from '../../../core/api/lookups-api.service';
 import { AuthService } from '../../../core/auth/auth.service';
-import { LanguageService } from '../../../core/services/language.service';
+import { LangCode, LanguageService } from '../../../core/services/language.service';
 import { PagedResult } from '../../../core/models/api.model';
 import { Property, PropertyFilterDto } from '../../../core/models/property.model';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -58,6 +59,9 @@ import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
 import { AdSlotComponent } from '../../../core/ads/ad-slot.component';
 import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count.component';
 import { listSeparator } from '../../../core/i18n/ui-language';
+import { GeoPlaceFilterComponent } from '../../../shared/ui/geo/geo-place-filter.component';
+import { LocationsApiService } from '../../../core/api/locations-api.service';
+import { GeoLocation } from '../../../core/models/geo-location.model';
 
 @Component({
   selector: 'app-property-list',
@@ -75,7 +79,8 @@ import { listSeparator } from '../../../core/i18n/ui-language';
     SkeletonCardGridComponent,
     ImageFallbackDirective,
     FavoriteToggleButtonComponent,
-    PropertyShareButtonComponent
+    PropertyShareButtonComponent,
+    GeoPlaceFilterComponent
   ],
   templateUrl: './property-list.page.html',
   styleUrls: ['./property-list.page.scss']
@@ -96,6 +101,8 @@ export class PropertyListPage implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly langService = inject(LanguageService);
+  /** The place catalog is only asked when a link carries a place, so the list renders without it otherwise. */
+  private readonly injector = inject(Injector);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
@@ -149,6 +156,9 @@ export class PropertyListPage implements OnInit {
   readonly neighborhoods = signal<StructuredLocationLookup[]>([]);
   readonly propertyTypeCatalog = signal<PropertyTypeLookup[]>([]);
   governorateId: number | null = null;
+  /** A catalog place of any level chosen in the "specific place" box; the API filters by everything inside it. */
+  locationId: number | null = null;
+  readonly locationPlace = signal<GeoLocation | null>(null);
   districtId: number | null = null;
   neighborhoodId: number | null = null;
   propertyTypeId: number | null = null;
@@ -338,6 +348,37 @@ export class PropertyListPage implements OnInit {
   }
 
   /** Cascading dropdown handler — mirrors property-form.page.ts's bindCascadingLocationChanges. */
+  get currentLang(): LangCode { return this.langService.getCurrent(); }
+
+  /** The "specific place" box: a place replaces the older governorate/district/neighborhood/city narrowing. */
+  onPlaceFilterPicked(place: GeoLocation | null): void {
+    this.locationPlace.set(place);
+    this.locationId = place?.id ?? null;
+    if (place) {
+      this.governorateId = null;
+      this.districtId = null;
+      this.neighborhoodId = null;
+      this.cityFilter = '';
+      this.districts.set([]);
+      this.neighborhoods.set([]);
+      this.citySuggestionScope.next(null);
+    }
+  }
+
+  /** Restores the box after a reload or a shared link: only the id is in the URL, the name comes from the catalog. */
+  private applyLocationFromUrl(raw: string | null): void {
+    const id = raw ? Math.trunc(Number(raw)) : 0;
+    this.locationId = id > 0 ? id : null;
+    if (!this.locationId) {
+      this.locationPlace.set(null);
+      return;
+    }
+    if (this.locationPlace()?.id === this.locationId) return;
+    this.injector.get(LocationsApiService).get(this.locationId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: place => this.locationPlace.set(place), error: () => this.locationPlace.set(null) });
+  }
+
   onGovernorateChange(): void {
     // The free-text city is a second, unrelated way to name the same place — keeping a city
     // typed for the previous governorate would send a contradictory combination that can only
@@ -345,6 +386,8 @@ export class PropertyListPage implements OnInit {
     this.cityFilter = '';
     this.districtId = null;
     this.neighborhoodId = null;
+    this.locationId = null;
+    this.locationPlace.set(null);
     this.districts.set([]);
     this.neighborhoods.set([]);
     this.citySuggestionScope.next(this.governorateId);
@@ -395,6 +438,7 @@ export class PropertyListPage implements OnInit {
     this.currencyCode = isMarketCurrency(urlCurrency) ? urlCurrency : this.defaultCurrencyCode();
 
     this.governorateId = params.get('governorateId') ? Number(params.get('governorateId')) : null;
+    this.applyLocationFromUrl(params.get('locationId'));
     this.districtId = params.get('districtId') ? Number(params.get('districtId')) : null;
     this.neighborhoodId = params.get('neighborhoodId') ? Number(params.get('neighborhoodId')) : null;
     this.propertyTypeId = params.get('propertyTypeId') ? Number(params.get('propertyTypeId')) : null;
@@ -443,6 +487,7 @@ export class PropertyListPage implements OnInit {
       governorateId: this.governorateId ?? undefined,
       districtId: this.districtId ?? undefined,
       neighborhoodId: this.neighborhoodId ?? undefined,
+      locationId: this.locationId ?? undefined,
       propertyTypeId: this.propertyTypeId ?? undefined
     };
   }
@@ -468,6 +513,7 @@ export class PropertyListPage implements OnInit {
       governorateId: this.governorateId ?? null,
       districtId: this.districtId ?? null,
       neighborhoodId: this.neighborhoodId ?? null,
+      locationId: this.locationId ?? null,
       propertyTypeId: this.propertyTypeId ?? null,
       page: page > 1 ? page : null,
       pageSize: this.pageSize() !== 20 ? this.pageSize() : null
@@ -679,6 +725,7 @@ export class PropertyListPage implements OnInit {
     if (this.governorateId) count++;
     if (this.districtId) count++;
     if (this.neighborhoodId) count++;
+    if (this.locationId) count++;
     if (this.propertyTypeId) count++;
 
     return count;
@@ -763,6 +810,8 @@ export class PropertyListPage implements OnInit {
     this.governorateId = null;
     this.districtId = null;
     this.neighborhoodId = null;
+    this.locationId = null;
+    this.locationPlace.set(null);
     this.propertyTypeId = null;
     this.districts.set([]);
     this.neighborhoods.set([]);

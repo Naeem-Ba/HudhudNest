@@ -104,6 +104,18 @@
           </div>
         </div>
 
+        <!-- One box that finds a place of any level (street, neighborhood, city…) in the location catalog. -->
+        <div class="filter-group">
+          <label class="filter-label" for="geo-place-filter-main">{{ 'GEO.FILTER_LABEL' | translate }}</label>
+          <app-geo-place-filter
+            inputId="geo-place-filter-main"
+            [lang]="currentLang"
+            [selected]="locationPlace()"
+            (picked)="onPlaceFilterPicked($event)"
+          ></app-geo-place-filter>
+          <small class="filter-hint">{{ 'GEO.FILTER_HINT' | translate }}</small>
+        </div>
+
         <!-- Location, broadest to narrowest: governorate -> city -> district -> neighborhood.
              Choosing a governorate narrows the city suggestions and the district list to it;
              every level is optional. -->

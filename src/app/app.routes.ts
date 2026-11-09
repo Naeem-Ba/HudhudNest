@@ -632,6 +632,16 @@ export const routes: Routes = [
             .then(m => m.AdminLocationSuggestionsPage)
       },
 
+      {
+        // Hybrid location catalog administration: place requests, hierarchy, policy, import, change log.
+        // Backend: AdminLocationsController (Admin role); AdminGuard is only the UX gate.
+        path: 'admin/geo',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/geo/geo-admin.page')
+            .then(m => m.AdminGeoPage)
+      },
+
       // Admin Investment Portal (Phase 2) — backend: AdminInvestmentsController,
       // [Authorize(Roles = "Admin")] on every action; AdminGuard here is a UX
       // convenience, the server remains the real boundary. 'new' is registered

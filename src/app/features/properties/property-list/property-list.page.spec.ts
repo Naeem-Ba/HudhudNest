@@ -22,6 +22,9 @@ import { PropertyListPage } from './property-list.page';
 import { PropertyApiService } from '../../../core/api/property-api.service';
 import { SavedSearchApiService } from '../../../core/api/saved-search-api.service';
 import { CurrencyLookup, LookupsApiService } from '../../../core/api/lookups-api.service';
+import { LocationsApiService } from '../../../core/api/locations-api.service';
+import { GeoLocation, GeoLocationType } from '../../../core/models/geo-location.model';
+import { locationsApiStub } from '../../../shared/ui/geo/locations-api.stub.spec';
 import { PageMetaService } from '../../../core/services/page-meta.service';
 import { PreferencesService } from '../../../core/services/preferences.service';
 import { InterestAreasService } from '../../../core/services/interest-areas.service';
@@ -60,10 +63,18 @@ function toParamMap(queryParams: Record<string, unknown>): ParamMap {
   return convertToParamMap(clean);
 }
 
+function place(id: number, type: GeoLocationType, nameAr: string, nameEn: string): GeoLocation {
+  return {
+    id, type, parentId: 1, countryCode: 'SY', officialName: nameEn, nameAr, nameEn, nameDe: null, latitude: null, longitude: null,
+    path: [], legacy: { governorateId: null, districtId: null, neighborhoodId: null }, matchedAlias: null
+  };
+}
+
 describe('PropertyListPage', () => {
   let component: PropertyListPage;
   let propertyApiSpy: jasmine.SpyObj<PropertyApiService>;
   let lookupsApiSpy: jasmine.SpyObj<LookupsApiService>;
+  let locationsApiSpy: jasmine.SpyObj<LocationsApiService>;
   let routerSpy: jasmine.SpyObj<Router>;
   let paramMapSubject: BehaviorSubject<ParamMap>;
   let interestParam: string | undefined;
@@ -103,6 +114,9 @@ describe('PropertyListPage', () => {
     lookupsApiSpy.getDistricts.and.returnValue(of([]));
     lookupsApiSpy.getNeighborhoods.and.returnValue(of([]));
 
+    locationsApiSpy = locationsApiStub();
+    locationsApiSpy.get.and.returnValue(of(place(77, 'Neighborhood', 'الجادات', 'Jadat')));
+
     const authSpy = jasmine.createSpyObj('AuthService', ['getAccessToken']);
     authSpy.getAccessToken.and.returnValue(null);
 
@@ -112,6 +126,7 @@ describe('PropertyListPage', () => {
         { provide: PropertyApiService, useValue: propertyApiSpy },
         { provide: SavedSearchApiService, useValue: jasmine.createSpyObj('SavedSearchApiService', ['create']) },
         { provide: LookupsApiService, useValue: lookupsApiSpy },
+        { provide: LocationsApiService, useValue: locationsApiSpy },
         { provide: AuthService, useValue: authSpy },
         { provide: LanguageService, useValue: { getCurrent: () => 'ar' } },
         { provide: PreferencesService, useValue: { currency: preferredCurrency } },
@@ -165,6 +180,7 @@ describe('PropertyListPage', () => {
       governorateId: undefined,
       districtId: undefined,
       neighborhoodId: undefined,
+      locationId: undefined,
       propertyTypeId: undefined
     });
   });
@@ -650,4 +666,48 @@ describe('PropertyListPage', () => {
       expect(component.properties()).toEqual([{ id: 'aleppo-1' } as Property]);
     });
   });
+
+  describe('بحث المكان (locationId)', () => {
+    it('✅ اختيار مكان يرسل locationId ويمسح فلتر المحافظة والمنطقة والمدينة', () => {
+      component.governorateId = 1;
+      component.districtId = 11;
+      component.cityFilter = 'Damascus';
+
+      component.onPlaceFilterPicked(place(77, 'Neighborhood', 'الجادات', 'Jadat'));
+      component.applyFilters();
+
+      const req = lastRequest();
+      expect(req.locationId).toBe(77);
+      expect(req.governorateId).toBeUndefined();
+      expect(req.districtId).toBeUndefined();
+      expect(req.city).toBeUndefined();
+    });
+
+    it('✅ locationId في الرابط يُرسل للـ API ويُجلب اسم المكان للعرض', () => {
+      component = createComponent({ locationId: '77' });
+
+      expect(lastRequest().locationId).toBe(77);
+      expect(locationsApiSpy.get).toHaveBeenCalledWith(77);
+      expect(component.locationPlace()?.nameEn).toBe('Jadat');
+    });
+
+    it('✅ locationId غير صالح في الرابط يُتجاهل', () => {
+      component = createComponent({ locationId: 'abc' });
+      expect(lastRequest().locationId).toBeUndefined();
+      expect(locationsApiSpy.get).not.toHaveBeenCalled();
+    });
+
+    it('✅ تغيير المحافظة يمسح المكان المحدّد، وإعادة الضبط تمسحه من الحالة', () => {
+      component.onPlaceFilterPicked(place(77, 'Neighborhood', 'الجادات', 'Jadat'));
+      component.governorateId = 2;
+      component.onGovernorateChange();
+      expect(component.locationId).toBeNull();
+      expect(component.locationPlace()).toBeNull();
+
+      component.onPlaceFilterPicked(place(78, 'Street', 'شارع', 'Street'));
+      component.resetFilters();
+      expect(component.locationId).toBeNull();
+    });
+  });
+
 });

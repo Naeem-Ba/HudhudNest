@@ -60,6 +60,8 @@ export interface Property {
   // listings created before this feature have none of these set, and the
   // free-text city/region fields keep working exactly as before.
   governorateId?: number | null;
+  /** The most specific place of the location catalog (any level, governorate down to street). */
+  locationId?: number | null;
   districtId?: number | null;
   // Manual fallback name when districtId has no matching seeded row —
   // submitted automatically as an admin-reviewed LocationSuggestion.
@@ -157,6 +159,8 @@ export interface PropertyFilterDto {
   governorateId?: number;
   districtId?: number;
   neighborhoodId?: number;
+  /** Everything inside this catalog place, however deep (a governorate finds its neighborhoods' listings too). */
+  locationId?: number;
   propertyTypeId?: number;
 
   // Type & Status
@@ -217,6 +221,7 @@ export interface CreatePropertyDto {
   // property-form.page.ts for the interface actually sent on the wire; kept
   // here in sync anyway since this DTO documents the backend contract.
   governorateId?: number | null;
+  locationId?: number | null;
   districtId?: number | null;
   neighborhoodId?: number | null;
   neighborhoodText?: string | null;

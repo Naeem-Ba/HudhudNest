@@ -1,3 +1,32 @@
+<div class="map-search" *ngIf="interactive && searchable">
+  <form class="map-search__form" (submit)="$event.preventDefault(); runSearch()" role="search">
+    <input
+      type="search"
+      class="map-search__input"
+      [value]="searchText()"
+      (input)="searchText.set($any($event.target).value)"
+      [placeholder]="searchText_('placeholder')"
+      [attr.aria-label]="searchText_('placeholder')"
+      maxlength="150"
+      autocomplete="off"
+    />
+    <button type="submit" class="map-search__btn" [disabled]="searching() || searchText().trim().length < 3">
+      {{ searching() ? searchText_('searching') : searchText_('button') }}
+    </button>
+  </form>
+
+  <ul class="map-search__results" *ngIf="searchResults().length" role="listbox">
+    <li *ngFor="let r of searchResults()" role="option">
+      <button type="button" class="map-search__result" (click)="chooseSearchResult(r)">
+        <span class="map-search__name">{{ r.name }}</span>
+        <span class="map-search__crumb" *ngIf="r.displayName && r.displayName !== r.name">{{ r.displayName }}</span>
+      </button>
+    </li>
+  </ul>
+  <p class="map-search__note" *ngIf="searchNotice() as note" role="status">{{ note }}</p>
+  <p class="map-search__attr" *ngIf="searchAttribution() && searchResults().length">{{ searchAttribution() }}</p>
+</div>
+
 <div class="map-wrapper" [class.map-wrapper--readonly]="!interactive">
   <div #mapElement class="map-canvas" role="application"
     [attr.aria-label]="lang === 'ar' ? 'خريطة موقع العقار' : lang === 'de' ? 'Karte des Immobilienstandorts' : 'Property location map'"></div>
