@@ -143,6 +143,15 @@ describe('getFriendlyApiErrorMessage — agency eligibility codes are translated
     });
   });
 
+  it('BOOKING_DUPLICATE_OPEN (a 409) is translated too, not shown in Arabic to an English reader', () => {
+    const message = getFriendlyApiErrorMessage(
+      fail(409, { title: 'Conflict', status: 409, message: 'لديك طلب حجز قائم لهذه الوحدة', code: 'BOOKING_DUPLICATE_OPEN' }),
+      translate
+    );
+
+    expect(message).toBe('API_ERRORS.BOOKING_DUPLICATE_OPEN');
+  });
+
   it('an unknown 403 code keeps showing the server message', () => {
     const message = getFriendlyApiErrorMessage(
       fail(403, { message: 'Only the agency owner can invite members.', code: 'SOMETHING_ELSE' }),

@@ -1,13 +1,14 @@
-import { APP_INITIALIZER, ApplicationConfig, ErrorHandler, importProvidersFrom } from '@angular/core';
+import { APP_INITIALIZER, ApplicationConfig, ErrorHandler, importProvidersFrom, inject } from '@angular/core';
 import { HttpErrorResponse, provideHttpClient, withInterceptors, HttpBackend, HttpClient } from '@angular/common/http';
 import { provideRouter, withNavigationErrorHandler } from '@angular/router';
 import { firstValueFrom, timeout, TimeoutError } from 'rxjs';
 
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import { routes } from './app.routes';
 import { ClientErrorHandler } from './core/diagnostics/client-error-handler';
+import { ToastService } from './shared/services/toast.service';
 import { ApiErrorInterceptor } from './core/interceptors/api-error.interceptor';
 import { AuthInterceptor } from './core/interceptors/auth-interceptor';
 import { CsrfInterceptor } from './core/interceptors/csrf.interceptor';
@@ -20,7 +21,7 @@ import { CsrfTokenService } from './core/services/csrf-token.service';
 import { GeoCountryService } from './core/services/geo-country.service';
 import { LanguageService } from './core/services/language.service';
 import { resolveFirstVisitLanguage, toSupportedLanguage } from './core/i18n/first-visit-language';
-import { browserStaleChunkReloadDeps, reloadForStaleChunk } from './core/services/stale-chunk-reload';
+import { browserStaleChunkReloadDeps, isChunkLoadError, reloadForStaleChunk } from './core/services/stale-chunk-reload';
 import { TokenStorageService } from './core/services/token-storage.service';
 import { environment } from '../environments/environment';
 
@@ -185,7 +186,13 @@ export const appConfig: ApplicationConfig = {
     provideRouter(
       routes,
       withNavigationErrorHandler(navigationError => {
-        reloadForStaleChunk(navigationError.error, navigationError.url, browserStaleChunkReloadDeps());
+        const deps = browserStaleChunkReloadDeps();
+        // Offline, a page that was never opened cannot load: say so instead of doing nothing.
+        if (isChunkLoadError(navigationError.error) && deps.isOnline && !deps.isOnline()) {
+          inject(ToastService).error(inject(TranslateService).instant('API_ERRORS.NETWORK'));
+          return;
+        }
+        reloadForStaleChunk(navigationError.error, navigationError.url, deps);
       })
     ),
     provideHttpClient(withInterceptors([CsrfInterceptor, AuthInterceptor, ApiErrorInterceptor])),

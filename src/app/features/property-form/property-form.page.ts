@@ -134,6 +134,12 @@ function positiveNumber(control: AbstractControl): ValidationErrors | null {
   return value === null || value > 0 ? null : { positiveNumber: true };
 }
 
+/** `rooms` and `floor` are whole numbers on the server (int); a half room used to end in a bare 400. */
+function wholeNumber(control: AbstractControl): ValidationErrors | null {
+  const value = toNumberOrNull(control.value);
+  return value === null || Number.isInteger(value) ? null : { wholeNumber: true };
+}
+
 function nonNegativeNumber(control: AbstractControl): ValidationErrors | null {
   const value = toNumberOrNull(control.value);
   return value === null || value >= 0 ? null : { nonNegativeNumber: true };
@@ -399,10 +405,10 @@ export class PropertyFormPage implements OnInit {
     purchasePrice: [null as number | null, positiveNumber],
     deposit: [null as number | null, nonNegativeNumber],
     additionalCosts: [null as number | null, nonNegativeNumber],
-    rooms: [null as number | null, [Validators.min(1), Validators.max(50)]],
+    rooms: [null as number | null, [Validators.min(1), Validators.max(50), wholeNumber]],
     area: [null as number | null, areaGreaterThanTen],
     areaUnit: [AREA_UNIT_SQUARE_METER, Validators.required],
-    floor: [null as number | null, Validators.min(0)],
+    floor: [null as number | null, [Validators.min(0), wholeNumber]],
     availableFrom: [null as string | null],
     heatingType: [0],
     hasBalcony: [false],
@@ -1318,6 +1324,8 @@ export class PropertyFormPage implements OnInit {
 
     if (this.f.governorateId.errors?.['required']) return 'PROPERTY_FORM.GOVERNORATE_REQUIRED';
     if (this.f.propertyTypeId.errors?.['required']) return 'PROPERTY_FORM.PROPERTY_TYPE_REQUIRED';
+    if (this.f.rooms.errors?.['wholeNumber']) return 'PROPERTY_FORM.ROOMS_WHOLE_NUMBER';
+    if (this.f.floor.errors?.['wholeNumber']) return 'PROPERTY_FORM.FLOOR_WHOLE_NUMBER';
     if (this.f.area.errors?.['areaGreaterThanTen']) return 'PROPERTY_FORM.AREA_TOO_SMALL';
     if (this.f.coldRent.errors?.['positiveNumber']) return 'PROPERTY_FORM.COLD_RENT_REQUIRED';
     if (this.f.warmRent.errors?.['positiveNumber']) return 'PROPERTY_FORM.WARM_RENT_REQUIRED';
