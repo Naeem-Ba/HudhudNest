@@ -146,6 +146,12 @@ describe('PropertyFormPage', () => {
 
   // ────────────── Rent: تفاصيل الإيجار ──────────────
   describe('whole-number rooms and floor (P26-D02)', () => {
+    // Jasmine runs specs in random order. These specs read the shared `component` but never created it, so
+    // they only passed when an earlier spec had happened to assign it (TypeError on `form` otherwise).
+    beforeEach(() => {
+      component = createComponent();
+    });
+
     it('rejects half rooms: the server stores rooms as an integer', () => {
       component.form.patchValue({ rooms: 2.5 });
       expect(component.f.rooms.errors?.['wholeNumber']).toBeTrue();
