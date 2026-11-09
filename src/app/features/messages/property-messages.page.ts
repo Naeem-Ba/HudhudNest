@@ -29,7 +29,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { filter } from 'rxjs';
+import { debounceTime, filter, merge } from 'rxjs';
 
 import { MessagesApiService } from '../../core/api/messages-api.service';
 import { NotificationsApiService } from '../../core/api/notifications-api.service';
@@ -271,11 +271,19 @@ export class PropertyMessagesPage implements OnInit {
     this.load();
 
     // رد جديد يصل لحظيًا بخصوص هذا العقار → حدّث المحادثة المفتوحة (أو القائمة).
-    this.notificationsApi.realtime$
-      .pipe(
-        filter(n => n.type === 'NewMessage' && (!n.propertyId || n.propertyId === this.propertyId)),
-        takeUntilDestroyed(this.destroyRef)
-      )
+    //
+    // QA phase 25 (P25-D02): the notice alone was not enough. The server folds notices together while an
+    // unread message exists, so a second reply raised none and the open page stayed stale. The server now also
+    // sends a MessageReceived event for every message; both sources are merged and debounced so a reply that
+    // raises both refreshes once. A reconnect refreshes too: events raised while offline are not replayed.
+    merge(
+      this.notificationsApi.realtime$.pipe(
+        filter(n => n.type === 'NewMessage' && (!n.propertyId || n.propertyId === this.propertyId))
+      ),
+      this.notificationsApi.messageReceived$.pipe(filter(e => e.propertyId === this.propertyId)),
+      this.notificationsApi.resync$
+    )
+      .pipe(debounceTime(250), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.refreshCurrentView());
   }
 

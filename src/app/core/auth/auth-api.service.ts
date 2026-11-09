@@ -42,7 +42,8 @@ export class AuthApiService {
   }
 
   login(request: LoginRequest): Observable<AuthTokenResponse> {
-    return this.api.post<unknown>('/auth/login', request).pipe(
+    // اللغة ترافق الطلب كي يصل رابط التأكيد بلغة الصفحة إن كان البريد غير مؤكَّد.
+    return this.api.post<unknown>('/auth/login', withUiLanguage(request)).pipe(
       timeout(AUTH_REQUEST_TIMEOUT_MS),
       map(response => normalizeAuthTokenResponse(response)),
       tap(response => this.tokenStorage.storeTokens(response))

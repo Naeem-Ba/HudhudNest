@@ -107,6 +107,19 @@
         {{ message }}
       </div>
 
+      <!-- Right password, address never confirmed (P4-D11): a new link was already sent; offer another. -->
+      <p *ngIf="emailNotConfirmed && !success" class="auth-alert__help">
+        <button
+          type="button"
+          class="auth-switch__btn"
+          [disabled]="resendingConfirmation"
+          (click)="resendConfirmation()"
+          data-testid="resend-confirmation"
+        >
+          {{ 'AUTH.RESEND_CONFIRMATION.BUTTON' | translate }}
+        </button>
+      </p>
+
       <!-- After a rejected sign-in: what to do next. The sentence above is the same whether or not the
            account exists; these links are the next step for either case. -->
       <p *ngIf="credentialsFailed && !success" class="auth-alert__help">

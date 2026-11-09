@@ -60,6 +60,9 @@ export function routeForNotification(item: Pick<NotificationItem, 'type' | 'targ
       return ['/saved-searches'];
     case 'referrals':
       return ['/referrals'];
+    case 'investment':
+      // A project the person follows posted an update (QA phase 25, P25-D07); the public page decides who may see it.
+      return entityId ? ['/investments', entityId] : ['/investments'];
     default:
       return null;
   }

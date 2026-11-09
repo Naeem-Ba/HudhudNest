@@ -166,6 +166,44 @@ describe('LoginComponent', () => {
       expect(component.message).toBe('AUTH.ERRORS.RATE_LIMITED');
     });
 
+    // QA المرحلة 4 (P4-D11): كلمة سر صحيحة + بريد غير مؤكَّد = رفض بسبب واضح وزر إعادة إرسال، لا «بيانات خاطئة».
+    it('✅ EMAIL_NOT_CONFIRMED يعرض رسالة التأكيد ويُظهر زر إعادة الإرسال لا «بيانات خاطئة»', () => {
+      authApi.login.and.returnValue(throwError(() => httpError(403, { errorCode: 'EMAIL_NOT_CONFIRMED' })));
+      component.loginData = { Email: ' New@Example.com ', Password: 'x' };
+
+      component.onLogin(fakeForm());
+
+      expect(component.message).toBe('AUTH.ERRORS.EMAIL_NOT_CONFIRMED');
+      expect(component.emailNotConfirmed).toBeTrue();
+      expect(component.credentialsFailed).toBeFalse();
+    });
+
+    it('✅ إعادة الإرسال تستدعي نقطة التأكيد بالبريد نفسه وتعرض رسالة النجاح', () => {
+      authApi.login.and.returnValue(throwError(() => httpError(403, { errorCode: 'EMAIL_NOT_CONFIRMED' })));
+      authApi.resendConfirmationEmail = jasmine.createSpy('resendConfirmationEmail').and.returnValue(of({ message: 'ok' }));
+      component.loginData = { Email: 'New@Example.com', Password: 'x' };
+      component.onLogin(fakeForm());
+
+      component.resendConfirmation();
+
+      expect(authApi.resendConfirmationEmail).toHaveBeenCalledOnceWith('new@example.com');
+      expect(component.message).toBe('AUTH.CONFIRMATION_RESENT');
+      expect(component.success).toBeTrue();
+      expect(component.emailNotConfirmed).toBeFalse();
+    });
+
+    it('✅ تجاوز حدّ إعادة الإرسال (429) يعرض رسالة الحدّ ويُبقي الزر', () => {
+      authApi.login.and.returnValue(throwError(() => httpError(403, { errorCode: 'EMAIL_NOT_CONFIRMED' })));
+      authApi.resendConfirmationEmail = jasmine.createSpy('resendConfirmationEmail').and.returnValue(throwError(() => httpError(429)));
+      component.loginData = { Email: 'new@example.com', Password: 'x' };
+      component.onLogin(fakeForm());
+
+      component.resendConfirmation();
+
+      expect(component.message).toBe('AUTH.RESEND_CONFIRMATION.TOO_MANY');
+      expect(component.emailNotConfirmed).toBeTrue();
+    });
+
     it('✅ لا يُرسل الطلب إذا كان النموذج غير صالح', () => {
       component.onLogin(fakeForm(true));
 

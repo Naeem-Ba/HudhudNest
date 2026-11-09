@@ -15,6 +15,8 @@ describe('routeForNotification', () => {
     expect(routeForNotification({ type: 'ListingDemandMatch', target: { kind: 'listing-demand', propertyId: '../x' } })).toEqual(['/search-requests/board']);
     expect(routeForNotification({ type: 'SavedSearchDigest', target: { kind: 'saved-searches', id: ENTITY } })).toEqual(['/saved-searches']);
     expect(routeForNotification({ type: 'ReferralQualified', target: { kind: 'referrals', id: ENTITY } })).toEqual(['/referrals']);
+    expect(routeForNotification({ type: 'InvestmentProjectUpdated', target: { kind: 'investment', id: ENTITY } })).toEqual(['/investments', ENTITY]);
+    expect(routeForNotification({ type: 'InvestmentProjectUpdated', target: { kind: 'investment', id: '../x' } })).toEqual(['/investments']);
   });
 
   it('sends provider-side service events to the provider request and requester events to my services', () => {

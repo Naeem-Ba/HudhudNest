@@ -22,6 +22,7 @@ import { LookupsApiService, PropertyTypeLookup } from '../../core/api/lookups-ap
 import { EnumService, EnumItem } from '../../core/services/enum.service';
 import { LanguageService } from '../../core/services/language.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { SKIP_ERROR_TOAST } from '../../core/interceptors/api-error.interceptor';
 
 const PROPERTY_TYPES: PropertyTypeLookup[] = [
   { id: 1, code: 'apartment', nameAr: 'شقة سكنية', nameEn: 'Apartment', category: 'Residential', icon: null },
@@ -102,6 +103,38 @@ describe('PropertyFormPage', () => {
     instance.ngOnInit(); // see file header — deliberately not fixture.detectChanges()
     return instance;
   }
+
+  // QA phase 25 (P25-D05): a failed photo upload after a successful save raised three toasts (the interceptor's
+  // generic error, the warning and "saved"). It must be exactly one: the warning that says both things.
+  describe('photo upload failing after the listing was saved', () => {
+    it('shows one toast, skips the interceptor toast, and still goes to the new listing', () => {
+      component = createComponent();
+      propertyApiSpy.uploadImages.and.returnValue(throwError(() => new Error('cloudinary down')));
+      const toast = TestBed.inject(ToastService) as jasmine.SpyObj<ToastService>;
+      const router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+      component.selectedFiles.set([new File(['x'], 'a.jpg', { type: 'image/jpeg' })]);
+
+      (component as unknown as { uploadImages(id: string): void }).uploadImages('new-id');
+
+      const options = propertyApiSpy.uploadImages.calls.mostRecent().args[2];
+      expect(options?.context?.get(SKIP_ERROR_TOAST)).toBeTrue();
+      expect(toast.error).toHaveBeenCalledTimes(1);
+      expect(toast.success).not.toHaveBeenCalled();
+      expect(router.navigate).toHaveBeenCalledWith(['/properties', 'new-id']);
+    });
+
+    it('a successful upload still announces the save once', () => {
+      component = createComponent();
+      propertyApiSpy.uploadImages.and.returnValue(of([]));
+      const toast = TestBed.inject(ToastService) as jasmine.SpyObj<ToastService>;
+      component.selectedFiles.set([new File(['x'], 'a.jpg', { type: 'image/jpeg' })]);
+
+      (component as unknown as { uploadImages(id: string): void }).uploadImages('new-id');
+
+      expect(toast.success).toHaveBeenCalledTimes(1);
+      expect(toast.error).not.toHaveBeenCalled();
+    });
+  });
 
   function selectApartment(): void {
     component.form.patchValue({ propertyTypeId: 1 });

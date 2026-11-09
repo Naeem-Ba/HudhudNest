@@ -167,6 +167,17 @@
                 : ('MY_LISTINGS.PUBLISH' | translate) }}
           </button>
           <button
+            *ngIf="canHide(p)"
+            type="button"
+            class="btn btn--secondary btn--hide"
+            [disabled]="hidingId() === p.id"
+            (click)="hide(p.id)"
+          >
+            {{ hidingId() === p.id
+                ? ('COMMON.SAVING' | translate)
+                : ('MY_LISTINGS.HIDE' | translate) }}
+          </button>
+          <button
             type="button"
             class="btn btn--secondary"
             (click)="openMessages(p.id)"

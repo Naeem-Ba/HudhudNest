@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
-import { filter } from 'rxjs';
+import { debounceTime, filter, merge } from 'rxjs';
 
 import { MessagesApiService } from '../../core/api/messages-api.service';
 import { NotificationsApiService } from '../../core/api/notifications-api.service';
@@ -99,8 +99,13 @@ export class MessagesInboxPage implements OnInit {
     this.reload();
 
     // رسالة جديدة تصل لحظيًا (SignalR) → تحديث القائمة كي يظهر الرد وعدّاد غير المقروء فورًا.
-    this.notificationsApi.realtime$
-      .pipe(filter(n => n.type === 'NewMessage'), takeUntilDestroyed(this.destroyRef))
+    // QA phase 25 (P25-D02): MessageReceived arrives for every message, also when the notice was folded away.
+    merge(
+      this.notificationsApi.realtime$.pipe(filter(n => n.type === 'NewMessage')),
+      this.notificationsApi.messageReceived$,
+      this.notificationsApi.resync$
+    )
+      .pipe(debounceTime(250), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.reload(false));
   }
 
