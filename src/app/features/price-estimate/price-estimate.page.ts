@@ -1,5 +1,5 @@
 import { PageMetaService } from '../../core/services/page-meta.service';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, Injector, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -8,6 +8,8 @@ import { AreaPriceRow, PriceEstimate, PriceEstimateApiService, PriceKind } from 
 import { LookupsApiService, PropertyTypeLookup, StructuredLocationLookup, pickLocalizedName } from '../../core/api/lookups-api.service';
 import { currentUiLanguage } from '../../core/i18n/ui-language';
 import { formatListingPrice } from '../../shared/utils/listing-price';
+import { ComboBoxComponent, ComboOption } from '../../shared/ui/combo-box.component';
+import { PlaceProposalService } from '../../core/api/place-proposal.service';
 
 /**
  * Public "what do similar listings ask?" page (growth engine P6). Shows a range from live asking prices with
@@ -17,7 +19,7 @@ import { formatListingPrice } from '../../shared/utils/listing-price';
 @Component({
   selector: 'app-price-estimate',
   standalone: true,
-  imports: [FormsModule, RouterModule, TranslateModule],
+  imports: [FormsModule, RouterModule, TranslateModule, ComboBoxComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="pe-page">
@@ -39,12 +41,25 @@ import { formatListingPrice } from '../../shared/utils/listing-price';
               @for (g of governorates(); track g.id) { <option [ngValue]="g.id">{{ name(g) }}</option> }
             </select>
           </label>
-          <label>{{ 'PRICE_ESTIMATE.DISTRICT' | translate }}
-            <select name="districtId" [(ngModel)]="districtId" [disabled]="!districts().length">
-              <option [ngValue]="null">{{ 'PRICE_ESTIMATE.ANY' | translate }}</option>
-              @for (d of districts(); track d.id) { <option [ngValue]="d.id">{{ name(d) }}</option> }
-            </select>
-          </label>
+          <div class="pe-form__field">
+            <label for="pe-district">{{ 'PRICE_ESTIMATE.DISTRICT' | translate }}</label>
+            <app-combo-box
+              inputId="pe-district"
+              name="districtId"
+              [options]="districtOptions()"
+              [allowCustom]="true"
+              [customValue]="districtText"
+              [disabled]="!governorateId"
+              [(ngModel)]="districtId"
+              (customText)="onDistrictTyped($event)"
+              [placeholder]="'PRICE_ESTIMATE.ANY' | translate"
+            ></app-combo-box>
+            @if (districtText.trim()) {
+              <small class="pe-form__note" role="status">
+                {{ (canProposePlaces ? 'GEO.TYPED_PLACE_PROPOSED' : 'GEO.TYPED_PLACE_NOT_SAVED') | translate: { value: districtText.trim() } }}
+              </small>
+            }
+          </div>
           <label>{{ 'PRICE_ESTIMATE.PROPERTY_TYPE' | translate }}
             <select name="propertyTypeId" [(ngModel)]="propertyTypeId">
               <option [ngValue]="null">{{ 'PRICE_ESTIMATE.ANY' | translate }}</option>
@@ -137,6 +152,20 @@ export class PriceEstimatePage implements OnInit {
   readonly governorates = signal<StructuredLocationLookup[]>([]);
   readonly districts = signal<StructuredLocationLookup[]>([]);
   readonly propertyTypes = signal<PropertyTypeLookup[]>([]);
+
+  /** Resolved on first use: only a typed place needs it, and the page renders without the catalog otherwise. */
+  private readonly injector = inject(Injector);
+  private get placeProposals(): PlaceProposalService {
+    return this.injector.get(PlaceProposalService);
+  }
+  readonly districtOptions = computed<ComboOption[]>(() =>
+    this.districts().map(d => ({ value: d.id, label: this.name(d) })));
+  /**
+   * A district typed because it is not in the list. The estimate works from the governorate and the districts that
+   * have prices, so a new name cannot refine it: it is proposed to the administrators (signed-in people) and the
+   * estimate covers the governorate (or the district already chosen).
+   */
+  districtText = '';
   readonly result = signal<PriceEstimate | null>(null);
   readonly areaRows = signal<AreaPriceRow[]>([]);
   readonly loading = signal(false);
@@ -159,8 +188,17 @@ export class PriceEstimatePage implements OnInit {
     return pickLocalizedName(item, currentUiLanguage() ?? 'ar');
   }
 
+  get canProposePlaces(): boolean {
+    return this.placeProposals.canPropose();
+  }
+
+  onDistrictTyped(text: string | null): void {
+    this.districtText = text ?? '';
+  }
+
   onGovernorate(id: number): void {
     this.districtId = null;
+    this.districtText = '';
     this.districts.set([]);
     if (!id) return;
     this.lookups.getDistricts(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({ next: d => this.districts.set(d ?? []), error: () => undefined });
@@ -170,6 +208,10 @@ export class PriceEstimatePage implements OnInit {
     if (!this.governorateId || !(this.area > 0)) return;
     this.loading.set(true);
     this.failed.set(false);
+    const typedDistrict = this.districtText.trim();
+    if (typedDistrict) {
+      this.placeProposals.propose({ governorateId: this.governorateId, type: 'District', name: typedDistrict }).subscribe();
+    }
     this.api.estimate({
       kind: this.kind, governorateId: this.governorateId, districtId: this.districtId,
       propertyTypeId: this.propertyTypeId, area: this.area, currency: this.currency

@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { BehaviorSubject, of, throwError } from 'rxjs';
+import { Router } from '@angular/router';
 
 import { LocationNamesService } from '../../core/api/location-names.service';
 import { LookupsApiService } from '../../core/api/lookups-api.service';
@@ -21,7 +22,10 @@ describe('HomeComponent — latest listings', () => {
   let api: jasmine.SpyObj<PropertyApiService>;
   let interest$: BehaviorSubject<string | undefined>;
 
+  let lang$: BehaviorSubject<string>;
+
   function create() {
+    lang$ = new BehaviorSubject<string>('ar');
     api = jasmine.createSpyObj('PropertyApiService', ['getProperties']);
     interest$ = new BehaviorSubject<string | undefined>(undefined);
 
@@ -33,10 +37,18 @@ describe('HomeComponent — latest listings', () => {
         { provide: InterestAreasService, useValue: { param$: interest$.asObservable() } },
         {
           provide: LookupsApiService,
-          useValue: { getCities: () => of([]), getPropertyTypeCatalog: () => of([]) }
+          useValue: {
+            getGovernorates: () => of([
+              { id: 1, nameAr: 'دمشق', nameEn: 'Damascus', nameDe: null },
+              { id: 2, nameAr: 'حلب', nameEn: 'Aleppo', nameDe: null }
+            ]),
+            getPropertyTypeCatalog: () => of([
+              { id: 7, code: 'apartment', nameAr: 'شقة', nameEn: 'Apartment', category: 'Residential' }
+            ])
+          }
         },
         { provide: LocationNamesService, useValue: { city: () => 'Damascus', region: () => '', cityName: (c: string) => c, governorateName: () => '', locationLabel: () => '' } },
-        { provide: LanguageService, useValue: { getCurrent: () => 'ar' } },
+        { provide: LanguageService, useValue: { getCurrent: () => lang$.value, currentLang$: lang$.asObservable() } },
         { provide: PageMetaService, useValue: jasmine.createSpyObj('PageMetaService', ['applyTranslated']) },
         { provide: UrlService, useValue: { buildResponsiveUrl: () => null, buildResponsiveSrcSet: () => null } }
       ]
@@ -104,5 +116,61 @@ describe('HomeComponent — latest listings', () => {
     const badges = fixture.nativeElement.querySelectorAll('.badge--area');
     expect(badges.length).toBe(1);
     expect(badges[0].closest('a, article, .prop-card')?.textContent).toContain('T-local-ad');
+  });
+
+  describe('hero search', () => {
+    function ready() {
+      const fixture = create();
+      api.getProperties.and.returnValue(of([]));
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    it('lists the governorates in the visitor\'s language only, never both spellings', () => {
+      const fixture = ready();
+      expect(fixture.componentInstance.governorateOptions.map(o => o.label)).toEqual(['دمشق', 'حلب']);
+
+      lang$.next('en');
+      expect(fixture.componentInstance.governorateOptions.map(o => o.label)).toEqual(['Damascus', 'Aleppo']);
+    });
+
+    it('lists the property types in the visitor\'s language', () => {
+      const fixture = ready();
+      expect(fixture.componentInstance.propertyTypeOptions.map(o => o.label)).toEqual(['شقة']);
+    });
+
+    it('opens the full list from the arrow of the location and type fields (no native datalist)', () => {
+      const fixture = ready();
+      const host: HTMLElement = fixture.nativeElement;
+      expect(host.querySelector('datalist')).toBeNull();
+
+      (host.querySelector('#heroSearchCity')!.closest('app-combo-box')!.querySelector('.combo__toggle') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(Array.from(host.querySelectorAll('.combo__option')).map(e => e.textContent!.trim())).toEqual(['دمشق', 'حلب']);
+    });
+
+    it('searches by ids so the results do not depend on the language the owner typed the city in', () => {
+      const fixture = ready();
+      const navigate = spyOn(TestBed.inject(Router), 'navigate');
+      const home = fixture.componentInstance;
+      home.searchGovernorateId = 2;
+      home.searchPropertyTypeId = 7;
+      home.searchListingType = 'ForRent';
+
+      home.submitHeroSearch();
+
+      expect(navigate).toHaveBeenCalledWith(['/properties'], {
+        queryParams: { governorateId: 2, propertyTypeId: 7, listingType: 'ForRent' }
+      });
+    });
+
+    it('sends nothing for fields left empty', () => {
+      const fixture = ready();
+      const navigate = spyOn(TestBed.inject(Router), 'navigate');
+
+      fixture.componentInstance.submitHeroSearch();
+
+      expect(navigate).toHaveBeenCalledWith(['/properties'], { queryParams: {} });
+    });
   });
 });

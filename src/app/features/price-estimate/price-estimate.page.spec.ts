@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 import { PriceEstimate, PriceEstimateApiService } from '../../core/api/price-estimate-api.service';
+import { PlaceProposalService } from '../../core/api/place-proposal.service';
 import { LookupsApiService } from '../../core/api/lookups-api.service';
 import { PriceEstimatePage } from './price-estimate.page';
 
@@ -53,6 +54,23 @@ describe('PriceEstimatePage', () => {
     expect(api.estimate).not.toHaveBeenCalled();
     const button = (fixture.nativeElement as HTMLElement).querySelector('[data-testid="pe-submit"]') as HTMLButtonElement;
     expect(button.disabled).toBeTrue();
+  });
+
+  it('a district typed by hand does not refine the estimate: it is proposed and the governorate is used', () => {
+    const fixture = create();
+    const page = fixture.componentInstance;
+    const proposals = jasmine.createSpyObj<PlaceProposalService>('PlaceProposalService', ['propose', 'canPropose']);
+    proposals.propose.and.returnValue(of(true));
+    (page as unknown as { injector: unknown }).injector = { get: () => proposals };
+    api.estimate.and.returnValue(of(estimate()));
+
+    page.governorateId = 1;
+    page.area = 100;
+    page.onDistrictTyped('الشعلان');
+    page.submit();
+
+    expect(api.estimate.calls.mostRecent().args[0].districtId).toBeNull();
+    expect(proposals.propose).toHaveBeenCalledOnceWith({ governorateId: 1, type: 'District', name: 'الشعلان' });
   });
 
   it('shows the range with the number of listings and only the all-types rows', () => {

@@ -4,6 +4,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 import { AnonymousSearchRequest, SearchRequest, SearchRequestApiService } from '../../core/api/search-request-api.service';
 import { LookupsApiService } from '../../core/api/lookups-api.service';
+import { PlaceProposalService } from '../../core/api/place-proposal.service';
 import { PropertyApiService } from '../../core/api/property-api.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { MySearchRequestsPage } from './my-search-requests.page';
@@ -75,6 +76,46 @@ describe('Search requests pages', () => {
     const body = api.create.calls.mostRecent().args[0];
     expect(body.details).toBeNull();
     expect(body.expiresAt).toBe('2026-12-01T23:59:00Z');
+  });
+
+  it('proposes a district typed by hand once the request is saved, and the request keeps the governorate', () => {
+    setup();
+    api.getMine.and.returnValue(of([]));
+    api.create.and.returnValue(of({} as SearchRequest));
+    const fixture = TestBed.createComponent(MySearchRequestsPage);
+    fixture.detectChanges();
+    const page = fixture.componentInstance;
+    const proposals = jasmine.createSpyObj<PlaceProposalService>('PlaceProposalService', ['propose', 'canPropose']);
+    proposals.propose.and.returnValue(of(true));
+    (page as unknown as { injector: unknown }).injector = { get: () => proposals };
+
+    page.startCreate();
+    page.form.governorateId = 1;
+    page.form.maxBudget = 500;
+    page.onDistrictTyped('الشعلان');
+    page.save();
+
+    expect(api.create.calls.mostRecent().args[0].districtId).toBeNull();
+    expect(proposals.propose).toHaveBeenCalledOnceWith({ governorateId: 1, type: 'District', name: 'الشعلان' });
+    expect(page.districtText).toBe('');
+  });
+
+  it('offers the districts in a combo whose arrow lists them all', () => {
+    setup();
+    api.getMine.and.returnValue(of([]));
+    const fixture = TestBed.createComponent(MySearchRequestsPage);
+    fixture.detectChanges();
+    const page = fixture.componentInstance;
+    page.startCreate();
+    page.districts.set([{ id: 5, nameAr: 'المزة', nameEn: 'Mazzeh' }, { id: 6, nameAr: 'الميدان', nameEn: 'Midan' }]);
+    page.form.governorateId = 1;
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('select[name="districtId"]')).toBeNull();
+    (el.querySelector('#sr-district ~ .combo__toggle') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(el.querySelectorAll('.combo__option').length).toBe(2);
   });
 
   it('explains the board to a user without a published listing instead of failing', () => {

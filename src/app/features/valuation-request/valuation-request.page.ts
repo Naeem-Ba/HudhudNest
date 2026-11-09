@@ -15,7 +15,7 @@
 // backend) — this route carries no AuthGuard.
 
 import { RouterLink } from '@angular/router';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, Injector, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -40,11 +40,13 @@ import { ToastService } from '../../shared/services/toast.service';
 import { PageMetaService } from '../../core/services/page-meta.service';
 import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
+import { ComboBoxComponent, ComboOption } from '../../shared/ui/combo-box.component';
+import { PlaceProposalService } from '../../core/api/place-proposal.service';
 
 @Component({
   selector: 'app-valuation-request-page',
   standalone: true,
-  imports: [LocalizedDatePipe, LocalizedNumberPipe, CommonModule, ReactiveFormsModule, TranslateModule, RouterLink],
+  imports: [LocalizedDatePipe, LocalizedNumberPipe, ComboBoxComponent, CommonModule, ReactiveFormsModule, TranslateModule, RouterLink],
   templateUrl: './valuation-request.page.html',
   styleUrls: ['./valuation-request.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -65,6 +67,22 @@ export class ValuationRequestPage implements OnInit {
   readonly districts = signal<StructuredLocationLookup[]>([]);
   readonly neighborhoods = signal<StructuredLocationLookup[]>([]);
   readonly propertyTypes = signal<PropertyTypeLookup[]>([]);
+
+  /** Resolved on first use: only a typed place needs it, and the page renders without the catalog otherwise. */
+  private readonly injector = inject(Injector);
+  private get placeProposals(): PlaceProposalService {
+    return this.injector.get(PlaceProposalService);
+  }
+  readonly districtOptions = computed<ComboOption[]>(() =>
+    this.districts().map(d => ({ value: d.id, label: pickLocalizedName(d, this.currentLang()) })));
+  readonly neighborhoodOptions = computed<ComboOption[]>(() =>
+    this.neighborhoods().map(n => ({ value: n.id, label: pickLocalizedName(n, this.currentLang()) })));
+  /**
+   * A district / neighborhood typed because it is not in the lists. The request itself only holds ids, so the name
+   * is proposed to the administrators (signed-in people) and the request keeps the nearest known area.
+   */
+  districtText = '';
+  neighborhoodText = '';
 
   readonly submitting = signal(false);
   readonly result = signal<CreateValuationInquiryResultDto | null>(null);
@@ -134,6 +152,7 @@ export class ValuationRequestPage implements OnInit {
 
     this.valuationApi.create(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: created => {
+        this.proposeTypedPlaces(payload.governorateId, payload.districtId ?? null);
         this.result.set(created);
         this.submitting.set(false);
       },
@@ -168,14 +187,41 @@ export class ValuationRequestPage implements OnInit {
     this.result.set(null);
     this.statusResult.set(null);
     this.form.reset({ requestType: 'ForSale' });
+    this.districtText = '';
+    this.neighborhoodText = '';
     this.districts.set([]);
     this.neighborhoods.set([]);
+  }
+
+  get canProposePlaces(): boolean {
+    return this.placeProposals.canPropose();
+  }
+
+  onDistrictTyped(text: string | null): void {
+    this.districtText = text ?? '';
+  }
+
+  onNeighborhoodTyped(text: string | null): void {
+    this.neighborhoodText = text ?? '';
+  }
+
+  private proposeTypedPlaces(governorateId: number, districtId: number | null): void {
+    const district = this.districtText.trim();
+    const neighborhood = this.neighborhoodText.trim();
+    if (district) {
+      this.placeProposals.propose({ governorateId, type: 'District', name: district }).subscribe();
+    }
+    if (neighborhood) {
+      this.placeProposals.propose({ governorateId, districtId, type: 'Neighborhood', name: neighborhood }).subscribe();
+    }
   }
 
   private bindCascadingLocationChanges(): void {
     this.form.controls.governorateId.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(governorateId => {
       this.districts.set([]);
       this.neighborhoods.set([]);
+      this.districtText = '';
+      this.neighborhoodText = '';
       this.form.patchValue({ districtId: null, neighborhoodId: null }, { emitEvent: false });
 
       if (governorateId) {

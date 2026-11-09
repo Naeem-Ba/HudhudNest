@@ -128,7 +128,7 @@ describe('PropertyListPage', () => {
         { provide: LookupsApiService, useValue: lookupsApiSpy },
         { provide: LocationsApiService, useValue: locationsApiSpy },
         { provide: AuthService, useValue: authSpy },
-        { provide: LanguageService, useValue: { getCurrent: () => 'ar' } },
+        { provide: LanguageService, useValue: { getCurrent: () => 'ar', currentLang$: of('ar') } },
         { provide: PreferencesService, useValue: { currency: preferredCurrency } },
         { provide: InterestAreasService, useValue: { current: () => interestParam } },
         { provide: PageMetaService, useValue: jasmine.createSpyObj<PageMetaService>('PageMetaService', ['applyTranslated']) },
@@ -707,6 +707,155 @@ describe('PropertyListPage', () => {
       component.onPlaceFilterPicked(place(78, 'Street', 'شارع', 'Street'));
       component.resetFilters();
       expect(component.locationId).toBeNull();
+    });
+  });
+
+
+  describe('district / neighborhood typed by hand', () => {
+    it('✅ الكلمات المكتوبة تذهب إلى البحث النصي مع نص البحث، فلا يُفقد الحي غير الموجود في القائمة', () => {
+      component.governorateId = 1;
+      component.searchText = 'شقة';
+      component.onDistrictTyped('الميدان');
+      component.onNeighborhoodTyped('الحارة الجديدة');
+      component.applyFilters();
+
+      expect(lastRequest().searchTerm).toBe('شقة الميدان الحارة الجديدة');
+      expect(lastRequest().districtId).toBeUndefined();
+      expect(component.activeFiltersCount).toBeGreaterThanOrEqual(4);
+    });
+
+    it('✅ تحفظ في الرابط وتُستعاد عند فتحه أو عند إعادة التحميل', () => {
+      component.governorateId = 1;
+      component.onDistrictTyped('الميدان');
+      component.applyFilters();
+      const url = routerSpy.navigate.calls.mostRecent().args[1] as { queryParams: Record<string, unknown> };
+      expect(url.queryParams['districtText']).toBe('الميدان');
+
+      component = createComponent({ governorateId: '1', districtText: 'الميدان' });
+      expect(component.districtText).toBe('الميدان');
+      expect(lastRequest().searchTerm).toBe('الميدان');
+    });
+
+    it('✅ المسافة بين كلمتين تبقى أثناء الكتابة (لا يُقصّ النص المخزَّن)', () => {
+      component.onDistrictTyped('باب ');
+      expect(component.districtText).toBe('باب ');
+    });
+
+    it('✅ اختيار عنصر من القائمة يمسح النص المكتوب، وكتابة نص تمسح الاختيار', () => {
+      component.districtId = 5;
+      component.onDistrictTyped('اسم حر');
+      expect(component.districtId).toBeNull();
+
+      component.onDistrictTyped(null);
+      expect(component.districtText).toBe('');
+    });
+
+    it('✅ تغيير المحافظة وإعادة الضبط يمسحان النصوص المكتوبة', () => {
+      component.onDistrictTyped('الميدان');
+      component.onNeighborhoodTyped('الحارة');
+      component.governorateId = 2;
+      component.onGovernorateChange();
+      expect(component.districtText).toBe('');
+      expect(component.neighborhoodText).toBe('');
+
+      component.onDistrictTyped('x');
+      component.resetFilters();
+      expect(component.districtText).toBe('');
+    });
+  });
+
+  describe('قائمة المدن بلغة واحدة', () => {
+    beforeEach(() => {
+      lookupsApiSpy.getGovernorates.and.returnValue(of([
+        { id: 1, nameAr: 'دمشق', nameEn: 'Damascus', nameDe: null },
+        { id: 2, nameAr: 'حلب', nameEn: 'Aleppo', nameDe: null }
+      ]));
+      lookupsApiSpy.getCities.and.returnValue(of([
+        { id: '1', name: 'دمشق' }, { id: '2', name: 'Damascus' }, { id: '3', name: 'Aleppo' },
+        { id: '4', name: 'جرمانا' }, { id: '5', name: 'Jaramana' }
+      ]));
+      component = createComponent();
+    });
+
+    it('✅ المحافظة تظهر مرة واحدة بأسمها العربي، وغير المحافظات بالعربية فقط في صفحة عربية', () => {
+      component['governorates'].set([
+        { id: 1, nameAr: 'دمشق', nameEn: 'Damascus', nameDe: null },
+        { id: 2, nameAr: 'حلب', nameEn: 'Aleppo', nameDe: null }
+      ]);
+      component.citySuggestions.set([
+        { id: '1', name: 'دمشق' }, { id: '2', name: 'Damascus' }, { id: '3', name: 'Aleppo' },
+        { id: '4', name: 'جرمانا' }, { id: '5', name: 'Jaramana' }
+      ]);
+
+      expect(component.cityOptions().map(o => o.label)).toEqual(['دمشق', 'حلب', 'جرمانا']);
+    });
+
+    it('✅ إن لم يوجد اسم بلغة الصفحة تُعرض الأسماء الموجودة بدل قائمة فارغة', () => {
+      component.citySuggestions.set([{ id: '5', name: 'Jaramana' }]);
+      expect(component.cityOptions().map(o => o.label)).toEqual(['Jaramana']);
+    });
+
+    it('✅ مدينة مكتوبة ليست في القائمة تبقى كما كُتبت، ومدينة من القائمة تظهر كقيمة مختارة', () => {
+      component.citySuggestions.set([{ id: '4', name: 'جرمانا' }]);
+
+      component.onCityTyped('حي جديد');
+      expect(component.cityFilter).toBe('حي جديد');
+      expect(component.cityComboValue).toBeNull();
+
+      component.onCityPicked('جرمانا');
+      component.onCityTyped(null);
+      expect(component.cityFilter).toBe('جرمانا');
+      expect(component.cityComboValue).toBe('جرمانا');
+
+      component.onCityPicked(null);
+      component.onCityTyped(null);
+      expect(component.cityFilter).toBe('');
+    });
+  });
+
+  describe('تطبيق الفلاتر يوصل إلى النتائج', () => {
+    function fakeRegion() {
+      const region = document.createElement('main');
+      spyOn(region, 'scrollIntoView');
+      spyOn(region, 'focus');
+      component['resultsRegion'] = { nativeElement: region };
+      return region;
+    }
+
+    const nextTask = () => new Promise<void>(resolve => setTimeout(resolve, 0));
+
+    it('✅ بعد الضغط على «تطبيق» وبعد وصول الجواب تُعرض بداية النتائج وتأخذ التركيز', async () => {
+      const region = fakeRegion();
+      component.applyFilters();
+      await nextTask();
+
+      expect(region.scrollIntoView).toHaveBeenCalledTimes(1);
+      expect(region.focus).toHaveBeenCalled();
+    });
+
+    it('✅ الجواب الفارغ («لا توجد عقارات مطابقة») يُعرض أيضًا بالطريقة نفسها', async () => {
+      const region = fakeRegion();
+      propertyApiSpy.getPropertiesPaged.and.returnValue(of(pagedResult([], 1, 0)));
+      component.searchText = 'لا شيء';
+      component.applyFilters();
+      await nextTask();
+
+      expect(component.properties().length).toBe(0);
+      expect(component.activeFiltersCount).toBeGreaterThan(0);
+      expect(region.scrollIntoView).toHaveBeenCalled();
+    });
+
+    it('✅ الخطأ يُعرض كذلك، ولا يحدث تمرير عند مجرد فتح الصفحة أو تغيير الصفحة', async () => {
+      const region = fakeRegion();
+      component.goToPage(2);
+      await nextTask();
+      expect(region.scrollIntoView).not.toHaveBeenCalled();
+
+      propertyApiSpy.getPropertiesPaged.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+      component.applyFilters();
+      await nextTask();
+      expect(component.error()).toBeTruthy();
+      expect(region.scrollIntoView).toHaveBeenCalledTimes(1);
     });
   });
 

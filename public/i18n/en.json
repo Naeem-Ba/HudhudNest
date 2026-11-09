@@ -77,7 +77,11 @@
     "AVATAR_ALT": "User photo",
     "COUNTRY_CODE": "Country code",
     "PICK_RATING": "Choose a rating",
-    "IMAGE_VIEWER": "Image viewer"
+    "IMAGE_VIEWER": "Image viewer",
+    "OPEN_LIST": "Open the list",
+    "CLOSE_LIST": "Close the list",
+    "COMBO_NO_OPTIONS": "No matching options",
+    "COMBO_KEEP_TYPED": "Not in the list. What you typed will be used: \"{{value}}\""
   },
   "NAVBAR": {
     "HOME": "Home",
@@ -616,7 +620,8 @@
     "GEO_UNSUPPORTED": "Your browser does not support location.",
     "GEO_CONSENT_NOTE": "We use your current location only to show properties near you.",
     "GEO_DENIED": "Could not get your location. Check the location permission.",
-    "MAP_VIEW": "Map view"
+    "MAP_VIEW": "Map view",
+    "TYPE_PLACE_HINT": "Not in the list? Type the name."
   },
   "PAGINATION": {
     "NAV_LABEL": "Page navigation",
@@ -4666,7 +4671,10 @@
     "FILTER_PLACEHOLDER": "Search a neighborhood, street or city…",
     "FILTER_NO_MATCH": "No results. Try another spelling.",
     "FILTER_LABEL": "Specific place",
-    "FILTER_HINT": "Includes everything inside it."
+    "FILTER_HINT": "Includes everything inside it.",
+    "TYPED_PLACE_PROPOSED": "\"{{value}}\" is not in our list. We will send the name to the moderators for review, and the nearest known area is used here.",
+    "TYPED_PLACE_NOT_SAVED": "\"{{value}}\" is not in our list and a new name cannot be saved without signing in, so the nearest known area is used here.",
+    "TYPED_PLACE_HINT": "Pick from the list, or type the name if you cannot find it."
   },
   "ADMIN_GEO": {
     "TITLE": "Location management",
