@@ -225,3 +225,73 @@ describe('MyListingsPage — listing status (QA Phase 7, P7-D08)', () => {
     });
   });
 });
+
+describe('MyListingsPage — hide / show (P8-D06a)', () => {
+  let fixture: ComponentFixture<MyListingsPage>;
+  let propertyApi: jasmine.SpyObj<PropertyApiService>;
+  let toast: jasmine.SpyObj<ToastService>;
+
+  function setup(listings: Property[], hideFails = false): void {
+    propertyApi = jasmine.createSpyObj('PropertyApiService', ['getMyProperties', 'unpublishProperty', 'publishProperty']);
+    propertyApi.getMyProperties.and.returnValue(of(listings));
+    propertyApi.unpublishProperty.and.returnValue(hideFails ? throwError(() => new Error('boom')) : of(undefined));
+    propertyApi.publishProperty.and.returnValue(of(undefined));
+    const shortStay = jasmine.createSpyObj('ShortStayListingApiService', ['getMine']);
+    shortStay.getMine.and.returnValue(of([]));
+    const feesApi = jasmine.createSpyObj('ListingFeesApiService', ['getMyPendingFeatured']);
+    feesApi.getMyPendingFeatured.and.returnValue(of([]));
+    toast = jasmine.createSpyObj('ToastService', ['show', 'success', 'error']);
+
+    TestBed.configureTestingModule({
+      imports: [MyListingsPage, TranslateModule.forRoot()],
+      providers: [
+        provideRouter([]),
+        { provide: ListingFeesApiService, useValue: feesApi },
+        { provide: PropertyApiService, useValue: propertyApi },
+        { provide: ShortStayListingApiService, useValue: shortStay },
+        { provide: ProfileService, useValue: { profile$: new BehaviorSubject(null) } },
+        { provide: PlansApiService, useValue: jasmine.createSpyObj('PlansApiService', ['getPlans']) },
+        { provide: ToastService, useValue: toast }
+      ]
+    });
+
+    fixture = TestBed.createComponent(MyListingsPage);
+    fixture.detectChanges();
+  }
+
+  const el = () => fixture.nativeElement as HTMLElement;
+
+  it('a published listing offers Hide; a draft, an expired and a taken-down listing do not', () => {
+    setup([
+      listing('live'),
+      listing('draft', { isPublished: false }),
+      listing('old', { status: 'Expired', isPublished: false }),
+      listing('down', { isPublished: false, isTakenDown: true })
+    ]);
+
+    expect(el().querySelectorAll('.btn--hide').length).toBe(1);
+  });
+
+  it('hiding calls the API, flips the card to a publishable one and tells the owner', () => {
+    setup([listing('live')]);
+
+    fixture.componentInstance.hide('live');
+    fixture.detectChanges();
+
+    expect(propertyApi.unpublishProperty).toHaveBeenCalledOnceWith('live');
+    expect(fixture.componentInstance.listings()[0].isPublished).toBeFalse();
+    expect(fixture.componentInstance.canPublish(fixture.componentInstance.listings()[0])).toBeTrue();
+    expect(fixture.componentInstance.canHide(fixture.componentInstance.listings()[0])).toBeFalse();
+    expect(toast.show).toHaveBeenCalledWith('MY_LISTINGS.HIDE_SUCCESS', 'success');
+  });
+
+  it('a failed hide keeps the listing published and shows the error', () => {
+    setup([listing('live')], true);
+
+    fixture.componentInstance.hide('live');
+
+    expect(fixture.componentInstance.listings()[0].isPublished).toBeTrue();
+    expect(toast.show).toHaveBeenCalledWith('MY_LISTINGS.HIDE_ERROR', 'error');
+    expect(fixture.componentInstance.hidingId()).toBeNull();
+  });
+});

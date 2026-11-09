@@ -21,6 +21,8 @@ import {
 } from '../../core/models/listing-report.model';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
+import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
 
 type Sort = NonNullable<ListingReportFilter['sort']>;
 
@@ -33,7 +35,7 @@ type Sort = NonNullable<ListingReportFilter['sort']>;
   selector: 'app-admin-listing-reports-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
+  imports: [ LocalizedDatePipe, LocalizedNumberPipe,CommonModule, FormsModule, RouterLink, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
   template: `
     <section class="page">
       <header class="page-header">
@@ -67,7 +69,7 @@ type Sort = NonNullable<ListingReportFilter['sort']>;
           <strong>{{ s.dismissed }}</strong><span>{{ 'ADMIN_REPORTS.STATUS.Dismissed' | translate }}</span>
         </button>
         <div class="stat stat--static" *ngIf="s.averageResolutionHours !== null">
-          <strong>{{ s.averageResolutionHours | number:'1.0-1' }}</strong>
+          <strong>{{ s.averageResolutionHours | localNumber:'1.0-1' }}</strong>
           <span>{{ 'ADMIN_REPORTS.STAT_AVG_HOURS' | translate:{ n: s.resolvedSampleSize } }}</span>
         </div>
       </div>
@@ -120,6 +122,7 @@ type Sort = NonNullable<ListingReportFilter['sort']>;
               <span class="muted" dir="ltr">{{ r.referenceNumber }}</span>
               <span class="tag tag--warn" *ngIf="r.listingTakenDown">{{ 'ADMIN_REPORTS.TAKEN_DOWN' | translate }}</span>
               <span class="tag tag--warn" *ngIf="r.listingDeleted">{{ 'ADMIN_REPORTS.LISTING_DELETED' | translate }}</span>
+              <span class="preview" *ngIf="r.detailsPreview" data-testid="report-preview">{{ r.detailsPreview }}</span>
             </div>
             <div class="cell">{{ 'REPORT.REASON.' + r.reason | translate }}</div>
             <div class="cell muted">{{ r.reporterName }}</div>
@@ -129,7 +132,7 @@ type Sort = NonNullable<ListingReportFilter['sort']>;
             </div>
             <div class="cell"><span class="chip" [attr.data-priority]="r.priority">{{ 'ADMIN_REPORTS.PRIORITY.' + r.priority | translate }}</span></div>
             <div class="cell muted">{{ r.assignedAdminName || ('ADMIN_REPORTS.UNASSIGNED' | translate) }}</div>
-            <div class="cell muted">{{ r.createdAt | date:'mediumDate' }}</div>
+            <div class="cell muted">{{ r.createdAt | localDate:'mediumDate' }}</div>
           </a>
         </div>
 
@@ -142,15 +145,16 @@ type Sort = NonNullable<ListingReportFilter['sort']>;
     </section>
   `,
   styles: [`
+    .preview { display:block; flex-basis:100%; color:var(--gray-600, #52606d); font-size:var(--text-sm); line-height:1.5; overflow-wrap:anywhere; }
     .page{padding:clamp(1rem,3vw,2rem);max-width:1300px;margin:0 auto}
-    .page-header h1{margin:0 0 .3rem;color:var(--navy);font-family:var(--font-display);font-size:clamp(1.5rem,2.6vw,2rem)}
+    .page-header h1{margin:0 0 .3rem;color: var(--text-strong);font-family:var(--font-display);font-size:clamp(1.5rem,2.6vw,2rem)}
     .page-header p{margin:0 0 1rem;color:var(--gray-500)}
     .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.6rem;margin-bottom:1rem}
     .stat{display:grid;gap:.1rem;text-align:start;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:.7rem .85rem;cursor:pointer;font:inherit;color:inherit}
-    .stat strong{font-size:1.4rem;color:var(--navy)}
+    .stat strong{font-size:1.4rem;color: var(--text-strong)}
     .stat span{font-size:var(--text-sm);color:var(--gray-600)}
     .stat.on{border-color:var(--primary);background:var(--primary-soft)}
-    .stat--warn strong{color:var(--danger)}
+    .stat--warn strong{color:var(--danger-text)}
     .stat--static{cursor:default}
     .filters{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:1rem;align-items:end}
     .filters select,.filters input{width:auto;min-width:150px}
@@ -164,14 +168,14 @@ type Sort = NonNullable<ListingReportFilter['sort']>;
     .cell--main{display:grid;gap:.15rem}
     .muted{color:var(--gray-500);font-size:var(--text-sm)}
     .tag{display:inline-block;width:fit-content;border-radius:999px;padding:.1rem .5rem;font-size:.75rem;background:var(--gray-100)}
-    .tag--warn{background:var(--danger-soft);color:var(--danger)}
+    .tag--warn{background:var(--danger-soft);color:var(--danger-text)}
     .chip{font-size:.78rem;font-weight:700;border-radius:999px;padding:.25rem .6rem;background:var(--gray-100);color:var(--gray-700);white-space:nowrap;margin-inline-end:.25rem}
     .chip[data-status='New']{background:var(--primary-soft);color:var(--primary-text)}
-    .chip[data-status='WaitingForInformation'],.chip[data-status='ActionRequired']{background:var(--warning-soft,#fef3c7);color:var(--warning,#92400e)}
-    .chip[data-status='Resolved']{background:var(--success-soft);color:var(--success)}
-    .chip[data-priority='High'],.chip[data-priority='Urgent'],.chip--overdue{background:var(--danger-soft);color:var(--danger)}
+    .chip[data-status='WaitingForInformation'],.chip[data-status='ActionRequired']{background:var(--warning-soft,#fef3c7);color:var(--warning-text)}
+    .chip[data-status='Resolved']{background:var(--success-soft);color:var(--success-text)}
+    .chip[data-priority='High'],.chip[data-priority='Urgent'],.chip--overdue{background:var(--danger-soft);color:var(--danger-text)}
     .state{padding:2rem;text-align:center;background:var(--surface);border:1px dashed var(--gray-300);border-radius:16px}
-    .state.error{color:var(--danger)}
+    .state.error{color:var(--danger-text)}
     .btn{border:0;border-radius:10px;padding:.55rem 1rem;font-weight:700;cursor:pointer;background:var(--gray-100)}
     .pagination{display:flex;justify-content:center;align-items:center;gap:1rem;margin-top:1.25rem}
     .pagination button{border:1px solid var(--border);background:var(--surface);border-radius:var(--r-sm);width:34px;height:34px;cursor:pointer}

@@ -23,7 +23,7 @@
   padding: .75rem .9rem;
   border: 1.5px solid var(--gray-200, #e5e7eb);
   border-radius: 12px;
-  background: #fff;
+  background: var(--surface);
   cursor: pointer;
   transition: border-color .15s ease, background-color .15s ease;
 
@@ -87,6 +87,6 @@
 }
 
 .otp-channel__note--warn {
-  color: #b42318;
+  color: var(--danger-text);
   font-weight: 700;
 }

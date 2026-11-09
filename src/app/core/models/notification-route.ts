@@ -22,6 +22,8 @@ export function routeForNotification(item: Pick<NotificationItem, 'type' | 'targ
       return propertyId ? ['/properties', propertyId] : null;
     case 'my-listings':
       return ['/my-listings'];
+    case 'listing-demand':
+      return propertyId ? ['/search-requests/for-listing', propertyId] : ['/search-requests/board'];
     case 'visit':
       return ['/visits'];
     case 'short-stay-booking':
@@ -38,7 +40,7 @@ export function routeForNotification(item: Pick<NotificationItem, 'type' | 'targ
     case 'admin-investment':
       return entityId ? ['/admin/investments', entityId] : ['/admin/investments'];
     case 'my-listing-report':
-      return ['/my-reports'];
+      return entityId ? ['/my-reports', entityId] : ['/my-reports'];
     case 'agency-invitation':
     case 'agency':
       return ['/my-agency'];
@@ -48,8 +50,21 @@ export function routeForNotification(item: Pick<NotificationItem, 'type' | 'targ
       return entityId ? ['/users', entityId] : null;
     case 'phone-verify':
       return ['/profile/phone-reverify'];
+    case 'pricing':
+      return ['/pricing'];
+    case 'billing':
+      return ['/payments'];
+    case 'admin-contact':
+      return entityId ? ['/admin/messages', entityId] : ['/admin/messages'];
     case 'notifications':
       return ['/notifications'];
+    case 'saved-searches':
+      return ['/saved-searches'];
+    case 'referrals':
+      return ['/referrals'];
+    case 'investment':
+      // A project the person follows posted an update (QA phase 25, P25-D07); the public page decides who may see it.
+      return entityId ? ['/investments', entityId] : ['/investments'];
     default:
       return null;
   }

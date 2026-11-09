@@ -91,10 +91,23 @@ const FALLBACK_REASONS: ListingReportReasonDto[] = LISTING_REPORT_REASONS.map(co
             <p class="report-notice report-notice--info" role="status">
               {{ 'REPORT.ALREADY_OPEN' | translate: { ref: open()?.referenceNumber } }}
             </p>
-            <p class="report-muted">{{ 'REPORT.ALREADY_OPEN_HINT' | translate }}</p>
-            <div class="report-actions">
-              <button type="button" class="report-btn report-btn--primary" (click)="close()">{{ 'COMMON.CLOSE' | translate }}</button>
-            </div>
+            <ng-container *ngIf="needsReply(); else plainHint">
+              <p class="report-notice report-notice--warn" role="alert" data-testid="report-needs-reply">
+                {{ 'REPORT.NEEDS_REPLY' | translate }}
+              </p>
+              <div class="report-actions">
+                <button type="button" class="report-btn" (click)="close()">{{ 'COMMON.CLOSE' | translate }}</button>
+                <button type="button" class="report-btn report-btn--primary" (click)="goReply()" data-testid="report-reply-now">
+                  {{ 'REPORT.REPLY_NOW' | translate }}
+                </button>
+              </div>
+            </ng-container>
+            <ng-template #plainHint>
+              <p class="report-muted">{{ 'REPORT.ALREADY_OPEN_HINT' | translate }}</p>
+              <div class="report-actions">
+                <button type="button" class="report-btn report-btn--primary" (click)="close()">{{ 'COMMON.CLOSE' | translate }}</button>
+              </div>
+            </ng-template>
           </div>
 
           <!-- Result -->
@@ -164,7 +177,7 @@ const FALLBACK_REASONS: ListingReportReasonDto[] = LISTING_REPORT_REASONS.map(co
       box-shadow: var(--shadow-sm, 0 2px 8px rgba(15,23,42,.08));
       transition: color .15s, transform .1s;
     }
-    .report-trigger:hover { color: var(--danger, #dc2626); }
+    .report-trigger:hover { color: var(--danger-text); }
     .report-trigger:active { transform: scale(.92); }
     .report-trigger:focus-visible { outline: 2px solid var(--navy, #0f2742); outline-offset: 2px; }
     .report-trigger--compact { width: 36px; height: 36px; min-width: 36px; min-height: 36px; background: rgba(255,255,255,.92); }
@@ -192,7 +205,7 @@ const FALLBACK_REASONS: ListingReportReasonDto[] = LISTING_REPORT_REASONS.map(co
     }
     .report-sheet__grab { display: block; width: 40px; height: 4px; border-radius: 4px; background: var(--border); margin: 0 auto .5rem; }
     .report-sheet__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .4rem; }
-    .report-sheet__header h2 { margin: 0; font-family: var(--font-display); font-size: 1.15rem; color: var(--navy); }
+    .report-sheet__header h2 { margin: 0; font-family: var(--font-display); font-size: 1.15rem; color: var(--text-strong); }
     .report-sheet__close {
       border: none; background: transparent; color: var(--gray-500); cursor: pointer; display: grid; place-items: center;
       border-radius: var(--r-pill, 999px); width: 44px; height: 44px; padding: 0;
@@ -220,15 +233,16 @@ const FALLBACK_REASONS: ListingReportReasonDto[] = LISTING_REPORT_REASONS.map(co
     textarea:focus-visible { outline: 2px solid var(--navy, #0f2742); outline-offset: 1px; }
     .report-counter { text-align: end; margin-top: .15rem; }
     .report-privacy { margin-top: .5rem; }
-    .report-error { color: var(--danger, #dc2626); font-size: var(--text-sm, .875rem); margin: .2rem 0; }
+    .report-error { color: var(--danger-text); font-size: var(--text-sm, .875rem); margin: .2rem 0; }
     .report-notice { padding: .7rem .9rem; border-radius: var(--r-md, 12px); margin: .5rem 0; overflow-wrap: anywhere; }
-    .report-notice--ok { background: var(--success-soft, #dcfce7); color: var(--success, #15803d); }
+    .report-notice--ok { background: var(--success-soft, #dcfce7); color: var(--success-text); }
+    .report-notice--warn { background: var(--warning-soft, #fef3c7); color: var(--warning-text); }
     .report-notice--info { background: var(--primary-soft, #e0e7ff); color: var(--primary-text, #1e3a8a); }
-    .report-notice--error { background: var(--danger-soft, #fee2e2); color: var(--danger, #b91c1c); }
+    .report-notice--error { background: var(--danger-soft, #fee2e2); color: var(--danger-text); }
     .report-actions { display: flex; gap: .6rem; justify-content: flex-end; margin-top: .9rem; flex-wrap: wrap; }
     .report-btn {
       min-height: 44px; padding: 0 1.2rem; border-radius: var(--r-md, 12px); border: 1px solid var(--border);
-      background: var(--surface); color: var(--navy, #0f2742); font: inherit; font-weight: 700; cursor: pointer;
+      background: var(--surface); color: var(--text-strong); font: inherit; font-weight: 700; cursor: pointer;
     }
     .report-btn--primary { background: var(--primary, #0f2742); color: var(--on-primary, #fff); border-color: transparent; }
     .report-btn:disabled { opacity: .6; cursor: not-allowed; }
@@ -345,6 +359,17 @@ export class ReportListingButtonComponent implements OnDestroy {
       // If the check fails the form still works: the server enforces the rule on submit.
       error: () => this.phase.set('form')
     });
+  }
+
+  /** The team asked this person a question and is waiting: the dialog must lead them to the answer box. */
+  needsReply(): boolean {
+    return this.open()?.status === 'NeedsYourInfo' && !!this.open()?.reportId;
+  }
+
+  goReply(): void {
+    const id = this.open()?.reportId;
+    this.close();
+    if (id) void this.router.navigate(['/my-reports', id]);
   }
 
   close(): void {

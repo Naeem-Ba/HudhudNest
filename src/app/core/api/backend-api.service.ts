@@ -55,12 +55,12 @@ export class BackendApiService {
     return this.http.delete<T>(this.url(path), { body, withCredentials: true, context: options?.context });
   }
 
-  upload<T>(path: string, formData: FormData): Observable<T> {
-    return this.http.post<T>(this.url(path), formData, { withCredentials: true });
+  upload<T>(path: string, formData: FormData, options?: RequestOptions): Observable<T> {
+    return this.http.post<T>(this.url(path), formData, { withCredentials: true, context: options?.context });
   }
 
-  postFormData<T>(path: string, formData: FormData): Observable<T> {
-    return this.upload<T>(path, formData);
+  postFormData<T>(path: string, formData: FormData, options?: RequestOptions): Observable<T> {
+    return this.upload<T>(path, formData, options);
   }
 
   private url(path: string): string {

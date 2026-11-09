@@ -29,7 +29,9 @@
 }
 
 .navbar__inner {
-  width: min(100% - 2rem, 1200px);
+  position: relative;
+  /* Wider than the 1200px page column on purpose: eight links in German plus the buttons need about 1.4k px. */
+  width: min(100% - 2rem, 1560px);
   min-height: 72px;
   margin-inline: auto;
 
@@ -87,7 +89,7 @@
   gap: 0.4rem;
 
   min-height: 42px;
-  padding: 0.6rem 0.8rem;
+  padding: 0.6rem 0.65rem;
 
   border-radius: var(--r-md, 8px);
 
@@ -143,7 +145,7 @@
   border-radius: var(--r-pill, 999px);
 
   background: var(--surface);
-  color: var(--gold);
+  color: var(--gold-text);
 
   cursor: pointer;
 
@@ -166,7 +168,7 @@
 }
 
 .mobile-theme-toggle {
-  color: var(--gold) !important;
+  color: var(--gold-text) !important;
 }
 
 /* ================================================================
@@ -540,11 +542,11 @@
 }
 
 .account__item--danger {
-  color: var(--danger);
+  color: var(--danger-text);
 }
 
 .account__item--danger:hover {
-  color: var(--danger);
+  color: var(--danger-text);
   background: rgba(220, 38, 38, 0.08);
 }
 
@@ -750,6 +752,23 @@
   pointer-events: auto;
 }
 
+.mobile-drawer__close {
+  position: absolute;
+  top: calc(0.75rem + var(--safe-area-inset-top, env(safe-area-inset-top, 0px)));
+  inset-inline-end: calc(0.75rem + var(--safe-area-inset-right, env(safe-area-inset-right, 0px)));
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md, 8px);
+  background: var(--surface);
+  color: var(--gray-800);
+  cursor: pointer;
+}
+
 .mobile-drawer__nav {
   display: flex;
   flex-direction: column;
@@ -790,7 +809,7 @@
 }
 
 .mobile-drawer__link--danger {
-  color: var(--danger);
+  color: var(--danger-text);
 }
 
 .mobile-drawer__user {
@@ -919,6 +938,28 @@
 @include bp.tablet {
   .navbar__nav {
     display: none;
+  }
+
+  .navbar__actions {
+    margin-inline-start: auto;
+  }
+
+  .mobile-toggle {
+    display: inline-flex;
+  }
+}
+
+/* The links do not fit next to the logo and the buttons (measured in navbar.component.ts, language and
+   sign-in state change the width): same look as the tablet layout, but the link row stays in the layout,
+   invisible and out of the tab order, so it can still be measured. */
+.navbar--compact {
+  .navbar__nav {
+    position: absolute;
+    visibility: hidden;
+    pointer-events: none;
+    /* No width, so it never widens the page; scrollWidth still reports the links' natural width. */
+    width: 0;
+    overflow: hidden;
   }
 
   .navbar__actions {

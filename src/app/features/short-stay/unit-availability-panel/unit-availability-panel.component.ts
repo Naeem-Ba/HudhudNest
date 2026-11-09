@@ -12,6 +12,7 @@ import { ShortStayListingApiService } from '../../../core/api/short-stay-listing
 import { apiErrorText } from '../../../core/api/api-error-text';
 import { ToastService } from '../../../shared/services/toast.service';
 import { AccommodationUnitDto, UnitBlockDto, validateUnitBlockRange } from '../../../core/models/short-stay.model';
+import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
 
 /** "yyyy-MM-dd" of the device's current day (the blocks are calendar days, not instants). */
 export function todayIso(now: Date = new Date()): string {
@@ -25,7 +26,7 @@ export function todayIso(now: Date = new Date()): string {
   selector: 'app-unit-availability-panel',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslateModule],
+  imports: [ LocalizedDatePipe,CommonModule, TranslateModule],
   templateUrl: './unit-availability-panel.component.html',
   styleUrls: ['./unit-availability-panel.component.scss']
 })

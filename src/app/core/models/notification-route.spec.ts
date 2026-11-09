@@ -11,6 +11,12 @@ describe('routeForNotification', () => {
 
   it('opens the property page for property events', () => {
     expect(routeForNotification({ type: 'SavedSearchMatch', target: { kind: 'property', propertyId: PROPERTY } })).toEqual(['/properties', PROPERTY]);
+    expect(routeForNotification({ type: 'ListingDemandMatch', target: { kind: 'listing-demand', propertyId: PROPERTY } })).toEqual(['/search-requests/for-listing', PROPERTY]);
+    expect(routeForNotification({ type: 'ListingDemandMatch', target: { kind: 'listing-demand', propertyId: '../x' } })).toEqual(['/search-requests/board']);
+    expect(routeForNotification({ type: 'SavedSearchDigest', target: { kind: 'saved-searches', id: ENTITY } })).toEqual(['/saved-searches']);
+    expect(routeForNotification({ type: 'ReferralQualified', target: { kind: 'referrals', id: ENTITY } })).toEqual(['/referrals']);
+    expect(routeForNotification({ type: 'InvestmentProjectUpdated', target: { kind: 'investment', id: ENTITY } })).toEqual(['/investments', ENTITY]);
+    expect(routeForNotification({ type: 'InvestmentProjectUpdated', target: { kind: 'investment', id: '../x' } })).toEqual(['/investments']);
   });
 
   it('sends provider-side service events to the provider request and requester events to my services', () => {
@@ -62,7 +68,7 @@ describe('routeForNotification (listing reports)', () => {
     expect(routeForNotification({ type: 'ListingReportSubmitted', target: { kind: 'admin-listing-report', id: ENTITY, propertyId: null }, propertyId: null, relatedEntityId: ENTITY }))
       .toEqual(['/admin/listing-reports', ENTITY]);
     expect(routeForNotification({ type: 'ListingReportInfoRequested', target: { kind: 'my-listing-report', id: ENTITY, propertyId: null }, propertyId: null, relatedEntityId: ENTITY }))
-      .toEqual(['/my-reports']);
+      .toEqual(['/my-reports', ENTITY]);
   });
 
   it('never puts a malformed id into the path', () => {
@@ -80,5 +86,16 @@ describe('routeForNotification (investment interest)', () => {
   it('falls back to the project list when the id is not an id', () => {
     expect(routeForNotification({ type: 'InvestmentInterestReceived', target: { kind: 'admin-investment', id: '../x', propertyId: null }, propertyId: null, relatedEntityId: '../x' }))
       .toEqual(['/admin/investments']);
+  });
+});
+
+describe('routeForNotification (plans and contact)', () => {
+  it('plan and fee notices open the pricing page; a contact alert opens the admin message', () => {
+    expect(routeForNotification({ type: 'PlanRequestApproved', target: { kind: 'pricing', id: null, propertyId: null }, propertyId: null, relatedEntityId: null }))
+      .toEqual(['/pricing']);
+    expect(routeForNotification({ type: 'ContactMessageReceived', target: { kind: 'admin-contact', id: ENTITY, propertyId: null }, propertyId: null, relatedEntityId: ENTITY }))
+      .toEqual(['/admin/messages', ENTITY]);
+    expect(routeForNotification({ type: 'ContactMessageReceived', target: { kind: 'admin-contact', id: '../x', propertyId: null }, propertyId: null, relatedEntityId: '../x' }))
+      .toEqual(['/admin/messages']);
   });
 });

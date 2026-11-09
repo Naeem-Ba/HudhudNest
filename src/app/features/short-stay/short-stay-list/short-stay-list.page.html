@@ -6,15 +6,15 @@
 
   <form class="ssl__filters" (ngSubmit)="applyFilters()">
     <div class="ssl__field">
-      <label>{{ 'SHORTSTAY.LIST.CITY' | translate }}</label>
-      <input type="text" [(ngModel)]="cityFilter" name="city" [placeholder]="'SHORTSTAY.LIST.CITY_PLACEHOLDER' | translate" />
+      <label for="ssl-city">{{ 'SHORTSTAY.LIST.CITY' | translate }}</label>
+      <input id="ssl-city" type="text" [(ngModel)]="cityFilter" name="city" [placeholder]="'SHORTSTAY.LIST.CITY_PLACEHOLDER' | translate" />
     </div>
 
     <div class="ssl__field ssl__field--dates">
       <label>{{ 'SHORTSTAY.LIST.DATES' | translate }}</label>
       <button type="button" class="ssl__date-trigger" (click)="toggleDatePicker()">
         <ng-container *ngIf="checkIn && checkOut; else noDates">
-          {{ checkIn | date:'d MMM' }} → {{ checkOut | date:'d MMM' }}
+          {{ checkIn | localDate:'d MMM' }} → {{ checkOut | localDate:'d MMM' }}
         </ng-container>
         <ng-template #noDates>{{ 'SHORTSTAY.LIST.SELECT_DATES' | translate }}</ng-template>
       </button>
@@ -26,18 +26,18 @@
     </div>
 
     <div class="ssl__field">
-      <label>{{ 'SHORTSTAY.LIST.GUESTS' | translate }}</label>
-      <input type="number" min="1" [(ngModel)]="guests" name="guests" />
+      <label for="ssl-guests">{{ 'SHORTSTAY.LIST.GUESTS' | translate }}</label>
+      <input id="ssl-guests" type="number" min="1" [(ngModel)]="guests" name="guests" />
     </div>
 
     <div class="ssl__field">
-      <label>{{ 'SHORTSTAY.LIST.MIN_PRICE' | translate }}</label>
-      <input type="number" min="0" [(ngModel)]="minPrice" name="minPrice" />
+      <label for="ssl-minPrice">{{ 'SHORTSTAY.LIST.MIN_PRICE' | translate }}</label>
+      <input id="ssl-minPrice" type="number" min="0" [(ngModel)]="minPrice" name="minPrice" />
     </div>
 
     <div class="ssl__field">
-      <label>{{ 'SHORTSTAY.LIST.MAX_PRICE' | translate }}</label>
-      <input type="number" min="0" [(ngModel)]="maxPrice" name="maxPrice" />
+      <label for="ssl-maxPrice">{{ 'SHORTSTAY.LIST.MAX_PRICE' | translate }}</label>
+      <input id="ssl-maxPrice" type="number" min="0" [(ngModel)]="maxPrice" name="maxPrice" />
     </div>
 
     <div class="ssl__filter-actions">
@@ -69,14 +69,14 @@
         <p class="ssl__card-type">{{ listing.accommodationTypeNameAr }}</p>
         <h3 class="ssl__card-title">{{ listing.title }}</h3>
         <p class="ssl__card-meta">
-          {{ listing.city || '—' }} · {{ listing.capacity }} {{ 'SHORTSTAY.LIST.GUESTS_SHORT' | translate }}
+          {{ locations.city({ city: listing.city }) || '—' }} · {{ listing.capacity }} {{ 'SHORTSTAY.LIST.GUESTS_SHORT' | translate }}
           · {{ listing.bedrooms }} {{ 'SHORTSTAY.LIST.BEDROOMS_SHORT' | translate }}
         </p>
         <app-listing-view-count class="card-views" [compact]="true" [count]="listing.viewCount"></app-listing-view-count>
         <div class="ssl__card-footer">
           <span class="ssl__card-price">{{ formatPrice(listing) }} / {{ 'SHORTSTAY.LIST.NIGHT' | translate }}</span>
           <span class="ssl__card-rating" *ngIf="listing.averageRating">
-            ⭐ {{ listing.averageRating | number:'1.1-1' }} ({{ listing.reviewCount }})
+            ⭐ {{ listing.averageRating | localNumber:'1.1-1' }} ({{ listing.reviewCount }})
           </span>
         </div>
       </div>

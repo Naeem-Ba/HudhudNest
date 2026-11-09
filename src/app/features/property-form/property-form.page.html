@@ -218,11 +218,16 @@
                 (locationChange)="onLocationSelected($event)">
               </app-map-picker>
               <p class="location-preview" *ngIf="f.latitude.value !== null && f.latitude.value !== undefined && f.longitude.value !== null && f.longitude.value !== undefined">
-                ✓ {{ 'property_add.location_selected' | translate }}: {{ f.latitude.value | number:'1.4-4' }}, {{ f.longitude.value | number:'1.4-4' }}
+                ✓ {{ 'property_add.location_selected' | translate }}: {{ f.latitude.value | localNumber:'1.4-4' }}, {{ f.longitude.value | localNumber:'1.4-4' }}
               </p>
               <p class="field-error" *ngIf="form.errors?.['invalidCoordinates'] && (f.latitude.touched || f.longitude.touched)">
                 {{ 'PROPERTY_FORM.INVALID_COORDINATES' | translate }}
               </p>
+              <label class="hide-location" data-testid="hide-exact-location">
+                <input type="checkbox" formControlName="hideExactLocation">
+                <span>{{ 'PROPERTY_FORM.HIDE_EXACT_LOCATION' | translate }}</span>
+              </label>
+              <small class="hide-location__hint">{{ 'PROPERTY_FORM.HIDE_EXACT_LOCATION_HINT' | translate }}</small>
             </div>
           </div>
         </div>
@@ -293,6 +298,15 @@
                   </p>
                 </div>
               </ng-container>
+
+              <!-- السعر قابل للتفاوض (بيع أو إيجار) — يظهر في تفاصيل الإعلان فقط -->
+              <div class="form-group form-group--full" *ngIf="isRent || isSale">
+                <label class="hide-location" data-testid="price-negotiable">
+                  <input type="checkbox" formControlName="isPriceNegotiable">
+                  <span>{{ 'PROPERTY_FORM.PRICE_NEGOTIABLE' | translate }}</span>
+                </label>
+                <small class="hide-location__hint">{{ 'PROPERTY_FORM.PRICE_NEGOTIABLE_HINT' | translate }}</small>
+              </div>
             </div>
 
             <!-- تفاصيل الإيجار — تُعرض فقط عند اختيار إيجار؛ الإيجار حالياً محدَّد
@@ -349,7 +363,8 @@
                    question that has no meaningful answer for a plot of land. -->
               <div class="form-group" *ngIf="!isLandCategory">
                 <label for="rooms">{{ 'property_add.rooms' | translate }}</label>
-                <input id="rooms" type="number" formControlName="rooms" min="0" step="0.5" />
+                <input id="rooms" type="number" inputmode="numeric" formControlName="rooms" min="1" step="1" />
+                <p class="field-error" *ngIf="hasError(f.rooms) && f.rooms.errors?.['wholeNumber']">{{ 'PROPERTY_FORM.ROOMS_WHOLE_NUMBER' | translate }}</p>
               </div>
               <div class="form-group">
                 <label for="area">{{ 'property_add.area' | translate }}</label>
@@ -373,7 +388,8 @@
               </div>
               <div class="form-group" *ngIf="!isLandCategory">
                 <label for="floor">{{ 'property_add.floor' | translate }}</label>
-                <input id="floor" type="number" formControlName="floor" />
+                <input id="floor" type="number" inputmode="numeric" formControlName="floor" step="1" />
+                <p class="field-error" *ngIf="hasError(f.floor) && f.floor.errors?.['wholeNumber']">{{ 'PROPERTY_FORM.FLOOR_WHOLE_NUMBER' | translate }}</p>
               </div>
               <div class="form-group">
                 <label for="availableFrom">{{ 'property_add.available_from' | translate }}</label>

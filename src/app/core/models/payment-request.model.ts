@@ -21,7 +21,21 @@ export interface PendingFeaturedPayment {
   requestedAt: string;
 }
 
+/** An owner's listing-extension fee waiting for an administrator to confirm payment. */
+export interface PendingExtensionPayment {
+  transactionId: string;
+  propertyId: string;
+  propertyTitle: string;
+  ownerId: string;
+  ownerName: string;
+  ownerEmail: string | null;
+  amountUsd: number;
+  requestedAt: string;
+  listingExpiresAt: string | null;
+}
+
 export interface PendingPaymentRequests {
   plans: PendingPlanRequest[];
   featured: PendingFeaturedPayment[];
+  extensions: PendingExtensionPayment[];
 }

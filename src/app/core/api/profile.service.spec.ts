@@ -156,6 +156,57 @@ describe('ProfileService — saving the profile', () => {
   });
 });
 
+describe('ProfileService — home area', () => {
+  let service: ProfileService;
+  let httpMock: HttpTestingController;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    service = TestBed.inject(ProfileService);
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => httpMock.verify());
+
+  it('sends only the governorate, then refreshes the profile from the server answer', () => {
+    let result: UserProfile | undefined;
+    service.setHomeGovernorate(6).subscribe(profile => (result = profile));
+
+    const put = httpMock.expectOne(r => r.method === 'PUT' && r.url === `${environment.apiUrl}/users/me`);
+    expect(put.request.body).toEqual({ homeGovernorateId: 6 });
+    put.flush(null, { status: 204, statusText: 'No Content' });
+    httpMock.expectOne(`${environment.apiUrl}/users/me`).flush({ id: 'u1', homeGovernorateId: 6 });
+
+    expect(result?.HomeGovernorateId).toBe(6);
+  });
+
+  it('clears the area with 0 (the API reads null as "leave unchanged")', () => {
+    service.setHomeGovernorate(null).subscribe();
+
+    const put = httpMock.expectOne(r => r.method === 'PUT' && r.url === `${environment.apiUrl}/users/me`);
+    expect(put.request.body).toEqual({ homeGovernorateId: 0 });
+    put.flush(null, { status: 204, statusText: 'No Content' });
+    httpMock.expectOne(`${environment.apiUrl}/users/me`).flush({ id: 'u1', homeGovernorateId: null });
+  });
+
+  it('reads the area from /users/me, null when the account has none', () => {
+    let first: UserProfile | undefined;
+    service.getMe().subscribe(profile => (first = profile));
+    httpMock.expectOne(`${environment.apiUrl}/users/me`).flush({ id: 'u1' });
+
+    expect(first?.HomeGovernorateId).toBeNull();
+  });
+
+  it('a rejected id is reported and the profile is not refreshed', () => {
+    let failed = false;
+    service.setHomeGovernorate(9999).subscribe({ error: () => (failed = true) });
+
+    httpMock.expectOne(r => r.method === 'PUT').flush({}, { status: 422, statusText: 'Unprocessable' });
+
+    expect(failed).toBeTrue();
+  });
+});
+
 describe('agencyEligibility — mirrors the API gate so the screen can explain what is missing', () => {
   const profile = (over: Partial<UserProfile>): UserProfile => ({ ...over });
 

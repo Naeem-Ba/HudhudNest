@@ -35,7 +35,7 @@
 
   <ul class="uap__blocks" *ngIf="blocks().length > 0">
     <li class="uap__block" *ngFor="let block of blocks(); trackBy: trackById" data-testid="block-row">
-      <span class="uap__range">{{ block.from | date:'d MMM y' }} → {{ block.to | date:'d MMM y' }}</span>
+      <span class="uap__range">{{ block.from | localDate:'d MMM y' }} → {{ block.to | localDate:'d MMM y' }}</span>
       <button type="button" class="btn btn--sm btn--outline" data-testid="block-remove"
         [disabled]="removingId() !== null" (click)="removeBlock(block)">
         {{ 'COMMON.DELETE' | translate }}

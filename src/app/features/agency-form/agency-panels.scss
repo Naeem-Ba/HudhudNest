@@ -69,7 +69,7 @@
 
   &--warning {
     background: var(--danger-soft);
-    color: var(--danger);
+    color: var(--danger-text);
     border-color: rgba(220, 38, 38, .25);
   }
 }
@@ -142,7 +142,7 @@
   font-size: .7rem;
   font-weight: 700;
   background: var(--gold-soft);
-  color: var(--navy);
+  color: var(--text-strong);
 }
 
 .inline-form {
@@ -189,7 +189,7 @@
 }
 
 .field-hint { color: var(--gray-500); }
-.field-error { color: var(--danger); }
+.field-error { color: var(--danger-text); }
 
 .logo-row {
   display: flex;
@@ -216,7 +216,7 @@
   align-items: center;
   justify-content: center;
   font-size: 2rem;
-  color: var(--gray-400);
+  color: var(--text-muted);
 }
 
 .file-input {

@@ -21,17 +21,20 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { switchMap } from 'rxjs';
+import { catchError, map, of, switchMap } from 'rxjs';
 
 import { PlansApiService } from '../../core/api/plans-api.service';
+import { PaymentsApiService } from '../../core/api/payments-api.service';
+import { isNativeApp } from '../../core/native/is-native-app';
 import { AgenciesApiService } from '../../core/api/agencies-api.service';
 import { knownErrorCodeKey } from '../../core/interceptors/api-error.interceptor';
 import { ProfileService } from '../../core/api/profile.service';
 import { AuthService } from '../../core/auth/auth.service';
-import { MetaService } from '../../core/services/meta.service';
+import { PageMetaService } from '../../core/services/page-meta.service';
 import { SubscriptionPlan } from '../../core/models/subscription-plan.model';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { ToastService } from '../../shared/services/toast.service';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 /**
  * F-22: /pricing?autoSelect=<tier> used to POST the plan for any signed-in visitor who merely
@@ -48,18 +51,19 @@ const PENDING_AUTO_SELECT_MAX_AGE_MS = 15 * 60 * 1000;
   selector: 'app-pricing',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslateModule, LoadingSpinnerComponent],
+  imports: [ LocalizedDatePipe,CommonModule, TranslateModule, LoadingSpinnerComponent],
   templateUrl: './pricing.page.html',
   styleUrls: ['./pricing.page.scss']
 })
 export class PricingPage implements OnInit {
   private readonly api = inject(PlansApiService);
+  private readonly payments = inject(PaymentsApiService);
   private readonly profileService = inject(ProfileService);
   private readonly agenciesApi = inject(AgenciesApiService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
-  private readonly meta = inject(MetaService);
+  private readonly pageMeta = inject(PageMetaService);
   private readonly translate = inject(TranslateService);
   private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
@@ -104,8 +108,26 @@ export class PricingPage implements OnInit {
    */
   readonly pendingTier = signal<string | null>(null);
 
+  /**
+   * The plan that is IN FORCE right now, or null when the visitor has none that grants anything
+   * (never chose one, expired, cancelled, or just the free tier). Taken from the server's
+   * effective status, not from PlanTier alone: an expired plan keeps its tier but benefits nothing.
+   */
+  readonly currentPaidTier = signal<string | null>(null);
+
+  /** When the plan in force ends (ISO), or null for no fixed end. */
+  readonly currentPlanExpiresAt = signal<string | null>(null);
+
+  /**
+   * True when the server says online payments are switched on and at least one provider can be offered. Only then does a paid
+   * plan lead to the payment checkout; otherwise the older request-and-contact flow is unchanged. Never true inside the
+   * installed iOS/Android app: store rules require the store's own billing there, which is not implemented.
+   */
+  readonly onlinePayments = signal(false);
+
   ngOnInit(): void {
-    this.applyMeta();
+    // Public marketing page: own title/description and a canonical (SEO.PRICING in the i18n files).
+    this.pageMeta.applyTranslated('SEO.PRICING', '/pricing', this.destroyRef);
     this.load();
 
     this.showPlanRequiredBanner.set(
@@ -116,12 +138,29 @@ export class PricingPage implements OnInit {
     );
     this.loadAgencyOwnership();
     this.trackPendingPlan();
+    this.loadPaymentAvailability();
+  }
+
+  private loadPaymentAvailability(): void {
+    if (isNativeApp()) {
+      return;
+    }
+    this.payments.catalog()
+      .pipe(catchError(() => of(null)), takeUntilDestroyed(this.destroyRef))
+      .subscribe(catalog => this.onlinePayments.set(catalog?.enabled === true && catalog.providers.length > 0));
   }
 
   private trackPendingPlan(): void {
     this.profileService.profile$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(profile => this.pendingTier.set(profile?.PendingPlanTier ?? null));
+      .subscribe(profile => {
+        this.pendingTier.set(profile?.PendingPlanTier ?? null);
+
+        const tier = profile?.PlanTier ?? null;
+        const inForce = !!tier && tier !== 'free' && profile?.PlanStatus === 'Active';
+        this.currentPaidTier.set(inForce ? tier : null);
+        this.currentPlanExpiresAt.set(inForce ? profile?.PlanExpiresAt ?? null : null);
+      });
   }
 
   private loadAgencyOwnership(): void {
@@ -144,6 +183,15 @@ export class PricingPage implements OnInit {
 
   isBlockedForAgencyOwner(plan: SubscriptionPlan): boolean {
     return this.ownsAgency() && plan.tier === 'free';
+  }
+
+  /**
+   * The free card is disabled while a paid plan is in force: the server refuses it
+   * (PAID_PLAN_ACTIVE) because it would silently end what the visitor paid for. Only an
+   * administrator can cancel a paid plan, so the card explains that instead of failing on click.
+   */
+  isBlockedByPaidPlan(plan: SubscriptionPlan): boolean {
+    return plan.tier === 'free' && this.currentPaidTier() !== null;
   }
 
   load(): void {
@@ -261,14 +309,33 @@ export class PricingPage implements OnInit {
     // The CTA button is itself a selection control — clicking it must move the gold
     // highlight to this plan (and only this plan) before submitting it, so the visual
     // state and the plan actually sent to the backend can never disagree.
-    if (this.isBlockedForAgencyOwner(plan)) {
+    if (this.isBlockedForAgencyOwner(plan) || this.isBlockedByPaidPlan(plan)) {
       return;
     }
 
     this.selectedTier.set(plan.tier);
 
-    const destination = () =>
-      void this.router.navigate([plan.ctaRoute], { queryParams: plan.ctaQueryParams });
+    // Online payment: a priced plan goes to the payment checkout, where the server quotes the price. The old request flow
+    // below (record a pending request, then contact an administrator) stays as it was for when payments are switched off.
+    if (this.onlinePayments() && plan.priceKind === 'monthly') {
+      const checkout = ['/payments/checkout'];
+      const queryParams = { product: 'plan', plan: plan.tier };
+      if (!this.auth.getAccessToken()) {
+        void this.router.navigate(['/auth/login'], {
+          queryParams: { returnUrl: `/payments/checkout?product=plan&plan=${encodeURIComponent(plan.tier)}` }
+        });
+        return;
+      }
+      void this.router.navigate(checkout, { queryParams });
+      return;
+    }
+
+    const destination = (requestId?: string | null) =>
+      void this.router.navigate([plan.ctaRoute], {
+        // A paid plan is a pending request: carry its id to the contact form so the message
+        // quotes the reference an administrator can match to the request.
+        queryParams: requestId ? { ...plan.ctaQueryParams, ref: requestId } : plan.ctaQueryParams
+      });
 
     if (!this.auth.getAccessToken()) {
       if (plan.ctaRoute === '/property-form') {
@@ -296,11 +363,11 @@ export class PricingPage implements OnInit {
         // Keep the shared profile$ (navbar, guard) in sync immediately rather than
         // waiting for their next independent load. A paid plan only becomes a pending
         // request here, so the refresh is what makes the "awaiting confirmation" note appear.
-        switchMap(() => this.profileService.refresh()),
+        switchMap(result => this.profileService.refresh().pipe(map(() => result))),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
-        next: () => {
+        next: result => {
           this.selecting.set(null);
           // Only the free plan is a finished action. A paid tier is merely recorded as a
           // pending request here; the visitor still has to write and send the contact
@@ -311,7 +378,7 @@ export class PricingPage implements OnInit {
           } else {
             this.toast.info(this.translate.instant('PRICING.MESSAGES.PLAN_NEXT_STEP'));
           }
-          destination();
+          destination(result?.requestId);
         },
         error: err => {
           this.selecting.set(null);
@@ -323,22 +390,6 @@ export class PricingPage implements OnInit {
           // Stay on /pricing — a failed save must not send the visitor on to a route
           // that assumes a plan was actually recorded.
         }
-      });
-  }
-
-  /**
-   * Public marketing page, so it sets its own meta tags — same precedent as the
-   * landing page. Uses translate.get() rather than instant() because the ngx-translate
-   * HTTP loader may not have resolved yet on a cold navigation.
-   */
-  private applyMeta(): void {
-    this.translate.get(['PRICING.META_TITLE', 'PRICING.META_DESCRIPTION'])
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(values => {
-        this.meta.setMeta({
-          title: values['PRICING.META_TITLE'],
-          description: values['PRICING.META_DESCRIPTION']
-        });
       });
   }
 }

@@ -46,7 +46,7 @@
         <span *ngIf="isVerified(offering)" class="badge">✓ {{ 'SERVICES_CATALOG.VERIFIED_PROVIDER' | translate }}</span>
       </p>
       <p class="meta rating" *ngIf="offering.averageRating != null && (offering.reviewCount ?? 0) > 0">
-        ★ {{ offering.averageRating | number:'1.1-1' }} · {{ 'SERVICES_CATALOG.REVIEWS_COUNT' | translate: { count: offering.reviewCount } }}
+        ★ {{ offering.averageRating | localNumber:'1.1-1' }} · {{ 'SERVICES_CATALOG.REVIEWS_COUNT' | translate: { count: offering.reviewCount } }}
       </p>
       <p class="meta" *ngIf="!offering.reviewCount">{{ 'SERVICE_REQUEST.NO_REVIEWS_YET' | translate }}</p>
       <p *ngIf="offering.description" class="description">{{ offering.description }}</p>

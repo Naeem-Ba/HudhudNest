@@ -1,8 +1,9 @@
-<header class="navbar" role="banner">
-  <div class="navbar__inner">
+<header class="navbar" role="banner" [class.navbar--compact]="compactNav">
+  <div class="navbar__inner" #innerRef>
 
     <!-- Logo -->
     <a
+      #brandRef
       routerLink="/home"
       class="navbar__brand"
       aria-label="HudhudNest"
@@ -25,9 +26,10 @@
 
     <!-- Desktop Navigation -->
     <nav
+      #navRef
       class="navbar__nav"
       role="navigation"
-      aria-label="التنقل الرئيسي"
+      [attr.aria-label]="'NAVBAR.MAIN_NAV' | translate"
     >
       <a
         routerLink="/home"
@@ -68,6 +70,22 @@
         class="navbar__link"
       >
         {{ 'NAVBAR.SERVICES' | translate }}
+      </a>
+
+      <a
+        routerLink="/price-estimate"
+        routerLinkActive="navbar__link--active"
+        class="navbar__link"
+      >
+        {{ 'NAVBAR.PRICE_ESTIMATE' | translate }}
+      </a>
+
+      <a
+        routerLink="/valuation"
+        routerLinkActive="navbar__link--active"
+        class="navbar__link"
+      >
+        {{ 'NAVBAR.VALUATION' | translate }}
       </a>
 
       <a
@@ -123,7 +141,7 @@
     </nav>
 
     <!-- Actions -->
-    <div class="navbar__actions">
+    <div class="navbar__actions" #actionsRef>
 
       <!-- Theme Toggle (Dark/Light) -->
       <button
@@ -155,7 +173,7 @@
           (click)="toggleLangMenu($event)"
           [attr.aria-expanded]="langMenuOpen"
           aria-haspopup="menu"
-          aria-label="تغيير اللغة"
+          [attr.aria-label]="'COMMON.CHANGE_LANGUAGE' | translate"
         >
           <svg
             width="16"
@@ -274,7 +292,7 @@
             (click)="toggleDropdown($event)"
             [attr.aria-expanded]="dropdownOpen"
             aria-haspopup="menu"
-            aria-label="قائمة المستخدم"
+            [attr.aria-label]="'COMMON.USER_MENU' | translate"
           >
             <ng-container *ngTemplateOutlet="avatarTpl; context: { $implicit: 'sm' }"></ng-container>
 
@@ -300,7 +318,7 @@
             *ngIf="dropdownOpen"
             class="account__dropdown"
             role="menu"
-            aria-label="خيارات الحساب"
+            [attr.aria-label]="'COMMON.ACCOUNT_OPTIONS' | translate"
           >
             <div class="account__user-info">
               <ng-container *ngTemplateOutlet="avatarTpl; context: { $implicit: 'lg' }"></ng-container>
@@ -390,6 +408,22 @@
             <a routerLink="/saved-searches" routerLinkActive="account__item--active" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
               <span aria-hidden="true">🔔</span>
               {{ 'NAVBAR.SAVED_SEARCHES' | translate }}
+            </a>
+
+            <!-- Growth engine P5. -->
+            <a routerLink="/referrals" routerLinkActive="account__item--active" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+              <span aria-hidden="true">🎁</span>
+              {{ 'NAVBAR.REFERRALS' | translate }}
+            </a>
+
+            <!-- Growth engine P2. -->
+            <a routerLink="/search-requests" routerLinkActive="account__item--active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+              <span aria-hidden="true">🔎</span>
+              {{ 'NAVBAR.SEARCH_REQUESTS' | translate }}
+            </a>
+            <a routerLink="/search-requests/board" routerLinkActive="account__item--active" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
+              <span aria-hidden="true">📋</span>
+              {{ 'NAVBAR.SEARCH_REQUEST_BOARD' | translate }}
             </a>
 
             <a routerLink="/investments/watchlist" routerLinkActive="account__item--active" ariaCurrentWhenActive="page" class="account__item" role="menuitem" (click)="closeAccountMenu()">
@@ -517,11 +551,26 @@
     class="mobile-drawer"
     [class.mobile-drawer--open]="mobileMenuOpen"
     [attr.aria-hidden]="!mobileMenuOpen"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="'NAVBAR.OPEN_MENU' | translate"
+    (keydown)="onDrawerKeydown($event)"
   >
+    <button
+      #drawerCloseRef
+      type="button"
+      class="mobile-drawer__close"
+      [attr.aria-label]="'NAVBAR.CLOSE_MENU' | translate"
+      (click)="closeMobileMenu()"
+    >
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+        <path d="M3 3l12 12M15 3L3 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+    </button>
     <nav
       class="mobile-drawer__nav"
       role="navigation"
-      aria-label="التنقل الرئيسي"
+      [attr.aria-label]="'NAVBAR.MAIN_NAV' | translate"
     >
       <a
         routerLink="/home"
@@ -569,6 +618,38 @@
         (click)="closeMobileMenu()"
       >
         {{ 'NAVBAR.PRICING' | translate }}
+      </a>
+
+      <a
+        routerLink="/expats"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ 'NAVBAR.EXPATS' | translate }}
+      </a>
+
+      <a
+        routerLink="/map"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ 'NAVBAR.MAP' | translate }}
+      </a>
+
+      <a
+        routerLink="/price-estimate"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ 'NAVBAR.PRICE_ESTIMATE' | translate }}
+      </a>
+
+      <a
+        routerLink="/valuation"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ 'NAVBAR.VALUATION' | translate }}
       </a>
 
       <a
@@ -662,6 +743,17 @@
 
         <a routerLink="/saved-searches" routerLinkActive="mobile-drawer__link--active" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
           {{ 'NAVBAR.SAVED_SEARCHES' | translate }}
+        </a>
+
+        <a routerLink="/referrals" routerLinkActive="mobile-drawer__link--active" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
+          {{ 'NAVBAR.REFERRALS' | translate }}
+        </a>
+
+        <a routerLink="/search-requests" routerLinkActive="mobile-drawer__link--active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
+          {{ 'NAVBAR.SEARCH_REQUESTS' | translate }}
+        </a>
+        <a routerLink="/search-requests/board" routerLinkActive="mobile-drawer__link--active" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
+          {{ 'NAVBAR.SEARCH_REQUEST_BOARD' | translate }}
         </a>
 
         <a routerLink="/investments/watchlist" routerLinkActive="mobile-drawer__link--active" ariaCurrentWhenActive="page" class="mobile-drawer__link" (click)="closeMobileMenu()">
@@ -826,8 +918,11 @@
       [hidden]="!managementOpen"
     >
       <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/my-listings', label: 'PROFILE.MY_ADS', icon: '📋' }"></ng-container>
+      <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/payments', label: 'NAVBAR.MY_PAYMENTS', icon: '🧾' }"></ng-container>
       <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/short-stay/manage', label: 'NAVBAR.SHORT_STAY_LISTINGS', icon: '🏡' }"></ng-container>
-      <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/my-agency', label: 'NAVBAR.MY_AGENCY', icon: '🏢' }"></ng-container>
+      <ng-container *ngIf="showMyAgency$ | async">
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/my-agency', label: 'NAVBAR.MY_AGENCY', icon: '🏢' }"></ng-container>
+      </ng-container>
 
       <ng-container *ngIf="isProvider$ | async">
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/provider/requests', label: 'NAVBAR.PROVIDER_INBOX', icon: '🧰' }"></ng-container>
@@ -846,11 +941,15 @@
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/service-providers', label: 'NAVBAR.ADMIN_SERVICE_PROVIDERS', icon: '🧰' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/listing-reports', label: 'NAVBAR.ADMIN_LISTING_REPORTS', icon: '🚩' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/payment-requests', label: 'NAVBAR.ADMIN_PAYMENT_REQUESTS', icon: '💳' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/payments', label: 'NAVBAR.ADMIN_PAYMENTS', icon: '🏦' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/investments', label: 'NAVBAR.ADMIN_INVESTMENTS', icon: '💼' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/location-suggestions', label: 'NAVBAR.ADMIN_LOCATION_SUGGESTIONS', icon: '📍' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/marketing', label: 'NAVBAR.ADMIN_MARKETING', icon: '📣' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/growth', label: 'NAVBAR.ADMIN_GROWTH', icon: '📈' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/referrals', label: 'NAVBAR.ADMIN_REFERRALS', icon: '🎁' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/app-updates', label: 'NAVBAR.ADMIN_APP_UPDATES', icon: '📲' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/social-distribution', label: 'NAVBAR.ADMIN_SOCIAL_DISTRIBUTION', icon: '📡' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/audit-logs', label: 'NAVBAR.ADMIN_AUDIT_LOGS', icon: '🧾' }"></ng-container>
       </ng-container>
     </div>
   </ng-template>

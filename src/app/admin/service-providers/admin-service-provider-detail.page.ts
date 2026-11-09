@@ -13,6 +13,7 @@ import { ToastService } from '../../shared/services/toast.service';
 import { ChoiceChipOption, ChoiceChipsComponent } from '../../shared/ui/choice-chips.component';
 import { ConfirmModalComponent } from '../../shared/ui/confirm-modal.component';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 type StatusAction = 'suspend' | 'reactivate' | 'revoke';
 
@@ -26,7 +27,7 @@ type StatusAction = 'suspend' | 'reactivate' | 'revoke';
   selector: 'app-admin-service-provider-detail-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, ChoiceChipsComponent, ConfirmModalComponent, LoadingSpinnerComponent],
+  imports: [ LocalizedDatePipe,CommonModule, FormsModule, RouterLink, TranslateModule, ChoiceChipsComponent, ConfirmModalComponent, LoadingSpinnerComponent],
   templateUrl: './admin-service-provider-detail.page.html',
   styleUrls: ['./admin-service-provider-detail.page.scss']
 })

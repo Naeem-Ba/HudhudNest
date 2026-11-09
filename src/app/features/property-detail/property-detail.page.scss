@@ -173,7 +173,7 @@
   border-radius: var(--r-md, .5rem);
   background: var(--warning-soft);
   border: 1px solid rgba(217,119,6,.3);
-  color: var(--warning);
+  color: var(--warning-text);
   font-size: .85rem;
   font-weight: 600;
 }
@@ -295,7 +295,7 @@
   small {
     font-size: .78rem;
     font-weight: 500;
-    color: var(--gray-400);
+    color: var(--text-muted);
     margin-inline-start: .25rem;
   }
 }
@@ -506,7 +506,7 @@
   border-radius: var(--r-pill);
   font-size: .82rem;
   font-weight: 600;
-  color: var(--success);
+  color: var(--success-text);
 }
 
 /* ── Star Selector ── */
@@ -575,7 +575,7 @@
 .review-date {
   display: block;
   font-size: .75rem;
-  color: var(--gray-400);
+  color: var(--text-muted);
   margin-top: .1rem;
 }
 
@@ -593,7 +593,7 @@
 
 .no-map {
   text-align: center;
-  color: var(--gray-400);
+  color: var(--text-muted);
   font-size: .85rem;
   padding: 2rem;
 }
@@ -607,7 +607,7 @@
   padding-inline: .9rem;
   border: 1px solid var(--border);
   border-radius: var(--r-md);
-  color: var(--primary);
+  color: var(--primary-text);
   font-weight: 600;
   text-decoration: none;
 
@@ -765,7 +765,7 @@
 }
 
 .agency-card__name:hover {
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .agency-card__rating {
@@ -777,7 +777,7 @@
 }
 
 .agency-card__stars {
-  color: var(--warning);
+  color: var(--warning-text);
 }
 
 .agency-card__count {
@@ -787,7 +787,7 @@
 
 .agency-card__link {
   font-size: .85rem;
-  color: var(--primary);
+  color: var(--primary-text);
   text-decoration: none;
 }
 
@@ -821,7 +821,7 @@
 }
 
 .owner-card__rate-link {
-  color: var(--warning);
+  color: var(--warning-text);
   font-size: .8rem;
   font-weight: 700;
   text-decoration: none;
@@ -837,7 +837,7 @@
 
   &__text {
     margin: 0;
-    color: var(--success);
+    color: var(--success-text);
     font-weight: 600;
   }
 }
@@ -848,7 +848,7 @@
   font-size: .82rem;
   color: var(--gray-500);
 
-  a { color: var(--warning); font-weight: 700; margin-inline-start: .25rem; }
+  a { color: var(--warning-text); font-weight: 700; margin-inline-start: .25rem; }
 }
 
 .owner-card__name {
@@ -904,7 +904,7 @@ a.owner-card__name--link {
   small { display: block; color: var(--gray-500); margin-top: .15rem; }
 }
 
-.offering-rating { color: var(--warning, #b7791f); font-weight: 700; }
+.offering-rating { color: var(--warning-text); font-weight: 700; }
 .offering-rating--none { color: var(--gray-500); font-weight: 400; }
 
 // Shown once the conversation exists; the provider's contact appears only after a confirmed request is accepted.
@@ -930,4 +930,19 @@ a.owner-card__name--link {
     li span { color: var(--gray-500); }
     a { font-weight: 700; }
   }
+}
+
+/* Growth engine P8: the owner hid the exact spot. */
+.map-approximate { margin: .5rem 0 0; font-size: .85rem; color: var(--text-muted, #5b6470); }
+
+// "Price negotiable" note — shown on the details page only, never on cards.
+.summary-card__negotiable {
+  display: inline-block;
+  margin: .35rem 0 0;
+  padding: .2rem .65rem;
+  border-radius: 999px;
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--success-text);
+  background: var(--success-soft);
 }

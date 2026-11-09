@@ -16,7 +16,7 @@
     border-radius: 8px;
     font-weight: 600;
     font-size: 0.9rem;
-    color: var(--danger, #dc2626);
+    color: var(--danger-text);
     background: var(--danger-soft, #fee2e2);
   }
 
@@ -119,7 +119,7 @@
   padding: 0 4px;
   background: none;
   border: 0;
-  color: var(--gold-dark);
+  color: var(--gold-text);
   font-weight: 700;
   font-size: var(--text-sm);
   text-decoration: underline;
@@ -141,7 +141,7 @@
   margin: -0.35rem 0 0.75rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--danger, #dc2626);
+  color: var(--danger-text);
 }
 
 .ssf__link {
@@ -149,7 +149,7 @@
   border: 0;
   padding: 0 4px;
   min-height: 32px;
-  color: var(--gold-dark);
+  color: var(--gold-text);
   font: inherit;
   font-weight: 700;
   text-decoration: underline;
@@ -157,7 +157,7 @@
   cursor: pointer;
 }
 
-.ssf__required { color: var(--danger, #dc2626); }
+.ssf__required { color: var(--danger-text); }
 
 .ssf__map {
   margin-bottom: 1rem;
@@ -183,7 +183,7 @@
 .ssf__pin-status {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--success, #15803d);
+  color: var(--success-text);
 }
 
 .ssf__map .ssf__error { margin-top: 0.5rem; }
@@ -196,7 +196,7 @@
 .ssf__camera-btn {
   display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin-top: 8px; padding: 0 14px;
   border: 1px solid var(--border); border-radius: var(--r-md, 12px); background: var(--surface);
-  color: var(--gold-dark, var(--navy)); font-weight: 700; cursor: pointer;
+  color: var(--primary-text); font-weight: 700; cursor: pointer;
 }
 .ssf__camera-btn:disabled { opacity: .6; cursor: default; }
 .ssf__camera-btn:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }

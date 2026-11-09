@@ -1,19 +1,23 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { PhoneAuthApiService } from '../../../core/auth/phone-auth-api.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { FormErrorComponent } from '../../../shared/ui/form-error.component';
-import { getPhoneWorkflowErrorMessage } from '../phone-auth-errors';
+import { AuthErrorFocusService } from '../../../core/auth/auth-error-focus.service';
+import { passwordPolicyValidator } from '../../../core/auth/password-policy';
+import { PasswordRulesComponent } from '../../../shared/ui/password-rules.component';
+import { AuthField, applyAuthFieldErrors, resolveAuthError } from '../auth-error';
 import { phoneNumberValidator } from '../../../core/auth/phone-number';
 import { OtpChannelState } from '../../../core/auth/otp-channel-state';
 import { OtpChannel } from '../../../core/models/auth.model';
 import { OtpChannelFallbackComponent } from '../../../shared/components/otp-channel-picker/otp-channel-fallback.component';
 import { OtpChannelPickerComponent } from '../../../shared/components/otp-channel-picker/otp-channel-picker.component';
+import { otpCodeValidator } from '../../../core/auth/otp-code';
 
 type Step = 'phone' | 'otp' | 'newPassword' | 'done';
 
@@ -25,7 +29,7 @@ type Step = 'phone' | 'otp' | 'newPassword' | 'done';
 @Component({
   selector: 'app-phone-password-reset-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslateModule, FormErrorComponent, OtpChannelPickerComponent, OtpChannelFallbackComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslateModule, FormErrorComponent, PasswordRulesComponent, OtpChannelPickerComponent, OtpChannelFallbackComponent],
   templateUrl: './phone-password-reset.page.html',
   styleUrls: ['./phone-password-reset.page.scss']
 })
@@ -36,6 +40,7 @@ export class PhonePasswordResetPage {
   private readonly translate = inject(TranslateService);
   private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly errorFocus = inject(AuthErrorFocusService);
 
   readonly step = signal<Step>('phone');
   readonly loading = signal(false);
@@ -53,16 +58,28 @@ export class PhonePasswordResetPage {
   });
 
   readonly otpForm = this.fb.nonNullable.group({
-    code: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]]
+    code: ['', [Validators.required, otpCodeValidator]]
   });
 
   readonly passwordForm = this.fb.nonNullable.group({
-    newPassword: ['', [Validators.required, Validators.minLength(8)]],
+    // The server's rules (the name is not on this page, so only the phone number could be compared and
+    // the server does that check; the list shown below never promises a rule this page cannot test).
+    newPassword: ['', [Validators.required, passwordPolicyValidator()]],
     confirmPassword: ['', [Validators.required]]
   });
 
   constructor() {
     this.channels.watch(this.phoneForm.controls.phoneNumber);
+
+    // A message about the previous attempt stops being true as soon as something is edited.
+    const clear = (): void => {
+      if (this.error()) {
+        this.error.set('');
+      }
+    };
+    this.phoneForm.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(clear);
+    this.otpForm.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(clear);
+    this.passwordForm.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(clear);
   }
 
   get maskedPhone(): string {
@@ -80,10 +97,15 @@ export class PhonePasswordResetPage {
   }
 
   sendOtp(): void {
+    if (this.loading()) {
+      return;
+    }
+
     this.submitted.set(true);
 
-    if (this.phoneForm.invalid || this.loading()) {
+    if (this.phoneForm.invalid) {
       this.phoneForm.markAllAsTouched();
+      this.errorFocus.request();
       return;
     }
 
@@ -98,7 +120,7 @@ export class PhonePasswordResetPage {
           this.loading.set(false);
 
           if (!result.succeeded || !result.challengeId) {
-            this.setError(getPhoneWorkflowErrorMessage(this.translate, result.errorCode, 'AUTH.ERRORS.SEND_OTP_FAILED'));
+            this.handleFailure({ status: 400, error: { code: result.errorCode } }, 'AUTH.ERRORS.SEND_OTP_FAILED');
             return;
           }
 
@@ -111,7 +133,7 @@ export class PhonePasswordResetPage {
         },
         error: error => {
           this.loading.set(false);
-          this.setError(getPhoneWorkflowErrorMessage(this.translate, this.readErrorCode(error), 'AUTH.ERRORS.SEND_OTP_FAILED', error));
+          this.handleFailure(error, 'AUTH.ERRORS.SEND_OTP_FAILED');
         }
       });
   }
@@ -144,10 +166,15 @@ export class PhonePasswordResetPage {
   }
 
   verifyOtp(): void {
+    if (this.loading()) {
+      return;
+    }
+
     this.submitted.set(true);
 
-    if (this.otpForm.invalid || this.loading()) {
+    if (this.otpForm.invalid) {
       this.otpForm.markAllAsTouched();
+      this.errorFocus.request();
       return;
     }
 
@@ -162,7 +189,7 @@ export class PhonePasswordResetPage {
           this.loading.set(false);
 
           if (!result.succeeded || !result.confirmationToken) {
-            this.setError(getPhoneWorkflowErrorMessage(this.translate, result.errorCode, 'AUTH.ERRORS.VERIFY_OTP_FAILED'));
+            this.handleFailure({ status: 400, error: { code: result.errorCode } }, 'AUTH.ERRORS.VERIFY_OTP_FAILED');
             return;
           }
 
@@ -174,16 +201,21 @@ export class PhonePasswordResetPage {
         error: error => {
           this.loading.set(false);
           // Verify is limited by attempts (5 per 15 minutes), not by codes requested.
-          this.setError(getPhoneWorkflowErrorMessage(this.translate, this.readErrorCode(error, 'OTP_RATE_LIMITED'), 'AUTH.ERRORS.VERIFY_OTP_FAILED', error));
+          this.handleFailure(error, 'AUTH.ERRORS.VERIFY_OTP_FAILED', 'OTP_RATE_LIMITED');
         }
       });
   }
 
   submitNewPassword(): void {
+    if (this.loading()) {
+      return;
+    }
+
     this.submitted.set(true);
 
-    if (this.passwordForm.invalid || this.loading() || this.passwordsMismatch) {
+    if (this.passwordForm.invalid || this.passwordsMismatch) {
       this.passwordForm.markAllAsTouched();
+      this.errorFocus.request();
       return;
     }
 
@@ -202,7 +234,7 @@ export class PhonePasswordResetPage {
           this.loading.set(false);
 
           if (!result.succeeded) {
-            this.setError(getPhoneWorkflowErrorMessage(this.translate, result.errorCode, 'AUTH.ERRORS.PASSWORD_RESET_FAILED'));
+            this.handleFailure({ status: 400, error: { code: result.errorCode } }, 'AUTH.ERRORS.PASSWORD_RESET_FAILED');
             return;
           }
 
@@ -211,7 +243,7 @@ export class PhonePasswordResetPage {
         },
         error: error => {
           this.loading.set(false);
-          this.setError(getPhoneWorkflowErrorMessage(this.translate, this.readErrorCode(error), 'AUTH.ERRORS.PASSWORD_RESET_FAILED', error));
+          this.handleFailure(error, 'AUTH.ERRORS.PASSWORD_RESET_FAILED');
         }
       });
   }
@@ -240,16 +272,30 @@ export class PhonePasswordResetPage {
     this.resendCooldown.set(0);
   }
 
-  private readErrorCode(error: unknown, rateLimitedCode = 'RATE_LIMITED'): string | undefined {
-    const response = error as { status?: number; error?: { code?: string; Code?: string } };
-    if (response.status === 429) {
-      return rateLimitedCode;
-    }
-    return response.error?.code ?? response.error?.Code;
-  }
+  /**
+   * The reason goes on the field it is about (a wrong code under the code box, a weak password under the
+   * password), anything else in the alert; the page scrolls to the first. Nothing typed is cleared.
+   * On the code step a 429 means "too many wrong codes", not "too many codes requested".
+   */
+  private handleFailure(error: unknown, fallbackKey: string, rateLimitedCode?: string): void {
+    const status = (error as { status?: number } | null)?.status;
+    const source = status === 429 && rateLimitedCode ? { status: 400, error: { code: rateLimitedCode } } : error;
+    const resolved = resolveAuthError(this.translate, source, { fallbackKey, passwordField: 'newPassword' });
 
-  private setError(message: string): void {
-    // toast.error() removed on purpose — see phone-change.page.ts's setError comment.
-    this.error.set(message);
+    const controls: Partial<Record<AuthField, AbstractControl | null>> = {
+      phone: this.phoneForm.controls.phoneNumber,
+      code: this.otpForm.controls.code,
+      newPassword: this.passwordForm.controls.newPassword
+    };
+    // Only the form of the visible step takes field errors; a leftover goes to the alert.
+    const step = this.step();
+    const visible: Partial<Record<AuthField, AbstractControl | null>> = {
+      phone: step === 'phone' ? controls.phone : null,
+      code: step === 'otp' ? controls.code : null,
+      newPassword: step === 'newPassword' ? controls.newPassword : null
+    };
+
+    this.error.set(applyAuthFieldErrors(resolved, visible).join(' '));
+    this.errorFocus.request();
   }
 }

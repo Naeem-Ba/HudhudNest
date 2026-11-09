@@ -142,20 +142,76 @@ export function escapeHtml(value) {
 
 const MAX_SUMMARY_LENGTH = 160;
 
+/** The preview languages. Arabic is the original and the default for a link that names none. */
+export const SHARE_LANGUAGES = ['ar', 'en', 'de'];
+
+const SHARE_TEXT = {
+  ar: {
+    dir: 'rtl',
+    locale: 'ar_SY',
+    siteName: 'هدهد نيست',
+    squareMeter: 'م²',
+    rooms: n => `${n} غرف`,
+    defaultTitle: 'تفاصيل العقار',
+    percent: v => `خصم ${v}%`,
+    fixed: v => `خصم ${v}$`,
+    freeMonths: v => (v === 1 ? 'شهر مجاني' : `${v} أشهر مجانية`),
+    unavailableTitle: 'الإعلان غير متاح',
+    unavailableBody: 'هذا الإعلان لم يعد متاحاً.'
+  },
+  en: {
+    dir: 'ltr',
+    locale: 'en_US',
+    siteName: 'HudhudNest',
+    squareMeter: 'm²',
+    rooms: n => `${n} ${Number(n) === 1 ? 'room' : 'rooms'}`,
+    defaultTitle: 'Property details',
+    percent: v => `${v}% off`,
+    fixed: v => `$${v} off`,
+    freeMonths: v => (v === 1 ? '1 month free' : `${v} months free`),
+    unavailableTitle: 'Listing unavailable',
+    unavailableBody: 'This listing is no longer available.'
+  },
+  de: {
+    dir: 'ltr',
+    locale: 'de_DE',
+    siteName: 'HudhudNest',
+    squareMeter: 'm²',
+    rooms: n => `${n} Zimmer`,
+    defaultTitle: 'Immobiliendetails',
+    percent: v => `${v} % Rabatt`,
+    fixed: v => `${v} $ Rabatt`,
+    freeMonths: v => (v === 1 ? '1 Monat gratis' : `${v} Monate gratis`),
+    unavailableTitle: 'Anzeige nicht verfügbar',
+    unavailableBody: 'Diese Anzeige ist nicht mehr verfügbar.'
+  }
+};
+
+/** "de" from "?lang=de" (also "de-AT"); anything else, or nothing, is Arabic -- the original behaviour. */
+export function resolveShareLanguage(value) {
+  const primary = String(value ?? '').trim().toLowerCase().split(/[-_]/, 1)[0];
+  return SHARE_LANGUAGES.includes(primary) ? primary : 'ar';
+}
+
+function shareText(lang) {
+  return SHARE_TEXT[resolveShareLanguage(lang)];
+}
+
 /** Mirrors PropertyShareContentService.buildMetaDescription() on the Angular side — same
  *  facts (area • rooms • price • city), same 160-char cap, same fallback to the title when
  *  there is nothing structured to show. Duplicated intentionally rather than shared at
  *  runtime; see the file header for why. */
-export function buildSummary(property) {
+export function buildSummary(property, lang = 'ar') {
+  const text = shareText(lang);
   const parts = [];
 
   if (property.area) {
-    const unit = !property.areaUnit || property.areaUnit === 'SquareMeter' ? 'م²' : property.areaUnit;
+    const unit = !property.areaUnit || property.areaUnit === 'SquareMeter' ? text.squareMeter : property.areaUnit;
     parts.push(`${property.area} ${unit}`);
   }
 
   if (property.rooms) {
-    parts.push(`${property.rooms} غرف`);
+    parts.push(text.rooms(property.rooms));
   }
 
   const price = property.purchasePrice ?? property.coldRent ?? property.warmRent;
@@ -267,15 +323,16 @@ export function buildListingJsonLd(property, canonicalUrl) {
  * Facebook/WhatsApp/Telegram links, Copy Link) — see PropertyShareUrlService on the Angular
  * side, the single source of truth this document's og:url/canonical must match.
  */
-export function buildPropertyMetaHtml({ property, canonicalUrl, fallbackImageUrl }) {
-  const title = sanitizeText(property.title) || 'تفاصيل العقار';
-  const description = buildSummary(property) || title;
+export function buildPropertyMetaHtml({ property, canonicalUrl, fallbackImageUrl, lang = 'ar' }) {
+  const text = shareText(lang);
+  const title = sanitizeText(property.title) || text.defaultTitle;
+  const description = buildSummary(property, lang) || title;
   const image =
     (typeof property.mainImageUrl === 'string' && /^https?:\/\//i.test(property.mainImageUrl) && property.mainImageUrl) ||
     (Array.isArray(property.images) && property.images.find(img => img && /^https?:\/\//i.test(img.url))?.url) ||
     fallbackImageUrl;
 
-  const fullTitle = `${title} | هدهد نيست`;
+  const fullTitle = `${title} | ${text.siteName}`;
   const t = escapeHtml(fullTitle);
   const d = escapeHtml(description);
   const u = escapeHtml(canonicalUrl);
@@ -288,7 +345,7 @@ export function buildPropertyMetaHtml({ property, canonicalUrl, fallbackImageUrl
   const jsonLd = JSON.stringify(buildListingJsonLd(property, canonicalUrl)).replace(/</g, '\\u003c');
 
   return `<!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="${resolveShareLanguage(lang)}" dir="${text.dir}">
 <head>
 <meta charset="utf-8">
 <title>${t}</title>
@@ -299,8 +356,8 @@ export function buildPropertyMetaHtml({ property, canonicalUrl, fallbackImageUrl
 <meta property="og:image" content="${img}">
 <meta property="og:url" content="${u}">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="هدهد نيست">
-<meta property="og:locale" content="ar_SY">
+<meta property="og:site_name" content="${text.siteName}">
+<meta property="og:locale" content="${text.locale}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${t}">
 <meta name="twitter:description" content="${d}">
@@ -321,14 +378,14 @@ export function isLandingPath(pathname) {
   return /^\/landing\/?$/.test(pathname);
 }
 
-/** Arabic one-line description of an offer's discount, for crawlers that cannot pick a language. */
-function describeOfferDiscount(offer) {
+/** One-line description of an offer's discount in the preview language. */
+function describeOfferDiscount(offer, text) {
   const value = Number(offer.discountValue);
   if (!Number.isFinite(value)) return '';
   switch (offer.discountType) {
-    case 'Percentage': return `خصم ${value}%`;
-    case 'FixedAmountUsd': return `خصم ${value}$`;
-    case 'FreeMonths': return value === 1 ? 'شهر مجاني' : `${value} أشهر مجانية`;
+    case 'Percentage': return text.percent(value);
+    case 'FixedAmountUsd': return text.fixed(value);
+    case 'FreeMonths': return text.freeMonths(value);
     default: return '';
   }
 }
@@ -339,23 +396,24 @@ function describeOfferDiscount(offer) {
  * it never carries status, ids or counters. Returns null when `offer` has no usable name, so the
  * caller serves the normal SPA (whose static tags describe the platform) instead of a hollow card.
  */
-export function buildOfferMetaHtml({ offer, canonicalUrl, fallbackImageUrl }) {
+export function buildOfferMetaHtml({ offer, canonicalUrl, fallbackImageUrl, lang = 'ar' }) {
+  const text = shareText(lang);
   const name = sanitizeText(offer?.name);
   if (!name) {
     return null;
   }
 
-  const discount = describeOfferDiscount(offer);
+  const discount = describeOfferDiscount(offer, text);
   const details = sanitizeText(offer.description);
   const description = [discount, details].filter(Boolean).join(' — ') || name;
 
-  const t = escapeHtml(`${name} | هدهد نيست`);
+  const t = escapeHtml(`${name} | ${text.siteName}`);
   const d = escapeHtml(description.slice(0, 200));
   const u = escapeHtml(canonicalUrl);
   const img = escapeHtml(fallbackImageUrl);
 
   return `<!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="${resolveShareLanguage(lang)}" dir="${text.dir}">
 <head>
 <meta charset="utf-8">
 <title>${t}</title>
@@ -366,8 +424,8 @@ export function buildOfferMetaHtml({ offer, canonicalUrl, fallbackImageUrl }) {
 <meta property="og:image" content="${img}">
 <meta property="og:url" content="${u}">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="هدهد نيست">
-<meta property="og:locale" content="ar_SY">
+<meta property="og:site_name" content="${text.siteName}">
+<meta property="og:locale" content="${text.locale}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${t}">
 <meta name="twitter:description" content="${d}">
@@ -384,16 +442,17 @@ export function buildOfferMetaHtml({ offer, canonicalUrl, fallbackImageUrl }) {
 
 /** Minimal, non-leaking document for a property id that is unpublished/deleted/expired/not
  *  found — never includes any property-specific data, per the feature's privacy rules. */
-export function buildNotFoundHtml() {
+export function buildNotFoundHtml(lang = 'ar') {
+  const text = shareText(lang);
   return `<!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="${resolveShareLanguage(lang)}" dir="${text.dir}">
 <head>
 <meta charset="utf-8">
-<title>الإعلان غير متاح | هدهد نيست</title>
+<title>${text.unavailableTitle} | ${text.siteName}</title>
 <meta name="robots" content="noindex">
 </head>
 <body>
-<p>هذا الإعلان لم يعد متاحاً.</p>
+<p>${text.unavailableBody}</p>
 </body>
 </html>
 `;

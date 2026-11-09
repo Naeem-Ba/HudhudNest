@@ -14,9 +14,21 @@
 ## إعداد لمرة واحدة: مستودع الإصدارات العام
 1. GitHub ← New repository ← الاسم **`HudhudNest-Releases`** ← **Public** ← أضف README قصيرًا (مثلًا: «ملفات التثبيت الرسمية لتطبيق HudhudNest؛ التحقق: SHA-256 في https://hudhudnest.com/download»). بلا كود مصدري.
 2. Settings ← General ← إن ظهر خيار **Release immutability** فعّله (لا يمكن بعدها استبدال ملف إصدار منشور بصمت؛ لم أتحقق من وجود الخيار في حسابك).
-3. لا حاجة لأي رمز وصول (token) أو سر في CI: الرفع يدوي من واجهة GitHub عمدًا، فلا يملك CI صلاحية كتابة على مستودع عام.
+3. للنشر التلقائي يلزم سر واحد في CI (انظر القسم التالي). بدونه يبقى النشر يدويًا من واجهة GitHub.
 
-## نشر إصدار جديد (كل مرة)
+## النشر التلقائي (الافتراضي)
+عند دفع وسم `vX.Y.Z` يتولى Frontend CI كل ما كان يدويًا:
+1. يرفع `HudhudNest-X.Y.Z.apk` و`.sha256` إلى Release بالوسم `vX.Y.Z` في `HudhudNest-Releases` (لا يستبدل إصدارًا موجودًا).
+2. ينزّل الملف من العنوان العلني ويقارن SHA-256 بما بناه؛ أي اختلاف يُفشل المهمة ولا يُقترح الاعتماد.
+3. يفتح PR باسم `chore/android-apk-X.Y.Z` فيه `downloads/android-release.json` (`approved: true`) وكتلة `/download/android` المولَّدة.
+4. **أنت تدمج الـ PR فقط**؛ هذا هو الاعتماد. بعد نشر الموقع شغّل `npm run android-release -- check-remote` للتحقق.
+
+إعداد لمرة واحدة:
+- أنشئ Fine-grained personal access token: Resource owner `Naeem-Ba`، Repository access: **Only select repositories ← HudhudNest-Releases**، Permissions: **Contents: Read and write** (لا شيء غيره)، وأضفه في `HudhudNest` ← Settings ← Secrets and variables ← Actions باسم `RELEASES_REPO_TOKEN`.
+- فعّل Settings ← Actions ← General ← **Allow GitHub Actions to create and approve pull requests**.
+- بلا السر تُتخطّى الخطوات (إشعار في سجل المهمة) ويبقى المسار اليدوي أدناه صالحًا. الـ PR الذي يفتحه `GITHUB_TOKEN` لا يشغّل CI تلقائيًا؛ إن كانت الفحوص مطلوبة للدمج فأغلق الـ PR وأعد فتحه لتعمل.
+
+## نشر إصدار جديد يدويًا (احتياطي)
 1. بعد نجاح تشغيل الوسم: GitHub ← `HudhudNest` ← Releases ← **android-latest** ← نزّل ثلاثة ملفات: `HudhudNest-X.Y.Z.apk` و`HudhudNest-X.Y.Z.apk.sha256` و`android-release.draft.json`.
 2. تحقق محليًا (اختياري لكنه مستحسن): `sha256sum -c HudhudNest-X.Y.Z.apk.sha256` (Windows: `certutil -hashfile HudhudNest-X.Y.Z.apk SHA256`).
 3. في `HudhudNest-Releases`: Releases ← Draft a new release ← Tag **`vX.Y.Z`** (حرفيًا، بحرف v) ← ارفع ملفي `.apk` و`.sha256` ← عنوان `HudhudNest X.Y.Z` ← Publish release (ليس pre-release).

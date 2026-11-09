@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { LocationNamesService } from '../../../core/api/location-names.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -33,6 +34,8 @@ import { mergeViewCount } from '../../../shared/utils/view-count';
 import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count.component';
 import { ListingViewTrackingService } from '../../../core/listing-views/listing-view-tracking.service';
 import { ShortStayReviewsSectionComponent } from '../short-stay-reviews-section/short-stay-reviews-section.component';
+import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
+import { LocalizedNumberPipe } from '../../../shared/pipes/localized-number.pipe';
 
 // حالات UnitBookingRange التي تُعتبر فعلياً "محجوزة" أمام ضيف جديد. Pending
 // مستثناة عمداً — طلبات متعددة يمكن أن تتنافس على نفس التاريخ إلى أن يختار
@@ -42,7 +45,7 @@ const BLOCKING_STATUSES = new Set(['Reserved', 'CheckedIn', 'Blocked']);
 @Component({
   selector: 'app-short-stay-detail-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, DateRangePickerComponent, ImageFallbackDirective, AmenityLabelPipe, ShortStayReviewsSectionComponent, ListingViewCountComponent, TranslationNoticeComponent],
+  imports: [ LocalizedDatePipe, LocalizedNumberPipe,CommonModule, RouterModule, FormsModule, TranslateModule, DateRangePickerComponent, ImageFallbackDirective, AmenityLabelPipe, ShortStayReviewsSectionComponent, ListingViewCountComponent, TranslationNoticeComponent],
   templateUrl: './short-stay-detail.page.html',
   styleUrls: ['./short-stay-detail.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -51,6 +54,7 @@ export class ShortStayDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly listingsApi = inject(ShortStayListingApiService);
+  readonly locations = inject(LocationNamesService);
   private readonly bookingsApi = inject(ShortStayBookingApiService);
   private readonly lookupsApi = inject(LookupsApiService);
   private readonly auth = inject(AuthService);

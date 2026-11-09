@@ -15,7 +15,10 @@
     "FIELD_INVALID": "The field “{{field}}” is empty or invalid.",
     "AGENCY_ACCOUNT_NOT_VERIFIED": "Verify your account first: confirm your email or phone number in your account settings, then try again.",
     "AGENCY_PAID_PLAN_REQUIRED": "A real-estate office needs a paid plan in force. The free plan does not include offices.",
+    "AGENCY_PLAN_EXPIRED": "The office owner's paid plan has ended, so no new listings can be added until it is renewed. Your existing listings, messages and appointments are unchanged.",
     "AGENCY_FREE_PLAN_NOT_ALLOWED": "You own a real-estate office, and the free plan does not include offices. Choose a paid plan.",
+    "PAID_PLAN_ACTIVE": "You have an active paid subscription, and choosing the free plan would end it. Contact us if you want it cancelled.",
+    "BOOKING_DUPLICATE_OPEN": "You already have an open booking request for this unit on overlapping dates. Wait for the host's answer or cancel the earlier request before sending a new one.",
     "SERVICE_CATEGORY_NOT_APPROVED": "This category is not approved for your provider account. Contact the team to have it added.",
     "FILTER_PRICE_RANGE": "The minimum price is higher than the maximum.",
     "FILTER_ROOMS_RANGE": "The minimum number of rooms is higher than the maximum.",
@@ -25,7 +28,23 @@
     "FILTER_SORT_PRICE_NEEDS_TYPE": "Choose “For rent” or “For sale” to sort by price.",
     "GEO_COORDS_REQUIRED": "Share your location first to search nearby.",
     "GEO_COORDS_INVALID": "The location coordinates are not valid.",
-    "UNSUPPORTED_MEDIA": "The request could not be sent in a format the server accepts. Refresh the page and try again; if it keeps happening, contact support."
+    "UNSUPPORTED_MEDIA": "The request could not be sent in a format the server accepts. Refresh the page and try again; if it keeps happening, contact support.",
+    "CONCURRENCY_CONFLICT": "This item was changed by someone else at the same moment. Refresh the page and try again.",
+    "CSRF_VALIDATION_FAILED": "The request could not be verified as safe. Reload the page and try again.",
+    "LISTING_QUOTA_REACHED": "You've reached the active-listing limit of your plan. Delete an existing listing or upgrade your plan to add a new one.",
+    "PAYMENTS_DISABLED": "Online payment is not available right now. Nothing was charged.",
+    "PAYMENT_PROVIDER_UNAVAILABLE": "The payment provider is not available right now. Nothing was charged. Try again shortly.",
+    "PAYMENT_PROVIDER_UNAVAILABLE_FOR_REQUEST": "This payment method is not available for this currency or country.",
+    "PAYMENT_TOO_MANY_OPEN_ORDERS": "You have too many unfinished payments. Finish or cancel one first.",
+    "PAYMENT_ORDER_ALREADY_PAID": "This order is already paid. Request a refund instead.",
+    "PAYMENT_ORDER_NOT_CANCELLABLE": "This order can no longer be cancelled.",
+    "PAYMENT_TERMS_VERSION_MISMATCH": "The terms changed. Review and accept the current terms.",
+    "PAYMENT_RENEWAL_UNSUPPORTED": "This payment method cannot renew automatically.",
+    "PAYMENT_IDEMPOTENCY_KEY_REUSED": "This request was already used for a different order. Reload the page and try again.",
+    "PAYMENT_CURRENCY_UNSUPPORTED": "This currency is not supported.",
+    "REFUND_WINDOW_CLOSED": "The refund request period for this order has ended.",
+    "REFUND_ALREADY_OPEN": "A refund request for this order is already open.",
+    "REFUND_ORDER_NOT_REFUNDABLE": "This order cannot be refunded."
   },
   "COMMON": {
     "SAVE": "Save",
@@ -52,7 +71,13 @@
     "MONTH": "month",
     "CLEAR": "Clear",
     "SEARCH": "Search",
-    "PAGINATION": "Pagination"
+    "PAGINATION": "Pagination",
+    "USER_MENU": "User menu",
+    "ACCOUNT_OPTIONS": "Account options",
+    "AVATAR_ALT": "User photo",
+    "COUNTRY_CODE": "Country code",
+    "PICK_RATING": "Choose a rating",
+    "IMAGE_VIEWER": "Image viewer"
   },
   "NAVBAR": {
     "HOME": "Home",
@@ -87,6 +112,7 @@
     "ADMIN_SOCIAL_DISTRIBUTION": "Social Distribution",
     "OPEN_MENU": "Open menu",
     "CLOSE_MENU": "Close menu",
+    "MAIN_NAV": "Main navigation",
     "PROVIDER_INBOX": "Incoming Service Requests",
     "MY_MESSAGES": "My messages",
     "MANAGEMENT": "Administration",
@@ -98,12 +124,24 @@
     "CURRENT_SECTION": "(current section)",
     "ADMIN_PAYMENT_REQUESTS": "Payment requests",
     "SERVICES": "HudhudNest Services",
+    "VALUATION": "Property valuation",
     "ADMIN_SERVICE_PROVIDERS": "Service providers",
     "PROVIDER_OFFERINGS": "My offerings",
     "ADMIN_SERVICES": "Services overview",
     "ADMIN_SHORT_STAY": "Short stays (admin)",
     "ADMIN_LISTING_REPORTS": "Listing reports",
-    "MY_REPORTS": "My reports"
+    "MY_REPORTS": "My reports",
+    "ADMIN_AUDIT_LOGS": "Audit log",
+    "SEARCH_REQUESTS": "My property requests",
+    "SEARCH_REQUEST_BOARD": "Buyer and renter requests",
+    "REFERRALS": "Invite friends",
+    "ADMIN_REFERRALS": "Referrals",
+    "PRICE_ESTIMATE": "Area prices",
+    "ADMIN_GROWTH": "Growth & campaigns",
+    "MAP": "Map",
+    "EXPATS": "For Syrians abroad",
+    "MY_PAYMENTS": "Payments & invoices",
+    "ADMIN_PAYMENTS": "Payments (online)"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -164,6 +202,7 @@
     "REGISTER_SUCCESS": "Account created successfully! We sent a confirmation link to your email. You can now log in.",
     "REGISTER_SUCCESS_MAIL_FAILED": "Your account was created, but we could not send the confirmation email right now. Tap \"Resend confirmation link\" in a moment. You can log in now.",
     "CONFIRMATION_SPAM_HINT": "If it has not arrived after a few minutes, check your spam folder.",
+    "CONFIRMATION_RESENT": "We sent a new confirmation link to your email. Open it, then sign in. If it has not arrived after a few minutes, check your spam folder.",
     "CONTINUE_WITH_EMAIL": "Continue with email",
     "CONTINUE_WITH_PHONE": "Continue with phone number",
     "PHONE_STEP_SUBTITLE": "Enter your phone number with the country code, and we will send you a verification code by SMS.",
@@ -238,6 +277,7 @@
       "OTP_SMS_FAILED": "Failed to send the SMS. Check the phone number or try again later.",
       "OTP_CHANNEL_UNAVAILABLE": "This method is not available right now. Choose another one.",
       "OTP_PROVIDER_UNAVAILABLE": "The code could not be sent this way right now. Try another method or try again later.",
+      "OTP_DAILY_LIMIT_REACHED": "We cannot send a new verification code right now because of heavy demand. Please try again later.",
       "OTP_STORE_FAILED": "The message was sent, but an error occurred while saving the code. Request a new code.",
       "OTP_NOT_FOUND": "No valid verification code was found. Request a new code.",
       "OTP_INVALID": "The code is invalid or has expired.",
@@ -264,6 +304,7 @@
       "ATTEMPTS_REMAINING": "{{count}} attempts remaining before your account is locked.",
       "RATE_LIMITED": "Too many login attempts. Please wait a moment and try again.",
       "ACCOUNT_DISABLED": "This account has been disabled. Please contact support.",
+      "EMAIL_NOT_CONFIRMED": "Please confirm your email address before signing in. We just sent you a new confirmation link; if it does not arrive, check your spam folder or resend it.",
       "SESSION_EXPIRED": "Your session has ended. Please sign in again.",
       "SESSION_REVOKED": "You've been signed out everywhere for your security. Please sign in again.",
       "PASSWORD_NO_UPPERCASE": "Password must contain at least one uppercase letter (A-Z).",
@@ -273,7 +314,17 @@
       "PASSWORD_COMMON_WORD": "This password is based on a commonly used word. Adding digits or symbols to it does not make it harder to guess.",
       "PASSWORD_LONG_RUN": "Password contains more than four sequential or repeated characters.",
       "PASSWORD_BREACHED": "This password has appeared in known data breaches. Please choose a different one.",
-      "PASSWORD_POLICY_UNMET": "This password does not meet the requirements listed below."
+      "PASSWORD_POLICY_UNMET": "This password does not meet all the requirements in the checklist.",
+      "CONSENT_REQUIRED": "To create an account, accept the Privacy Policy and Terms of Use.",
+      "EMAIL_TOO_LONG": "The email address is too long (up to 254 characters).",
+      "NAME_TOO_LONG": "The name is too long (up to 100 characters).",
+      "GENERIC": "Something went wrong. Please try again.",
+      "TIMEOUT": "The server took too long to answer. Check your connection and try again.",
+      "PASSWORD_PERSONAL_INFO": "The password must not contain your name, email address or phone number. Choose one that is not based on your personal details.",
+      "SESSION_SUPERSEDED": "This device was signed out because the account was signed in on more devices than allowed. Please sign in again.",
+      "LOGIN_HELP": "Check the spelling (upper and lower case matter), reset your password, or create an account if you are new.",
+      "PHONE_LOGIN_HELP": "Check the number (with country code) and the password, reset your password, or create an account if you are new.",
+      "OTP_FORMAT": "The code has 6 digits."
     },
     "FIRST_NAME_PLACEHOLDER": "Enter first name",
     "LAST_NAME_PLACEHOLDER": "Enter last name",
@@ -369,8 +420,11 @@
       "PASSWORD_NO_DIGIT": "One digit (0-9)",
       "PASSWORD_NO_SPECIAL": "One symbol (! @ # $ %)",
       "PASSWORD_COMMON_WORD": "Not a common word such as «password» or «qwerty»",
-      "PASSWORD_LONG_RUN": "No more than four sequential or repeated characters"
-    }
+      "PASSWORD_LONG_RUN": "No more than four sequential or repeated characters",
+      "PASSWORD_CONTAINS_PERSONAL_INFO": "Not your name, email or phone number"
+    },
+    "PASSWORD_RULE_MET": "met",
+    "PASSWORD_RULE_UNMET": "not met yet"
   },
   "ERRORS": {
     "EMAIL_REQUIRED": "Email is required.",
@@ -414,6 +468,8 @@
     "hero_subtitle": "Your easiest path to your next property",
     "hero_title": "Find the property that suits you",
     "hero_desc": "Browse properties for sale and rent with clear details, images, and location information.",
+    "valuation_cta": "What is your property worth?",
+    "price_estimate_cta": "See price ranges",
     "browse_properties": "Browse properties",
     "list_property": "List your property",
     "stat_properties": "Properties",
@@ -443,6 +499,7 @@
   },
   "KONTAKT": {
     "PLAN_SUBJECT": "Subscription plan enquiry: {{plan}}",
+    "PLAN_REF_LINE": "Plan request reference: {{ref}}",
     "SERVICE_PROVIDER_SUBJECT": "Request to join as a service provider",
     "SERVICE_PROVIDER_MESSAGE_PLACEHOLDER": "Tell us about your business: business name, service type (moving, cleaning, photography...), a phone number, and your service area. Our team will reach out to review and activate your account.",
     "title": "Contact us",
@@ -557,7 +614,8 @@
     "SORT_PRICE_NEEDS_TYPE": "Choose “For rent” or “For sale” to sort by price.",
     "GEO_UNSUPPORTED": "Your browser does not support location.",
     "GEO_CONSENT_NOTE": "We use your current location only to show properties near you.",
-    "GEO_DENIED": "Could not get your location. Check the location permission."
+    "GEO_DENIED": "Could not get your location. Check the location permission.",
+    "MAP_VIEW": "Map view"
   },
   "PAGINATION": {
     "NAV_LABEL": "Page navigation",
@@ -566,6 +624,7 @@
     "PAGE": "Page"
   },
   "PROPERTY_DETAIL": {
+    "PRICE_NEGOTIABLE": "Price negotiable",
     "TRANSLATION": {
       "LOADING": "Translating the description…",
       "WAITING": "The translation is taking longer. Showing the original text for now.",
@@ -611,7 +670,13 @@
     "CONFIRM_AVAILABILITY_ERROR": "Could not confirm availability. Please try again.",
     "QUICK_ACTIONS": "Listing actions",
     "IMAGE_ALT": "{{title}} - photo {{n}}",
-    "IMAGE_N": "Photo {{n}}"
+    "IMAGE_N": "Photo {{n}}",
+    "PRICE_HISTORY": {
+      "TITLE": "Price history",
+      "TO": "to",
+      "NOTE": "Changes the advertiser made after the listing went live. An asking price is not the price of a completed sale."
+    },
+    "APPROXIMATE_LOCATION": "Approximate location (about 500 m). The advertiser hid the exact spot."
   },
   "SHARE": {
     "BUTTON_LABEL": "Share",
@@ -659,7 +724,8 @@
     "ADDITIONAL_COSTS": "Additional costs",
     "DEPOSIT": "Deposit",
     "PURCHASE_PRICE": "Purchase price",
-    "FEATURED": "Featured"
+    "FEATURED": "Featured",
+    "IN_YOUR_AREA": "In your area"
   },
   "PROPERTY_FORM": {
     "LOAD_ERROR": "Unable to load property data.",
@@ -698,6 +764,8 @@
     "ADDITIONAL_COSTS": "Additional costs",
     "ADDITIONAL_COSTS_INVALID": "Additional costs must be a positive number.",
     "AREA_TOO_SMALL": "Area must be greater than 10 m².",
+    "ROOMS_WHOLE_NUMBER": "The number of rooms must be a whole number (no half rooms).",
+    "FLOOR_WHOLE_NUMBER": "The floor must be a whole number.",
     "DEPOSIT": "Deposit",
     "DEPOSIT_INVALID": "Deposit must be a positive number.",
     "HEATING": "Heating",
@@ -763,7 +831,11 @@
     "FURNISHING_STATUS": "Furnishing",
     "FURNISHING_UNFURNISHED": "Unfurnished",
     "FURNISHING_SEMIFURNISHED": "Semi-Furnished",
-    "FURNISHING_FURNISHED": "Furnished"
+    "FURNISHING_FURNISHED": "Furnished",
+    "HIDE_EXACT_LOCATION": "Hide my exact location from the public",
+    "HIDE_EXACT_LOCATION_HINT": "Visitors see an approximate area of about 500 m instead of the pin, and no street name. You and the admins still see the exact spot.",
+    "PRICE_NEGOTIABLE": "The price is negotiable",
+    "PRICE_NEGOTIABLE_HINT": "Turn this on if you are open to negotiating the price. Visitors see it on the listing details page only."
   },
   "property_add": {
     "title": "Add property",
@@ -863,6 +935,9 @@
     "PUBLISH": "Publish listing",
     "PUBLISH_SUCCESS": "Property published successfully.",
     "PUBLISH_ERROR": "Could not publish the property.",
+    "HIDE": "Hide listing",
+    "HIDE_SUCCESS": "The listing is hidden from the site. You can publish it again any time.",
+    "HIDE_ERROR": "Could not hide the listing.",
     "MESSAGES": "Messages",
     "PUBLISHING": "Publishing...",
     "PUBLISH_NEEDS_IMAGE": "Add at least one photo before publishing.",
@@ -916,6 +991,11 @@
     "TITLE": "Notifications",
     "SUBTITLE": "Latest alerts and account updates.",
     "CONNECTION_STATE": "Connection status",
+    "PUSH_PROMPT_TITLE": "Turn on phone notifications",
+    "PUSH_PROMPT_BODY": "Get messages, visit requests and important alerts even when the app is closed. You can switch them off any time in your phone settings.",
+    "PUSH_ENABLE": "Turn on notifications",
+    "PUSH_DENIED": "Phone notifications are off for this app. To turn them on, open your phone settings and go to Notifications.",
+    "PUSH_CHANNEL_NAME": "HudhudNest notifications",
     "EMPTY_TITLE": "No notifications",
     "EMPTY_MESSAGE": "New notifications will appear here.",
     "READ": "Read",
@@ -1030,7 +1110,8 @@
       "Cancelled": "Cancelled"
     },
     "ADS_SUMMARY": "{{total}} total · {{active}} active · {{featured}} featured",
-    "VIEW_DETAILS": "View details"
+    "VIEW_DETAILS": "View details",
+    "ROLE_LAST_ADMIN": "You cannot remove your own admin role, or leave the system without an active admin."
   },
   "ADMIN_USER_DETAIL": {
     "TITLE": "User details",
@@ -1068,7 +1149,18 @@
     "ACTIVATE_SUCCESS": "The plan was activated.",
     "EXTEND_SUCCESS": "The subscription was extended.",
     "CANCEL_SUCCESS": "The subscription was cancelled.",
-    "ACTION_ERROR": "Could not complete the action."
+    "ACTION_ERROR": "Could not complete the action.",
+    "DISABLE_ACCOUNT": "Disable account",
+    "DISABLE_MODAL_TITLE": "Disable this account?",
+    "DISABLE_EXPLANATION": "The owner can no longer sign in and their listings are taken off the public site. You can re-enable the account later; listings that the disabling itself took down come back.",
+    "DISABLE_SUCCESS": "Account disabled and its listings taken down.",
+    "DISABLE_LAST_ADMIN": "The last active admin cannot be disabled.",
+    "ENABLE_ACCOUNT": "Re-enable account",
+    "ENABLE_MODAL_TITLE": "Re-enable this account?",
+    "ENABLE_EXPLANATION": "The owner can sign in again and listings that the disabling took down come back. Listings taken down for another reason stay down.",
+    "ENABLE_REASON": "Reason for re-enabling (required)",
+    "ENABLE_SUCCESS": "Account re-enabled.",
+    "ENABLE_NOT_POSSIBLE": "This account cannot be re-enabled: the owner deleted it themselves (irreversible) or it is not disabled."
   },
   "ADMIN_USER_PROPERTIES": {
     "TAKEN_DOWN": "Taken down",
@@ -1117,6 +1209,11 @@
     "MY_LOCATION": "Find my location"
   },
   "PREFERENCES": {
+    "THEME_LABEL": "Appearance",
+    "THEME_SYSTEM": "Match device setting",
+    "THEME_LIGHT": "Light",
+    "THEME_DARK": "Dark",
+    "THEME_NOTE": "\"Match device\" follows your phone or computer, including when it switches at night.",
     "TITLE": "Language & currency",
     "DESC": "These settings belong to your account and follow you to every device.",
     "LANGUAGE_LABEL": "Language",
@@ -1239,7 +1336,7 @@
       "WILL_DELETE_2": "Your registered email and phone number, and any linked Google/Apple sign-in — you will not be able to sign in to this account with them again",
       "WILL_DELETE_3": "Every active session on every device — you will be signed out everywhere at that point",
       "WILL_RETAIN_TITLE": "Will be retained (without your personal data):",
-      "WILL_RETAIN_1": "Listings, messages, and reviews you previously published stay visible to others, but attributed to \"Deleted User\" instead of your real name",
+      "WILL_RETAIN_1": "Messages and reviews you previously published stay visible to others, but attributed to \"Deleted User\" instead of your real name. Your listings are taken off the site when the deletion is carried out (unless you belong to a real-estate office)",
       "WILL_RETAIN_2": "Limited internal security records (to prevent abuse), containing none of your personal data after deletion",
       "BUSINESS_NOTE": "Note: this does not delete or automatically unpublish your listings. If you want to unpublish a listing before deleting your account, go back and do that first from \"My Listings\".",
       "CONTINUE_BTN": "Continue",
@@ -1429,6 +1526,11 @@
     "ADD_PROPERTY": "Review the property",
     "PROPERTY_HINT": "Property reviews are available after a completed visit. To rate the owner after messaging them:"
   },
+  "AGENCY_GRACE": {
+    "TITLE": "The renewal period ends in {{days}} days",
+    "DESC": "The office owner's paid plan has ended, so the office is temporarily suspended: neither you nor your team can add new listings, but messages, enquiries and appointments still reach you. Renew the plan within {{days}} days to restore it; otherwise the office's listings are hidden from the public until the plan is renewed.",
+    "CTA": "Renew the plan"
+  },
   "AGENCY_FORM": {
     "CREATE_TITLE": "Register your agency",
     "EDIT_TITLE": "Edit agency",
@@ -1559,7 +1661,15 @@
     "EMAIL": "Enter a valid email address.",
     "FIX_FIELDS": "Please correct the specified fields.",
     "IMAGE_TYPE": "Unsupported image type. Use PNG, JPG, or WebP.",
-    "IMAGE_SIZE": "The image is too large. The maximum size is 5 MB."
+    "IMAGE_SIZE": "The image is too large. The maximum size is 5 MB.",
+    "INVALID": "This value is not valid.",
+    "TOO_SHORT": "This value is too short.",
+    "TOO_LONG": "This value is too long.",
+    "MIN_LENGTH": "Enter at least {{n}} characters.",
+    "MAX_LENGTH": "The value must not exceed {{n}} characters.",
+    "MIN_VALUE": "The value must be at least {{n}}.",
+    "MAX_VALUE": "The value must be at most {{n}}.",
+    "PATTERN": "The format is not valid."
   },
   "ENUM": {
     "STADT": {
@@ -1705,7 +1815,33 @@
     "CONFIRM_DELETE": "Delete this saved search?",
     "DELETE_SUCCESS": "Saved search deleted.",
     "DELETE_ERROR": "Could not delete the saved search.",
-    "LOAD_ERROR": "Could not load saved searches."
+    "LOAD_ERROR": "Could not load saved searches.",
+    "STATUS_ACTIVE": "Active",
+    "STATUS_PAUSED": "Paused",
+    "FREQ_INSTANT": "Instant alerts",
+    "FREQ_DAILY": "Daily summary",
+    "FREQ_DAILY_HINT": "Daily summary (at most one notification a day)",
+    "LAST_ALERT": "Last alert",
+    "ALERTED_COUNT": "{{count}} listings announced so far",
+    "NAME": "Name",
+    "FREQUENCY": "How often should we notify you?",
+    "MIN_PRICE": "Min. price",
+    "MAX_PRICE": "Max. price",
+    "CURRENCY": "Currency",
+    "MIN_ROOMS": "Min. rooms",
+    "MAX_ROOMS": "Max. rooms",
+    "MIN_AREA": "Min. area (m²)",
+    "MAX_AREA": "Max. area (m²)",
+    "MUST_HAVE": "Must have",
+    "EDIT_NOTE": "After saving, only listings published from now on are announced. Location and property type stay as saved; change them by saving a new search.",
+    "EDIT": "Edit",
+    "PAUSE": "Pause",
+    "RESUME": "Resume",
+    "PAUSED_OK": "Alerts paused.",
+    "RESUMED_OK": "Alerts resumed. Listings published while paused are not sent.",
+    "SAVE_SUCCESS": "Saved search updated.",
+    "SAVE_ERROR": "Could not update the saved search.",
+    "ROOMS_RANGE": "{{min}}–{{max}} rooms"
   },
   "ADMIN_LOCATIONS": {
     "TITLE": "Location Suggestions",
@@ -1823,8 +1959,6 @@
     }
   },
   "PRICING": {
-    "META_TITLE": "Subscription plans for owners and agencies",
-    "META_DESCRIPTION": "Start free by listing your own property, or pick an agency plan: Basic $49, Premium $99, or Elite — higher listing limits, agent and staff accounts, reports and analytics, and featured placement in search results.",
     "EYEBROW": "Subscription plans",
     "TITLE": "Choose the plan that fits you",
     "SUBTITLE": "The free plan is for individuals listing their own property. The agency plans add agent and staff accounts and performance reporting, and you can upgrade or switch at any time.",
@@ -1881,7 +2015,11 @@
     },
     "REASON_AGENCY_PLAN_REQUIRED": "Choose a paid plan to create a real-estate office or invite members to it — the free plan does not include offices.",
     "AGENCY_NO_FREE": "Not available to a real-estate office owner: the free plan does not include offices.",
-    "PENDING_NOTE": "Your request for this plan is waiting for an administrator to confirm payment."
+    "PENDING_NOTE": "Your request for this plan is waiting for an administrator to confirm payment.",
+    "CURRENT_PLAN": "Your current plan: {{plan}}.",
+    "CURRENT_PLAN_UNTIL": "Valid until {{date}}.",
+    "CURRENT_BADGE": "This is your current plan.",
+    "PAID_ACTIVE_NO_FREE": "You have an active paid subscription. Choosing the free plan would end it, so our team cancels it for you if you want that."
   },
   "NOT_AUTHORIZED": {
     "TITLE": "You are not authorised",
@@ -2571,40 +2709,77 @@
     }
   },
   "LANDING": {
+    "TOP": {
+      "HOME_LINK": "Browse the site",
+      "LANG_ARIA": "Language"
+    },
     "HERO": {
       "ARIA": "Homepage",
       "BADGE": "Beta — launching soon in Syria",
       "TITLE_MAIN": "Every home has a story.",
       "TITLE_ACCENT": "Let's start yours in Syria.",
       "TAGLINE_1": "A small platform with a big heart, helping families find a home — real photos and direct contact, no duplicate or fake listings.",
-      "TAGLINE_2": "A platform that organizes Syria's real-estate listings into one unified record: real photos, accurate data, a single source of truth instead of dozens of scattered Facebook and WhatsApp groups.",
-      "TAGLINE_3": "Precise filters, comparable prices, and results updated live from every Syrian city — no more scrolling through scattered posts at random.",
-      "CTA_PRIMARY": "Join the waitlist",
-      "CTA_PRIMARY_ARIA": "Join the HudhudNest waitlist",
-      "CTA_GHOST": "List your property soon",
-      "CTA_GHOST_ARIA": "List your property on HudhudNest",
-      "STATS_ARIA": "Quick stats",
-      "STAT_CITIES_VALUE": "5+",
-      "STAT_CITIES_LABEL": "Syrian cities",
-      "STAT_FREE_VALUE": "Free",
-      "STAT_FREE_LABEL": "at launch",
-      "STAT_MVP_VALUE": "MVP",
-      "STAT_MVP_LABEL": "coming soon"
+      "CTA_EXPLORE": "Explore properties",
+      "CTA_EXPLORE_ARIA": "Explore properties on HudhudNest",
+      "CTA_PUBLISH": "List your property",
+      "CTA_PUBLISH_ARIA": "Publish your property listing on HudhudNest",
+      "CHIPS_ARIA": "Quick facts",
+      "CHIP_FREE": "Free to start",
+      "CHIP_REAL": "Real photos, direct contact",
+      "CHIP_LANGS": "عربي · English · Deutsch",
+      "VISUAL_ARIA": "Illustration of the platform's search screen — not real listings",
+      "VISUAL_TITLE": "Find your property",
+      "VISUAL_SALE": "Buy",
+      "VISUAL_RENT": "Rent",
+      "VISUAL_LOCATION": "Governorate · Area",
+      "VISUAL_TYPE": "Property type",
+      "VISUAL_PRICE": "Price range",
+      "VISUAL_BTN": "Show results",
+      "VISUAL_NOTE": "Interface illustration"
     },
-    "OFFER": {
-      "EYEBROW": "Special offer for real-estate offices",
-      "PROGRESS_ARIA": "{{count}} of {{max}} joined so far",
-      "PROGRESS_LABEL": "{{count}} of {{max}} offices have joined so far",
-      "CTA": "Register your office now",
-      "CTA_ARIA": "Register your real-estate office for this offer",
-      "ENDS_ON": "Offer ends on {{date}}",
-      "LOADING_ARIA": "Loading offers",
-      "EMPTY_TITLE": "No offers are published right now",
-      "EMPTY_TEXT": "Register your interest and we will let you know as soon as the first offer launches.",
-      "EMPTY_CTA": "Register your interest",
-      "ERROR_TITLE": "Offers could not be loaded right now",
-      "ERROR_TEXT": "The rest of the page works normally. You can try again.",
-      "RETRY": "Try again"
+    "VISION": {
+      "EYEBROW": "Our vision",
+      "TITLE": "A real-estate platform for all of Syria",
+      "TEXT": "A platform that organizes Syria's property listings into one register: real photos, accurate data, and a single source of truth instead of dozens of scattered Facebook and WhatsApp groups.",
+      "PATH_ARIA": "Rollout stages",
+      "STEP1_TAG": "The start",
+      "STEP1_TITLE": "Damascus and Rif Dimashq",
+      "STEP1_DESC": "Our gradual launch most likely begins here, so we can build an organized register and learn from real use.",
+      "STEP2_TAG": "Then",
+      "STEP2_TITLE": "The rest of Syria's governorates",
+      "STEP2_DESC": "Our vision covers all of Syria, and we expand stage by stage.",
+      "NOTE": "The launch is gradual: availability of listings and services varies by area and grows over time."
+    },
+    "USES": {
+      "EYEBROW": "Start here",
+      "TITLE": "What can you do with HudhudNest?",
+      "ITEMS": {
+        "BUY": {
+          "TITLE": "Buy a property",
+          "DESC": "Browse properties for sale with photos and structured details, and compare options in one place."
+        },
+        "RENT": {
+          "TITLE": "Rent a home",
+          "DESC": "Search rentals by governorate, area, price and amenities."
+        },
+        "SHORT": {
+          "TITLE": "Short stays",
+          "DESC": "Discover short-term stays and send a booking request to the host."
+        },
+        "INVEST": {
+          "TITLE": "Investment opportunities",
+          "DESC": "Explore real-estate investment projects and follow the ones that matter to you."
+        },
+        "PUBLISH": {
+          "TITLE": "List your property",
+          "DESC": "Add your listing with clear photos and details so seekers can reach you directly."
+        },
+        "SERVICES": {
+          "TITLE": "Request a property service",
+          "DESC": "Browse services offered by providers approved by the platform."
+        }
+      },
+      "GO": "Explore"
     },
     "PROBLEM_SOLUTION": {
       "EYEBROW": "Why HudhudNest?",
@@ -2639,15 +2814,124 @@
           "TITLE": "Clearer information",
           "DESC": "Photos, a detailed description, approximate location, size, floors, and organized contact details — everything in its place."
         },
+        "PRICE": {
+          "TITLE": "Know your area's prices",
+          "DESC": "A price range based on listings actually published, plus a valuation request for your own property when you need one."
+        },
+        "LANGS": {
+          "TITLE": "In three languages",
+          "DESC": "A complete interface in Arabic, English and German, for visitors inside Syria and abroad."
+        },
+        "SERVICES": {
+          "TITLE": "Property services",
+          "DESC": "Verification, inspection, photography and more, from providers the platform team approves."
+        },
+        "SAVE": {
+          "TITLE": "Save and share",
+          "DESC": "Add favorites, save your searches and share a listing with anyone."
+        },
+        "MAP": {
+          "TITLE": "On the map",
+          "DESC": "Browse properties on the map to see their approximate location and surroundings."
+        },
         "CONTACT": {
           "TITLE": "Direct contact",
           "DESC": "Reach the owner or real-estate office directly, with no complicated steps or unnecessary middlemen."
-        },
-        "SCALE": {
-          "TITLE": "Built to grow",
-          "DESC": "We're starting in Syria, serving major cities and expats, with a design built to expand into Arab and global markets."
         }
       }
+    },
+    "SEARCH": {
+      "EYEBROW": "Search and filters",
+      "TITLE": "Search smart… and find the property that fits you.",
+      "TEXT": "Precise filters, comparable prices and results that refresh with every new listing, instead of scrolling through scattered posts.",
+      "POINTS": {
+        "1": "Governorate, then area and neighborhood",
+        "2": "Buy or rent",
+        "3": "Property type, price range and currency",
+        "4": "Amenities and features",
+        "5": "Sorting, and searching around a point on the map"
+      },
+      "POINTS_ARIA": "Main search options",
+      "CTA": "Try the search now",
+      "CTA_MAP": "Open the map"
+    },
+    "VALUE": {
+      "EYEBROW": "Price insight",
+      "TITLE": "What is your property worth? Discover an estimate.",
+      "TEXT": "Two ways to get a price estimate, depending on what you need.",
+      "RANGE_TAG": "Instant",
+      "RANGE_TITLE": "Price range in your area",
+      "RANGE_DESC": "Choose the governorate, area, property type and size to see the asking-price range in listings published now. The range shows how many listings it is based on — and if there is not enough data, we say so.",
+      "RANGE_CTA": "Show the price range",
+      "REQ_TAG": "For your property",
+      "REQ_TITLE": "Request a valuation of your property",
+      "REQ_DESC": "Enter the governorate, area, neighborhood, property type, size and number of rooms. You get a quick estimate based on similar listings, or we send your request to real-estate offices in your area.",
+      "REQ_CTA": "Request an estimate",
+      "DISCLAIMER": "An estimate is a guide, not an official valuation or a guaranteed price. For major financial decisions, consult a professional and verify for yourself."
+    },
+    "LANGS": {
+      "EYEBROW": "Multilingual",
+      "TITLE": "Syrian property, in your language.",
+      "TEXT": "The platform speaks Arabic, English and German, so you can explore Syrian property easily — whether you are in Syria or abroad.",
+      "TILES_ARIA": "Supported languages",
+      "NOTE": "Automatic translation of listing texts is being prepared and is not announced as ready yet; for now a listing appears in the language its author wrote it in.",
+      "CTA_EXPATS": "Guide for expats"
+    },
+    "SERVICES": {
+      "EYEBROW": "Property services",
+      "TITLE": "Don't just search for a property… discover the services you need on your property journey.",
+      "TEXT": "Property services offered by providers approved by the platform. Categories and providers grow gradually, and the catalog shows what is actually available.",
+      "CHIPS_ARIA": "Examples of service categories",
+      "C_VERIFICATION": "Verification",
+      "C_VALUATION": "Valuation",
+      "C_INSPECTION": "Technical inspection",
+      "C_PHOTOGRAPHY": "Professional photography",
+      "C_MANAGEMENT": "Property management",
+      "C_LEGAL": "Legal services",
+      "C_ENGINEERING": "Engineering",
+      "C_MAINTENANCE": "Maintenance",
+      "CTA": "Browse services",
+      "CTA_JOIN": "Join as a service provider"
+    },
+    "OFFICES": {
+      "EYEBROW": "For offices and advertisers",
+      "TITLE": "Put your properties in front of seekers",
+      "TEXT": "Whether you are an owner or a real-estate office, the platform gives you an organized way to show your listings and reach interested people.",
+      "POINTS": {
+        "1": {
+          "TITLE": "A public page for your office",
+          "DESC": "Introduce your office and show its listings on a page with its own link."
+        },
+        "2": {
+          "TITLE": "Your team and listings in one place",
+          "DESC": "Add agents and staff and manage the office's listings, depending on your plan."
+        },
+        "3": {
+          "TITLE": "Reports and analytics",
+          "DESC": "Follow how your listings perform, depending on the plan you choose."
+        },
+        "4": {
+          "TITLE": "Direct contact with interested people",
+          "DESC": "Messages, inquiries and visit requests reach you inside the platform."
+        }
+      },
+      "CTA_PLANS": "See the plans",
+      "CTA_REGISTER": "Register your office"
+    },
+    "OFFER": {
+      "EYEBROW": "Special offer for real-estate offices",
+      "PROGRESS_ARIA": "{{count}} of {{max}} joined so far",
+      "PROGRESS_LABEL": "{{count}} of {{max}} offices have joined so far",
+      "CTA": "Register your office now",
+      "CTA_ARIA": "Register your real-estate office for this offer",
+      "ENDS_ON": "Offer ends on {{date}}",
+      "LOADING_ARIA": "Loading offers",
+      "EMPTY_TITLE": "No offers are published right now",
+      "EMPTY_TEXT": "Register your interest and we will let you know as soon as the first offer launches.",
+      "EMPTY_CTA": "Register your interest",
+      "ERROR_TITLE": "Offers could not be loaded right now",
+      "ERROR_TEXT": "The rest of the page works normally. You can try again.",
+      "RETRY": "Try again"
     },
     "HOW": {
       "EYEBROW": "In a few simple steps",
@@ -2663,8 +2947,8 @@
           "DESC": "Explore properties with clear photos, prices, and information, and compare options easily."
         },
         "STEP_3": {
-          "TITLE": "Contact or join the waitlist",
-          "DESC": "Reach out directly to the listing owner, or join the waitlist now to be the first notified at launch."
+          "TITLE": "Contact the advertiser",
+          "DESC": "Reach the owner or the real-estate office directly, and save what you like to come back to it later."
         }
       }
     },
@@ -2760,7 +3044,7 @@
       "ITEMS": {
         "LAUNCH": {
           "Q": "When will the platform launch?",
-          "A": "We're currently building the MVP. Waitlist members will be the first to receive a launch invite."
+          "A": "The platform runs as a beta and is launching gradually, most likely starting with Damascus and Rif Dimashq and then expanding to the other governorates. Register your interest in the form and we will let you know when it reaches your area."
         },
         "FREE": {
           "Q": "Is the service free at first?",
@@ -2788,14 +3072,21 @@
       "TITLE": "Be one of the first HudhudNest users",
       "DESC": "Help us build a more organized real-estate experience in Syria. Your voice will help shape the platform to come.",
       "BTN": "Join the waitlist now",
-      "BTN_ARIA": "Join the HudhudNest waitlist"
+      "BTN_ARIA": "Join the HudhudNest waitlist",
+      "EXPLORE": "Explore properties",
+      "PUBLISH": "Have a property? List it"
     },
     "FOOTER": {
       "TAGLINE": "A digital real-estate platform · Syria first",
       "RIGHTS": "All rights reserved",
       "PRIVACY": "Privacy Policy",
       "TERMS": "Terms of Service",
-      "DOWNLOAD": "Download the app"
+      "DOWNLOAD": "Download the app",
+      "CONTACT": "Contact us"
+    },
+    "SEO": {
+      "TITLE": "Digital real-estate platform for Syria",
+      "DESCRIPTION": "Search property for sale and rent in Syria, check area prices, request a valuation and discover property services. In Arabic, English and German."
     }
   },
   "VALUATION": {
@@ -2851,7 +3142,8 @@
       "NEIGHBORHOOD_NEEDS_DISTRICT": "A neighborhood cannot be selected without a district.",
       "AREA_INVALID": "Area must be greater than zero.",
       "ROOMS_INVALID": "Invalid number of rooms."
-    }
+    },
+    "QUICK_RANGE_LINK": "Want a quick idea first? See the asking-price range in your area"
   },
   "PROVIDER": {
     "INBOX": {
@@ -2980,7 +3272,10 @@
     "MIDDLE": "and acknowledge that I have read the",
     "PRIVACY": "Privacy Policy",
     "TRAIL": ".",
-    "OPENS_NEW_TAB": "(opens in a new tab)"
+    "OPENS_NEW_TAB": "(opens in a new tab)",
+    "SOCIAL_LEAD": "By continuing with Google or Apple you agree to the",
+    "SOCIAL_MIDDLE": "and confirm that you have read the",
+    "SOCIAL_TRAIL": "."
   },
   "SEO": {
     "SHORT_STAY": {
@@ -3002,6 +3297,34 @@
     "PROPERTIES": {
       "TITLE": "Properties for sale and rent in Syria",
       "DESCRIPTION": "Browse apartments and houses for sale and rent in Syria, in Damascus, Aleppo, Tartus and more, with photos, full details and direct contact with the owner or agency."
+    },
+    "HOME": {
+      "TITLE": "Digital real-estate platform in Syria",
+      "DESCRIPTION": "Find apartments and properties for sale and rent in Syria with ease: clear photos, organised details and direct contact with the owner or agency."
+    },
+    "SERVICES": {
+      "TITLE": "Trusted real estate services",
+      "DESCRIPTION": "Browse approved service providers on HudhudNest: legal, engineering, moving, photography and more. Request a service and follow it directly."
+    },
+    "EXPATS": {
+      "TITLE": "Expat guide to buying property in Syria",
+      "DESCRIPTION": "Clear steps for expats who want to own a property, find a home or invest in Syria, with the supporting services available."
+    },
+    "MAP": {
+      "TITLE": "Property map",
+      "DESCRIPTION": "Explore properties for sale and rent on the map and pick the area that suits you."
+    },
+    "PRICE_ESTIMATE": {
+      "TITLE": "Property price estimate",
+      "DESCRIPTION": "Estimate a property price in your area by governorate, type and size, and compare average prices across districts."
+    },
+    "PRICING": {
+      "TITLE": "Subscription plans for owners and agencies",
+      "DESCRIPTION": "Start free by listing your own property, or pick an agency plan: Basic $49, Premium $99, or Elite — higher listing limits, agent and staff accounts, reports and analytics, and featured placement in search results."
+    },
+    "IMPRINT": {
+      "TITLE": "Legal notice | HudhudNest",
+      "DESCRIPTION": "Name, address and contact details of the operator of the HudhudNest platform."
     }
   },
   "ADMIN_PAYMENTS": {
@@ -3011,6 +3334,11 @@
     "EMPTY_MESSAGE": "All payment requests have been handled.",
     "PLANS_TITLE": "Plan requests",
     "FEATURED_TITLE": "Featured-listing requests",
+    "EXTENSIONS_TITLE": "Listing extension fees",
+    "APPROVE_EXTENSION": "Confirm payment & extend listing",
+    "CONFIRM_APPROVE_EXTENSION": "Confirm payment arrived and extend \"{{title}}\" by 30 days?",
+    "EXTENSION_APPROVED": "Listing extended.",
+    "REFERENCE": "Reference",
     "DURATION_DAYS": "Subscription length (days)",
     "APPROVE_PLAN": "Confirm payment & activate plan",
     "APPROVE_FEATURED": "Confirm payment & feature listing",
@@ -3428,6 +3756,15 @@
       "Provider": "Provider"
     }
   },
+  "HOME_AREA": {
+    "TITLE": "My area",
+    "DESC": "Choose the governorate you live in. Featured listings of this area are shown to you first. Only you can see this setting.",
+    "LABEL": "Governorate",
+    "NONE": "Not set",
+    "SAVING": "Saving…",
+    "SAVED": "Saved",
+    "SAVE_FAILED": "Could not save. Try again."
+  },
   "NOTIFICATION_SETTINGS": {
     "TITLE": "Notification settings",
     "DESC": "Choose which updates reach you, in the app and as push on your phone. Account-safety messages are always sent.",
@@ -3556,6 +3893,8 @@
     "SUCCESS_HINT": "You can follow its status under “My reports”.",
     "ALREADY_OPEN": "You already have an open report on this listing ({{ref}}).",
     "ALREADY_OPEN_HINT": "Follow it under “My reports”. We will not review it twice.",
+    "NEEDS_REPLY": "The team needs more information from you to continue with this report.",
+    "REPLY_NOW": "Reply now",
     "LOGIN_REQUIRED": "Please sign in to report a listing.",
     "ERR_REASON": "Please choose a reason.",
     "ERR_DETAILS": "Details are required for this reason.",
@@ -3595,6 +3934,7 @@
     "YOUR_ANSWER": "Your answer",
     "SEND_ANSWER": "Send answer",
     "ANSWER_SENT": "Your answer was sent.",
+    "WAITING_BANNER": "{{count}} report is waiting for your answer to the team's question.",
     "ANSWER_FAILED": "Could not send your answer.",
     "event": {
       "Created": "Report received",
@@ -3760,7 +4100,8 @@
       "RESTORE_TEXT": "The listing becomes visible again and the owner is notified.",
       "CLOSE_TITLE": "Close this report?",
       "CLOSE_TEXT": "The decision is recorded and the reporter is told the general result. Closing does not change the listing."
-    }
+    },
+    "REPORTER_REPLY": "Reporter replied to your question"
   },
   "ADS": {
     "LABEL": "Ad",
@@ -3769,5 +4110,533 @@
     "CONSENT_TEXT": "We would like to show a few clearly labelled ads to help cover running costs. They are non-personalised and never replace or reorder listings. Choose \"Allow ads\" to see them, or \"No ads\" to keep the site ad-free. You can change this any time under \"Ad choices\".",
     "ACCEPT": "Allow ads",
     "DECLINE": "No ads"
+  },
+  "ADMIN_AUDIT": {
+    "TITLE": "Audit log",
+    "SUBTITLE": "Admin actions and sign-ins, newest first. Read-only.",
+    "SEARCH": "Search (actor, id, action)",
+    "ACTION": "Action (e.g. UserDisabled)",
+    "FROM": "From",
+    "TO": "To",
+    "APPLY": "Apply",
+    "EMPTY": "No matching entries.",
+    "LOAD_ERROR": "Could not load the audit log.",
+    "BY": "By",
+    "DETAILS": "Details",
+    "BEFORE": "Before",
+    "AFTER": "After"
+  },
+  "SEARCH_REQUESTS": {
+    "TITLE": "My property search requests",
+    "LEAD": "Describe the property you are looking for. We tell you when a fitting one appears, and advertisers can suggest theirs without seeing your details.",
+    "NEW": "New request",
+    "EDIT": "Edit request",
+    "TYPE": "Request type",
+    "TYPE_RENT": "Rent",
+    "TYPE_BUY": "Buy",
+    "GOVERNORATE": "Governorate",
+    "DISTRICT": "District",
+    "PROPERTY_TYPE": "Property type",
+    "ANY": "Any",
+    "CURRENCY": "Currency",
+    "BUDGET": "Budget",
+    "MIN_BUDGET": "Minimum budget",
+    "MAX_BUDGET": "Maximum budget",
+    "MIN_ROOMS": "Minimum rooms",
+    "AREA": "Area",
+    "MIN_AREA": "Minimum area (m²)",
+    "MAX_AREA": "Maximum area (m²)",
+    "EXPIRES": "Request ends on (optional, up to 90 days)",
+    "EXPIRES_ON": "Ends on",
+    "FEATURES": "Required features",
+    "FURNISHED": "Furnished",
+    "DETAILS": "Additional details",
+    "DETAILS_HINT": "Do not write a phone number, e-mail or link: advertisers reach you through the platform.",
+    "PRIVACY": "Advertisers see only your criteria, never your name, phone or e-mail. You decide whether to get in touch.",
+    "EMPTY": "No requests yet.",
+    "CREATED": "Request created. We are looking for fitting properties.",
+    "SAVED": "Changes saved.",
+    "CONFIRM_CLOSE": "Close this request for good?",
+    "MATCHES": "Fitting properties ({{count}})",
+    "NO_MATCHES": "No fitting property right now. We will tell you when one appears.",
+    "SCORE": "Match score {{score}}/100",
+    "PROPOSED": "Suggested by an advertiser",
+    "PAUSE": "Pause",
+    "RESUME": "Resume",
+    "RENEW": "Renew",
+    "CLOSE": "Close",
+    "STATUS": {
+      "Active": "Active",
+      "Paused": "Paused",
+      "Closed": "Closed",
+      "Expired": "Expired"
+    },
+    "BOARD_TITLE": "Buyer and renter requests",
+    "DEMAND_TITLE": "Requests that fit your property",
+    "BOARD_LEAD": "Real requests without personal data. Suggest your published listing; the requester receives it and decides whether to get in touch.",
+    "BOARD_EMPTY": "No matching requests right now.",
+    "BOARD_ADVERTISERS_ONLY": "The request board is open to users with a published listing.",
+    "PUBLISH_LISTING": "Publish a listing",
+    "PICK_LISTING": "Choose your listing",
+    "PROPOSE": "Suggest my listing",
+    "PROPOSAL_SENT": "Suggestion sent",
+    "MORE": "More",
+    "REASON": {
+      "location_neighborhood": "Same neighbourhood",
+      "location_district": "Same district",
+      "location_governorate": "Same governorate",
+      "budget_within": "Within budget",
+      "budget_slightly_above": "Slightly above budget",
+      "rooms_fit": "Rooms fit",
+      "rooms_unknown": "Rooms not stated",
+      "area_fit": "Area fits",
+      "area_unknown": "Area not stated",
+      "balcony_yes": "Has a balcony",
+      "balcony_unknown": "Balcony not stated",
+      "elevator_yes": "Has a lift",
+      "elevator_unknown": "Lift not stated",
+      "parking_yes": "Has parking",
+      "parking_unknown": "Parking not stated",
+      "furnished_yes": "Furnished",
+      "furnished_unknown": "Furnishing not stated",
+      "no_longer_fits": "No longer fits"
+    }
+  },
+  "REFERRALS": {
+    "TITLE": "Invite friends",
+    "SUBTITLE": "Share your link. An invitation counts only after the new account shows real activity.",
+    "LOAD_ERROR": "Could not load your invitations.",
+    "YOUR_CODE": "Your code",
+    "YOUR_LINK": "Your invitation link",
+    "COPY": "Copy link",
+    "COPIED": "Link copied.",
+    "COPY_FAILED": "Could not copy. Select the link and copy it by hand.",
+    "SHARE": "Share",
+    "SHARE_TITLE": "Join me on HudhudNest",
+    "HOW_TITLE": "When does an invitation count?",
+    "HOW_1": "The person signs up through your link (or enters your code).",
+    "HOW_PHONE": "They confirm their phone number.",
+    "HOW_LISTING": "They publish a listing that stays live for at least {{days}} days.",
+    "NO_REWARD": "No reward is announced at the moment. Counted invitations are kept, so any future reward can include them.",
+    "NOT_COUNTED": "Not counted",
+    "EMPTY": "Nobody has signed up with your link yet.",
+    "REWARDED": "Reward given",
+    "STATUS": {
+      "Pending": "Waiting",
+      "Qualified": "Counted",
+      "Rejected": "Not accepted",
+      "Expired": "Expired"
+    }
+  },
+  "ADMIN_REFERRALS": {
+    "TITLE": "Referrals",
+    "SUBTITLE": "Invitations are qualified automatically by real activity. Rewards are recorded here by hand.",
+    "FILTER": "Status",
+    "ALL": "All",
+    "LOAD_ERROR": "Could not load referrals.",
+    "DATE": "Signed up",
+    "REFERRER": "Invited by",
+    "INVITED": "Invited account",
+    "STATUS": "Status",
+    "ACTIONS": "Actions",
+    "MARK_REWARDED": "Reward given",
+    "REJECT": "Reject",
+    "EMPTY": "No referrals.",
+    "CONFIRM_REWARDED": "Record that the reward was given? This cannot be undone.",
+    "REJECT_REASON": "Reason for rejecting (required):",
+    "SAVED": "Saved.",
+    "SAVE_ERROR": "Could not save."
+  },
+  "PRICE_ESTIMATE": {
+    "TITLE": "Price range in your area",
+    "LEAD": "A range built from the asking prices of listings live on HudhudNest right now. It is not a valuation of your property.",
+    "KIND": "Price type",
+    "KIND_SALE": "Sale",
+    "KIND_RENT": "Monthly rent",
+    "GOVERNORATE": "Governorate",
+    "DISTRICT": "District",
+    "PROPERTY_TYPE": "Property type",
+    "ANY": "Any",
+    "AREA": "Size (m²)",
+    "CURRENCY": "Currency",
+    "SUBMIT": "Show range",
+    "ERROR": "The range could not be loaded right now. Please try again later.",
+    "RESULT_SALE": "Asking sale prices for similar properties",
+    "RESULT_RENT": "Asking monthly rents for similar properties",
+    "MIDDLE": "Middle value: {{value}}",
+    "SAMPLE": "Based on {{count}} listings after removing duplicates and outliers",
+    "BASIS": {
+      "DistrictAndType": "Level: same district, same property type",
+      "District": "Level: same district, all property types",
+      "GovernorateAndType": "Level: whole governorate, same property type",
+      "Governorate": "Level: whole governorate, all property types"
+    },
+    "CONFIDENCE": {
+      "Low": "Low confidence",
+      "Medium": "Medium confidence",
+      "High": "High confidence"
+    },
+    "DATES": "Listings dated {{from}} to {{to}}, last computed {{at}}",
+    "NO_RESULT": "No number shown here",
+    "REASON": {
+      "not_enough_data": "There are not yet enough similar listings in this area for a reliable range. A range is shown only with at least 8 listings from 3 different advertisers.",
+      "area_out_of_range": "The size is outside the range we compute for (15 to 5,000 m²).",
+      "currency_rate_missing": "No exchange rate is available for this currency right now. Choose USD."
+    },
+    "DISCLAIMER": "These are asking prices in listings, not final sale prices, and they ignore condition, floor and age. Do not rely on them alone to buy or sell.",
+    "VALUATION_LINK": "Need a valuation of a specific property? Request one",
+    "AREAS_TITLE": "Price per m² in the governorate and its districts",
+    "AREA_NAME": "Area",
+    "MEDIAN_SQM": "Median per m²",
+    "MIDDLE_HALF": "Middle half per m²",
+    "LISTINGS": "Listings",
+    "METHOD": "Method: implausible sizes, duplicate listings and outliers are removed, then the lower quartile, median and upper quartile of the price per m² are computed. Data is updated every 6 hours."
+  },
+  "ADMIN_GROWTH": {
+    "TITLE": "Growth & campaigns",
+    "SUBTITLE": "Aggregated counts only, from the growth event log and accounts, with no personal data. Definitions in GROWTH-METRICS.md.",
+    "FROM": "From",
+    "TO": "To",
+    "APPLY": "Show",
+    "RANGE_HINT": "Default is the last 30 days, at most 186 days (UTC).",
+    "LOAD_ERROR": "The numbers could not be loaded.",
+    "PERIOD": "Period {{from}} to {{to}}",
+    "T_NEW_ACCOUNTS": "New accounts",
+    "T_ACTIVE": "Active users",
+    "T_LISTINGS": "Listings published",
+    "T_SEARCH_REQUESTS": "Search requests",
+    "T_SAVED_SEARCHES": "Saved searches",
+    "T_FAVORITES": "Favorites added",
+    "T_CONTACTS": "Advertiser contacts",
+    "T_PROPOSALS": "Advertiser proposals",
+    "T_REFERRALS": "Referrals counted",
+    "FUNNEL": "New account funnel",
+    "FUNNEL_HINT": "For accounts created in the period, within 30 days of sign-up. Recent weeks look lower because they have not had 30 days yet.",
+    "F_REGISTERED": "Signed up",
+    "F_ACTIVATED": "Took a real action",
+    "F_PUBLISHED": "Published a listing",
+    "F_CONTACTED": "Contacted an advertiser",
+    "RETENTION": "Retention",
+    "RETENTION_HINT": "Dn: share of accounts at least n days old that came back n or more days after sign-up. Activity is counted since {{since}} only.",
+    "NO_ACTIVITY_YET": "No activity data yet. It starts one hour after this version runs.",
+    "OF_COHORT": "{{retained}} of {{cohort}}",
+    "CAMPAIGNS": "Campaigns (UTM)",
+    "CAMPAIGNS_HINT": "E-mail sign-ups by UTM tags. Google, Apple and phone sign-ups carry no tags yet. Untagged sign-ups: {{untagged}}.",
+    "NO_CAMPAIGNS": "No sign-ups with campaign tags in this period.",
+    "DAILY": "Day by day",
+    "DATE": "Date",
+    "LINK_BUILDER": "Campaign link builder",
+    "LINK_BUILDER_HINT": "Create a link with UTM tags for each post or ad, so its sign-ups appear in the campaign table. Tags: lower-case letters, digits and - _ . only.",
+    "PAGE": "Page",
+    "PAGE_HOME": "Home",
+    "PAGE_REGISTER": "Sign up",
+    "PAGE_LISTINGS": "Listings",
+    "PAGE_PRICING": "Plans",
+    "PAGE_PRICE_ESTIMATE": "Area prices",
+    "TAG_INVALID": "Invalid tag: use lower-case letters, digits and - _ . only.",
+    "COPY": "Copy link",
+    "COPIED": "Link copied.",
+    "COPY_FAILED": "Copying failed. Copy the link by hand."
+  },
+  "PROPERTY_MAP": {
+    "TITLE": "Listings on the map",
+    "TYPE": "Type",
+    "ALL": "All",
+    "RENT": "Rent",
+    "SALE": "Sale",
+    "MIN_ROOMS": "Min. rooms",
+    "LIST_VIEW": "List view",
+    "ERROR": "The map could not be loaded right now.",
+    "COUNT": "{{count}} listings in this area",
+    "ZOOM_IN": "{{count}} listings, zoom in to see them one by one",
+    "PRIVACY_NOTE": "Circles mean the advertiser hid the exact spot: the property is somewhere inside the circle.",
+    "APPROXIMATE": "approximate location"
+  },
+  "EXPATS": {
+    "TITLE": "Managing a property or looking for a home from outside Syria?",
+    "LEAD": "Start here. We show the steps that really exist on HudhudNest, and only the services approved providers offer right now.",
+    "QUESTION": "What do you want to do?",
+    "GOAL": {
+      "own": "I own a property in Syria and want to rent it out, sell or manage it",
+      "find": "I am looking for a home to rent or buy before I arrive",
+      "invest": "I want to invest in a real-estate project"
+    },
+    "STEPS_TITLE": "Steps",
+    "STEP": {
+      "OWN_LIST": "List your property (you can hide the exact location)",
+      "OWN_PRICE": "See the asking-price range in your area",
+      "OWN_SERVICES": "Request a service for your property from its own page",
+      "FIND_REQUEST": "Create a search request so advertisers can propose matching homes",
+      "FIND_MAP": "Browse listings on the map",
+      "FIND_ALERTS": "Save your search to get new listings",
+      "FIND_PRICE": "Compare with the price range in the area",
+      "INVEST_PROJECTS": "Browse published investment projects",
+      "INVEST_PRICE": "Compare with the price range in the area"
+    },
+    "SERVICES_TITLE": "Services available now from approved providers",
+    "SERVICES_HINT": "A service is requested from the page of the property it is for.",
+    "NO_SERVICES": "No approved provider offers these services yet. They appear here when providers join.",
+    "FOOTNOTE": "HudhudNest is a listings and services platform, not a legal or financial intermediary. Check documents before paying anything."
+  },
+  "LEGAL_LINKS": {
+    "TITLE": "Legal and privacy",
+    "PRIVACY": "Privacy Policy",
+    "TERMS": "Terms of Use",
+    "DELETION": "Delete account and data",
+    "IMPRINT": "Legal notice (Impressum)",
+    "CONTACT": "Contact support"
+  },
+  "IMPRINT": {
+    "TITLE": "Legal notice (Impressum)",
+    "PROVIDER": "Provider",
+    "CONTACT": "Contact",
+    "EMAIL": "Email",
+    "PHONE": "Phone",
+    "REGISTER": "Commercial register",
+    "VAT": "VAT ID",
+    "RESPONSIBLE": "Responsible for content",
+    "NOT_AVAILABLE": "The operator's details have not been published yet. Write to us at support@hudhudnest.com."
+  },
+  "PAYMENTS": {
+    "SANDBOX_BADGE": "Test mode",
+    "BACK_TO_PRICING": "Back to plans",
+    "CONTACT_US": "Contact us",
+    "AMOUNT": "Amount",
+    "DISCOUNT": "Discount",
+    "TAX": "Tax",
+    "TOTAL": "Total",
+    "REFUNDED": "Refunded",
+    "INTERVAL": {
+      "OneTime": "One time",
+      "Monthly": "Monthly",
+      "Yearly": "Yearly"
+    },
+    "CAP": {
+      "CARDS": "Cards",
+      "WALLETS": "Wallets",
+      "QR": "QR code",
+      "RECURRING": "Automatic renewal"
+    },
+    "CHECKOUT": {
+      "TITLE": "Checkout",
+      "SUBTITLE": "Review the price, choose how to pay, then continue to the payment provider.",
+      "INVALID": "This payment link is incomplete.",
+      "INTERVAL": "Billing period",
+      "CURRENCY": "Currency",
+      "METHOD": "Payment method",
+      "NO_METHOD": "No payment method is available for this currency.",
+      "HOSTED_NOTE": "You will enter your payment details on the provider's secure page. HudhudNest never sees or stores your card number.",
+      "RENEWAL": "Automatic renewal",
+      "CONSENT_TEXT": "I agree that HudhudNest charges {{amount}} {{interval}} to my payment method until I cancel.",
+      "TERMS_LINK": "Terms of service",
+      "CONSENT_HELP": "Leave this unticked to pay for one period only. You can cancel renewal at any time from your billing page; the paid period stays active.",
+      "SUMMARY": "Order summary",
+      "NO_TAX_NOTE": "No tax is added to this price.",
+      "PAY": "Continue to payment",
+      "REDIRECTING": "Opening the payment page…",
+      "SECURE_NOTE": "The price is calculated by our server. Your plan is activated only after the provider confirms the payment."
+    },
+    "NATIVE": {
+      "TITLE": "Pay on our website",
+      "BODY": "Purchases are not available inside the app yet. Open hudhudnest.com in your browser to subscribe; your account and benefits are the same in the app."
+    },
+    "UNAVAILABLE": {
+      "TITLE": "Online payment is not available right now",
+      "BODY": "Nothing was charged. You can still request a plan through our team."
+    },
+    "ERRORS": {
+      "GENERIC": "Something went wrong. Nothing was charged. Please try again.",
+      "UNAVAILABLE": "The payment provider is not available right now. Nothing was charged. Try again in a few minutes."
+    },
+    "STATUS": {
+      "Created": "Created",
+      "Pending": "Waiting for payment",
+      "Processing": "Processing",
+      "Succeeded": "Paid",
+      "Failed": "Failed",
+      "Cancelled": "Cancelled",
+      "Expired": "Expired",
+      "RefundPending": "Refund pending",
+      "PartiallyRefunded": "Partly refunded",
+      "Refunded": "Refunded",
+      "Disputed": "Disputed"
+    },
+    "SUB_STATUS": {
+      "Active": "Active",
+      "PastDue": "Payment overdue",
+      "Cancelled": "Cancelled",
+      "Expired": "Expired"
+    },
+    "REFUND_STATUS": {
+      "Requested": "Under review",
+      "Approved": "Approved, processing",
+      "Succeeded": "Refunded",
+      "Failed": "Failed, we will retry",
+      "Rejected": "Declined"
+    },
+    "RESULT": {
+      "SUCCESS_TITLE": "Payment received",
+      "SUCCESS_BODY": "Thank you. Your purchase is active and the invoice is ready.",
+      "DELIVERING_TITLE": "Payment received, activating",
+      "DELIVERING_BODY": "Your payment is confirmed. We are activating your purchase; this takes a moment.",
+      "DELIVERY_FAILED_TITLE": "Paid, but we could not activate it",
+      "DELIVERY_FAILED_BODY": "Your payment was received but the purchase could not be applied (for example the listing is no longer available). A refund is being arranged; contact us if you need help.",
+      "PENDING_TITLE": "Waiting for confirmation",
+      "PENDING_BODY": "We have not received the provider's confirmation yet. This page updates by itself. Do not pay again.",
+      "CHECKING": "Checking…",
+      "TAKING_LONGER": "This is taking longer than usual. If you paid, your purchase will be activated as soon as the confirmation arrives; reload this page later.",
+      "FAILED_TITLE": "Payment failed",
+      "FAILED_BODY": "The payment was not completed and nothing was charged. You can try again with another method.",
+      "CANCELLED_TITLE": "Payment cancelled",
+      "CANCELLED_BODY": "You cancelled this payment. Nothing was charged.",
+      "EXPIRED_TITLE": "Payment window expired",
+      "EXPIRED_BODY": "This order was not paid in time. Start a new one if you still want it.",
+      "REFUND_TITLE": "Refund in progress or completed",
+      "REFUND_BODY": "See the refund status in your billing page."
+    },
+    "ORDER": {
+      "NOT_FOUND": "This order was not found.",
+      "DETAILS": "Order details",
+      "NUMBER": "Order number",
+      "WHAT": "Item",
+      "STATUS": "Status",
+      "MODE": "Mode",
+      "CREATED": "Created",
+      "PAID_AT": "Paid on",
+      "VIEW_INVOICE": "View invoice",
+      "CANCEL": "Cancel this order",
+      "REQUEST_REFUND": "Request a refund"
+    },
+    "REFUND": {
+      "REASON": "Reason",
+      "SEND": "Send request",
+      "SENT": "Your refund request was sent. We will review it and update you.",
+      "NOTE": "Note"
+    },
+    "HISTORY": {
+      "TITLE": "Payments & invoices",
+      "SUBTITLE": "Your subscription, orders, invoices and refunds.",
+      "TAB_ORDERS": "Orders",
+      "TAB_INVOICES": "Invoices",
+      "TAB_REFUNDS": "Refunds",
+      "EMPTY": "No orders yet.",
+      "EMPTY_INVOICES": "No invoices yet.",
+      "EMPTY_REFUNDS": "No refunds.",
+      "OPEN": "Open"
+    },
+    "SUBSCRIPTION": {
+      "TITLE": "Subscription",
+      "PLAN": "Plan",
+      "PERIOD_END": "Current period ends",
+      "RENEWAL": "Renewal",
+      "RENEWAL_ON": "Renews automatically",
+      "RENEWAL_OFF": "Will not renew",
+      "RENEWAL_NONE": "Manual: pay again to extend",
+      "CONSENT": "Renewal you agreed to",
+      "PENDING_PLAN": "Next plan",
+      "PAST_DUE": "The last renewal payment failed. Your benefits continue until {{date}} while we retry. Update your payment method to avoid losing them.",
+      "CANCELLED_NOTE": "Renewal is cancelled. Your plan stays active until {{date}}.",
+      "CANCEL": "Cancel renewal",
+      "CANCEL_CONFIRM": "You will not be charged again. Your plan stays active until {{date}}.",
+      "CANCEL_YES": "Yes, cancel renewal",
+      "CANCEL_NO": "Keep it",
+      "RESUME": "Resume renewal",
+      "CHANGE": "Change plan",
+      "NONE": "You have no paid subscription."
+    },
+    "INVOICE": {
+      "TITLE": "Invoice",
+      "CREDIT_NOTE": "Credit note",
+      "NUMBER": "Number",
+      "ISSUED": "Issue date",
+      "SELLER": "Seller",
+      "CUSTOMER": "Customer",
+      "TAX_ID": "Tax ID",
+      "PERIOD": "Service period",
+      "NET": "Net amount",
+      "PAID_ON": "Paid on",
+      "REFERENCE": "Payment reference",
+      "PRINT": "Print / save as PDF",
+      "NOT_FOUND": "This invoice was not found.",
+      "NO_TAX_NOTE": "No tax is charged on this invoice."
+    },
+    "SANDBOX": {
+      "TITLE": "Test payment page",
+      "BODY": "This simulates a payment provider. No real money moves. Choose the outcome to test.",
+      "SUCCEED": "Simulate success",
+      "FAIL": "Simulate failure",
+      "CANCEL": "Simulate cancel",
+      "UNAVAILABLE": "The test payment page is not available in this environment."
+    }
+  },
+  "ADMIN_PAY": {
+    "TITLE": "Payments",
+    "SUBTITLE": "Transactions, subscriptions, refunds, providers and webhooks. An order becomes paid only when the provider confirms it; there is no manual \"mark as paid\".",
+    "TAB_DASHBOARD": "Dashboard",
+    "TAB_ORDERS": "Transactions",
+    "TAB_SUBSCRIPTIONS": "Subscriptions",
+    "TAB_REFUNDS": "Refunds",
+    "TAB_PROVIDERS": "Providers",
+    "TAB_WEBHOOKS": "Webhooks",
+    "TAB_REPORTS": "Reports",
+    "REVENUE_USD": "Revenue (USD)",
+    "ORDERS": "Orders",
+    "SUCCEEDED": "Paid",
+    "FAILED": "Failed",
+    "PENDING": "Pending",
+    "ACTIVE_SUBS": "Active subscriptions",
+    "NEEDS_ATTENTION": "Needs attention",
+    "FAILED_WEBHOOKS": "Failed webhooks",
+    "STALE_PENDING": "Stale pending orders",
+    "FAILED_ENTITLEMENTS": "Paid, not delivered",
+    "OPEN_REFUNDS": "Open refund requests",
+    "PAST_DUE": "Past-due subscriptions",
+    "BY_CURRENCY": "Revenue by currency",
+    "RECONCILE": "Reconcile pending payments with providers",
+    "SEARCH": "Search order number",
+    "ALL": "All",
+    "USER": "User",
+    "PROVIDER": "Provider",
+    "EMPTY": "Nothing to show.",
+    "CORRELATION": "Correlation ID",
+    "ENTITLEMENT": "Delivery",
+    "TRANSACTIONS": "Provider transactions",
+    "AUDIT": "Audit trail",
+    "RESYNC": "Re-check with provider",
+    "NOTE": "Internal note",
+    "ADD_NOTE": "Add note",
+    "REFUND_ORDER": "Refund this order",
+    "REFUND_AMOUNT": "Amount (empty = full remaining)",
+    "REFUND_SEND": "Refund via provider",
+    "AUTO_RENEW": "Auto-renew",
+    "ATTEMPTS": "Attempts",
+    "APPROVE": "Approve",
+    "REJECT": "Reject",
+    "RETRY": "Retry",
+    "PROVIDERS_NOTE": "A real provider cannot be enabled without a recorded business approval, and only after the legal and commercial checks in the deployment guide. The test provider never runs in Production.",
+    "ENABLED": "Enabled",
+    "DISABLED": "Disabled",
+    "IMPLEMENTED": "Adapter implemented",
+    "ALLOWED_HERE": "Allowed in this environment",
+    "CURRENCIES": "Currencies",
+    "CAPABILITIES": "Capabilities",
+    "APPROVED_ON": "Business approval",
+    "APPROVAL_NOTE": "Business approval note (who approved, on what basis)",
+    "ENABLE": "Enable",
+    "DISABLE": "Disable",
+    "EVENT": "Event",
+    "RECEIVED": "Received",
+    "LAST_ERROR": "Last error",
+    "REPROCESS": "Reprocess",
+    "GROUP_DAY": "By day",
+    "GROUP_MONTH": "By month",
+    "GROUP_PROVIDER": "By provider",
+    "GROUP_PRODUCT": "By product",
+    "GROUP_CURRENCY": "By currency",
+    "GROUP": "Group",
+    "GROSS_USD": "Gross (USD)",
+    "DONE": "Done.",
+    "LOAD_FAILED": "Could not load the data.",
+    "ACTION_FAILED": "The action failed. Nothing was changed, or the provider did not accept it; check the audit trail."
   }
 }

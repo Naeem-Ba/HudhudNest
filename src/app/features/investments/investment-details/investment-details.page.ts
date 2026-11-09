@@ -23,12 +23,14 @@ import { LoadingSpinnerComponent } from '../../../shared/ui/loading-spinner.comp
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
 import { PageMetaService } from '../../../core/services/page-meta.service';
 import { uiNumberLocale } from '../../../core/i18n/ui-language';
+import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
+import { LocalizedNumberPipe } from '../../../shared/pipes/localized-number.pipe';
 
 @Component({
   selector: 'app-investment-details',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, LoadingSpinnerComponent, ImageFallbackDirective],
+  imports: [ LocalizedDatePipe, LocalizedNumberPipe,CommonModule, RouterModule, FormsModule, TranslateModule, LoadingSpinnerComponent, ImageFallbackDirective],
   templateUrl: './investment-details.page.html',
   styleUrls: ['./investment-details.page.scss']
 })

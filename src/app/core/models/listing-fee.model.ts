@@ -34,7 +34,7 @@ export const LISTING_FEE_PREVIEWS: Readonly<Record<ListingFeeKind, ListingFeePre
   extension: {
     kind: 'extension',
     amountUsd: 1,
-    days: 90,
+    days: 30,
     titleKey: 'CHECKOUT.EXTENSION.TITLE',
     descriptionKey: 'CHECKOUT.EXTENSION.DESCRIPTION'
   },

@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import { checkIosProject } from './lib/ios-config.mjs';
 
 const root = process.cwd();
 const requiredFiles = ['package.json', 'angular.json', 'capacitor.config.ts'];
@@ -53,6 +54,11 @@ if (fs.existsSync(spmManifestPath)) {
     );
   }
 }
+
+// Entitlements, Info.plist, permission texts, packaged resources and the push hooks (tools/lib/ios-config.mjs).
+const project = checkIosProject(root);
+errors.push(...project.errors);
+warnings.push(...project.warnings);
 
 console.log('iOS configuration preflight');
 for (const warning of warnings) console.warn(`WARN: ${warning}`);

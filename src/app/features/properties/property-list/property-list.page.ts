@@ -13,6 +13,7 @@ import {
   signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LocationNamesService } from '../../../core/api/location-names.service';
 import { ActivatedRoute, ParamMap, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -36,13 +37,13 @@ import { Property, PropertyFilterDto } from '../../../core/models/property.model
 import { HttpErrorResponse } from '@angular/common/http';
 import { EmptyStateComponent } from '../../../shared/ui/empty-state.component';
 import { SkeletonCardGridComponent } from '../../../shared/ui/skeleton-card-grid.component';
+import { PropertyShareButtonComponent } from '../../../shared/ui/property-share-button.component';
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
 import { OverlayBackHandlerService } from '../../../core/services/overlay-back-handler.service';
 import { ScrollLockService } from '../../../core/services/scroll-lock.service';
 import { UrlService } from '../../../core/services/url.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { FavoriteToggleButtonComponent } from '../../../shared/ui/favorite-toggle-button.component';
-import { ReportListingButtonComponent } from '../../../shared/ui/report-listing-button.component';
 import { StructuredDataService, BREADCRUMB_JSON_LD_ID } from '../../../core/services/structured-data.service';
 import { PropertyShareUrlService } from '../../../core/sharing/property-share-url.service';
 import { PageMetaService } from '../../../core/services/page-meta.service';
@@ -51,9 +52,12 @@ import { isReservedListing } from '../../../shared/utils/listing-status';
 import { CurrencyRatesService } from '../../../core/pricing/currency-rates.service';
 import { isMarketCurrency } from '../../../core/pricing/market-currencies';
 import { PreferencesService } from '../../../core/services/preferences.service';
+import { InterestAreasService } from '../../../core/services/interest-areas.service';
+import { RecentAreasService } from '../../../core/services/recent-areas.service';
 import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
 import { AdSlotComponent } from '../../../core/ads/ad-slot.component';
 import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count.component';
+import { listSeparator } from '../../../core/i18n/ui-language';
 
 @Component({
   selector: 'app-property-list',
@@ -71,7 +75,7 @@ import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count
     SkeletonCardGridComponent,
     ImageFallbackDirective,
     FavoriteToggleButtonComponent,
-    ReportListingButtonComponent
+    PropertyShareButtonComponent
   ],
   templateUrl: './property-list.page.html',
   styleUrls: ['./property-list.page.scss']
@@ -87,6 +91,7 @@ export class PropertyListPage implements OnInit {
   private readonly api = inject(PropertyApiService);
   private readonly savedSearchApi = inject(SavedSearchApiService);
   private readonly lookupsApi = inject(LookupsApiService);
+  private readonly locations = inject(LocationNamesService);
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
@@ -102,6 +107,8 @@ export class PropertyListPage implements OnInit {
   private readonly pageMeta = inject(PageMetaService);
   private readonly currencyRates = inject(CurrencyRatesService);
   private readonly preferences = inject(PreferencesService);
+  private readonly interestAreas = inject(InterestAreasService);
+  private readonly recentAreas = inject(RecentAreasService);
 
   readonly properties = signal<Property[]>([]);
   readonly loading = signal(false);
@@ -233,6 +240,8 @@ export class PropertyListPage implements OnInit {
       .pipe(
         tap(params => {
           this.applyParamsToState(params);
+          // A governorate the person searched in is remembered on this device (never sent to the server as a log).
+          this.recentAreas.record(this.governorateId);
           this.loading.set(true);
           this.error.set('');
         }),
@@ -428,6 +437,9 @@ export class PropertyListPage implements OnInit {
       amenityIds: this.selectedAmenityIds.length > 0 ? this.selectedAmenityIds : undefined,
       sortBy: sort.sortBy,
       sortDescending: sort.sortDescending,
+      // Only the default order is ranked, and only without a governorate filter (inside one governorate there
+      // is nothing to favour); sending it otherwise would only split the shared response cache.
+      interestGovernorateIds: sort.sortBy === 'CreatedAt' && !this.governorateId ? this.interestAreas.current() : undefined,
       governorateId: this.governorateId ?? undefined,
       districtId: this.districtId ?? undefined,
       neighborhoodId: this.neighborhoodId ?? undefined,
@@ -479,7 +491,7 @@ export class PropertyListPage implements OnInit {
     if (!typed) return;
 
     const named = this.governorates().find(
-      g => g.nameAr?.trim().toLowerCase() === typed || g.nameEn?.trim().toLowerCase() === typed
+      g => g.nameAr?.trim().toLowerCase() === typed || g.nameEn?.trim().toLowerCase() === typed || g.nameDe?.trim().toLowerCase() === typed
     );
     if (!named) return;
 
@@ -870,7 +882,7 @@ export class PropertyListPage implements OnInit {
   }
 
   getLocation(property: Property): string {
-    return [property.street, property.city, property.postalCode].filter(Boolean).join('، ') || '—';
+    return [property.street, this.locations.city(property), property.postalCode].filter(Boolean).join(listSeparator()) || '—';
   }
 
   private mapSort(): Pick<PropertyFilterDto, 'sortBy' | 'sortDescending'> {

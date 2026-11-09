@@ -1,5 +1,5 @@
 import { Component, OnDestroy } from '@angular/core';
-import { FormsModule, NgForm } from '@angular/forms';
+import { AbstractControl, FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -13,7 +13,6 @@ import { AuthTokenResponse, TokenStorageService } from '../../../core/services/t
 import { AuthService } from '../../../core/auth/auth.service';
 import { LoginMethod } from '../../../core/auth/login-identifier';
 import { ConsentApiService } from '../../../core/api/consent-api.service';
-import { isServerFailure } from '../../../core/api/server-failure';
 import { PRIVACY_POLICY_VERSION, TERMS_OF_SERVICE_VERSION } from '../../../core/models/consent-versions';
 import { ConsentCheckboxComponent } from '../../../shared/components/consent-checkbox/consent-checkbox.component';
 import {
@@ -22,11 +21,13 @@ import {
   lockoutMinutesRemaining,
   parseLoginFailure
 } from '../../../core/models/auth.model';
-import { getPasswordRejectionMessages } from '../password-errors';
-import { isEmailAlreadyRegistered } from '../register-errors';
+import { translatePasswordViolations } from '../password-errors';
+import { AuthField, applyAuthFieldErrors, resolveAuthError } from '../auth-error';
+import { AuthErrorFocusService } from '../../../core/auth/auth-error-focus.service';
+import { getPasswordPolicyViolations } from '../../../core/auth/password-policy';
 import { ToastService } from '../../../shared/services/toast.service';
 import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
-import { PasswordStrengthIndicatorComponent } from '../../../shared/ui/password-strength-indicator.component';
+import { PasswordRulesComponent } from '../../../shared/ui/password-rules.component';
 
 interface LoginFormModel {
   Email: string;
@@ -52,7 +53,7 @@ type AuthMode = 'email' | 'phone';
     RouterLink,
     TranslateModule,
     ImageFallbackDirective,
-    PasswordStrengthIndicatorComponent, // ✨ جديد: عرض قوة كلمة المرور
+    PasswordRulesComponent,
     ConsentCheckboxComponent
   ],
   templateUrl: './login.component.html',
@@ -86,6 +87,17 @@ export class LoginComponent implements OnDestroy {
   lockoutMinutesLeft = 0;
   private lockoutTimerHandle: ReturnType<typeof setInterval> | null = null;
   success = false;
+  /**
+   * true after a rejected e-mail/phone + password: the alert is followed by what the person can do next
+   * (reset the password, create an account). The sentence itself stays the same whether or not the
+   * account exists, so this does not tell an attacker which addresses are registered.
+   */
+  credentialsFailed = false;
+  /** كلمة السر صحيحة لكن البريد غير مؤكَّد: يظهر زر إعادة إرسال الرابط (P4-D11). */
+  emailNotConfirmed = false;
+  resendingConfirmation = false;
+  private unconfirmedEmail = '';
+  consentError = '';
   showPass = false;
   showPassReg = false;
   loading = false;
@@ -112,7 +124,9 @@ export class LoginComponent implements OnDestroy {
     private readonly router: Router,
     private readonly route: ActivatedRoute,
     private readonly translate: TranslateService,
-    private readonly toast: ToastService
+    private readonly toast: ToastService,
+    private readonly errorFocus: AuthErrorFocusService,
+    private readonly consentApi: ConsentApiService
   ) {}
 
   get googleAvailable(): boolean {
@@ -131,6 +145,10 @@ export class LoginComponent implements OnDestroy {
   }
 
   onLogin(form: NgForm): void {
+    if (this.loading) {
+      return;
+    }
+
     this.submitted = true;
     form.control.markAllAsTouched();
 
@@ -138,13 +156,20 @@ export class LoginComponent implements OnDestroy {
       return;
     }
 
-    if (form.invalid || this.loading) {
-      this.setError(this.t('AUTH.ERRORS.FIX_FIELDS'));
+    // Length is deliberately NOT checked here: the server decides whether a password is right, and an
+    // account created under an older rule must still be able to sign in.
+    if (form.invalid) {
+      this.message = '';
+      this.credentialsFailed = false;
+      this.loginAttemptWarning = '';
+      this.errorFocus.request();
       return;
     }
 
     this.loading = true;
     this.message = '';
+    this.credentialsFailed = false;
+    this.emailNotConfirmed = false;
 
     const request = {
       email: this.loginData.Email.trim().toLowerCase(),
@@ -159,24 +184,62 @@ export class LoginComponent implements OnDestroy {
       },
       error: error => {
         this.loading = false;
-        this.handleLoginFailure(parseLoginFailure(error));
+        this.handleLoginFailure(error);
       }
     });
+  }
+
+  /** يعيد إرسال رابط تأكيد البريد (الخادم يطبّق حدّ 3 رسائل/24 ساعة ويردّ بالرد نفسه دائمًا). */
+  resendConfirmation(): void {
+    if (this.resendingConfirmation || !this.unconfirmedEmail) {
+      return;
+    }
+
+    this.resendingConfirmation = true;
+    this.authApi.resendConfirmationEmail(this.unconfirmedEmail).subscribe({
+      next: () => {
+        this.resendingConfirmation = false;
+        this.emailNotConfirmed = false;
+        this.message = this.t('AUTH.CONFIRMATION_RESENT');
+        this.success = true;
+      },
+      error: error => {
+        this.resendingConfirmation = false;
+        this.setError(
+          this.t((error as { status?: number } | null)?.status === 429
+            ? 'AUTH.RESEND_CONFIRMATION.TOO_MANY'
+            : 'AUTH.ERRORS.SERVER_ERROR')
+        );
+        this.emailNotConfirmed = true;
+      }
+    });
+  }
+
+  /** Called when the person edits a field: the message about the previous attempt is no longer true. */
+  clearFormMessage(): void {
+    if (this.success || this.isLockedOut || (!this.message && !this.loginAttemptWarning)) {
+      return;
+    }
+
+    this.emailNotConfirmed = false;
+    this.message = '';
+    this.credentialsFailed = false;
+    this.loginAttemptWarning = '';
   }
 
   /**
    * يترجم عقد فشل /auth/login إلى حالة واجهة. المصدر الوحيد للتفرّع هو
    * errorCode (نص ثابت من الباك) وليس نص الرسالة الإنجليزي.
    */
-  private handleLoginFailure(failure: LoginFailure): void {
+  private handleLoginFailure(error: unknown): void {
+    const failure = parseLoginFailure(error);
     this.loginAttemptWarning = '';
 
-    // status 0 يعني أن الطلب لم يصل إلى الخادم إطلاقاً (انقطاع اتصال، CORS،
-    // أو الخادم متوقف) — لا علاقة له ببيانات الدخول، فيجب عدم خلطه برسالة
-    // "بيانات الدخول غير صحيحة" التي يوحي بها inferErrorCodeFromStatus حين
-    // لا يجد حالة مطابقة لـ 0 ويترك errorCode كـ null.
-    if (failure.status === 0) {
-      this.setError(this.t('AUTH.ERRORS.NETWORK_ERROR'));
+    // Not an answer about the credentials at all: the request never arrived (status 0), took too long, or
+    // the server/proxy failed (502/503/504 while the host wakes up used to fall through to "wrong password").
+    const resolved = resolveAuthError(this.translate, error);
+    if (resolved.kind === 'network' || resolved.kind === 'timeout' || resolved.kind === 'server') {
+      this.setError(resolved.message ?? this.t('AUTH.ERRORS.SERVER_ERROR'));
       return;
     }
 
@@ -197,10 +260,19 @@ export class LoginComponent implements OnDestroy {
         this.setError(this.t('AUTH.ERRORS.SERVER_ERROR'));
         return;
 
+      case LOGIN_ERROR_CODES.EMAIL_NOT_CONFIRMED:
+        // The server already sent a fresh link (within its 3-per-24h limit); say so and offer one more.
+        this.setError(this.t('AUTH.ERRORS.EMAIL_NOT_CONFIRMED'));
+        this.emailNotConfirmed = true;
+        this.unconfirmedEmail = this.loginData.Email.trim().toLowerCase();
+        return;
+
       default:
-        // INVALID_CREDENTIALS وأي رمز غير معروف: رسالة عامة موحّدة حتى لا
-        // نكشف إن كان البريد مسجَّلاً أم لا.
+        // INVALID_CREDENTIALS and any unknown code: one sentence for "wrong password" and "no such
+        // account", so the form never tells a stranger which addresses are registered (the server's
+        // answer is identical for both). The help line below it says what to do next.
         this.setError(this.t('AUTH.ERRORS.INVALID_CREDENTIALS'));
+        this.credentialsFailed = true;
         this.showRemainingAttempts(failure);
     }
   }
@@ -248,6 +320,7 @@ export class LoginComponent implements OnDestroy {
     };
 
     tick();
+    this.errorFocus.request();
     // toast.error() أُزيلت من هنا — كانت تكرّر رسالة auth-alert (القالب) نفسها، ونفس
     // السبب الموثَّق في setError() أعلاه؛ ApiErrorInterceptor أيضاً لم يعد يعرض toast
     // تلقائياً لأي طلب /auth/ (راجع isAuthFlowRequest هناك).
@@ -306,15 +379,13 @@ export class LoginComponent implements OnDestroy {
   }
 
   onRegister(form: NgForm): void {
-    this.submitted = true;
-    form.control.markAllAsTouched();
-
-    if (form.invalid || this.loading) {
-      this.setError(this.t('AUTH.ERRORS.FIX_FIELDS'));
+    if (this.loading) {
       return;
     }
 
-    this.loading = true;
+    this.submitted = true;
+    this.consentError = '';
+    form.control.markAllAsTouched();
     this.message = '';
 
     const firstName = this.registerData.FirstName.trim();
@@ -322,19 +393,25 @@ export class LoginComponent implements OnDestroy {
     const email = this.registerData.Email.trim().toLowerCase();
     const password = this.registerData.Password;
 
-    const validationMessage = this.validateRegisterForm(firstName, lastName, email, password);
-    if (validationMessage) {
-      this.loading = false;
-      this.setError(validationMessage);
+    // The rules the server enforces, checked here first so the person learns about them before the
+    // round trip. The server stays the reference: if it disagrees (the breached-password list), its
+    // answer is shown the same way below.
+    const passwordControl = form.controls['passReg'];
+    const policyBroken = !!password && getPasswordPolicyViolations(password, { firstName, lastName, email }).length > 0;
+    if (policyBroken) {
+      passwordControl?.setErrors({ server: this.t('AUTH.ERRORS.PASSWORD_POLICY_UNMET') });
+    }
+
+    if (!this.privacyConsentAccepted) {
+      this.consentError = this.t('AUTH.ERRORS.CONSENT_REQUIRED');
+    }
+
+    if (form.invalid || policyBroken || this.consentError) {
+      this.errorFocus.request();
       return;
     }
 
-    // زر الإرسال معطَّل بدون الموافقة أصلاً (انظر القالب) — هذا دفاع إضافي فقط.
-    if (!this.privacyConsentAccepted) {
-      this.loading = false;
-      this.setError(this.t('AUTH.ERRORS.FIX_FIELDS'));
-      return;
-    }
+    this.loading = true;
 
     this.authApi.register({
       firstName,
@@ -364,12 +441,48 @@ export class LoginComponent implements OnDestroy {
           Email: '',
           Password: ''
         };
+        this.errorFocus.request();
       },
       error: error => {
         this.loading = false;
-        this.setError(this.getRegisterErrorMessage(error));
+        this.handleRegisterFailure(form, error);
       }
     });
+  }
+
+  /**
+   * Puts each reason on the field it belongs to (e-mail taken -> the e-mail field, a rejected password
+   * -> the password field), keeps everything the person typed, and shows the rest (network, server,
+   * rate limit) in the form-level alert.
+   */
+  private handleRegisterFailure(form: NgForm, error: unknown): void {
+    const resolved = resolveAuthError(this.translate, error, {
+      conflictMeansEmailTaken: true,
+      allowServerMessage: true,
+      fallbackKey: 'AUTH.ERRORS.REGISTER_FAILED'
+    });
+
+    const controls: Partial<Record<AuthField, AbstractControl | null>> = {
+      firstName: form.controls['firstName'],
+      lastName: form.controls['lastName'],
+      email: form.controls['emailReg'],
+      password: form.controls['passReg']
+    };
+
+    if (resolved.fields.some(item => item.field === 'consent')) {
+      this.consentError = this.t('AUTH.ERRORS.CONSENT_REQUIRED');
+    }
+
+    const leftovers = applyAuthFieldErrors(
+      { ...resolved, fields: resolved.fields.filter(item => item.field !== 'consent') },
+      controls
+    );
+
+    if (leftovers.length > 0) {
+      this.setError(leftovers.join(' '));
+    } else {
+      this.errorFocus.request();
+    }
   }
 
   toggleRegister(): void {
@@ -412,27 +525,31 @@ export class LoginComponent implements OnDestroy {
   // ================= تسجيل الدخول بالهاتف (رقم + كلمة سر، بدون OTP) =================
 
   onPhoneLogin(form: NgForm): void {
-    this.submitted = true;
-    form.control.markAllAsTouched();
-
-    const phone = normalizePhoneInput(this.phoneLoginNumber);
-
-    if (!PHONE_E164_PATTERN.test(phone)) {
-      this.setError(this.t('AUTH.ERRORS.PHONE_INVALID'));
-      return;
-    }
-
-    if (!this.phoneLoginPassword) {
-      this.setError(this.t('AUTH.ERRORS.PASSWORD_REQUIRED'));
-      return;
-    }
-
     if (this.loading) {
       return;
     }
 
-    this.loading = true;
+    this.submitted = true;
+    form.control.markAllAsTouched();
     this.message = '';
+    this.credentialsFailed = false;
+
+    const phone = normalizePhoneInput(this.phoneLoginNumber);
+    const numberControl = form.controls['phoneLoginNumber'];
+
+    // Required is handled by the template validator; a filled-in but malformed number is explained on
+    // the field (it used to be a banner far from it, and only after the password had been typed too).
+    const malformed = !!this.phoneLoginNumber.trim() && !PHONE_E164_PATTERN.test(phone);
+    if (malformed) {
+      numberControl?.setErrors({ server: this.t('AUTH.ERRORS.PHONE_INVALID') });
+    }
+
+    if (form.invalid || malformed) {
+      this.errorFocus.request();
+      return;
+    }
+
+    this.loading = true;
 
     this.phoneAuthApi.login({ phoneNumber: phone, password: this.phoneLoginPassword }).subscribe({
       next: () => {
@@ -444,7 +561,14 @@ export class LoginComponent implements OnDestroy {
         // رقم/كلمة سر خاطئة وحساب مقفل ورقم غير مسجَّل كلها 400 PHONE_AUTH_FAILED بنص واحد (لا كشف
         // عن وجود الحساب)؛ أما تجاوز المعدّل وانقطاع الشبكة وخطأ الخادم والحساب غير المتاح فتُعرض
         // كما هي كي لا تُقرأ كأن كلمة السر خاطئة.
-        this.setError(getPhoneLoginErrorMessage(this.translate, err));
+        const resolved = resolveAuthError(this.translate, err);
+        const notCredentials =
+          resolved.kind === 'network' || resolved.kind === 'timeout' || resolved.kind === 'server' ||
+          resolved.kind === 'rate_limited';
+
+        this.setError(notCredentials && resolved.message ? resolved.message : getPhoneLoginErrorMessage(this.translate, err));
+        this.credentialsFailed =
+          !notCredentials && this.message === this.t('AUTH.ERRORS.PHONE_INVALID_CREDENTIALS');
       }
     });
   }
@@ -457,6 +581,8 @@ export class LoginComponent implements OnDestroy {
 
   private completeSocialLogin(response: AuthTokenResponse): void {
     this.tokenStorage.storeTokens(response);
+    // The notice under the social buttons is the consent on this path; keep the proof (best-effort).
+    this.consentApi.ensureCurrentAcceptance().subscribe({ error: () => undefined });
     this.refreshAuthState('email');
     this.completeLoginSuccess();
   }
@@ -485,87 +611,15 @@ export class LoginComponent implements OnDestroy {
     authState.validateSession?.();
   }
 
-  private validateRegisterForm(firstName: string, lastName: string, email: string, password: string): string | null {
-    if (!firstName || !lastName) {
-      return this.t('AUTH.ERRORS.FULL_NAME_REQUIRED');
-    }
-
-    if (!email) {
-      return this.t('AUTH.ERRORS.EMAIL_REQUIRED');
-    }
-
-    if (/\s/.test(email)) {
-      return this.t('AUTH.ERRORS.EMAIL_NO_SPACES');
-    }
-
-    if (!this.isValidEmail(email)) {
-      return this.t('AUTH.ERRORS.INVALID_EMAIL');
-    }
-
-    if (!password) {
-      return this.t('AUTH.ERRORS.PASSWORD_REQUIRED');
-    }
-
-    if (password.length < 8) {
-      return this.t('AUTH.ERRORS.PASSWORD_MIN');
-    }
-
-    return null;
-  }
-
   private setError(message: string): void {
     this.loading = false;
     this.success = false;
+    this.credentialsFailed = false;
+    this.emailNotConfirmed = false;
     this.message = message;
-    // ⚠️ تم إزالة toast.error هنا لتجنب عرض الرسالة مرتين
-    // الرسالة تُعرض مرة واحدة عبر alert في القالب (div.auth-alert)
-  }
-
-  private isValidEmail(email: string): boolean {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  }
-
-  private getRegisterErrorMessage(error: unknown): string {
-    // خطأ الخادم (5xx) نصه الإنجليزي العام لا يفيد القارئ — نص مترجَم بدلاً منه.
-    if (isServerFailure(error)) {
-      return this.t('AUTH.ERRORS.SERVER_ERROR');
-    }
-
-    // "البريد مسجّل" (409): رسالته إنجليزية ثابتة، فتُترجَم قبل قراءة error.message
-    // -- نفس الأداة المشتركة التي يستخدمها register.page.ts (2026-10-07).
-    if (isEmailAlreadyRegistered(error)) {
-      return this.t('AUTH.ERRORS.EMAIL_ALREADY_EXISTS');
-    }
-
-    // كود PASSWORD_BREACHED وأخواته يُترجَمان أولاً — نفس الأداة المشتركة التي
-    // يستخدمها register.page.ts، بدل عرض نص الخادم الإنجليزي الخام لمستخدم
-    // عربي أو ألماني (كان هذا النموذج المدمج ينفرد بتجاوز الترجمة هنا).
-    const passwordReasons = getPasswordRejectionMessages(this.translate, error);
-    if (passwordReasons.length > 0) {
-      return passwordReasons.join(' ');
-    }
-
-    const response = error as {
-      error?: {
-        message?: string;
-        errors?: Record<string, string[]>;
-      };
-    };
-
-    const backendMessage = response.error?.message;
-    if (backendMessage) {
-      return backendMessage;
-    }
-
-    const backendErrors = response.error?.errors;
-    if (backendErrors) {
-      const messages = Object.values(backendErrors).flat();
-      if (messages.length > 0) {
-        return messages.join(' ');
-      }
-    }
-
-    return this.t('AUTH.ERRORS.REGISTER_FAILED');
+    // No toast here: the alert in the template is the one place the message is shown. The page then
+    // scrolls to it (or to the field it belongs to) so it is never left below the fold or the keyboard.
+    this.errorFocus.request();
   }
 
   private t(key: string): string {

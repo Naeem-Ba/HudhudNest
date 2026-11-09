@@ -43,14 +43,25 @@ describe('ForgotPasswordPage — the reset-link request', () => {
     expect(page.error()).toBe('');
   });
 
-  it('says the request could not be sent when the API fails', () => {
-    authApi.forgotPassword.and.returnValue(throwError(() => ({ status: 500 })));
+  it('says the request could not be sent when the API refuses it', () => {
+    authApi.forgotPassword.and.returnValue(throwError(() => ({ status: 400 })));
     const page = create();
 
     page.submit();
 
     expect(page.error()).toBe('AUTH.ERRORS.FORGOT_FAILED');
     expect(page.loading()).toBeFalse();
+  });
+
+  it('says it is a server problem on a 5xx, and a connection problem when nothing arrived', () => {
+    authApi.forgotPassword.and.returnValue(throwError(() => ({ status: 503 })));
+    const page = create();
+    page.submit();
+    expect(page.error()).toBe('AUTH.ERRORS.SERVER_ERROR');
+
+    authApi.forgotPassword.and.returnValue(throwError(() => ({ status: 0 })));
+    page.submit();
+    expect(page.error()).toBe('AUTH.ERRORS.NETWORK_ERROR');
   });
 
   it('names the limit, not a failed send, when the API answers 429', () => {

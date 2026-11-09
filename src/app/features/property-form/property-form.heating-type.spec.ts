@@ -57,7 +57,7 @@ describe('PropertyFormPage heating type', () => {
         { provide: LookupsApiService, useValue: lookups },
         { provide: PropertyApiService, useValue: propertyApi },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap(editId ? { id: editId } : {}) } } },
-        { provide: LanguageService, useValue: { getCurrentLang: () => 'ar', currentLang$: of('ar') } }
+        { provide: LanguageService, useValue: { getCurrentLang: () => 'ar', getCurrent: () => 'ar', currentLang$: of('ar') } }
       ]
     });
     TestBed.overrideComponent(PropertyFormPage, {
@@ -109,6 +109,53 @@ describe('PropertyFormPage heating type', () => {
     expect(propertyApi.getPropertyForManagement).toHaveBeenCalled();
     expect(fixture.componentInstance.form.get('heatingType')?.value).toBe(2);
   });
+
+  it('edit mode keeps the owner\'s "hide exact location" choice (growth engine P8)', async () => {
+    setup('11111111-1111-1111-1111-111111111111');
+    propertyApi.getPropertyForManagement.and.returnValue(of({
+      id: '11111111-1111-1111-1111-111111111111', title: 'Edit me', description: 'd', listingType: 'ForRent',
+      countryCode: 'SY', latitude: 33.51, longitude: 36.29, hideExactLocation: true
+    } as never));
+    const fixture = TestBed.createComponent(PropertyFormPage);
+    fixture.detectChanges();
+    flushEnums();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.form.get('hideExactLocation')?.value).toBeTrue();
+    expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="hide-exact-location"] input')).not.toBeNull();
+  });
+
+  it('edit mode keeps the "price negotiable" choice and shows the checkbox for rent', async () => {
+    setup('11111111-1111-1111-1111-111111111111');
+    propertyApi.getPropertyForManagement.and.returnValue(of({
+      id: '11111111-1111-1111-1111-111111111111', title: 'Edit me', description: 'd', listingType: 'ForRent',
+      countryCode: 'SY', isPriceNegotiable: true
+    } as never));
+    const fixture = TestBed.createComponent(PropertyFormPage);
+    fixture.detectChanges();
+    flushEnums();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.form.get('isPriceNegotiable')?.value).toBeTrue();
+    expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="price-negotiable"] input')).not.toBeNull();
+  });
+
+  it('edit mode defaults "price negotiable" to off when the listing never set it', async () => {
+    setup('11111111-1111-1111-1111-111111111111');
+    propertyApi.getPropertyForManagement.and.returnValue(of({
+      id: '11111111-1111-1111-1111-111111111111', title: 'Edit me', description: 'd', listingType: 'ForSale', countryCode: 'SY'
+    } as never));
+    const fixture = TestBed.createComponent(PropertyFormPage);
+    fixture.detectChanges();
+    flushEnums();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.form.get('isPriceNegotiable')?.value).toBeFalse();
+    expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="price-negotiable"] input')).not.toBeNull();
+  });
 });
 
 describe('PropertyFormPage heating type in the save payload', () => {
@@ -128,7 +175,7 @@ describe('PropertyFormPage heating type in the save payload', () => {
         { provide: LookupsApiService, useValue: lookups },
         { provide: PropertyApiService, useValue: api },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap(editId ? { id: editId } : {}) } } },
-        { provide: LanguageService, useValue: { getCurrentLang: () => 'ar', currentLang$: of('ar') } }
+        { provide: LanguageService, useValue: { getCurrentLang: () => 'ar', getCurrent: () => 'ar', currentLang$: of('ar') } }
       ]
     });
     TestBed.overrideComponent(PropertyFormPage, {

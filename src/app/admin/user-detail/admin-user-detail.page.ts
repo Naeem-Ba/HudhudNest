@@ -23,16 +23,17 @@ import { computeExtendedExpiry } from '../../core/services/admin-subscription-da
 import { ToastService } from '../../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { ConfirmModalComponent } from '../../shared/ui/confirm-modal.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 const DURATION_PRESETS = [30, 90, 180, 365];
 
-type ModalKind = 'activate' | 'extend' | 'cancel' | null;
+type ModalKind = 'activate' | 'extend' | 'cancel' | 'disable' | 'enable' | null;
 
 @Component({
   selector: 'app-admin-user-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, LoadingSpinnerComponent, ConfirmModalComponent],
+  imports: [ LocalizedDatePipe,CommonModule, RouterModule, FormsModule, TranslateModule, LoadingSpinnerComponent, ConfirmModalComponent],
   template: `
     <section class="page">
       <header class="page-header">
@@ -50,13 +51,23 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | null;
             <div><span class="field-label">{{ 'ADMIN_USERS.EMAIL' | translate }}</span><strong>{{ u.email || '—' }}</strong></div>
             <div><span class="field-label">{{ 'ADMIN_USER_DETAIL.PHONE' | translate }}</span><strong>{{ u.phoneNumber || '—' }}</strong></div>
             <div><span class="field-label">{{ 'ADMIN_USER_DETAIL.USER_ID' | translate }}</span><code>{{ u.id }}</code></div>
-            <div><span class="field-label">{{ 'ADMIN_USER_DETAIL.REGISTERED_AT' | translate }}</span><strong>{{ u.createdAt | date:'medium' }}</strong></div>
+            <div><span class="field-label">{{ 'ADMIN_USER_DETAIL.REGISTERED_AT' | translate }}</span><strong>{{ u.createdAt | localDate:'medium' }}</strong></div>
             <div>
               <span class="field-label">{{ 'ADMIN_USERS.STATUS' | translate }}</span>
               <span class="status-chip" [class.status-chip--disabled]="u.accountStatus === 'Disabled'">
                 {{ ('ADMIN_USERS.STATUS_' + u.accountStatus.toUpperCase()) | translate }}
               </span>
             </div>
+          </div>
+
+          <!-- حالة الحساب: تعطيل مع إخفاء الإعلانات، وإعادة تفعيل بسبب (المرحلة 14) -->
+          <div class="plan-actions" data-testid="account-actions">
+            <button type="button" class="btn btn--danger" *ngIf="u.accountStatus !== 'Disabled'" (click)="openDisableModal()">
+              {{ 'ADMIN_USER_DETAIL.DISABLE_ACCOUNT' | translate }}
+            </button>
+            <button type="button" class="btn btn--primary" *ngIf="u.accountStatus === 'Disabled'" (click)="openEnableModal()">
+              {{ 'ADMIN_USER_DETAIL.ENABLE_ACCOUNT' | translate }}
+            </button>
           </div>
         </div>
 
@@ -77,7 +88,7 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | null;
             <span *ngIf="u.roles.length === 0" class="muted">—</span>
           </div>
           <div class="role-add">
-            <select #roleSelect class="role-select">
+            <select #roleSelect class="role-select" [attr.aria-label]="'ADMIN_USERS.ADD_ROLE' | translate">
               <option *ngFor="let role of roles()" [value]="role">{{ role }}</option>
             </select>
             <button type="button" class="btn btn--outline" (click)="assignRole(roleSelect.value)">
@@ -103,11 +114,11 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | null;
             </div>
             <div class="plan-summary__row">
               <span class="field-label">{{ 'ADMIN_USER_DETAIL.PLAN_STARTED_AT' | translate }}</span>
-              <strong>{{ u.planStartedAt ? (u.planStartedAt | date:'medium') : '—' }}</strong>
+              <strong>{{ u.planStartedAt ? (u.planStartedAt | localDate:'medium') : '—' }}</strong>
             </div>
             <div class="plan-summary__row">
               <span class="field-label">{{ 'ADMIN_USER_DETAIL.PLAN_EXPIRES_AT' | translate }}</span>
-              <strong>{{ u.planExpiresAt ? (u.planExpiresAt | date:'medium') : ('ADMIN_USER_DETAIL.NO_EXPIRY' | translate) }}</strong>
+              <strong>{{ u.planExpiresAt ? (u.planExpiresAt | localDate:'medium') : ('ADMIN_USER_DETAIL.NO_EXPIRY' | translate) }}</strong>
             </div>
             <div class="plan-summary__row" *ngIf="remainingDays() !== null">
               <span class="field-label">{{ 'ADMIN_USER_DETAIL.REMAINING' | translate }}</span>
@@ -123,7 +134,7 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | null;
             </div>
             <div class="plan-summary__row" *ngIf="u.planCancelledAt">
               <span class="field-label">{{ 'ADMIN_USER_DETAIL.CANCELLED_AT' | translate }}</span>
-              <strong>{{ u.planCancelledAt | date:'medium' }}</strong>
+              <strong>{{ u.planCancelledAt | localDate:'medium' }}</strong>
             </div>
           </div>
           <ng-template #noPlan>
@@ -160,6 +171,42 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | null;
         </div>
       </ng-container>
     </section>
+
+    <!-- نافذة تعطيل الحساب -->
+    <app-confirm-modal
+      [open]="activeModal() === 'disable'"
+      [title]="'ADMIN_USER_DETAIL.DISABLE_MODAL_TITLE' | translate"
+      [confirmLabel]="'ADMIN_USER_DETAIL.DISABLE_ACCOUNT' | translate"
+      [danger]="true"
+      [loading]="saving()"
+      (confirmed)="submitDisable()"
+      (cancelled)="closeModal()"
+    >
+      <div class="modal-form">
+        <p>{{ 'ADMIN_USER_DETAIL.DISABLE_EXPLANATION' | translate }}</p>
+      </div>
+    </app-confirm-modal>
+
+    <!-- نافذة إعادة تفعيل الحساب -->
+    <app-confirm-modal
+      [open]="activeModal() === 'enable'"
+      [title]="'ADMIN_USER_DETAIL.ENABLE_MODAL_TITLE' | translate"
+      [confirmLabel]="'ADMIN_USER_DETAIL.ENABLE_ACCOUNT' | translate"
+      [confirmDisabled]="!enableReason.trim()"
+      [loading]="saving()"
+      (confirmed)="submitEnable()"
+      (cancelled)="closeModal()"
+    >
+      <div class="modal-form">
+        <p>{{ 'ADMIN_USER_DETAIL.ENABLE_EXPLANATION' | translate }}</p>
+        <textarea
+          rows="2"
+          maxlength="500"
+          [placeholder]="'ADMIN_USER_DETAIL.ENABLE_REASON' | translate"
+          [(ngModel)]="enableReason"
+        ></textarea>
+      </div>
+    </app-confirm-modal>
 
     <!-- نافذة تفعيل خطة -->
     <app-confirm-modal
@@ -204,8 +251,8 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | null;
           {{ 'ADMIN_USER_DETAIL.ACTIVATE_PREVIEW' | translate:{
               user: userDisplayName(),
               plan: (planNameKey(activateTier) | translate),
-              start: (today | date:'mediumDate'),
-              end: (activateEndPreview() | date:'mediumDate')
+              start: (today | localDate:'mediumDate'),
+              end: (activateEndPreview() | localDate:'mediumDate')
             } }}
         </p>
       </div>
@@ -243,7 +290,7 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | null;
         ></textarea>
 
         <p class="preview" *ngIf="extendDays > 0">
-          {{ 'ADMIN_USER_DETAIL.EXTEND_PREVIEW' | translate:{ end: (extendEndPreview() | date:'mediumDate') } }}
+          {{ 'ADMIN_USER_DETAIL.EXTEND_PREVIEW' | translate:{ end: (extendEndPreview() | localDate:'mediumDate') } }}
         </p>
       </div>
     </app-confirm-modal>
@@ -271,24 +318,24 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | null;
   styles: [`
     .page { padding: clamp(1rem, 3vw, 2rem); max-width: 860px; margin: 0 auto; }
     .page-header { margin-bottom: 1rem; }
-    .page-header h1 { margin: .4rem 0 0; color:var(--navy); font-family:var(--font-display); font-size:clamp(1.4rem,2.4vw,1.9rem); }
+    .page-header h1 { margin: .4rem 0 0; color: var(--text-strong); font-family:var(--font-display); font-size:clamp(1.4rem,2.4vw,1.9rem); }
     .link-btn { background:none; border:0; color:var(--primary-text); cursor:pointer; font-weight:600; padding:0; }
 
     .card {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg, 14px);
       padding: 1.1rem 1.25rem; margin-bottom: 1rem;
     }
-    .card h2 { margin: 0 0 .75rem; font-size: 1.05rem; color: var(--navy); }
+    .card h2 { margin: 0 0 .75rem; font-size: 1.05rem; color: var(--text-strong); }
 
     .identity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .8rem; }
     .field-label { display:block; font-size: .72rem; color: var(--gray-500); margin-bottom: .15rem; }
 
     .roles { display:flex; flex-wrap:wrap; gap:.35rem; margin-bottom: .6rem; }
     .role-chip {
-      display:inline-flex; align-items:center; gap:.3rem; background:var(--gold-soft); color:var(--navy);
+      display:inline-flex; align-items:center; gap:.3rem; background:var(--gold-soft); color: var(--text-strong);
       border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600;
     }
-    .role-chip__remove { border:0; background:none; cursor:pointer; color:var(--danger); font-size:1rem; line-height:1; padding:0; }
+    .role-chip__remove { border:0; background:none; cursor:pointer; color:var(--danger-text); font-size:1rem; line-height:1; padding:0; }
     .role-add { display:flex; gap:.5rem; align-items:center; }
     .role-select { border:1px solid var(--border); border-radius:var(--r-sm); padding:.35rem .5rem; font-size:var(--text-sm); }
 
@@ -297,28 +344,28 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | null;
     .plan-actions { display:flex; flex-wrap:wrap; gap:.6rem; margin-top: 1rem; }
 
     .status-chip {
-      display:inline-flex; align-items:center; background: var(--success-soft, #dcfce7); color: var(--success, #16a34a);
+      display:inline-flex; align-items:center; background: var(--success-soft, #dcfce7); color: var(--success-text);
       border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600;
     }
-    .status-chip--disabled { background: var(--danger-soft); color: var(--danger); }
+    .status-chip--disabled { background: var(--danger-soft); color: var(--danger-text); }
 
     .plan-chip {
-      display:inline-flex; align-items:center; background:var(--gold-soft); color:var(--navy);
+      display:inline-flex; align-items:center; background:var(--gold-soft); color: var(--text-strong);
       border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600;
     }
-    .plan-chip--expired, .plan-chip--cancelled { background: var(--danger-soft); color: var(--danger); }
+    .plan-chip--expired, .plan-chip--cancelled { background: var(--danger-soft); color: var(--danger-text); }
 
     .ads-summary { color: var(--gray-700); margin: 0 0 .8rem; }
 
     .btn { border-radius:var(--r-sm); padding:.5rem .9rem; font-size:var(--text-sm); cursor:pointer; border:1px solid transparent; font-weight:600; text-decoration:none; display:inline-block; }
-    .btn--outline { background:var(--surface); border-color:var(--border); color:var(--navy); }
+    .btn--outline { background:var(--surface); border-color:var(--border); color: var(--text-strong); }
     .btn--primary { background: var(--primary); color: var(--on-primary); }
-    .btn--danger { background:var(--danger-soft); color:var(--danger); border-color:rgba(220,38,38,.2); }
+    .btn--danger { background:var(--danger-soft); color:var(--danger-text); border-color:rgba(220,38,38,.2); }
     .btn:disabled { opacity:.6; cursor:not-allowed; }
-    .muted { color: var(--gray-400); }
+    .muted { color: var(--text-muted); }
 
     .modal-form { display:flex; flex-direction:column; gap:.8rem; }
-    .modal-form label { display:flex; flex-direction:column; gap:.35rem; font-size: var(--text-sm); font-weight:600; color: var(--navy); }
+    .modal-form label { display:flex; flex-direction:column; gap:.35rem; font-size: var(--text-sm); font-weight:600; color: var(--text-strong); }
     .modal-form select, .modal-form input, .modal-form textarea {
       /* font-size مضبوط صراحة بـ 16px (لا inherit من .modal-form label الأصغر) — أقل من
          16px يُشغّل تكبير iOS Safari التلقائي عند تركيز أي حقل إدخال، مؤكَّد حيّاً على
@@ -331,7 +378,7 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | null;
       padding:.25rem .7rem; font-size:var(--text-xs); cursor:pointer;
     }
     .preset-chip--active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
-    .preview { background: var(--gold-soft); border-radius: var(--r-sm); padding: .6rem .75rem; font-size: var(--text-sm); color: var(--navy); margin:0; }
+    .preview { background: var(--gold-soft); border-radius: var(--r-sm); padding: .6rem .75rem; font-size: var(--text-sm); color: var(--text-strong); margin:0; }
   `]
 })
 export class AdminUserDetailPage implements OnInit {
@@ -370,6 +417,8 @@ export class AdminUserDetailPage implements OnInit {
   extendReason = '';
 
   cancelReason = '';
+
+  enableReason = '';
 
   private userId = '';
 
@@ -440,7 +489,9 @@ export class AdminUserDetailPage implements OnInit {
         this.user.update(current => current && { ...current, roles: current.roles.filter(r => r !== role) });
         this.toast.success(this.translate.instant('ADMIN_USERS.ROLE_REMOVED'));
       },
-      error: () => this.toast.error(this.translate.instant('ADMIN_USERS.ROLE_ERROR'))
+      // 409: لا يُسحب دور Admin من النفس ولا من آخر مشرف فعّال.
+      error: err => this.toast.error(this.translate.instant(
+        err?.status === 409 ? 'ADMIN_USERS.ROLE_LAST_ADMIN' : 'ADMIN_USERS.ROLE_ERROR'))
     });
   }
 
@@ -467,6 +518,68 @@ export class AdminUserDetailPage implements OnInit {
   closeModal(): void {
     if (this.saving()) return;
     this.activeModal.set(null);
+  }
+
+  // -- حالة الحساب (المرحلة 14) --------------------------------
+
+  openDisableModal(): void {
+    this.activeModal.set('disable');
+  }
+
+  openEnableModal(): void {
+    this.enableReason = '';
+    this.activeModal.set('enable');
+  }
+
+  submitDisable(): void {
+    const u = this.user();
+    if (!u) return;
+
+    this.saving.set(true);
+    this.adminUsers
+      .disableUser(u.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.toast.success(this.translate.instant('ADMIN_USER_DETAIL.DISABLE_SUCCESS'));
+          this.saving.set(false);
+          this.activeModal.set(null);
+          this.load();
+        },
+        error: err => {
+          this.saving.set(false);
+          // 409: آخر مشرف فعّال لا يُعطَّل.
+          this.toast.error(this.translate.instant(err?.status === 409
+            ? 'ADMIN_USER_DETAIL.DISABLE_LAST_ADMIN'
+            : 'ADMIN_USER_DETAIL.ACTION_ERROR'));
+        }
+      });
+  }
+
+  submitEnable(): void {
+    const u = this.user();
+    const reason = this.enableReason.trim();
+    if (!u || !reason) return;
+
+    this.saving.set(true);
+    this.adminUsers
+      .enableUser(u.id, reason)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.toast.success(this.translate.instant('ADMIN_USER_DETAIL.ENABLE_SUCCESS'));
+          this.saving.set(false);
+          this.activeModal.set(null);
+          this.load();
+        },
+        error: err => {
+          this.saving.set(false);
+          // 409: الحساب حذفه صاحبه (لا رجعة) أو ليس معطّلاً.
+          this.toast.error(this.translate.instant(err?.status === 409
+            ? 'ADMIN_USER_DETAIL.ENABLE_NOT_POSSIBLE'
+            : 'ADMIN_USER_DETAIL.ACTION_ERROR'));
+        }
+      });
   }
 
   activateEndPreview(): Date {

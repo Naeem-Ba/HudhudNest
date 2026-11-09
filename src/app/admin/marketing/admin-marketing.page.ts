@@ -27,6 +27,9 @@ import {
 import { ToastService } from '../../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
+import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
+import { csvRow } from '../../shared/utils/csv';
 
 type Tab = 'offers' | 'leads' | 'surveys' | 'analytics';
 
@@ -87,7 +90,7 @@ const PAYMENT_MODEL_LABELS: Record<string, string> = {
   selector: 'app-admin-marketing',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, LoadingSpinnerComponent, EmptyStateComponent, OfferSharePanelComponent],
+  imports: [ LocalizedDatePipe, LocalizedNumberPipe,CommonModule, FormsModule, ReactiveFormsModule, LoadingSpinnerComponent, EmptyStateComponent, OfferSharePanelComponent],
   templateUrl: './admin-marketing.page.html',
   styleUrls: ['./admin-marketing.page.scss'],
 })
@@ -374,9 +377,8 @@ export class AdminMarketingPage implements OnInit {
       l.offerName ?? '', l.status, new Date(l.createdAt).toLocaleString('ar'),
     ]);
 
-    const csv = [header, ...csvRows]
-      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-      .join('\n');
+    // csvRow defuses spreadsheet formulas (=, +, -, @) in values typed by visitors (QA phase 17, P17-D03).
+    const csv = [header, ...csvRows].map(row => csvRow(row)).join('\n');
 
     // BOM لضمان عرض صحيح للعربية عند فتح الملف في Excel.
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });

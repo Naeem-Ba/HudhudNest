@@ -1,15 +1,17 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 import { PreferencesCardComponent } from '../../shared/ui/preferences-card.component';
+import { HomeAreaCardComponent } from './home-area-card.component';
 import { NotificationSettingsCardComponent } from './notification-settings-card.component';
+import { LegalLinksCardComponent } from './legal-links-card.component';
 
-/** Language, display currency and (signed in) notification settings, reachable signed in or out (the account menu links the signed-in profile page too). */
+/** Language, display currency and (signed in) home area and notification settings, reachable signed in or out (the account menu links the signed-in profile page too). */
 @Component({
   selector: 'app-settings-page',
   standalone: true,
-  imports: [PreferencesCardComponent, NotificationSettingsCardComponent],
+  imports: [PreferencesCardComponent, HomeAreaCardComponent, NotificationSettingsCardComponent, LegalLinksCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<main class="settings-page"><app-preferences-card /><app-notification-settings-card /></main>`,
+  template: `<main class="settings-page"><app-preferences-card /><app-home-area-card /><app-notification-settings-card /><app-legal-links-card /></main>`,
   styles: [`.settings-page { max-width: 560px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }`]
 })
 export class SettingsPage {}

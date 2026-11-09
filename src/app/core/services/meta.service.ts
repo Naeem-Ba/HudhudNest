@@ -6,6 +6,9 @@ import { DOCUMENT } from '@angular/common';
 import { Injectable, inject } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { environment } from '../../../environments/environment';
+import { currentUiLanguage } from '../i18n/ui-language';
+
+const OG_LOCALE: Record<string, string> = { ar: 'ar_SY', en: 'en_US', de: 'de_DE' };
 
 export interface PageMeta {
   title:       string;
@@ -22,8 +25,15 @@ export interface PageMeta {
   /** Open Graph type — defaults to 'website'; a property page passes 'website' too (there is
    *  no dedicated 'product'/'real_estate' og:type this app opts into). */
   ogType?: string;
-  /** Overrides the default Arabic site name in the title suffix (e.g. 'HudhudNest' for en/de pages). */
+  /** Overrides the site name in the title suffix. Default: "هدهد نيست" in Arabic, "HudhudNest" in en/de. */
   siteName?: string;
+  /** The generic title every page gets until it sets its own (see PageMetaService.resetToDefault). */
+  isDefault?: boolean;
+}
+
+/** The product name as written in the page language (Arabic script on an Arabic page). */
+export function siteNameFor(language: string | null): string {
+  return language === 'ar' ? 'هدهد نيست' : 'HudhudNest';
 }
 
 @Injectable({ providedIn: 'root' })
@@ -35,8 +45,22 @@ export class MetaService {
   /**
    * تعيين جميع meta tags لصفحة معينة
    */
+  /** True once a page set its own title/description; false while the generic default is showing. */
+  private pageOwned = false;
+
+  get isPageOwned(): boolean {
+    return this.pageOwned;
+  }
+
+  /** Forget the previous page's ownership (a new page is being opened). */
+  releasePage(): void {
+    this.pageOwned = false;
+  }
+
   setMeta(opts: PageMeta): void {
-    const siteName = opts.siteName ?? 'هدهد نيست';
+    this.pageOwned = !opts.isDefault;
+    const language = currentUiLanguage() ?? 'ar';
+    const siteName = opts.siteName ?? siteNameFor(language);
     const fullTitle = `${opts.title} | ${siteName}`;
 
     // ── Title ──
@@ -52,7 +76,7 @@ export class MetaService {
     this.meta.updateTag({ property: 'og:title',       content: fullTitle });
     this.meta.updateTag({ property: 'og:description', content: opts.description });
     this.meta.updateTag({ property: 'og:type',        content: opts.ogType ?? 'website' });
-    this.meta.updateTag({ property: 'og:locale',      content: 'ar_SY' });
+    this.meta.updateTag({ property: 'og:locale',      content: OG_LOCALE[language] ?? 'ar_SY' });
     this.meta.updateTag({ property: 'og:site_name',   content: siteName });
     if (opts.ogImage) {
       this.meta.updateTag({ property: 'og:image', content: opts.ogImage });
@@ -137,65 +161,17 @@ export class MetaService {
   }
 
   /**
-   * Meta Tags المُعدَّة مسبقاً لصفحة الهبوط
+   * Meta tags of the landing page while a marketing offer is live: the tags describe the offer
+   * (crawlers that run JS see this; those that don't get the same text from the social-crawler edge
+   * function for /landing). Without an offer the page uses the translated default (PageMetaService).
    */
-  setLandingMeta(offer?: { offerName: string; offerDescription?: string | null }): void {
-    // With a live offer the tags describe it (browsers/crawlers that run JS see this; crawlers
-    // that don't get the same text from the social-crawler edge function for /landing).
-    const description = offer
-      ? [offer.offerName, offer.offerDescription].filter((part): part is string => !!part?.trim()).join(' — ')
-      : 'ابحث عن شقق وعقارات للبيع والإيجار في سوريا بسهولة. صور واضحة، معلومات منظمة، وتواصل مباشر مع المالك أو المكتب العقاري.';
+  setLandingMeta(offer: { offerName: string; offerDescription?: string | null }): void {
+    const description = [offer.offerName, offer.offerDescription].filter((part): part is string => !!part?.trim()).join(' — ');
     this.setMeta({
-      title:       'منصة عقارية رقمية في سوريا',
+      title:       offer.offerName,
       description,
-      keywords:    'عقارات سوريا, شقق للإيجار في دمشق, عقارات للبيع في حلب, منصة عقارية سوريا, بيع وشراء العقارات',
-      // Was '/assets/images/og-cover.jpg', a file that has never existed in this project (no
-      // assets/images directory at all) -- a broken og:image means a blank/failed preview image
-      // on every Facebook/WhatsApp/Telegram share of this page. Session audit, 2026-10.
+      // Was '/assets/images/og-cover.jpg', a file that has never existed in this project.
       ogImage:     'https://hudhudnest.com/images/og-default.png',
-    });
-  }
-
-  /**
-   * Meta tags for the real homepage (/home, what '/' redirects to) -- distinct from
-   * setLandingMeta() above, which is a separate, currently-unlinked marketing page. Session
-   * audit (2026-10) found /home called neither this nor anything else: its title/description
-   * were whatever index.html's static shell happened to say ("HudhudNest", no description at
-   * all) and it had no canonical link, same gap this closes for every other page via setMeta.
-   * `canonical` is passed in rather than built here because resolving the site origin
-   * (environment.siteUrl, falling back to window.location.origin) already has a single home in
-   * PropertyShareUrlService.getSiteOrigin() -- this generic service has no reason to depend on
-   * that property-sharing-named one, so the caller (HomeComponent) resolves it instead.
-   */
-  setHomeMeta(canonical: string): void {
-    this.setMeta({
-      title:       'منصة عقارية رقمية في سوريا',
-      description: 'ابحث عن شقق وعقارات للبيع والإيجار في سوريا بسهولة. صور واضحة، معلومات منظمة، وتواصل مباشر مع المالك أو المكتب العقاري.',
-      keywords:    'عقارات سوريا, شقق للإيجار في دمشق, عقارات للبيع في حلب, منصة عقارية سوريا, بيع وشراء العقارات',
-      ogImage:     'https://hudhudnest.com/images/og-default.png',
-      canonical
-    });
-  }
-
-  /**
-   * Meta tags for the property list/search page. Session audit (2026-10) found two gaps here:
-   * no title/description of its own (same "HudhudNest" default as every unhandled page), and no
-   * canonical at all -- the page's own filters (city, price, rooms...) are real query params
-   * (property-list.page.ts calls router.navigate with queryParams), so /properties?city=...&
-   * minPrice=... is a real, distinct, crawlable URL with no canonical pointing back to the base
-   * listing. `canonical` is always the clean `/properties` path with no query string, regardless
-   * of which filters are active when this is called -- consolidating every filtered variant onto
-   * one canonical URL is the standard fix for this class of faceted-search duplicate content,
-   * and still lets Google crawl/index a specific filtered URL on its own if it chooses to; this
-   * only removes the "these are N different pages" signal that a missing canonical implied.
-   */
-  setPropertiesListMeta(canonical: string): void {
-    this.setMeta({
-      title:       'عقارات للبيع والإيجار في سوريا',
-      description: 'تصفّح آلاف العقارات للبيع والإيجار في سوريا — شقق ومنازل في دمشق وحلب وطرطوس وغيرها، مع صور وتفاصيل كاملة وتواصل مباشر مع المالك أو المكتب العقاري.',
-      keywords:    'عقارات للبيع, عقارات للإيجار, شقق سوريا, عقارات دمشق, عقارات حلب',
-      ogImage:     'https://hudhudnest.com/images/og-default.png',
-      canonical
     });
   }
 }

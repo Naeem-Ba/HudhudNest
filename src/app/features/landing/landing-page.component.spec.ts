@@ -7,8 +7,12 @@ import { LandingPageComponent } from './landing-page.component';
 import { ActiveOfferState, OffersApiService } from '../../core/api/offers-api.service';
 import { MarketingEventsApiService } from '../../core/api/marketing-events-api.service';
 import { MetaService } from '../../core/services/meta.service';
+import { PageMetaService } from '../../core/services/page-meta.service';
 import { LeadService } from '../../core/services/lead.service';
 import { Offer } from '../../core/models/offer.model';
+import { LanguageService } from '../../core/services/language.service';
+import { routes } from '../../app.routes';
+import { LayoutComponent } from '../../layout/layout';
 
 const LIVE: Offer = {
   id: 'o-1', name: 'أول 100 مكتب عقاري', description: 'خصم للمنضمين مبكرًا', discountType: 'Percentage',
@@ -30,6 +34,7 @@ describe('LandingPageComponent — marketing offer section', () => {
         { provide: OffersApiService, useValue: offersApi },
         { provide: MarketingEventsApiService, useValue: events },
         { provide: MetaService, useValue: meta },
+        { provide: PageMetaService, useValue: jasmine.createSpyObj('PageMetaService', ['applyTranslated']) },
         { provide: LeadService, useValue: jasmine.createSpyObj('LeadService', ['submitLead']) },
         { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: { get: (k: string) => (k === 'utm_campaign' ? campaign : null) } } } },
       ],
@@ -104,5 +109,64 @@ describe('LandingPageComponent — marketing offer section', () => {
     expect(fixture.componentInstance.offerState()).toBe('ready');
     // retrying is not a second page view
     expect(events.track.calls.allArgs().filter(a => a[0] === 'PageView').length).toBe(1);
+  });
+});
+
+
+describe('Landing page — standalone marketing page', () => {
+  it('is a top-level route outside LayoutComponent, so the main Navbar is not rendered, while other pages keep it', () => {
+    const layout = routes.find(r => r.component === LayoutComponent);
+    expect(routes.some(r => r.path === 'landing')).toBeTrue();
+    expect(layout?.children?.some(r => r.path === 'landing')).toBeFalse();
+    expect(layout?.children?.some(r => r.path === 'properties')).toBeTrue();
+  });
+
+  function render() {
+    const offersApi = jasmine.createSpyObj('OffersApiService', ['getActiveOfferState']);
+    offersApi.getActiveOfferState.and.returnValue(of<ActiveOfferState>({ status: 'empty' }));
+    TestBed.configureTestingModule({
+      imports: [LandingPageComponent, TranslateModule.forRoot()],
+      providers: [
+        provideRouter([]),
+        { provide: OffersApiService, useValue: offersApi },
+        { provide: MarketingEventsApiService, useValue: jasmine.createSpyObj('MarketingEventsApiService', ['track']) },
+        { provide: MetaService, useValue: jasmine.createSpyObj('MetaService', ['setLandingMeta']) },
+        { provide: PageMetaService, useValue: jasmine.createSpyObj('PageMetaService', ['applyTranslated']) },
+        { provide: LeadService, useValue: jasmine.createSpyObj('LeadService', ['submitLead']) },
+        { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: { get: () => null } } } },
+      ],
+    });
+    const fixture = TestBed.createComponent(LandingPageComponent);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  it('has no navigation bar: one slim brand strip, no <nav>, no app-navbar', () => {
+    const el: HTMLElement = render().nativeElement;
+    expect(el.querySelector('app-navbar')).toBeNull();
+    expect(el.querySelector('nav')).toBeNull();
+    expect(el.querySelectorAll('h1').length).toBe(1);
+  });
+
+  it('every call to action points at a real route of the app', () => {
+    const el: HTMLElement = render().nativeElement;
+    const known = new Set<string>();
+    const walk = (list: typeof routes) => list.forEach(r => { if (r.path !== undefined) known.add('/' + r.path.split('/:')[0]); walk(r.children ?? []); });
+    walk(routes);
+    const hrefs = Array.from(el.querySelectorAll('a[href]'))
+      .map(a => (a.getAttribute('href') ?? '').split('?')[0])
+      .filter(h => h.startsWith('/') && h !== '/download');
+    expect(hrefs.length).toBeGreaterThan(15);
+    for (const h of hrefs) expect(known.has(h)).withContext(h).toBeTrue();
+  });
+
+  it('the language buttons switch the UI language', () => {
+    const fixture = render();
+    const language = TestBed.inject(LanguageService);
+    spyOn(language, 'use');
+    const buttons = fixture.nativeElement.querySelectorAll('.lang__btn') as NodeListOf<HTMLButtonElement>;
+    expect(buttons.length).toBe(3);
+    buttons[1].click();
+    expect(language.use).toHaveBeenCalledWith('en');
   });
 });

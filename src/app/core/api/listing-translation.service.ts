@@ -23,6 +23,8 @@ export interface ListingTranslation {
   reason?: string | null;
   title: ListingTranslationField;
   description: ListingTranslationField;
+  /** Sale/rent only; absent or "empty" when there is no public street. */
+  street?: ListingTranslationField;
   retryAfterSeconds?: number | null;
 }
 

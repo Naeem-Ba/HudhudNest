@@ -1,4 +1,4 @@
-import { currentUiLanguage, withUiLanguage } from './ui-language';
+import { currentUiLanguage, listSeparator, withUiLanguage } from './ui-language';
 
 describe('ui-language', () => {
   let original: string;
@@ -56,6 +56,22 @@ describe('ui-language', () => {
       showing('de');
 
       expect(withUiLanguage({ email: 'a@b.co', language: 'en' })).toEqual({ email: 'a@b.co', language: 'en' });
+    });
+  });
+
+  describe('listSeparator', () => {
+    it('is the Arabic comma only on an Arabic page', () => {
+      showing('ar');
+      expect(listSeparator()).toBe('، ');
+
+      showing('de');
+      expect(listSeparator()).toBe(', ');
+
+      showing('en');
+      expect(listSeparator()).toBe(', ');
+
+      showing('');
+      expect(listSeparator()).toBe(', ');
     });
   });
 });

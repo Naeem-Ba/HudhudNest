@@ -4,7 +4,7 @@
   padding: var(--space-6, 1.5rem) var(--space-4, 1rem);
 
   &__eyebrow {
-    color: var(--primary, #D6A84F);
+    color: var(--primary-text);
     font-weight: 600;
     font-size: 0.8125rem;
     text-transform: uppercase;
@@ -54,7 +54,7 @@
 
   &__filter-actions { display: flex; gap: 0.5rem; }
 
-  &__error { color: var(--danger, #dc2626); padding: 1rem 0; }
+  &__error { color: var(--danger-text); padding: 1rem 0; }
 
   &__grid {
     display: grid;
@@ -95,10 +95,10 @@
     color: #fff;
     background: var(--gray-500, #6b7280);
 
-    &--Low { background: #16a34a; }
-    &--Medium { background: #d97706; }
+    &--Low { background: var(--success-solid); }
+    &--Medium { background: var(--warning-solid); }
     &--High { background: #dc2626; }
-    &--VeryHigh { background: #991b1b; }
+    &--VeryHigh { background: var(--danger-solid-hover); }
   }
 
   &__card-body { padding: 0.85rem 1rem 1rem; }

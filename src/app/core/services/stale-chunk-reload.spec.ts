@@ -8,13 +8,14 @@ import {
 describe('stale chunk reload', () => {
   const chunkError = new TypeError('Failed to fetch dynamically imported module: https://hudhudnest.com/chunk-AB12.js');
 
-  function makeDeps(last: number | null = null, now = 1_000_000) {
+  function makeDeps(last: number | null = null, now = 1_000_000, online = true) {
     const state = { last, loaded: [] as string[] };
     const deps: StaleChunkReloadDeps = {
       now: () => now,
       readLastReloadAt: () => state.last,
       writeLastReloadAt: value => (state.last = value),
-      load: url => state.loaded.push(url)
+      load: url => state.loaded.push(url),
+      isOnline: () => online
     };
     return { deps, state };
   }
@@ -63,6 +64,14 @@ describe('stale chunk reload', () => {
     const { deps, state } = makeDeps();
 
     expect(reloadForStaleChunk(new Error('boom'), '/x', deps)).toBeFalse();
+    expect(state.loaded).toEqual([]);
+    expect(state.last).toBeNull();
+  });
+
+  it('does not reload while offline: the chunk is unreachable, not stale (P26-D07)', () => {
+    const { deps, state } = makeDeps(null, 1_000_000, false);
+
+    expect(reloadForStaleChunk(chunkError, '/properties', deps)).toBeFalse();
     expect(state.loaded).toEqual([]);
     expect(state.last).toBeNull();
   });

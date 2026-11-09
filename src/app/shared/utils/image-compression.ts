@@ -10,7 +10,8 @@
 // 10-photo request still fits the 20 MB request cap, not the exact server limit.
 //
 // Behaviour contract:
-//  - a file already under the target is returned untouched (no needless re-encoding, no quality loss);
+//  - a JPEG/PNG/WebP already under the target is re-encoded once at the same size so its EXIF block (GPS position,
+//    device) is dropped; any other file under the target is returned untouched;
 //  - anything else is decoded (EXIF orientation applied), scaled down to `maxDimension` on its longest
 //    side if needed, and re-encoded as JPEG, lowering quality and then size until it fits;
 //  - if decoding or encoding is impossible (corrupt file, unsupported format, no canvas) the ORIGINAL
@@ -65,8 +66,19 @@ export function toJpegFileName(name: string): string {
   return `${base || 'image'}.jpg`;
 }
 
+/** Photos the server accepts; re-encoding them in the browser drops their EXIF block (GPS position, device). */
+const METADATA_CARRYING_TYPES = /^image\/(jpeg|png|webp)$/;
+
 export async function compressImageForUpload(file: File, options: ImageCompressionOptions): Promise<File> {
-  if (!file.type.startsWith('image/') || file.size <= options.maxBytes) {
+  if (!file.type.startsWith('image/')) {
+    return file;
+  }
+
+  // A photo that already fits is still re-encoded once (QA phase 17, P17-D02): handing it over untouched would
+  // publish the EXIF block, including the GPS position, on the public listing URL.
+  const fitsAlready = file.size <= options.maxBytes;
+
+  if (fitsAlready && !METADATA_CARRYING_TYPES.test(file.type)) {
     return file;
   }
 
@@ -76,7 +88,9 @@ export async function compressImageForUpload(file: File, options: ImageCompressi
     source = await decodeImage(file);
     const blob = await encodeWithinBudget(source, options);
 
-    if (!blob || blob.size >= file.size) {
+    // Over budget: only use the result when it is really smaller. Within budget the point is stripping, so the
+    // result is used whenever it still fits the ceiling (the server removes metadata too, this is the first layer).
+    if (!blob || (fitsAlready ? blob.size > options.maxBytes : blob.size >= file.size)) {
       return file;
     }
 

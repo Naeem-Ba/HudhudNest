@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { LocationNamesService } from '../../../core/api/location-names.service';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -14,12 +15,14 @@ import { DateRangePickerComponent, DateRangeValue } from '../../../shared/ui/dat
 import { PageMetaService } from '../../../core/services/page-meta.service';
 import { uiNumberLocale } from '../../../core/i18n/ui-language';
 import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count.component';
+import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
+import { LocalizedNumberPipe } from '../../../shared/pipes/localized-number.pipe';
 
 @Component({
   selector: 'app-short-stay-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [ LocalizedDatePipe, LocalizedNumberPipe,
     ListingViewCountComponent,
     CommonModule,
     RouterModule,
@@ -35,6 +38,7 @@ import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count
 })
 export class ShortStayListPage implements OnInit {
   private readonly api = inject(ShortStayListingApiService);
+  readonly locations = inject(LocationNamesService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly pageMeta = inject(PageMetaService);

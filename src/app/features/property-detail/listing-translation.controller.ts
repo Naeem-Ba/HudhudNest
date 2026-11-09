@@ -23,6 +23,8 @@ export interface TranslationControllerOptions {
   maxPolls: number;
 }
 
+const PERMANENT_TRANSLATION_REASONS = new Set(['disabled', 'quota', 'unknown_source_language', 'too_long']);
+
 export const DEFAULT_TRANSLATION_OPTIONS: TranslationControllerOptions = { waitBudgetMs: 8000, maxPolls: 12 };
 
 /**
@@ -39,6 +41,7 @@ export class ListingTranslationController {
   readonly showOriginal = signal(false);
   readonly title = signal<string | null>(null);
   readonly description = signal<string | null>(null);
+  readonly street = signal<string | null>(null);
 
   private readonly cache = new Map<string, ListingTranslation>();
   private requestSub?: Subscription;
@@ -71,6 +74,7 @@ export class ListingTranslationController {
     this.showOriginal.set(false);
     this.title.set(null);
     this.description.set(null);
+    this.street.set(null);
 
     const cached = this.cache.get(key);
     if (cached) {
@@ -102,6 +106,7 @@ export class ListingTranslationController {
     this.showOriginal.set(false);
     this.title.set(null);
     this.description.set(null);
+    this.street.set(null);
   }
 
   private request(): void {
@@ -151,16 +156,31 @@ export class ListingTranslationController {
   private apply(result: ListingTranslation): void {
     const title = result.title?.state === 'ready' ? result.title.text ?? null : null;
     const description = result.description?.state === 'ready' ? result.description.text ?? null : null;
+    const street = result.street?.state === 'ready' ? result.street.text ?? null : null;
     this.title.set(title);
     this.description.set(description);
+    this.street.set(street);
 
-    if (title || description) {
+    if (title || description || street) {
       this.view.set('ready');
-    } else if (result.status === 'same_language') {
+    } else if (result.status === 'same_language' || this.isPermanentlyUntranslatable(result)) {
       this.view.set('none');
     } else {
       this.view.set('unavailable');
     }
+  }
+
+  /**
+   * QA phase 25 (P25-D01): a "could not translate, try again" bar is only honest when trying again can help. These reasons
+   * cannot change by pressing the button (translation switched off, the monthly allowance spent, text whose language
+   * cannot be told or is too long), so the listing just shows its original text without a notice. A provider hiccup, a
+   * cooldown or a store error keeps the notice and the retry button.
+   */
+  private isPermanentlyUntranslatable(result: ListingTranslation): boolean {
+    if (result.status !== 'unavailable') return false;
+    const reasons = [result.reason, result.title?.reason, result.description?.reason, result.street?.reason]
+      .filter((reason): reason is string => !!reason);
+    return reasons.length > 0 && reasons.every(reason => PERMANENT_TRANSLATION_REASONS.has(reason));
   }
 
   private cancel(): void {

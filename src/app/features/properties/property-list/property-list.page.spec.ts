@@ -24,6 +24,8 @@ import { SavedSearchApiService } from '../../../core/api/saved-search-api.servic
 import { CurrencyLookup, LookupsApiService } from '../../../core/api/lookups-api.service';
 import { PageMetaService } from '../../../core/services/page-meta.service';
 import { PreferencesService } from '../../../core/services/preferences.service';
+import { InterestAreasService } from '../../../core/services/interest-areas.service';
+import { RecentAreasService, RECENT_AREAS_STORAGE_KEY } from '../../../core/services/recent-areas.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/auth/auth.service';
 import { LanguageService } from '../../../core/services/language.service';
@@ -64,12 +66,15 @@ describe('PropertyListPage', () => {
   let lookupsApiSpy: jasmine.SpyObj<LookupsApiService>;
   let routerSpy: jasmine.SpyObj<Router>;
   let paramMapSubject: BehaviorSubject<ParamMap>;
+  let interestParam: string | undefined;
 
   function createComponent(initialParams: Record<string, unknown> = {}, preferredCurrency: string | null = null): PropertyListPage {
     // Some tests (deep-link) build a second component within the same `it`, after the
     // outer beforeEach already instantiated one — TestBed requires an explicit reset
     // between two configureTestingModule calls within a single test.
     TestBed.resetTestingModule();
+    localStorage.removeItem(RECENT_AREAS_STORAGE_KEY);
+    interestParam = undefined;
 
     paramMapSubject = new BehaviorSubject<ParamMap>(toParamMap(initialParams));
 
@@ -110,6 +115,7 @@ describe('PropertyListPage', () => {
         { provide: AuthService, useValue: authSpy },
         { provide: LanguageService, useValue: { getCurrent: () => 'ar' } },
         { provide: PreferencesService, useValue: { currency: preferredCurrency } },
+        { provide: InterestAreasService, useValue: { current: () => interestParam } },
         { provide: PageMetaService, useValue: jasmine.createSpyObj<PageMetaService>('PageMetaService', ['applyTranslated']) },
         { provide: ToastService, useValue: jasmine.createSpyObj('ToastService', ['success', 'error', 'info']) },
         {
@@ -155,10 +161,54 @@ describe('PropertyListPage', () => {
       amenityIds: undefined,
       sortBy: 'CreatedAt',
       sortDescending: true,
+      interestGovernorateIds: undefined,
       governorateId: undefined,
       districtId: undefined,
       neighborhoodId: undefined,
       propertyTypeId: undefined
+    });
+  });
+
+  describe('ترتيب الإعلانات المميزة حسب المنطقة', () => {
+    it('✅ الترتيب الافتراضي بلا فلتر محافظة يرسل مناطق اهتمام الزائر', () => {
+      interestParam = '3,7';
+      component.applyFilters();
+
+      expect(lastRequest().interestGovernorateIds).toBe('3,7');
+    });
+
+    it('✅ داخل محافظة واحدة لا يُرسَل شيء (لا ما يُفضَّل هناك، ولا تفتيت للكاش)', () => {
+      interestParam = '3,7';
+      component.governorateId = 3;
+      component.applyFilters();
+
+      expect(lastRequest().interestGovernorateIds).toBeUndefined();
+    });
+
+    it('✅ الفرز الصريح بالسعر لا يحمل مناطق الاهتمام', () => {
+      interestParam = '3,7';
+      component.selectedListingType = 'ForSale';
+      component.sortBy = 'Price';
+      component.applyFilters();
+
+      expect(lastRequest().sortBy).toBe('Price');
+      expect(lastRequest().interestGovernorateIds).toBeUndefined();
+    });
+
+    it('✅ المحافظة التي بحث فيها تُحفظ على الجهاز (3 كحد أقصى، الأحدث أولًا)', () => {
+      const recent = TestBed.inject(RecentAreasService);
+      for (const id of [1, 2, 3, 4]) {
+        component.governorateId = id;
+        component.applyFilters();
+      }
+
+      expect(recent.list()).toEqual([4, 3, 2]);
+    });
+
+    it('✅ التصفح بلا فلتر محافظة لا يضيف شيئًا إلى المناطق الأخيرة', () => {
+      component.applyFilters();
+
+      expect(TestBed.inject(RecentAreasService).list()).toEqual([]);
     });
   });
 

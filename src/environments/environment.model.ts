@@ -124,6 +124,15 @@ export function readAdsFromProcessEnv(): AdsEnvironment {
   };
 }
 
+/**
+ * Reports of unhandled app errors to our own API are on in every build except an explicit
+ * CLIENT_ERROR_REPORTING_DISABLED=true. Only the exact string switches them off, so a typo keeps reporting on
+ * (the reports hold no personal data) rather than silently losing crash visibility.
+ */
+export function readClientErrorReportingEnabled(): boolean {
+  return readProcessEnv('CLIENT_ERROR_REPORTING_DISABLED')?.toLowerCase() !== 'true';
+}
+
 export const ADS_DISABLED: AdsEnvironment = {
   enabled: false,
   webEnabled: false,

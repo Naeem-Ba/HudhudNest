@@ -131,7 +131,7 @@
             {{ offer.redeemedCount }} / {{ offer.maxRedemptions }} مستفيد
           </span>
           <span *ngIf="offer.maxRedemptions === null">{{ offer.redeemedCount }} مستفيد (بلا حد أقصى)</span>
-          <span *ngIf="offer.endsAtUtc">ينتهي: {{ offer.endsAtUtc | date:'mediumDate' }}</span>
+          <span *ngIf="offer.endsAtUtc">ينتهي: {{ offer.endsAtUtc | localDate:'mediumDate' }}</span>
           <span *ngIf="offer.targetPlanTier">الباقة: {{ offer.targetPlanTier }}</span>
         </div>
 
@@ -238,7 +238,7 @@
         <span data-label="الحالة">
           <span class="status-chip">{{ lead.status }}</span>
         </span>
-        <span data-label="التاريخ" class="muted">{{ lead.createdAt | date:'short' }}</span>
+        <span data-label="التاريخ" class="muted">{{ lead.createdAt | localDate:'short' }}</span>
       </div>
     </div>
 
@@ -260,15 +260,15 @@
           <span class="stat-card__label">إجمالي الردود</span>
         </div>
         <div class="stat-card" *ngIf="stats.averageExpectedMonthlyPriceUsd !== null">
-          <span class="stat-card__value">{{ stats.averageExpectedMonthlyPriceUsd | number:'1.0-2' }}$</span>
+          <span class="stat-card__value">{{ stats.averageExpectedMonthlyPriceUsd | localNumber:'1.0-2' }}$</span>
           <span class="stat-card__label">متوسط السعر الشهري المتوقع</span>
         </div>
         <div class="stat-card" *ngIf="stats.averageExpectedPerListingPriceUsd !== null">
-          <span class="stat-card__value">{{ stats.averageExpectedPerListingPriceUsd | number:'1.0-2' }}$</span>
+          <span class="stat-card__value">{{ stats.averageExpectedPerListingPriceUsd | localNumber:'1.0-2' }}$</span>
           <span class="stat-card__label">متوسط سعر الإعلان المتوقع</span>
         </div>
         <div class="stat-card" *ngIf="stats.averageAcceptableCommissionPercent !== null">
-          <span class="stat-card__value">{{ stats.averageAcceptableCommissionPercent | number:'1.0-2' }}%</span>
+          <span class="stat-card__value">{{ stats.averageAcceptableCommissionPercent | localNumber:'1.0-2' }}%</span>
           <span class="stat-card__label">متوسط العمولة المقبولة</span>
         </div>
         <div class="stat-card">
@@ -326,7 +326,7 @@
           </span>
           <span data-label="أهم ميزة" class="muted">{{ response.mostImportantFeature || '—' }}</span>
           <span data-label="أكبر مشكلة" class="muted">{{ response.biggestProblem || '—' }}</span>
-          <span data-label="التاريخ" class="muted">{{ response.createdAt | date:'short' }}</span>
+          <span data-label="التاريخ" class="muted">{{ response.createdAt | localDate:'short' }}</span>
         </div>
       </div>
 
@@ -363,7 +363,7 @@
 
     <ng-container *ngIf="!analyticsLoading() && analyticsSummary() as summary">
       <p class="range-note">
-        الفترة المعروضة: {{ summary.fromUtc | date:'mediumDate' }} — {{ summary.toUtc | date:'mediumDate' }}
+        الفترة المعروضة: {{ summary.fromUtc | localDate:'mediumDate' }} — {{ summary.toUtc | localDate:'mediumDate' }}
       </p>
 
       <app-empty-state
@@ -389,19 +389,19 @@
                غيابًا للبيانات، فيجب ألا تختفي الصفوف عند صفر تمامًا. -->
           <div class="breakdown-row" *ngIf="conversionRate(summary, 'PageView', 'FormStart') !== null">
             <span>من المشاهدة إلى بدء التسجيل</span>
-            <strong>{{ conversionRate(summary, 'PageView', 'FormStart') | number:'1.0-1' }}%</strong>
+            <strong>{{ conversionRate(summary, 'PageView', 'FormStart') | localNumber:'1.0-1' }}%</strong>
           </div>
           <div class="breakdown-row" *ngIf="conversionRate(summary, 'FormStart', 'FormComplete') !== null">
             <span>من بدء التسجيل إلى إتمامه</span>
-            <strong>{{ conversionRate(summary, 'FormStart', 'FormComplete') | number:'1.0-1' }}%</strong>
+            <strong>{{ conversionRate(summary, 'FormStart', 'FormComplete') | localNumber:'1.0-1' }}%</strong>
           </div>
           <div class="breakdown-row" *ngIf="conversionRate(summary, 'PageView', 'FormComplete') !== null">
             <span>من المشاهدة إلى إتمام التسجيل (الإجمالي)</span>
-            <strong>{{ conversionRate(summary, 'PageView', 'FormComplete') | number:'1.0-1' }}%</strong>
+            <strong>{{ conversionRate(summary, 'PageView', 'FormComplete') | localNumber:'1.0-1' }}%</strong>
           </div>
           <div class="breakdown-row" *ngIf="conversionRate(summary, 'SurveyStart', 'SurveySubmit') !== null">
             <span>من بدء الاستبيان إلى إتمامه</span>
-            <strong>{{ conversionRate(summary, 'SurveyStart', 'SurveySubmit') | number:'1.0-1' }}%</strong>
+            <strong>{{ conversionRate(summary, 'SurveyStart', 'SurveySubmit') | localNumber:'1.0-1' }}%</strong>
           </div>
 
           <p

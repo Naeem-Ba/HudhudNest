@@ -7,6 +7,8 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { ShortStayListingApiService } from '../../../core/api/short-stay-listing-api.service';
 import { ShortStayReviewItem } from '../../../core/models/short-stay.model';
+import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
+import { LocalizedNumberPipe } from '../../../shared/pipes/localized-number.pipe';
 
 const PAGE_SIZE = 10;
 
@@ -14,13 +16,13 @@ const PAGE_SIZE = 10;
   selector: 'app-short-stay-reviews-section',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslateModule],
+  imports: [ LocalizedDatePipe, LocalizedNumberPipe,CommonModule, TranslateModule],
   template: `
     <section class="ssr" data-testid="reviews-section">
       <h2>{{ 'SHORTSTAY.REVIEWS.TITLE' | translate }}</h2>
 
       <p class="ssr__summary" *ngIf="totalCount() > 0" data-testid="reviews-summary">
-        <strong>{{ average() | number:'1.1-1' }}</strong>
+        <strong>{{ average() | localNumber:'1.1-1' }}</strong>
         <span class="ssr__stars" aria-hidden="true">★</span>
         · {{ 'SHORTSTAY.REVIEWS.COUNT' | translate:{ count: totalCount() } }}
       </p>
@@ -39,7 +41,7 @@ const PAGE_SIZE = 10;
               <span *ngFor="let filled of starsOf(review.rating)" [class.ssr__muted]="!filled">★</span>
             </span>
           </div>
-          <p class="ssr__date">{{ review.createdAt | date:'mediumDate' }}</p>
+          <p class="ssr__date">{{ review.createdAt | localDate:'mediumDate' }}</p>
           <p class="ssr__comment" *ngIf="review.comment">{{ review.comment }}</p>
         </li>
       </ul>
@@ -53,13 +55,13 @@ const PAGE_SIZE = 10;
   styles: [`
     .ssr h2 { font-size: 1.0625rem; margin-bottom: .6rem; }
     .ssr__summary { margin: 0 0 .75rem; color: var(--gray-700); }
-    .ssr__stars { color: var(--warning, #f59e0b); }
+    .ssr__stars { color: var(--warning-text); }
     .ssr__state { color: var(--gray-500); }
-    .ssr__state--error { color: var(--danger); }
+    .ssr__state--error { color: var(--danger-text); }
     .ssr__list { list-style: none; margin: 0 0 .75rem; padding: 0; display: flex; flex-direction: column; gap: .75rem; }
     .ssr__item { border: 1px solid var(--border); border-radius: var(--r-md, 10px); padding: .75rem .9rem; }
     .ssr__head { display: flex; justify-content: space-between; gap: .75rem; align-items: center; }
-    .ssr__rating { color: var(--warning, #f59e0b); direction: ltr; white-space: nowrap; }
+    .ssr__rating { color: var(--warning-text); direction: ltr; white-space: nowrap; }
     .ssr__muted { color: var(--gray-300); }
     .ssr__date { margin: .15rem 0 0; font-size: .75rem; color: var(--gray-500); }
     .ssr__comment { margin: .4rem 0 0; white-space: pre-line; overflow-wrap: anywhere; }

@@ -22,6 +22,7 @@ import { ToastService } from '../../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { ConfirmModalComponent } from '../../shared/ui/confirm-modal.component';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 const DURATION_PRESETS = [30, 90, 180, 365];
 
@@ -31,7 +32,7 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | 'takedown' | 'restore' | n
   selector: 'app-admin-user-properties',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent, ConfirmModalComponent],
+  imports: [ LocalizedDatePipe,CommonModule, RouterModule, FormsModule, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent, ConfirmModalComponent],
   template: `
     <section class="page">
       <header class="page-header">
@@ -63,13 +64,13 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | 'takedown' | 'restore' | n
               <span class="badge" [class]="'badge--' + p.status.toLowerCase()">{{ ('ADMIN_USER_PROPERTIES.STATUS.' + p.status) | translate }}</span>
               <span class="badge badge--taken-down" *ngIf="p.isTakenDown">{{ 'ADMIN_USER_PROPERTIES.TAKEN_DOWN' | translate }}</span>
               <span class="badge badge--featured" *ngIf="p.isFeatured">
-                {{ 'ADMIN_USER_PROPERTIES.FEATURED_UNTIL' | translate:{ date: (p.featuredUntil | date:'mediumDate') } }}
+                {{ 'ADMIN_USER_PROPERTIES.FEATURED_UNTIL' | translate:{ date: (p.featuredUntil | localDate:'mediumDate') } }}
               </span>
             </div>
             <p class="taken-down-reason" *ngIf="p.isTakenDown && p.takenDownReason">{{ p.takenDownReason }}</p>
             <div class="meta">
-              <span *ngIf="p.expiresAt">{{ 'ADMIN_USER_PROPERTIES.EXPIRES_AT' | translate:{ date: (p.expiresAt | date:'mediumDate') } }}</span>
-              <span>{{ 'ADMIN_USER_PROPERTIES.CREATED_AT' | translate:{ date: (p.createdAt | date:'mediumDate') } }}</span>
+              <span *ngIf="p.expiresAt">{{ 'ADMIN_USER_PROPERTIES.EXPIRES_AT' | translate:{ date: (p.expiresAt | localDate:'mediumDate') } }}</span>
+              <span>{{ 'ADMIN_USER_PROPERTIES.CREATED_AT' | translate:{ date: (p.createdAt | localDate:'mediumDate') } }}</span>
             </div>
           </div>
 
@@ -125,7 +126,7 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | 'takedown' | 'restore' | n
         </label>
         <textarea rows="2" [placeholder]="'ADMIN_USER_DETAIL.REASON_OPTIONAL' | translate" [(ngModel)]="actionReason"></textarea>
         <p class="preview">
-          {{ 'ADMIN_USER_PROPERTIES.FEATURE_PREVIEW' | translate:{ title: p.title, end: (featureEndPreview() | date:'mediumDate') } }}
+          {{ 'ADMIN_USER_PROPERTIES.FEATURE_PREVIEW' | translate:{ title: p.title, end: (featureEndPreview() | localDate:'mediumDate') } }}
         </p>
       </div>
     </app-confirm-modal>
@@ -195,7 +196,7 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | 'takedown' | 'restore' | n
         </label>
         <textarea rows="2" [placeholder]="'ADMIN_USER_DETAIL.REASON_OPTIONAL' | translate" [(ngModel)]="actionReason"></textarea>
         <p class="preview">
-          {{ 'ADMIN_USER_PROPERTIES.EXTEND_PREVIEW' | translate:{ title: p.title, end: (extendEndPreview() | date:'mediumDate') } }}
+          {{ 'ADMIN_USER_PROPERTIES.EXTEND_PREVIEW' | translate:{ title: p.title, end: (extendEndPreview() | localDate:'mediumDate') } }}
         </p>
       </div>
     </app-confirm-modal>
@@ -203,7 +204,7 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | 'takedown' | 'restore' | n
   styles: [`
     .page { padding: clamp(1rem, 3vw, 2rem); max-width: 920px; margin: 0 auto; }
     .page-header { margin-bottom: 1rem; }
-    .page-header h1 { margin: .4rem 0 0; color:var(--navy); font-family:var(--font-display); font-size:clamp(1.3rem,2.2vw,1.7rem); }
+    .page-header h1 { margin: .4rem 0 0; color: var(--text-strong); font-family:var(--font-display); font-size:clamp(1.3rem,2.2vw,1.7rem); }
     .link-btn { background:none; border:0; color:var(--primary-text); cursor:pointer; font-weight:600; padding:0; }
 
     .filters { margin-bottom: 1rem; }
@@ -215,22 +216,22 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | 'takedown' | 'restore' | n
       padding: 1rem 1.15rem; display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap;
     }
     .listing-card__main { flex: 1 1 260px; }
-    .listing-card__main strong { display:block; color: var(--navy); margin-bottom:.35rem; }
+    .listing-card__main strong { display:block; color: var(--text-strong); margin-bottom:.35rem; }
     .badges { display:flex; gap:.4rem; flex-wrap:wrap; margin-bottom:.35rem; }
     .badge {
       display:inline-flex; align-items:center; background: var(--gray-100); color: var(--gray-700);
       border-radius:var(--r-pill); padding:.15rem .6rem; font-size:var(--text-xs); font-weight:600;
     }
-    .badge--expired, .badge--archived { background: var(--danger-soft); color: var(--danger); }
-    .badge--available { background: var(--success-soft, #dcfce7); color: var(--success, #16a34a); }
-    .badge--featured { background: var(--gold-soft); color: var(--navy); }
-    .badge--taken-down { background: var(--danger-soft); color: var(--danger); }
+    .badge--expired, .badge--archived { background: var(--danger-soft); color: var(--danger-text); }
+    .badge--available { background: var(--success-soft, #dcfce7); color: var(--success-text); }
+    .badge--featured { background: var(--gold-soft); color: var(--text-strong); }
+    .badge--taken-down { background: var(--danger-soft); color: var(--danger-text); }
     .taken-down-reason { margin:0 0 .35rem; font-size:var(--text-sm); color: var(--gray-700); }
     .meta { display:flex; gap:.8rem; flex-wrap:wrap; font-size: .78rem; color: var(--gray-500); }
 
     .listing-card__actions { display:flex; align-items:flex-start; gap:.4rem; flex-wrap:wrap; }
     .btn { border-radius:var(--r-sm); padding:.4rem .75rem; font-size:var(--text-sm); cursor:pointer; border:1px solid transparent; font-weight:600; text-decoration:none; }
-    .btn--outline { background:var(--surface); border-color:var(--border); color:var(--navy); }
+    .btn--outline { background:var(--surface); border-color:var(--border); color: var(--text-strong); }
     .btn--primary { background: var(--primary); color: var(--on-primary); }
 
     .pagination { display:flex; justify-content:center; align-items:center; gap:1rem; margin-top:1.25rem; }
@@ -238,7 +239,7 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | 'takedown' | 'restore' | n
     .pagination button:disabled { opacity:.4; cursor:not-allowed; }
 
     .modal-form { display:flex; flex-direction:column; gap:.8rem; }
-    .modal-form label { display:flex; flex-direction:column; gap:.35rem; font-size: var(--text-sm); font-weight:600; color: var(--navy); }
+    .modal-form label { display:flex; flex-direction:column; gap:.35rem; font-size: var(--text-sm); font-weight:600; color: var(--text-strong); }
     .modal-form input, .modal-form textarea {
       /* 16px صريح — أقل من ذلك يُشغّل تكبير iOS Safari التلقائي عند التركيز، انظر نفس
          الإصلاح في admin-user-detail.page.ts. */
@@ -250,7 +251,7 @@ type ModalKind = 'feature' | 'unfeature' | 'extend' | 'takedown' | 'restore' | n
       padding:.25rem .7rem; font-size:var(--text-xs); cursor:pointer;
     }
     .preset-chip--active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
-    .preview { background: var(--gold-soft); border-radius: var(--r-sm); padding: .6rem .75rem; font-size: var(--text-sm); color: var(--navy); margin:0; }
+    .preview { background: var(--gold-soft); border-radius: var(--r-sm); padding: .6rem .75rem; font-size: var(--text-sm); color: var(--text-strong); margin:0; }
   `]
 })
 export class AdminUserPropertiesPage implements OnInit {

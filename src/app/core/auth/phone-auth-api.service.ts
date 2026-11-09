@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Observable, map, tap } from 'rxjs';
+import { Observable, map, tap, timeout } from 'rxjs';
 import { BackendApiService } from '../api/backend-api.service';
+import { AUTH_REQUEST_TIMEOUT_MS } from './auth-api.service';
 import { withUiLanguage } from '../i18n/ui-language';
 import { TokenStorageService } from '../services/token-storage.service';
 import { normalizePhoneInput } from './phone-number';
@@ -14,6 +15,7 @@ import {
   normalizeOtpChannels,
   normalizePhoneWorkflowResult
 } from '../models/auth.model';
+import { normalizeOtpCode } from './otp-code';
 
 /**
  * تدفق المصادقة الموازي الكامل عبر PhonePasswordAuthController
@@ -64,7 +66,7 @@ export class PhoneAuthApiService {
     return this.api
       .post<unknown>('/auth/phone/registration/verify', {
         challengeId: request.challengeId,
-        code: request.code.trim(),
+        code: normalizeOtpCode(request.code),
         password: request.password,
         firstName: request.firstName.trim(),
         lastName: request.lastName.trim(),
@@ -85,6 +87,7 @@ export class PhoneAuthApiService {
     };
 
     return this.api.post<unknown>('/auth/phone/login', payload).pipe(
+      timeout(AUTH_REQUEST_TIMEOUT_MS),
       map(response => normalizeAuthTokenResponse(response)),
       tap(response => this.tokenStorage.storeTokens(response))
     );
@@ -100,7 +103,7 @@ export class PhoneAuthApiService {
   /** POST /auth/phone/password-reset/verify — يبادل رمز الـ OTP برمز تأكيد (ConfirmationToken). */
   verifyPasswordReset(challengeId: string, code: string, channel?: OtpChannel): Observable<PhoneWorkflowResponse> {
     return this.api
-      .post<unknown>('/auth/phone/password-reset/verify', { challengeId, code: code.trim(), ...channelField(channel) })
+      .post<unknown>('/auth/phone/password-reset/verify', { challengeId, code: normalizeOtpCode(code), ...channelField(channel) })
       .pipe(map(response => normalizePhoneWorkflowResult(response)));
   }
 
@@ -136,7 +139,7 @@ export class PhoneAuthApiService {
   /** POST /auth/phone/reverification/verify — يعيد الحالة إلى Verified. */
   verifyReverification(challengeId: string, code: string, channel?: OtpChannel): Observable<PhoneWorkflowResponse> {
     return this.api
-      .post<unknown>('/auth/phone/reverification/verify', { challengeId, code: code.trim(), ...channelField(channel) })
+      .post<unknown>('/auth/phone/reverification/verify', { challengeId, code: normalizeOtpCode(code), ...channelField(channel) })
       .pipe(map(response => normalizePhoneWorkflowResult(response)));
   }
 
@@ -157,7 +160,7 @@ export class PhoneAuthApiService {
     return this.api
       .post<unknown>('/auth/phone/change/verify', {
         challengeId: request.challengeId,
-        code: request.code.trim(),
+        code: normalizeOtpCode(request.code),
         currentPassword: request.currentPassword,
         ...channelField(request.channel)
       })
@@ -206,7 +209,7 @@ export class PhoneAuthApiService {
 
   private sendChallenge(path: string, phoneNumber: string, channel?: OtpChannel): Observable<PhoneWorkflowResponse> {
     return this.api
-      .post<unknown>(path, { phoneNumber: normalizePhoneInput(phoneNumber), ...channelField(channel) })
+      .post<unknown>(path, withUiLanguage({ phoneNumber: normalizePhoneInput(phoneNumber), ...channelField(channel) }))
       .pipe(map(response => normalizePhoneWorkflowResult(response)));
   }
 

@@ -1,9 +1,11 @@
-import { Injectable } from '@angular/core';
-import { catchError, finalize, map, Observable, of, tap } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { catchError, finalize, map, Observable, of, tap, timeout } from 'rxjs';
 
 import { BackendApiService } from '../api/backend-api.service';
 import { withUiLanguage } from '../i18n/ui-language';
 import { TokenStorageService } from '../services/token-storage.service';
+import { AttributionContextService } from '../sharing/attribution-context.service';
+import { ReferralCodeService } from '../sharing/referral-code.service';
 import {
   AppleLoginRequest,
   AuthTokenResponse,
@@ -16,19 +18,33 @@ import {
   normalizeAuthTokenResponse
 } from '../models/auth.model';
 
+/**
+ * How long a sign-in / sign-up request may take before the form gives up and says so. Without a limit a
+ * request that never answers (a phone that lost signal mid-request) left the button spinning forever.
+ * Long enough for a cold-started API (free hosting sleeps), short enough that nobody stares at a spinner.
+ */
+export const AUTH_REQUEST_TIMEOUT_MS = 45_000;
+
 @Injectable({ providedIn: 'root' })
 export class AuthApiService {
+  private readonly attribution = inject(AttributionContextService);
+  private readonly referralCode = inject(ReferralCodeService);
+
   constructor(
     private readonly api: BackendApiService,
     private readonly tokenStorage: TokenStorageService
   ) {}
 
   register(request: RegisterRequest): Observable<RegisterResponse> {
-    return this.api.post<RegisterResponse>('/auth/register', withUiLanguage(request));
+    return this.api
+      .post<RegisterResponse>('/auth/register', withUiLanguage(this.withAcquisition(request)))
+      .pipe(timeout(AUTH_REQUEST_TIMEOUT_MS));
   }
 
   login(request: LoginRequest): Observable<AuthTokenResponse> {
-    return this.api.post<unknown>('/auth/login', request).pipe(
+    // اللغة ترافق الطلب كي يصل رابط التأكيد بلغة الصفحة إن كان البريد غير مؤكَّد.
+    return this.api.post<unknown>('/auth/login', withUiLanguage(request)).pipe(
+      timeout(AUTH_REQUEST_TIMEOUT_MS),
       map(response => normalizeAuthTokenResponse(response)),
       tap(response => this.tokenStorage.storeTokens(response))
     );
@@ -60,7 +76,7 @@ export class AuthApiService {
   }
 
   forgotPassword(request: ForgotPasswordRequest): Observable<unknown> {
-    return this.api.post('/auth/forgot-password', request);
+    return this.api.post('/auth/forgot-password', withUiLanguage(request));
   }
 
   /**
@@ -98,5 +114,26 @@ export class AuthApiService {
   /** @deprecated Use logout() so the backend refresh token is invalidated. */
   logoutLocal(): void {
     this.tokenStorage.clear();
+  }
+
+  /**
+   * Growth engine P4: the first UTM touch kept by AttributionContextService (30-day window) goes with
+   * the sign-up, so the API can count where new accounts come from. Nothing is added for a direct visit.
+   */
+  private withAcquisition(request: RegisterRequest): RegisterRequest {
+    const referralCode = this.referralCode.current();
+    if (referralCode) {
+      request = { ...request, referralCode };
+    }
+    const first = this.attribution.getFirstTouchContext();
+    if (!first?.source) {
+      return request;
+    }
+    return {
+      ...request,
+      acquisitionSource: first.source,
+      acquisitionMedium: first.medium || undefined,
+      acquisitionCampaign: first.campaign || undefined
+    };
   }
 }

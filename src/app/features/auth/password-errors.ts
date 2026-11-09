@@ -6,7 +6,7 @@ import { PASSWORD_ERROR_CODES } from '../../core/auth/password-policy';
  * تعيين أكواد رفض كلمة المرور (PasswordErrorCodes في الخادم) إلى مفاتيح الترجمة.
  * نفس نمط ERROR_CODE_TO_KEY في phone-auth-errors.ts.
  */
-const PASSWORD_CODE_TO_KEY: Record<string, string> = {
+export const PASSWORD_CODE_TO_KEY: Record<string, string> = {
   [PASSWORD_ERROR_CODES.required]: 'AUTH.ERRORS.PASSWORD_REQUIRED',
   [PASSWORD_ERROR_CODES.tooShort]: 'AUTH.ERRORS.PASSWORD_MIN',
   [PASSWORD_ERROR_CODES.noUppercase]: 'AUTH.ERRORS.PASSWORD_NO_UPPERCASE',
@@ -15,7 +15,8 @@ const PASSWORD_CODE_TO_KEY: Record<string, string> = {
   [PASSWORD_ERROR_CODES.noSpecial]: 'AUTH.ERRORS.PASSWORD_NO_SPECIAL',
   [PASSWORD_ERROR_CODES.commonWord]: 'AUTH.ERRORS.PASSWORD_COMMON_WORD',
   [PASSWORD_ERROR_CODES.longRun]: 'AUTH.ERRORS.PASSWORD_LONG_RUN',
-  [PASSWORD_ERROR_CODES.breached]: 'AUTH.ERRORS.PASSWORD_BREACHED'
+  [PASSWORD_ERROR_CODES.breached]: 'AUTH.ERRORS.PASSWORD_BREACHED',
+  [PASSWORD_ERROR_CODES.personalInfo]: 'AUTH.ERRORS.PASSWORD_PERSONAL_INFO'
 };
 
 /** ترجمة كود واحد، مع الرجوع إلى رسالة الخادم إن كان الكود مجهولاً. */
@@ -86,4 +87,11 @@ export function getPasswordRejectionMessages(
   );
 
   return reasons.filter((reason): reason is string => !!reason);
+}
+
+/** The sentences for a list of violated rules (client-side check), in the order of the checklist. */
+export function translatePasswordViolations(translate: TranslateService, codes: readonly string[]): string[] {
+  return codes
+    .map(code => translatePasswordErrorCode(translate, code))
+    .filter((message): message is string => !!message);
 }

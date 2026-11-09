@@ -23,12 +23,13 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AgenciesApiService } from '../../core/api/agencies-api.service';
 import { AgencyInvitation } from '../../core/models/agency.model';
 import { ToastService } from '../../shared/services/toast.service';
+import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 @Component({
   selector: 'app-agency-invitations',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink, TranslateModule],
+  imports: [ LocalizedDatePipe,CommonModule, RouterLink, TranslateModule],
   styleUrl: './agency-panels.scss',
   template: `
     <section class="panel">
@@ -49,7 +50,7 @@ import { ToastService } from '../../shared/services/toast.service';
               <a class="row__name" [routerLink]="['/agencies', inv.agencySlug]">{{ inv.agencyName }}</a>
               <span class="row__meta">
                 {{ 'AGENCY_INVITES.FROM' | translate: { name: inv.inviterName } }}
-                · {{ 'AGENCY_INVITES.EXPIRES' | translate }} {{ inv.expiresAt | date:'dd/MM/yyyy' }}
+                · {{ 'AGENCY_INVITES.EXPIRES' | translate }} {{ inv.expiresAt | localDate:'dd/MM/yyyy' }}
               </span>
             </div>
             <div class="row__actions">

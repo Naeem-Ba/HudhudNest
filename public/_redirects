@@ -25,6 +25,13 @@ http://realestateworld.world/*       https://hudhudnest.com/:splat   301!
 https://www.realestateworld.world/*  https://hudhudnest.com/:splat   301!
 http://www.realestateworld.world/*   https://hudhudnest.com/:splat   301!
 #
+# Legacy German-named listing URLs (/wohnungen, /wohnungen/:id). Angular used to redirect these in the
+# browser only (200, then a client-side route change), so a crawler saw a duplicate page and a social
+# crawler got an empty preview. A real 301 here consolidates them onto /properties. Must stay above the
+# SPA catch-all. (QA Phase 20, P20-D05.)
+/wohnungen        /properties         301!
+/wohnungen/:id    /properties/:id     301!
+#
 # /download is NOT an Angular route: it is a static page generated at build time
 # (tools/generate-download-page.mjs -> public/download/index.html) so it works without the app shell
 # and the QR code can point at one stable address. The explicit forced rewrite keeps `/download`
@@ -37,7 +44,7 @@ http://www.realestateworld.world/*   https://hudhudnest.com/:splat   301!
 # (tools/generate-download-page.mjs) from downloads/android-release.json: an approved release redirects to its one
 # validated address; with none it returns to /download. Do not edit it by hand.
 # BEGIN generated:download-android (tools/generate-download-page.mjs; edit downloads/android-release.json instead)
-/download/android   https://github.com/Naeem-Ba/HudhudNest-Releases/releases/download/v1.1.0/HudhudNest-1.1.0.apk   302!
+/download/android   https://github.com/Naeem-Ba/HudhudNest-Releases/releases/download/v1.1.1/HudhudNest-1.1.1.apk   302!
 # END generated:download-android
 #
 # Original rule — SPA fallback. Load-bearing since hash-based routing was removed (see

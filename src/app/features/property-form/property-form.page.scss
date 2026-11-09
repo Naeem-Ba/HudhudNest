@@ -43,7 +43,7 @@
   background: var(--danger-soft);
   border: 1px solid rgba(220,38,38,.2);
   border-radius: var(--r-md);
-  color: var(--danger);
+  color: var(--danger-text);
   font-size: .9rem;
   font-weight: 500;
   margin-bottom: 1.5rem;
@@ -141,7 +141,7 @@
   color: var(--gray-600);
   text-align: center;
 
-  svg { color: var(--gray-400); transition: color .2s; }
+  svg { color: var(--text-muted); transition: color .2s; }
 
   &:hover {
     border-color: var(--gold);
@@ -160,7 +160,7 @@
 .listing-type-badge {
   font-size: .72rem;
   font-weight: 400;
-  color: var(--gray-400);
+  color: var(--text-muted);
   margin-top: -.2rem;
 }
 
@@ -209,7 +209,7 @@
       box-shadow: 0 0 0 3px var(--gold-soft);
     }
 
-    &::placeholder { color: var(--gray-400); }
+    &::placeholder { color: var(--text-muted); }
 
     &.ng-invalid.ng-touched {
       border-color: var(--danger) !important;
@@ -239,7 +239,7 @@
 }
 
 .required {
-  color: var(--danger);
+  color: var(--danger-text);
   margin-inline-start: .15rem;
 }
 
@@ -325,7 +325,7 @@
 
 .location-preview {
   font-size: .8rem;
-  color: var(--success);
+  color: var(--success-text);
   font-weight: 600;
   padding: .6rem 1rem;
   background: var(--success-soft);
@@ -366,7 +366,7 @@
 
   span {
     font-size: .78rem;
-    color: var(--gray-400);
+    color: var(--text-muted);
   }
 }
 
@@ -617,7 +617,7 @@
   padding: 0 4px;
   background: none;
   border: 0;
-  color: var(--gold-dark);
+  color: var(--gold-text);
   font-weight: 700;
   font-size: var(--text-sm);
   text-decoration: underline;
@@ -625,7 +625,7 @@
   cursor: pointer;
 }
 
-.field-hint--error { color: var(--danger); }
+.field-hint--error { color: var(--danger-text); }
 .link-btn {
   border: 0; background: none; padding: 0 .35rem; min-height: 0;
   color: var(--primary-text, var(--navy)); font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer;
@@ -636,9 +636,14 @@
   display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
   min-height: 44px; margin-top: .9rem; padding: 0 1.1rem;
   border: 1px solid var(--gold, var(--border)); border-radius: var(--r-md);
-  background: var(--surface); color: var(--gold-dark, var(--navy)); font-weight: 700; font-size: var(--text-sm);
+  background: var(--surface); color: var(--primary-text); font-weight: 700; font-size: var(--text-sm);
   cursor: pointer;
   &:hover:not(:disabled) { background: var(--gold-soft); }
   &:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
   &:disabled { opacity: .6; cursor: default; }
 }
+
+/* Growth engine P8: hide the exact spot from the public. */
+.hide-location { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; margin-top: .5rem; cursor: pointer; }
+.hide-location input { width: 1.1rem; height: 1.1rem; }
+.hide-location__hint { display: block; color: var(--text-muted, #5b6470); font-size: .85rem; }

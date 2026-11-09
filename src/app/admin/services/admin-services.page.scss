@@ -2,12 +2,12 @@
 
 .page{padding:clamp(1rem,3vw,2rem);max-width:1300px;margin:0 auto}
 .page-header{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;margin-bottom:1rem}
-.page-header h1{margin:0 0 .3rem;color:var(--navy);font-family:var(--font-display);font-size:clamp(1.5rem,2.6vw,2rem)}
+.page-header h1{margin:0 0 .3rem;color: var(--text-strong);font-family:var(--font-display);font-size:clamp(1.5rem,2.6vw,2rem)}
 .page-header p{margin:0;color:var(--gray-500)}
 
 .tabs{display:flex;gap:.4rem;border-bottom:1px solid var(--border);margin-bottom:1rem}
 .tabs button{border:0;background:transparent;padding:.65rem 1rem;font:inherit;font-weight:700;color:var(--gray-600);cursor:pointer;border-bottom:3px solid transparent}
-.tabs button.on{color:var(--navy);border-bottom-color:var(--primary)}
+.tabs button.on{color: var(--text-strong);border-bottom-color:var(--primary)}
 
 .filters{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:1rem;align-items:flex-end}
 .filters label{display:grid;gap:.2rem;font-size:.8rem;font-weight:700;color:var(--gray-600)}
@@ -17,11 +17,11 @@
 
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.7rem;margin-bottom:1rem}
 .kpi{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:.8rem 1rem;display:grid;gap:.15rem}
-.kpi strong{font-size:1.6rem;color:var(--navy);font-family:var(--font-display)}
+.kpi strong{font-size:1.6rem;color: var(--text-strong);font-family:var(--font-display)}
 .kpi span{font-size:.8rem;color:var(--gray-500)}
-.kpi--good strong{color:var(--success)}
-.kpi--bad strong{color:var(--danger)}
-.kpi--warn strong{color:var(--warning,#92400e)}
+.kpi--good strong{color:var(--success-text)}
+.kpi--bad strong{color:var(--danger-text)}
+.kpi--warn strong{color:var(--warning-text)}
 
 .note-line{background:var(--warning-soft,#fef3c7);border-radius:12px;padding:.7rem 1rem;margin:0 0 1rem}
 .subtabs{display:flex;gap:.4rem;margin-bottom:.8rem;flex-wrap:wrap}
@@ -37,9 +37,9 @@ table.stats tr.clickable:hover,table.stats tr.clickable:focus-visible{background
 td.name{display:grid;gap:.1rem;min-width:200px}
 td.num{text-align:center;white-space:nowrap}
 td.strong{font-weight:800}
-td.good{color:var(--success)}
-td.bad{color:var(--danger)}
-td.warn{color:var(--warning,#92400e)}
+td.good{color:var(--success-text)}
+td.bad{color:var(--danger-text)}
+td.warn{color:var(--warning-text)}
 
 .reasons{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.1rem;display:grid;gap:.5rem;align-content:start}
@@ -58,12 +58,12 @@ td.warn{color:var(--warning,#92400e)}
 .muted{color:var(--gray-500);font-size:var(--text-sm)}
 .chip{font-size:.78rem;font-weight:700;border-radius:999px;padding:.25rem .6rem;background:var(--gray-100);color:var(--gray-700);white-space:nowrap;display:inline-block;margin-inline-end:.3rem}
 .chip[data-status='Accepted'],.chip[data-status='Scheduled'],.chip[data-status='InProgress'],.chip[data-status='UnderReview']{background:var(--primary-soft);color:var(--primary-text)}
-.chip[data-status='Completed'],.chip[data-status='Reviewed']{background:var(--success-soft);color:var(--success)}
-.chip[data-status='Rejected'],.chip[data-status='Cancelled'],.chip[data-status='NotCompleted'],.chip--off{background:var(--danger-soft);color:var(--danger)}
-.chip--warn{background:var(--warning-soft,#fef3c7);color:var(--warning,#92400e)}
+.chip[data-status='Completed'],.chip[data-status='Reviewed']{background:var(--success-soft);color:var(--success-text)}
+.chip[data-status='Rejected'],.chip[data-status='Cancelled'],.chip[data-status='NotCompleted'],.chip--off{background:var(--danger-soft);color:var(--danger-text)}
+.chip--warn{background:var(--warning-soft,#fef3c7);color:var(--warning-text)}
 
 .state{padding:2rem;text-align:center;background:var(--surface);border:1px dashed var(--gray-300);border-radius:16px}
-.state.error{color:var(--danger)}
+.state.error{color:var(--danger-text)}
 .btn{border:0;border-radius:10px;padding:.55rem 1rem;font-weight:700;cursor:pointer;background:var(--gray-100);color:var(--gray-800);text-decoration:none;font:inherit}
 .pagination{display:flex;justify-content:center;align-items:center;gap:1rem;margin-top:1.25rem}
 .pagination button{border:1px solid var(--border);background:var(--surface);border-radius:var(--r-sm);width:34px;height:34px;cursor:pointer}

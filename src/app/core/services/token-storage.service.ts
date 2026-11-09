@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
 
+import { writeSessionHint } from '../auth/session-hint';
+import { safeRemoveItem } from './safe-storage';
+
 export interface AuthTokenResponse {
   accessToken?: string | null;
   AccessToken?: string | null;
@@ -31,11 +34,16 @@ export class TokenStorageService {
 
     if (accessToken) {
       this.accessToken = accessToken;
+      // Every sign-in path stores its token here, so this is the one place that knows a session exists.
+      writeSessionHint('yes');
     }
   }
 
   setAccessToken(token: string | null): void {
     this.accessToken = token;
+    if (token) {
+      writeSessionHint('yes');
+    }
   }
 
   getAccessToken(): string | null {
@@ -52,8 +60,8 @@ export class TokenStorageService {
       'wohnungsapp_refresh', 'wohnungsapp_remember',
       'loggedUser', 'user'
     ]) {
-      localStorage.removeItem(key);
-      sessionStorage.removeItem(key);
+      safeRemoveItem(key, 'local');
+      safeRemoveItem(key, 'session');
     }
   }
 }

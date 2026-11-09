@@ -34,6 +34,14 @@ export interface Agency {
   governorateId?: number | null;
   districtId?: number | null;
   neighborhoodId?: number | null;
+
+  /**
+   * خطة المالك الآن (NoPlan | Active | Expired | Cancelled) وتاريخ نهايتها. تأتي فقط من
+   * GET /api/agencies/me (للمالك وللأعضاء)، لا من الصفحة العامة. تُستعمل لإبقاء المكتب ظاهرًا
+   * مع تنبيه تجديد خلال مهلة ما بعد الانتهاء (انظر agency-grace.ts).
+   */
+  ownerPlanStatus?: string | null;
+  ownerPlanExpiresAt?: string | null;
 }
 
 /** جسم POST /api/agencies — إنشاء مكتب جديد. */

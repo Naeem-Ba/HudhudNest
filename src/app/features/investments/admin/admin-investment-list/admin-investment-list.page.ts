@@ -20,6 +20,7 @@ import { ToastService } from '../../../../shared/services/toast.service';
 import { LoadingSpinnerComponent } from '../../../../shared/ui/loading-spinner.component';
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state.component';
 import { uiNumberLocale } from '../../../../core/i18n/ui-language';
+import { LocalizedDatePipe } from '../../../../shared/pipes/localized-date.pipe';
 
 const ALL_STATUSES: InvestmentProjectStatus[] = [
   'Draft', 'UnderReview', 'Approved', 'Scheduled', 'Published', 'Closed', 'Rejected', 'Suspended'
@@ -32,7 +33,7 @@ const ALL_TYPES: InvestmentProjectType[] = [
   selector: 'app-admin-investment-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
+  imports: [ LocalizedDatePipe,CommonModule, RouterModule, FormsModule, TranslateModule, LoadingSpinnerComponent, EmptyStateComponent],
   template: `
     <section class="page">
       <header class="page-header">
@@ -54,14 +55,14 @@ const ALL_TYPES: InvestmentProjectType[] = [
           (ngModelChange)="onSearchChange($event)"
         />
 
-        <select [(ngModel)]="statusFilter" (change)="applyFilters()">
+        <select [(ngModel)]="statusFilter" (change)="applyFilters()" [attr.aria-label]="'ADMIN_INVESTMENTS.LIST.ALL_STATUSES' | translate">
           <option value="">{{ 'ADMIN_INVESTMENTS.LIST.ALL_STATUSES' | translate }}</option>
           <option *ngFor="let status of statuses" [value]="status">
             {{ ('INVESTMENTS.STATUS.' + status.toUpperCase()) | translate }}
           </option>
         </select>
 
-        <select [(ngModel)]="typeFilter" (change)="applyFilters()">
+        <select [(ngModel)]="typeFilter" (change)="applyFilters()" [attr.aria-label]="'ADMIN_INVESTMENTS.LIST.ALL_TYPES' | translate">
           <option value="">{{ 'ADMIN_INVESTMENTS.LIST.ALL_TYPES' | translate }}</option>
           <option *ngFor="let type of types" [value]="type">
             {{ ('INVESTMENTS.PROJECT_TYPE.' + type.toUpperCase()) | translate }}
@@ -109,7 +110,7 @@ const ALL_TYPES: InvestmentProjectType[] = [
             {{ project.activeInterestCount }}
           </span>
           <span [attr.data-label]="'ADMIN_INVESTMENTS.LIST.COL_CREATED' | translate" class="muted">
-            {{ project.createdAt | date:'mediumDate' }}
+            {{ project.createdAt | localDate:'mediumDate' }}
           </span>
           <span [attr.data-label]="'ADMIN_INVESTMENTS.LIST.COL_ACTIONS' | translate" class="actions">
             <button type="button" class="btn btn--outline" (click)="openDetails(project)">
@@ -129,7 +130,7 @@ const ALL_TYPES: InvestmentProjectType[] = [
   styles: [`
     .page { padding: clamp(1rem, 3vw, 2rem); max-width: 1280px; margin: 0 auto; }
     .page-header { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap; }
-    .page-header h1 { margin:0 0 .3rem; color:var(--navy); font-family:var(--font-display); font-size:clamp(1.5rem,2.6vw,2rem); }
+    .page-header h1 { margin:0 0 .3rem; color: var(--text-strong); font-family:var(--font-display); font-size:clamp(1.5rem,2.6vw,2rem); }
     .page-header p { margin:0; color:var(--gray-500); }
 
     .filters { display:flex; flex-wrap:wrap; gap:.6rem; margin-bottom:1rem; }
@@ -147,23 +148,23 @@ const ALL_TYPES: InvestmentProjectType[] = [
       padding:.85rem 1rem;
     }
     .row--head { background:transparent; border:0; color:var(--gray-500); font-size:var(--text-sm); font-weight:600; padding:0 1rem; }
-    .muted { color:var(--gray-400); font-size: var(--text-sm); }
-    .project-id { display:block; font-size: .7rem; color: var(--gray-400); margin-top: .15rem; }
+    .muted { color:var(--text-muted); font-size: var(--text-sm); }
+    .project-id { display:block; font-size: .7rem; color: var(--text-muted); margin-top: .15rem; }
 
     .status-chip {
       display:inline-flex; align-items:center; border-radius:var(--r-pill); padding:.15rem .6rem;
       font-size:var(--text-xs); font-weight:600; background: var(--gray-100); color: var(--gray-600);
     }
-    .status-chip--published { background: var(--success-soft, #dcfce7); color: var(--success, #16a34a); }
+    .status-chip--published { background: var(--success-soft, #dcfce7); color: var(--success-text); }
     .status-chip--draft { background: var(--gray-100); color: var(--gray-500); }
-    .status-chip--underreview, .status-chip--scheduled { background: #fef3c7; color: #b45309; }
+    .status-chip--underreview, .status-chip--scheduled { background: var(--warning-bg); color: var(--warning-text); }
     .status-chip--approved { background: var(--primary-soft); color: var(--primary-text); }
-    .status-chip--rejected, .status-chip--suspended { background: var(--danger-soft); color: var(--danger); }
+    .status-chip--rejected, .status-chip--suspended { background: var(--danger-soft); color: var(--danger-text); }
     .status-chip--closed { background: var(--gray-200, #e5e7eb); color: var(--gray-600); }
 
     .actions { display:flex; gap:.4rem; align-items:center; flex-wrap:wrap; }
     .btn { border-radius:var(--r-sm); padding:.4rem .75rem; font-size:var(--text-sm); cursor:pointer; border:1px solid transparent; font-weight:600; }
-    .btn--outline { background:var(--surface); border-color:var(--border); color:var(--navy); }
+    .btn--outline { background:var(--surface); border-color:var(--border); color: var(--text-strong); }
     .btn--primary { background: var(--primary); color: var(--on-primary); }
     .btn:disabled { opacity:.6; cursor:not-allowed; }
 

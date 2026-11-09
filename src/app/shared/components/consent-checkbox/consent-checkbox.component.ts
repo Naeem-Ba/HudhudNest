@@ -33,6 +33,8 @@ import { TranslateModule } from '@ngx-translate/core';
         [checked]="checked"
         (change)="onToggle($event)"
         [attr.aria-required]="true"
+        [attr.aria-invalid]="error ? true : null"
+        [attr.aria-describedby]="error ? 'consent-error' : null"
       />
       <span class="consent-checkbox__label">
         {{ 'CONSENT.LEAD' | translate }}
@@ -41,6 +43,11 @@ import { TranslateModule } from '@ngx-translate/core';
         <a routerLink="/privacy-policy" target="_blank" rel="noopener">{{ 'CONSENT.PRIVACY' | translate }}<span class="consent-checkbox__sr"> {{ 'CONSENT.OPENS_NEW_TAB' | translate }}</span></a>{{ 'CONSENT.TRAIL' | translate }}
       </span>
     </label>
+    @if (error) {
+      <p class="consent-checkbox__error" id="consent-error" data-form-error>
+        <span aria-hidden="true">⚠️</span> {{ error }}
+      </p>
+    }
   `,
   styles: [`
     .consent-checkbox {
@@ -51,13 +58,16 @@ import { TranslateModule } from '@ngx-translate/core';
       font-size: var(--text-sm, 0.875rem);
       color: var(--gray-600, #4b5563);
       line-height: 1.6;
+      /* A finger needs a 44px row, and the box itself must not be a 17px speck (WCAG 2.5.8 / Apple HIG). */
+      min-height: 44px;
+      padding-block: 0.25rem;
     }
 
     .consent-checkbox__input {
-      margin-top: 0.2rem;
+      margin-top: 0.1rem;
       flex-shrink: 0;
-      width: 1.05rem;
-      height: 1.05rem;
+      width: 1.5rem;
+      height: 1.5rem;
       cursor: pointer;
     }
 
@@ -69,9 +79,18 @@ import { TranslateModule } from '@ngx-translate/core';
     }
 
     .consent-checkbox__label a {
-      color: var(--primary, #D6A84F);
+      color: var(--primary-text, #8a6414);
       font-weight: 600;
       text-decoration: underline;
+    }
+
+    .consent-checkbox__error {
+      display: flex;
+      gap: .35rem;
+      margin: .15rem 0 .5rem;
+      color: var(--danger-text);
+      font-size: var(--text-sm, .875rem);
+      line-height: 1.45;
     }
 
     .consent-checkbox__sr {
@@ -86,6 +105,8 @@ import { TranslateModule } from '@ngx-translate/core';
 })
 export class ConsentCheckboxComponent {
   @Input() checked = false;
+  /** Sentence shown under the box when the form was submitted without agreeing (already translated). */
+  @Input() error: string | null = null;
   @Output() checkedChange = new EventEmitter<boolean>();
 
   onToggle(event: Event): void {

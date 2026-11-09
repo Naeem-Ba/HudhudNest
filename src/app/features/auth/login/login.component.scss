@@ -157,20 +157,20 @@
 
   &--success {
     background: var(--success-soft);
-    color: var(--success);
+    color: var(--success-text);
     border: 1px solid rgba(22, 163, 74, .2);
   }
 
   &--error {
     background: var(--danger-soft);
-    color: var(--danger);
+    color: var(--danger-text);
     border: 1px solid rgba(220, 38, 38, .2);
   }
 
   /* عدّاد المحاولات المتبقية: أخفّ من الخطأ، فهو تحذير وليس فشلاً بذاته. */
   &--warning {
     background: var(--warning-soft);
-    color: var(--warning);
+    color: var(--warning-text);
     border: 1px solid rgba(217, 119, 6, .25);
   }
 }
@@ -220,7 +220,7 @@
       box-shadow: 0 0 0 3px var(--gold-soft);
     }
 
-    &::placeholder { color: var(--gray-400); }
+    &::placeholder { color: var(--text-muted); }
 
     &.ng-invalid.ng-touched {
       border-color: var(--danger) !important;
@@ -241,10 +241,27 @@
 /* ── Field error message ── */
 .field-error {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: .35rem;
-  font-size: .78rem;
-  color: var(--danger, #dc2626);
+  font-size: .8rem;
+  line-height: 1.45;
+  color: var(--danger-text);
+}
+
+/* What to do after a rejected sign-in: sits right under the alert, same width */
+.auth-alert__help {
+  margin: -.5rem 0 0;
+  padding-inline: .25rem;
+  font-size: .85rem;
+  line-height: 1.6;
+  color: var(--gray-600, #4b5563);
+}
+
+.auth-alert__help .auth-switch__btn {
+  display: inline;
+  padding: 0;
+  min-height: 0;
+  font-size: inherit;
 }
 
 /* ── Password Field ── */
@@ -264,7 +281,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--gray-400);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -364,7 +381,7 @@
   display: flex;
   align-items: center;
   gap: .75rem;
-  color: var(--gray-400);
+  color: var(--text-muted);
   font-size: .8rem;
 
   &::before, &::after {
@@ -437,4 +454,12 @@
   .auth-panel { padding-inline: 1rem; }
   .auth-form { padding: 1.25rem 1rem; }
   .form-group input { font-size: 16px; }
+}
+
+.social-consent {
+  margin: 0.75rem 0 0;
+  font-size: var(--text-sm, 0.875rem);
+  line-height: 1.6;
+  color: var(--gray-600, #4b5563);
+  text-align: center;
 }

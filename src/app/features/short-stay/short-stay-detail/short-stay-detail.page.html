@@ -28,7 +28,7 @@
         <p class="ssd__type">{{ l.accommodationTypeCode }}</p>
         <h1 dir="auto">{{ displayTitle(l) }}</h1>
         <p class="ssd__meta">
-          {{ l.city || '—' }} ·
+          {{ locations.city(l) || '—' }} ·
           {{ l.capacity }} {{ 'SHORTSTAY.DETAIL.GUESTS_SHORT' | translate }} ·
           {{ l.bedrooms }} {{ 'SHORTSTAY.DETAIL.BEDROOMS_SHORT' | translate }} ·
           {{ l.bathrooms }} {{ 'SHORTSTAY.DETAIL.BATHROOMS_SHORT' | translate }}
@@ -87,7 +87,7 @@
     <aside class="ssd__booking" *ngIf="bookableUnit() as unit">
       <div class="ssd__booking-card" *ngIf="!isOwner(); else ownerNotice">
         <p class="ssd__price-line">
-          <strong>{{ unit.roomType.basePricePerNight | number:'1.0-2' }} {{ l.currencyCode }}</strong>
+          <strong>{{ unit.roomType.basePricePerNight | localNumber:'1.0-2' }} {{ l.currencyCode }}</strong>
           {{ 'SHORTSTAY.DETAIL.PER_NIGHT' | translate }}
         </p>
 
@@ -136,20 +136,20 @@
 
         <div class="ssd__pricing" *ngIf="pricing() as breakdown">
           <div class="ssd__pricing-row" *ngFor="let night of breakdown.nights">
-            <span>{{ night.date | date:'d MMM' }}</span>
-            <span>{{ night.price | number:'1.0-2' }} {{ l.currencyCode }}</span>
+            <span>{{ night.date | localDate:'d MMM' }}</span>
+            <span>{{ night.price | localNumber:'1.0-2' }} {{ l.currencyCode }}</span>
           </div>
           <div class="ssd__pricing-row" *ngIf="breakdown.cleaningFee > 0">
             <span>{{ 'SHORTSTAY.DETAIL.CLEANING_FEE' | translate }}</span>
-            <span>{{ breakdown.cleaningFee | number:'1.0-2' }} {{ l.currencyCode }}</span>
+            <span>{{ breakdown.cleaningFee | localNumber:'1.0-2' }} {{ l.currencyCode }}</span>
           </div>
           <div class="ssd__pricing-row" *ngIf="breakdown.extraGuestFee > 0">
             <span>{{ 'SHORTSTAY.DETAIL.EXTRA_GUEST_FEE' | translate }}</span>
-            <span>{{ breakdown.extraGuestFee | number:'1.0-2' }} {{ l.currencyCode }}</span>
+            <span>{{ breakdown.extraGuestFee | localNumber:'1.0-2' }} {{ l.currencyCode }}</span>
           </div>
           <div class="ssd__pricing-row ssd__pricing-row--total">
             <span>{{ 'SHORTSTAY.DETAIL.TOTAL' | translate }}</span>
-            <span>{{ breakdown.totalAmount | number:'1.0-2' }} {{ l.currencyCode }}</span>
+            <span>{{ breakdown.totalAmount | localNumber:'1.0-2' }} {{ l.currencyCode }}</span>
           </div>
         </div>
 
