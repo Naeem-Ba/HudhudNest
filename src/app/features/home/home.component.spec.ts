@@ -12,6 +12,7 @@ import { InterestAreasService } from '../../core/services/interest-areas.service
 import { LanguageService } from '../../core/services/language.service';
 import { PageMetaService } from '../../core/services/page-meta.service';
 import { UrlService } from '../../core/services/url.service';
+import { ListingTitleTranslationService } from '../../core/api/listing-title-translation.service';
 import { HomeComponent } from './home.component';
 
 function listing(id: string, createdAt: string, extra: Partial<Property> = {}): Property {
@@ -23,8 +24,10 @@ describe('HomeComponent — latest listings', () => {
   let interest$: BehaviorSubject<string | undefined>;
 
   let lang$: BehaviorSubject<string>;
+  let translated = false;
 
   function create() {
+    translated = false;
     lang$ = new BehaviorSubject<string>('ar');
     api = jasmine.createSpyObj('PropertyApiService', ['getProperties']);
     interest$ = new BehaviorSubject<string | undefined>(undefined);
@@ -49,6 +52,15 @@ describe('HomeComponent — latest listings', () => {
         },
         { provide: LocationNamesService, useValue: { city: () => 'Damascus', region: () => '', cityName: (c: string) => c, governorateName: () => '', locationLabel: () => '' } },
         { provide: LanguageService, useValue: { getCurrent: () => lang$.value, currentLang$: lang$.asObservable() } },
+        {
+          provide: ListingTitleTranslationService,
+          useValue: {
+            display: (_kind: string, _id: string, title: string) => (translated ? `EN ${title}` : title),
+            hasTranslation: () => translated,
+            showingOriginal: () => false,
+            toggleOriginal: () => undefined
+          }
+        },
         { provide: PageMetaService, useValue: jasmine.createSpyObj('PageMetaService', ['applyTranslated']) },
         { provide: UrlService, useValue: { buildResponsiveUrl: () => null, buildResponsiveSrcSet: () => null } }
       ]
@@ -172,5 +184,18 @@ describe('HomeComponent — latest listings', () => {
 
       expect(navigate).toHaveBeenCalledWith(['/properties'], { queryParams: {} });
     });
+  });
+
+  it('shows each card title in the visitor\'s language when the translation is known, with the toggle bar above the list', () => {
+    const fixture = create();
+    translated = true;
+    api.getProperties.and.returnValue(of([listing('a', '2026-11-04T00:00:00Z')]));
+
+    fixture.componentInstance.ngOnInit();
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.prop-card__title')?.textContent?.trim()).toBe('EN T-a');
+    expect(el.querySelector('[data-testid="title-translation-bar"]')).not.toBeNull();
   });
 });

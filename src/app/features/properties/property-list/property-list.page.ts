@@ -59,6 +59,8 @@ import { InterestAreasService } from '../../../core/services/interest-areas.serv
 import { RecentAreasService } from '../../../core/services/recent-areas.service';
 import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
 import { AdSlotComponent } from '../../../core/ads/ad-slot.component';
+import { ListingTitlePipe } from '../../../shared/pipes/listing-title.pipe';
+import { ListingTitleTranslationBarComponent } from '../../../shared/ui/listing-title-translation-bar.component';
 import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count.component';
 import { listSeparator } from '../../../core/i18n/ui-language';
 import { GeoPlaceFilterComponent } from '../../../shared/ui/geo/geo-place-filter.component';
@@ -71,6 +73,8 @@ import { ComboBoxComponent, ComboOption } from '../../../shared/ui/combo-box.com
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    ListingTitlePipe,
+    ListingTitleTranslationBarComponent,
     AdSlotComponent,
     ComboBoxComponent,
     ListingViewCountComponent,

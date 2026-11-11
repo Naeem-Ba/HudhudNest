@@ -22,6 +22,8 @@ import { LanguageService } from '../../core/services/language.service';
 import { PageMetaService } from '../../core/services/page-meta.service';
 import { formatListingPrice, primaryListingPrice } from '../../shared/utils/listing-price';
 import { isReservedListing } from '../../shared/utils/listing-status';
+import { ListingTitlePipe } from '../../shared/pipes/listing-title.pipe';
+import { ListingTitleTranslationBarComponent } from '../../shared/ui/listing-title-translation-bar.component';
 import { ListingViewCountComponent } from '../../shared/ui/listing-view-count.component';
 import { ComboBoxComponent, ComboOption } from '../../shared/ui/combo-box.component';
 
@@ -35,6 +37,8 @@ interface HeroPriceOption {
   selector: 'app-home',
   standalone: true,
   imports: [
+    ListingTitlePipe,
+    ListingTitleTranslationBarComponent,
     ListingViewCountComponent,
     ComboBoxComponent,
     CommonModule,

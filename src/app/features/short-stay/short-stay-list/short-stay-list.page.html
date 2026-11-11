@@ -57,17 +57,19 @@
     [message]="'SHORTSTAY.LIST.EMPTY_MESSAGE' | translate"
   />
 
+  <app-listing-title-translation-bar *ngIf="!loading() && listings().length > 0" [items]="listings()" kind="short-stay" />
+
   <div class="ssl__grid" *ngIf="!loading() && listings().length > 0">
     <article class="ssl__card" *ngFor="let listing of listings(); trackBy: trackById" (click)="goToDetails(listing.id)">
       <img
         [src]="listing.mainPhotoUrl || fallbackImage"
         [appImageFallback]="fallbackImage"
-        [alt]="listing.title"
+        [alt]="listing.title | listingTitle: 'short-stay' : listing.id"
         class="ssl__card-image"
       />
       <div class="ssl__card-body">
         <p class="ssl__card-type">{{ listing.accommodationTypeNameAr }}</p>
-        <h3 class="ssl__card-title">{{ listing.title }}</h3>
+        <h3 class="ssl__card-title">{{ listing.title | listingTitle: 'short-stay' : listing.id }}</h3>
         <p class="ssl__card-meta">
           {{ locations.city({ city: listing.city }) || '—' }} · {{ listing.capacity }} {{ 'SHORTSTAY.LIST.GUESTS_SHORT' | translate }}
           · {{ listing.bedrooms }} {{ 'SHORTSTAY.LIST.BEDROOMS_SHORT' | translate }}
