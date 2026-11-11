@@ -8,7 +8,7 @@ import { Router, provideRouter } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { BehaviorSubject, of } from 'rxjs';
 
-import { NavbarComponent, navNeedsMenuButton } from './navbar.component';
+import { NavbarComponent, navLayoutFor } from './navbar.component';
 import { AuthService, AuthenticatedUser } from '../core/auth/auth.service';
 import { LoginMethod } from '../core/auth/login-identifier';
 import { ProfileService, UserProfile } from '../core/api/profile.service';
@@ -362,26 +362,41 @@ describe('NavbarComponent (Phase 6)', () => {
 
   // ────────────── Phase 15: قائمة الجوال وملاءمة الروابط ──────────────
 
-  describe('menu button vs link row (P15-D01)', () => {
-    // brand 134 + links 1023 + buttons 228 + 2 gaps of 20 = 1425px needed.
-    const english = { brand: 134, nav: 1023, actions: 228, menuButtonExtra: 0, gap: 20 };
+  describe('link row vs menu button (P15-D01)', () => {
+    // brand 134 + links 1023 (main links 640) + buttons 228 + 2 gaps of 20 = 1425px for the whole row.
+    const english = { brand: 134, nav: 1023, navPrimary: 640, actions: 228, menuButton: 52, gap: 20 };
 
-    it('✅ تتسع الروابط تمامًا ⇒ تبقى ظاهرة؛ بكسل أقل ⇒ زر القائمة', () => {
-      expect(navNeedsMenuButton({ ...english, available: 1425 })).toBeFalse();
-      expect(navNeedsMenuButton({ ...english, available: 1424 })).toBeTrue();
+    it('✅ تتسع كل الروابط تمامًا ⇒ تبقى ظاهرة؛ بكسل أقل ⇒ الروابط الرئيسية فقط', () => {
+      expect(navLayoutFor({ ...english, available: 1425 })).toBe('full');
+      expect(navLayoutFor({ ...english, available: 1424 })).toBe('condensed');
     });
 
-    it('✅ اللغة تغيّر القرار: الألمانية (روابط أعرض) تحتاج مساحة أكبر من العربية على العرض نفسه', () => {
-      const room = 1500;
-      expect(navNeedsMenuButton({ brand: 134, nav: 895, actions: 282, menuButtonExtra: 0, gap: 20, available: room })).toBeFalse();
-      expect(navNeedsMenuButton({ brand: 134, nav: 1085, actions: 259, menuButtonExtra: 0, gap: 20, available: room })).toBeTrue();
+    it('✅ الروابط الرئيسية + زر القائمة تتسع تمامًا ⇒ condensed؛ بكسل أقل ⇒ زر القائمة وحده', () => {
+      // 134 + 640 + 228 + 52 + 40 = 1094
+      expect(navLayoutFor({ ...english, available: 1094 })).toBe('condensed');
+      expect(navLayoutFor({ ...english, available: 1093 })).toBe('menu');
     });
 
-    it('✅ الجواب لا يتأثر بوجود زر القائمة نفسه (لا تذبذب بين الحالتين)', () => {
-      const available = 1500;
-      const withoutButton = navNeedsMenuButton({ ...english, available });
-      const withButton = navNeedsMenuButton({ ...english, actions: english.actions + 52, menuButtonExtra: 52, available });
-      expect(withButton).toBe(withoutButton);
+    it('✅ الألمانية على شاشة 1440: تبقى الروابط الرئيسية نصًا ظاهرًا ولا يبقى زر القائمة وحده', () => {
+      const german = { brand: 134, nav: 1192, navPrimary: 700, actions: 240, menuButton: 52, gap: 20 };
+      expect(navLayoutFor({ ...german, available: 1408 })).toBe('condensed');
+      expect(navLayoutFor({ ...german, available: 1606 })).toBe('full');
+    });
+
+    it('✅ الجواب مستقل عن الحالة الحالية (القياسات لا تتضمن زر القائمة) فلا تذبذب بين الحالات', () => {
+      for (const available of [1000, 1094, 1300, 1425, 1600]) {
+        expect(navLayoutFor({ ...english, available })).toBe(navLayoutFor({ ...english, available }));
+      }
+    });
+
+    it('✅ الروابط الثانوية موسومة في الشريط (لتختفي في وضع condensed) والرئيسية لا', () => {
+      const secondary = Array.from(el().querySelectorAll('.navbar__nav .navbar__link--secondary')).map(a => a.getAttribute('routerLink') ?? a.getAttribute('href'));
+      expect(secondary).toContain('/price-estimate');
+      expect(secondary).toContain('/valuation');
+      expect(secondary).toContain('/pricing');
+      expect(secondary).toContain('/download');
+      expect(el().querySelector('.navbar__nav a[routerLink="/home"]')?.classList).not.toContain('navbar__link--secondary');
+      expect(el().querySelector('.navbar__nav a[routerLink="/properties"]')?.classList).not.toContain('navbar__link--secondary');
     });
   });
 

@@ -1,4 +1,4 @@
-<header class="navbar" role="banner" [class.navbar--compact]="compactNav">
+<header class="navbar" role="banner" [class.navbar--compact]="compactNav" [class.navbar--condensed]="condensedNav">
   <div class="navbar__inner" #innerRef>
 
     <!-- Logo -->
@@ -75,7 +75,7 @@
       <a
         routerLink="/price-estimate"
         routerLinkActive="navbar__link--active"
-        class="navbar__link"
+        class="navbar__link navbar__link--secondary"
       >
         {{ 'NAVBAR.PRICE_ESTIMATE' | translate }}
       </a>
@@ -83,7 +83,7 @@
       <a
         routerLink="/valuation"
         routerLinkActive="navbar__link--active"
-        class="navbar__link"
+        class="navbar__link navbar__link--secondary"
       >
         {{ 'NAVBAR.VALUATION' | translate }}
       </a>
@@ -91,7 +91,7 @@
       <a
         routerLink="/pricing"
         routerLinkActive="navbar__link--active"
-        class="navbar__link"
+        class="navbar__link navbar__link--secondary"
       >
         {{ 'NAVBAR.PRICING' | translate }}
       </a>
@@ -125,7 +125,7 @@
         routerLink="/kontakt"
         routerLinkActive="navbar__link--active"
         [routerLinkActiveOptions]="{ exact: true }"
-        class="navbar__link"
+        class="navbar__link navbar__link--secondary"
       >
         {{ 'NAVBAR.CONTACT' | translate }}
       </a>
@@ -133,7 +133,7 @@
       <a
         *ngIf="showDownloadLink"
         href="/download"
-        class="navbar__link navbar__link--download"
+        class="navbar__link navbar__link--secondary navbar__link--download"
       >
         {{ 'NAVBAR.DOWNLOAD_APP' | translate }}
       </a>
