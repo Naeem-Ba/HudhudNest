@@ -34,7 +34,8 @@ interface InlineSegment {
 const LANGUAGE_BUTTONS: ReadonlyArray<{ code: LangCode; label: string }> = [
   { code: 'ar', label: 'العربية' },
   { code: 'en', label: 'English' },
-  { code: 'de', label: 'Deutsch' }
+  { code: 'de', label: 'Deutsch' },
+  { code: 'tr', label: 'Türkçe' }
 ];
 
 /** Splits "a **b** [c](/d)" into plain/bold runs, each parsed for links (never injected as HTML). */

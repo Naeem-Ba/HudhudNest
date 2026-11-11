@@ -1,10 +1,10 @@
 # Legal pages: open items (LEGAL REVIEW REQUIRED)
 
-Texts: `public/i18n/legal/{ar,en,de}/{privacy,terms}.json`. Version + dates: `src/app/core/models/consent-versions.ts`
-(one version for all three languages; bump together). Parity check: `node scripts/check-legal-parity.mjs`.
+Texts: `public/i18n/legal/{ar,en,de,tr}/{privacy,terms}.json`. Version + dates: `src/app/core/models/consent-versions.ts`
+(one version for all four languages; bump together). Parity check: `node scripts/check-legal-parity.mjs`.
 
 The texts were drafted from what the code actually does (see `docs/privacy/data-inventory.md` in the API repo) and are
-**not legal advice**. A lawyer must review all three languages before production launch. Open decisions, which were
+**not legal advice**. A lawyer must review all four languages before production launch. Open decisions, which were
 deliberately not invented:
 
 1. **Operator identity.** No legal entity name, address, registration number or EU representative/DPO is named. The
@@ -50,3 +50,10 @@ deliberately not invented:
     Policy") and records the acceptance of the current versions through `POST /consents` (`ConsentApiService
     .ensureCurrentAcceptance`). A lawyer should confirm that an informed-continue notice is enough for the target
     markets or whether an explicit checkbox is required.
+
+11. **Turkish texts (added with the Turkish language, 2026-11-11).** `public/i18n/legal/tr/{privacy,terms}.json` are a
+    faithful Turkish rendering of the English text, written without a Turkish lawyer. They show a visible notice
+    (`reviewNotice`) saying so. A Turkish-qualified lawyer must review them. Turkish law is **not** addressed: the
+    KVKK (Law No. 6698) controller duties (VERBIS registration, aydınlatma metni, explicit-consent wording, cross-border
+    transfer rules) are not covered by this text and need a decision if Turkey becomes a target market. Remove the
+    `reviewNotice` only after that review.

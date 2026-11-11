@@ -251,10 +251,12 @@ test('buildNotFoundHtml never includes property-specific data and is marked noin
 
 import { resolveShareLanguage, buildOfferMetaHtml } from './social-crawler.mjs';
 
-test('resolveShareLanguage accepts ar/en/de (also regional forms) and falls back to Arabic', () => {
+test('resolveShareLanguage accepts ar/en/de/tr (also regional forms) and falls back to Arabic', () => {
   assert.equal(resolveShareLanguage('de'), 'de');
   assert.equal(resolveShareLanguage('EN-us'), 'en');
   assert.equal(resolveShareLanguage('ar'), 'ar');
+  assert.equal(resolveShareLanguage('tr'), 'tr');
+  assert.equal(resolveShareLanguage('TR-tr'), 'tr');
   assert.equal(resolveShareLanguage('fr'), 'ar');
   assert.equal(resolveShareLanguage(null), 'ar');
   assert.equal(resolveShareLanguage(undefined), 'ar');
@@ -281,6 +283,17 @@ test('buildPropertyMetaHtml in German: lang, locale, site name and summary words
   assert.doesNotMatch(html, /[؀-ۿ]/);
 });
 
+test('buildPropertyMetaHtml in Turkish: lang, locale, summary words are Turkish and no Arabic text leaks', () => {
+  const html = buildPropertyMetaHtml({ property: { ...sample, title: 'İstanbul Şişli dairesi', city: 'Şam' }, ...ctx, lang: 'tr' });
+  assert.match(html, /<html lang="tr" dir="ltr">/);
+  assert.match(html, /og:locale" content="tr_TR"/);
+  assert.match(html, /og:site_name" content="HudhudNest"/);
+  assert.match(html, /<title>İstanbul Şişli dairesi \| HudhudNest<\/title>/);
+  assert.match(html, /85 m² • 3 oda/);
+  assert.match(html, /rel="canonical" href="https:\/\/hudhudnest.com\/properties\/p1"/);
+  assert.doesNotMatch(html, /[؀-ۿ]/);
+});
+
 test('buildPropertyMetaHtml in English uses "rooms" and en_US, and keeps the canonical URL untouched', () => {
   const html = buildPropertyMetaHtml({ property: sample, ...ctx, lang: 'en' });
   assert.match(html, /<html lang="en" dir="ltr">/);
@@ -300,6 +313,20 @@ test('buildOfferMetaHtml describes the discount in the preview language', () => 
   assert.match(buildOfferMetaHtml({ offer, ...ctx, lang: 'en' }), /20% off/);
   assert.match(buildOfferMetaHtml({ offer, ...ctx }), /خصم 20%/);
   assert.match(buildOfferMetaHtml({ offer: { ...offer, discountType: 'FreeMonths', discountValue: 1 }, ...ctx, lang: 'de' }), /1 Monat gratis/);
+});
+
+test('buildOfferMetaHtml in Turkish describes the discount in Turkish', () => {
+  const offer = { name: 'Bahar', discountType: 'Percentage', discountValue: 20 };
+  assert.match(buildOfferMetaHtml({ offer, ...ctx, lang: 'tr' }), /%20 indirim/);
+  assert.match(buildOfferMetaHtml({ offer: { ...offer, discountType: 'FreeMonths', discountValue: 1 }, ...ctx, lang: 'tr' }), /1 ay ücretsiz/);
+  assert.match(buildOfferMetaHtml({ offer: { ...offer, discountType: 'FreeMonths', discountValue: 3 }, ...ctx, lang: 'tr' }), /3 ay ücretsiz/);
+});
+
+test('buildNotFoundHtml in Turkish is translated and still noindex', () => {
+  const html = buildNotFoundHtml('tr');
+  assert.match(html, /<html lang="tr" dir="ltr">/);
+  assert.match(html, /İlan yayında değil \| HudhudNest/);
+  assert.match(html, /noindex/);
 });
 
 test('buildNotFoundHtml is translated and still noindex', () => {

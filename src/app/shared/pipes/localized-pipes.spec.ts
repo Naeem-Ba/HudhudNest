@@ -29,6 +29,9 @@ describe('localized pipes (QA Phase 16, D05)', () => {
       current = 'de';
       expect(pipe.transform(date, 'longDate')).toBe('1. November 2026');
 
+      current = 'tr';
+      expect(pipe.transform(date, 'longDate')).toBe('1 Kasım 2026');
+
       current = 'ar';
       const arabic = pipe.transform(date, 'longDate') ?? '';
       expect(arabic).toContain('نوفمبر');
@@ -50,6 +53,9 @@ describe('localized pipes (QA Phase 16, D05)', () => {
       expect(pipe.transform(1234567.5, '1.0-1')).toBe('1,234,567.5');
 
       current = 'de';
+      expect(pipe.transform(1234567.5, '1.0-1')).toBe('1.234.567,5');
+
+      current = 'tr';
       expect(pipe.transform(1234567.5, '1.0-1')).toBe('1.234.567,5');
 
       current = 'ar';

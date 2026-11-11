@@ -143,7 +143,7 @@ export function escapeHtml(value) {
 const MAX_SUMMARY_LENGTH = 160;
 
 /** The preview languages. Arabic is the original and the default for a link that names none. */
-export const SHARE_LANGUAGES = ['ar', 'en', 'de'];
+export const SHARE_LANGUAGES = ['ar', 'en', 'de', 'tr'];
 
 const SHARE_TEXT = {
   ar: {
@@ -184,10 +184,23 @@ const SHARE_TEXT = {
     freeMonths: v => (v === 1 ? '1 Monat gratis' : `${v} Monate gratis`),
     unavailableTitle: 'Anzeige nicht verfügbar',
     unavailableBody: 'Diese Anzeige ist nicht mehr verfügbar.'
+  },
+  tr: {
+    dir: 'ltr',
+    locale: 'tr_TR',
+    siteName: 'HudhudNest',
+    squareMeter: 'm²',
+    rooms: n => `${n} oda`,
+    defaultTitle: 'İlan ayrıntıları',
+    percent: v => `%${v} indirim`,
+    fixed: v => `${v} $ indirim`,
+    freeMonths: v => (v === 1 ? '1 ay ücretsiz' : `${v} ay ücretsiz`),
+    unavailableTitle: 'İlan yayında değil',
+    unavailableBody: 'Bu ilan artık yayında değil.'
   }
 };
 
-/** "de" from "?lang=de" (also "de-AT"); anything else, or nothing, is Arabic -- the original behaviour. */
+/** "de" from "?lang=de" (also "de-AT"; "tr" from "?lang=tr"); anything else, or nothing, is Arabic -- the original behaviour. */
 export function resolveShareLanguage(value) {
   const primary = String(value ?? '').trim().toLowerCase().split(/[-_]/, 1)[0];
   return SHARE_LANGUAGES.includes(primary) ? primary : 'ar';

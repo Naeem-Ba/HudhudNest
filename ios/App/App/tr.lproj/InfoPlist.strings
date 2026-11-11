@@ -1,0 +1,5 @@
+/* iOS izin pencerelerinin Türkçe metinleri. */
+"NSLocationWhenInUseUsageDescription" = "HudhudNest, yakınınızdaki ilanları haritada göstermek ve arama sonuçlarını uzaklığa göre sıralamak için konumunuzu kullanır.";
+"NSCameraUsageDescription" = "HudhudNest, bir mülk ilanına eklemek üzere fotoğraf çekebilmeniz için kameraya erişim ister.";
+"NSPhotoLibraryUsageDescription" = "HudhudNest, mevcut fotoğrafları bir mülk ilanına ekleyebilmeniz için fotoğraf kitaplığınıza erişim ister.";
+"NSUserTrackingUsageDescription" = "HudhudNest bunu yalnızca kişiselleştirilmiş reklamları seçerseniz sorar. Reddedebilirsiniz; bu durumda kişiselleştirilmemiş reklamlar görürsünüz.";

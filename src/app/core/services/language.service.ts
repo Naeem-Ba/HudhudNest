@@ -5,7 +5,7 @@ import { BehaviorSubject } from 'rxjs';
 import { pickDeviceLanguage } from '../i18n/first-visit-language';
 import { safeGetItem, safeRemoveItem, safeSetItem } from './safe-storage';
 
-export type LangCode = 'en' | 'ar' | 'de';
+export type LangCode = 'en' | 'ar' | 'de' | 'tr';
 
 /**
  * How a language change is remembered:
@@ -32,7 +32,8 @@ export class LanguageService {
   private readonly languages: readonly LanguageOption[] = [
     { code: 'ar', label: 'العربية', dir: 'rtl' },
     { code: 'en', label: 'English', dir: 'ltr' },
-    { code: 'de', label: 'Deutsch', dir: 'ltr' }
+    { code: 'de', label: 'Deutsch', dir: 'ltr' },
+    { code: 'tr', label: 'Türkçe', dir: 'ltr' }
   ];
 
   private readonly langSubject = new BehaviorSubject<LangCode>('ar');
@@ -132,7 +133,7 @@ export class LanguageService {
   }
 
   private isSupported(lang: string | null | undefined): lang is LangCode {
-    return lang === 'ar' || lang === 'en' || lang === 'de';
+    return lang === 'ar' || lang === 'en' || lang === 'de' || lang === 'tr';
   }
 
   private setFallbackLanguage(lang: LangCode): void {

@@ -2732,7 +2732,7 @@
       "CHIPS_ARIA": "Auf einen Blick",
       "CHIP_FREE": "Zum Start kostenlos",
       "CHIP_REAL": "Echte Fotos, direkter Kontakt",
-      "CHIP_LANGS": "عربي · English · Deutsch",
+      "CHIP_LANGS": "عربي · English · Deutsch · Türkçe",
       "VISUAL_ARIA": "Illustration der Suchansicht der Plattform – keine echten Anzeigen",
       "VISUAL_TITLE": "Finden Sie Ihre Immobilie",
       "VISUAL_SALE": "Kauf",
@@ -2825,8 +2825,8 @@
           "DESC": "Eine Preisspanne auf Basis tatsächlich veröffentlichter Anzeigen – und bei Bedarf eine Bewertungsanfrage für Ihre Immobilie."
         },
         "LANGS": {
-          "TITLE": "In drei Sprachen",
-          "DESC": "Eine vollständige Oberfläche auf Arabisch, Englisch und Deutsch – für Besucher in Syrien und im Ausland."
+          "TITLE": "In vier Sprachen",
+          "DESC": "Eine vollständige Oberfläche auf Arabisch, Englisch, Deutsch und Türkisch – für Besucher in Syrien und im Ausland."
         },
         "SERVICES": {
           "TITLE": "Immobilienservices",
@@ -2878,7 +2878,7 @@
     "LANGS": {
       "EYEBROW": "Mehrsprachig",
       "TITLE": "Syriens Immobilien in Ihrer Sprache.",
-      "TEXT": "Die Plattform spricht Arabisch, Englisch und Deutsch – so entdecken Sie syrische Immobilien mühelos, ob in Syrien oder im Ausland.",
+      "TEXT": "Die Plattform spricht Arabisch, Englisch, Deutsch und Türkisch – so entdecken Sie syrische Immobilien mühelos, ob in Syrien oder im Ausland.",
       "TILES_ARIA": "Unterstützte Sprachen",
       "NOTE": "Die automatische Übersetzung von Anzeigentexten ist in Vorbereitung und noch nicht als fertig angekündigt; derzeit erscheint eine Anzeige in der Sprache ihres Verfassers.",
       "CTA_EXPATS": "Leitfaden für Auslandssyrer"
@@ -3092,7 +3092,7 @@
     },
     "SEO": {
       "TITLE": "Digitale Immobilienplattform für Syrien",
-      "DESCRIPTION": "Immobilien zum Kauf und zur Miete in Syrien suchen, Preise Ihrer Gegend prüfen, eine Bewertung anfragen und Immobilienservices entdecken. Auf Arabisch, Englisch und Deutsch."
+      "DESCRIPTION": "Immobilien zum Kauf und zur Miete in Syrien suchen, Preise Ihrer Gegend prüfen, eine Bewertung anfragen und Immobilienservices entdecken. Auf Arabisch, Englisch, Deutsch und Türkisch."
     }
   },
   "VALUATION": {

@@ -17,6 +17,7 @@ export function formatMoney(amount: number | null | undefined, currency: string 
 export function intlLocale(lang: string | undefined): string {
   switch (lang) {
     case 'de': return 'de-DE';
+    case 'tr': return 'tr-TR';
     case 'ar': return 'ar-SY-u-nu-latn';
     default: return 'en-US';
   }

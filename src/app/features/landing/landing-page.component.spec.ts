@@ -165,8 +165,11 @@ describe('Landing page — standalone marketing page', () => {
     const language = TestBed.inject(LanguageService);
     spyOn(language, 'use');
     const buttons = fixture.nativeElement.querySelectorAll('.lang__btn') as NodeListOf<HTMLButtonElement>;
-    expect(buttons.length).toBe(3);
+    expect(buttons.length).toBe(4);
+    expect(Array.from(buttons).map(b => b.textContent?.trim())).toContain('Türkçe');
     buttons[1].click();
     expect(language.use).toHaveBeenCalledWith('en');
+    buttons[3].click();
+    expect(language.use).toHaveBeenCalledWith('tr');
   });
 });

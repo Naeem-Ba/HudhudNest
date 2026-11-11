@@ -854,7 +854,8 @@
 
 .mobile-lang {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Four languages: two rows of two on narrow drawers instead of squeezing four labels into one row. */
+  grid-template-columns: repeat(auto-fit, minmax(5.25rem, 1fr));
   gap: 0.45rem;
 }
 

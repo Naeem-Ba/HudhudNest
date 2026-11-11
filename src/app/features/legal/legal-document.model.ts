@@ -20,6 +20,8 @@ export interface LegalSection {
 export interface LegalDocumentContent {
   title: string;
   metaDescription: string;
+  /** Shown as a banner above the text. Set while a translation has not been reviewed by a lawyer. */
+  reviewNotice?: string;
   sections: LegalSection[];
 }
 

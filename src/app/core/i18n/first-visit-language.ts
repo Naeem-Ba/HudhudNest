@@ -6,18 +6,22 @@
 //   2. Country known:
 //        Arab League country            -> Arabic
 //        German-speaking country        -> German
-//        anywhere else                  -> the device language when it is Arabic, English or German,
+//        anywhere else                  -> the device language when it is Arabic, English, German or Turkish,
 //                                          otherwise English
 //   3. Country unknown (offline, VPN, geo disabled, endpoint unreachable):
-//        the device language when it is Arabic, English or German, otherwise Arabic (the app's
+//        the device language when it is Arabic, English, German or Turkish, otherwise Arabic (the app's
 //        long-standing default).
+//
+// Turkish has no country rule on purpose: many Arabic-speaking residents of Turkey would be switched to a
+// language they did not pick. A Turkish device language is honoured everywhere the rules above fall
+// through to the device language.
 //
 // "Country" comes from GeoCountryService (an IP lookup at the Netlify edge); no location permission
 // prompt is involved.
 
-export type SupportedLanguage = 'ar' | 'en' | 'de';
+export type SupportedLanguage = 'ar' | 'en' | 'de' | 'tr';
 
-const SUPPORTED: readonly SupportedLanguage[] = ['ar', 'en', 'de'];
+const SUPPORTED: readonly SupportedLanguage[] = ['ar', 'en', 'de', 'tr'];
 
 /** The 22 Arab League members (plus Western Sahara, which geo databases report separately as EH). */
 export const ARAB_COUNTRY_CODES: ReadonlySet<string> = new Set([

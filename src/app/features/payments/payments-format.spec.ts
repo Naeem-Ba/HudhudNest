@@ -11,6 +11,7 @@ describe('payments-format', () => {
   it('keeps Latin digits for Arabic so amounts match the invoice', () => {
     expect(intlLocale('ar')).toContain('latn');
     expect(intlLocale('de')).toBe('de-DE');
+    expect(intlLocale('tr')).toBe('tr-TR');
     expect(intlLocale(undefined)).toBe('en-US');
   });
 
