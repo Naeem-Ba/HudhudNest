@@ -1,5 +1,5 @@
 // Shared, language-aware page for the Privacy Policy and Terms of Use. The legal text lives in
-// public/i18n/legal/{ar,en,de}/{privacy,terms}.json (one canonical, reviewable file per
+// public/i18n/legal/{ar,en,de,tr}/{privacy,terms}.json (one canonical, reviewable file per
 // language — kept out of the UI i18n bundles on purpose so a legal edit never touches UI
 // strings and the files can be handed to a lawyer as-is). Routes stay /privacy-policy and
 // /terms-of-service; the language is the app's current language (LanguageService).
@@ -33,6 +33,10 @@ import { numberLocaleFor } from '../../core/i18n/supported-preferences';
             {{ 'LEGAL.EFFECTIVE' | translate }}: {{ effectiveLabel() }} ·
             {{ 'LEGAL.UPDATED' | translate }}: {{ updatedLabel() }}
           </p>
+
+          @if (doc.reviewNotice) {
+            <p class="legal__review" role="note">{{ doc.reviewNotice }}</p>
+          }
 
           @for (section of doc.sections; track $index) {
             <h2>{{ $index + 1 }}. {{ section.heading }}</h2>
@@ -106,6 +110,15 @@ import { numberLocaleFor } from '../../core/i18n/supported-preferences';
       color: var(--gray-500);
       font-size: var(--text-sm);
       margin: 0 0 var(--space-6);
+    }
+
+    .legal__review {
+      background: var(--warning-bg, #fff7e0);
+      border: 1px solid var(--warning-border, #e8c872);
+      border-radius: var(--r-md, 8px);
+      color: var(--gray-700, #374151) !important;
+      margin: 0 0 var(--space-6);
+      padding: var(--space-3) var(--space-4);
     }
 
     .legal__card h2 {

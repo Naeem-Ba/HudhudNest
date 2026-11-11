@@ -218,6 +218,22 @@ describe('getFriendlyApiErrorMessage — a message in another script is replaced
     expect(isInOtherScript('anything', null)).toBeFalse();
   });
 
+  it('isInOtherScript on a Turkish page: Arabic and English sentences are replaced, Turkish and short text are kept', () => {
+    expect(isInOtherScript('خطتكم الحالية تسمح بـ 3 إعلانات.', 'tr')).toBeTrue();
+    expect(isInOtherScript('You can only delete your own reviews.', 'tr')).toBeTrue();
+    expect(isInOtherScript('Yalnızca kendi değerlendirmelerinizi silebilirsiniz.', 'tr')).toBeFalse();
+    expect(isInOtherScript('İstanbul Şişli Çağrı Üsküdar Iğdır', 'tr')).toBeFalse();
+    expect(isInOtherScript('Reference ABC-123', 'tr')).toBeFalse();
+  });
+
+  it('an English server message on a Turkish page becomes the translated text of the status', () => {
+    document.documentElement.lang = 'tr';
+
+    const message = getFriendlyApiErrorMessage(fail(403, { message: 'You can only delete your own reviews.' }), translate);
+
+    expect(message).toBe('API_ERRORS.FORBIDDEN');
+  });
+
   it('an Arabic-only server message on a German page becomes the translated text of the status', () => {
     document.documentElement.lang = 'de';
 

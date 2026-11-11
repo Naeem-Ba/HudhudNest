@@ -1,6 +1,6 @@
-// Text of the public /account-deletion page in the three shipped languages. Static content kept in
+// Text of the public /account-deletion page in the four shipped languages. Static content kept in
 // code (not in the i18n bundles) for the same reason as the privacy policy and terms: one
-// reviewable reference text per language. Keep the three versions in step -- the spec checks that
+// reviewable reference text per language. Keep the four versions in step -- the spec checks that
 // they have the same structure.
 //
 // Inline markup: **bold** and [label](/route) or [label](mailto:...) links, parsed by
@@ -283,5 +283,89 @@ export const ACCOUNT_DELETION_CONTENT: Record<LangCode, AccountDeletionContent> 
       }
     ],
     back: 'Zurück zur Startseite'
+  },
+  tr: {
+    title: 'Hesabınızı silin — HudhudNest',
+    metaTitle: 'Hesabınızı ve verilerinizi silin',
+    metaDescription:
+      'HudhudNest hesabınızın ve verilerinizin silinmesini nasıl talep edeceğiniz; nelerin silindiği, nelerin saklandığı ve nedenleri.',
+    updated: 'Son güncelleme: 13 Ekim 2026',
+    intro:
+      'HudhudNest hesabınızı istediğiniz zaman uygulama içinden (Android ve iOS) veya web sitesinden kalıcı olarak silebilirsiniz. Bizimle doğrudan iletişime geçmeyi tercih ederseniz, uygulamayı yüklemeden de talebi başlatabilirsiniz (aşağıdaki son bölüme bakın).',
+    sections: [
+      {
+        heading: 'Hesabınızı nasıl silersiniz (uygulamada veya web\'de)',
+        blocks: [
+          {
+            ol: [
+              'Hesabınızda oturum açın.',
+              '**Profil** → sayfanın altındaki **Tehlikeli Bölge** (Danger Zone) bölümünü açın → **"Hesabı kalıcı olarak sil"** düğmesine dokunun.',
+              '(İsteğe bağlı) Bundan önce, aynı sayfadaki **"Verileriniz"** bölümünden verilerinizin bir kopyasını indirebilirsiniz.',
+              'Nelerin silineceğini ve nelerin saklanacağını açıklayan uyarıyı okuyun, ardından "Devam"a dokunun.',
+              'Geçerli parolanızı girin (hesabınız parola kullanıyorsa — yalnızca Google/Apple ile giriş yapan hesaplardan istenmez), ardından son onay alanına **DELETE** yazın.',
+              'Onayladığınızda **silme işlemi 30 gün sonrasına planlanır** ve hiçbir şey hemen silinmez: hesabınız bu süre boyunca çalışmaya devam eder ve silme tarihini gösteren bir not ile **"Silme talebini iptal et"** düğmesi görünür. Süre dolduğunda silme otomatik olarak çalışır ve tüm cihazlarınızdaki oturumunuz kapatılır. **Çalıştıktan sonra geri alınamaz.**'
+            ]
+          }
+        ]
+      },
+      {
+        heading: 'Silme işlemi çalıştığında nelerin silindiği',
+        blocks: [
+          {
+            ul: [
+              'Adınız, profil fotoğrafınız, özgeçmişiniz ve iletişim bilgileriniz.',
+              'Hesaba kayıtlı e-posta adresi ve telefon numarası ile bir Google/Apple hesabına olan her bağlantı — artık bunlarla bu hesapta oturum açamazsınız.',
+              'Saklanan parola (özet biçiminde) ve cihazlarınızın bildirim belirteçleri.',
+              'Tüm cihazlarınızdaki etkin oturumların hepsi.'
+            ]
+          }
+        ]
+      },
+      {
+        heading: 'Nelerin saklandığı (kişisel verileriniz olmadan)',
+        blocks: [
+          {
+            ul: [
+              'Daha önce yayınladığınız mesajlar ve puanlar diğer kullanıcılara görünür kalır — ancak gerçek adınız yerine **"Silinmiş Kullanıcı"** adı altında ve adınız veya kişisel verileriniz olmadan.',
+              'Sınırlı sayıda dahili güvenlik günlüğü (kötüye kullanımı önlemek ve güvenlik olaylarını izlemek için); silme tamamlandıktan sonra bunlar kişisel verilerinizin hiçbirini içermez.',
+              '**Not:** hesap silme işlemi gerçekleştirildiğinde ilanlarınız hemen siteden kaldırılır (böylece hiçbir ilan iletişim kişisiz kalmaz) ve 30 günlük bir sürenin ardından fotoğraflarıyla birlikte kalıcı olarak silinir. Silme çalışmadan önceki iptal süresi boyunca ilanlarınız olduğu gibi kalır. Bir emlak ofisinin üyesiyseniz, ilanlarınız yayında kalır ve ofis sahibine devredilir; ilanlara ilişkin sorular artık ona ulaşır.'
+            ]
+          }
+        ]
+      },
+      {
+        heading: 'Silme talebini iptal etme',
+        blocks: [
+          {
+            p: 'Otuz gün içinde fikrinizi değiştirirseniz, oturum açın ve sayfanın üstündeki notta veya profilinizin **Tehlikeli Bölge**sinde **"Silme talebini iptal et"** düğmesine dokunun. İptal için parola gerekmez ve hesabınız tamamen eskisi gibi kalır.'
+          }
+        ]
+      },
+      {
+        heading: 'Kimlik doğrulama gerekli',
+        blocks: [
+          {
+            p: 'Hesap silme hassas ve kesin bir işlemdir; bu nedenle bir silme talebi kabul edilmeden önce önce oturum açmanızı, ek bir onay olarak geçerli parolanızı yeniden girmenizi (yalnızca e-posta/parola hesapları için) ve açık bir onay sözcüğü yazmanızı isteriz.'
+          }
+        ]
+      },
+      {
+        heading: 'Oturum açamıyor musunuz?',
+        blocks: [
+          {
+            p: 'Hesabınıza erişemiyorsanız (örneğin parolanıza veya telefon numaranıza erişiminizi kaybettiniz) ve hesabınızın ve verilerinizin silinmesini talep etmek istiyorsanız, hesabınıza kayıtlı e-posta adresinden [support@hudhudnest.com](mailto:support@hudhudnest.com?subject=Hesap%20silme%20talebi) adresine talebinizi açıklayan bir e-posta yazın. Silmeyi elle gerçekleştirmeden önce kimliğinizi doğrularız.'
+          }
+        ]
+      },
+      {
+        heading: 'Gizlilik politikası',
+        blocks: [
+          {
+            p: 'Topladığımız veriler ve ne kadar süre sakladığımız hakkında daha fazla bilgi için [Gizlilik Politikası](/privacy-policy)\'na bakın.'
+          }
+        ]
+      }
+    ],
+    back: 'Ana sayfaya dön'
   }
 };

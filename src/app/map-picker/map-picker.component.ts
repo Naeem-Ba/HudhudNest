@@ -289,6 +289,13 @@ export class MapPickerComponent implements AfterViewInit, OnChanges, OnDestroy {
         none: 'No results. You can place the pin by clicking the map.',
         unavailable: 'Map search is unavailable right now. Place the pin by clicking the map or use the fields above.',
         searching: 'Searching…'
+      },
+      tr: {
+        placeholder: 'Haritada sokak, mahalle veya yer arayın',
+        button: 'Ara',
+        none: 'Sonuç yok. Haritaya tıklayarak konumu belirleyebilirsiniz.',
+        unavailable: 'Harita araması şu anda kullanılamıyor. Konumu haritaya tıklayarak veya yukarıdaki alanlarla belirleyin.',
+        searching: 'Aranıyor…'
       }
     } as const;
     return (texts[this.lang] ?? texts.ar)[key];
@@ -298,7 +305,8 @@ export class MapPickerComponent implements AfterViewInit, OnChanges, OnDestroy {
     const titles = {
       ar: { zoomIn: 'تكبير', zoomOut: 'تصغير' },
       de: { zoomIn: 'Vergrößern', zoomOut: 'Verkleinern' },
-      en: { zoomIn: 'Zoom in', zoomOut: 'Zoom out' }
+      en: { zoomIn: 'Zoom in', zoomOut: 'Zoom out' },
+      tr: { zoomIn: 'Yakınlaştır', zoomOut: 'Uzaklaştır' }
     } as const;
     return titles[this.lang] ?? titles.ar;
   }
@@ -316,9 +324,13 @@ export class MapPickerComponent implements AfterViewInit, OnChanges, OnDestroy {
       en: {
         locationDenied: 'Location access was denied. You can select the property location manually on the map.',
         locationUnavailable: 'The device location is unavailable. You can select the property location manually on the map.'
+      },
+      tr: {
+        locationDenied: 'Konum erişimi reddedildi. Mülkün konumunu haritadan elle seçebilirsiniz.',
+        locationUnavailable: 'Cihaz konumu alınamıyor. Mülkün konumunu haritadan elle seçebilirsiniz.'
       }
     } as const;
-    return messages[this.lang][key];
+    return (messages[this.lang] ?? messages.ar)[key];
   }
 
   ngOnDestroy(): void {

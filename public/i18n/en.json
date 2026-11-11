@@ -2732,7 +2732,7 @@
       "CHIPS_ARIA": "Quick facts",
       "CHIP_FREE": "Free to start",
       "CHIP_REAL": "Real photos, direct contact",
-      "CHIP_LANGS": "عربي · English · Deutsch",
+      "CHIP_LANGS": "عربي · English · Deutsch · Türkçe",
       "VISUAL_ARIA": "Illustration of the platform's search screen — not real listings",
       "VISUAL_TITLE": "Find your property",
       "VISUAL_SALE": "Buy",
@@ -2825,8 +2825,8 @@
           "DESC": "A price range based on listings actually published, plus a valuation request for your own property when you need one."
         },
         "LANGS": {
-          "TITLE": "In three languages",
-          "DESC": "A complete interface in Arabic, English and German, for visitors inside Syria and abroad."
+          "TITLE": "In four languages",
+          "DESC": "A complete interface in Arabic, English, German and Turkish, for visitors inside Syria and abroad."
         },
         "SERVICES": {
           "TITLE": "Property services",
@@ -2878,7 +2878,7 @@
     "LANGS": {
       "EYEBROW": "Multilingual",
       "TITLE": "Syrian property, in your language.",
-      "TEXT": "The platform speaks Arabic, English and German, so you can explore Syrian property easily — whether you are in Syria or abroad.",
+      "TEXT": "The platform speaks Arabic, English, German and Turkish, so you can explore Syrian property easily — whether you are in Syria or abroad.",
       "TILES_ARIA": "Supported languages",
       "NOTE": "Automatic translation of listing texts is being prepared and is not announced as ready yet; for now a listing appears in the language its author wrote it in.",
       "CTA_EXPATS": "Guide for expats"
@@ -3092,7 +3092,7 @@
     },
     "SEO": {
       "TITLE": "Digital real-estate platform for Syria",
-      "DESCRIPTION": "Search property for sale and rent in Syria, check area prices, request a valuation and discover property services. In Arabic, English and German."
+      "DESCRIPTION": "Search property for sale and rent in Syria, check area prices, request a valuation and discover property services. In Arabic, English, German and Turkish."
     }
   },
   "VALUATION": {

@@ -153,8 +153,8 @@ function extractBackendMessage(error: HttpErrorResponse, translate: TranslateSer
 
 /**
  * True when a server message is clearly written in a script the reader's page is not in: Arabic
- * letters on an English or German page, or Latin-only text on an Arabic page. Short or mixed text
- * (a name, a code) is left alone. An English sentence on a German page is recognised by its common
+ * letters on an English, German or Turkish page, or Latin-only text on an Arabic page. Short or mixed text
+ * (a name, a code) is left alone. An English sentence on a German or Turkish page is recognised by its common
  * words; any other Latin text stays as is, and the stable codes cover the cases that matter.
  */
 export function isInOtherScript(message: string, language: string | null = currentUiLanguage()): boolean {
@@ -173,8 +173,8 @@ export function isInOtherScript(message: string, language: string | null = curre
     return true;
   }
 
-  // On a German page an English sentence is Latin too; it is recognised by its common words.
-  return language === 'de' && arabic === 0 && looksEnglish(message);
+  // On a German or Turkish page an English sentence is Latin too; it is recognised by its common words.
+  return (language === 'de' || language === 'tr') && arabic === 0 && looksEnglish(message);
 }
 
 const ENGLISH_WORDS = new Set([

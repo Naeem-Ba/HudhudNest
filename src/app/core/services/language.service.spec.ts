@@ -39,6 +39,68 @@ describe('LanguageService first-visit behaviour', () => {
     expect(service.hasStoredPreference()).toBeFalse();
   });
 
+  it('shows Turkish (LTR) for a Turkish device and keeps the page direction left-to-right', () => {
+    deviceLanguages = ['tr-TR'];
+    const service = TestBed.inject(LanguageService);
+
+    expect(service.getCurrent()).toBe('tr');
+    expect(document.documentElement.lang).toBe('tr');
+    expect(document.documentElement.dir).toBe('ltr');
+    expect(service.hasStoredPreference()).toBeFalse();
+  });
+
+  it('lists Turkish with its native name and a left-to-right direction', () => {
+    const service = TestBed.inject(LanguageService);
+
+    expect(service.getLanguages().map(l => l.code)).toEqual(['ar', 'en', 'de', 'tr']);
+    expect(service.getLanguages().find(l => l.code === 'tr')).toEqual(jasmine.objectContaining({ label: 'Türkçe', dir: 'ltr' }));
+  });
+
+  it('switching between Arabic and Turkish flips the direction both ways and stores each explicit choice', () => {
+    const service = TestBed.inject(LanguageService);
+
+    service.use('ar');
+    expect(document.documentElement.dir).toBe('rtl');
+
+    service.use('tr');
+    expect(document.documentElement.dir).toBe('ltr');
+    expect(document.documentElement.lang).toBe('tr');
+    expect(localStorage.getItem('lang')).toBe('tr');
+
+    service.use('ar');
+    expect(document.documentElement.dir).toBe('rtl');
+    expect(localStorage.getItem('lang')).toBe('ar');
+  });
+
+  it('every ordered pair of the four languages can be switched to and reports the right direction', () => {
+    const service = TestBed.inject(LanguageService);
+    const codes = ['ar', 'en', 'de', 'tr'] as const;
+
+    for (const from of codes) {
+      for (const to of codes) {
+        service.use(from, 'ephemeral');
+        service.use(to, 'ephemeral');
+        expect(service.getCurrent()).withContext(`${from} -> ${to}`).toBe(to);
+        expect(document.documentElement.dir).withContext(`${from} -> ${to}`).toBe(to === 'ar' ? 'rtl' : 'ltr');
+        expect(document.documentElement.lang).withContext(`${from} -> ${to}`).toBe(to);
+      }
+    }
+  });
+
+  it('a shared link with ?lang=tr opens in Turkish for a visitor who never chose', async () => {
+    history.replaceState(null, '', `${location.pathname}?lang=tr`);
+    try {
+      const service = TestBed.inject(LanguageService);
+
+      await resolveInitialLanguage(service, geo('SY'))();
+
+      expect(service.getCurrent()).toBe('tr');
+      expect(localStorage.getItem('lang')).toBeNull();
+    } finally {
+      history.replaceState(null, '', location.pathname);
+    }
+  });
+
   it('defaults to Arabic when the device language is not supported', () => {
     deviceLanguages = ['fr-FR'];
 

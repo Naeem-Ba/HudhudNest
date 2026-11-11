@@ -34,7 +34,7 @@ import { ServiceProviderService } from '../core/api/service-provider.service';
 import { AgenciesApiService } from '../core/api/agencies-api.service';
 import { agencyGrace } from '../core/api/agency-grace';
 
-type AppLang = 'ar' | 'en' | 'de';
+type AppLang = 'ar' | 'en' | 'de' | 'tr';
 
 /**
  * pending — signed in, profile not loaded yet: a neutral circle instead of a letter
@@ -605,6 +605,10 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 
     if (code === 'de') {
       return 'de';
+    }
+
+    if (code === 'tr') {
+      return 'tr';
     }
 
     return 'ar';

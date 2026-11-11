@@ -109,7 +109,8 @@ export class ReferralsPage implements OnInit {
     const d = this.data();
     if (!d) return null;
     const lang = (this.translate.currentLang || 'ar').slice(0, 2);
-    const text = lang === 'de' ? d.rewardDe : lang === 'en' ? d.rewardEn : d.rewardAr;
+    // The API stores reward wording in Arabic, English and German only; Turkish readers get the English text.
+    const text = lang === 'de' ? d.rewardDe : lang === 'en' || lang === 'tr' ? d.rewardEn : d.rewardAr;
     return text?.trim() || null;
   });
 

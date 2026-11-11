@@ -15,6 +15,9 @@ describe('supported-preferences', () => {
     expect(new Intl.NumberFormat(numberLocaleFor('en'), { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(1234))
       .toBe('$1,234');
     // Arabic with Latin digits (QA Phase 16, D11): the site writes numbers in Latin digits everywhere.
+    expect(numberLocaleFor('tr')).toBe('tr-TR');
+    expect(new Intl.NumberFormat(numberLocaleFor('tr'), { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(1234))
+      .toMatch(/\$1\.234/);
     expect(numberLocaleFor('ar')).toBe('ar-u-nu-latn');
     expect(numberLocaleFor(null)).toBe('ar-u-nu-latn');
   });

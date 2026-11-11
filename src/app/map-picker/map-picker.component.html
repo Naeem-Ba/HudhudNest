@@ -29,15 +29,15 @@
 
 <div class="map-wrapper" [class.map-wrapper--readonly]="!interactive">
   <div #mapElement class="map-canvas" role="application"
-    [attr.aria-label]="lang === 'ar' ? 'خريطة موقع العقار' : lang === 'de' ? 'Karte des Immobilienstandorts' : 'Property location map'"></div>
+    [attr.aria-label]="lang === 'ar' ? 'خريطة موقع العقار' : lang === 'de' ? 'Karte des Immobilienstandorts' : lang === 'tr' ? 'Mülk konumu haritası' : 'Property location map'"></div>
 
   <div class="map-status" *ngIf="tilesUnavailable()" role="status">
-    {{ lang === 'ar' ? 'تعذر تحميل الخريطة. تحقق من الاتصال بالإنترنت.' : lang === 'de' ? 'Die Karte konnte nicht geladen werden. Prüfen Sie die Internetverbindung.' : 'The map could not load. Check your internet connection.' }}
+    {{ lang === 'ar' ? 'تعذر تحميل الخريطة. تحقق من الاتصال بالإنترنت.' : lang === 'de' ? 'Die Karte konnte nicht geladen werden. Prüfen Sie die Internetverbindung.' : lang === 'tr' ? 'Harita yüklenemedi. İnternet bağlantınızı kontrol edin.' : 'The map could not load. Check your internet connection.' }}
   </div>
 
   <div class="map-actions" *ngIf="interactive && enableLocate">
     <button type="button" class="map-action" (click)="locateCurrentPosition()">
-      {{ lang === 'ar' ? 'استخدام موقعي الحالي' : lang === 'de' ? 'Meinen Standort verwenden' : 'Use my current location' }}
+      {{ lang === 'ar' ? 'استخدام موقعي الحالي' : lang === 'de' ? 'Meinen Standort verwenden' : lang === 'tr' ? 'Mevcut konumumu kullan' : 'Use my current location' }}
     </button>
   </div>
 

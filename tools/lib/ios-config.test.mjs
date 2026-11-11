@@ -23,6 +23,7 @@ function sandbox() {
     'ios/App/App/en.lproj/InfoPlist.strings',
     'ios/App/App/ar.lproj/InfoPlist.strings',
     'ios/App/App/de.lproj/InfoPlist.strings',
+    'ios/App/App/tr.lproj/InfoPlist.strings',
     'ios/App/App.xcodeproj/project.pbxproj'
   ]) {
     mkdirSync(dirname(join(dir, file)), { recursive: true });
@@ -86,10 +87,11 @@ test('a permission text without a translation, or a manifest not packaged in the
 test('the parsers read this repository\'s own files', () => {
   const project = readFileSync(join(root, 'ios/App/App.xcodeproj/project.pbxproj'), 'utf8');
   assert.ok(resourcesPhaseFiles(project).includes('InfoPlist.strings'));
-  assert.deepEqual(knownRegions(project).sort(), ['Base', 'ar', 'de', 'en']);
+  assert.deepEqual(knownRegions(project).sort(), ['Base', 'ar', 'de', 'en', 'tr']);
   const info = readFileSync(join(root, 'ios/App/App/Info.plist'), 'utf8');
-  assert.deepEqual(plistStringArray(info, 'CFBundleLocalizations'), ['en', 'ar', 'de']);
+  assert.deepEqual(plistStringArray(info, 'CFBundleLocalizations'), ['en', 'ar', 'de', 'tr']);
   assert.equal(stringsKeys(readFileSync(join(root, 'ios/App/App/de.lproj/InfoPlist.strings'), 'utf8')).length, 4);
+  assert.equal(stringsKeys(readFileSync(join(root, 'ios/App/App/tr.lproj/InfoPlist.strings'), 'utf8')).length, 4);
 });
 
 // ----- GoogleService-Info.plist -----------------------------------------------------------------

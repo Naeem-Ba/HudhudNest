@@ -4,7 +4,7 @@ import { BackendApiService } from './backend-api.service';
 
 export type TranslationListingKind = 'property' | 'short-stay';
 
-export type TranslationLanguage = 'ar' | 'de' | 'en';
+export type TranslationLanguage = 'ar' | 'de' | 'en' | 'tr';
 
 export type TranslationFieldState = 'ready' | 'pending' | 'same_language' | 'unavailable' | 'empty';
 

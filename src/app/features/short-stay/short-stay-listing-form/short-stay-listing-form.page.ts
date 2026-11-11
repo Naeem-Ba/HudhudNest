@@ -287,7 +287,8 @@ export class ShortStayListingFormPage implements OnInit {
   }
 
   private get lang(): LangCode {
-    return (this.translate.currentLang === 'ar' ? 'ar' : this.translate.currentLang === 'de' ? 'de' : 'en') as LangCode;
+    const current = this.translate.currentLang;
+    return (current === 'ar' || current === 'de' || current === 'tr' ? current : 'en') as LangCode;
   }
 
   get mapLang(): LangCode {

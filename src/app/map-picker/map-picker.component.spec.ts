@@ -51,6 +51,25 @@ describe('MapPickerComponent', () => {
     fixture.destroy();
   });
 
+  it('has Turkish texts for the search, the zoom controls and the location messages (never Arabic or a thrown error under tr)', () => {
+    const fixture = TestBed.createComponent(MapPickerComponent);
+    fixture.componentInstance.lang = 'tr';
+    fixture.detectChanges();
+    const picker = fixture.componentInstance;
+
+    for (const key of ['placeholder', 'button', 'none', 'unavailable', 'searching'] as const) {
+      const text = picker.searchText_(key);
+      expect(text).withContext(key).not.toMatch(/[\u0600-\u06FF]/);
+      expect(text).withContext(key).not.toBe(picker.searchText_.call({ ...picker, lang: 'en' }, key));
+    }
+    const message = (picker as unknown as { message(k: string): string }).message('locationDenied');
+    expect(message).toContain('Konum erişimi');
+    const titles = (picker as unknown as { controlTitles(): { zoomIn: string } }).controlTitles();
+    expect(titles.zoomIn).toBe('Yakınlaştır');
+    expect(fixture.nativeElement.textContent).not.toMatch(/[\u0600-\u06FF]/);
+    fixture.destroy();
+  });
+
   describe('map search (explicit only)', () => {
     const suggestion = (over: Partial<GeoMapSuggestion> = {}): GeoMapSuggestion => ({
       source: 'provider', type: 'Street', name: 'شارع الأمين', displayName: 'شارع الأمين، المزة', latitude: 33.51, longitude: 36.27,

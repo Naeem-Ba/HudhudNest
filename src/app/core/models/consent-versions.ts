@@ -5,7 +5,7 @@
  * agreed to an older version can be told apart from one who agreed to the current one.
  *
  * Bump the version AND the dates here whenever the legal text in
- * public/i18n/legal/{ar,en,de}/*.json changes materially — the three languages share one
+ * public/i18n/legal/{ar,en,de,tr}/*.json changes materially — the four languages share one
  * version, so they must always be updated together.
  */
 export interface LegalDocumentMeta {

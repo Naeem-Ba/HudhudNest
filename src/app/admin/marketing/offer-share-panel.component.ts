@@ -113,7 +113,12 @@ export class OfferSharePanelComponent implements OnInit {
   }
 
   languageLabel(language: OfferShareLanguage): string {
-    return language === 'ar' ? 'العربية' : language === 'en' ? 'English' : 'Deutsch';
+    switch (language) {
+      case 'ar': return 'العربية';
+      case 'en': return 'English';
+      case 'de': return 'Deutsch';
+      default: return 'Türkçe';
+    }
   }
 
   /** The admin page itself is laid out right-to-left whatever the UI language is; this panel's own

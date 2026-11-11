@@ -255,6 +255,18 @@
             <span aria-hidden="true">🇩🇪</span>
             <span>Deutsch</span>
           </li>
+
+          <li
+            role="menuitem"
+            tabindex="0"
+            lang="tr"
+            (click)="changeLang('tr')"
+            (keydown.enter)="changeLang('tr')"
+            [class.lang-menu__item--active]="currentLang === 'tr'"
+          >
+            <span aria-hidden="true">🇹🇷</span>
+            <span>Türkçe</span>
+          </li>
         </ul>
       </div>
 
@@ -832,6 +844,16 @@
           (click)="changeLang('de')"
         >
           Deutsch
+        </button>
+
+        <button
+          type="button"
+          class="mobile-lang__btn"
+          lang="tr"
+          [class.mobile-lang__btn--active]="currentLang === 'tr'"
+          (click)="changeLang('tr')"
+        >
+          Türkçe
         </button>
       </div>
     </nav>

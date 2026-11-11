@@ -62,7 +62,7 @@
 | الحقن | `inject()` دالةً، لا حقن بالمُنشئ في الكود الجديد |
 | التنسيق | نظامان معاً: SCSS خام + متغيرات CSS (معظم الصفحات) و**Tailwind v4** (`checkout`) |
 | الخطوط | Roboto · IBM Plex Sans Arabic · Cairo (من Google Fonts في `index.html`) |
-| التعريب | `@ngx-translate/core` 17 — ثلاث لغات، الافتراضية `ar` |
+| التعريب | `@ngx-translate/core` 17 — أربع لغات (ar, en, de, tr)، الافتراضية `ar` |
 | الخرائط | Leaflet 1.9 |
 | الزمن الحقيقي | `@microsoft/signalr` 10 |
 | المحمول | Capacitor 8 — Android + iOS. `@angular/service-worker` **^20.3.25** تبعية موجودة، **غير مُفعَّلة** (‏§12) |

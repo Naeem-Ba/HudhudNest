@@ -27,7 +27,7 @@ import { ImageFallbackDirective } from '../../../shared/directives/image-fallbac
 import { PageMetaService } from '../../../core/services/page-meta.service';
 import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
 import { apiErrorText } from '../../../core/api/api-error-text';
-import { ListingTranslationService } from '../../../core/api/listing-translation.service';
+import { ListingTranslationService, TranslationLanguage } from '../../../core/api/listing-translation.service';
 import { ListingTranslationController } from '../../property-detail/listing-translation.controller';
 import { TranslationNoticeComponent } from '../../property-detail/translation-notice.component';
 import { mergeViewCount } from '../../../shared/utils/view-count';
@@ -136,7 +136,7 @@ export class ShortStayDetailPage implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(event => {
         const current = this.listing();
-        if (current) this.translation.start(current.id, event.lang as 'ar' | 'de' | 'en', 'short-stay');
+        if (current) this.translation.start(current.id, event.lang as TranslationLanguage, 'short-stay');
       });
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) { this.error.set('SHORTSTAY.DETAIL.NOT_FOUND'); this.pageMeta.markNotFound(); return; }
@@ -155,7 +155,7 @@ export class ShortStayDetailPage implements OnInit {
     this.listingsApi.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: listing => {
         this.listing.set(listing);
-        this.translation.start(listing.id, (this.translate.currentLang || 'ar') as 'ar' | 'de' | 'en', 'short-stay');
+        this.translation.start(listing.id, (this.translate.currentLang || 'ar') as TranslationLanguage, 'short-stay');
         this.pageMeta.applyDynamic({ title: listing.title, description: listing.description, path: `/short-stay/${listing.id}` });
         this.loading.set(false);
         this.loadAvailability();
