@@ -1,0 +1,105 @@
+// Shared look of the public marketing pages: navy header/footer (fixed colours, so text is always light on navy),
+// content area on the app's page tokens. Logical properties only, so RTL needs no second copy.
+:host {
+  --mk-navy: #0f2742;
+  --mk-navy-600: #1a3a5c;
+  --mk-gold: #d6a84f;
+  --mk-gold-light: #e8c47a;
+  --mk-on-navy: #f4f7fb;         // 15.7:1 on navy
+  --mk-on-navy-muted: #c5d0dd;   // 9.6:1 on navy (the old muted grey was below 4.5:1)
+  --mk-line-on-navy: #5f7791;    // 3.5:1, decorative borders / UI boundaries only
+
+  display: block;
+  min-height: 100dvh;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: var(--page-bg);
+  line-height: 1.65;
+  overflow-x: clip;
+}
+
+.wrap { width: 100%; max-width: 1160px; margin-inline: auto; }
+.wrap { padding-inline-start: max(1.25rem, env(safe-area-inset-left)); padding-inline-end: max(1.25rem, env(safe-area-inset-right)); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--mk-gold-light); outline-offset: 3px; border-radius: 6px; }
+main:focus { outline: none; }
+
+.skip {
+  position: absolute; inset-inline-start: 0.5rem; inset-block-start: -4rem; z-index: 10;
+  padding: 0.75rem 1rem; border-radius: 8px; background: var(--mk-gold); color: #111; font-weight: 700;
+  &:focus { inset-block-start: 0.5rem; }
+}
+
+// ─── Header ───────────────────────────────────────────
+.hdr {
+  position: sticky; inset-block-start: 0; z-index: 20;
+  background: var(--mk-navy); color: var(--mk-on-navy);
+  padding-block-start: env(safe-area-inset-top);
+  border-block-end: 1px solid var(--mk-navy-600);
+}
+.hdr__bar { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; min-height: 64px; position: relative; }
+.hdr__brand { display: inline-flex; align-items: center; min-height: 44px; img { display: block; height: 40px; width: auto; } }
+.hdr__tools { display: flex; align-items: center; gap: 0.5rem; }
+
+.lang select {
+  min-height: 44px; padding-inline: 0.75rem; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--mk-line-on-navy); background: var(--mk-navy); color: var(--mk-on-navy);
+  font: inherit; font-size: 0.875rem; font-weight: 600;
+  option { background: #fff; color: #0f2742; }
+  &:hover { border-color: var(--mk-gold); }
+}
+
+.hdr__burger {
+  width: 44px; height: 44px; display: grid; place-items: center; cursor: pointer;
+  border: 1px solid var(--mk-line-on-navy); border-radius: 10px; background: transparent; color: var(--mk-on-navy);
+  svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+}
+
+.menu {
+  display: none;
+  position: absolute; inset-inline: 0; inset-block-start: 100%;
+  flex-direction: column; padding: 0.5rem 1.25rem 1rem;
+  background: var(--mk-navy); border-block-end: 1px solid var(--mk-navy-600);
+  &--open { display: flex; }
+  a {
+    display: flex; align-items: center; min-height: 48px; text-decoration: none; font-weight: 600; color: var(--mk-on-navy);
+    border-block-end: 1px solid var(--mk-navy-600);
+    &:hover, &.is-active { color: var(--mk-gold-light); }
+  }
+  .menu__platform {
+    margin-block-start: 0.5rem; border: 0; font-weight: 500; font-size: 0.9375rem; color: var(--mk-on-navy-muted);
+    &:hover { color: var(--mk-on-navy); text-decoration: underline; }
+  }
+}
+
+@media (min-width: 900px) {
+  .hdr__burger { display: none; }
+  .menu {
+    display: flex; position: static; flex-direction: row; align-items: center; gap: 0.25rem; padding: 0; border: 0; background: transparent; flex: 1; margin-inline-start: 1.5rem;
+    a { padding-inline: 0.75rem; border: 0; border-radius: 8px; font-size: 0.9375rem; }
+    .menu__platform { margin: 0; margin-inline-start: auto; }
+  }
+  .hdr__tools { order: 3; }
+}
+
+// ─── Footer ───────────────────────────────────────────
+.ftr {
+  background: var(--mk-navy); color: var(--mk-on-navy-muted);
+  padding-block: 2.5rem calc(2rem + env(safe-area-inset-bottom));
+  a { text-decoration: none; color: var(--mk-on-navy); display: inline-flex; align-items: center; min-height: 44px; &:hover { color: var(--mk-gold-light); text-decoration: underline; } }
+}
+.ftr__inner { display: grid; gap: 1.5rem; }
+.ftr__brand { img { display: block; height: 36px; width: auto; } p { margin: 0.5rem 0 0; max-width: 30em; } }
+.ftr__nav { display: flex; flex-wrap: wrap; gap: 0 1.25rem; }
+.ftr__copy { margin: 0; font-size: 0.875rem; }
+.lang--footer select { min-height: 44px; }
+
+@media (min-width: 900px) {
+  .ftr__inner { grid-template-columns: 1.5fr auto auto auto; align-items: start; }
+  .ftr__nav { flex-direction: column; gap: 0; }
+  .ftr__copy { grid-column: 1 / -1; }
+}
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }

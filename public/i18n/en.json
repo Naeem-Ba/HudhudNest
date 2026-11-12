@@ -2715,270 +2715,7 @@
     }
   },
   "LANDING": {
-    "TOP": {
-      "HOME_LINK": "Browse the site",
-      "LANG_ARIA": "Language"
-    },
-    "HERO": {
-      "ARIA": "Homepage",
-      "BADGE": "Beta — launching soon in Syria",
-      "TITLE_MAIN": "Every home has a story.",
-      "TITLE_ACCENT": "Let's start yours in Syria.",
-      "TAGLINE_1": "A small platform with a big heart, helping families find a home — real photos and direct contact, no duplicate or fake listings.",
-      "CTA_EXPLORE": "Explore properties",
-      "CTA_EXPLORE_ARIA": "Explore properties on HudhudNest",
-      "CTA_PUBLISH": "List your property",
-      "CTA_PUBLISH_ARIA": "Publish your property listing on HudhudNest",
-      "CHIPS_ARIA": "Quick facts",
-      "CHIP_FREE": "Free to start",
-      "CHIP_REAL": "Real photos, direct contact",
-      "CHIP_LANGS": "عربي · English · Deutsch · Türkçe",
-      "VISUAL_ARIA": "Illustration of the platform's search screen — not real listings",
-      "VISUAL_TITLE": "Find your property",
-      "VISUAL_SALE": "Buy",
-      "VISUAL_RENT": "Rent",
-      "VISUAL_LOCATION": "Governorate · Area",
-      "VISUAL_TYPE": "Property type",
-      "VISUAL_PRICE": "Price range",
-      "VISUAL_BTN": "Show results",
-      "VISUAL_NOTE": "Interface illustration"
-    },
-    "VISION": {
-      "EYEBROW": "Our vision",
-      "TITLE": "A real-estate platform for all of Syria",
-      "TEXT": "A platform that organizes Syria's property listings into one register: real photos, accurate data, and a single source of truth instead of dozens of scattered Facebook and WhatsApp groups.",
-      "PATH_ARIA": "Rollout stages",
-      "STEP1_TAG": "The start",
-      "STEP1_TITLE": "Damascus and Rif Dimashq",
-      "STEP1_DESC": "Our gradual launch most likely begins here, so we can build an organized register and learn from real use.",
-      "STEP2_TAG": "Then",
-      "STEP2_TITLE": "The rest of Syria's governorates",
-      "STEP2_DESC": "Our vision covers all of Syria, and we expand stage by stage.",
-      "NOTE": "The launch is gradual: availability of listings and services varies by area and grows over time."
-    },
-    "USES": {
-      "EYEBROW": "Start here",
-      "TITLE": "What can you do with HudhudNest?",
-      "ITEMS": {
-        "BUY": {
-          "TITLE": "Buy a property",
-          "DESC": "Browse properties for sale with photos and structured details, and compare options in one place."
-        },
-        "RENT": {
-          "TITLE": "Rent a home",
-          "DESC": "Search rentals by governorate, area, price and amenities."
-        },
-        "SHORT": {
-          "TITLE": "Short stays",
-          "DESC": "Discover short-term stays and send a booking request to the host."
-        },
-        "INVEST": {
-          "TITLE": "Investment opportunities",
-          "DESC": "Explore real-estate investment projects and follow the ones that matter to you."
-        },
-        "PUBLISH": {
-          "TITLE": "List your property",
-          "DESC": "Add your listing with clear photos and details so seekers can reach you directly."
-        },
-        "SERVICES": {
-          "TITLE": "Request a property service",
-          "DESC": "Browse services offered by providers approved by the platform."
-        }
-      },
-      "GO": "Explore"
-    },
-    "PROBLEM_SOLUTION": {
-      "EYEBROW": "Why HudhudNest?",
-      "TITLE": "Finding a property in Syria is still exhausting",
-      "DESC": "We hear the same complaints every day. HudhudNest aims to fix them, step by step.",
-      "PROBLEM_LABEL": "Right now",
-      "PROBLEM_ITEMS": {
-        "ITEM_1": "Searching scattered, disorganized Facebook and WhatsApp groups",
-        "ITEM_2": "Hard to tell if a listing is real or a duplicate",
-        "ITEM_3": "Most listings are missing photos and basic information",
-        "ITEM_4": "Hard to compare prices and areas in one place",
-        "ITEM_5": "Weak trust between the seeker and the owner or agency"
-      },
-      "SOLUTION_LABEL": "With HudhudNest",
-      "SOLUTION_ITEMS": {
-        "ITEM_1": "One platform that brings together Syria's listings, organized and searchable",
-        "ITEM_2": "Clear photos and consistent basic information on every listing",
-        "ITEM_3": "Filter by city, area, price, type, and purpose",
-        "ITEM_4": "Direct contact with the owner or real-estate office",
-        "ITEM_5": "Gradual verification to reduce noise and increase transparency"
-      }
-    },
-    "FEATURES": {
-      "EYEBROW": "What sets us apart",
-      "TITLE": "Everything you need in one place",
-      "ITEMS": {
-        "SEARCH": {
-          "TITLE": "Easier search",
-          "DESC": "Filter by city, area, price, property type, and purpose — for sale or rent — in seconds."
-        },
-        "INFO": {
-          "TITLE": "Clearer information",
-          "DESC": "Photos, a detailed description, approximate location, size, floors, and organized contact details — everything in its place."
-        },
-        "PRICE": {
-          "TITLE": "Know your area's prices",
-          "DESC": "A price range based on listings actually published, plus a valuation request for your own property when you need one."
-        },
-        "LANGS": {
-          "TITLE": "In four languages",
-          "DESC": "A complete interface in Arabic, English, German and Turkish, for visitors inside Syria and abroad."
-        },
-        "SERVICES": {
-          "TITLE": "Property services",
-          "DESC": "Verification, inspection, photography and more, from providers the platform team approves."
-        },
-        "SAVE": {
-          "TITLE": "Save and share",
-          "DESC": "Add favorites, save your searches and share a listing with anyone."
-        },
-        "MAP": {
-          "TITLE": "On the map",
-          "DESC": "Browse properties on the map to see their approximate location and surroundings."
-        },
-        "CONTACT": {
-          "TITLE": "Direct contact",
-          "DESC": "Reach the owner or real-estate office directly, with no complicated steps or unnecessary middlemen."
-        }
-      }
-    },
-    "SEARCH": {
-      "EYEBROW": "Search and filters",
-      "TITLE": "Search smart… and find the property that fits you.",
-      "TEXT": "Precise filters, comparable prices and results that refresh with every new listing, instead of scrolling through scattered posts.",
-      "POINTS": {
-        "1": "Governorate, then area and neighborhood",
-        "2": "Buy or rent",
-        "3": "Property type, price range and currency",
-        "4": "Amenities and features",
-        "5": "Sorting, and searching around a point on the map"
-      },
-      "POINTS_ARIA": "Main search options",
-      "CTA": "Try the search now",
-      "CTA_MAP": "Open the map"
-    },
-    "VALUE": {
-      "EYEBROW": "Price insight",
-      "TITLE": "What is your property worth? Discover an estimate.",
-      "TEXT": "Two ways to get a price estimate, depending on what you need.",
-      "RANGE_TAG": "Instant",
-      "RANGE_TITLE": "Price range in your area",
-      "RANGE_DESC": "Choose the governorate, area, property type and size to see the asking-price range in listings published now. The range shows how many listings it is based on — and if there is not enough data, we say so.",
-      "RANGE_CTA": "Show the price range",
-      "REQ_TAG": "For your property",
-      "REQ_TITLE": "Request a valuation of your property",
-      "REQ_DESC": "Enter the governorate, area, neighborhood, property type, size and number of rooms. You get a quick estimate based on similar listings, or we send your request to real-estate offices in your area.",
-      "REQ_CTA": "Request an estimate",
-      "DISCLAIMER": "An estimate is a guide, not an official valuation or a guaranteed price. For major financial decisions, consult a professional and verify for yourself."
-    },
-    "LANGS": {
-      "EYEBROW": "Multilingual",
-      "TITLE": "Syrian property, in your language.",
-      "TEXT": "The platform speaks Arabic, English, German and Turkish, so you can explore Syrian property easily — whether you are in Syria or abroad.",
-      "TILES_ARIA": "Supported languages",
-      "NOTE": "Automatic translation of listing texts is being prepared and is not announced as ready yet; for now a listing appears in the language its author wrote it in.",
-      "CTA_EXPATS": "Guide for expats"
-    },
-    "SERVICES": {
-      "EYEBROW": "Property services",
-      "TITLE": "Don't just search for a property… discover the services you need on your property journey.",
-      "TEXT": "Property services offered by providers approved by the platform. Categories and providers grow gradually, and the catalog shows what is actually available.",
-      "CHIPS_ARIA": "Examples of service categories",
-      "C_VERIFICATION": "Verification",
-      "C_VALUATION": "Valuation",
-      "C_INSPECTION": "Technical inspection",
-      "C_PHOTOGRAPHY": "Professional photography",
-      "C_MANAGEMENT": "Property management",
-      "C_LEGAL": "Legal services",
-      "C_ENGINEERING": "Engineering",
-      "C_MAINTENANCE": "Maintenance",
-      "CTA": "Browse services",
-      "CTA_JOIN": "Join as a service provider"
-    },
-    "OFFICES": {
-      "EYEBROW": "For offices and advertisers",
-      "TITLE": "Put your properties in front of seekers",
-      "TEXT": "Whether you are an owner or a real-estate office, the platform gives you an organized way to show your listings and reach interested people.",
-      "POINTS": {
-        "1": {
-          "TITLE": "A public page for your office",
-          "DESC": "Introduce your office and show its listings on a page with its own link."
-        },
-        "2": {
-          "TITLE": "Your team and listings in one place",
-          "DESC": "Add agents and staff and manage the office's listings, depending on your plan."
-        },
-        "3": {
-          "TITLE": "Reports and analytics",
-          "DESC": "Follow how your listings perform, depending on the plan you choose."
-        },
-        "4": {
-          "TITLE": "Direct contact with interested people",
-          "DESC": "Messages, inquiries and visit requests reach you inside the platform."
-        }
-      },
-      "CTA_PLANS": "See the plans",
-      "CTA_REGISTER": "Register your office"
-    },
-    "OFFER": {
-      "EYEBROW": "Special offer for real-estate offices",
-      "PROGRESS_ARIA": "{{count}} of {{max}} joined so far",
-      "PROGRESS_LABEL": "{{count}} of {{max}} offices have joined so far",
-      "CTA": "Register your office now",
-      "CTA_ARIA": "Register your real-estate office for this offer",
-      "ENDS_ON": "Offer ends on {{date}}",
-      "LOADING_ARIA": "Loading offers",
-      "EMPTY_TITLE": "No offers are published right now",
-      "EMPTY_TEXT": "Register your interest and we will let you know as soon as the first offer launches.",
-      "EMPTY_CTA": "Register your interest",
-      "ERROR_TITLE": "Offers could not be loaded right now",
-      "ERROR_TEXT": "The rest of the page works normally. You can try again.",
-      "RETRY": "Try again"
-    },
-    "HOW": {
-      "EYEBROW": "In a few simple steps",
-      "TITLE": "How does HudhudNest work?",
-      "ARIA": "Steps to use the platform",
-      "STEPS": {
-        "STEP_1": {
-          "TITLE": "Choose a property type or city",
-          "DESC": "Decide whether you're looking to rent or buy, then choose your preferred city or area."
-        },
-        "STEP_2": {
-          "TITLE": "Browse organized listings",
-          "DESC": "Explore properties with clear photos, prices, and information, and compare options easily."
-        },
-        "STEP_3": {
-          "TITLE": "Contact the advertiser",
-          "DESC": "Reach the owner or the real-estate office directly, and save what you like to come back to it later."
-        }
-      }
-    },
     "FORM": {
-      "EYEBROW": "Waitlist",
-      "TITLE": "Be one of the first HudhudNest users",
-      "DESC": "Register your interest now and we'll reach out when the platform launches in your area.",
-      "ARIA": "Waitlist signup form",
-      "SUCCESS": {
-        "OFFER_TITLE": "You're registered for the offer!",
-        "OFFER_MSG": "Great! We've reserved you a spot in the \"first 100 offices\" offer. We'll follow up soon with the details.",
-        "NO_OFFER_TITLE": "Registration successful",
-        "NO_OFFER_MSG": "Unfortunately the limited offer filled up before your registration arrived, but your interest has been registered — we'll reach out when the platform launches.",
-        "PLAIN_TITLE": "Registration successful!",
-        "PLAIN_MSG": "Thank you — your interest has been registered. We'll send you updates when HudhudNest launches.",
-        "RESET_BTN": "Register someone else"
-      },
-      "FULLNAME_LABEL": "Full name",
-      "FULLNAME_PLACEHOLDER": "e.g. Ahmad Mohammad",
-      "PHONE_LABEL": "Phone or WhatsApp number",
-      "PHONE_PLACEHOLDER": "e.g. 0933123456 or +963933123456",
-      "PHONE_HINT": "A WhatsApp number works too",
-      "USERTYPE_LABEL": "I am…",
-      "USERTYPE_PLACEHOLDER": "Choose what applies to you",
       "USER_TYPES": {
         "RENTER": "Looking to rent",
         "BUYER": "Looking to buy",
@@ -2986,8 +2723,6 @@
         "AGENCY": "Real-estate office",
         "INVESTOR": "Investor / expat"
       },
-      "CITY_LABEL": "City or area",
-      "CITY_PLACEHOLDER": "Choose your city or area",
       "CITIES": {
         "DAMASCUS": "Damascus",
         "ALEPPO": "Aleppo",
@@ -3004,95 +2739,11 @@
         "IDLIB": "Idlib",
         "DAMASCUS_COUNTRYSIDE": "Rif Dimashq",
         "OTHER": "Other area"
-      },
-      "NOTES_LABEL": "Additional notes",
-      "NOTES_OPTIONAL": "optional",
-      "NOTES_PLACEHOLDER": "e.g. Looking for a 2-bedroom apartment in Mazzeh under $200",
-      "REQUIRED_ARIA": "required",
-      "SUBMIT_ARIA": "Submit waitlist signup",
-      "SUBMIT_LOADING": "Registering…",
-      "SUBMIT_TEXT": "Join the waitlist now",
-      "PRIVACY_NOTE": "We won't share your data with third parties or send unsolicited messages.",
-      "ERRORS": {
-        "REQUIRED": "This field is required.",
-        "MINLENGTH": "Too short (minimum {{min}} characters).",
-        "MAXLENGTH": "You've exceeded the maximum length.",
-        "PHONE": "Invalid phone number. Example: 0933123456 or +963933123456",
-        "GENERIC": "Invalid value."
       }
-    },
-    "TRUST": {
-      "EYEBROW": "Full transparency",
-      "TITLE": "We're building trust step by step",
-      "DESC": "We're in our first MVP stage. Here's what we commit to, and what's still in progress.",
-      "ITEMS": {
-        "PHOTOS": {
-          "TITLE": "Real photos required",
-          "DESC": "We encourage property owners to upload real photos of the property, and don't accept fake or borrowed images."
-        },
-        "CONTACT": {
-          "TITLE": "Clear contact details",
-          "DESC": "Every listing must include accurate contact information. We're here to connect you with the other side."
-        },
-        "CAUTION": {
-          "TITLE": "Don't pay before verifying",
-          "DESC": "We always recommend visiting the property in person and verifying documents before paying anything. The platform facilitates contact — it doesn't guarantee the deal."
-        },
-        "IMPROVING": {
-          "TITLE": "Always improving",
-          "DESC": "Listing verification will keep improving over time. We're upfront about being in an early stage."
-        }
-      }
-    },
-    "FAQ": {
-      "EYEBROW": "Questions",
-      "TITLE": "Frequently asked questions",
-      "ITEMS": {
-        "LAUNCH": {
-          "Q": "When will the platform launch?",
-          "A": "The platform runs as a beta and is launching gradually, most likely starting with Damascus and Rif Dimashq and then expanding to the other governorates. Register your interest in the form and we will let you know when it reaches your area."
-        },
-        "FREE": {
-          "Q": "Is the service free at first?",
-          "A": "Yes — we plan for the service to be free in its first stage for both seekers and property owners, with the possibility of premium plans later."
-        },
-        "OWNER": {
-          "Q": "Can property owners register now?",
-          "A": "Absolutely. Register your interest through the form and choose \"I want to list a property\" — we'll reach out once listing opens."
-        },
-        "AGENCY": {
-          "Q": "Can real-estate offices add their listings?",
-          "A": "Yes, we welcome real-estate offices. Choose \"Real-estate office\" in the form and we'll follow up with partnership details."
-        },
-        "VERIFIED": {
-          "Q": "Are the listings verified and safe?",
-          "A": "We're working on clearer information and fewer random listings. The platform is still in development, and verification will keep improving. As with any real-estate deal, we always recommend verifying in person before deciding."
-        },
-        "SYRIA_ONLY": {
-          "Q": "Is the platform only for Syria?",
-          "A": "We're starting in Syria, but the design supports expanding into Arab and global markets later, especially to serve Syrian expats everywhere."
-        }
-      }
-    },
-    "FINAL_CTA": {
-      "TITLE": "Be one of the first HudhudNest users",
-      "DESC": "Help us build a more organized real-estate experience in Syria. Your voice will help shape the platform to come.",
-      "BTN": "Join the waitlist now",
-      "BTN_ARIA": "Join the HudhudNest waitlist",
-      "EXPLORE": "Explore properties",
-      "PUBLISH": "Have a property? List it"
-    },
-    "FOOTER": {
-      "TAGLINE": "A digital real-estate platform · Syria first",
-      "RIGHTS": "All rights reserved",
-      "PRIVACY": "Privacy Policy",
-      "TERMS": "Terms of Service",
-      "DOWNLOAD": "Download the app",
-      "CONTACT": "Contact us"
     },
     "SEO": {
-      "TITLE": "Digital real-estate platform for Syria",
-      "DESCRIPTION": "Search property for sale and rent in Syria, check area prices, request a valuation and discover property services. In Arabic, English, German and Turkish."
+      "TITLE": "HudhudNest – find property in Syria",
+      "DESCRIPTION": "Buy, rent or stay short-term in Syria: one platform instead of scattered groups. Beta, launching soon, free at launch."
     }
   },
   "VALUATION": {
@@ -4771,5 +4422,160 @@
     "IMPORT_ROLLBACK_CONFIRM": "Roll back the whole batch?",
     "CHANGES_OF": "Changes of: {{name}}",
     "NO_CHANGES": "No changes recorded."
+  },
+  "SITE": {
+    "NAV": {
+      "SKIP": "Skip to content",
+      "MENU_OPEN": "Open menu",
+      "MENU_CLOSE": "Close menu",
+      "MAIN_ARIA": "Main navigation",
+      "HOME_ARIA": "HudhudNest – home",
+      "LANG_ARIA": "Language",
+      "PROPERTIES": "Properties",
+      "ABOUT": "About us",
+      "PROVIDERS": "For providers",
+      "CONTACT": "Contact",
+      "PLATFORM": "Go to the platform"
+    },
+    "HERO": {
+      "BADGE": "Beta – launching in Syria soon",
+      "TITLE": "Find property in Syria – clear and direct.",
+      "SUBLINE": "Buy, rent or stay short-term: one platform instead of scattered Facebook and WhatsApp groups.",
+      "CTA_PUBLISH": "List your property",
+      "CTA_NOTIFY": "Notify me when you launch",
+      "CTA_EXPLORE": "Discover properties",
+      "CHIP_FREE": "Free at launch"
+    },
+    "WHY": {
+      "TITLE": "Why HudhudNest",
+      "INTRO": "Searching for property in Syria is still a struggle. HudhudNest aims to change that step by step.",
+      "ALL": {
+        "T": "Everything in one place",
+        "D": "Listings, organised and searchable."
+      },
+      "CLEAR": {
+        "T": "Clear details",
+        "D": "Photos and consistent basic information."
+      },
+      "DIRECT": {
+        "T": "Direct contact",
+        "D": "With owners or real-estate offices."
+      }
+    },
+    "START": {
+      "TITLE": "Start here",
+      "BUY": {
+        "T": "Buy a property",
+        "D": "Sign up and find out as soon as properties for sale are available."
+      },
+      "RENT": {
+        "T": "Rent a home",
+        "D": "Sign up and find out as soon as rentals are available."
+      },
+      "SHORT": {
+        "T": "Short stays",
+        "D": "Sign up and find out as soon as short-stay accommodation is available."
+      },
+      "OFFER": {
+        "T": "List a property",
+        "D": "Create an account and add your property with photos."
+      }
+    },
+    "WAITLIST": {
+      "TITLE": "Notify me when you launch",
+      "INTRO": "Leave your email address or WhatsApp number. We will get in touch as soon as HudhudNest launches in Syria.",
+      "CONTACT_LABEL": "Email or WhatsApp number",
+      "CONTACT_PLACEHOLDER": "name@example.com or +49 157 1234567",
+      "CONTACT_HINT": "WhatsApp numbers with country code, e.g. +49 or +963.",
+      "INTEREST_LABEL": "What are you interested in? (optional)",
+      "INTEREST_NONE": "No preference",
+      "INTEREST_KAUFEN": "Buying a property",
+      "INTEREST_MIETEN": "Renting a home",
+      "INTEREST_KURZ": "Short stays",
+      "CONSENT_BEFORE": "I agree that HudhudNest may contact me about the launch using these details. Information on processing and on withdrawing consent is in the",
+      "CONSENT_LINK": "privacy policy",
+      "CONSENT_AFTER": ".",
+      "SUBMIT": "Sign me up",
+      "SENDING": "Sending …",
+      "CLOSE": "Close",
+      "SUCCESS_TITLE": "Thank you, you are on the list.",
+      "SUCCESS_TEXT": "We will get in touch as soon as we launch.",
+      "ERR_CONTACT": "Please enter a valid email address or a WhatsApp number with country code.",
+      "ERR_CONSENT": "Please agree to the processing so that we can notify you.",
+      "ERR_SEND": "That did not work. Please try again in a moment.",
+      "ERR_UNAVAILABLE": "The waitlist is not available right now. Please try again later."
+    },
+    "FOOTER": {
+      "TAGLINE": "Property in Syria – clear and direct.",
+      "NAV_ARIA": "Pages",
+      "LEGAL_ARIA": "Legal",
+      "IMPRESSUM": "Legal notice (Impressum)",
+      "PRIVACY": "Privacy"
+    },
+    "ABOUT": {
+      "TITLE": "About us",
+      "LEAD": "HudhudNest is a property platform for Syria, built for people in Syria and the Syrian diaspora.",
+      "VISION_TITLE": "Our vision",
+      "VISION_TEXT": "One property platform for all of Syria: a single register instead of dozens of scattered Facebook and WhatsApp groups.",
+      "STEP1_TAG": "The start",
+      "STEP1_TITLE": "Damascus and surroundings",
+      "STEP1_TEXT": "This is where our gradual launch is expected to begin, so we can build an orderly register and learn from real use.",
+      "STEP2_TAG": "Afterwards",
+      "STEP2_TITLE": "The other governorates",
+      "STEP2_TEXT": "Our vision covers all of Syria. We expand phase by phase.",
+      "WHY_TITLE": "Why we do this",
+      "WHY_TEXT": "Anyone looking for or offering property in Syria, whether living there or abroad, has to work through scattered groups and messages today. We want seekers and providers to find each other more easily and directly."
+    },
+    "PROVIDERS": {
+      "TITLE": "For providers",
+      "LEAD": "Owners and real-estate offices can list their property now and be there from day one.",
+      "FREE": "Free at launch",
+      "STEPS_TITLE": "In three steps",
+      "STEP1_T": "Create an account",
+      "STEP1_D": "Sign up on the platform.",
+      "STEP2_T": "Add your property with photos",
+      "STEP2_D": "Enter the key details and upload photos.",
+      "STEP3_T": "Receive enquiries directly",
+      "STEP3_D": "Interested people contact you directly.",
+      "WHY_TITLE": "Why list with us",
+      "WHY_FREE_T": "Free at launch",
+      "WHY_FREE_D": "Listing your property costs nothing at launch.",
+      "WHY_REACH_T": "Reach the diaspora",
+      "WHY_REACH_D": "The platform is available in Arabic, German, English and Turkish.",
+      "WHY_SIMPLE_T": "Simple process",
+      "WHY_SIMPLE_D": "A guided form instead of single messages in groups."
+    },
+    "LEGAL": {
+      "DRAFT": "DRAFT – fill in before going live"
+    },
+    "SEO": {
+      "ABOUT": {
+        "TITLE": "About us – HudhudNest",
+        "DESCRIPTION": "Our vision: one property platform for all of Syria, starting with Damascus and its surroundings."
+      },
+      "PROVIDERS": {
+        "TITLE": "For providers – HudhudNest",
+        "DESCRIPTION": "List property in Syria: create an account, add your property with photos, receive enquiries directly. Free at launch."
+      },
+      "IMPRESSUM": {
+        "TITLE": "Legal notice – HudhudNest",
+        "DESCRIPTION": "Provider identification of HudhudNest."
+      },
+      "PRIVACY": {
+        "TITLE": "Privacy – HudhudNest",
+        "DESCRIPTION": "Privacy policy of HudhudNest."
+      }
+    },
+    "FAQ": {
+      "TITLE": "Frequently asked questions",
+      "Q1": "When does HudhudNest launch in Syria?",
+      "A1": "HudhudNest is in beta. The launch in Syria is coming soon, starting with Damascus and its surroundings. The waitlist lets you know in time.",
+      "Q2": "Does listing cost anything?",
+      "A2": "Listing is free at launch.",
+      "Q3": "How do I reach owners or real-estate offices?",
+      "A3": "Once listings are online, you contact them directly through the platform.",
+      "Q4": "What data does the waitlist store?",
+      "A4": "Only your email address or WhatsApp number, optionally your interest, the language and the time of your consent."
+    }
   }
 }

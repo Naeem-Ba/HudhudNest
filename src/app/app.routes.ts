@@ -712,13 +712,12 @@ export const routes: Routes = [
   },
 
   {
-    // Marketing landing page: deliberately a top-level route (a sibling of LayoutComponent, like
-    // /login) so the main Navbar is not rendered here. Nothing else changes: the Navbar and every
-    // other page keep using LayoutComponent. The page brings its own slim brand strip and footer.
-    path: 'landing',
-    loadComponent: () =>
-      import('./features/landing/landing-page.component')
-        .then(m => m.LandingPageComponent)
+    // Public marketing pages (/landing, /ueber-uns, /fuer-anbieter, /impressum, /datenschutz): top-level and
+    // pathless, a sibling of LayoutComponent like /login, so the app Navbar is not rendered here. They bring their own
+    // header and footer (features/marketing/shell).
+    path: '',
+    loadChildren: () =>
+      import('./features/marketing/marketing.routes').then(m => m.MARKETING_ROUTES)
   },
   {
     path: 'login',

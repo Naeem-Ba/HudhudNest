@@ -107,9 +107,8 @@ export const TR_SAME_AS_ENGLISH = new Set([
   'PRICING.PREMIUM.NAME',
   'ADMIN_REPORTS.PRIORITY.Normal',
   'property_detail.Unit_of_measurement',
-  'CHECKOUT.USD',
-  'LANDING.HERO.CHIP_LANGS'
+  'CHECKOUT.USD'
 ]);
 
-/** The one Turkish value that is deliberately in Arabic script: the language-name chip row ("عربي · English · Deutsch · Türkçe"). */
-export const TR_OTHER_SCRIPT = new Set(['LANDING.HERO.CHIP_LANGS']);
+/** Turkish values that are deliberately in another script. None at the moment (the landing language chip row was removed). */
+export const TR_OTHER_SCRIPT = new Set([]);
