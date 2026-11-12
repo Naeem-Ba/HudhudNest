@@ -37,8 +37,34 @@ export interface AppEnvironment {
   /** Apple redirect URI. Required for Apple Sign In popup flow. */
   appleRedirectUri: string;
 
+  /**
+   * Origin of the platform (the app itself) that the marketing pages link to ("Zur Plattform", "Immobilie
+   * inserieren"). No trailing slash. Defaults to siteUrl; empty in local dev, where the pages fall back to a
+   * relative link on the current origin.
+   */
+  appUrl: string;
+
+  /**
+   * Whether property listings exist yet. While false the marketing pages show no search, no listing grid and
+   * never link to a (empty) search result: the primary call to action is "list your property" and the
+   * secondary one opens the waitlist. Only the exact build variable LISTINGS_LIVE=true switches it on.
+   */
+  listingsLive: boolean;
+
+  /**
+   * Supabase project used ONLY for the public waitlist (table waitlist_signups, INSERT-only for the anon role).
+   * The anon key is public by design; the service_role key must never appear in this app. Empty = the waitlist
+   * form reports that signing up is not available, instead of pretending to save.
+   */
+  supabase: SupabaseEnvironment;
+
   /** Monetization switches and public ad identifiers. Everything is off/empty unless set at build time. */
   ads: AdsEnvironment;
+}
+
+export interface SupabaseEnvironment {
+  url: string;
+  anonKey: string;
 }
 
 /**
@@ -99,6 +125,18 @@ export function readBaseUrlFromProcessEnv(): string | undefined {
 
 export function readSignalRUrlFromProcessEnv(): string | undefined {
   return readProcessEnv('SIGNALR_URL');
+}
+
+export function readAppUrlFromProcessEnv(): string | undefined {
+  return readProcessEnv('APP_URL');
+}
+
+export function readSupabaseFromProcessEnv(): SupabaseEnvironment {
+  return { url: readProcessEnv('SUPABASE_URL') ?? '', anonKey: readProcessEnv('SUPABASE_ANON_KEY') ?? '' };
+}
+
+export function readListingsLiveFromProcessEnv(): boolean {
+  return flag('LISTINGS_LIVE');
 }
 
 export function readSiteUrlFromProcessEnv(): string | undefined {
@@ -165,6 +203,9 @@ export function createAppEnvironment(config: {
   baseUrl?: string;
   signalRUrl?: string;
   siteUrl?: string;
+  appUrl?: string;
+  listingsLive?: boolean;
+  supabase?: SupabaseEnvironment;
   googleClientId?: string;
   appleClientId?: string;
   appleRedirectUri?: string;
@@ -180,6 +221,9 @@ export function createAppEnvironment(config: {
     environmentName: config.environmentName,
     baseUrl,
     siteUrl,
+    appUrl: config.appUrl ? withoutTrailingSlash(config.appUrl) : siteUrl,
+    listingsLive: config.listingsLive ?? false,
+    supabase: config.supabase ?? { url: '', anonKey: '' },
     apiBaseUrl,
     apiUrl: apiBaseUrl,
     signalRUrl,

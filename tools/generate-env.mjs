@@ -41,6 +41,11 @@ const values = {
   BASE_URL: readEnv('BASE_URL', 'API_ORIGIN'),
   SIGNALR_URL: readEnv('SIGNALR_URL', 'NOTIFICATION_HUB_URL'),
   SITE_URL: readEnv('SITE_URL'),
+  // Marketing pages: platform origin, listings switch (only exactly "true" turns it on), Supabase waitlist (anon key only).
+  APP_URL: readEnv('APP_URL'),
+  LISTINGS_LIVE: readEnv('LISTINGS_LIVE'),
+  SUPABASE_URL: readEnv('SUPABASE_URL'),
+  SUPABASE_ANON_KEY: readEnv('SUPABASE_ANON_KEY'),
   // Monetization (docs/MONETIZATION.md). Every flag is OFF unless exactly "true"; ids are never defaulted.
   ADS_ENABLED: readEnv('ADS_ENABLED'),
   WEB_ADS_ENABLED: readEnv('WEB_ADS_ENABLED'),
