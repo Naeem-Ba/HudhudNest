@@ -311,6 +311,7 @@
       />
 
       <!-- Properties Grid -->
+      <app-listing-title-translation-bar *ngIf="!loading() && !error() && properties().length > 0" [items]="properties()" kind="property" />
       <div
         class="properties-grid"
         *ngIf="!loading() && !error() && properties().length > 0"
@@ -321,7 +322,7 @@
           class="property-card"
           [class.property-card--featured]="property.isFeatured"
           [class.listing-muted]="isReserved(property)"
-          [attr.aria-label]="property.title"
+          [attr.aria-label]="property.title | listingTitle: 'property' : property.id"
         >
           <!-- Image -->
           <div class="property-card__image">
@@ -330,7 +331,7 @@
               [src]="getResponsiveImage(property)"
               [attr.srcset]="getResponsiveSrcSet(property)"
               sizes="(max-width: 640px) calc(100vw - 2rem), (max-width: 980px) calc(50vw - 2rem), 360px"
-              [alt]="property.title || ''"
+              [alt]="(property.title | listingTitle: 'property' : property.id) || ''"
               loading="lazy"
               appImageFallback="/images/no-image.svg"
             />
@@ -374,7 +375,7 @@
           <!-- Body -->
           <div class="property-card__body listing-muted__text">
             <h2 class="property-card__title line-clamp-2">
-              {{ property.title || ('PROPERTY_LIST.NO_TITLE' | translate) }}
+              {{ (property.title | listingTitle: 'property' : property.id) || ('PROPERTY_LIST.NO_TITLE' | translate) }}
             </h2>
             <p class="property-card__location line-clamp-1">
               📍 {{ getLocation(property) }}
