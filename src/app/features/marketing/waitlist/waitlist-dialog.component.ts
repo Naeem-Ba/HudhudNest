@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef, effect, inject, signal, viewChild } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -33,7 +33,7 @@ export class WaitlistDialogComponent {
   readonly submitted = signal(false);
 
   readonly form = this.fb.nonNullable.group({
-    contact: ['', [Validators.required, c => (normalizeContact(c.value) ? null : { contact: true })]],
+    contact: ['', [Validators.required, (c: AbstractControl) => (normalizeContact(c.value) ? null : { contact: true })]],
     interest: ['' as WaitlistInterest | ''],
     consent: [false, Validators.requiredTrue],
     website: [''] // honeypot: real visitors never see or fill it

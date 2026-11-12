@@ -1,13 +1,13 @@
 // Shared look of the public marketing pages: navy header/footer (fixed colours, so text is always light on navy),
 // content area on the app's page tokens. Logical properties only, so RTL needs no second copy.
 :host {
-  --mk-navy: #0f2742;
-  --mk-navy-600: #1a3a5c;
-  --mk-gold: #d6a84f;
-  --mk-gold-light: #e8c47a;
-  --mk-on-navy: #f4f7fb;         // 15.7:1 on navy
-  --mk-on-navy-muted: #c5d0dd;   // 9.6:1 on navy (the old muted grey was below 4.5:1)
-  --mk-line-on-navy: #5f7791;    // 3.5:1, decorative borders / UI boundaries only
+  --mk-navy: var(--navy);
+  --mk-navy-600: var(--navy-600);
+  --mk-gold: var(--gold);
+  --mk-gold-light: var(--gold-light);
+  --mk-on-navy: var(--text-on-navy);
+  --mk-on-navy-muted: var(--text-on-navy-muted);          // >= 4.5:1 on navy (the old muted grey was below)
+  --mk-line-on-navy: color-mix(in srgb, var(--text-on-navy) 45%, transparent);  // UI boundaries on navy
 
   display: block;
   min-height: 100dvh;
@@ -28,7 +28,7 @@ main:focus { outline: none; }
 
 .skip {
   position: absolute; inset-inline-start: 0.5rem; inset-block-start: -4rem; z-index: 10;
-  padding: 0.75rem 1rem; border-radius: 8px; background: var(--mk-gold); color: #111; font-weight: 700;
+  padding: 0.75rem 1rem; border-radius: 8px; background: var(--mk-gold); color: var(--on-primary); font-weight: 700;
   &:focus { inset-block-start: 0.5rem; }
 }
 
@@ -47,7 +47,7 @@ main:focus { outline: none; }
   min-height: 44px; padding-inline: 0.75rem; border-radius: 999px; cursor: pointer;
   border: 1px solid var(--mk-line-on-navy); background: var(--mk-navy); color: var(--mk-on-navy);
   font: inherit; font-size: 0.875rem; font-weight: 600;
-  option { background: #fff; color: #0f2742; }
+  option { background: var(--surface); color: var(--text-primary); }
   &:hover { border-color: var(--mk-gold); }
 }
 

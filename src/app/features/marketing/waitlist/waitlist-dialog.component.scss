@@ -2,24 +2,24 @@
 :host { display: contents; }
 
 .wl {
-  --wl-navy: #0f2742;
-  --wl-text: #1e293b;
-  --wl-muted: #475569;
-  --wl-border: #94a3b8;
-  --wl-gold: #d6a84f;
-  --wl-error: #b91c1c;
+  --wl-navy: var(--text-strong);
+  --wl-text: var(--text-primary);
+  --wl-muted: var(--text-secondary);
+  --wl-border: var(--gray-500);
+  --wl-gold: var(--gold);
+  --wl-error: var(--danger-text, var(--danger));
 
   width: min(30rem, calc(100vw - 2rem));
   max-height: calc(100dvh - 2rem);
   padding: 0;
   border: 0;
   border-radius: 16px;
-  background: #fff;
+  background: var(--surface);
   color: var(--wl-text);
   overflow: auto;
-  box-shadow: 0 24px 60px rgba(15, 39, 66, 0.35);
+  box-shadow: var(--shadow-xl);
 
-  &::backdrop { background: rgba(15, 39, 66, 0.7); }
+  &::backdrop { background: var(--navy-80); }
 }
 
 .wl__panel {
@@ -57,7 +57,7 @@ input[type='text'], select {
   padding: 0.5rem 0.75rem;
   border: 1.5px solid var(--wl-border);
   border-radius: 10px;
-  background: #fff;
+  background: var(--surface);
   color: var(--wl-text);
   font: inherit;
   &[aria-invalid='true'] { border-color: var(--wl-error); }
@@ -66,7 +66,7 @@ input[type='text'], select {
 
 .wl__hint { margin: 0.375rem 0 0; font-size: 0.875rem; color: var(--wl-muted); }
 .wl__error { margin: 0.375rem 0 0; font-size: 0.875rem; color: var(--wl-error); font-weight: 600; }
-.wl__error--box { margin-block-end: 1rem; padding: 0.625rem 0.75rem; border-radius: 8px; background: #fef2f2; }
+.wl__error--box { margin-block-end: 1rem; padding: 0.625rem 0.75rem; border-radius: 8px; background: var(--danger-soft); }
 
 .wl__consent {
   display: flex;
@@ -86,7 +86,7 @@ input[type='text'], select {
   border: 0;
   border-radius: 999px;
   background: var(--wl-gold);
-  color: #111;
+  color: var(--on-primary);
   font: inherit;
   font-weight: 700;
   cursor: pointer;
@@ -95,7 +95,7 @@ input[type='text'], select {
 
 .wl__done { text-align: center; padding-block: 0.5rem; p { color: var(--wl-muted); margin: 0 0 1.25rem; } }
 
-:focus-visible { outline: 3px solid var(--wl-navy); outline-offset: 2px; }
-.wl__btn:focus-visible { outline-color: var(--wl-navy); box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--wl-navy); }
+:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
