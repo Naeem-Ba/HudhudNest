@@ -2715,270 +2715,7 @@
     }
   },
   "LANDING": {
-    "TOP": {
-      "HOME_LINK": "Siteye göz at",
-      "LANG_ARIA": "Dil"
-    },
-    "HERO": {
-      "ARIA": "Ana sayfa",
-      "BADGE": "Beta: yakında Suriye'de yayında",
-      "TITLE_MAIN": "Her evin bir hikâyesi vardır.",
-      "TITLE_ACCENT": "Seninkini Suriye'de başlatalım.",
-      "TAGLINE_1": "Ailelerin yuva bulmasına yardımcı olan, büyük yürekli küçük bir platform: gerçek fotoğraflar ve doğrudan iletişim, yinelenen veya sahte ilan yok.",
-      "CTA_EXPLORE": "İlanları keşfedin",
-      "CTA_EXPLORE_ARIA": "HudhudNest'te ilanları keşfedin",
-      "CTA_PUBLISH": "Mülkünüzü ilana verin",
-      "CTA_PUBLISH_ARIA": "HudhudNest'te mülk ilanınızı yayınlayın",
-      "CHIPS_ARIA": "Kısaca bilgiler",
-      "CHIP_FREE": "Başlamak ücretsiz",
-      "CHIP_REAL": "Gerçek fotoğraflar, doğrudan iletişim",
-      "CHIP_LANGS": "عربي · English · Deutsch · Türkçe",
-      "VISUAL_ARIA": "Platformun arama ekranının çizimi; gerçek ilanlar değildir",
-      "VISUAL_TITLE": "Mülkünüzü bulun",
-      "VISUAL_SALE": "Satın al",
-      "VISUAL_RENT": "Kirala",
-      "VISUAL_LOCATION": "İl · Bölge",
-      "VISUAL_TYPE": "Mülk türü",
-      "VISUAL_PRICE": "Fiyat aralığı",
-      "VISUAL_BTN": "Sonuçları göster",
-      "VISUAL_NOTE": "Arayüz çizimi"
-    },
-    "VISION": {
-      "EYEBROW": "Vizyonumuz",
-      "TITLE": "Tüm Suriye için bir gayrimenkul platformu",
-      "TEXT": "Suriye'deki mülk ilanlarını tek bir kayıtta toplayan bir platform: gerçek fotoğraflar, doğru veriler ve onlarca dağınık Facebook ve WhatsApp grubu yerine tek bir güvenilir kaynak.",
-      "PATH_ARIA": "Yayılım aşamaları",
-      "STEP1_TAG": "Başlangıç",
-      "STEP1_TITLE": "Şam ve Şam Kırsalı",
-      "STEP1_DESC": "Kademeli lansmanımız büyük olasılıkla burada başlayacak; böylece düzenli bir kayıt oluşturup gerçek kullanımdan öğrenebiliriz.",
-      "STEP2_TAG": "Sonra",
-      "STEP2_TITLE": "Suriye'nin diğer illeri",
-      "STEP2_DESC": "Vizyonumuz tüm Suriye'yi kapsıyor ve aşama aşama genişliyoruz.",
-      "NOTE": "Lansman kademelidir: ilanların ve hizmetlerin kullanılabilirliği bölgeye göre değişir ve zamanla artar."
-    },
-    "USES": {
-      "EYEBROW": "Buradan başlayın",
-      "TITLE": "HudhudNest ile neler yapabilirsiniz?",
-      "ITEMS": {
-        "BUY": {
-          "TITLE": "Mülk satın alın",
-          "DESC": "Satılık mülklere fotoğraflar ve düzenli ayrıntılarla göz atın, seçenekleri tek yerde karşılaştırın."
-        },
-        "RENT": {
-          "TITLE": "Ev kiralayın",
-          "DESC": "Kiralık evleri il, bölge, fiyat ve olanaklara göre arayın."
-        },
-        "SHORT": {
-          "TITLE": "Günlük kiralık",
-          "DESC": "Kısa süreli konaklamaları keşfedin ve ev sahibine rezervasyon talebi gönderin."
-        },
-        "INVEST": {
-          "TITLE": "Yatırım fırsatları",
-          "DESC": "Gayrimenkul yatırım projelerini keşfedin ve sizin için önemli olanları takip edin."
-        },
-        "PUBLISH": {
-          "TITLE": "Mülkünüzü ilana verin",
-          "DESC": "İlanınızı net fotoğraflar ve ayrıntılarla ekleyin; arayanlar size doğrudan ulaşsın."
-        },
-        "SERVICES": {
-          "TITLE": "Mülk hizmeti talep edin",
-          "DESC": "Platform tarafından onaylı hizmet sağlayıcıların sunduğu hizmetlere göz atın."
-        }
-      },
-      "GO": "Keşfedin"
-    },
-    "PROBLEM_SOLUTION": {
-      "EYEBROW": "Neden HudhudNest?",
-      "TITLE": "Suriye'de mülk bulmak hâlâ yorucu",
-      "DESC": "Her gün aynı şikâyetleri duyuyoruz. HudhudNest bunları adım adım çözmeyi amaçlıyor.",
-      "PROBLEM_LABEL": "Şu anda",
-      "PROBLEM_ITEMS": {
-        "ITEM_1": "Dağınık ve düzensiz Facebook ve WhatsApp gruplarında arama",
-        "ITEM_2": "Bir ilanın gerçek mi yoksa yinelenen mi olduğunu anlamak zor",
-        "ITEM_3": "İlanların çoğunda fotoğraf ve temel bilgiler eksik",
-        "ITEM_4": "Fiyat ve alanları tek yerde karşılaştırmak zor",
-        "ITEM_5": "Arayan ile mülk sahibi veya ofis arasındaki güven zayıf"
-      },
-      "SOLUTION_LABEL": "HudhudNest ile",
-      "SOLUTION_ITEMS": {
-        "ITEM_1": "Suriye'nin ilanlarını bir araya getiren, düzenli ve aranabilir tek bir platform",
-        "ITEM_2": "Her ilanda net fotoğraflar ve tutarlı temel bilgiler",
-        "ITEM_3": "Şehre, bölgeye, fiyata, türe ve amaca göre filtreleme",
-        "ITEM_4": "Mülk sahibi veya emlak ofisiyle doğrudan iletişim",
-        "ITEM_5": "Karmaşayı azaltmak ve şeffaflığı artırmak için kademeli doğrulama"
-      }
-    },
-    "FEATURES": {
-      "EYEBROW": "Bizi farklı kılan",
-      "TITLE": "İhtiyacınız olan her şey tek yerde",
-      "ITEMS": {
-        "SEARCH": {
-          "TITLE": "Daha kolay arama",
-          "DESC": "Şehre, bölgeye, fiyata, mülk türüne ve amaca (satılık veya kiralık) göre saniyeler içinde filtreleyin."
-        },
-        "INFO": {
-          "TITLE": "Daha net bilgi",
-          "DESC": "Fotoğraflar, ayrıntılı açıklama, yaklaşık konum, büyüklük, kat bilgisi ve düzenli iletişim bilgileri; her şey yerli yerinde."
-        },
-        "PRICE": {
-          "TITLE": "Bölgenizin fiyatlarını bilin",
-          "DESC": "Gerçekten yayınlanmış ilanlara dayalı bir fiyat aralığı ve gerektiğinde kendi mülkünüz için değerleme talebi."
-        },
-        "LANGS": {
-          "TITLE": "Dört dilde",
-          "DESC": "Suriye içindeki ve dışındaki ziyaretçiler için Arapça, İngilizce, Almanca ve Türkçe tam bir arayüz."
-        },
-        "SERVICES": {
-          "TITLE": "Mülk hizmetleri",
-          "DESC": "Platform ekibinin onayladığı hizmet sağlayıcılardan doğrulama, ekspertiz, fotoğrafçılık ve daha fazlası."
-        },
-        "SAVE": {
-          "TITLE": "Kaydedin ve paylaşın",
-          "DESC": "Favorilere ekleyin, aramalarınızı kaydedin ve bir ilanı dilediğiniz kişiyle paylaşın."
-        },
-        "MAP": {
-          "TITLE": "Haritada",
-          "DESC": "Mülklerin yaklaşık konumunu ve çevresini görmek için haritada gezinin."
-        },
-        "CONTACT": {
-          "TITLE": "Doğrudan iletişim",
-          "DESC": "Karmaşık adımlar ve gereksiz aracılar olmadan mülk sahibine veya emlak ofisine doğrudan ulaşın."
-        }
-      }
-    },
-    "SEARCH": {
-      "EYEBROW": "Arama ve filtreler",
-      "TITLE": "Akıllı arayın… ve size uygun mülkü bulun.",
-      "TEXT": "Dağınık gönderilerde gezinmek yerine hassas filtreler, karşılaştırılabilir fiyatlar ve her yeni ilanla yenilenen sonuçlar.",
-      "POINTS": {
-        "1": "Önce il, sonra bölge ve mahalle",
-        "2": "Satın alma veya kiralama",
-        "3": "Mülk türü, fiyat aralığı ve para birimi",
-        "4": "Olanaklar ve özellikler",
-        "5": "Sıralama ve haritadaki bir nokta çevresinde arama"
-      },
-      "POINTS_ARIA": "Ana arama seçenekleri",
-      "CTA": "Aramayı şimdi deneyin",
-      "CTA_MAP": "Haritayı aç"
-    },
-    "VALUE": {
-      "EYEBROW": "Fiyat öngörüsü",
-      "TITLE": "Mülkünüz ne kadar değerli? Bir tahmin görün.",
-      "TEXT": "İhtiyacınıza göre fiyat tahmini almanın iki yolu.",
-      "RANGE_TAG": "Anında",
-      "RANGE_TITLE": "Bölgenizdeki fiyat aralığı",
-      "RANGE_DESC": "Şu anda yayınlanan ilanlardaki istenen fiyat aralığını görmek için ili, bölgeyi, mülk türünü ve büyüklüğü seçin. Aralık, kaç ilana dayandığını gösterir; yeterli veri yoksa bunu da söyleriz.",
-      "RANGE_CTA": "Fiyat aralığını göster",
-      "REQ_TAG": "Mülkünüz için",
-      "REQ_TITLE": "Mülkünüz için değerleme isteyin",
-      "REQ_DESC": "İli, bölgeyi, mahalleyi, mülk türünü, büyüklüğü ve oda sayısını girin. Benzer ilanlara dayalı hızlı bir tahmin alırsınız veya talebinizi bölgenizdeki emlak ofislerine göndeririz.",
-      "REQ_CTA": "Tahmin isteyin",
-      "DISCLAIMER": "Tahmin bir rehberdir; resmî bir değerleme veya garantili bir fiyat değildir. Önemli finansal kararlar için bir uzmana danışın ve kendiniz doğrulayın."
-    },
-    "LANGS": {
-      "EYEBROW": "Çok dilli",
-      "TITLE": "Suriye gayrimenkulü, kendi dilinizde.",
-      "TEXT": "Platform Arapça, İngilizce, Almanca ve Türkçe konuşur; böylece Suriye'de veya yurt dışında olun, Suriye gayrimenkulünü kolayca keşfedebilirsiniz.",
-      "TILES_ARIA": "Desteklenen diller",
-      "NOTE": "İlan metinlerinin otomatik çevirisi hazırlanıyor ve henüz hazır olarak duyurulmadı; şimdilik bir ilan, yazarının yazdığı dilde görünür.",
-      "CTA_EXPATS": "Yurt dışındakiler için rehber"
-    },
-    "SERVICES": {
-      "EYEBROW": "Mülk hizmetleri",
-      "TITLE": "Yalnızca mülk aramayın… mülk yolculuğunuzda ihtiyacınız olan hizmetleri keşfedin.",
-      "TEXT": "Platform tarafından onaylı hizmet sağlayıcıların sunduğu mülk hizmetleri. Kategoriler ve hizmet sağlayıcılar kademeli olarak artar; katalog gerçekte neyin mevcut olduğunu gösterir.",
-      "CHIPS_ARIA": "Hizmet kategorisi örnekleri",
-      "C_VERIFICATION": "Doğrulama",
-      "C_VALUATION": "Değerleme",
-      "C_INSPECTION": "Teknik ekspertiz",
-      "C_PHOTOGRAPHY": "Profesyonel fotoğrafçılık",
-      "C_MANAGEMENT": "Mülk yönetimi",
-      "C_LEGAL": "Hukuki hizmetler",
-      "C_ENGINEERING": "Mühendislik",
-      "C_MAINTENANCE": "Bakım ve onarım",
-      "CTA": "Hizmetlere göz atın",
-      "CTA_JOIN": "Hizmet sağlayıcı olarak katılın"
-    },
-    "OFFICES": {
-      "EYEBROW": "Ofisler ve ilan verenler için",
-      "TITLE": "Mülklerinizi arayanların önüne çıkarın",
-      "TEXT": "Mülk sahibi de olsanız emlak ofisi de olsanız platform, ilanlarınızı göstermeniz ve ilgilenenlere ulaşmanız için düzenli bir yol sunar.",
-      "POINTS": {
-        "1": {
-          "TITLE": "Ofisiniz için herkese açık sayfa",
-          "DESC": "Ofisinizi tanıtın ve ilanlarını kendi bağlantısı olan bir sayfada gösterin."
-        },
-        "2": {
-          "TITLE": "Ekibiniz ve ilanlarınız tek yerde",
-          "DESC": "Planınıza bağlı olarak danışman ve personel ekleyin, ofisin ilanlarını yönetin."
-        },
-        "3": {
-          "TITLE": "Raporlar ve analizler",
-          "DESC": "Seçtiğiniz plana bağlı olarak ilanlarınızın performansını takip edin."
-        },
-        "4": {
-          "TITLE": "İlgilenenlerle doğrudan iletişim",
-          "DESC": "Mesajlar, talepler ve ziyaret istekleri size platform içinde ulaşır."
-        }
-      },
-      "CTA_PLANS": "Planları gör",
-      "CTA_REGISTER": "Ofisinizi kaydedin"
-    },
-    "OFFER": {
-      "EYEBROW": "Emlak ofislerine özel teklif",
-      "PROGRESS_ARIA": "Şimdiye kadar {{max}} ofisten {{count}} tanesi katıldı",
-      "PROGRESS_LABEL": "Şimdiye kadar {{max}} ofisten {{count}} tanesi katıldı",
-      "CTA": "Ofisinizi şimdi kaydedin",
-      "CTA_ARIA": "Emlak ofisinizi bu teklif için kaydedin",
-      "ENDS_ON": "Teklif {{date}} tarihinde sona erer",
-      "LOADING_ARIA": "Teklifler yükleniyor",
-      "EMPTY_TITLE": "Şu anda yayında teklif yok",
-      "EMPTY_TEXT": "İlginizi kaydedin; ilk teklif başlar başlamaz size haber verelim.",
-      "EMPTY_CTA": "İlginizi kaydedin",
-      "ERROR_TITLE": "Teklifler şu anda yüklenemedi",
-      "ERROR_TEXT": "Sayfanın geri kalanı normal çalışıyor. Tekrar deneyebilirsiniz.",
-      "RETRY": "Tekrar dene"
-    },
-    "HOW": {
-      "EYEBROW": "Birkaç basit adımda",
-      "TITLE": "HudhudNest nasıl çalışır?",
-      "ARIA": "Platformu kullanma adımları",
-      "STEPS": {
-        "STEP_1": {
-          "TITLE": "Mülk türünü veya şehri seçin",
-          "DESC": "Kiralık mı satılık mı aradığınıza karar verin, ardından tercih ettiğiniz şehri veya bölgeyi seçin."
-        },
-        "STEP_2": {
-          "TITLE": "Düzenli ilanlara göz atın",
-          "DESC": "Net fotoğraflar, fiyatlar ve bilgilerle mülkleri keşfedin, seçenekleri kolayca karşılaştırın."
-        },
-        "STEP_3": {
-          "TITLE": "İlan sahibiyle iletişime geçin",
-          "DESC": "Mülk sahibine veya emlak ofisine doğrudan ulaşın ve beğendiklerinizi sonra dönmek üzere kaydedin."
-        }
-      }
-    },
     "FORM": {
-      "EYEBROW": "Bekleme listesi",
-      "TITLE": "İlk HudhudNest kullanıcılarından biri olun",
-      "DESC": "İlginizi şimdi kaydedin; platform bölgenizde yayına girdiğinde sizinle iletişime geçelim.",
-      "ARIA": "Bekleme listesi kayıt formu",
-      "SUCCESS": {
-        "OFFER_TITLE": "Teklif için kaydoldunuz!",
-        "OFFER_MSG": "Harika! \"İlk 100 ofis\" teklifinde sizin için bir yer ayırdık. Ayrıntılarla birlikte yakında dönüş yapacağız.",
-        "NO_OFFER_TITLE": "Kayıt başarılı",
-        "NO_OFFER_MSG": "Maalesef sınırlı teklif, kaydınız ulaşmadan önce doldu ancak ilginiz kaydedildi; platform yayına girdiğinde sizinle iletişime geçeceğiz.",
-        "PLAIN_TITLE": "Kayıt başarılı!",
-        "PLAIN_MSG": "Teşekkürler; ilginiz kaydedildi. HudhudNest yayına girdiğinde size güncellemeler göndereceğiz.",
-        "RESET_BTN": "Başka biri için kaydol"
-      },
-      "FULLNAME_LABEL": "Ad soyad",
-      "FULLNAME_PLACEHOLDER": "ör. Ahmet Mehmet",
-      "PHONE_LABEL": "Telefon veya WhatsApp numarası",
-      "PHONE_PLACEHOLDER": "ör. 05321234567 veya +905321234567",
-      "PHONE_HINT": "WhatsApp numarası da olur",
-      "USERTYPE_LABEL": "Ben…",
-      "USERTYPE_PLACEHOLDER": "Size uyanı seçin",
       "USER_TYPES": {
         "RENTER": "Kiralık ev arıyorum",
         "BUYER": "Satılık mülk arıyorum",
@@ -2986,8 +2723,6 @@
         "AGENCY": "Emlak ofisiyim",
         "INVESTOR": "Yatırımcı / yurt dışında yaşayan"
       },
-      "CITY_LABEL": "Şehir veya bölge",
-      "CITY_PLACEHOLDER": "Şehrinizi veya bölgenizi seçin",
       "CITIES": {
         "DAMASCUS": "Şam",
         "ALEPPO": "Halep",
@@ -3004,95 +2739,11 @@
         "IDLIB": "İdlib",
         "DAMASCUS_COUNTRYSIDE": "Şam Kırsalı",
         "OTHER": "Diğer bölge"
-      },
-      "NOTES_LABEL": "Ek notlar",
-      "NOTES_OPTIONAL": "isteğe bağlı",
-      "NOTES_PLACEHOLDER": "ör. Mezze'de 200 $ altında 2 yatak odalı daire arıyorum",
-      "REQUIRED_ARIA": "zorunlu",
-      "SUBMIT_ARIA": "Bekleme listesi kaydını gönder",
-      "SUBMIT_LOADING": "Kaydediliyor…",
-      "SUBMIT_TEXT": "Bekleme listesine şimdi katılın",
-      "PRIVACY_NOTE": "Verilerinizi üçüncü taraflarla paylaşmayız ve istenmeyen mesajlar göndermeyiz.",
-      "ERRORS": {
-        "REQUIRED": "Bu alan zorunludur.",
-        "MINLENGTH": "Çok kısa (en az {{min}} karakter).",
-        "MAXLENGTH": "En fazla uzunluğu aştınız.",
-        "PHONE": "Geçersiz telefon numarası. Örnek: 05321234567 veya +905321234567",
-        "GENERIC": "Geçersiz değer."
       }
-    },
-    "TRUST": {
-      "EYEBROW": "Tam şeffaflık",
-      "TITLE": "Güveni adım adım inşa ediyoruz",
-      "DESC": "İlk MVP aşamamızdayız. Taahhüt ettiklerimiz ve hâlâ üzerinde çalıştıklarımız şunlar.",
-      "ITEMS": {
-        "PHOTOS": {
-          "TITLE": "Gerçek fotoğraf şart",
-          "DESC": "Mülk sahiplerini mülkün gerçek fotoğraflarını yüklemeye teşvik ediyoruz; sahte veya ödünç alınmış görselleri kabul etmiyoruz."
-        },
-        "CONTACT": {
-          "TITLE": "Net iletişim bilgileri",
-          "DESC": "Her ilan doğru iletişim bilgilerini içermelidir. Sizi karşı tarafla buluşturmak için buradayız."
-        },
-        "CAUTION": {
-          "TITLE": "Doğrulamadan ödeme yapmayın",
-          "DESC": "Herhangi bir ödeme yapmadan önce mülkü bizzat ziyaret etmenizi ve belgeleri doğrulamanızı her zaman öneririz. Platform iletişimi kolaylaştırır; anlaşmayı garanti etmez."
-        },
-        "IMPROVING": {
-          "TITLE": "Sürekli gelişiyoruz",
-          "DESC": "İlan doğrulaması zamanla gelişmeye devam edecek. Erken bir aşamada olduğumuz konusunda açığız."
-        }
-      }
-    },
-    "FAQ": {
-      "EYEBROW": "Sorular",
-      "TITLE": "Sıkça sorulan sorular",
-      "ITEMS": {
-        "LAUNCH": {
-          "Q": "Platform ne zaman yayına girecek?",
-          "A": "Platform beta olarak çalışıyor ve kademeli olarak yayına giriyor; büyük olasılıkla Şam ve Şam Kırsalı ile başlayıp diğer illere genişleyecek. İlginizi formda kaydedin, bölgenize ulaştığında size haber verelim."
-        },
-        "FREE": {
-          "Q": "Hizmet başlangıçta ücretsiz mi?",
-          "A": "Evet; hizmetin ilk aşamada hem arayanlar hem de mülk sahipleri için ücretsiz olmasını planlıyoruz, ileride premium planlar olabilir."
-        },
-        "OWNER": {
-          "Q": "Mülk sahipleri şimdi kayıt olabilir mi?",
-          "A": "Kesinlikle. İlginizi form üzerinden kaydedin ve \"Mülkümü ilana vermek istiyorum\"u seçin; ilan verme açıldığında size ulaşacağız."
-        },
-        "AGENCY": {
-          "Q": "Emlak ofisleri ilanlarını ekleyebilir mi?",
-          "A": "Evet, emlak ofislerini memnuniyetle karşılıyoruz. Formda \"Emlak ofisiyim\"i seçin, iş birliği ayrıntılarıyla size dönelim."
-        },
-        "VERIFIED": {
-          "Q": "İlanlar doğrulanmış ve güvenli mi?",
-          "A": "Daha net bilgi ve daha az rastgele ilan için çalışıyoruz. Platform hâlâ geliştirilme aşamasında ve doğrulama gelişmeye devam edecek. Her gayrimenkul işleminde olduğu gibi, karar vermeden önce bizzat doğrulamanızı her zaman öneririz."
-        },
-        "SYRIA_ONLY": {
-          "Q": "Platform yalnızca Suriye için mi?",
-          "A": "Suriye'de başlıyoruz ancak tasarım, ileride Arap ve küresel pazarlara, özellikle her yerdeki Suriyeli gurbetçilere hizmet etmek üzere genişlemeyi destekliyor."
-        }
-      }
-    },
-    "FINAL_CTA": {
-      "TITLE": "İlk HudhudNest kullanıcılarından biri olun",
-      "DESC": "Suriye'de daha düzenli bir gayrimenkul deneyimi kurmamıza yardım edin. Sesiniz, gelecekteki platformu şekillendirmeye yardımcı olacak.",
-      "BTN": "Bekleme listesine şimdi katılın",
-      "BTN_ARIA": "HudhudNest bekleme listesine katılın",
-      "EXPLORE": "İlanları keşfedin",
-      "PUBLISH": "Mülkünüz mü var? İlana verin"
-    },
-    "FOOTER": {
-      "TAGLINE": "Dijital bir gayrimenkul platformu · Önce Suriye",
-      "RIGHTS": "Tüm hakları saklıdır",
-      "PRIVACY": "Gizlilik Politikası",
-      "TERMS": "Kullanım Şartları",
-      "DOWNLOAD": "Uygulamayı indirin",
-      "CONTACT": "Bize ulaşın"
     },
     "SEO": {
-      "TITLE": "Suriye için dijital gayrimenkul platformu",
-      "DESCRIPTION": "Suriye'de satılık ve kiralık mülk arayın, bölge fiyatlarına bakın, değerleme isteyin ve mülk hizmetlerini keşfedin. Arapça, İngilizce, Almanca ve Türkçe."
+      "TITLE": "HudhudNest – Suriye’de emlak bulun",
+      "DESCRIPTION": "Suriye’de satın alın, kiralayın veya kısa süreli konaklayın: dağınık gruplar yerine tek platform. Beta, yakında başlıyor, başlangıçta ücretsiz."
     }
   },
   "VALUATION": {
@@ -4771,5 +4422,160 @@
     "IMPORT_ROLLBACK_CONFIRM": "Tüm parti geri alınsın mı?",
     "CHANGES_OF": "Değişiklikler: {{name}}",
     "NO_CHANGES": "Kayıtlı değişiklik yok."
+  },
+  "SITE": {
+    "NAV": {
+      "SKIP": "İçeriğe geç",
+      "MENU_OPEN": "Menüyü aç",
+      "MENU_CLOSE": "Menüyü kapat",
+      "MAIN_ARIA": "Ana gezinme",
+      "HOME_ARIA": "HudhudNest – ana sayfa",
+      "LANG_ARIA": "Dil",
+      "PROPERTIES": "Emlaklar",
+      "ABOUT": "Hakkımızda",
+      "PROVIDERS": "İlan verenler için",
+      "CONTACT": "İletişim",
+      "PLATFORM": "Platforma git"
+    },
+    "HERO": {
+      "BADGE": "Beta – Suriye’de yakında başlıyor",
+      "TITLE": "Suriye’de emlak bulun – net ve doğrudan.",
+      "SUBLINE": "Satın alın, kiralayın ya da kısa süreli konaklayın: dağınık Facebook ve WhatsApp grupları yerine tek bir platform.",
+      "CTA_PUBLISH": "İlan verin",
+      "CTA_NOTIFY": "Başlayınca haber verin",
+      "CTA_EXPLORE": "Emlakları keşfedin",
+      "CHIP_FREE": "Başlangıçta ücretsiz"
+    },
+    "WHY": {
+      "TITLE": "Neden HudhudNest",
+      "INTRO": "Suriye’de emlak aramak hâlâ zahmetli. HudhudNest bunu adım adım değiştirmek istiyor.",
+      "ALL": {
+        "T": "Her şey tek yerde",
+        "D": "Düzenli ve aranabilir ilanlar."
+      },
+      "CLEAR": {
+        "T": "Net bilgiler",
+        "D": "Fotoğraflar ve tutarlı temel bilgiler."
+      },
+      "DIRECT": {
+        "T": "Doğrudan iletişim",
+        "D": "Mal sahipleri veya emlak ofisleriyle."
+      }
+    },
+    "START": {
+      "TITLE": "Buradan başlayın",
+      "BUY": {
+        "T": "Emlak satın alın",
+        "D": "Kaydolun, satılık emlaklar yayına girer girmez haberiniz olsun."
+      },
+      "RENT": {
+        "T": "Daire kiralayın",
+        "D": "Kaydolun, kiralık daireler yayına girer girmez haberiniz olsun."
+      },
+      "SHORT": {
+        "T": "Kısa süreli konaklama",
+        "D": "Kaydolun, kısa süreli konaklamalar yayına girer girmez haberiniz olsun."
+      },
+      "OFFER": {
+        "T": "Emlak ilanı verin",
+        "D": "Hesap oluşturun ve emlağınızı fotoğraflarla ekleyin."
+      }
+    },
+    "WAITLIST": {
+      "TITLE": "Başlayınca haber verin",
+      "INTRO": "E-posta adresinizi veya WhatsApp numaranızı bırakın. HudhudNest Suriye’de başlar başlamaz size ulaşacağız.",
+      "CONTACT_LABEL": "E-posta veya WhatsApp numarası",
+      "CONTACT_PLACEHOLDER": "ad@ornek.com veya +49 157 1234567",
+      "CONTACT_HINT": "WhatsApp numaraları ülke koduyla, örn. +49 veya +963.",
+      "INTEREST_LABEL": "Neyle ilgileniyorsunuz? (isteğe bağlı)",
+      "INTEREST_NONE": "Belirtmek istemiyorum",
+      "INTEREST_KAUFEN": "Emlak satın almak",
+      "INTEREST_MIETEN": "Daire kiralamak",
+      "INTEREST_KURZ": "Kısa süreli konaklama",
+      "CONSENT_BEFORE": "HudhudNest’in başlangıç hakkında bu bilgilerle bana ulaşmasını kabul ediyorum. Verilerin işlenmesi ve onayın geri alınması hakkında bilgi",
+      "CONSENT_LINK": "gizlilik politikasında",
+      "CONSENT_AFTER": " yer alır.",
+      "SUBMIT": "Kaydol",
+      "SENDING": "Gönderiliyor …",
+      "CLOSE": "Kapat",
+      "SUCCESS_TITLE": "Teşekkürler, listeye eklendiniz.",
+      "SUCCESS_TEXT": "Başlar başlamaz size ulaşacağız.",
+      "ERR_CONTACT": "Lütfen geçerli bir e-posta adresi ya da ülke kodlu bir WhatsApp numarası girin.",
+      "ERR_CONSENT": "Size haber verebilmemiz için lütfen veri işlemeyi onaylayın.",
+      "ERR_SEND": "Bu olmadı. Lütfen birazdan tekrar deneyin.",
+      "ERR_UNAVAILABLE": "Bekleme listesi şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin."
+    },
+    "FOOTER": {
+      "TAGLINE": "Suriye’de emlak – net ve doğrudan.",
+      "NAV_ARIA": "Sayfalar",
+      "LEGAL_ARIA": "Yasal",
+      "IMPRESSUM": "Yasal bildirim (Impressum)",
+      "PRIVACY": "Gizlilik"
+    },
+    "ABOUT": {
+      "TITLE": "Hakkımızda",
+      "LEAD": "HudhudNest, Suriye’de yaşayanlar ve Suriyeli diaspora için kurulmuş bir emlak platformudur.",
+      "VISION_TITLE": "Vizyonumuz",
+      "VISION_TEXT": "Tüm Suriye için tek bir emlak platformu: onlarca dağınık Facebook ve WhatsApp grubu yerine tek bir kayıt.",
+      "STEP1_TAG": "Başlangıç",
+      "STEP1_TITLE": "Şam ve çevresi",
+      "STEP1_TEXT": "Kademeli açılışımızın buradan başlaması bekleniyor; böylece düzenli bir kayıt oluşturup gerçek kullanımdan öğrenebiliriz.",
+      "STEP2_TAG": "Sonrasında",
+      "STEP2_TITLE": "Diğer iller",
+      "STEP2_TEXT": "Vizyonumuz tüm Suriye’yi kapsıyor. Aşama aşama genişliyoruz.",
+      "WHY_TITLE": "Bunu neden yapıyoruz",
+      "WHY_TEXT": "Suriye’de, ister orada ister yurt dışında olsun, emlak arayan ya da sunan herkes bugün dağınık gruplar ve mesajlar arasında yol bulmak zorunda. Arayanlar ve ilan verenler birbirini daha kolay ve doğrudan bulsun istiyoruz."
+    },
+    "PROVIDERS": {
+      "TITLE": "İlan verenler için",
+      "LEAD": "Mal sahipleri ve emlak ofisleri emlaklarını şimdiden ekleyebilir ve en baştan yer alabilir.",
+      "FREE": "Başlangıçta ücretsiz",
+      "STEPS_TITLE": "Üç adımda",
+      "STEP1_T": "Hesap oluşturun",
+      "STEP1_D": "Platforma kaydolun.",
+      "STEP2_T": "Emlağı fotoğraflarla ekleyin",
+      "STEP2_D": "Temel bilgileri girin ve fotoğrafları yükleyin.",
+      "STEP3_T": "Talepleri doğrudan alın",
+      "STEP3_D": "İlgilenenler sizinle doğrudan iletişime geçer.",
+      "WHY_TITLE": "Neden bizde ilan vermelisiniz",
+      "WHY_FREE_T": "Başlangıçta ücretsiz",
+      "WHY_FREE_D": "Başlangıçta emlağınızı eklemek ücretsizdir.",
+      "WHY_REACH_T": "Diasporaya ulaşın",
+      "WHY_REACH_D": "Platform Arapça, Almanca, İngilizce ve Türkçe olarak kullanılabilir.",
+      "WHY_SIMPLE_T": "Basit süreç",
+      "WHY_SIMPLE_D": "Gruplarda tek tek mesajlar yerine yönlendirmeli bir form."
+    },
+    "LEGAL": {
+      "DRAFT": "TASLAK – yayına almadan önce doldurulmalı"
+    },
+    "SEO": {
+      "ABOUT": {
+        "TITLE": "Hakkımızda – HudhudNest",
+        "DESCRIPTION": "Vizyonumuz: tüm Suriye için tek bir emlak platformu, Şam ve çevresinden başlayarak."
+      },
+      "PROVIDERS": {
+        "TITLE": "İlan verenler için – HudhudNest",
+        "DESCRIPTION": "Suriye’de emlak ilanı verin: hesap oluşturun, emlağı fotoğraflarla ekleyin, talepleri doğrudan alın. Başlangıçta ücretsiz."
+      },
+      "IMPRESSUM": {
+        "TITLE": "Yasal bildirim – HudhudNest",
+        "DESCRIPTION": "HudhudNest hizmet sağlayıcı bilgileri."
+      },
+      "PRIVACY": {
+        "TITLE": "Gizlilik – HudhudNest",
+        "DESCRIPTION": "HudhudNest gizlilik politikası."
+      }
+    },
+    "FAQ": {
+      "TITLE": "Sık sorulan sorular",
+      "Q1": "HudhudNest Suriye’de ne zaman başlıyor?",
+      "A1": "HudhudNest beta aşamasında. Suriye’de açılış yakında, Şam ve çevresinden başlayarak gerçekleşecek. Bekleme listesi sizi zamanında haberdar eder.",
+      "Q2": "İlan vermek ücretli mi?",
+      "A2": "İlan vermek başlangıçta ücretsizdir.",
+      "Q3": "Mal sahiplerine veya emlak ofislerine nasıl ulaşırım?",
+      "A3": "İlanlar yayına girdiğinde onlarla platform üzerinden doğrudan iletişime geçersiniz.",
+      "Q4": "Bekleme listesi hangi verileri saklar?",
+      "A4": "Yalnızca e-posta adresinizi veya WhatsApp numaranızı, isteğe bağlı olarak ilginizi, dili ve onayınızın zamanını."
+    }
   }
 }

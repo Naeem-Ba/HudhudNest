@@ -25,6 +25,9 @@ const PLAN_TIERS: readonly PlanTier[] = ['free', 'basic', 'premium', 'elite'];
   styleUrl: './contact.component.scss'
 })
 export class KontaktComponent implements OnInit {
+  /** Short FAQ under the form; wording in SITE.FAQ. */
+  readonly faqItems = [1, 2, 3, 4].map(n => ({ q: `SITE.FAQ.Q${n}`, a: `SITE.FAQ.A${n}` }));
+
   model = {
     Name: '',
     Email: '',

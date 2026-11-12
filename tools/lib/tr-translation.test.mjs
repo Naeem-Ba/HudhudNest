@@ -63,10 +63,10 @@ test('Turkish casing: i/ı and İ/I are distinct letters, the way search and hea
   assert.notEqual('Iğdır'.toLowerCase(), 'ığdır', 'plain toLowerCase would turn I into i: why search must not use it for Turkish');
 });
 
-test('the LANDING language chips and tiles mention Turkish in every UI language', () => {
+test('the provider page lists Turkish among the platform languages in every UI language', () => {
   for (const language of ['ar', 'en', 'de', 'tr']) {
     const file = load(`public/i18n/${language}.json`);
-    assert.match(file.LANDING.HERO.CHIP_LANGS, /Türkçe/, language);
+    assert.match(file.SITE.PROVIDERS.WHY_REACH_D, /Turk|Türk|تركي/, language);
   }
 });
 
