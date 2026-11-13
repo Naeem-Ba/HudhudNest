@@ -621,7 +621,15 @@
     "GEO_CONSENT_NOTE": "Mevcut konumunuzu yalnızca yakınınızdaki ilanları göstermek için kullanıyoruz.",
     "GEO_DENIED": "Konumunuz alınamadı. Konum iznini kontrol edin.",
     "MAP_VIEW": "Harita görünümü",
-    "TYPE_PLACE_HINT": "Listede yok mu? Adını yazın."
+    "TYPE_PLACE_HINT": "Listede yok mu? Adını yazın.",
+    "AMENITIES_SECTION": "Olanaklar ve hizmetler",
+    "AMENITIES_SELECTED": "{{count}} seçili",
+    "CITY_FILTER_CHIP": "Şehir: {{city}}",
+    "CITY_FILTER_REMOVE": "Şehir filtresini kaldır",
+    "EMPTY_GEO_TITLE": "Yakınınızda ilan yok",
+    "EMPTY_GEO_MESSAGE": "Konumunuzun {{km}} km çevresinde filtrelere uyan ilan yok. Yarıçapı genişletin veya filtreleri değiştirin.",
+    "GEO_STATUS": "Konumunuzun {{km}} km çevresindeki sonuçlar",
+    "SORT_BY_DISTANCE_HINT": "“Yakınımda” açıkken sonuçlar en yakından en uzağa sıralanır."
   },
   "PAGINATION": {
     "NAV_LABEL": "Sayfa gezintisi",
@@ -4346,12 +4354,13 @@
     "IGNORE_SUGGESTION": "Yoksay",
     "PROPOSAL_NOTE": "Kaydettiğinizde {{count}} yeni yer adı incelenmek üzere gönderilecek. Bu, ilanınızı engellemez.",
     "FILTER_PLACEHOLDER": "Mahalle, sokak veya şehir arayın…",
-    "FILTER_NO_MATCH": "Sonuç yok. Başka bir yazım deneyin.",
+    "FILTER_NO_MATCH": "Listede bu adda bir yer yok.",
     "FILTER_LABEL": "Belirli bir yer",
-    "FILTER_HINT": "İçindeki her şeyi kapsar.",
+    "FILTER_HINT": "Bir yer seçin (içindekileri kapsar) veya metin yazıp filtreleri uygulayarak ilan adreslerinde arayın.",
     "TYPED_PLACE_PROPOSED": "“{{value}}” listemizde yok. Adı incelenmek üzere moderatörlere göndereceğiz; burada en yakın bilinen bölge kullanılır.",
     "TYPED_PLACE_NOT_SAVED": "“{{value}}” listemizde yok ve giriş yapmadan yeni bir ad kaydedilemez; bu nedenle burada en yakın bilinen bölge kullanılır.",
-    "TYPED_PLACE_HINT": "Listeden seçin veya bulamıyorsanız adı yazın."
+    "TYPED_PLACE_HINT": "Listeden seçin veya bulamıyorsanız adı yazın.",
+    "FILTER_SEARCH_TEXT": "İlan adreslerinde “{{text}}” ara"
   },
   "ADMIN_GEO": {
     "TITLE": "Konum yönetimi",

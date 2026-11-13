@@ -621,7 +621,15 @@
     "GEO_CONSENT_NOTE": "Wir verwenden Ihren aktuellen Standort nur, um Immobilien in Ihrer Nähe anzuzeigen.",
     "GEO_DENIED": "Ihr Standort konnte nicht ermittelt werden. Bitte prüfen Sie die Standortfreigabe.",
     "MAP_VIEW": "Kartenansicht",
-    "TYPE_PLACE_HINT": "Nicht in der Liste? Namen eintippen."
+    "TYPE_PLACE_HINT": "Nicht in der Liste? Namen eintippen.",
+    "AMENITIES_SECTION": "Ausstattung & Services",
+    "AMENITIES_SELECTED": "{{count}} ausgewählt",
+    "CITY_FILTER_CHIP": "Stadt: {{city}}",
+    "CITY_FILTER_REMOVE": "Stadtfilter entfernen",
+    "EMPTY_GEO_TITLE": "Keine Immobilien in Ihrer Nähe",
+    "EMPTY_GEO_MESSAGE": "Im Umkreis von {{km}} km um Ihren Standort passt keine Immobilie zu den Filtern. Vergrößern Sie den Umkreis oder ändern Sie die Filter.",
+    "GEO_STATUS": "Ergebnisse im Umkreis von {{km}} km um Ihren Standort",
+    "SORT_BY_DISTANCE_HINT": "Bei „in meiner Nähe“ sind die Ergebnisse nach Entfernung sortiert."
   },
   "PAGINATION": {
     "NAV_LABEL": "Seitennavigation",
@@ -4346,12 +4354,13 @@
     "IGNORE_SUGGESTION": "Ignorieren",
     "PROPOSAL_NOTE": "{{count}} neue(r) Ortsname(n) wird/werden beim Speichern zur Prüfung eingereicht. Ihre Anzeige wird dadurch nicht blockiert.",
     "FILTER_PLACEHOLDER": "Stadtviertel, Straße oder Stadt suchen…",
-    "FILTER_NO_MATCH": "Keine Treffer. Versuchen Sie eine andere Schreibweise.",
+    "FILTER_NO_MATCH": "Kein Ort mit diesem Namen in der Liste.",
     "FILTER_LABEL": "Bestimmter Ort",
-    "FILTER_HINT": "Umfasst alles darin.",
+    "FILTER_HINT": "Wählen Sie einen Ort (inkl. allem darin) oder tippen Sie Text und wenden Sie die Filter an, um Anzeigenadressen zu durchsuchen.",
     "TYPED_PLACE_PROPOSED": "„{{value}}“ steht nicht in unserer Liste. Wir senden den Namen zur Prüfung an die Moderation; hier wird der nächste bekannte Bereich verwendet.",
     "TYPED_PLACE_NOT_SAVED": "„{{value}}“ steht nicht in unserer Liste, und ein neuer Name kann ohne Anmeldung nicht gespeichert werden; hier wird der nächste bekannte Bereich verwendet.",
-    "TYPED_PLACE_HINT": "Aus der Liste wählen oder den Namen eintippen, falls er fehlt."
+    "TYPED_PLACE_HINT": "Aus der Liste wählen oder den Namen eintippen, falls er fehlt.",
+    "FILTER_SEARCH_TEXT": "„{{text}}“ in Anzeigenadressen suchen"
   },
   "ADMIN_GEO": {
     "TITLE": "Standortverwaltung",

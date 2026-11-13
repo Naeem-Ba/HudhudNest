@@ -14,7 +14,7 @@
 // دالة داخلية بمعزل عن البقية.
 // =====================================================================
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, ParamMap, Router, UrlTree } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject, of, Subject, throwError } from 'rxjs';
 
@@ -63,6 +63,16 @@ function toParamMap(queryParams: Record<string, unknown>): ParamMap {
   return convertToParamMap(clean);
 }
 
+/** What the real router would put in the address bar for these query params (null/undefined are dropped). */
+function serializeQuery(queryParams: Record<string, unknown>): string {
+  const parts: string[] = [];
+  Object.entries(queryParams).forEach(([key, value]) => {
+    if (value === null || value === undefined) return;
+    (Array.isArray(value) ? value : [value]).forEach(v => parts.push(`${key}=${encodeURIComponent(String(v))}`));
+  });
+  return `/properties${parts.length ? `?${parts.join('&')}` : ''}`;
+}
+
 function place(id: number, type: GeoLocationType, nameAr: string, nameEn: string): GeoLocation {
   return {
     id, type, parentId: 1, countryCode: 'SY', officialName: nameEn, nameAr, nameEn, nameDe: null, latitude: null, longitude: null,
@@ -97,9 +107,26 @@ describe('PropertyListPage', () => {
       of(pagedResult([], filter.page ?? 1, 100))
     );
 
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    // The geo search answers with the page that was asked for, like the list does.
+    propertyApiSpy.geoSearch.and.callFake((_lat: number, _lng: number, _radius?: number, filter: PropertyFilterDto = {}) =>
+      of(pagedResult([], filter.page ?? 1, 40))
+    );
+
+    // Like the real router, a navigation to the URL it is already on does nothing (no emission), and the page asks the
+    // router what the URL would be before navigating (createUrlTree + serializeUrl + url).
+    let currentUrl = serializeQuery(initialParams);
+    routerSpy = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
+    Object.defineProperty(routerSpy, 'url', { get: () => currentUrl });
+    routerSpy.createUrlTree.and.callFake((_commands: unknown[], extras?: { queryParams?: Record<string, unknown> }) =>
+      ({ queryParams: extras?.queryParams ?? {} }) as unknown as UrlTree);
+    routerSpy.serializeUrl.and.callFake((tree: UrlTree) => serializeQuery((tree as unknown as { queryParams: Record<string, unknown> }).queryParams));
     routerSpy.navigate.and.callFake((_commands: unknown[], extras?: { queryParams?: Record<string, unknown> }) => {
-      paramMapSubject.next(toParamMap(extras?.queryParams ?? {}));
+      const params = extras?.queryParams ?? {};
+      const next = serializeQuery(params);
+      if (next !== currentUrl) {
+        currentUrl = next;
+        paramMapSubject.next(toParamMap(params));
+      }
       return Promise.resolve(true);
     });
 
@@ -168,6 +195,7 @@ describe('PropertyListPage', () => {
       page: 1,
       pageSize: 20,
       searchTerm: undefined,
+      placeText: undefined,
       city: undefined,
       listingType: undefined,
       minPrice: undefined,
@@ -188,6 +216,7 @@ describe('PropertyListPage', () => {
   describe('ترتيب الإعلانات المميزة حسب المنطقة', () => {
     it('✅ الترتيب الافتراضي بلا فلتر محافظة يرسل مناطق اهتمام الزائر', () => {
       interestParam = '3,7';
+      component.searchText = 'شقة';
       component.applyFilters();
 
       expect(lastRequest().interestGovernorateIds).toBe('3,7');
@@ -302,7 +331,10 @@ describe('PropertyListPage', () => {
 
       component.resetFilters();
 
-      expect(routerSpy.navigate).toHaveBeenCalledWith([], jasmine.objectContaining({ queryParams: {} }));
+      // The URL ends up clean: every parameter is dropped (null), nothing of the old search survives.
+      expect(routerSpy.navigate).toHaveBeenCalledWith([], jasmine.objectContaining({
+        queryParams: jasmine.objectContaining({ search: null, city: null, governorateId: null, minPrice: null, amenityIds: null, page: null })
+      }));
       expect(component.searchText).toBe('');
       expect(component.cityFilter).toBe('');
       expect(component.governorateId).toBeNull();
@@ -313,55 +345,6 @@ describe('PropertyListPage', () => {
       expect(req.page).toBe(1);
       expect(req.city).toBeUndefined();
       expect(req.searchTerm).toBeUndefined();
-    });
-  });
-
-  describe('اقتراحات المدينة تتبع المحافظة المختارة', () => {
-    it('✅ بلا محافظة تُجلب كل المدن', () => {
-      expect(lookupsApiSpy.getCities).toHaveBeenCalledTimes(1);
-      expect(lookupsApiSpy.getCities).toHaveBeenCalledWith(null);
-    });
-
-    it('✅ اختيار محافظة يجلب مدنها فقط، ومسحها يعيد كل المدن', () => {
-      component.governorateId = 3;
-      component.onGovernorateChange();
-      expect(lookupsApiSpy.getCities).toHaveBeenCalledWith(3);
-
-      component.governorateId = null;
-      component.onGovernorateChange();
-      expect(lookupsApiSpy.getCities.calls.mostRecent().args[0]).toBeNull();
-    });
-
-    it('✅ تغيير المحافظة يمسح المدينة المكتوبة لأنها تخص المحافظة السابقة', () => {
-      component.cityFilter = 'Aleppo';
-      component.governorateId = 1;
-
-      component.onGovernorateChange();
-
-      expect(component.cityFilter).toBe('');
-    });
-
-    it('✅ رابط يحمل governorateId يجلب مدن تلك المحافظة عند فتح الصفحة', () => {
-      createComponent({ governorateId: '5' });
-
-      expect(lookupsApiSpy.getCities).toHaveBeenCalledWith(5);
-    });
-
-    it('✅ اختيار المحافظة نفسها مرتين متتاليتين لا يعيد الطلب', () => {
-      component.governorateId = 3;
-      component.onGovernorateChange();
-      component.onGovernorateChange();
-
-      expect(lookupsApiSpy.getCities.calls.allArgs().filter(a => a[0] === 3).length).toBe(1);
-    });
-
-    it('✅ إعادة الضبط تعيد كل المدن', () => {
-      component.governorateId = 3;
-      component.onGovernorateChange();
-
-      component.resetFilters();
-
-      expect(lookupsApiSpy.getCities.calls.mostRecent().args[0]).toBeNull();
     });
   });
 
@@ -460,6 +443,7 @@ describe('PropertyListPage', () => {
 
     it('✅ لا تُرسَل العملة (ولا تظهر في الرابط) بلا حدّ سعر', () => {
       component.currencyCode = 'SYP';
+      component.searchText = 'شقة';
       component.applyFilters();
 
       expect(lastRequest().currencyCode).toBeUndefined();
@@ -571,10 +555,12 @@ describe('PropertyListPage', () => {
 
     it('✅ رفض الخادم للفلاتر (422) يظهر كخطأ فلاتر لا كعطل تحميل', () => {
       propertyApiSpy.getPropertiesPaged.and.returnValue(throwError(() => new HttpErrorResponse({ status: 422 })));
+      component.searchText = 'أ';
       component.applyFilters();
       expect(component.error()).toBe('PROPERTY_LIST.INVALID_FILTERS');
 
       propertyApiSpy.getPropertiesPaged.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+      component.searchText = 'ب';
       component.applyFilters();
       expect(component.error()).toBe('PROPERTY_LIST.LOAD_ERROR');
     });
@@ -712,14 +698,15 @@ describe('PropertyListPage', () => {
 
 
   describe('district / neighborhood typed by hand', () => {
-    it('✅ الكلمات المكتوبة تذهب إلى البحث النصي مع نص البحث، فلا يُفقد الحي غير الموجود في القائمة', () => {
+    it('✅ الكلمات المكتوبة تذهب إلى placeText (كلها مطلوبة)، ونص البحث يبقى وحده في searchTerm', () => {
       component.governorateId = 1;
       component.searchText = 'شقة';
       component.onDistrictTyped('الميدان');
       component.onNeighborhoodTyped('الحارة الجديدة');
       component.applyFilters();
 
-      expect(lastRequest().searchTerm).toBe('شقة الميدان الحارة الجديدة');
+      expect(lastRequest().searchTerm).toBe('شقة');
+      expect(lastRequest().placeText).toBe('الميدان الحارة الجديدة');
       expect(lastRequest().districtId).toBeUndefined();
       expect(component.activeFiltersCount).toBeGreaterThanOrEqual(4);
     });
@@ -733,7 +720,8 @@ describe('PropertyListPage', () => {
 
       component = createComponent({ governorateId: '1', districtText: 'الميدان' });
       expect(component.districtText).toBe('الميدان');
-      expect(lastRequest().searchTerm).toBe('الميدان');
+      expect(lastRequest().searchTerm).toBeUndefined();
+      expect(lastRequest().placeText).toBe('الميدان');
     });
 
     it('✅ المسافة بين كلمتين تبقى أثناء الكتابة (لا يُقصّ النص المخزَّن)', () => {
@@ -764,52 +752,278 @@ describe('PropertyListPage', () => {
     });
   });
 
-  describe('قائمة المدن بلغة واحدة', () => {
+  describe('المدينة لم تعد حقلًا في اللوحة', () => {
+    it('✅ مدينة قادمة من رابط قديم تبقى فعّالة وتُرسَل، حتى لا يوجد فلتر مخفي', () => {
+      component = createComponent({ city: 'Jaramana' });
+      expect(component.cityFilter).toBe('Jaramana');
+      expect(lastRequest().city).toBe('Jaramana');
+      expect(component.activeFiltersCount).toBe(1);
+    });
+
+    it('✅ إزالة الشريحة تمسح المدينة من الطلب ومن الرابط', () => {
+      component = createComponent({ city: 'Jaramana' });
+      component.removeCityFilter();
+      component.applyFilters();
+
+      expect(lastRequest().city).toBeUndefined();
+      expect(routerSpy.navigate.calls.mostRecent().args[1]).toEqual(jasmine.objectContaining({
+        queryParams: jasmine.objectContaining({ city: null })
+      }));
+      expect(component.activeFiltersCount).toBe(0);
+    });
+
+    it('✅ لا يُطلب اقتراح المدن من الخادم بعد الآن', () => {
+      component.governorateId = 1;
+      component.onGovernorateChange();
+      expect(lookupsApiSpy.getCities).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('مربع المكان: نص العنوان (placeText)', () => {
+    it('✅ «ابحث عن X في عناوين الإعلانات» يُطبَّق كـ placeText وينتقل إلى الرابط ويُستعاد منه', () => {
+      component.onPlaceTextPicked('  بغداد ');
+      component.applyFilters();
+
+      expect(lastRequest().placeText).toBe('بغداد');
+      expect(lastRequest().searchTerm).toBeUndefined();
+      expect(routerSpy.navigate.calls.mostRecent().args[1]).toEqual(jasmine.objectContaining({
+        queryParams: jasmine.objectContaining({ placeText: 'بغداد' })
+      }));
+      expect(component.activeFiltersCount).toBe(1);
+
+      component = createComponent({ placeText: 'بغداد' });
+      expect(component.addressText).toBe('بغداد');
+      expect(lastRequest().placeText).toBe('بغداد');
+    });
+
+    it('✅ النص المكتوب في المربع ولم يُختَر شيء يُطبَّق عند «تطبيق» بدل أن يضيع بصمت', () => {
+      component.onPlaceTyped('شارع الثورة');
+      component.applyFilters();
+
+      expect(component.addressText).toBe('شارع الثورة');
+      expect(lastRequest().placeText).toBe('شارع الثورة');
+    });
+
+    it('✅ مكان من الكتالوج ونص عنوان لا يجتمعان: كل منهما يلغي الآخر', () => {
+      component.onPlaceTextPicked('بغداد');
+      component.onPlaceFilterPicked(place(77, 'Neighborhood', 'الجادات', 'Jadat'));
+      expect(component.addressText).toBe('');
+      expect(component.locationId).toBe(77);
+
+      component.onPlaceTextPicked('بغداد');
+      expect(component.locationId).toBeNull();
+      expect(component.locationPlace()).toBeNull();
+    });
+
+    it('✅ المكان المختار نفسه المكتوب في المربع لا يتحوّل إلى نص عنوان', () => {
+      component.onPlaceFilterPicked(place(77, 'Neighborhood', 'الجادات', 'Jadat'));
+      component.onPlaceTyped('الجادات');
+      component.applyFilters();
+
+      expect(component.addressText).toBe('');
+      expect(lastRequest().locationId).toBe(77);
+      expect(lastRequest().placeText).toBeUndefined();
+    });
+
+    it('✅ إفراغ المربع (مسح المكان) يزيل النص المطبَّق، وإعادة الضبط تمسحه', () => {
+      component.onPlaceTextPicked('بغداد');
+      component.onPlaceFilterPicked(null);
+      expect(component.addressText).toBe('');
+
+      component.onPlaceTextPicked('بغداد');
+      component.resetFilters();
+      expect(component.addressText).toBe('');
+      expect(lastRequest().placeText).toBeUndefined();
+    });
+
+    it('✅ placeText يُدمج مع الحي المكتوب، وكلاهما شرط (لا يوسّع البحث)', () => {
+      component.governorateId = 1;
+      component.onPlaceTextPicked('بغداد');
+      component.onDistrictTyped('الميدان');
+      component.applyFilters();
+
+      expect(lastRequest().placeText).toBe('بغداد الميدان');
+    });
+  });
+
+  describe('«القريبة مني» تحترم كل الفلاتر وتبقى فعّالة', () => {
+    let getCurrentPosition: jasmine.Spy;
+
     beforeEach(() => {
-      lookupsApiSpy.getGovernorates.and.returnValue(of([
-        { id: 1, nameAr: 'دمشق', nameEn: 'Damascus', nameDe: null },
-        { id: 2, nameAr: 'حلب', nameEn: 'Aleppo', nameDe: null }
-      ]));
-      lookupsApiSpy.getCities.and.returnValue(of([
-        { id: '1', name: 'دمشق' }, { id: '2', name: 'Damascus' }, { id: '3', name: 'Aleppo' },
-        { id: '4', name: 'جرمانا' }, { id: '5', name: 'Jaramana' }
-      ]));
-      component = createComponent();
+      getCurrentPosition = spyOn(navigator.geolocation, 'getCurrentPosition').and.callFake(
+        ((success: PositionCallback) => success({ coords: { latitude: 33.5, longitude: 36.3 } } as GeolocationPosition)) as typeof navigator.geolocation.getCurrentPosition
+      );
     });
 
-    it('✅ المحافظة تظهر مرة واحدة بأسمها العربي، وغير المحافظات بالعربية فقط في صفحة عربية', () => {
-      component['governorates'].set([
-        { id: 1, nameAr: 'دمشق', nameEn: 'Damascus', nameDe: null },
-        { id: 2, nameAr: 'حلب', nameEn: 'Aleppo', nameDe: null }
-      ]);
-      component.citySuggestions.set([
-        { id: '1', name: 'دمشق' }, { id: '2', name: 'Damascus' }, { id: '3', name: 'Aleppo' },
-        { id: '4', name: 'جرمانا' }, { id: '5', name: 'Jaramana' }
-      ]);
+    function lastGeoCall() {
+      const calls = propertyApiSpy.geoSearch.calls.all();
+      return calls[calls.length - 1].args as [number, number, number, PropertyFilterDto];
+    }
 
-      expect(component.cityOptions().map(o => o.label)).toEqual(['دمشق', 'حلب', 'جرمانا']);
+    it('✅ التفعيل يرسل الإحداثيات ونصف القطر وكل الفلاتر المعتمدة (لا نوع الإعلان وحده)', () => {
+      component.searchText = 'شقة';
+      component.selectedListingType = 'ForSale';
+      component.minPrice = 100;
+      component.propertyTypeId = 4;
+      component.selectedAmenityIds = ['a1'];
+      component.onPlaceTextPicked('بغداد');
+      propertyApiSpy.getPropertiesPaged.calls.reset();
+
+      component.toggleGeoMode();
+
+      expect(component.geoModeActive()).toBeTrue();
+      expect(propertyApiSpy.getPropertiesPaged).not.toHaveBeenCalled();
+      const [lat, lng, radius, filter] = lastGeoCall();
+      expect([lat, lng, radius]).toEqual([33.5, 36.3, 5]);
+      expect(filter).toEqual(jasmine.objectContaining({
+        page: 1, searchTerm: 'شقة', placeText: 'بغداد', listingType: 'ForSale', minPrice: 100, propertyTypeId: 4, amenityIds: ['a1']
+      }));
     });
 
-    it('✅ إن لم يوجد اسم بلغة الصفحة تُعرض الأسماء الموجودة بدل قائمة فارغة', () => {
-      component.citySuggestions.set([{ id: '5', name: 'Jaramana' }]);
-      expect(component.cityOptions().map(o => o.label)).toEqual(['Jaramana']);
+    it('✅ لا يُرسل إلى البحث القريب ترتيب ولا مناطق اهتمام (النتائج حسب القرب)', () => {
+      interestParam = '3,7';
+      component.toggleGeoMode();
+      const filter = lastGeoCall()[3];
+      expect('sortBy' in filter).toBeFalse();
+      expect('sortDescending' in filter).toBeFalse();
+      expect('interestGovernorateIds' in filter).toBeFalse();
     });
 
-    it('✅ مدينة مكتوبة ليست في القائمة تبقى كما كُتبت، ومدينة من القائمة تظهر كقيمة مختارة', () => {
-      component.citySuggestions.set([{ id: '4', name: 'جرمانا' }]);
+    it('✅ الترقيم في الوضع القريب يبقى قريبًا (صفحة 2 من البحث القريب، لا من القائمة العادية)', () => {
+      component.toggleGeoMode();
+      propertyApiSpy.getPropertiesPaged.calls.reset();
+      propertyApiSpy.geoSearch.calls.reset();
 
-      component.onCityTyped('حي جديد');
-      expect(component.cityFilter).toBe('حي جديد');
-      expect(component.cityComboValue).toBeNull();
+      component.goToPage(2);
 
-      component.onCityPicked('جرمانا');
-      component.onCityTyped(null);
-      expect(component.cityFilter).toBe('جرمانا');
-      expect(component.cityComboValue).toBe('جرمانا');
+      expect(propertyApiSpy.getPropertiesPaged).not.toHaveBeenCalled();
+      expect(lastGeoCall()[3].page).toBe(2);
+      expect(component.geoModeActive()).toBeTrue();
+      expect(component.currentPage()).toBe(2);
+    });
 
-      component.onCityPicked(null);
-      component.onCityTyped(null);
-      expect(component.cityFilter).toBe('');
+    it('✅ «تطبيق الفلاتر» داخل الوضع القريب يبقيه فعّالًا ويضيف الفلتر إلى طلب البحث القريب', () => {
+      component.toggleGeoMode();
+      propertyApiSpy.geoSearch.calls.reset();
+
+      component.selectedListingType = 'ForRent';
+      component.applyFilters();
+
+      expect(component.geoModeActive()).toBeTrue();
+      expect(propertyApiSpy.geoSearch).toHaveBeenCalledTimes(1);
+      expect(lastGeoCall()[3].listingType).toBe('ForRent');
+    });
+
+    it('✅ «تطبيق» دون تغيير داخل الوضع القريب لا يطلب مرة ثانية', () => {
+      component.toggleGeoMode();
+      propertyApiSpy.geoSearch.calls.reset();
+      component.applyFilters();
+      expect(propertyApiSpy.geoSearch).not.toHaveBeenCalled();
+    });
+
+    it('✅ تغيير نصف القطر يعيد البحث بالموقع المعروف دون طلب إذن موقع جديد', () => {
+      component.toggleGeoMode();
+      expect(getCurrentPosition).toHaveBeenCalledTimes(1);
+      propertyApiSpy.geoSearch.calls.reset();
+
+      component.radiusKm = 20;
+      component.onRadiusChange();
+
+      expect(getCurrentPosition).toHaveBeenCalledTimes(1);
+      expect(propertyApiSpy.geoSearch).toHaveBeenCalledTimes(1);
+      expect(lastGeoCall()[2]).toBe(20);
+    });
+
+    it('✅ الإلغاء يعود إلى القائمة العادية بطلب واحد وبالفلاتر نفسها، ويمسح الموقع', () => {
+      component.searchText = 'شقة';
+      component.applyFilters();
+      component.toggleGeoMode();
+      propertyApiSpy.getPropertiesPaged.calls.reset();
+      propertyApiSpy.geoSearch.calls.reset();
+
+      component.toggleGeoMode();
+
+      expect(component.geoModeActive()).toBeFalse();
+      expect(propertyApiSpy.geoSearch).not.toHaveBeenCalled();
+      expect(propertyApiSpy.getPropertiesPaged).toHaveBeenCalledTimes(1);
+      expect(lastRequest().searchTerm).toBe('شقة');
+      component.onRadiusChange();
+      expect(propertyApiSpy.geoSearch).not.toHaveBeenCalled();
+    });
+
+    it('✅ إعادة التعيين تُخرج من الوضع القريب وتُحدّث النتائج حتى لو كان الرابط نظيفًا أصلًا', () => {
+      component.toggleGeoMode();
+      propertyApiSpy.getPropertiesPaged.calls.reset();
+
+      component.resetFilters();
+
+      expect(component.geoModeActive()).toBeFalse();
+      expect(propertyApiSpy.getPropertiesPaged).toHaveBeenCalledTimes(1);
+    });
+
+    it('✅ رفض الإذن لا يفعّل الوضع ولا يرسل طلبًا', () => {
+      getCurrentPosition.and.callFake(((_ok: PositionCallback, fail: PositionErrorCallback) => fail({ code: 1 } as GeolocationPositionError)) as typeof navigator.geolocation.getCurrentPosition);
+      propertyApiSpy.geoSearch.calls.reset();
+
+      component.toggleGeoMode();
+
+      expect(component.geoModeActive()).toBeFalse();
+      expect(component.geoLoading()).toBeFalse();
+      expect(propertyApiSpy.geoSearch).not.toHaveBeenCalled();
+    });
+
+    it('✅ خطأ البحث القريب يظهر كخطأ قابل لإعادة المحاولة بنفس الوضع', () => {
+      component.toggleGeoMode();
+      propertyApiSpy.geoSearch.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+      component.loadProperties();
+      expect(component.error()).toBe('PROPERTY_LIST.LOAD_ERROR');
+
+      propertyApiSpy.geoSearch.and.callFake((_a: number, _b: number, _c?: number, f: PropertyFilterDto = {}) => of(pagedResult([], f.page ?? 1, 5)));
+      component.loadProperties();
+      expect(component.error()).toBe('');
+      expect(component.totalCount()).toBe(5);
+    });
+  });
+
+  describe('«تطبيق» دون تغيير في الرابط', () => {
+    it('✅ لا طلب جديد، لكن النتائج تُعرض فورًا (الزر ليس ميتًا)', async () => {
+      const region = document.createElement('main');
+      spyOn(region, 'scrollIntoView');
+      spyOn(region, 'focus');
+      component['resultsRegion'] = { nativeElement: region };
+      propertyApiSpy.getPropertiesPaged.calls.reset();
+
+      component.applyFilters();
+      await new Promise<void>(resolve => setTimeout(resolve, 0));
+
+      expect(propertyApiSpy.getPropertiesPaged).not.toHaveBeenCalled();
+      expect(region.scrollIntoView).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('قسم المرافق القابل للطي', () => {
+    it('✅ مغلق افتراضيًا، والنقر على الرأس يفتحه ويغلقه، والاختيارات تبقى', () => {
+      expect(component.amenitiesOpen).toBeFalse();
+      component.toggleAmenityFilter('a1');
+      component.toggleAmenityFilter('a2');
+
+      component.toggleAmenitiesSection();
+      expect(component.amenitiesOpen).toBeTrue();
+      component.toggleAmenitiesSection();
+      expect(component.amenitiesOpen).toBeFalse();
+
+      expect(component.selectedAmenityIds).toEqual(['a1', 'a2']);
+      expect(component.isAmenitySelected('a2')).toBeTrue();
+    });
+
+    it('✅ الاختيارات تُرسل مع الفلتر وتُحسب، وإعادة الضبط تمسحها', () => {
+      component.toggleAmenityFilter('a1');
+      component.applyFilters();
+      expect(lastRequest().amenityIds).toEqual(['a1']);
+      expect(component.activeFiltersCount).toBe(1);
+
+      component.resetFilters();
+      expect(component.selectedAmenityIds).toEqual([]);
     });
   });
 

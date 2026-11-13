@@ -246,7 +246,8 @@
   cursor: pointer;
   background: var(--surface);
   color: var(--gray-600);
-  transition: all .15s;
+  // Not `all`: an animated `visibility` would keep a chip of a folded section visible for a moment.
+  transition: background .15s, color .15s, border-color .15s;
 
   &--active {
     background: var(--gold-soft);
@@ -468,21 +469,40 @@
   border-bottom: 1px solid var(--border, #e2e8f0);
 }
 
+.geo-actions {
+  display: grid;
+  // Two equal actions side by side while there is room (a desktop sidebar, a wide drawer), stacked on a very narrow one.
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: .5rem;
+}
+
+// "Near me" (a button) and "map view" (a link) are the same kind of action: one size, one shape, one icon style.
 .geo-btn {
-  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 44px;
   display: flex;
   align-items: center;
   gap: .5rem;
   justify-content: center;
-  padding: .65rem 1rem;
+  padding: .55rem .75rem;
   border-radius: var(--r-md, 10px);
   border: 1px solid var(--gold);
   background: var(--gold-soft);
   color: var(--gold-text);
+  font: inherit;
+  font-size: .875rem;
   font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
   cursor: pointer;
-  transition: background .15s, color .15s;
+  transition: background .15s, color .15s, border-color .15s;
 
+  svg { flex: none; }
+
+  &:hover:not(:disabled) { background: var(--gold-soft); border-color: var(--gold-text); }
+  &:focus-visible { outline: 2px solid var(--gold-text); outline-offset: 2px; }
   &:disabled { opacity: .6; cursor: default; }
 
   &--active {
@@ -490,6 +510,8 @@
     color: #1a1206;
   }
 }
+
+.geo-btn__text { min-width: 0; overflow-wrap: anywhere; }
 
 .radius-control {
   margin-top: .75rem;
@@ -641,8 +663,6 @@
   grid-column: 1 / -1;
 }
 
-/* Growth engine P8: link to the map view. */
-.geo-btn--map { text-decoration: none; margin-inline-start: .5rem; }
 
 /* The results region is scrolled to and focused after "apply filters"; keep it clear of a sticky header and do not draw a ring on it. */
 .prop-list-main {
@@ -651,4 +671,200 @@
   &:focus {
     outline: none;
   }
+}
+
+/* ── One look for every field of the filter form ──
+   Selects, text boxes, number boxes and the place box share a border, a height and a padding; the price boxes are
+   narrow, so their padding is smaller and the placeholders ("Min", "الحد الأدنى") are never cut. */
+.filter-form {
+  select,
+  input[type="search"],
+  input[type="text"],
+  input[type="number"] {
+    min-height: 44px;
+    padding-block: .55rem;
+    padding-inline: .8rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    color: var(--gray-900);
+    font-size: .9rem;
+  }
+
+  select { padding-inline-end: 2rem; text-overflow: ellipsis; }
+
+  select:focus,
+  input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px var(--gold-soft);
+  }
+
+  .search-input { padding-inline-start: 2.25rem; }
+}
+
+.range-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .4rem;
+
+  // The "—" between the boxes is decoration; dropping it gives each box the width its placeholder needs.
+  .range-sep { display: none; }
+
+  input {
+    min-width: 0;
+    padding-inline: .6rem !important;
+    text-overflow: ellipsis;
+  }
+}
+
+/* A filter that is on but has no field of its own (the city of an older link): shown as a chip that can be removed. */
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  max-width: 100%;
+  gap: .4rem;
+  padding-block: .25rem;
+  padding-inline: .75rem .35rem;
+  border: 1px solid var(--gold);
+  border-radius: var(--r-pill, 999px);
+  background: var(--gold-soft);
+  color: var(--gold-text);
+  font-size: .8rem;
+  font-weight: 600;
+}
+
+.filter-chip__text { min-width: 0; overflow-wrap: anywhere; }
+
+.filter-chip__remove {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  font-size: .8rem;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover { background: var(--gold); color: var(--on-primary); }
+  &:focus-visible { outline: 2px solid var(--gold-text); outline-offset: 1px; }
+}
+
+/* ── Collapsible section (amenities) ──
+   The header is a real, full-width button that looks like the fields around it - never like a disabled control. */
+.collapse-head {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .55rem .8rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--gray-900);
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 700;
+  text-align: start;
+  cursor: pointer;
+  transition: border-color .15s, background .15s, box-shadow .15s;
+
+  &:hover { border-color: var(--gold); background: var(--gold-soft); }
+  &:focus-visible { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
+  &--open { border-color: var(--gold); }
+}
+
+.collapse-head__title { flex: 1; min-width: 0; }
+
+.collapse-head__badge {
+  flex: none;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 .4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-pill, 999px);
+  background: var(--gold);
+  color: var(--on-primary);
+  font-size: .75rem;
+  font-weight: 800;
+}
+
+.collapse-head__chevron {
+  flex: none;
+  color: var(--gray-500);
+  transition: transform .2s ease;
+}
+
+.collapse-head--open .collapse-head__chevron { transform: rotate(180deg); }
+
+// Height animates through the grid-row trick (0fr -> 1fr), so no fixed height is needed; a closed body is also
+// invisible to keyboard and screen readers (visibility), not just clipped.
+.collapse-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-top: 0;
+  transition: grid-template-rows .2s ease, margin-top .2s ease;
+
+  &--open {
+    grid-template-rows: 1fr;
+    margin-top: .5rem;
+  }
+}
+
+.collapse-body__inner {
+  min-height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  transition: visibility 0s linear .2s;
+}
+
+.collapse-body--open .collapse-body__inner {
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collapse-body,
+  .collapse-body__inner,
+  .collapse-head__chevron {
+    transition: none;
+  }
+}
+
+/* "Near me" state, next to the results (the panel may be closed on a phone). */
+.geo-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .5rem .75rem;
+  margin-bottom: 1rem;
+  padding: .6rem .9rem;
+  border: 1px solid var(--gold);
+  border-radius: var(--r-md);
+  background: var(--gold-soft);
+  color: var(--gold-text);
+  font-size: .875rem;
+  font-weight: 600;
+}
+
+.geo-status__cancel {
+  padding: .3rem .8rem;
+  border: 1px solid var(--gold-text);
+  border-radius: var(--r-pill, 999px);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover { background: var(--gold); color: var(--on-primary); }
+  &:focus-visible { outline: 2px solid var(--gold-text); outline-offset: 2px; }
 }

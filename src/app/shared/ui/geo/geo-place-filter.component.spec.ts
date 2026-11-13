@@ -73,4 +73,73 @@ describe('GeoPlaceFilterComponent', () => {
     tick(300);
     expect(filter.state()).toBe('error');
   }));
+
+  describe('search the typed text in listing addresses', () => {
+    let texts: string[];
+    let typed: string[];
+
+    beforeEach(() => {
+      texts = [];
+      typed = [];
+      filter.textPicked.subscribe(t => texts.push(t));
+      filter.typed.subscribe(t => typed.push(t));
+    });
+
+    it('is offered whenever two or more characters are typed, even when the catalog finds nothing', fakeAsync(() => {
+      api.search.and.returnValue(of([]));
+      filter.onInput('شارع بغداد');
+      tick(300);
+      fixture.detectChanges();
+
+      expect(filter.state()).toBe('empty');
+      expect(filter.canSearchText()).toBeTrue();
+      const option = fixture.nativeElement.querySelector('[data-testid="place-search-text"]') as HTMLElement;
+      expect(option).not.toBeNull();
+    }));
+
+    it('is not offered for one character, nor for the place that is already applied', () => {
+      filter.onInput('ب');
+      expect(filter.canSearchText()).toBeFalse();
+
+      fixture.componentRef.setInput('selected', place(VILLAT));
+      fixture.detectChanges();
+      expect(filter.canSearchText()).toBeFalse();
+    });
+
+    it('choosing it emits the trimmed text and closes the list, without pretending a place was picked', () => {
+      filter.onInput('  بغداد ');
+      filter.chooseText();
+
+      expect(texts).toEqual(['بغداد']);
+      expect(picked).toEqual([]);
+      expect(filter.open()).toBeFalse();
+    });
+
+    it('every keystroke is reported, and clearing reports an empty text and no place', () => {
+      filter.onInput('بغ');
+      filter.onInput('بغد');
+      filter.clear();
+
+      expect(typed).toEqual(['بغ', 'بغد', '']);
+      expect(picked).toEqual([null]);
+    });
+
+    it('emptying the box by hand removes what was applied through it (a place or a text)', () => {
+      fixture.componentRef.setInput('text', 'بغداد');
+      fixture.detectChanges();
+      expect(filter.query()).toBe('بغداد');
+
+      filter.onInput('');
+      expect(picked).toEqual([null]);
+    });
+
+    it('reset() puts the box back to what is applied, dropping a draft', () => {
+      fixture.componentRef.setInput('text', 'بغداد');
+      fixture.detectChanges();
+      filter.onInput('شيء آخر');
+
+      filter.reset();
+      expect(filter.query()).toBe('بغداد');
+    });
+  });
 });

@@ -150,6 +150,11 @@ export interface PropertyFilterDto {
 
   // Free-text keyword search — matched against Title/Description on the backend (Phase 3).
   searchTerm?: string;
+  /**
+   * A place typed as text (a street, a landmark, a district name that is not in the catalog). Unlike `searchTerm`,
+   * where one matching word is enough, every word here must be found in the listing's text.
+   */
+  placeText?: string;
 
   // Location
   countryCode?: string;
