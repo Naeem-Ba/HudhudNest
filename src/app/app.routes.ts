@@ -1,15 +1,15 @@
 ﻿import { Routes } from '@angular/router';
-import { LayoutComponent } from './layout/layout';
 import { AuthGuard } from './core/guards/auth-guard';
 import { ListingEligibilityGuard } from './core/guards/listing-eligibility.guard';
-import { AdminMessagesComponent } from './admin/messages/messages.component';
 import { AdminGuard } from './core/guards/admin-guard';
 import { ProviderGuard } from './core/guards/provider-guard';
 
 export const routes: Routes = [
   {
     path: '',
-    component: LayoutComponent,
+    // Lazy: the shell (navbar and everything it imports, ~63 kB) is no longer part of the initial bundle, so the
+    // public marketing pages and the login page, which do not use it, no longer download it.
+    loadComponent: () => import('./layout/layout').then(m => m.LayoutComponent),
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       {
@@ -492,7 +492,7 @@ export const routes: Routes = [
 
       {
         path: 'admin/messages',
-        component: AdminMessagesComponent,
+        loadComponent: () => import('./admin/messages/messages.component').then(m => m.AdminMessagesComponent),
         canActivate: [AdminGuard]
       },
       {
