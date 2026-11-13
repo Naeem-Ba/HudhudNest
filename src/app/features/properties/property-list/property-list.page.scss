@@ -748,7 +748,7 @@
   line-height: 1;
   cursor: pointer;
 
-  &:hover { background: var(--gold); color: #1a1206; }
+  &:hover { background: var(--gold); color: var(--on-primary); }
   &:focus-visible { outline: 2px solid var(--gold-text); outline-offset: 1px; }
 }
 
@@ -790,7 +790,7 @@
   justify-content: center;
   border-radius: var(--r-pill, 999px);
   background: var(--gold);
-  color: #1a1206;
+  color: var(--on-primary);
   font-size: .75rem;
   font-weight: 800;
 }
@@ -865,6 +865,6 @@
   font-weight: 700;
   cursor: pointer;
 
-  &:hover { background: var(--gold); color: #1a1206; }
+  &:hover { background: var(--gold); color: var(--on-primary); }
   &:focus-visible { outline: 2px solid var(--gold-text); outline-offset: 2px; }
 }
