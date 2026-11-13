@@ -100,11 +100,11 @@ describe('WaitlistDialogComponent', () => {
     expect(fixture.componentInstance.state()).toBe('unavailable');
   });
 
-  it('the consent text links to /datenschutz', () => {
+  it('the consent text links to /privacy-policy', () => {
     const fixture = create();
     waitlist.open();
     fixture.detectChanges();
     const link = fixture.nativeElement.querySelector('.wl__consent a') as HTMLAnchorElement;
-    expect(link.getAttribute('href')).toBe('/datenschutz');
+    expect(link.getAttribute('href')).toBe('/privacy-policy');
   });
 });

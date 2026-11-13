@@ -11,12 +11,15 @@
 // session only, which at worst makes the server count that visitor once more.
 // =============================================================
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+
+import { MeasurementConsentService } from '../consent/measurement-consent.service';
 
 const STORAGE_KEY = 'hn.visitorId';
 
 @Injectable({ providedIn: 'root' })
 export class VisitorIdService {
+  private readonly consent = inject(MeasurementConsentService);
   private inMemory: string | null = null;
 
   /** The visitor id: read from storage, created on first use, never empty. */
@@ -35,7 +38,8 @@ export class VisitorIdService {
     if (!id || !VisitorIdService.isValid(id)) {
       id = VisitorIdService.generate();
       try {
-        globalThis.localStorage?.setItem(STORAGE_KEY, id);
+        // Kept on the device only with consent where the law requires it; otherwise for this page only.
+        if (this.consent.canPersist()) globalThis.localStorage?.setItem(STORAGE_KEY, id);
       } catch {
         /* storage unavailable: keep it for this session only */
       }

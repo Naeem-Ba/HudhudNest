@@ -5,13 +5,23 @@
     {
       "heading": "Acceptance of these Terms",
       "blocks": [
-        { "p": "These Terms of Use (\"Terms\") are an agreement between you and HudhudNest (\"we\", \"us\") that governs your use of the HudhudNest website and apps (the \"Platform\"). By creating an account, ticking the acceptance box, or using the Platform, you confirm that you have read and agree to these Terms and have read our [Privacy Policy](/privacy-policy). If you do not agree, do not use the Platform." }
+        {
+          "p": "These Terms of Use (\"Terms\") are an agreement between you and the operator of the Platform, which trades as {{CONTROLLER_NAME}} (\"we\", \"us\"; see section 29 and the [Impressum](/impressum)), and govern your use of the website {{WEBSITE}} and the apps (the \"Platform\")."
+        },
+        {
+          "p": "You accept these Terms when you create an account by ticking the acceptance box, or when you sign in with Google or Apple and confirm the notice shown to you. Visitors without an account may browse public listings; the rules in these Terms that apply to visitors (such as sections 8, 18 and 19) apply to that use. Our [Privacy Policy](/privacy-policy) explains how we process personal data; it is information, not a contract, and acknowledging it is not consent to any processing."
+        },
+        {
+          "p": "The newsletter is separate from these Terms: accepting these Terms never subscribes you to marketing, and you can use every feature without subscribing."
+        }
       ]
     },
     {
       "heading": "What HudhudNest is, and what it is not",
       "blocks": [
-        { "p": "HudhudNest is an online platform that lets users publish and discover property listings (sale, long-term rent, short stays and investment projects) and contact one another. Users, not HudhudNest, create listings and decide whether and on what terms to deal with each other." },
+        {
+          "p": "HudhudNest is an online platform that lets users publish and discover property listings (sale, long-term rent, short stays and investment projects) and contact one another. Users, not HudhudNest, create listings and decide whether and on what terms to deal with each other."
+        },
         {
           "ul": [
             "We are not a party to any sale, rental, booking or other agreement between users, and we do not act as a real-estate broker, agent, landlord, lawyer or financial adviser for any user.",
@@ -24,7 +34,9 @@
     {
       "heading": "Eligibility",
       "blocks": [
-        { "p": "You must be at least 18 years old and have the legal capacity to enter into a binding agreement to use the Platform. If you register on behalf of an agency or other organisation, you confirm that you are authorised to bind it. You may not use the Platform if you have been suspended or removed from it, or if the law prohibits you from doing so." }
+        {
+          "p": "You must be at least 18 years old and have the legal capacity to enter into a binding agreement to use the Platform. If you register on behalf of an agency or other organisation, you confirm that you are authorised to bind it. You may not use the Platform if you have been suspended or removed from it, or if the law prohibits you from doing so."
+        }
       ]
     },
     {
@@ -33,7 +45,7 @@
         {
           "ul": [
             "Provide accurate, current information when registering and keep it up to date.",
-            "Keep your credentials and any verification codes confidential. You are responsible for activity under your account unless you notify us promptly of unauthorised use at [support@hudhudnest.com](mailto:support@hudhudnest.com).",
+            "Keep your credentials and any verification codes confidential. You are responsible for activity under your account unless you notify us promptly of unauthorised use at {{SUPPORT_EMAIL}}.",
             "One person should not hold multiple accounts to evade a suspension or a limit.",
             "We may require phone or email verification, and may ask you to re-verify periodically, to protect the Platform."
           ]
@@ -43,7 +55,9 @@
     {
       "heading": "Your responsibilities",
       "blocks": [
-        { "p": "You are responsible for your conduct on the Platform and for complying with the laws that apply to you and to the property you advertise, including property, rental, consumer, tax, licensing, anti-discrimination and data-protection rules. Before entering any transaction you should independently verify the property, the other party's identity and authority, ownership documents, prices, fees and legal status, and, where appropriate, obtain professional advice. Do not transfer money or sensitive documents before you are satisfied that the other party is genuine." }
+        {
+          "p": "You are responsible for your conduct on the Platform and for complying with the laws that apply to you and to the property you advertise, including property, rental, consumer, tax, licensing, anti-discrimination and data-protection rules. Before entering any transaction you should independently verify the property, the other party's identity and authority, ownership documents, prices, fees and legal status, and, where appropriate, obtain professional advice. Do not transfer money or sensitive documents before you are satisfied that the other party is genuine."
+        }
       ]
     },
     {
@@ -62,13 +76,17 @@
     {
       "heading": "Ownership and authorisation",
       "blocks": [
-        { "p": "By publishing a listing you declare that you are the owner of the property or are duly authorised by the owner to advertise it, and that, where you act as an agent or agency, you hold any licence or authorisation required by the law that applies to you. If you are an agent, you must make that capacity clear." }
+        {
+          "p": "By publishing a listing you declare that you are the owner of the property or are duly authorised by the owner to advertise it, and that, where you act as an agent or agency, you hold any licence or authorisation required by the law that applies to you. If you are an agent, you must make that capacity clear."
+        }
       ]
     },
     {
       "heading": "Prohibited conduct and listings",
       "blocks": [
-        { "p": "You must not:" },
+        {
+          "p": "You must not:"
+        },
         {
           "ul": [
             "publish listings that are fake, duplicated to mislead, unavailable, bait-and-switch, or for property you have no right to offer;",
@@ -85,129 +103,204 @@
     {
       "heading": "Fraud and misrepresentation",
       "blocks": [
-        { "p": "Fraud, deceptive practices and misrepresentation are grounds for immediate removal of content and suspension or termination of the account, and we may report suspected unlawful activity to the competent authorities and cooperate with their lawful requests. If you encounter suspicious listings or behaviour, report it to [support@hudhudnest.com](mailto:support@hudhudnest.com)." }
+        {
+          "p": "Fraud, deceptive practices and misrepresentation are grounds for immediate removal of content and suspension or termination of the account, and we may report suspected unlawful activity to the competent authorities and cooperate with their lawful requests. If you encounter suspicious listings or behaviour, report it to {{SUPPORT_EMAIL}}."
+        }
       ]
     },
     {
       "heading": "User content and licence to us",
       "blocks": [
-        { "p": "You keep ownership of the content you submit (listings, text, photos, reviews, messages, profile). You are solely responsible for it and confirm that you have all rights needed to submit it." },
-        { "p": "You grant us a worldwide, non-exclusive, royalty-free licence, for as long as the content is on the Platform and for a reasonable period afterwards, to host, store, reproduce, resize, adapt for format, display and distribute your content for the purposes of operating, securing, improving and promoting the Platform. This includes showing public listing content on the Platform and republishing it (for example a photo, headline, price and location) on HudhudNest's own channels on third-party social platforms to promote the listing. You can ask us to stop promoting a listing by removing it or contacting us." }
+        {
+          "p": "You keep ownership of the content you submit (listings, text, photos, reviews, messages, profile). You are solely responsible for it and confirm that you have all rights needed to submit it."
+        },
+        {
+          "p": "You grant us a worldwide, non-exclusive, royalty-free licence, for as long as the content is on the Platform and for a reasonable period afterwards, to host, store, reproduce, resize, adapt for format, display and distribute your content for the purposes of operating, securing, improving and promoting the Platform. This includes showing public listing content on the Platform and republishing it (for example a photo, headline, price and location) on HudhudNest's own channels on third-party social platforms to promote the listing. You can ask us to stop promoting a listing by removing it or contacting us."
+        }
       ]
     },
     {
       "heading": "Photos and media",
       "blocks": [
-        { "p": "Photos must show the advertised property or project and not mislead. Do not upload images showing identifiable people, ID documents or private information without the necessary permission. Image links are public. We may resize, compress or remove media, and may remove content that breaches these Terms." }
+        {
+          "p": "Photos must show the advertised property or project and not mislead. Do not upload images showing identifiable people, ID documents or private information without the necessary permission. Image links are public. We may resize, compress or remove media, and may remove content that breaches these Terms."
+        }
       ]
     },
     {
       "heading": "Communication between users",
       "blocks": [
-        { "p": "The Platform lets users message each other and, in some cases, request visits or bookings. You are responsible for what you send and for your dealings with other users, whether on or off the Platform. Be respectful and do not use messaging for spam, harassment or fraud. We may review messages where needed to investigate abuse or a breach of these Terms, as described in the Privacy Policy." }
+        {
+          "p": "The Platform lets users message each other and, in some cases, request visits or bookings. You are responsible for what you send and for your dealings with other users, whether on or off the Platform. Be respectful and do not use messaging for spam, harassment or fraud. We may review messages where needed to investigate abuse or a breach of these Terms, as described in the Privacy Policy."
+        }
       ]
     },
     {
       "heading": "Marketplace disclaimer and no guarantee of transactions",
       "blocks": [
-        { "p": "Dealings between users are solely their own. To the extent permitted by applicable law, we are not responsible for the conduct of users, for the quality, safety, legality or availability of any property, or for whether a transaction takes place or is completed as agreed. Reviews and ratings are opinions of users, not statements by us." }
+        {
+          "p": "Dealings between users are solely their own. To the extent permitted by applicable law, we are not responsible for the conduct of users, for the quality, safety, legality or availability of any property, or for whether a transaction takes place or is completed as agreed. Reviews and ratings are opinions of users, not statements by us."
+        }
       ]
     },
     {
       "heading": "Property information, valuations and investments",
       "blocks": [
-        { "p": "Information on the Platform, including prices, areas, descriptions, maps, location data and any valuation or investment information, is provided by users or third parties and for general information only. Map positions may be approximate. A valuation received through the Platform is an opinion of the office that provided it, not a binding appraisal by us. Investment project information is not an offer of securities and is not financial, legal or tax advice; you should do your own due diligence." }
+        {
+          "p": "Information on the Platform, including prices, areas, descriptions, maps, location data and any valuation or investment information, is provided by users or third parties and for general information only. Map positions may be approximate. A valuation received through the Platform is an opinion of the office that provided it, not a binding appraisal by us. Investment project information is not an offer of securities and is not financial, legal or tax advice; you should do your own due diligence."
+        }
       ]
     },
     {
       "heading": "Short-stay bookings",
       "blocks": [
-        { "p": "Where the Platform supports short-stay booking requests, a booking is an arrangement between the guest and the host. We provide the technical means to request, confirm and manage it. Unless the Platform expressly states otherwise, payment, deposits, house rules, cancellation and refunds are agreed between guest and host and handled outside the Platform. Hosts are responsible for lawful operation of their accommodation (including any registration, licensing or tax requirements)." }
+        {
+          "p": "Where the Platform supports short-stay booking requests, a booking is an arrangement between the guest and the host. We provide the technical means to request, confirm and manage it. Unless the Platform expressly states otherwise, payment, deposits, house rules, cancellation and refunds are agreed between guest and host and handled outside the Platform. Hosts are responsible for lawful operation of their accommodation (including any registration, licensing or tax requirements)."
+        }
       ]
     },
     {
       "heading": "Fees, plans and featured listings",
       "blocks": [
-        { "p": "Basic use of the Platform may be free, and some features (such as higher listing limits, featured placement or agency plans) may depend on a plan. Where a fee applies, the price, billing period, renewal and cancellation terms will be shown to you before you commit. Where a refund or cancellation right is granted by mandatory law, it applies regardless of this section. The Platform does not currently collect payment-card details itself; if that changes, these Terms will be updated first." }
+        {
+          "p": "Basic use of the Platform may be free, and some features (such as higher listing limits, featured placement or agency plans) may depend on a plan. Where a fee applies, the price, billing period, renewal and cancellation terms will be shown to you before you commit. Where a refund or cancellation right is granted by mandatory law, it applies regardless of this section. The Platform does not currently collect payment-card details itself; if that changes, these Terms will be updated first."
+        },
+        {
+          "p": "Ranking: search results and lists are ordered by your filters and by listing attributes such as how recent a listing is. Paid featured listings, and the paid listings of the area you chose, are shown first and are marked as featured. We do not accept payment to change the order in any other way."
+        }
       ]
     },
     {
       "heading": "Third-party services and links",
       "blocks": [
-        { "p": "The Platform uses third-party services (for example sign-in, maps, image hosting, email and messaging providers) and may link to external sites. We do not control them and are not responsible for their content, availability or practices; your use of them may be subject to their own terms." }
+        {
+          "p": "The Platform uses third-party services (for example sign-in, maps, image hosting, email and messaging providers) and may link to external sites. We do not control them and are not responsible for their content, availability or practices; your use of them may be subject to their own terms."
+        }
       ]
     },
     {
       "heading": "Intellectual property",
       "blocks": [
-        { "p": "The Platform, its software, design, logo, trade names and content created by us belong to us or our licensors and are protected by law. We grant you a limited, revocable, non-exclusive, non-transferable right to use the Platform for its intended purpose under these Terms. You may not copy, modify, distribute, reverse-engineer or exploit it, or use our name or logo, without our written permission. If you believe content on the Platform infringes your rights, send details to [support@hudhudnest.com](mailto:support@hudhudnest.com)." }
+        {
+          "p": "The Platform, its software, design, logo, trade names and content created by us belong to us or our licensors and are protected by law. We grant you a limited, revocable, non-exclusive, non-transferable right to use the Platform for its intended purpose under these Terms. You may not copy, modify, distribute, reverse-engineer or exploit it, or use our name or logo, without our written permission. If you believe content on the Platform infringes your rights, send details to {{SUPPORT_EMAIL}}."
+        }
       ]
     },
     {
-      "heading": "Moderation, suspension and termination",
+      "heading": "Reporting, moderation, suspension and termination",
       "blocks": [
-        { "p": "We may remove or restrict content, limit features, or suspend or terminate an account, with notice where reasonably practicable, if we reasonably believe that you breached these Terms or the law, that your conduct puts users or the Platform at risk, or if required by law. You may stop using the Platform at any time. Provisions that by their nature should survive termination (such as licences already granted, disclaimers, liability and dispute provisions) will survive." }
+        {
+          "p": "Anyone signed in can report a listing from the listing page, and anyone can report content or behaviour at {{SUPPORT_EMAIL}} or, for legal notices, at {{LEGAL_EMAIL}}. Please say what is wrong and where, and why you believe it breaches these Terms or the law. We review reports with human reviewers and act on them diligently."
+        },
+        {
+          "p": "We may remove or restrict content, limit features, or suspend or terminate an account if we reasonably believe that you breached these Terms or the law, that your conduct puts users or the Platform at risk, or if required by law. Our measures are proportionate to the breach. Unless the law or an urgent safety risk prevents it, we will tell you what we did and why, and which rule or law it is based on."
+        },
+        {
+          "p": "If you disagree with a decision, you can ask us to review it by replying to our notice or writing to {{SUPPORT_EMAIL}} within six months. A person who did not take the original decision will review it, and we will tell you the outcome and reasons. This does not limit your right to go to court or to any authority."
+        },
+        {
+          "p": "You may stop using the Platform at any time. Provisions that by their nature should survive termination (such as licences already granted, disclaimers, liability and dispute provisions) will survive."
+        }
       ]
     },
     {
       "heading": "Account deletion",
       "blocks": [
-        { "p": "You can delete your account from your profile or on the [account deletion page](/account-deletion). What happens to your data is described in the [Privacy Policy](/privacy-policy). Deleting your account does not remove your obligations for earlier conduct, and does not by itself remove listings you published; remove them first if you want them taken down." }
+        {
+          "p": "You can delete your account from your profile or on the [account deletion page](/account-deletion). What happens to your data is described in the [Privacy Policy](/privacy-policy). Deleting your account does not remove your obligations for earlier conduct, and does not by itself remove listings you published; remove them first if you want them taken down."
+        }
       ]
     },
     {
       "heading": "Availability of the Platform",
       "blocks": [
-        { "p": "We aim to keep the Platform available but do not promise uninterrupted or error-free operation. We may change, suspend or discontinue features, perform maintenance, or restrict access for security or legal reasons." }
+        {
+          "p": "We aim to keep the Platform available but do not promise uninterrupted or error-free operation. We may change, suspend or discontinue features, perform maintenance, or restrict access for security or legal reasons."
+        }
       ]
     },
     {
       "heading": "Disclaimer of warranties",
       "blocks": [
-        { "p": "To the fullest extent permitted by applicable law, the Platform is provided \"as is\" and \"as available\", and we disclaim warranties of any kind that the law allows us to disclaim, including implied warranties of merchantability, fitness for a particular purpose and non-infringement. Nothing in these Terms excludes warranties or consumer rights that cannot be excluded under the law that applies to you." }
+        {
+          "p": "To the fullest extent permitted by applicable law, the Platform is provided \"as is\" and \"as available\", and we disclaim warranties of any kind that the law allows us to disclaim, including implied warranties of merchantability, fitness for a particular purpose and non-infringement. Nothing in these Terms excludes warranties or consumer rights that cannot be excluded under the law that applies to you."
+        }
       ]
     },
     {
       "heading": "Limitation of liability",
       "blocks": [
-        { "p": "To the extent permitted by applicable law, we are not liable for indirect, incidental, special or consequential loss, loss of profit, opportunity or data, or for losses arising from dealings between users, from user content, or from information or third-party services, and our total liability for any claim relating to the Platform is limited to the amounts, if any, that you paid us for the relevant paid service in the 12 months before the claim arose." },
-        { "p": "Nothing in these Terms limits or excludes liability that cannot be limited or excluded by law, including liability for death or personal injury caused by negligence, for fraud or wilful misconduct, or any non-waivable consumer right." }
+        {
+          "p": "To the extent permitted by applicable law, we are not liable for indirect, incidental, special or consequential loss, loss of profit, opportunity or data, or for losses arising from dealings between users, from user content, or from information or third-party services, and our total liability for any claim relating to the Platform is limited to the amounts, if any, that you paid us for the relevant paid service in the 12 months before the claim arose."
+        },
+        {
+          "p": "Nothing in these Terms limits or excludes liability that cannot be limited or excluded by law, including liability for death or personal injury caused by negligence, for fraud or wilful misconduct, or any non-waivable consumer right."
+        }
       ]
     },
     {
       "heading": "Indemnification",
       "blocks": [
-        { "p": "To the extent permitted by applicable law, you agree to compensate us for losses, damages and reasonable costs arising from third-party claims caused by your content, your breach of these Terms or the law, or your infringement of another person's rights. This does not apply to the extent the loss was caused by us, and does not apply to consumers where the law prohibits such a clause." }
+        {
+          "p": "To the extent permitted by applicable law, you agree to compensate us for losses, damages and reasonable costs arising from third-party claims caused by your content, your breach of these Terms or the law, or your infringement of another person's rights. This does not apply to the extent the loss was caused by us, and does not apply to consumers where the law prohibits such a clause."
+        }
       ]
     },
     {
       "heading": "Events beyond our control",
       "blocks": [
-        { "p": "We are not responsible for failure or delay caused by events beyond our reasonable control, such as natural disasters, war or hostilities, power or network failures, failures of third-party providers, government actions or attacks on our systems." }
+        {
+          "p": "We are not responsible for failure or delay caused by events beyond our reasonable control, such as natural disasters, war or hostilities, power or network failures, failures of third-party providers, government actions or attacks on our systems."
+        }
       ]
     },
     {
       "heading": "Changes to these Terms",
       "blocks": [
-        { "p": "We may update these Terms. The version and dates are shown at the top of this page. We will notify you of material changes in the Platform or by email and, where required, ask you to accept the new version. If you do not agree with the updated Terms, stop using the Platform and you may delete your account." }
+        {
+          "p": "We may update these Terms. The version, publication date and effective date are shown at the top of this page, and we keep earlier versions. We distinguish editorial changes (wording, corrections, translations that do not change the meaning), which we may publish without new acceptance, from material changes to your rights or obligations."
+        },
+        {
+          "p": "We will notify you of material changes in the Platform or by email before they take effect and ask you to accept the new version. Continuing to use the Platform does not count as acceptance where the law requires your express agreement. If you do not accept, you may delete your account, and changes do not apply to paid periods you have already bought."
+        }
       ]
     },
     {
       "heading": "Governing law and disputes",
       "blocks": [
-        { "p": "These Terms are governed by the law applicable to the operator of the Platform, without depriving you of the mandatory consumer-protection rules of the country where you live where they apply. Before starting formal proceedings, please contact us at [support@hudhudnest.com](mailto:support@hudhudnest.com) so that we can try to resolve the matter in good faith. Where the law allows us to choose a court or forum, disputes will be brought before the competent courts determined under applicable law, but nothing here limits your right to bring a claim before the courts that mandatory law gives you." }
+        {
+          "p": "These Terms are governed by the laws of the Syrian Arab Republic, where the Platform is operated from. If you are a consumer and live in another country, this choice of law does not deprive you of the protection of the mandatory provisions of the law of your country of residence, and you may bring a claim before the courts that those provisions give you."
+        },
+        {
+          "p": "Before starting formal proceedings, please contact us at {{LEGAL_EMAIL}} so that we can try to resolve the matter in good faith. Where the law allows a choice of court, disputes will be brought before the competent courts determined under applicable law; nothing here limits the rights that mandatory law gives you."
+        }
       ]
     },
     {
       "heading": "General",
       "blocks": [
-        { "p": "If any provision of these Terms is found invalid or unenforceable, the rest remains in effect and the provision will be replaced by a valid one that comes closest to its intent. These Terms and the Privacy Policy are the entire agreement between you and us about the Platform and replace earlier versions. Our failure to enforce a right is not a waiver. You may not assign these Terms without our consent; we may assign them in connection with a business transfer. If translations of these Terms differ in meaning, please contact us; the version in the language you accepted is the one you agreed to." }
+        {
+          "p": "If any provision of these Terms is found invalid or unenforceable, the rest remains in effect and the provision will be replaced by a valid one that comes closest to its intent. These Terms are the entire agreement between you and us about the Platform and replace earlier versions. Our failure to enforce a right is not a waiver. You may not assign these Terms without our consent; we may assign them in connection with a business transfer, without reducing your rights. Nothing in these Terms limits the statutory rights you have as a consumer."
+        },
+        {
+          "p": "These Terms are available in Arabic, English, German and Turkish. If the versions differ in meaning, please contact us; the version in the language you accepted is the one you agreed to."
+        }
       ]
     },
     {
       "heading": "Contact",
       "blocks": [
-        { "p": "Questions about these Terms: [support@hudhudnest.com](mailto:support@hudhudnest.com)." }
+        {
+          "p": "Operator: {{CONTROLLER_NAME}}, {{CORRESPONDENCE_ADDRESS}}. Further mandatory provider information is in the [Impressum](/impressum)."
+        },
+        {
+          "ul": [
+            "Questions about these Terms and support: {{SUPPORT_EMAIL}}",
+            "Legal notices and complaints: {{LEGAL_EMAIL}}",
+            "Privacy: {{PRIVACY_EMAIL}}",
+            "Security vulnerabilities: {{SECURITY_EMAIL}}"
+          ]
+        }
       ]
     }
   ]

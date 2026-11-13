@@ -56,7 +56,8 @@ export const PRIVATE_PATHS = [
   // Public profile pages show a person's name, photo and join date. They are public by design
   // (reachable from a listing), but are thin and personal -- not something to put in a search
   // index until the owner decides otherwise.
-  '/users/'
+  '/users/',
+  '/newsletter/'
 ];
 
 /** Netlify `_headers` path patterns for one robots-style path: a prefix without a trailing slash

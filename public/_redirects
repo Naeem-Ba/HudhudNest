@@ -38,6 +38,10 @@ http://www.realestateworld.world/*   https://hudhudnest.com/:splat   301!
 # (no trailing slash, which is what the QR encodes) answering 200 on that page whatever Netlify's
 # directory handling does, and must stay ABOVE the catch-all below. Do not add /download to
 # deep-links.config.json paths: the installed app would then open this page instead of the store.
+# Legal pages (2026-11-13): one privacy policy at /privacy-policy (in four languages) and the Impressum at /impressum.
+# The old German privacy draft and the earlier /imprint address answer with a real 301 so links and crawlers follow.
+/datenschutz   /privacy-policy?lang=de   301!
+/imprint       /impressum                301!
 /download   /download/index.html   200!
 #
 # /download/android: the stable address for the direct APK download. The block below is rewritten by the build

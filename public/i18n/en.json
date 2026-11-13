@@ -2921,7 +2921,11 @@
     "UPDATED": "Last updated",
     "BACK_HOME": "Back to home",
     "LOADING": "Loading…",
-    "LOAD_FAILED": "The document could not be loaded. Check your connection and try again."
+    "LOAD_FAILED": "The document could not be loaded. Check your connection and try again.",
+    "PUBLISHED": "Published",
+    "LANGUAGE": "Language",
+    "PENDING_PUBLICATION": "Not published yet",
+    "RELATED": "Related documents"
   },
   "CONSENT": {
     "LEAD": "I agree to the",
@@ -2979,9 +2983,13 @@
       "TITLE": "Subscription plans for owners and agencies",
       "DESCRIPTION": "Start free by listing your own property, or pick an agency plan: Basic $49, Premium $99, or Elite — higher listing limits, agent and staff accounts, reports and analytics, and featured placement in search results."
     },
-    "IMPRINT": {
-      "TITLE": "Legal notice | HudhudNest",
-      "DESCRIPTION": "Name, address and contact details of the operator of the HudhudNest platform."
+    "NEWSLETTER_CONFIRM": {
+      "TITLE": "Confirm newsletter | HudhudNest",
+      "DESCRIPTION": "Confirm your HudhudNest newsletter subscription."
+    },
+    "NEWSLETTER_UNSUBSCRIBE": {
+      "TITLE": "Unsubscribe | HudhudNest",
+      "DESCRIPTION": "Unsubscribe from the HudhudNest newsletter."
     }
   },
   "ADMIN_PAYMENTS": {
@@ -4047,12 +4055,30 @@
     "TITLE": "Legal notice (Impressum)",
     "PROVIDER": "Provider",
     "CONTACT": "Contact",
-    "EMAIL": "Email",
-    "PHONE": "Phone",
-    "REGISTER": "Commercial register",
+    "REGISTER": "Register and tax details",
     "VAT": "VAT ID",
-    "RESPONSIBLE": "Responsible for content",
-    "NOT_AVAILABLE": "The operator's details have not been published yet. Write to us at support@hudhudnest.com."
+    "INTRO": "Provider identification for the HudhudNest website and apps. Only details the operator has confirmed are shown; nothing here is a placeholder or an estimate.",
+    "TRADING_NAME": "Trading name",
+    "OPERATOR": "Legal name of the operator",
+    "LEGAL_FORM": "Legal form",
+    "REPRESENTATIVE": "Authorised representative",
+    "STREET": "Street address",
+    "POSTAL_CODE": "Postal code",
+    "CORRESPONDENCE": "Correspondence (city and country)",
+    "EU_REP": "Representative in the EU (Art. 27 GDPR)",
+    "DPO": "Data protection officer",
+    "SUPPORT": "Support",
+    "LEGAL": "Legal notices",
+    "PRIVACY": "Privacy",
+    "SECURITY": "Security reports",
+    "WEBSITE": "Website",
+    "REGISTER_COURT": "Register",
+    "REGISTER_NUMBER": "Register number",
+    "NOT_PROVIDED": "Not provided yet",
+    "NOT_APPOINTED": "Not appointed",
+    "NONE_KNOWN": "None stated",
+    "INCOMPLETE_TITLE": "Provider information is incomplete",
+    "INCOMPLETE_BODY": "The following details required for this notice have not been confirmed by the operator yet. They will be added here before the platform is fully launched. Until then you can reach us at the addresses below."
   },
   "PAYMENTS": {
     "SANDBOX_BADGE": "Test mode",
@@ -4510,7 +4536,8 @@
       "NAV_ARIA": "Pages",
       "LEGAL_ARIA": "Legal",
       "IMPRESSUM": "Legal notice (Impressum)",
-      "PRIVACY": "Privacy"
+      "PRIVACY": "Privacy",
+      "TERMS": "Terms of Use"
     },
     "ABOUT": {
       "TITLE": "About us",
@@ -4545,9 +4572,6 @@
       "WHY_SIMPLE_T": "Simple process",
       "WHY_SIMPLE_D": "A guided form instead of single messages in groups."
     },
-    "LEGAL": {
-      "DRAFT": "DRAFT – fill in before going live"
-    },
     "SEO": {
       "ABOUT": {
         "TITLE": "About us – HudhudNest",
@@ -4577,5 +4601,47 @@
       "Q4": "What data does the waitlist store?",
       "A4": "Only your email address or WhatsApp number, optionally your interest, the language and the time of your consent."
     }
+  },
+  "NEWSLETTER": {
+    "OPT_IN_LABEL": "Optional: send me the HudhudNest newsletter (news, offers and updates). I will first get an e-mail to confirm, and I can unsubscribe at any time.",
+    "SETTINGS_TITLE": "Newsletter",
+    "SETTINGS_DESC": "Optional e-mails about platform news, offers and updates. Separate from service e-mails.",
+    "STATUS_NONE": "You are not subscribed.",
+    "STATUS_PENDING": "Waiting for your confirmation: open the link in the e-mail we sent you.",
+    "STATUS_ACTIVE": "You are subscribed.",
+    "STATUS_UNSUBSCRIBED": "You have unsubscribed.",
+    "SUBSCRIBE": "Subscribe",
+    "UNSUBSCRIBE": "Unsubscribe",
+    "SUBSCRIBE_SENT": "We sent you an e-mail. Your subscription starts only when you confirm it.",
+    "UNSUBSCRIBED_DONE": "Done. You will not receive the newsletter any more.",
+    "ERROR": "Something went wrong. Please try again later.",
+    "SERVICE_MAIL_NOTE": "Service e-mails (account, security, bookings and messages) are not affected by the newsletter setting.",
+    "CONFIRM_TITLE": "Confirm your newsletter subscription",
+    "CONFIRMED": "Thank you. Your subscription is confirmed. Every newsletter e-mail contains an unsubscribe link.",
+    "CONFIRM_INVALID": "This confirmation link is invalid or has expired. You can subscribe again in Settings.",
+    "UNSUB_TITLE": "Unsubscribe from the newsletter",
+    "UNSUB_BODY": "Click the button to stop receiving the HudhudNest newsletter at this address. It takes effect immediately.",
+    "UNSUB_BUTTON": "Unsubscribe",
+    "UNSUB_DONE": "You have been unsubscribed. We will not send marketing e-mails to this address.",
+    "UNSUB_INVALID": "This unsubscribe link is not valid. Write to privacy@hudhudnest.com and we will remove the address.",
+    "MISSING_TOKEN": "The link is incomplete. Please open it again from the e-mail.",
+    "WORKING": "One moment…",
+    "BACK_HOME": "Home"
+  },
+  "MEASUREMENT": {
+    "TITLE": "Your choice about measurement",
+    "BANNER_TEXT": "May we keep a random visitor ID and the source of the link you came from on this device? We use them only to count listing views once and to see which links bring visitors. No advertising, nothing goes to third parties. Declining blocks nothing.",
+    "LEARN_MORE": "Privacy Policy, section 9",
+    "ACCEPT": "Allow",
+    "DECLINE": "Decline",
+    "SETTINGS_TITLE": "Measurement on this device",
+    "SETTINGS_DESC": "A random visitor ID, the campaign tags of a link you opened and an invitation code, kept on this device. No third parties, no advertising.",
+    "SETTINGS_TOGGLE": "Allow first-party measurement on this device"
+  },
+  "RECONSENT": {
+    "TITLE": "We updated our terms",
+    "TEXT": "We changed the documents below. Please read them and accept to keep using your account. Using the app without accepting does not count as acceptance.",
+    "ACCEPT": "I accept",
+    "LATER": "Later"
   }
 }

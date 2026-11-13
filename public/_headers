@@ -164,3 +164,6 @@
 
 /users/*
   X-Robots-Tag: noindex, nofollow
+
+/newsletter/*
+  X-Robots-Tag: noindex, nofollow

@@ -15,6 +15,8 @@ export interface RegisterRequest {
   consentSource?: string;
   termsAccepted?: boolean;
   termsVersion?: string;
+  // Optional, separate and never pre-ticked: asks the API for the newsletter double opt-in mail. Absent = no request.
+  newsletterOptIn?: boolean;
   // Growth engine P4: first UTM touch (tags only), sent only when one was captured.
   acquisitionSource?: string;
   acquisitionMedium?: string;

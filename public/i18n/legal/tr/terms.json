@@ -7,7 +7,13 @@
       "heading": "Bu Koşulların kabulü",
       "blocks": [
         {
-          "p": "Bu Kullanım Koşulları (\"Koşullar\"), sizinle HudhudNest (\"biz\") arasında, HudhudNest web sitesini ve uygulamalarını (\"Platform\") kullanımınızı düzenleyen bir sözleşmedir. Bir hesap oluşturarak, kabul kutusunu işaretleyerek veya Platform'u kullanarak, bu Koşulları okuduğunuzu ve kabul ettiğinizi, ayrıca [Gizlilik Politikamızı](/privacy-policy) okuduğunuzu onaylarsınız. Kabul etmiyorsanız Platform'u kullanmayın."
+          "p": "Bu Kullanım Koşulları (\"Koşullar\"), sizinle {{CONTROLLER_NAME}} ticari adıyla faaliyet gösteren Platform işletmecisi (\"biz\"; bkz. bölüm 29 ve [Künye](/impressum)) arasında bir sözleşmedir ve {{WEBSITE}} web sitesini ve uygulamaları (\"Platform\") kullanımınızı düzenler."
+        },
+        {
+          "p": "Bu Koşulları, kabul kutusunu işaretleyerek bir hesap oluşturduğunuzda veya Google ya da Apple ile oturum açıp size gösterilen bildirimi onayladığınızda kabul edersiniz. Hesabı olmayan ziyaretçiler herkese açık ilanlara göz atabilir; bu kullanıma Koşulların ziyaretçilerle ilgili kuralları (örneğin bölüm 8, 18 ve 19) uygulanır. [Gizlilik Politikamız](/privacy-policy) kişisel verileri nasıl işlediğimizi açıklar; bir bilgilendirmedir, sözleşme değildir ve onu okuduğunuzu kabul etmeniz herhangi bir işlemeye onay anlamına gelmez."
+        },
+        {
+          "p": "Bülten bu Koşullardan ayrıdır: bu Koşulları kabul etmek sizi hiçbir zaman pazarlama iletilerine abone yapmaz ve her özelliği abone olmadan kullanabilirsiniz."
         }
       ]
     },
@@ -40,7 +46,7 @@
         {
           "ul": [
             "Kaydolurken doğru ve güncel bilgi verin ve bunları güncel tutun.",
-            "Kimlik bilgilerinizi ve doğrulama kodlarını gizli tutun. Yetkisiz kullanımı [support@hudhudnest.com](mailto:support@hudhudnest.com) adresine derhal bildirmediğiniz sürece hesabınız altındaki etkinlikten siz sorumlusunuz.",
+            "Kimlik bilgilerinizi ve doğrulama kodlarını gizli tutun. Yetkisiz kullanımı {{SUPPORT_EMAIL}} adresine derhal bildirmediğiniz sürece hesabınız altındaki etkinlikten siz sorumlusunuz.",
             "Bir askıya almadan veya sınırlamadan kaçınmak için bir kişi birden fazla hesap bulundurmamalıdır.",
             "Platform'u korumak için telefon veya e-posta doğrulaması isteyebilir ve zaman zaman yeniden doğrulama talep edebiliriz."
           ]
@@ -99,7 +105,7 @@
       "heading": "Dolandırıcılık ve yanlış beyan",
       "blocks": [
         {
-          "p": "Dolandırıcılık, aldatıcı uygulamalar ve yanlış beyan; içeriğin derhal kaldırılması ile hesabın askıya alınması veya feshedilmesi için gerekçedir ve şüpheli yasa dışı etkinlikleri yetkili makamlara bildirebilir ve onların hukuka uygun taleplerine yardımcı olabiliriz. Şüpheli ilanlar veya davranışlarla karşılaşırsanız bunu [support@hudhudnest.com](mailto:support@hudhudnest.com) adresine bildirin."
+          "p": "Dolandırıcılık, aldatıcı uygulamalar ve yanlış beyan; içeriğin derhal kaldırılması ile hesabın askıya alınması veya feshedilmesi için gerekçedir ve şüpheli yasa dışı etkinlikleri yetkili makamlara bildirebilir ve onların hukuka uygun taleplerine yardımcı olabiliriz. Şüpheli ilanlar veya davranışlarla karşılaşırsanız bunu {{SUPPORT_EMAIL}} adresine bildirin."
         }
       ]
     },
@@ -158,7 +164,10 @@
       "heading": "Ücretler, planlar ve öne çıkan ilanlar",
       "blocks": [
         {
-          "p": "Platform'un temel kullanımı ücretsiz olabilir ve bazı özellikler (daha yüksek ilan limitleri, öne çıkarma veya ofis planları gibi) bir plana bağlı olabilir. Bir ücret geçerli olduğunda; fiyat, faturalandırma dönemi, yenileme ve iptal koşulları, taahhütte bulunmadan önce size gösterilir. Emredici hukukun tanıdığı bir iade veya cayma hakkı varsa, bu bölümden bağımsız olarak uygulanır. Platform şu anda ödeme kartı bilgilerini kendisi toplamamaktadır; bu değişirse önce bu Koşullar güncellenecektir."
+          "p": "Platform'un temel kullanımı ücretsiz olabilir; bazı özellikler (daha yüksek ilan sınırları, öne çıkarma veya ofis planları gibi) bir plana bağlı olabilir. Ücret söz konusu olduğunda fiyat, faturalama dönemi, yenileme ve iptal koşulları siz taahhütte bulunmadan önce gösterilir. Emredici hukukun tanıdığı bir iade veya cayma hakkı bu bölümden bağımsız olarak uygulanır. Platform şu anda ödeme kartı bilgilerini kendisi toplamamaktadır; bu değişirse önce bu Koşulları güncelleyeceğiz."
+        },
+        {
+          "p": "Sıralama: arama sonuçları ve listeler filtrelerinize ve ilanın ne kadar yeni olduğu gibi ilan özelliklerine göre sıralanır. Ücretli öne çıkan ilanlar ve seçtiğiniz bölgenin ücretli ilanları önce gösterilir ve öne çıkan olarak işaretlenir. Sıralamayı başka bir şekilde değiştirmek için ödeme kabul etmeyiz."
         }
       ]
     },
@@ -174,15 +183,24 @@
       "heading": "Fikri mülkiyet",
       "blocks": [
         {
-          "p": "Platform, yazılımı, tasarımı, logosu, ticari adları ve tarafımızdan oluşturulan içerik bize veya lisans verenlerimize aittir ve hukuk tarafından korunur. Size, Platform'u bu Koşullar uyarınca amaçlanan kullanımı için kullanma konusunda sınırlı, geri alınabilir, münhasır olmayan, devredilemez bir hak veriyoruz. Yazılı iznimiz olmadan onu kopyalayamaz, değiştiremez, dağıtamaz, tersine mühendislik yapamaz veya istismar edemez ya da adımızı veya logomuzu kullanamazsınız. Platform'daki bir içeriğin haklarınızı ihlal ettiğini düşünüyorsanız ayrıntıları [support@hudhudnest.com](mailto:support@hudhudnest.com) adresine gönderin."
+          "p": "Platform, yazılımı, tasarımı, logosu, ticari adları ve tarafımızdan oluşturulan içerik bize veya lisans verenlerimize aittir ve hukuk tarafından korunur. Size, Platform'u bu Koşullar uyarınca amaçlanan kullanımı için kullanma konusunda sınırlı, geri alınabilir, münhasır olmayan, devredilemez bir hak veriyoruz. Yazılı iznimiz olmadan onu kopyalayamaz, değiştiremez, dağıtamaz, tersine mühendislik yapamaz veya istismar edemez ya da adımızı veya logomuzu kullanamazsınız. Platform'daki bir içeriğin haklarınızı ihlal ettiğini düşünüyorsanız ayrıntıları {{SUPPORT_EMAIL}} adresine gönderin."
         }
       ]
     },
     {
-      "heading": "Moderasyon, askıya alma ve fesih",
+      "heading": "Bildirim, denetim, askıya alma ve fesih",
       "blocks": [
         {
-          "p": "Bu Koşulları veya hukuku ihlal ettiğinizi, davranışınızın kullanıcıları veya Platform'u riske attığını makul olarak düşünüyorsak ya da hukuk gerektiriyorsa, makul olarak uygulanabilir olduğunda bildirimle, içeriği kaldırabilir veya kısıtlayabilir, özellikleri sınırlayabilir veya bir hesabı askıya alabilir ya da feshedebiliriz. Platform'u istediğiniz zaman kullanmayı bırakabilirsiniz. Niteliği gereği fesihten sonra da geçerli kalması gereken hükümler (verilmiş lisanslar, sorumluluk reddi, sorumluluk ve uyuşmazlık hükümleri gibi) geçerliliğini korur."
+          "p": "Oturum açmış her kullanıcı bir ilanı ilan sayfasından bildirebilir; herkes içerik veya davranışı {{SUPPORT_EMAIL}} adresine, hukuki bildirimler için ise {{LEGAL_EMAIL}} adresine bildirebilir. Lütfen sorunun ne olduğunu, nerede olduğunu ve neden bu Koşullara veya hukuka aykırı olduğunu düşündüğünüzü belirtin. Bildirimler insanlar tarafından incelenir ve özenle ele alınır."
+        },
+        {
+          "p": "Bu Koşulları veya hukuku ihlal ettiğinize, davranışınızın kullanıcıları veya Platform'u tehlikeye attığına makul olarak inanırsak ya da hukuk gerektirirse içeriği kaldırabilir veya kısıtlayabilir, özellikleri sınırlayabilir ya da bir hesabı askıya alabilir veya feshedebiliriz. Önlemlerimiz ihlalle orantılıdır. Hukuk veya acil bir güvenlik riski engellemedikçe ne yaptığımızı, nedenini ve hangi kurala veya kanuna dayandığını size bildiririz."
+        },
+        {
+          "p": "Bir karara katılmıyorsanız, altı ay içinde bildirimimizi yanıtlayarak veya {{SUPPORT_EMAIL}} adresine yazarak kararın yeniden incelenmesini isteyebilirsiniz. Asıl kararı vermemiş bir kişi kararı inceler ve sonucu ile gerekçelerini size bildiririz. Bu, mahkemeye veya herhangi bir makama başvurma hakkınızı sınırlamaz."
+        },
+        {
+          "p": "Platform'u kullanmayı istediğiniz zaman bırakabilirsiniz. Niteliği gereği fesihten sonra da geçerli olması gereken hükümler (önceden verilmiş lisanslar, sorumluluk reddi, sorumluluk ve uyuşmazlık hükümleri gibi) geçerliliğini korur."
         }
       ]
     },
@@ -241,7 +259,10 @@
       "heading": "Bu Koşullardaki değişiklikler",
       "blocks": [
         {
-          "p": "Bu Koşulları güncelleyebiliriz. Sürüm ve tarihler bu sayfanın üstünde gösterilir. Önemli değişiklikleri Platform'da veya e-posta ile size bildirir ve gerektiğinde yeni sürümü kabul etmenizi isteriz. Güncellenmiş Koşulları kabul etmiyorsanız Platform'u kullanmayı bırakın; hesabınızı silebilirsiniz."
+          "p": "Bu Koşulları güncelleyebiliriz. Sürüm, yayın tarihi ve yürürlük tarihi bu sayfanın üst kısmında gösterilir ve önceki sürümleri saklarız. Yeni kabul gerektirmeden yayınlayabileceğimiz düzenleme amaçlı değişiklikleri (anlamı değiştirmeyen ifade, düzeltme ve çeviriler), haklarınızdaki veya yükümlülüklerinizdeki esaslı değişikliklerden ayırırız."
+        },
+        {
+          "p": "Esaslı değişiklikleri yürürlüğe girmeden önce Platform'da veya e-postayla size bildirir ve yeni sürümü kabul etmenizi isteriz. Hukukun açık onayınızı gerektirdiği yerlerde Platform'u kullanmaya devam etmek kabul sayılmaz. Kabul etmezseniz hesabınızı silebilirsiniz; değişiklikler önceden satın aldığınız ücretli dönemlere uygulanmaz."
         }
       ]
     },
@@ -249,7 +270,10 @@
       "heading": "Uygulanacak hukuk ve uyuşmazlıklar",
       "blocks": [
         {
-          "p": "Bu Koşullar, geçerli oldukları yerlerde yaşadığınız ülkenin emredici tüketici koruma kurallarından sizi yoksun bırakmaksızın, Platform işletmecisine uygulanan hukuka tabidir. Resmî işlem başlatmadan önce, konuyu iyi niyetle çözmeye çalışabilmemiz için lütfen [support@hudhudnest.com](mailto:support@hudhudnest.com) adresinden bizimle iletişime geçin. Hukukun bir mahkeme veya merci seçmemize izin verdiği yerlerde, uyuşmazlıklar geçerli hukuka göre belirlenen yetkili mahkemelerde görülür; ancak buradaki hiçbir şey, emredici hukukun size tanıdığı mahkemelerde dava açma hakkınızı sınırlamaz."
+          "p": "Bu Koşullar, Platform'un işletildiği Suriye Arap Cumhuriyeti hukukuna tabidir. Tüketiciyseniz ve başka bir ülkede yaşıyorsanız, bu hukuk seçimi sizi yerleşim yerinizdeki ülke hukukunun emredici hükümlerinin sağladığı korumadan yoksun bırakmaz ve bu hükümlerin size tanıdığı mahkemelerde dava açabilirsiniz."
+        },
+        {
+          "p": "Resmi bir sürece başlamadan önce, konuyu iyi niyetle çözmeye çalışabilmemiz için lütfen {{LEGAL_EMAIL}} adresinden bizimle iletişime geçin. Hukukun mahkeme seçimine izin verdiği yerlerde uyuşmazlıklar, geçerli hukuka göre yetkili mahkemelerde görülür; buradaki hiçbir şey emredici hukukun size tanıdığı hakları sınırlamaz."
         }
       ]
     },
@@ -257,7 +281,10 @@
       "heading": "Genel hükümler",
       "blocks": [
         {
-          "p": "Bu Koşulların herhangi bir hükmünün geçersiz veya uygulanamaz olduğu tespit edilirse geri kalanı yürürlükte kalır ve hüküm, amacına en yakın geçerli bir hükümle değiştirilir. Bu Koşullar ve Gizlilik Politikası, Platform ile ilgili olarak sizinle aramızdaki tüm anlaşmayı oluşturur ve önceki sürümlerin yerini alır. Bir hakkı uygulamamamız bu haktan feragat anlamına gelmez. Bu Koşulları iznimiz olmadan devredemezsiniz; biz bir işletme devri kapsamında devredebiliriz. Bu Koşulların çevirileri anlamca farklılık gösteriyorsa lütfen bizimle iletişime geçin; kabul ettiğiniz dildeki sürüm, üzerinde anlaştığınız sürümdür."
+          "p": "Bu Koşulların herhangi bir hükmü geçersiz veya uygulanamaz bulunursa geri kalanı yürürlükte kalır ve o hüküm, amacına en yakın geçerli bir hükümle değiştirilir. Bu Koşullar, Platform hakkında sizinle aramızdaki sözleşmenin tamamıdır ve önceki sürümlerin yerini alır. Bir hakkı kullanmamamız ondan feragat anlamına gelmez. Bu Koşulları onayımız olmadan devredemezsiniz; biz ise haklarınızı azaltmadan bir işletme devri kapsamında devredebiliriz. Bu Koşullardaki hiçbir şey tüketici olarak sahip olduğunuz yasal hakları sınırlamaz."
+        },
+        {
+          "p": "Bu Koşullar Arapça, İngilizce, Almanca ve Türkçe olarak sunulur. Sürümler arasında anlam farkı varsa lütfen bizimle iletişime geçin; kabul ettiğiniz dildeki sürüm, onayladığınız sürümdür."
         }
       ]
     },
@@ -265,7 +292,15 @@
       "heading": "İletişim",
       "blocks": [
         {
-          "p": "Bu Koşullarla ilgili sorular: [support@hudhudnest.com](mailto:support@hudhudnest.com)."
+          "p": "İşletmeci: {{CONTROLLER_NAME}}, {{CORRESPONDENCE_ADDRESS}}. Diğer zorunlu sağlayıcı bilgileri [Künye](/impressum) sayfasındadır."
+        },
+        {
+          "ul": [
+            "Bu Koşullar hakkındaki sorular ve destek: {{SUPPORT_EMAIL}}",
+            "Hukuki bildirimler ve şikâyetler: {{LEGAL_EMAIL}}",
+            "Gizlilik: {{PRIVACY_EMAIL}}",
+            "Güvenlik açıkları: {{SECURITY_EMAIL}}"
+          ]
         }
       ]
     }

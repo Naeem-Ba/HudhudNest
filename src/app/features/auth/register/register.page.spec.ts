@@ -42,6 +42,20 @@ describe('RegisterPage — error shown for a failed sign-up', () => {
   const failWith = (status: number, error: unknown) =>
     authApi.register.and.returnValue(throwError(() => ({ status, error })));
 
+  it('the newsletter box starts unticked, is not required, and is sent only when ticked (2026-11-13)', () => {
+    authApi.register.and.returnValue(of({ message: 'ok', userId: 'u1' }));
+    expect(page.newsletterOptIn()).toBeFalse();
+
+    page.submit();
+    const first = authApi.register.calls.mostRecent().args[0];
+    expect(first.newsletterOptIn).toBeUndefined();
+    expect(first.termsAccepted).toBeTrue();
+
+    page.newsletterOptIn.set(true);
+    page.submit();
+    expect(authApi.register.calls.mostRecent().args[0].newsletterOptIn).toBeTrue();
+  });
+
   it('shows the translated server-error text for the API generic 500, not its English sentence (2026-10-05)', () => {
     failWith(500, {
       title: 'Internal Server Error',

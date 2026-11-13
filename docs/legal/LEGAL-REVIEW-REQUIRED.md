@@ -32,11 +32,10 @@ deliberately not invented:
 12. **German text** should be checked by a German-qualified lawyer (AGB-Recht, DSGVO terminology); Arabic by a lawyer in
     the target Arab jurisdiction(s). Translations are meaning-aligned, not literal.
 13. ~~`/account-deletion` is Arabic-only~~ Resolved: the page is now served in ar/en/de (`account-deletion.content.ts`).
-14. **Imprint (Impressum).** The page `/imprint` exists but is hidden until `LEGAL_ENTITY` in
-    `src/app/features/legal/legal-entity.ts` is filled with the real legal name and postal address (and optionally
-    register number, VAT id, responsible person). While it is `null`, the route shows "not available", the footer
-    and settings links are hidden, and no placeholder is ever published. If the Platform targets Germany/Austria/
-    Switzerland, the imprint is a legal requirement (DDG section 5): decide the operator identity first (item 1).
+14. **Impressum.** Since 2026-11-13 the page is `/impressum` (`/imprint` and `/datenschutz` redirect with a 301). It
+    is filled only from `src/app/features/legal/controller-identity.ts` and shows the operator fields that are still
+    unknown (legal name, legal form, representative, street, postal code) as "not provided yet" under an
+    "incomplete" notice. `npm run check:legal` fails until they are filled. See `docs/compliance/impressum-requirements.md`.
 15. **First-party measurement (2026-11-08).** The Policy now states account-linked growth/activity events, anonymous
     app error reports sent to our own API and aggregate counters (see `docs/privacy/analytics-inventory.md` in the API
     repo). Confirm the legal bases and retention for them (items 5 and 6). The error-report switch is the build variable
