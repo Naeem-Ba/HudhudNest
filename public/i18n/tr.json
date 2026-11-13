@@ -2921,7 +2921,11 @@
     "UPDATED": "Son güncelleme",
     "BACK_HOME": "Ana sayfaya dön",
     "LOADING": "Yükleniyor…",
-    "LOAD_FAILED": "Belge yüklenemedi. Bağlantınızı kontrol edip tekrar deneyin."
+    "LOAD_FAILED": "Belge yüklenemedi. Bağlantınızı kontrol edip tekrar deneyin.",
+    "PUBLISHED": "Yayın tarihi",
+    "LANGUAGE": "Dil",
+    "PENDING_PUBLICATION": "Henüz yayınlanmadı",
+    "RELATED": "İlgili belgeler"
   },
   "CONSENT": {
     "LEAD": "Okudum ve kabul ediyorum:",
@@ -2979,9 +2983,13 @@
       "TITLE": "Mülk sahipleri ve ofisler için abonelik planları",
       "DESCRIPTION": "Kendi mülkünüzü ilan vererek ücretsiz başlayın ya da bir ofis planı seçin: Temel 49 $, Premium 99 $ veya Elit — daha yüksek ilan limitleri, temsilci ve personel hesapları, raporlar ve analizler, arama sonuçlarında öne çıkarma."
     },
-    "IMPRINT": {
-      "TITLE": "Yasal bildirim | HudhudNest",
-      "DESCRIPTION": "HudhudNest platformunun işletmecisinin adı, adresi ve iletişim bilgileri."
+    "NEWSLETTER_CONFIRM": {
+      "TITLE": "Bülteni onayla | HudhudNest",
+      "DESCRIPTION": "HudhudNest bülten aboneliğinizi onaylayın."
+    },
+    "NEWSLETTER_UNSUBSCRIBE": {
+      "TITLE": "Abonelikten çık | HudhudNest",
+      "DESCRIPTION": "HudhudNest bülteninden çıkın."
     }
   },
   "ADMIN_PAYMENTS": {
@@ -4044,15 +4052,33 @@
     "CONTACT": "Destekle iletişime geç"
   },
   "IMPRINT": {
-    "TITLE": "Yasal bildirim (Impressum)",
+    "TITLE": "Künye (Impressum)",
     "PROVIDER": "Hizmet sağlayıcı",
     "CONTACT": "İletişim",
-    "EMAIL": "E-posta",
-    "PHONE": "Telefon",
-    "REGISTER": "Ticaret sicili",
-    "VAT": "KDV kimlik numarası",
-    "RESPONSIBLE": "İçerikten sorumlu",
-    "NOT_AVAILABLE": "İşletmecinin bilgileri henüz yayınlanmadı. Bize support@hudhudnest.com adresinden yazın."
+    "REGISTER": "Sicil ve vergi bilgileri",
+    "VAT": "KDV numarası",
+    "INTRO": "HudhudNest web sitesi ve uygulamaları için hizmet sağlayıcı bilgileri. Yalnızca işletmecinin onayladığı bilgiler gösterilir; burada yer tutucu veya tahmin yoktur.",
+    "TRADING_NAME": "Ticari ad",
+    "OPERATOR": "İşletmecinin yasal adı",
+    "LEGAL_FORM": "Hukuki biçim",
+    "REPRESENTATIVE": "Yetkili temsilci",
+    "STREET": "Sokak adresi",
+    "POSTAL_CODE": "Posta kodu",
+    "CORRESPONDENCE": "Yazışma (şehir ve ülke)",
+    "EU_REP": "AB temsilcisi (GDPR m. 27)",
+    "DPO": "Veri koruma görevlisi",
+    "SUPPORT": "Destek",
+    "LEGAL": "Hukuki bildirimler",
+    "PRIVACY": "Gizlilik",
+    "SECURITY": "Güvenlik bildirimleri",
+    "WEBSITE": "Web sitesi",
+    "REGISTER_COURT": "Sicil",
+    "REGISTER_NUMBER": "Sicil numarası",
+    "NOT_PROVIDED": "Henüz bildirilmedi",
+    "NOT_APPOINTED": "Atanmadı",
+    "NONE_KNOWN": "Belirtilmedi",
+    "INCOMPLETE_TITLE": "Hizmet sağlayıcı bilgileri eksik",
+    "INCOMPLETE_BODY": "Bu sayfa için gereken aşağıdaki bilgiler işletmeci tarafından henüz onaylanmadı. Platform tam olarak açılmadan önce buraya eklenecektir. O zamana kadar bize aşağıdaki adreslerden ulaşabilirsiniz."
   },
   "PAYMENTS": {
     "SANDBOX_BADGE": "Test modu",
@@ -4510,7 +4536,8 @@
       "NAV_ARIA": "Sayfalar",
       "LEGAL_ARIA": "Yasal",
       "IMPRESSUM": "Yasal bildirim (Impressum)",
-      "PRIVACY": "Gizlilik"
+      "PRIVACY": "Gizlilik",
+      "TERMS": "Kullanım Koşulları"
     },
     "ABOUT": {
       "TITLE": "Hakkımızda",
@@ -4545,9 +4572,6 @@
       "WHY_SIMPLE_T": "Basit süreç",
       "WHY_SIMPLE_D": "Gruplarda tek tek mesajlar yerine yönlendirmeli bir form."
     },
-    "LEGAL": {
-      "DRAFT": "TASLAK – yayına almadan önce doldurulmalı"
-    },
     "SEO": {
       "ABOUT": {
         "TITLE": "Hakkımızda – HudhudNest",
@@ -4577,5 +4601,47 @@
       "Q4": "Bekleme listesi hangi verileri saklar?",
       "A4": "Yalnızca e-posta adresinizi veya WhatsApp numaranızı, isteğe bağlı olarak ilginizi, dili ve onayınızın zamanını."
     }
+  },
+  "NEWSLETTER": {
+    "OPT_IN_LABEL": "İsteğe bağlı: bana HudhudNest bültenini (haberler, teklifler ve güncellemeler) gönderin. Önce onay için bir e-posta alacağım ve istediğim zaman abonelikten çıkabilirim.",
+    "SETTINGS_TITLE": "Bülten",
+    "SETTINGS_DESC": "Platform haberleri, teklifler ve güncellemeler hakkında isteğe bağlı e-postalar; hizmet e-postalarından ayrıdır.",
+    "STATUS_NONE": "Abone değilsiniz.",
+    "STATUS_PENDING": "Onayınız bekleniyor: size gönderdiğimiz e-postadaki bağlantıyı açın.",
+    "STATUS_ACTIVE": "Abonesiniz.",
+    "STATUS_UNSUBSCRIBED": "Abonelikten çıktınız.",
+    "SUBSCRIBE": "Abone ol",
+    "UNSUBSCRIBE": "Abonelikten çık",
+    "SUBSCRIBE_SENT": "Size bir e-posta gönderdik. Aboneliğiniz yalnızca onu onayladığınızda başlar.",
+    "UNSUBSCRIBED_DONE": "Tamam. Artık bülteni almayacaksınız.",
+    "ERROR": "Bir sorun oluştu. Lütfen daha sonra tekrar deneyin.",
+    "SERVICE_MAIL_NOTE": "Hizmet e-postaları (hesap, güvenlik, rezervasyonlar ve mesajlar) bülten ayarından etkilenmez.",
+    "CONFIRM_TITLE": "Bülten aboneliğinizi onaylayın",
+    "CONFIRMED": "Teşekkürler. Aboneliğiniz onaylandı. Her bülten e-postası bir abonelikten çıkma bağlantısı içerir.",
+    "CONFIRM_INVALID": "Bu onay bağlantısı geçersiz veya süresi dolmuş. Ayarlar'dan yeniden abone olabilirsiniz.",
+    "UNSUB_TITLE": "Bültenden çık",
+    "UNSUB_BODY": "Bu adrese HudhudNest bülteninin gönderilmesini durdurmak için düğmeye tıklayın. Hemen geçerli olur.",
+    "UNSUB_BUTTON": "Abonelikten çık",
+    "UNSUB_DONE": "Abonelikten çıkarıldınız. Bu adrese pazarlama e-postası göndermeyeceğiz.",
+    "UNSUB_INVALID": "Bu abonelikten çıkma bağlantısı geçersiz. privacy@hudhudnest.com adresine yazın, adresi kaldıralım.",
+    "MISSING_TOKEN": "Bağlantı eksik. Lütfen e-postadan yeniden açın.",
+    "WORKING": "Bir saniye…",
+    "BACK_HOME": "Ana sayfa"
+  },
+  "MEASUREMENT": {
+    "TITLE": "Ölçüm konusundaki tercihiniz",
+    "BANNER_TEXT": "Bu cihazda rastgele bir ziyaretçi kimliği ve geldiğiniz bağlantının kaynağını saklayabilir miyiz? Bunları yalnızca ilan görüntülemelerini bir kez saymak ve hangi bağlantıların ziyaretçi getirdiğini görmek için kullanırız. Reklam yok, üçüncü taraflara hiçbir şey gitmez. Reddetmek hiçbir özelliği engellemez.",
+    "LEARN_MORE": "Gizlilik Politikası, bölüm 9",
+    "ACCEPT": "İzin ver",
+    "DECLINE": "Reddet",
+    "SETTINGS_TITLE": "Bu cihazda ölçüm",
+    "SETTINGS_DESC": "Bu cihazda saklanan rastgele bir ziyaretçi kimliği, açtığınız bir bağlantının kampanya etiketleri ve bir davet kodu. Üçüncü taraf yok, reklam yok.",
+    "SETTINGS_TOGGLE": "Bu cihazda birinci taraf ölçüme izin ver"
+  },
+  "RECONSENT": {
+    "TITLE": "Koşullarımızı güncelledik",
+    "TEXT": "Aşağıdaki belgeleri değiştirdik. Hesabınızı kullanmaya devam etmek için lütfen okuyup kabul edin. Uygulamayı kabul etmeden kullanmak kabul sayılmaz.",
+    "ACCEPT": "Kabul ediyorum",
+    "LATER": "Daha sonra"
   }
 }

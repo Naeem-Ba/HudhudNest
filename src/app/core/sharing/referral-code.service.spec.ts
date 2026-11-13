@@ -1,10 +1,15 @@
+import { TestBed } from '@angular/core/testing';
+
+import { MeasurementConsentService } from '../consent/measurement-consent.service';
 import { ReferralCodeService } from './referral-code.service';
 
 describe('ReferralCodeService (growth engine P5)', () => {
   let service: ReferralCodeService;
 
   beforeEach(() => {
-    service = new ReferralCodeService();
+    // Persisting needs the measurement consent where the law requires it (MeasurementConsentService); granted here.
+    TestBed.inject(MeasurementConsentService).grant();
+    service = TestBed.runInInjectionContext(() => new ReferralCodeService());
     service.clear();
   });
 

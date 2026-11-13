@@ -2921,7 +2921,11 @@
     "UPDATED": "Zuletzt aktualisiert",
     "BACK_HOME": "Zurück zur Startseite",
     "LOADING": "Wird geladen…",
-    "LOAD_FAILED": "Das Dokument konnte nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut."
+    "LOAD_FAILED": "Das Dokument konnte nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "PUBLISHED": "Veröffentlicht",
+    "LANGUAGE": "Sprache",
+    "PENDING_PUBLICATION": "Noch nicht veröffentlicht",
+    "RELATED": "Weitere Dokumente"
   },
   "CONSENT": {
     "LEAD": "Ich stimme den",
@@ -2979,9 +2983,13 @@
       "TITLE": "Abo-Pakete für Eigentümer und Immobilienbüros",
       "DESCRIPTION": "Starten Sie kostenlos mit der Anzeige Ihrer eigenen Immobilie oder wählen Sie ein Büro-Paket: Basic 49 $, Premium 99 $ oder Elite — höhere Anzeigengrenzen, Makler- und Mitarbeiterkonten, Berichte und Analysen sowie hervorgehobene Platzierung in den Suchergebnissen."
     },
-    "IMPRINT": {
-      "TITLE": "Impressum | HudhudNest",
-      "DESCRIPTION": "Name, Anschrift und Kontaktdaten des Betreibers der Plattform HudhudNest."
+    "NEWSLETTER_CONFIRM": {
+      "TITLE": "Newsletter bestätigen | HudhudNest",
+      "DESCRIPTION": "Bestätigen Sie Ihre Anmeldung zum Newsletter von HudhudNest."
+    },
+    "NEWSLETTER_UNSUBSCRIBE": {
+      "TITLE": "Abmelden | HudhudNest",
+      "DESCRIPTION": "Vom Newsletter von HudhudNest abmelden."
     }
   },
   "ADMIN_PAYMENTS": {
@@ -4047,12 +4055,30 @@
     "TITLE": "Impressum",
     "PROVIDER": "Anbieter",
     "CONTACT": "Kontakt",
-    "EMAIL": "E-Mail",
-    "PHONE": "Telefon",
-    "REGISTER": "Handelsregister",
-    "VAT": "Umsatzsteuer-Identifikationsnummer",
-    "RESPONSIBLE": "Verantwortlich für den Inhalt",
-    "NOT_AVAILABLE": "Die Angaben zum Betreiber sind noch nicht veröffentlicht. Schreiben Sie uns an support@hudhudnest.com."
+    "REGISTER": "Register- und Steuerangaben",
+    "VAT": "USt-IdNr.",
+    "INTRO": "Anbieterkennzeichnung für die Website und die Apps von HudhudNest. Angezeigt werden nur Angaben, die der Betreiber bestätigt hat; hier steht weder ein Platzhalter noch eine Schätzung.",
+    "TRADING_NAME": "Geschäftsbezeichnung",
+    "OPERATOR": "Rechtlicher Name des Betreibers",
+    "LEGAL_FORM": "Rechtsform",
+    "REPRESENTATIVE": "Vertretungsberechtigte Person",
+    "STREET": "Straße und Hausnummer",
+    "POSTAL_CODE": "Postleitzahl",
+    "CORRESPONDENCE": "Korrespondenz (Ort und Land)",
+    "EU_REP": "Vertreter in der EU (Art. 27 DSGVO)",
+    "DPO": "Datenschutzbeauftragter",
+    "SUPPORT": "Support",
+    "LEGAL": "Rechtliche Hinweise",
+    "PRIVACY": "Datenschutz",
+    "SECURITY": "Sicherheitsmeldungen",
+    "WEBSITE": "Website",
+    "REGISTER_COURT": "Register",
+    "REGISTER_NUMBER": "Registernummer",
+    "NOT_PROVIDED": "Noch nicht angegeben",
+    "NOT_APPOINTED": "Nicht benannt",
+    "NONE_KNOWN": "Keine Angabe",
+    "INCOMPLETE_TITLE": "Die Anbieterangaben sind unvollständig",
+    "INCOMPLETE_BODY": "Die folgenden für dieses Impressum erforderlichen Angaben hat der Betreiber noch nicht bestätigt. Sie werden vor dem vollständigen Start der Plattform hier ergänzt. Bis dahin erreichen Sie uns unter den unten genannten Adressen."
   },
   "PAYMENTS": {
     "SANDBOX_BADGE": "Testmodus",
@@ -4510,7 +4536,8 @@
       "NAV_ARIA": "Seiten",
       "LEGAL_ARIA": "Rechtliches",
       "IMPRESSUM": "Impressum",
-      "PRIVACY": "Datenschutz"
+      "PRIVACY": "Datenschutz",
+      "TERMS": "Nutzungsbedingungen"
     },
     "ABOUT": {
       "TITLE": "Über uns",
@@ -4545,9 +4572,6 @@
       "WHY_SIMPLE_T": "Einfacher Ablauf",
       "WHY_SIMPLE_D": "Ein geführtes Formular statt einzelner Nachrichten in Gruppen."
     },
-    "LEGAL": {
-      "DRAFT": "ENTWURF – vor Livegang ausfüllen"
-    },
     "SEO": {
       "ABOUT": {
         "TITLE": "Über uns – HudhudNest",
@@ -4577,5 +4601,47 @@
       "Q4": "Welche Daten speichert die Warteliste?",
       "A4": "Nur Ihre E-Mail-Adresse oder WhatsApp-Nummer, optional Ihr Interesse, die Sprache und den Zeitpunkt Ihrer Einwilligung."
     }
+  },
+  "NEWSLETTER": {
+    "OPT_IN_LABEL": "Freiwillig: Senden Sie mir den Newsletter von HudhudNest (Neuigkeiten, Angebote und Updates). Ich erhalte zuerst eine E-Mail zur Bestätigung und kann mich jederzeit abmelden.",
+    "SETTINGS_TITLE": "Newsletter",
+    "SETTINGS_DESC": "Freiwillige E-Mails zu Neuigkeiten, Angeboten und Updates der Plattform, getrennt von Service-E-Mails.",
+    "STATUS_NONE": "Sie sind nicht angemeldet.",
+    "STATUS_PENDING": "Wartet auf Ihre Bestätigung: Öffnen Sie den Link in der E-Mail, die wir Ihnen gesendet haben.",
+    "STATUS_ACTIVE": "Sie sind angemeldet.",
+    "STATUS_UNSUBSCRIBED": "Sie haben sich abgemeldet.",
+    "SUBSCRIBE": "Anmelden",
+    "UNSUBSCRIBE": "Abmelden",
+    "SUBSCRIBE_SENT": "Wir haben Ihnen eine E-Mail gesendet. Ihr Abonnement beginnt erst, wenn Sie es bestätigen.",
+    "UNSUBSCRIBED_DONE": "Erledigt. Sie erhalten den Newsletter nicht mehr.",
+    "ERROR": "Etwas ist schiefgelaufen. Bitte versuchen Sie es später erneut.",
+    "SERVICE_MAIL_NOTE": "Service-E-Mails (Konto, Sicherheit, Buchungen und Nachrichten) sind von der Newsletter-Einstellung nicht betroffen.",
+    "CONFIRM_TITLE": "Newsletter-Anmeldung bestätigen",
+    "CONFIRMED": "Vielen Dank. Ihr Abonnement ist bestätigt. Jede Newsletter-E-Mail enthält einen Abmeldelink.",
+    "CONFIRM_INVALID": "Dieser Bestätigungslink ist ungültig oder abgelaufen. Sie können sich in den Einstellungen erneut anmelden.",
+    "UNSUB_TITLE": "Vom Newsletter abmelden",
+    "UNSUB_BODY": "Klicken Sie auf die Schaltfläche, um den Newsletter von HudhudNest an diese Adresse zu beenden. Die Abmeldung wirkt sofort.",
+    "UNSUB_BUTTON": "Abmelden",
+    "UNSUB_DONE": "Sie wurden abgemeldet. Wir senden keine Werbe-E-Mails mehr an diese Adresse.",
+    "UNSUB_INVALID": "Dieser Abmeldelink ist ungültig. Schreiben Sie an privacy@hudhudnest.com, dann entfernen wir die Adresse.",
+    "MISSING_TOKEN": "Der Link ist unvollständig. Bitte öffnen Sie ihn erneut aus der E-Mail.",
+    "WORKING": "Einen Moment…",
+    "BACK_HOME": "Startseite"
+  },
+  "MEASUREMENT": {
+    "TITLE": "Ihre Wahl zur Reichweitenmessung",
+    "BANNER_TEXT": "Dürfen wir auf diesem Gerät eine zufällige Besucherkennung und die Herkunft des Links speichern, über den Sie gekommen sind? Wir nutzen sie nur, um Inseratsaufrufe einmal zu zählen und zu sehen, welche Links Besucher bringen. Keine Werbung, keine Weitergabe an Dritte. Eine Ablehnung schränkt nichts ein.",
+    "LEARN_MORE": "Datenschutzerklärung, Abschnitt 9",
+    "ACCEPT": "Erlauben",
+    "DECLINE": "Ablehnen",
+    "SETTINGS_TITLE": "Reichweitenmessung auf diesem Gerät",
+    "SETTINGS_DESC": "Eine zufällige Besucherkennung, die Kampagnenparameter eines geöffneten Links und ein Einladungscode, auf diesem Gerät gespeichert. Keine Dritten, keine Werbung.",
+    "SETTINGS_TOGGLE": "Eigene Reichweitenmessung auf diesem Gerät erlauben"
+  },
+  "RECONSENT": {
+    "TITLE": "Wir haben unsere Bedingungen aktualisiert",
+    "TEXT": "Wir haben die unten genannten Dokumente geändert. Bitte lesen Sie sie und stimmen Sie zu, um Ihr Konto weiter zu nutzen. Die Nutzung der App ohne Zustimmung gilt nicht als Zustimmung.",
+    "ACCEPT": "Ich stimme zu",
+    "LATER": "Später"
   }
 }

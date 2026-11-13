@@ -399,11 +399,26 @@ export const routes: Routes = [
             .then(m => m.LegalDocumentPage)
       },
       {
-        // Impressum (QA phase 22, LEG-004): shows the operator's details once legal-entity.ts is filled in.
+        // The Impressum lives at /impressum (marketing shell, filled from features/legal/controller-identity.ts).
+        // /imprint was its earlier address; Netlify answers it with a 301 too (public/_redirects).
         path: 'imprint',
+        redirectTo: '/impressum',
+        pathMatch: 'full'
+      },
+      {
+        // Links in the newsletter e-mails (double opt-in and unsubscribe); public, no sign-in.
+        path: 'newsletter/confirm',
+        data: { mode: 'confirm' },
         loadComponent: () =>
-          import('./features/legal/imprint.page')
-            .then(m => m.ImprintPage)
+          import('./features/newsletter/newsletter-token.page')
+            .then(m => m.NewsletterTokenPage)
+      },
+      {
+        path: 'newsletter/unsubscribe',
+        data: { mode: 'unsubscribe' },
+        loadComponent: () =>
+          import('./features/newsletter/newsletter-token.page')
+            .then(m => m.NewsletterTokenPage)
       },
       {
         // Phase 5 (Account Deletion) — public, no AuthGuard: Google Play/Apple App

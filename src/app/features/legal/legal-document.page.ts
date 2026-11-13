@@ -8,14 +8,14 @@ import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { catchError, map, of, switchMap, tap } from 'rxjs';
 
 import { PRIVACY_POLICY_META, TERMS_OF_SERVICE_META } from '../../core/models/consent-versions';
 import { LanguageService, LangCode } from '../../core/services/language.service';
 import { MetaService } from '../../core/services/meta.service';
 import { PropertyShareUrlService } from '../../core/sharing/property-share-url.service';
-import { LegalDocKind, LegalDocumentContent, parseLegalText } from './legal-document.model';
+import { LegalDocKind, LegalDocumentContent, interpolateDocument, parseLegalText } from './legal-document.model';
 import { numberLocaleFor } from '../../core/i18n/supported-preferences';
 
 @Component({
@@ -28,11 +28,13 @@ import { numberLocaleFor } from '../../core/i18n/supported-preferences';
       <article class="legal__card" [attr.lang]="contentLang()" [attr.dir]="contentDir()">
         @if (content(); as doc) {
           <h1>{{ doc.title }}</h1>
-          <p class="legal__updated">
-            {{ 'LEGAL.VERSION' | translate }}: {{ meta.version }} ·
-            {{ 'LEGAL.EFFECTIVE' | translate }}: {{ effectiveLabel() }} ·
-            {{ 'LEGAL.UPDATED' | translate }}: {{ updatedLabel() }}
-          </p>
+          <dl class="legal__meta" data-legal-meta>
+            <div><dt>{{ 'LEGAL.VERSION' | translate }}</dt><dd>{{ meta.version }}</dd></div>
+            <div><dt>{{ 'LEGAL.PUBLISHED' | translate }}</dt><dd>{{ publishedLabel() }}</dd></div>
+            <div><dt>{{ 'LEGAL.EFFECTIVE' | translate }}</dt><dd>{{ effectiveLabel() }}</dd></div>
+            <div><dt>{{ 'LEGAL.UPDATED' | translate }}</dt><dd>{{ updatedLabel() }}</dd></div>
+            <div><dt>{{ 'LEGAL.LANGUAGE' | translate }}</dt><dd>{{ languageLabel() }}</dd></div>
+          </dl>
 
           @if (doc.reviewNotice) {
             <p class="legal__review" role="note">{{ doc.reviewNotice }}</p>
@@ -75,6 +77,16 @@ import { numberLocaleFor } from '../../core/i18n/supported-preferences';
           <p class="legal__loading" aria-busy="true">{{ 'LEGAL.LOADING' | translate }}</p>
         }
 
+        <nav class="legal__related" [attr.aria-label]="'LEGAL.RELATED' | translate">
+          <h2>{{ 'LEGAL.RELATED' | translate }}</h2>
+          <ul>
+            @if (kind !== 'privacy') { <li><a routerLink="/privacy-policy">{{ 'LEGAL_LINKS.PRIVACY' | translate }}</a></li> }
+            @if (kind !== 'terms') { <li><a routerLink="/terms-of-service">{{ 'LEGAL_LINKS.TERMS' | translate }}</a></li> }
+            <li><a routerLink="/impressum">{{ 'LEGAL_LINKS.IMPRINT' | translate }}</a></li>
+            <li><a routerLink="/account-deletion">{{ 'LEGAL_LINKS.DELETION' | translate }}</a></li>
+          </ul>
+        </nav>
+
         <a class="legal__back" routerLink="/home">{{ 'LEGAL.BACK_HOME' | translate }}</a>
       </article>
     </section>
@@ -106,11 +118,35 @@ import { numberLocaleFor } from '../../core/i18n/supported-preferences';
       margin: 0 0 var(--space-2);
     }
 
-    .legal__updated {
+    .legal__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-1) var(--space-4);
       color: var(--gray-500);
       font-size: var(--text-sm);
       margin: 0 0 var(--space-6);
     }
+
+    .legal__meta div { display: flex; gap: 0.35rem; }
+    .legal__meta dt { font-weight: 600; }
+    .legal__meta dt::after { content: ':'; }
+    .legal__meta dd { margin: 0; }
+
+    .legal__related {
+      margin-top: var(--space-8);
+      border-top: 1px solid var(--border);
+      padding-top: var(--space-4);
+    }
+
+    .legal__related ul {
+      list-style: none !important;
+      padding: 0 !important;
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2) var(--space-4);
+    }
+
+    .legal__related a { display: inline-block; min-height: 44px; line-height: 44px; }
 
     .legal__review {
       background: var(--warning-bg, #fff7e0);
@@ -166,8 +202,9 @@ export class LegalDocumentPage {
   private readonly metaService = inject(MetaService);
   private readonly shareUrl = inject(PropertyShareUrlService);
   private readonly languages = inject(LanguageService);
+  private readonly translate = inject(TranslateService);
 
-  private readonly kind: LegalDocKind = this.route.snapshot.data['doc'] === 'terms' ? 'terms' : 'privacy';
+  readonly kind: LegalDocKind = this.route.snapshot.data['doc'] === 'terms' ? 'terms' : 'privacy';
 
   readonly meta = this.kind === 'terms' ? TERMS_OF_SERVICE_META : PRIVACY_POLICY_META;
   readonly lang = toSignal(this.languages.currentLang$, { initialValue: this.languages.getCurrent() });
@@ -181,10 +218,20 @@ export class LegalDocumentPage {
   readonly segments = parseLegalText;
 
   // Intl, not DatePipe: the app registers no Angular locale data for ar/de.
-  readonly effectiveLabel = computed(() => this.formatDate(this.meta.effectiveDate));
+  readonly effectiveLabel = computed(() => this.formatDateOrPending(this.meta.effectiveDate));
+  readonly publishedLabel = computed(() => this.formatDateOrPending(this.meta.publishedDate));
   readonly updatedLabel = computed(() => this.formatDate(this.meta.lastUpdated));
+  readonly languageLabel = computed(
+    () => this.languages.getLanguages().find(option => option.code === this.contentLang())?.label ?? this.contentLang()
+  );
 
   constructor() {
+    // /datenschutz redirects here with ?lang=de: show that language for this visit without overriding a saved choice.
+    const requested = this.route.snapshot.queryParamMap.get('lang');
+    if (requested && requested !== this.languages.getCurrent() && ['ar', 'en', 'de', 'tr'].includes(requested)) {
+      this.languages.use(requested as LangCode, 'ephemeral');
+    }
+
     // Own clean canonical (this page lives at one URL whatever the language); removed again on leave.
     this.destroyRef.onDestroy(() => this.metaService.clearCanonical());
     toObservable(this.lang)
@@ -206,7 +253,7 @@ export class LegalDocumentPage {
           this.failed.set(true);
           return;
         }
-        this.content.set(result.doc);
+        this.content.set(interpolateDocument(result.doc, result.lang));
         this.contentLang.set(result.lang);
         this.metaService.setMeta({
           title: result.doc.title,
@@ -215,6 +262,10 @@ export class LegalDocumentPage {
           canonical: `${this.shareUrl.getSiteOrigin()}${this.kind === 'terms' ? '/terms-of-service' : '/privacy-policy'}`
         });
       });
+  }
+
+  private formatDateOrPending(iso: string | null): string {
+    return iso ? this.formatDate(iso) : this.translate.instant('LEGAL.PENDING_PUBLICATION');
   }
 
   private formatDate(iso: string): string {

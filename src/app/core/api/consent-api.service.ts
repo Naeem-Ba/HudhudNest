@@ -2,12 +2,15 @@ import { Injectable } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { Observable, forkJoin, of, switchMap } from 'rxjs';
 
+import { withUiLanguage } from '../i18n/ui-language';
 import { PRIVACY_POLICY_VERSION, TERMS_OF_SERVICE_VERSION } from '../models/consent-versions';
 
 import { BackendApiService } from './backend-api.service';
 
 export type ConsentPolicyType = 'PrivacyPolicy' | 'TermsOfService';
 export type ConsentSource = 'Web' | 'Ios' | 'Android';
+/** How the consent was captured (API ConsentMethod); stored with the record as evidence. */
+export type ConsentMethod = 'UncheckedCheckbox' | 'SocialSignInNotice' | 'AccountSettings' | 'UpdatePrompt';
 
 export interface ConsentRecord {
   id: string;
@@ -17,6 +20,8 @@ export interface ConsentRecord {
   source: ConsentSource;
   withdrawnAtUtc: string | null;
   isActive: boolean;
+  language?: string | null;
+  method?: string | null;
 }
 
 /**
@@ -38,12 +43,17 @@ export class ConsentApiService {
     return Capacitor.getPlatform() === 'ios' ? 'Ios' : 'Android';
   }
 
-  record(policyType: ConsentPolicyType, policyVersion: string): Observable<ConsentRecord> {
-    return this.api.post<ConsentRecord>('/users/me/consents', {
-      policyType,
-      policyVersion,
-      source: ConsentApiService.currentSource()
-    });
+  /** The page language goes along (withUiLanguage), so the record says in which language the text was shown. */
+  record(policyType: ConsentPolicyType, policyVersion: string, method?: ConsentMethod): Observable<ConsentRecord> {
+    return this.api.post<ConsentRecord>(
+      '/users/me/consents',
+      withUiLanguage({
+        policyType,
+        policyVersion,
+        source: ConsentApiService.currentSource(),
+        ...(method ? { method } : {})
+      })
+    );
   }
 
   getMine(): Observable<ConsentRecord[]> {
@@ -69,7 +79,7 @@ export class ConsentApiService {
         ] as const).filter(
           ([type, version]) => !records.some(record => record.policyType === type && record.policyVersion === version && record.isActive)
         );
-        return missing.length > 0 ? forkJoin(missing.map(([type, version]) => this.record(type, version))) : of([]);
+        return missing.length > 0 ? forkJoin(missing.map(([type, version]) => this.record(type, version, 'SocialSignInNotice'))) : of([]);
       })
     );
   }

@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { VisitorIdService } from './visitor-id.service';
+import { MeasurementConsentService } from '../consent/measurement-consent.service';
 
 describe('VisitorIdService', () => {
   const KEY = 'hn.visitorId';
@@ -7,9 +8,14 @@ describe('VisitorIdService', () => {
   beforeEach(() => {
     localStorage.removeItem(KEY);
     TestBed.configureTestingModule({});
+    // Persisting needs the measurement consent where the law requires it; granted here (see measurement-consent spec).
+    TestBed.inject(MeasurementConsentService).grant();
   });
 
-  afterEach(() => localStorage.removeItem(KEY));
+  afterEach(() => {
+    localStorage.removeItem(KEY);
+    localStorage.removeItem('hn.measurement.consent.v1');
+  });
 
   it('creates a server-acceptable random id once and keeps it', () => {
     const service = TestBed.inject(VisitorIdService);

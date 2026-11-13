@@ -16,8 +16,9 @@ Last reviewed: 2026-11-08 (QA phase 22). Items marked **OWNER** need an account,
       landing footer, the sign-up form and Settings > Legal.
 - [x] **DONE** Sign-in with Google/Apple shows the consent notice and records acceptance.
 - [x] **DONE** In-app account deletion (Profile) and the public page `/account-deletion` (ar/en/de), 30 days grace.
-- [ ] **OWNER** Fill `LEGAL_ENTITY` (`src/app/features/legal/legal-entity.ts`) to publish the imprint; have the three
-      language versions reviewed by a lawyer (`docs/legal/LEGAL-REVIEW-REQUIRED.md`).
+- [ ] **OWNER** Fill the operator fields in `src/app/features/legal/controller-identity.ts` (the Impressum at
+      `/impressum` shows them) and have the four language versions reviewed by a lawyer
+      (`docs/compliance/launch-readiness.md`, `docs/legal/LEGAL-REVIEW-REQUIRED.md`).
 - [ ] **OWNER** Send a test mail to `support@hudhudnest.com` and `security@hudhudnest.com`; decide whether a separate
       `privacy@` address and a response time (for example 30 days for GDPR requests) are published.
 

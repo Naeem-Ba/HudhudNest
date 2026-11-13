@@ -10,7 +10,7 @@
           "p": "HudhudNest; kişilerin satılık, uzun dönem kiralık ve kısa süreli konaklama amaçlı mülk ilanlarını yayınladığı ve incelediği, bu ilanlar hakkında birbirleriyle iletişime geçtiği dijital bir gayrimenkul pazar yeridir. Bu Gizlilik Politikası, HudhudNest web sitesini ve uygulamalarını (birlikte \"Platform\") kullandığınızda hangi kişisel verileri topladığımızı, bunları neden topladığımızı, kimlerin aldığını, ne kadar süre sakladığımızı ve hangi haklara sahip olduğunuzu açıklar."
         },
         {
-          "p": "Burada yalnızca Platform'un yukarıda belirtilen tarih itibarıyla gerçekten yaptıklarını anlatıyoruz. Bu Politika'yı kabul etmiyorsanız lütfen Platform'u kullanmayın."
+          "p": "Burada yalnızca Platform'un yukarıda belirtilen tarih itibarıyla gerçekten yaptıklarını anlatıyoruz. Bu Politika sizin için bir bilgilendirmedir ve onayınızı istemez; hukukun onay gerektirdiği yerlerde onayınızı ayrıca isteriz."
         }
       ]
     },
@@ -18,10 +18,21 @@
       "heading": "Biz kimiz (veri sorumlusu)",
       "blocks": [
         {
-          "p": "Platform, HudhudNest (\"biz\") tarafından işletilir. Bu Politika'da açıklanan kişisel veriler bakımından, size uygulanan hukukta bu kavram geçerli olduğu ölçüde veri sorumlusu biziz."
+          "p": "Platform, {{WEBSITE}} adresinde ve uygulamalarında hizmet veren dijital bir emlak pazar yeri olan {{CONTROLLER_NAME}} ticari adı altında işletilir (\"biz\"). Bu Politikada açıklanan kişisel veri işleme faaliyetlerinin amaçlarını ve araçlarını biz belirleriz; bu nedenle, size uygulanan hukukta bu kavramın geçerli olduğu ölçüde \"veri sorumlusu\" biziz."
         },
         {
-          "p": "Gizlilik konuları için iletişim: [support@hudhudnest.com](mailto:support@hudhudnest.com). Güvenlik bildirimleri: [security@hudhudnest.com](mailto:security@hudhudnest.com)."
+          "p": "Yazışma adresi: {{CORRESPONDENCE_ADDRESS}}."
+        },
+        {
+          "ul": [
+            "Gizlilik ve veri haklarınız: {{PRIVACY_EMAIL}}",
+            "Genel destek: {{SUPPORT_EMAIL}}",
+            "Hukuki konular ve bildirimler: {{LEGAL_EMAIL}}",
+            "Güvenlik açığı bildirimi: {{SECURITY_EMAIL}}"
+          ]
+        },
+        {
+          "p": "Şu anda bir veri koruma görevlisi veya Avrupa Birliği'nde bir temsilci atamadık. Bunlardan birini atarsak bilgilerini bu bölüme ekleyeceğiz."
         }
       ]
     },
@@ -48,7 +59,9 @@
             "Ofis verileri: bir emlak ofisi oluşturduğunuzda veya bir ofise katıldığınızda işletme ve konum bilgileri.",
             "Sizin oluşturduğunuz etkinlik verileri: favoriler, kayıtlı aramalar, puanlar ve değerlendirmeler, kısa süreli konaklama rezervasyonları ve rezervasyon talepleri, mülk değerleme talepleri ve yatırım projelerine ilgi bildirimleri.",
             "Mesajlar: Platform üzerinden diğer kullanıcılara gönderdiğiniz mesajların içeriği.",
-            "İletişim ve bekleme listesi formları: ad, e-posta veya telefon, şehir, kullanıcı türü, konu ve mesaj metni.",
+            "İletişim formu: ad, e-posta adresi, konu ve mesaj metni.",
+            "Açılış sayfasındaki bekleme listesi: e-posta adresiniz veya WhatsApp numaranız, isteğe bağlı ilginiz (satın alma, kiralama veya kısa süreli konaklama), sayfanın dili ve onayınızın zamanı. Bunları yalnızca Platform'un açıldığını size bildirmek için kullanırız. Daha önce eski ilgi formu üzerinden kaydolduysanız, gönderdiğiniz ad, telefon numarası, şehir, kullanıcı türü ve notları saklıyor olabiliriz.",
+            "Bülten (isteğe bağlı): e-posta adresiniz, diliniz ve abonelik talebinizin, onayınızın ve iptalinizin kaydı (bkz. bölüm 19).",
             "Plan seçimi: seçtiğiniz abonelik planı ve durumu. Şu anda Platform'da ödeme kartı bilgilerini toplamıyoruz."
           ]
         }
@@ -67,7 +80,8 @@
             "Hesaba bağlı etkinlik olayları (oturum açtıysanız): davet, ödül ve kullanım dönüm noktası olayları ile hesap başına günde en fazla bir etkinlik işareti. Bunları davet programını yürütmek ve hangi özelliklerin kullanıldığını anlamak için kullanırız. Sizi davet eden kişi yalnızca toplu sayıları görür; yöneticiler olayları görebilir.",
             "Uygulama hata raporları: uygulama beklenmeyen bir hatayla karşılaştığında, e-posta adreslerini, uzun sayıları ve belirteçleri çıkardıktan sonra; hata türünü, platformu, uygulama sürümünü, sayfayı (sorgu parametreleri olmadan), hata iletisini ve yığın izinin ilk satırlarını içeren kısa bir raporu (harici bir hizmete değil) kendi sunucumuza gönderir. Hesabınıza, IP adresinize veya cihaz tanımlayıcınıza bağlanmaz, veritabanında saklanmaz ve yalnızca operasyonel günlüklerde kalır.",
             "Toplu kullanım sayaçları: kapasite planlaması ve aramayı iyileştirmek için sunucuda, herhangi bir tanımlayıcı veya kimlik olmadan kaç arama ve ilan paylaşımı yapıldığını sayarız.",
-            "Yaklaşık mevcut konumunuz, yalnızca \"yakınımda\" aramasına bastığınızda: tarayıcınız veya cihazınız önce izin ister ve koordinatları yalnızca o aramayı yapmak için kullanırız; saklamayız."
+            "Yaklaşık mevcut konumunuz, yalnızca \"yakınımda\" aramasına bastığınızda: tarayıcınız veya cihazınız önce izin ister ve koordinatları yalnızca o aramayı yapmak için kullanırız; saklamayız.",
+            "Barındırma sağlayıcılarının günlükleri: web sitesini açtığınızda veya API'yi kullandığınızda barındırma sağlayıcılarımızın sunucuları (bölüm 13) IP adresiniz, isteğin zamanı, istenen adres ve tarayıcı türü gibi teknik bağlantı verilerini işler ve her sağlayıcının belirlediği süre boyunca operasyonel günlüklerinde saklar."
           ]
         },
         {
@@ -79,10 +93,24 @@
       "heading": "İlanlar ve herkese açık bilgiler",
       "blocks": [
         {
-          "p": "İlanlar tasarım gereği herkese açıktır. İlan metni, fotoğraflar, fiyat, adres ve harita konumu, ilanda görünen ad ve eklediğiniz iletişim bilgileri; hesabı olmayanlar ve arama motorları dahil herkes tarafından görülebilir. Fotoğraf bağlantıları herkese açıktır: bağlantıya sahip olan herkes görüntüyü açabilir."
+          "p": "İlanlar doğası gereği herkese açıktır. Hesabı olmayanlar dahil herkes ilanları görebilir ve arama motorları onları dizine ekleyebilir:"
         },
         {
-          "p": "Ayrıca herkese açık ilan içeriğini (örneğin bir fotoğraf, başlık, fiyat ve konum), ilanı tanıtmak için HudhudNest'in Telegram, Facebook ve Instagram gibi üçüncü taraf sosyal platformlardaki kendi kanallarında yeniden yayınlayabiliriz. Herkese açık olmasını istemediğiniz hiçbir kişisel veriyi ilana eklemeyin."
+          "ul": [
+            "Mülk verileri: tür, fiyat, alan, açıklama, özellikler ve müsaitlik.",
+            "Fotoğraflar: görsel sağlayıcımızda (bölüm 13) saklanır ve herkese açık bağlantılarla sunulur; bağlantıya sahip olan herkes fotoğrafı açabilir. Uygun bir dayanağınız olmadan tanınabilir kişileri, kişisel belgeleri veya araç plakalarını gösteren fotoğraflar yüklemeyin.",
+            "Konum: ilanın konumu haritada gösterilir. İlanı oluştururken veya düzenlerken tam konumu gizlemeyi seçebilirsiniz; bu durumda yalnızca yaklaşık bir konum gösterilir.",
+            "İlandaki kişisel veriler: görünen adınız ve eklemeyi seçtiğiniz iletişim bilgileri herkese açık hale gelir. Yayınlanmasını istemediğiniz verileri eklemeyin."
+          ]
+        },
+        {
+          "p": "Bir ilanın herkese açık içeriğini (fotoğraf, başlık, fiyat, genel konum ve bağlantı) tanıtmak amacıyla Telegram, Facebook ve Instagram gibi üçüncü taraf sosyal ağlardaki HudhudNest'e ait kanallarda yeniden yayınlayabiliriz. Bu paylaşımlar hiçbir zaman telefon numaranızı veya e-posta adresinizi içermez. İlanınızın tanıtımını durdurmamızı {{SUPPORT_EMAIL}} adresinden isteyebilirsiniz."
+        },
+        {
+          "p": "İlan içeriğinizi yalnızca Platform'u işletmek ve o ilanı ve Platform'u tanıtmak için, Kullanım Koşulları'ndaki lisans çerçevesinde kullanırız. Onu satmayız ve başkalarına kendi amaçları için lisanslamayız."
+        },
+        {
+          "p": "İlanlar herkese açık olduğundan başkaları (arama motorları, diğer web siteleri veya kişiler) onları bizim bilgimiz olmadan kopyalayabilir veya yeniden yayınlayabilir. Bunu kontrol edemeyiz ve başkalarının kopyaladıklarını nasıl kullandığından sorumlu değiliz. İlanınızın veya verilerinizin hakkı olmadan başka bir yerde yayınlanmış bir kopyasını bulursanız bize bildirin; örneğin ilan Platform'dan silindikten sonra arama motorlarından önbellekteki kopyaların kaldırılmasını isteyerek elimizden geldiğince yardımcı oluruz."
         }
       ]
     },
@@ -115,16 +143,21 @@
       ]
     },
     {
-      "heading": "Çerezler ve benzer teknolojiler",
+      "heading": "Çerezler ve yerel depolama",
       "blocks": [
         {
-          "p": "Oturumunuzu açık tutan, kesinlikle gerekli ve yalnızca HTTP ile erişilebilen (HttpOnly) tek bir çerez kullanıyoruz. Reklam veya izleme çerezleri kullanmıyoruz."
+          "p": "Bu Politikanın tarihinde web sitesinin ve uygulamanın kodunu inceledik ve tarayıcınızda veya cihazınızda saklananları şöyle sınıflandırıyoruz:"
         },
         {
-          "p": "Ayrıca tarayıcınızın yerel depolamasını, sizin istediğiniz veya Platform'un ihtiyaç duyduğu işlevler için kullanıyoruz: dil ve tema seçiminiz, oturum durumunuz ve (izlenen bir bağlantıyı açarsanız) sonraki bir eylemi ona atfedebilmemiz için o bağlantının kampanya parametreleri. Aynı ilanı yeniden açmanın ikinci bir görüntüleme sayılmaması için orada rastgele bir anonim ziyaretçi kimliği de tutarız; sunucu bunun yalnızca anahtarlı bir özetini saklar, adınıza veya cihaz donanımınıza bağlanmaz ve reklam amacıyla asla kullanılmaz. Bu verileri tarayıcı ayarlarınızdan silebilirsiniz; bazı özellikler bunun üzerine çalışmayı bırakabilir veya sıfırlanabilir ve ziyaretçi kimliği yeniden oluşturulur."
+          "ul": [
+            "Kesinlikle gerekli (onay gerekmez): yenileme belirtecini taşıyan ve oturumunuzu açık tutan bir HttpOnly çerezi, siteler arası istek sahteciliğine (CSRF) karşı bir koruma belirteci, yerel depolamada bir oturumun var olduğunu ve en son kullandığınız giriş yöntemini gösteren bir işaret ve uygulama güncellemesinden sonra sayfanın tekrar tekrar yeniden yüklenmesini önleyen, oturum depolamasında geçici bir işaret. Ayrıca aşağıda açıklanan onay penceresindeki seçiminizi saklarız.",
+            "Tercihler (sizin isteğiniz olduğu için onay gerekmez): dil, açık veya koyu tema, para birimi, çevrilmiş başlıkların nasıl gösterileceği, en son aradığınız bölgeler ve çevrilmiş ilan başlıklarının geçici bir kopyası. Bunlar cihazınızda kalır.",
+            "Birinci taraf ölçüm (hukukun gerektirdiği yerlerde onayla): bir ilan görüntülemesini yalnızca bir kez saymak için rastgele bir ziyaretçi tanımlayıcısı, açtığınız izlenen bir bağlantının kampanya parametreleri (UTM) ve bir davet bağlantısıyla geldiyseniz davet kodu. Hiçbir üçüncü tarafa gönderilmez ve reklam için kullanılmaz. Avrupa Birliği'nde, Avrupa Ekonomik Alanı'nda, Birleşik Krallık'ta, İsviçre'de veya Türkiye'deyseniz ya da ülkenizi belirleyemezsek, bunları yalnızca onayınızdan sonra cihazınızda saklarız; aksi halde sayfayı kapatana kadar yalnızca sayfanın belleğinde kalırlar. Seçiminizi Ayarlar'dan istediğiniz zaman değiştirebilirsiniz.",
+            "Üçüncü taraf analiz ve pazarlama: bu Politikanın tarihinde hiçbirini kullanmıyoruz. Kodda varsayılan olarak kapalı bir reklam modülü (Google AdSense/AdMob) bulunur; bu Politikayı güncellemeden ve gerektiğinde onayınızı almadan onu etkinleştirmeyiz."
+          ]
         },
         {
-          "p": "Harita karoları doğrudan tarayıcınızda OpenStreetMap'ten yüklenir (bkz. 13. bölüm) ve yüklenirken IP adresinizi alır. Sayfa yazı tipleri kendi sunucularımızdan sunulur."
+          "p": "Harita karoları doğrudan tarayıcınızda OpenStreetMap'ten (bölüm 13) yüklenir; bu nedenle OpenStreetMap IP adresinizi alır. Sayfa yazı tipleri kendi sunucularımızdan sunulur. Saklanan verileri tarayıcınızın veya cihazınızın ayarlarından silebilirsiniz; bu durumda bazı ayarlar varsayılan değerlerine dönebilir."
         }
       ]
     },
@@ -141,6 +174,7 @@
             "Platform'u sürdürmek, hatalarını ayıklamak ve iyileştirmek.",
             "Taleplerinizi yanıtlamak ve kullandığınız değerleme, ofis ve yatırım özelliklerini yürütmek.",
             "Herkese açık ilanları ve Platform'u tanıtmak ve hangi bağlantıların ziyaretçi getirdiğini (reklam profilleri oluşturmadan) ölçmek.",
+            "Yalnızca abone olup aboneliğinizi onayladıysanız bülteni göndermek (bölüm 19).",
             "Yasal yükümlülüklere uymak ve hukuki talepleri tespit etmek, kullanmak veya savunmak.",
             "Kabul ettiğiniz Koşullar ve Gizlilik Politikası sürümlerinin ve zamanının kaydını tutmak."
           ]
@@ -148,22 +182,27 @@
       ]
     },
     {
-      "heading": "İşlemenin hukuki dayanakları",
+      "heading": "İşlemenin hukuki sebepleri",
       "blocks": [
         {
-          "p": "GDPR gibi veri koruma hukukunun geçerli olduğu yerlerde aşağıdaki dayanaklara başvururuz:"
+          "p": "Bir veri koruma kanunu hukuki sebep gerektirdiğinde, örneğin kapsamındaki kişiler için AB Genel Veri Koruma Tüzüğü (GDPR) veya 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK), her faaliyet için kendi sebebine dayanırız:"
         },
         {
           "ul": [
-            "Sözleşmenin ifası: kullandığınız hesap, ilan, mesajlaşma, rezervasyon ve plan özellikleri.",
-            "Meşru menfaatler: güvenlik, dolandırıcılığın önlenmesi, hizmetin iyileştirilmesi, paylaşılan bağlantıların toplu atfı ve herkese açık ilanların tanıtımı; bunlar haklarınız ve menfaatlerinizle dengelenir.",
-            "Açık rıza: istediğimiz yerlerde, örneğin iletişim bilgilerinizin bir değerleme ofisiyle paylaşılması, \"yakınımda\" araması için konum erişimi ve isteğe bağlı her türlü pazarlama. Rızanızı, önceki işlemeyi etkilemeden istediğiniz zaman geri alabilirsiniz.",
-            "Yasal yükümlülük: verileri yasa gereği saklamamız veya ifşa etmemiz gerektiğinde.",
-            "Koşulları ve bu Politika'yı kabul ettiğinizi kanıtlamak için kabulünüzün kayıtları tutulur."
+            "Sözleşmenin ifası (GDPR m. 6(1)(b), KVKK m. 5(2)(c)): hesabınızın oluşturulması ve oturum açmanız, ilanların yayınlanması ve gösterilmesi, mesajlar, rezervasyonlar, görüntüleme ve değerleme talepleri, seçtiğiniz planlar ve hizmet e-postaları.",
+            "Hukuki yükümlülük (GDPR m. 6(1)(c), KVKK m. 5(2)(ç)): hukukun gerektirdiği yerlerde verilerin saklanması veya açıklanması ile haklarınıza ilişkin taleplerin yanıtlanması ve kayıt altına alınması.",
+            "Meşru menfaat (GDPR m. 6(1)(f), KVKK m. 5(2)(f)): Platform güvenliği ile dolandırıcılık ve kötüye kullanımın önlenmesi, güvenlik günlükleri, hata raporları ve toplu sayaçlar, herkese açık ilanların kanallarımızda yeniden yayınlanması, onay kanıtlarının saklanması ve hukuki taleplere karşı savunma. Bu menfaatleri haklarınızla tartarız.",
+            "Açık rıza / onay (GDPR m. 6(1)(a), KVKK m. 5(1)): bülten ve bekleme listesi, iletişim bilgilerinizin bir değerleme ofisiyle paylaşılması, \"yakınımda\" araması için konumunuza erişim, anlık bildirimler ve hukukun onay gerektirdiği yerlerde birinci taraf ölçüm. Onayınızı istediğiniz zaman geri alabilirsiniz; bu, geri almadan önceki işlemenin hukuka uygunluğunu etkilemez."
           ]
         },
         {
-          "p": "Geçerli hukukun gerektirdiği ölçüde, belirli bir işleme faaliyetinin tam hukuki dayanağı ülkenize göre farklılık gösterebilir."
+          "p": "Onayı her işleme için genel bir dayanak olarak kullanmayız ve Kullanım Koşulları'nı kabul etmeyi pazarlamaya onay saymayız."
+        },
+        {
+          "p": "İtiraz hakkı: Meşru menfaate dayanan işlemeye, özel durumunuzla ilgili gerekçelerle istediğiniz zaman itiraz edebilirsiniz. Menfaatlerinizin önüne geçen zorlayıcı meşru gerekçeler ortaya koymadıkça veya işleme hukuki talepler için gerekli olmadıkça işlemeyi durdururuz. Doğrudan pazarlamaya istediğiniz zaman ve gerekçe göstermeden itiraz edebilirsiniz."
+        },
+        {
+          "p": "Belirli bir faaliyetin kesin hukuki sebebi ülkenizde geçerli hukuka göre farklılık gösterebilir."
         }
       ]
     },
@@ -188,52 +227,67 @@
       "heading": "Hizmet sağlayıcılar ve üçüncü taraflar",
       "blocks": [
         {
-          "p": "Aşağıdaki sağlayıcıları kullanıyoruz. Her biri yalnızca rolü için ihtiyaç duyduğunu alır."
+          "p": "Aşağıdaki sağlayıcıları kullanırız ve her biri yalnızca görevi için gerekenleri alır:"
         },
         {
           "ul": [
-            "Cloudinary: profil ve ilan görsellerinin depolanması ve sunulması.",
-            "Resend: hesap onayı, parola sıfırlama ve güvenlik e-postalarının gönderilmesi.",
-            "Twilio veya benzeri bir SMS sağlayıcısı: SMS doğrulama kodlarının iletilmesi.",
+            "Barındırma ve altyapı: Render (API), Supabase (veritabanı ve açılış sayfasındaki bekleme listesi), Netlify (web uygulaması ve web sitesi sayfaları) ve şifreli yedekler için bir bulut depolama sağlayıcısı.",
+            "Cloudinary: profil ve ilan görsellerinin saklanması ve sunulması.",
+            "Resend: e-posta gönderimi (hesap onayı, parola sıfırlama, güvenlik uyarıları, bülten aboneliği onayı ve aboneliğini onaylayanlara gönderilen bülten e-postaları).",
+            "SMS sağlayıcıları (ülkeye ve yapılandırmaya göre Twilio, D7 Networks veya Unimatrix gibi): doğrulama kodlarının SMS ile iletilmesi.",
             "Telegram ve WhatsApp (Meta): bu kanalları seçtiğinizde doğrulama kodlarının iletilmesi.",
-            "Telegram, Facebook ve Instagram (Meta): 6. bölümde açıklandığı gibi, herkese açık ilan içeriğinin HudhudNest'in kendi kanallarında yayınlanması.",
-            "Google ve Apple: seçerseniz giriş. Google Identity Services, giriş sayfalarında tarayıcınıza yüklenir.",
-            "OpenStreetMap (OpenStreetMap Foundation karo sunucuları): bir konumu görüntülediğinizde veya seçtiğinizde gösterilen harita karoları; karo sunucusu IP adresinizi görebilir.",
-            "Google Firebase Cloud Messaging (ve iPhone'da Apple Push Notification service): yalnızca bildirimleri açarsanız anlık bildirimlerin iletilmesi; cihazınızın anlık bildirim belirteci, bildirimleri kapatana veya hesabı silene kadar hesabınızla birlikte saklanır.",
-            "Bulut barındırma sağlayıcıları (şu anda API için Render, veritabanı için Supabase, web uygulaması için Netlify ve yedekler için şifreli bir depolama sağlayıcısı): Platform'un üzerinde çalıştığı altyapı.",
-            "Have I Been Pwned (k-anonimlik aralık sorgusu): ihlal edilmiş parola kontrolü, bkz. 8. bölüm."
+            "Telegram, Facebook ve Instagram (Meta): bölüm 6'da açıklandığı gibi ilanların herkese açık içeriğinin HudhudNest kanallarında yayınlanması.",
+            "Google ve Apple: seçerseniz oturum açma. Google Identity Services, oturum açma sayfalarında tarayıcınızda yüklenir.",
+            "Google Firebase Cloud Messaging ve Apple Push Notification Service: yalnızca etkinleştirirseniz anlık bildirimlerin iletilmesi.",
+            "OpenStreetMap (OpenStreetMap Foundation'ın karo sunucuları): harita karoları; karo sunucusu IP adresinizi görür.",
+            "Have I Been Pwned: sızdırılmış parolaların k-anonimlik yöntemiyle kontrolü, bkz. bölüm 8.",
+            "Yalnızca etkinleştirildiğinde: herkese açık ilan metinlerinin makine çevirisi için DeepL ve adreslerin sunucumuzda koordinatlara dönüştürülmesi için OpenStreetMap'in Nominatim hizmeti. İkisi de varsayılan yapılandırmada kapalıdır."
           ]
         },
         {
-          "p": "Bu sağlayıcılar kendi koşulları ve gizlilik politikaları uyarınca hareket eder. Sağlayıcıları değiştirebiliriz; değişiklik önemli olduğunda bu Politika güncellenir."
+          "p": "Bu sağlayıcılar verileri kendi koşulları ve politikalarına göre işler. Yeni bir amaç kategorisi için kişisel veri işleyen bir sağlayıcı eklemeden önce bu listeyi güncelleyeceğiz."
         }
       ]
     },
     {
-      "heading": "Uluslararası veri aktarımları",
+      "heading": "Yurt dışına veri aktarımı",
       "blocks": [
         {
-          "p": "Sağlayıcılarımız ve sunucularımız, veri koruma hukuku sizin ülkenizden farklı olan ülkeler dahil olmak üzere sizin ülkenizden başka ülkelerde bulunabilir. Geçerli hukuk bu tür aktarımlar için güvenceler gerektirdiğinde (örneğin standart sözleşme hükümleri), bunları sağlayıcılarımızla yürürlüğe koymak için adımlar atarız. Verileriniz için geçerli güvencelerin ayrıntıları için bizimle iletişime geçin."
+          "p": "Verileriniz kendi ülkeniz dışındaki ülkelerde işlenir. Bazı sağlayıcılarımızın veya ana şirketlerinin sunucuları Amerika Birleşik Devletleri'nde veya Avrupa Birliği dışındaki başka ülkelerdedir ve veriler Suriye'den veya ülkenizden bu ülkelere aktarılabilir."
+        },
+        {
+          "p": "Böyle bir aktarıma GDPR uygulandığında aktarım yalnızca Avrupa Komisyonu'nun yeterlilik kararı bulunan bir ülkeye ya da gerektiğinde aktarım etki değerlendirmesi ve ek önlemlerle birlikte Standart Sözleşme Maddeleri (SCC) gibi uygun güvencelerle yapılabilir. KVKK'nın uygulandığı durumlarda da KVKK m. 9'daki şartlar aranır. Her sağlayıcıya uygulanan mekanizmayı doğruluyor ve iç aktarım kaydında belgeliyoruz; hiçbir aktarımı doğrulamadan uyumlu olarak nitelendirmeyeceğiz."
+        },
+        {
+          "p": "Verilerinize uygulanan güvenceler hakkında bilgi veya hukukun izin verdiği yerlerde bunların bir kopyasını {{PRIVACY_EMAIL}} adresinden isteyebilirsiniz."
         }
       ]
     },
     {
-      "heading": "Verilerin saklanması",
+      "heading": "Saklama süreleri",
       "blocks": [
         {
-          "p": "Kişisel verileri yalnızca bu Politika'daki amaçlar için gerekli olduğu sürece saklarız:"
+          "p": "Kişisel verileri yalnızca amaçları için gerekli olduğu süre boyunca saklar, ardından siler veya sizinle bağlantısını kaldırırız. Sistemlerimizin uyguladığı süreler şunlardır:"
         },
         {
           "ul": [
-            "Hesap ve profil verileri: hesabınız etkin olduğu sürece; silme için bkz. 18. bölüm.",
-            "İlanlar: ilan etkin olduğu sürece ve ardından Platform'un ilan yaşam döngüsü uyarınca sınırlı bir süre. Görseller görsel sağlayıcımızda saklanır ve bir ilan kaldırıldıktan sonra biz silene kadar orada kalabilir.",
-            "Oturum belirteçleri: süreleri dolana (en fazla 30 gün) veya oturumu kapatana kadar.",
-            "Doğrulama kodları: özet olarak saklanır ve birkaç dakika geçerlidir.",
-            "Güvenlik ve giriş günlükleri: güvenlik amacıyla sınırlı bir süre saklanır. Her günlük türü için henüz nihai bir saklama süresi belirlemedik; belirlediğimizde bu Politika'yı güncelleyeceğiz.",
-            "İletişim formu mesajları: talebinizi ele almak için gerektiği sürece saklanır. Henüz sabit bir silme süresi belirlemedik.",
-            "Rıza kayıtları: neyi ve ne zaman kabul ettiğinizin kanıtı olarak saklanır.",
-            "Yedekler: şifrelenir ve bir takvime göre döndürülür (48 saat, ardından 30 gün boyunca günlük, 12 hafta boyunca haftalık, 12 ay boyunca aylık). Canlı sistemlerimizden silinen veriler, o yedeğin süresi dolana kadar bir yedekte kalabilir."
+            "Hesap ve profil verileri: hesap var olduğu sürece. Silme talebi ve 30 günlük vazgeçme süresinden sonra, silme işlemi yürütüldüğünde kaldırılır veya kimliksizleştirilir (bölüm 18).",
+            "İlanlar: bir ilan ilan yaşam döngüsüne göre sona erer ve yenilemezseniz 30 gün sonra fotoğraflarıyla birlikte silinir. Silinen bir hesabın ilanları silme yürütüldüğünde sona erer ve aynı sürenin ardından silinir; ancak bir ofis üyesinin ilanları ofis sahibine geçer.",
+            "Oturum belirteçleri: süreleri dolana kadar (en fazla 30 gün) veya oturumu kapatana kadar; kayıtları süre dolduktan 30 gün sonra silinir.",
+            "Tek kullanımlık doğrulama kodları: özet olarak saklanır, birkaç dakika geçerlidir ve süre dolduktan bir gün sonra silinir.",
+            "Oturum kayıtlarındaki ve iletişim mesajlarındaki IP adresleri: 90 gün sonra silinir.",
+            "Güvenlik günlükleri: giriş olayları 90 gün, yönetimsel ve diğer hesap olayları 365 gün; yalnızca bir güvenlik olayı incelenirken gerektiği ölçüde uzatılır.",
+            "Operasyonel ve hata günlükleri: barındırma sağlayıcısı tarafından kendi saklama süresince tutulur; bunları veritabanımızda saklamayız.",
+            "İletişim formu mesajları: okunduktan 12 ay sonra ve her durumda ulaştıktan 24 ay sonra silinir. Eski ilgi formundan gelen veriler: ulaştıktan 12 ay sonra.",
+            "Bekleme listesi: açılış bildirimi gönderildikten sonra ve her durumda kayıttan en geç 12 ay sonra silinir.",
+            "Bülten: aboneliğiniz devam ettiği sürece. Onaylanmamış bir talep, onay bağlantısının süresi dolduktan 30 gün sonra silinir. Abonelikten çıktıktan sonra onay ve iptal kanıtını üç yıl saklarız; ardından e-posta adresini siler ve ona bir daha pazarlama iletisi göndermemek için yalnızca kriptografik özetini tutarız.",
+            "Koşulları ve bu Politikayı kabul ettiğinize ilişkin kayıtlar: hesap var olduğu sürece, sonrasında ise geçerli zamanaşımı süreleri dolana kadar hak ve yükümlülükleri ispat etmek için gerektiği kadar.",
+            "Anlık bildirim belirteçleri: bildirimleri kapatana veya hesabınızı silene kadar.",
+            "Yedekler: şifrelenir ve bir plana göre döndürülür (her 48 saatte bir, ardından 30 gün boyunca günlük, 12 hafta boyunca haftalık ve 12 ay boyunca aylık). Canlı sistemlerimizden silinen veriler, süreleri dolana kadar eski yedeklerde kalır ve silme işlemini yeniden uygulamadan bunlardan canlı sistemlere veri geri yüklemeyiz."
           ]
+        },
+        {
+          "p": "Belirli verileri daha uzun süre yalnızca hukuk gerektirdiğinde, mevcut veya makul olarak beklenen bir uyuşmazlıkta bir hakkı ileri sürmek veya savunmak için ya da dolandırıcılığı incelemek için saklayabiliriz; bu durumlarda silmeyi yalnızca ilgili veriler için ve yalnızca gerektiği kadar durdururuz."
         }
       ]
     },
@@ -241,7 +295,7 @@
       "heading": "Veri güvenliği",
       "blocks": [
         {
-          "p": "Riske uygun önlemler kullanıyoruz; bunlar arasında iletim sırasında şifreleme, özetlenmiş parolalar ve belirteçler, telefon numaraları gibi bazı hassas alanlar için bekleme hâlinde şifreleme, erişim denetimleri ve istek sınırlama bulunur. Hiçbir sistem tamamen güvenli değildir ve mutlak güvenliği garanti edemeyiz. Lütfen kimlik bilgilerinizi gizli tutun ve kötüye kullanımdan şüphelenirseniz bunu hemen [security@hudhudnest.com](mailto:security@hudhudnest.com) adresine bildirin."
+          "p": "Riske uygun önlemler kullanıyoruz; bunlar arasında iletim sırasında şifreleme, özetlenmiş parolalar ve belirteçler, telefon numaraları gibi bazı hassas alanlar için bekleme hâlinde şifreleme, erişim denetimleri ve istek sınırlama bulunur. Hiçbir sistem tamamen güvenli değildir ve mutlak güvenliği garanti edemeyiz. Lütfen kimlik bilgilerinizi gizli tutun ve kötüye kullanımdan şüphelenirseniz bunu hemen {{SECURITY_EMAIL}} adresine bildirin."
         }
       ]
     },
@@ -249,22 +303,26 @@
       "heading": "Haklarınız",
       "blocks": [
         {
-          "p": "Yaşadığınız yere bağlı olarak ve geçerli hukukun gerektirdiği ölçüde şu haklara sahip olabilirsiniz:"
+          "p": "Yaşadığınız yere bağlı olarak ve geçerli hukukun gerektirdiği ölçüde (kapsamındaki kişiler için GDPR ve KVKK m. 11 dahil) şu haklara sahip olabilirsiniz:"
         },
         {
           "ul": [
-            "hakkınızda tuttuğumuz kişisel verilere erişme ve bir kopyasını alma (sunulduğu yerlerde hesabınızda kendi kendinize dışa aktarma imkânı vardır);",
-            "yanlış veya eksik verileri düzeltme (çoğu profil alanı hesabınızdan düzenlenebilir);",
-            "verilerinizin silinmesini talep etme;",
-            "meşru menfaatlere dayalı işleme dahil belirli işlemeleri kısıtlama veya bunlara itiraz etme;",
-            "verilerinizi taşınabilir bir biçimde alma;",
-            "rızanızı istediğiniz zaman geri alma;",
-            "hukuki veya benzer şekilde önemli sonuçlar doğuran, yalnızca otomatik işlemeye dayalı bir karara tabi olmama (böyle kararlar vermiyoruz);",
-            "bir veri koruma denetim makamına şikâyette bulunma (bkz. 25. bölüm)."
+            "Verilerinize erişme ve bir kopyasını alma: hesap ayarlarınızda verilerinizi JSON biçiminde kendiniz dışa aktarabilirsiniz.",
+            "Yanlış veya eksik verilerin düzeltilmesi: profil alanlarının çoğunu hesabınızdan düzenleyebilirsiniz.",
+            "Verilerinizin silinmesi: hesabınızdan veya hesap silme sayfasından (bölüm 18).",
+            "Hukukun belirlediği durumlarda işlemenin kısıtlanması.",
+            "Veri taşınabilirliği: kendi kendine dışa aktarma size makine tarafından okunabilir biçimde bir dosya verir.",
+            "Meşru menfaate dayanan işlemeye ve istediğiniz zaman doğrudan pazarlamaya itiraz (bölüm 11).",
+            "Onayınızı istediğiniz zaman geri alma; buna herhangi bir e-postadan veya Ayarlar'dan bültenden çıkmak dahildir.",
+            "Hukuki veya benzer şekilde önemli sonuçlar doğuran, yalnızca otomatik işlemeye dayalı bir karara tabi olmama; bu tür kararlar vermiyoruz (bölüm 23).",
+            "Bir veri koruma denetim makamına şikâyette bulunma (bölüm 25)."
           ]
         },
         {
-          "p": "Bir hakkınızı kullanmak için [support@hudhudnest.com](mailto:support@hudhudnest.com) adresine yazın. Önce kimliğinizi doğrulamamız gerekebilir ve geçerli hukukun gerektirdiği süre içinde yanıt veririz. CCPA/CPRA gibi yasaların geçerli olduğu yerlerde, kişisel verileri satmayız veya bağlamlar arası davranışsal reklamcılık için paylaşmayız ve haklarınızı kullandığınız için size olumsuz davranılmaz."
+          "p": "Talepte bulunmak için, tercihen hesabınızda kayıtlı e-posta adresinden {{PRIVACY_EMAIL}} adresine yazın ve hangi hakkı kullanmak istediğinizi belirtin. Kimliğinizi doğrulamak için talebi hesabınızdan veya o e-posta adresinden onaylamanızı isteyebiliriz; kimlik belgesini yalnızca başka şekilde doğrulama yapamazsak isteriz. Talebi aldıktan sonra bir ay içinde yanıt veririz; karmaşık taleplerde bu süre, nedenini size bildirerek iki ay daha uzatılabilir. KVKK kapsamındaki başvurular en geç otuz gün içinde sonuçlandırılır. Talepler, açıkça dayanaksız veya aşırı olmadıkça ücretsizdir."
+        },
+        {
+          "p": "CCPA/CPRA gibi kanunların uygulandığı yerlerde kişisel verileri satmayız veya bağlamlar arası davranışsal reklam için paylaşmayız ve haklarınızı kullandığınız için size daha olumsuz davranılmaz."
         }
       ]
     },
@@ -272,18 +330,46 @@
       "heading": "Hesabın silinmesi",
       "blocks": [
         {
-          "p": "Hesabınızı profilinizden veya [hesap silme sayfası](/account-deletion) üzerinden silebilirsiniz. İptal edebileceğiniz kısa bir bekleme süresinin ardından adınız, profil fotoğrafınız, özgeçmişiniz ve iletişim bilgileriniz silinir, e-posta adresiniz ve telefon numaranız size geri bağlanamayacak değerlerle değiştirilir ve Google veya Apple ile giriş bağlantıları kaldırılır."
+          "p": "Hesabınızın silinmesini profilinizden veya [hesap silme sayfasından](/account-deletion) isteyebilirsiniz. Silme işlemi, vazgeçebileceğiniz 30 günlük bir sürenin ardından yürütülür. Yürütüldüğünde:"
         },
         {
-          "p": "Yayınladığınız ilanlar, mesajlar ve değerlendirmeler, operasyonel nedenlerle (örneğin mevcut görüşmelerin sürekliliği) kişisel verileriniz olmadan ve \"silinmiş kullanıcı\"ya atfedilerek diğer kullanıcılara görünür kalabilir. Sınırlı güvenlik kayıtları ve yedekler 15. bölümdeki sürelerce kalabilir."
+          "ul": [
+            "Profil: adınız, fotoğrafınız, özgeçmişiniz ve iletişim bilgileriniz silinir; e-posta adresiniz ve telefon numaranız sizinle ilişkilendirilemeyen değerlerle değiştirilir; Google veya Apple giriş bağlantıları kaldırılır; tüm oturumlar sonlandırılır ve fotoğrafınız görsel sağlayıcısından silinir.",
+            "İlanlar: hemen sona erer ve 30 gün sonra fotoğraflarıyla birlikte silinir. Bir emlak ofisinin üyesiyseniz ilanlarınız, onlarla ilgili sorular mümkün kalsın diye ofis sahibine geçer.",
+            "Mesajlar ve değerlendirmeler: silinmeleri karşı tarafın haklarını etkileyeceğinden, konuşmadaki kişilere veya değerlendirmenin okuyucularına \"Silinmiş kullanıcı\" adıyla ve kişisel verileriniz olmadan görünür kalır.",
+            "Anlık bildirim belirteçleri: silinir.",
+            "Bülten: aboneliğiniz sona erdirilir ve e-posta adresiniz hemen bültenden kaldırılır; yalnızca iptal kanıtını ve adresin özetini saklarız (bölüm 15).",
+            "Onay ve güvenlik kayıtları: neyi kabul ettiğinizi ispat etmek ve Platform'u korumak için bölüm 15'teki süreler boyunca saklanır.",
+            "Mali kayıtlar: ücretli işlemler olduysa, geçerli muhasebe veya vergi hukukunun gerektirdiklerini saklarız.",
+            "Yedekler: verileriniz, bölüm 15'te belirtildiği gibi her yedeğin süresi dolana kadar yedeklerde kalır."
+          ]
+        },
+        {
+          "p": "Hesap devam eden bir uyuşmazlığa veya yetkili bir makamın saklama talebine konu ise silmeyi bu durum sona erene kadar erteleyebiliriz ve hukuk engellemedikçe bunu size bildiririz."
         }
       ]
     },
     {
-      "heading": "Pazarlama iletişimi",
+      "heading": "Bülten ve pazarlama iletişimi",
       "blocks": [
         {
-          "p": "Size pazarlama e-postaları veya mesajları yalnızca hukukun izin verdiği hâllerde ve rıza gerekiyorsa, Koşulları ve bu Politika'yı kabul etmenizden ayrı olan, Platform'u kullanmanın şartı olmayan ve istediğiniz zaman geri alınabilen ayrı ve isteğe bağlı rızanızla göndeririz. Hizmet ve güvenlik mesajları pazarlama değildir ve hizmetin bir parçası olarak gönderilir."
+          "p": "HudhudNest bülteni; Platform haberleri ve yeni özellikleri, teklifler ve plan kampanyaları ile Platform'daki emlak piyasasına ilişkin güncellemeler hakkında isteğe bağlı e-postalardan oluşur."
+        },
+        {
+          "ul": [
+            "Abonelik tamamen isteğe bağlıdır ve hesap oluşturmanın veya herhangi bir özelliği kullanmanın şartı değildir. Abonelik kutusu, Kullanım Koşulları'nın ve bu Politikanın kabulünden ayrıdır ve önceden işaretlenmemiştir.",
+            "Çift onay: abone olmak istediğinizde tek bir onay e-postası göndeririz ve onay bağlantısına tıklamadan hiçbir pazarlama iletisi göndermeyiz. Bağlantı 72 saat sonra geçerliliğini yitirir.",
+            "Hizmet e-postaları pazarlama değildir: hesap onayı, parola sıfırlama, güvenlik uyarıları ile rezervasyon ve mesaj bildirimleri hizmetin bir parçası olarak gönderilir ve bültenden çıkmak bunları durdurmaz.",
+            "Abonelikten çıkma: her pazarlama e-postası oturum açmadan çalışan bir abonelikten çıkma bağlantısı içerir; ayrıca Ayarlar'dan veya {{PRIVACY_EMAIL}} adresine yazarak da çıkabilirsiniz. Hemen geçerli olur ve sonrasında pazarlama iletisi göndermeyiz.",
+            "Kanıt: abone olmayı ne zaman istediğinizi, ne zaman onayladığınızı ve ne zaman çıktığınızı, hangi arayüzden, bu Politikanın hangi sürümünün hangi dilde gösterildiğini IP adresinizi saklamadan kaydederiz. Bu kanıtı bölüm 15'teki süre boyunca saklarız.",
+            "E-posta adreslerini satmayız ve kimseyle kendi pazarlaması için paylaşmayız. E-postalar e-posta sağlayıcımız Resend aracılığıyla gönderilir (bölüm 13)."
+          ]
+        },
+        {
+          "p": "Açılış sayfasındaki bekleme listesi bültenden ayrıdır: onu yalnızca Platform'un açıldığını size bildirmek için kullanırız ve kendiniz abone olmadıkça sizi bültene eklemeyiz. Bekleme listesi onayınızı geri almak için {{PRIVACY_EMAIL}} adresine yazın."
+        },
+        {
+          "p": "Mevcut kullanıcılara yalnızca bir hesapları olduğu için pazarlama iletisi göndermeyiz. Pazarlama onayınıza dayandığında, öncesini etkilemeden onu istediğiniz zaman geri alabilirsiniz."
         }
       ]
     },
@@ -323,7 +409,7 @@
       "heading": "Bu Politika'daki değişiklikler",
       "blocks": [
         {
-          "p": "Bu Politika'yı güncelleyebiliriz. Sürüm ve tarihler bu sayfanın üstünde gösterilir. Önemli değişikliklerde sizi Platform'da veya e-posta ile bilgilendirir ve hukukun gerektirdiği hâllerde yeni sürümü yeniden kabul etmenizi isteriz. Yürürlük tarihinden sonra kullanmaya devam etmeniz, hukukun izin verdiği ölçüde güncellenmiş Politika'ya tabi olduğunuz anlamına gelir."
+          "p": "Bu Politikayı güncelleyebiliriz. Sürüm, yayın tarihi ve yürürlük tarihi bu sayfanın üst kısmında gösterilir ve önceki sürümleri saklarız. Esaslı değişiklikleri yürürlüğe girmeden önce Platform'da veya e-postayla size bildiririz; hukukun onayınızı gerektirdiği yerlerde onu açıkça isteriz ve bu durumlarda sayfayı yalnızca ziyaret etmek veya Platform'u kullanmaya devam etmek onay sayılmaz. Anlamı değiştirmeyen düzenleme amaçlı değişiklikleri yeni onay istemeden yayınlayabiliriz."
         }
       ]
     },
@@ -331,10 +417,10 @@
       "heading": "İletişim ve şikâyetler",
       "blocks": [
         {
-          "p": "Bu Politika veya verileriniz hakkındaki her türlü soru için: [support@hudhudnest.com](mailto:support@hudhudnest.com)."
+          "p": "Bu Politika veya verileriniz hakkındaki her soru için: {{PRIVACY_EMAIL}}. Yazışma adresi: {{CORRESPONDENCE_ADDRESS}}."
         },
         {
-          "p": "İkamet ettiğiniz, çalıştığınız ülkedeki veya iddia edilen ihlalin gerçekleştiği yerdeki veri koruma denetim makamına şikâyette bulunma hakkınız vardır. Endişenizi çözmeye çalışabilmemiz için önce bizimle iletişime geçmenizi öneririz."
+          "p": "Böyle bir makamın bulunduğu ve hukukun size bu hakkı tanıdığı durumlarda, yaşadığınız veya çalıştığınız ya da iddia edilen ihlalin gerçekleştiği ülkedeki veri koruma denetim makamına (Türkiye'de Kişisel Verileri Koruma Kurulu) şikâyette bulunma hakkınız vardır. Konuyu çözmeye çalışabilmemiz için önce bizimle iletişime geçmenizi rica ederiz."
         }
       ]
     }

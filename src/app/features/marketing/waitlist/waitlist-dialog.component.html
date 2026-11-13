@@ -49,7 +49,7 @@
                  [attr.aria-describedby]="invalid('consent') ? 'wl-consent-err' : null" />
           <label for="wl-consent">
             {{ 'SITE.WAITLIST.CONSENT_BEFORE' | translate }}
-            <a routerLink="/datenschutz" target="_blank" rel="noopener">{{ 'SITE.WAITLIST.CONSENT_LINK' | translate }}</a>{{ 'SITE.WAITLIST.CONSENT_AFTER' | translate }}
+            <a routerLink="/privacy-policy" target="_blank" rel="noopener">{{ 'SITE.WAITLIST.CONSENT_LINK' | translate }}</a>{{ 'SITE.WAITLIST.CONSENT_AFTER' | translate }}
           </label>
         </div>
         @if (invalid('consent')) {
