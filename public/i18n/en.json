@@ -621,7 +621,15 @@
     "GEO_CONSENT_NOTE": "We use your current location only to show properties near you.",
     "GEO_DENIED": "Could not get your location. Check the location permission.",
     "MAP_VIEW": "Map view",
-    "TYPE_PLACE_HINT": "Not in the list? Type the name."
+    "TYPE_PLACE_HINT": "Not in the list? Type the name.",
+    "AMENITIES_SECTION": "Amenities & services",
+    "AMENITIES_SELECTED": "{{count}} selected",
+    "CITY_FILTER_CHIP": "City: {{city}}",
+    "CITY_FILTER_REMOVE": "Remove the city filter",
+    "EMPTY_GEO_TITLE": "No properties near you",
+    "EMPTY_GEO_MESSAGE": "No properties within {{km}} km of your location match the filters. Widen the radius or change the filters.",
+    "GEO_STATUS": "Results within {{km}} km of your location",
+    "SORT_BY_DISTANCE_HINT": "With “near me” on, results are ordered from nearest to farthest."
   },
   "PAGINATION": {
     "NAV_LABEL": "Page navigation",
@@ -4320,12 +4328,13 @@
     "IGNORE_SUGGESTION": "Ignore",
     "PROPOSAL_NOTE": "{{count}} new place name(s) will be sent for review when you save. This does not block your listing.",
     "FILTER_PLACEHOLDER": "Search a neighborhood, street or city…",
-    "FILTER_NO_MATCH": "No results. Try another spelling.",
+    "FILTER_NO_MATCH": "No place with this name in the list.",
     "FILTER_LABEL": "Specific place",
-    "FILTER_HINT": "Includes everything inside it.",
+    "FILTER_HINT": "Pick a place (includes everything inside it), or type text and press Apply filters to search listing addresses.",
     "TYPED_PLACE_PROPOSED": "\"{{value}}\" is not in our list. We will send the name to the moderators for review, and the nearest known area is used here.",
     "TYPED_PLACE_NOT_SAVED": "\"{{value}}\" is not in our list and a new name cannot be saved without signing in, so the nearest known area is used here.",
-    "TYPED_PLACE_HINT": "Pick from the list, or type the name if you cannot find it."
+    "TYPED_PLACE_HINT": "Pick from the list, or type the name if you cannot find it.",
+    "FILTER_SEARCH_TEXT": "Search “{{text}}” in listing addresses"
   },
   "ADMIN_GEO": {
     "TITLE": "Location management",

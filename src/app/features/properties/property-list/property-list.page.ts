@@ -16,19 +16,18 @@ import {
   signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LocationNamesService, normalizePlaceName } from '../../../core/api/location-names.service';
+import { LocationNamesService } from '../../../core/api/location-names.service';
 import { ActivatedRoute, ParamMap, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { BehaviorSubject, catchError, debounceTime, distinctUntilChanged, EMPTY, fromEvent, of, switchMap, tap } from 'rxjs';
+import { Subject, catchError, debounceTime, EMPTY, fromEvent, merge, Observable, switchMap, tap } from 'rxjs';
 
 import { PropertyApiService } from '../../../core/api/property-api.service';
 import { SavedSearchApiService } from '../../../core/api/saved-search-api.service';
 import {
   LookupsApiService,
   LookupAmenity,
-  LookupItem,
   PropertyTypeLookup,
   StructuredLocationLookup,
   pickLocalizedName
@@ -65,7 +64,7 @@ import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count
 import { listSeparator } from '../../../core/i18n/ui-language';
 import { GeoPlaceFilterComponent } from '../../../shared/ui/geo/geo-place-filter.component';
 import { LocationsApiService } from '../../../core/api/locations-api.service';
-import { GeoLocation } from '../../../core/models/geo-location.model';
+import { GeoLocation, geoName } from '../../../core/models/geo-location.model';
 import { ComboBoxComponent, ComboOption } from '../../../shared/ui/combo-box.component';
 
 @Component({
@@ -139,12 +138,11 @@ export class PropertyListPage implements OnInit {
   readonly fallbackImage = '/images/no-image.svg';
 
   /**
-   * ✅ إضافة: اقتراحات مدن حقيقية عبر GET /api/lookups/cities لحقل فلترة
-   * المدينة (كان نصياً حراً بدون أي اقتراح رغم توفر endpoint جاهز لذلك).
+   * Runs the current query again without a URL change: "near me" switched on or off, a new radius, the error
+   * state's Retry, and "apply" when nothing in the URL changed but the mode did. Feeds the same cancelling
+   * pipeline as the URL, so two requests are never in flight for one screen.
    */
-  readonly citySuggestions = signal<LookupItem[]>([]);
-  /** The governorate the city suggestions are scoped to (null = every city). Each change refetches, dropping a stale in-flight reply. */
-  private readonly citySuggestionScope = new BehaviorSubject<number | null>(null);
+  private readonly reload$ = new Subject<void>();
 
   /**
    * ✅ إضافة: فلترة حسب المرافق — الباك اند يدعم فعلياً AmenityIds ضمن
@@ -176,7 +174,18 @@ export class PropertyListPage implements OnInit {
    */
   districtText = '';
   neighborhoodText = '';
+  /**
+   * A place typed as text and applied through the place box ("search «X» in listing addresses"): a street or a city
+   * the catalog does not hold. Sent as `placeText`, where every word must be found (it narrows, it never widens).
+   */
+  addressText = '';
+  /** What is in the place box right now when it differs from what was applied; committed by "apply" so nothing typed is silently ignored. null = untouched. */
+  private placeDraft: string | null = null;
   propertyTypeId: number | null = null;
+
+  @ViewChild(GeoPlaceFilterComponent) private placeBox?: GeoPlaceFilterComponent;
+  /** The amenities section is folded away until asked for (34 chips used to fill a third of the panel). */
+  amenitiesOpen = false;
 
   @ViewChild('plResults') private resultsRegion?: ElementRef<HTMLElement>;
   /** Set by "apply filters": the next answer (results, nothing found, or an error) is brought into view. */
@@ -190,38 +199,6 @@ export class PropertyListPage implements OnInit {
   readonly neighborhoodOptions = computed<ComboOption[]>(() =>
     this.neighborhoods().map(n => ({ value: n.id, label: pickLocalizedName(n, this.lang()) })));
 
-  /**
-   * Cities that exist on listings. The stored text holds whatever language its owner used, so the same city can
-   * appear as "حلب" and "Aleppo": a governorate is shown once under its catalog name in the page language, and
-   * any other name is listed only when it is written in the script of the page language.
-   */
-  readonly cityOptions = computed<ComboOption[]>(() => {
-    const lang = this.lang();
-    const governorates = this.governorates();
-    const all = this.citySuggestions().map(c => c.name).filter(n => !!n?.trim());
-    const arabicPage = lang === 'ar';
-    const options = new Map<string, ComboOption>();
-
-    const add = (label: string) => {
-      const key = normalizePlaceName(label);
-      if (key && !options.has(key)) options.set(key, { value: label, label });
-    };
-
-    for (const name of all) {
-      const key = normalizePlaceName(name);
-      const governorate = governorates.find(g =>
-        [g.nameAr, g.nameEn, g.nameDe].some(n => normalizePlaceName(n) === key));
-      if (governorate) {
-        add(pickLocalizedName(governorate, lang));
-      } else if (/[\u0600-\u06FF]/.test(name) === arabicPage) {
-        add(name);
-      }
-    }
-    // Nothing written in the page language: better the other spelling than an empty list.
-    if (!options.size) all.forEach(add);
-    return [...options.values()];
-  });
-
   /** Phase-0, Task 3 — "save this search" button state. */
   readonly savingSearch = signal(false);
 
@@ -230,6 +207,8 @@ export class PropertyListPage implements OnInit {
   // رغم أن الخادم يوفره بفهرسة PostGIS مخصصة لهذا الغرض.
   readonly geoModeActive = signal(false);
   readonly geoLoading = signal(false);
+  /** Where the person is while "near me" is on. Kept here (never in the URL: a shared link must not carry a home address). */
+  private readonly geoCoords = signal<{ latitude: number; longitude: number } | null>(null);
   radiusKm = 5;
 
   /**
@@ -297,7 +276,6 @@ export class PropertyListPage implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(lang => this.lang.set(lang));
 
-    this.bindCitySuggestions();
     this.loadCurrencies();
     this.loadAmenities();
     this.loadGovernorates();
@@ -309,17 +287,22 @@ export class PropertyListPage implements OnInit {
     // panel "apply", a page change, Reset, and browser back/forward navigation all
     // funnel through here as a query-param change. switchMap cancels an in-flight
     // request if a newer one starts before it resolves (race-condition guard).
-    this.route.queryParamMap
+    const urlChanges$ = this.route.queryParamMap.pipe(
+      tap(params => {
+        this.applyParamsToState(params);
+        // A governorate the person searched in is remembered on this device (never sent to the server as a log).
+        this.recentAreas.record(this.governorateId);
+      })
+    );
+
+    merge(urlChanges$, this.reload$)
       .pipe(
-        tap(params => {
-          this.applyParamsToState(params);
-          // A governorate the person searched in is remembered on this device (never sent to the server as a log).
-          this.recentAreas.record(this.governorateId);
+        tap(() => {
           this.loading.set(true);
           this.error.set('');
         }),
         switchMap(() =>
-          this.api.getPropertiesPaged(this.buildFilterFromState(this.currentPage())).pipe(
+          this.fetchPage(this.currentPage()).pipe(
             catchError(err => {
               this.error.set(this.loadErrorKey(err));
               this.loading.set(false);
@@ -336,6 +319,14 @@ export class PropertyListPage implements OnInit {
           this.revealResultsIfRequested();
         }
       });
+  }
+
+  /** The list, or - while "near me" is on - the listings around the person, with the same filters either way. */
+  private fetchPage(page: number): Observable<PagedResult<Property>> {
+    const coords = this.geoModeActive() ? this.geoCoords() : null;
+    return coords
+      ? this.api.geoSearch(coords.latitude, coords.longitude, this.radiusKm, this.buildGeoFilter(page))
+      : this.api.getPropertiesPaged(this.buildFilterFromState(page));
   }
 
   /**
@@ -415,10 +406,13 @@ export class PropertyListPage implements OnInit {
   /** Cascading dropdown handler — mirrors property-form.page.ts's bindCascadingLocationChanges. */
   get currentLang(): LangCode { return this.langService.getCurrent(); }
 
-  /** The "specific place" box: a place replaces the older governorate/district/neighborhood/city narrowing. */
+  /** The "specific place" box: a place replaces the older governorate/district/neighborhood narrowing. */
   onPlaceFilterPicked(place: GeoLocation | null): void {
     this.locationPlace.set(place);
     this.locationId = place?.id ?? null;
+    // One box, one meaning: a catalog place and an address text never apply together.
+    this.addressText = '';
+    this.placeDraft = null;
     if (place) {
       this.governorateId = null;
       this.districtId = null;
@@ -428,8 +422,34 @@ export class PropertyListPage implements OnInit {
       this.cityFilter = '';
       this.districts.set([]);
       this.neighborhoods.set([]);
-      this.citySuggestionScope.next(null);
     }
+  }
+
+  /** "Search «X» in listing addresses": the street or city the catalog does not know, applied as a text that must be found. */
+  onPlaceTextPicked(text: string): void {
+    this.addressText = text.trim();
+    this.locationId = null;
+    this.locationPlace.set(null);
+    this.placeDraft = null;
+  }
+
+  /** What the person has typed in the place box so far (applied, if still there, when they press "apply"). */
+  onPlaceTyped(text: string): void {
+    this.placeDraft = text;
+  }
+
+  /**
+   * "Apply" takes the place box as it looks: text left in it that was neither picked from the list nor chosen as an
+   * address search is applied as an address search, instead of being dropped without a word.
+   */
+  private commitPlaceDraft(): void {
+    const draft = this.placeDraft?.trim();
+    this.placeDraft = null;
+    if (!draft) return;
+
+    const current = this.locationPlace();
+    const appliedLabel = current ? geoName(current, this.currentLang) : this.addressText;
+    if (draft !== appliedLabel) this.onPlaceTextPicked(draft);
   }
 
   /** Restores the box after a reload or a shared link: only the id is in the URL, the name comes from the catalog. */
@@ -459,7 +479,6 @@ export class PropertyListPage implements OnInit {
     this.locationPlace.set(null);
     this.districts.set([]);
     this.neighborhoods.set([]);
-    this.citySuggestionScope.next(this.governorateId);
 
     if (this.governorateId) {
       this.lookupsApi.getDistricts(this.governorateId)
@@ -479,20 +498,13 @@ export class PropertyListPage implements OnInit {
     }
   }
 
-  /** The city combo shows an option when the text is one of them; anything else is kept as typed text. */
-  get cityComboValue(): string | null {
-    const key = normalizePlaceName(this.cityFilter);
-    return key && this.cityOptions().some(o => normalizePlaceName(o.label) === key) ? this.cityFilter : null;
-  }
-
-  onCityPicked(value: string | number | null): void {
-    this.cityFilter = value === null ? '' : String(value);
-  }
-
-  /** Typed text that is not a listed city (null when it matches a city, or when the box was emptied). */
-  onCityTyped(text: string | null): void {
-    if (text !== null) this.cityFilter = text;
-    else if (this.cityComboValue === null) this.cityFilter = '';
+  /**
+   * The city is no longer a field of the panel (the governorate and the place box say the same thing in a way the
+   * catalog can check), but a link or saved search may still carry one: it stays in force, shown as a chip that
+   * can be removed, so a filter is never active without being visible.
+   */
+  removeCityFilter(): void {
+    this.cityFilter = '';
   }
 
   // The typed words are kept exactly as typed (a space between two words must survive); they are trimmed where used.
@@ -539,8 +551,12 @@ export class PropertyListPage implements OnInit {
     this.neighborhoodId = params.get('neighborhoodId') ? Number(params.get('neighborhoodId')) : null;
     this.districtText = params.get('districtText') ?? '';
     this.neighborhoodText = params.get('neighborhoodText') ?? '';
+    this.addressText = params.get('placeText') ?? '';
+    if (this.placeDraft !== null) {
+      this.placeDraft = null;
+      this.placeBox?.reset();
+    }
     this.propertyTypeId = params.get('propertyTypeId') ? Number(params.get('propertyTypeId')) : null;
-    this.citySuggestionScope.next(this.governorateId);
 
     // The URL is user-editable: a page or size that is not a whole number in range would be refused
     // by the server (422) or answer an empty page, so it is brought back into range here.
@@ -563,9 +579,12 @@ export class PropertyListPage implements OnInit {
     }
   }
 
-  /** The keyword box plus the district / neighborhood names typed by hand (all must be found on the listing). */
-  private keywordSearch(): string {
-    return [this.searchText, this.districtText, this.neighborhoodText].map(t => t.trim()).filter(Boolean).join(' ');
+  /**
+   * The words of the place the person typed, all of which must be found: the address text from the place box and
+   * the district / neighborhood names typed by hand. (The keyword box is separate: there one word is enough.)
+   */
+  private placeTextFilter(): string {
+    return [this.addressText, this.districtText, this.neighborhoodText].map(t => t.trim()).filter(Boolean).join(' ');
   }
 
   /** Builds the request DTO sent to the API from the filter panel's current UI-bound state. */
@@ -575,7 +594,8 @@ export class PropertyListPage implements OnInit {
     return {
       page,
       pageSize: this.pageSize(),
-      searchTerm: this.keywordSearch() || undefined,
+      searchTerm: this.searchText.trim() || undefined,
+      placeText: this.placeTextFilter() || undefined,
       city: this.cityFilter.trim() || undefined,
       listingType: this.selectedListingType || undefined,
       minPrice: this.minPrice ?? undefined,
@@ -595,6 +615,12 @@ export class PropertyListPage implements OnInit {
     };
   }
 
+  /** The filters "near me" understands: all of the list's, except the ordering (nearest first) and the interest ranking. */
+  private buildGeoFilter(page: number): PropertyFilterDto {
+    const { sortBy: _sortBy, sortDescending: _sortDescending, interestGovernorateIds: _interest, ...filter } = this.buildFilterFromState(page);
+    return filter;
+  }
+
   /**
    * Pushes the filter panel's current UI-bound state into the URL as query
    * params (replacing, not merging — an omitted/null param is dropped rather
@@ -602,7 +628,7 @@ export class PropertyListPage implements OnInit {
    * in ngOnInit reacts to the resulting navigation and performs the actual
    * fetch, so this is the one place that turns a user action into a request.
    */
-  private navigateWithCurrentState(page: number, replaceUrl = false): void {
+  private navigateWithCurrentState(page: number, replaceUrl = false, forceReload = false): void {
     this.foldGovernorateNameIntoGovernorateFilter();
     const queryParams: Record<string, string | number | string[] | null> = {
       search: this.searchText.trim() || null,
@@ -618,11 +644,25 @@ export class PropertyListPage implements OnInit {
       neighborhoodId: this.neighborhoodId ?? null,
       districtText: this.districtText.trim() || null,
       neighborhoodText: this.neighborhoodText.trim() || null,
+      placeText: this.addressText.trim() || null,
       locationId: this.locationId ?? null,
       propertyTypeId: this.propertyTypeId ?? null,
       page: page > 1 ? page : null,
       pageSize: this.pageSize() !== 20 ? this.pageSize() : null
     };
+
+    // The router ignores a navigation to the URL it is already on, so nothing would load or scroll: the button would
+    // look dead. When the URL would not change, the results are either re-run (the mode changed) or simply shown.
+    const target = this.router.serializeUrl(this.router.createUrlTree([], { relativeTo: this.route, queryParams }));
+    if (target === this.router.url) {
+      if (forceReload) {
+        this.currentPage.set(page);
+        this.reload$.next();
+      } else {
+        this.revealResultsIfRequested();
+      }
+      return;
+    }
 
     this.router.navigate([], replaceUrl ? { relativeTo: this.route, queryParams, replaceUrl } : { relativeTo: this.route, queryParams });
   }
@@ -654,18 +694,6 @@ export class PropertyListPage implements OnInit {
     this.cityFilter = '';
   }
 
-  private bindCitySuggestions(): void {
-    this.citySuggestionScope
-      .pipe(
-        distinctUntilChanged(),
-        switchMap(governorateId =>
-          this.lookupsApi.getCities(governorateId).pipe(catchError(() => of([] as LookupItem[])))
-        ),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(cities => this.citySuggestions.set(cities));
-  }
-
   /** GET /api/lookups/amenities — لفلتر المرافق في لوحة البحث. */
   private loadAmenities(): void {
     this.lookupsApi
@@ -681,17 +709,22 @@ export class PropertyListPage implements OnInit {
     return this.selectedAmenityIds.includes(amenityId);
   }
 
+  toggleAmenitiesSection(): void {
+    this.amenitiesOpen = !this.amenitiesOpen;
+  }
+
   toggleAmenityFilter(amenityId: string): void {
     this.selectedAmenityIds = this.isAmenitySelected(amenityId)
       ? this.selectedAmenityIds.filter(id => id !== amenityId)
       : [...this.selectedAmenityIds, amenityId];
   }
 
-  /** يبدّل بين نتائج البحث النصي/الفلاتر العادية والبحث الجغرافي القريب. */
+  /** Switches "near me" on (asks for the position once) or off (back to the plain list); the filters stay either way. */
   toggleGeoMode(): void {
     if (this.geoModeActive()) {
       this.geoModeActive.set(false);
-      this.loadProperties();
+      this.geoCoords.set(null);
+      this.refreshFromFirstPage();
       return;
     }
 
@@ -708,50 +741,31 @@ export class PropertyListPage implements OnInit {
 
     navigator.geolocation.getCurrentPosition(
       position => {
+        this.geoCoords.set({ latitude: position.coords.latitude, longitude: position.coords.longitude });
         this.geoModeActive.set(true);
         this.geoLoading.set(false);
-        this.searchNearby(position.coords.latitude, position.coords.longitude);
+        this.scrollToResultsWhenLoaded = true;
+        this.setFiltersOpen(false);
+        this.refreshFromFirstPage();
       },
       () => {
         this.geoLoading.set(false);
         this.toast.error(this.translate.instant('PROPERTY_LIST.GEO_DENIED'));
-      }
+      },
+      // A position from the last minute is good enough for "near me"; waiting forever for a fresh one is not.
+      { enableHighAccuracy: false, timeout: 15_000, maximumAge: 60_000 }
     );
   }
 
-  searchNearby(latitude: number, longitude: number): void {
-    this.loading.set(true);
-    this.error.set('');
-
-    this.api
-      .geoSearch(latitude, longitude, this.radiusKm, {
-        page: 1,
-        pageSize: this.pageSize(),
-        listingType: this.selectedListingType || undefined
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: result => {
-          this.properties.set(result.items);
-          this.totalCount.set(result.totalCount);
-          this.currentPage.set(result.page);
-          this.pageSize.set(result.pageSize);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.error.set('PROPERTY_LIST.LOAD_ERROR');
-          this.loading.set(false);
-        }
-      });
+  onRadiusChange(): void {
+    // The position is already known: a new radius only needs a new search, not a second permission prompt.
+    if (!this.geoModeActive() || !this.geoCoords()) return;
+    this.refreshFromFirstPage();
   }
 
-  onRadiusChange(): void {
-    // نحتاج موقعاً جديداً عند تغيير نصف القطر فقط إذا كان وضع القرب مفعّلاً بالفعل.
-    if (!this.geoModeActive() || !('geolocation' in navigator)) return;
-
-    navigator.geolocation.getCurrentPosition(position => {
-      this.searchNearby(position.coords.latitude, position.coords.longitude);
-    });
+  /** Runs the current query again from page 1 (and puts page 1 in the URL), whether or not the URL changes. */
+  private refreshFromFirstPage(): void {
+    this.navigateWithCurrentState(1, true, true);
   }
 
   openFilters(): void {
@@ -786,27 +800,9 @@ export class PropertyListPage implements OnInit {
     }
   }
 
-  /**
-   * Re-fetches with the current (already-applied) filter/page state without
-   * going through the URL — used by the error state's Retry button and by
-   * toggleGeoMode() when switching back from geo-search results, neither of
-   * which represents a new filter/page the user should be able to navigate
-   * back to.
-   */
+  /** Re-fetches the current page without touching the URL: the error state's Retry button. */
   loadProperties(): void {
-    this.loading.set(true);
-    this.error.set('');
-
-    this.api
-      .getPropertiesPaged(this.buildFilterFromState(this.currentPage()))
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: result => this.applyResult(result),
-        error: () => {
-          this.error.set('PROPERTY_LIST.LOAD_ERROR');
-          this.loading.set(false);
-        }
-      });
+    this.reload$.next();
   }
 
   /**
@@ -850,6 +846,7 @@ export class PropertyListPage implements OnInit {
     if (this.neighborhoodId) count++;
     if (this.districtText.trim()) count++;
     if (this.neighborhoodText.trim()) count++;
+    if (this.addressText.trim()) count++;
     if (this.locationId) count++;
     if (this.propertyTypeId) count++;
 
@@ -912,14 +909,13 @@ export class PropertyListPage implements OnInit {
     }
 
     this.filterError.set('');
+    this.commitPlaceDraft();
     this.setFiltersOpen(false);
     this.scrollToResultsWhenLoaded = true;
-    // Applying filters runs the normal (URL-driven) search, so a previously active "near me"
-    // result set must not stay flagged as active while it is no longer what is shown.
-    this.geoModeActive.set(false);
     // A new/changed search or filter always returns to page 1 — the previous
     // page from a different result set is otherwise very likely to come back
-    // empty and read as a spurious "no results" error.
+    // empty and read as a spurious "no results" error. "Near me", if on, stays on: it is a mode of the
+    // search, and the filters now apply inside it.
     this.navigateWithCurrentState(1);
   }
 
@@ -940,15 +936,20 @@ export class PropertyListPage implements OnInit {
     this.neighborhoodText = '';
     this.locationId = null;
     this.locationPlace.set(null);
+    this.addressText = '';
+    this.placeDraft = null;
+    this.placeBox?.reset();
     this.propertyTypeId = null;
     this.districts.set([]);
     this.neighborhoods.set([]);
-    this.citySuggestionScope.next(null);
     this.geoModeActive.set(false);
+    this.geoCoords.set(null);
     this.setFiltersOpen(false);
     // Clears the URL entirely (not just component state) so a refresh or a
-    // shared link after Reset doesn't resurrect the filters that were just cleared.
-    this.router.navigate([], { relativeTo: this.route, queryParams: {} });
+    // shared link after Reset doesn't resurrect the filters that were just cleared. When the URL was
+    // already clean (only "near me" was on) the list is reloaded instead, so Reset always refreshes.
+    this.scrollToResultsWhenLoaded = true;
+    this.navigateWithCurrentState(1, false, true);
   }
 
   /**
