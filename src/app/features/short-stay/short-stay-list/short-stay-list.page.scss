@@ -12,14 +12,22 @@
   }
 
   &__filters {
-    display: flex;
-    flex-wrap: wrap;
+    // One grid for every width: one column on a phone, two on a tablet, four on a desktop. Fields that need room
+    // (the keyword and the place) span two columns, the amenities and the buttons span the row.
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.75rem;
-    align-items: flex-end;
+    align-items: end;
     margin: 1.25rem 0 1.5rem;
     padding: 1rem;
     background: var(--gray-50, #f9fafb);
     border-radius: var(--r-md, 10px);
+
+    // On a phone the short numeric fields (guests, bedrooms, the two prices) sit two to a row; the rest take the row.
+    > * { grid-column: span 2; }
+    > .ssl__field--half { grid-column: span 1; }
+    @media (min-width: 600px) { > * { grid-column: span 1; } }
+    @media (min-width: 1000px) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   }
 
   &__field {
@@ -27,24 +35,54 @@
     flex-direction: column;
     gap: 0.25rem;
     position: relative;
+    min-width: 0;
 
     label { font-size: 0.75rem; font-weight: 600; color: var(--gray-600, #4b5563); }
 
-    input {
-      padding: 0.5rem 0.65rem;
-      border: 1px solid var(--border, #e5e7eb);
-      border-radius: 8px;
-      min-width: 120px;
+    input,
+    select {
+      box-sizing: border-box;
+      width: 100%;
+      min-height: 44px;
+      padding: 0.55rem 0.8rem;
+      border: 1.5px solid var(--border, #e5e7eb);
+      border-radius: var(--r-md, 8px);
+      font-size: 0.9rem;
+      font-family: inherit;
+      background: var(--surface);
+      color: var(--gray-900);
+
+      &:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
     }
+
+    &--wide { @media (min-width: 600px) { grid-column: span 2; } }
+  }
+
+  &__field--full { grid-column: 1 / -1; }
+
+  &__check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    font-size: 0.9rem;
+    cursor: pointer;
+
+    @media (min-width: 600px) { grid-column: span 2; }
   }
 
   &__date-trigger {
-    padding: 0.5rem 0.65rem;
-    border: 1px solid var(--border, #e5e7eb);
-    border-radius: 8px;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 44px;
+    padding: 0.55rem 0.8rem;
+    border: 1.5px solid var(--border, #e5e7eb);
+    border-radius: var(--r-md, 8px);
     background: var(--surface);
+    color: var(--gray-900);
+    font-size: 0.9rem;
+    font-family: inherit;
     cursor: pointer;
-    min-width: 180px;
     text-align: start;
   }
 
@@ -58,6 +96,7 @@
     border: 1px solid var(--border, #e5e7eb);
     border-radius: 10px;
     padding: 0.75rem;
+    max-width: calc(100vw - 2rem);
     box-shadow: var(--shadow-md, 0 6px 20px rgba(0,0,0,.15));
   }
 
@@ -75,9 +114,24 @@
     gap: 0.5rem;
   }
 
+  &__results { outline: none; scroll-margin-top: 5rem; }
+
+  &__count {
+    margin: 0 0 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gray-600, #4b5563);
+  }
+
   &__error {
     color: var(--danger-text);
     padding: 1rem 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+
+    p { margin: 0; }
   }
 
   &__grid {
@@ -152,5 +206,115 @@
     justify-content: center;
     gap: 1rem;
     margin-top: 2rem;
+  }
+}
+
+
+/* ── Amenities: a folded section whose whole header is the button (same look as the property list's) ── */
+.amenity-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+}
+
+.amenity-chip {
+  padding: .35rem .75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill, 999px);
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--surface);
+  color: var(--gray-600);
+  // Not `all`: an animated `visibility` would keep a chip of a folded section visible for a moment.
+  transition: background .15s, color .15s, border-color .15s;
+
+  &--active {
+    background: var(--gold-soft);
+    color: var(--gold-text);
+    border-color: var(--gold);
+  }
+}
+
+.collapse-head {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .55rem .8rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--gray-900);
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 700;
+  text-align: start;
+  cursor: pointer;
+  transition: border-color .15s, background .15s, box-shadow .15s;
+
+  &:hover { border-color: var(--gold); background: var(--gold-soft); }
+  &:focus-visible { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
+  &--open { border-color: var(--gold); }
+}
+
+.collapse-head__title { flex: 1; min-width: 0; }
+
+.collapse-head__badge {
+  flex: none;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 .4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-pill, 999px);
+  background: var(--gold);
+  color: var(--on-primary);
+  font-size: .75rem;
+  font-weight: 800;
+}
+
+.collapse-head__chevron {
+  flex: none;
+  color: var(--gray-500);
+  transition: transform .2s ease;
+}
+
+.collapse-head--open .collapse-head__chevron { transform: rotate(180deg); }
+
+// Height animates through the grid-row trick (0fr -> 1fr); a closed body is also invisible to keyboard and screen
+// readers (visibility), not just clipped.
+.collapse-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-top: 0;
+  transition: grid-template-rows .2s ease, margin-top .2s ease;
+
+  &--open {
+    grid-template-rows: 1fr;
+    margin-top: .5rem;
+  }
+}
+
+.collapse-body__inner {
+  min-height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  transition: visibility 0s linear .2s;
+}
+
+.collapse-body--open .collapse-body__inner {
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collapse-body,
+  .collapse-body__inner,
+  .collapse-head__chevron {
+    transition: none;
   }
 }
