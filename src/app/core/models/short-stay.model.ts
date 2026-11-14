@@ -159,13 +159,28 @@ export interface ShortStayListing {
 }
 
 export interface ShortStayListingSearchFilter {
+  /** The city/governorate as text (a place typed in the place box); matched in the listing's city and the governorate's names. */
   city?: string;
+  /** Free text: ONE matching word in the title, description or city, or a place name in any language, is enough. */
+  searchTerm?: string;
   accommodationTypeId?: number;
+  /** A catalog place of any level; the server finds every listing inside it. */
+  locationId?: number;
   checkIn?: string; // "yyyy-MM-dd"
   checkOut?: string;
+  /** People who sleep there; compared with the capacity of the room that is booked. */
   guests?: number;
+  minBedrooms?: number;
+  instantBooking?: boolean;
+  /** Every one of these amenities must be offered. */
+  amenityIds?: string[];
   minPrice?: number;
   maxPrice?: number;
+  /** The currency the price range is written in; listings priced in other currencies are converted by the server. */
+  currencyCode?: string;
+  /** "price" (nightly price in one currency) or omitted for the newest first. */
+  sortBy?: 'price';
+  sortDescending?: boolean;
   page?: number;
   pageSize?: number;
 }

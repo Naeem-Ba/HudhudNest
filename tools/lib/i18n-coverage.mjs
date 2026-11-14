@@ -107,7 +107,9 @@ export const TR_SAME_AS_ENGLISH = new Set([
   'PRICING.PREMIUM.NAME',
   'ADMIN_REPORTS.PRIORITY.Normal',
   'property_detail.Unit_of_measurement',
-  'CHECKOUT.USD'
+  'CHECKOUT.USD',
+  // "3+": a number and a sign, the same in every language.
+  'SHORTSTAY.LIST.BEDROOMS_AT_LEAST'
 ]);
 
 /** Turkish values that are deliberately in another script. None at the moment (the landing language chip row was removed). */
