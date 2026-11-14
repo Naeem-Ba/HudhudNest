@@ -326,6 +326,7 @@
       "GENERIC": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
       "TIMEOUT": "Sunucu yanıt vermekte çok gecikti. Bağlantınızı kontrol edip tekrar deneyin.",
       "PASSWORD_PERSONAL_INFO": "Şifre adınızı, e-posta adresinizi veya telefon numaranızı içermemelidir. Kişisel bilgilerinize dayanmayan bir şifre seçin.",
+      "CURRENT_PASSWORD_WRONG": "Mevcut şifre doğru değil.",
       "SESSION_SUPERSEDED": "Hesap izin verilenden fazla cihazda açıldığı için bu cihazdaki oturum kapatıldı. Lütfen yeniden giriş yapın.",
       "LOGIN_HELP": "Yazımı kontrol edin (büyük ve küçük harf önemlidir), şifrenizi sıfırlayın veya yeniyseniz hesap oluşturun.",
       "PHONE_LOGIN_HELP": "Numarayı (ülke koduyla) ve şifreyi kontrol edin, şifrenizi sıfırlayın veya yeniyseniz hesap oluşturun.",

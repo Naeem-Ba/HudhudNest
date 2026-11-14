@@ -95,6 +95,77 @@ describe('resolveAuthError', () => {
     const resolved = resolveAuthError(translate, { status: 400, error: { message: 'Some English sentence' } });
     expect(resolved.message).not.toContain('English');
   });
+
+  describe('a rejected password, whichever shape the API answers with', () => {
+    const PERSONAL_SENTENCE =
+      'Password must not contain your name, the first part of your e-mail address or part of your phone number.';
+    let originalLang: string;
+
+    beforeEach(() => {
+      originalLang = document.documentElement.lang;
+      document.documentElement.lang = 'ar';
+    });
+
+    afterEach(() => {
+      document.documentElement.lang = originalLang;
+    });
+
+    it('two parallel lists (register 400, change / reset password): the code picks the sentence', () => {
+      const resolved = resolveAuthError(translate, {
+        status: 400,
+        error: { errors: [PERSONAL_SENTENCE], errorCodes: ['PASSWORD_CONTAINS_PERSONAL_INFO'] }
+      });
+
+      expect(resolved.fields).toEqual([
+        jasmine.objectContaining({ field: 'password', message: 'AUTH.ERRORS.PASSWORD_PERSONAL_INFO' })
+      ]);
+    });
+
+    it('the sentence alone (a server that sends no codes) is still translated, never shown as English', () => {
+      const resolved = resolveAuthError(
+        translate,
+        { status: 400, error: { errors: [PERSONAL_SENTENCE] } },
+        { allowServerMessage: true, fallbackKey: 'AUTH.ERRORS.REGISTER_FAILED' }
+      );
+
+      expect(resolved.fields).toEqual([
+        jasmine.objectContaining({ field: 'password', message: 'AUTH.ERRORS.PASSWORD_PERSONAL_INFO' })
+      ]);
+      expect(resolved.message).toBeNull();
+    });
+
+    it('an English sentence nobody can translate falls back to the page\'s own wording on an Arabic page', () => {
+      const resolved = resolveAuthError(
+        translate,
+        { status: 400, error: { errors: ['Something the table does not know about.'] } },
+        { allowServerMessage: true, fallbackKey: 'AUTH.ERRORS.REGISTER_FAILED' }
+      );
+
+      expect(resolved.message).toBe('AUTH.ERRORS.REGISTER_FAILED');
+    });
+
+    it('an Arabic sentence from the API is still shown on an Arabic page', () => {
+      const resolved = resolveAuthError(
+        translate,
+        { status: 400, error: { message: 'هذا البريد محجوز لحساب آخر.' } },
+        { allowServerMessage: true }
+      );
+
+      expect(resolved.message).toBe('هذا البريد محجوز لحساب آخر.');
+    });
+
+    it('a wrong current password belongs to the current-password field', () => {
+      const resolved = resolveAuthError(
+        translate,
+        { status: 400, error: { errors: ['Incorrect password.'], errorCodes: ['PasswordMismatch'] } },
+        { passwordField: 'newPassword' }
+      );
+
+      expect(resolved.fields).toEqual([
+        jasmine.objectContaining({ field: 'currentPassword', message: 'AUTH.ERRORS.CURRENT_PASSWORD_WRONG' })
+      ]);
+    });
+  });
 });
 
 describe('applyAuthFieldErrors', () => {

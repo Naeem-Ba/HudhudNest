@@ -86,7 +86,19 @@ const KNOWN_VALIDATION_MESSAGE_KEYS: readonly (readonly [RegExp, string])[] = [
   [/^(SearchTerm|City|Region) contains characters that are not allowed\.?$/i, 'API_ERRORS.FILTER_TEXT_NOT_ALLOWED'],
   [/^SortBy=Price requires ListingType/i, 'API_ERRORS.FILTER_SORT_PRICE_NEEDS_TYPE'],
   [/^(Latitude|Longitude) is required\.?$/i, 'API_ERRORS.GEO_COORDS_REQUIRED'],
-  [/^(Latitude|Longitude) must be between/i, 'API_ERRORS.GEO_COORDS_INVALID']
+  [/^(Latitude|Longitude) must be between/i, 'API_ERRORS.GEO_COORDS_INVALID'],
+  // The password rules (PasswordPolicy.cs, ASP.NET Identity defaults): servers that predate the stable
+  // codes, and any path that still answers with the sentence alone, must not show English to an Arabic reader.
+  [/^Password is required\.?$/i, 'AUTH.ERRORS.PASSWORD_REQUIRED'],
+  [/^Passwords? must be at least \d+ characters/i, 'AUTH.ERRORS.PASSWORD_MIN'],
+  [/^Passwords? must (contain|have) at least one upper ?case/i, 'AUTH.ERRORS.PASSWORD_NO_UPPERCASE'],
+  [/^Passwords? must (contain|have) at least one lower ?case/i, 'AUTH.ERRORS.PASSWORD_NO_LOWERCASE'],
+  [/^Passwords? must (contain|have) at least one digit/i, 'AUTH.ERRORS.PASSWORD_NO_DIGIT'],
+  [/^Passwords? must (contain|have) at least one (special|non alphanumeric)/i, 'AUTH.ERRORS.PASSWORD_NO_SPECIAL'],
+  [/^Password is based on a commonly used word/i, 'AUTH.ERRORS.PASSWORD_COMMON_WORD'],
+  [/^Password contains a run of more than/i, 'AUTH.ERRORS.PASSWORD_LONG_RUN'],
+  [/^Password must not contain your name/i, 'AUTH.ERRORS.PASSWORD_PERSONAL_INFO'],
+  [/^This password has been exposed in known data breaches/i, 'AUTH.ERRORS.PASSWORD_BREACHED']
 ];
 
 export function knownValidationMessageKey(message: string): string | null {

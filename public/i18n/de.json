@@ -326,6 +326,7 @@
       "GENERIC": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
       "TIMEOUT": "Der Server hat zu lange gebraucht. Prüfe deine Verbindung und versuche es erneut.",
       "PASSWORD_PERSONAL_INFO": "Das Passwort darf weder deinen Namen noch deine E-Mail-Adresse oder Telefonnummer enthalten. Wähle eines, das nicht auf deinen persönlichen Daten beruht.",
+      "CURRENT_PASSWORD_WRONG": "Das aktuelle Passwort ist nicht korrekt.",
       "SESSION_SUPERSEDED": "Dieses Gerät wurde abgemeldet, weil das Konto auf mehr Geräten angemeldet war als erlaubt. Bitte melde dich erneut an.",
       "LOGIN_HELP": "Prüfe die Schreibweise (Groß- und Kleinschreibung zählt), setze dein Passwort zurück oder erstelle ein Konto, falls du neu bist.",
       "PHONE_LOGIN_HELP": "Prüfe die Nummer (mit Ländervorwahl) und das Passwort, setze das Passwort zurück oder erstelle ein Konto, falls du neu bist.",
