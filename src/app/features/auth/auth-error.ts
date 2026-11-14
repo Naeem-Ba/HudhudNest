@@ -1,7 +1,7 @@
 import { AbstractControl } from '@angular/forms';
 import { TranslateService } from '@ngx-translate/core';
 
-import { knownValidationMessageKey } from '../../core/interceptors/api-error.interceptor';
+import { isInOtherScript, knownValidationMessageKey } from '../../core/interceptors/api-error.interceptor';
 import { PASSWORD_CODE_TO_KEY } from './password-errors';
 import { PHONE_ERROR_CODE_TO_KEY } from './phone-auth-errors';
 
@@ -59,6 +59,8 @@ export interface AuthErrorOptions {
 
 /** Which field a code belongs to, when it belongs to one. */
 const FIELD_OF_CODE: Record<string, AuthField> = {
+  PasswordMismatch: 'currentPassword',
+  'INVALID_CURRENT_PASSWORD': 'currentPassword',
   EMAIL_ALREADY_REGISTERED: 'email',
   EMAIL_REQUIRED: 'email',
   EMAIL_INVALID: 'email',
@@ -85,6 +87,8 @@ const FIELD_OF_CODE: Record<string, AuthField> = {
 
 /** Codes added for the sign-up forms (API: AuthValidationCodes) that have no older table to live in. */
 const FORM_CODE_TO_KEY: Record<string, string> = {
+  PasswordMismatch: 'AUTH.ERRORS.CURRENT_PASSWORD_WRONG',
+  'INVALID_CURRENT_PASSWORD': 'AUTH.ERRORS.CURRENT_PASSWORD_WRONG',
   EMAIL_ALREADY_REGISTERED: 'AUTH.ERRORS.EMAIL_ALREADY_EXISTS',
   EMAIL_REQUIRED: 'AUTH.ERRORS.EMAIL_REQUIRED',
   EMAIL_INVALID: 'AUTH.ERRORS.INVALID_EMAIL',
@@ -281,7 +285,9 @@ export function resolveAuthError(
       ? Object.values(body.errors as Record<string, unknown>).flat().map(String).filter(Boolean)
       : [];
     const text = typeof own === 'string' && own.trim() ? own.trim() : listed.join(' ');
-    if (text) {
+    // The API writes some sentences in one fixed language. A reader on a page in another language gets the
+    // translated fallback below instead of a sentence they cannot read.
+    if (text && !isInOtherScript(text)) {
       return { kind: 'validation', message: text, fields: [], code };
     }
   }

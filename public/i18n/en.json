@@ -326,6 +326,7 @@
       "GENERIC": "Something went wrong. Please try again.",
       "TIMEOUT": "The server took too long to answer. Check your connection and try again.",
       "PASSWORD_PERSONAL_INFO": "The password must not contain your name, email address or phone number. Choose one that is not based on your personal details.",
+      "CURRENT_PASSWORD_WRONG": "The current password is not correct.",
       "SESSION_SUPERSEDED": "This device was signed out because the account was signed in on more devices than allowed. Please sign in again.",
       "LOGIN_HELP": "Check the spelling (upper and lower case matter), reset your password, or create an account if you are new.",
       "PHONE_LOGIN_HELP": "Check the number (with country code) and the password, reset your password, or create an account if you are new.",

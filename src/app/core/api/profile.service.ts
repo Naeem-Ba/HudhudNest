@@ -26,9 +26,11 @@
 //   - استبدال map بـ switchMap → getMe() في updateProfile
 //   - إصلاح شامل لـ toUpdateRequest
 
+import { HttpContext } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, catchError, map, of, switchMap, tap, throwError } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
+import { SKIP_ERROR_TOAST } from '../interceptors/api-error.interceptor';
 
 export interface UserProfile {
   Id?: string;
@@ -371,8 +373,12 @@ export class ProfileService {
       .pipe(switchMap(() => this.getMe()));
   }
 
+  /**
+   * The page shows every failure of this call next to the field it is about (the server's rejection codes are
+   * translated there), so the global error toast is switched off: it used to add a second, generic message.
+   */
   changePassword(data: ChangePasswordRequest): Observable<void> {
-    return this.api.post<void>('/users/me/change-password', data);
+    return this.api.post<void>('/users/me/change-password', data, { context: new HttpContext().set(SKIP_ERROR_TOAST, true) });
   }
 
   /**
