@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { BackendApiService, QueryValue, RequestOptions } from '../api/backend-api.service';
 import { ApiPagedResult, normalizePagedResult, PagedResult, unwrapItems } from '../models/api.model';
-import { DuplicateCheckResult, Property, PropertyFilterDto } from '../models/property.model';
+import { AvailableFloors, DuplicateCheckResult, Property, PropertyFilterDto } from '../models/property.model';
 import { OwnerSelectableStatus } from '../../shared/utils/listing-status';
 
 /**
@@ -19,6 +19,18 @@ export interface ListingExtensionQuote {
   expiresAt: string | null;
   graceEndsAt: string | null;
   isExistingPendingFee: boolean;
+}
+
+/**
+ * The part of a list request that decides which floors exist: the floor filter itself, paging, ordering and the interest
+ * ranking are not part of the question (they would only split the server's response cache).
+ */
+export function toFloorScope(filter: PropertyFilterDto): PropertyFilterDto {
+  const {
+    page: _page, pageSize: _pageSize, sortBy: _sortBy, sortDescending: _sortDescending,
+    interestGovernorateIds: _interest, floorFrom: _from, floorTo: _to, floorMode: _mode, ...scope
+  } = filter;
+  return scope;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -46,6 +58,15 @@ export class PropertyApiService {
           pageSize
         ))
       );
+  }
+
+  /**
+   * GET /properties/floors — the floors that exist among the listings matching the same filters as the list. The floor
+   * filter itself, paging, ordering and the interest ranking are not part of the question, so they are left out (they
+   * would only split the server's response cache).
+   */
+  getAvailableFloors(filter: PropertyFilterDto = {}): Observable<AvailableFloors> {
+    return this.api.get<AvailableFloors>('/properties/floors', this.toQuery(toFloorScope(filter)));
   }
 
   /**

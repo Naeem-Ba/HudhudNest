@@ -230,6 +230,67 @@
   input { flex: 1; }
 }
 
+/* Floor filter: quick "lowest / highest available", one floor, and a from-to range. */
+.floor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  min-height: 1.75rem;
+}
+
+.floor-clear {
+  margin: 0;
+  padding: .2rem .5rem;
+  border: none;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--gold-text);
+  font-size: .8rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover { background: var(--gold-soft); }
+}
+
+.floor-group {
+  // The two quick options carry long names in some languages ("Niedrigste verfügbare Etage"): they wrap instead of clipping.
+  .filter-toggle {
+    min-width: 0;
+    white-space: normal;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+
+    &:disabled { opacity: .5; cursor: not-allowed; }
+  }
+
+  select:disabled { opacity: .6; cursor: not-allowed; }
+}
+
+.floor-range {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .4rem;
+
+  select {
+    min-width: 0;
+    text-overflow: ellipsis;
+  }
+}
+
+.floor-field {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  min-width: 0;
+}
+
+.floor-sub {
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
 /* ✅ إضافة: فلتر المرافق (Amenities) */
 .amenity-chips {
   display: flex;

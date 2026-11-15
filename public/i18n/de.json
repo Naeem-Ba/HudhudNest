@@ -608,6 +608,18 @@
     "NEIGHBORHOOD": "Stadtviertel",
     "PROPERTY_TYPE": "Immobilientyp",
     "SELECT_OPTIONAL": "— Auswählen (optional) —",
+    "FLOOR_FILTER": {
+      "TITLE": "Etage",
+      "ALL": "Alle Etagen",
+      "FROM": "Ab Etage",
+      "TO": "Bis Etage",
+      "GROUND": "Erdgeschoss",
+      "LOWEST": "Niedrigste verfügbare Etage",
+      "HIGHEST": "Höchste verfügbare Etage",
+      "NONE": "Keine Etagen verfügbar",
+      "SELECT": "Etage auswählen",
+      "CLEAR": "Filter zurücksetzen"
+    },
     "SAVE_SEARCH": "Diese Suche speichern",
     "SAVE_SEARCH_NAME_PROMPT": "Geben Sie dieser Suche einen Namen (optional):",
     "SAVE_SEARCH_SUCCESS": "Suche gespeichert. Wir benachrichtigen Sie über neue passende Immobilien.",

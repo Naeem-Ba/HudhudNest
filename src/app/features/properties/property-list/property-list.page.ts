@@ -21,9 +21,9 @@ import { ActivatedRoute, ParamMap, Router, RouterModule } from '@angular/router'
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Subject, catchError, debounceTime, EMPTY, fromEvent, merge, Observable, switchMap, tap } from 'rxjs';
+import { Subject, catchError, debounceTime, distinctUntilChanged, EMPTY, fromEvent, map, merge, Observable, of, switchMap, tap } from 'rxjs';
 
-import { PropertyApiService } from '../../../core/api/property-api.service';
+import { PropertyApiService, toFloorScope } from '../../../core/api/property-api.service';
 import { SavedSearchApiService } from '../../../core/api/saved-search-api.service';
 import {
   LookupsApiService,
@@ -35,7 +35,15 @@ import {
 import { AuthService } from '../../../core/auth/auth.service';
 import { LangCode, LanguageService } from '../../../core/services/language.service';
 import { PagedResult } from '../../../core/models/api.model';
-import { Property, PropertyFilterDto } from '../../../core/models/property.model';
+import { AvailableFloors, FloorMode, Property, PropertyFilterDto } from '../../../core/models/property.model';
+import {
+  FloorSelection,
+  floorChoices,
+  hasFloorSelection,
+  parseFloorMode,
+  parseFloorParam,
+  selectionStillPossible
+} from './floor-filter.util';
 import { HttpErrorResponse } from '@angular/common/http';
 import { EmptyStateComponent } from '../../../shared/ui/empty-state.component';
 import { SkeletonCardGridComponent } from '../../../shared/ui/skeleton-card-grid.component';
@@ -221,6 +229,18 @@ export class PropertyListPage implements OnInit {
   /** Why the last "apply" did nothing (an inverted range), shown under the price fields. */
   readonly filterError = signal('');
 
+  // ── Floor filter ──
+  // Three ways to ask, one state: a floor range (a single floor is from === to) or "the highest / lowest floor
+  // that exists" (floorMode, which excludes the range). 0 is the ground floor; a listing with no floor on record
+  // matches none of them. The choices come from GET /properties/floors, i.e. only floors the other filters leave.
+  floorFrom: number | null = null;
+  floorTo: number | null = null;
+  floorMode: FloorMode | null = null;
+  /** The floors that exist for the filters as they stand; null while unknown (then the screen offers 0..50). */
+  readonly floorOptions = signal<AvailableFloors | null>(null);
+  /** Asks for the floor choices again (true: and drop a floor choice that no longer exists under the new filters). */
+  private readonly floorScope$ = new Subject<boolean>();
+
   filtersOpen = false;
   searchText = '';
   selectedListingType: '' | 'ForRent' | 'ForSale' = '';
@@ -276,6 +296,7 @@ export class PropertyListPage implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(lang => this.lang.set(lang));
 
+    this.watchFloorOptions();
     this.loadCurrencies();
     this.loadAmenities();
     this.loadGovernorates();
@@ -413,6 +434,7 @@ export class PropertyListPage implements OnInit {
     // One box, one meaning: a catalog place and an address text never apply together.
     this.addressText = '';
     this.placeDraft = null;
+    this.onFloorScopeChanged();
     if (place) {
       this.governorateId = null;
       this.districtId = null;
@@ -479,6 +501,7 @@ export class PropertyListPage implements OnInit {
     this.locationPlace.set(null);
     this.districts.set([]);
     this.neighborhoods.set([]);
+    this.onFloorScopeChanged();
 
     if (this.governorateId) {
       this.lookupsApi.getDistricts(this.governorateId)
@@ -490,6 +513,7 @@ export class PropertyListPage implements OnInit {
   onDistrictChange(): void {
     this.neighborhoodId = null;
     this.neighborhoods.set([]);
+    this.onFloorScopeChanged();
 
     if (this.districtId) {
       this.lookupsApi.getNeighborhoods(this.districtId)
@@ -558,6 +582,12 @@ export class PropertyListPage implements OnInit {
     }
     this.propertyTypeId = params.get('propertyTypeId') ? Number(params.get('propertyTypeId')) : null;
 
+    // The URL is user-editable: a floor that is not a whole number from 0 to 200 is dropped, and a mode excludes a range.
+    this.floorMode = parseFloorMode(params.get('floorMode'));
+    this.floorFrom = this.floorMode ? null : parseFloorParam(params.get('floorFrom'));
+    this.floorTo = this.floorMode ? null : parseFloorParam(params.get('floorTo'));
+    this.requestFloorOptions(false);
+
     // The URL is user-editable: a page or size that is not a whole number in range would be refused
     // by the server (422) or answer an empty page, so it is brought back into range here.
     const pageSize = Math.min(100, Math.max(1, Math.trunc(Number(params.get('pageSize'))) || 20));
@@ -611,13 +641,24 @@ export class PropertyListPage implements OnInit {
       districtId: this.districtId ?? undefined,
       neighborhoodId: this.neighborhoodId ?? undefined,
       locationId: this.locationId ?? undefined,
-      propertyTypeId: this.propertyTypeId ?? undefined
+      propertyTypeId: this.propertyTypeId ?? undefined,
+      floorFrom: this.floorFrom ?? undefined,
+      floorTo: this.floorTo ?? undefined,
+      floorMode: this.floorMode ?? undefined
     };
   }
 
   /** The filters "near me" understands: all of the list's, except the ordering (nearest first) and the interest ranking. */
   private buildGeoFilter(page: number): PropertyFilterDto {
-    const { sortBy: _sortBy, sortDescending: _sortDescending, interestGovernorateIds: _interest, ...filter } = this.buildFilterFromState(page);
+    const { sortBy: _sortBy, sortDescending: _sortDescending, interestGovernorateIds: _interest, floorMode, ...filter } = this.buildFilterFromState(page);
+
+    // "Near me" understands a floor range but not "highest / lowest": the extreme is read from the floors that exist
+    // for the same filters (the whole result, not only the circle) and sent as that one floor.
+    const options = this.floorOptions();
+    if (floorMode && options && options.min !== null && options.max !== null) {
+      const floor = floorMode === 'highest' ? options.max : options.min;
+      return { ...filter, floorFrom: floor, floorTo: floor };
+    }
     return filter;
   }
 
@@ -647,6 +688,9 @@ export class PropertyListPage implements OnInit {
       placeText: this.addressText.trim() || null,
       locationId: this.locationId ?? null,
       propertyTypeId: this.propertyTypeId ?? null,
+      floorFrom: this.floorFrom ?? null,
+      floorTo: this.floorTo ?? null,
+      floorMode: this.floorMode ?? null,
       page: page > 1 ? page : null,
       pageSize: this.pageSize() !== 20 ? this.pageSize() : null
     };
@@ -849,6 +893,7 @@ export class PropertyListPage implements OnInit {
     if (this.addressText.trim()) count++;
     if (this.locationId) count++;
     if (this.propertyTypeId) count++;
+    if (this.hasFloorFilter) count++;
 
     return count;
   }
@@ -879,6 +924,7 @@ export class PropertyListPage implements OnInit {
     if (type === '' && (this.sortBy === 'Price' || this.sortBy === 'PriceDesc')) {
       this.sortBy = 'CreatedAt';
     }
+    this.onFloorScopeChanged();
   }
 
   /** The approximate equivalent of a listing's price in the chosen currency, shown while a price range is active. */
@@ -899,6 +945,104 @@ export class PropertyListPage implements OnInit {
 
   isReserved(property: Property): boolean {
     return isReservedListing(property);
+  }
+
+  // ── Floor filter ──────────────────────────────────────────────────────────────────────────────────────────────
+
+  /** What is chosen, as one object (for the helpers). */
+  private get floorSelection(): FloorSelection {
+    return { from: this.floorFrom, to: this.floorTo, mode: this.floorMode };
+  }
+
+  get hasFloorFilter(): boolean {
+    return hasFloorSelection(this.floorSelection);
+  }
+
+  /** The "choose one floor" select shows a floor only while the range is exactly that floor. */
+  get specificFloor(): number | null {
+    return this.floorFrom !== null && this.floorFrom === this.floorTo ? this.floorFrom : null;
+  }
+
+  /** The server answered and no listing under the current filters has a floor on record. */
+  noFloorsAvailable(): boolean {
+    const options = this.floorOptions();
+    return options !== null && options.floors.length === 0;
+  }
+
+  /** Every floor to offer, ground floor first; a floor already chosen is always in the list. */
+  floorList(): number[] {
+    return floorChoices(this.floorOptions(), [this.floorFrom, this.floorTo]);
+  }
+
+  toggleFloorMode(mode: FloorMode): void {
+    this.floorMode = this.floorMode === mode ? null : mode;
+    if (this.floorMode) {
+      this.floorFrom = null;
+      this.floorTo = null;
+    }
+  }
+
+  onSpecificFloor(floor: number | null): void {
+    this.floorMode = null;
+    this.floorFrom = floor;
+    this.floorTo = floor;
+  }
+
+  onFloorFrom(floor: number | null): void {
+    this.floorMode = null;
+    this.floorFrom = floor;
+    if (floor !== null && this.floorTo !== null && floor > this.floorTo) this.floorTo = floor;
+  }
+
+  onFloorTo(floor: number | null): void {
+    this.floorMode = null;
+    this.floorTo = floor;
+    if (floor !== null && this.floorFrom !== null && floor < this.floorFrom) this.floorFrom = floor;
+  }
+
+  /** "Clear filter": back to all floors. The list changes when the person applies, like every other field. */
+  clearFloorFilter(refreshOptions = true): void {
+    this.floorFrom = null;
+    this.floorTo = null;
+    this.floorMode = null;
+    if (refreshOptions) this.requestFloorOptions(false);
+  }
+
+  /** A filter that decides which floors exist changed in the panel: refresh the choices (and drop a floor that is gone). */
+  onFloorScopeChanged(): void {
+    this.requestFloorOptions(true);
+  }
+
+  private requestFloorOptions(pruneSelection: boolean): void {
+    this.floorScope$.next(pruneSelection);
+  }
+
+  /**
+   * One request per distinct set of other filters (a burst of changes is one request, the last one wins, and an
+   * unchanged set asks nothing). A failed request leaves the choices unknown, which the screen answers with 0..50.
+   */
+  private watchFloorOptions(): void {
+    this.floorScope$
+      .pipe(
+        debounceTime(200),
+        map(prune => ({ prune, scope: toFloorScope(this.buildFilterFromState(1)) })),
+        distinctUntilChanged((a, b) => JSON.stringify(a.scope) === JSON.stringify(b.scope)),
+        switchMap(({ prune, scope }) =>
+          this.api.getAvailableFloors(scope).pipe(
+            map(options => ({ prune, options })),
+            catchError(() => of({ prune, options: null }))
+          )
+        ),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(({ prune, options }) => {
+        this.floorOptions.set(options);
+        // Only a change made in the panel drops the choice. A floor that arrived in the URL stays visible, because it
+        // is what the list below was asked for.
+        if (prune && options && !selectionStillPossible(this.floorSelection, options)) {
+          this.clearFloorFilter(false);
+        }
+      });
   }
 
   applyFilters(): void {
@@ -940,6 +1084,7 @@ export class PropertyListPage implements OnInit {
     this.placeDraft = null;
     this.placeBox?.reset();
     this.propertyTypeId = null;
+    this.clearFloorFilter(false);
     this.districts.set([]);
     this.neighborhoods.set([]);
     this.geoModeActive.set(false);

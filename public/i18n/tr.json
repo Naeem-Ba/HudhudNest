@@ -608,6 +608,18 @@
     "NEIGHBORHOOD": "Mahalle",
     "PROPERTY_TYPE": "Mülk türü",
     "SELECT_OPTIONAL": "— Seçin (isteğe bağlı) —",
+    "FLOOR_FILTER": {
+      "TITLE": "Kat",
+      "ALL": "Tüm Katlar",
+      "FROM": "Başlangıç Katı",
+      "TO": "Bitiş Katı",
+      "GROUND": "Zemin Kat",
+      "LOWEST": "Mevcut En Alt Kat",
+      "HIGHEST": "Mevcut En Üst Kat",
+      "NONE": "Kullanılabilir Kat Bulunmuyor",
+      "SELECT": "Kat Seçin",
+      "CLEAR": "Filtreyi Temizle"
+    },
     "SAVE_SEARCH": "Bu aramayı kaydet",
     "SAVE_SEARCH_NAME_PROMPT": "Bu aramaya bir ad verin (isteğe bağlı):",
     "SAVE_SEARCH_SUCCESS": "Arama kaydedildi. Eşleşen yeni ilanlar olduğunda size haber vereceğiz.",
