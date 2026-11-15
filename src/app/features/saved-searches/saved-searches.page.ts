@@ -124,6 +124,9 @@ export class SavedSearchesPage implements OnInit {
       queryParams['currency'] = search.currencyCode;
     }
 
+    if (search.floorFrom != null) queryParams['floorFrom'] = String(search.floorFrom);
+    if (search.floorTo != null) queryParams['floorTo'] = String(search.floorTo);
+
     void this.router.navigate(['/properties'], { queryParams });
   }
 
@@ -144,11 +147,21 @@ export class SavedSearchesPage implements OnInit {
     if (search.minArea != null || search.maxArea != null) {
       parts.push(`${search.minArea ?? '…'}-${search.maxArea ?? '…'} m²`);
     }
+    if (search.floorFrom != null || search.floorTo != null) {
+      parts.push(`${this.translate.instant('PROPERTY_LIST.FLOOR_FILTER.TITLE')}: ${this.floorRangeText(search.floorFrom ?? null, search.floorTo ?? null)}`);
+    }
     if (search.hasBalcony) parts.push(this.translate.instant('PROPERTY.HAS_BALCONY'));
     if (search.hasElevator) parts.push(this.translate.instant('PROPERTY.HAS_ELEVATOR'));
     if (search.hasParkingSpace) parts.push(this.translate.instant('PROPERTY.HAS_PARKING'));
 
     return parts.length > 0 ? parts.join(' · ') : '—';
+  }
+
+  /** One floor reads as that floor (0 as "Ground Floor"); a range as "from – to", an open end as "…". */
+  private floorRangeText(from: number | null, to: number | null): string {
+    const label = (floor: number | null): string =>
+      floor === null ? '…' : floor === 0 ? this.translate.instant('PROPERTY_LIST.FLOOR_FILTER.GROUND') : String(floor);
+    return from !== null && from === to ? label(from) : `${label(from)} – ${label(to)}`;
   }
 
   startEdit(search: SavedSearch): void {
@@ -197,7 +210,10 @@ export class SavedSearchesPage implements OnInit {
       HasBalcony: d.hasBalcony || null,
       HasElevator: d.hasElevator || null,
       HasParkingSpace: d.hasParkingSpace || null,
-      Frequency: d.frequency
+      Frequency: d.frequency,
+      // Not editable in this form, but PUT replaces everything: leaving them out would silently clear the floor.
+      FloorFrom: search.floorFrom ?? null,
+      FloorTo: search.floorTo ?? null
     };
 
     this.savingId.set(search.id);

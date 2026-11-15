@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 import { SavedSearchApiService } from '../../core/api/saved-search-api.service';
@@ -55,6 +55,67 @@ describe('SavedSearchesPage (growth engine P3)', () => {
     expect(payload.HasBalcony).toBeNull();
     expect(page.searches()[0].frequency).toBe('Daily');
     expect(page.editingId()).toBeNull();
+  });
+
+  it('keeps the floor when another criterion is edited (PUT replaces everything), including the ground floor', () => {
+    api.getMine.and.returnValue(of([search({ floorFrom: 0, floorTo: 0 })]));
+    api.update.and.returnValue(of(void 0));
+    const fixture = TestBed.createComponent(SavedSearchesPage);
+    fixture.detectChanges();
+    const page = fixture.componentInstance;
+
+    page.startEdit(page.searches()[0]);
+    page.draft.minRooms = 3;
+    page.saveEdit(page.searches()[0]);
+
+    const payload = api.update.calls.mostRecent().args[1];
+    expect(payload.FloorFrom).toBe(0);
+    expect(payload.FloorTo).toBe(0);
+  });
+
+  it('sends null floors for a search without a floor', () => {
+    api.getMine.and.returnValue(of([search()]));
+    api.update.and.returnValue(of(void 0));
+    const fixture = TestBed.createComponent(SavedSearchesPage);
+    fixture.detectChanges();
+    const page = fixture.componentInstance;
+
+    page.startEdit(page.searches()[0]);
+    page.saveEdit(page.searches()[0]);
+
+    const payload = api.update.calls.mostRecent().args[1];
+    expect(payload.FloorFrom).toBeNull();
+    expect(payload.FloorTo).toBeNull();
+  });
+
+  it('re-runs the search with its floor range, and with floor 0', () => {
+    api.getMine.and.returnValue(of([search({ floorFrom: 2, floorTo: 4 }), search({ id: 's2', floorFrom: 0, floorTo: 0 }), search({ id: 's3' })]));
+    const fixture = TestBed.createComponent(SavedSearchesPage);
+    fixture.detectChanges();
+    const page = fixture.componentInstance;
+    const router = TestBed.inject(Router);
+    const navigate = spyOn(router, 'navigate').and.resolveTo(true);
+
+    page.runSearch(page.searches()[0]);
+    expect(navigate.calls.mostRecent().args[1]?.queryParams).toEqual(jasmine.objectContaining({ floorFrom: '2', floorTo: '4' }));
+
+    page.runSearch(page.searches()[1]);
+    expect(navigate.calls.mostRecent().args[1]?.queryParams).toEqual(jasmine.objectContaining({ floorFrom: '0', floorTo: '0' }));
+
+    page.runSearch(page.searches()[2]);
+    const params = navigate.calls.mostRecent().args[1]?.queryParams as Record<string, string>;
+    expect(params['floorFrom']).toBeUndefined();
+    expect(params['floorTo']).toBeUndefined();
+  });
+
+  it('describes the floor in the summary: one floor, ground floor, open range', () => {
+    api.getMine.and.returnValue(of([]));
+    const page = TestBed.createComponent(SavedSearchesPage).componentInstance;
+
+    expect(page.summary(search({ floorFrom: 3, floorTo: 3 }))).toContain('PROPERTY_LIST.FLOOR_FILTER.TITLE: 3');
+    expect(page.summary(search({ floorFrom: 0, floorTo: 0 }))).toContain('PROPERTY_LIST.FLOOR_FILTER.GROUND');
+    expect(page.summary(search({ floorFrom: 2, floorTo: null }))).toContain('2 – …');
+    expect(page.summary(search())).not.toContain('FLOOR_FILTER');
   });
 
   it('drops the currency when no price bound is left', () => {

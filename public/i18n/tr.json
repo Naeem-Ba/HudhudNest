@@ -618,7 +618,8 @@
       "HIGHEST": "Mevcut En Üst Kat",
       "NONE": "Kullanılabilir Kat Bulunmuyor",
       "SELECT": "Kat Seçin",
-      "CLEAR": "Filtreyi Temizle"
+      "CLEAR": "Filtreyi Temizle",
+      "SAVE_MODE_NOTE": "Arama kat bilgisi olmadan kaydedildi: “Mevcut en üst/en alt kat” piyasayla değişir. Bildirim istiyorsanız belirli bir kat seçin."
     },
     "SAVE_SEARCH": "Bu aramayı kaydet",
     "SAVE_SEARCH_NAME_PROMPT": "Bu aramaya bir ad verin (isteğe bağlı):",
