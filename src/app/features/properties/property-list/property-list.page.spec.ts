@@ -1219,6 +1219,40 @@ describe('PropertyListPage', () => {
       expect(lastRequest().floorFrom).toBeUndefined();
     });
 
+    describe('البحث المحفوظ', () => {
+      /** createComponent rebuilds the TestBed, so the spies are read after it, never before. */
+      function saveWith(params: Record<string, string>): { payload: Record<string, unknown>; toast: jasmine.SpyObj<ToastService> } {
+        component = createComponent(params);
+        const savedSearchApi = TestBed.inject(SavedSearchApiService) as jasmine.SpyObj<SavedSearchApiService>;
+        savedSearchApi.create.and.returnValue(of({} as never));
+        component.saveCurrentSearch();
+        return {
+          payload: savedSearchApi.create.calls.mostRecent().args[0] as unknown as Record<string, unknown>,
+          toast: TestBed.inject(ToastService) as jasmine.SpyObj<ToastService>
+        };
+      }
+
+      beforeEach(() => { spyOn(window, 'prompt').and.returnValue(''); });
+
+      it('✅ يحفظ الطابق الأرضي (0) والمدى كما هما', () => {
+        expect(saveWith({ floorFrom: '0', floorTo: '0' }).payload).toEqual(jasmine.objectContaining({ FloorFrom: 0, FloorTo: 0 }));
+        expect(saveWith({ floorFrom: '2', floorTo: '5' }).payload).toEqual(jasmine.objectContaining({ FloorFrom: 2, FloorTo: 5 }));
+      });
+
+      it('✅ بلا طابق يُرسَل null دون تنبيه', () => {
+        const { payload, toast } = saveWith({});
+        expect(payload).toEqual(jasmine.objectContaining({ FloorFrom: null, FloorTo: null }));
+        expect(toast.info).not.toHaveBeenCalled();
+      });
+
+      it('✅ «أعلى طابق متاح» لا يُحفظ ويظهر تنبيه بذلك', () => {
+        const { payload, toast } = saveWith({ floorMode: 'highest' });
+        expect(payload).toEqual(jasmine.objectContaining({ FloorFrom: null, FloorTo: null }));
+        expect(toast.info).toHaveBeenCalledTimes(1);
+        expect(TestBed.inject(TranslateService).instant).toHaveBeenCalledWith('PROPERTY_LIST.FLOOR_FILTER.SAVE_MODE_NOTE');
+      });
+    });
+
     describe('الطوابق المتاحة (ديناميكية)', () => {
       it('✅ تُطلب من الخادم بفلاتر القائمة نفسها دون الطابق والترقيم والفرز', fakeAsync(() => {
         component = createComponent({ propertyTypeId: '3', listingType: 'ForSale', floorFrom: '2', floorTo: '2', page: '4', sort: 'Price' });

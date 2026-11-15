@@ -618,7 +618,8 @@
       "HIGHEST": "Höchste verfügbare Etage",
       "NONE": "Keine Etagen verfügbar",
       "SELECT": "Etage auswählen",
-      "CLEAR": "Filter zurücksetzen"
+      "CLEAR": "Filter zurücksetzen",
+      "SAVE_MODE_NOTE": "Die Suche wurde ohne Etage gespeichert: „Höchste/Niedrigste verfügbare Etage“ ändert sich mit dem Markt. Wählen Sie eine feste Etage, wenn Sie dafür Benachrichtigungen möchten."
     },
     "SAVE_SEARCH": "Diese Suche speichern",
     "SAVE_SEARCH_NAME_PROMPT": "Geben Sie dieser Suche einen Namen (optional):",

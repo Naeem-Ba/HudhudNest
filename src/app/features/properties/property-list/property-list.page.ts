@@ -1123,13 +1123,19 @@ export class PropertyListPage implements OnInit {
         MaxPrice: this.maxPrice,
         // The range means nothing without the currency it was written in (the matcher compares
         // listings in other currencies by it).
-        CurrencyCode: this.hasPriceFilter && this.currencyCode ? this.currencyCode : null
+        CurrencyCode: this.hasPriceFilter && this.currencyCode ? this.currencyCode : null,
+        // "Highest/lowest available floor" moves with the market, so only a concrete floor or range is saved.
+        FloorFrom: this.floorMode ? null : this.floorFrom,
+        FloorTo: this.floorMode ? null : this.floorTo
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           this.savingSearch.set(false);
           this.toast.success(this.translate.instant('PROPERTY_LIST.SAVE_SEARCH_SUCCESS'));
+          if (this.floorMode) {
+            this.toast.info(this.translate.instant('PROPERTY_LIST.FLOOR_FILTER.SAVE_MODE_NOTE'));
+          }
         },
         error: () => {
           this.savingSearch.set(false);

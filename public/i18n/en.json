@@ -618,7 +618,8 @@
       "HIGHEST": "Highest Available Floor",
       "NONE": "No Floors Available",
       "SELECT": "Select Floor",
-      "CLEAR": "Clear Filter"
+      "CLEAR": "Clear Filter",
+      "SAVE_MODE_NOTE": "The search was saved without the floor: “highest/lowest available floor” changes with the market, so pick a specific floor if you want alerts for it."
     },
     "SAVE_SEARCH": "Save this search",
     "SAVE_SEARCH_NAME_PROMPT": "Give this search a name (optional):",
