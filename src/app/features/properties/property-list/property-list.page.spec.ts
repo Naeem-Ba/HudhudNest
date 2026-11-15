@@ -13,7 +13,7 @@
 // إلى الـ URL → الاشتراك في queryParamMap يعيد الجلب" بالكامل، لا فقط استدعاء
 // دالة داخلية بمعزل عن البقية.
 // =====================================================================
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick, discardPeriodicTasks } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, ParamMap, Router, UrlTree } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject, of, Subject, throwError } from 'rxjs';
@@ -34,7 +34,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { LanguageService } from '../../../core/services/language.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { PagedResult } from '../../../core/models/api.model';
-import { Property, PropertyFilterDto } from '../../../core/models/property.model';
+import { AvailableFloors, Property, PropertyFilterDto } from '../../../core/models/property.model';
 
 function currencyRow(code: string, rate: number, isBase = false): CurrencyLookup {
   return { code, nameEn: code, nameAr: code, symbol: code, decimalPlaces: 2, exchangeRateToUsd: rate, rateUpdatedAt: '2026-10-01T00:00:00Z', isBase };
@@ -88,6 +88,8 @@ describe('PropertyListPage', () => {
   let routerSpy: jasmine.SpyObj<Router>;
   let paramMapSubject: BehaviorSubject<ParamMap>;
   let interestParam: string | undefined;
+  /** What the floors endpoint answers (the floors that exist for the other filters). */
+  let floorsResponse: AvailableFloors;
 
   function createComponent(initialParams: Record<string, unknown> = {}, preferredCurrency: string | null = null): PropertyListPage {
     // Some tests (deep-link) build a second component within the same `it`, after the
@@ -99,7 +101,9 @@ describe('PropertyListPage', () => {
 
     paramMapSubject = new BehaviorSubject<ParamMap>(toParamMap(initialParams));
 
-    propertyApiSpy = jasmine.createSpyObj('PropertyApiService', ['getPropertiesPaged', 'geoSearch']);
+    propertyApiSpy = jasmine.createSpyObj('PropertyApiService', ['getPropertiesPaged', 'geoSearch', 'getAvailableFloors']);
+    floorsResponse = { min: 0, max: 5, floors: [0, 1, 2, 5].map(floor => ({ floor, count: 3 })) };
+    propertyApiSpy.getAvailableFloors.and.callFake(() => of(floorsResponse));
     // Echoes back the requested page and reports enough total results for multi-page
     // pagination tests, mirroring the real backend's PagedResult contract (PagedResult.cs:
     // Page is always the clamped requested page; TotalCount reflects the filtered set).
@@ -209,7 +213,10 @@ describe('PropertyListPage', () => {
       districtId: undefined,
       neighborhoodId: undefined,
       locationId: undefined,
-      propertyTypeId: undefined
+      propertyTypeId: undefined,
+      floorFrom: undefined,
+      floorTo: undefined,
+      floorMode: undefined
     });
   });
 
@@ -1070,6 +1077,296 @@ describe('PropertyListPage', () => {
       await nextTask();
       expect(component.error()).toBeTruthy();
       expect(region.scrollIntoView).toHaveBeenCalledTimes(1);
+    });
+  });
+
+
+  describe('فلتر الطابق', () => {
+    /** The one request the floors endpoint received last (its argument is the list's filters without the floor). */
+    function lastFloorsScope(): PropertyFilterDto {
+      const calls = propertyApiSpy.getAvailableFloors.calls.all();
+      return calls[calls.length - 1].args[0] as PropertyFilterDto;
+    }
+
+    it('✅ الطابق الأرضي (0) يصل إلى الطلب ولا يُعامَل كقيمة فارغة', () => {
+      component = createComponent({ floorFrom: '0', floorTo: '0' });
+
+      expect(component.floorFrom).toBe(0);
+      expect(component.floorTo).toBe(0);
+      expect(component.specificFloor).toBe(0);
+      expect(lastRequest()).toEqual(jasmine.objectContaining({ floorFrom: 0, floorTo: 0 }));
+    });
+
+    it('✅ المدى من الرابط يملأ الحقلين ويصل إلى الطلب', () => {
+      component = createComponent({ floorFrom: '1', floorTo: '5' });
+
+      expect(component.specificFloor).toBeNull();
+      expect(lastRequest()).toEqual(jasmine.objectContaining({ floorFrom: 1, floorTo: 5 }));
+      expect(lastRequest().floorMode).toBeUndefined();
+    });
+
+    it('✅ أعلى/أدنى طابق متاح من الرابط يصل كـ floorMode ويُلغي المدى', () => {
+      component = createComponent({ floorMode: 'highest', floorFrom: '2', floorTo: '3' });
+
+      expect(component.floorMode).toBe('highest');
+      expect(component.floorFrom).toBeNull();
+      expect(component.floorTo).toBeNull();
+      expect(lastRequest()).toEqual(jasmine.objectContaining({ floorMode: 'highest' }));
+      expect(lastRequest().floorFrom).toBeUndefined();
+    });
+
+    it('✅ قيمة طابق غير صالحة في الرابط (سالبة، كسر، نص، فوق 200) تُهمل ولا تُرسل', () => {
+      component = createComponent({ floorFrom: '-3', floorTo: 'abc', floorMode: 'middle' });
+      expect(component.floorFrom).toBeNull();
+      expect(component.floorTo).toBeNull();
+      expect(component.floorMode).toBeNull();
+
+      component = createComponent({ floorFrom: '2.5', floorTo: '201' });
+      expect(component.floorFrom).toBeNull();
+      expect(component.floorTo).toBeNull();
+      expect(lastRequest().floorFrom).toBeUndefined();
+    });
+
+    it('✅ طابق فوق 50 يُقبل: 50 افتراضٌ في الواجهة لا حدٌّ للبيانات', () => {
+      component = createComponent({ floorFrom: '120', floorTo: '120' });
+
+      expect(lastRequest()).toEqual(jasmine.objectContaining({ floorFrom: 120, floorTo: 120 }));
+      expect(component.floorList()).toContain(120);
+    });
+
+    it('✅ «تطبيق» يضع الطابق في الرابط (0 يبقى 0) وبقية الصفحات تحفظه', () => {
+      component.onSpecificFloor(0);
+      component.applyFilters();
+
+      expect(routerSpy.navigate).toHaveBeenCalledWith([], jasmine.objectContaining({
+        queryParams: jasmine.objectContaining({ floorFrom: 0, floorTo: 0, floorMode: null })
+      }));
+
+      component.goToPage(3);
+      expect(lastRequest()).toEqual(jasmine.objectContaining({ page: 3, floorFrom: 0, floorTo: 0 }));
+    });
+
+    it('✅ اختيار أعلى طابق ثم تطبيق: floorMode في الرابط ولا مدى', () => {
+      component.toggleFloorMode('highest');
+      component.applyFilters();
+
+      expect(routerSpy.navigate).toHaveBeenCalledWith([], jasmine.objectContaining({
+        queryParams: jasmine.objectContaining({ floorMode: 'highest', floorFrom: null, floorTo: null })
+      }));
+      expect(lastRequest().floorMode).toBe('highest');
+    });
+
+    it('✅ الأوضاع الثلاثة لا تتعارض: الخيار السريع يمسح المدى، والمدى يمسح الخيار السريع، والطابق المحدد يملأ الحدّين', () => {
+      component.onFloorFrom(1);
+      component.onFloorTo(4);
+      component.toggleFloorMode('lowest');
+      expect([component.floorMode, component.floorFrom, component.floorTo]).toEqual(['lowest', null, null]);
+
+      component.onSpecificFloor(3);
+      expect([component.floorMode, component.floorFrom, component.floorTo]).toEqual([null, 3, 3]);
+      expect(component.specificFloor).toBe(3);
+
+      component.toggleFloorMode('highest');
+      component.toggleFloorMode('highest');
+      expect(component.floorMode).toBeNull();
+
+      component.onSpecificFloor(3);
+      component.onFloorFrom(0);
+      expect(component.specificFloor).toBeNull();
+      expect([component.floorFrom, component.floorTo]).toEqual([0, 3]);
+    });
+
+    it('✅ لا يمكن بناء مدى مقلوب من الواجهة: رفع أحد الحدّين فوق الآخر يرفع الآخر معه', () => {
+      component.onFloorFrom(1);
+      component.onFloorTo(3);
+      expect([component.floorFrom, component.floorTo]).toEqual([1, 3]);
+
+      component.onFloorFrom(5);
+      expect([component.floorFrom, component.floorTo]).toEqual([5, 5]);
+
+      component.onFloorTo(2);
+      expect([component.floorFrom, component.floorTo]).toEqual([2, 2]);
+
+      component.onFloorFrom(null);
+      component.onFloorTo(4);
+      expect([component.floorFrom, component.floorTo]).toEqual([null, 4]);
+    });
+
+    it('✅ «مسح الفلتر» يرجع كل الطوابق، ويُحسب الفلتر في عدّاد الفلاتر الفعّالة', () => {
+      expect(component.activeFiltersCount).toBe(0);
+
+      component.onSpecificFloor(0);
+      expect(component.hasFloorFilter).toBeTrue();
+      expect(component.activeFiltersCount).toBe(1);
+
+      component.clearFloorFilter();
+      expect(component.hasFloorFilter).toBeFalse();
+      expect(component.activeFiltersCount).toBe(0);
+
+      component.toggleFloorMode('lowest');
+      expect(component.activeFiltersCount).toBe(1);
+    });
+
+    it('✅ «إعادة الضبط» تمسح الطابق من الحالة والرابط', () => {
+      component = createComponent({ floorFrom: '2', floorTo: '4' });
+
+      component.resetFilters();
+
+      expect(component.hasFloorFilter).toBeFalse();
+      expect(routerSpy.navigate).toHaveBeenCalledWith([], jasmine.objectContaining({
+        queryParams: jasmine.objectContaining({ floorFrom: null, floorTo: null, floorMode: null })
+      }));
+      expect(lastRequest().floorFrom).toBeUndefined();
+    });
+
+    describe('الطوابق المتاحة (ديناميكية)', () => {
+      it('✅ تُطلب من الخادم بفلاتر القائمة نفسها دون الطابق والترقيم والفرز', fakeAsync(() => {
+        component = createComponent({ propertyTypeId: '3', listingType: 'ForSale', floorFrom: '2', floorTo: '2', page: '4', sort: 'Price' });
+        tick(250);
+
+        expect(propertyApiSpy.getAvailableFloors).toHaveBeenCalledTimes(1);
+        const scope = lastFloorsScope();
+        expect(scope.propertyTypeId).toBe(3);
+        expect(scope.listingType).toBe('ForSale');
+        expect(scope.floorFrom).toBeUndefined();
+        expect(scope.floorTo).toBeUndefined();
+        expect(scope.page).toBeUndefined();
+        expect(scope.sortBy).toBeUndefined();
+        expect(component.floorOptions()).toEqual(floorsResponse);
+        discardPeriodicTasks();
+      }));
+
+      it('✅ تتغير الخيارات عند تغيير نوع العقار، بطلب واحد لسلسلة تغييرات متتالية', fakeAsync(() => {
+        component = createComponent();
+        tick(250);
+        propertyApiSpy.getAvailableFloors.calls.reset();
+
+        floorsResponse = { min: 1, max: 9, floors: [1, 9].map(floor => ({ floor, count: 1 })) };
+        component.propertyTypeId = 2;
+        component.onFloorScopeChanged();
+        component.propertyTypeId = 4;
+        component.onFloorScopeChanged();
+        tick(250);
+
+        expect(propertyApiSpy.getAvailableFloors).toHaveBeenCalledTimes(1);
+        expect(lastFloorsScope().propertyTypeId).toBe(4);
+        expect(component.floorList()).toEqual([1, 9]);
+      }));
+
+      it('✅ لا طلب مكرّر عندما لا يتغير شيء يؤثر في الطوابق', fakeAsync(() => {
+        component = createComponent();
+        tick(250);
+        propertyApiSpy.getAvailableFloors.calls.reset();
+
+        component.onFloorScopeChanged();
+        component.onFloorScopeChanged();
+        tick(250);
+
+        expect(propertyApiSpy.getAvailableFloors).not.toHaveBeenCalled();
+      }));
+
+      it('✅ تغيير نوع العقار يمسح طابقاً اختاره المستخدم ولم يعد موجوداً', fakeAsync(() => {
+        component = createComponent();
+        tick(250);
+        component.onSpecificFloor(5);
+
+        floorsResponse = { min: 0, max: 1, floors: [0, 1].map(floor => ({ floor, count: 2 })) };
+        component.propertyTypeId = 3;
+        component.onFloorScopeChanged();
+        tick(250);
+
+        expect(component.hasFloorFilter).toBeFalse();
+        expect(component.floorList()).toEqual([0, 1]);
+      }));
+
+      it('✅ ويُبقي طابقاً ما زال موجوداً، وكذلك أعلى/أدنى طابق متاح', fakeAsync(() => {
+        component = createComponent();
+        tick(250);
+        component.onFloorFrom(0);
+        component.onFloorTo(1);
+
+        floorsResponse = { min: 0, max: 1, floors: [0, 1].map(floor => ({ floor, count: 2 })) };
+        component.propertyTypeId = 3;
+        component.onFloorScopeChanged();
+        tick(250);
+        expect([component.floorFrom, component.floorTo]).toEqual([0, 1]);
+
+        component.toggleFloorMode('highest');
+        floorsResponse = { min: null, max: null, floors: [] };
+        component.propertyTypeId = 4;
+        component.onFloorScopeChanged();
+        tick(250);
+        expect(component.floorMode).toBe('highest');
+      }));
+
+      it('✅ طابق جاء من الرابط يبقى ظاهراً حتى لو لم يعد في الخيارات (هو ما طُلبت به القائمة)', fakeAsync(() => {
+        component = createComponent({ floorFrom: '7', floorTo: '7' });
+        floorsResponse = { min: 0, max: 1, floors: [0, 1].map(floor => ({ floor, count: 2 })) };
+        tick(250);
+
+        expect(component.specificFloor).toBe(7);
+        expect(component.floorList()).toEqual([0, 1, 7]);
+      }));
+
+      it('✅ لا طوابق متاحة: حالة واضحة، ولا يُعامَل المجهول كطابق أرضي', fakeAsync(() => {
+        component = createComponent();
+        floorsResponse = { min: null, max: null, floors: [] };
+        tick(250);
+
+        expect(component.noFloorsAvailable()).toBeTrue();
+        expect(component.floorList()).toEqual([]);
+      }));
+
+      it('✅ فشل طلب الطوابق لا يعطّل البحث: الخيارات المجهولة تعني 0 إلى 50', fakeAsync(() => {
+        component = createComponent();
+        propertyApiSpy.getAvailableFloors.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+        tick(250);
+
+        expect(component.floorOptions()).toBeNull();
+        expect(component.noFloorsAvailable()).toBeFalse();
+        expect(component.floorList().length).toBe(51);
+        expect(component.floorList()[0]).toBe(0);
+        expect(component.floorList()[50]).toBe(50);
+        expect(component.error()).toBe('');
+      }));
+    });
+
+    describe('«القريبة مني»', () => {
+      beforeEach(() => {
+        spyOn(navigator.geolocation, 'getCurrentPosition').and.callFake(
+          ((success: PositionCallback) => success({ coords: { latitude: 33.5, longitude: 36.3 } } as GeolocationPosition)) as typeof navigator.geolocation.getCurrentPosition
+        );
+      });
+
+      function lastGeoFilter(): PropertyFilterDto {
+        const calls = propertyApiSpy.geoSearch.calls.all();
+        return calls[calls.length - 1].args[3] as PropertyFilterDto;
+      }
+
+      it('✅ مدى الطوابق يصل إلى البحث القريب', () => {
+        component.onFloorFrom(1);
+        component.onFloorTo(3);
+        component.toggleGeoMode();
+
+        expect(lastGeoFilter()).toEqual(jasmine.objectContaining({ floorFrom: 1, floorTo: 3 }));
+      });
+
+      it('✅ أعلى طابق متاح يُرسَل رقماً واحداً (البحث القريب لا يعرف floorMode)', fakeAsync(() => {
+        component = createComponent();
+        tick(250);
+        component.toggleFloorMode('highest');
+        component.toggleGeoMode();
+
+        const filter = lastGeoFilter();
+        expect(filter.floorFrom).toBe(5);
+        expect(filter.floorTo).toBe(5);
+        expect(filter.floorMode).toBeUndefined();
+
+        component.toggleFloorMode('highest');
+        component.toggleFloorMode('lowest');
+        component.onRadiusChange();
+        expect(lastGeoFilter()).toEqual(jasmine.objectContaining({ floorFrom: 0, floorTo: 0 }));
+      }));
     });
   });
 

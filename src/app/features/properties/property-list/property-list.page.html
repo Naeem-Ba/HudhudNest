@@ -170,6 +170,7 @@
             [allowCustom]="true"
             [customValue]="neighborhoodText"
             [(ngModel)]="neighborhoodId"
+            (ngModelChange)="onFloorScopeChanged()"
             (customText)="onNeighborhoodTyped($event)"
             [placeholder]="'PROPERTY_LIST.SELECT_OPTIONAL' | translate"
           ></app-combo-box>
@@ -177,10 +178,92 @@
 
         <div class="filter-group">
           <label class="filter-label" for="filter-property-type">{{ 'PROPERTY_LIST.PROPERTY_TYPE' | translate }}</label>
-          <select id="filter-property-type" [(ngModel)]="propertyTypeId" name="propertyTypeId">
+          <select id="filter-property-type" [(ngModel)]="propertyTypeId" name="propertyTypeId" (ngModelChange)="onFloorScopeChanged()">
             <option [ngValue]="null">{{ 'PROPERTY_LIST.SELECT_OPTIONAL' | translate }}</option>
             <option *ngFor="let pt of propertyTypeCatalog()" [ngValue]="pt.id">{{ localizedName(pt) }}</option>
           </select>
+        </div>
+
+        <!-- Floor: a floor, a range, or the highest / lowest floor that exists. The choices are the floors the other
+             filters leave (GET /properties/floors); 0 is the ground floor and listings with no floor never match. -->
+        <div class="filter-group floor-group" data-testid="floor-filter" role="group" aria-labelledby="pl-floor-label">
+          <div class="floor-head">
+            <span class="filter-label" id="pl-floor-label">{{ 'PROPERTY_LIST.FLOOR_FILTER.TITLE' | translate }}</span>
+            <button type="button" class="floor-clear" *ngIf="hasFloorFilter" data-testid="floor-clear" (click)="clearFloorFilter()">
+              {{ 'PROPERTY_LIST.FLOOR_FILTER.CLEAR' | translate }}
+            </button>
+          </div>
+
+          <p class="filter-hint" role="status" data-testid="floor-none" *ngIf="noFloorsAvailable()">
+            {{ 'PROPERTY_LIST.FLOOR_FILTER.NONE' | translate }}
+          </p>
+
+          <ng-container *ngIf="!noFloorsAvailable() || hasFloorFilter">
+            <div class="filter-toggle-group floor-quick" role="group" [attr.aria-label]="'PROPERTY_LIST.FLOOR_FILTER.TITLE' | translate">
+              <button
+                type="button"
+                class="filter-toggle"
+                data-testid="floor-lowest"
+                [class.filter-toggle--active]="floorMode === 'lowest'"
+                [attr.aria-pressed]="floorMode === 'lowest'"
+                [disabled]="noFloorsAvailable()"
+                (click)="toggleFloorMode('lowest')"
+              >{{ 'PROPERTY_LIST.FLOOR_FILTER.LOWEST' | translate }}</button>
+              <button
+                type="button"
+                class="filter-toggle"
+                data-testid="floor-highest"
+                [class.filter-toggle--active]="floorMode === 'highest'"
+                [attr.aria-pressed]="floorMode === 'highest'"
+                [disabled]="noFloorsAvailable()"
+                (click)="toggleFloorMode('highest')"
+              >{{ 'PROPERTY_LIST.FLOOR_FILTER.HIGHEST' | translate }}</button>
+            </div>
+
+            <label class="floor-sub" for="filter-floor">{{ 'PROPERTY_LIST.FLOOR_FILTER.SELECT' | translate }}</label>
+            <select
+              id="filter-floor"
+              name="floorSpecific"
+              data-testid="floor-select"
+              [ngModel]="specificFloor"
+              (ngModelChange)="onSpecificFloor($event)"
+              [disabled]="noFloorsAvailable()"
+            >
+              <option [ngValue]="null">{{ 'PROPERTY_LIST.FLOOR_FILTER.ALL' | translate }}</option>
+              <option *ngFor="let floor of floorList()" [ngValue]="floor">{{ floor === 0 ? ('PROPERTY_LIST.FLOOR_FILTER.GROUND' | translate) : floor }}</option>
+            </select>
+
+            <div class="floor-range">
+              <div class="floor-field">
+                <label class="floor-sub" for="filter-floor-from">{{ 'PROPERTY_LIST.FLOOR_FILTER.FROM' | translate }}</label>
+                <select
+                  id="filter-floor-from"
+                  name="floorFrom"
+                  data-testid="floor-from"
+                  [ngModel]="floorFrom"
+                  (ngModelChange)="onFloorFrom($event)"
+                  [disabled]="noFloorsAvailable()"
+                >
+                  <option [ngValue]="null">—</option>
+                  <option *ngFor="let floor of floorList()" [ngValue]="floor">{{ floor === 0 ? ('PROPERTY_LIST.FLOOR_FILTER.GROUND' | translate) : floor }}</option>
+                </select>
+              </div>
+              <div class="floor-field">
+                <label class="floor-sub" for="filter-floor-to">{{ 'PROPERTY_LIST.FLOOR_FILTER.TO' | translate }}</label>
+                <select
+                  id="filter-floor-to"
+                  name="floorTo"
+                  data-testid="floor-to"
+                  [ngModel]="floorTo"
+                  (ngModelChange)="onFloorTo($event)"
+                  [disabled]="noFloorsAvailable()"
+                >
+                  <option [ngValue]="null">—</option>
+                  <option *ngFor="let floor of floorList()" [ngValue]="floor">{{ floor === 0 ? ('PROPERTY_LIST.FLOOR_FILTER.GROUND' | translate) : floor }}</option>
+                </select>
+              </div>
+            </div>
+          </ng-container>
         </div>
 
         <!-- Price Range -->

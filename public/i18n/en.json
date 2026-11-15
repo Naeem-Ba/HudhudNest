@@ -608,6 +608,18 @@
     "NEIGHBORHOOD": "Neighborhood",
     "PROPERTY_TYPE": "Property Type",
     "SELECT_OPTIONAL": "— Select (optional) —",
+    "FLOOR_FILTER": {
+      "TITLE": "Floor",
+      "ALL": "All Floors",
+      "FROM": "From Floor",
+      "TO": "To Floor",
+      "GROUND": "Ground Floor",
+      "LOWEST": "Lowest Available Floor",
+      "HIGHEST": "Highest Available Floor",
+      "NONE": "No Floors Available",
+      "SELECT": "Select Floor",
+      "CLEAR": "Clear Filter"
+    },
     "SAVE_SEARCH": "Save this search",
     "SAVE_SEARCH_NAME_PROMPT": "Give this search a name (optional):",
     "SAVE_SEARCH_SUCCESS": "Search saved. We’ll notify you about new matching properties.",

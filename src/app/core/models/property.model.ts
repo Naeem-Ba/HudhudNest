@@ -184,6 +184,13 @@ export interface PropertyFilterDto {
   minArea?: number;
   maxArea?: number;
 
+  // Floor (0 = ground floor). A listing with no floor on record matches no floor filter.
+  /** Lowest floor wanted; with `floorTo` equal to it, one specific floor. */
+  floorFrom?: number;
+  floorTo?: number;
+  /** Let the database pick the highest / lowest floor that exists among the other filters' results. Excludes floorFrom/floorTo. */
+  floorMode?: FloorMode;
+
   // Features
   hasBalcony?: boolean;          // ✅ مضاف
   hasElevator?: boolean;         // ✅ مضاف
@@ -210,6 +217,17 @@ export interface PropertyFilterDto {
 
   // Internal (not sent to API)
   isPublished?: boolean;
+}
+
+/** PropertyFilterDto.FloorMode: the API reads the name case-insensitively. */
+export type FloorMode = 'highest' | 'lowest';
+
+/** GET /api/properties/floors — the floors that exist among the listings matching the list's other filters. */
+export interface AvailableFloors {
+  min: number | null;
+  max: number | null;
+  /** One entry per distinct floor, lowest first; `count` is how many listings are on it. */
+  floors: { floor: number; count: number }[];
 }
 
 // ✅ نموذج إنشاء عقار — مطابق لما يتوقعه الـ Backend
