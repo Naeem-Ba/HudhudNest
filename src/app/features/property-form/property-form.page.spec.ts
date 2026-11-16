@@ -12,9 +12,11 @@
 // المُختبَرة هنا (isRent/isSale/isLandCategory/form.errors).
 // =====================================================================
 import { TestBed } from '@angular/core/testing';
+import { AgenciesApiService } from '../../core/api/agencies-api.service';
+import { Agency } from '../../core/models/agency.model';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { of, throwError } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 
 import { PropertyFormPage, addMonthsToDateString } from './property-form.page';
 import { PropertyApiService } from '../../core/api/property-api.service';
@@ -26,6 +28,9 @@ import { EnumService, EnumItem } from '../../core/services/enum.service';
 import { LanguageService } from '../../core/services/language.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { SKIP_ERROR_TOAST } from '../../core/interceptors/api-error.interceptor';
+
+// The publisher's office (branch picker / "add to my office"); none by default.
+let agenciesApi: { getMine: () => Observable<Partial<Agency> | null> } = { getMine: () => of(null) };
 
 const PROPERTY_TYPES: PropertyTypeLookup[] = [
   { id: 1, code: 'apartment', nameAr: 'شقة سكنية', nameEn: 'Apartment', category: 'Residential', icon: null },
@@ -46,6 +51,8 @@ const AREA_UNIT_OPTIONS: EnumItem[] = [
 ];
 
 describe('PropertyFormPage', () => {
+  afterEach(() => { agenciesApi = { getMine: () => of(null) }; });
+
   let component: PropertyFormPage;
   let propertyApiSpy: jasmine.SpyObj<PropertyApiService>;
   let lookupsApiSpy: jasmine.SpyObj<LookupsApiService>;
@@ -82,6 +89,7 @@ describe('PropertyFormPage', () => {
       imports: [PropertyFormPage],
       providers: [
         { provide: PropertyApiService, useValue: propertyApiSpy },
+        { provide: AgenciesApiService, useValue: agenciesApi },
         { provide: LookupsApiService, useValue: lookupsApiSpy },
         { provide: LocationsApiService, useValue: locationsApiStub() },
         { provide: EnumService, useValue: enumServiceSpy },
@@ -107,6 +115,91 @@ describe('PropertyFormPage', () => {
     instance.ngOnInit(); // see file header — deliberately not fixture.detectChanges()
     return instance;
   }
+
+  describe('office branch (offices P4)', () => {
+    const office = { id: 'o1', name: 'Office', branches: [
+      { id: 'b1', name: 'Mezzeh', isMain: true, governorateId: 1 },
+      { id: 'b2', name: 'Malki', isMain: false, governorateId: 1 }
+    ] } as unknown as Partial<Agency>;
+
+    const submit = (c: PropertyFormPage) => (c as unknown as { proceedWithSubmit(): void }).proceedWithSubmit();
+    const lastPayload = () => propertyApiSpy.createProperty.calls.mostRecent().args[0] as Record<string, unknown>;
+
+    async function editing(property: Record<string, unknown>): Promise<PropertyFormPage> {
+      const c = createComponent('p1');
+      propertyApiSpy.getPropertyForManagement.and.returnValue(of({ id: 'p1', ...property } as never));
+      (propertyApiSpy as unknown as Record<string, jasmine.Spy>)['setPropertyBranch'] = jasmine.createSpy('setPropertyBranch').and.returnValue(of(undefined));
+      await Promise.resolve();
+      await new Promise(r => setTimeout(r));
+      return c;
+    }
+
+    it('a member picks a branch of their office and it is sent with the new listing', () => {
+      agenciesApi = { getMine: () => of(office) };
+      component = createComponent();
+      expect(component.showBranchPicker()).toBeTrue();
+
+      component.onBranchChange('b2');
+      submit(component);
+      expect(lastPayload()['AgencyBranchId']).toBe('b2');
+    });
+
+    it('without an office there is no picker and no branch in the payload', () => {
+      component = createComponent();
+      expect(component.showBranchPicker()).toBeFalse();
+      submit(component);
+      expect('AgencyBranchId' in lastPayload()).toBeFalse();
+    });
+
+    it('an office without branches shows no picker', () => {
+      agenciesApi = { getMine: () => of({ id: 'o1', name: 'Office', branches: [] }) };
+      component = createComponent();
+      expect(component.showBranchPicker()).toBeFalse();
+    });
+
+    it('editing: a changed branch is saved through its own endpoint after the update', async () => {
+      agenciesApi = { getMine: () => of(office) };
+      component = await editing({ agencyId: 'o1', agencyBranchId: 'b1' });
+      expect(component.showBranchPicker()).toBeTrue();
+      expect(component.selectedBranchId()).toBe('b1');
+
+      component.onBranchChange('');
+      submit(component);
+
+      const setBranch = (propertyApiSpy as unknown as Record<string, jasmine.Spy>)['setPropertyBranch'];
+      expect(propertyApiSpy.updateProperty).toHaveBeenCalled();
+      expect(setBranch).toHaveBeenCalledOnceWith('p1', null);
+      expect('AgencyBranchId' in (propertyApiSpy.updateProperty.calls.mostRecent().args[1] as object)).toBeFalse();
+    });
+
+    it('editing: an unchanged branch makes no extra call', async () => {
+      agenciesApi = { getMine: () => of(office) };
+      component = await editing({ agencyId: 'o1', agencyBranchId: 'b1' });
+      submit(component);
+      expect((propertyApiSpy as unknown as Record<string, jasmine.Spy>)['setPropertyBranch']).not.toHaveBeenCalled();
+    });
+
+    it('editing a listing of another office shows no picker', async () => {
+      agenciesApi = { getMine: () => of(office) };
+      component = await editing({ agencyId: 'someone-else', agencyBranchId: null });
+      expect(component.showBranchPicker()).toBeFalse();
+    });
+
+    it('a branch removed meanwhile is explained and the list is refreshed', () => {
+      let calls = 0;
+      agenciesApi = { getMine: () => { calls++; return of(office); } };
+      component = createComponent();
+      propertyApiSpy.createProperty.and.returnValue(throwError(() => ({
+        status: 422, error: { errorCodes: { AgencyBranchId: ['LISTING_BRANCH_INVALID'] } }
+      })));
+      component.onBranchChange('b2');
+      submit(component);
+
+      expect(component.submitError()).toBe('PROPERTY_FORM.BRANCH.INVALID');
+      expect(component.selectedBranchId()).toBe('');
+      expect(calls).toBe(2);
+    });
+  });
 
   // QA phase 25 (P25-D05): a failed photo upload after a successful save raised three toasts (the interceptor's
   // generic error, the warning and "saved"). It must be exactly one: the warning that says both things.
@@ -457,6 +550,7 @@ describe('PropertyFormPage amenities loading', () => {
       imports: [PropertyFormPage],
       providers: [
         { provide: PropertyApiService, useValue: jasmine.createSpyObj('PropertyApiService', ['checkDuplicate']) },
+        { provide: AgenciesApiService, useValue: agenciesApi },
         { provide: LookupsApiService, useValue: lookups },
         { provide: LocationsApiService, useValue: locationsApiStub() },
         { provide: EnumService, useValue: enumSvc },

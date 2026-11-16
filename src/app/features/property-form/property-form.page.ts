@@ -4,6 +4,7 @@ import {
   DestroyRef,
   OnInit,
   ViewChild,
+  computed,
   inject,
   signal
 } from '@angular/core';
@@ -18,9 +19,11 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Observable, forkJoin, of, catchError } from 'rxjs';
+import { Observable, forkJoin, of, catchError, map, switchMap } from 'rxjs';
 
 import { PropertyApiService } from '../../core/api/property-api.service';
+import { AgenciesApiService } from '../../core/api/agencies-api.service';
+import { AgencyBranch } from '../../core/models/agency.model';
 import { hasCompleteCoordinates, isValidCoordinates } from '../../core/models/property-location';
 import {
   LookupsApiService,
@@ -95,6 +98,8 @@ interface PropertySavePayload {
   RentalEndDate?: string | null;
   RentalDurationType?: number | null;
   FurnishingStatus?: number | null;
+  /** Create only: the branch of the publisher's office. Changed on an existing listing through PUT /properties/{id}/branch. */
+  AgencyBranchId?: string | null;
 }
 
 /** AreaUnit — must match HudhudNestApi.Domain.Listings.Enums.AreaUnit's ordinals. */
@@ -229,6 +234,7 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
 })
 export class PropertyFormPage implements OnInit {
   private readonly propertyApi = inject(PropertyApiService);
+  private readonly agenciesApi = inject(AgenciesApiService);
   private readonly lookupsApi = inject(LookupsApiService);
   private readonly locationsApi = inject(LocationsApiService);
   private readonly router = inject(Router);
@@ -242,6 +248,23 @@ export class PropertyFormPage implements OnInit {
   private readonly scrollLock = inject(ScrollLockService);
 
   readonly isSaving = signal(false);
+
+  /** The publisher's office, when they belong to one; the branch picker needs its id and branches. */
+  private readonly myOfficeId = signal<string | null>(null);
+  readonly officeBranches = signal<AgencyBranch[]>([]);
+  /** Edit mode: the office the listing is published under (null for a listing without one). */
+  private readonly listingOfficeId = signal<string | null>(null);
+  private readonly savedBranchId = signal<string | null>(null);
+  readonly selectedBranchId = signal<string>('');
+  /**
+   * The picker shows only when the choice is real: the publisher's office has branches and, on an existing listing,
+   * the listing is published under that same office (a listing of a former office keeps its branch untouched).
+   */
+  readonly showBranchPicker = computed(() => {
+    const office = this.myOfficeId();
+    if (!office || this.officeBranches().length === 0) return false;
+    return !this.isEditMode() || this.listingOfficeId() === office;
+  });
   /** Photography guide (UX only): never part of the form value nor of the upload flow. */
   readonly photoGuideOpen = signal(false);
   readonly isEditMode = signal(false);
@@ -460,6 +483,7 @@ export class PropertyFormPage implements OnInit {
     }
 
     this.bindLanguage();
+    this.loadMyOffice();
     this.loadAmenities();
     this.loadPropertyTypeCatalog();
     this.bindPropertyTypeCategoryTracking();
@@ -742,6 +766,21 @@ export class PropertyFormPage implements OnInit {
       .subscribe(lang => this.currentLang.set(lang));
   }
 
+  /** The branch picker is optional: any failure (no office, an older server) simply leaves it hidden. */
+  private loadMyOffice(): void {
+    this.agenciesApi
+      .getMine()
+      .pipe(catchError(() => of(null)), takeUntilDestroyed(this.destroyRef))
+      .subscribe(office => {
+        this.myOfficeId.set(office?.id ?? null);
+        this.officeBranches.set(office?.branches ?? []);
+      });
+  }
+
+  onBranchChange(value: string): void {
+    this.selectedBranchId.set(value);
+  }
+
   private loadExistingProperty(id: string): void {
     // ✅ إصلاح: كانت هذه الدالة تستخدم GET /properties/{id} العام، الذي يرفض
     // بـ 404 أي عقار غير منشور بعد (Draft) حتى لصاحبه — ما كان يمنع فتح نموذج
@@ -753,6 +792,9 @@ export class PropertyFormPage implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (property: Property) => {
+          this.listingOfficeId.set(property.agencyId ?? null);
+          this.savedBranchId.set(property.agencyBranchId ?? null);
+          this.selectedBranchId.set(property.agencyBranchId ?? '');
           this.form.patchValue({
             listingType: property.listingType === 'ForSale' || property.listingType === 2 ? 2 : 1,
             title: property.title ?? '',
@@ -1127,10 +1169,18 @@ export class PropertyFormPage implements OnInit {
       FurnishingStatus: isLand ? null : (f.furnishingStatus ?? null)
     };
 
+    const branchId = this.showBranchPicker() ? (this.selectedBranchId() || null) : null;
+    if (!this.isEditMode() && branchId) payload.AgencyBranchId = branchId;
+    // On an existing listing the branch has its own endpoint, called only when the choice changed.
+    const branchChanged = this.isEditMode() && this.showBranchPicker() && branchId !== this.savedBranchId();
+
     this.isSaving.set(true);
 
     const request$ = this.isEditMode()
-      ? this.propertyApi.updateProperty(this.propertyId(), payload)
+      ? this.propertyApi.updateProperty(this.propertyId(), payload).pipe(
+          switchMap(result => branchChanged
+            ? this.propertyApi.setPropertyBranch(this.propertyId(), branchId).pipe(map(() => result))
+            : of(result)))
       : this.propertyApi.createProperty(payload);
 
     request$
@@ -1163,8 +1213,16 @@ export class PropertyFormPage implements OnInit {
    * specially handled before this method existed — falls through to the generic
    * message unchanged.
    */
-  private handleSaveError(err: { status?: number; error?: { code?: string } }): void {
+  private handleSaveError(err: { status?: number; error?: { code?: string; errorCodes?: Record<string, string[]> } }): void {
     const code = err?.error?.code;
+
+    // The branch was removed meanwhile: refresh the list so the picker no longer offers it.
+    if (err?.error?.errorCodes?.['AgencyBranchId']?.includes('LISTING_BRANCH_INVALID')) {
+      this.submitError.set('PROPERTY_FORM.BRANCH.INVALID');
+      this.selectedBranchId.set('');
+      this.loadMyOffice();
+      return;
+    }
 
     if (err?.status === 403 && code === 'LISTING_CONTACT_NOT_CONFIRMED') {
       this.submitError.set('PROPERTY_FORM.CONTACT_NOT_CONFIRMED');

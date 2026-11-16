@@ -323,6 +323,10 @@
             <span class="agency-card__verified" *ngIf="property()!.agencyIsVerified" data-testid="agency-verified">
               ✓ {{ 'OFFICES.VERIFICATION.VERIFIED' | translate }}
             </span>
+            <div class="agency-card__branch" *ngIf="property()!.agencyBranchName" data-testid="agency-branch">
+              {{ 'PROPERTY_DETAIL.AGENCY.BRANCH' | translate }}: <bdi>{{ property()!.agencyBranchName }}</bdi>
+              <ng-container *ngIf="property()!.agencyBranchAddress"> · <bdi>{{ property()!.agencyBranchAddress }}</bdi></ng-container>
+            </div>
             <div class="agency-card__rating" *ngIf="(property()!.agencyRatingCount ?? 0) > 0; else agencyNotRated">
               <span class="agency-card__stars" aria-hidden="true">★</span>
               <strong>{{ property()!.agencyRatingAverage }}</strong>

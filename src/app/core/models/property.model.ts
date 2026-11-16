@@ -124,6 +124,10 @@ export interface Property {
   agencyRatingCount?: number;
   /** True only when the administration has verified the office (detail page only; absent from an older server). */
   agencyIsVerified?: boolean;
+  /** The office branch the listing is handled from. The name and address come only with the public detail page. */
+  agencyBranchId?: string | null;
+  agencyBranchName?: string | null;
+  agencyBranchAddress?: string | null;
   availableFrom?: string;
   isPublished?: boolean;
   // عدد مشاهدات صفحة الإعلان (منزوع التكرار، من الخادم فقط). غائب من خادم أقدم فلا يُفترض.

@@ -150,6 +150,16 @@
               </div>
             </div>
 
+            <!-- The branch of the publisher's office the listing is handled from: optional, own office only. -->
+            <div class="form-group" *ngIf="showBranchPicker()" data-testid="listing-branch">
+              <label for="agencyBranchId">{{ 'PROPERTY_FORM.BRANCH.LABEL' | translate }}</label>
+              <select id="agencyBranchId" [value]="selectedBranchId()" (change)="onBranchChange($any($event.target).value)">
+                <option value="">{{ 'PROPERTY_FORM.BRANCH.NONE' | translate }}</option>
+                <option *ngFor="let b of officeBranches()" [value]="b.id" [selected]="b.id === selectedBranchId()">{{ b.name }}</option>
+              </select>
+              <small class="hide-location__hint">{{ 'PROPERTY_FORM.BRANCH.HINT' | translate }}</small>
+            </div>
+
             <!-- Map Picker -->
             <div class="map-section">
               <p class="map-label">
