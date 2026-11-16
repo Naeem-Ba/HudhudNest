@@ -49,8 +49,8 @@ test('serves the real sitemap when SITE_URL is unset/mis-scoped but the request 
   assert.equal(response.headers.get('x-robots-tag'), null);
   const xml = await response.text();
   assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/properties\/p1<\/loc>/);
-  // properties, short-stay listings and investment projects: one request each.
-  assert.equal(requestedUrls.length, 3);
+  // properties, short-stay listings, investment projects and offices: one request each.
+  assert.equal(requestedUrls.length, 4);
 });
 
 test('stays empty+noindex for a non-production host even if SITE_URL is unset', async () => {
@@ -92,6 +92,12 @@ test('serves a full sitemap with static pages and paginated properties for the p
         if (url.includes('/investments/projects')) {
           return new Response(JSON.stringify({ items: [{ id: 'i1' }, { id: 'i2' }], totalCount: 2 }), { status: 200 });
         }
+        if (url.includes('/agencies')) {
+          return new Response(
+            JSON.stringify({ items: [{ id: 'a1', slug: 'yasmin' }, { id: 'a2', slug: 'al-sham office' }], totalCount: 2 }),
+            { status: 200 }
+          );
+        }
         if (url.includes('page=1')) {
           return new Response(
             JSON.stringify({
@@ -110,7 +116,9 @@ test('serves a full sitemap with static pages and paginated properties for the p
 
   assert.equal(response.status, 200);
   assert.equal(response.headers.get('content-type'), 'application/xml; charset=utf-8');
-  assert.equal(requestedUrls.length, 4);
+  assert.equal(requestedUrls.length, 5);
+  // The office directory is walked at its own maximum page size (50); a larger page would be refused.
+  assert.ok(requestedUrls.includes('https://api.example.test/api/agencies?page=1&pageSize=50'));
   assert.ok(requestedUrls.includes('https://api.example.test/api/properties?page=1&pageSize=100'));
   assert.ok(requestedUrls.includes('https://api.example.test/api/properties?page=2&pageSize=100'));
   assert.ok(requestedUrls.includes('https://api.example.test/api/short-stay/listings?page=1&pageSize=100'));
@@ -118,6 +126,8 @@ test('serves a full sitemap with static pages and paginated properties for the p
 
   const xml = await response.text();
   assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/<\/loc>/);
+  assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/offices\/yasmin<\/loc>/);
+  assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/offices\/al-sham%20office<\/loc>/);
   assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/properties<\/loc>/);
   assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/short-stay<\/loc>/);
   assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/investments<\/loc>/);

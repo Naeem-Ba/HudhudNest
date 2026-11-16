@@ -48,6 +48,8 @@ import {
   buildPropertyUrlEntries,
   buildShortStayUrlEntries,
   buildInvestmentUrlEntries,
+  buildOfficeUrlEntries,
+  OFFICE_DIRECTORY_PAGE_SIZE,
   fetchAllPublishedProperties
 } from './lib/sitemap.mjs';
 
@@ -76,7 +78,7 @@ export default async (request) => {
 
   // Each list is fetched independently: if one endpoint is down or rate-limited the others still
   // make it into the sitemap (fetchAllPublishedProperties keeps whatever pages it already has).
-  const fetchList = path =>
+  const fetchList = (path, options) =>
     fetchAllPublishedProperties(async (page, pageSize) => {
       const response = await fetch(`${apiBaseUrl}${path}?page=${page}&pageSize=${pageSize}`, {
         headers: { accept: 'application/json' }
@@ -85,19 +87,22 @@ export default async (request) => {
         throw new Error(`${path} page ${page} responded ${response.status}`);
       }
       return response.json();
-    });
+    }, options);
 
-  const [properties, shortStayListings, investmentProjects] = await Promise.all([
+  const [properties, shortStayListings, investmentProjects, offices] = await Promise.all([
     fetchList('/properties'),
     fetchList('/short-stay/listings'),
-    fetchList('/investments/projects')
+    fetchList('/investments/projects'),
+    // The directory refuses a page larger than its own maximum, so it is walked at that size.
+    fetchList('/agencies', { pageSize: OFFICE_DIRECTORY_PAGE_SIZE, maxPages: 1000 })
   ]);
 
   const xml = buildSitemapXml([
     ...buildStaticUrlEntries(siteUrl),
     ...buildPropertyUrlEntries(siteUrl, properties),
     ...buildShortStayUrlEntries(siteUrl, shortStayListings),
-    ...buildInvestmentUrlEntries(siteUrl, investmentProjects)
+    ...buildInvestmentUrlEntries(siteUrl, investmentProjects),
+    ...buildOfficeUrlEntries(siteUrl, offices)
   ]);
 
   return new Response(xml, {

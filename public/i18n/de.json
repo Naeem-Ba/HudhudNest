@@ -3057,6 +3057,10 @@
     "OFFICES": {
       "TITLE": "Verzeichnis der Immobilienbüros",
       "DESCRIPTION": "Finden Sie ein Immobilienbüro in Syrien nach Gouvernement, Bezirk, Viertel und Immobilienart, mit verifizierten Büros, Bewertungen und aktiven Anzeigen."
+    },
+    "OFFICE_PROFILE": {
+      "DESCRIPTION": "{{name}}: Immobilienbüro auf HudhudNest. Inserate, Öffnungszeiten und Kontakt.",
+      "DESCRIPTION_PLACE": "{{name}}: Immobilienbüro in {{place}}. Inserate, Öffnungszeiten und Kontakt auf HudhudNest."
     }
   },
   "ADMIN_PAYMENTS": {

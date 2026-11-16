@@ -3057,6 +3057,10 @@
     "OFFICES": {
       "TITLE": "Real estate agency directory",
       "DESCRIPTION": "Find a real estate agency in Syria by governorate, district, neighborhood and property type, and see verified agencies, their ratings and active listings."
+    },
+    "OFFICE_PROFILE": {
+      "DESCRIPTION": "{{name}}: real estate office on HudhudNest. Listings, opening hours and contact details.",
+      "DESCRIPTION_PLACE": "{{name}}: real estate office in {{place}}. Listings, opening hours and contact details on HudhudNest."
     }
   },
   "ADMIN_PAYMENTS": {

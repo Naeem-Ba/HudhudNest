@@ -63,7 +63,7 @@ describe('AgencyPublicPage', () => {
         { provide: PropertyApiService, useValue: properties },
         { provide: AuthService, useValue: { getCurrentUserId: () => (opts.userId === undefined ? 'user-1' : opts.userId) } },
         { provide: ToastService, useValue: toast },
-        { provide: TranslateService, useValue: { instant: (k: string) => k } },
+        { provide: TranslateService, useValue: { instant: (k: string, p?: Record<string, string>) => (p ? `${k}|${p['name']}|${p['place']}` : k), stream: () => of('') } },
         { provide: LookupsApiService, useValue: lookups },
         { provide: LanguageService, useValue: { getCurrent: () => 'en', currentLang$: of('en') } }
       ]
@@ -95,6 +95,62 @@ describe('AgencyPublicPage', () => {
     expect(page.summary()?.averageOverall).toBe(4);
     expect(agencies.getRatings).toHaveBeenCalledWith('agency-1', 1, 20);
     expect(properties.getPropertiesPaged).toHaveBeenCalledWith({ agencyId: 'agency-1', page: 1, pageSize: 12 });
+  });
+
+  describe('search metadata (offices P5)', () => {
+    afterEach(() => {
+      document.getElementById('ld-office')?.remove();
+      document.getElementById('ld-breadcrumb')?.remove();
+    });
+
+    const json = (id: string) => JSON.parse(document.getElementById(id)?.textContent ?? 'null');
+
+    it('describes the office for search engines: canonical page, fallback description with its place, schema.org data', () => {
+      agencies.getBySlug.and.returnValue(of({ ...AGENCY, governorateId: 1, districtId: 4, coverImageUrl: 'https://cdn.example/c.jpg' }));
+      const page = create();
+      const meta = TestBed.inject(PageMetaService) as jasmine.SpyObj<PageMetaService>;
+
+      page.ngOnInit();
+      TestBed.tick();
+
+      expect(meta.applyDynamic).toHaveBeenCalledWith({
+        title: 'XYZ Real Estate',
+        description: 'SEO.OFFICE_PROFILE.DESCRIPTION_PLACE|XYZ Real Estate|Mezzeh, Damascus',
+        path: '/offices/xyz',
+        image: 'https://cdn.example/c.jpg'
+      });
+      const office = json('ld-office');
+      expect(office['@type']).toBe('RealEstateAgent');
+      expect(office.url).toMatch(/\/offices\/xyz$/);
+      expect(office.address).toEqual({ '@type': 'PostalAddress', addressLocality: 'Mezzeh', addressRegion: 'Damascus', addressCountry: 'SY' });
+      expect(office.aggregateRating.reviewCount).toBe(3);
+      expect(json('ld-breadcrumb').itemListElement.length).toBe(3);
+    });
+
+    it('publishes no schema.org office block without an address, but still sets title and description', () => {
+      const page = create();
+      const meta = TestBed.inject(PageMetaService) as jasmine.SpyObj<PageMetaService>;
+
+      page.ngOnInit();
+      TestBed.tick();
+
+      expect(document.getElementById('ld-office')).toBeNull();
+      expect(meta.applyDynamic).toHaveBeenCalledWith(jasmine.objectContaining({
+        title: 'XYZ Real Estate', description: 'SEO.OFFICE_PROFILE.DESCRIPTION|XYZ Real Estate|'
+      }));
+    });
+
+    it('an unknown office is marked noindex and leaves no structured data behind', () => {
+      agencies.getBySlug.and.returnValue(throwError(() => ({ status: 404 })));
+      const page = create();
+      const meta = TestBed.inject(PageMetaService) as jasmine.SpyObj<PageMetaService>;
+
+      page.ngOnInit();
+      TestBed.tick();
+
+      expect(meta.markNotFound).toHaveBeenCalled();
+      expect(document.getElementById('ld-office')).toBeNull();
+    });
   });
 
   describe('closed-deal tabs (P7-D08)', () => {
