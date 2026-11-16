@@ -302,6 +302,48 @@ describe('AgencyPublicPage', () => {
     });
   });
 
+  describe('office profile (cover, links, hours)', () => {
+    const PROFILE: Agency = {
+      ...AGENCY,
+      coverImageUrl: 'https://img.example/cover.png',
+      website: 'https://office.example.sy/',
+      socialLinks: [
+        { network: 'WhatsApp', value: '+963944123456' },
+        { network: 'Instagram', value: 'https://instagram.com/office' },
+        { network: 'Facebook', value: 'javascript:alert(1)' }
+      ],
+      workingHours: [{ day: 'Monday', ranges: [{ opens: '09:00', closes: '17:00' }] }]
+    };
+
+    it('offers WhatsApp, the website and only the https social links, and counts their clicks', () => {
+      agencies.getBySlug.and.returnValue(of(PROFILE));
+      const page = create();
+      page.ngOnInit();
+      expect(page.whatsApp()).toBe('https://wa.me/963944123456');
+      expect(page.websiteHref()).toBe('https://office.example.sy/');
+      expect(page.profileLinks()).toEqual([{ channel: 'Instagram', href: 'https://instagram.com/office' }]);
+
+      page.track({ type: 'ContactClick', channel: 'Instagram' });
+      expect(agencies.recordEvent).toHaveBeenCalledWith('agency-1', { type: 'ContactClick', channel: 'Instagram' });
+    });
+
+    it('shows a full week from partial hours, and nothing when the office set none', () => {
+      agencies.getBySlug.and.returnValue(of(PROFILE));
+      let page = create();
+      page.ngOnInit();
+      expect(page.hours()!.length).toBe(7);
+      expect(page.openNow()).not.toBeNull();
+
+      TestBed.resetTestingModule();
+      agencies.getBySlug.and.returnValue(of(AGENCY));
+      page = create();
+      page.ngOnInit();
+      expect(page.hours()).toBeNull();
+      expect(page.openNow()).toBeNull();
+      expect(page.whatsApp()).toBeNull();
+    });
+  });
+
   describe('office statistics events', () => {
     afterEach(() => history.replaceState(null, ''));
 

@@ -50,6 +50,49 @@ export interface Agency {
   activeListingCount?: number | null;
   /** فروع المكتب، الرئيسي أولًا. تأتي من الصفحة العامة ومن /me؛ غائبة من خادم أقدم. */
   branches?: AgencyBranch[] | null;
+
+  // ── ملف المكتب (P4): كلها اختيارية، وغائبة من خادم أقدم ──
+  /** صورة الغلاف العريضة أعلى صفحة المكتب. */
+  coverImageUrl?: string | null;
+  /** رابط https فقط (الخادم يرفض غيره). */
+  website?: string | null;
+  /** روابط https على نطاق كل شبكة؛ واتساب رقم دولي (+963…) والرابط يُبنى هنا. */
+  socialLinks?: AgencySocialLink[] | null;
+  /** أيام الأسبوع السبعة، السبت أولًا؛ يوم بلا فترات = مغلق. null = لم يحددها المكتب. */
+  workingHours?: AgencyWorkingDay[] | null;
+}
+
+export type AgencySocialNetwork = 'Facebook' | 'Instagram' | 'WhatsApp' | 'Telegram' | 'X' | 'LinkedIn' | 'YouTube' | 'TikTok';
+
+/** ترتيب العرض والتحرير. واتساب أولًا لأنه أكثر وسيلة تواصل استعمالًا هنا. */
+export const AGENCY_SOCIAL_NETWORKS: readonly AgencySocialNetwork[] =
+  ['WhatsApp', 'Facebook', 'Instagram', 'Telegram', 'X', 'LinkedIn', 'YouTube', 'TikTok'];
+
+export interface AgencySocialLink {
+  network: AgencySocialNetwork;
+  value: string;
+}
+
+export type WeekDay = 'Saturday' | 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday';
+
+/** السبت أولًا كما تُكتب ساعات العمل في المنطقة. */
+export const WEEK_DAYS: readonly WeekDay[] = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+/** "HH:mm" بتوقيت المكتب المحلي؛ "24:00" = حتى منتصف الليل. */
+export interface AgencyTimeRange {
+  opens: string;
+  closes: string;
+}
+
+export interface AgencyWorkingDay {
+  day: WeekDay;
+  ranges: AgencyTimeRange[];
+}
+
+/** جسم PUT /api/agencies/{id}/links: القائمة تستبدل الروابط كلها، والقيمة الفارغة تحذف الشبكة. */
+export interface AgencyContactLinksInput {
+  website: string | null;
+  links: { network: AgencySocialNetwork; value: string | null }[];
 }
 
 /** فرع مكتب — يقابل AgencyBranchDto. الإحداثيات اختيارية؛ بلاها لا يظهر الفرع في «القريبة مني» ولا على الخريطة. */
@@ -382,14 +425,16 @@ export interface SubmitAgencyRatingRequest {
 
 /** نوع حدث على صفحة المكتب. QrScan يسجّله الخادم وحده عند فتح /o/{code}. */
 export type AgencyProfileEventType = 'ProfileView' | 'QrScan' | 'ContactClick' | 'ListingClick' | 'Share';
-export type AgencyEventChannel = 'None' | 'Phone' | 'WhatsApp' | 'Email' | 'NativeShare' | 'CopyLink';
+export type AgencyEventChannel = 'None' | 'Phone' | 'WhatsApp' | 'Email' | 'NativeShare' | 'CopyLink' | AgencyLinkChannel;
+/** نقرات الموقع وروابط التواصل الاجتماعي (P4)؛ تُحسب ضمن «نقرات التواصل». */
+export type AgencyLinkChannel = 'Website' | Exclude<AgencySocialNetwork, 'WhatsApp'>;
 /** من أين جاء الزائر إلى صفحة المكتب. قائمة مغلقة، لا نص حر. */
 export type AgencyEventSource = 'None' | 'Direct' | 'Qr' | 'Directory' | 'Listing' | 'Share';
 
 /** جسم POST /api/agencies/{id}/events. */
 export type AgencyProfileEvent =
   | { type: 'ProfileView'; source: Exclude<AgencyEventSource, 'None'> }
-  | { type: 'ContactClick'; channel: 'Phone' | 'WhatsApp' | 'Email' }
+  | { type: 'ContactClick'; channel: 'Phone' | 'WhatsApp' | 'Email' | AgencyLinkChannel }
   | { type: 'ListingClick' }
   | { type: 'Share'; channel: 'NativeShare' | 'CopyLink' };
 

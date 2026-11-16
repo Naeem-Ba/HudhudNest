@@ -54,6 +54,7 @@ import { knownErrorCodeKey } from '../../core/interceptors/api-error.interceptor
 import { RouterLink } from '@angular/router';
 import { AgencyTeamPanelComponent } from './agency-team-panel.component';
 import { AgencyBranchesPanelComponent } from './agency-branches-panel.component';
+import { AgencyProfilePanelComponent } from './agency-profile-panel.component';
 import { AgencyQrPanelComponent } from './agency-qr-panel.component';
 import { AgencyStatsPanelComponent } from './agency-stats-panel.component';
 import { AgencyInvitationsComponent } from './agency-invitations.component';
@@ -67,7 +68,7 @@ const SUPPORTED_COUNTRY_CODES = ['SY', 'DE', 'US', 'GB', 'FR', 'AE', 'SA', 'TR',
   selector: 'app-agency-form',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, ComboBoxComponent, AgencyTeamPanelComponent, AgencyBranchesPanelComponent, AgencyQrPanelComponent, AgencyStatsPanelComponent, AgencyInvitationsComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, ComboBoxComponent, AgencyTeamPanelComponent, AgencyBranchesPanelComponent, AgencyProfilePanelComponent, AgencyQrPanelComponent, AgencyStatsPanelComponent, AgencyInvitationsComponent],
   templateUrl: './agency-form.page.html',
   styleUrl: './agency-form.page.scss'
 })

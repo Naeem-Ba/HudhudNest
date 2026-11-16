@@ -30,8 +30,11 @@ import {
   AgencyRatingDto,
   OFFICE_VISIT_SOURCE_STATE,
   AgencyRatingEligibilityDto,
-  AgencyRatingSummaryDto
+  AgencyRatingSummaryDto,
+  AGENCY_SOCIAL_NETWORKS,
+  AgencySocialNetwork,
 } from '../../core/models/agency.model';
+import { isOpenNow, normalizeWeek, officeClock, rangesText, safeHttps, socialHref, websiteLabel, whatsAppLink } from '../../shared/utils/agency-profile';
 import { starsFor } from '../../core/models/user-profile.model';
 import { AuthService } from '../../core/auth/auth.service';
 import { ToastService } from '../../shared/services/toast.service';
@@ -79,6 +82,7 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
       ></app-empty-state>
 
       <ng-container *ngIf="agency() as a">
+        <img *ngIf="a.coverImageUrl" class="agency-cover" [src]="a.coverImageUrl" alt="" data-testid="office-cover" />
         <header class="agency-header">
           <img *ngIf="a.logoUrl; else noLogo" class="agency-header__logo" [src]="a.logoUrl" [alt]="a.name" />
           <ng-template #noLogo><div class="agency-header__logo agency-header__logo--empty" aria-hidden="true">🏢</div></ng-template>
@@ -123,12 +127,48 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
 
         <p class="agency-description" *ngIf="a.description">{{ a.description }}</p>
 
-        <div class="agency-contact" *ngIf="a.contactPhone || a.contactEmail">
+        <div class="agency-contact" *ngIf="a.contactPhone || a.contactEmail || whatsApp()">
+          <a *ngIf="whatsApp() as wa" class="btn btn--outline btn--sm agency-contact__wa" [href]="wa" target="_blank" rel="noopener noreferrer"
+             (click)="track({ type: 'ContactClick', channel: 'WhatsApp' })" data-testid="contact-whatsapp">💬 {{ 'OFFICE_PROFILE.NETWORK.WHATSAPP' | translate }}</a>
           <a *ngIf="a.contactPhone" class="btn btn--outline btn--sm" [href]="'tel:' + a.contactPhone" dir="ltr"
              (click)="track({ type: 'ContactClick', channel: 'Phone' })" data-testid="contact-phone">📞 {{ a.contactPhone }}</a>
           <a *ngIf="a.contactEmail" class="btn btn--outline btn--sm" [href]="'mailto:' + a.contactEmail"
              (click)="track({ type: 'ContactClick', channel: 'Email' })" data-testid="contact-email">✉️ {{ a.contactEmail }}</a>
         </div>
+
+        <!-- ── الموقع وروابط التواصل الاجتماعي (روابط https فقط؛ socialHref يرفض غيرها) ── -->
+        <ul class="agency-links" *ngIf="websiteHref() || profileLinks().length > 0" data-testid="office-links">
+          <li *ngIf="websiteHref() as href">
+            <a class="agency-links__item" [href]="href" target="_blank" rel="noopener noreferrer nofollow" dir="ltr"
+               (click)="track({ type: 'ContactClick', channel: 'Website' })" data-testid="office-website">🌐 {{ websiteText() }}</a>
+          </li>
+          <li *ngFor="let l of profileLinks()">
+            <a class="agency-links__item" [href]="l.href" target="_blank" rel="noopener noreferrer nofollow"
+               (click)="track({ type: 'ContactClick', channel: l.channel })" [attr.data-testid]="'office-link-' + l.channel">
+              {{ 'OFFICE_PROFILE.NETWORK.' + l.channel.toUpperCase() | translate }}
+            </a>
+          </li>
+        </ul>
+
+        <!-- ── ساعات العمل (بتوقيت دمشق) ── -->
+        <section class="agency-hours" *ngIf="hours() as week" data-testid="office-hours">
+          <h2 class="section-title">
+            {{ 'OFFICE_PROFILE.HOURS' | translate }}
+            <span class="agency-hours__now" *ngIf="openNow() !== null" [class.agency-hours__now--open]="openNow()" data-testid="open-now">
+              {{ (openNow() ? 'OFFICE_PROFILE.OPEN_NOW' : 'OFFICE_PROFILE.CLOSED_NOW') | translate }}
+            </span>
+          </h2>
+          <dl class="agency-hours__list">
+            <ng-container *ngFor="let d of week">
+              <dt [class.agency-hours__today]="d.day === today()">{{ 'OFFICE_PROFILE.DAY.' + d.day.toUpperCase() | translate }}</dt>
+              <dd [class.agency-hours__today]="d.day === today()">
+                <span *ngIf="d.ranges.length; else closedDay" dir="ltr">{{ rangesText(d.ranges) }}</span>
+                <ng-template #closedDay>{{ 'OFFICE_PROFILE.CLOSED' | translate }}</ng-template>
+              </dd>
+            </ng-container>
+          </dl>
+          <p class="agency-hours__tz">{{ 'OFFICE_PROFILE.HOURS_TZ' | translate }}</p>
+        </section>
 
         <!-- ── الفروع: القائمة دائمًا، والخريطة لما له إحداثيات فقط ── -->
         <section class="branches" *ngIf="branches().length > 0" data-testid="office-branches">
@@ -339,6 +379,18 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
   `,
   styles: [`
     .agency-page { padding-block: 2rem; max-width: 960px; }
+    .agency-cover { display: block; width: 100%; aspect-ratio: 3 / 1; max-height: 320px; object-fit: cover; border-radius: var(--r-lg, 14px); margin: 0 0 1rem; background: var(--gray-50); }
+    .agency-links { list-style: none; margin: 0 0 1.25rem; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
+    .agency-links__item { display: inline-flex; align-items: center; gap: .3rem; padding: .35rem .8rem; border: 1px solid var(--border); border-radius: 999px; font-size: .85rem; color: var(--text-strong); text-decoration: none; background: var(--surface); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .agency-links__item:hover { border-color: var(--primary); }
+    .agency-hours { margin: 0 0 1.5rem; }
+    .agency-hours__now { margin-inline-start: .5rem; font-size: .75rem; font-weight: 700; padding: .1rem .5rem; border-radius: 999px; background: var(--gray-100, var(--gray-50)); color: var(--gray-700); vertical-align: middle; }
+    .agency-hours__now--open { background: var(--success-bg, var(--gray-50)); color: var(--success-text); }
+    .agency-hours__list { display: grid; grid-template-columns: max-content 1fr; gap: .3rem 1.25rem; margin: 0; font-size: .9rem; }
+    .agency-hours__list dt { color: var(--gray-700); }
+    .agency-hours__list dd { margin: 0; }
+    .agency-hours__today { font-weight: 700; color: var(--text-strong); }
+    .agency-hours__tz { margin: .4rem 0 0; font-size: .75rem; color: var(--gray-500); }
     .agency-header { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
     .agency-header__logo { width: 96px; height: 96px; border-radius: var(--r-lg); border: 1px solid var(--border); object-fit: contain; background: var(--surface); }
     .agency-header__logo--empty { display: flex; align-items: center; justify-content: center; font-size: 2.5rem; }
@@ -469,6 +521,32 @@ export class AgencyPublicPage implements OnInit {
   readonly notFound = signal(false);
   readonly agency = signal<Agency | null>(null);
   readonly branches = computed<AgencyBranch[]>(() => this.agency()?.branches ?? []);
+
+  // ── ملف المكتب (P4) ──
+  readonly whatsApp = computed(() => {
+    const value = this.agency()?.socialLinks?.find(l => l.network === 'WhatsApp')?.value;
+    return whatsAppLink(value);
+  });
+  readonly websiteHref = computed(() => safeHttps(this.agency()?.website));
+  readonly websiteText = computed(() => {
+    const href = this.websiteHref();
+    return href ? websiteLabel(href) : '';
+  });
+  /** روابط الشبكات بترتيب ثابت، بلا واتساب (له زر في التواصل) وبلا أي رابط ليس https. */
+  readonly profileLinks = computed(() => AGENCY_SOCIAL_NETWORKS
+    .filter((n): n is Exclude<AgencySocialNetwork, 'WhatsApp'> => n !== 'WhatsApp')
+    .map(channel => {
+      const link = this.agency()?.socialLinks?.find(l => l.network === channel);
+      const href = link ? socialHref(link) : null;
+      return href ? { channel, href } : null;
+    })
+    .filter((l): l is { channel: Exclude<AgencySocialNetwork, 'WhatsApp'>; href: string } => l !== null));
+  readonly hours = computed(() => normalizeWeek(this.agency()?.workingHours));
+  /** يُحسب مرة عند التحميل؛ لا مؤقت يعيد الرسم كل دقيقة لصفحة تُقرأ في ثوانٍ. */
+  private readonly loadedAt = new Date();
+  readonly openNow = computed(() => isOpenNow(this.agency()?.workingHours, this.loadedAt));
+  readonly today = computed(() => officeClock(this.loadedAt).day);
+  readonly rangesText = rangesText;
   readonly branchPoints = computed<OfficeMapPoint[]>(() => this.branches()
     .filter(b => b.latitude != null && b.longitude != null)
     .map(b => ({ id: b.id, latitude: b.latitude as number, longitude: b.longitude as number, label: b.name, main: b.isMain })));

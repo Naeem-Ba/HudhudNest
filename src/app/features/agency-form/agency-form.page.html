@@ -207,6 +207,12 @@
       ></app-agency-team-panel>
     </div>
 
+    <!-- ملف المكتب: الغلاف والموقع وروابط التواصل وساعات العمل. للمالك فقط (الخادم يتحقق من الملكية).
+         /me يحمل حقول الخطة التي لا تعيدها نداءات الحفظ، فنعيد تحميل المكتب بعد كل حفظ بدل استبداله. -->
+    <div class="page-block" *ngIf="!loading() && agency() as a">
+      <app-agency-profile-panel *ngIf="a.ownerUserId === currentUserId()" [agency]="a" (agencyChanged)="reloadAgency()"></app-agency-profile-panel>
+    </div>
+
     <!-- فروع المكتب وموقعها على الخريطة: للمالك فقط (الخادم يتحقق من الملكية) -->
     <div class="page-block" *ngIf="!loading() && agency() as a">
       <app-agency-branches-panel *ngIf="a.ownerUserId === currentUserId()" [agency]="a"></app-agency-branches-panel>
