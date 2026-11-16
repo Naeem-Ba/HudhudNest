@@ -333,16 +333,45 @@ describe('AgencyPublicPage', () => {
       page.ngOnInit();
       const nav = navigator as Navigator & { share?: unknown };
       const originalShare = nav.share;
+      const originalClipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+      // Some CI browsers expose no clipboard at all (insecure origin), so provide one explicitly.
+      const write = jasmine.createSpy('writeText').and.resolveTo();
       Object.defineProperty(navigator, 'share', { value: undefined, configurable: true });
-      const write = spyOn(navigator.clipboard, 'writeText').and.resolveTo();
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText: write }, configurable: true });
       try {
         await page.share(AGENCY);
       } finally {
         Object.defineProperty(navigator, 'share', { value: originalShare, configurable: true });
+        restoreClipboard(originalClipboard);
       }
       expect(write.calls.mostRecent().args[0]).toMatch(/\/offices\/xyz$/);
       expect(agencies.recordEvent).toHaveBeenCalledWith('agency-1', { type: 'Share', channel: 'CopyLink' });
       expect(toast.success).toHaveBeenCalled();
     });
+
+    it('neither claims a copy nor counts a share when the browser has no clipboard', async () => {
+      const page = create();
+      page.ngOnInit();
+      agencies.recordEvent.calls.reset();
+      const nav = navigator as Navigator & { share?: unknown };
+      const originalShare = nav.share;
+      const originalClipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+      Object.defineProperty(navigator, 'share', { value: undefined, configurable: true });
+      Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
+      try {
+        await page.share(AGENCY);
+      } finally {
+        Object.defineProperty(navigator, 'share', { value: originalShare, configurable: true });
+        restoreClipboard(originalClipboard);
+      }
+      expect(agencies.recordEvent).not.toHaveBeenCalledWith('agency-1', jasmine.objectContaining({ type: 'Share' }));
+      expect(toast.success).not.toHaveBeenCalled();
+    });
   });
 });
+
+/** Puts navigator.clipboard back as it was: an own property if the test found one, else the prototype getter. */
+function restoreClipboard(original: PropertyDescriptor | undefined): void {
+  if (original) Object.defineProperty(navigator, 'clipboard', original);
+  else delete (navigator as unknown as Record<string, unknown>)['clipboard'];
+}

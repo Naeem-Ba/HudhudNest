@@ -507,7 +507,9 @@ export class AgencyPublicPage implements OnInit {
         this.track({ type: 'Share', channel: 'NativeShare' }, a.id);
         return;
       }
-      await nav?.clipboard?.writeText(url);
+      // No clipboard (insecure context, old browser): claim nothing and count nothing.
+      if (!nav?.clipboard) return;
+      await nav.clipboard.writeText(url);
       this.toast.success(this.translate.instant('OFFICE_STATS.LINK_COPIED'));
       this.track({ type: 'Share', channel: 'CopyLink' }, a.id);
     } catch {
