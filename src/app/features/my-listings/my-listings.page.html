@@ -185,6 +185,17 @@
             💬 {{ 'MY_LISTINGS.MESSAGES' | translate }}
           </button>
           <button
+            *ngIf="canLinkToOffice(p)"
+            type="button"
+            class="btn btn--secondary"
+            data-testid="link-to-office"
+            [disabled]="linkingId() === p.id"
+            [title]="'MY_LISTINGS.OFFICE_LINK.HINT' | translate"
+            (click)="linkToOffice(p)"
+          >
+            🏢 {{ linkingId() === p.id ? ('COMMON.SAVING' | translate) : ('MY_LISTINGS.OFFICE_LINK.ACTION' | translate) }}
+          </button>
+          <button
             type="button"
             class="btn btn--secondary"
             (click)="edit(p.id)"

@@ -116,6 +116,19 @@ export class PropertyApiService {
     return this.api.put<unknown>(`/properties/${id}`, payload);
   }
 
+  /** PUT /properties/{id}/branch — the branch of the listing's office it is handled from; null clears it. Owner only. */
+  setPropertyBranch(id: string, branchId: string | null): Observable<void> {
+    return this.api.put<void>(`/properties/${id}/branch`, { branchId });
+  }
+
+  /**
+   * POST /properties/{id}/office — publishes one of the caller's own older listings under the office they belong to
+   * now. There is no undo; an active listing needs a free seat in the office's quota (409 otherwise).
+   */
+  linkPropertyToOffice(id: string, branchId: string | null = null): Observable<void> {
+    return this.api.post<void>(`/properties/${id}/office`, { branchId });
+  }
+
   /**
    * Moves a listing to another status (Available, Reserved, Sold, Rented, Archived). The API has
    * no dedicated endpoint: PUT /properties/{id} applies only the fields present in the body, so

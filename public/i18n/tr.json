@@ -671,7 +671,8 @@
     "AGENCY": {
       "TITLE": "Emlak ofisi",
       "NOT_RATED": "Henüz puanlanmadı",
-      "VIEW_PROFILE": "Ofis sayfasını ve puanını görüntüle"
+      "VIEW_PROFILE": "Ofis sayfasını ve puanını görüntüle",
+      "BRANCH": "Şube"
     },
     "NOT_FOUND_TITLE": "İlan bulunamadı",
     "NOT_FOUND_MESSAGE": "İlan silinmiş olabilir veya bağlantı hatalı.",
@@ -868,7 +869,13 @@
     "HIDE_EXACT_LOCATION": "Tam konumumu herkesten gizle",
     "HIDE_EXACT_LOCATION_HINT": "Ziyaretçiler işaretçi yerine yaklaşık 500 m'lik bir bölge görür ve sokak adı gösterilmez. Siz ve yöneticiler tam konumu görmeye devam edersiniz.",
     "PRICE_NEGOTIABLE": "Fiyat pazarlığa açık",
-    "PRICE_NEGOTIABLE_HINT": "Fiyat konusunda pazarlığa açıksanız bunu etkinleştirin. Ziyaretçiler bunu yalnızca ilan ayrıntıları sayfasında görür."
+    "PRICE_NEGOTIABLE_HINT": "Fiyat konusunda pazarlığa açıksanız bunu etkinleştirin. Ziyaretçiler bunu yalnızca ilan ayrıntıları sayfasında görür.",
+    "BRANCH": {
+      "LABEL": "Ofis şubesi",
+      "NONE": "Belirli bir şube yok",
+      "HINT": "Bu ilanla ilgilenen şube. İlan sayfasında gösterilir.",
+      "INVALID": "Seçilen şube artık yok. Başka bir şube seçip kaydedin."
+    }
   },
   "property_add": {
     "title": "İlan ekle",
@@ -977,7 +984,17 @@
     "FEATURED_UNTIL": "Öne çıkarma bitiş tarihi",
     "FEATURE": "İlanı öne çıkar",
     "FEATURE_EXTEND": "Öne çıkarmayı uzat",
-    "FEATURE_PENDING": "Öne çıkarma talebiniz, bir yöneticinin ödemeyi onaylamasını bekliyor."
+    "FEATURE_PENDING": "Öne çıkarma talebiniz, bir yöneticinin ödemeyi onaylamasını bekliyor.",
+    "OFFICE_LINK": {
+      "ACTION": "Ofisime ekle",
+      "HINT": "İlan ofis sayfanızda görünür ve ofis kotasından düşer.",
+      "CONFIRM": "Bu ilan “{{office}}” adına yayınlanacak ve ofis sayfasında gösterilecek. Aktifse ofisin ilan kotasından düşer. Bu işlem daha sonra geri alınamaz. Devam edilsin mi?",
+      "DONE": "İlan artık ofisinize ait.",
+      "QUOTA": "Ofisiniz aktif ilan sınırına ulaştı, bu ilan şimdi eklenemez.",
+      "PLAN_EXPIRED": "Ofis sahibinin planı sona erdi; plan yenilenene kadar aktif ilan eklenemez.",
+      "OTHER_OFFICE": "Bu ilan başka bir ofise ait.",
+      "ERROR": "İlan eklenemedi. Lütfen tekrar deneyin."
+    }
   },
   "VIEW_COUNT": {
     "LABEL": "Görüntülenme",

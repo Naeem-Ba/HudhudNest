@@ -11,9 +11,10 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { filter, take } from 'rxjs';
+import { catchError, filter, of, take } from 'rxjs';
 
 import { PropertyApiService } from '../../core/api/property-api.service';
+import { AgenciesApiService } from '../../core/api/agencies-api.service';
 import { ShortStayListingApiService } from '../../core/api/short-stay-listing-api.service';
 import { ProfileService } from '../../core/api/profile.service';
 import { PlansApiService } from '../../core/api/plans-api.service';
@@ -52,6 +53,7 @@ import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 })
 export class MyListingsPage implements OnInit {
   private readonly api = inject(PropertyApiService);
+  private readonly agenciesApi = inject(AgenciesApiService);
   private readonly shortStayApi = inject(ShortStayListingApiService);
   private readonly profile = inject(ProfileService);
   private readonly plansApi = inject(PlansApiService);
@@ -69,6 +71,10 @@ export class MyListingsPage implements OnInit {
   readonly hidingId = signal<string | null>(null);
   readonly extendingId = signal<string | null>(null);
   readonly statusChangingId = signal<string | null>(null);
+
+  /** The office the user belongs to now, if any: older listings without an office can be published under it. */
+  readonly myOffice = signal<{ id: string; name: string } | null>(null);
+  readonly linkingId = signal<string | null>(null);
 
   readonly selectableStatuses = OWNER_SELECTABLE_STATUSES;
 
@@ -104,6 +110,50 @@ export class MyListingsPage implements OnInit {
     this.loadMyListings();
     this.loadQuotaUsage();
     this.loadPendingFeatured();
+    this.loadMyOffice();
+  }
+
+  private loadMyOffice(): void {
+    this.agenciesApi
+      .getMine()
+      .pipe(catchError(() => of(null)), takeUntilDestroyed(this.destroyRef))
+      .subscribe(office => this.myOffice.set(office?.id ? { id: office.id, name: office.name } : null));
+  }
+
+  /** An older listing of a member that is not attributed to any office yet (no backfill: the member decides). */
+  canLinkToOffice(property: Property): boolean {
+    return !!this.myOffice() && !!property.id && !property.agencyId;
+  }
+
+  linkToOffice(property: Property): void {
+    const office = this.myOffice();
+    if (!office || !property.id || this.linkingId()) return;
+    if (!confirm(this.translate.instant('MY_LISTINGS.OFFICE_LINK.CONFIRM', { office: office.name }))) return;
+
+    const id = property.id;
+    this.linkingId.set(id);
+    this.api
+      .linkPropertyToOffice(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.listings.update(list => list.map(p => (p.id === id ? { ...p, agencyId: office.id } : p)));
+          this.toast.show(this.translate.instant('MY_LISTINGS.OFFICE_LINK.DONE'), 'success');
+          this.linkingId.set(null);
+        },
+        error: (err: { status?: number; error?: { code?: string } }) => {
+          const code = err?.error?.code;
+          const key = code === 'LISTING_QUOTA_REACHED'
+            ? 'MY_LISTINGS.OFFICE_LINK.QUOTA'
+            : code === 'AGENCY_PLAN_EXPIRED'
+              ? 'MY_LISTINGS.OFFICE_LINK.PLAN_EXPIRED'
+              : code === 'LISTING_ALREADY_LINKED_TO_OFFICE'
+                ? 'MY_LISTINGS.OFFICE_LINK.OTHER_OFFICE'
+                : 'MY_LISTINGS.OFFICE_LINK.ERROR';
+          this.toast.show(this.translate.instant(key), 'error');
+          this.linkingId.set(null);
+        }
+      });
   }
 
   private loadPendingFeatured(): void {

@@ -671,7 +671,8 @@
     "AGENCY": {
       "TITLE": "Real estate agency",
       "NOT_RATED": "Not rated yet",
-      "VIEW_PROFILE": "View the agency page and its rating"
+      "VIEW_PROFILE": "View the agency page and its rating",
+      "BRANCH": "Branch"
     },
     "NOT_FOUND_TITLE": "Property not found",
     "NOT_FOUND_MESSAGE": "The property may have been deleted or the link is incorrect.",
@@ -868,7 +869,13 @@
     "HIDE_EXACT_LOCATION": "Hide my exact location from the public",
     "HIDE_EXACT_LOCATION_HINT": "Visitors see an approximate area of about 500 m instead of the pin, and no street name. You and the admins still see the exact spot.",
     "PRICE_NEGOTIABLE": "The price is negotiable",
-    "PRICE_NEGOTIABLE_HINT": "Turn this on if you are open to negotiating the price. Visitors see it on the listing details page only."
+    "PRICE_NEGOTIABLE_HINT": "Turn this on if you are open to negotiating the price. Visitors see it on the listing details page only.",
+    "BRANCH": {
+      "LABEL": "Office branch",
+      "NONE": "No specific branch",
+      "HINT": "The branch that handles this listing. It is shown on the listing page.",
+      "INVALID": "The chosen branch no longer exists. Choose another branch, then save."
+    }
   },
   "property_add": {
     "title": "Add property",
@@ -977,7 +984,17 @@
     "FEATURED_UNTIL": "Featured until",
     "FEATURE": "Feature listing",
     "FEATURE_EXTEND": "Extend featuring",
-    "FEATURE_PENDING": "Your featuring request is waiting for an administrator to confirm payment."
+    "FEATURE_PENDING": "Your featuring request is waiting for an administrator to confirm payment.",
+    "OFFICE_LINK": {
+      "ACTION": "Add to my office",
+      "HINT": "The listing appears on your office page and counts toward the office quota.",
+      "CONFIRM": "This listing will be published under “{{office}}” and shown on the office page. If it is active, it counts toward the office listing quota. You cannot undo this later. Continue?",
+      "DONE": "The listing is now under your office.",
+      "QUOTA": "Your office has reached its active listing limit, so this listing cannot be added now.",
+      "PLAN_EXPIRED": "The office owner’s plan has ended, so active listings cannot be added until it is renewed.",
+      "OTHER_OFFICE": "This listing belongs to another office.",
+      "ERROR": "The listing could not be added. Please try again."
+    }
   },
   "VIEW_COUNT": {
     "LABEL": "Views",

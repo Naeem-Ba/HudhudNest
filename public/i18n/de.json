@@ -671,7 +671,8 @@
     "AGENCY": {
       "TITLE": "Immobilienbüro",
       "NOT_RATED": "Noch nicht bewertet",
-      "VIEW_PROFILE": "Büroseite und Bewertung ansehen"
+      "VIEW_PROFILE": "Büroseite und Bewertung ansehen",
+      "BRANCH": "Filiale"
     },
     "NOT_FOUND_TITLE": "Immobilie nicht gefunden",
     "NOT_FOUND_MESSAGE": "Die Immobilie wurde möglicherweise gelöscht oder der Link ist falsch.",
@@ -868,7 +869,13 @@
     "HIDE_EXACT_LOCATION": "Meinen genauen Standort öffentlich ausblenden",
     "HIDE_EXACT_LOCATION_HINT": "Besucher sehen statt der Stecknadel einen ungefähren Bereich von etwa 500 m und keinen Straßennamen. Sie und die Administration sehen den genauen Ort.",
     "PRICE_NEGOTIABLE": "Preis verhandelbar",
-    "PRICE_NEGOTIABLE_HINT": "Aktivieren Sie dies, wenn Sie über den Preis verhandeln möchten. Besucher sehen es nur auf der Detailseite der Anzeige."
+    "PRICE_NEGOTIABLE_HINT": "Aktivieren Sie dies, wenn Sie über den Preis verhandeln möchten. Besucher sehen es nur auf der Detailseite der Anzeige.",
+    "BRANCH": {
+      "LABEL": "Filiale des Büros",
+      "NONE": "Keine bestimmte Filiale",
+      "HINT": "Die Filiale, die dieses Inserat betreut. Sie wird auf der Inseratsseite angezeigt.",
+      "INVALID": "Die gewählte Filiale gibt es nicht mehr. Wählen Sie eine andere und speichern Sie erneut."
+    }
   },
   "property_add": {
     "title": "Immobilie hinzufügen",
@@ -977,7 +984,17 @@
     "FEATURED_UNTIL": "Hervorgehoben bis",
     "FEATURE": "Anzeige hervorheben",
     "FEATURE_EXTEND": "Hervorhebung verlängern",
-    "FEATURE_PENDING": "Ihre Hervorhebungsanfrage wartet auf die Zahlungsbestätigung durch einen Administrator."
+    "FEATURE_PENDING": "Ihre Hervorhebungsanfrage wartet auf die Zahlungsbestätigung durch einen Administrator.",
+    "OFFICE_LINK": {
+      "ACTION": "Meinem Büro zuordnen",
+      "HINT": "Das Inserat erscheint auf Ihrer Büroseite und zählt zum Kontingent des Büros.",
+      "CONFIRM": "Dieses Inserat wird „{{office}}“ zugeordnet und auf der Büroseite angezeigt. Ist es aktiv, zählt es zum Inseratskontingent des Büros. Das lässt sich später nicht rückgängig machen. Fortfahren?",
+      "DONE": "Das Inserat ist jetzt Ihrem Büro zugeordnet.",
+      "QUOTA": "Ihr Büro hat sein Limit für aktive Inserate erreicht. Dieses Inserat kann jetzt nicht zugeordnet werden.",
+      "PLAN_EXPIRED": "Der Tarif des Büroinhabers ist abgelaufen. Aktive Inserate können erst nach der Verlängerung zugeordnet werden.",
+      "OTHER_OFFICE": "Dieses Inserat gehört zu einem anderen Büro.",
+      "ERROR": "Das Inserat konnte nicht zugeordnet werden. Bitte erneut versuchen."
+    }
   },
   "VIEW_COUNT": {
     "LABEL": "Aufrufe",

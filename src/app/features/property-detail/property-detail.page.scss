@@ -778,6 +778,12 @@
   font-weight: 700;
 }
 
+.agency-card__branch {
+  font-size: .85rem;
+  color: var(--gray-700);
+  overflow-wrap: anywhere;
+}
+
 .agency-card__rating {
   display: flex;
   align-items: center;
