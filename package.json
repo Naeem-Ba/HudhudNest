@@ -82,6 +82,7 @@
     "@supabase/supabase-js": "2.119.0",
     "firebase": "^12.19.0",
     "leaflet": "^1.9.4",
+    "qrcode-generator": "2.0.4",
     "rxjs": "~7.8.0",
     "tslib": "^2.9.1",
     "zone.js": "~0.15.0"
@@ -102,7 +103,6 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.3.0",
     "postcss": "^8.5.32",
-    "qrcode-generator": "2.0.4",
     "tailwindcss": "^4.3.3",
     "typescript": "~5.9.2"
   }

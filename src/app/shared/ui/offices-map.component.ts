@@ -33,6 +33,8 @@ export interface OfficeMapPoint {
   main?: boolean;
   /** مسار تفتحه العلامة عند النقر (مثل ['/offices', slug])؛ بلاه العلامة للعرض فقط. */
   link?: unknown[] | null;
+  /** حالة التنقل مع الرابط (مثل مصدر الزيارة لإحصاءات المكتب). */
+  linkState?: Record<string, unknown> | null;
 }
 
 export interface OfficeMapBounds {
@@ -147,7 +149,8 @@ export class OfficesMapComponent implements AfterViewInit, OnDestroy {
       });
       if (p.detail || !this.labelled) marker.bindTooltip(escapeHtml(title));
       const link = p.link;
-      if (link) marker.on('click', () => this.zone.run(() => this.router.navigate(link)));
+      const state = p.linkState ?? undefined;
+      if (link) marker.on('click', () => this.zone.run(() => state ? this.router.navigate(link, { state }) : this.router.navigate(link)));
       this.layer.addLayer(marker);
     }
     return this.current.length;

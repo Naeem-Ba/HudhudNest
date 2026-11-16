@@ -31,7 +31,8 @@ import {
   AgencyDirectoryFilter,
   AgencyDirectoryItem,
   AgencyDirectorySort,
-  AgencyMapResult
+  AgencyMapResult,
+  OFFICE_VISIT_SOURCE_STATE
 } from '../../core/models/agency.model';
 import { LanguageService } from '../../core/services/language.service';
 import { PageMetaService } from '../../core/services/page-meta.service';
@@ -165,7 +166,8 @@ export class OfficesDirectoryPage implements OnInit {
     label: m.name,
     detail: m.branchName,
     verified: m.isVerified,
-    link: ['/offices', m.slug]
+    link: ['/offices', m.slug],
+    linkState: { [OFFICE_VISIT_SOURCE_STATE]: 'Directory' }
   })));
 
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / OFFICES_PAGE_SIZE)));

@@ -72,7 +72,7 @@ describe('AgencyPublicPage', () => {
   }
 
   beforeEach(() => {
-    agencies = jasmine.createSpyObj<AgenciesApiService>('AgenciesApiService', ['getBySlug', 'getRatings', 'getRatingEligibility', 'submitRating']);
+    agencies = jasmine.createSpyObj<AgenciesApiService>('AgenciesApiService', ['getBySlug', 'getRatings', 'getRatingEligibility', 'submitRating', 'recordEvent']);
     properties = jasmine.createSpyObj<PropertyApiService>('PropertyApiService', ['getPropertiesPaged']);
     toast = jasmine.createSpyObj<ToastService>('ToastService', ['success', 'error']);
     lookups = jasmine.createSpyObj<LookupsApiService>('LookupsApiService', ['getGovernorates', 'getDistricts']);
@@ -80,6 +80,7 @@ describe('AgencyPublicPage', () => {
     lookups.getDistricts.and.returnValue(of([{ id: 4, nameAr: 'المزة', nameEn: 'Mezzeh' }] as never));
 
     agencies.getBySlug.and.returnValue(of(AGENCY));
+    agencies.recordEvent.and.returnValue(of({ counted: true }));
     agencies.getRatings.and.returnValue(of(SUMMARY));
     agencies.getRatingEligibility.and.returnValue(of(eligibility()));
     properties.getPropertiesPaged.and.returnValue(of({ items: [], page: 1, pageSize: 12, totalCount: 7, totalPages: 1, hasNext: false, hasPrevious: false }));
@@ -298,6 +299,50 @@ describe('AgencyPublicPage', () => {
       page.ngOnInit();
       expect(page.branches()).toEqual([]);
       expect(lookups.getGovernorates).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('office statistics events', () => {
+    afterEach(() => history.replaceState(null, ''));
+
+    it('records one profile view, from the source the navigation carried', () => {
+      history.replaceState({ officeVisitSource: 'Qr' }, '');
+      const page = create();
+      page.ngOnInit();
+      expect(agencies.recordEvent).toHaveBeenCalledOnceWith('agency-1', { type: 'ProfileView', source: 'Qr' });
+    });
+
+    it('counts an unknown or missing source as a direct visit', () => {
+      history.replaceState({ officeVisitSource: 'Evil' }, '');
+      const page = create();
+      page.ngOnInit();
+      expect(agencies.recordEvent).toHaveBeenCalledOnceWith('agency-1', { type: 'ProfileView', source: 'Direct' });
+    });
+
+    it('a failed event never breaks the page', () => {
+      agencies.recordEvent.and.returnValue(throwError(() => new Error('down')));
+      const page = create();
+      page.ngOnInit();
+      expect(page.agency()?.id).toBe('agency-1');
+      page.track({ type: 'ContactClick', channel: 'Phone' });
+      expect(agencies.recordEvent).toHaveBeenCalledWith('agency-1', { type: 'ContactClick', channel: 'Phone' });
+    });
+
+    it('copies the clean office link when there is no share sheet, and counts it', async () => {
+      const page = create();
+      page.ngOnInit();
+      const nav = navigator as Navigator & { share?: unknown };
+      const originalShare = nav.share;
+      Object.defineProperty(navigator, 'share', { value: undefined, configurable: true });
+      const write = spyOn(navigator.clipboard, 'writeText').and.resolveTo();
+      try {
+        await page.share(AGENCY);
+      } finally {
+        Object.defineProperty(navigator, 'share', { value: originalShare, configurable: true });
+      }
+      expect(write.calls.mostRecent().args[0]).toMatch(/\/offices\/xyz$/);
+      expect(agencies.recordEvent).toHaveBeenCalledWith('agency-1', { type: 'Share', channel: 'CopyLink' });
+      expect(toast.success).toHaveBeenCalled();
     });
   });
 });

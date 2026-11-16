@@ -377,3 +377,65 @@ export interface SubmitAgencyRatingRequest {
   overallExperience: number;
   comment?: string | null;
 }
+
+// ── P3: رمز QR الثابت وإحصاءات المكتب ──
+
+/** نوع حدث على صفحة المكتب. QrScan يسجّله الخادم وحده عند فتح /o/{code}. */
+export type AgencyProfileEventType = 'ProfileView' | 'QrScan' | 'ContactClick' | 'ListingClick' | 'Share';
+export type AgencyEventChannel = 'None' | 'Phone' | 'WhatsApp' | 'Email' | 'NativeShare' | 'CopyLink';
+/** من أين جاء الزائر إلى صفحة المكتب. قائمة مغلقة، لا نص حر. */
+export type AgencyEventSource = 'None' | 'Direct' | 'Qr' | 'Directory' | 'Listing' | 'Share';
+
+/** جسم POST /api/agencies/{id}/events. */
+export type AgencyProfileEvent =
+  | { type: 'ProfileView'; source: Exclude<AgencyEventSource, 'None'> }
+  | { type: 'ContactClick'; channel: 'Phone' | 'WhatsApp' | 'Email' }
+  | { type: 'ListingClick' }
+  | { type: 'Share'; channel: 'NativeShare' | 'CopyLink' };
+
+export interface AgencyEventResult {
+  counted: boolean;
+  reason?: string | null;
+}
+
+export interface AgencyQrCode {
+  code: string;
+}
+
+export interface AgencyQrResolution {
+  slug: string;
+}
+
+export interface AgencyStatsTotals {
+  profileViews: number;
+  qrScans: number;
+  contactClicks: number;
+  listingClicks: number;
+  shares: number;
+}
+
+export interface AgencyStatsDay extends AgencyStatsTotals {
+  /** yyyy-MM-dd (UTC). */
+  day: string;
+}
+
+/** يقابل AgencyStatsDto: آخر 7 أو 30 أو 90 يومًا (UTC، اليوم ضمنها). */
+export interface AgencyStats {
+  days: number;
+  from: string;
+  to: string;
+  totals: AgencyStatsTotals;
+  uniqueVisitors: number;
+  contacts: { channel: AgencyEventChannel; count: number }[];
+  shares: { channel: AgencyEventChannel; count: number }[];
+  viewSources: { source: AgencyEventSource; count: number }[];
+  daily: AgencyStatsDay[];
+}
+
+export const AGENCY_STATS_RANGES: readonly number[] = [7, 30, 90];
+
+/**
+ * مفتاح حالة التنقل (history.state) الذي يحمل مصدر زيارة صفحة المكتب ('Qr' | 'Directory' | 'Listing').
+ * في الحالة لا في الرابط: الرابط يبقى نظيفًا عند المشاركة، والمشارَك لا يُحتسب «من QR».
+ */
+export const OFFICE_VISIT_SOURCE_STATE = 'officeVisitSource';

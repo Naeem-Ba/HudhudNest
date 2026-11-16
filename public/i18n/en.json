@@ -4834,5 +4834,57 @@
     "MAP_LABEL": "Map of the agency's branches",
     "MAIN": "Main",
     "DIRECTIONS": "Directions"
+  },
+  "OFFICE_QR": {
+    "TITLE": "Agency QR code",
+    "DESC": "Print it on your shop front, business cards or signs. Scanning it opens your agency page.",
+    "LOAD_ERROR": "Could not load the QR code right now.",
+    "ALT": "QR code for the page of {{name}}",
+    "PERMANENT": "This link is permanent: it does not change if you rename the agency, so what you print keeps working.",
+    "DOWNLOAD_PNG": "Download for print (PNG)",
+    "DOWNLOAD_SVG": "Download SVG",
+    "COPY": "Copy link",
+    "COPY_FAILED": "Could not copy the link.",
+    "PRINT_TIP": "For print: keep the code at least 3 cm wide, black on white.",
+    "NOT_FOUND_TITLE": "Unknown code",
+    "NOT_FOUND_TEXT": "We found no agency with this code, or the agency is no longer listed.",
+    "BROWSE": "Browse real estate agencies",
+    "OPENING": "Opening the agency page…"
+  },
+  "OFFICE_STATS": {
+    "TITLE": "Agency page statistics",
+    "DESC": "How many people visited your agency page, scanned your QR code and contacted you.",
+    "RANGE": "Period",
+    "DAYS": "Last {{count}} days",
+    "LOAD_ERROR": "Could not load the statistics right now.",
+    "TILE": {
+      "profileViews": "Page visits",
+      "uniqueVisitors": "Different visitors",
+      "qrScans": "QR scans",
+      "contactClicks": "Contact clicks",
+      "listingClicks": "Listings opened",
+      "shares": "Shares"
+    },
+    "EMPTY": "No activity recorded in this period yet.",
+    "CHART_LABEL": "Daily visits over the last {{count}} days",
+    "SOURCES": "Where visitors came from",
+    "CONTACTS": "How they contacted you",
+    "SOURCE": {
+      "DIRECT": "Direct",
+      "QR": "QR code",
+      "DIRECTORY": "Agency directory",
+      "LISTING": "A listing page",
+      "SHARE": "Shared link"
+    },
+    "CHANNEL": {
+      "PHONE": "Call",
+      "WHATSAPP": "WhatsApp",
+      "EMAIL": "Email",
+      "NATIVESHARE": "Share",
+      "COPYLINK": "Link copied"
+    },
+    "NOTE": "The numbers leave out you, your team and automated programs, and count the same visitor once every 24 hours. Days are in UTC.",
+    "SHARE": "Share",
+    "LINK_COPIED": "Link copied."
   }
 }

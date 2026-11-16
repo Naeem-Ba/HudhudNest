@@ -176,6 +176,13 @@ export const routes: Routes = [
             .then(m => m.AgencyPublicPage)
       },
       {
+        // رابط رمز QR المطبوع للمكتب (P3): رمز قصير ثابت، يحوّل إلى /offices/{slug} ويُحتسب مسحًا.
+        path: 'o/:code',
+        loadComponent: () =>
+          import('./features/office-qr/office-qr-redirect.page')
+            .then(m => m.OfficeQrRedirectPage)
+      },
+      {
         // الرابط القديم: يبقى صالحًا لمن شاركه، ويحوّل إلى الرابط المعتمد.
         path: 'agencies/:slug',
         redirectTo: 'offices/:slug'

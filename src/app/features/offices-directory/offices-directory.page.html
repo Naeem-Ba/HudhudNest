@@ -157,7 +157,7 @@
 
       <div class="offices__grid" *ngIf="!loading() && items().length > 0">
         <article class="office-card" *ngFor="let o of items(); trackBy: trackById" data-testid="office-card">
-          <a class="office-card__top" [routerLink]="['/offices', o.slug]">
+          <a class="office-card__top" [routerLink]="['/offices', o.slug]" [state]="{ officeVisitSource: 'Directory' }">
             <img *ngIf="o.logoUrl; else noLogo" class="office-card__logo" [src]="o.logoUrl" alt="" loading="lazy"
                  appImageFallback="/images/default-avatar.svg" width="64" height="64" />
             <ng-template #noLogo><span class="office-card__logo office-card__logo--empty" aria-hidden="true">🏢</span></ng-template>
@@ -186,7 +186,7 @@
           </ul>
 
           <div class="office-card__actions">
-            <a class="btn btn--primary" [routerLink]="['/offices', o.slug]">{{ 'OFFICES.VIEW_PROFILE' | translate }}</a>
+            <a class="btn btn--primary" [routerLink]="['/offices', o.slug]" [state]="{ officeVisitSource: 'Directory' }">{{ 'OFFICES.VIEW_PROFILE' | translate }}</a>
             <a class="btn btn--ghost" *ngIf="o.contactPhone; else emailContact" [href]="telHref(o.contactPhone)">
               {{ 'OFFICES.CONTACT' | translate }}
             </a>

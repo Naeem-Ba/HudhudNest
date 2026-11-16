@@ -211,5 +211,13 @@
     <div class="page-block" *ngIf="!loading() && agency() as a">
       <app-agency-branches-panel *ngIf="a.ownerUserId === currentUserId()" [agency]="a"></app-agency-branches-panel>
     </div>
+
+    <!-- رمز QR الثابت وإحصاءات صفحة المكتب: للمالك فقط (الخادم يتحقق من الملكية) -->
+    <ng-container *ngIf="!loading() && agency() as a">
+      <ng-container *ngIf="a.ownerUserId === currentUserId()">
+        <div class="page-block"><app-agency-qr-panel [agency]="a"></app-agency-qr-panel></div>
+        <div class="page-block"><app-agency-stats-panel [agency]="a"></app-agency-stats-panel></div>
+      </ng-container>
+    </ng-container>
   </div>
 </div>
