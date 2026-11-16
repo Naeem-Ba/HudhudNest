@@ -1,0 +1,114 @@
+<section class="page">
+  <header class="page-header">
+    <h1>{{ 'ADMIN_AGENCIES.TITLE' | translate }}</h1>
+    <p>{{ 'ADMIN_AGENCIES.SUBTITLE' | translate }}</p>
+  </header>
+
+  <div class="filters">
+    <input
+      type="search"
+      class="search-input"
+      data-testid="search"
+      [(ngModel)]="search"
+      (ngModelChange)="onSearchChange($event)"
+      [placeholder]="'ADMIN_AGENCIES.SEARCH_PLACEHOLDER' | translate"
+    />
+    <select data-testid="status-filter" [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()"
+            [attr.aria-label]="'ADMIN_AGENCIES.STATUS_FILTER' | translate">
+      <option value="">{{ 'ADMIN_AGENCIES.ALL_STATUSES' | translate }}</option>
+      <option *ngFor="let s of statuses" [value]="s">{{ statusKey(s) | translate }}</option>
+    </select>
+  </div>
+
+  <app-loading-spinner *ngIf="loading()" [label]="'COMMON.LOADING' | translate"></app-loading-spinner>
+
+  <p class="error" role="alert" *ngIf="failed()">
+    {{ 'ADMIN_AGENCIES.LOAD_ERROR' | translate }}
+    <button type="button" class="link-btn" (click)="load()">{{ 'COMMON.RETRY' | translate }}</button>
+  </p>
+
+  <app-empty-state
+    *ngIf="!loading() && !failed() && agencies().length === 0"
+    icon="🏢"
+    [title]="'ADMIN_AGENCIES.EMPTY_TITLE' | translate"
+    [message]="'ADMIN_AGENCIES.EMPTY_MESSAGE' | translate"
+  ></app-empty-state>
+
+  <div class="rows" *ngIf="agencies().length > 0">
+    <article class="row" *ngFor="let a of agencies(); trackBy: trackById" data-testid="agency-row">
+      <div class="row__main">
+        <a class="title" [routerLink]="['/offices', a.slug]" target="_blank">{{ a.name }}</a>
+        <div class="badges">
+          <span class="badge badge--{{ a.verificationStatus | lowercase }}" data-testid="status-badge">
+            {{ statusKey(a.verificationStatus) | translate }}
+          </span>
+          <span class="badge" *ngIf="!a.isActive">{{ 'ADMIN_AGENCIES.INACTIVE' | translate }}</span>
+        </div>
+        <div class="meta">
+          <span>{{ 'ADMIN_AGENCIES.OWNER' | translate }}: {{ a.ownerName }}</span>
+          <span *ngIf="a.licenseNumber">{{ 'ADMIN_AGENCIES.LICENSE' | translate }}: <bdi>{{ a.licenseNumber }}</bdi></span>
+          <span *ngIf="a.contactPhone"><bdi dir="ltr">{{ a.contactPhone }}</bdi></span>
+          <span>{{ 'ADMIN_AGENCIES.LISTINGS' | translate: { count: a.activeListingCount } }}</span>
+          <span>{{ 'ADMIN_AGENCIES.MEMBERS' | translate: { count: a.memberCount } }}</span>
+          <span *ngIf="a.verifiedAt">{{ 'ADMIN_AGENCIES.VERIFIED_AT' | translate: { date: (a.verifiedAt | localDate:'mediumDate') } }}</span>
+        </div>
+      </div>
+      <div class="row__actions">
+        <button type="button" class="btn btn--outline" data-testid="change-status" (click)="open(a)">
+          {{ 'ADMIN_AGENCIES.CHANGE_STATUS' | translate }}
+        </button>
+      </div>
+    </article>
+  </div>
+
+  <div class="pagination" *ngIf="!loading() && totalPages() > 1">
+    <button type="button" [disabled]="page() <= 1" (click)="goToPage(page() - 1)">‹</button>
+    <span>{{ page() }} / {{ totalPages() }}</span>
+    <button type="button" [disabled]="page() >= totalPages()" (click)="goToPage(page() + 1)">›</button>
+  </div>
+</section>
+
+<app-confirm-modal
+  [open]="modalOpen()"
+  [title]="'ADMIN_AGENCIES.MODAL_TITLE' | translate"
+  [confirmLabel]="'ADMIN_AGENCIES.SAVE' | translate"
+  [confirmDisabled]="!canSubmit()"
+  [loading]="saving()"
+  (confirmed)="submit()"
+  (cancelled)="close()"
+>
+  <div class="modal-form" *ngIf="selected() as a">
+    <p class="preview">
+      <strong>{{ a.name }}</strong><br />
+      {{ 'ADMIN_AGENCIES.CURRENT_STATUS' | translate }}: {{ statusKey(a.verificationStatus) | translate }}<br />
+      {{ 'ADMIN_AGENCIES.HINT' | translate }}
+    </p>
+    <label>
+      {{ 'ADMIN_AGENCIES.NEW_STATUS' | translate }}
+      <select data-testid="new-status" [(ngModel)]="newStatus">
+        <option value="" disabled>{{ 'ADMIN_AGENCIES.CHOOSE_STATUS' | translate }}</option>
+        <option *ngFor="let s of targetStatuses()" [value]="s">{{ statusKey(s) | translate }}</option>
+      </select>
+    </label>
+    <textarea
+      rows="3"
+      data-testid="reason"
+      [attr.maxlength]="reasonMaxLength"
+      [placeholder]="'ADMIN_AGENCIES.REASON' | translate"
+      [(ngModel)]="reason"
+    ></textarea>
+
+    <div class="history">
+      <h3>{{ 'ADMIN_AGENCIES.HISTORY' | translate }}</h3>
+      <p *ngIf="historyLoading()">{{ 'COMMON.LOADING' | translate }}</p>
+      <p class="muted" *ngIf="!historyLoading() && history().length === 0">{{ 'ADMIN_AGENCIES.HISTORY_EMPTY' | translate }}</p>
+      <ol *ngIf="history().length > 0" data-testid="history">
+        <li *ngFor="let h of history(); trackBy: trackById">
+          <strong>{{ statusKey(h.fromStatus) | translate }} → {{ statusKey(h.toStatus) | translate }}</strong>
+          <span class="muted"> · {{ h.actorName }} · {{ h.createdAt | localDate:'medium' }}</span>
+          <div class="reason">{{ h.reason }}</div>
+        </li>
+      </ol>
+    </div>
+  </div>
+</app-confirm-modal>

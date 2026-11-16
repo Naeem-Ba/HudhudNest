@@ -317,9 +317,12 @@
             alt=""
           />
           <div class="agency-card__info">
-            <a class="agency-card__name" [routerLink]="['/agencies', property()!.agencySlug]">
-              {{ property()!.agencyName }}
+            <a class="agency-card__name" [routerLink]="['/offices', property()!.agencySlug]">
+              <bdi>{{ property()!.agencyName }}</bdi>
             </a>
+            <span class="agency-card__verified" *ngIf="property()!.agencyIsVerified" data-testid="agency-verified">
+              ✓ {{ 'OFFICES.VERIFICATION.VERIFIED' | translate }}
+            </span>
             <div class="agency-card__rating" *ngIf="(property()!.agencyRatingCount ?? 0) > 0; else agencyNotRated">
               <span class="agency-card__stars" aria-hidden="true">★</span>
               <strong>{{ property()!.agencyRatingAverage }}</strong>
@@ -328,7 +331,7 @@
             <ng-template #agencyNotRated>
               <span class="agency-card__count">{{ 'PROPERTY_DETAIL.AGENCY.NOT_RATED' | translate }}</span>
             </ng-template>
-            <a class="agency-card__link" [routerLink]="['/agencies', property()!.agencySlug]">
+            <a class="agency-card__link" [routerLink]="['/offices', property()!.agencySlug]">
               {{ 'PROPERTY_DETAIL.AGENCY.VIEW_PROFILE' | translate }}
             </a>
           </div>

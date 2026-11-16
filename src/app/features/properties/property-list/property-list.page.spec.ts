@@ -21,6 +21,8 @@ import { BehaviorSubject, of, Subject, throwError } from 'rxjs';
 import { PropertyListPage } from './property-list.page';
 import { PropertyApiService } from '../../../core/api/property-api.service';
 import { SavedSearchApiService } from '../../../core/api/saved-search-api.service';
+import { AgenciesApiService } from '../../../core/api/agencies-api.service';
+import { Agency } from '../../../core/models/agency.model';
 import { CurrencyLookup, LookupsApiService } from '../../../core/api/lookups-api.service';
 import { LocationsApiService } from '../../../core/api/locations-api.service';
 import { GeoLocation, GeoLocationType } from '../../../core/models/geo-location.model';
@@ -80,6 +82,8 @@ function place(id: number, type: GeoLocationType, nameAr: string, nameEn: string
   };
 }
 
+const OFFICE_ID = '0b9d6c1e-2f4a-4c55-9a1e-6f2d3c4b5a69';
+
 describe('PropertyListPage', () => {
   let component: PropertyListPage;
   let propertyApiSpy: jasmine.SpyObj<PropertyApiService>;
@@ -90,6 +94,7 @@ describe('PropertyListPage', () => {
   let interestParam: string | undefined;
   /** What the floors endpoint answers (the floors that exist for the other filters). */
   let floorsResponse: AvailableFloors;
+  let agenciesApiSpy: jasmine.SpyObj<AgenciesApiService>;
 
   function createComponent(initialParams: Record<string, unknown> = {}, preferredCurrency: string | null = null): PropertyListPage {
     // Some tests (deep-link) build a second component within the same `it`, after the
@@ -148,6 +153,9 @@ describe('PropertyListPage', () => {
     locationsApiSpy = locationsApiStub();
     locationsApiSpy.get.and.returnValue(of(place(77, 'Neighborhood', 'الجادات', 'Jadat')));
 
+    agenciesApiSpy = jasmine.createSpyObj('AgenciesApiService', ['getBySlug']);
+    agenciesApiSpy.getBySlug.and.returnValue(of({ id: OFFICE_ID, name: 'Alpha Homes', slug: 'alpha' } as Agency));
+
     const authSpy = jasmine.createSpyObj('AuthService', ['getAccessToken']);
     authSpy.getAccessToken.and.returnValue(null);
 
@@ -156,6 +164,7 @@ describe('PropertyListPage', () => {
       providers: [
         { provide: PropertyApiService, useValue: propertyApiSpy },
         { provide: SavedSearchApiService, useValue: jasmine.createSpyObj('SavedSearchApiService', ['create']) },
+        { provide: AgenciesApiService, useValue: agenciesApiSpy },
         { provide: LookupsApiService, useValue: lookupsApiSpy },
         { provide: LocationsApiService, useValue: locationsApiSpy },
         { provide: AuthService, useValue: authSpy },
@@ -216,7 +225,8 @@ describe('PropertyListPage', () => {
       propertyTypeId: undefined,
       floorFrom: undefined,
       floorTo: undefined,
-      floorMode: undefined
+      floorMode: undefined,
+      agencyId: undefined
     });
   });
 
@@ -1401,6 +1411,41 @@ describe('PropertyListPage', () => {
         component.onRadiusChange();
         expect(lastGeoFilter()).toEqual(jasmine.objectContaining({ floorFrom: 0, floorTo: 0 }));
       }));
+    });
+  });
+
+  describe('إعلانات مكتب واحد (agencyId)', () => {
+    it('sends the office id from the URL and names the office once its slug resolves to the same id', () => {
+      component = createComponent({ agencyId: OFFICE_ID, office: 'alpha' });
+      expect(lastRequest().agencyId).toBe(OFFICE_ID);
+      expect(agenciesApiSpy.getBySlug).toHaveBeenCalledWith('alpha');
+      expect(component.officeName()).toBe('Alpha Homes');
+    });
+
+    it('does not show the name of a different office than the one searched', () => {
+      component = createComponent({ agencyId: '11111111-2222-4333-8444-555555555555', office: 'alpha' });
+      expect(lastRequest().agencyId).toBe('11111111-2222-4333-8444-555555555555');
+      expect(component.officeName()).toBeNull();
+    });
+
+    it('drops a malformed office id instead of sending it', () => {
+      component = createComponent({ agencyId: 'not-a-guid', office: 'alpha' });
+      expect(lastRequest().agencyId).toBeUndefined();
+      expect(component.agencyId).toBeNull();
+      expect(agenciesApiSpy.getBySlug).not.toHaveBeenCalled();
+    });
+
+    it('keeps the office when the filters are cleared, and leaves it only on request', () => {
+      component = createComponent({ agencyId: OFFICE_ID, office: 'alpha', listingType: 'ForRent' });
+      component.resetFilters();
+      expect(lastRequest().agencyId).toBe(OFFICE_ID);
+      expect(lastRequest().listingType).toBeUndefined();
+
+      component.clearOfficeScope();
+      expect(lastRequest().agencyId).toBeUndefined();
+      const params = routerSpy.navigate.calls.mostRecent().args[1]!.queryParams!;
+      expect(params['agencyId']).toBeNull();
+      expect(params['office']).toBeNull();
     });
   });
 

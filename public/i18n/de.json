@@ -146,7 +146,9 @@
     "EXPATS": "Für Syrer im Ausland",
     "MY_PAYMENTS": "Zahlungen & Rechnungen",
     "ADMIN_PAYMENTS": "Zahlungen (online)",
-    "ADMIN_GEO": "Standortkatalog"
+    "ADMIN_GEO": "Standortkatalog",
+    "OFFICES": "Makler",
+    "ADMIN_AGENCIES": "Makler-Verifizierung"
   },
   "AUTH": {
     "LOGIN_TITLE": "Willkommen",
@@ -643,7 +645,10 @@
     "EMPTY_GEO_TITLE": "Keine Immobilien in Ihrer Nähe",
     "EMPTY_GEO_MESSAGE": "Im Umkreis von {{km}} km um Ihren Standort passt keine Immobilie zu den Filtern. Vergrößern Sie den Umkreis oder ändern Sie die Filter.",
     "GEO_STATUS": "Ergebnisse im Umkreis von {{km}} km um Ihren Standort",
-    "SORT_BY_DISTANCE_HINT": "Bei „in meiner Nähe“ sind die Ergebnisse nach Entfernung sortiert."
+    "SORT_BY_DISTANCE_HINT": "Bei „in meiner Nähe“ sind die Ergebnisse nach Entfernung sortiert.",
+    "OFFICE_SCOPE": "Nur Anzeigen von {{name}}",
+    "OFFICE_SCOPE_GENERIC": "Nur Anzeigen eines Büros",
+    "OFFICE_SCOPE_CLEAR": "Alle Anzeigen zeigen"
   },
   "PAGINATION": {
     "NAV_LABEL": "Seitennavigation",
@@ -1682,7 +1687,9 @@
     "TAB_RENTED": "Vermietet",
     "NO_SOLD": "Noch keine verkauften Immobilien.",
     "NO_RENTED": "Noch keine vermieteten Immobilien.",
-    "CLOSED_NOTE": "Abgeschlossene Geschäfte, nur zur Dokumentation aufbewahrt. Sie erscheinen nicht in der Suche."
+    "CLOSED_NOTE": "Abgeschlossene Geschäfte, nur zur Dokumentation aufbewahrt. Sie erscheinen nicht in der Suche.",
+    "BROWSE_WITH_FILTERS": "Anzeigen des Büros mit Filtern durchsuchen",
+    "VERIFIED_HINT": "Die Plattform hat dieses Büro verifiziert"
   },
   "VALIDATION": {
     "REQUIRED": "Dieses Feld ist erforderlich.",
@@ -3029,6 +3036,10 @@
     "NEWSLETTER_UNSUBSCRIBE": {
       "TITLE": "Abmelden | HudhudNest",
       "DESCRIPTION": "Vom Newsletter von HudhudNest abmelden."
+    },
+    "OFFICES": {
+      "TITLE": "Verzeichnis der Immobilienbüros",
+      "DESCRIPTION": "Finden Sie ein Immobilienbüro in Syrien nach Gouvernement, Bezirk, Viertel und Immobilienart, mit verifizierten Büros, Bewertungen und aktiven Anzeigen."
     }
   },
   "ADMIN_PAYMENTS": {
@@ -4683,5 +4694,85 @@
     "TEXT": "Wir haben die unten genannten Dokumente geändert. Bitte lesen Sie sie und stimmen Sie zu, um Ihr Konto weiter zu nutzen. Die Nutzung der App ohne Zustimmung gilt nicht als Zustimmung.",
     "ACCEPT": "Ich stimme zu",
     "LATER": "Später"
+  },
+  "OFFICES": {
+    "TITLE": "Immobilienbüros",
+    "SUBTITLE": "Finden Sie ein Büro in der Gegend, die Sie interessiert.",
+    "SEARCH_LABEL": "Büros suchen",
+    "SEARCH_PLACEHOLDER": "Name des Büros",
+    "FILTERS": "Filter",
+    "SORT_LABEL": "Sortierung",
+    "SORT": {
+      "MOSTLISTINGS": "Meiste Anzeigen",
+      "TOPRATED": "Beste Bewertung",
+      "NEWEST": "Neueste"
+    },
+    "FILTER": {
+      "GOVERNORATE": "Gouvernement",
+      "DISTRICT": "Bezirk",
+      "NEIGHBORHOOD": "Viertel",
+      "ANY": "Alle",
+      "NONE_HERE": "Hier noch keine Büros",
+      "DEAL": "Angebotsart",
+      "PROPERTY_TYPE": "Immobilienart",
+      "RATING": "Bewertung",
+      "RATING_AT_LEAST": "Ab {{value}} Sternen",
+      "VERIFIED_ONLY": "Nur verifizierte Büros"
+    },
+    "DEAL": {
+      "SALE": "Kauf",
+      "RENT": "Miete",
+      "SHORTSTAY": "Kurzaufenthalt",
+      "INVESTMENT": "Investition"
+    },
+    "CLEAR": "Filter zurücksetzen",
+    "NEARBY_SOON": "Die Suche nach Büros in meiner Nähe und die Karte kommen bald.",
+    "RESULTS": "{{count}} Büros",
+    "LOAD_ERROR": "Die Büros konnten gerade nicht geladen werden.",
+    "EMPTY_TITLE": "Keine passenden Büros",
+    "EMPTY_MESSAGE": "Versuchen Sie eine andere Gegend oder lockern Sie die Filter.",
+    "VERIFICATION": {
+      "UNVERIFIED": "Nicht verifiziert",
+      "PENDING": "In Prüfung",
+      "VERIFIED": "Verifiziert",
+      "REJECTED": "Abgelehnt",
+      "REVOKED": "Verifizierung entzogen"
+    },
+    "RATING": "{{value}} ({{count}} Bewertungen)",
+    "NOT_RATED": "Noch nicht bewertet",
+    "ACTIVE_LISTINGS": "{{count}} aktive Anzeigen",
+    "VIEW_PROFILE": "Zum Büro",
+    "CONTACT": "Kontakt",
+    "PAGINATION": "Seiten der Büros",
+    "PREVIOUS": "Vorherige Seite",
+    "NEXT": "Nächste Seite"
+  },
+  "ADMIN_AGENCIES": {
+    "TITLE": "Verifizierung der Immobilienbüros",
+    "SUBTITLE": "Büros in Prüfung stehen oben. Die Verifizierung ist eine Entscheidung der Verwaltung nach einer echten Prüfung außerhalb der Plattform.",
+    "SEARCH_PLACEHOLDER": "Name, Link oder Lizenznummer",
+    "STATUS_FILTER": "Verifizierungsstatus",
+    "ALL_STATUSES": "Alle Status",
+    "LOAD_ERROR": "Die Büros konnten nicht geladen werden.",
+    "EMPTY_TITLE": "Keine Büros",
+    "EMPTY_MESSAGE": "Kein Büro passt zur Suche.",
+    "INACTIVE": "Deaktiviert",
+    "OWNER": "Inhaber",
+    "LICENSE": "Lizenz",
+    "LISTINGS": "{{count}} aktive Anzeigen",
+    "MEMBERS": "{{count}} Mitglieder",
+    "VERIFIED_AT": "Verifiziert am {{date}}",
+    "CHANGE_STATUS": "Status ändern",
+    "MODAL_TITLE": "Verifizierungsstatus ändern",
+    "SAVE": "Speichern",
+    "CURRENT_STATUS": "Aktueller Status",
+    "HINT": "Ein Grund ist Pflicht und wird im Verlauf gespeichert. „Verifiziert“ nur nach Prüfung von Lizenz und Identität vergeben.",
+    "NEW_STATUS": "Neuer Status",
+    "CHOOSE_STATUS": "Status wählen",
+    "REASON": "Grund (Pflicht)",
+    "HISTORY": "Verifizierungsverlauf",
+    "HISTORY_EMPTY": "Keine früheren Änderungen.",
+    "SAVED": "Verifizierungsstatus gespeichert.",
+    "SAVE_ERROR": "Der Status konnte nicht gespeichert werden."
   }
 }

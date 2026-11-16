@@ -122,6 +122,8 @@ export interface Property {
   agencyLogoUrl?: string | null;
   agencyRatingAverage?: number | null;
   agencyRatingCount?: number;
+  /** True only when the administration has verified the office (detail page only; absent from an older server). */
+  agencyIsVerified?: boolean;
   availableFrom?: string;
   isPublished?: boolean;
   // عدد مشاهدات صفحة الإعلان (منزوع التكرار، من الخادم فقط). غائب من خادم أقدم فلا يُفترض.

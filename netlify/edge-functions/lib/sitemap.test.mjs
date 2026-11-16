@@ -42,7 +42,7 @@ test('toLastmod returns null for missing or unparseable input', () => {
 test('buildStaticUrlEntries lists every public page, once, and no private route', () => {
   const entries = buildStaticUrlEntries('https://hudhudnest.com');
   const locs = entries.map(e => e.loc);
-  for (const path of ['/', '/properties', '/short-stay', '/investments', '/services', '/map', '/price-estimate',
+  for (const path of ['/', '/properties', '/short-stay', '/investments', '/services', '/offices', '/map', '/price-estimate',
     '/valuation', '/expats', '/pricing', '/kontakt', '/privacy-policy', '/terms-of-service', '/impressum', '/download']) {
     assert.ok(locs.includes(`https://hudhudnest.com${path}`), `missing ${path}`);
   }

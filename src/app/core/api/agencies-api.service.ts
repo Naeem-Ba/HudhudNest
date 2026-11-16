@@ -14,6 +14,9 @@ import {
   AgencyRatingSummaryDto,
   SubmitAgencyRatingRequest,
   Agency,
+  AgencyDirectoryFacets,
+  AgencyDirectoryFilter,
+  AgencyDirectoryPage,
   AgencyInvitation,
   AgencySentInvitation,
   AgencyMember,
@@ -34,6 +37,27 @@ export class AgenciesApiService {
    */
   getMine(): Observable<Agency | null> {
     return this.api.get<Agency | null>(`${this.endpoint}/me`);
+  }
+
+  /**
+   * GET /api/agencies — دليل المكاتب العام (مجهول). الخادم يدرج فقط المكاتب الفعّالة التي خطة مالكها
+   * سارية أو ضمن مهلة الثلاثين يومًا. القيم الفارغة لا تُرسل.
+   */
+  searchDirectory(filter: AgencyDirectoryFilter): Observable<AgencyDirectoryPage> {
+    const query: Record<string, string | number | boolean> = {};
+    Object.entries(filter).forEach(([key, value]) => {
+      if (value === null || value === undefined || value === '' || value === false) return;
+      query[key] = value as string | number | boolean;
+    });
+    return this.api.get<AgencyDirectoryPage>(this.endpoint, query);
+  }
+
+  /** GET /api/agencies/directory/facets — عدد المكاتب في كل محافظة/منطقة/حي. */
+  getDirectoryFacets(governorateId?: number | null, districtId?: number | null): Observable<AgencyDirectoryFacets> {
+    const query: Record<string, number> = {};
+    if (governorateId) query['governorateId'] = governorateId;
+    if (districtId) query['districtId'] = districtId;
+    return this.api.get<AgencyDirectoryFacets>(`${this.endpoint}/directory/facets`, query);
   }
 
   /** GET /api/agencies/{slug} — الصفحة العامة (مجهول؛ 404 لمكتب غير مفعّل). */

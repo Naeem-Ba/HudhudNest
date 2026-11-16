@@ -146,7 +146,9 @@
     "EXPATS": "For Syrians abroad",
     "MY_PAYMENTS": "Payments & invoices",
     "ADMIN_PAYMENTS": "Payments (online)",
-    "ADMIN_GEO": "Location catalog"
+    "ADMIN_GEO": "Location catalog",
+    "OFFICES": "Agencies",
+    "ADMIN_AGENCIES": "Agency verification"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -643,7 +645,10 @@
     "EMPTY_GEO_TITLE": "No properties near you",
     "EMPTY_GEO_MESSAGE": "No properties within {{km}} km of your location match the filters. Widen the radius or change the filters.",
     "GEO_STATUS": "Results within {{km}} km of your location",
-    "SORT_BY_DISTANCE_HINT": "With “near me” on, results are ordered from nearest to farthest."
+    "SORT_BY_DISTANCE_HINT": "With “near me” on, results are ordered from nearest to farthest.",
+    "OFFICE_SCOPE": "Only listings from {{name}}",
+    "OFFICE_SCOPE_GENERIC": "Only listings from one agency",
+    "OFFICE_SCOPE_CLEAR": "Show all listings"
   },
   "PAGINATION": {
     "NAV_LABEL": "Page navigation",
@@ -1682,7 +1687,9 @@
     "TAB_RENTED": "Rented",
     "NO_SOLD": "No sold properties yet.",
     "NO_RENTED": "No rented properties yet.",
-    "CLOSED_NOTE": "Concluded deals kept as a record. They do not appear in search."
+    "CLOSED_NOTE": "Concluded deals kept as a record. They do not appear in search.",
+    "BROWSE_WITH_FILTERS": "Browse this agency's listings with filters",
+    "VERIFIED_HINT": "The platform has verified this agency"
   },
   "VALIDATION": {
     "REQUIRED": "This field is required.",
@@ -3029,6 +3036,10 @@
     "NEWSLETTER_UNSUBSCRIBE": {
       "TITLE": "Unsubscribe | HudhudNest",
       "DESCRIPTION": "Unsubscribe from the HudhudNest newsletter."
+    },
+    "OFFICES": {
+      "TITLE": "Real estate agency directory",
+      "DESCRIPTION": "Find a real estate agency in Syria by governorate, district, neighborhood and property type, and see verified agencies, their ratings and active listings."
     }
   },
   "ADMIN_PAYMENTS": {
@@ -4683,5 +4694,85 @@
     "TEXT": "We changed the documents below. Please read them and accept to keep using your account. Using the app without accepting does not count as acceptance.",
     "ACCEPT": "I accept",
     "LATER": "Later"
+  },
+  "OFFICES": {
+    "TITLE": "Real estate agencies",
+    "SUBTITLE": "Find an agency near the area you care about.",
+    "SEARCH_LABEL": "Search agencies",
+    "SEARCH_PLACEHOLDER": "Agency name",
+    "FILTERS": "Filters",
+    "SORT_LABEL": "Sort",
+    "SORT": {
+      "MOSTLISTINGS": "Most listings",
+      "TOPRATED": "Top rated",
+      "NEWEST": "Newest"
+    },
+    "FILTER": {
+      "GOVERNORATE": "Governorate",
+      "DISTRICT": "District",
+      "NEIGHBORHOOD": "Neighborhood",
+      "ANY": "Any",
+      "NONE_HERE": "No agencies here yet",
+      "DEAL": "Deal type",
+      "PROPERTY_TYPE": "Property type",
+      "RATING": "Rating",
+      "RATING_AT_LEAST": "{{value}} stars or more",
+      "VERIFIED_ONLY": "Verified agencies only"
+    },
+    "DEAL": {
+      "SALE": "Sale",
+      "RENT": "Rent",
+      "SHORTSTAY": "Short stay",
+      "INVESTMENT": "Investment"
+    },
+    "CLEAR": "Clear filters",
+    "NEARBY_SOON": "Searching for agencies near me and the map are coming soon.",
+    "RESULTS": "{{count}} agencies",
+    "LOAD_ERROR": "The agencies could not be loaded right now.",
+    "EMPTY_TITLE": "No matching agencies",
+    "EMPTY_MESSAGE": "Try another area or loosen the filters.",
+    "VERIFICATION": {
+      "UNVERIFIED": "Unverified",
+      "PENDING": "Under review",
+      "VERIFIED": "Verified",
+      "REJECTED": "Rejected",
+      "REVOKED": "Verification revoked"
+    },
+    "RATING": "{{value}} ({{count}} ratings)",
+    "NOT_RATED": "Not rated yet",
+    "ACTIVE_LISTINGS": "{{count}} active listings",
+    "VIEW_PROFILE": "View agency",
+    "CONTACT": "Contact",
+    "PAGINATION": "Agency pages",
+    "PREVIOUS": "Previous page",
+    "NEXT": "Next page"
+  },
+  "ADMIN_AGENCIES": {
+    "TITLE": "Agency verification",
+    "SUBTITLE": "Agencies under review come first. Verification is an admin decision after a real check outside the platform.",
+    "SEARCH_PLACEHOLDER": "Name, link or licence number",
+    "STATUS_FILTER": "Verification status",
+    "ALL_STATUSES": "All statuses",
+    "LOAD_ERROR": "The agencies could not be loaded.",
+    "EMPTY_TITLE": "No agencies",
+    "EMPTY_MESSAGE": "No agency matches the search.",
+    "INACTIVE": "Deactivated",
+    "OWNER": "Owner",
+    "LICENSE": "Licence",
+    "LISTINGS": "{{count}} active listings",
+    "MEMBERS": "{{count}} members",
+    "VERIFIED_AT": "Verified on {{date}}",
+    "CHANGE_STATUS": "Change status",
+    "MODAL_TITLE": "Change verification status",
+    "SAVE": "Save",
+    "CURRENT_STATUS": "Current status",
+    "HINT": "A reason is required and is kept in the history. Only grant \"Verified\" after checking the licence and identity.",
+    "NEW_STATUS": "New status",
+    "CHOOSE_STATUS": "Choose a status",
+    "REASON": "Reason (required)",
+    "HISTORY": "Verification history",
+    "HISTORY_EMPTY": "No earlier changes.",
+    "SAVED": "Verification status saved.",
+    "SAVE_ERROR": "The status could not be saved."
   }
 }

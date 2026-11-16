@@ -54,10 +54,11 @@ export function buildStaticUrlEntries(siteUrl) {
     // QA phase 20 (P20-D02): the other public sections. Each one sets its own title, description and
     // canonical (PageMetaService). Not listed on purpose: private routes (tools/lib/private-paths.mjs),
     // /users/* (kept out of the index), /landing (a campaign page that changes with the live offer)
-    // and /agencies/:slug (there is no public office list to enumerate yet).
+    // and the office profiles /offices/:slug (listed with the SEO phase of the offices directory).
     { loc: `${siteUrl}/short-stay`, changefreq: 'daily', priority: '0.7' },
     { loc: `${siteUrl}/investments`, changefreq: 'daily', priority: '0.7' },
     { loc: `${siteUrl}/services`, changefreq: 'weekly', priority: '0.6' },
+    { loc: `${siteUrl}/offices`, changefreq: 'daily', priority: '0.6' },
     { loc: `${siteUrl}/map`, changefreq: 'daily', priority: '0.5' },
     { loc: `${siteUrl}/price-estimate`, changefreq: 'weekly', priority: '0.5' },
     { loc: `${siteUrl}/valuation`, changefreq: 'monthly', priority: '0.5' },

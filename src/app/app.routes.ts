@@ -162,10 +162,23 @@ export const routes: Routes = [
       {
         // الصفحة العامة للمكتب بالرابط القصير (/F-AGY-05/) — مجهولة عمدًا، مثل
         // GET /api/Agencies/{slug} بالباك اند.
-        path: 'agencies/:slug',
+        // دليل المكاتب العقارية: بحث وفلاتر في الرابط، مجهول عمدًا مثل GET /api/agencies.
+        path: 'offices',
+        loadComponent: () =>
+          import('./features/offices-directory/offices-directory.page')
+            .then(m => m.OfficesDirectoryPage)
+      },
+      {
+        // الصفحة العامة للمكتب (/F-AGY-05/): الرابط المعتمد /offices/{slug}.
+        path: 'offices/:slug',
         loadComponent: () =>
           import('./features/agency-public/agency-public.page')
             .then(m => m.AgencyPublicPage)
+      },
+      {
+        // الرابط القديم: يبقى صالحًا لمن شاركه، ويحوّل إلى الرابط المعتمد.
+        path: 'agencies/:slug',
+        redirectTo: 'offices/:slug'
       },
       {
         // Create only. ListingEligibilityGuard runs after AuthGuard (so an anonymous
@@ -595,6 +608,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./admin/short-stay/admin-short-stay.page')
             .then(m => m.AdminShortStayPage)
+      },
+      {
+        // توثيق المكاتب العقارية: تغيير الحالة بسبب إلزامي وسجل. Role Admin على الخادم لكل نقطة.
+        path: 'admin/agencies',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/agencies/admin-agencies.page')
+            .then(m => m.AdminAgenciesPage)
       },
       {
         // إدارة مزوّدي الخدمات: طلبات الانضمام ثم المزوّدون المعتمدون. Role Admin على الخادم لكل نقطة.

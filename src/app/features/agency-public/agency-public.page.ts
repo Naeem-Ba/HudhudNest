@@ -1,6 +1,6 @@
 // src/app/features/agency-public/agency-public.page.ts
 //
-// الصفحة العامة للمكتب العقاري بالرابط القصير /agencies/{slug} (/F-AGY-05/): الشعار،
+// الصفحة العامة للمكتب العقاري بالرابط /offices/{slug} (والقديم /agencies/{slug} يحوّل إليه) (/F-AGY-05/): الشعار،
 // الوصف، بيانات التواصل، الفريق، وإعلانات المكتب المنشورة (GET /api/Properties?agencyId=…
 // — فلتر عرض عام، PropertyFilterDto.AgencyId بالباك اند).
 //
@@ -66,8 +66,15 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
           <img *ngIf="a.logoUrl; else noLogo" class="agency-header__logo" [src]="a.logoUrl" [alt]="a.name" />
           <ng-template #noLogo><div class="agency-header__logo agency-header__logo--empty" aria-hidden="true">🏢</div></ng-template>
           <div class="agency-header__info">
-            <h1>{{ a.name }}</h1>
+            <h1><bdi>{{ a.name }}</bdi></h1>
+            <span class="verified-badge" *ngIf="a.verificationStatus === 'Verified'" data-testid="verified-badge"
+                  [attr.title]="'AGENCY_PUBLIC.VERIFIED_HINT' | translate">
+              ✓ {{ 'OFFICES.VERIFICATION.VERIFIED' | translate }}
+            </span>
             <p class="agency-header__meta" *ngIf="a.city">📍 {{ a.city }}</p>
+            <p class="agency-header__meta" *ngIf="a.activeListingCount != null" data-testid="active-listing-count">
+              {{ 'OFFICES.ACTIVE_LISTINGS' | translate: { count: a.activeListingCount } }}
+            </p>
             <p class="agency-header__meta">
               {{ 'AGENCY_PUBLIC.MEMBERS_COUNT' | translate: { count: a.memberCount } }}
             </p>
@@ -226,7 +233,13 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
           </li>
         </ul>
 
-        <h2 class="section-title">{{ 'AGENCY_PUBLIC.LISTINGS' | translate }}</h2>
+        <div class="section-head">
+          <h2 class="section-title">{{ 'AGENCY_PUBLIC.LISTINGS' | translate }}</h2>
+          <a class="btn btn--outline btn--sm" data-testid="browse-office-listings"
+             [routerLink]="['/properties']" [queryParams]="{ agencyId: a.id, office: a.slug }">
+            {{ 'AGENCY_PUBLIC.BROWSE_WITH_FILTERS' | translate }}
+          </a>
+        </div>
 
         <!-- التبويبات: المتاحة دائمًا، والمباعة/المؤجرة لا تظهر إلا إن وُجدت صفقات منها (سجل توثيق، لا تظهر في البحث). -->
         <div class="listing-tabs" role="tablist" *ngIf="soldCount() > 0 || rentedCount() > 0">
@@ -287,6 +300,9 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
     .agency-header__meta { margin: 0; font-size: .85rem; color: var(--gray-500); }
     .agency-description { white-space: pre-line; line-height: 1.8; color: var(--gray-700); margin: 0 0 1rem; }
     .agency-contact { display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .section-head { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; margin: 1.5rem 0 .75rem; }
+    .section-head .section-title { margin: 0; }
+    .verified-badge { display: inline-flex; align-items: center; gap: .25rem; margin-bottom: .3rem; padding: .15rem .6rem; border-radius: 999px; background: var(--success-soft); color: var(--success-text); font-size: .78rem; font-weight: 700; }
     .section-title { font-size: 1.05rem; font-weight: 700; color: var(--gray-900); margin: 1.5rem 0 .75rem; }
     .team { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .75rem; }
     .team__member { display: flex; align-items: center; gap: .5rem; padding: .4rem .8rem .4rem .4rem; border: 1px solid var(--border); border-radius: 999px; text-decoration: none; color: var(--gray-800); background: var(--surface); }
@@ -447,7 +463,7 @@ export class AgencyPublicPage implements OnInit {
           this.pageMeta.applyDynamic({
             title: agency.name,
             description: agency.description,
-            path: `/agencies/${agency.slug}`,
+            path: `/offices/${agency.slug}`,
             image: agency.logoUrl
           });
           this.loadListings(agency.id, 1);
