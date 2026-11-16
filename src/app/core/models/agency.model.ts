@@ -42,6 +42,113 @@ export interface Agency {
    */
   ownerPlanStatus?: string | null;
   ownerPlanExpiresAt?: string | null;
+
+  /** التوثيق الإداري (دليل المكاتب). الشارة لـ Verified فقط؛ غائب من خادم أقدم = غير موثّق. */
+  verificationStatus?: AgencyVerificationStatus | null;
+  verifiedAt?: string | null;
+  /** الإعلانات النشطة المنسوبة إلى المكتب؛ تأتي من الصفحة العامة فقط. */
+  activeListingCount?: number | null;
+}
+
+/** يقابل HudhudNestApi.Domain.Agencies.Enums.AgencyVerificationStatus (يُسلسَل نصًّا). */
+export type AgencyVerificationStatus = 'Unverified' | 'Pending' | 'Verified' | 'Rejected' | 'Revoked';
+
+export const AGENCY_VERIFICATION_STATUSES: readonly AgencyVerificationStatus[] =
+  ['Unverified', 'Pending', 'Verified', 'Rejected', 'Revoked'];
+
+// ── دليل المكاتب العام (GET /api/agencies) ──────────────────────────────
+
+/** نوع الصفقة الذي يجب أن يملك المكتب إعلانًا نشطًا واحدًا منه على الأقل. */
+export type AgencyDirectoryDeal = 'Sale' | 'Rent' | 'ShortStay' | 'Investment';
+
+/** الترتيب. لا يوجد «الموثّق أولًا» عمدًا: التوثيق فلتر وشارة، لا ترتيب. */
+export type AgencyDirectorySort = 'MostListings' | 'TopRated' | 'Newest';
+
+export interface AgencyDirectoryFilter {
+  search?: string | null;
+  governorateId?: number | null;
+  districtId?: number | null;
+  neighborhoodId?: number | null;
+  propertyTypeId?: number | null;
+  deal?: AgencyDirectoryDeal | null;
+  verifiedOnly?: boolean;
+  minRating?: number | null;
+  sort?: AgencyDirectorySort;
+  page?: number;
+  pageSize?: number;
+}
+
+/** بطاقة مكتب في الدليل — يقابل AgencyDirectoryItemDto. */
+export interface AgencyDirectoryItem {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl?: string | null;
+  description?: string | null;
+  contactPhone?: string | null;
+  contactEmail?: string | null;
+  city?: string | null;
+  governorateId?: number | null;
+  districtId?: number | null;
+  neighborhoodId?: number | null;
+  verificationStatus: AgencyVerificationStatus;
+  activeListingCount: number;
+  ratingAverage: number;
+  ratingCount: number;
+  createdAt: string;
+}
+
+export interface AgencyDirectoryPage {
+  items: AgencyDirectoryItem[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
+export interface AgencyDirectoryFacet {
+  id: number;
+  count: number;
+}
+
+/** عدد المكاتب المدرجة في كل مكان، كي لا يُعرض مكان بلا نتائج. */
+export interface AgencyDirectoryFacets {
+  governorates: AgencyDirectoryFacet[];
+  districts: AgencyDirectoryFacet[];
+  neighborhoods: AgencyDirectoryFacet[];
+  totalCount: number;
+}
+
+// ── المشرف: التوثيق (api/admin/agencies) ───────────────────────────────
+
+export interface AdminAgencySummary {
+  id: string;
+  name: string;
+  slug: string;
+  isActive: boolean;
+  verificationStatus: AgencyVerificationStatus;
+  verifiedAt?: string | null;
+  licenseNumber?: string | null;
+  contactPhone?: string | null;
+  contactEmail?: string | null;
+  governorateId?: number | null;
+  ownerUserId: string;
+  ownerName: string;
+  memberCount: number;
+  activeListingCount: number;
+  createdAt: string;
+}
+
+export interface AgencyVerificationEvent {
+  id: string;
+  fromStatus: AgencyVerificationStatus;
+  toStatus: AgencyVerificationStatus;
+  actorUserId: string;
+  actorName: string;
+  reason: string;
+  createdAt: string;
 }
 
 /** جسم POST /api/agencies — إنشاء مكتب جديد. */

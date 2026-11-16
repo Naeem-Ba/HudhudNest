@@ -146,7 +146,9 @@
     "EXPATS": "Yurt dışındaki Suriyeliler için",
     "MY_PAYMENTS": "Ödemeler ve faturalar",
     "ADMIN_PAYMENTS": "Ödemeler (çevrimiçi)",
-    "ADMIN_GEO": "Konum kataloğu"
+    "ADMIN_GEO": "Konum kataloğu",
+    "OFFICES": "Emlak ofisleri",
+    "ADMIN_AGENCIES": "Ofis doğrulama"
   },
   "AUTH": {
     "LOGIN_TITLE": "Hoş geldiniz",
@@ -643,7 +645,10 @@
     "EMPTY_GEO_TITLE": "Yakınınızda ilan yok",
     "EMPTY_GEO_MESSAGE": "Konumunuzun {{km}} km çevresinde filtrelere uyan ilan yok. Yarıçapı genişletin veya filtreleri değiştirin.",
     "GEO_STATUS": "Konumunuzun {{km}} km çevresindeki sonuçlar",
-    "SORT_BY_DISTANCE_HINT": "“Yakınımda” açıkken sonuçlar en yakından en uzağa sıralanır."
+    "SORT_BY_DISTANCE_HINT": "“Yakınımda” açıkken sonuçlar en yakından en uzağa sıralanır.",
+    "OFFICE_SCOPE": "Yalnızca {{name}} ilanları",
+    "OFFICE_SCOPE_GENERIC": "Yalnızca bir ofisin ilanları",
+    "OFFICE_SCOPE_CLEAR": "Tüm ilanları göster"
   },
   "PAGINATION": {
     "NAV_LABEL": "Sayfa gezintisi",
@@ -1682,7 +1687,9 @@
     "TAB_RENTED": "Kiralananlar",
     "NO_SOLD": "Henüz satılan mülk yok.",
     "NO_RENTED": "Henüz kiralanan mülk yok.",
-    "CLOSED_NOTE": "Sonuçlanan işlemler kayıt olarak tutulur. Aramalarda görünmezler."
+    "CLOSED_NOTE": "Sonuçlanan işlemler kayıt olarak tutulur. Aramalarda görünmezler.",
+    "BROWSE_WITH_FILTERS": "Ofisin ilanlarına filtrelerle göz at",
+    "VERIFIED_HINT": "Platform bu ofisi doğruladı"
   },
   "VALIDATION": {
     "REQUIRED": "Bu alan zorunludur.",
@@ -3029,6 +3036,10 @@
     "NEWSLETTER_UNSUBSCRIBE": {
       "TITLE": "Abonelikten çık | HudhudNest",
       "DESCRIPTION": "HudhudNest bülteninden çıkın."
+    },
+    "OFFICES": {
+      "TITLE": "Emlak ofisleri rehberi",
+      "DESCRIPTION": "Suriye'de il, ilçe, mahalle ve emlak türüne göre emlak ofisi bulun; doğrulanmış ofisleri, puanlarını ve aktif ilanlarını görün."
     }
   },
   "ADMIN_PAYMENTS": {
@@ -4683,5 +4694,85 @@
     "TEXT": "Aşağıdaki belgeleri değiştirdik. Hesabınızı kullanmaya devam etmek için lütfen okuyup kabul edin. Uygulamayı kabul etmeden kullanmak kabul sayılmaz.",
     "ACCEPT": "Kabul ediyorum",
     "LATER": "Daha sonra"
+  },
+  "OFFICES": {
+    "TITLE": "Emlak ofisleri",
+    "SUBTITLE": "İlgilendiğiniz bölgeye yakın bir ofis bulun.",
+    "SEARCH_LABEL": "Ofis ara",
+    "SEARCH_PLACEHOLDER": "Ofis adı",
+    "FILTERS": "Filtreler",
+    "SORT_LABEL": "Sıralama",
+    "SORT": {
+      "MOSTLISTINGS": "En çok ilan",
+      "TOPRATED": "En yüksek puan",
+      "NEWEST": "En yeni"
+    },
+    "FILTER": {
+      "GOVERNORATE": "İl",
+      "DISTRICT": "İlçe",
+      "NEIGHBORHOOD": "Mahalle",
+      "ANY": "Tümü",
+      "NONE_HERE": "Burada henüz ofis yok",
+      "DEAL": "İşlem türü",
+      "PROPERTY_TYPE": "Emlak türü",
+      "RATING": "Puan",
+      "RATING_AT_LEAST": "{{value}} yıldız ve üzeri",
+      "VERIFIED_ONLY": "Yalnızca doğrulanmış ofisler"
+    },
+    "DEAL": {
+      "SALE": "Satılık",
+      "RENT": "Kiralık",
+      "SHORTSTAY": "Kısa süreli",
+      "INVESTMENT": "Yatırım"
+    },
+    "CLEAR": "Filtreleri temizle",
+    "NEARBY_SOON": "Yakınımdaki ofisleri arama ve harita yakında geliyor.",
+    "RESULTS": "{{count}} ofis",
+    "LOAD_ERROR": "Ofisler şu anda yüklenemedi.",
+    "EMPTY_TITLE": "Eşleşen ofis yok",
+    "EMPTY_MESSAGE": "Başka bir bölge deneyin veya filtreleri gevşetin.",
+    "VERIFICATION": {
+      "UNVERIFIED": "Doğrulanmamış",
+      "PENDING": "İncelemede",
+      "VERIFIED": "Doğrulanmış",
+      "REJECTED": "Reddedildi",
+      "REVOKED": "Doğrulama geri alındı"
+    },
+    "RATING": "{{value}} ({{count}} değerlendirme)",
+    "NOT_RATED": "Henüz puanlanmadı",
+    "ACTIVE_LISTINGS": "{{count}} aktif ilan",
+    "VIEW_PROFILE": "Ofis sayfası",
+    "CONTACT": "İletişim",
+    "PAGINATION": "Ofis sayfaları",
+    "PREVIOUS": "Önceki sayfa",
+    "NEXT": "Sonraki sayfa"
+  },
+  "ADMIN_AGENCIES": {
+    "TITLE": "Emlak ofisi doğrulama",
+    "SUBTITLE": "İncelemedeki ofisler önce gelir. Doğrulama, platform dışında gerçek bir kontrolden sonra verilen idari bir karardır.",
+    "SEARCH_PLACEHOLDER": "Ad, bağlantı veya lisans numarası",
+    "STATUS_FILTER": "Doğrulama durumu",
+    "ALL_STATUSES": "Tüm durumlar",
+    "LOAD_ERROR": "Ofisler yüklenemedi.",
+    "EMPTY_TITLE": "Ofis yok",
+    "EMPTY_MESSAGE": "Aramaya uyan ofis yok.",
+    "INACTIVE": "Devre dışı",
+    "OWNER": "Sahip",
+    "LICENSE": "Lisans",
+    "LISTINGS": "{{count}} aktif ilan",
+    "MEMBERS": "{{count}} üye",
+    "VERIFIED_AT": "{{date}} tarihinde doğrulandı",
+    "CHANGE_STATUS": "Durumu değiştir",
+    "MODAL_TITLE": "Doğrulama durumunu değiştir",
+    "SAVE": "Kaydet",
+    "CURRENT_STATUS": "Mevcut durum",
+    "HINT": "Gerekçe zorunludur ve geçmişte saklanır. \"Doğrulanmış\" durumunu yalnızca lisans ve kimlik kontrolünden sonra verin.",
+    "NEW_STATUS": "Yeni durum",
+    "CHOOSE_STATUS": "Durum seçin",
+    "REASON": "Gerekçe (zorunlu)",
+    "HISTORY": "Doğrulama geçmişi",
+    "HISTORY_EMPTY": "Önceki değişiklik yok.",
+    "SAVED": "Doğrulama durumu kaydedildi.",
+    "SAVE_ERROR": "Durum kaydedilemedi."
   }
 }

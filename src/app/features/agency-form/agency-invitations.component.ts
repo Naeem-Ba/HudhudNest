@@ -47,7 +47,7 @@ import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
         <ul class="row-list" *ngIf="invitations().length">
           <li class="row" *ngFor="let inv of invitations(); trackBy: trackInvitation">
             <div class="row__main">
-              <a class="row__name" [routerLink]="['/agencies', inv.agencySlug]">{{ inv.agencyName }}</a>
+              <a class="row__name" [routerLink]="['/offices', inv.agencySlug]">{{ inv.agencyName }}</a>
               <span class="row__meta">
                 {{ 'AGENCY_INVITES.FROM' | translate: { name: inv.inviterName } }}
                 · {{ 'AGENCY_INVITES.EXPIRES' | translate }} {{ inv.expiresAt | localDate:'dd/MM/yyyy' }}

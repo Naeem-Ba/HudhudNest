@@ -363,7 +363,7 @@
           <button
             type="button"
             class="btn btn--outline btn--full"
-            *ngIf="isLoggedIn"
+            *ngIf="isLoggedIn && !agencyId"
             [disabled]="savingSearch()"
             (click)="saveCurrentSearch()"
           >
@@ -391,6 +391,14 @@
         <p class="mobile-count" *ngIf="!loading() && totalCount() > 0">
           {{ totalCount() }} {{ 'PROPERTY_LIST.RESULTS' | translate }}
         </p>
+      </div>
+
+      <!-- One office's listings (from its page): named when known, and left with one tap; clearing the filters keeps it. -->
+      <div class="geo-status office-scope" *ngIf="agencyId" role="status" data-testid="office-scope">
+        <span>{{ officeName() ? ('PROPERTY_LIST.OFFICE_SCOPE' | translate: { name: officeName() }) : ('PROPERTY_LIST.OFFICE_SCOPE_GENERIC' | translate) }}</span>
+        <button type="button" class="geo-status__cancel" data-testid="office-scope-clear" (click)="clearOfficeScope()">
+          {{ 'PROPERTY_LIST.OFFICE_SCOPE_CLEAR' | translate }}
+        </button>
       </div>
 
       <!-- While "near me" is on the panel may be closed (phone): say so next to the results, with a way out. -->

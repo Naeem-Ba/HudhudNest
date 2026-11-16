@@ -24,6 +24,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, catchError, debounceTime, distinctUntilChanged, EMPTY, fromEvent, map, merge, Observable, of, switchMap, tap } from 'rxjs';
 
 import { PropertyApiService, toFloorScope } from '../../../core/api/property-api.service';
+import { AgenciesApiService } from '../../../core/api/agencies-api.service';
+import { isGuid } from '../../../shared/utils/guid';
 import { SavedSearchApiService } from '../../../core/api/saved-search-api.service';
 import {
   LookupsApiService,
@@ -110,6 +112,7 @@ export class PropertyListPage implements OnInit {
 
   private readonly api = inject(PropertyApiService);
   private readonly savedSearchApi = inject(SavedSearchApiService);
+  private readonly agenciesApi = inject(AgenciesApiService);
   private readonly lookupsApi = inject(LookupsApiService);
   private readonly locations = inject(LocationNamesService);
   private readonly auth = inject(AuthService);
@@ -236,6 +239,15 @@ export class PropertyListPage implements OnInit {
   floorFrom: number | null = null;
   floorTo: number | null = null;
   floorMode: FloorMode | null = null;
+
+  /**
+   * One office's listings (the office page's "browse with filters" link): `agencyId` scopes the search, and
+   * `office` (its slug) only names it. It is not a panel filter: clearing the filters keeps it, and the bar above
+   * the results is the way out. The name is shown only when the slug resolves to the same office id.
+   */
+  agencyId: string | null = null;
+  private officeSlug: string | null = null;
+  readonly officeName = signal<string | null>(null);
   /** The floors that exist for the filters as they stand; null while unknown (then the screen offers 0..50). */
   readonly floorOptions = signal<AvailableFloors | null>(null);
   /** Asks for the floor choices again (true: and drop a floor choice that no longer exists under the new filters). */
@@ -581,6 +593,7 @@ export class PropertyListPage implements OnInit {
       this.placeBox?.reset();
     }
     this.propertyTypeId = params.get('propertyTypeId') ? Number(params.get('propertyTypeId')) : null;
+    this.applyOfficeFromUrl(params.get('agencyId'), params.get('office'));
 
     // The URL is user-editable: a floor that is not a whole number from 0 to 200 is dropped, and a mode excludes a range.
     this.floorMode = parseFloorMode(params.get('floorMode'));
@@ -607,6 +620,35 @@ export class PropertyListPage implements OnInit {
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({ next: items => this.neighborhoods.set(items), error: () => this.neighborhoods.set([]) });
     }
+  }
+
+  /** A malformed id would be refused by the server (422), so it is dropped like any other bad URL value. */
+  private applyOfficeFromUrl(rawId: string | null, rawSlug: string | null): void {
+    const id = isGuid(rawId?.trim()) ? rawId!.trim().toLowerCase() : null;
+    const slug = id && rawSlug?.trim() ? rawSlug.trim() : null;
+    const changed = id !== this.agencyId || slug !== this.officeSlug;
+    this.agencyId = id;
+    this.officeSlug = slug;
+    if (!changed) return;
+
+    this.officeName.set(null);
+    if (!id || !slug) return;
+    this.agenciesApi.getBySlug(slug)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: agency => {
+          if (this.agencyId === id && agency.id.toLowerCase() === id) this.officeName.set(agency.name);
+        },
+        error: () => { /* the bar falls back to a generic label */ }
+      });
+  }
+
+  /** Leaves the office scope: the same filters, over every listing. */
+  clearOfficeScope(): void {
+    this.agencyId = null;
+    this.officeSlug = null;
+    this.officeName.set(null);
+    this.navigateWithCurrentState(1);
   }
 
   /**
@@ -644,7 +686,8 @@ export class PropertyListPage implements OnInit {
       propertyTypeId: this.propertyTypeId ?? undefined,
       floorFrom: this.floorFrom ?? undefined,
       floorTo: this.floorTo ?? undefined,
-      floorMode: this.floorMode ?? undefined
+      floorMode: this.floorMode ?? undefined,
+      agencyId: this.agencyId ?? undefined
     };
   }
 
@@ -691,6 +734,8 @@ export class PropertyListPage implements OnInit {
       floorFrom: this.floorFrom ?? null,
       floorTo: this.floorTo ?? null,
       floorMode: this.floorMode ?? null,
+      agencyId: this.agencyId ?? null,
+      office: this.agencyId ? this.officeSlug : null,
       page: page > 1 ? page : null,
       pageSize: this.pageSize() !== 20 ? this.pageSize() : null
     };
@@ -1093,6 +1138,7 @@ export class PropertyListPage implements OnInit {
     // Clears the URL entirely (not just component state) so a refresh or a
     // shared link after Reset doesn't resurrect the filters that were just cleared. When the URL was
     // already clean (only "near me" was on) the list is reloaded instead, so Reset always refreshes.
+    // The office scope (agencyId) is not a filter of the panel and stays: its own bar removes it.
     this.scrollToResultsWhenLoaded = true;
     this.navigateWithCurrentState(1, false, true);
   }

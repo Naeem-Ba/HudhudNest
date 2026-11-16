@@ -1,0 +1,173 @@
+@use '../../../styles/breakpoints' as bp;
+
+/* Offices directory: a filter column beside the cards on a wide screen; on a phone the filters fold behind
+   one button above the results, so the first card is visible without scrolling past every select. */
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+.offices { padding-block: 1.5rem 2.5rem; }
+
+.offices__head {
+  margin-bottom: 1rem;
+
+  h1 { margin: 0 0 .25rem; font-size: clamp(1.35rem, 2.6vw, 1.85rem); font-weight: 800; color: var(--gray-900); }
+  p { margin: 0; color: var(--gray-500); }
+}
+
+.offices__bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin-bottom: 1rem;
+}
+
+.offices__search {
+  flex: 1 1 260px; min-width: 0;
+
+  input {
+    width: 100%; box-sizing: border-box; border: 1px solid var(--border); border-radius: var(--r-md);
+    padding: .6rem .85rem; background: var(--surface); color: var(--text-strong); font: inherit; font-size: 16px;
+  }
+}
+
+.offices__filters-toggle {
+  display: none; align-items: center; gap: .4rem; border: 1px solid var(--border); border-radius: var(--r-md);
+  background: var(--surface); color: var(--text-strong); padding: .55rem .9rem; font: inherit; font-weight: 600; cursor: pointer;
+}
+
+.offices__count-badge {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 1.3rem; height: 1.3rem; padding: 0 .3rem;
+  border-radius: 999px; background: var(--primary); color: var(--on-primary); font-size: .75rem;
+}
+
+.offices__sort {
+  display: flex; align-items: center; gap: .4rem; font-size: .85rem; color: var(--gray-600, var(--gray-500));
+
+  select {
+    border: 1px solid var(--border); border-radius: var(--r-md); padding: .5rem .6rem; background: var(--surface);
+    color: var(--text-strong); font: inherit; font-size: 16px;
+  }
+}
+
+.offices__layout {
+  display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 1.25rem; align-items: start;
+}
+
+.offices__filters {
+  display: flex; flex-direction: column; gap: .8rem; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg, 14px); padding: 1rem; position: sticky; top: calc(var(--navbar-height, 68px) + 1rem);
+
+  label { display: flex; flex-direction: column; gap: .3rem; font-size: .85rem; font-weight: 600; color: var(--gray-700); }
+
+  select {
+    border: 1px solid var(--border); border-radius: var(--r-sm); padding: .5rem .6rem; background: var(--surface);
+    color: var(--text-strong); font: inherit; font-size: 16px; min-width: 0;
+
+    &:disabled { opacity: .6; }
+  }
+}
+
+.offices__filters .offices__check {
+  flex-direction: row; align-items: center; gap: .5rem; cursor: pointer;
+
+  input { width: 1.1rem; height: 1.1rem; margin: 0; accent-color: var(--primary); }
+}
+
+.offices__clear {
+  align-self: flex-start; background: none; border: 0; padding: 0; color: var(--primary-text); font: inherit;
+  font-weight: 600; cursor: pointer;
+}
+
+.offices__note { margin: 0; font-size: .78rem; color: var(--gray-500); }
+
+.offices__total { margin: 0 0 .75rem; font-size: .85rem; color: var(--gray-500); }
+
+.offices__error {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; padding: 1rem; border-radius: var(--r-md);
+  background: var(--danger-soft); color: var(--danger-text);
+
+  p { margin: 0; }
+  button {
+    border: 1px solid currentColor; background: none; color: inherit; border-radius: var(--r-sm); padding: .35rem .75rem;
+    font: inherit; font-weight: 600; cursor: pointer;
+  }
+}
+
+.offices__grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;
+}
+
+.office-card {
+  display: flex; flex-direction: column; gap: .75rem; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg, 14px); padding: 1rem; box-shadow: var(--shadow-xs); min-width: 0;
+}
+
+.office-card__top { display: flex; align-items: center; gap: .75rem; text-decoration: none; color: inherit; min-width: 0; }
+
+.office-card__logo {
+  flex: 0 0 64px; width: 64px; height: 64px; border-radius: var(--r-md); border: 1px solid var(--border);
+  object-fit: contain; background: var(--surface);
+}
+
+.office-card__logo--empty { display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
+
+.office-card__id { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
+
+.office-card__name {
+  margin: 0; font-size: 1rem; font-weight: 700; color: var(--gray-900); overflow-wrap: anywhere;
+  display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.office-card__top:hover .office-card__name { color: var(--primary-text); }
+
+.office-card__verified {
+  align-self: flex-start; padding: .1rem .55rem; border-radius: 999px; background: var(--success-soft);
+  color: var(--success-text); font-size: .75rem; font-weight: 700;
+}
+
+.office-card__facts {
+  list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .3rem;
+  font-size: .85rem; color: var(--gray-700);
+
+  li { overflow-wrap: anywhere; }
+}
+
+.office-card__star { color: var(--warning-text); }
+
+.office-card__actions {
+  margin-top: auto; display: flex; gap: .5rem; flex-wrap: wrap;
+
+  .btn { flex: 1 1 auto; justify-content: center; text-align: center; }
+}
+
+.offices__pagination {
+  display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1.25rem;
+
+  button {
+    width: 40px; height: 40px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface);
+    color: var(--text-strong); font-size: 1.1rem; cursor: pointer;
+
+    &:disabled { opacity: .4; cursor: not-allowed; }
+  }
+}
+
+/* ‹ and › are bidi-mirrored characters: in a right-to-left page the browser already turns them, so no flip here. */
+
+@include bp.tablet {
+  .offices__layout { grid-template-columns: minmax(0, 1fr); }
+
+  .offices__filters-toggle { display: inline-flex; }
+
+  .offices__filters {
+    display: none; position: static;
+
+    &--open { display: flex; }
+  }
+}
+
+@include bp.mobile {
+  .offices__search { flex-basis: 100%; }
+  .offices__sort { flex: 1 1 0; min-width: 0; justify-content: flex-end; }
+  .offices__sort select { flex: 1 1 auto; min-width: 0; }
+  .offices__grid { grid-template-columns: minmax(0, 1fr); }
+}

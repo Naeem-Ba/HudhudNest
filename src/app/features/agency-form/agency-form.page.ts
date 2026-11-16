@@ -244,7 +244,7 @@ export class AgencyFormPage implements OnInit {
     this.existingAgencyId = agency.id;
 
     // Slug غير قابل للتعديل بعد الإنشاء — يُعطَّل بدل أن يُحذَف من النموذج،
-    // ليبقى معروضًا للمستخدم كمرجع (رابط صفحته العامة /agencies/{slug}).
+    // ليبقى معروضًا للمستخدم كمرجع (رابط صفحته العامة /offices/{slug}).
     this.form.controls.slug.disable();
 
     this.form.patchValue({
