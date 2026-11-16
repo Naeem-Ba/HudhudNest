@@ -15,8 +15,10 @@
     "FIELD_INVALID": "Das Feld „{{field}}“ ist leer oder ungültig.",
     "AGENCY_ACCOUNT_NOT_VERIFIED": "Bestätigen Sie zuerst Ihr Konto: Bestätigen Sie in den Kontoeinstellungen Ihre E-Mail-Adresse oder Telefonnummer und versuchen Sie es erneut.",
     "AGENCY_PAID_PLAN_REQUIRED": "Ein Maklerbüro erfordert ein aktives kostenpflichtiges Paket. Das kostenlose Paket enthält keine Büros.",
+    "AGENCY_PLAN_EXPIRED": "Der kostenpflichtige Tarif des Büro-Inhabers ist abgelaufen, neue Inserate können erst nach der Verlängerung hinzugefügt werden. Bestehende Inserate, Nachrichten und Termine bleiben unverändert.",
     "AGENCY_FREE_PLAN_NOT_ALLOWED": "Sie besitzen ein Maklerbüro, und das kostenlose Paket enthält keine Büros. Wählen Sie ein kostenpflichtiges Paket.",
     "PAID_PLAN_ACTIVE": "Sie haben ein aktives kostenpflichtiges Abo, und das kostenlose Paket würde es beenden. Kontaktieren Sie uns, wenn Sie es kündigen möchten.",
+    "BOOKING_DUPLICATE_OPEN": "Für diese Unterkunft liegt bereits eine offene Buchungsanfrage mit überschneidenden Daten von Ihnen vor. Warten Sie auf die Antwort des Gastgebers oder stornieren Sie die frühere Anfrage.",
     "SERVICE_CATEGORY_NOT_APPROVED": "Diese Kategorie ist für Ihr Anbieterkonto nicht freigegeben. Wenden Sie sich an das Team.",
     "FILTER_PRICE_RANGE": "Der Mindestpreis ist höher als der Höchstpreis.",
     "FILTER_ROOMS_RANGE": "Die Mindestzahl der Zimmer ist höher als die Höchstzahl.",
@@ -29,7 +31,20 @@
     "UNSUPPORTED_MEDIA": "Die Anfrage konnte nicht in einem vom Server akzeptierten Format gesendet werden. Laden Sie die Seite neu und versuchen Sie es erneut; bei wiederholtem Auftreten wenden Sie sich an den Support.",
     "CONCURRENCY_CONFLICT": "Dieser Eintrag wurde gleichzeitig von jemand anderem geändert. Aktualisieren Sie die Seite und versuchen Sie es erneut.",
     "CSRF_VALIDATION_FAILED": "Die Anfrage konnte nicht als sicher bestätigt werden. Laden Sie die Seite neu und versuchen Sie es erneut.",
-    "LISTING_QUOTA_REACHED": "Sie haben das Limit aktiver Anzeigen Ihres Pakets erreicht. Löschen Sie eine bestehende Anzeige oder wechseln Sie in ein höheres Paket, um eine neue hinzuzufügen."
+    "LISTING_QUOTA_REACHED": "Sie haben das Limit aktiver Anzeigen Ihres Pakets erreicht. Löschen Sie eine bestehende Anzeige oder wechseln Sie in ein höheres Paket, um eine neue hinzuzufügen.",
+    "PAYMENTS_DISABLED": "Online-Zahlung ist derzeit nicht verfügbar. Es wurde nichts abgebucht.",
+    "PAYMENT_PROVIDER_UNAVAILABLE": "Der Zahlungsanbieter ist gerade nicht erreichbar. Es wurde nichts abgebucht. Bitte gleich erneut versuchen.",
+    "PAYMENT_PROVIDER_UNAVAILABLE_FOR_REQUEST": "Diese Zahlungsart ist für diese Währung oder dieses Land nicht verfügbar.",
+    "PAYMENT_TOO_MANY_OPEN_ORDERS": "Sie haben zu viele offene Zahlungen. Schließen Sie eine ab oder stornieren Sie sie.",
+    "PAYMENT_ORDER_ALREADY_PAID": "Diese Bestellung ist bereits bezahlt. Beantragen Sie stattdessen eine Erstattung.",
+    "PAYMENT_ORDER_NOT_CANCELLABLE": "Diese Bestellung kann nicht mehr storniert werden.",
+    "PAYMENT_TERMS_VERSION_MISMATCH": "Die Bedingungen haben sich geändert. Bitte prüfen und akzeptieren Sie die aktuellen Bedingungen.",
+    "PAYMENT_RENEWAL_UNSUPPORTED": "Diese Zahlungsart unterstützt keine automatische Verlängerung.",
+    "PAYMENT_IDEMPOTENCY_KEY_REUSED": "Diese Anfrage wurde bereits für eine andere Bestellung verwendet. Seite neu laden und erneut versuchen.",
+    "PAYMENT_CURRENCY_UNSUPPORTED": "Diese Währung wird nicht unterstützt.",
+    "REFUND_WINDOW_CLOSED": "Die Frist für einen Erstattungsantrag zu dieser Bestellung ist abgelaufen.",
+    "REFUND_ALREADY_OPEN": "Für diese Bestellung liegt bereits ein Erstattungsantrag vor.",
+    "REFUND_ORDER_NOT_REFUNDABLE": "Diese Bestellung kann nicht erstattet werden."
   },
   "COMMON": {
     "SAVE": "Speichern",
@@ -62,7 +77,11 @@
     "AVATAR_ALT": "Nutzerfoto",
     "COUNTRY_CODE": "Ländercode",
     "PICK_RATING": "Bewertung wählen",
-    "IMAGE_VIEWER": "Bildbetrachter"
+    "IMAGE_VIEWER": "Bildbetrachter",
+    "OPEN_LIST": "Liste öffnen",
+    "CLOSE_LIST": "Liste schließen",
+    "COMBO_NO_OPTIONS": "Keine passenden Optionen",
+    "COMBO_KEEP_TYPED": "Nicht in der Liste. Ihre Eingabe wird verwendet: „{{value}}“"
   },
   "NAVBAR": {
     "HOME": "Startseite",
@@ -124,7 +143,12 @@
     "PRICE_ESTIMATE": "Preise nach Gegend",
     "ADMIN_GROWTH": "Wachstum & Kampagnen",
     "MAP": "Karte",
-    "EXPATS": "Für Syrer im Ausland"
+    "EXPATS": "Für Syrer im Ausland",
+    "MY_PAYMENTS": "Zahlungen & Rechnungen",
+    "ADMIN_PAYMENTS": "Zahlungen (online)",
+    "ADMIN_GEO": "Standortkatalog",
+    "OFFICES": "Makler",
+    "ADMIN_AGENCIES": "Makler-Verifizierung"
   },
   "AUTH": {
     "LOGIN_TITLE": "Willkommen",
@@ -185,6 +209,7 @@
     "REGISTER_SUCCESS": "Das Konto wurde erfolgreich erstellt! Wir haben einen Bestätigungslink an Ihre E-Mail-Adresse gesendet. Sie können sich jetzt anmelden.",
     "REGISTER_SUCCESS_MAIL_FAILED": "Ihr Konto wurde erstellt, aber die Bestätigungs-E-Mail konnte gerade nicht gesendet werden. Tippen Sie gleich auf „Bestätigungslink erneut senden“. Sie können sich jetzt anmelden.",
     "CONFIRMATION_SPAM_HINT": "Sollte sie nach einigen Minuten nicht angekommen sein, prüfen Sie Ihren Spam-Ordner.",
+    "CONFIRMATION_RESENT": "Wir haben einen neuen Bestätigungslink an Ihre E-Mail-Adresse gesendet. Öffnen Sie ihn und melden Sie sich dann an. Sollte er nach einigen Minuten nicht angekommen sein, prüfen Sie Ihren Spam-Ordner.",
     "CONTINUE_WITH_EMAIL": "Mit E-Mail fortfahren",
     "CONTINUE_WITH_PHONE": "Mit Telefonnummer fortfahren",
     "PHONE_STEP_SUBTITLE": "Geben Sie Ihre Telefonnummer mit Ländervorwahl ein. Wir senden Ihnen einen Bestätigungscode per SMS.",
@@ -286,6 +311,7 @@
       "ATTEMPTS_REMAINING": "Noch {{count}} Versuche, bevor Ihr Konto gesperrt wird.",
       "RATE_LIMITED": "Zu viele Anmeldeversuche. Bitte warten Sie einen Moment.",
       "ACCOUNT_DISABLED": "Dieses Konto wurde deaktiviert. Bitte kontaktieren Sie den Support.",
+      "EMAIL_NOT_CONFIRMED": "Bitte bestätigen Sie Ihre E-Mail-Adresse, bevor Sie sich anmelden. Wir haben Ihnen soeben einen neuen Bestätigungslink gesendet; falls er nicht ankommt, prüfen Sie Ihren Spam-Ordner oder senden Sie ihn erneut.",
       "SESSION_EXPIRED": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.",
       "SESSION_REVOKED": "Sie wurden aus Sicherheitsgründen überall abgemeldet. Bitte melden Sie sich erneut an.",
       "PASSWORD_NO_UPPERCASE": "Das Passwort muss mindestens einen Großbuchstaben (A-Z) enthalten.",
@@ -302,6 +328,7 @@
       "GENERIC": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
       "TIMEOUT": "Der Server hat zu lange gebraucht. Prüfe deine Verbindung und versuche es erneut.",
       "PASSWORD_PERSONAL_INFO": "Das Passwort darf weder deinen Namen noch deine E-Mail-Adresse oder Telefonnummer enthalten. Wähle eines, das nicht auf deinen persönlichen Daten beruht.",
+      "CURRENT_PASSWORD_WRONG": "Das aktuelle Passwort ist nicht korrekt.",
       "SESSION_SUPERSEDED": "Dieses Gerät wurde abgemeldet, weil das Konto auf mehr Geräten angemeldet war als erlaubt. Bitte melde dich erneut an.",
       "LOGIN_HELP": "Prüfe die Schreibweise (Groß- und Kleinschreibung zählt), setze dein Passwort zurück oder erstelle ein Konto, falls du neu bist.",
       "PHONE_LOGIN_HELP": "Prüfe die Nummer (mit Ländervorwahl) und das Passwort, setze das Passwort zurück oder erstelle ein Konto, falls du neu bist.",
@@ -583,6 +610,19 @@
     "NEIGHBORHOOD": "Stadtviertel",
     "PROPERTY_TYPE": "Immobilientyp",
     "SELECT_OPTIONAL": "— Auswählen (optional) —",
+    "FLOOR_FILTER": {
+      "TITLE": "Etage",
+      "ALL": "Alle Etagen",
+      "FROM": "Ab Etage",
+      "TO": "Bis Etage",
+      "GROUND": "Erdgeschoss",
+      "LOWEST": "Niedrigste verfügbare Etage",
+      "HIGHEST": "Höchste verfügbare Etage",
+      "NONE": "Keine Etagen verfügbar",
+      "SELECT": "Etage auswählen",
+      "CLEAR": "Filter zurücksetzen",
+      "SAVE_MODE_NOTE": "Die Suche wurde ohne Etage gespeichert: „Höchste/Niedrigste verfügbare Etage“ ändert sich mit dem Markt. Wählen Sie eine feste Etage, wenn Sie dafür Benachrichtigungen möchten."
+    },
     "SAVE_SEARCH": "Diese Suche speichern",
     "SAVE_SEARCH_NAME_PROMPT": "Geben Sie dieser Suche einen Namen (optional):",
     "SAVE_SEARCH_SUCCESS": "Suche gespeichert. Wir benachrichtigen Sie über neue passende Immobilien.",
@@ -596,7 +636,19 @@
     "GEO_UNSUPPORTED": "Ihr Browser unterstützt keine Standortbestimmung.",
     "GEO_CONSENT_NOTE": "Wir verwenden Ihren aktuellen Standort nur, um Immobilien in Ihrer Nähe anzuzeigen.",
     "GEO_DENIED": "Ihr Standort konnte nicht ermittelt werden. Bitte prüfen Sie die Standortfreigabe.",
-    "MAP_VIEW": "Kartenansicht"
+    "MAP_VIEW": "Kartenansicht",
+    "TYPE_PLACE_HINT": "Nicht in der Liste? Namen eintippen.",
+    "AMENITIES_SECTION": "Ausstattung & Services",
+    "AMENITIES_SELECTED": "{{count}} ausgewählt",
+    "CITY_FILTER_CHIP": "Stadt: {{city}}",
+    "CITY_FILTER_REMOVE": "Stadtfilter entfernen",
+    "EMPTY_GEO_TITLE": "Keine Immobilien in Ihrer Nähe",
+    "EMPTY_GEO_MESSAGE": "Im Umkreis von {{km}} km um Ihren Standort passt keine Immobilie zu den Filtern. Vergrößern Sie den Umkreis oder ändern Sie die Filter.",
+    "GEO_STATUS": "Ergebnisse im Umkreis von {{km}} km um Ihren Standort",
+    "SORT_BY_DISTANCE_HINT": "Bei „in meiner Nähe“ sind die Ergebnisse nach Entfernung sortiert.",
+    "OFFICE_SCOPE": "Nur Anzeigen von {{name}}",
+    "OFFICE_SCOPE_GENERIC": "Nur Anzeigen eines Büros",
+    "OFFICE_SCOPE_CLEAR": "Alle Anzeigen zeigen"
   },
   "PAGINATION": {
     "NAV_LABEL": "Seitennavigation",
@@ -619,7 +671,8 @@
     "AGENCY": {
       "TITLE": "Immobilienbüro",
       "NOT_RATED": "Noch nicht bewertet",
-      "VIEW_PROFILE": "Büroseite und Bewertung ansehen"
+      "VIEW_PROFILE": "Büroseite und Bewertung ansehen",
+      "BRANCH": "Filiale"
     },
     "NOT_FOUND_TITLE": "Immobilie nicht gefunden",
     "NOT_FOUND_MESSAGE": "Die Immobilie wurde möglicherweise gelöscht oder der Link ist falsch.",
@@ -745,6 +798,8 @@
     "ADDITIONAL_COSTS": "Nebenkosten",
     "ADDITIONAL_COSTS_INVALID": "Die Nebenkosten müssen eine positive Zahl sein.",
     "AREA_TOO_SMALL": "Die Fläche muss größer als 10 m² sein.",
+    "ROOMS_WHOLE_NUMBER": "Die Zimmerzahl muss eine ganze Zahl sein (keine halben Zimmer).",
+    "FLOOR_WHOLE_NUMBER": "Das Stockwerk muss eine ganze Zahl sein.",
     "DEPOSIT": "Kaution",
     "DEPOSIT_INVALID": "Die Kaution muss eine positive Zahl sein.",
     "HEATING": "Heizung",
@@ -814,7 +869,13 @@
     "HIDE_EXACT_LOCATION": "Meinen genauen Standort öffentlich ausblenden",
     "HIDE_EXACT_LOCATION_HINT": "Besucher sehen statt der Stecknadel einen ungefähren Bereich von etwa 500 m und keinen Straßennamen. Sie und die Administration sehen den genauen Ort.",
     "PRICE_NEGOTIABLE": "Preis verhandelbar",
-    "PRICE_NEGOTIABLE_HINT": "Aktivieren Sie dies, wenn Sie über den Preis verhandeln möchten. Besucher sehen es nur auf der Detailseite der Anzeige."
+    "PRICE_NEGOTIABLE_HINT": "Aktivieren Sie dies, wenn Sie über den Preis verhandeln möchten. Besucher sehen es nur auf der Detailseite der Anzeige.",
+    "BRANCH": {
+      "LABEL": "Filiale des Büros",
+      "NONE": "Keine bestimmte Filiale",
+      "HINT": "Die Filiale, die dieses Inserat betreut. Sie wird auf der Inseratsseite angezeigt.",
+      "INVALID": "Die gewählte Filiale gibt es nicht mehr. Wählen Sie eine andere und speichern Sie erneut."
+    }
   },
   "property_add": {
     "title": "Immobilie hinzufügen",
@@ -914,13 +975,26 @@
     "PUBLISH": "Anzeige veröffentlichen",
     "PUBLISH_SUCCESS": "Immobilie erfolgreich veröffentlicht.",
     "PUBLISH_ERROR": "Veröffentlichung fehlgeschlagen.",
+    "HIDE": "Anzeige ausblenden",
+    "HIDE_SUCCESS": "Die Anzeige ist ausgeblendet. Sie können sie jederzeit wieder veröffentlichen.",
+    "HIDE_ERROR": "Ausblenden fehlgeschlagen.",
     "MESSAGES": "Nachrichten",
     "PUBLISHING": "Wird veröffentlicht...",
     "PUBLISH_NEEDS_IMAGE": "Fügen Sie vor der Veröffentlichung mindestens ein Foto hinzu.",
     "FEATURED_UNTIL": "Hervorgehoben bis",
     "FEATURE": "Anzeige hervorheben",
     "FEATURE_EXTEND": "Hervorhebung verlängern",
-    "FEATURE_PENDING": "Ihre Hervorhebungsanfrage wartet auf die Zahlungsbestätigung durch einen Administrator."
+    "FEATURE_PENDING": "Ihre Hervorhebungsanfrage wartet auf die Zahlungsbestätigung durch einen Administrator.",
+    "OFFICE_LINK": {
+      "ACTION": "Meinem Büro zuordnen",
+      "HINT": "Das Inserat erscheint auf Ihrer Büroseite und zählt zum Kontingent des Büros.",
+      "CONFIRM": "Dieses Inserat wird „{{office}}“ zugeordnet und auf der Büroseite angezeigt. Ist es aktiv, zählt es zum Inseratskontingent des Büros. Das lässt sich später nicht rückgängig machen. Fortfahren?",
+      "DONE": "Das Inserat ist jetzt Ihrem Büro zugeordnet.",
+      "QUOTA": "Ihr Büro hat sein Limit für aktive Inserate erreicht. Dieses Inserat kann jetzt nicht zugeordnet werden.",
+      "PLAN_EXPIRED": "Der Tarif des Büroinhabers ist abgelaufen. Aktive Inserate können erst nach der Verlängerung zugeordnet werden.",
+      "OTHER_OFFICE": "Dieses Inserat gehört zu einem anderen Büro.",
+      "ERROR": "Das Inserat konnte nicht zugeordnet werden. Bitte erneut versuchen."
+    }
   },
   "VIEW_COUNT": {
     "LABEL": "Aufrufe",
@@ -1312,7 +1386,7 @@
       "WILL_DELETE_2": "Ihre registrierte E-Mail-Adresse und Telefonnummer sowie jede verknüpfte Google-/Apple-Anmeldung — Sie können sich damit nicht mehr bei diesem Konto anmelden",
       "WILL_DELETE_3": "Alle aktiven Sitzungen auf allen Geräten — Sie werden dann überall abgemeldet",
       "WILL_RETAIN_TITLE": "Bleibt erhalten (ohne Ihre persönlichen Daten):",
-      "WILL_RETAIN_1": "Von Ihnen veröffentlichte Anzeigen, Nachrichten und Bewertungen bleiben für andere sichtbar, jedoch mit „Gelöschter Nutzer“ statt Ihrem echten Namen gekennzeichnet",
+      "WILL_RETAIN_1": "Von Ihnen veröffentlichte Nachrichten und Bewertungen bleiben für andere sichtbar, jedoch mit „Gelöschter Nutzer“ statt Ihrem echten Namen gekennzeichnet. Ihre Anzeigen werden bei der Ausführung der Löschung offline genommen (außer Sie gehören zu einem Immobilienbüro)",
       "WILL_RETAIN_2": "Begrenzte interne Sicherheitsprotokolle (zur Missbrauchsprävention), die nach der Löschung keine Ihrer persönlichen Daten mehr enthalten",
       "BUSINESS_NOTE": "Hinweis: Dies löscht Ihre veröffentlichten Anzeigen nicht und deaktiviert sie nicht automatisch. Wenn Sie eine Anzeige vor der Kontolöschung deaktivieren möchten, tun Sie dies zuerst unter „Meine Anzeigen“.",
       "CONTINUE_BTN": "Weiter",
@@ -1502,6 +1576,11 @@
     "ADD_PROPERTY": "Immobilie bewerten",
     "PROPERTY_HINT": "Immobilienbewertungen sind nach einer abgeschlossenen Besichtigung möglich. Um den Eigentümer nach dem Nachrichtenaustausch zu bewerten:"
   },
+  "AGENCY_GRACE": {
+    "TITLE": "Die Verlängerungsfrist endet in {{days}} Tagen",
+    "DESC": "Der kostenpflichtige Tarif des Büro-Inhabers ist abgelaufen, das Büro ist daher vorübergehend gesperrt: Sie und Ihr Team können keine neuen Inserate hinzufügen, Nachrichten, Anfragen und Termine erreichen Sie weiterhin. Verlängern Sie den Tarif innerhalb von {{days}} Tagen, um es wiederherzustellen; andernfalls werden die Inserate des Büros öffentlich ausgeblendet, bis der Tarif verlängert wird.",
+    "CTA": "Tarif verlängern"
+  },
   "AGENCY_FORM": {
     "CREATE_TITLE": "Immobilienbüro registrieren",
     "EDIT_TITLE": "Immobilienbüro bearbeiten",
@@ -1625,7 +1704,9 @@
     "TAB_RENTED": "Vermietet",
     "NO_SOLD": "Noch keine verkauften Immobilien.",
     "NO_RENTED": "Noch keine vermieteten Immobilien.",
-    "CLOSED_NOTE": "Abgeschlossene Geschäfte, nur zur Dokumentation aufbewahrt. Sie erscheinen nicht in der Suche."
+    "CLOSED_NOTE": "Abgeschlossene Geschäfte, nur zur Dokumentation aufbewahrt. Sie erscheinen nicht in der Suche.",
+    "BROWSE_WITH_FILTERS": "Anzeigen des Büros mit Filtern durchsuchen",
+    "VERIFIED_HINT": "Die Plattform hat dieses Büro verifiziert"
   },
   "VALIDATION": {
     "REQUIRED": "Dieses Feld ist erforderlich.",
@@ -1930,8 +2011,6 @@
     }
   },
   "PRICING": {
-    "META_TITLE": "Abo-Pakete für Eigentümer und Immobilienbüros",
-    "META_DESCRIPTION": "Starten Sie kostenlos mit der Anzeige Ihrer eigenen Immobilie oder wählen Sie ein Büro-Paket: Basic 49 $, Premium 99 $ oder Elite — höhere Anzeigengrenzen, Makler- und Mitarbeiterkonten, Berichte und Analysen sowie hervorgehobene Platzierung in den Suchergebnissen.",
     "EYEBROW": "Abo-Pakete",
     "TITLE": "Wählen Sie das passende Paket",
     "SUBTITLE": "Das kostenlose Paket ist für Privatpersonen, die ihre eigene Immobilie inserieren. Die Büro-Pakete ergänzen Makler- und Mitarbeiterkonten sowie Leistungsberichte — wechseln oder upgraden können Sie jederzeit.",
@@ -2166,7 +2245,24 @@
       "EMPTY_MESSAGE": "Versuchen Sie andere Suchkriterien oder Daten.",
       "GUESTS_SHORT": "Gäste",
       "BEDROOMS_SHORT": "Zi.",
-      "NIGHT": "Nacht"
+      "NIGHT": "Nacht",
+      "KEYWORD": "Suche nach Wörtern",
+      "KEYWORD_PLACEHOLDER": "z. B. möblierte Wohnung Damaskus (ein passendes Wort genügt)",
+      "TYPE": "Art der Unterkunft",
+      "ANY": "Alle",
+      "BEDROOMS": "Schlafzimmer",
+      "BEDROOMS_AT_LEAST": "ab {{count}}",
+      "PRICE_CURRENCY": "Preiswährung",
+      "SORT": "Sortierung",
+      "SORT_NEWEST": "Neueste zuerst",
+      "SORT_PRICE_ASC": "Preis: aufsteigend",
+      "SORT_PRICE_DESC": "Preis: absteigend",
+      "INSTANT_ONLY": "Nur Sofortbuchung",
+      "AMENITIES_SECTION": "Ausstattung und Services",
+      "AMENITIES_SELECTED": "{{count}} ausgewählt",
+      "RESULTS_COUNT": "{{count}} Unterkünfte",
+      "INVALID_FILTERS": "Die Suchoptionen konnten nicht angewendet werden. Prüfen Sie Daten und Preise und versuchen Sie es erneut.",
+      "RETRY": "Erneut versuchen"
     },
     "DETAIL": {
       "LOADING": "Wird geladen...",
@@ -2682,270 +2778,7 @@
     }
   },
   "LANDING": {
-    "TOP": {
-      "HOME_LINK": "Zur Website",
-      "LANG_ARIA": "Sprache"
-    },
-    "HERO": {
-      "ARIA": "Startseite",
-      "BADGE": "Beta — Start in Syrien in Kürze",
-      "TITLE_MAIN": "Jedes Zuhause hat eine Geschichte.",
-      "TITLE_ACCENT": "Lassen Sie uns Ihre Geschichte in Syrien beginnen.",
-      "TAGLINE_1": "Eine kleine Plattform mit großem Herz, die Familien hilft, ein Zuhause zu finden — echte Fotos und direkter Kontakt, ohne doppelte oder gefälschte Anzeigen.",
-      "CTA_EXPLORE": "Immobilien entdecken",
-      "CTA_EXPLORE_ARIA": "Immobilien auf HudhudNest entdecken",
-      "CTA_PUBLISH": "Immobilie inserieren",
-      "CTA_PUBLISH_ARIA": "Ihre Immobilienanzeige auf HudhudNest veröffentlichen",
-      "CHIPS_ARIA": "Auf einen Blick",
-      "CHIP_FREE": "Zum Start kostenlos",
-      "CHIP_REAL": "Echte Fotos, direkter Kontakt",
-      "CHIP_LANGS": "عربي · English · Deutsch",
-      "VISUAL_ARIA": "Illustration der Suchansicht der Plattform – keine echten Anzeigen",
-      "VISUAL_TITLE": "Finden Sie Ihre Immobilie",
-      "VISUAL_SALE": "Kauf",
-      "VISUAL_RENT": "Miete",
-      "VISUAL_LOCATION": "Gouvernement · Gebiet",
-      "VISUAL_TYPE": "Immobilientyp",
-      "VISUAL_PRICE": "Preisspanne",
-      "VISUAL_BTN": "Ergebnisse anzeigen",
-      "VISUAL_NOTE": "Illustration der Oberfläche"
-    },
-    "VISION": {
-      "EYEBROW": "Unsere Vision",
-      "TITLE": "Eine Immobilienplattform für ganz Syrien",
-      "TEXT": "Eine Plattform, die Syriens Immobilienanzeigen in einem einheitlichen Register bündelt: echte Fotos, genaue Angaben und eine verlässliche Quelle statt Dutzender verstreuter Facebook- und WhatsApp-Gruppen.",
-      "PATH_ARIA": "Phasen des Starts",
-      "STEP1_TAG": "Der Anfang",
-      "STEP1_TITLE": "Damaskus und Umland Damaskus",
-      "STEP1_DESC": "Hier beginnt voraussichtlich unser schrittweiser Start, damit wir ein geordnetes Register aufbauen und aus der realen Nutzung lernen.",
-      "STEP2_TAG": "Danach",
-      "STEP2_TITLE": "Die übrigen Gouvernements Syriens",
-      "STEP2_DESC": "Unsere Vision umfasst ganz Syrien, und wir erweitern Phase für Phase.",
-      "NOTE": "Der Start erfolgt schrittweise: Das Angebot an Anzeigen und Services unterscheidet sich je nach Gebiet und wächst mit der Zeit."
-    },
-    "USES": {
-      "EYEBROW": "Hier starten",
-      "TITLE": "Was können Sie mit HudhudNest tun?",
-      "ITEMS": {
-        "BUY": {
-          "TITLE": "Immobilie kaufen",
-          "DESC": "Stöbern Sie in Immobilien zum Kauf mit Fotos und strukturierten Angaben und vergleichen Sie Optionen an einem Ort."
-        },
-        "RENT": {
-          "TITLE": "Wohnung mieten",
-          "DESC": "Suchen Sie Mietobjekte nach Gouvernement, Gebiet, Preis und Ausstattung."
-        },
-        "SHORT": {
-          "TITLE": "Kurzzeitaufenthalte",
-          "DESC": "Entdecken Sie Kurzzeitunterkünfte und senden Sie eine Buchungsanfrage an den Gastgeber."
-        },
-        "INVEST": {
-          "TITLE": "Investmentchancen",
-          "DESC": "Entdecken Sie Immobilien-Investitionsprojekte und behalten Sie die für Sie interessanten im Blick."
-        },
-        "PUBLISH": {
-          "TITLE": "Immobilie inserieren",
-          "DESC": "Veröffentlichen Sie Ihre Anzeige mit klaren Fotos und Angaben, damit Suchende Sie direkt erreichen."
-        },
-        "SERVICES": {
-          "TITLE": "Immobilienservice anfragen",
-          "DESC": "Entdecken Sie Services von Anbietern, die von der Plattform zugelassen wurden."
-        }
-      },
-      "GO": "Entdecken"
-    },
-    "PROBLEM_SOLUTION": {
-      "EYEBROW": "Warum HudhudNest?",
-      "TITLE": "Immobiliensuche in Syrien ist noch immer mühsam",
-      "DESC": "Wir hören täglich dieselben Beschwerden. HudhudNest will sie Schritt für Schritt lösen.",
-      "PROBLEM_LABEL": "Aktuelle Situation",
-      "PROBLEM_ITEMS": {
-        "ITEM_1": "Suche in unübersichtlichen, verstreuten Facebook- und WhatsApp-Gruppen",
-        "ITEM_2": "Schwer zu erkennen, ob eine Anzeige echt oder doppelt ist",
-        "ITEM_3": "Den meisten Anzeigen fehlen Fotos und grundlegende Informationen",
-        "ITEM_4": "Preise und Lagen lassen sich kaum an einem Ort vergleichen",
-        "ITEM_5": "Wenig Vertrauen zwischen Suchenden und Eigentümer oder Büro"
-      },
-      "SOLUTION_LABEL": "Mit HudhudNest",
-      "SOLUTION_ITEMS": {
-        "ITEM_1": "Eine Plattform bündelt Syriens Immobilienangebote — organisiert und durchsuchbar",
-        "ITEM_2": "Klare Fotos und einheitliche Basisinformationen bei jeder Anzeige",
-        "ITEM_3": "Filter nach Stadt, Viertel, Preis, Typ und Zweck",
-        "ITEM_4": "Direkter Kontakt zum Eigentümer oder Immobilienbüro",
-        "ITEM_5": "Schrittweise Verifizierung für weniger Zufall und mehr Transparenz"
-      }
-    },
-    "FEATURES": {
-      "EYEBROW": "Was uns auszeichnet",
-      "TITLE": "Alles, was Sie brauchen, an einem Ort",
-      "ITEMS": {
-        "SEARCH": {
-          "TITLE": "Einfachere Suche",
-          "DESC": "Filtern nach Stadt, Viertel, Preis, Immobilientyp und Zweck — Kauf oder Miete — in Sekunden."
-        },
-        "INFO": {
-          "TITLE": "Klarere Informationen",
-          "DESC": "Fotos, ausführliche Beschreibung, ungefähre Lage, Fläche, Etagen und übersichtliche Kontaktdaten — alles an seinem Platz."
-        },
-        "PRICE": {
-          "TITLE": "Preise Ihrer Gegend kennen",
-          "DESC": "Eine Preisspanne auf Basis tatsächlich veröffentlichter Anzeigen – und bei Bedarf eine Bewertungsanfrage für Ihre Immobilie."
-        },
-        "LANGS": {
-          "TITLE": "In drei Sprachen",
-          "DESC": "Eine vollständige Oberfläche auf Arabisch, Englisch und Deutsch – für Besucher in Syrien und im Ausland."
-        },
-        "SERVICES": {
-          "TITLE": "Immobilienservices",
-          "DESC": "Verifizierung, Besichtigung, Fotografie und mehr – von Anbietern, die das Plattform-Team zulässt."
-        },
-        "SAVE": {
-          "TITLE": "Merken und teilen",
-          "DESC": "Favoriten anlegen, Suchen speichern und Anzeigen mit anderen teilen."
-        },
-        "MAP": {
-          "TITLE": "Auf der Karte",
-          "DESC": "Stöbern Sie in Immobilien auf der Karte und sehen Sie ungefähre Lage und Umgebung."
-        },
-        "CONTACT": {
-          "TITLE": "Direkter Kontakt",
-          "DESC": "Kontaktieren Sie Eigentümer oder Immobilienbüro direkt, ohne komplizierte Schritte oder unnötige Mittelsmänner."
-        }
-      }
-    },
-    "SEARCH": {
-      "EYEBROW": "Suche und Filter",
-      "TITLE": "Suchen Sie klug … und finden Sie die Immobilie, die zu Ihnen passt.",
-      "TEXT": "Präzise Filter, vergleichbare Preise und Ergebnisse, die sich mit jeder neuen Anzeige aktualisieren – statt wahllosem Scrollen durch verstreute Beiträge.",
-      "POINTS": {
-        "1": "Gouvernement, dann Gebiet und Viertel",
-        "2": "Kauf oder Miete",
-        "3": "Immobilientyp, Preisspanne und Währung",
-        "4": "Ausstattung und Merkmale",
-        "5": "Sortierung und Umkreissuche auf der Karte"
-      },
-      "POINTS_ARIA": "Wichtigste Suchoptionen",
-      "CTA": "Suche jetzt ausprobieren",
-      "CTA_MAP": "Karte öffnen"
-    },
-    "VALUE": {
-      "EYEBROW": "Preiseinschätzung",
-      "TITLE": "Was ist Ihre Immobilie wert? Entdecken Sie eine Einschätzung.",
-      "TEXT": "Zwei Wege zu einer Preiseinschätzung – je nachdem, was Sie brauchen.",
-      "RANGE_TAG": "Sofort",
-      "RANGE_TITLE": "Preisspanne in Ihrer Gegend",
-      "RANGE_DESC": "Wählen Sie Gouvernement, Gebiet, Immobilientyp und Fläche und sehen Sie die Angebotspreisspanne aktuell veröffentlichter Anzeigen. Die Spanne zeigt, auf wie vielen Anzeigen sie beruht – und reichen die Daten nicht, sagen wir das offen.",
-      "RANGE_CTA": "Preisspanne anzeigen",
-      "REQ_TAG": "Für Ihre Immobilie",
-      "REQ_TITLE": "Bewertung Ihrer Immobilie anfragen",
-      "REQ_DESC": "Geben Sie Gouvernement, Gebiet, Viertel, Immobilientyp, Fläche und Zimmerzahl an. Sie erhalten eine schnelle Einschätzung auf Basis ähnlicher Anzeigen – oder wir leiten Ihre Anfrage an Immobilienbüros in Ihrer Gegend weiter.",
-      "REQ_CTA": "Einschätzung anfragen",
-      "DISCLAIMER": "Eine Einschätzung ist eine Orientierung, keine offizielle Bewertung und keine Preisgarantie. Für wichtige finanzielle Entscheidungen ziehen Sie Fachleute hinzu und prüfen Sie selbst."
-    },
-    "LANGS": {
-      "EYEBROW": "Mehrsprachig",
-      "TITLE": "Syriens Immobilien in Ihrer Sprache.",
-      "TEXT": "Die Plattform spricht Arabisch, Englisch und Deutsch – so entdecken Sie syrische Immobilien mühelos, ob in Syrien oder im Ausland.",
-      "TILES_ARIA": "Unterstützte Sprachen",
-      "NOTE": "Die automatische Übersetzung von Anzeigentexten ist in Vorbereitung und noch nicht als fertig angekündigt; derzeit erscheint eine Anzeige in der Sprache ihres Verfassers.",
-      "CTA_EXPATS": "Leitfaden für Auslandssyrer"
-    },
-    "SERVICES": {
-      "EYEBROW": "Immobilienservices",
-      "TITLE": "Suchen Sie nicht nur eine Immobilie … entdecken Sie die Services, die Sie auf Ihrem Weg brauchen.",
-      "TEXT": "Immobilienservices von Anbietern, die von der Plattform zugelassen sind. Kategorien und Anbieter wachsen schrittweise, und der Katalog zeigt, was tatsächlich verfügbar ist.",
-      "CHIPS_ARIA": "Beispiele für Servicekategorien",
-      "C_VERIFICATION": "Verifizierung",
-      "C_VALUATION": "Bewertung",
-      "C_INSPECTION": "Technische Besichtigung",
-      "C_PHOTOGRAPHY": "Professionelle Fotografie",
-      "C_MANAGEMENT": "Immobilienverwaltung",
-      "C_LEGAL": "Rechtliche Services",
-      "C_ENGINEERING": "Ingenieurleistungen",
-      "C_MAINTENANCE": "Instandhaltung",
-      "CTA": "Services ansehen",
-      "CTA_JOIN": "Als Anbieter beitreten"
-    },
-    "OFFICES": {
-      "EYEBROW": "Für Büros und Anbieter",
-      "TITLE": "Bringen Sie Ihre Immobilien zu den Suchenden",
-      "TEXT": "Ob Eigentümer oder Immobilienbüro: Die Plattform bietet Ihnen einen geordneten Weg, Ihre Anzeigen zu präsentieren und mit Interessenten in Kontakt zu treten.",
-      "POINTS": {
-        "1": {
-          "TITLE": "Eine öffentliche Seite für Ihr Büro",
-          "DESC": "Stellen Sie Ihr Büro vor und zeigen Sie dessen Anzeigen auf einer Seite mit eigenem Link."
-        },
-        "2": {
-          "TITLE": "Ihr Team und Ihre Anzeigen an einem Ort",
-          "DESC": "Fügen Sie Makler und Mitarbeitende hinzu und verwalten Sie die Anzeigen des Büros – je nach Tarif."
-        },
-        "3": {
-          "TITLE": "Berichte und Auswertungen",
-          "DESC": "Verfolgen Sie die Leistung Ihrer Anzeigen – je nach gewähltem Tarif."
-        },
-        "4": {
-          "TITLE": "Direkter Kontakt zu Interessenten",
-          "DESC": "Nachrichten, Anfragen und Besichtigungswünsche erreichen Sie direkt in der Plattform."
-        }
-      },
-      "CTA_PLANS": "Tarife ansehen",
-      "CTA_REGISTER": "Büro registrieren"
-    },
-    "OFFER": {
-      "EYEBROW": "Sonderangebot für Immobilienbüros",
-      "PROGRESS_ARIA": "{{count}} von {{max}} beigetreten",
-      "PROGRESS_LABEL": "{{count}} von {{max}} Büros sind bereits beigetreten",
-      "CTA": "Büro jetzt registrieren",
-      "CTA_ARIA": "Ihr Immobilienbüro für dieses Angebot registrieren",
-      "ENDS_ON": "Angebot endet am {{date}}",
-      "LOADING_ARIA": "Angebote werden geladen",
-      "EMPTY_TITLE": "Derzeit sind keine Angebote veröffentlicht",
-      "EMPTY_TEXT": "Melden Sie Ihr Interesse an – wir informieren Sie, sobald das erste Angebot startet.",
-      "EMPTY_CTA": "Interesse anmelden",
-      "ERROR_TITLE": "Die Angebote konnten gerade nicht geladen werden",
-      "ERROR_TEXT": "Der Rest der Seite funktioniert normal. Sie können es erneut versuchen.",
-      "RETRY": "Erneut versuchen"
-    },
-    "HOW": {
-      "EYEBROW": "In wenigen einfachen Schritten",
-      "TITLE": "Wie funktioniert HudhudNest?",
-      "ARIA": "Schritte zur Nutzung der Plattform",
-      "STEPS": {
-        "STEP_1": {
-          "TITLE": "Immobilientyp oder Stadt wählen",
-          "DESC": "Entscheiden Sie, ob Sie mieten oder kaufen möchten, und wählen Sie dann Ihre bevorzugte Stadt oder Region."
-        },
-        "STEP_2": {
-          "TITLE": "Organisierte Angebote durchsuchen",
-          "DESC": "Entdecken Sie Immobilien mit klaren Fotos, Preisen und Informationen und vergleichen Sie Optionen mühelos."
-        },
-        "STEP_3": {
-          "TITLE": "Anbieter kontaktieren",
-          "DESC": "Nehmen Sie direkt Kontakt zu Eigentümer oder Immobilienbüro auf und merken Sie sich Favoriten für später."
-        }
-      }
-    },
     "FORM": {
-      "EYEBROW": "Warteliste",
-      "TITLE": "Seien Sie unter den ersten Nutzer:innen von HudhudNest",
-      "DESC": "Registrieren Sie jetzt Ihr Interesse — wir melden uns, sobald die Plattform in Ihrer Region startet.",
-      "ARIA": "Anmeldeformular für die Warteliste",
-      "SUCCESS": {
-        "OFFER_TITLE": "Sie sind für das Angebot registriert!",
-        "OFFER_MSG": "Großartig! Wir haben Ihnen einen Platz im Angebot \"erste 100 Büros\" reserviert. Wir melden uns bald mit den Details.",
-        "NO_OFFER_TITLE": "Registrierung erfolgreich",
-        "NO_OFFER_MSG": "Leider war das begrenzte Angebot bereits ausgeschöpft, bevor Ihre Anmeldung einging — Ihr Interesse wurde aber erfolgreich registriert, und wir melden uns beim Start der Plattform.",
-        "PLAIN_TITLE": "Registrierung erfolgreich!",
-        "PLAIN_MSG": "Danke — Ihr Interesse wurde erfolgreich registriert. Wir senden Ihnen Updates, sobald HudhudNest startet.",
-        "RESET_BTN": "Eine weitere Person registrieren"
-      },
-      "FULLNAME_LABEL": "Vollständiger Name",
-      "FULLNAME_PLACEHOLDER": "z. B. Ahmad Mohammad",
-      "PHONE_LABEL": "Telefon- oder WhatsApp-Nummer",
-      "PHONE_PLACEHOLDER": "z. B. 0933123456 oder +963933123456",
-      "PHONE_HINT": "Eine WhatsApp-Nummer funktioniert auch",
-      "USERTYPE_LABEL": "Ich bin…",
-      "USERTYPE_PLACEHOLDER": "Wählen Sie, was auf Sie zutrifft",
       "USER_TYPES": {
         "RENTER": "Auf der Suche nach einer Mietwohnung",
         "BUYER": "Auf der Suche nach einer Immobilie zum Kauf",
@@ -2953,8 +2786,6 @@
         "AGENCY": "Immobilienbüro",
         "INVESTOR": "Investor:in / Auslandssyrer:in"
       },
-      "CITY_LABEL": "Stadt oder Region",
-      "CITY_PLACEHOLDER": "Wählen Sie Ihre Stadt oder Region",
       "CITIES": {
         "DAMASCUS": "Damaskus",
         "ALEPPO": "Aleppo",
@@ -2971,95 +2802,11 @@
         "IDLIB": "Idlib",
         "DAMASCUS_COUNTRYSIDE": "Rif Dimaschq",
         "OTHER": "Andere Region"
-      },
-      "NOTES_LABEL": "Zusätzliche Anmerkungen",
-      "NOTES_OPTIONAL": "optional",
-      "NOTES_PLACEHOLDER": "z. B. Ich suche eine 2-Zimmer-Wohnung in Mazzeh für maximal 200 US-Dollar",
-      "REQUIRED_ARIA": "Pflichtfeld",
-      "SUBMIT_ARIA": "Wartelisten-Anmeldung absenden",
-      "SUBMIT_LOADING": "Wird registriert…",
-      "SUBMIT_TEXT": "Jetzt der Warteliste beitreten",
-      "PRIVACY_NOTE": "Wir geben Ihre Daten nicht an Dritte weiter und senden keine unerwünschten Nachrichten.",
-      "ERRORS": {
-        "REQUIRED": "Dieses Feld ist erforderlich.",
-        "MINLENGTH": "Zu kurz (mindestens {{min}} Zeichen).",
-        "MAXLENGTH": "Die maximale Länge wurde überschritten.",
-        "PHONE": "Ungültige Telefonnummer. Beispiel: 0933123456 oder +963933123456",
-        "GENERIC": "Ungültiger Wert."
       }
-    },
-    "TRUST": {
-      "EYEBROW": "Volle Transparenz",
-      "TITLE": "Wir bauen Vertrauen Schritt für Schritt auf",
-      "DESC": "Wir befinden uns in der ersten MVP-Phase. Hier sehen Sie, wozu wir uns verpflichten und was noch in Arbeit ist.",
-      "ITEMS": {
-        "PHOTOS": {
-          "TITLE": "Echte Fotos erforderlich",
-          "DESC": "Wir ermutigen Eigentümer, echte Fotos der Immobilie hochzuladen, und akzeptieren keine gefälschten oder geliehenen Bilder."
-        },
-        "CONTACT": {
-          "TITLE": "Klare Kontaktdaten",
-          "DESC": "Jede Anzeige muss korrekte Kontaktdaten enthalten. Wir sind hier, um Sie mit der anderen Seite zu verbinden."
-        },
-        "CAUTION": {
-          "TITLE": "Nicht zahlen vor der Prüfung",
-          "DESC": "Wir empfehlen immer, die Immobilie persönlich zu besichtigen und Dokumente zu prüfen, bevor Sie etwas bezahlen. Die Plattform erleichtert den Kontakt — sie garantiert nicht den Abschluss."
-        },
-        "IMPROVING": {
-          "TITLE": "Stetige Verbesserung",
-          "DESC": "Die Verifizierung von Anzeigen wird sich schrittweise verbessern. Wir sind offen damit, dass wir uns noch in einer frühen Phase befinden."
-        }
-      }
-    },
-    "FAQ": {
-      "EYEBROW": "Fragen",
-      "TITLE": "Häufig gestellte Fragen",
-      "ITEMS": {
-        "LAUNCH": {
-          "Q": "Wann startet die Plattform?",
-          "A": "Die Plattform läuft als Beta und startet schrittweise – voraussichtlich zunächst in Damaskus und im Umland Damaskus, danach in den übrigen Gouvernements. Registrieren Sie Ihr Interesse im Formular, und wir informieren Sie, sobald sie Ihr Gebiet erreicht."
-        },
-        "FREE": {
-          "Q": "Ist der Dienst zu Beginn kostenlos?",
-          "A": "Ja — wir planen, den Dienst in der ersten Phase für Suchende und Eigentümer kostenlos anzubieten, mit der Möglichkeit späterer Premium-Pläne."
-        },
-        "OWNER": {
-          "Q": "Können sich Eigentümer schon jetzt registrieren?",
-          "A": "Auf jeden Fall. Registrieren Sie Ihr Interesse über das Formular und wählen Sie \"Ich möchte eine Immobilie inserieren\" — wir melden uns, sobald das Inserieren möglich ist."
-        },
-        "AGENCY": {
-          "Q": "Können Immobilienbüros ihre Angebote hinzufügen?",
-          "A": "Ja, wir freuen uns über Immobilienbüros. Wählen Sie im Formular \"Immobilienbüro\" — wir melden uns mit Details zur Partnerschaft."
-        },
-        "VERIFIED": {
-          "Q": "Sind die Immobilien verifiziert und sicher?",
-          "A": "Wir arbeiten an klareren Informationen und weniger zufälligen Anzeigen. Die Plattform befindet sich noch in der Entwicklung, und die Verifizierung wird sich schrittweise verbessern. Wie bei jedem Immobiliengeschäft empfehlen wir immer eine persönliche Prüfung vor jeder Entscheidung."
-        },
-        "SYRIA_ONLY": {
-          "Q": "Ist die Plattform nur für Syrien gedacht?",
-          "A": "Wir starten in Syrien, aber das Design unterstützt eine spätere Erweiterung in arabische und globale Märkte — insbesondere um Auslandssyrer:innen überall zu erreichen."
-        }
-      }
-    },
-    "FINAL_CTA": {
-      "TITLE": "Seien Sie unter den ersten Nutzer:innen von HudhudNest",
-      "DESC": "Helfen Sie uns, eine besser organisierte Immobilienerfahrung in Syrien aufzubauen. Ihre Stimme prägt die kommende Plattform mit.",
-      "BTN": "Jetzt der Warteliste beitreten",
-      "BTN_ARIA": "Der HudhudNest-Warteliste beitreten",
-      "EXPLORE": "Immobilien entdecken",
-      "PUBLISH": "Sie haben eine Immobilie? Inserieren Sie"
-    },
-    "FOOTER": {
-      "TAGLINE": "Eine digitale Immobilienplattform · Syrien zuerst",
-      "RIGHTS": "Alle Rechte vorbehalten",
-      "PRIVACY": "Datenschutzerklärung",
-      "TERMS": "Nutzungsbedingungen",
-      "DOWNLOAD": "App herunterladen",
-      "CONTACT": "Kontakt"
     },
     "SEO": {
-      "TITLE": "Digitale Immobilienplattform für Syrien",
-      "DESCRIPTION": "Immobilien zum Kauf und zur Miete in Syrien suchen, Preise Ihrer Gegend prüfen, eine Bewertung anfragen und Immobilienservices entdecken. Auf Arabisch, Englisch und Deutsch."
+      "TITLE": "HudhudNest – Immobilien in Syrien finden",
+      "DESCRIPTION": "Immobilien in Syrien kaufen, mieten oder kurz bleiben: eine Plattform statt verstreuter Gruppen. Beta, Start in Kürze, zum Start kostenlos."
     }
   },
   "VALUATION": {
@@ -3237,7 +2984,11 @@
     "UPDATED": "Zuletzt aktualisiert",
     "BACK_HOME": "Zurück zur Startseite",
     "LOADING": "Wird geladen…",
-    "LOAD_FAILED": "Das Dokument konnte nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut."
+    "LOAD_FAILED": "Das Dokument konnte nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "PUBLISHED": "Veröffentlicht",
+    "LANGUAGE": "Sprache",
+    "PENDING_PUBLICATION": "Noch nicht veröffentlicht",
+    "RELATED": "Weitere Dokumente"
   },
   "CONSENT": {
     "LEAD": "Ich stimme den",
@@ -3245,7 +2996,10 @@
     "MIDDLE": "zu und bestätige, dass ich die",
     "PRIVACY": "Datenschutzerklärung",
     "TRAIL": "gelesen habe.",
-    "OPENS_NEW_TAB": "(öffnet in neuem Tab)"
+    "OPENS_NEW_TAB": "(öffnet in neuem Tab)",
+    "SOCIAL_LEAD": "Mit der Fortsetzung über Google oder Apple stimmen Sie den",
+    "SOCIAL_MIDDLE": "zu und bestätigen, die",
+    "SOCIAL_TRAIL": "gelesen zu haben."
   },
   "SEO": {
     "SHORT_STAY": {
@@ -3271,6 +3025,42 @@
     "HOME": {
       "TITLE": "Digitale Immobilienplattform in Syrien",
       "DESCRIPTION": "Finden Sie Wohnungen und Immobilien zum Kauf und zur Miete in Syrien: klare Fotos, übersichtliche Angaben und direkter Kontakt zum Eigentümer oder Büro."
+    },
+    "SERVICES": {
+      "TITLE": "Vertrauenswürdige Immobilien-Dienstleistungen",
+      "DESCRIPTION": "Entdecken Sie geprüfte Dienstleister auf HudhudNest: Recht, Technik, Umzug, Fotografie und mehr. Dienstleistung anfragen und direkt verfolgen."
+    },
+    "EXPATS": {
+      "TITLE": "Ratgeber für Auslandssyrer zum Immobilienkauf",
+      "DESCRIPTION": "Klare Schritte für Auslandssyrer, die eine Immobilie erwerben, eine Wohnung suchen oder in Syrien investieren möchten, mit passenden Zusatzleistungen."
+    },
+    "MAP": {
+      "TITLE": "Immobilienkarte",
+      "DESCRIPTION": "Entdecken Sie Immobilien zum Kauf und zur Miete auf der Karte und wählen Sie die passende Gegend."
+    },
+    "PRICE_ESTIMATE": {
+      "TITLE": "Immobilienpreis schätzen",
+      "DESCRIPTION": "Schätzen Sie den Immobilienpreis in Ihrer Gegend nach Gouvernement, Typ und Fläche und vergleichen Sie Durchschnittspreise der Bezirke."
+    },
+    "PRICING": {
+      "TITLE": "Abo-Pakete für Eigentümer und Immobilienbüros",
+      "DESCRIPTION": "Starten Sie kostenlos mit der Anzeige Ihrer eigenen Immobilie oder wählen Sie ein Büro-Paket: Basic 49 $, Premium 99 $ oder Elite — höhere Anzeigengrenzen, Makler- und Mitarbeiterkonten, Berichte und Analysen sowie hervorgehobene Platzierung in den Suchergebnissen."
+    },
+    "NEWSLETTER_CONFIRM": {
+      "TITLE": "Newsletter bestätigen | HudhudNest",
+      "DESCRIPTION": "Bestätigen Sie Ihre Anmeldung zum Newsletter von HudhudNest."
+    },
+    "NEWSLETTER_UNSUBSCRIBE": {
+      "TITLE": "Abmelden | HudhudNest",
+      "DESCRIPTION": "Vom Newsletter von HudhudNest abmelden."
+    },
+    "OFFICES": {
+      "TITLE": "Verzeichnis der Immobilienbüros",
+      "DESCRIPTION": "Finden Sie ein Immobilienbüro in Syrien nach Gouvernement, Bezirk, Viertel und Immobilienart, mit verifizierten Büros, Bewertungen und aktiven Anzeigen."
+    },
+    "OFFICE_PROFILE": {
+      "DESCRIPTION": "{{name}}: Immobilienbüro auf HudhudNest. Inserate, Öffnungszeiten und Kontakt.",
+      "DESCRIPTION_PLACE": "{{name}}: Immobilienbüro in {{place}}. Inserate, Öffnungszeiten und Kontakt auf HudhudNest."
     }
   },
   "ADMIN_PAYMENTS": {
@@ -4323,5 +4113,869 @@
     "SERVICES_HINT": "Ein Dienst wird auf der Seite der betreffenden Immobilie angefordert.",
     "NO_SERVICES": "Für diese Dienste gibt es noch keinen zugelassenen Anbieter. Sie erscheinen hier, sobald Anbieter dazukommen.",
     "FOOTNOTE": "HudhudNest ist eine Plattform für Anzeigen und Dienste, kein rechtlicher oder finanzieller Vermittler. Prüfen Sie Unterlagen, bevor Sie etwas bezahlen."
+  },
+  "LEGAL_LINKS": {
+    "TITLE": "Rechtliches und Datenschutz",
+    "PRIVACY": "Datenschutzerklärung",
+    "TERMS": "Nutzungsbedingungen",
+    "DELETION": "Konto und Daten löschen",
+    "IMPRINT": "Impressum",
+    "CONTACT": "Support kontaktieren"
+  },
+  "IMPRINT": {
+    "TITLE": "Impressum",
+    "PROVIDER": "Anbieter",
+    "CONTACT": "Kontakt",
+    "REGISTER": "Register- und Steuerangaben",
+    "VAT": "USt-IdNr.",
+    "INTRO": "Anbieterkennzeichnung für die Website und die Apps von HudhudNest. Angezeigt werden nur Angaben, die der Betreiber bestätigt hat; hier steht weder ein Platzhalter noch eine Schätzung.",
+    "TRADING_NAME": "Geschäftsbezeichnung",
+    "OPERATOR": "Rechtlicher Name des Betreibers",
+    "LEGAL_FORM": "Rechtsform",
+    "REPRESENTATIVE": "Vertretungsberechtigte Person",
+    "STREET": "Straße und Hausnummer",
+    "POSTAL_CODE": "Postleitzahl",
+    "CORRESPONDENCE": "Korrespondenz (Ort und Land)",
+    "EU_REP": "Vertreter in der EU (Art. 27 DSGVO)",
+    "DPO": "Datenschutzbeauftragter",
+    "SUPPORT": "Support",
+    "LEGAL": "Rechtliche Hinweise",
+    "PRIVACY": "Datenschutz",
+    "SECURITY": "Sicherheitsmeldungen",
+    "WEBSITE": "Website",
+    "REGISTER_COURT": "Register",
+    "REGISTER_NUMBER": "Registernummer",
+    "NOT_PROVIDED": "Noch nicht angegeben",
+    "NOT_APPOINTED": "Nicht benannt",
+    "NONE_KNOWN": "Keine Angabe",
+    "INCOMPLETE_TITLE": "Die Anbieterangaben sind unvollständig",
+    "INCOMPLETE_BODY": "Die folgenden für dieses Impressum erforderlichen Angaben hat der Betreiber noch nicht bestätigt. Sie werden vor dem vollständigen Start der Plattform hier ergänzt. Bis dahin erreichen Sie uns unter den unten genannten Adressen."
+  },
+  "PAYMENTS": {
+    "SANDBOX_BADGE": "Testmodus",
+    "BACK_TO_PRICING": "Zurück zu den Paketen",
+    "CONTACT_US": "Kontakt",
+    "AMOUNT": "Betrag",
+    "DISCOUNT": "Rabatt",
+    "TAX": "Steuer",
+    "TOTAL": "Gesamt",
+    "REFUNDED": "Erstattet",
+    "INTERVAL": {
+      "OneTime": "Einmalig",
+      "Monthly": "Monatlich",
+      "Yearly": "Jährlich"
+    },
+    "CAP": {
+      "CARDS": "Karten",
+      "WALLETS": "E-Wallets",
+      "QR": "QR-Code",
+      "RECURRING": "Automatische Verlängerung"
+    },
+    "CHECKOUT": {
+      "TITLE": "Zur Kasse",
+      "SUBTITLE": "Preis prüfen, Zahlungsart wählen und weiter zum Zahlungsanbieter.",
+      "INVALID": "Dieser Zahlungslink ist unvollständig.",
+      "INTERVAL": "Abrechnungszeitraum",
+      "CURRENCY": "Währung",
+      "METHOD": "Zahlungsart",
+      "NO_METHOD": "Für diese Währung ist keine Zahlungsart verfügbar.",
+      "HOSTED_NOTE": "Ihre Zahlungsdaten geben Sie auf der sicheren Seite des Anbieters ein. HudhudNest sieht oder speichert Ihre Kartennummer nie.",
+      "RENEWAL": "Automatische Verlängerung",
+      "CONSENT_TEXT": "Ich stimme zu, dass HudhudNest {{amount}} ({{interval}}) von meiner Zahlungsart abbucht, bis ich kündige.",
+      "TERMS_LINK": "Nutzungsbedingungen",
+      "CONSENT_HELP": "Lassen Sie das Feld leer, um nur einen Zeitraum zu bezahlen. Sie können die Verlängerung jederzeit auf der Abrechnungsseite beenden; der bezahlte Zeitraum bleibt aktiv.",
+      "SUMMARY": "Bestellübersicht",
+      "NO_TAX_NOTE": "Auf diesen Preis wird keine Steuer erhoben.",
+      "PAY": "Weiter zur Zahlung",
+      "REDIRECTING": "Zahlungsseite wird geöffnet …",
+      "SECURE_NOTE": "Der Preis wird von unserem Server berechnet. Ihr Paket wird erst aktiviert, wenn der Anbieter die Zahlung bestätigt."
+    },
+    "NATIVE": {
+      "TITLE": "Bezahlen Sie auf unserer Website",
+      "BODY": "Käufe sind in der App noch nicht möglich. Öffnen Sie hudhudnest.com im Browser, um ein Abo abzuschließen; Konto und Vorteile gelten auch in der App."
+    },
+    "UNAVAILABLE": {
+      "TITLE": "Online-Zahlung ist derzeit nicht verfügbar",
+      "BODY": "Es wurde nichts abgebucht. Sie können das Paket weiterhin über unser Team anfragen."
+    },
+    "ERRORS": {
+      "GENERIC": "Etwas ist schiefgelaufen. Es wurde nichts abgebucht. Bitte versuchen Sie es erneut.",
+      "UNAVAILABLE": "Der Zahlungsanbieter ist gerade nicht erreichbar. Es wurde nichts abgebucht. Versuchen Sie es in einigen Minuten erneut."
+    },
+    "STATUS": {
+      "Created": "Erstellt",
+      "Pending": "Wartet auf Zahlung",
+      "Processing": "In Bearbeitung",
+      "Succeeded": "Bezahlt",
+      "Failed": "Fehlgeschlagen",
+      "Cancelled": "Storniert",
+      "Expired": "Abgelaufen",
+      "RefundPending": "Erstattung in Bearbeitung",
+      "PartiallyRefunded": "Teilweise erstattet",
+      "Refunded": "Erstattet",
+      "Disputed": "Angefochten"
+    },
+    "SUB_STATUS": {
+      "Active": "Aktiv",
+      "PastDue": "Zahlung überfällig",
+      "Cancelled": "Gekündigt",
+      "Expired": "Abgelaufen"
+    },
+    "REFUND_STATUS": {
+      "Requested": "In Prüfung",
+      "Approved": "Genehmigt, in Bearbeitung",
+      "Succeeded": "Erstattet",
+      "Failed": "Fehlgeschlagen, wir versuchen es erneut",
+      "Rejected": "Abgelehnt"
+    },
+    "RESULT": {
+      "SUCCESS_TITLE": "Zahlung eingegangen",
+      "SUCCESS_BODY": "Vielen Dank. Ihr Kauf ist aktiv und die Rechnung liegt bereit.",
+      "DELIVERING_TITLE": "Zahlung eingegangen, Aktivierung läuft",
+      "DELIVERING_BODY": "Ihre Zahlung ist bestätigt. Wir aktivieren Ihren Kauf; das dauert einen Moment.",
+      "DELIVERY_FAILED_TITLE": "Bezahlt, aber die Aktivierung war nicht möglich",
+      "DELIVERY_FAILED_BODY": "Ihre Zahlung ist eingegangen, der Kauf konnte aber nicht angewendet werden (z. B. Anzeige nicht mehr verfügbar). Eine Erstattung wird veranlasst; kontaktieren Sie uns bei Fragen.",
+      "PENDING_TITLE": "Warten auf Bestätigung",
+      "PENDING_BODY": "Die Bestätigung des Anbieters liegt noch nicht vor. Diese Seite aktualisiert sich automatisch. Bitte nicht erneut zahlen.",
+      "CHECKING": "Wird geprüft …",
+      "TAKING_LONGER": "Das dauert länger als üblich. Falls Sie bezahlt haben, wird Ihr Kauf aktiviert, sobald die Bestätigung eintrifft; laden Sie die Seite später neu.",
+      "FAILED_TITLE": "Zahlung fehlgeschlagen",
+      "FAILED_BODY": "Die Zahlung wurde nicht abgeschlossen und nichts abgebucht. Sie können es mit einer anderen Zahlungsart erneut versuchen.",
+      "CANCELLED_TITLE": "Zahlung abgebrochen",
+      "CANCELLED_BODY": "Sie haben diese Zahlung abgebrochen. Es wurde nichts abgebucht.",
+      "EXPIRED_TITLE": "Zahlungsfrist abgelaufen",
+      "EXPIRED_BODY": "Diese Bestellung wurde nicht rechtzeitig bezahlt. Starten Sie bei Bedarf eine neue.",
+      "REFUND_TITLE": "Erstattung läuft oder abgeschlossen",
+      "REFUND_BODY": "Den Erstattungsstatus finden Sie auf Ihrer Abrechnungsseite."
+    },
+    "ORDER": {
+      "NOT_FOUND": "Diese Bestellung wurde nicht gefunden.",
+      "DETAILS": "Bestelldetails",
+      "NUMBER": "Bestellnummer",
+      "WHAT": "Artikel",
+      "STATUS": "Status",
+      "MODE": "Modus",
+      "CREATED": "Erstellt",
+      "PAID_AT": "Bezahlt am",
+      "VIEW_INVOICE": "Rechnung ansehen",
+      "CANCEL": "Bestellung stornieren",
+      "REQUEST_REFUND": "Erstattung beantragen"
+    },
+    "REFUND": {
+      "REASON": "Grund",
+      "SEND": "Antrag senden",
+      "SENT": "Ihr Erstattungsantrag wurde gesendet. Wir prüfen ihn und melden uns.",
+      "NOTE": "Hinweis"
+    },
+    "HISTORY": {
+      "TITLE": "Zahlungen & Rechnungen",
+      "SUBTITLE": "Ihr Abo, Bestellungen, Rechnungen und Erstattungen.",
+      "TAB_ORDERS": "Bestellungen",
+      "TAB_INVOICES": "Rechnungen",
+      "TAB_REFUNDS": "Erstattungen",
+      "EMPTY": "Noch keine Bestellungen.",
+      "EMPTY_INVOICES": "Noch keine Rechnungen.",
+      "EMPTY_REFUNDS": "Keine Erstattungen.",
+      "OPEN": "Öffnen"
+    },
+    "SUBSCRIPTION": {
+      "TITLE": "Abonnement",
+      "PLAN": "Paket",
+      "PERIOD_END": "Aktueller Zeitraum endet",
+      "RENEWAL": "Verlängerung",
+      "RENEWAL_ON": "Verlängert sich automatisch",
+      "RENEWAL_OFF": "Wird nicht verlängert",
+      "RENEWAL_NONE": "Manuell: zum Verlängern erneut zahlen",
+      "CONSENT": "Zugestimmte Verlängerung",
+      "PENDING_PLAN": "Nächstes Paket",
+      "PAST_DUE": "Die letzte Verlängerungszahlung ist fehlgeschlagen. Ihre Vorteile laufen bis {{date}} weiter, während wir es erneut versuchen. Aktualisieren Sie Ihre Zahlungsart, um sie nicht zu verlieren.",
+      "CANCELLED_NOTE": "Die Verlängerung ist gekündigt. Ihr Paket bleibt bis {{date}} aktiv.",
+      "CANCEL": "Verlängerung kündigen",
+      "CANCEL_CONFIRM": "Es wird nichts mehr abgebucht. Ihr Paket bleibt bis {{date}} aktiv.",
+      "CANCEL_YES": "Ja, Verlängerung kündigen",
+      "CANCEL_NO": "Behalten",
+      "RESUME": "Verlängerung fortsetzen",
+      "CHANGE": "Paket wechseln",
+      "NONE": "Sie haben kein kostenpflichtiges Abo."
+    },
+    "INVOICE": {
+      "TITLE": "Rechnung",
+      "CREDIT_NOTE": "Gutschrift",
+      "NUMBER": "Nummer",
+      "ISSUED": "Ausstellungsdatum",
+      "SELLER": "Verkäufer",
+      "CUSTOMER": "Kunde",
+      "TAX_ID": "Steuernummer",
+      "PERIOD": "Leistungszeitraum",
+      "NET": "Nettobetrag",
+      "PAID_ON": "Bezahlt am",
+      "REFERENCE": "Zahlungsreferenz",
+      "PRINT": "Drucken / als PDF speichern",
+      "NOT_FOUND": "Diese Rechnung wurde nicht gefunden.",
+      "NO_TAX_NOTE": "Auf dieser Rechnung wird keine Steuer berechnet."
+    },
+    "SANDBOX": {
+      "TITLE": "Test-Zahlungsseite",
+      "BODY": "Dies simuliert einen Zahlungsanbieter. Es fließt kein echtes Geld. Wählen Sie das Testergebnis.",
+      "SUCCEED": "Erfolg simulieren",
+      "FAIL": "Fehler simulieren",
+      "CANCEL": "Abbruch simulieren",
+      "UNAVAILABLE": "Die Test-Zahlungsseite ist in dieser Umgebung nicht verfügbar."
+    }
+  },
+  "ADMIN_PAY": {
+    "TITLE": "Zahlungen",
+    "SUBTITLE": "Transaktionen, Abos, Erstattungen, Anbieter und Webhooks. Eine Bestellung gilt erst als bezahlt, wenn der Anbieter sie bestätigt; es gibt kein manuelles „Als bezahlt markieren“.",
+    "TAB_DASHBOARD": "Übersicht",
+    "TAB_ORDERS": "Transaktionen",
+    "TAB_SUBSCRIPTIONS": "Abos",
+    "TAB_REFUNDS": "Erstattungen",
+    "TAB_PROVIDERS": "Anbieter",
+    "TAB_WEBHOOKS": "Webhooks",
+    "TAB_REPORTS": "Berichte",
+    "REVENUE_USD": "Umsatz (USD)",
+    "ORDERS": "Bestellungen",
+    "SUCCEEDED": "Bezahlt",
+    "FAILED": "Fehlgeschlagen",
+    "PENDING": "Offen",
+    "ACTIVE_SUBS": "Aktive Abos",
+    "NEEDS_ATTENTION": "Braucht Aufmerksamkeit",
+    "FAILED_WEBHOOKS": "Fehlgeschlagene Webhooks",
+    "STALE_PENDING": "Veraltete offene Bestellungen",
+    "FAILED_ENTITLEMENTS": "Bezahlt, nicht geliefert",
+    "OPEN_REFUNDS": "Offene Erstattungsanträge",
+    "PAST_DUE": "Überfällige Abos",
+    "BY_CURRENCY": "Umsatz nach Währung",
+    "RECONCILE": "Offene Zahlungen mit Anbietern abgleichen",
+    "SEARCH": "Bestellnummer suchen",
+    "ALL": "Alle",
+    "USER": "Nutzer",
+    "PROVIDER": "Anbieter",
+    "EMPTY": "Nichts anzuzeigen.",
+    "CORRELATION": "Korrelations-ID",
+    "ENTITLEMENT": "Lieferung",
+    "TRANSACTIONS": "Anbieter-Transaktionen",
+    "AUDIT": "Prüfpfad",
+    "RESYNC": "Beim Anbieter neu prüfen",
+    "NOTE": "Interne Notiz",
+    "ADD_NOTE": "Notiz hinzufügen",
+    "REFUND_ORDER": "Diese Bestellung erstatten",
+    "REFUND_AMOUNT": "Betrag (leer = voller Restbetrag)",
+    "REFUND_SEND": "Über Anbieter erstatten",
+    "AUTO_RENEW": "Auto-Verlängerung",
+    "ATTEMPTS": "Versuche",
+    "APPROVE": "Genehmigen",
+    "REJECT": "Ablehnen",
+    "RETRY": "Erneut versuchen",
+    "PROVIDERS_NOTE": "Ein echter Anbieter kann nur mit dokumentierter geschäftlicher Freigabe aktiviert werden, und erst nach den rechtlichen und kommerziellen Prüfungen aus dem Deployment-Leitfaden. Der Testanbieter läuft nie in Produktion.",
+    "ENABLED": "Aktiv",
+    "DISABLED": "Deaktiviert",
+    "IMPLEMENTED": "Adapter implementiert",
+    "ALLOWED_HERE": "In dieser Umgebung erlaubt",
+    "CURRENCIES": "Währungen",
+    "CAPABILITIES": "Fähigkeiten",
+    "APPROVED_ON": "Geschäftliche Freigabe",
+    "APPROVAL_NOTE": "Notiz zur Freigabe (wer, auf welcher Grundlage)",
+    "ENABLE": "Aktivieren",
+    "DISABLE": "Deaktivieren",
+    "EVENT": "Ereignis",
+    "RECEIVED": "Eingegangen",
+    "LAST_ERROR": "Letzter Fehler",
+    "REPROCESS": "Erneut verarbeiten",
+    "GROUP_DAY": "Nach Tag",
+    "GROUP_MONTH": "Nach Monat",
+    "GROUP_PROVIDER": "Nach Anbieter",
+    "GROUP_PRODUCT": "Nach Produkt",
+    "GROUP_CURRENCY": "Nach Währung",
+    "GROUP": "Gruppe",
+    "GROSS_USD": "Brutto (USD)",
+    "DONE": "Erledigt.",
+    "LOAD_FAILED": "Die Daten konnten nicht geladen werden.",
+    "ACTION_FAILED": "Die Aktion ist fehlgeschlagen. Es wurde nichts geändert oder der Anbieter hat sie nicht akzeptiert; prüfen Sie den Prüfpfad."
+  },
+  "GEO": {
+    "LOADING": "Suche läuft…",
+    "LOAD_ERROR": "Orte konnten nicht geladen werden. Bitte erneut versuchen.",
+    "NO_MATCH": "Kein Ort namens „{{value}}“ in der Liste.",
+    "ADD_NEW": "„{{value}}“ zur Ergänzung vorschlagen",
+    "ADD_CONFIRMED": "„{{value}}“ wird beim Speichern zur Prüfung eingereicht und verhindert die Veröffentlichung nicht.",
+    "PLACEHOLDER": "Namen eingeben…",
+    "GOVERNORATE": "Gouvernement",
+    "OPTIONAL": "optional",
+    "LEVEL_CITY": "Stadt",
+    "LEVEL_DISTRICT": "Bezirk",
+    "LEVEL_NEIGHBORHOOD": "Stadtviertel",
+    "LEVEL_STREET": "Straße",
+    "PLACEHOLDER_CITY": "Stadtnamen eingeben",
+    "PLACEHOLDER_DISTRICT": "Bezirksnamen eingeben",
+    "PLACEHOLDER_NEIGHBORHOOD": "Viertelnamen eingeben",
+    "PLACEHOLDER_STREET": "Straßennamen eingeben (falls bekannt)",
+    "STREET_HINT": "Die Straße ist optional. Sie können stattdessen die Stecknadel auf der Karte setzen.",
+    "PIN_MISMATCH": "Die Stecknadel liegt in „{{value}}“ und weicht von Ihrer Auswahl ab. Bitte prüfen.",
+    "SUGGESTED_ADDRESS": "Von der Karte vorgeschlagene Adresse",
+    "USE_SUGGESTION": "Diese Adresse übernehmen",
+    "IGNORE_SUGGESTION": "Ignorieren",
+    "PROPOSAL_NOTE": "{{count}} neue(r) Ortsname(n) wird/werden beim Speichern zur Prüfung eingereicht. Ihre Anzeige wird dadurch nicht blockiert.",
+    "FILTER_PLACEHOLDER": "Stadtviertel, Straße oder Stadt suchen…",
+    "FILTER_NO_MATCH": "Kein Ort mit diesem Namen in der Liste.",
+    "FILTER_LABEL": "Bestimmter Ort",
+    "FILTER_HINT": "Wählen Sie einen Ort (inkl. allem darin) oder tippen Sie Text und wenden Sie die Filter an, um Anzeigenadressen zu durchsuchen.",
+    "TYPED_PLACE_PROPOSED": "„{{value}}“ steht nicht in unserer Liste. Wir senden den Namen zur Prüfung an die Moderation; hier wird der nächste bekannte Bereich verwendet.",
+    "TYPED_PLACE_NOT_SAVED": "„{{value}}“ steht nicht in unserer Liste, und ein neuer Name kann ohne Anmeldung nicht gespeichert werden; hier wird der nächste bekannte Bereich verwendet.",
+    "TYPED_PLACE_HINT": "Aus der Liste wählen oder den Namen eintippen, falls er fehlt.",
+    "FILTER_SEARCH_TEXT": "„{{text}}“ in Anzeigenadressen suchen"
+  },
+  "ADMIN_GEO": {
+    "TITLE": "Standortverwaltung",
+    "SUBTITLE": "Der eigene Katalog von HudhudNest ist die maßgebliche Quelle. Externe Karten schlagen nur vor.",
+    "TAB_REQUESTS": "Ortsanfragen",
+    "TAB_PLACES": "Orte",
+    "TAB_POLICY": "Freigaberegeln",
+    "TAB_IMPORT": "Import",
+    "TAB_CHANGES": "Änderungsprotokoll",
+    "STATUS": "Status",
+    "TYPE": "Typ",
+    "ALL": "Alle",
+    "STATUS_PENDING": "Ausstehend",
+    "STATUS_NEEDSCORRECTION": "Korrektur nötig",
+    "STATUS_APPROVED": "Freigegeben",
+    "STATUS_REJECTED": "Abgelehnt",
+    "STATUS_DUPLICATE": "Duplikat",
+    "TYPE_COUNTRY": "Land",
+    "TYPE_GOVERNORATE": "Gouvernement",
+    "TYPE_CITY": "Stadt",
+    "TYPE_DISTRICT": "Bezirk",
+    "TYPE_NEIGHBORHOOD": "Stadtviertel",
+    "TYPE_STREET": "Straße",
+    "NO_REQUESTS": "Keine Anfragen.",
+    "PARENT": "Gehört zu",
+    "SOURCE": "Quelle",
+    "AUTO": "automatisch freigegeben",
+    "CONFIDENCE": "Vertrauenswert",
+    "DECISION_REASON": "Entscheidungsgrund",
+    "COORDINATES": "Koordinaten",
+    "SUBMITTED_BY": "Eingereicht von",
+    "NAME_AR": "Arabischer Name",
+    "NAME_EN": "Englischer Name",
+    "NAME_DE": "Deutscher Name",
+    "NOTES": "Notizen",
+    "DUPLICATE_OF": "ID des vorhandenen Ortes (bei Duplikaten)",
+    "APPROVE": "Freigeben",
+    "NEEDS_CORRECTION": "Korrektur anfordern",
+    "MARK_DUPLICATE": "Als Duplikat markieren",
+    "REJECT": "Ablehnen",
+    "APPROVED": "Der Ort wurde freigegeben.",
+    "REJECTED": "Die Anfrage wurde abgelehnt.",
+    "CORRECTION_ASKED": "Eine Korrektur wurde angefordert.",
+    "MARKED_DUPLICATE": "Die Anfrage wurde als Duplikat markiert.",
+    "ROOT": "Syrien",
+    "SEARCH": "Suchen",
+    "INCLUDE_ARCHIVED": "Archivierte anzeigen",
+    "NO_PLACES": "Keine Orte.",
+    "ARCHIVED": "Archiviert",
+    "INACTIVE": "Inaktiv",
+    "OPEN": "Öffnen",
+    "COUNTS_HINT": "Die beiden Zahlen: Unterorte / Anzeigen.",
+    "LATITUDE": "Breitengrad",
+    "LONGITUDE": "Längengrad",
+    "VERIFICATION": "Verifizierung",
+    "REASON": "Grund der Änderung (wird protokolliert)",
+    "ACTIVATE": "Aktivieren",
+    "DEACTIVATE": "Deaktivieren",
+    "ARCHIVE": "Archivieren",
+    "RESTORE": "Wiederherstellen",
+    "ALIASES": "Alternative Namen",
+    "ADD_ALIAS": "Alias hinzufügen",
+    "REMOVE_ALIAS": "Alias entfernen",
+    "MERGE": "In anderen Ort zusammenführen",
+    "MERGE_HINT": "Verschiebt Unterorte und Anzeigen zum Zielort und behält den Namen als Alias.",
+    "MERGE_TARGET": "ID des Zielorts",
+    "MERGE_ACTION": "Zusammenführen",
+    "MERGE_CONFIRM": "„{{source}}“ in Ort Nr. {{target}} zusammenführen?",
+    "MERGED": "Zusammengeführt: {{children}} Unterorte und {{listings}} Anzeigen verschoben.",
+    "ADD_CHILD": "Neue(n) {{type}} hinzufügen",
+    "CREATE": "Erstellen",
+    "SAVED": "Gespeichert.",
+    "SHOW_CHANGES": "Änderungsprotokoll dieses Ortes anzeigen",
+    "POLICY_HINT": "Diese Regeln gelten nur für Straßen. Gouvernements, Städte, Bezirke und Viertel gehen immer in die manuelle Prüfung.",
+    "POLICY_AUTO": "Straßen automatisch freigeben",
+    "POLICY_EXTERNAL": "Abfragen beim externen Kartenanbieter erlauben",
+    "POLICY_MIN_SCORE": "Mindest-Vertrauenswert (0–1)",
+    "POLICY_DUPLICATE": "Ähnlichkeitsschwelle für Duplikate (0–1)",
+    "POLICY_MAX_PER_DAY": "Max. automatische Freigaben pro Nutzer und Tag",
+    "POLICY_ONLY_STREETS": "Auch wenn aktiviert, wird eine Straße nur bei vertrauenswürdigem Nachweis, korrektem Elternort, ohne Duplikat und ohne Konflikt mit Stadt oder Bezirk automatisch freigegeben.",
+    "IMPORT_HINT": "JSON-Liste von Orten einfügen. Ein Testlauf schreibt nichts. Nach dem Bereitstellen können Sie den ganzen Stapel übernehmen oder zurückrollen.",
+    "IMPORT_NAME": "Name des Stapels",
+    "IMPORT_SOURCE": "Quelle",
+    "IMPORT_LICENSE": "Lizenz",
+    "IMPORT_ROWS": "Zeilen (JSON)",
+    "IMPORT_DRY_RUN": "Testlauf",
+    "IMPORT_STAGE": "Stapel bereitstellen",
+    "IMPORT_SKIPPED": "übersprungen",
+    "IMPORT_COMMIT": "Stapel übernehmen",
+    "IMPORT_ROLLBACK": "Stapel zurückrollen",
+    "IMPORT_BAD_JSON": "Die Zeilen sind kein gültiges JSON (Liste erforderlich).",
+    "IMPORT_COMMITTED": "{{count}} Zeilen übernommen.",
+    "IMPORT_ROLLED_BACK": "{{count}} Zeilen zurückgerollt.",
+    "IMPORT_ROLLBACK_CONFIRM": "Den gesamten Stapel zurückrollen?",
+    "CHANGES_OF": "Änderungen von: {{name}}",
+    "NO_CHANGES": "Keine Änderungen protokolliert."
+  },
+  "SITE": {
+    "NAV": {
+      "SKIP": "Zum Inhalt springen",
+      "MENU_OPEN": "Menü öffnen",
+      "MENU_CLOSE": "Menü schließen",
+      "MAIN_ARIA": "Hauptnavigation",
+      "HOME_ARIA": "HudhudNest – Startseite",
+      "LANG_ARIA": "Sprache",
+      "PROPERTIES": "Immobilien",
+      "ABOUT": "Über uns",
+      "PROVIDERS": "Für Anbieter",
+      "CONTACT": "Kontakt",
+      "PLATFORM": "Zur Plattform"
+    },
+    "HERO": {
+      "BADGE": "Beta – Start in Syrien in Kürze",
+      "TITLE": "Immobilien in Syrien finden – übersichtlich und direkt.",
+      "SUBLINE": "Kaufen, mieten oder kurz bleiben: eine Plattform statt verstreuter Facebook- und WhatsApp-Gruppen.",
+      "CTA_PUBLISH": "Immobilie inserieren",
+      "CTA_NOTIFY": "Benachrichtigen, wenn wir starten",
+      "CTA_EXPLORE": "Immobilien entdecken",
+      "CHIP_FREE": "Zum Start kostenlos"
+    },
+    "WHY": {
+      "TITLE": "Warum HudhudNest",
+      "INTRO": "Immobiliensuche in Syrien ist noch immer mühsam. HudhudNest will das Schritt für Schritt ändern.",
+      "ALL": {
+        "T": "Alles an einem Ort",
+        "D": "Angebote, organisiert und durchsuchbar."
+      },
+      "CLEAR": {
+        "T": "Klare Angaben",
+        "D": "Fotos und einheitliche Basisinformationen."
+      },
+      "DIRECT": {
+        "T": "Direkter Kontakt",
+        "D": "Zu Eigentümern oder Immobilienbüros."
+      }
+    },
+    "START": {
+      "TITLE": "Hier starten",
+      "BUY": {
+        "T": "Immobilie kaufen",
+        "D": "Tragen Sie sich ein und erfahren Sie, sobald Immobilien zum Kauf verfügbar sind."
+      },
+      "RENT": {
+        "T": "Wohnung mieten",
+        "D": "Tragen Sie sich ein und erfahren Sie, sobald Mietwohnungen verfügbar sind."
+      },
+      "SHORT": {
+        "T": "Kurzzeitaufenthalte",
+        "D": "Tragen Sie sich ein und erfahren Sie, sobald Kurzzeitunterkünfte verfügbar sind."
+      },
+      "OFFER": {
+        "T": "Immobilie anbieten",
+        "D": "Legen Sie ein Konto an und tragen Sie Ihre Immobilie mit Fotos ein."
+      }
+    },
+    "WAITLIST": {
+      "TITLE": "Benachrichtigen, wenn wir starten",
+      "INTRO": "Hinterlassen Sie Ihre E-Mail-Adresse oder WhatsApp-Nummer. Wir melden uns, sobald HudhudNest in Syrien startet.",
+      "CONTACT_LABEL": "E-Mail oder WhatsApp-Nummer",
+      "CONTACT_PLACEHOLDER": "name@beispiel.de oder +49 157 1234567",
+      "CONTACT_HINT": "WhatsApp-Nummern mit Ländervorwahl, z. B. +49 oder +963.",
+      "INTEREST_LABEL": "Woran sind Sie interessiert? (optional)",
+      "INTEREST_NONE": "Keine Angabe",
+      "INTEREST_KAUFEN": "Immobilie kaufen",
+      "INTEREST_MIETEN": "Wohnung mieten",
+      "INTEREST_KURZ": "Kurzzeitaufenthalte",
+      "CONSENT_BEFORE": "Ich willige ein, dass HudhudNest mich mit diesen Angaben über den Start kontaktiert. Hinweise zur Verarbeitung und zum Widerruf stehen in der",
+      "CONSENT_LINK": "Datenschutzerklärung",
+      "CONSENT_AFTER": ".",
+      "SUBMIT": "Eintragen",
+      "SENDING": "Wird gesendet …",
+      "CLOSE": "Schließen",
+      "SUCCESS_TITLE": "Danke, Sie sind eingetragen.",
+      "SUCCESS_TEXT": "Wir melden uns, sobald wir starten.",
+      "ERR_CONTACT": "Bitte eine gültige E-Mail-Adresse oder eine WhatsApp-Nummer mit Ländervorwahl eingeben.",
+      "ERR_CONSENT": "Bitte stimmen Sie der Verarbeitung zu, damit wir Sie benachrichtigen können.",
+      "ERR_SEND": "Das hat leider nicht geklappt. Bitte versuchen Sie es in einem Moment noch einmal.",
+      "ERR_UNAVAILABLE": "Die Warteliste ist gerade nicht verfügbar. Bitte versuchen Sie es später noch einmal."
+    },
+    "FOOTER": {
+      "TAGLINE": "Immobilien in Syrien – übersichtlich und direkt.",
+      "NAV_ARIA": "Seiten",
+      "LEGAL_ARIA": "Rechtliches",
+      "IMPRESSUM": "Impressum",
+      "PRIVACY": "Datenschutz",
+      "TERMS": "Nutzungsbedingungen"
+    },
+    "ABOUT": {
+      "TITLE": "Über uns",
+      "LEAD": "HudhudNest ist eine Immobilienplattform für Syrien, aufgebaut für Menschen in Syrien und die syrische Diaspora.",
+      "VISION_TITLE": "Unsere Vision",
+      "VISION_TEXT": "Eine Immobilienplattform für ganz Syrien: ein einheitliches Register statt Dutzender verstreuter Facebook- und WhatsApp-Gruppen.",
+      "STEP1_TAG": "Der Anfang",
+      "STEP1_TITLE": "Damaskus und Umland",
+      "STEP1_TEXT": "Hier beginnt voraussichtlich unser schrittweiser Start, damit wir ein geordnetes Register aufbauen und aus der Nutzung lernen.",
+      "STEP2_TAG": "Danach",
+      "STEP2_TITLE": "Die übrigen Gouvernements",
+      "STEP2_TEXT": "Unsere Vision umfasst ganz Syrien. Wir erweitern Phase für Phase.",
+      "WHY_TITLE": "Warum wir das tun",
+      "WHY_TEXT": "Wer in Syrien oder aus dem Ausland eine Immobilie sucht oder anbietet, muss sich heute durch verstreute Gruppen und Nachrichten arbeiten. Wir wollen, dass Suchende und Anbieter einander einfacher und direkter finden."
+    },
+    "PROVIDERS": {
+      "TITLE": "Für Anbieter",
+      "LEAD": "Eigentümer und Immobilienbüros können ihre Immobilie schon jetzt eintragen und sind von Anfang an dabei.",
+      "FREE": "Zum Start kostenlos",
+      "STEPS_TITLE": "In drei Schritten",
+      "STEP1_T": "Konto erstellen",
+      "STEP1_D": "Registrieren Sie sich auf der Plattform.",
+      "STEP2_T": "Immobilie mit Fotos eintragen",
+      "STEP2_D": "Geben Sie die wichtigsten Angaben ein und laden Sie Fotos hoch.",
+      "STEP3_T": "Anfragen direkt erhalten",
+      "STEP3_D": "Interessenten nehmen direkt Kontakt mit Ihnen auf.",
+      "WHY_TITLE": "Warum bei uns inserieren",
+      "WHY_FREE_T": "Zum Start kostenlos",
+      "WHY_FREE_D": "Das Eintragen Ihrer Immobilie kostet zum Start nichts.",
+      "WHY_REACH_T": "Die Diaspora erreichen",
+      "WHY_REACH_D": "Die Plattform gibt es auf Arabisch, Deutsch, Englisch und Türkisch.",
+      "WHY_SIMPLE_T": "Einfacher Ablauf",
+      "WHY_SIMPLE_D": "Ein geführtes Formular statt einzelner Nachrichten in Gruppen."
+    },
+    "SEO": {
+      "ABOUT": {
+        "TITLE": "Über uns – HudhudNest",
+        "DESCRIPTION": "Unsere Vision: eine Immobilienplattform für ganz Syrien, beginnend mit Damaskus und Umland."
+      },
+      "PROVIDERS": {
+        "TITLE": "Für Anbieter – HudhudNest",
+        "DESCRIPTION": "Immobilie in Syrien inserieren: Konto erstellen, Immobilie mit Fotos eintragen, Anfragen direkt erhalten. Zum Start kostenlos."
+      },
+      "IMPRESSUM": {
+        "TITLE": "Impressum – HudhudNest",
+        "DESCRIPTION": "Anbieterkennzeichnung von HudhudNest."
+      },
+      "PRIVACY": {
+        "TITLE": "Datenschutz – HudhudNest",
+        "DESCRIPTION": "Datenschutzerklärung von HudhudNest."
+      }
+    },
+    "FAQ": {
+      "TITLE": "Häufige Fragen",
+      "Q1": "Wann startet HudhudNest in Syrien?",
+      "A1": "HudhudNest ist in der Beta-Phase. Der Start in Syrien erfolgt in Kürze, beginnend mit Damaskus und Umland. Über die Warteliste erfahren Sie rechtzeitig davon.",
+      "Q2": "Kostet das Inserieren etwas?",
+      "A2": "Zum Start ist das Inserieren kostenlos.",
+      "Q3": "Wie erreiche ich Eigentümer oder Immobilienbüros?",
+      "A3": "Sobald Angebote online sind, nehmen Sie direkt über die Plattform Kontakt auf.",
+      "Q4": "Welche Daten speichert die Warteliste?",
+      "A4": "Nur Ihre E-Mail-Adresse oder WhatsApp-Nummer, optional Ihr Interesse, die Sprache und den Zeitpunkt Ihrer Einwilligung."
+    }
+  },
+  "NEWSLETTER": {
+    "OPT_IN_LABEL": "Freiwillig: Senden Sie mir den Newsletter von HudhudNest (Neuigkeiten, Angebote und Updates). Ich erhalte zuerst eine E-Mail zur Bestätigung und kann mich jederzeit abmelden.",
+    "SETTINGS_TITLE": "Newsletter",
+    "SETTINGS_DESC": "Freiwillige E-Mails zu Neuigkeiten, Angeboten und Updates der Plattform, getrennt von Service-E-Mails.",
+    "STATUS_NONE": "Sie sind nicht angemeldet.",
+    "STATUS_PENDING": "Wartet auf Ihre Bestätigung: Öffnen Sie den Link in der E-Mail, die wir Ihnen gesendet haben.",
+    "STATUS_ACTIVE": "Sie sind angemeldet.",
+    "STATUS_UNSUBSCRIBED": "Sie haben sich abgemeldet.",
+    "SUBSCRIBE": "Anmelden",
+    "UNSUBSCRIBE": "Abmelden",
+    "SUBSCRIBE_SENT": "Wir haben Ihnen eine E-Mail gesendet. Ihr Abonnement beginnt erst, wenn Sie es bestätigen.",
+    "UNSUBSCRIBED_DONE": "Erledigt. Sie erhalten den Newsletter nicht mehr.",
+    "ERROR": "Etwas ist schiefgelaufen. Bitte versuchen Sie es später erneut.",
+    "SERVICE_MAIL_NOTE": "Service-E-Mails (Konto, Sicherheit, Buchungen und Nachrichten) sind von der Newsletter-Einstellung nicht betroffen.",
+    "CONFIRM_TITLE": "Newsletter-Anmeldung bestätigen",
+    "CONFIRMED": "Vielen Dank. Ihr Abonnement ist bestätigt. Jede Newsletter-E-Mail enthält einen Abmeldelink.",
+    "CONFIRM_INVALID": "Dieser Bestätigungslink ist ungültig oder abgelaufen. Sie können sich in den Einstellungen erneut anmelden.",
+    "UNSUB_TITLE": "Vom Newsletter abmelden",
+    "UNSUB_BODY": "Klicken Sie auf die Schaltfläche, um den Newsletter von HudhudNest an diese Adresse zu beenden. Die Abmeldung wirkt sofort.",
+    "UNSUB_BUTTON": "Abmelden",
+    "UNSUB_DONE": "Sie wurden abgemeldet. Wir senden keine Werbe-E-Mails mehr an diese Adresse.",
+    "UNSUB_INVALID": "Dieser Abmeldelink ist ungültig. Schreiben Sie an privacy@hudhudnest.com, dann entfernen wir die Adresse.",
+    "MISSING_TOKEN": "Der Link ist unvollständig. Bitte öffnen Sie ihn erneut aus der E-Mail.",
+    "WORKING": "Einen Moment…",
+    "BACK_HOME": "Startseite"
+  },
+  "MEASUREMENT": {
+    "TITLE": "Ihre Wahl zur Reichweitenmessung",
+    "BANNER_TEXT": "Dürfen wir auf diesem Gerät eine zufällige Besucherkennung und die Herkunft des Links speichern, über den Sie gekommen sind? Wir nutzen sie nur, um Inseratsaufrufe einmal zu zählen und zu sehen, welche Links Besucher bringen. Keine Werbung, keine Weitergabe an Dritte. Eine Ablehnung schränkt nichts ein.",
+    "LEARN_MORE": "Datenschutzerklärung, Abschnitt 9",
+    "ACCEPT": "Erlauben",
+    "DECLINE": "Ablehnen",
+    "SETTINGS_TITLE": "Reichweitenmessung auf diesem Gerät",
+    "SETTINGS_DESC": "Eine zufällige Besucherkennung, die Kampagnenparameter eines geöffneten Links und ein Einladungscode, auf diesem Gerät gespeichert. Keine Dritten, keine Werbung.",
+    "SETTINGS_TOGGLE": "Eigene Reichweitenmessung auf diesem Gerät erlauben"
+  },
+  "RECONSENT": {
+    "TITLE": "Wir haben unsere Bedingungen aktualisiert",
+    "TEXT": "Wir haben die unten genannten Dokumente geändert. Bitte lesen Sie sie und stimmen Sie zu, um Ihr Konto weiter zu nutzen. Die Nutzung der App ohne Zustimmung gilt nicht als Zustimmung.",
+    "ACCEPT": "Ich stimme zu",
+    "LATER": "Später"
+  },
+  "OFFICES": {
+    "TITLE": "Immobilienbüros",
+    "SUBTITLE": "Finden Sie ein Büro in der Gegend, die Sie interessiert.",
+    "SEARCH_LABEL": "Büros suchen",
+    "SEARCH_PLACEHOLDER": "Name des Büros",
+    "FILTERS": "Filter",
+    "SORT_LABEL": "Sortierung",
+    "SORT": {
+      "MOSTLISTINGS": "Meiste Anzeigen",
+      "TOPRATED": "Beste Bewertung",
+      "NEWEST": "Neueste",
+      "NEAREST": "Am nächsten"
+    },
+    "FILTER": {
+      "GOVERNORATE": "Gouvernement",
+      "DISTRICT": "Bezirk",
+      "NEIGHBORHOOD": "Viertel",
+      "ANY": "Alle",
+      "NONE_HERE": "Hier noch keine Büros",
+      "DEAL": "Angebotsart",
+      "PROPERTY_TYPE": "Immobilienart",
+      "RATING": "Bewertung",
+      "RATING_AT_LEAST": "Ab {{value}} Sternen",
+      "VERIFIED_ONLY": "Nur verifizierte Büros"
+    },
+    "DEAL": {
+      "SALE": "Kauf",
+      "RENT": "Miete",
+      "SHORTSTAY": "Kurzaufenthalt",
+      "INVESTMENT": "Investition"
+    },
+    "CLEAR": "Filter zurücksetzen",
+    "RESULTS": "{{count}} Büros",
+    "LOAD_ERROR": "Die Büros konnten gerade nicht geladen werden.",
+    "EMPTY_TITLE": "Keine passenden Büros",
+    "EMPTY_MESSAGE": "Versuchen Sie eine andere Gegend oder lockern Sie die Filter.",
+    "VERIFICATION": {
+      "UNVERIFIED": "Nicht verifiziert",
+      "PENDING": "In Prüfung",
+      "VERIFIED": "Verifiziert",
+      "REJECTED": "Abgelehnt",
+      "REVOKED": "Verifizierung entzogen"
+    },
+    "RATING": "{{value}} ({{count}} Bewertungen)",
+    "NOT_RATED": "Noch nicht bewertet",
+    "ACTIVE_LISTINGS": "{{count}} aktive Anzeigen",
+    "VIEW_PROFILE": "Zum Büro",
+    "CONTACT": "Kontakt",
+    "PAGINATION": "Seiten der Büros",
+    "PREVIOUS": "Vorherige Seite",
+    "NEXT": "Nächste Seite",
+    "NEAR": {
+      "BUTTON": "Büros in meiner Nähe",
+      "LOCATING": "Standort wird ermittelt…",
+      "ACTIVE": "In Ihrer Nähe",
+      "RADIUS": "Umkreis",
+      "RADIUS_KM": "{{value}} km",
+      "CLEAR": "Abbrechen",
+      "PRIVACY": "Wir verwenden Ihren ungefähren Standort nur für diese Suche und speichern ihn nicht.",
+      "UNSUPPORTED": "Ihr Browser unterstützt keine Standortbestimmung.",
+      "DENIED": "Ihr Standort konnte nicht ermittelt werden. Erlauben Sie den Standortzugriff und versuchen Sie es erneut.",
+      "EMPTY": "Keine Büros mit Kartenstandort im Umkreis von {{value}} km. Versuchen Sie eine größere Entfernung.",
+      "DISTANCE_KM": "{{value}} km entfernt",
+      "DISTANCE_M": "{{value}} m entfernt"
+    },
+    "VIEW": {
+      "LABEL": "Ansicht",
+      "LIST": "Liste",
+      "MAP": "Karte"
+    },
+    "MAP": {
+      "LABEL": "Karte der Immobilienbüros",
+      "COUNT": "{{count}} Filialen in diesem Gebiet",
+      "TRUNCATED": "Nur die ersten {{count}} Filialen werden angezeigt. Zoomen Sie hinein, um den Rest zu sehen.",
+      "LOAD_ERROR": "Die Karte konnte gerade nicht geladen werden.",
+      "ONLY_PINNED": "Hier erscheinen nur Filialen, deren Inhaber sie auf der Karte platziert haben.",
+      "FILTERS_NOTE": "Auf der Karte gilt nur der Filter „nur verifizierte“."
+    }
+  },
+  "ADMIN_AGENCIES": {
+    "TITLE": "Verifizierung der Immobilienbüros",
+    "SUBTITLE": "Büros in Prüfung stehen oben. Die Verifizierung ist eine Entscheidung der Verwaltung nach einer echten Prüfung außerhalb der Plattform.",
+    "SEARCH_PLACEHOLDER": "Name, Link oder Lizenznummer",
+    "STATUS_FILTER": "Verifizierungsstatus",
+    "ALL_STATUSES": "Alle Status",
+    "LOAD_ERROR": "Die Büros konnten nicht geladen werden.",
+    "EMPTY_TITLE": "Keine Büros",
+    "EMPTY_MESSAGE": "Kein Büro passt zur Suche.",
+    "INACTIVE": "Deaktiviert",
+    "OWNER": "Inhaber",
+    "LICENSE": "Lizenz",
+    "LISTINGS": "{{count}} aktive Anzeigen",
+    "MEMBERS": "{{count}} Mitglieder",
+    "VERIFIED_AT": "Verifiziert am {{date}}",
+    "CHANGE_STATUS": "Status ändern",
+    "MODAL_TITLE": "Verifizierungsstatus ändern",
+    "SAVE": "Speichern",
+    "CURRENT_STATUS": "Aktueller Status",
+    "HINT": "Ein Grund ist Pflicht und wird im Verlauf gespeichert. „Verifiziert“ nur nach Prüfung von Lizenz und Identität vergeben.",
+    "NEW_STATUS": "Neuer Status",
+    "CHOOSE_STATUS": "Status wählen",
+    "REASON": "Grund (Pflicht)",
+    "HISTORY": "Verifizierungsverlauf",
+    "HISTORY_EMPTY": "Keine früheren Änderungen.",
+    "SAVED": "Verifizierungsstatus gespeichert.",
+    "SAVE_ERROR": "Der Status konnte nicht gespeichert werden."
+  },
+  "AGENCY_BRANCHES": {
+    "TITLE": "Filialen und Kartenstandort",
+    "DESC": "Fügen Sie Ihren Hauptsitz und Ihre Filialen hinzu. Eine Filiale mit Kartenstandort erscheint unter „Büros in meiner Nähe“ und auf der Bürokarte.",
+    "EMPTY": "Noch keine Filialen. Ihr Büro erscheint erst auf der Karte, wenn Sie eine Filiale mit Standort hinzufügen.",
+    "MAIN": "Hauptsitz",
+    "ON_MAP": "Auf der Karte",
+    "NOT_ON_MAP": "Kein Kartenstandort",
+    "ADD": "Filiale hinzufügen",
+    "LIMIT": "Sie haben das Maximum erreicht ({{max}} Filialen).",
+    "NAME": "Name der Filiale",
+    "GOVERNORATE": "Gouvernement",
+    "DISTRICT": "Bezirk",
+    "NEIGHBORHOOD": "Viertel",
+    "CHOOSE": "Auswählen",
+    "OPTIONAL": "Optional",
+    "ADDRESS": "Adresse",
+    "PHONE": "Telefon der Filiale",
+    "PIN": "Kartenstandort",
+    "PIN_HINT": "Klicken Sie auf die Karte, um die Markierung genau an der Filiale zu setzen.",
+    "CLEAR_PIN": "Standort entfernen",
+    "MAKE_MAIN": "Zum Hauptsitz machen",
+    "DELETE_TITLE": "Filiale löschen",
+    "DELETE_TEXT": "Die Filiale „{{name}}“ löschen?",
+    "SAVED": "Filiale gespeichert.",
+    "DELETED": "Filiale gelöscht.",
+    "SAVE_ERROR": "Die Filiale konnte nicht gespeichert werden."
+  },
+  "OFFICE_BRANCHES": {
+    "TITLE": "Filialen ({{count}})",
+    "MAP_LABEL": "Karte der Filialen des Büros",
+    "MAIN": "Hauptsitz",
+    "DIRECTIONS": "Route"
+  },
+  "OFFICE_QR": {
+    "TITLE": "QR-Code des Büros",
+    "DESC": "Drucken Sie ihn auf Schaufenster, Visitenkarten oder Schilder. Wer ihn scannt, landet direkt auf Ihrer Büroseite.",
+    "LOAD_ERROR": "Der QR-Code konnte gerade nicht geladen werden.",
+    "ALT": "QR-Code zur Seite von {{name}}",
+    "PERMANENT": "Dieser Link bleibt gleich, auch wenn Sie das Büro umbenennen. Gedrucktes bleibt also gültig.",
+    "DOWNLOAD_PNG": "Für den Druck herunterladen (PNG)",
+    "DOWNLOAD_SVG": "SVG herunterladen",
+    "COPY": "Link kopieren",
+    "COPY_FAILED": "Der Link konnte nicht kopiert werden.",
+    "PRINT_TIP": "Für den Druck: mindestens 3 cm breit, schwarz auf weiß.",
+    "NOT_FOUND_TITLE": "Unbekannter Code",
+    "NOT_FOUND_TEXT": "Zu diesem Code gibt es kein Büro, oder das Büro wird nicht mehr angezeigt.",
+    "BROWSE": "Immobilienbüros durchsuchen",
+    "OPENING": "Büroseite wird geöffnet…"
+  },
+  "OFFICE_STATS": {
+    "TITLE": "Statistik der Büroseite",
+    "DESC": "Wie viele Menschen Ihre Büroseite besucht, Ihren QR-Code gescannt und Sie kontaktiert haben.",
+    "RANGE": "Zeitraum",
+    "DAYS": "Letzte {{count}} Tage",
+    "LOAD_ERROR": "Die Statistik konnte gerade nicht geladen werden.",
+    "TILE": {
+      "profileViews": "Seitenbesuche",
+      "uniqueVisitors": "Verschiedene Besucher",
+      "qrScans": "QR-Scans",
+      "contactClicks": "Kontaktklicks",
+      "listingClicks": "Geöffnete Inserate",
+      "shares": "Geteilt"
+    },
+    "EMPTY": "In diesem Zeitraum wurde noch nichts erfasst.",
+    "CHART_LABEL": "Tägliche Besuche der letzten {{count}} Tage",
+    "SOURCES": "Woher die Besucher kamen",
+    "CONTACTS": "Wie Sie kontaktiert wurden",
+    "SOURCE": {
+      "DIRECT": "Direkt",
+      "QR": "QR-Code",
+      "DIRECTORY": "Bürosuche",
+      "LISTING": "Inseratsseite",
+      "SHARE": "Geteilter Link"
+    },
+    "CHANNEL": {
+      "PHONE": "Anruf",
+      "WHATSAPP": "WhatsApp",
+      "EMAIL": "E-Mail",
+      "NATIVESHARE": "Teilen",
+      "COPYLINK": "Link kopiert",
+      "WEBSITE": "Website",
+      "FACEBOOK": "Facebook",
+      "INSTAGRAM": "Instagram",
+      "TELEGRAM": "Telegram",
+      "X": "X",
+      "LINKEDIN": "LinkedIn",
+      "YOUTUBE": "YouTube",
+      "TIKTOK": "TikTok"
+    },
+    "NOTE": "Ohne Sie, Ihr Team und automatisierte Programme; derselbe Besucher zählt einmal alle 24 Stunden. Tage in UTC.",
+    "SHARE": "Teilen",
+    "LINK_COPIED": "Link kopiert."
+  },
+  "OFFICE_PROFILE": {
+    "TITLE": "Büroprofil",
+    "DESC": "Titelbild, Website, Social-Media-Links und Öffnungszeiten, wie sie auf Ihrer öffentlichen Büroseite erscheinen.",
+    "COVER": "Titelbild",
+    "NO_COVER": "Noch kein Titelbild",
+    "COVER_HINT": "Ein breites Bild (am besten 1600×530 px), PNG oder JPEG bis 5 MB.",
+    "UPLOAD_COVER": "Titelbild hochladen",
+    "CHANGE_COVER": "Titelbild ändern",
+    "REMOVE_COVER": "Titelbild entfernen",
+    "COVER_TYPE": "Nur PNG oder JPEG.",
+    "COVER_TOO_LARGE": "Das Bild ist größer als 5 MB.",
+    "COVER_SAVED": "Titelbild gespeichert.",
+    "COVER_REMOVED": "Titelbild entfernt.",
+    "LINKS": "Website und Social-Media-Links",
+    "LINKS_HINT": "https-Links zu den Seiten des Büros oder @Name für Konten. WhatsApp: internationale Nummer mit Ländervorwahl.",
+    "WEBSITE": "Website",
+    "SAVE_LINKS": "Links speichern",
+    "LINKS_SAVED": "Links gespeichert.",
+    "FIX_FIELDS": "Korrigieren Sie die markierten Felder und speichern Sie dann.",
+    "ERR_WEBSITE": "Ungültiger Link. Nur https-Links sind erlaubt.",
+    "ERR_LINK": "Das ist kein Link zu diesem Netzwerk.",
+    "ERR_WHATSAPP": "Geben Sie die internationale Nummer mit Ländervorwahl ein, z. B. +963 9XX XXX XXX.",
+    "HOURS": "Öffnungszeiten",
+    "HOURS_HINT": "Zeit in Damaskus. Höchstens zwei Zeiträume pro Tag (z. B. 9–14 und 17–20).",
+    "ADD_HOURS": "Öffnungszeiten hinzufügen",
+    "CLOSED": "Geschlossen",
+    "OPENS": "Öffnet",
+    "CLOSES": "Schließt",
+    "ADD_PERIOD": "Zweiter Zeitraum",
+    "REMOVE_PERIOD": "Zeitraum entfernen",
+    "SAVE_HOURS": "Öffnungszeiten speichern",
+    "CLEAR_HOURS": "Öffnungszeiten entfernen",
+    "HOURS_SAVED": "Öffnungszeiten gespeichert.",
+    "HOURS_CLEARED": "Öffnungszeiten entfernt.",
+    "HOURS_ERR_TOO_MANY": "Höchstens zwei Zeiträume pro Tag.",
+    "HOURS_ERR_FORMAT": "Wählen Sie für jeden Zeitraum eine gültige Uhrzeit.",
+    "HOURS_ERR_ORDER": "Die Schließzeit muss nach der Öffnungszeit liegen.",
+    "HOURS_ERR_OVERLAP": "Der zweite Zeitraum muss nach dem Ende des ersten beginnen.",
+    "SAVE_ERROR": "Speichern fehlgeschlagen. Bitte erneut versuchen.",
+    "OPEN_NOW": "Jetzt geöffnet",
+    "CLOSED_NOW": "Jetzt geschlossen",
+    "HOURS_TZ": "Zeiten in Damaszener Zeit.",
+    "NETWORK": {
+      "WHATSAPP": "WhatsApp",
+      "FACEBOOK": "Facebook",
+      "INSTAGRAM": "Instagram",
+      "TELEGRAM": "Telegram",
+      "X": "X (Twitter)",
+      "LINKEDIN": "LinkedIn",
+      "YOUTUBE": "YouTube",
+      "TIKTOK": "TikTok"
+    },
+    "DAY": {
+      "SATURDAY": "Samstag",
+      "SUNDAY": "Sonntag",
+      "MONDAY": "Montag",
+      "TUESDAY": "Dienstag",
+      "WEDNESDAY": "Mittwoch",
+      "THURSDAY": "Donnerstag",
+      "FRIDAY": "Freitag"
+    }
   }
 }

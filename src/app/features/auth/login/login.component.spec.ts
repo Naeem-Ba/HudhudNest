@@ -42,6 +42,7 @@ describe('LoginComponent', () => {
   let translate: jasmine.SpyObj<any>;
   let toast: jasmine.SpyObj<any>;
   let errorFocus: jasmine.SpyObj<any>;
+  let consentApi: jasmine.SpyObj<any>;
 
   beforeEach(() => {
     authApi = jasmine.createSpyObj('AuthApiService', ['login', 'register']);
@@ -60,6 +61,8 @@ describe('LoginComponent', () => {
     translate.instant.and.callFake((key: string) => key);
     toast = jasmine.createSpyObj('ToastService', ['success', 'error']);
     errorFocus = jasmine.createSpyObj('AuthErrorFocusService', ['request']);
+    consentApi = jasmine.createSpyObj('ConsentApiService', ['ensureCurrentAcceptance']);
+    consentApi.ensureCurrentAcceptance.and.returnValue(of([]));
 
     component = new LoginComponent(
       authApi,
@@ -71,11 +74,32 @@ describe('LoginComponent', () => {
       route,
       translate,
       toast,
-      errorFocus
+      errorFocus,
+      consentApi
     );
   });
 
   afterEach(() => component.ngOnDestroy());
+
+  describe('الدخول الاجتماعي — إثبات الموافقة (LEG-002)', () => {
+    const response = { accessToken: 'a', refreshToken: 'r', expiresIn: 3600 };
+
+    it('✅ يسجّل قبول النسخة الحالية ثم يكمل الدخول', () => {
+      (component as any).completeSocialLogin(response);
+
+      expect(consentApi.ensureCurrentAcceptance).toHaveBeenCalled();
+      expect(tokenStorage.storeTokens).toHaveBeenCalledWith(response);
+      expect(router.navigateByUrl).toHaveBeenCalledWith('/home');
+    });
+
+    it('✅ فشل تسجيل الموافقة لا يمنع الدخول', () => {
+      consentApi.ensureCurrentAcceptance.and.returnValue(throwError(() => httpError(500)));
+
+      (component as any).completeSocialLogin(response);
+
+      expect(router.navigateByUrl).toHaveBeenCalledWith('/home');
+    });
+  });
 
   describe('onLogin — البريد الإلكتروني', () => {
     it('✅ ينجح الدخول ويستعيد الجلسة وينتقل إلى returnUrl', () => {
@@ -140,6 +164,44 @@ describe('LoginComponent', () => {
       component.onLogin(fakeForm());
 
       expect(component.message).toBe('AUTH.ERRORS.RATE_LIMITED');
+    });
+
+    // QA المرحلة 4 (P4-D11): كلمة سر صحيحة + بريد غير مؤكَّد = رفض بسبب واضح وزر إعادة إرسال، لا «بيانات خاطئة».
+    it('✅ EMAIL_NOT_CONFIRMED يعرض رسالة التأكيد ويُظهر زر إعادة الإرسال لا «بيانات خاطئة»', () => {
+      authApi.login.and.returnValue(throwError(() => httpError(403, { errorCode: 'EMAIL_NOT_CONFIRMED' })));
+      component.loginData = { Email: ' New@Example.com ', Password: 'x' };
+
+      component.onLogin(fakeForm());
+
+      expect(component.message).toBe('AUTH.ERRORS.EMAIL_NOT_CONFIRMED');
+      expect(component.emailNotConfirmed).toBeTrue();
+      expect(component.credentialsFailed).toBeFalse();
+    });
+
+    it('✅ إعادة الإرسال تستدعي نقطة التأكيد بالبريد نفسه وتعرض رسالة النجاح', () => {
+      authApi.login.and.returnValue(throwError(() => httpError(403, { errorCode: 'EMAIL_NOT_CONFIRMED' })));
+      authApi.resendConfirmationEmail = jasmine.createSpy('resendConfirmationEmail').and.returnValue(of({ message: 'ok' }));
+      component.loginData = { Email: 'New@Example.com', Password: 'x' };
+      component.onLogin(fakeForm());
+
+      component.resendConfirmation();
+
+      expect(authApi.resendConfirmationEmail).toHaveBeenCalledOnceWith('new@example.com');
+      expect(component.message).toBe('AUTH.CONFIRMATION_RESENT');
+      expect(component.success).toBeTrue();
+      expect(component.emailNotConfirmed).toBeFalse();
+    });
+
+    it('✅ تجاوز حدّ إعادة الإرسال (429) يعرض رسالة الحدّ ويُبقي الزر', () => {
+      authApi.login.and.returnValue(throwError(() => httpError(403, { errorCode: 'EMAIL_NOT_CONFIRMED' })));
+      authApi.resendConfirmationEmail = jasmine.createSpy('resendConfirmationEmail').and.returnValue(throwError(() => httpError(429)));
+      component.loginData = { Email: 'new@example.com', Password: 'x' };
+      component.onLogin(fakeForm());
+
+      component.resendConfirmation();
+
+      expect(component.message).toBe('AUTH.RESEND_CONFIRMATION.TOO_MANY');
+      expect(component.emailNotConfirmed).toBeTrue();
     });
 
     it('✅ لا يُرسل الطلب إذا كان النموذج غير صالح', () => {

@@ -3,19 +3,26 @@
 //     (Gas=2, Electric=3, FloorHeating=4), so choosing "Gas" saved Electric;
 //  2. edit mode never loaded the saved heating type, so saving any edit reset it to Unknown.
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { AgenciesApiService } from '../../core/api/agencies-api.service';
+import { Agency } from '../../core/models/agency.model';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 import { PropertyFormPage } from './property-form.page';
 import { LookupsApiService } from '../../core/api/lookups-api.service';
+import { LocationsApiService } from '../../core/api/locations-api.service';
+import { locationsApiStub } from '../../shared/ui/geo/locations-api.stub.spec';
 import { PropertyApiService } from '../../core/api/property-api.service';
 import { LanguageService } from '../../core/services/language.service';
 import { MapPickerComponent } from '../../map-picker/map-picker.component';
 import { LocationComboComponent } from '../../shared/ui/location-combo.component';
+
+// The publisher's office (branch picker / "add to my office"); none by default.
+const agenciesApi: { getMine: () => Observable<Partial<Agency> | null> } = { getMine: () => of(null) };
 
 // Same ids/keys the real GET /api/enums/HeatingType returns.
 const HEATING_ENUM = [
@@ -55,7 +62,9 @@ describe('PropertyFormPage heating type', () => {
       providers: [
         provideHttpClient(), provideHttpClientTesting(), provideRouter([]),
         { provide: LookupsApiService, useValue: lookups },
+        { provide: LocationsApiService, useValue: locationsApiStub() },
         { provide: PropertyApiService, useValue: propertyApi },
+        { provide: AgenciesApiService, useValue: agenciesApi },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap(editId ? { id: editId } : {}) } } },
         { provide: LanguageService, useValue: { getCurrentLang: () => 'ar', getCurrent: () => 'ar', currentLang$: of('ar') } }
       ]
@@ -173,7 +182,9 @@ describe('PropertyFormPage heating type in the save payload', () => {
       providers: [
         provideHttpClient(), provideHttpClientTesting(), provideRouter([]),
         { provide: LookupsApiService, useValue: lookups },
+        { provide: LocationsApiService, useValue: locationsApiStub() },
         { provide: PropertyApiService, useValue: api },
+        { provide: AgenciesApiService, useValue: agenciesApi },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap(editId ? { id: editId } : {}) } } },
         { provide: LanguageService, useValue: { getCurrentLang: () => 'ar', getCurrent: () => 'ar', currentLang$: of('ar') } }
       ]

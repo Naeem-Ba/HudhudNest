@@ -137,5 +137,15 @@
       </aside>
 
     </div>
+
+    <section class="contact-faq" aria-labelledby="contact-faq-title">
+      <h2 id="contact-faq-title">{{ 'SITE.FAQ.TITLE' | translate }}</h2>
+      @for (item of faqItems; track item.q) {
+        <details>
+          <summary>{{ item.q | translate }}</summary>
+          <p>{{ item.a | translate }}</p>
+        </details>
+      }
+    </section>
   </div>
 </div>

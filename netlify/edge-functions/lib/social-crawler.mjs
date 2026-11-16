@@ -123,6 +123,17 @@ export function extractPropertyIdFromPath(pathname) {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
+/** The office slug from "/offices/<slug>" or "/offices/<slug>/"; null for the directory itself and anything nested. */
+export function extractOfficeSlugFromPath(pathname) {
+  const match = /^\/offices\/([^/]+)\/?$/.exec(pathname);
+  if (!match) return null;
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return null;
+  }
+}
+
 /** Strips HTML markup and collapses whitespace — the same defensive sanitization
  *  PropertyMetaService.sanitize() applies on the Angular side, reimplemented here since this
  *  file cannot import Angular/TypeScript code (see the file header). Keep the two in sync if
@@ -143,7 +154,7 @@ export function escapeHtml(value) {
 const MAX_SUMMARY_LENGTH = 160;
 
 /** The preview languages. Arabic is the original and the default for a link that names none. */
-export const SHARE_LANGUAGES = ['ar', 'en', 'de'];
+export const SHARE_LANGUAGES = ['ar', 'en', 'de', 'tr'];
 
 const SHARE_TEXT = {
   ar: {
@@ -157,7 +168,10 @@ const SHARE_TEXT = {
     fixed: v => `خصم ${v}$`,
     freeMonths: v => (v === 1 ? 'شهر مجاني' : `${v} أشهر مجانية`),
     unavailableTitle: 'الإعلان غير متاح',
-    unavailableBody: 'هذا الإعلان لم يعد متاحاً.'
+    unavailableBody: 'هذا الإعلان لم يعد متاحاً.',
+    officeDescription: name => `${name}: مكتب عقاري على هدهد نيست. الإعلانات وساعات العمل وطرق التواصل.`,
+    officeUnavailableTitle: 'المكتب غير متاح',
+    officeUnavailableBody: 'هذا المكتب غير متاح.'
   },
   en: {
     dir: 'ltr',
@@ -170,7 +184,10 @@ const SHARE_TEXT = {
     fixed: v => `$${v} off`,
     freeMonths: v => (v === 1 ? '1 month free' : `${v} months free`),
     unavailableTitle: 'Listing unavailable',
-    unavailableBody: 'This listing is no longer available.'
+    unavailableBody: 'This listing is no longer available.',
+    officeDescription: name => `${name}: real estate office on HudhudNest. Listings, opening hours and contact details.`,
+    officeUnavailableTitle: 'Office unavailable',
+    officeUnavailableBody: 'This office is not available.'
   },
   de: {
     dir: 'ltr',
@@ -183,11 +200,30 @@ const SHARE_TEXT = {
     fixed: v => `${v} $ Rabatt`,
     freeMonths: v => (v === 1 ? '1 Monat gratis' : `${v} Monate gratis`),
     unavailableTitle: 'Anzeige nicht verfügbar',
-    unavailableBody: 'Diese Anzeige ist nicht mehr verfügbar.'
+    unavailableBody: 'Diese Anzeige ist nicht mehr verfügbar.',
+    officeDescription: name => `${name}: Immobilienbüro auf HudhudNest. Inserate, Öffnungszeiten und Kontakt.`,
+    officeUnavailableTitle: 'Büro nicht verfügbar',
+    officeUnavailableBody: 'Dieses Büro ist nicht verfügbar.'
+  },
+  tr: {
+    dir: 'ltr',
+    locale: 'tr_TR',
+    siteName: 'HudhudNest',
+    squareMeter: 'm²',
+    rooms: n => `${n} oda`,
+    defaultTitle: 'İlan ayrıntıları',
+    percent: v => `%${v} indirim`,
+    fixed: v => `${v} $ indirim`,
+    freeMonths: v => (v === 1 ? '1 ay ücretsiz' : `${v} ay ücretsiz`),
+    unavailableTitle: 'İlan yayında değil',
+    unavailableBody: 'Bu ilan artık yayında değil.',
+    officeDescription: name => `${name}: HudhudNest üzerinde emlak ofisi. İlanlar, çalışma saatleri ve iletişim bilgileri.`,
+    officeUnavailableTitle: 'Ofis kullanılamıyor',
+    officeUnavailableBody: 'Bu ofis kullanılamıyor.'
   }
 };
 
-/** "de" from "?lang=de" (also "de-AT"); anything else, or nothing, is Arabic -- the original behaviour. */
+/** "de" from "?lang=de" (also "de-AT"; "tr" from "?lang=tr"); anything else, or nothing, is Arabic -- the original behaviour. */
 export function resolveShareLanguage(value) {
   const primary = String(value ?? '').trim().toLowerCase().split(/[-_]/, 1)[0];
   return SHARE_LANGUAGES.includes(primary) ? primary : 'ar';
@@ -453,6 +489,78 @@ export function buildNotFoundHtml(lang = 'ar') {
 </head>
 <body>
 <p>${text.unavailableBody}</p>
+</body>
+</html>
+`;
+}
+
+function httpsUrl(value) {
+  return typeof value === 'string' && /^https:\/\//i.test(value) ? value : null;
+}
+
+/**
+ * Pre-rendered preview for a social crawler on an office page (/offices/<slug>). Built only from what the public
+ * office endpoint already shows (name, description, cover or logo). Returns null when the office has no usable name,
+ * so the caller serves the normal SPA instead of a hollow card.
+ */
+export function buildOfficeMetaHtml({ agency, canonicalUrl, fallbackImageUrl, lang = 'ar' }) {
+  const text = shareText(lang);
+  const name = sanitizeText(agency?.name);
+  if (!name) {
+    return null;
+  }
+
+  const own = sanitizeText(agency.description);
+  const description = own
+    ? (own.length > MAX_SUMMARY_LENGTH ? `${own.slice(0, MAX_SUMMARY_LENGTH - 1)}…` : own)
+    : text.officeDescription(name);
+  const image = httpsUrl(agency.coverImageUrl) || httpsUrl(agency.logoUrl) || fallbackImageUrl;
+
+  const t = escapeHtml(`${name} | ${text.siteName}`);
+  const d = escapeHtml(description);
+  const u = escapeHtml(canonicalUrl);
+  const img = escapeHtml(image);
+
+  return `<!doctype html>
+<html lang="${resolveShareLanguage(lang)}" dir="${text.dir}">
+<head>
+<meta charset="utf-8">
+<title>${t}</title>
+<meta name="description" content="${d}">
+<link rel="canonical" href="${u}">
+<meta property="og:title" content="${t}">
+<meta property="og:description" content="${d}">
+<meta property="og:image" content="${img}">
+<meta property="og:url" content="${u}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="${text.siteName}">
+<meta property="og:locale" content="${text.locale}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${t}">
+<meta name="twitter:description" content="${d}">
+<meta name="twitter:image" content="${img}">
+</head>
+<body>
+<h1>${t}</h1>
+<p>${d}</p>
+<p><a href="${u}">${u}</a></p>
+</body>
+</html>
+`;
+}
+
+/** Minimal, non-leaking document for an unknown or deactivated office. */
+export function buildOfficeNotFoundHtml(lang = 'ar') {
+  const text = shareText(lang);
+  return `<!doctype html>
+<html lang="${resolveShareLanguage(lang)}" dir="${text.dir}">
+<head>
+<meta charset="utf-8">
+<title>${text.officeUnavailableTitle} | ${text.siteName}</title>
+<meta name="robots" content="noindex">
+</head>
+<body>
+<p>${text.officeUnavailableBody}</p>
 </body>
 </html>
 `;

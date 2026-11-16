@@ -1,11 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin, of, switchMap } from 'rxjs';
+
+import { withUiLanguage } from '../i18n/ui-language';
+import { PRIVACY_POLICY_VERSION, TERMS_OF_SERVICE_VERSION } from '../models/consent-versions';
 
 import { BackendApiService } from './backend-api.service';
 
 export type ConsentPolicyType = 'PrivacyPolicy' | 'TermsOfService';
 export type ConsentSource = 'Web' | 'Ios' | 'Android';
+/** How the consent was captured (API ConsentMethod); stored with the record as evidence. */
+export type ConsentMethod = 'UncheckedCheckbox' | 'SocialSignInNotice' | 'AccountSettings' | 'UpdatePrompt';
 
 export interface ConsentRecord {
   id: string;
@@ -15,6 +20,8 @@ export interface ConsentRecord {
   source: ConsentSource;
   withdrawnAtUtc: string | null;
   isActive: boolean;
+  language?: string | null;
+  method?: string | null;
 }
 
 /**
@@ -36,12 +43,17 @@ export class ConsentApiService {
     return Capacitor.getPlatform() === 'ios' ? 'Ios' : 'Android';
   }
 
-  record(policyType: ConsentPolicyType, policyVersion: string): Observable<ConsentRecord> {
-    return this.api.post<ConsentRecord>('/users/me/consents', {
-      policyType,
-      policyVersion,
-      source: ConsentApiService.currentSource()
-    });
+  /** The page language goes along (withUiLanguage), so the record says in which language the text was shown. */
+  record(policyType: ConsentPolicyType, policyVersion: string, method?: ConsentMethod): Observable<ConsentRecord> {
+    return this.api.post<ConsentRecord>(
+      '/users/me/consents',
+      withUiLanguage({
+        policyType,
+        policyVersion,
+        source: ConsentApiService.currentSource(),
+        ...(method ? { method } : {})
+      })
+    );
   }
 
   getMine(): Observable<ConsentRecord[]> {
@@ -50,5 +62,25 @@ export class ConsentApiService {
 
   withdraw(policyType: ConsentPolicyType): Observable<{ withdrawnCount: number }> {
     return this.api.delete<{ withdrawnCount: number }>(`/users/me/consents/${policyType}`);
+  }
+
+  /**
+   * After a Google or Apple sign-in (no checkbox on that path; the sign-in page shows a notice that continuing means
+   * accepting the terms and the privacy policy): records the CURRENT version of each document for an account that has
+   * no active record of it, so the proof of acceptance exists for every sign-up route (QA phase 22, LEG-002).
+   * Best-effort: callers ignore a failure.
+   */
+  ensureCurrentAcceptance(): Observable<unknown> {
+    return this.getMine().pipe(
+      switchMap(records => {
+        const missing = ([
+          ['PrivacyPolicy', PRIVACY_POLICY_VERSION],
+          ['TermsOfService', TERMS_OF_SERVICE_VERSION]
+        ] as const).filter(
+          ([type, version]) => !records.some(record => record.policyType === type && record.policyVersion === version && record.isActive)
+        );
+        return missing.length > 0 ? forkJoin(missing.map(([type, version]) => this.record(type, version, 'SocialSignInNotice'))) : of([]);
+      })
+    );
   }
 }

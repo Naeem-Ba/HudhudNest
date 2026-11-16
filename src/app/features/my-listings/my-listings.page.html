@@ -167,11 +167,33 @@
                 : ('MY_LISTINGS.PUBLISH' | translate) }}
           </button>
           <button
+            *ngIf="canHide(p)"
+            type="button"
+            class="btn btn--secondary btn--hide"
+            [disabled]="hidingId() === p.id"
+            (click)="hide(p.id)"
+          >
+            {{ hidingId() === p.id
+                ? ('COMMON.SAVING' | translate)
+                : ('MY_LISTINGS.HIDE' | translate) }}
+          </button>
+          <button
             type="button"
             class="btn btn--secondary"
             (click)="openMessages(p.id)"
           >
             💬 {{ 'MY_LISTINGS.MESSAGES' | translate }}
+          </button>
+          <button
+            *ngIf="canLinkToOffice(p)"
+            type="button"
+            class="btn btn--secondary"
+            data-testid="link-to-office"
+            [disabled]="linkingId() === p.id"
+            [title]="'MY_LISTINGS.OFFICE_LINK.HINT' | translate"
+            (click)="linkToOffice(p)"
+          >
+            🏢 {{ linkingId() === p.id ? ('COMMON.SAVING' | translate) : ('MY_LISTINGS.OFFICE_LINK.ACTION' | translate) }}
           </button>
           <button
             type="button"

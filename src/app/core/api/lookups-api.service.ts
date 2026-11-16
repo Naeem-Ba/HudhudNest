@@ -73,8 +73,9 @@ export interface CurrencyLookup {
 /**
  * Picks the display name matching the current UI language for a lookup item.
  * Governorates/districts/neighborhoods may carry a German name (`nameDe`); where
- * it is missing, and for every other lookup, German falls back to English, and
- * anything unrecognized to English too.
+ * it is missing, and for every other lookup, German falls back to English, Turkish
+ * has no place-name columns and uses English too (place names are not translated, QA Phase 16 D09), and
+ * anything unrecognized falls back to English as well.
  */
 export function pickLocalizedName(item: { nameAr: string; nameEn: string; nameDe?: string | null }, lang: string): string {
   if (lang === 'ar') return item.nameAr || item.nameEn;

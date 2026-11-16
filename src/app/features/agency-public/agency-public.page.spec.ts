@@ -16,6 +16,8 @@ import { PropertyApiService } from '../../core/api/property-api.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { Agency, AgencyRatingEligibilityDto, AgencyRatingSummaryDto } from '../../core/models/agency.model';
+import { LookupsApiService } from '../../core/api/lookups-api.service';
+import { LanguageService } from '../../core/services/language.service';
 
 const AGENCY: Agency = {
   id: 'agency-1',
@@ -49,6 +51,7 @@ describe('AgencyPublicPage', () => {
   let agencies: jasmine.SpyObj<AgenciesApiService>;
   let properties: jasmine.SpyObj<PropertyApiService>;
   let toast: jasmine.SpyObj<ToastService>;
+  let lookups: jasmine.SpyObj<LookupsApiService>;
 
   function create(opts: { slug?: string; userId?: string | null } = {}): AgencyPublicPage {
     TestBed.configureTestingModule({
@@ -60,18 +63,24 @@ describe('AgencyPublicPage', () => {
         { provide: PropertyApiService, useValue: properties },
         { provide: AuthService, useValue: { getCurrentUserId: () => (opts.userId === undefined ? 'user-1' : opts.userId) } },
         { provide: ToastService, useValue: toast },
-        { provide: TranslateService, useValue: { instant: (k: string) => k } }
+        { provide: TranslateService, useValue: { instant: (k: string, p?: Record<string, string>) => (p ? `${k}|${p['name']}|${p['place']}` : k), stream: () => of('') } },
+        { provide: LookupsApiService, useValue: lookups },
+        { provide: LanguageService, useValue: { getCurrent: () => 'en', currentLang$: of('en') } }
       ]
     });
     return TestBed.inject(AgencyPublicPage);
   }
 
   beforeEach(() => {
-    agencies = jasmine.createSpyObj<AgenciesApiService>('AgenciesApiService', ['getBySlug', 'getRatings', 'getRatingEligibility', 'submitRating']);
+    agencies = jasmine.createSpyObj<AgenciesApiService>('AgenciesApiService', ['getBySlug', 'getRatings', 'getRatingEligibility', 'submitRating', 'recordEvent']);
     properties = jasmine.createSpyObj<PropertyApiService>('PropertyApiService', ['getPropertiesPaged']);
     toast = jasmine.createSpyObj<ToastService>('ToastService', ['success', 'error']);
+    lookups = jasmine.createSpyObj<LookupsApiService>('LookupsApiService', ['getGovernorates', 'getDistricts']);
+    lookups.getGovernorates.and.returnValue(of([{ id: 1, nameAr: 'دمشق', nameEn: 'Damascus' }] as never));
+    lookups.getDistricts.and.returnValue(of([{ id: 4, nameAr: 'المزة', nameEn: 'Mezzeh' }] as never));
 
     agencies.getBySlug.and.returnValue(of(AGENCY));
+    agencies.recordEvent.and.returnValue(of({ counted: true }));
     agencies.getRatings.and.returnValue(of(SUMMARY));
     agencies.getRatingEligibility.and.returnValue(of(eligibility()));
     properties.getPropertiesPaged.and.returnValue(of({ items: [], page: 1, pageSize: 12, totalCount: 7, totalPages: 1, hasNext: false, hasPrevious: false }));
@@ -86,6 +95,62 @@ describe('AgencyPublicPage', () => {
     expect(page.summary()?.averageOverall).toBe(4);
     expect(agencies.getRatings).toHaveBeenCalledWith('agency-1', 1, 20);
     expect(properties.getPropertiesPaged).toHaveBeenCalledWith({ agencyId: 'agency-1', page: 1, pageSize: 12 });
+  });
+
+  describe('search metadata (offices P5)', () => {
+    afterEach(() => {
+      document.getElementById('ld-office')?.remove();
+      document.getElementById('ld-breadcrumb')?.remove();
+    });
+
+    const json = (id: string) => JSON.parse(document.getElementById(id)?.textContent ?? 'null');
+
+    it('describes the office for search engines: canonical page, fallback description with its place, schema.org data', () => {
+      agencies.getBySlug.and.returnValue(of({ ...AGENCY, governorateId: 1, districtId: 4, coverImageUrl: 'https://cdn.example/c.jpg' }));
+      const page = create();
+      const meta = TestBed.inject(PageMetaService) as jasmine.SpyObj<PageMetaService>;
+
+      page.ngOnInit();
+      TestBed.tick();
+
+      expect(meta.applyDynamic).toHaveBeenCalledWith({
+        title: 'XYZ Real Estate',
+        description: 'SEO.OFFICE_PROFILE.DESCRIPTION_PLACE|XYZ Real Estate|Mezzeh, Damascus',
+        path: '/offices/xyz',
+        image: 'https://cdn.example/c.jpg'
+      });
+      const office = json('ld-office');
+      expect(office['@type']).toBe('RealEstateAgent');
+      expect(office.url).toMatch(/\/offices\/xyz$/);
+      expect(office.address).toEqual({ '@type': 'PostalAddress', addressLocality: 'Mezzeh', addressRegion: 'Damascus', addressCountry: 'SY' });
+      expect(office.aggregateRating.reviewCount).toBe(3);
+      expect(json('ld-breadcrumb').itemListElement.length).toBe(3);
+    });
+
+    it('publishes no schema.org office block without an address, but still sets title and description', () => {
+      const page = create();
+      const meta = TestBed.inject(PageMetaService) as jasmine.SpyObj<PageMetaService>;
+
+      page.ngOnInit();
+      TestBed.tick();
+
+      expect(document.getElementById('ld-office')).toBeNull();
+      expect(meta.applyDynamic).toHaveBeenCalledWith(jasmine.objectContaining({
+        title: 'XYZ Real Estate', description: 'SEO.OFFICE_PROFILE.DESCRIPTION|XYZ Real Estate|'
+      }));
+    });
+
+    it('an unknown office is marked noindex and leaves no structured data behind', () => {
+      agencies.getBySlug.and.returnValue(throwError(() => ({ status: 404 })));
+      const page = create();
+      const meta = TestBed.inject(PageMetaService) as jasmine.SpyObj<PageMetaService>;
+
+      page.ngOnInit();
+      TestBed.tick();
+
+      expect(meta.markNotFound).toHaveBeenCalled();
+      expect(document.getElementById('ld-office')).toBeNull();
+    });
   });
 
   describe('closed-deal tabs (P7-D08)', () => {
@@ -252,4 +317,159 @@ describe('AgencyPublicPage', () => {
     expect(toast.error).toHaveBeenCalledWith('يجب إتمام زيارة أو التواصل أولاً');
     expect(page.submittingRating()).toBeFalse();
   });
+
+  describe('branches', () => {
+    const withBranches: Agency = {
+      ...AGENCY,
+      branches: [
+        { id: 'b1', name: 'Head office', isMain: true, governorateId: 1, districtId: 4, latitude: 33.5, longitude: 36.27 },
+        { id: 'b2', name: 'Kiosk', isMain: false, governorateId: 1, latitude: null, longitude: null }
+      ]
+    };
+
+    it('lists every branch but puts only the pinned ones on the map', () => {
+      agencies.getBySlug.and.returnValue(of(withBranches));
+      const page = create();
+      page.ngOnInit();
+      expect(page.branches().map(b => b.id)).toEqual(['b1', 'b2']);
+      expect(page.branchPoints()).toEqual([jasmine.objectContaining({ id: 'b1', latitude: 33.5, longitude: 36.27, main: true })]);
+    });
+
+    it('names the branch place from the lookups and loads districts only where a branch has one', () => {
+      agencies.getBySlug.and.returnValue(of(withBranches));
+      const page = create();
+      page.ngOnInit();
+      expect(lookups.getDistricts).toHaveBeenCalledOnceWith(1);
+      expect(page.branchPlace(withBranches.branches![0])).toBe('Mezzeh, Damascus');
+      expect(page.branchPlace(withBranches.branches![1])).toBe('Damascus');
+    });
+
+    it('offers directions only for a branch with coordinates', () => {
+      const page = create();
+      expect(page.directionsUrl(withBranches.branches![0])).toBe('https://www.google.com/maps/dir/?api=1&destination=33.5,36.27');
+      expect(page.directionsUrl(withBranches.branches![1])).toBeNull();
+    });
+
+    it('does not ask for place names when the office has no branches', () => {
+      const page = create();
+      page.ngOnInit();
+      expect(page.branches()).toEqual([]);
+      expect(lookups.getGovernorates).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('office profile (cover, links, hours)', () => {
+    const PROFILE: Agency = {
+      ...AGENCY,
+      coverImageUrl: 'https://img.example/cover.png',
+      website: 'https://office.example.sy/',
+      socialLinks: [
+        { network: 'WhatsApp', value: '+963944123456' },
+        { network: 'Instagram', value: 'https://instagram.com/office' },
+        { network: 'Facebook', value: 'javascript:alert(1)' }
+      ],
+      workingHours: [{ day: 'Monday', ranges: [{ opens: '09:00', closes: '17:00' }] }]
+    };
+
+    it('offers WhatsApp, the website and only the https social links, and counts their clicks', () => {
+      agencies.getBySlug.and.returnValue(of(PROFILE));
+      const page = create();
+      page.ngOnInit();
+      expect(page.whatsApp()).toBe('https://wa.me/963944123456');
+      expect(page.websiteHref()).toBe('https://office.example.sy/');
+      expect(page.profileLinks()).toEqual([{ channel: 'Instagram', href: 'https://instagram.com/office' }]);
+
+      page.track({ type: 'ContactClick', channel: 'Instagram' });
+      expect(agencies.recordEvent).toHaveBeenCalledWith('agency-1', { type: 'ContactClick', channel: 'Instagram' });
+    });
+
+    it('shows a full week from partial hours, and nothing when the office set none', () => {
+      agencies.getBySlug.and.returnValue(of(PROFILE));
+      let page = create();
+      page.ngOnInit();
+      expect(page.hours()!.length).toBe(7);
+      expect(page.openNow()).not.toBeNull();
+
+      TestBed.resetTestingModule();
+      agencies.getBySlug.and.returnValue(of(AGENCY));
+      page = create();
+      page.ngOnInit();
+      expect(page.hours()).toBeNull();
+      expect(page.openNow()).toBeNull();
+      expect(page.whatsApp()).toBeNull();
+    });
+  });
+
+  describe('office statistics events', () => {
+    afterEach(() => history.replaceState(null, ''));
+
+    it('records one profile view, from the source the navigation carried', () => {
+      history.replaceState({ officeVisitSource: 'Qr' }, '');
+      const page = create();
+      page.ngOnInit();
+      expect(agencies.recordEvent).toHaveBeenCalledOnceWith('agency-1', { type: 'ProfileView', source: 'Qr' });
+    });
+
+    it('counts an unknown or missing source as a direct visit', () => {
+      history.replaceState({ officeVisitSource: 'Evil' }, '');
+      const page = create();
+      page.ngOnInit();
+      expect(agencies.recordEvent).toHaveBeenCalledOnceWith('agency-1', { type: 'ProfileView', source: 'Direct' });
+    });
+
+    it('a failed event never breaks the page', () => {
+      agencies.recordEvent.and.returnValue(throwError(() => new Error('down')));
+      const page = create();
+      page.ngOnInit();
+      expect(page.agency()?.id).toBe('agency-1');
+      page.track({ type: 'ContactClick', channel: 'Phone' });
+      expect(agencies.recordEvent).toHaveBeenCalledWith('agency-1', { type: 'ContactClick', channel: 'Phone' });
+    });
+
+    it('copies the clean office link when there is no share sheet, and counts it', async () => {
+      const page = create();
+      page.ngOnInit();
+      const nav = navigator as Navigator & { share?: unknown };
+      const originalShare = nav.share;
+      const originalClipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+      // Some CI browsers expose no clipboard at all (insecure origin), so provide one explicitly.
+      const write = jasmine.createSpy('writeText').and.resolveTo();
+      Object.defineProperty(navigator, 'share', { value: undefined, configurable: true });
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText: write }, configurable: true });
+      try {
+        await page.share(AGENCY);
+      } finally {
+        Object.defineProperty(navigator, 'share', { value: originalShare, configurable: true });
+        restoreClipboard(originalClipboard);
+      }
+      expect(write.calls.mostRecent().args[0]).toMatch(/\/offices\/xyz$/);
+      expect(agencies.recordEvent).toHaveBeenCalledWith('agency-1', { type: 'Share', channel: 'CopyLink' });
+      expect(toast.success).toHaveBeenCalled();
+    });
+
+    it('neither claims a copy nor counts a share when the browser has no clipboard', async () => {
+      const page = create();
+      page.ngOnInit();
+      agencies.recordEvent.calls.reset();
+      const nav = navigator as Navigator & { share?: unknown };
+      const originalShare = nav.share;
+      const originalClipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+      Object.defineProperty(navigator, 'share', { value: undefined, configurable: true });
+      Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
+      try {
+        await page.share(AGENCY);
+      } finally {
+        Object.defineProperty(navigator, 'share', { value: originalShare, configurable: true });
+        restoreClipboard(originalClipboard);
+      }
+      expect(agencies.recordEvent).not.toHaveBeenCalledWith('agency-1', jasmine.objectContaining({ type: 'Share' }));
+      expect(toast.success).not.toHaveBeenCalled();
+    });
+  });
 });
+
+/** Puts navigator.clipboard back as it was: an own property if the test found one, else the prototype getter. */
+function restoreClipboard(original: PropertyDescriptor | undefined): void {
+  if (original) Object.defineProperty(navigator, 'clipboard', original);
+  else delete (navigator as unknown as Record<string, unknown>)['clipboard'];
+}

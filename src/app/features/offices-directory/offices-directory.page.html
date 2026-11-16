@@ -1,0 +1,209 @@
+<section class="container offices">
+  <header class="offices__head">
+    <h1>{{ 'OFFICES.TITLE' | translate }}</h1>
+    <p>{{ 'OFFICES.SUBTITLE' | translate }}</p>
+  </header>
+
+  <div class="offices__bar">
+    <label class="offices__search">
+      <span class="sr-only">{{ 'OFFICES.SEARCH_LABEL' | translate }}</span>
+      <input
+        type="search"
+        data-testid="offices-search"
+        [(ngModel)]="searchText"
+        (ngModelChange)="onSearchInput($event)"
+        [placeholder]="'OFFICES.SEARCH_PLACEHOLDER' | translate"
+        maxlength="100"
+        enterkeyhint="search"
+      />
+    </label>
+    <button type="button" class="offices__filters-toggle" data-testid="filters-toggle"
+            [attr.aria-expanded]="filtersOpen()" aria-controls="offices-filters" (click)="toggleFilters()">
+      {{ 'OFFICES.FILTERS' | translate }}
+      <span class="offices__count-badge" *ngIf="activeFilterCount() > 0">{{ activeFilterCount() }}</span>
+    </button>
+    <label class="offices__sort">
+      <span>{{ 'OFFICES.SORT_LABEL' | translate }}</span>
+      <select data-testid="sort" [ngModel]="currentSort()" (ngModelChange)="setSort($event)">
+        <option *ngFor="let s of sortOptions()" [ngValue]="s">{{ 'OFFICES.SORT.' + s.toUpperCase() | translate }}</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="offices__near" data-testid="near-bar">
+    <ng-container *ngIf="near(); else nearButton">
+      <span class="offices__near-chip" data-testid="near-active">📍 {{ 'OFFICES.NEAR.ACTIVE' | translate }}</span>
+      <label class="offices__near-radius">
+        <span>{{ 'OFFICES.NEAR.RADIUS' | translate }}</span>
+        <select data-testid="near-radius" [ngModel]="radiusKm()" (ngModelChange)="setRadius($event)">
+          <option *ngFor="let r of radii" [ngValue]="r">{{ 'OFFICES.NEAR.RADIUS_KM' | translate: { value: r } }}</option>
+        </select>
+      </label>
+      <button type="button" class="offices__near-clear" data-testid="near-clear" (click)="clearNearMe()">
+        {{ 'OFFICES.NEAR.CLEAR' | translate }}
+      </button>
+    </ng-container>
+    <ng-template #nearButton>
+      <button type="button" class="btn btn--ghost offices__near-btn" data-testid="near-me" [disabled]="geoLoading()" (click)="findNearMe()">
+        📍 {{ (geoLoading() ? 'OFFICES.NEAR.LOCATING' : 'OFFICES.NEAR.BUTTON') | translate }}
+      </button>
+      <span class="offices__note">{{ 'OFFICES.NEAR.PRIVACY' | translate }}</span>
+    </ng-template>
+    <p class="offices__geo-error" role="alert" *ngIf="geoError() as err">{{ err | translate }}</p>
+
+    <div class="offices__view" role="group" [attr.aria-label]="'OFFICES.VIEW.LABEL' | translate">
+      <button type="button" data-testid="view-list" [class.is-active]="view() === 'list'" [attr.aria-pressed]="view() === 'list'"
+              (click)="setView('list')">{{ 'OFFICES.VIEW.LIST' | translate }}</button>
+      <button type="button" data-testid="view-map" [class.is-active]="view() === 'map'" [attr.aria-pressed]="view() === 'map'"
+              (click)="setView('map')">{{ 'OFFICES.VIEW.MAP' | translate }}</button>
+    </div>
+  </div>
+
+  <div class="offices__layout">
+    <aside id="offices-filters" class="offices__filters" [class.offices__filters--open]="filtersOpen()"
+           [attr.aria-label]="'OFFICES.FILTERS' | translate">
+      <ng-container *ngIf="view() === 'list'">
+        <label>
+          <span>{{ 'OFFICES.FILTER.GOVERNORATE' | translate }}</span>
+          <select data-testid="filter-governorate" [ngModel]="filter().governorateId ?? null" (ngModelChange)="setGovernorate($event)">
+            <option [ngValue]="null">{{ 'OFFICES.FILTER.ANY' | translate }}</option>
+            <option *ngFor="let g of governorateOptions(); trackBy: trackById" [ngValue]="g.id">{{ g.name }} ({{ g.count }})</option>
+          </select>
+        </label>
+
+        <label *ngIf="filter().governorateId">
+          <span>{{ 'OFFICES.FILTER.DISTRICT' | translate }}</span>
+          <select data-testid="filter-district" [ngModel]="filter().districtId ?? null" (ngModelChange)="setDistrict($event)"
+                  [disabled]="districtOptions().length === 0 && !filter().districtId">
+            <option [ngValue]="null">{{ (districtOptions().length ? 'OFFICES.FILTER.ANY' : 'OFFICES.FILTER.NONE_HERE') | translate }}</option>
+            <option *ngFor="let d of districtOptions(); trackBy: trackById" [ngValue]="d.id">{{ d.name }} ({{ d.count }})</option>
+          </select>
+        </label>
+
+        <label *ngIf="filter().districtId">
+          <span>{{ 'OFFICES.FILTER.NEIGHBORHOOD' | translate }}</span>
+          <select data-testid="filter-neighborhood" [ngModel]="filter().neighborhoodId ?? null" (ngModelChange)="setNeighborhood($event)"
+                  [disabled]="neighborhoodOptions().length === 0 && !filter().neighborhoodId">
+            <option [ngValue]="null">{{ (neighborhoodOptions().length ? 'OFFICES.FILTER.ANY' : 'OFFICES.FILTER.NONE_HERE') | translate }}</option>
+            <option *ngFor="let n of neighborhoodOptions(); trackBy: trackById" [ngValue]="n.id">{{ n.name }} ({{ n.count }})</option>
+          </select>
+        </label>
+
+        <label>
+          <span>{{ 'OFFICES.FILTER.DEAL' | translate }}</span>
+          <select data-testid="filter-deal" [ngModel]="filter().deal ?? null" (ngModelChange)="setDeal($event)">
+            <option [ngValue]="null">{{ 'OFFICES.FILTER.ANY' | translate }}</option>
+            <option *ngFor="let d of deals" [ngValue]="d">{{ 'OFFICES.DEAL.' + d.toUpperCase() | translate }}</option>
+          </select>
+        </label>
+
+        <label>
+          <span>{{ 'OFFICES.FILTER.PROPERTY_TYPE' | translate }}</span>
+          <select data-testid="filter-property-type" [ngModel]="filter().propertyTypeId ?? null" (ngModelChange)="setPropertyType($event)">
+            <option [ngValue]="null">{{ 'OFFICES.FILTER.ANY' | translate }}</option>
+            <option *ngFor="let pt of propertyTypes(); trackBy: trackById" [ngValue]="pt.id">{{ propertyTypeName(pt) }}</option>
+          </select>
+        </label>
+
+        <label>
+          <span>{{ 'OFFICES.FILTER.RATING' | translate }}</span>
+          <select data-testid="filter-rating" [ngModel]="filter().minRating ?? null" (ngModelChange)="setMinRating($event)">
+            <option [ngValue]="null">{{ 'OFFICES.FILTER.ANY' | translate }}</option>
+            <option *ngFor="let r of ratings" [ngValue]="r">{{ 'OFFICES.FILTER.RATING_AT_LEAST' | translate: { value: r } }}</option>
+          </select>
+        </label>
+
+      </ng-container>
+
+      <label class="offices__check">
+        <input type="checkbox" data-testid="filter-verified" [ngModel]="filter().verifiedOnly" (ngModelChange)="setVerifiedOnly($event)" />
+        <span>{{ 'OFFICES.FILTER.VERIFIED_ONLY' | translate }}</span>
+      </label>
+
+      <button type="button" class="offices__clear" (click)="clearFilters()" *ngIf="activeFilterCount() > 0 || filter().search">
+        {{ 'OFFICES.CLEAR' | translate }}
+      </button>
+      <p class="offices__note" *ngIf="view() === 'map'">{{ 'OFFICES.MAP.FILTERS_NOTE' | translate }}</p>
+    </aside>
+
+    <div class="offices__results" *ngIf="view() === 'map'" data-testid="map-view">
+      <app-offices-map height="min(70vh, 560px)" [ariaLabel]="'OFFICES.MAP.LABEL' | translate" [points]="mapPoints()"
+                       [initialCenter]="near()" (boundsChange)="onMapBounds($event)"></app-offices-map>
+      <p class="offices__total" role="status" *ngIf="mapResult() as r">
+        {{ (r.isTruncated ? 'OFFICES.MAP.TRUNCATED' : 'OFFICES.MAP.COUNT') | translate: { count: r.markers.length } }}
+      </p>
+      <p class="offices__error" role="alert" *ngIf="mapFailed()">{{ 'OFFICES.MAP.LOAD_ERROR' | translate }}</p>
+      <p class="offices__note">{{ 'OFFICES.MAP.ONLY_PINNED' | translate }}</p>
+    </div>
+
+    <div class="offices__results" *ngIf="view() === 'list'">
+      <p class="offices__total" role="status" *ngIf="!loading() && !failed()">
+        {{ 'OFFICES.RESULTS' | translate: { count: total() } }}
+      </p>
+
+      <app-skeleton-card-grid *ngIf="loading()" [count]="6"></app-skeleton-card-grid>
+
+      <div class="offices__error" role="alert" *ngIf="!loading() && failed()">
+        <p>{{ 'OFFICES.LOAD_ERROR' | translate }}</p>
+        <button type="button" (click)="retry()">{{ 'COMMON.RETRY' | translate }}</button>
+      </div>
+
+      <app-empty-state
+        *ngIf="!loading() && !failed() && items().length === 0"
+        icon="🏢"
+        [title]="'OFFICES.EMPTY_TITLE' | translate"
+        [message]="(near() ? 'OFFICES.NEAR.EMPTY' : 'OFFICES.EMPTY_MESSAGE') | translate: { value: radiusKm() }"
+      ></app-empty-state>
+
+      <div class="offices__grid" *ngIf="!loading() && items().length > 0">
+        <article class="office-card" *ngFor="let o of items(); trackBy: trackById" data-testid="office-card">
+          <a class="office-card__top" [routerLink]="['/offices', o.slug]" [state]="{ officeVisitSource: 'Directory' }">
+            <img *ngIf="o.logoUrl; else noLogo" class="office-card__logo" [src]="o.logoUrl" alt="" loading="lazy"
+                 appImageFallback="/images/default-avatar.svg" width="64" height="64" />
+            <ng-template #noLogo><span class="office-card__logo office-card__logo--empty" aria-hidden="true">🏢</span></ng-template>
+            <div class="office-card__id">
+              <h2 class="office-card__name"><bdi>{{ o.name }}</bdi></h2>
+              <span class="office-card__verified" *ngIf="o.verificationStatus === 'Verified'" data-testid="verified-badge">
+                ✓ {{ 'OFFICES.VERIFICATION.VERIFIED' | translate }}
+              </span>
+            </div>
+          </a>
+
+          <ul class="office-card__facts">
+            <li *ngIf="o.distanceMeters != null" class="office-card__distance" data-testid="distance">
+              🧭 {{ distanceKey(o.distanceMeters).key | translate: { value: distanceKey(o.distanceMeters).value } }}
+              <ng-container *ngIf="o.nearestBranchName"> · <bdi>{{ o.nearestBranchName }}</bdi></ng-container>
+            </li>
+            <li *ngIf="placeOf(o) as place">📍 {{ place }}</li>
+            <li>
+              <ng-container *ngIf="o.ratingCount > 0; else notRated">
+                <span class="office-card__star" aria-hidden="true">★</span>
+                {{ 'OFFICES.RATING' | translate: { value: (o.ratingAverage | number:'1.1-1'), count: o.ratingCount } }}
+              </ng-container>
+              <ng-template #notRated>{{ 'OFFICES.NOT_RATED' | translate }}</ng-template>
+            </li>
+            <li>{{ 'OFFICES.ACTIVE_LISTINGS' | translate: { count: o.activeListingCount } }}</li>
+          </ul>
+
+          <div class="office-card__actions">
+            <a class="btn btn--primary" [routerLink]="['/offices', o.slug]" [state]="{ officeVisitSource: 'Directory' }">{{ 'OFFICES.VIEW_PROFILE' | translate }}</a>
+            <a class="btn btn--ghost" *ngIf="o.contactPhone; else emailContact" [href]="telHref(o.contactPhone)">
+              {{ 'OFFICES.CONTACT' | translate }}
+            </a>
+            <ng-template #emailContact>
+              <a class="btn btn--ghost" *ngIf="o.contactEmail" [href]="'mailto:' + o.contactEmail">{{ 'OFFICES.CONTACT' | translate }}</a>
+            </ng-template>
+          </div>
+        </article>
+      </div>
+
+      <nav class="offices__pagination" *ngIf="!loading() && totalPages() > 1" [attr.aria-label]="'OFFICES.PAGINATION' | translate">
+        <button type="button" [disabled]="(filter().page ?? 1) <= 1" (click)="goToPage((filter().page ?? 1) - 1)"
+                [attr.aria-label]="'OFFICES.PREVIOUS' | translate">‹</button>
+        <span>{{ filter().page ?? 1 }} / {{ totalPages() }}</span>
+        <button type="button" [disabled]="(filter().page ?? 1) >= totalPages()" (click)="goToPage((filter().page ?? 1) + 1)"
+                [attr.aria-label]="'OFFICES.NEXT' | translate">›</button>
+      </nav>
+    </div>
+  </div>
+</section>

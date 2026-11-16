@@ -8,7 +8,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const LOCALES = ['en', 'ar', 'de'];
+const LOCALES = ['en', 'ar', 'de', 'tr'];
 
 function read(root, relative) {
   try {

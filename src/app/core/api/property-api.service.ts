@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { BackendApiService, QueryValue } from '../api/backend-api.service';
+import { BackendApiService, QueryValue, RequestOptions } from '../api/backend-api.service';
 import { ApiPagedResult, normalizePagedResult, PagedResult, unwrapItems } from '../models/api.model';
-import { DuplicateCheckResult, Property, PropertyFilterDto } from '../models/property.model';
+import { AvailableFloors, DuplicateCheckResult, Property, PropertyFilterDto } from '../models/property.model';
 import { OwnerSelectableStatus } from '../../shared/utils/listing-status';
 
 /**
@@ -19,6 +19,18 @@ export interface ListingExtensionQuote {
   expiresAt: string | null;
   graceEndsAt: string | null;
   isExistingPendingFee: boolean;
+}
+
+/**
+ * The part of a list request that decides which floors exist: the floor filter itself, paging, ordering and the interest
+ * ranking are not part of the question (they would only split the server's response cache).
+ */
+export function toFloorScope(filter: PropertyFilterDto): PropertyFilterDto {
+  const {
+    page: _page, pageSize: _pageSize, sortBy: _sortBy, sortDescending: _sortDescending,
+    interestGovernorateIds: _interest, floorFrom: _from, floorTo: _to, floorMode: _mode, ...scope
+  } = filter;
+  return scope;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -46,6 +58,15 @@ export class PropertyApiService {
           pageSize
         ))
       );
+  }
+
+  /**
+   * GET /properties/floors — the floors that exist among the listings matching the same filters as the list. The floor
+   * filter itself, paging, ordering and the interest ranking are not part of the question, so they are left out (they
+   * would only split the server's response cache).
+   */
+  getAvailableFloors(filter: PropertyFilterDto = {}): Observable<AvailableFloors> {
+    return this.api.get<AvailableFloors>('/properties/floors', this.toQuery(toFloorScope(filter)));
   }
 
   /**
@@ -95,6 +116,19 @@ export class PropertyApiService {
     return this.api.put<unknown>(`/properties/${id}`, payload);
   }
 
+  /** PUT /properties/{id}/branch — the branch of the listing's office it is handled from; null clears it. Owner only. */
+  setPropertyBranch(id: string, branchId: string | null): Observable<void> {
+    return this.api.put<void>(`/properties/${id}/branch`, { branchId });
+  }
+
+  /**
+   * POST /properties/{id}/office — publishes one of the caller's own older listings under the office they belong to
+   * now. There is no undo; an active listing needs a free seat in the office's quota (409 otherwise).
+   */
+  linkPropertyToOffice(id: string, branchId: string | null = null): Observable<void> {
+    return this.api.post<void>(`/properties/${id}/office`, { branchId });
+  }
+
   /**
    * Moves a listing to another status (Available, Reserved, Sold, Rented, Archived). The API has
    * no dedicated endpoint: PUT /properties/{id} applies only the fields present in the body, so
@@ -104,10 +138,11 @@ export class PropertyApiService {
     return this.api.put<unknown>(`/properties/${id}`, { status });
   }
 
-  uploadImages(propertyId: string, formData: FormData): Observable<unknown[]> {
+  uploadImages(propertyId: string, formData: FormData, options?: RequestOptions): Observable<unknown[]> {
     return this.api.postFormData<unknown[]>(
       `/properties/${propertyId}/images`,
-      formData
+      formData,
+      options
     );
   }
 
@@ -119,8 +154,7 @@ export class PropertyApiService {
   // ظهرت شاشة تحتاج تحديث الصور دون إعادة تحميل بيانات العقار كاملة.
 
   /**
-   * ينشر إعلاناً في وضع مسودة. الخادم يوفر PUBLISH فقط (نشر لمرة واحدة) —
-   * لا يوجد endpoint "unpublish" للتراجع عن النشر (تحقق مباشر من الكود).
+   * ينشر إعلاناً في وضع مسودة أو مخفيّ. الإخفاء له `unpublishProperty` (QA المرحلة 8، P8-D06a).
    *
    * 📌 قرار معماري موثَّق: الباك اند (PropertiesController) يقبل هذا المسار
    * نفسه عبر PATCH و POST معاً (نفس الـ handler بالضبط) — الأرجح أن POST كان
@@ -130,6 +164,11 @@ export class PropertyApiService {
    */
   publishProperty(id: string): Observable<void> {
     return this.api.patch<void>(`/properties/${id}/publish`);
+  }
+
+  /** يُخفي إعلاناً عن الموقع دون حذفه (للمالك). الإظهار من جديد عبر `publishProperty`. */
+  unpublishProperty(id: string): Observable<void> {
+    return this.api.post<void>(`/properties/${id}/unpublish`, {});
   }
 
   /**

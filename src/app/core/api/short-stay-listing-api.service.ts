@@ -58,12 +58,20 @@ export class ShortStayListingApiService {
     const pageSize = filter.pageSize ?? 20;
     const query: Record<string, QueryValue> = {
       city: filter.city,
+      searchTerm: filter.searchTerm,
       accommodationTypeId: filter.accommodationTypeId,
+      locationId: filter.locationId,
       checkIn: filter.checkIn,
       checkOut: filter.checkOut,
       guests: filter.guests,
+      minBedrooms: filter.minBedrooms,
+      instantBooking: filter.instantBooking,
+      amenityIds: filter.amenityIds,
       minPrice: filter.minPrice,
       maxPrice: filter.maxPrice,
+      currencyCode: filter.currencyCode,
+      sortBy: filter.sortBy,
+      sortDescending: filter.sortDescending,
       page,
       pageSize
     };

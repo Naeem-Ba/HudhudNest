@@ -1,6 +1,7 @@
 import { DatePipe, registerLocaleData } from '@angular/common';
 import localeAr from '@angular/common/locales/ar';
 import localeDe from '@angular/common/locales/de';
+import localeTr from '@angular/common/locales/tr';
 import { Pipe, PipeTransform, inject } from '@angular/core';
 
 import { LanguageService } from '../../core/services/language.service';
@@ -9,8 +10,9 @@ import { LanguageService } from '../../core/services/language.service';
 // the Arabic and German UI (QA Phase 16, P16-D05). English (en-US) is built into Angular.
 registerLocaleData(localeAr, 'ar');
 registerLocaleData(localeDe, 'de');
+registerLocaleData(localeTr, 'tr');
 
-const LOCALE_BY_LANG: Record<string, string> = { ar: 'ar', de: 'de', en: 'en-US' };
+const LOCALE_BY_LANG: Record<string, string> = { ar: 'ar', de: 'de', en: 'en-US', tr: 'tr' };
 
 /**
  * `date` in the language on screen, re-evaluated when the language changes (the page is not reloaded

@@ -2,7 +2,23 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <title>HudhudNest</title>
+  <title>HudhudNest | منصة عقارية رقمية في سوريا</title>
+  <!--
+    Static fallback description / Open Graph card (QA Phase 20, P20-D01). This shell is what every route that has no
+    edge-function preview is served with (the home page, /properties, short stays, investments, offices, pricing, ...),
+    and WhatsApp / Telegram / Facebook read it without running any JavaScript. Angular's MetaService overwrites these
+    tags per page once it boots, so a browser user sees the page-specific values. Arabic is the default language.
+    Absolute https URLs on purpose: crawlers do not resolve relative image paths. No og:url on purpose: Facebook treats it as the page's canonical, and one fixed value here would merge every shared link into the home
+    page. Always the production origin, like the
+    JSON-LD below (Staging/local are protected by noindex + a block-all robots.txt).
+  -->
+  <meta name="description" content="ابحث عن شقق وعقارات للبيع والإيجار في سوريا بسهولة. صور واضحة، معلومات منظمة، وتواصل مباشر مع المالك أو المكتب العقاري.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="هدهد نيست">
+  <meta property="og:title" content="HudhudNest | منصة عقارية رقمية في سوريا">
+  <meta property="og:description" content="ابحث عن شقق وعقارات للبيع والإيجار في سوريا بسهولة. صور واضحة، معلومات منظمة، وتواصل مباشر مع المالك أو المكتب العقاري.">
+  <meta property="og:image" content="https://hudhudnest.com/images/og-default.png">
+  <meta name="twitter:card" content="summary_large_image">
   <base href="/">
   <script>
     // The app used to route with Angular's hash location (/#/properties/:id) -- switched to
@@ -28,12 +44,15 @@
   <meta name="theme-color" content="#0F2742">
   <script>
     // Theme before first paint (no flash). Same rule as ThemeService: an explicit choice stored under
-    // hudhudnest-theme wins; otherwise follow the OS. ThemeService takes over once Angular boots.
+    // hudhudnest-theme wins ('system' = follow the OS); otherwise light, the default.
+    // ThemeService takes over once Angular boots.
     (function () {
       var t = null;
       try { t = localStorage.getItem('hudhudnest-theme') || localStorage.getItem('aqar-tech-theme'); } catch (e) {}
-      if (t !== 'dark' && t !== 'light') {
+      if (t === 'system') {
         t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      } else if (t !== 'dark') {
+        t = 'light';
       }
       var root = document.documentElement;
       root.setAttribute('data-theme', t);

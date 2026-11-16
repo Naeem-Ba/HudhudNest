@@ -22,18 +22,25 @@ import { AttributionContextService } from './core/sharing/attribution-context.se
 import { ConfirmModalComponent } from './shared/ui/confirm-modal.component';
 import { EnvironmentBadgeComponent } from './shared/ui/environment-badge.component';
 import { AdsConsentBannerComponent } from './core/ads/ads-consent-banner.component';
+import { MeasurementConsentBannerComponent } from './core/consent/measurement-consent-banner.component';
+import { ReconsentPromptComponent } from './core/consent/reconsent-prompt.component';
 import { MetaService } from './core/services/meta.service';
 import { PageMetaService } from './core/services/page-meta.service';
+import { ClientErrorReporterService } from './core/diagnostics/client-error-reporter.service';
+import { installWindowErrorListeners } from './core/diagnostics/client-error-handler';
+import { AppUpdateNativeGateway } from './core/api/app-update-native.gateway';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, ToastContainerComponent, ConfirmModalComponent, EnvironmentBadgeComponent, AdsConsentBannerComponent, TranslateModule],
+  imports: [RouterOutlet, CommonModule, ToastContainerComponent, ConfirmModalComponent, EnvironmentBadgeComponent, AdsConsentBannerComponent, MeasurementConsentBannerComponent, ReconsentPromptComponent, TranslateModule],
   template: `
     <router-outlet></router-outlet>
     <app-toast-container></app-toast-container>
     <app-environment-badge></app-environment-badge>
     <app-ads-consent-banner></app-ads-consent-banner>
+    <app-measurement-consent-banner></app-measurement-consent-banner>
+    <app-reconsent-prompt></app-reconsent-prompt>
 
     <!-- App Update Management: تحديث اختياري — قابل للتجاهل، مرة واحدة لكل إقلاع تطبيق. -->
     <app-confirm-modal
@@ -85,6 +92,8 @@ export class AppComponent {
   private readonly preferences = inject(PreferencesService);
   private readonly push = inject(PushRegistrationService);
   private readonly sessionRecovery = inject(SessionRecoveryService);
+  private readonly errorReporter = inject(ClientErrorReporterService);
+  private readonly nativeGateway = inject(AppUpdateNativeGateway);
 
   constructor(
     private readonly authService: AuthService,
@@ -104,6 +113,11 @@ export class AppComponent {
     deepLinks.initialize();
     this.appUpdate.initialize();
     this.metaService.applyGlobalRobotsPolicy();
+    // Errors outside Angular's zone, plus the real app version on native builds (QA phase 21, D07).
+    installWindowErrorListeners(this.errorReporter);
+    if (this.nativeGateway.isNativePlatform()) {
+      this.nativeGateway.getAppVersion().then(version => this.errorReporter.setAppVersion(version)).catch(() => undefined);
+    }
     void themeService; // يُطبَّق الوضع الداكن/الفاتح فور إنشاء الخدمة (constructor)
 
     // Every page starts from the generic title/description in the UI language and replaces it with its

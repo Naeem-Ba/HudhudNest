@@ -73,10 +73,24 @@ describe('scroll-to-error', () => {
     const far = host.querySelector<HTMLElement>('#far-error')!;
     expect(revealElement(far, null, { smooth: false })).toBeTrue();
 
-    // The element is now inside the visible area: a second call must not move anything.
-    return new Promise<void>(resolve => setTimeout(() => {
-      expect(revealElement(far, null, { smooth: false })).toBeFalse();
-      resolve();
-    }, 50));
+    // The element is now inside the visible area: a further call must not move anything. The browser
+    // applies the scroll on its own schedule (a fixed 50 ms wait failed on a loaded CI runner), so wait
+    // until the position has settled instead of guessing a delay.
+    return new Promise<void>((resolve, reject) => {
+      const deadline = Date.now() + 3000;
+      const check = (): void => {
+        const rect = far.getBoundingClientRect();
+        const settled = rect.top >= 0 && rect.bottom <= window.innerHeight;
+        if (settled) {
+          expect(revealElement(far, null, { smooth: false })).toBeFalse();
+          resolve();
+        } else if (Date.now() > deadline) {
+          reject(new Error('the page did not scroll the error into view'));
+        } else {
+          setTimeout(check, 20);
+        }
+      };
+      check();
+    });
   });
 });

@@ -13,7 +13,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { NavigationEnd, NavigationStart, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Observable, combineLatest, debounceTime, distinctUntilChanged, filter, fromEvent, map, switchMap } from 'rxjs';
+import { Observable, catchError, combineLatest, debounceTime, distinctUntilChanged, filter, fromEvent, map, of, switchMap } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AuthService, AuthenticatedUser } from '../core/auth/auth.service';
@@ -29,10 +29,12 @@ import { ScrollLockService } from '../core/services/scroll-lock.service';
 import { ThemeService } from '../core/services/theme.service';
 import { isNativeApp } from '../core/native/is-native-app';
 import { NotificationsApiService } from '../core/api/notifications-api.service';
-import { ProfileService, UserProfile, isEligibleForListing } from '../core/api/profile.service';
+import { ProfileService, UserProfile, hasActivePaidPlan, isEligibleForListing } from '../core/api/profile.service';
 import { ServiceProviderService } from '../core/api/service-provider.service';
+import { AgenciesApiService } from '../core/api/agencies-api.service';
+import { agencyGrace } from '../core/api/agency-grace';
 
-type AppLang = 'ar' | 'en' | 'de';
+type AppLang = 'ar' | 'en' | 'de' | 'tr';
 
 /**
  * pending — signed in, profile not loaded yet: a neutral circle instead of a letter
@@ -60,27 +62,43 @@ const MANAGEMENT_ROUTE_PREFIXES = [
   '/admin'
 ];
 
-/** Widths (px) the navbar needs to decide between the link row and the menu button. */
+/** Widths (px) the navbar needs to decide how much of the link row it can show. */
 export interface NavMeasure {
   /** Room inside the navbar. */
   available: number;
   brand: number;
-  /** Natural width of the link row. */
+  /** Natural width of the whole link row. */
   nav: number;
-  /** Width of the button group; includes the menu button while it is shown. */
+  /** Natural width of the main links only (the ones kept when the row is shortened). */
+  navPrimary: number;
+  /** Width of the button group WITHOUT the menu button. */
   actions: number;
-  /** Extra width the menu button adds to `actions` while it is shown (0 when it is hidden). */
-  menuButtonExtra: number;
+  /** Width the menu button adds to the button group (its own width plus the gap in front of it). */
+  menuButton: number;
   /** Gap between brand, links and buttons. */
   gap: number;
 }
 
 /**
- * The link row fits only when brand + links + buttons (without the menu button) + the two gaps between them
- * fit in the room available. Independent of the current state, so the answer cannot flip back and forth.
+ * full      - every link is shown;
+ * condensed - only the main links are shown, the rest are reached through the menu button;
+ * menu      - no link fits: the menu button alone.
  */
-export function navNeedsMenuButton(m: NavMeasure): boolean {
-  return m.brand + m.nav + (m.actions - m.menuButtonExtra) + 2 * m.gap > m.available;
+export type NavLayout = 'full' | 'condensed' | 'menu';
+
+/**
+ * Independent of the layout currently shown (the measures exclude the menu button), so the answer cannot flip
+ * back and forth. A layout is used only when brand + links + buttons (+ menu button) + the two gaps fit.
+ */
+export function navLayoutFor(m: NavMeasure): NavLayout {
+  const fixed = m.brand + m.actions + 2 * m.gap;
+  if (fixed + m.nav <= m.available) {
+    return 'full';
+  }
+  if (fixed + m.menuButton + m.navPrimary <= m.available) {
+    return 'condensed';
+  }
+  return 'menu';
 }
 
 @Component({
@@ -120,6 +138,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
   readonly notificationsApi = inject(NotificationsApiService);
   private readonly profileService = inject(ProfileService);
   private readonly serviceProviderService = inject(ServiceProviderService);
+  private readonly agenciesApi = inject(AgenciesApiService);
 
   @ViewChild('accountRef')
   private accountRef?: ElementRef<HTMLElement>;
@@ -170,6 +189,30 @@ export class NavbarComponent implements OnInit, AfterViewInit {
   ]).pipe(map(([loggedIn, profile]) => loggedIn && isEligibleForListing(profile)));
 
   /**
+   * "مكتبي العقاري" is shown only to an account whose paid plan is in force (product decision
+   * 2026-11-07). Offices need a paid plan anyway, so a free account would only land on a page that
+   * tells it to upgrade; the plan page stays reachable from the pricing link.
+   */
+  readonly showMyAgency$: Observable<boolean> = combineLatest([
+    this.isLoggedIn$,
+    this.profileService.profile$
+  ]).pipe(
+    distinctUntilChanged(
+      ([l1, p1], [l2, p2]) => l1 === l2 && p1?.Id === p2?.Id && p1?.PlanTier === p2?.PlanTier && p1?.PlanStatus === p2?.PlanStatus
+    ),
+    switchMap(([loggedIn, profile]) => {
+      if (!loggedIn || !profile) return of(false);
+      if (hasActivePaidPlan(profile)) return of(true);
+      // Plan ended: the link stays for 30 more days for the owner and the members of the office
+      // (the owner's plan decides), so they can renew. Checked only for accounts without a paid plan.
+      return this.agenciesApi.getMine().pipe(
+        map(agency => agencyGrace(agency).active),
+        catchError(() => of(false))
+      );
+    })
+  );
+
+  /**
    * "لوحة مزوّد الخدمة" — تظهر فقط لحساب لديه ملف ServiceProvider فعلي (ليس دور Identity؛
    * انظر provider-guard.ts لنفس التفرقة). myProvider$ يبدأ undefined (لم يُحمَّل بعد)
    * فيُقرأ كـ false هنا حتى يصل refresh() أدناه (مستدعى مرة واحدة لكل حساب مسجَّل دخوله
@@ -191,6 +234,13 @@ export class NavbarComponent implements OnInit, AfterViewInit {
    * button is always used.
    */
   compactNav = false;
+
+  /**
+   * Only the main links fit: the secondary ones (price estimate, valuation, pricing, contact, download) move to
+   * the menu button, which is shown next to the main links. Without this step a German or Turkish visitor on a
+   * normal desktop screen saw no link text at all, only the logo and the menu button.
+   */
+  condensedNav = false;
 
   currentLang: AppLang = 'ar';
 
@@ -440,13 +490,12 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 
   /** True when the menu button (and not the link row) is what the visitor sees at this width. */
   private menuButtonShown(): boolean {
-    return this.compactNav || window.innerWidth <= NavbarComponent.DESKTOP_BREAKPOINT_PX;
+    return this.compactNav || this.condensedNav || window.innerWidth <= NavbarComponent.DESKTOP_BREAKPOINT_PX;
   }
 
   /**
-   * Decides between the link row and the menu button. The link row is kept in the layout (hidden) while the
-   * button is shown, so its natural width can still be measured; the width needed is brand + links + buttons
-   * (without the menu button, which only exists in compact mode) + the gaps between them.
+   * Decides how much of the link row is shown. The links that are not shown stay in the layout (invisible, out
+   * of the tab order), so every link keeps a measurable natural width in every state.
    */
   private updateCompactNav(): void {
     const inner = this.innerRef?.nativeElement;
@@ -460,8 +509,9 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 
     if (window.innerWidth <= NavbarComponent.DESKTOP_BREAKPOINT_PX) {
       // The stylesheet already shows the menu button here, and the link row is display:none (not measurable).
-      if (!this.compactNav) {
+      if (!this.compactNav || this.condensedNav) {
         this.compactNav = true;
+        this.condensedNav = false;
         this.cd.markForCheck();
       }
       return;
@@ -469,20 +519,40 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 
     const gap = parseFloat(getComputedStyle(inner).columnGap) || 0;
     const actionsGap = parseFloat(getComputedStyle(actions).columnGap) || 0;
-    const compact = navNeedsMenuButton({
+    const navGap = parseFloat(getComputedStyle(nav).columnGap) || 0;
+
+    // The menu button is part of the button group only while it is displayed; its width is remembered for
+    // the states in which it is hidden.
+    const toggleShown = !!toggle && toggle.offsetWidth > 0;
+    if (toggleShown) {
+      this.menuButtonWidth = toggle.offsetWidth + actionsGap;
+    }
+
+    const links = Array.from(nav.querySelectorAll<HTMLElement>('.navbar__link'));
+    const rowWidth = (items: HTMLElement[]): number =>
+      items.reduce((sum, link) => sum + link.offsetWidth, 0) + navGap * Math.max(0, items.length - 1);
+
+    const layout = navLayoutFor({
       available: inner.clientWidth,
       brand: brand.offsetWidth,
-      nav: nav.scrollWidth,
-      actions: actions.offsetWidth,
-      menuButtonExtra: this.compactNav && toggle ? toggle.offsetWidth + actionsGap : 0,
+      nav: rowWidth(links),
+      navPrimary: rowWidth(links.filter(link => !link.classList.contains('navbar__link--secondary'))),
+      actions: actions.offsetWidth - (toggleShown ? this.menuButtonWidth : 0),
+      menuButton: this.menuButtonWidth,
       gap
     });
 
-    if (compact !== this.compactNav) {
+    const compact = layout === 'menu';
+    const condensed = layout === 'condensed';
+    if (compact !== this.compactNav || condensed !== this.condensedNav) {
       this.compactNav = compact;
+      this.condensedNav = condensed;
       this.cd.markForCheck();
     }
   }
+
+  /** Width of the menu button plus the gap in front of it (42px button + 10.4px gap until it is measured). */
+  private menuButtonWidth = 52;
 
   logout(): void {
     this.closeAllMenus();
@@ -578,6 +648,10 @@ export class NavbarComponent implements OnInit, AfterViewInit {
 
     if (code === 'de') {
       return 'de';
+    }
+
+    if (code === 'tr') {
+      return 'tr';
     }
 
     return 'ar';

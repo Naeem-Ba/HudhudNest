@@ -15,8 +15,10 @@
     "FIELD_INVALID": "The field “{{field}}” is empty or invalid.",
     "AGENCY_ACCOUNT_NOT_VERIFIED": "Verify your account first: confirm your email or phone number in your account settings, then try again.",
     "AGENCY_PAID_PLAN_REQUIRED": "A real-estate office needs a paid plan in force. The free plan does not include offices.",
+    "AGENCY_PLAN_EXPIRED": "The office owner's paid plan has ended, so no new listings can be added until it is renewed. Your existing listings, messages and appointments are unchanged.",
     "AGENCY_FREE_PLAN_NOT_ALLOWED": "You own a real-estate office, and the free plan does not include offices. Choose a paid plan.",
     "PAID_PLAN_ACTIVE": "You have an active paid subscription, and choosing the free plan would end it. Contact us if you want it cancelled.",
+    "BOOKING_DUPLICATE_OPEN": "You already have an open booking request for this unit on overlapping dates. Wait for the host's answer or cancel the earlier request before sending a new one.",
     "SERVICE_CATEGORY_NOT_APPROVED": "This category is not approved for your provider account. Contact the team to have it added.",
     "FILTER_PRICE_RANGE": "The minimum price is higher than the maximum.",
     "FILTER_ROOMS_RANGE": "The minimum number of rooms is higher than the maximum.",
@@ -29,7 +31,20 @@
     "UNSUPPORTED_MEDIA": "The request could not be sent in a format the server accepts. Refresh the page and try again; if it keeps happening, contact support.",
     "CONCURRENCY_CONFLICT": "This item was changed by someone else at the same moment. Refresh the page and try again.",
     "CSRF_VALIDATION_FAILED": "The request could not be verified as safe. Reload the page and try again.",
-    "LISTING_QUOTA_REACHED": "You've reached the active-listing limit of your plan. Delete an existing listing or upgrade your plan to add a new one."
+    "LISTING_QUOTA_REACHED": "You've reached the active-listing limit of your plan. Delete an existing listing or upgrade your plan to add a new one.",
+    "PAYMENTS_DISABLED": "Online payment is not available right now. Nothing was charged.",
+    "PAYMENT_PROVIDER_UNAVAILABLE": "The payment provider is not available right now. Nothing was charged. Try again shortly.",
+    "PAYMENT_PROVIDER_UNAVAILABLE_FOR_REQUEST": "This payment method is not available for this currency or country.",
+    "PAYMENT_TOO_MANY_OPEN_ORDERS": "You have too many unfinished payments. Finish or cancel one first.",
+    "PAYMENT_ORDER_ALREADY_PAID": "This order is already paid. Request a refund instead.",
+    "PAYMENT_ORDER_NOT_CANCELLABLE": "This order can no longer be cancelled.",
+    "PAYMENT_TERMS_VERSION_MISMATCH": "The terms changed. Review and accept the current terms.",
+    "PAYMENT_RENEWAL_UNSUPPORTED": "This payment method cannot renew automatically.",
+    "PAYMENT_IDEMPOTENCY_KEY_REUSED": "This request was already used for a different order. Reload the page and try again.",
+    "PAYMENT_CURRENCY_UNSUPPORTED": "This currency is not supported.",
+    "REFUND_WINDOW_CLOSED": "The refund request period for this order has ended.",
+    "REFUND_ALREADY_OPEN": "A refund request for this order is already open.",
+    "REFUND_ORDER_NOT_REFUNDABLE": "This order cannot be refunded."
   },
   "COMMON": {
     "SAVE": "Save",
@@ -62,7 +77,11 @@
     "AVATAR_ALT": "User photo",
     "COUNTRY_CODE": "Country code",
     "PICK_RATING": "Choose a rating",
-    "IMAGE_VIEWER": "Image viewer"
+    "IMAGE_VIEWER": "Image viewer",
+    "OPEN_LIST": "Open the list",
+    "CLOSE_LIST": "Close the list",
+    "COMBO_NO_OPTIONS": "No matching options",
+    "COMBO_KEEP_TYPED": "Not in the list. What you typed will be used: \"{{value}}\""
   },
   "NAVBAR": {
     "HOME": "Home",
@@ -124,7 +143,12 @@
     "PRICE_ESTIMATE": "Area prices",
     "ADMIN_GROWTH": "Growth & campaigns",
     "MAP": "Map",
-    "EXPATS": "For Syrians abroad"
+    "EXPATS": "For Syrians abroad",
+    "MY_PAYMENTS": "Payments & invoices",
+    "ADMIN_PAYMENTS": "Payments (online)",
+    "ADMIN_GEO": "Location catalog",
+    "OFFICES": "Agencies",
+    "ADMIN_AGENCIES": "Agency verification"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -185,6 +209,7 @@
     "REGISTER_SUCCESS": "Account created successfully! We sent a confirmation link to your email. You can now log in.",
     "REGISTER_SUCCESS_MAIL_FAILED": "Your account was created, but we could not send the confirmation email right now. Tap \"Resend confirmation link\" in a moment. You can log in now.",
     "CONFIRMATION_SPAM_HINT": "If it has not arrived after a few minutes, check your spam folder.",
+    "CONFIRMATION_RESENT": "We sent a new confirmation link to your email. Open it, then sign in. If it has not arrived after a few minutes, check your spam folder.",
     "CONTINUE_WITH_EMAIL": "Continue with email",
     "CONTINUE_WITH_PHONE": "Continue with phone number",
     "PHONE_STEP_SUBTITLE": "Enter your phone number with the country code, and we will send you a verification code by SMS.",
@@ -286,6 +311,7 @@
       "ATTEMPTS_REMAINING": "{{count}} attempts remaining before your account is locked.",
       "RATE_LIMITED": "Too many login attempts. Please wait a moment and try again.",
       "ACCOUNT_DISABLED": "This account has been disabled. Please contact support.",
+      "EMAIL_NOT_CONFIRMED": "Please confirm your email address before signing in. We just sent you a new confirmation link; if it does not arrive, check your spam folder or resend it.",
       "SESSION_EXPIRED": "Your session has ended. Please sign in again.",
       "SESSION_REVOKED": "You've been signed out everywhere for your security. Please sign in again.",
       "PASSWORD_NO_UPPERCASE": "Password must contain at least one uppercase letter (A-Z).",
@@ -302,6 +328,7 @@
       "GENERIC": "Something went wrong. Please try again.",
       "TIMEOUT": "The server took too long to answer. Check your connection and try again.",
       "PASSWORD_PERSONAL_INFO": "The password must not contain your name, email address or phone number. Choose one that is not based on your personal details.",
+      "CURRENT_PASSWORD_WRONG": "The current password is not correct.",
       "SESSION_SUPERSEDED": "This device was signed out because the account was signed in on more devices than allowed. Please sign in again.",
       "LOGIN_HELP": "Check the spelling (upper and lower case matter), reset your password, or create an account if you are new.",
       "PHONE_LOGIN_HELP": "Check the number (with country code) and the password, reset your password, or create an account if you are new.",
@@ -583,6 +610,19 @@
     "NEIGHBORHOOD": "Neighborhood",
     "PROPERTY_TYPE": "Property Type",
     "SELECT_OPTIONAL": "— Select (optional) —",
+    "FLOOR_FILTER": {
+      "TITLE": "Floor",
+      "ALL": "All Floors",
+      "FROM": "From Floor",
+      "TO": "To Floor",
+      "GROUND": "Ground Floor",
+      "LOWEST": "Lowest Available Floor",
+      "HIGHEST": "Highest Available Floor",
+      "NONE": "No Floors Available",
+      "SELECT": "Select Floor",
+      "CLEAR": "Clear Filter",
+      "SAVE_MODE_NOTE": "The search was saved without the floor: “highest/lowest available floor” changes with the market, so pick a specific floor if you want alerts for it."
+    },
     "SAVE_SEARCH": "Save this search",
     "SAVE_SEARCH_NAME_PROMPT": "Give this search a name (optional):",
     "SAVE_SEARCH_SUCCESS": "Search saved. We’ll notify you about new matching properties.",
@@ -596,7 +636,19 @@
     "GEO_UNSUPPORTED": "Your browser does not support location.",
     "GEO_CONSENT_NOTE": "We use your current location only to show properties near you.",
     "GEO_DENIED": "Could not get your location. Check the location permission.",
-    "MAP_VIEW": "Map view"
+    "MAP_VIEW": "Map view",
+    "TYPE_PLACE_HINT": "Not in the list? Type the name.",
+    "AMENITIES_SECTION": "Amenities & services",
+    "AMENITIES_SELECTED": "{{count}} selected",
+    "CITY_FILTER_CHIP": "City: {{city}}",
+    "CITY_FILTER_REMOVE": "Remove the city filter",
+    "EMPTY_GEO_TITLE": "No properties near you",
+    "EMPTY_GEO_MESSAGE": "No properties within {{km}} km of your location match the filters. Widen the radius or change the filters.",
+    "GEO_STATUS": "Results within {{km}} km of your location",
+    "SORT_BY_DISTANCE_HINT": "With “near me” on, results are ordered from nearest to farthest.",
+    "OFFICE_SCOPE": "Only listings from {{name}}",
+    "OFFICE_SCOPE_GENERIC": "Only listings from one agency",
+    "OFFICE_SCOPE_CLEAR": "Show all listings"
   },
   "PAGINATION": {
     "NAV_LABEL": "Page navigation",
@@ -619,7 +671,8 @@
     "AGENCY": {
       "TITLE": "Real estate agency",
       "NOT_RATED": "Not rated yet",
-      "VIEW_PROFILE": "View the agency page and its rating"
+      "VIEW_PROFILE": "View the agency page and its rating",
+      "BRANCH": "Branch"
     },
     "NOT_FOUND_TITLE": "Property not found",
     "NOT_FOUND_MESSAGE": "The property may have been deleted or the link is incorrect.",
@@ -745,6 +798,8 @@
     "ADDITIONAL_COSTS": "Additional costs",
     "ADDITIONAL_COSTS_INVALID": "Additional costs must be a positive number.",
     "AREA_TOO_SMALL": "Area must be greater than 10 m².",
+    "ROOMS_WHOLE_NUMBER": "The number of rooms must be a whole number (no half rooms).",
+    "FLOOR_WHOLE_NUMBER": "The floor must be a whole number.",
     "DEPOSIT": "Deposit",
     "DEPOSIT_INVALID": "Deposit must be a positive number.",
     "HEATING": "Heating",
@@ -814,7 +869,13 @@
     "HIDE_EXACT_LOCATION": "Hide my exact location from the public",
     "HIDE_EXACT_LOCATION_HINT": "Visitors see an approximate area of about 500 m instead of the pin, and no street name. You and the admins still see the exact spot.",
     "PRICE_NEGOTIABLE": "The price is negotiable",
-    "PRICE_NEGOTIABLE_HINT": "Turn this on if you are open to negotiating the price. Visitors see it on the listing details page only."
+    "PRICE_NEGOTIABLE_HINT": "Turn this on if you are open to negotiating the price. Visitors see it on the listing details page only.",
+    "BRANCH": {
+      "LABEL": "Office branch",
+      "NONE": "No specific branch",
+      "HINT": "The branch that handles this listing. It is shown on the listing page.",
+      "INVALID": "The chosen branch no longer exists. Choose another branch, then save."
+    }
   },
   "property_add": {
     "title": "Add property",
@@ -914,13 +975,26 @@
     "PUBLISH": "Publish listing",
     "PUBLISH_SUCCESS": "Property published successfully.",
     "PUBLISH_ERROR": "Could not publish the property.",
+    "HIDE": "Hide listing",
+    "HIDE_SUCCESS": "The listing is hidden from the site. You can publish it again any time.",
+    "HIDE_ERROR": "Could not hide the listing.",
     "MESSAGES": "Messages",
     "PUBLISHING": "Publishing...",
     "PUBLISH_NEEDS_IMAGE": "Add at least one photo before publishing.",
     "FEATURED_UNTIL": "Featured until",
     "FEATURE": "Feature listing",
     "FEATURE_EXTEND": "Extend featuring",
-    "FEATURE_PENDING": "Your featuring request is waiting for an administrator to confirm payment."
+    "FEATURE_PENDING": "Your featuring request is waiting for an administrator to confirm payment.",
+    "OFFICE_LINK": {
+      "ACTION": "Add to my office",
+      "HINT": "The listing appears on your office page and counts toward the office quota.",
+      "CONFIRM": "This listing will be published under “{{office}}” and shown on the office page. If it is active, it counts toward the office listing quota. You cannot undo this later. Continue?",
+      "DONE": "The listing is now under your office.",
+      "QUOTA": "Your office has reached its active listing limit, so this listing cannot be added now.",
+      "PLAN_EXPIRED": "The office owner’s plan has ended, so active listings cannot be added until it is renewed.",
+      "OTHER_OFFICE": "This listing belongs to another office.",
+      "ERROR": "The listing could not be added. Please try again."
+    }
   },
   "VIEW_COUNT": {
     "LABEL": "Views",
@@ -1312,7 +1386,7 @@
       "WILL_DELETE_2": "Your registered email and phone number, and any linked Google/Apple sign-in — you will not be able to sign in to this account with them again",
       "WILL_DELETE_3": "Every active session on every device — you will be signed out everywhere at that point",
       "WILL_RETAIN_TITLE": "Will be retained (without your personal data):",
-      "WILL_RETAIN_1": "Listings, messages, and reviews you previously published stay visible to others, but attributed to \"Deleted User\" instead of your real name",
+      "WILL_RETAIN_1": "Messages and reviews you previously published stay visible to others, but attributed to \"Deleted User\" instead of your real name. Your listings are taken off the site when the deletion is carried out (unless you belong to a real-estate office)",
       "WILL_RETAIN_2": "Limited internal security records (to prevent abuse), containing none of your personal data after deletion",
       "BUSINESS_NOTE": "Note: this does not delete or automatically unpublish your listings. If you want to unpublish a listing before deleting your account, go back and do that first from \"My Listings\".",
       "CONTINUE_BTN": "Continue",
@@ -1502,6 +1576,11 @@
     "ADD_PROPERTY": "Review the property",
     "PROPERTY_HINT": "Property reviews are available after a completed visit. To rate the owner after messaging them:"
   },
+  "AGENCY_GRACE": {
+    "TITLE": "The renewal period ends in {{days}} days",
+    "DESC": "The office owner's paid plan has ended, so the office is temporarily suspended: neither you nor your team can add new listings, but messages, enquiries and appointments still reach you. Renew the plan within {{days}} days to restore it; otherwise the office's listings are hidden from the public until the plan is renewed.",
+    "CTA": "Renew the plan"
+  },
   "AGENCY_FORM": {
     "CREATE_TITLE": "Register your agency",
     "EDIT_TITLE": "Edit agency",
@@ -1625,7 +1704,9 @@
     "TAB_RENTED": "Rented",
     "NO_SOLD": "No sold properties yet.",
     "NO_RENTED": "No rented properties yet.",
-    "CLOSED_NOTE": "Concluded deals kept as a record. They do not appear in search."
+    "CLOSED_NOTE": "Concluded deals kept as a record. They do not appear in search.",
+    "BROWSE_WITH_FILTERS": "Browse this agency's listings with filters",
+    "VERIFIED_HINT": "The platform has verified this agency"
   },
   "VALIDATION": {
     "REQUIRED": "This field is required.",
@@ -1930,8 +2011,6 @@
     }
   },
   "PRICING": {
-    "META_TITLE": "Subscription plans for owners and agencies",
-    "META_DESCRIPTION": "Start free by listing your own property, or pick an agency plan: Basic $49, Premium $99, or Elite — higher listing limits, agent and staff accounts, reports and analytics, and featured placement in search results.",
     "EYEBROW": "Subscription plans",
     "TITLE": "Choose the plan that fits you",
     "SUBTITLE": "The free plan is for individuals listing their own property. The agency plans add agent and staff accounts and performance reporting, and you can upgrade or switch at any time.",
@@ -2166,7 +2245,24 @@
       "EMPTY_MESSAGE": "Try different search criteria or dates.",
       "GUESTS_SHORT": "guests",
       "BEDROOMS_SHORT": "bed",
-      "NIGHT": "night"
+      "NIGHT": "night",
+      "KEYWORD": "Search by words",
+      "KEYWORD_PLACEHOLDER": "e.g. furnished flat Damascus (one matching word is enough)",
+      "TYPE": "Type of stay",
+      "ANY": "Any",
+      "BEDROOMS": "Bedrooms",
+      "BEDROOMS_AT_LEAST": "{{count}}+",
+      "PRICE_CURRENCY": "Price currency",
+      "SORT": "Sort by",
+      "SORT_NEWEST": "Newest first",
+      "SORT_PRICE_ASC": "Price: low to high",
+      "SORT_PRICE_DESC": "Price: high to low",
+      "INSTANT_ONLY": "Instant booking only",
+      "AMENITIES_SECTION": "Amenities and services",
+      "AMENITIES_SELECTED": "{{count}} selected",
+      "RESULTS_COUNT": "{{count}} stays",
+      "INVALID_FILTERS": "The search options could not be applied. Check the dates and prices and try again.",
+      "RETRY": "Try again"
     },
     "DETAIL": {
       "LOADING": "Loading...",
@@ -2682,270 +2778,7 @@
     }
   },
   "LANDING": {
-    "TOP": {
-      "HOME_LINK": "Browse the site",
-      "LANG_ARIA": "Language"
-    },
-    "HERO": {
-      "ARIA": "Homepage",
-      "BADGE": "Beta — launching soon in Syria",
-      "TITLE_MAIN": "Every home has a story.",
-      "TITLE_ACCENT": "Let's start yours in Syria.",
-      "TAGLINE_1": "A small platform with a big heart, helping families find a home — real photos and direct contact, no duplicate or fake listings.",
-      "CTA_EXPLORE": "Explore properties",
-      "CTA_EXPLORE_ARIA": "Explore properties on HudhudNest",
-      "CTA_PUBLISH": "List your property",
-      "CTA_PUBLISH_ARIA": "Publish your property listing on HudhudNest",
-      "CHIPS_ARIA": "Quick facts",
-      "CHIP_FREE": "Free to start",
-      "CHIP_REAL": "Real photos, direct contact",
-      "CHIP_LANGS": "عربي · English · Deutsch",
-      "VISUAL_ARIA": "Illustration of the platform's search screen — not real listings",
-      "VISUAL_TITLE": "Find your property",
-      "VISUAL_SALE": "Buy",
-      "VISUAL_RENT": "Rent",
-      "VISUAL_LOCATION": "Governorate · Area",
-      "VISUAL_TYPE": "Property type",
-      "VISUAL_PRICE": "Price range",
-      "VISUAL_BTN": "Show results",
-      "VISUAL_NOTE": "Interface illustration"
-    },
-    "VISION": {
-      "EYEBROW": "Our vision",
-      "TITLE": "A real-estate platform for all of Syria",
-      "TEXT": "A platform that organizes Syria's property listings into one register: real photos, accurate data, and a single source of truth instead of dozens of scattered Facebook and WhatsApp groups.",
-      "PATH_ARIA": "Rollout stages",
-      "STEP1_TAG": "The start",
-      "STEP1_TITLE": "Damascus and Rif Dimashq",
-      "STEP1_DESC": "Our gradual launch most likely begins here, so we can build an organized register and learn from real use.",
-      "STEP2_TAG": "Then",
-      "STEP2_TITLE": "The rest of Syria's governorates",
-      "STEP2_DESC": "Our vision covers all of Syria, and we expand stage by stage.",
-      "NOTE": "The launch is gradual: availability of listings and services varies by area and grows over time."
-    },
-    "USES": {
-      "EYEBROW": "Start here",
-      "TITLE": "What can you do with HudhudNest?",
-      "ITEMS": {
-        "BUY": {
-          "TITLE": "Buy a property",
-          "DESC": "Browse properties for sale with photos and structured details, and compare options in one place."
-        },
-        "RENT": {
-          "TITLE": "Rent a home",
-          "DESC": "Search rentals by governorate, area, price and amenities."
-        },
-        "SHORT": {
-          "TITLE": "Short stays",
-          "DESC": "Discover short-term stays and send a booking request to the host."
-        },
-        "INVEST": {
-          "TITLE": "Investment opportunities",
-          "DESC": "Explore real-estate investment projects and follow the ones that matter to you."
-        },
-        "PUBLISH": {
-          "TITLE": "List your property",
-          "DESC": "Add your listing with clear photos and details so seekers can reach you directly."
-        },
-        "SERVICES": {
-          "TITLE": "Request a property service",
-          "DESC": "Browse services offered by providers approved by the platform."
-        }
-      },
-      "GO": "Explore"
-    },
-    "PROBLEM_SOLUTION": {
-      "EYEBROW": "Why HudhudNest?",
-      "TITLE": "Finding a property in Syria is still exhausting",
-      "DESC": "We hear the same complaints every day. HudhudNest aims to fix them, step by step.",
-      "PROBLEM_LABEL": "Right now",
-      "PROBLEM_ITEMS": {
-        "ITEM_1": "Searching scattered, disorganized Facebook and WhatsApp groups",
-        "ITEM_2": "Hard to tell if a listing is real or a duplicate",
-        "ITEM_3": "Most listings are missing photos and basic information",
-        "ITEM_4": "Hard to compare prices and areas in one place",
-        "ITEM_5": "Weak trust between the seeker and the owner or agency"
-      },
-      "SOLUTION_LABEL": "With HudhudNest",
-      "SOLUTION_ITEMS": {
-        "ITEM_1": "One platform that brings together Syria's listings, organized and searchable",
-        "ITEM_2": "Clear photos and consistent basic information on every listing",
-        "ITEM_3": "Filter by city, area, price, type, and purpose",
-        "ITEM_4": "Direct contact with the owner or real-estate office",
-        "ITEM_5": "Gradual verification to reduce noise and increase transparency"
-      }
-    },
-    "FEATURES": {
-      "EYEBROW": "What sets us apart",
-      "TITLE": "Everything you need in one place",
-      "ITEMS": {
-        "SEARCH": {
-          "TITLE": "Easier search",
-          "DESC": "Filter by city, area, price, property type, and purpose — for sale or rent — in seconds."
-        },
-        "INFO": {
-          "TITLE": "Clearer information",
-          "DESC": "Photos, a detailed description, approximate location, size, floors, and organized contact details — everything in its place."
-        },
-        "PRICE": {
-          "TITLE": "Know your area's prices",
-          "DESC": "A price range based on listings actually published, plus a valuation request for your own property when you need one."
-        },
-        "LANGS": {
-          "TITLE": "In three languages",
-          "DESC": "A complete interface in Arabic, English and German, for visitors inside Syria and abroad."
-        },
-        "SERVICES": {
-          "TITLE": "Property services",
-          "DESC": "Verification, inspection, photography and more, from providers the platform team approves."
-        },
-        "SAVE": {
-          "TITLE": "Save and share",
-          "DESC": "Add favorites, save your searches and share a listing with anyone."
-        },
-        "MAP": {
-          "TITLE": "On the map",
-          "DESC": "Browse properties on the map to see their approximate location and surroundings."
-        },
-        "CONTACT": {
-          "TITLE": "Direct contact",
-          "DESC": "Reach the owner or real-estate office directly, with no complicated steps or unnecessary middlemen."
-        }
-      }
-    },
-    "SEARCH": {
-      "EYEBROW": "Search and filters",
-      "TITLE": "Search smart… and find the property that fits you.",
-      "TEXT": "Precise filters, comparable prices and results that refresh with every new listing, instead of scrolling through scattered posts.",
-      "POINTS": {
-        "1": "Governorate, then area and neighborhood",
-        "2": "Buy or rent",
-        "3": "Property type, price range and currency",
-        "4": "Amenities and features",
-        "5": "Sorting, and searching around a point on the map"
-      },
-      "POINTS_ARIA": "Main search options",
-      "CTA": "Try the search now",
-      "CTA_MAP": "Open the map"
-    },
-    "VALUE": {
-      "EYEBROW": "Price insight",
-      "TITLE": "What is your property worth? Discover an estimate.",
-      "TEXT": "Two ways to get a price estimate, depending on what you need.",
-      "RANGE_TAG": "Instant",
-      "RANGE_TITLE": "Price range in your area",
-      "RANGE_DESC": "Choose the governorate, area, property type and size to see the asking-price range in listings published now. The range shows how many listings it is based on — and if there is not enough data, we say so.",
-      "RANGE_CTA": "Show the price range",
-      "REQ_TAG": "For your property",
-      "REQ_TITLE": "Request a valuation of your property",
-      "REQ_DESC": "Enter the governorate, area, neighborhood, property type, size and number of rooms. You get a quick estimate based on similar listings, or we send your request to real-estate offices in your area.",
-      "REQ_CTA": "Request an estimate",
-      "DISCLAIMER": "An estimate is a guide, not an official valuation or a guaranteed price. For major financial decisions, consult a professional and verify for yourself."
-    },
-    "LANGS": {
-      "EYEBROW": "Multilingual",
-      "TITLE": "Syrian property, in your language.",
-      "TEXT": "The platform speaks Arabic, English and German, so you can explore Syrian property easily — whether you are in Syria or abroad.",
-      "TILES_ARIA": "Supported languages",
-      "NOTE": "Automatic translation of listing texts is being prepared and is not announced as ready yet; for now a listing appears in the language its author wrote it in.",
-      "CTA_EXPATS": "Guide for expats"
-    },
-    "SERVICES": {
-      "EYEBROW": "Property services",
-      "TITLE": "Don't just search for a property… discover the services you need on your property journey.",
-      "TEXT": "Property services offered by providers approved by the platform. Categories and providers grow gradually, and the catalog shows what is actually available.",
-      "CHIPS_ARIA": "Examples of service categories",
-      "C_VERIFICATION": "Verification",
-      "C_VALUATION": "Valuation",
-      "C_INSPECTION": "Technical inspection",
-      "C_PHOTOGRAPHY": "Professional photography",
-      "C_MANAGEMENT": "Property management",
-      "C_LEGAL": "Legal services",
-      "C_ENGINEERING": "Engineering",
-      "C_MAINTENANCE": "Maintenance",
-      "CTA": "Browse services",
-      "CTA_JOIN": "Join as a service provider"
-    },
-    "OFFICES": {
-      "EYEBROW": "For offices and advertisers",
-      "TITLE": "Put your properties in front of seekers",
-      "TEXT": "Whether you are an owner or a real-estate office, the platform gives you an organized way to show your listings and reach interested people.",
-      "POINTS": {
-        "1": {
-          "TITLE": "A public page for your office",
-          "DESC": "Introduce your office and show its listings on a page with its own link."
-        },
-        "2": {
-          "TITLE": "Your team and listings in one place",
-          "DESC": "Add agents and staff and manage the office's listings, depending on your plan."
-        },
-        "3": {
-          "TITLE": "Reports and analytics",
-          "DESC": "Follow how your listings perform, depending on the plan you choose."
-        },
-        "4": {
-          "TITLE": "Direct contact with interested people",
-          "DESC": "Messages, inquiries and visit requests reach you inside the platform."
-        }
-      },
-      "CTA_PLANS": "See the plans",
-      "CTA_REGISTER": "Register your office"
-    },
-    "OFFER": {
-      "EYEBROW": "Special offer for real-estate offices",
-      "PROGRESS_ARIA": "{{count}} of {{max}} joined so far",
-      "PROGRESS_LABEL": "{{count}} of {{max}} offices have joined so far",
-      "CTA": "Register your office now",
-      "CTA_ARIA": "Register your real-estate office for this offer",
-      "ENDS_ON": "Offer ends on {{date}}",
-      "LOADING_ARIA": "Loading offers",
-      "EMPTY_TITLE": "No offers are published right now",
-      "EMPTY_TEXT": "Register your interest and we will let you know as soon as the first offer launches.",
-      "EMPTY_CTA": "Register your interest",
-      "ERROR_TITLE": "Offers could not be loaded right now",
-      "ERROR_TEXT": "The rest of the page works normally. You can try again.",
-      "RETRY": "Try again"
-    },
-    "HOW": {
-      "EYEBROW": "In a few simple steps",
-      "TITLE": "How does HudhudNest work?",
-      "ARIA": "Steps to use the platform",
-      "STEPS": {
-        "STEP_1": {
-          "TITLE": "Choose a property type or city",
-          "DESC": "Decide whether you're looking to rent or buy, then choose your preferred city or area."
-        },
-        "STEP_2": {
-          "TITLE": "Browse organized listings",
-          "DESC": "Explore properties with clear photos, prices, and information, and compare options easily."
-        },
-        "STEP_3": {
-          "TITLE": "Contact the advertiser",
-          "DESC": "Reach the owner or the real-estate office directly, and save what you like to come back to it later."
-        }
-      }
-    },
     "FORM": {
-      "EYEBROW": "Waitlist",
-      "TITLE": "Be one of the first HudhudNest users",
-      "DESC": "Register your interest now and we'll reach out when the platform launches in your area.",
-      "ARIA": "Waitlist signup form",
-      "SUCCESS": {
-        "OFFER_TITLE": "You're registered for the offer!",
-        "OFFER_MSG": "Great! We've reserved you a spot in the \"first 100 offices\" offer. We'll follow up soon with the details.",
-        "NO_OFFER_TITLE": "Registration successful",
-        "NO_OFFER_MSG": "Unfortunately the limited offer filled up before your registration arrived, but your interest has been registered — we'll reach out when the platform launches.",
-        "PLAIN_TITLE": "Registration successful!",
-        "PLAIN_MSG": "Thank you — your interest has been registered. We'll send you updates when HudhudNest launches.",
-        "RESET_BTN": "Register someone else"
-      },
-      "FULLNAME_LABEL": "Full name",
-      "FULLNAME_PLACEHOLDER": "e.g. Ahmad Mohammad",
-      "PHONE_LABEL": "Phone or WhatsApp number",
-      "PHONE_PLACEHOLDER": "e.g. 0933123456 or +963933123456",
-      "PHONE_HINT": "A WhatsApp number works too",
-      "USERTYPE_LABEL": "I am…",
-      "USERTYPE_PLACEHOLDER": "Choose what applies to you",
       "USER_TYPES": {
         "RENTER": "Looking to rent",
         "BUYER": "Looking to buy",
@@ -2953,8 +2786,6 @@
         "AGENCY": "Real-estate office",
         "INVESTOR": "Investor / expat"
       },
-      "CITY_LABEL": "City or area",
-      "CITY_PLACEHOLDER": "Choose your city or area",
       "CITIES": {
         "DAMASCUS": "Damascus",
         "ALEPPO": "Aleppo",
@@ -2971,95 +2802,11 @@
         "IDLIB": "Idlib",
         "DAMASCUS_COUNTRYSIDE": "Rif Dimashq",
         "OTHER": "Other area"
-      },
-      "NOTES_LABEL": "Additional notes",
-      "NOTES_OPTIONAL": "optional",
-      "NOTES_PLACEHOLDER": "e.g. Looking for a 2-bedroom apartment in Mazzeh under $200",
-      "REQUIRED_ARIA": "required",
-      "SUBMIT_ARIA": "Submit waitlist signup",
-      "SUBMIT_LOADING": "Registering…",
-      "SUBMIT_TEXT": "Join the waitlist now",
-      "PRIVACY_NOTE": "We won't share your data with third parties or send unsolicited messages.",
-      "ERRORS": {
-        "REQUIRED": "This field is required.",
-        "MINLENGTH": "Too short (minimum {{min}} characters).",
-        "MAXLENGTH": "You've exceeded the maximum length.",
-        "PHONE": "Invalid phone number. Example: 0933123456 or +963933123456",
-        "GENERIC": "Invalid value."
       }
-    },
-    "TRUST": {
-      "EYEBROW": "Full transparency",
-      "TITLE": "We're building trust step by step",
-      "DESC": "We're in our first MVP stage. Here's what we commit to, and what's still in progress.",
-      "ITEMS": {
-        "PHOTOS": {
-          "TITLE": "Real photos required",
-          "DESC": "We encourage property owners to upload real photos of the property, and don't accept fake or borrowed images."
-        },
-        "CONTACT": {
-          "TITLE": "Clear contact details",
-          "DESC": "Every listing must include accurate contact information. We're here to connect you with the other side."
-        },
-        "CAUTION": {
-          "TITLE": "Don't pay before verifying",
-          "DESC": "We always recommend visiting the property in person and verifying documents before paying anything. The platform facilitates contact — it doesn't guarantee the deal."
-        },
-        "IMPROVING": {
-          "TITLE": "Always improving",
-          "DESC": "Listing verification will keep improving over time. We're upfront about being in an early stage."
-        }
-      }
-    },
-    "FAQ": {
-      "EYEBROW": "Questions",
-      "TITLE": "Frequently asked questions",
-      "ITEMS": {
-        "LAUNCH": {
-          "Q": "When will the platform launch?",
-          "A": "The platform runs as a beta and is launching gradually, most likely starting with Damascus and Rif Dimashq and then expanding to the other governorates. Register your interest in the form and we will let you know when it reaches your area."
-        },
-        "FREE": {
-          "Q": "Is the service free at first?",
-          "A": "Yes — we plan for the service to be free in its first stage for both seekers and property owners, with the possibility of premium plans later."
-        },
-        "OWNER": {
-          "Q": "Can property owners register now?",
-          "A": "Absolutely. Register your interest through the form and choose \"I want to list a property\" — we'll reach out once listing opens."
-        },
-        "AGENCY": {
-          "Q": "Can real-estate offices add their listings?",
-          "A": "Yes, we welcome real-estate offices. Choose \"Real-estate office\" in the form and we'll follow up with partnership details."
-        },
-        "VERIFIED": {
-          "Q": "Are the listings verified and safe?",
-          "A": "We're working on clearer information and fewer random listings. The platform is still in development, and verification will keep improving. As with any real-estate deal, we always recommend verifying in person before deciding."
-        },
-        "SYRIA_ONLY": {
-          "Q": "Is the platform only for Syria?",
-          "A": "We're starting in Syria, but the design supports expanding into Arab and global markets later, especially to serve Syrian expats everywhere."
-        }
-      }
-    },
-    "FINAL_CTA": {
-      "TITLE": "Be one of the first HudhudNest users",
-      "DESC": "Help us build a more organized real-estate experience in Syria. Your voice will help shape the platform to come.",
-      "BTN": "Join the waitlist now",
-      "BTN_ARIA": "Join the HudhudNest waitlist",
-      "EXPLORE": "Explore properties",
-      "PUBLISH": "Have a property? List it"
-    },
-    "FOOTER": {
-      "TAGLINE": "A digital real-estate platform · Syria first",
-      "RIGHTS": "All rights reserved",
-      "PRIVACY": "Privacy Policy",
-      "TERMS": "Terms of Service",
-      "DOWNLOAD": "Download the app",
-      "CONTACT": "Contact us"
     },
     "SEO": {
-      "TITLE": "Digital real-estate platform for Syria",
-      "DESCRIPTION": "Search property for sale and rent in Syria, check area prices, request a valuation and discover property services. In Arabic, English and German."
+      "TITLE": "HudhudNest – find property in Syria",
+      "DESCRIPTION": "Buy, rent or stay short-term in Syria: one platform instead of scattered groups. Beta, launching soon, free at launch."
     }
   },
   "VALUATION": {
@@ -3237,7 +2984,11 @@
     "UPDATED": "Last updated",
     "BACK_HOME": "Back to home",
     "LOADING": "Loading…",
-    "LOAD_FAILED": "The document could not be loaded. Check your connection and try again."
+    "LOAD_FAILED": "The document could not be loaded. Check your connection and try again.",
+    "PUBLISHED": "Published",
+    "LANGUAGE": "Language",
+    "PENDING_PUBLICATION": "Not published yet",
+    "RELATED": "Related documents"
   },
   "CONSENT": {
     "LEAD": "I agree to the",
@@ -3245,7 +2996,10 @@
     "MIDDLE": "and acknowledge that I have read the",
     "PRIVACY": "Privacy Policy",
     "TRAIL": ".",
-    "OPENS_NEW_TAB": "(opens in a new tab)"
+    "OPENS_NEW_TAB": "(opens in a new tab)",
+    "SOCIAL_LEAD": "By continuing with Google or Apple you agree to the",
+    "SOCIAL_MIDDLE": "and confirm that you have read the",
+    "SOCIAL_TRAIL": "."
   },
   "SEO": {
     "SHORT_STAY": {
@@ -3271,6 +3025,42 @@
     "HOME": {
       "TITLE": "Digital real-estate platform in Syria",
       "DESCRIPTION": "Find apartments and properties for sale and rent in Syria with ease: clear photos, organised details and direct contact with the owner or agency."
+    },
+    "SERVICES": {
+      "TITLE": "Trusted real estate services",
+      "DESCRIPTION": "Browse approved service providers on HudhudNest: legal, engineering, moving, photography and more. Request a service and follow it directly."
+    },
+    "EXPATS": {
+      "TITLE": "Expat guide to buying property in Syria",
+      "DESCRIPTION": "Clear steps for expats who want to own a property, find a home or invest in Syria, with the supporting services available."
+    },
+    "MAP": {
+      "TITLE": "Property map",
+      "DESCRIPTION": "Explore properties for sale and rent on the map and pick the area that suits you."
+    },
+    "PRICE_ESTIMATE": {
+      "TITLE": "Property price estimate",
+      "DESCRIPTION": "Estimate a property price in your area by governorate, type and size, and compare average prices across districts."
+    },
+    "PRICING": {
+      "TITLE": "Subscription plans for owners and agencies",
+      "DESCRIPTION": "Start free by listing your own property, or pick an agency plan: Basic $49, Premium $99, or Elite — higher listing limits, agent and staff accounts, reports and analytics, and featured placement in search results."
+    },
+    "NEWSLETTER_CONFIRM": {
+      "TITLE": "Confirm newsletter | HudhudNest",
+      "DESCRIPTION": "Confirm your HudhudNest newsletter subscription."
+    },
+    "NEWSLETTER_UNSUBSCRIBE": {
+      "TITLE": "Unsubscribe | HudhudNest",
+      "DESCRIPTION": "Unsubscribe from the HudhudNest newsletter."
+    },
+    "OFFICES": {
+      "TITLE": "Real estate agency directory",
+      "DESCRIPTION": "Find a real estate agency in Syria by governorate, district, neighborhood and property type, and see verified agencies, their ratings and active listings."
+    },
+    "OFFICE_PROFILE": {
+      "DESCRIPTION": "{{name}}: real estate office on HudhudNest. Listings, opening hours and contact details.",
+      "DESCRIPTION_PLACE": "{{name}}: real estate office in {{place}}. Listings, opening hours and contact details on HudhudNest."
     }
   },
   "ADMIN_PAYMENTS": {
@@ -4323,5 +4113,869 @@
     "SERVICES_HINT": "A service is requested from the page of the property it is for.",
     "NO_SERVICES": "No approved provider offers these services yet. They appear here when providers join.",
     "FOOTNOTE": "HudhudNest is a listings and services platform, not a legal or financial intermediary. Check documents before paying anything."
+  },
+  "LEGAL_LINKS": {
+    "TITLE": "Legal and privacy",
+    "PRIVACY": "Privacy Policy",
+    "TERMS": "Terms of Use",
+    "DELETION": "Delete account and data",
+    "IMPRINT": "Legal notice (Impressum)",
+    "CONTACT": "Contact support"
+  },
+  "IMPRINT": {
+    "TITLE": "Legal notice (Impressum)",
+    "PROVIDER": "Provider",
+    "CONTACT": "Contact",
+    "REGISTER": "Register and tax details",
+    "VAT": "VAT ID",
+    "INTRO": "Provider identification for the HudhudNest website and apps. Only details the operator has confirmed are shown; nothing here is a placeholder or an estimate.",
+    "TRADING_NAME": "Trading name",
+    "OPERATOR": "Legal name of the operator",
+    "LEGAL_FORM": "Legal form",
+    "REPRESENTATIVE": "Authorised representative",
+    "STREET": "Street address",
+    "POSTAL_CODE": "Postal code",
+    "CORRESPONDENCE": "Correspondence (city and country)",
+    "EU_REP": "Representative in the EU (Art. 27 GDPR)",
+    "DPO": "Data protection officer",
+    "SUPPORT": "Support",
+    "LEGAL": "Legal notices",
+    "PRIVACY": "Privacy",
+    "SECURITY": "Security reports",
+    "WEBSITE": "Website",
+    "REGISTER_COURT": "Register",
+    "REGISTER_NUMBER": "Register number",
+    "NOT_PROVIDED": "Not provided yet",
+    "NOT_APPOINTED": "Not appointed",
+    "NONE_KNOWN": "None stated",
+    "INCOMPLETE_TITLE": "Provider information is incomplete",
+    "INCOMPLETE_BODY": "The following details required for this notice have not been confirmed by the operator yet. They will be added here before the platform is fully launched. Until then you can reach us at the addresses below."
+  },
+  "PAYMENTS": {
+    "SANDBOX_BADGE": "Test mode",
+    "BACK_TO_PRICING": "Back to plans",
+    "CONTACT_US": "Contact us",
+    "AMOUNT": "Amount",
+    "DISCOUNT": "Discount",
+    "TAX": "Tax",
+    "TOTAL": "Total",
+    "REFUNDED": "Refunded",
+    "INTERVAL": {
+      "OneTime": "One time",
+      "Monthly": "Monthly",
+      "Yearly": "Yearly"
+    },
+    "CAP": {
+      "CARDS": "Cards",
+      "WALLETS": "Wallets",
+      "QR": "QR code",
+      "RECURRING": "Automatic renewal"
+    },
+    "CHECKOUT": {
+      "TITLE": "Checkout",
+      "SUBTITLE": "Review the price, choose how to pay, then continue to the payment provider.",
+      "INVALID": "This payment link is incomplete.",
+      "INTERVAL": "Billing period",
+      "CURRENCY": "Currency",
+      "METHOD": "Payment method",
+      "NO_METHOD": "No payment method is available for this currency.",
+      "HOSTED_NOTE": "You will enter your payment details on the provider's secure page. HudhudNest never sees or stores your card number.",
+      "RENEWAL": "Automatic renewal",
+      "CONSENT_TEXT": "I agree that HudhudNest charges {{amount}} {{interval}} to my payment method until I cancel.",
+      "TERMS_LINK": "Terms of service",
+      "CONSENT_HELP": "Leave this unticked to pay for one period only. You can cancel renewal at any time from your billing page; the paid period stays active.",
+      "SUMMARY": "Order summary",
+      "NO_TAX_NOTE": "No tax is added to this price.",
+      "PAY": "Continue to payment",
+      "REDIRECTING": "Opening the payment page…",
+      "SECURE_NOTE": "The price is calculated by our server. Your plan is activated only after the provider confirms the payment."
+    },
+    "NATIVE": {
+      "TITLE": "Pay on our website",
+      "BODY": "Purchases are not available inside the app yet. Open hudhudnest.com in your browser to subscribe; your account and benefits are the same in the app."
+    },
+    "UNAVAILABLE": {
+      "TITLE": "Online payment is not available right now",
+      "BODY": "Nothing was charged. You can still request a plan through our team."
+    },
+    "ERRORS": {
+      "GENERIC": "Something went wrong. Nothing was charged. Please try again.",
+      "UNAVAILABLE": "The payment provider is not available right now. Nothing was charged. Try again in a few minutes."
+    },
+    "STATUS": {
+      "Created": "Created",
+      "Pending": "Waiting for payment",
+      "Processing": "Processing",
+      "Succeeded": "Paid",
+      "Failed": "Failed",
+      "Cancelled": "Cancelled",
+      "Expired": "Expired",
+      "RefundPending": "Refund pending",
+      "PartiallyRefunded": "Partly refunded",
+      "Refunded": "Refunded",
+      "Disputed": "Disputed"
+    },
+    "SUB_STATUS": {
+      "Active": "Active",
+      "PastDue": "Payment overdue",
+      "Cancelled": "Cancelled",
+      "Expired": "Expired"
+    },
+    "REFUND_STATUS": {
+      "Requested": "Under review",
+      "Approved": "Approved, processing",
+      "Succeeded": "Refunded",
+      "Failed": "Failed, we will retry",
+      "Rejected": "Declined"
+    },
+    "RESULT": {
+      "SUCCESS_TITLE": "Payment received",
+      "SUCCESS_BODY": "Thank you. Your purchase is active and the invoice is ready.",
+      "DELIVERING_TITLE": "Payment received, activating",
+      "DELIVERING_BODY": "Your payment is confirmed. We are activating your purchase; this takes a moment.",
+      "DELIVERY_FAILED_TITLE": "Paid, but we could not activate it",
+      "DELIVERY_FAILED_BODY": "Your payment was received but the purchase could not be applied (for example the listing is no longer available). A refund is being arranged; contact us if you need help.",
+      "PENDING_TITLE": "Waiting for confirmation",
+      "PENDING_BODY": "We have not received the provider's confirmation yet. This page updates by itself. Do not pay again.",
+      "CHECKING": "Checking…",
+      "TAKING_LONGER": "This is taking longer than usual. If you paid, your purchase will be activated as soon as the confirmation arrives; reload this page later.",
+      "FAILED_TITLE": "Payment failed",
+      "FAILED_BODY": "The payment was not completed and nothing was charged. You can try again with another method.",
+      "CANCELLED_TITLE": "Payment cancelled",
+      "CANCELLED_BODY": "You cancelled this payment. Nothing was charged.",
+      "EXPIRED_TITLE": "Payment window expired",
+      "EXPIRED_BODY": "This order was not paid in time. Start a new one if you still want it.",
+      "REFUND_TITLE": "Refund in progress or completed",
+      "REFUND_BODY": "See the refund status in your billing page."
+    },
+    "ORDER": {
+      "NOT_FOUND": "This order was not found.",
+      "DETAILS": "Order details",
+      "NUMBER": "Order number",
+      "WHAT": "Item",
+      "STATUS": "Status",
+      "MODE": "Mode",
+      "CREATED": "Created",
+      "PAID_AT": "Paid on",
+      "VIEW_INVOICE": "View invoice",
+      "CANCEL": "Cancel this order",
+      "REQUEST_REFUND": "Request a refund"
+    },
+    "REFUND": {
+      "REASON": "Reason",
+      "SEND": "Send request",
+      "SENT": "Your refund request was sent. We will review it and update you.",
+      "NOTE": "Note"
+    },
+    "HISTORY": {
+      "TITLE": "Payments & invoices",
+      "SUBTITLE": "Your subscription, orders, invoices and refunds.",
+      "TAB_ORDERS": "Orders",
+      "TAB_INVOICES": "Invoices",
+      "TAB_REFUNDS": "Refunds",
+      "EMPTY": "No orders yet.",
+      "EMPTY_INVOICES": "No invoices yet.",
+      "EMPTY_REFUNDS": "No refunds.",
+      "OPEN": "Open"
+    },
+    "SUBSCRIPTION": {
+      "TITLE": "Subscription",
+      "PLAN": "Plan",
+      "PERIOD_END": "Current period ends",
+      "RENEWAL": "Renewal",
+      "RENEWAL_ON": "Renews automatically",
+      "RENEWAL_OFF": "Will not renew",
+      "RENEWAL_NONE": "Manual: pay again to extend",
+      "CONSENT": "Renewal you agreed to",
+      "PENDING_PLAN": "Next plan",
+      "PAST_DUE": "The last renewal payment failed. Your benefits continue until {{date}} while we retry. Update your payment method to avoid losing them.",
+      "CANCELLED_NOTE": "Renewal is cancelled. Your plan stays active until {{date}}.",
+      "CANCEL": "Cancel renewal",
+      "CANCEL_CONFIRM": "You will not be charged again. Your plan stays active until {{date}}.",
+      "CANCEL_YES": "Yes, cancel renewal",
+      "CANCEL_NO": "Keep it",
+      "RESUME": "Resume renewal",
+      "CHANGE": "Change plan",
+      "NONE": "You have no paid subscription."
+    },
+    "INVOICE": {
+      "TITLE": "Invoice",
+      "CREDIT_NOTE": "Credit note",
+      "NUMBER": "Number",
+      "ISSUED": "Issue date",
+      "SELLER": "Seller",
+      "CUSTOMER": "Customer",
+      "TAX_ID": "Tax ID",
+      "PERIOD": "Service period",
+      "NET": "Net amount",
+      "PAID_ON": "Paid on",
+      "REFERENCE": "Payment reference",
+      "PRINT": "Print / save as PDF",
+      "NOT_FOUND": "This invoice was not found.",
+      "NO_TAX_NOTE": "No tax is charged on this invoice."
+    },
+    "SANDBOX": {
+      "TITLE": "Test payment page",
+      "BODY": "This simulates a payment provider. No real money moves. Choose the outcome to test.",
+      "SUCCEED": "Simulate success",
+      "FAIL": "Simulate failure",
+      "CANCEL": "Simulate cancel",
+      "UNAVAILABLE": "The test payment page is not available in this environment."
+    }
+  },
+  "ADMIN_PAY": {
+    "TITLE": "Payments",
+    "SUBTITLE": "Transactions, subscriptions, refunds, providers and webhooks. An order becomes paid only when the provider confirms it; there is no manual \"mark as paid\".",
+    "TAB_DASHBOARD": "Dashboard",
+    "TAB_ORDERS": "Transactions",
+    "TAB_SUBSCRIPTIONS": "Subscriptions",
+    "TAB_REFUNDS": "Refunds",
+    "TAB_PROVIDERS": "Providers",
+    "TAB_WEBHOOKS": "Webhooks",
+    "TAB_REPORTS": "Reports",
+    "REVENUE_USD": "Revenue (USD)",
+    "ORDERS": "Orders",
+    "SUCCEEDED": "Paid",
+    "FAILED": "Failed",
+    "PENDING": "Pending",
+    "ACTIVE_SUBS": "Active subscriptions",
+    "NEEDS_ATTENTION": "Needs attention",
+    "FAILED_WEBHOOKS": "Failed webhooks",
+    "STALE_PENDING": "Stale pending orders",
+    "FAILED_ENTITLEMENTS": "Paid, not delivered",
+    "OPEN_REFUNDS": "Open refund requests",
+    "PAST_DUE": "Past-due subscriptions",
+    "BY_CURRENCY": "Revenue by currency",
+    "RECONCILE": "Reconcile pending payments with providers",
+    "SEARCH": "Search order number",
+    "ALL": "All",
+    "USER": "User",
+    "PROVIDER": "Provider",
+    "EMPTY": "Nothing to show.",
+    "CORRELATION": "Correlation ID",
+    "ENTITLEMENT": "Delivery",
+    "TRANSACTIONS": "Provider transactions",
+    "AUDIT": "Audit trail",
+    "RESYNC": "Re-check with provider",
+    "NOTE": "Internal note",
+    "ADD_NOTE": "Add note",
+    "REFUND_ORDER": "Refund this order",
+    "REFUND_AMOUNT": "Amount (empty = full remaining)",
+    "REFUND_SEND": "Refund via provider",
+    "AUTO_RENEW": "Auto-renew",
+    "ATTEMPTS": "Attempts",
+    "APPROVE": "Approve",
+    "REJECT": "Reject",
+    "RETRY": "Retry",
+    "PROVIDERS_NOTE": "A real provider cannot be enabled without a recorded business approval, and only after the legal and commercial checks in the deployment guide. The test provider never runs in Production.",
+    "ENABLED": "Enabled",
+    "DISABLED": "Disabled",
+    "IMPLEMENTED": "Adapter implemented",
+    "ALLOWED_HERE": "Allowed in this environment",
+    "CURRENCIES": "Currencies",
+    "CAPABILITIES": "Capabilities",
+    "APPROVED_ON": "Business approval",
+    "APPROVAL_NOTE": "Business approval note (who approved, on what basis)",
+    "ENABLE": "Enable",
+    "DISABLE": "Disable",
+    "EVENT": "Event",
+    "RECEIVED": "Received",
+    "LAST_ERROR": "Last error",
+    "REPROCESS": "Reprocess",
+    "GROUP_DAY": "By day",
+    "GROUP_MONTH": "By month",
+    "GROUP_PROVIDER": "By provider",
+    "GROUP_PRODUCT": "By product",
+    "GROUP_CURRENCY": "By currency",
+    "GROUP": "Group",
+    "GROSS_USD": "Gross (USD)",
+    "DONE": "Done.",
+    "LOAD_FAILED": "Could not load the data.",
+    "ACTION_FAILED": "The action failed. Nothing was changed, or the provider did not accept it; check the audit trail."
+  },
+  "GEO": {
+    "LOADING": "Searching…",
+    "LOAD_ERROR": "Could not load places. Please try again.",
+    "NO_MATCH": "No place named “{{value}}” in the list.",
+    "ADD_NEW": "Suggest adding “{{value}}”",
+    "ADD_CONFIRMED": "“{{value}}” will be sent for review when you save the listing. It does not block publishing.",
+    "PLACEHOLDER": "Start typing a name…",
+    "GOVERNORATE": "Governorate",
+    "OPTIONAL": "optional",
+    "LEVEL_CITY": "City",
+    "LEVEL_DISTRICT": "District",
+    "LEVEL_NEIGHBORHOOD": "Neighborhood",
+    "LEVEL_STREET": "Street",
+    "PLACEHOLDER_CITY": "Type the city name",
+    "PLACEHOLDER_DISTRICT": "Type the district name",
+    "PLACEHOLDER_NEIGHBORHOOD": "Type the neighborhood name",
+    "PLACEHOLDER_STREET": "Type the street name (if you know it)",
+    "STREET_HINT": "The street is optional. You can pin the property on the map instead.",
+    "PIN_MISMATCH": "The pin is in “{{value}}”, which differs from what you picked. Please check the location.",
+    "SUGGESTED_ADDRESS": "Address suggested by the map",
+    "USE_SUGGESTION": "Use this address",
+    "IGNORE_SUGGESTION": "Ignore",
+    "PROPOSAL_NOTE": "{{count}} new place name(s) will be sent for review when you save. This does not block your listing.",
+    "FILTER_PLACEHOLDER": "Search a neighborhood, street or city…",
+    "FILTER_NO_MATCH": "No place with this name in the list.",
+    "FILTER_LABEL": "Specific place",
+    "FILTER_HINT": "Pick a place (includes everything inside it), or type text and press Apply filters to search listing addresses.",
+    "TYPED_PLACE_PROPOSED": "\"{{value}}\" is not in our list. We will send the name to the moderators for review, and the nearest known area is used here.",
+    "TYPED_PLACE_NOT_SAVED": "\"{{value}}\" is not in our list and a new name cannot be saved without signing in, so the nearest known area is used here.",
+    "TYPED_PLACE_HINT": "Pick from the list, or type the name if you cannot find it.",
+    "FILTER_SEARCH_TEXT": "Search “{{text}}” in listing addresses"
+  },
+  "ADMIN_GEO": {
+    "TITLE": "Location management",
+    "SUBTITLE": "HudhudNest’s own catalog is the source of truth. External maps only suggest.",
+    "TAB_REQUESTS": "Place requests",
+    "TAB_PLACES": "Places",
+    "TAB_POLICY": "Approval policy",
+    "TAB_IMPORT": "Import",
+    "TAB_CHANGES": "Change log",
+    "STATUS": "Status",
+    "TYPE": "Type",
+    "ALL": "All",
+    "STATUS_PENDING": "Pending",
+    "STATUS_NEEDSCORRECTION": "Needs correction",
+    "STATUS_APPROVED": "Approved",
+    "STATUS_REJECTED": "Rejected",
+    "STATUS_DUPLICATE": "Duplicate",
+    "TYPE_COUNTRY": "Country",
+    "TYPE_GOVERNORATE": "Governorate",
+    "TYPE_CITY": "City",
+    "TYPE_DISTRICT": "District",
+    "TYPE_NEIGHBORHOOD": "Neighborhood",
+    "TYPE_STREET": "Street",
+    "NO_REQUESTS": "No requests.",
+    "PARENT": "Belongs to",
+    "SOURCE": "Source",
+    "AUTO": "auto-approved",
+    "CONFIDENCE": "Confidence",
+    "DECISION_REASON": "Decision reason",
+    "COORDINATES": "Coordinates",
+    "SUBMITTED_BY": "Submitted by",
+    "NAME_AR": "Arabic name",
+    "NAME_EN": "English name",
+    "NAME_DE": "German name",
+    "NOTES": "Notes",
+    "DUPLICATE_OF": "Existing place id (for duplicates)",
+    "APPROVE": "Approve",
+    "NEEDS_CORRECTION": "Ask for correction",
+    "MARK_DUPLICATE": "Mark duplicate",
+    "REJECT": "Reject",
+    "APPROVED": "The place was approved.",
+    "REJECTED": "The request was rejected.",
+    "CORRECTION_ASKED": "A correction was requested.",
+    "MARKED_DUPLICATE": "The request was marked as a duplicate.",
+    "ROOT": "Syria",
+    "SEARCH": "Search",
+    "INCLUDE_ARCHIVED": "Show archived",
+    "NO_PLACES": "No places.",
+    "ARCHIVED": "Archived",
+    "INACTIVE": "Inactive",
+    "OPEN": "Open",
+    "COUNTS_HINT": "The two numbers: sub-places / listings.",
+    "LATITUDE": "Latitude",
+    "LONGITUDE": "Longitude",
+    "VERIFICATION": "Verification",
+    "REASON": "Reason for the change (logged)",
+    "ACTIVATE": "Activate",
+    "DEACTIVATE": "Deactivate",
+    "ARCHIVE": "Archive",
+    "RESTORE": "Restore",
+    "ALIASES": "Aliases",
+    "ADD_ALIAS": "Add alias",
+    "REMOVE_ALIAS": "Remove alias",
+    "MERGE": "Merge into another place",
+    "MERGE_HINT": "Moves sub-places and listings to the target and keeps this place’s name as an alias.",
+    "MERGE_TARGET": "Target place id",
+    "MERGE_ACTION": "Merge",
+    "MERGE_CONFIRM": "Merge “{{source}}” into place #{{target}}?",
+    "MERGED": "Merged: {{children}} sub-places and {{listings}} listings moved.",
+    "ADD_CHILD": "Add a new {{type}}",
+    "CREATE": "Create",
+    "SAVED": "Saved.",
+    "SHOW_CHANGES": "Show the change log of this place",
+    "POLICY_HINT": "These rules apply to streets only. Governorates, cities, districts and neighborhoods always go to manual review.",
+    "POLICY_AUTO": "Allow streets to be approved automatically",
+    "POLICY_EXTERNAL": "Allow lookups in the external map provider",
+    "POLICY_MIN_SCORE": "Minimum confidence score (0–1)",
+    "POLICY_DUPLICATE": "Similarity threshold for duplicates (0–1)",
+    "POLICY_MAX_PER_DAY": "Max auto-approvals per user per day",
+    "POLICY_ONLY_STREETS": "Even when enabled, a street is auto-approved only with trusted evidence, a correct parent, no duplicate and no conflict with the city or district.",
+    "IMPORT_HINT": "Paste a JSON list of places. A dry run writes nothing. After staging you can commit or roll back the whole batch.",
+    "IMPORT_NAME": "Batch name",
+    "IMPORT_SOURCE": "Source",
+    "IMPORT_LICENSE": "License",
+    "IMPORT_ROWS": "Rows (JSON)",
+    "IMPORT_DRY_RUN": "Dry run",
+    "IMPORT_STAGE": "Stage batch",
+    "IMPORT_SKIPPED": "skipped",
+    "IMPORT_COMMIT": "Commit batch",
+    "IMPORT_ROLLBACK": "Roll back batch",
+    "IMPORT_BAD_JSON": "The rows are not valid JSON (a list is required).",
+    "IMPORT_COMMITTED": "{{count}} rows committed.",
+    "IMPORT_ROLLED_BACK": "{{count}} rows rolled back.",
+    "IMPORT_ROLLBACK_CONFIRM": "Roll back the whole batch?",
+    "CHANGES_OF": "Changes of: {{name}}",
+    "NO_CHANGES": "No changes recorded."
+  },
+  "SITE": {
+    "NAV": {
+      "SKIP": "Skip to content",
+      "MENU_OPEN": "Open menu",
+      "MENU_CLOSE": "Close menu",
+      "MAIN_ARIA": "Main navigation",
+      "HOME_ARIA": "HudhudNest – home",
+      "LANG_ARIA": "Language",
+      "PROPERTIES": "Properties",
+      "ABOUT": "About us",
+      "PROVIDERS": "For providers",
+      "CONTACT": "Contact",
+      "PLATFORM": "Go to the platform"
+    },
+    "HERO": {
+      "BADGE": "Beta – launching in Syria soon",
+      "TITLE": "Find property in Syria – clear and direct.",
+      "SUBLINE": "Buy, rent or stay short-term: one platform instead of scattered Facebook and WhatsApp groups.",
+      "CTA_PUBLISH": "List your property",
+      "CTA_NOTIFY": "Notify me when you launch",
+      "CTA_EXPLORE": "Discover properties",
+      "CHIP_FREE": "Free at launch"
+    },
+    "WHY": {
+      "TITLE": "Why HudhudNest",
+      "INTRO": "Searching for property in Syria is still a struggle. HudhudNest aims to change that step by step.",
+      "ALL": {
+        "T": "Everything in one place",
+        "D": "Listings, organised and searchable."
+      },
+      "CLEAR": {
+        "T": "Clear details",
+        "D": "Photos and consistent basic information."
+      },
+      "DIRECT": {
+        "T": "Direct contact",
+        "D": "With owners or real-estate offices."
+      }
+    },
+    "START": {
+      "TITLE": "Start here",
+      "BUY": {
+        "T": "Buy a property",
+        "D": "Sign up and find out as soon as properties for sale are available."
+      },
+      "RENT": {
+        "T": "Rent a home",
+        "D": "Sign up and find out as soon as rentals are available."
+      },
+      "SHORT": {
+        "T": "Short stays",
+        "D": "Sign up and find out as soon as short-stay accommodation is available."
+      },
+      "OFFER": {
+        "T": "List a property",
+        "D": "Create an account and add your property with photos."
+      }
+    },
+    "WAITLIST": {
+      "TITLE": "Notify me when you launch",
+      "INTRO": "Leave your email address or WhatsApp number. We will get in touch as soon as HudhudNest launches in Syria.",
+      "CONTACT_LABEL": "Email or WhatsApp number",
+      "CONTACT_PLACEHOLDER": "name@example.com or +49 157 1234567",
+      "CONTACT_HINT": "WhatsApp numbers with country code, e.g. +49 or +963.",
+      "INTEREST_LABEL": "What are you interested in? (optional)",
+      "INTEREST_NONE": "No preference",
+      "INTEREST_KAUFEN": "Buying a property",
+      "INTEREST_MIETEN": "Renting a home",
+      "INTEREST_KURZ": "Short stays",
+      "CONSENT_BEFORE": "I agree that HudhudNest may contact me about the launch using these details. Information on processing and on withdrawing consent is in the",
+      "CONSENT_LINK": "privacy policy",
+      "CONSENT_AFTER": ".",
+      "SUBMIT": "Sign me up",
+      "SENDING": "Sending …",
+      "CLOSE": "Close",
+      "SUCCESS_TITLE": "Thank you, you are on the list.",
+      "SUCCESS_TEXT": "We will get in touch as soon as we launch.",
+      "ERR_CONTACT": "Please enter a valid email address or a WhatsApp number with country code.",
+      "ERR_CONSENT": "Please agree to the processing so that we can notify you.",
+      "ERR_SEND": "That did not work. Please try again in a moment.",
+      "ERR_UNAVAILABLE": "The waitlist is not available right now. Please try again later."
+    },
+    "FOOTER": {
+      "TAGLINE": "Property in Syria – clear and direct.",
+      "NAV_ARIA": "Pages",
+      "LEGAL_ARIA": "Legal",
+      "IMPRESSUM": "Legal notice (Impressum)",
+      "PRIVACY": "Privacy",
+      "TERMS": "Terms of Use"
+    },
+    "ABOUT": {
+      "TITLE": "About us",
+      "LEAD": "HudhudNest is a property platform for Syria, built for people in Syria and the Syrian diaspora.",
+      "VISION_TITLE": "Our vision",
+      "VISION_TEXT": "One property platform for all of Syria: a single register instead of dozens of scattered Facebook and WhatsApp groups.",
+      "STEP1_TAG": "The start",
+      "STEP1_TITLE": "Damascus and surroundings",
+      "STEP1_TEXT": "This is where our gradual launch is expected to begin, so we can build an orderly register and learn from real use.",
+      "STEP2_TAG": "Afterwards",
+      "STEP2_TITLE": "The other governorates",
+      "STEP2_TEXT": "Our vision covers all of Syria. We expand phase by phase.",
+      "WHY_TITLE": "Why we do this",
+      "WHY_TEXT": "Anyone looking for or offering property in Syria, whether living there or abroad, has to work through scattered groups and messages today. We want seekers and providers to find each other more easily and directly."
+    },
+    "PROVIDERS": {
+      "TITLE": "For providers",
+      "LEAD": "Owners and real-estate offices can list their property now and be there from day one.",
+      "FREE": "Free at launch",
+      "STEPS_TITLE": "In three steps",
+      "STEP1_T": "Create an account",
+      "STEP1_D": "Sign up on the platform.",
+      "STEP2_T": "Add your property with photos",
+      "STEP2_D": "Enter the key details and upload photos.",
+      "STEP3_T": "Receive enquiries directly",
+      "STEP3_D": "Interested people contact you directly.",
+      "WHY_TITLE": "Why list with us",
+      "WHY_FREE_T": "Free at launch",
+      "WHY_FREE_D": "Listing your property costs nothing at launch.",
+      "WHY_REACH_T": "Reach the diaspora",
+      "WHY_REACH_D": "The platform is available in Arabic, German, English and Turkish.",
+      "WHY_SIMPLE_T": "Simple process",
+      "WHY_SIMPLE_D": "A guided form instead of single messages in groups."
+    },
+    "SEO": {
+      "ABOUT": {
+        "TITLE": "About us – HudhudNest",
+        "DESCRIPTION": "Our vision: one property platform for all of Syria, starting with Damascus and its surroundings."
+      },
+      "PROVIDERS": {
+        "TITLE": "For providers – HudhudNest",
+        "DESCRIPTION": "List property in Syria: create an account, add your property with photos, receive enquiries directly. Free at launch."
+      },
+      "IMPRESSUM": {
+        "TITLE": "Legal notice – HudhudNest",
+        "DESCRIPTION": "Provider identification of HudhudNest."
+      },
+      "PRIVACY": {
+        "TITLE": "Privacy – HudhudNest",
+        "DESCRIPTION": "Privacy policy of HudhudNest."
+      }
+    },
+    "FAQ": {
+      "TITLE": "Frequently asked questions",
+      "Q1": "When does HudhudNest launch in Syria?",
+      "A1": "HudhudNest is in beta. The launch in Syria is coming soon, starting with Damascus and its surroundings. The waitlist lets you know in time.",
+      "Q2": "Does listing cost anything?",
+      "A2": "Listing is free at launch.",
+      "Q3": "How do I reach owners or real-estate offices?",
+      "A3": "Once listings are online, you contact them directly through the platform.",
+      "Q4": "What data does the waitlist store?",
+      "A4": "Only your email address or WhatsApp number, optionally your interest, the language and the time of your consent."
+    }
+  },
+  "NEWSLETTER": {
+    "OPT_IN_LABEL": "Optional: send me the HudhudNest newsletter (news, offers and updates). I will first get an e-mail to confirm, and I can unsubscribe at any time.",
+    "SETTINGS_TITLE": "Newsletter",
+    "SETTINGS_DESC": "Optional e-mails about platform news, offers and updates. Separate from service e-mails.",
+    "STATUS_NONE": "You are not subscribed.",
+    "STATUS_PENDING": "Waiting for your confirmation: open the link in the e-mail we sent you.",
+    "STATUS_ACTIVE": "You are subscribed.",
+    "STATUS_UNSUBSCRIBED": "You have unsubscribed.",
+    "SUBSCRIBE": "Subscribe",
+    "UNSUBSCRIBE": "Unsubscribe",
+    "SUBSCRIBE_SENT": "We sent you an e-mail. Your subscription starts only when you confirm it.",
+    "UNSUBSCRIBED_DONE": "Done. You will not receive the newsletter any more.",
+    "ERROR": "Something went wrong. Please try again later.",
+    "SERVICE_MAIL_NOTE": "Service e-mails (account, security, bookings and messages) are not affected by the newsletter setting.",
+    "CONFIRM_TITLE": "Confirm your newsletter subscription",
+    "CONFIRMED": "Thank you. Your subscription is confirmed. Every newsletter e-mail contains an unsubscribe link.",
+    "CONFIRM_INVALID": "This confirmation link is invalid or has expired. You can subscribe again in Settings.",
+    "UNSUB_TITLE": "Unsubscribe from the newsletter",
+    "UNSUB_BODY": "Click the button to stop receiving the HudhudNest newsletter at this address. It takes effect immediately.",
+    "UNSUB_BUTTON": "Unsubscribe",
+    "UNSUB_DONE": "You have been unsubscribed. We will not send marketing e-mails to this address.",
+    "UNSUB_INVALID": "This unsubscribe link is not valid. Write to privacy@hudhudnest.com and we will remove the address.",
+    "MISSING_TOKEN": "The link is incomplete. Please open it again from the e-mail.",
+    "WORKING": "One moment…",
+    "BACK_HOME": "Home"
+  },
+  "MEASUREMENT": {
+    "TITLE": "Your choice about measurement",
+    "BANNER_TEXT": "May we keep a random visitor ID and the source of the link you came from on this device? We use them only to count listing views once and to see which links bring visitors. No advertising, nothing goes to third parties. Declining blocks nothing.",
+    "LEARN_MORE": "Privacy Policy, section 9",
+    "ACCEPT": "Allow",
+    "DECLINE": "Decline",
+    "SETTINGS_TITLE": "Measurement on this device",
+    "SETTINGS_DESC": "A random visitor ID, the campaign tags of a link you opened and an invitation code, kept on this device. No third parties, no advertising.",
+    "SETTINGS_TOGGLE": "Allow first-party measurement on this device"
+  },
+  "RECONSENT": {
+    "TITLE": "We updated our terms",
+    "TEXT": "We changed the documents below. Please read them and accept to keep using your account. Using the app without accepting does not count as acceptance.",
+    "ACCEPT": "I accept",
+    "LATER": "Later"
+  },
+  "OFFICES": {
+    "TITLE": "Real estate agencies",
+    "SUBTITLE": "Find an agency near the area you care about.",
+    "SEARCH_LABEL": "Search agencies",
+    "SEARCH_PLACEHOLDER": "Agency name",
+    "FILTERS": "Filters",
+    "SORT_LABEL": "Sort",
+    "SORT": {
+      "MOSTLISTINGS": "Most listings",
+      "TOPRATED": "Top rated",
+      "NEWEST": "Newest",
+      "NEAREST": "Nearest"
+    },
+    "FILTER": {
+      "GOVERNORATE": "Governorate",
+      "DISTRICT": "District",
+      "NEIGHBORHOOD": "Neighborhood",
+      "ANY": "Any",
+      "NONE_HERE": "No agencies here yet",
+      "DEAL": "Deal type",
+      "PROPERTY_TYPE": "Property type",
+      "RATING": "Rating",
+      "RATING_AT_LEAST": "{{value}} stars or more",
+      "VERIFIED_ONLY": "Verified agencies only"
+    },
+    "DEAL": {
+      "SALE": "Sale",
+      "RENT": "Rent",
+      "SHORTSTAY": "Short stay",
+      "INVESTMENT": "Investment"
+    },
+    "CLEAR": "Clear filters",
+    "RESULTS": "{{count}} agencies",
+    "LOAD_ERROR": "The agencies could not be loaded right now.",
+    "EMPTY_TITLE": "No matching agencies",
+    "EMPTY_MESSAGE": "Try another area or loosen the filters.",
+    "VERIFICATION": {
+      "UNVERIFIED": "Unverified",
+      "PENDING": "Under review",
+      "VERIFIED": "Verified",
+      "REJECTED": "Rejected",
+      "REVOKED": "Verification revoked"
+    },
+    "RATING": "{{value}} ({{count}} ratings)",
+    "NOT_RATED": "Not rated yet",
+    "ACTIVE_LISTINGS": "{{count}} active listings",
+    "VIEW_PROFILE": "View agency",
+    "CONTACT": "Contact",
+    "PAGINATION": "Agency pages",
+    "PREVIOUS": "Previous page",
+    "NEXT": "Next page",
+    "NEAR": {
+      "BUTTON": "Agencies near me",
+      "LOCATING": "Finding your location…",
+      "ACTIVE": "Near you",
+      "RADIUS": "Within",
+      "RADIUS_KM": "{{value}} km",
+      "CLEAR": "Cancel",
+      "PRIVACY": "We use your approximate location for this search only and do not store it.",
+      "UNSUPPORTED": "Your browser does not support location.",
+      "DENIED": "We could not get your location. Allow location access and try again.",
+      "EMPTY": "No agencies with a map location within {{value}} km. Try a larger distance.",
+      "DISTANCE_KM": "{{value}} km away",
+      "DISTANCE_M": "{{value}} m away"
+    },
+    "VIEW": {
+      "LABEL": "View",
+      "LIST": "List",
+      "MAP": "Map"
+    },
+    "MAP": {
+      "LABEL": "Map of real estate agencies",
+      "COUNT": "{{count}} branches in this area",
+      "TRUNCATED": "Showing the first {{count}} branches only. Zoom in to see the rest.",
+      "LOAD_ERROR": "Could not load the map right now.",
+      "ONLY_PINNED": "Only branches whose owners placed them on the map appear here.",
+      "FILTERS_NOTE": "On the map, only the \"verified only\" filter applies."
+    }
+  },
+  "ADMIN_AGENCIES": {
+    "TITLE": "Agency verification",
+    "SUBTITLE": "Agencies under review come first. Verification is an admin decision after a real check outside the platform.",
+    "SEARCH_PLACEHOLDER": "Name, link or licence number",
+    "STATUS_FILTER": "Verification status",
+    "ALL_STATUSES": "All statuses",
+    "LOAD_ERROR": "The agencies could not be loaded.",
+    "EMPTY_TITLE": "No agencies",
+    "EMPTY_MESSAGE": "No agency matches the search.",
+    "INACTIVE": "Deactivated",
+    "OWNER": "Owner",
+    "LICENSE": "Licence",
+    "LISTINGS": "{{count}} active listings",
+    "MEMBERS": "{{count}} members",
+    "VERIFIED_AT": "Verified on {{date}}",
+    "CHANGE_STATUS": "Change status",
+    "MODAL_TITLE": "Change verification status",
+    "SAVE": "Save",
+    "CURRENT_STATUS": "Current status",
+    "HINT": "A reason is required and is kept in the history. Only grant \"Verified\" after checking the licence and identity.",
+    "NEW_STATUS": "New status",
+    "CHOOSE_STATUS": "Choose a status",
+    "REASON": "Reason (required)",
+    "HISTORY": "Verification history",
+    "HISTORY_EMPTY": "No earlier changes.",
+    "SAVED": "Verification status saved.",
+    "SAVE_ERROR": "The status could not be saved."
+  },
+  "AGENCY_BRANCHES": {
+    "TITLE": "Branches and map location",
+    "DESC": "Add your main office and branches. A branch with a map location appears in \"Agencies near me\" and on the agencies map.",
+    "EMPTY": "No branches yet. Your agency will not appear on the map until you add a branch with a location.",
+    "MAIN": "Main",
+    "ON_MAP": "On the map",
+    "NOT_ON_MAP": "No map location",
+    "ADD": "Add branch",
+    "LIMIT": "You have reached the limit ({{max}} branches).",
+    "NAME": "Branch name",
+    "GOVERNORATE": "Governorate",
+    "DISTRICT": "District",
+    "NEIGHBORHOOD": "Neighborhood",
+    "CHOOSE": "Choose",
+    "OPTIONAL": "Optional",
+    "ADDRESS": "Address",
+    "PHONE": "Branch phone",
+    "PIN": "Map location",
+    "PIN_HINT": "Click the map to place the pin exactly where the branch is.",
+    "CLEAR_PIN": "Remove location",
+    "MAKE_MAIN": "Make this the main branch",
+    "DELETE_TITLE": "Delete branch",
+    "DELETE_TEXT": "Delete the branch \"{{name}}\"?",
+    "SAVED": "Branch saved.",
+    "DELETED": "Branch deleted.",
+    "SAVE_ERROR": "Could not save the branch."
+  },
+  "OFFICE_BRANCHES": {
+    "TITLE": "Branches ({{count}})",
+    "MAP_LABEL": "Map of the agency's branches",
+    "MAIN": "Main",
+    "DIRECTIONS": "Directions"
+  },
+  "OFFICE_QR": {
+    "TITLE": "Agency QR code",
+    "DESC": "Print it on your shop front, business cards or signs. Scanning it opens your agency page.",
+    "LOAD_ERROR": "Could not load the QR code right now.",
+    "ALT": "QR code for the page of {{name}}",
+    "PERMANENT": "This link is permanent: it does not change if you rename the agency, so what you print keeps working.",
+    "DOWNLOAD_PNG": "Download for print (PNG)",
+    "DOWNLOAD_SVG": "Download SVG",
+    "COPY": "Copy link",
+    "COPY_FAILED": "Could not copy the link.",
+    "PRINT_TIP": "For print: keep the code at least 3 cm wide, black on white.",
+    "NOT_FOUND_TITLE": "Unknown code",
+    "NOT_FOUND_TEXT": "We found no agency with this code, or the agency is no longer listed.",
+    "BROWSE": "Browse real estate agencies",
+    "OPENING": "Opening the agency page…"
+  },
+  "OFFICE_STATS": {
+    "TITLE": "Agency page statistics",
+    "DESC": "How many people visited your agency page, scanned your QR code and contacted you.",
+    "RANGE": "Period",
+    "DAYS": "Last {{count}} days",
+    "LOAD_ERROR": "Could not load the statistics right now.",
+    "TILE": {
+      "profileViews": "Page visits",
+      "uniqueVisitors": "Different visitors",
+      "qrScans": "QR scans",
+      "contactClicks": "Contact clicks",
+      "listingClicks": "Listings opened",
+      "shares": "Shares"
+    },
+    "EMPTY": "No activity recorded in this period yet.",
+    "CHART_LABEL": "Daily visits over the last {{count}} days",
+    "SOURCES": "Where visitors came from",
+    "CONTACTS": "How they contacted you",
+    "SOURCE": {
+      "DIRECT": "Direct",
+      "QR": "QR code",
+      "DIRECTORY": "Agency directory",
+      "LISTING": "A listing page",
+      "SHARE": "Shared link"
+    },
+    "CHANNEL": {
+      "PHONE": "Call",
+      "WHATSAPP": "WhatsApp",
+      "EMAIL": "Email",
+      "NATIVESHARE": "Share",
+      "COPYLINK": "Link copied",
+      "WEBSITE": "Website",
+      "FACEBOOK": "Facebook",
+      "INSTAGRAM": "Instagram",
+      "TELEGRAM": "Telegram",
+      "X": "X",
+      "LINKEDIN": "LinkedIn",
+      "YOUTUBE": "YouTube",
+      "TIKTOK": "TikTok"
+    },
+    "NOTE": "The numbers leave out you, your team and automated programs, and count the same visitor once every 24 hours. Days are in UTC.",
+    "SHARE": "Share",
+    "LINK_COPIED": "Link copied."
+  },
+  "OFFICE_PROFILE": {
+    "TITLE": "Office profile",
+    "DESC": "Cover image, website, social links and opening hours, as shown on your public office page.",
+    "COVER": "Cover image",
+    "NO_COVER": "No cover image yet",
+    "COVER_HINT": "A wide image (1600×530 px works best), PNG or JPEG up to 5 MB.",
+    "UPLOAD_COVER": "Upload a cover image",
+    "CHANGE_COVER": "Change cover",
+    "REMOVE_COVER": "Remove cover",
+    "COVER_TYPE": "Only PNG or JPEG.",
+    "COVER_TOO_LARGE": "The image is larger than 5 MB.",
+    "COVER_SAVED": "Cover image saved.",
+    "COVER_REMOVED": "Cover image removed.",
+    "LINKS": "Website and social links",
+    "LINKS_HINT": "https links to the office pages, or @name for accounts. WhatsApp: the international number with country code.",
+    "WEBSITE": "Website",
+    "SAVE_LINKS": "Save links",
+    "LINKS_SAVED": "Links saved.",
+    "FIX_FIELDS": "Fix the marked fields, then save.",
+    "ERR_WEBSITE": "Not a valid link. Only https links are accepted.",
+    "ERR_LINK": "This is not a link to this network.",
+    "ERR_WHATSAPP": "Enter the international number with country code, e.g. +963 9XX XXX XXX.",
+    "HOURS": "Opening hours",
+    "HOURS_HINT": "Damascus time. At most two periods a day (e.g. 9–14 and 17–20).",
+    "ADD_HOURS": "Add opening hours",
+    "CLOSED": "Closed",
+    "OPENS": "Opens",
+    "CLOSES": "Closes",
+    "ADD_PERIOD": "Second period",
+    "REMOVE_PERIOD": "Remove period",
+    "SAVE_HOURS": "Save opening hours",
+    "CLEAR_HOURS": "Remove opening hours",
+    "HOURS_SAVED": "Opening hours saved.",
+    "HOURS_CLEARED": "Opening hours removed.",
+    "HOURS_ERR_TOO_MANY": "At most two periods a day.",
+    "HOURS_ERR_FORMAT": "Choose a valid time for each period.",
+    "HOURS_ERR_ORDER": "Closing time must be after opening time.",
+    "HOURS_ERR_OVERLAP": "The second period must start after the first one ends.",
+    "SAVE_ERROR": "Could not save. Please try again.",
+    "OPEN_NOW": "Open now",
+    "CLOSED_NOW": "Closed now",
+    "HOURS_TZ": "Times are in Damascus time.",
+    "NETWORK": {
+      "WHATSAPP": "WhatsApp",
+      "FACEBOOK": "Facebook",
+      "INSTAGRAM": "Instagram",
+      "TELEGRAM": "Telegram",
+      "X": "X (Twitter)",
+      "LINKEDIN": "LinkedIn",
+      "YOUTUBE": "YouTube",
+      "TIKTOK": "TikTok"
+    },
+    "DAY": {
+      "SATURDAY": "Saturday",
+      "SUNDAY": "Sunday",
+      "MONDAY": "Monday",
+      "TUESDAY": "Tuesday",
+      "WEDNESDAY": "Wednesday",
+      "THURSDAY": "Thursday",
+      "FRIDAY": "Friday"
+    }
   }
 }

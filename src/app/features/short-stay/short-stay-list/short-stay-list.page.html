@@ -4,15 +4,29 @@
     <h1>{{ 'SHORTSTAY.LIST.TITLE' | translate }}</h1>
   </header>
 
-  <form class="ssl__filters" (ngSubmit)="applyFilters()">
-    <div class="ssl__field">
-      <label for="ssl-city">{{ 'SHORTSTAY.LIST.CITY' | translate }}</label>
-      <input id="ssl-city" type="text" [(ngModel)]="cityFilter" name="city" [placeholder]="'SHORTSTAY.LIST.CITY_PLACEHOLDER' | translate" />
+  <form class="ssl__filters" (ngSubmit)="applyFilters()" role="search" data-testid="ssl-filters">
+    <div class="ssl__field ssl__field--wide">
+      <label for="ssl-search">{{ 'SHORTSTAY.LIST.KEYWORD' | translate }}</label>
+      <input id="ssl-search" type="search" autocomplete="off" maxlength="200" [(ngModel)]="searchText" name="search"
+        [placeholder]="'SHORTSTAY.LIST.KEYWORD_PLACEHOLDER' | translate" />
+    </div>
+
+    <div class="ssl__field ssl__field--wide">
+      <label for="ssl-place">{{ 'GEO.FILTER_LABEL' | translate }}</label>
+      <app-geo-place-filter
+        inputId="ssl-place"
+        [lang]="currentLang"
+        [selected]="locationPlace()"
+        [text]="addressText"
+        (picked)="onPlacePicked($event)"
+        (textPicked)="onPlaceTextPicked($event)"
+        (typed)="onPlaceTyped($event)"
+      ></app-geo-place-filter>
     </div>
 
     <div class="ssl__field ssl__field--dates">
-      <label>{{ 'SHORTSTAY.LIST.DATES' | translate }}</label>
-      <button type="button" class="ssl__date-trigger" (click)="toggleDatePicker()">
+      <label id="ssl-dates-label">{{ 'SHORTSTAY.LIST.DATES' | translate }}</label>
+      <button type="button" class="ssl__date-trigger" aria-labelledby="ssl-dates-label" [attr.aria-expanded]="datePickerOpen()" (click)="toggleDatePicker()">
         <ng-container *ngIf="checkIn && checkOut; else noDates">
           {{ checkIn | localDate:'d MMM' }} → {{ checkOut | localDate:'d MMM' }}
         </ng-container>
@@ -26,66 +40,155 @@
     </div>
 
     <div class="ssl__field">
+      <label for="ssl-type">{{ 'SHORTSTAY.LIST.TYPE' | translate }}</label>
+      <select id="ssl-type" [(ngModel)]="accommodationTypeId" name="type">
+        <option [ngValue]="null">{{ 'SHORTSTAY.LIST.ANY' | translate }}</option>
+        <option *ngFor="let type of accommodationTypes()" [ngValue]="type.id">{{ typeLabel(type) }}</option>
+      </select>
+    </div>
+
+    <div class="ssl__field ssl__field--half">
       <label for="ssl-guests">{{ 'SHORTSTAY.LIST.GUESTS' | translate }}</label>
-      <input id="ssl-guests" type="number" min="1" [(ngModel)]="guests" name="guests" />
+      <input id="ssl-guests" type="number" min="1" max="100" inputmode="numeric" [(ngModel)]="guests" name="guests" />
     </div>
 
-    <div class="ssl__field">
+    <div class="ssl__field ssl__field--half">
+      <label for="ssl-bedrooms">{{ 'SHORTSTAY.LIST.BEDROOMS' | translate }}</label>
+      <select id="ssl-bedrooms" [(ngModel)]="minBedrooms" name="bedrooms">
+        <option [ngValue]="null">{{ 'SHORTSTAY.LIST.ANY' | translate }}</option>
+        <option *ngFor="let count of bedroomChoices" [ngValue]="count">{{ 'SHORTSTAY.LIST.BEDROOMS_AT_LEAST' | translate: { count: count } }}</option>
+      </select>
+    </div>
+
+    <div class="ssl__field ssl__field--half">
       <label for="ssl-minPrice">{{ 'SHORTSTAY.LIST.MIN_PRICE' | translate }}</label>
-      <input id="ssl-minPrice" type="number" min="0" [(ngModel)]="minPrice" name="minPrice" />
+      <input id="ssl-minPrice" type="number" min="0" inputmode="decimal" [(ngModel)]="minPrice" name="minPrice" />
+    </div>
+
+    <div class="ssl__field ssl__field--half">
+      <label for="ssl-maxPrice">{{ 'SHORTSTAY.LIST.MAX_PRICE' | translate }}</label>
+      <input id="ssl-maxPrice" type="number" min="0" inputmode="decimal" [(ngModel)]="maxPrice" name="maxPrice" />
+    </div>
+
+    <!-- The range is written in this currency; the server compares every listing in it, so a stay priced in another
+         currency is found at its equivalent price (search audit S05). -->
+    <div class="ssl__field" *ngIf="currencies().length > 0">
+      <label for="ssl-currency">{{ 'SHORTSTAY.LIST.PRICE_CURRENCY' | translate }}</label>
+      <select id="ssl-currency" [(ngModel)]="currencyCode" name="currencyCode">
+        <option *ngFor="let c of currencies()" [value]="c.code">{{ currencyLabel(c) }}</option>
+      </select>
     </div>
 
     <div class="ssl__field">
-      <label for="ssl-maxPrice">{{ 'SHORTSTAY.LIST.MAX_PRICE' | translate }}</label>
-      <input id="ssl-maxPrice" type="number" min="0" [(ngModel)]="maxPrice" name="maxPrice" />
+      <label for="ssl-sort">{{ 'SHORTSTAY.LIST.SORT' | translate }}</label>
+      <select id="ssl-sort" [(ngModel)]="sort" name="sort">
+        <option value="">{{ 'SHORTSTAY.LIST.SORT_NEWEST' | translate }}</option>
+        <option value="priceAsc">{{ 'SHORTSTAY.LIST.SORT_PRICE_ASC' | translate }}</option>
+        <option value="priceDesc">{{ 'SHORTSTAY.LIST.SORT_PRICE_DESC' | translate }}</option>
+      </select>
     </div>
 
-    <div class="ssl__filter-actions">
-      <button type="submit" class="btn btn--primary btn--sm">{{ 'SHORTSTAY.LIST.SEARCH' | translate }}</button>
-      <button type="button" class="btn btn--outline btn--sm" (click)="resetFilters()">{{ 'SHORTSTAY.LIST.RESET' | translate }}</button>
+    <label class="ssl__check ssl__field--wide" for="ssl-instant">
+      <input id="ssl-instant" type="checkbox" [(ngModel)]="instantOnly" name="instant" />
+      <span>{{ 'SHORTSTAY.LIST.INSTANT_ONLY' | translate }}</span>
+    </label>
+
+    <!-- Amenities: folded away until asked for; the whole header is the button, the count says what is selected. -->
+    <div class="ssl__field--full">
+      <button
+        type="button"
+        class="collapse-head"
+        [class.collapse-head--open]="amenitiesOpen"
+        [attr.aria-expanded]="amenitiesOpen"
+        aria-controls="ssl-amenities-panel"
+        id="ssl-amenities-head"
+        data-testid="amenities-toggle"
+        (click)="toggleAmenitiesSection()"
+      >
+        <span class="collapse-head__title">{{ 'SHORTSTAY.LIST.AMENITIES_SECTION' | translate }}</span>
+        <span class="collapse-head__badge" *ngIf="selectedAmenityIds.length > 0" data-testid="amenities-count"
+          [attr.aria-label]="'SHORTSTAY.LIST.AMENITIES_SELECTED' | translate: { count: selectedAmenityIds.length }">{{ selectedAmenityIds.length }}</span>
+        <svg class="collapse-head__chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="collapse-body" [class.collapse-body--open]="amenitiesOpen" id="ssl-amenities-panel" role="region" aria-labelledby="ssl-amenities-head">
+        <div class="collapse-body__inner">
+          <div class="amenity-chips">
+            <button
+              type="button"
+              class="amenity-chip"
+              *ngFor="let amenity of amenities()"
+              [class.amenity-chip--active]="isAmenitySelected(amenity.id)"
+              [attr.aria-pressed]="isAmenitySelected(amenity.id)"
+              [attr.tabindex]="amenitiesOpen ? null : -1"
+              (click)="toggleAmenityFilter(amenity.id)"
+            >{{ amenity | amenityLabel }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ssl__filter-actions ssl__field--full">
+      <button type="submit" class="btn btn--primary btn--sm" data-testid="ssl-apply">{{ 'SHORTSTAY.LIST.SEARCH' | translate }}</button>
+      <button type="button" class="btn btn--outline btn--sm" data-testid="ssl-reset" (click)="resetFilters()">{{ 'SHORTSTAY.LIST.RESET' | translate }}</button>
     </div>
   </form>
 
-  <app-skeleton-card-grid *ngIf="loading()" [count]="6" />
+  <!-- Results region: brought into view and focused after an action, so a button press is never silent. -->
+  <div class="ssl__results" #resultsRegion tabindex="-1" aria-live="polite">
+    <p class="ssl__count" data-testid="ssl-count" *ngIf="!loading() && !error() && totalCount() > 0">
+      {{ 'SHORTSTAY.LIST.RESULTS_COUNT' | translate: { count: (totalCount() | localNumber) } }}
+    </p>
 
-  <p *ngIf="error()" class="ssl__error">{{ error() | translate }}</p>
+    <app-skeleton-card-grid *ngIf="loading()" [count]="6" />
 
-  <app-empty-state
-    *ngIf="!loading() && !error() && listings().length === 0"
-    icon="🏖️"
-    [title]="'SHORTSTAY.LIST.EMPTY_TITLE' | translate"
-    [message]="'SHORTSTAY.LIST.EMPTY_MESSAGE' | translate"
-  />
+    <div class="ssl__error" *ngIf="error()" role="alert">
+      <p>{{ error() | translate }}</p>
+      <button type="button" class="btn btn--outline btn--sm" (click)="retry()">{{ 'SHORTSTAY.LIST.RETRY' | translate }}</button>
+    </div>
 
-  <div class="ssl__grid" *ngIf="!loading() && listings().length > 0">
-    <article class="ssl__card" *ngFor="let listing of listings(); trackBy: trackById" (click)="goToDetails(listing.id)">
-      <img
-        [src]="listing.mainPhotoUrl || fallbackImage"
-        [appImageFallback]="fallbackImage"
-        [alt]="listing.title"
-        class="ssl__card-image"
-      />
-      <div class="ssl__card-body">
-        <p class="ssl__card-type">{{ listing.accommodationTypeNameAr }}</p>
-        <h3 class="ssl__card-title">{{ listing.title }}</h3>
-        <p class="ssl__card-meta">
-          {{ locations.city({ city: listing.city }) || '—' }} · {{ listing.capacity }} {{ 'SHORTSTAY.LIST.GUESTS_SHORT' | translate }}
-          · {{ listing.bedrooms }} {{ 'SHORTSTAY.LIST.BEDROOMS_SHORT' | translate }}
-        </p>
-        <app-listing-view-count class="card-views" [compact]="true" [count]="listing.viewCount"></app-listing-view-count>
-        <div class="ssl__card-footer">
-          <span class="ssl__card-price">{{ formatPrice(listing) }} / {{ 'SHORTSTAY.LIST.NIGHT' | translate }}</span>
-          <span class="ssl__card-rating" *ngIf="listing.averageRating">
-            ⭐ {{ listing.averageRating | localNumber:'1.1-1' }} ({{ listing.reviewCount }})
-          </span>
+    <app-empty-state
+      *ngIf="!loading() && !error() && listings().length === 0"
+      icon="🏖️"
+      [title]="'SHORTSTAY.LIST.EMPTY_TITLE' | translate"
+      [message]="'SHORTSTAY.LIST.EMPTY_MESSAGE' | translate"
+      [actionLabel]="hasActiveFilters ? ('SHORTSTAY.LIST.RESET' | translate) : ''"
+      (action)="resetFilters()"
+    />
+
+    <app-listing-title-translation-bar *ngIf="!loading() && listings().length > 0" [items]="listings()" kind="short-stay" />
+
+    <div class="ssl__grid" *ngIf="!loading() && listings().length > 0">
+      <article class="ssl__card" *ngFor="let listing of listings(); trackBy: trackById" (click)="goToDetails(listing.id)">
+        <img
+          [src]="listing.mainPhotoUrl || fallbackImage"
+          [appImageFallback]="fallbackImage"
+          [alt]="listing.title | listingTitle: 'short-stay' : listing.id"
+          class="ssl__card-image"
+        />
+        <div class="ssl__card-body">
+          <p class="ssl__card-type">{{ listing.accommodationTypeNameAr }}</p>
+          <h3 class="ssl__card-title">{{ listing.title | listingTitle: 'short-stay' : listing.id }}</h3>
+          <p class="ssl__card-meta">
+            {{ locations.city({ city: listing.city }) || '—' }} · {{ listing.capacity }} {{ 'SHORTSTAY.LIST.GUESTS_SHORT' | translate }}
+            · {{ listing.bedrooms }} {{ 'SHORTSTAY.LIST.BEDROOMS_SHORT' | translate }}
+          </p>
+          <app-listing-view-count class="card-views" [compact]="true" [count]="listing.viewCount"></app-listing-view-count>
+          <div class="ssl__card-footer">
+            <span class="ssl__card-price">{{ formatPrice(listing) }} / {{ 'SHORTSTAY.LIST.NIGHT' | translate }}</span>
+            <span class="ssl__card-rating" *ngIf="listing.averageRating">
+              ⭐ {{ listing.averageRating | localNumber:'1.1-1' }} ({{ listing.reviewCount }})
+            </span>
+          </div>
         </div>
-      </div>
-    </article>
-  </div>
+      </article>
+    </div>
 
-  <nav class="ssl__pagination" *ngIf="!loading() && totalPages() > 1" aria-label="pagination">
-    <button type="button" class="btn btn--outline btn--sm" [disabled]="!hasPrevious()" (click)="prevPage()">‹</button>
-    <span class="ssl__page-info">{{ currentPage() }} / {{ totalPages() }}</span>
-    <button type="button" class="btn btn--outline btn--sm" [disabled]="!hasNext()" (click)="nextPage()">›</button>
-  </nav>
+    <nav class="ssl__pagination" *ngIf="!loading() && totalPages() > 1" aria-label="pagination">
+      <button type="button" class="btn btn--outline btn--sm" [disabled]="!hasPrevious()" (click)="prevPage()">‹</button>
+      <span class="ssl__page-info">{{ currentPage() }} / {{ totalPages() }}</span>
+      <button type="button" class="btn btn--outline btn--sm" [disabled]="!hasNext()" (click)="nextPage()">›</button>
+    </nav>
+  </div>
 </div>

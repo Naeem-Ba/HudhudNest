@@ -43,7 +43,7 @@ jobs:
           REPO: ${{ github.repository }}
           KEEP_DAYS: ${{ inputs.keep_days || '3' }}
           DRY_RUN: ${{ inputs.dry_run || false }}
-          PROTECTED_PATTERN: '^aqar-tech-release-aab$'
+          PROTECTED_PATTERN: '^(hudhudnest|aqar-tech)-release-aab$'
         run: |
           set -euo pipefail
           if ! [[ "$KEEP_DAYS" =~ ^[0-9]+$ ]]; then

@@ -768,6 +768,22 @@
   color: var(--primary-text);
 }
 
+.agency-card__verified {
+  align-self: flex-start;
+  padding: .1rem .55rem;
+  border-radius: 999px;
+  background: var(--success-soft);
+  color: var(--success-text);
+  font-size: .75rem;
+  font-weight: 700;
+}
+
+.agency-card__branch {
+  font-size: .85rem;
+  color: var(--gray-700);
+  overflow-wrap: anywhere;
+}
+
 .agency-card__rating {
   display: flex;
   align-items: center;

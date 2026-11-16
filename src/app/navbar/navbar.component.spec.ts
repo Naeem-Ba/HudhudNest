@@ -8,10 +8,12 @@ import { Router, provideRouter } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { BehaviorSubject, of } from 'rxjs';
 
-import { NavbarComponent, navNeedsMenuButton } from './navbar.component';
+import { NavbarComponent, navLayoutFor } from './navbar.component';
 import { AuthService, AuthenticatedUser } from '../core/auth/auth.service';
 import { LoginMethod } from '../core/auth/login-identifier';
 import { ProfileService, UserProfile } from '../core/api/profile.service';
+import { AgenciesApiService } from '../core/api/agencies-api.service';
+import { Agency } from '../core/models/agency.model';
 import { ServiceProviderService } from '../core/api/service-provider.service';
 import { NotificationsApiService } from '../core/api/notifications-api.service';
 import { LanguageService } from '../core/services/language.service';
@@ -58,10 +60,12 @@ describe('NavbarComponent (Phase 6)', () => {
   let profile: ProfileStub;
   let providerRefresh: jasmine.Spy;
   let router: Router;
+  let myAgency: Agency | null;
 
   const el = () => fixture.nativeElement as HTMLElement;
 
   beforeEach(async () => {
+    myAgency = null;
     auth = new AuthStub();
     profile = new ProfileStub();
     providerRefresh = jasmine.createSpy('refresh').and.returnValue(of(null));
@@ -77,6 +81,7 @@ describe('NavbarComponent (Phase 6)', () => {
         ]),
         { provide: AuthService, useValue: auth },
         { provide: ProfileService, useValue: profile },
+        { provide: AgenciesApiService, useValue: { getMine: () => of(myAgency) } },
         {
           provide: ServiceProviderService,
           useValue: { myProvider$: of(null), refresh: providerRefresh }
@@ -215,6 +220,44 @@ describe('NavbarComponent (Phase 6)', () => {
     expect(el().querySelector('.navbar__nav a[href^="/admin"]')).toBeNull();
   });
 
+  describe('«مكتبي العقاري» يظهر فقط لمن لديه خطة مدفوعة سارية', () => {
+    function managementHrefs(planFields: Partial<UserProfile>): (string | null)[] {
+      auth.signIn({ email: 'owner@example.com' });
+      profile.profileSubject.next({ Id: 'u1', ...planFields } as UserProfile);
+      fixture.detectChanges();
+      openAccountMenu();
+      return Array.from(el().querySelectorAll('#account-management-group a')).map(a => a.getAttribute('href'));
+    }
+
+    it('بلا خطة ⇒ لا رابط', () => {
+      expect(managementHrefs({})).not.toContain('/my-agency');
+    });
+
+    it('خطة مجانية ⇒ لا رابط', () => {
+      expect(managementHrefs({ PlanTier: 'free', PlanStatus: 'Active' })).not.toContain('/my-agency');
+    });
+
+    it('خطة مدفوعة منتهية أو ملغاة ⇒ لا رابط', () => {
+      expect(managementHrefs({ PlanTier: 'pro', PlanStatus: 'Expired' })).not.toContain('/my-agency');
+    });
+
+    const expiredDaysAgo = (days: number) => new Date(Date.now() - days * 86_400_000).toISOString();
+
+    it('خطة منتهية منذ أقل من 30 يومًا ⇒ الرابط ظاهر لصاحب المكتب أو عضوه', () => {
+      myAgency = { ownerPlanStatus: 'Expired', ownerPlanExpiresAt: expiredDaysAgo(5) } as Agency;
+      expect(managementHrefs({ PlanTier: 'free', PlanStatus: 'Expired' })).toContain('/my-agency');
+    });
+
+    it('خطة منتهية منذ أكثر من 30 يومًا ⇒ لا رابط', () => {
+      myAgency = { ownerPlanStatus: 'Expired', ownerPlanExpiresAt: expiredDaysAgo(31) } as Agency;
+      expect(managementHrefs({ PlanTier: 'free', PlanStatus: 'Expired' })).not.toContain('/my-agency');
+    });
+
+    it('خطة مدفوعة سارية ⇒ الرابط ظاهر', () => {
+      expect(managementHrefs({ PlanTier: 'pro', PlanStatus: 'Active' })).toContain('/my-agency');
+    });
+  });
+
   it('✅ Admin ⇒ أدوات المشرف داخل قسم الإدارة (بما فيها اقتراحات المواقع)', () => {
     auth.signIn({ email: 'admin@example.com' }, true);
     fixture.detectChanges();
@@ -319,26 +362,41 @@ describe('NavbarComponent (Phase 6)', () => {
 
   // ────────────── Phase 15: قائمة الجوال وملاءمة الروابط ──────────────
 
-  describe('menu button vs link row (P15-D01)', () => {
-    // brand 134 + links 1023 + buttons 228 + 2 gaps of 20 = 1425px needed.
-    const english = { brand: 134, nav: 1023, actions: 228, menuButtonExtra: 0, gap: 20 };
+  describe('link row vs menu button (P15-D01)', () => {
+    // brand 134 + links 1023 (main links 640) + buttons 228 + 2 gaps of 20 = 1425px for the whole row.
+    const english = { brand: 134, nav: 1023, navPrimary: 640, actions: 228, menuButton: 52, gap: 20 };
 
-    it('✅ تتسع الروابط تمامًا ⇒ تبقى ظاهرة؛ بكسل أقل ⇒ زر القائمة', () => {
-      expect(navNeedsMenuButton({ ...english, available: 1425 })).toBeFalse();
-      expect(navNeedsMenuButton({ ...english, available: 1424 })).toBeTrue();
+    it('✅ تتسع كل الروابط تمامًا ⇒ تبقى ظاهرة؛ بكسل أقل ⇒ الروابط الرئيسية فقط', () => {
+      expect(navLayoutFor({ ...english, available: 1425 })).toBe('full');
+      expect(navLayoutFor({ ...english, available: 1424 })).toBe('condensed');
     });
 
-    it('✅ اللغة تغيّر القرار: الألمانية (روابط أعرض) تحتاج مساحة أكبر من العربية على العرض نفسه', () => {
-      const room = 1500;
-      expect(navNeedsMenuButton({ brand: 134, nav: 895, actions: 282, menuButtonExtra: 0, gap: 20, available: room })).toBeFalse();
-      expect(navNeedsMenuButton({ brand: 134, nav: 1085, actions: 259, menuButtonExtra: 0, gap: 20, available: room })).toBeTrue();
+    it('✅ الروابط الرئيسية + زر القائمة تتسع تمامًا ⇒ condensed؛ بكسل أقل ⇒ زر القائمة وحده', () => {
+      // 134 + 640 + 228 + 52 + 40 = 1094
+      expect(navLayoutFor({ ...english, available: 1094 })).toBe('condensed');
+      expect(navLayoutFor({ ...english, available: 1093 })).toBe('menu');
     });
 
-    it('✅ الجواب لا يتأثر بوجود زر القائمة نفسه (لا تذبذب بين الحالتين)', () => {
-      const available = 1500;
-      const withoutButton = navNeedsMenuButton({ ...english, available });
-      const withButton = navNeedsMenuButton({ ...english, actions: english.actions + 52, menuButtonExtra: 52, available });
-      expect(withButton).toBe(withoutButton);
+    it('✅ الألمانية على شاشة 1440: تبقى الروابط الرئيسية نصًا ظاهرًا ولا يبقى زر القائمة وحده', () => {
+      const german = { brand: 134, nav: 1192, navPrimary: 700, actions: 240, menuButton: 52, gap: 20 };
+      expect(navLayoutFor({ ...german, available: 1408 })).toBe('condensed');
+      expect(navLayoutFor({ ...german, available: 1606 })).toBe('full');
+    });
+
+    it('✅ الجواب مستقل عن الحالة الحالية (القياسات لا تتضمن زر القائمة) فلا تذبذب بين الحالات', () => {
+      for (const available of [1000, 1094, 1300, 1425, 1600]) {
+        expect(navLayoutFor({ ...english, available })).toBe(navLayoutFor({ ...english, available }));
+      }
+    });
+
+    it('✅ الروابط الثانوية موسومة في الشريط (لتختفي في وضع condensed) والرئيسية لا', () => {
+      const secondary = Array.from(el().querySelectorAll('.navbar__nav .navbar__link--secondary')).map(a => a.getAttribute('routerLink') ?? a.getAttribute('href'));
+      expect(secondary).toContain('/price-estimate');
+      expect(secondary).toContain('/valuation');
+      expect(secondary).toContain('/pricing');
+      expect(secondary).toContain('/download');
+      expect(el().querySelector('.navbar__nav a[routerLink="/home"]')?.classList).not.toContain('navbar__link--secondary');
+      expect(el().querySelector('.navbar__nav a[routerLink="/properties"]')?.classList).not.toContain('navbar__link--secondary');
     });
   });
 

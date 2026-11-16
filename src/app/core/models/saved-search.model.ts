@@ -28,6 +28,9 @@ export interface SavedSearch {
   isPaused: boolean;
   lastNotifiedAt?: string | null;
   notifiedCount: number;
+  /** Floor range, 0 = ground floor; one floor is from = to. Null = any floor. The "highest/lowest available floor" mode is never saved. */
+  floorFrom?: number | null;
+  floorTo?: number | null;
 }
 
 export type SavedSearchFrequency = 'Instant' | 'Daily';
@@ -54,4 +57,6 @@ export interface CreateSavedSearchPayload {
   HasElevator?: boolean | null;
   HasParkingSpace?: boolean | null;
   Frequency?: SavedSearchFrequency | null;
+  FloorFrom?: number | null;
+  FloorTo?: number | null;
 }

@@ -1,6 +1,8 @@
 // Profile page: handles user data, password changes, data export and account deletion.
 // ✅ Avatar upload is now live — POST /users/me/avatar (UsersController.UploadAvatar).
-import { getPasswordPolicyViolations } from '../core/auth/password-policy';
+import { PasswordPersonalContext, getPasswordPolicyViolations } from '../core/auth/password-policy';
+import { AuthErrorFocusService } from '../core/auth/auth-error-focus.service';
+import { PasswordRulesComponent } from '../shared/ui/password-rules.component';
 import { translatePasswordViolations } from '../features/auth/password-errors';
 import { resolveAuthError } from '../features/auth/auth-error';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
@@ -38,7 +40,8 @@ import { formatDeletionDate } from '../shared/utils/deletion-date';
     LoadingSpinnerComponent,
     ImageFallbackDirective,
     ConfirmModalComponent,
-    PreferencesCardComponent
+    PreferencesCardComponent,
+    PasswordRulesComponent
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
@@ -50,6 +53,7 @@ export class ProfileComponent implements OnInit {
   private readonly translate      = inject(TranslateService);
   private readonly urlService     = inject(UrlService);
   private readonly toast          = inject(ToastService);
+  private readonly errorFocus     = inject(AuthErrorFocusService);
   private readonly route          = inject(ActivatedRoute);
   private readonly native         = inject(AppUpdateNativeGateway);
   private readonly nativeFiles    = inject(NativeFileExportGateway);
@@ -86,6 +90,20 @@ export class ProfileComponent implements OnInit {
   readonly maxFileSizeMB  = 2;
 
   passwordData = { currentPassword: '', newPassword: '', confirmPassword: '' };
+
+  /** Sentences for the change-password form, each next to its own field; `form` is for what belongs to none. */
+  readonly passwordErrors = signal<{ currentPassword?: string; newPassword?: string; confirmPassword?: string; form?: string }>({});
+
+  /** What a new password must not contain: the person's own details, as this page knows them. */
+  readonly passwordContext = computed<PasswordPersonalContext>(() => {
+    const user = this.user();
+    return {
+      firstName: user?.Vorname ?? null,
+      lastName: user?.Name ?? null,
+      email: user?.Email ?? null,
+      phoneNumber: user?.Phone ?? null
+    };
+  });
 
   /** Set when listing-eligibility.guard.ts redirected here with
    * ?reason=confirm-required — the visitor tried to add a property before confirming
@@ -248,24 +266,47 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  /** An edit makes the sentence that was about that field obsolete. */
+  clearPasswordError(field: 'currentPassword' | 'newPassword' | 'confirmPassword'): void {
+    const current = this.passwordErrors();
+    if (current[field] || current.form) {
+      this.passwordErrors.set({ ...current, [field]: undefined, form: undefined });
+    }
+  }
+
   onChangePassword(): void {
+    if (this.isSaving()) {
+      return;
+    }
+
     this.passwordSubmitted = true;
     const { currentPassword, newPassword, confirmPassword } = this.passwordData;
+    const errors: { currentPassword?: string; newPassword?: string; confirmPassword?: string; form?: string } = {};
 
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      this.toast.error(this.translate.instant('PROFILE.MESSAGES.FILL_ALL_FIELDS'));
-      return;
+    if (!currentPassword) {
+      errors.currentPassword = this.translate.instant('VALIDATION.REQUIRED');
     }
 
-    // The server's rules, so the person hears the real reason (not only "at least 8") before the round trip.
-    const violations = getPasswordPolicyViolations(newPassword);
-    if (violations.length > 0) {
-      this.toast.error(translatePasswordViolations(this.translate, violations)[0] ?? this.translate.instant('AUTH.ERRORS.PASSWORD_POLICY_UNMET'));
-      return;
+    // The server's rules, including "not your own name / e-mail / phone", so the person hears the real reason
+    // before the round trip. The server stays the reference and repeats the check.
+    const violations = newPassword ? getPasswordPolicyViolations(newPassword, this.passwordContext()) : [];
+    if (!newPassword) {
+      errors.newPassword = this.translate.instant('VALIDATION.REQUIRED');
+    } else if (violations.length > 0) {
+      errors.newPassword = translatePasswordViolations(this.translate, violations)[0]
+        ?? this.translate.instant('AUTH.ERRORS.PASSWORD_POLICY_UNMET');
     }
 
-    if (newPassword !== confirmPassword) {
-      this.toast.error(this.translate.instant('PROFILE.MESSAGES.PASS_MISMATCH'));
+    if (!confirmPassword) {
+      errors.confirmPassword = this.translate.instant('VALIDATION.REQUIRED');
+    } else if (newPassword !== confirmPassword) {
+      errors.confirmPassword = this.translate.instant('PROFILE.MESSAGES.PASS_MISMATCH');
+    }
+
+    this.passwordErrors.set(errors);
+
+    if (errors.currentPassword || errors.newPassword || errors.confirmPassword) {
+      this.errorFocus.request();
       return;
     }
 
@@ -279,19 +320,37 @@ export class ProfileComponent implements OnInit {
       },
       error: error => {
         this.isSaving.set(false);
+
         // 429: the hourly limit on password changes -- say so instead of "could not change".
         if (isRateLimited(error)) {
-          this.toast.error(this.translate.instant('PROFILE.MESSAGES.PASS_RATE_LIMITED'));
+          this.passwordErrors.set({ form: this.translate.instant('PROFILE.MESSAGES.PASS_RATE_LIMITED') });
+          this.errorFocus.request();
           return;
         }
 
         // The server's reason when it sent one (a password built from the person's own details, a breached
-        // one), a connection / server sentence when the request itself failed, otherwise the generic text.
+        // one, a wrong current password), a connection / server sentence when the request itself failed,
+        // otherwise the generic text. Each one lands under the field it is about.
         const resolved = resolveAuthError(this.translate, error, {
           passwordField: 'newPassword',
           fallbackKey: 'PROFILE.MESSAGES.PASS_ERROR'
         });
-        this.toast.error(resolved.fields[0]?.message ?? resolved.message ?? this.translate.instant('PROFILE.MESSAGES.PASS_ERROR'));
+        const next: { currentPassword?: string; newPassword?: string; confirmPassword?: string; form?: string } = {};
+
+        for (const item of resolved.fields) {
+          if (item.field === 'currentPassword' || item.field === 'newPassword' || item.field === 'confirmPassword') {
+            next[item.field] ??= item.message;
+          } else {
+            next.form ??= item.message;
+          }
+        }
+
+        if (!next.currentPassword && !next.newPassword && !next.confirmPassword && !next.form) {
+          next.form = resolved.message ?? this.translate.instant('PROFILE.MESSAGES.PASS_ERROR');
+        }
+
+        this.passwordErrors.set(next);
+        this.errorFocus.request();
       }
     });
   }
@@ -581,6 +640,7 @@ export class ProfileComponent implements OnInit {
   }
   private resetPasswordForm(): void {
     this.passwordData     = { currentPassword: '', newPassword: '', confirmPassword: '' };
+    this.passwordErrors.set({});
     this.passwordSubmitted = false;
     this.showPasswordForm.set(false);
   }

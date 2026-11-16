@@ -16,7 +16,7 @@ describe('ui-language', () => {
   };
 
   describe('currentUiLanguage', () => {
-    for (const lang of ['ar', 'en', 'de'] as const) {
+    for (const lang of ['ar', 'en', 'de', 'tr'] as const) {
       it(`reads "${lang}" from the page`, () => {
         showing(lang);
 

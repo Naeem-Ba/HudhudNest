@@ -2,20 +2,27 @@
 // EnumService to guard the regression where a failed startup enum fetch left the
 // ownership-type (Sale) and furnishing (Sale + Rent) dropdowns empty for the whole session.
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { AgenciesApiService } from '../../core/api/agencies-api.service';
+import { Agency } from '../../core/models/agency.model';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 import { PropertyFormPage } from './property-form.page';
 import { EnumService } from '../../core/services/enum.service';
 import { LookupsApiService } from '../../core/api/lookups-api.service';
+import { LocationsApiService } from '../../core/api/locations-api.service';
+import { locationsApiStub } from '../../shared/ui/geo/locations-api.stub.spec';
 import { PropertyApiService } from '../../core/api/property-api.service';
 import { LanguageService } from '../../core/services/language.service';
 import { MapPickerComponent } from '../../map-picker/map-picker.component';
 import { LocationComboComponent } from '../../shared/ui/location-combo.component';
+
+// The publisher's office (branch picker / "add to my office"); none by default.
+const agenciesApi: { getMine: () => Observable<Partial<Agency> | null> } = { getMine: () => of(null) };
 
 const ENUMS: Record<string, unknown> = {
   OwnershipType: [{ id: 0, key: 'GreenDeed' }, { id: 4, key: 'CourtJudgment' }],
@@ -56,7 +63,9 @@ describe('PropertyFormPage enum dropdowns', () => {
       providers: [
         provideHttpClient(), provideHttpClientTesting(), provideRouter([]),
         { provide: LookupsApiService, useValue: lookups },
+        { provide: LocationsApiService, useValue: locationsApiStub() },
         { provide: PropertyApiService, useValue: jasmine.createSpyObj('PropertyApiService', ['checkDuplicate']) },
+        { provide: AgenciesApiService, useValue: agenciesApi },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({}) } } },
         { provide: LanguageService, useValue: { getCurrentLang: () => 'ar', currentLang$: of('ar') } }
       ]

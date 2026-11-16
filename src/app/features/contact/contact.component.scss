@@ -178,3 +178,12 @@
 
   a { font-weight: 700; margin-inline-start: .35rem; }
 }
+
+// Short FAQ under the form (native <details>: keyboard and screen-reader support for free).
+.contact-faq {
+  margin-block-start: var(--space-10);
+  h2 { font-size: var(--text-2xl); margin: 0 0 var(--space-4); }
+  details { border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); margin-block-end: var(--space-3); }
+  summary { cursor: pointer; padding: var(--space-3) var(--space-4); min-height: 44px; font-weight: 600; color: var(--text-strong); }
+  p { margin: 0; padding: 0 var(--space-4) var(--space-4); color: var(--text-secondary); }
+}

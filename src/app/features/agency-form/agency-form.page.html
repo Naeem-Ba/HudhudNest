@@ -23,6 +23,20 @@
       <p class="or-create" *ngIf="canCreate()">{{ 'AGENCY_MANAGE.OR_CREATE' | translate }}</p>
     </div>
 
+    <!-- خطة المالك منتهية: مهلة 30 يومًا للتجديد قبل حذف المكتب -->
+    <div class="page-block" *ngIf="!loading() && agency() && grace().active">
+      <div class="state-card" role="status" data-testid="agency-grace">
+        <span aria-hidden="true">⏳</span>
+        <div>
+          <h2>{{ 'AGENCY_GRACE.TITLE' | translate: { days: grace().daysLeft } }}</h2>
+          <p>{{ 'AGENCY_GRACE.DESC' | translate: { days: grace().daysLeft } }}</p>
+          <a class="btn btn--primary" routerLink="/pricing" [queryParams]="{ reason: 'agency-plan-required' }">
+            {{ 'AGENCY_GRACE.CTA' | translate }}
+          </a>
+        </div>
+      </div>
+    </div>
+
     <!-- حساب غير مؤهَّل: يُشرح السبب ويُعرض الحل بدل نموذج سيرفضه الخادم -->
     <div class="page-block" *ngIf="!loading() && !agency() && eligibility() && !canCreate()">
       <div class="state-card" role="status" data-testid="agency-gate">
@@ -135,26 +149,41 @@
 
               <div class="form-group">
                 <label for="districtId">{{ 'AGENCY_FORM.DISTRICT' | translate }}</label>
-                <select id="districtId" formControlName="districtId" [disabled]="!form.controls.governorateId.value">
-                  <option [ngValue]="null">{{ 'PROPERTY_FORM.SELECT_PLACEHOLDER' | translate }}</option>
-                  <option *ngFor="let d of districts()" [ngValue]="d.id">{{ localizedName(d) }}</option>
-                </select>
-                <p class="field-hint" *ngIf="form.controls.governorateId.value && !districts().length">
+                <app-combo-box
+                  inputId="districtId"
+                  formControlName="districtId"
+                  [options]="districtOptions()"
+                  [allowCustom]="true"
+                  [customValue]="districtText"
+                  [locked]="!form.controls.governorateId.value"
+                  [placeholder]="'PROPERTY_FORM.SELECT_PLACEHOLDER' | translate"
+                  (customText)="onDistrictTyped($event)"
+                ></app-combo-box>
+                <p class="field-hint" *ngIf="form.controls.governorateId.value && !districts().length && !districtText.trim()">
                   {{ 'AGENCY_FORM.NO_DISTRICTS_HINT' | translate }}
                 </p>
               </div>
 
               <div class="form-group">
                 <label for="neighborhoodId">{{ 'AGENCY_FORM.NEIGHBORHOOD' | translate }}</label>
-                <select id="neighborhoodId" formControlName="neighborhoodId" [disabled]="!form.controls.districtId.value">
-                  <option [ngValue]="null">{{ 'PROPERTY_FORM.SELECT_PLACEHOLDER' | translate }}</option>
-                  <option *ngFor="let n of neighborhoods()" [ngValue]="n.id">{{ localizedName(n) }}</option>
-                </select>
-                <p class="field-hint" *ngIf="form.controls.districtId.value && !neighborhoods().length">
+                <app-combo-box
+                  inputId="neighborhoodId"
+                  formControlName="neighborhoodId"
+                  [options]="neighborhoodOptions()"
+                  [allowCustom]="true"
+                  [customValue]="neighborhoodText"
+                  [locked]="!form.controls.governorateId.value"
+                  [placeholder]="'PROPERTY_FORM.SELECT_PLACEHOLDER' | translate"
+                  (customText)="onNeighborhoodTyped($event)"
+                ></app-combo-box>
+                <p class="field-hint" *ngIf="form.controls.districtId.value && !neighborhoods().length && !neighborhoodText.trim()">
                   {{ 'AGENCY_FORM.NO_NEIGHBORHOODS_HINT' | translate }}
                 </p>
               </div>
             </div>
+            <p class="field-hint" *ngIf="districtText.trim() || neighborhoodText.trim()" role="status">
+              {{ (canProposePlaces ? 'GEO.TYPED_PLACE_PROPOSED' : 'GEO.TYPED_PLACE_NOT_SAVED') | translate: { value: (districtText.trim() || neighborhoodText.trim()) } }}
+            </p>
           </div>
         </div>
       </div>
@@ -177,5 +206,24 @@
         (left)="onLeftAgency()"
       ></app-agency-team-panel>
     </div>
+
+    <!-- ملف المكتب: الغلاف والموقع وروابط التواصل وساعات العمل. للمالك فقط (الخادم يتحقق من الملكية).
+         /me يحمل حقول الخطة التي لا تعيدها نداءات الحفظ، فنعيد تحميل المكتب بعد كل حفظ بدل استبداله. -->
+    <div class="page-block" *ngIf="!loading() && agency() as a">
+      <app-agency-profile-panel *ngIf="a.ownerUserId === currentUserId()" [agency]="a" (agencyChanged)="reloadAgency()"></app-agency-profile-panel>
+    </div>
+
+    <!-- فروع المكتب وموقعها على الخريطة: للمالك فقط (الخادم يتحقق من الملكية) -->
+    <div class="page-block" *ngIf="!loading() && agency() as a">
+      <app-agency-branches-panel *ngIf="a.ownerUserId === currentUserId()" [agency]="a"></app-agency-branches-panel>
+    </div>
+
+    <!-- رمز QR الثابت وإحصاءات صفحة المكتب: للمالك فقط (الخادم يتحقق من الملكية) -->
+    <ng-container *ngIf="!loading() && agency() as a">
+      <ng-container *ngIf="a.ownerUserId === currentUserId()">
+        <div class="page-block"><app-agency-qr-panel [agency]="a"></app-agency-qr-panel></div>
+        <div class="page-block"><app-agency-stats-panel [agency]="a"></app-agency-stats-panel></div>
+      </ng-container>
+    </ng-container>
   </div>
 </div>

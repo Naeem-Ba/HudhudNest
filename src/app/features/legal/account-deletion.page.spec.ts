@@ -8,9 +8,9 @@ import { ACCOUNT_DELETION_CONTENT, DeletionBlock } from './account-deletion.cont
 import { AccountDeletionPage, parseInline } from './account-deletion.page';
 
 // P5-D02: the page used to be fixed Arabic text, which the Play and App Store reviewers cannot
-// read. It now ships in ar/en/de, follows the app language and lets the reader switch.
+// read. It now ships in ar/en/de/tr, follows the app language and lets the reader switch.
 describe('AccountDeletionPage', () => {
-  function render(appLang?: 'ar' | 'en' | 'de') {
+  function render(appLang?: 'ar' | 'en' | 'de' | 'tr') {
     TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot()],
       providers: [provideRouter([])]
@@ -57,12 +57,23 @@ describe('AccountDeletionPage', () => {
     expect(root.querySelector('h1')?.textContent).toContain('Konto löschen');
   });
 
+  it('✅ يعرض التركية LTR مع الحفاظ على حروف İ/ı والعنوان التركي', () => {
+    const { root, applyDynamic } = render('tr');
+    const section = root.querySelector('section.legal');
+
+    expect(section?.getAttribute('dir')).toBe('ltr');
+    expect(section?.getAttribute('lang')).toBe('tr');
+    expect(root.querySelector('h1')?.textContent).toContain('Hesabınızı silin');
+    expect(root.textContent).toContain('silme işlemi 30 gün sonrasına planlanır');
+    expect(lastMetaTitle(applyDynamic)).toBe(ACCOUNT_DELETION_CONTENT.tr.metaTitle);
+  });
+
   it('✅ أزرار اللغة تبدّل لغة الصفحة وحدها دون لغة التطبيق، وتحدّث العنوان', () => {
     const { fixture, root, applyDynamic } = render('ar');
     const languages = TestBed.inject(LanguageService);
     const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>('.legal__lang'));
 
-    expect(buttons.map(b => b.getAttribute('lang'))).toEqual(['ar', 'en', 'de']);
+    expect(buttons.map(b => b.getAttribute('lang'))).toEqual(['ar', 'en', 'de', 'tr']);
     expect(buttons[0].getAttribute('aria-pressed')).toBe('true');
 
     buttons[1].click();
@@ -77,7 +88,7 @@ describe('AccountDeletionPage', () => {
   });
 
   it('✅ يبقى رابط البريد الداعم والرابط إلى سياسة الخصوصية في كل لغة', () => {
-    for (const lang of ['ar', 'en', 'de'] as const) {
+    for (const lang of ['ar', 'en', 'de', 'tr'] as const) {
       TestBed.resetTestingModule();
       const { root } = render(lang);
 
@@ -87,12 +98,12 @@ describe('AccountDeletionPage', () => {
     }
   });
 
-  it('✅ النصوص الثلاثة بنفس البنية (أقسام وقوائم وعدد العناصر) حتى لا يسقط قسم من لغة', () => {
+  it('✅ النصوص الأربعة بنفس البنية (أقسام وقوائم وعدد العناصر) حتى لا يسقط قسم من لغة', () => {
     const shape = (blocks: DeletionBlock[]) =>
       blocks.map(block => ('p' in block ? 'p' : 'ul' in block ? `ul${block.ul.length}` : `ol${block.ol.length}`));
     const reference = ACCOUNT_DELETION_CONTENT.ar.sections.map(s => shape(s.blocks));
 
-    for (const lang of ['en', 'de'] as const) {
+    for (const lang of ['en', 'de', 'tr'] as const) {
       expect(ACCOUNT_DELETION_CONTENT[lang].sections.map(s => shape(s.blocks))).withContext(lang).toEqual(reference);
     }
   });

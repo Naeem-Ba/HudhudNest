@@ -21,14 +21,16 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { map, switchMap } from 'rxjs';
+import { catchError, map, of, switchMap } from 'rxjs';
 
 import { PlansApiService } from '../../core/api/plans-api.service';
+import { PaymentsApiService } from '../../core/api/payments-api.service';
+import { isNativeApp } from '../../core/native/is-native-app';
 import { AgenciesApiService } from '../../core/api/agencies-api.service';
 import { knownErrorCodeKey } from '../../core/interceptors/api-error.interceptor';
 import { ProfileService } from '../../core/api/profile.service';
 import { AuthService } from '../../core/auth/auth.service';
-import { MetaService } from '../../core/services/meta.service';
+import { PageMetaService } from '../../core/services/page-meta.service';
 import { SubscriptionPlan } from '../../core/models/subscription-plan.model';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { ToastService } from '../../shared/services/toast.service';
@@ -55,12 +57,13 @@ const PENDING_AUTO_SELECT_MAX_AGE_MS = 15 * 60 * 1000;
 })
 export class PricingPage implements OnInit {
   private readonly api = inject(PlansApiService);
+  private readonly payments = inject(PaymentsApiService);
   private readonly profileService = inject(ProfileService);
   private readonly agenciesApi = inject(AgenciesApiService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
-  private readonly meta = inject(MetaService);
+  private readonly pageMeta = inject(PageMetaService);
   private readonly translate = inject(TranslateService);
   private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
@@ -115,8 +118,16 @@ export class PricingPage implements OnInit {
   /** When the plan in force ends (ISO), or null for no fixed end. */
   readonly currentPlanExpiresAt = signal<string | null>(null);
 
+  /**
+   * True when the server says online payments are switched on and at least one provider can be offered. Only then does a paid
+   * plan lead to the payment checkout; otherwise the older request-and-contact flow is unchanged. Never true inside the
+   * installed iOS/Android app: store rules require the store's own billing there, which is not implemented.
+   */
+  readonly onlinePayments = signal(false);
+
   ngOnInit(): void {
-    this.applyMeta();
+    // Public marketing page: own title/description and a canonical (SEO.PRICING in the i18n files).
+    this.pageMeta.applyTranslated('SEO.PRICING', '/pricing', this.destroyRef);
     this.load();
 
     this.showPlanRequiredBanner.set(
@@ -127,6 +138,16 @@ export class PricingPage implements OnInit {
     );
     this.loadAgencyOwnership();
     this.trackPendingPlan();
+    this.loadPaymentAvailability();
+  }
+
+  private loadPaymentAvailability(): void {
+    if (isNativeApp()) {
+      return;
+    }
+    this.payments.catalog()
+      .pipe(catchError(() => of(null)), takeUntilDestroyed(this.destroyRef))
+      .subscribe(catalog => this.onlinePayments.set(catalog?.enabled === true && catalog.providers.length > 0));
   }
 
   private trackPendingPlan(): void {
@@ -294,6 +315,21 @@ export class PricingPage implements OnInit {
 
     this.selectedTier.set(plan.tier);
 
+    // Online payment: a priced plan goes to the payment checkout, where the server quotes the price. The old request flow
+    // below (record a pending request, then contact an administrator) stays as it was for when payments are switched off.
+    if (this.onlinePayments() && plan.priceKind === 'monthly') {
+      const checkout = ['/payments/checkout'];
+      const queryParams = { product: 'plan', plan: plan.tier };
+      if (!this.auth.getAccessToken()) {
+        void this.router.navigate(['/auth/login'], {
+          queryParams: { returnUrl: `/payments/checkout?product=plan&plan=${encodeURIComponent(plan.tier)}` }
+        });
+        return;
+      }
+      void this.router.navigate(checkout, { queryParams });
+      return;
+    }
+
     const destination = (requestId?: string | null) =>
       void this.router.navigate([plan.ctaRoute], {
         // A paid plan is a pending request: carry its id to the contact form so the message
@@ -354,22 +390,6 @@ export class PricingPage implements OnInit {
           // Stay on /pricing — a failed save must not send the visitor on to a route
           // that assumes a plan was actually recorded.
         }
-      });
-  }
-
-  /**
-   * Public marketing page, so it sets its own meta tags — same precedent as the
-   * landing page. Uses translate.get() rather than instant() because the ngx-translate
-   * HTTP loader may not have resolved yet on a cold navigation.
-   */
-  private applyMeta(): void {
-    this.translate.get(['PRICING.META_TITLE', 'PRICING.META_DESCRIPTION'])
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(values => {
-        this.meta.setMeta({
-          title: values['PRICING.META_TITLE'],
-          description: values['PRICING.META_DESCRIPTION']
-        });
       });
   }
 }

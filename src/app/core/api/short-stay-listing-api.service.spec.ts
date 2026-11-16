@@ -67,4 +67,37 @@ describe('ShortStayListingApiService (availability and reviews)', () => {
     http.expectOne(r => r.url.endsWith('/l1/reviews')).flush(null);
     expect(result).toEqual({ averageRating: 0, totalCount: 0, reviews: [] });
   });
+
+  it('sends every search filter as its API query parameter (amenities repeated, unset ones omitted)', () => {
+    service.search({
+      searchTerm: 'sea', city: 'Damascus', locationId: 7, accommodationTypeId: 2, checkIn: '2026-12-01', checkOut: '2026-12-04',
+      guests: 3, minBedrooms: 2, instantBooking: true, amenityIds: ['a', 'b'], minPrice: 10, maxPrice: 90,
+      currencyCode: 'EUR', sortBy: 'price', sortDescending: true, page: 2, pageSize: 10
+    }).subscribe();
+
+    const req = http.expectOne(r => r.url.endsWith('/short-stay/listings'));
+    const p = req.request.params;
+    expect(p.get('searchTerm')).toBe('sea');
+    expect(p.get('city')).toBe('Damascus');
+    expect(p.get('locationId')).toBe('7');
+    expect(p.get('checkIn')).toBe('2026-12-01');
+    expect(p.get('guests')).toBe('3');
+    expect(p.get('minBedrooms')).toBe('2');
+    expect(p.get('instantBooking')).toBe('true');
+    expect(p.getAll('amenityIds')).toEqual(['a', 'b']);
+    expect(p.get('minPrice')).toBe('10');
+    expect(p.get('currencyCode')).toBe('EUR');
+    expect(p.get('sortBy')).toBe('price');
+    expect(p.get('sortDescending')).toBe('true');
+    expect(p.get('page')).toBe('2');
+    req.flush({ items: [], totalCount: 0, page: 2, pageSize: 10 });
+  });
+
+  it('omits filters that are not set', () => {
+    service.search({}).subscribe();
+
+    const req = http.expectOne(r => r.url.endsWith('/short-stay/listings'));
+    expect(req.request.params.keys().sort()).toEqual(['page', 'pageSize']);
+    req.flush({ items: [], totalCount: 0, page: 1, pageSize: 20 });
+  });
 });

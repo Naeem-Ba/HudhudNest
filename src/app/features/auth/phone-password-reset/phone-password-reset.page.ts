@@ -17,6 +17,7 @@ import { OtpChannelState } from '../../../core/auth/otp-channel-state';
 import { OtpChannel } from '../../../core/models/auth.model';
 import { OtpChannelFallbackComponent } from '../../../shared/components/otp-channel-picker/otp-channel-fallback.component';
 import { OtpChannelPickerComponent } from '../../../shared/components/otp-channel-picker/otp-channel-picker.component';
+import { otpCodeValidator } from '../../../core/auth/otp-code';
 
 type Step = 'phone' | 'otp' | 'newPassword' | 'done';
 
@@ -57,7 +58,7 @@ export class PhonePasswordResetPage {
   });
 
   readonly otpForm = this.fb.nonNullable.group({
-    code: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]]
+    code: ['', [Validators.required, otpCodeValidator]]
   });
 
   readonly passwordForm = this.fb.nonNullable.group({

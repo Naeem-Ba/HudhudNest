@@ -71,8 +71,8 @@ export function normalizeApiEnvironment(name: string | null | undefined): string
     `
       .env-badge {
         position: fixed;
-        inset-block-end: 8px;
-        inset-inline-start: 8px;
+        inset-block-end: calc(8px + env(safe-area-inset-bottom));
+        inset-inline-start: calc(8px + env(safe-area-inset-left));
         z-index: 2147483000;
         display: flex;
         flex-wrap: wrap;

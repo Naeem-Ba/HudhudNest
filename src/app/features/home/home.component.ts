@@ -14,15 +14,18 @@ import { UrlService } from '../../core/services/url.service';
 import { InterestAreasService } from '../../core/services/interest-areas.service';
 import {
   LookupsApiService,
-  LookupItem,
   PropertyTypeLookup,
+  StructuredLocationLookup,
   pickLocalizedName
 } from '../../core/api/lookups-api.service';
 import { LanguageService } from '../../core/services/language.service';
 import { PageMetaService } from '../../core/services/page-meta.service';
 import { formatListingPrice, primaryListingPrice } from '../../shared/utils/listing-price';
 import { isReservedListing } from '../../shared/utils/listing-status';
+import { ListingTitlePipe } from '../../shared/pipes/listing-title.pipe';
+import { ListingTitleTranslationBarComponent } from '../../shared/ui/listing-title-translation-bar.component';
 import { ListingViewCountComponent } from '../../shared/ui/listing-view-count.component';
+import { ComboBoxComponent, ComboOption } from '../../shared/ui/combo-box.component';
 
 /** خيارات سقف السعر بحقل البحث — تُرسَل كـ maxPrice لصفحة النتائج. */
 interface HeroPriceOption {
@@ -34,7 +37,10 @@ interface HeroPriceOption {
   selector: 'app-home',
   standalone: true,
   imports: [
+    ListingTitlePipe,
+    ListingTitleTranslationBarComponent,
     ListingViewCountComponent,
+    ComboBoxComponent,
     CommonModule,
     RouterLink,
     FormsModule,
@@ -64,8 +70,12 @@ export class HomeComponent implements OnInit {
   properties: Property[] = [];
 
   // ── Hero Search — يطابق تخطيط الموك-اب المرجعي (Location / Type / Price / Rent-Sale) ──
-  cities: LookupItem[] = [];
+  // Both lists come from the catalog tables (not from the free-text city of existing listings, which holds
+  // Arabic and English spellings side by side) and are shown in the visitor's language only.
+  governorates: StructuredLocationLookup[] = [];
   propertyTypes: PropertyTypeLookup[] = [];
+  governorateOptions: ComboOption[] = [];
+  propertyTypeOptions: ComboOption[] = [];
 
   readonly priceOptions: HeroPriceOption[] = [
     { value: null, labelKey: 'HOME.search.price_any' },
@@ -75,8 +85,8 @@ export class HomeComponent implements OnInit {
     { value: 5000, labelKey: 'HOME.search.price_5000' }
   ];
 
-  searchCity = '';
-  searchPropertyTypeText = '';
+  searchGovernorateId: number | null = null;
+  searchPropertyTypeId: number | null = null;
   searchListingType: '' | 'ForRent' | 'ForSale' = '';
   searchMaxPrice: number | null = null;
 
@@ -87,6 +97,9 @@ export class HomeComponent implements OnInit {
     this.pageMeta.applyTranslated('SEO.HOME', '/', this.destroyRef);
     this.loadLatestProperties();
     this.loadHeroLookups();
+    this.langService.currentLang$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.rebuildOptions());
   }
 
   localizedTypeName(item: { nameAr: string; nameEn: string }): string {
@@ -97,43 +110,37 @@ export class HomeComponent implements OnInit {
   submitHeroSearch(): void {
     const queryParams: Record<string, string | number> = {};
 
-    if (this.searchCity) queryParams['city'] = this.searchCity;
-
-    const propertyTypeId = this.resolvePropertyTypeId(this.searchPropertyTypeText);
-    if (propertyTypeId) queryParams['propertyTypeId'] = propertyTypeId;
-
+    // Ids, not names: the results page then finds listings whichever language their owner typed the city in.
+    if (this.searchGovernorateId) queryParams['governorateId'] = this.searchGovernorateId;
+    if (this.searchPropertyTypeId) queryParams['propertyTypeId'] = this.searchPropertyTypeId;
     if (this.searchListingType) queryParams['listingType'] = this.searchListingType;
     if (this.searchMaxPrice) queryParams['maxPrice'] = this.searchMaxPrice;
 
     this.router.navigate(['/properties'], { queryParams });
   }
 
-  /**
-   * يحوّل النص المكتوب في حقل "نوع العقار" (datalist حرّ) إلى الـ id الذي يتوقعه
-   * الباك اند — مطابقة غير حسّاسة لحالة الأحرف مع الاسم المُترجَم الحالي، حتى لا
-   * يُرسَل propertyTypeId خاطئ لو كتب المستخدم نصًا لا يطابق أي خيار فعليًا.
-   */
-  private resolvePropertyTypeId(text: string): number | null {
-    const trimmed = text.trim().toLowerCase();
-    if (!trimmed) return null;
-
-    const match = this.propertyTypes.find(
-      t => this.localizedTypeName(t).trim().toLowerCase() === trimmed
-    );
-
-    return match?.id ?? null;
+  private rebuildOptions(): void {
+    const lang = this.langService.getCurrent();
+    this.governorateOptions = this.governorates.map(g => ({ value: g.id, label: pickLocalizedName(g, lang) }));
+    this.propertyTypeOptions = this.propertyTypes.map(t => ({ value: t.id, label: this.localizedTypeName(t) }));
   }
 
   private loadHeroLookups(): void {
     this.lookupsApi
-      .getCities()
+      .getGovernorates()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({ next: items => this.cities = items, error: () => this.cities = [] });
+      .subscribe({
+        next: items => { this.governorates = items; this.rebuildOptions(); },
+        error: () => { this.governorates = []; this.rebuildOptions(); }
+      });
 
     this.lookupsApi
       .getPropertyTypeCatalog()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({ next: items => this.propertyTypes = items, error: () => this.propertyTypes = [] });
+      .subscribe({
+        next: items => { this.propertyTypes = items; this.rebuildOptions(); },
+        error: () => { this.propertyTypes = []; this.rebuildOptions(); }
+      });
   }
 
   private loadLatestProperties(): void {

@@ -1,6 +1,8 @@
 // Growth engine P5: keeps the invitation code from a "?ref=CODE" link for 30 days so it can go with the
 // sign-up. Only a well-formed code is kept; the API ignores unknown codes anyway.
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+
+import { MeasurementConsentService } from '../consent/measurement-consent.service';
 
 const STORAGE_KEY = 'hudhudnest.referral.v1';
 const WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
@@ -13,6 +15,8 @@ interface StoredCode {
 
 @Injectable({ providedIn: 'root' })
 export class ReferralCodeService {
+  private readonly consent = inject(MeasurementConsentService);
+
   private memory: StoredCode | null = null;
 
   /** Reads "ref" from the URL. A later valid link replaces the earlier one (the latest invitation wins). */
@@ -70,7 +74,8 @@ export class ReferralCodeService {
   private write(value: StoredCode): void {
     this.memory = value;
     try {
-      window.localStorage?.setItem(STORAGE_KEY, JSON.stringify(value));
+      // Kept on the device only with consent where the law requires it (MeasurementConsentService).
+      if (this.consent.canPersist()) window.localStorage?.setItem(STORAGE_KEY, JSON.stringify(value));
     } catch {
       // memory only
     }
