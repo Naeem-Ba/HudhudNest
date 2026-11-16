@@ -30,8 +30,8 @@
 
 .navbar__inner {
   position: relative;
-  /* Wider than the 1200px page column on purpose: eight links in German plus the buttons need about 1.4k px. */
-  width: min(100% - 2rem, 1560px);
+  /* Wider than the 1200px page column on purpose: all ten links in German plus the buttons need about 1.6k px. */
+  width: min(100% - 2rem, 1680px);
   min-height: 72px;
   margin-inline: auto;
 
@@ -854,7 +854,8 @@
 
 .mobile-lang {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Four languages: two rows of two on narrow drawers instead of squeezing four labels into one row. */
+  grid-template-columns: repeat(auto-fit, minmax(5.25rem, 1fr));
   gap: 0.45rem;
 }
 
@@ -964,6 +965,21 @@
 
   .navbar__actions {
     margin-inline-start: auto;
+  }
+
+  .mobile-toggle {
+    display: inline-flex;
+  }
+}
+
+/* Only the main links fit: the secondary ones leave the row (they stay in the layout, invisible and out of the
+   tab order, so they can still be measured) and the menu button, which lists every link, appears next to the
+   main ones. */
+.navbar--condensed {
+  .navbar__link--secondary {
+    position: absolute;
+    visibility: hidden;
+    pointer-events: none;
   }
 
   .mobile-toggle {

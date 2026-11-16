@@ -60,6 +60,8 @@ export interface Property {
   // listings created before this feature have none of these set, and the
   // free-text city/region fields keep working exactly as before.
   governorateId?: number | null;
+  /** The most specific place of the location catalog (any level, governorate down to street). */
+  locationId?: number | null;
   districtId?: number | null;
   // Manual fallback name when districtId has no matching seeded row —
   // submitted automatically as an admin-reviewed LocationSuggestion.
@@ -120,6 +122,12 @@ export interface Property {
   agencyLogoUrl?: string | null;
   agencyRatingAverage?: number | null;
   agencyRatingCount?: number;
+  /** True only when the administration has verified the office (detail page only; absent from an older server). */
+  agencyIsVerified?: boolean;
+  /** The office branch the listing is handled from. The name and address come only with the public detail page. */
+  agencyBranchId?: string | null;
+  agencyBranchName?: string | null;
+  agencyBranchAddress?: string | null;
   availableFrom?: string;
   isPublished?: boolean;
   // عدد مشاهدات صفحة الإعلان (منزوع التكرار، من الخادم فقط). غائب من خادم أقدم فلا يُفترض.
@@ -148,6 +156,11 @@ export interface PropertyFilterDto {
 
   // Free-text keyword search — matched against Title/Description on the backend (Phase 3).
   searchTerm?: string;
+  /**
+   * A place typed as text (a street, a landmark, a district name that is not in the catalog). Unlike `searchTerm`,
+   * where one matching word is enough, every word here must be found in the listing's text.
+   */
+  placeText?: string;
 
   // Location
   countryCode?: string;
@@ -157,6 +170,8 @@ export interface PropertyFilterDto {
   governorateId?: number;
   districtId?: number;
   neighborhoodId?: number;
+  /** Everything inside this catalog place, however deep (a governorate finds its neighborhoods' listings too). */
+  locationId?: number;
   propertyTypeId?: number;
 
   // Type & Status
@@ -174,6 +189,13 @@ export interface PropertyFilterDto {
   maxRooms?: number;
   minArea?: number;
   maxArea?: number;
+
+  // Floor (0 = ground floor). A listing with no floor on record matches no floor filter.
+  /** Lowest floor wanted; with `floorTo` equal to it, one specific floor. */
+  floorFrom?: number;
+  floorTo?: number;
+  /** Let the database pick the highest / lowest floor that exists among the other filters' results. Excludes floorFrom/floorTo. */
+  floorMode?: FloorMode;
 
   // Features
   hasBalcony?: boolean;          // ✅ مضاف
@@ -203,6 +225,17 @@ export interface PropertyFilterDto {
   isPublished?: boolean;
 }
 
+/** PropertyFilterDto.FloorMode: the API reads the name case-insensitively. */
+export type FloorMode = 'highest' | 'lowest';
+
+/** GET /api/properties/floors — the floors that exist among the listings matching the list's other filters. */
+export interface AvailableFloors {
+  min: number | null;
+  max: number | null;
+  /** One entry per distinct floor, lowest first; `count` is how many listings are on it. */
+  floors: { floor: number; count: number }[];
+}
+
 // ✅ نموذج إنشاء عقار — مطابق لما يتوقعه الـ Backend
 export interface CreatePropertyDto {
   title: string;
@@ -217,6 +250,7 @@ export interface CreatePropertyDto {
   // property-form.page.ts for the interface actually sent on the wire; kept
   // here in sync anyway since this DTO documents the backend contract.
   governorateId?: number | null;
+  locationId?: number | null;
   districtId?: number | null;
   neighborhoodId?: number | null;
   neighborhoodText?: string | null;

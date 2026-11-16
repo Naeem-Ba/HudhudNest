@@ -24,7 +24,7 @@ const HOST = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/
 const ANDROID_PACKAGE = /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/i;
 const APP_STORE_ID = /^\d{6,12}$/;
 
-const LANGS = ['ar', 'en', 'de'];
+const LANGS = ['ar', 'en', 'de', 'tr'];
 
 const TEXT = {
   ar: {
@@ -158,10 +158,54 @@ const TEXT = {
     scan: 'Mit der Handykamera scannen',
     qrAlt: 'QR-Code, der diese Seite öffnet',
     language: 'Sprache'
+  },
+  tr: {
+    dir: 'ltr',
+    title: 'HudhudNest uygulamasını indirin',
+    description: 'Mülklere telefonunuzdan göz atmak için HudhudNest uygulamasını indirin: cihazınıza uygun mağazadan veya Android için imzalı doğrudan indirme ile.',
+    heading: 'HudhudNest uygulamasını indirin',
+    lead: 'Mülklere göz atın, aramalarınızı kaydedin, ilanlarınızı ve mesajlarınızı telefonunuzdan takip edin.',
+    recommended: 'Cihazınıza uygun',
+    soon: 'Henüz mevcut değil',
+    playName: 'Google Play',
+    playSoon: 'Uygulama henüz Google Play\'de yayınlanmadı.',
+    playOpen: 'Google Play\'de aç',
+    iosName: 'App Store',
+    iosSoon: 'Uygulama henüz App Store\'da yayınlanmadı. Web sitesini iPhone tarayıcınızda kullanabilirsiniz.',
+    iosOpen: 'App Store\'da aç',
+    directTitle: 'Android için doğrudan indirme (APK)',
+    directLead: 'HudhudNest\'in resmî, imzalı kurulum dosyası; Google Play\'i olmayanlar veya doğrudan indirmeyi tercih edenler için.',
+    directButton: 'Resmî APK\'yı indir',
+    version: 'Sürüm',
+    released: 'Yayın tarihi',
+    size: 'Dosya boyutu',
+    requires: 'Gereksinim',
+    requiresValue: 'Android {v} veya daha yeni',
+    sha: 'Dosya parmak izi (SHA-256)',
+    cert: 'İmza sertifikası parmak izi (SHA-256)',
+    directWarning: 'Mağaza dışından kurulum, Android ayarlarında bu kaynaktan kuruluma izin vermeyi gerektirir. Google Play Protect\'i kapatmayın ve parmak izi burada gösterilenden farklıysa dosyayı kurmayın.',
+    helpTitle: 'Kurulum yardımı',
+    helpSteps: [
+      'APK\'yı indirin, ardından indirme bildiriminden veya Dosyalar uygulamasından açın.',
+      'Android bu kaynaktan kuruluma izin vermenizi isterse, yalnızca bu tarayıcı veya Dosyalar uygulaması için etkinleştirin, ardından geri dönüp Yükle\'ye dokunun.',
+      'Google Play Protect\'i kapatmayın. Bir uyarı gösterirse okuyun ve yalnızca dosya parmak izi bu sayfada gösterilenle eşleşiyorsa devam edin.',
+      'Dosyayı doğrulamak için (isteğe bağlı): Windows\'ta certutil -hashfile {file} SHA256 , macOS veya Linux\'ta shasum -a 256 {file} çalıştırın ve sonucu yukarıdaki dosya parmak iziyle karşılaştırın.',
+      'İndirme yarıda kesildiyse veya tamamlanmadıysa dosyayı silip yeniden indirin. Eksik bir dosya kurulmaz.'
+    ],
+    switchNote: 'İki kaynağı karıştırmayın: doğrudan indirilen kopya Google Play üzerinden güncellenmez ve daha sonra mağaza sürümüne geçmek önce kaldırmayı gerektirir (telefondaki yerel veriler silinir; hesabınız kayıtlı kalır).',
+    iosNote: 'iPhone için doğrudan kurulum dosyası yoktur. Uygulama yayınlandığında tek yol App Store\'dur.',
+    desktopNote: 'Bir bilgisayardan göz atıyorsunuz. Bu sayfayı telefonunuzda açmak için kodu telefon kameranızla tarayın.',
+    web: 'Web sitesini aç',
+    privacy: 'Gizlilik politikası',
+    terms: 'Kullanım koşulları',
+    support: 'Destek ve iletişim',
+    scan: 'Telefon kameranızla tarayın',
+    qrAlt: 'Bu sayfayı açan QR kodu',
+    language: 'Dil'
   }
 };
 
-const LANGUAGE_NAMES = { ar: 'العربية', en: 'English', de: 'Deutsch' };
+const LANGUAGE_NAMES = { ar: 'العربية', en: 'English', de: 'Deutsch', tr: 'Türkçe' };
 
 function escapeHtml(value) {
   return String(value)

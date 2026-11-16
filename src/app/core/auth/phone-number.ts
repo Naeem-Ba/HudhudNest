@@ -6,6 +6,13 @@ export const PHONE_E164_PATTERN = /^\+[1-9]\d{7,14}$/;
 const ARABIC_INDIC_ZERO = 0x0660;
 const EXTENDED_ARABIC_INDIC_ZERO = 0x06f0;
 
+/** Arabic-Indic (٠-٩) and Persian (۰-۹) digits to ASCII; everything else untouched. */
+export function toAsciiDigits(raw: string | null | undefined): string {
+  return String(raw ?? '')
+    .replace(/[٠-٩]/g, ch => String(ch.charCodeAt(0) - ARABIC_INDIC_ZERO))
+    .replace(/[۰-۹]/g, ch => String(ch.charCodeAt(0) - EXTENDED_ARABIC_INDIC_ZERO));
+}
+
 /**
  * Turns what a person actually types into the strict E.164 the API requires, without guessing
  * beyond the common Syrian habits:

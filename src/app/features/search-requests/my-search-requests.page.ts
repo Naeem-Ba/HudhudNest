@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, Injector, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -11,6 +11,8 @@ import { currentUiLanguage } from '../../core/i18n/ui-language';
 import { ToastService } from '../../shared/services/toast.service';
 import { formatListingPrice } from '../../shared/utils/listing-price';
 import { SearchRequestSummaryComponent } from './search-request-summary.component';
+import { ComboBoxComponent, ComboOption } from '../../shared/ui/combo-box.component';
+import { PlaceProposalService } from '../../core/api/place-proposal.service';
 
 const emptyForm = (): SearchRequestInput => ({
   listingType: 'ForRent', governorateId: 0, districtId: null, propertyTypeId: null,
@@ -25,7 +27,7 @@ const emptyForm = (): SearchRequestInput => ({
 @Component({
   selector: 'app-my-search-requests',
   standalone: true,
-  imports: [FormsModule, RouterModule, TranslateModule, SearchRequestSummaryComponent],
+  imports: [FormsModule, RouterModule, TranslateModule, ComboBoxComponent, SearchRequestSummaryComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="sr-page container">
@@ -54,12 +56,25 @@ const emptyForm = (): SearchRequestInput => ({
                 @for (g of governorates(); track g.id) { <option [ngValue]="g.id">{{ name(g) }}</option> }
               </select>
             </label>
-            <label>{{ 'SEARCH_REQUESTS.DISTRICT' | translate }}
-              <select name="districtId" [(ngModel)]="form.districtId" [disabled]="!districts().length">
-                <option [ngValue]="null">{{ 'SEARCH_REQUESTS.ANY' | translate }}</option>
-                @for (d of districts(); track d.id) { <option [ngValue]="d.id">{{ name(d) }}</option> }
-              </select>
-            </label>
+            <div class="sr-form__field">
+              <label for="sr-district">{{ 'SEARCH_REQUESTS.DISTRICT' | translate }}</label>
+              <app-combo-box
+                inputId="sr-district"
+                name="districtId"
+                [options]="districtOptions()"
+                [allowCustom]="true"
+                [customValue]="districtText"
+                [disabled]="!form.governorateId"
+                [(ngModel)]="form.districtId"
+                (customText)="onDistrictTyped($event)"
+                [placeholder]="'SEARCH_REQUESTS.ANY' | translate"
+              ></app-combo-box>
+              @if (districtText.trim()) {
+                <small class="sr-form__note" role="status">
+                  {{ (canProposePlaces ? 'GEO.TYPED_PLACE_PROPOSED' : 'GEO.TYPED_PLACE_NOT_SAVED') | translate: { value: districtText.trim() } }}
+                </small>
+              }
+            </div>
             <label>{{ 'SEARCH_REQUESTS.PROPERTY_TYPE' | translate }}
               <select name="propertyTypeId" [(ngModel)]="form.propertyTypeId">
                 <option [ngValue]="null">{{ 'SEARCH_REQUESTS.ANY' | translate }}</option>
@@ -184,6 +199,19 @@ export class MySearchRequestsPage implements OnInit {
   readonly districts = signal<StructuredLocationLookup[]>([]);
   readonly propertyTypes = signal<PropertyTypeLookup[]>([]);
 
+  /** Resolved on first use: only a typed place needs it, and the page renders without the catalog otherwise. */
+  private readonly injector = inject(Injector);
+  private get placeProposals(): PlaceProposalService {
+    return this.injector.get(PlaceProposalService);
+  }
+  readonly districtOptions = computed<ComboOption[]>(() =>
+    this.districts().map(d => ({ value: d.id, label: this.name(d) })));
+  /**
+   * A district typed because it is not in the list. A request only holds the district id, so the name is proposed to
+   * the administrators and the request stays on the governorate (or the district already chosen).
+   */
+  districtText = '';
+
   form: SearchRequestInput = emptyForm();
   expiresDate = '';
   readonly today = new Date().toISOString().slice(0, 10);
@@ -207,14 +235,24 @@ export class MySearchRequestsPage implements OnInit {
     return pickLocalizedName(item, currentUiLanguage() ?? 'ar');
   }
 
+  get canProposePlaces(): boolean {
+    return this.placeProposals.canPropose();
+  }
+
+  onDistrictTyped(text: string | null): void {
+    this.districtText = text ?? '';
+  }
+
   onGovernorate(id: number): void {
     this.form.districtId = null;
+    this.districtText = '';
     this.districts.set([]);
     if (!id) return;
     this.lookups.getDistricts(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({ next: d => this.districts.set(d ?? []), error: () => undefined });
   }
 
   startCreate(): void {
+    this.districtText = '';
     this.form = emptyForm();
     this.expiresDate = '';
     this.editingId.set(null);
@@ -222,6 +260,7 @@ export class MySearchRequestsPage implements OnInit {
   }
 
   startEdit(r: SearchRequest): void {
+    this.districtText = '';
     this.form = { ...r };
     this.expiresDate = r.expiresAt?.slice(0, 10) ?? '';
     this.editingId.set(r.id);
@@ -245,6 +284,11 @@ export class MySearchRequestsPage implements OnInit {
     this.saving.set(true);
     (id ? this.api.update(id, body) : this.api.create(body)).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
+        const typedDistrict = this.districtText.trim();
+        if (typedDistrict && body.governorateId) {
+          this.placeProposals.propose({ governorateId: body.governorateId, type: 'District', name: typedDistrict }).subscribe();
+        }
+        this.districtText = '';
         this.saving.set(false);
         this.editing.set(false);
         this.toast.success(this.translate.instant(id ? 'SEARCH_REQUESTS.SAVED' : 'SEARCH_REQUESTS.CREATED'));

@@ -49,7 +49,8 @@ test('serves the real sitemap when SITE_URL is unset/mis-scoped but the request 
   assert.equal(response.headers.get('x-robots-tag'), null);
   const xml = await response.text();
   assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/properties\/p1<\/loc>/);
-  assert.equal(requestedUrls.length, 1);
+  // properties, short-stay listings, investment projects and offices: one request each.
+  assert.equal(requestedUrls.length, 4);
 });
 
 test('stays empty+noindex for a non-production host even if SITE_URL is unset', async () => {
@@ -75,6 +76,28 @@ test('serves a full sitemap with static pages and paginated properties for the p
     () =>
       withFetchStub(async url => {
         requestedUrls.push(url);
+        if (url.includes('/short-stay/listings')) {
+          return new Response(
+            JSON.stringify({
+              items: [
+                { id: 's1', isPublished: true, isTakenDown: false },
+                { id: 's-hidden', isPublished: true, isTakenDown: true },
+                { id: 's-draft', isPublished: false, isTakenDown: false }
+              ],
+              totalCount: 3
+            }),
+            { status: 200 }
+          );
+        }
+        if (url.includes('/investments/projects')) {
+          return new Response(JSON.stringify({ items: [{ id: 'i1' }, { id: 'i2' }], totalCount: 2 }), { status: 200 });
+        }
+        if (url.includes('/agencies')) {
+          return new Response(
+            JSON.stringify({ items: [{ id: 'a1', slug: 'yasmin' }, { id: 'a2', slug: 'al-sham office' }], totalCount: 2 }),
+            { status: 200 }
+          );
+        }
         if (url.includes('page=1')) {
           return new Response(
             JSON.stringify({
@@ -93,15 +116,49 @@ test('serves a full sitemap with static pages and paginated properties for the p
 
   assert.equal(response.status, 200);
   assert.equal(response.headers.get('content-type'), 'application/xml; charset=utf-8');
-  assert.equal(requestedUrls.length, 2);
-  assert.match(requestedUrls[0], /^https:\/\/api\.example\.test\/api\/properties\?page=1&pageSize=100$/);
-  assert.match(requestedUrls[1], /^https:\/\/api\.example\.test\/api\/properties\?page=2&pageSize=100$/);
+  assert.equal(requestedUrls.length, 5);
+  // The office directory is walked at its own maximum page size (50); a larger page would be refused.
+  assert.ok(requestedUrls.includes('https://api.example.test/api/agencies?page=1&pageSize=50'));
+  assert.ok(requestedUrls.includes('https://api.example.test/api/properties?page=1&pageSize=100'));
+  assert.ok(requestedUrls.includes('https://api.example.test/api/properties?page=2&pageSize=100'));
+  assert.ok(requestedUrls.includes('https://api.example.test/api/short-stay/listings?page=1&pageSize=100'));
+  assert.ok(requestedUrls.includes('https://api.example.test/api/investments/projects?page=1&pageSize=100'));
 
   const xml = await response.text();
   assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/<\/loc>/);
+  assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/offices\/yasmin<\/loc>/);
+  assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/offices\/al-sham%20office<\/loc>/);
   assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/properties<\/loc>/);
+  assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/short-stay<\/loc>/);
+  assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/investments<\/loc>/);
   assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/properties\/p0<\/loc>/);
   assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/properties\/p100<\/loc><lastmod>2026-01-02<\/lastmod>/);
+  assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/short-stay\/s1<\/loc>/);
+  assert.doesNotMatch(xml, /s-hidden|s-draft/);
+  assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/investments\/i1<\/loc>/);
+  assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/investments\/i2<\/loc>/);
+});
+
+test('one failing list does not remove the others from the sitemap', async () => {
+  const response = await withNetlifyEnvStub(
+    { SITE_URL: 'https://hudhudnest.com', API_URL: 'https://api.example.test/api' },
+    () =>
+      withFetchStub(async url => {
+        if (url.includes('/short-stay/listings')) {
+          return new Response('', { status: 503 });
+        }
+        if (url.includes('/investments/projects')) {
+          return new Response(JSON.stringify({ items: [{ id: 'i1' }], totalCount: 1 }), { status: 200 });
+        }
+        return new Response(JSON.stringify({ items: [{ id: 'p1' }], totalCount: 1 }), { status: 200 });
+      }, () => handler())
+  );
+
+  const xml = await response.text();
+  assert.match(xml, /\/properties\/p1</);
+  assert.match(xml, /\/investments\/i1</);
+  assert.doesNotMatch(xml, /\/short-stay\/[a-z0-9]/);
+  assert.match(xml, /<loc>https:\/\/hudhudnest\.com\/short-stay<\/loc>/);
 });
 
 test('degrades to static pages only when the backend is unreachable', async () => {

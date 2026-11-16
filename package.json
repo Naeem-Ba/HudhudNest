@@ -14,8 +14,10 @@
     "watch": "npm run generate:env && npm run generate:robots && npm run generate:deep-links && npm run generate:download && ng build --watch --configuration development",
     "test": "npm run generate:env && ng test",
     "test:ci": "npm run generate:env && ng test --watch=false --browsers=ChromeHeadless",
-    "test:tools": "node --test tools/lib/theme-colors.test.mjs tools/lib/app-version.test.mjs tools/lib/i18n-keys.test.mjs tools/lib/deploy-context-guard.test.mjs tools/lib/deep-links.test.mjs tools/lib/private-paths.test.mjs tools/lib/cache-headers.test.mjs tools/lib/security-headers.test.mjs tools/lib/build-info.test.mjs tools/lib/download-page.test.mjs tools/lib/android-release.test.mjs tools/lib/promote-release.test.mjs tools/lib/native-changes.test.mjs tools/lib/ads-ids-guard.test.mjs tools/lib/ios-config.test.mjs && npm run test:edge-functions",
+    "test:tools": "node --test tools/lib/theme-colors.test.mjs tools/lib/app-version.test.mjs tools/lib/i18n-keys.test.mjs tools/lib/deploy-context-guard.test.mjs tools/lib/deep-links.test.mjs tools/lib/private-paths.test.mjs tools/lib/cache-headers.test.mjs tools/lib/security-headers.test.mjs tools/lib/build-info.test.mjs tools/lib/download-page.test.mjs tools/lib/android-release.test.mjs tools/lib/promote-release.test.mjs tools/lib/native-changes.test.mjs tools/lib/ads-ids-guard.test.mjs tools/lib/ios-config.test.mjs tools/lib/tr-translation.test.mjs tools/lib/legal-content.test.mjs && npm run test:edge-functions",
+    "check:legal": "node tools/check-legal.mjs",
     "check:i18n": "node tools/check-i18n-keys.mjs",
+    "i18n:coverage": "node tools/i18n-coverage.mjs",
     "theme:baseline": "node tools/theme-colors-baseline.mjs",
     "version:check": "node tools/app-version.mjs check",
     "version:set": "node tools/app-version.mjs set",
@@ -77,8 +79,10 @@
     "@microsoft/signalr": "^10.0.0",
     "@ngx-translate/core": "^17.0.0",
     "@ngx-translate/http-loader": "^7.0.0",
+    "@supabase/supabase-js": "2.119.0",
     "firebase": "^12.19.0",
     "leaflet": "^1.9.4",
+    "qrcode-generator": "2.0.4",
     "rxjs": "~7.8.0",
     "tslib": "^2.9.1",
     "zone.js": "~0.15.0"
@@ -99,7 +103,6 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.3.0",
     "postcss": "^8.5.32",
-    "qrcode-generator": "2.0.4",
     "tailwindcss": "^4.3.3",
     "typescript": "~5.9.2"
   }

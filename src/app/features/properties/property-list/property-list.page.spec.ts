@@ -13,15 +13,20 @@
 // إلى الـ URL → الاشتراك في queryParamMap يعيد الجلب" بالكامل، لا فقط استدعاء
 // دالة داخلية بمعزل عن البقية.
 // =====================================================================
-import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/router';
+import { fakeAsync, TestBed, tick, discardPeriodicTasks } from '@angular/core/testing';
+import { ActivatedRoute, convertToParamMap, ParamMap, Router, UrlTree } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject, of, Subject, throwError } from 'rxjs';
 
 import { PropertyListPage } from './property-list.page';
 import { PropertyApiService } from '../../../core/api/property-api.service';
 import { SavedSearchApiService } from '../../../core/api/saved-search-api.service';
+import { AgenciesApiService } from '../../../core/api/agencies-api.service';
+import { Agency } from '../../../core/models/agency.model';
 import { CurrencyLookup, LookupsApiService } from '../../../core/api/lookups-api.service';
+import { LocationsApiService } from '../../../core/api/locations-api.service';
+import { GeoLocation, GeoLocationType } from '../../../core/models/geo-location.model';
+import { locationsApiStub } from '../../../shared/ui/geo/locations-api.stub.spec';
 import { PageMetaService } from '../../../core/services/page-meta.service';
 import { PreferencesService } from '../../../core/services/preferences.service';
 import { InterestAreasService } from '../../../core/services/interest-areas.service';
@@ -31,7 +36,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { LanguageService } from '../../../core/services/language.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { PagedResult } from '../../../core/models/api.model';
-import { Property, PropertyFilterDto } from '../../../core/models/property.model';
+import { AvailableFloors, Property, PropertyFilterDto } from '../../../core/models/property.model';
 
 function currencyRow(code: string, rate: number, isBase = false): CurrencyLookup {
   return { code, nameEn: code, nameAr: code, symbol: code, decimalPlaces: 2, exchangeRateToUsd: rate, rateUpdatedAt: '2026-10-01T00:00:00Z', isBase };
@@ -60,13 +65,36 @@ function toParamMap(queryParams: Record<string, unknown>): ParamMap {
   return convertToParamMap(clean);
 }
 
+/** What the real router would put in the address bar for these query params (null/undefined are dropped). */
+function serializeQuery(queryParams: Record<string, unknown>): string {
+  const parts: string[] = [];
+  Object.entries(queryParams).forEach(([key, value]) => {
+    if (value === null || value === undefined) return;
+    (Array.isArray(value) ? value : [value]).forEach(v => parts.push(`${key}=${encodeURIComponent(String(v))}`));
+  });
+  return `/properties${parts.length ? `?${parts.join('&')}` : ''}`;
+}
+
+function place(id: number, type: GeoLocationType, nameAr: string, nameEn: string): GeoLocation {
+  return {
+    id, type, parentId: 1, countryCode: 'SY', officialName: nameEn, nameAr, nameEn, nameDe: null, latitude: null, longitude: null,
+    path: [], legacy: { governorateId: null, districtId: null, neighborhoodId: null }, matchedAlias: null
+  };
+}
+
+const OFFICE_ID = '0b9d6c1e-2f4a-4c55-9a1e-6f2d3c4b5a69';
+
 describe('PropertyListPage', () => {
   let component: PropertyListPage;
   let propertyApiSpy: jasmine.SpyObj<PropertyApiService>;
   let lookupsApiSpy: jasmine.SpyObj<LookupsApiService>;
+  let locationsApiSpy: jasmine.SpyObj<LocationsApiService>;
   let routerSpy: jasmine.SpyObj<Router>;
   let paramMapSubject: BehaviorSubject<ParamMap>;
   let interestParam: string | undefined;
+  /** What the floors endpoint answers (the floors that exist for the other filters). */
+  let floorsResponse: AvailableFloors;
+  let agenciesApiSpy: jasmine.SpyObj<AgenciesApiService>;
 
   function createComponent(initialParams: Record<string, unknown> = {}, preferredCurrency: string | null = null): PropertyListPage {
     // Some tests (deep-link) build a second component within the same `it`, after the
@@ -78,7 +106,9 @@ describe('PropertyListPage', () => {
 
     paramMapSubject = new BehaviorSubject<ParamMap>(toParamMap(initialParams));
 
-    propertyApiSpy = jasmine.createSpyObj('PropertyApiService', ['getPropertiesPaged', 'geoSearch']);
+    propertyApiSpy = jasmine.createSpyObj('PropertyApiService', ['getPropertiesPaged', 'geoSearch', 'getAvailableFloors']);
+    floorsResponse = { min: 0, max: 5, floors: [0, 1, 2, 5].map(floor => ({ floor, count: 3 })) };
+    propertyApiSpy.getAvailableFloors.and.callFake(() => of(floorsResponse));
     // Echoes back the requested page and reports enough total results for multi-page
     // pagination tests, mirroring the real backend's PagedResult contract (PagedResult.cs:
     // Page is always the clamped requested page; TotalCount reflects the filtered set).
@@ -86,9 +116,26 @@ describe('PropertyListPage', () => {
       of(pagedResult([], filter.page ?? 1, 100))
     );
 
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    // The geo search answers with the page that was asked for, like the list does.
+    propertyApiSpy.geoSearch.and.callFake((_lat: number, _lng: number, _radius?: number, filter: PropertyFilterDto = {}) =>
+      of(pagedResult([], filter.page ?? 1, 40))
+    );
+
+    // Like the real router, a navigation to the URL it is already on does nothing (no emission), and the page asks the
+    // router what the URL would be before navigating (createUrlTree + serializeUrl + url).
+    let currentUrl = serializeQuery(initialParams);
+    routerSpy = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
+    Object.defineProperty(routerSpy, 'url', { get: () => currentUrl });
+    routerSpy.createUrlTree.and.callFake((_commands: unknown[], extras?: { queryParams?: Record<string, unknown> }) =>
+      ({ queryParams: extras?.queryParams ?? {} }) as unknown as UrlTree);
+    routerSpy.serializeUrl.and.callFake((tree: UrlTree) => serializeQuery((tree as unknown as { queryParams: Record<string, unknown> }).queryParams));
     routerSpy.navigate.and.callFake((_commands: unknown[], extras?: { queryParams?: Record<string, unknown> }) => {
-      paramMapSubject.next(toParamMap(extras?.queryParams ?? {}));
+      const params = extras?.queryParams ?? {};
+      const next = serializeQuery(params);
+      if (next !== currentUrl) {
+        currentUrl = next;
+        paramMapSubject.next(toParamMap(params));
+      }
       return Promise.resolve(true);
     });
 
@@ -103,6 +150,12 @@ describe('PropertyListPage', () => {
     lookupsApiSpy.getDistricts.and.returnValue(of([]));
     lookupsApiSpy.getNeighborhoods.and.returnValue(of([]));
 
+    locationsApiSpy = locationsApiStub();
+    locationsApiSpy.get.and.returnValue(of(place(77, 'Neighborhood', 'الجادات', 'Jadat')));
+
+    agenciesApiSpy = jasmine.createSpyObj('AgenciesApiService', ['getBySlug']);
+    agenciesApiSpy.getBySlug.and.returnValue(of({ id: OFFICE_ID, name: 'Alpha Homes', slug: 'alpha' } as Agency));
+
     const authSpy = jasmine.createSpyObj('AuthService', ['getAccessToken']);
     authSpy.getAccessToken.and.returnValue(null);
 
@@ -111,9 +164,11 @@ describe('PropertyListPage', () => {
       providers: [
         { provide: PropertyApiService, useValue: propertyApiSpy },
         { provide: SavedSearchApiService, useValue: jasmine.createSpyObj('SavedSearchApiService', ['create']) },
+        { provide: AgenciesApiService, useValue: agenciesApiSpy },
         { provide: LookupsApiService, useValue: lookupsApiSpy },
+        { provide: LocationsApiService, useValue: locationsApiSpy },
         { provide: AuthService, useValue: authSpy },
-        { provide: LanguageService, useValue: { getCurrent: () => 'ar' } },
+        { provide: LanguageService, useValue: { getCurrent: () => 'ar', currentLang$: of('ar') } },
         { provide: PreferencesService, useValue: { currency: preferredCurrency } },
         { provide: InterestAreasService, useValue: { current: () => interestParam } },
         { provide: PageMetaService, useValue: jasmine.createSpyObj<PageMetaService>('PageMetaService', ['applyTranslated']) },
@@ -153,6 +208,7 @@ describe('PropertyListPage', () => {
       page: 1,
       pageSize: 20,
       searchTerm: undefined,
+      placeText: undefined,
       city: undefined,
       listingType: undefined,
       minPrice: undefined,
@@ -165,13 +221,19 @@ describe('PropertyListPage', () => {
       governorateId: undefined,
       districtId: undefined,
       neighborhoodId: undefined,
-      propertyTypeId: undefined
+      locationId: undefined,
+      propertyTypeId: undefined,
+      floorFrom: undefined,
+      floorTo: undefined,
+      floorMode: undefined,
+      agencyId: undefined
     });
   });
 
   describe('ترتيب الإعلانات المميزة حسب المنطقة', () => {
     it('✅ الترتيب الافتراضي بلا فلتر محافظة يرسل مناطق اهتمام الزائر', () => {
       interestParam = '3,7';
+      component.searchText = 'شقة';
       component.applyFilters();
 
       expect(lastRequest().interestGovernorateIds).toBe('3,7');
@@ -286,7 +348,10 @@ describe('PropertyListPage', () => {
 
       component.resetFilters();
 
-      expect(routerSpy.navigate).toHaveBeenCalledWith([], jasmine.objectContaining({ queryParams: {} }));
+      // The URL ends up clean: every parameter is dropped (null), nothing of the old search survives.
+      expect(routerSpy.navigate).toHaveBeenCalledWith([], jasmine.objectContaining({
+        queryParams: jasmine.objectContaining({ search: null, city: null, governorateId: null, minPrice: null, amenityIds: null, page: null })
+      }));
       expect(component.searchText).toBe('');
       expect(component.cityFilter).toBe('');
       expect(component.governorateId).toBeNull();
@@ -297,55 +362,6 @@ describe('PropertyListPage', () => {
       expect(req.page).toBe(1);
       expect(req.city).toBeUndefined();
       expect(req.searchTerm).toBeUndefined();
-    });
-  });
-
-  describe('اقتراحات المدينة تتبع المحافظة المختارة', () => {
-    it('✅ بلا محافظة تُجلب كل المدن', () => {
-      expect(lookupsApiSpy.getCities).toHaveBeenCalledTimes(1);
-      expect(lookupsApiSpy.getCities).toHaveBeenCalledWith(null);
-    });
-
-    it('✅ اختيار محافظة يجلب مدنها فقط، ومسحها يعيد كل المدن', () => {
-      component.governorateId = 3;
-      component.onGovernorateChange();
-      expect(lookupsApiSpy.getCities).toHaveBeenCalledWith(3);
-
-      component.governorateId = null;
-      component.onGovernorateChange();
-      expect(lookupsApiSpy.getCities.calls.mostRecent().args[0]).toBeNull();
-    });
-
-    it('✅ تغيير المحافظة يمسح المدينة المكتوبة لأنها تخص المحافظة السابقة', () => {
-      component.cityFilter = 'Aleppo';
-      component.governorateId = 1;
-
-      component.onGovernorateChange();
-
-      expect(component.cityFilter).toBe('');
-    });
-
-    it('✅ رابط يحمل governorateId يجلب مدن تلك المحافظة عند فتح الصفحة', () => {
-      createComponent({ governorateId: '5' });
-
-      expect(lookupsApiSpy.getCities).toHaveBeenCalledWith(5);
-    });
-
-    it('✅ اختيار المحافظة نفسها مرتين متتاليتين لا يعيد الطلب', () => {
-      component.governorateId = 3;
-      component.onGovernorateChange();
-      component.onGovernorateChange();
-
-      expect(lookupsApiSpy.getCities.calls.allArgs().filter(a => a[0] === 3).length).toBe(1);
-    });
-
-    it('✅ إعادة الضبط تعيد كل المدن', () => {
-      component.governorateId = 3;
-      component.onGovernorateChange();
-
-      component.resetFilters();
-
-      expect(lookupsApiSpy.getCities.calls.mostRecent().args[0]).toBeNull();
     });
   });
 
@@ -444,6 +460,7 @@ describe('PropertyListPage', () => {
 
     it('✅ لا تُرسَل العملة (ولا تظهر في الرابط) بلا حدّ سعر', () => {
       component.currencyCode = 'SYP';
+      component.searchText = 'شقة';
       component.applyFilters();
 
       expect(lastRequest().currencyCode).toBeUndefined();
@@ -555,10 +572,12 @@ describe('PropertyListPage', () => {
 
     it('✅ رفض الخادم للفلاتر (422) يظهر كخطأ فلاتر لا كعطل تحميل', () => {
       propertyApiSpy.getPropertiesPaged.and.returnValue(throwError(() => new HttpErrorResponse({ status: 422 })));
+      component.searchText = 'أ';
       component.applyFilters();
       expect(component.error()).toBe('PROPERTY_LIST.INVALID_FILTERS');
 
       propertyApiSpy.getPropertiesPaged.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+      component.searchText = 'ب';
       component.applyFilters();
       expect(component.error()).toBe('PROPERTY_LIST.LOAD_ERROR');
     });
@@ -650,4 +669,784 @@ describe('PropertyListPage', () => {
       expect(component.properties()).toEqual([{ id: 'aleppo-1' } as Property]);
     });
   });
+
+  describe('بحث المكان (locationId)', () => {
+    it('✅ اختيار مكان يرسل locationId ويمسح فلتر المحافظة والمنطقة والمدينة', () => {
+      component.governorateId = 1;
+      component.districtId = 11;
+      component.cityFilter = 'Damascus';
+
+      component.onPlaceFilterPicked(place(77, 'Neighborhood', 'الجادات', 'Jadat'));
+      component.applyFilters();
+
+      const req = lastRequest();
+      expect(req.locationId).toBe(77);
+      expect(req.governorateId).toBeUndefined();
+      expect(req.districtId).toBeUndefined();
+      expect(req.city).toBeUndefined();
+    });
+
+    it('✅ locationId في الرابط يُرسل للـ API ويُجلب اسم المكان للعرض', () => {
+      component = createComponent({ locationId: '77' });
+
+      expect(lastRequest().locationId).toBe(77);
+      expect(locationsApiSpy.get).toHaveBeenCalledWith(77);
+      expect(component.locationPlace()?.nameEn).toBe('Jadat');
+    });
+
+    it('✅ locationId غير صالح في الرابط يُتجاهل', () => {
+      component = createComponent({ locationId: 'abc' });
+      expect(lastRequest().locationId).toBeUndefined();
+      expect(locationsApiSpy.get).not.toHaveBeenCalled();
+    });
+
+    it('✅ تغيير المحافظة يمسح المكان المحدّد، وإعادة الضبط تمسحه من الحالة', () => {
+      component.onPlaceFilterPicked(place(77, 'Neighborhood', 'الجادات', 'Jadat'));
+      component.governorateId = 2;
+      component.onGovernorateChange();
+      expect(component.locationId).toBeNull();
+      expect(component.locationPlace()).toBeNull();
+
+      component.onPlaceFilterPicked(place(78, 'Street', 'شارع', 'Street'));
+      component.resetFilters();
+      expect(component.locationId).toBeNull();
+    });
+  });
+
+
+  describe('district / neighborhood typed by hand', () => {
+    it('✅ الكلمات المكتوبة تذهب إلى placeText (كلها مطلوبة)، ونص البحث يبقى وحده في searchTerm', () => {
+      component.governorateId = 1;
+      component.searchText = 'شقة';
+      component.onDistrictTyped('الميدان');
+      component.onNeighborhoodTyped('الحارة الجديدة');
+      component.applyFilters();
+
+      expect(lastRequest().searchTerm).toBe('شقة');
+      expect(lastRequest().placeText).toBe('الميدان الحارة الجديدة');
+      expect(lastRequest().districtId).toBeUndefined();
+      expect(component.activeFiltersCount).toBeGreaterThanOrEqual(4);
+    });
+
+    it('✅ تحفظ في الرابط وتُستعاد عند فتحه أو عند إعادة التحميل', () => {
+      component.governorateId = 1;
+      component.onDistrictTyped('الميدان');
+      component.applyFilters();
+      const url = routerSpy.navigate.calls.mostRecent().args[1] as { queryParams: Record<string, unknown> };
+      expect(url.queryParams['districtText']).toBe('الميدان');
+
+      component = createComponent({ governorateId: '1', districtText: 'الميدان' });
+      expect(component.districtText).toBe('الميدان');
+      expect(lastRequest().searchTerm).toBeUndefined();
+      expect(lastRequest().placeText).toBe('الميدان');
+    });
+
+    it('✅ المسافة بين كلمتين تبقى أثناء الكتابة (لا يُقصّ النص المخزَّن)', () => {
+      component.onDistrictTyped('باب ');
+      expect(component.districtText).toBe('باب ');
+    });
+
+    it('✅ اختيار عنصر من القائمة يمسح النص المكتوب، وكتابة نص تمسح الاختيار', () => {
+      component.districtId = 5;
+      component.onDistrictTyped('اسم حر');
+      expect(component.districtId).toBeNull();
+
+      component.onDistrictTyped(null);
+      expect(component.districtText).toBe('');
+    });
+
+    it('✅ تغيير المحافظة وإعادة الضبط يمسحان النصوص المكتوبة', () => {
+      component.onDistrictTyped('الميدان');
+      component.onNeighborhoodTyped('الحارة');
+      component.governorateId = 2;
+      component.onGovernorateChange();
+      expect(component.districtText).toBe('');
+      expect(component.neighborhoodText).toBe('');
+
+      component.onDistrictTyped('x');
+      component.resetFilters();
+      expect(component.districtText).toBe('');
+    });
+  });
+
+  describe('المدينة لم تعد حقلًا في اللوحة', () => {
+    it('✅ مدينة قادمة من رابط قديم تبقى فعّالة وتُرسَل، حتى لا يوجد فلتر مخفي', () => {
+      component = createComponent({ city: 'Jaramana' });
+      expect(component.cityFilter).toBe('Jaramana');
+      expect(lastRequest().city).toBe('Jaramana');
+      expect(component.activeFiltersCount).toBe(1);
+    });
+
+    it('✅ إزالة الشريحة تمسح المدينة من الطلب ومن الرابط', () => {
+      component = createComponent({ city: 'Jaramana' });
+      component.removeCityFilter();
+      component.applyFilters();
+
+      expect(lastRequest().city).toBeUndefined();
+      expect(routerSpy.navigate.calls.mostRecent().args[1]).toEqual(jasmine.objectContaining({
+        queryParams: jasmine.objectContaining({ city: null })
+      }));
+      expect(component.activeFiltersCount).toBe(0);
+    });
+
+    it('✅ لا يُطلب اقتراح المدن من الخادم بعد الآن', () => {
+      component.governorateId = 1;
+      component.onGovernorateChange();
+      expect(lookupsApiSpy.getCities).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('مربع المكان: نص العنوان (placeText)', () => {
+    it('✅ «ابحث عن X في عناوين الإعلانات» يُطبَّق كـ placeText وينتقل إلى الرابط ويُستعاد منه', () => {
+      component.onPlaceTextPicked('  بغداد ');
+      component.applyFilters();
+
+      expect(lastRequest().placeText).toBe('بغداد');
+      expect(lastRequest().searchTerm).toBeUndefined();
+      expect(routerSpy.navigate.calls.mostRecent().args[1]).toEqual(jasmine.objectContaining({
+        queryParams: jasmine.objectContaining({ placeText: 'بغداد' })
+      }));
+      expect(component.activeFiltersCount).toBe(1);
+
+      component = createComponent({ placeText: 'بغداد' });
+      expect(component.addressText).toBe('بغداد');
+      expect(lastRequest().placeText).toBe('بغداد');
+    });
+
+    it('✅ النص المكتوب في المربع ولم يُختَر شيء يُطبَّق عند «تطبيق» بدل أن يضيع بصمت', () => {
+      component.onPlaceTyped('شارع الثورة');
+      component.applyFilters();
+
+      expect(component.addressText).toBe('شارع الثورة');
+      expect(lastRequest().placeText).toBe('شارع الثورة');
+    });
+
+    it('✅ مكان من الكتالوج ونص عنوان لا يجتمعان: كل منهما يلغي الآخر', () => {
+      component.onPlaceTextPicked('بغداد');
+      component.onPlaceFilterPicked(place(77, 'Neighborhood', 'الجادات', 'Jadat'));
+      expect(component.addressText).toBe('');
+      expect(component.locationId).toBe(77);
+
+      component.onPlaceTextPicked('بغداد');
+      expect(component.locationId).toBeNull();
+      expect(component.locationPlace()).toBeNull();
+    });
+
+    it('✅ المكان المختار نفسه المكتوب في المربع لا يتحوّل إلى نص عنوان', () => {
+      component.onPlaceFilterPicked(place(77, 'Neighborhood', 'الجادات', 'Jadat'));
+      component.onPlaceTyped('الجادات');
+      component.applyFilters();
+
+      expect(component.addressText).toBe('');
+      expect(lastRequest().locationId).toBe(77);
+      expect(lastRequest().placeText).toBeUndefined();
+    });
+
+    it('✅ إفراغ المربع (مسح المكان) يزيل النص المطبَّق، وإعادة الضبط تمسحه', () => {
+      component.onPlaceTextPicked('بغداد');
+      component.onPlaceFilterPicked(null);
+      expect(component.addressText).toBe('');
+
+      component.onPlaceTextPicked('بغداد');
+      component.resetFilters();
+      expect(component.addressText).toBe('');
+      expect(lastRequest().placeText).toBeUndefined();
+    });
+
+    it('✅ placeText يُدمج مع الحي المكتوب، وكلاهما شرط (لا يوسّع البحث)', () => {
+      component.governorateId = 1;
+      component.onPlaceTextPicked('بغداد');
+      component.onDistrictTyped('الميدان');
+      component.applyFilters();
+
+      expect(lastRequest().placeText).toBe('بغداد الميدان');
+    });
+  });
+
+  describe('«القريبة مني» تحترم كل الفلاتر وتبقى فعّالة', () => {
+    let getCurrentPosition: jasmine.Spy;
+
+    beforeEach(() => {
+      getCurrentPosition = spyOn(navigator.geolocation, 'getCurrentPosition').and.callFake(
+        ((success: PositionCallback) => success({ coords: { latitude: 33.5, longitude: 36.3 } } as GeolocationPosition)) as typeof navigator.geolocation.getCurrentPosition
+      );
+    });
+
+    function lastGeoCall() {
+      const calls = propertyApiSpy.geoSearch.calls.all();
+      return calls[calls.length - 1].args as [number, number, number, PropertyFilterDto];
+    }
+
+    it('✅ التفعيل يرسل الإحداثيات ونصف القطر وكل الفلاتر المعتمدة (لا نوع الإعلان وحده)', () => {
+      component.searchText = 'شقة';
+      component.selectedListingType = 'ForSale';
+      component.minPrice = 100;
+      component.propertyTypeId = 4;
+      component.selectedAmenityIds = ['a1'];
+      component.onPlaceTextPicked('بغداد');
+      propertyApiSpy.getPropertiesPaged.calls.reset();
+
+      component.toggleGeoMode();
+
+      expect(component.geoModeActive()).toBeTrue();
+      expect(propertyApiSpy.getPropertiesPaged).not.toHaveBeenCalled();
+      const [lat, lng, radius, filter] = lastGeoCall();
+      expect([lat, lng, radius]).toEqual([33.5, 36.3, 5]);
+      expect(filter).toEqual(jasmine.objectContaining({
+        page: 1, searchTerm: 'شقة', placeText: 'بغداد', listingType: 'ForSale', minPrice: 100, propertyTypeId: 4, amenityIds: ['a1']
+      }));
+    });
+
+    it('✅ لا يُرسل إلى البحث القريب ترتيب ولا مناطق اهتمام (النتائج حسب القرب)', () => {
+      interestParam = '3,7';
+      component.toggleGeoMode();
+      const filter = lastGeoCall()[3];
+      expect('sortBy' in filter).toBeFalse();
+      expect('sortDescending' in filter).toBeFalse();
+      expect('interestGovernorateIds' in filter).toBeFalse();
+    });
+
+    it('✅ الترقيم في الوضع القريب يبقى قريبًا (صفحة 2 من البحث القريب، لا من القائمة العادية)', () => {
+      component.toggleGeoMode();
+      propertyApiSpy.getPropertiesPaged.calls.reset();
+      propertyApiSpy.geoSearch.calls.reset();
+
+      component.goToPage(2);
+
+      expect(propertyApiSpy.getPropertiesPaged).not.toHaveBeenCalled();
+      expect(lastGeoCall()[3].page).toBe(2);
+      expect(component.geoModeActive()).toBeTrue();
+      expect(component.currentPage()).toBe(2);
+    });
+
+    it('✅ «تطبيق الفلاتر» داخل الوضع القريب يبقيه فعّالًا ويضيف الفلتر إلى طلب البحث القريب', () => {
+      component.toggleGeoMode();
+      propertyApiSpy.geoSearch.calls.reset();
+
+      component.selectedListingType = 'ForRent';
+      component.applyFilters();
+
+      expect(component.geoModeActive()).toBeTrue();
+      expect(propertyApiSpy.geoSearch).toHaveBeenCalledTimes(1);
+      expect(lastGeoCall()[3].listingType).toBe('ForRent');
+    });
+
+    it('✅ «تطبيق» دون تغيير داخل الوضع القريب لا يطلب مرة ثانية', () => {
+      component.toggleGeoMode();
+      propertyApiSpy.geoSearch.calls.reset();
+      component.applyFilters();
+      expect(propertyApiSpy.geoSearch).not.toHaveBeenCalled();
+    });
+
+    it('✅ تغيير نصف القطر يعيد البحث بالموقع المعروف دون طلب إذن موقع جديد', () => {
+      component.toggleGeoMode();
+      expect(getCurrentPosition).toHaveBeenCalledTimes(1);
+      propertyApiSpy.geoSearch.calls.reset();
+
+      component.radiusKm = 20;
+      component.onRadiusChange();
+
+      expect(getCurrentPosition).toHaveBeenCalledTimes(1);
+      expect(propertyApiSpy.geoSearch).toHaveBeenCalledTimes(1);
+      expect(lastGeoCall()[2]).toBe(20);
+    });
+
+    it('✅ الإلغاء يعود إلى القائمة العادية بطلب واحد وبالفلاتر نفسها، ويمسح الموقع', () => {
+      component.searchText = 'شقة';
+      component.applyFilters();
+      component.toggleGeoMode();
+      propertyApiSpy.getPropertiesPaged.calls.reset();
+      propertyApiSpy.geoSearch.calls.reset();
+
+      component.toggleGeoMode();
+
+      expect(component.geoModeActive()).toBeFalse();
+      expect(propertyApiSpy.geoSearch).not.toHaveBeenCalled();
+      expect(propertyApiSpy.getPropertiesPaged).toHaveBeenCalledTimes(1);
+      expect(lastRequest().searchTerm).toBe('شقة');
+      component.onRadiusChange();
+      expect(propertyApiSpy.geoSearch).not.toHaveBeenCalled();
+    });
+
+    it('✅ إعادة التعيين تُخرج من الوضع القريب وتُحدّث النتائج حتى لو كان الرابط نظيفًا أصلًا', () => {
+      component.toggleGeoMode();
+      propertyApiSpy.getPropertiesPaged.calls.reset();
+
+      component.resetFilters();
+
+      expect(component.geoModeActive()).toBeFalse();
+      expect(propertyApiSpy.getPropertiesPaged).toHaveBeenCalledTimes(1);
+    });
+
+    it('✅ رفض الإذن لا يفعّل الوضع ولا يرسل طلبًا', () => {
+      getCurrentPosition.and.callFake(((_ok: PositionCallback, fail: PositionErrorCallback) => fail({ code: 1 } as GeolocationPositionError)) as typeof navigator.geolocation.getCurrentPosition);
+      propertyApiSpy.geoSearch.calls.reset();
+
+      component.toggleGeoMode();
+
+      expect(component.geoModeActive()).toBeFalse();
+      expect(component.geoLoading()).toBeFalse();
+      expect(propertyApiSpy.geoSearch).not.toHaveBeenCalled();
+    });
+
+    it('✅ خطأ البحث القريب يظهر كخطأ قابل لإعادة المحاولة بنفس الوضع', () => {
+      component.toggleGeoMode();
+      propertyApiSpy.geoSearch.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+      component.loadProperties();
+      expect(component.error()).toBe('PROPERTY_LIST.LOAD_ERROR');
+
+      propertyApiSpy.geoSearch.and.callFake((_a: number, _b: number, _c?: number, f: PropertyFilterDto = {}) => of(pagedResult([], f.page ?? 1, 5)));
+      component.loadProperties();
+      expect(component.error()).toBe('');
+      expect(component.totalCount()).toBe(5);
+    });
+  });
+
+  describe('«تطبيق» دون تغيير في الرابط', () => {
+    it('✅ لا طلب جديد، لكن النتائج تُعرض فورًا (الزر ليس ميتًا)', async () => {
+      const region = document.createElement('main');
+      spyOn(region, 'scrollIntoView');
+      spyOn(region, 'focus');
+      component['resultsRegion'] = { nativeElement: region };
+      propertyApiSpy.getPropertiesPaged.calls.reset();
+
+      component.applyFilters();
+      await new Promise<void>(resolve => setTimeout(resolve, 0));
+
+      expect(propertyApiSpy.getPropertiesPaged).not.toHaveBeenCalled();
+      expect(region.scrollIntoView).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('قسم المرافق القابل للطي', () => {
+    it('✅ مغلق افتراضيًا، والنقر على الرأس يفتحه ويغلقه، والاختيارات تبقى', () => {
+      expect(component.amenitiesOpen).toBeFalse();
+      component.toggleAmenityFilter('a1');
+      component.toggleAmenityFilter('a2');
+
+      component.toggleAmenitiesSection();
+      expect(component.amenitiesOpen).toBeTrue();
+      component.toggleAmenitiesSection();
+      expect(component.amenitiesOpen).toBeFalse();
+
+      expect(component.selectedAmenityIds).toEqual(['a1', 'a2']);
+      expect(component.isAmenitySelected('a2')).toBeTrue();
+    });
+
+    it('✅ الاختيارات تُرسل مع الفلتر وتُحسب، وإعادة الضبط تمسحها', () => {
+      component.toggleAmenityFilter('a1');
+      component.applyFilters();
+      expect(lastRequest().amenityIds).toEqual(['a1']);
+      expect(component.activeFiltersCount).toBe(1);
+
+      component.resetFilters();
+      expect(component.selectedAmenityIds).toEqual([]);
+    });
+  });
+
+  describe('تطبيق الفلاتر يوصل إلى النتائج', () => {
+    function fakeRegion() {
+      const region = document.createElement('main');
+      spyOn(region, 'scrollIntoView');
+      spyOn(region, 'focus');
+      component['resultsRegion'] = { nativeElement: region };
+      return region;
+    }
+
+    const nextTask = () => new Promise<void>(resolve => setTimeout(resolve, 0));
+
+    it('✅ بعد الضغط على «تطبيق» وبعد وصول الجواب تُعرض بداية النتائج وتأخذ التركيز', async () => {
+      const region = fakeRegion();
+      component.applyFilters();
+      await nextTask();
+
+      expect(region.scrollIntoView).toHaveBeenCalledTimes(1);
+      expect(region.focus).toHaveBeenCalled();
+    });
+
+    it('✅ الجواب الفارغ («لا توجد عقارات مطابقة») يُعرض أيضًا بالطريقة نفسها', async () => {
+      const region = fakeRegion();
+      propertyApiSpy.getPropertiesPaged.and.returnValue(of(pagedResult([], 1, 0)));
+      component.searchText = 'لا شيء';
+      component.applyFilters();
+      await nextTask();
+
+      expect(component.properties().length).toBe(0);
+      expect(component.activeFiltersCount).toBeGreaterThan(0);
+      expect(region.scrollIntoView).toHaveBeenCalled();
+    });
+
+    it('✅ الخطأ يُعرض كذلك، ولا يحدث تمرير عند مجرد فتح الصفحة أو تغيير الصفحة', async () => {
+      const region = fakeRegion();
+      component.goToPage(2);
+      await nextTask();
+      expect(region.scrollIntoView).not.toHaveBeenCalled();
+
+      propertyApiSpy.getPropertiesPaged.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+      component.applyFilters();
+      await nextTask();
+      expect(component.error()).toBeTruthy();
+      expect(region.scrollIntoView).toHaveBeenCalledTimes(1);
+    });
+  });
+
+
+  describe('فلتر الطابق', () => {
+    /** The one request the floors endpoint received last (its argument is the list's filters without the floor). */
+    function lastFloorsScope(): PropertyFilterDto {
+      const calls = propertyApiSpy.getAvailableFloors.calls.all();
+      return calls[calls.length - 1].args[0] as PropertyFilterDto;
+    }
+
+    it('✅ الطابق الأرضي (0) يصل إلى الطلب ولا يُعامَل كقيمة فارغة', () => {
+      component = createComponent({ floorFrom: '0', floorTo: '0' });
+
+      expect(component.floorFrom).toBe(0);
+      expect(component.floorTo).toBe(0);
+      expect(component.specificFloor).toBe(0);
+      expect(lastRequest()).toEqual(jasmine.objectContaining({ floorFrom: 0, floorTo: 0 }));
+    });
+
+    it('✅ المدى من الرابط يملأ الحقلين ويصل إلى الطلب', () => {
+      component = createComponent({ floorFrom: '1', floorTo: '5' });
+
+      expect(component.specificFloor).toBeNull();
+      expect(lastRequest()).toEqual(jasmine.objectContaining({ floorFrom: 1, floorTo: 5 }));
+      expect(lastRequest().floorMode).toBeUndefined();
+    });
+
+    it('✅ أعلى/أدنى طابق متاح من الرابط يصل كـ floorMode ويُلغي المدى', () => {
+      component = createComponent({ floorMode: 'highest', floorFrom: '2', floorTo: '3' });
+
+      expect(component.floorMode).toBe('highest');
+      expect(component.floorFrom).toBeNull();
+      expect(component.floorTo).toBeNull();
+      expect(lastRequest()).toEqual(jasmine.objectContaining({ floorMode: 'highest' }));
+      expect(lastRequest().floorFrom).toBeUndefined();
+    });
+
+    it('✅ قيمة طابق غير صالحة في الرابط (سالبة، كسر، نص، فوق 200) تُهمل ولا تُرسل', () => {
+      component = createComponent({ floorFrom: '-3', floorTo: 'abc', floorMode: 'middle' });
+      expect(component.floorFrom).toBeNull();
+      expect(component.floorTo).toBeNull();
+      expect(component.floorMode).toBeNull();
+
+      component = createComponent({ floorFrom: '2.5', floorTo: '201' });
+      expect(component.floorFrom).toBeNull();
+      expect(component.floorTo).toBeNull();
+      expect(lastRequest().floorFrom).toBeUndefined();
+    });
+
+    it('✅ طابق فوق 50 يُقبل: 50 افتراضٌ في الواجهة لا حدٌّ للبيانات', () => {
+      component = createComponent({ floorFrom: '120', floorTo: '120' });
+
+      expect(lastRequest()).toEqual(jasmine.objectContaining({ floorFrom: 120, floorTo: 120 }));
+      expect(component.floorList()).toContain(120);
+    });
+
+    it('✅ «تطبيق» يضع الطابق في الرابط (0 يبقى 0) وبقية الصفحات تحفظه', () => {
+      component.onSpecificFloor(0);
+      component.applyFilters();
+
+      expect(routerSpy.navigate).toHaveBeenCalledWith([], jasmine.objectContaining({
+        queryParams: jasmine.objectContaining({ floorFrom: 0, floorTo: 0, floorMode: null })
+      }));
+
+      component.goToPage(3);
+      expect(lastRequest()).toEqual(jasmine.objectContaining({ page: 3, floorFrom: 0, floorTo: 0 }));
+    });
+
+    it('✅ اختيار أعلى طابق ثم تطبيق: floorMode في الرابط ولا مدى', () => {
+      component.toggleFloorMode('highest');
+      component.applyFilters();
+
+      expect(routerSpy.navigate).toHaveBeenCalledWith([], jasmine.objectContaining({
+        queryParams: jasmine.objectContaining({ floorMode: 'highest', floorFrom: null, floorTo: null })
+      }));
+      expect(lastRequest().floorMode).toBe('highest');
+    });
+
+    it('✅ الأوضاع الثلاثة لا تتعارض: الخيار السريع يمسح المدى، والمدى يمسح الخيار السريع، والطابق المحدد يملأ الحدّين', () => {
+      component.onFloorFrom(1);
+      component.onFloorTo(4);
+      component.toggleFloorMode('lowest');
+      expect([component.floorMode, component.floorFrom, component.floorTo]).toEqual(['lowest', null, null]);
+
+      component.onSpecificFloor(3);
+      expect([component.floorMode, component.floorFrom, component.floorTo]).toEqual([null, 3, 3]);
+      expect(component.specificFloor).toBe(3);
+
+      component.toggleFloorMode('highest');
+      component.toggleFloorMode('highest');
+      expect(component.floorMode).toBeNull();
+
+      component.onSpecificFloor(3);
+      component.onFloorFrom(0);
+      expect(component.specificFloor).toBeNull();
+      expect([component.floorFrom, component.floorTo]).toEqual([0, 3]);
+    });
+
+    it('✅ لا يمكن بناء مدى مقلوب من الواجهة: رفع أحد الحدّين فوق الآخر يرفع الآخر معه', () => {
+      component.onFloorFrom(1);
+      component.onFloorTo(3);
+      expect([component.floorFrom, component.floorTo]).toEqual([1, 3]);
+
+      component.onFloorFrom(5);
+      expect([component.floorFrom, component.floorTo]).toEqual([5, 5]);
+
+      component.onFloorTo(2);
+      expect([component.floorFrom, component.floorTo]).toEqual([2, 2]);
+
+      component.onFloorFrom(null);
+      component.onFloorTo(4);
+      expect([component.floorFrom, component.floorTo]).toEqual([null, 4]);
+    });
+
+    it('✅ «مسح الفلتر» يرجع كل الطوابق، ويُحسب الفلتر في عدّاد الفلاتر الفعّالة', () => {
+      expect(component.activeFiltersCount).toBe(0);
+
+      component.onSpecificFloor(0);
+      expect(component.hasFloorFilter).toBeTrue();
+      expect(component.activeFiltersCount).toBe(1);
+
+      component.clearFloorFilter();
+      expect(component.hasFloorFilter).toBeFalse();
+      expect(component.activeFiltersCount).toBe(0);
+
+      component.toggleFloorMode('lowest');
+      expect(component.activeFiltersCount).toBe(1);
+    });
+
+    it('✅ «إعادة الضبط» تمسح الطابق من الحالة والرابط', () => {
+      component = createComponent({ floorFrom: '2', floorTo: '4' });
+
+      component.resetFilters();
+
+      expect(component.hasFloorFilter).toBeFalse();
+      expect(routerSpy.navigate).toHaveBeenCalledWith([], jasmine.objectContaining({
+        queryParams: jasmine.objectContaining({ floorFrom: null, floorTo: null, floorMode: null })
+      }));
+      expect(lastRequest().floorFrom).toBeUndefined();
+    });
+
+    describe('البحث المحفوظ', () => {
+      /** createComponent rebuilds the TestBed, so the spies are read after it, never before. */
+      function saveWith(params: Record<string, string>): { payload: Record<string, unknown>; toast: jasmine.SpyObj<ToastService> } {
+        component = createComponent(params);
+        const savedSearchApi = TestBed.inject(SavedSearchApiService) as jasmine.SpyObj<SavedSearchApiService>;
+        savedSearchApi.create.and.returnValue(of({} as never));
+        component.saveCurrentSearch();
+        return {
+          payload: savedSearchApi.create.calls.mostRecent().args[0] as unknown as Record<string, unknown>,
+          toast: TestBed.inject(ToastService) as jasmine.SpyObj<ToastService>
+        };
+      }
+
+      beforeEach(() => { spyOn(window, 'prompt').and.returnValue(''); });
+
+      it('✅ يحفظ الطابق الأرضي (0) والمدى كما هما', () => {
+        expect(saveWith({ floorFrom: '0', floorTo: '0' }).payload).toEqual(jasmine.objectContaining({ FloorFrom: 0, FloorTo: 0 }));
+        expect(saveWith({ floorFrom: '2', floorTo: '5' }).payload).toEqual(jasmine.objectContaining({ FloorFrom: 2, FloorTo: 5 }));
+      });
+
+      it('✅ بلا طابق يُرسَل null دون تنبيه', () => {
+        const { payload, toast } = saveWith({});
+        expect(payload).toEqual(jasmine.objectContaining({ FloorFrom: null, FloorTo: null }));
+        expect(toast.info).not.toHaveBeenCalled();
+      });
+
+      it('✅ «أعلى طابق متاح» لا يُحفظ ويظهر تنبيه بذلك', () => {
+        const { payload, toast } = saveWith({ floorMode: 'highest' });
+        expect(payload).toEqual(jasmine.objectContaining({ FloorFrom: null, FloorTo: null }));
+        expect(toast.info).toHaveBeenCalledTimes(1);
+        expect(TestBed.inject(TranslateService).instant).toHaveBeenCalledWith('PROPERTY_LIST.FLOOR_FILTER.SAVE_MODE_NOTE');
+      });
+    });
+
+    describe('الطوابق المتاحة (ديناميكية)', () => {
+      it('✅ تُطلب من الخادم بفلاتر القائمة نفسها دون الطابق والترقيم والفرز', fakeAsync(() => {
+        component = createComponent({ propertyTypeId: '3', listingType: 'ForSale', floorFrom: '2', floorTo: '2', page: '4', sort: 'Price' });
+        tick(250);
+
+        expect(propertyApiSpy.getAvailableFloors).toHaveBeenCalledTimes(1);
+        const scope = lastFloorsScope();
+        expect(scope.propertyTypeId).toBe(3);
+        expect(scope.listingType).toBe('ForSale');
+        expect(scope.floorFrom).toBeUndefined();
+        expect(scope.floorTo).toBeUndefined();
+        expect(scope.page).toBeUndefined();
+        expect(scope.sortBy).toBeUndefined();
+        expect(component.floorOptions()).toEqual(floorsResponse);
+        discardPeriodicTasks();
+      }));
+
+      it('✅ تتغير الخيارات عند تغيير نوع العقار، بطلب واحد لسلسلة تغييرات متتالية', fakeAsync(() => {
+        component = createComponent();
+        tick(250);
+        propertyApiSpy.getAvailableFloors.calls.reset();
+
+        floorsResponse = { min: 1, max: 9, floors: [1, 9].map(floor => ({ floor, count: 1 })) };
+        component.propertyTypeId = 2;
+        component.onFloorScopeChanged();
+        component.propertyTypeId = 4;
+        component.onFloorScopeChanged();
+        tick(250);
+
+        expect(propertyApiSpy.getAvailableFloors).toHaveBeenCalledTimes(1);
+        expect(lastFloorsScope().propertyTypeId).toBe(4);
+        expect(component.floorList()).toEqual([1, 9]);
+      }));
+
+      it('✅ لا طلب مكرّر عندما لا يتغير شيء يؤثر في الطوابق', fakeAsync(() => {
+        component = createComponent();
+        tick(250);
+        propertyApiSpy.getAvailableFloors.calls.reset();
+
+        component.onFloorScopeChanged();
+        component.onFloorScopeChanged();
+        tick(250);
+
+        expect(propertyApiSpy.getAvailableFloors).not.toHaveBeenCalled();
+      }));
+
+      it('✅ تغيير نوع العقار يمسح طابقاً اختاره المستخدم ولم يعد موجوداً', fakeAsync(() => {
+        component = createComponent();
+        tick(250);
+        component.onSpecificFloor(5);
+
+        floorsResponse = { min: 0, max: 1, floors: [0, 1].map(floor => ({ floor, count: 2 })) };
+        component.propertyTypeId = 3;
+        component.onFloorScopeChanged();
+        tick(250);
+
+        expect(component.hasFloorFilter).toBeFalse();
+        expect(component.floorList()).toEqual([0, 1]);
+      }));
+
+      it('✅ ويُبقي طابقاً ما زال موجوداً، وكذلك أعلى/أدنى طابق متاح', fakeAsync(() => {
+        component = createComponent();
+        tick(250);
+        component.onFloorFrom(0);
+        component.onFloorTo(1);
+
+        floorsResponse = { min: 0, max: 1, floors: [0, 1].map(floor => ({ floor, count: 2 })) };
+        component.propertyTypeId = 3;
+        component.onFloorScopeChanged();
+        tick(250);
+        expect([component.floorFrom, component.floorTo]).toEqual([0, 1]);
+
+        component.toggleFloorMode('highest');
+        floorsResponse = { min: null, max: null, floors: [] };
+        component.propertyTypeId = 4;
+        component.onFloorScopeChanged();
+        tick(250);
+        expect(component.floorMode).toBe('highest');
+      }));
+
+      it('✅ طابق جاء من الرابط يبقى ظاهراً حتى لو لم يعد في الخيارات (هو ما طُلبت به القائمة)', fakeAsync(() => {
+        component = createComponent({ floorFrom: '7', floorTo: '7' });
+        floorsResponse = { min: 0, max: 1, floors: [0, 1].map(floor => ({ floor, count: 2 })) };
+        tick(250);
+
+        expect(component.specificFloor).toBe(7);
+        expect(component.floorList()).toEqual([0, 1, 7]);
+      }));
+
+      it('✅ لا طوابق متاحة: حالة واضحة، ولا يُعامَل المجهول كطابق أرضي', fakeAsync(() => {
+        component = createComponent();
+        floorsResponse = { min: null, max: null, floors: [] };
+        tick(250);
+
+        expect(component.noFloorsAvailable()).toBeTrue();
+        expect(component.floorList()).toEqual([]);
+      }));
+
+      it('✅ فشل طلب الطوابق لا يعطّل البحث: الخيارات المجهولة تعني 0 إلى 50', fakeAsync(() => {
+        component = createComponent();
+        propertyApiSpy.getAvailableFloors.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+        tick(250);
+
+        expect(component.floorOptions()).toBeNull();
+        expect(component.noFloorsAvailable()).toBeFalse();
+        expect(component.floorList().length).toBe(51);
+        expect(component.floorList()[0]).toBe(0);
+        expect(component.floorList()[50]).toBe(50);
+        expect(component.error()).toBe('');
+      }));
+    });
+
+    describe('«القريبة مني»', () => {
+      beforeEach(() => {
+        spyOn(navigator.geolocation, 'getCurrentPosition').and.callFake(
+          ((success: PositionCallback) => success({ coords: { latitude: 33.5, longitude: 36.3 } } as GeolocationPosition)) as typeof navigator.geolocation.getCurrentPosition
+        );
+      });
+
+      function lastGeoFilter(): PropertyFilterDto {
+        const calls = propertyApiSpy.geoSearch.calls.all();
+        return calls[calls.length - 1].args[3] as PropertyFilterDto;
+      }
+
+      it('✅ مدى الطوابق يصل إلى البحث القريب', () => {
+        component.onFloorFrom(1);
+        component.onFloorTo(3);
+        component.toggleGeoMode();
+
+        expect(lastGeoFilter()).toEqual(jasmine.objectContaining({ floorFrom: 1, floorTo: 3 }));
+      });
+
+      it('✅ أعلى طابق متاح يُرسَل رقماً واحداً (البحث القريب لا يعرف floorMode)', fakeAsync(() => {
+        component = createComponent();
+        tick(250);
+        component.toggleFloorMode('highest');
+        component.toggleGeoMode();
+
+        const filter = lastGeoFilter();
+        expect(filter.floorFrom).toBe(5);
+        expect(filter.floorTo).toBe(5);
+        expect(filter.floorMode).toBeUndefined();
+
+        component.toggleFloorMode('highest');
+        component.toggleFloorMode('lowest');
+        component.onRadiusChange();
+        expect(lastGeoFilter()).toEqual(jasmine.objectContaining({ floorFrom: 0, floorTo: 0 }));
+      }));
+    });
+  });
+
+  describe('إعلانات مكتب واحد (agencyId)', () => {
+    it('sends the office id from the URL and names the office once its slug resolves to the same id', () => {
+      component = createComponent({ agencyId: OFFICE_ID, office: 'alpha' });
+      expect(lastRequest().agencyId).toBe(OFFICE_ID);
+      expect(agenciesApiSpy.getBySlug).toHaveBeenCalledWith('alpha');
+      expect(component.officeName()).toBe('Alpha Homes');
+    });
+
+    it('does not show the name of a different office than the one searched', () => {
+      component = createComponent({ agencyId: '11111111-2222-4333-8444-555555555555', office: 'alpha' });
+      expect(lastRequest().agencyId).toBe('11111111-2222-4333-8444-555555555555');
+      expect(component.officeName()).toBeNull();
+    });
+
+    it('drops a malformed office id instead of sending it', () => {
+      component = createComponent({ agencyId: 'not-a-guid', office: 'alpha' });
+      expect(lastRequest().agencyId).toBeUndefined();
+      expect(component.agencyId).toBeNull();
+      expect(agenciesApiSpy.getBySlug).not.toHaveBeenCalled();
+    });
+
+    it('keeps the office when the filters are cleared, and leaves it only on request', () => {
+      component = createComponent({ agencyId: OFFICE_ID, office: 'alpha', listingType: 'ForRent' });
+      component.resetFilters();
+      expect(lastRequest().agencyId).toBe(OFFICE_ID);
+      expect(lastRequest().listingType).toBeUndefined();
+
+      component.clearOfficeScope();
+      expect(lastRequest().agencyId).toBeUndefined();
+      const params = routerSpy.navigate.calls.mostRecent().args[1]!.queryParams!;
+      expect(params['agencyId']).toBeNull();
+      expect(params['office']).toBeNull();
+    });
+  });
+
 });

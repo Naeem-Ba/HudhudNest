@@ -5,10 +5,14 @@ import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PhotoGuideSheetComponent } from '../../../shared/ui/photo-guide/photo-guide-sheet.component';
-import { forkJoin } from 'rxjs';
+import { catchError, forkJoin, of } from 'rxjs';
 
 import { ShortStayListingApiService } from '../../../core/api/short-stay-listing-api.service';
-import { LookupsApiService, LookupAmenity, StructuredLocationLookup, pickLocalizedName } from '../../../core/api/lookups-api.service';
+import { LookupsApiService, LookupAmenity } from '../../../core/api/lookups-api.service';
+import { LocationsApiService } from '../../../core/api/locations-api.service';
+import { GeoPickerComponent } from '../../../shared/ui/geo/geo-picker.component';
+import { GeoPickerInitial, GeoPickerValue, GeoProposal } from '../../../shared/ui/geo/geo-picker.models';
+import { GeoMapSuggestion } from '../../../core/models/geo-location.model';
 import { MapPickerComponent } from '../../../map-picker/map-picker.component';
 import { CITY_MAPS } from '../../../map-picker/city-map.config';
 import { LangCode } from '../../../core/services/language.service';
@@ -79,7 +83,7 @@ type PricingRuleForm = {
 @Component({
   selector: 'app-short-stay-listing-form-page',
   standalone: true,
-  imports: [ LocalizedNumberPipe,CommonModule, RouterModule, FormsModule, TranslateModule, PhotoGuideSheetComponent, MapPickerComponent, AmenityLabelPipe, UnitAvailabilityPanelComponent],
+  imports: [ LocalizedNumberPipe,CommonModule, RouterModule, FormsModule, TranslateModule, PhotoGuideSheetComponent, MapPickerComponent, GeoPickerComponent, AmenityLabelPipe, UnitAvailabilityPanelComponent],
   templateUrl: './short-stay-listing-form.page.html',
   styleUrls: ['./short-stay-listing-form.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -89,6 +93,7 @@ export class ShortStayListingFormPage implements OnInit {
   private readonly router = inject(Router);
   private readonly api = inject(ShortStayListingApiService);
   private readonly lookupsApi = inject(LookupsApiService);
+  private readonly locationsApi = inject(LocationsApiService);
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
@@ -120,10 +125,12 @@ export class ShortStayListingFormPage implements OnInit {
   readonly togglingPublish = signal(false);
 
   // ── الموقع: المحافظة ← المنطقة ← الحي + نقطة على الخريطة ──
-  readonly governorates = signal<StructuredLocationLookup[]>([]);
-  readonly districts = signal<StructuredLocationLookup[]>([]);
-  readonly neighborhoods = signal<StructuredLocationLookup[]>([]);
-  readonly locationLoadFailed = signal(false);
+  readonly geoInitial = signal<GeoPickerInitial | null>(null);
+  /** The pin the host has just placed or moved: this is what triggers an address suggestion. */
+  readonly geoPin = signal<{ lat: number; lng: number } | null>(null);
+  /** Places the host typed that the catalog lacks; proposed to the administrators once the listing exists. */
+  private geoProposals: GeoProposal[] = [];
+  @ViewChild(GeoPickerComponent) private geoPicker?: GeoPickerComponent;
   /** The map's pin. Single source of truth: latitude/longitude below always mirror it. */
   readonly pin = signal<{ lat: number; lng: number } | null>(null);
   readonly locating = signal(false);
@@ -199,14 +206,6 @@ export class ShortStayListingFormPage implements OnInit {
 
     this.loadAmenities();
 
-    this.lookupsApi.getGovernorates().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: items => this.governorates.set(items),
-      error: () => {
-        this.governorates.set([]);
-        this.locationLoadFailed.set(true);
-      }
-    });
-
     if (id) {
       this.loadForEdit(id);
     } else {
@@ -253,8 +252,12 @@ export class ShortStayListingFormPage implements OnInit {
     this.governorateId = listing.governorateId;
     this.districtId = listing.districtId;
     this.neighborhoodId = listing.neighborhoodId;
-    if (listing.governorateId) this.loadDistricts(listing.governorateId);
-    if (listing.districtId) this.loadNeighborhoods(listing.districtId);
+    this.geoInitial.set({
+      governorateId: listing.governorateId,
+      districtId: listing.districtId,
+      neighborhoodId: listing.neighborhoodId,
+      city: listing.city
+    });
     this.poolType = listing.poolType;
     this.poolLocation = listing.poolLocation;
     this.poolIsSeasonal = listing.poolIsSeasonal;
@@ -284,58 +287,57 @@ export class ShortStayListingFormPage implements OnInit {
   }
 
   private get lang(): LangCode {
-    return (this.translate.currentLang === 'ar' ? 'ar' : this.translate.currentLang === 'de' ? 'de' : 'en') as LangCode;
-  }
-
-  locationLabel(item: StructuredLocationLookup): string {
-    return pickLocalizedName(item, this.lang);
+    const current = this.translate.currentLang;
+    return (current === 'ar' || current === 'de' || current === 'tr' ? current : 'en') as LangCode;
   }
 
   get mapLang(): LangCode {
     return this.lang;
   }
 
-  private loadDistricts(governorateId: number): void {
-    this.lookupsApi.getDistricts(governorateId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: items => this.districts.set(items),
-      error: () => {
-        this.districts.set([]);
-        this.locationLoadFailed.set(true);
-      }
-    });
+  /**
+   * The location picker reports every change here. A short-stay listing stores the governorate, district and
+   * neighborhood ids (plus the city text); places the host typed are proposed to the administrators after saving.
+   */
+  onGeoChange(value: GeoPickerValue): void {
+    const governorateChanged = value.governorateId !== this.governorateId;
+    this.governorateId = value.governorateId;
+    this.districtId = value.districtId;
+    this.neighborhoodId = value.neighborhoodId;
+    this.city = value.city;
+    this.geoProposals = value.proposals;
+
+    // Only steer the map before the host has placed a pin: never move it out from under one.
+    if (governorateChanged && value.governorateId && !this.pin()) {
+      const city = value.governorateNameEn ? cityMapFor(value.governorateNameEn) : null;
+      if (city) this.mapPicker?.updateCenter(city.lat, city.lng, city.zoom);
+    }
   }
 
-  private loadNeighborhoods(districtId: number): void {
-    this.lookupsApi.getNeighborhoods(districtId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: items => this.neighborhoods.set(items),
-      error: () => {
-        this.neighborhoods.set([]);
-        this.locationLoadFailed.set(true);
-      }
-    });
+  onMapPlaceSelected(place: GeoMapSuggestion): void {
+    this.geoPicker?.applyMapSuggestion(place);
   }
 
-  onGovernorateChange(id: number | null): void {
-    this.governorateId = id;
-    this.districtId = null;
-    this.neighborhoodId = null;
-    this.districts.set([]);
-    this.neighborhoods.set([]);
-    if (!id) return;
+  /** "Location not found? Suggest adding it." Best effort after the listing exists: never blocks or fails the save. */
+  private submitGeoProposals(): void {
+    const proposals = this.geoProposals;
+    if (!proposals.length) return;
+    this.geoProposals = [];
 
-    this.loadDistricts(id);
-
-    // Only steer the map before the host has placed a pin — never move it out from under one.
-    const governorate = this.governorates().find(g => g.id === id);
-    const city = governorate ? cityMapFor(governorate.nameEn) : null;
-    if (city && !this.pin()) this.mapPicker?.updateCenter(city.lat, city.lng, city.zoom);
-  }
-
-  onDistrictChange(id: number | null): void {
-    this.districtId = id;
-    this.neighborhoodId = null;
-    this.neighborhoods.set([]);
-    if (id) this.loadNeighborhoods(id);
+    forkJoin(
+      proposals.map(p =>
+        this.locationsApi
+          .submitRequest({
+            type: p.type,
+            parentLocationId: p.parentLocationId,
+            name: p.name,
+            proof: p.proof,
+            latitude: p.latitude ?? this.latitude,
+            longitude: p.longitude ?? this.longitude
+          })
+          .pipe(catchError(() => of(null)))
+      )
+    ).subscribe();
   }
 
   setPin(lat: number | null, lng: number | null): void {
@@ -347,6 +349,7 @@ export class ShortStayListingFormPage implements OnInit {
 
   onMapPinSelected(location: { lat: number; lng: number }): void {
     this.setPin(location.lat, location.lng);
+    this.geoPin.set({ lat: location.lat, lng: location.lng });
   }
 
   /** "Use my location": a GPS fix becomes the pin; every failure says what to do next. */
@@ -361,6 +364,7 @@ export class ShortStayListingFormPage implements OnInit {
       position => {
         this.locating.set(false);
         this.setPin(position.coords.latitude, position.coords.longitude);
+        this.geoPin.set({ lat: position.coords.latitude, lng: position.coords.longitude });
       },
       error => {
         this.locating.set(false);
@@ -477,7 +481,10 @@ export class ShortStayListingFormPage implements OnInit {
       defaultBasePricePerNight: this.defaultBasePricePerNight,
       currencyCode: this.currencyCode
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: created => this.uploadPendingPhotosThenOpen(created.id),
+      next: created => {
+        this.submitGeoProposals();
+        this.uploadPendingPhotosThenOpen(created.id);
+      },
       error: err => {
         this.saving.set(false);
         this.handleCreateError(err);
@@ -679,6 +686,7 @@ export class ShortStayListingFormPage implements OnInit {
       .subscribe({
         next: () => {
           this.saving.set(false);
+          this.submitGeoProposals();
           this.toast.show(this.translate.instant('SHORTSTAY.FORM.SAVE_SUCCESS'), 'success');
           this.loadForEdit(id);
         },

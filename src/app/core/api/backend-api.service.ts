@@ -33,7 +33,7 @@ export class BackendApiService {
   // local development), and a browser never attaches or stores a cross-origin cookie without
   // this flag on the request, no matter what the server's Set-Cookie says.
   get<T>(path: string, query?: Record<string, QueryValue>, options?: RequestOptions): Observable<T> {
-    return this.http.get<T>(this.url(path), { params: this.params(query), withCredentials: true, context: options?.context });
+    return this.http.get<T>(this.url(path), { params: this.params(query), withCredentials: true, context: options?.context, headers: options?.headers });
   }
 
   post<T>(path: string, body?: unknown, options?: RequestOptions): Observable<T> {
@@ -55,12 +55,12 @@ export class BackendApiService {
     return this.http.delete<T>(this.url(path), { body, withCredentials: true, context: options?.context });
   }
 
-  upload<T>(path: string, formData: FormData): Observable<T> {
-    return this.http.post<T>(this.url(path), formData, { withCredentials: true });
+  upload<T>(path: string, formData: FormData, options?: RequestOptions): Observable<T> {
+    return this.http.post<T>(this.url(path), formData, { withCredentials: true, context: options?.context });
   }
 
-  postFormData<T>(path: string, formData: FormData): Observable<T> {
-    return this.upload<T>(path, formData);
+  postFormData<T>(path: string, formData: FormData, options?: RequestOptions): Observable<T> {
+    return this.upload<T>(path, formData, options);
   }
 
   private url(path: string): string {

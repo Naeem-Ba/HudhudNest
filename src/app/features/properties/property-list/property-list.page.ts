@@ -7,7 +7,10 @@ import {
   Component,
   DestroyRef,
   HostListener,
+  ElementRef,
+  Injector,
   OnInit,
+  ViewChild,
   computed,
   inject,
   signal
@@ -18,22 +21,31 @@ import { ActivatedRoute, ParamMap, Router, RouterModule } from '@angular/router'
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { BehaviorSubject, catchError, debounceTime, distinctUntilChanged, EMPTY, fromEvent, of, switchMap, tap } from 'rxjs';
+import { Subject, catchError, debounceTime, distinctUntilChanged, EMPTY, fromEvent, map, merge, Observable, of, switchMap, tap } from 'rxjs';
 
-import { PropertyApiService } from '../../../core/api/property-api.service';
+import { PropertyApiService, toFloorScope } from '../../../core/api/property-api.service';
+import { AgenciesApiService } from '../../../core/api/agencies-api.service';
+import { isGuid } from '../../../shared/utils/guid';
 import { SavedSearchApiService } from '../../../core/api/saved-search-api.service';
 import {
   LookupsApiService,
   LookupAmenity,
-  LookupItem,
   PropertyTypeLookup,
   StructuredLocationLookup,
   pickLocalizedName
 } from '../../../core/api/lookups-api.service';
 import { AuthService } from '../../../core/auth/auth.service';
-import { LanguageService } from '../../../core/services/language.service';
+import { LangCode, LanguageService } from '../../../core/services/language.service';
 import { PagedResult } from '../../../core/models/api.model';
-import { Property, PropertyFilterDto } from '../../../core/models/property.model';
+import { AvailableFloors, FloorMode, Property, PropertyFilterDto } from '../../../core/models/property.model';
+import {
+  FloorSelection,
+  floorChoices,
+  hasFloorSelection,
+  parseFloorMode,
+  parseFloorParam,
+  selectionStillPossible
+} from './floor-filter.util';
 import { HttpErrorResponse } from '@angular/common/http';
 import { EmptyStateComponent } from '../../../shared/ui/empty-state.component';
 import { SkeletonCardGridComponent } from '../../../shared/ui/skeleton-card-grid.component';
@@ -56,15 +68,24 @@ import { InterestAreasService } from '../../../core/services/interest-areas.serv
 import { RecentAreasService } from '../../../core/services/recent-areas.service';
 import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
 import { AdSlotComponent } from '../../../core/ads/ad-slot.component';
+import { ListingTitlePipe } from '../../../shared/pipes/listing-title.pipe';
+import { ListingTitleTranslationBarComponent } from '../../../shared/ui/listing-title-translation-bar.component';
 import { ListingViewCountComponent } from '../../../shared/ui/listing-view-count.component';
 import { listSeparator } from '../../../core/i18n/ui-language';
+import { GeoPlaceFilterComponent } from '../../../shared/ui/geo/geo-place-filter.component';
+import { LocationsApiService } from '../../../core/api/locations-api.service';
+import { GeoLocation, geoName } from '../../../core/models/geo-location.model';
+import { ComboBoxComponent, ComboOption } from '../../../shared/ui/combo-box.component';
 
 @Component({
   selector: 'app-property-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    ListingTitlePipe,
+    ListingTitleTranslationBarComponent,
     AdSlotComponent,
+    ComboBoxComponent,
     ListingViewCountComponent,
     AmenityLabelPipe,
     CommonModule,
@@ -75,7 +96,8 @@ import { listSeparator } from '../../../core/i18n/ui-language';
     SkeletonCardGridComponent,
     ImageFallbackDirective,
     FavoriteToggleButtonComponent,
-    PropertyShareButtonComponent
+    PropertyShareButtonComponent,
+    GeoPlaceFilterComponent
   ],
   templateUrl: './property-list.page.html',
   styleUrls: ['./property-list.page.scss']
@@ -90,12 +112,15 @@ export class PropertyListPage implements OnInit {
 
   private readonly api = inject(PropertyApiService);
   private readonly savedSearchApi = inject(SavedSearchApiService);
+  private readonly agenciesApi = inject(AgenciesApiService);
   private readonly lookupsApi = inject(LookupsApiService);
   private readonly locations = inject(LocationNamesService);
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly langService = inject(LanguageService);
+  /** The place catalog is only asked when a link carries a place, so the list renders without it otherwise. */
+  private readonly injector = inject(Injector);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
@@ -124,12 +149,11 @@ export class PropertyListPage implements OnInit {
   readonly fallbackImage = '/images/no-image.svg';
 
   /**
-   * ✅ إضافة: اقتراحات مدن حقيقية عبر GET /api/lookups/cities لحقل فلترة
-   * المدينة (كان نصياً حراً بدون أي اقتراح رغم توفر endpoint جاهز لذلك).
+   * Runs the current query again without a URL change: "near me" switched on or off, a new radius, the error
+   * state's Retry, and "apply" when nothing in the URL changed but the mode did. Feeds the same cancelling
+   * pipeline as the URL, so two requests are never in flight for one screen.
    */
-  readonly citySuggestions = signal<LookupItem[]>([]);
-  /** The governorate the city suggestions are scoped to (null = every city). Each change refetches, dropping a stale in-flight reply. */
-  private readonly citySuggestionScope = new BehaviorSubject<number | null>(null);
+  private readonly reload$ = new Subject<void>();
 
   /**
    * ✅ إضافة: فلترة حسب المرافق — الباك اند يدعم فعلياً AmenityIds ضمن
@@ -149,9 +173,42 @@ export class PropertyListPage implements OnInit {
   readonly neighborhoods = signal<StructuredLocationLookup[]>([]);
   readonly propertyTypeCatalog = signal<PropertyTypeLookup[]>([]);
   governorateId: number | null = null;
+  /** A catalog place of any level chosen in the "specific place" box; the API filters by everything inside it. */
+  locationId: number | null = null;
+  readonly locationPlace = signal<GeoLocation | null>(null);
   districtId: number | null = null;
   neighborhoodId: number | null = null;
+  /**
+   * A district / neighborhood the person typed because it is not in the lists. There is no id to filter by, so
+   * the words go through the keyword search, which already looks at the stored city, district and neighborhood
+   * text of every listing (Arabic spellings folded together).
+   */
+  districtText = '';
+  neighborhoodText = '';
+  /**
+   * A place typed as text and applied through the place box ("search «X» in listing addresses"): a street or a city
+   * the catalog does not hold. Sent as `placeText`, where every word must be found (it narrows, it never widens).
+   */
+  addressText = '';
+  /** What is in the place box right now when it differs from what was applied; committed by "apply" so nothing typed is silently ignored. null = untouched. */
+  private placeDraft: string | null = null;
   propertyTypeId: number | null = null;
+
+  @ViewChild(GeoPlaceFilterComponent) private placeBox?: GeoPlaceFilterComponent;
+  /** The amenities section is folded away until asked for (34 chips used to fill a third of the panel). */
+  amenitiesOpen = false;
+
+  @ViewChild('plResults') private resultsRegion?: ElementRef<HTMLElement>;
+  /** Set by "apply filters": the next answer (results, nothing found, or an error) is brought into view. */
+  private scrollToResultsWhenLoaded = false;
+
+  private readonly lang = signal<LangCode>(this.langService.getCurrent());
+
+  /** The lists shown in the language of the page, rebuilt when the language or the lookups change. */
+  readonly districtOptions = computed<ComboOption[]>(() =>
+    this.districts().map(d => ({ value: d.id, label: pickLocalizedName(d, this.lang()) })));
+  readonly neighborhoodOptions = computed<ComboOption[]>(() =>
+    this.neighborhoods().map(n => ({ value: n.id, label: pickLocalizedName(n, this.lang()) })));
 
   /** Phase-0, Task 3 — "save this search" button state. */
   readonly savingSearch = signal(false);
@@ -161,6 +218,8 @@ export class PropertyListPage implements OnInit {
   // رغم أن الخادم يوفره بفهرسة PostGIS مخصصة لهذا الغرض.
   readonly geoModeActive = signal(false);
   readonly geoLoading = signal(false);
+  /** Where the person is while "near me" is on. Kept here (never in the URL: a shared link must not carry a home address). */
+  private readonly geoCoords = signal<{ latitude: number; longitude: number } | null>(null);
   radiusKm = 5;
 
   /**
@@ -172,6 +231,27 @@ export class PropertyListPage implements OnInit {
   currencyCode = '';
   /** Why the last "apply" did nothing (an inverted range), shown under the price fields. */
   readonly filterError = signal('');
+
+  // ── Floor filter ──
+  // Three ways to ask, one state: a floor range (a single floor is from === to) or "the highest / lowest floor
+  // that exists" (floorMode, which excludes the range). 0 is the ground floor; a listing with no floor on record
+  // matches none of them. The choices come from GET /properties/floors, i.e. only floors the other filters leave.
+  floorFrom: number | null = null;
+  floorTo: number | null = null;
+  floorMode: FloorMode | null = null;
+
+  /**
+   * One office's listings (the office page's "browse with filters" link): `agencyId` scopes the search, and
+   * `office` (its slug) only names it. It is not a panel filter: clearing the filters keeps it, and the bar above
+   * the results is the way out. The name is shown only when the slug resolves to the same office id.
+   */
+  agencyId: string | null = null;
+  private officeSlug: string | null = null;
+  readonly officeName = signal<string | null>(null);
+  /** The floors that exist for the filters as they stand; null while unknown (then the screen offers 0..50). */
+  readonly floorOptions = signal<AvailableFloors | null>(null);
+  /** Asks for the floor choices again (true: and drop a floor choice that no longer exists under the new filters). */
+  private readonly floorScope$ = new Subject<boolean>();
 
   filtersOpen = false;
   searchText = '';
@@ -224,7 +304,11 @@ export class PropertyListPage implements OnInit {
         }
       });
 
-    this.bindCitySuggestions();
+    this.langService.currentLang$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(lang => this.lang.set(lang));
+
+    this.watchFloorOptions();
     this.loadCurrencies();
     this.loadAmenities();
     this.loadGovernorates();
@@ -236,20 +320,26 @@ export class PropertyListPage implements OnInit {
     // panel "apply", a page change, Reset, and browser back/forward navigation all
     // funnel through here as a query-param change. switchMap cancels an in-flight
     // request if a newer one starts before it resolves (race-condition guard).
-    this.route.queryParamMap
+    const urlChanges$ = this.route.queryParamMap.pipe(
+      tap(params => {
+        this.applyParamsToState(params);
+        // A governorate the person searched in is remembered on this device (never sent to the server as a log).
+        this.recentAreas.record(this.governorateId);
+      })
+    );
+
+    merge(urlChanges$, this.reload$)
       .pipe(
-        tap(params => {
-          this.applyParamsToState(params);
-          // A governorate the person searched in is remembered on this device (never sent to the server as a log).
-          this.recentAreas.record(this.governorateId);
+        tap(() => {
           this.loading.set(true);
           this.error.set('');
         }),
         switchMap(() =>
-          this.api.getPropertiesPaged(this.buildFilterFromState(this.currentPage())).pipe(
+          this.fetchPage(this.currentPage()).pipe(
             catchError(err => {
               this.error.set(this.loadErrorKey(err));
               this.loading.set(false);
+              this.revealResultsIfRequested();
               return EMPTY;
             })
           )
@@ -259,8 +349,17 @@ export class PropertyListPage implements OnInit {
       .subscribe(result => {
         if (!this.redirectToLastPageIfBeyond(result)) {
           this.applyResult(result);
+          this.revealResultsIfRequested();
         }
       });
+  }
+
+  /** The list, or - while "near me" is on - the listings around the person, with the same filters either way. */
+  private fetchPage(page: number): Observable<PagedResult<Property>> {
+    const coords = this.geoModeActive() ? this.geoCoords() : null;
+    return coords
+      ? this.api.geoSearch(coords.latitude, coords.longitude, this.radiusKm, this.buildGeoFilter(page))
+      : this.api.getPropertiesPaged(this.buildFilterFromState(page));
   }
 
   /**
@@ -338,6 +437,69 @@ export class PropertyListPage implements OnInit {
   }
 
   /** Cascading dropdown handler — mirrors property-form.page.ts's bindCascadingLocationChanges. */
+  get currentLang(): LangCode { return this.langService.getCurrent(); }
+
+  /** The "specific place" box: a place replaces the older governorate/district/neighborhood narrowing. */
+  onPlaceFilterPicked(place: GeoLocation | null): void {
+    this.locationPlace.set(place);
+    this.locationId = place?.id ?? null;
+    // One box, one meaning: a catalog place and an address text never apply together.
+    this.addressText = '';
+    this.placeDraft = null;
+    this.onFloorScopeChanged();
+    if (place) {
+      this.governorateId = null;
+      this.districtId = null;
+      this.neighborhoodId = null;
+      this.districtText = '';
+      this.neighborhoodText = '';
+      this.cityFilter = '';
+      this.districts.set([]);
+      this.neighborhoods.set([]);
+    }
+  }
+
+  /** "Search «X» in listing addresses": the street or city the catalog does not know, applied as a text that must be found. */
+  onPlaceTextPicked(text: string): void {
+    this.addressText = text.trim();
+    this.locationId = null;
+    this.locationPlace.set(null);
+    this.placeDraft = null;
+  }
+
+  /** What the person has typed in the place box so far (applied, if still there, when they press "apply"). */
+  onPlaceTyped(text: string): void {
+    this.placeDraft = text;
+  }
+
+  /**
+   * "Apply" takes the place box as it looks: text left in it that was neither picked from the list nor chosen as an
+   * address search is applied as an address search, instead of being dropped without a word.
+   */
+  private commitPlaceDraft(): void {
+    const draft = this.placeDraft?.trim();
+    this.placeDraft = null;
+    if (!draft) return;
+
+    const current = this.locationPlace();
+    const appliedLabel = current ? geoName(current, this.currentLang) : this.addressText;
+    if (draft !== appliedLabel) this.onPlaceTextPicked(draft);
+  }
+
+  /** Restores the box after a reload or a shared link: only the id is in the URL, the name comes from the catalog. */
+  private applyLocationFromUrl(raw: string | null): void {
+    const id = raw ? Math.trunc(Number(raw)) : 0;
+    this.locationId = id > 0 ? id : null;
+    if (!this.locationId) {
+      this.locationPlace.set(null);
+      return;
+    }
+    if (this.locationPlace()?.id === this.locationId) return;
+    this.injector.get(LocationsApiService).get(this.locationId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: place => this.locationPlace.set(place), error: () => this.locationPlace.set(null) });
+  }
+
   onGovernorateChange(): void {
     // The free-text city is a second, unrelated way to name the same place — keeping a city
     // typed for the previous governorate would send a contradictory combination that can only
@@ -345,9 +507,13 @@ export class PropertyListPage implements OnInit {
     this.cityFilter = '';
     this.districtId = null;
     this.neighborhoodId = null;
+    this.districtText = '';
+    this.neighborhoodText = '';
+    this.locationId = null;
+    this.locationPlace.set(null);
     this.districts.set([]);
     this.neighborhoods.set([]);
-    this.citySuggestionScope.next(this.governorateId);
+    this.onFloorScopeChanged();
 
     if (this.governorateId) {
       this.lookupsApi.getDistricts(this.governorateId)
@@ -359,12 +525,33 @@ export class PropertyListPage implements OnInit {
   onDistrictChange(): void {
     this.neighborhoodId = null;
     this.neighborhoods.set([]);
+    this.onFloorScopeChanged();
 
     if (this.districtId) {
       this.lookupsApi.getNeighborhoods(this.districtId)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({ next: items => this.neighborhoods.set(items), error: () => this.neighborhoods.set([]) });
     }
+  }
+
+  /**
+   * The city is no longer a field of the panel (the governorate and the place box say the same thing in a way the
+   * catalog can check), but a link or saved search may still carry one: it stays in force, shown as a chip that
+   * can be removed, so a filter is never active without being visible.
+   */
+  removeCityFilter(): void {
+    this.cityFilter = '';
+  }
+
+  // The typed words are kept exactly as typed (a space between two words must survive); they are trimmed where used.
+  onDistrictTyped(text: string | null): void {
+    this.districtText = text ?? '';
+    if (this.districtText.trim()) this.districtId = null;
+  }
+
+  onNeighborhoodTyped(text: string | null): void {
+    this.neighborhoodText = text ?? '';
+    if (this.neighborhoodText.trim()) this.neighborhoodId = null;
   }
 
   /** Localized label for a bilingual lookup item, matching the current UI language. */
@@ -395,10 +582,24 @@ export class PropertyListPage implements OnInit {
     this.currencyCode = isMarketCurrency(urlCurrency) ? urlCurrency : this.defaultCurrencyCode();
 
     this.governorateId = params.get('governorateId') ? Number(params.get('governorateId')) : null;
+    this.applyLocationFromUrl(params.get('locationId'));
     this.districtId = params.get('districtId') ? Number(params.get('districtId')) : null;
     this.neighborhoodId = params.get('neighborhoodId') ? Number(params.get('neighborhoodId')) : null;
+    this.districtText = params.get('districtText') ?? '';
+    this.neighborhoodText = params.get('neighborhoodText') ?? '';
+    this.addressText = params.get('placeText') ?? '';
+    if (this.placeDraft !== null) {
+      this.placeDraft = null;
+      this.placeBox?.reset();
+    }
     this.propertyTypeId = params.get('propertyTypeId') ? Number(params.get('propertyTypeId')) : null;
-    this.citySuggestionScope.next(this.governorateId);
+    this.applyOfficeFromUrl(params.get('agencyId'), params.get('office'));
+
+    // The URL is user-editable: a floor that is not a whole number from 0 to 200 is dropped, and a mode excludes a range.
+    this.floorMode = parseFloorMode(params.get('floorMode'));
+    this.floorFrom = this.floorMode ? null : parseFloorParam(params.get('floorFrom'));
+    this.floorTo = this.floorMode ? null : parseFloorParam(params.get('floorTo'));
+    this.requestFloorOptions(false);
 
     // The URL is user-editable: a page or size that is not a whole number in range would be refused
     // by the server (422) or answer an empty page, so it is brought back into range here.
@@ -421,6 +622,43 @@ export class PropertyListPage implements OnInit {
     }
   }
 
+  /** A malformed id would be refused by the server (422), so it is dropped like any other bad URL value. */
+  private applyOfficeFromUrl(rawId: string | null, rawSlug: string | null): void {
+    const id = isGuid(rawId?.trim()) ? rawId!.trim().toLowerCase() : null;
+    const slug = id && rawSlug?.trim() ? rawSlug.trim() : null;
+    const changed = id !== this.agencyId || slug !== this.officeSlug;
+    this.agencyId = id;
+    this.officeSlug = slug;
+    if (!changed) return;
+
+    this.officeName.set(null);
+    if (!id || !slug) return;
+    this.agenciesApi.getBySlug(slug)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: agency => {
+          if (this.agencyId === id && agency.id.toLowerCase() === id) this.officeName.set(agency.name);
+        },
+        error: () => { /* the bar falls back to a generic label */ }
+      });
+  }
+
+  /** Leaves the office scope: the same filters, over every listing. */
+  clearOfficeScope(): void {
+    this.agencyId = null;
+    this.officeSlug = null;
+    this.officeName.set(null);
+    this.navigateWithCurrentState(1);
+  }
+
+  /**
+   * The words of the place the person typed, all of which must be found: the address text from the place box and
+   * the district / neighborhood names typed by hand. (The keyword box is separate: there one word is enough.)
+   */
+  private placeTextFilter(): string {
+    return [this.addressText, this.districtText, this.neighborhoodText].map(t => t.trim()).filter(Boolean).join(' ');
+  }
+
   /** Builds the request DTO sent to the API from the filter panel's current UI-bound state. */
   private buildFilterFromState(page: number): PropertyFilterDto {
     const sort = this.mapSort();
@@ -429,6 +667,7 @@ export class PropertyListPage implements OnInit {
       page,
       pageSize: this.pageSize(),
       searchTerm: this.searchText.trim() || undefined,
+      placeText: this.placeTextFilter() || undefined,
       city: this.cityFilter.trim() || undefined,
       listingType: this.selectedListingType || undefined,
       minPrice: this.minPrice ?? undefined,
@@ -443,8 +682,27 @@ export class PropertyListPage implements OnInit {
       governorateId: this.governorateId ?? undefined,
       districtId: this.districtId ?? undefined,
       neighborhoodId: this.neighborhoodId ?? undefined,
-      propertyTypeId: this.propertyTypeId ?? undefined
+      locationId: this.locationId ?? undefined,
+      propertyTypeId: this.propertyTypeId ?? undefined,
+      floorFrom: this.floorFrom ?? undefined,
+      floorTo: this.floorTo ?? undefined,
+      floorMode: this.floorMode ?? undefined,
+      agencyId: this.agencyId ?? undefined
     };
+  }
+
+  /** The filters "near me" understands: all of the list's, except the ordering (nearest first) and the interest ranking. */
+  private buildGeoFilter(page: number): PropertyFilterDto {
+    const { sortBy: _sortBy, sortDescending: _sortDescending, interestGovernorateIds: _interest, floorMode, ...filter } = this.buildFilterFromState(page);
+
+    // "Near me" understands a floor range but not "highest / lowest": the extreme is read from the floors that exist
+    // for the same filters (the whole result, not only the circle) and sent as that one floor.
+    const options = this.floorOptions();
+    if (floorMode && options && options.min !== null && options.max !== null) {
+      const floor = floorMode === 'highest' ? options.max : options.min;
+      return { ...filter, floorFrom: floor, floorTo: floor };
+    }
+    return filter;
   }
 
   /**
@@ -454,7 +712,7 @@ export class PropertyListPage implements OnInit {
    * in ngOnInit reacts to the resulting navigation and performs the actual
    * fetch, so this is the one place that turns a user action into a request.
    */
-  private navigateWithCurrentState(page: number, replaceUrl = false): void {
+  private navigateWithCurrentState(page: number, replaceUrl = false, forceReload = false): void {
     this.foldGovernorateNameIntoGovernorateFilter();
     const queryParams: Record<string, string | number | string[] | null> = {
       search: this.searchText.trim() || null,
@@ -468,10 +726,32 @@ export class PropertyListPage implements OnInit {
       governorateId: this.governorateId ?? null,
       districtId: this.districtId ?? null,
       neighborhoodId: this.neighborhoodId ?? null,
+      districtText: this.districtText.trim() || null,
+      neighborhoodText: this.neighborhoodText.trim() || null,
+      placeText: this.addressText.trim() || null,
+      locationId: this.locationId ?? null,
       propertyTypeId: this.propertyTypeId ?? null,
+      floorFrom: this.floorFrom ?? null,
+      floorTo: this.floorTo ?? null,
+      floorMode: this.floorMode ?? null,
+      agencyId: this.agencyId ?? null,
+      office: this.agencyId ? this.officeSlug : null,
       page: page > 1 ? page : null,
       pageSize: this.pageSize() !== 20 ? this.pageSize() : null
     };
+
+    // The router ignores a navigation to the URL it is already on, so nothing would load or scroll: the button would
+    // look dead. When the URL would not change, the results are either re-run (the mode changed) or simply shown.
+    const target = this.router.serializeUrl(this.router.createUrlTree([], { relativeTo: this.route, queryParams }));
+    if (target === this.router.url) {
+      if (forceReload) {
+        this.currentPage.set(page);
+        this.reload$.next();
+      } else {
+        this.revealResultsIfRequested();
+      }
+      return;
+    }
 
     this.router.navigate([], replaceUrl ? { relativeTo: this.route, queryParams, replaceUrl } : { relativeTo: this.route, queryParams });
   }
@@ -503,18 +783,6 @@ export class PropertyListPage implements OnInit {
     this.cityFilter = '';
   }
 
-  private bindCitySuggestions(): void {
-    this.citySuggestionScope
-      .pipe(
-        distinctUntilChanged(),
-        switchMap(governorateId =>
-          this.lookupsApi.getCities(governorateId).pipe(catchError(() => of([] as LookupItem[])))
-        ),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(cities => this.citySuggestions.set(cities));
-  }
-
   /** GET /api/lookups/amenities — لفلتر المرافق في لوحة البحث. */
   private loadAmenities(): void {
     this.lookupsApi
@@ -530,17 +798,22 @@ export class PropertyListPage implements OnInit {
     return this.selectedAmenityIds.includes(amenityId);
   }
 
+  toggleAmenitiesSection(): void {
+    this.amenitiesOpen = !this.amenitiesOpen;
+  }
+
   toggleAmenityFilter(amenityId: string): void {
     this.selectedAmenityIds = this.isAmenitySelected(amenityId)
       ? this.selectedAmenityIds.filter(id => id !== amenityId)
       : [...this.selectedAmenityIds, amenityId];
   }
 
-  /** يبدّل بين نتائج البحث النصي/الفلاتر العادية والبحث الجغرافي القريب. */
+  /** Switches "near me" on (asks for the position once) or off (back to the plain list); the filters stay either way. */
   toggleGeoMode(): void {
     if (this.geoModeActive()) {
       this.geoModeActive.set(false);
-      this.loadProperties();
+      this.geoCoords.set(null);
+      this.refreshFromFirstPage();
       return;
     }
 
@@ -557,50 +830,31 @@ export class PropertyListPage implements OnInit {
 
     navigator.geolocation.getCurrentPosition(
       position => {
+        this.geoCoords.set({ latitude: position.coords.latitude, longitude: position.coords.longitude });
         this.geoModeActive.set(true);
         this.geoLoading.set(false);
-        this.searchNearby(position.coords.latitude, position.coords.longitude);
+        this.scrollToResultsWhenLoaded = true;
+        this.setFiltersOpen(false);
+        this.refreshFromFirstPage();
       },
       () => {
         this.geoLoading.set(false);
         this.toast.error(this.translate.instant('PROPERTY_LIST.GEO_DENIED'));
-      }
+      },
+      // A position from the last minute is good enough for "near me"; waiting forever for a fresh one is not.
+      { enableHighAccuracy: false, timeout: 15_000, maximumAge: 60_000 }
     );
   }
 
-  searchNearby(latitude: number, longitude: number): void {
-    this.loading.set(true);
-    this.error.set('');
-
-    this.api
-      .geoSearch(latitude, longitude, this.radiusKm, {
-        page: 1,
-        pageSize: this.pageSize(),
-        listingType: this.selectedListingType || undefined
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: result => {
-          this.properties.set(result.items);
-          this.totalCount.set(result.totalCount);
-          this.currentPage.set(result.page);
-          this.pageSize.set(result.pageSize);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.error.set('PROPERTY_LIST.LOAD_ERROR');
-          this.loading.set(false);
-        }
-      });
+  onRadiusChange(): void {
+    // The position is already known: a new radius only needs a new search, not a second permission prompt.
+    if (!this.geoModeActive() || !this.geoCoords()) return;
+    this.refreshFromFirstPage();
   }
 
-  onRadiusChange(): void {
-    // نحتاج موقعاً جديداً عند تغيير نصف القطر فقط إذا كان وضع القرب مفعّلاً بالفعل.
-    if (!this.geoModeActive() || !('geolocation' in navigator)) return;
-
-    navigator.geolocation.getCurrentPosition(position => {
-      this.searchNearby(position.coords.latitude, position.coords.longitude);
-    });
+  /** Runs the current query again from page 1 (and puts page 1 in the URL), whether or not the URL changes. */
+  private refreshFromFirstPage(): void {
+    this.navigateWithCurrentState(1, true, true);
   }
 
   openFilters(): void {
@@ -635,27 +889,27 @@ export class PropertyListPage implements OnInit {
     }
   }
 
-  /**
-   * Re-fetches with the current (already-applied) filter/page state without
-   * going through the URL — used by the error state's Retry button and by
-   * toggleGeoMode() when switching back from geo-search results, neither of
-   * which represents a new filter/page the user should be able to navigate
-   * back to.
-   */
+  /** Re-fetches the current page without touching the URL: the error state's Retry button. */
   loadProperties(): void {
-    this.loading.set(true);
-    this.error.set('');
+    this.reload$.next();
+  }
 
-    this.api
-      .getPropertiesPaged(this.buildFilterFromState(this.currentPage()))
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: result => this.applyResult(result),
-        error: () => {
-          this.error.set('PROPERTY_LIST.LOAD_ERROR');
-          this.loading.set(false);
-        }
-      });
+  /**
+   * After "apply filters" the person is looking at the filter panel (a drawer on a phone, the sidebar on a
+   * desktop): once the answer is in, the top of the results - or the "nothing matches" message - is brought into
+   * view and focused, so the effect of the button is never out of sight.
+   */
+  private revealResultsIfRequested(): void {
+    if (!this.scrollToResultsWhenLoaded) return;
+    this.scrollToResultsWhenLoaded = false;
+    // One macrotask later: the change detection that paints the new results (or the empty message) has run by then.
+    const timer = setTimeout(() => {
+      const region = this.resultsRegion?.nativeElement;
+      if (!region) return;
+      region.scrollIntoView({ block: 'start' });
+      region.focus({ preventScroll: true });
+    }, 0);
+    this.destroyRef.onDestroy(() => clearTimeout(timer));
   }
 
   private applyResult(result: PagedResult<Property>): void {
@@ -679,7 +933,12 @@ export class PropertyListPage implements OnInit {
     if (this.governorateId) count++;
     if (this.districtId) count++;
     if (this.neighborhoodId) count++;
+    if (this.districtText.trim()) count++;
+    if (this.neighborhoodText.trim()) count++;
+    if (this.addressText.trim()) count++;
+    if (this.locationId) count++;
     if (this.propertyTypeId) count++;
+    if (this.hasFloorFilter) count++;
 
     return count;
   }
@@ -710,6 +969,7 @@ export class PropertyListPage implements OnInit {
     if (type === '' && (this.sortBy === 'Price' || this.sortBy === 'PriceDesc')) {
       this.sortBy = 'CreatedAt';
     }
+    this.onFloorScopeChanged();
   }
 
   /** The approximate equivalent of a listing's price in the chosen currency, shown while a price range is active. */
@@ -732,6 +992,104 @@ export class PropertyListPage implements OnInit {
     return isReservedListing(property);
   }
 
+  // ── Floor filter ──────────────────────────────────────────────────────────────────────────────────────────────
+
+  /** What is chosen, as one object (for the helpers). */
+  private get floorSelection(): FloorSelection {
+    return { from: this.floorFrom, to: this.floorTo, mode: this.floorMode };
+  }
+
+  get hasFloorFilter(): boolean {
+    return hasFloorSelection(this.floorSelection);
+  }
+
+  /** The "choose one floor" select shows a floor only while the range is exactly that floor. */
+  get specificFloor(): number | null {
+    return this.floorFrom !== null && this.floorFrom === this.floorTo ? this.floorFrom : null;
+  }
+
+  /** The server answered and no listing under the current filters has a floor on record. */
+  noFloorsAvailable(): boolean {
+    const options = this.floorOptions();
+    return options !== null && options.floors.length === 0;
+  }
+
+  /** Every floor to offer, ground floor first; a floor already chosen is always in the list. */
+  floorList(): number[] {
+    return floorChoices(this.floorOptions(), [this.floorFrom, this.floorTo]);
+  }
+
+  toggleFloorMode(mode: FloorMode): void {
+    this.floorMode = this.floorMode === mode ? null : mode;
+    if (this.floorMode) {
+      this.floorFrom = null;
+      this.floorTo = null;
+    }
+  }
+
+  onSpecificFloor(floor: number | null): void {
+    this.floorMode = null;
+    this.floorFrom = floor;
+    this.floorTo = floor;
+  }
+
+  onFloorFrom(floor: number | null): void {
+    this.floorMode = null;
+    this.floorFrom = floor;
+    if (floor !== null && this.floorTo !== null && floor > this.floorTo) this.floorTo = floor;
+  }
+
+  onFloorTo(floor: number | null): void {
+    this.floorMode = null;
+    this.floorTo = floor;
+    if (floor !== null && this.floorFrom !== null && floor < this.floorFrom) this.floorFrom = floor;
+  }
+
+  /** "Clear filter": back to all floors. The list changes when the person applies, like every other field. */
+  clearFloorFilter(refreshOptions = true): void {
+    this.floorFrom = null;
+    this.floorTo = null;
+    this.floorMode = null;
+    if (refreshOptions) this.requestFloorOptions(false);
+  }
+
+  /** A filter that decides which floors exist changed in the panel: refresh the choices (and drop a floor that is gone). */
+  onFloorScopeChanged(): void {
+    this.requestFloorOptions(true);
+  }
+
+  private requestFloorOptions(pruneSelection: boolean): void {
+    this.floorScope$.next(pruneSelection);
+  }
+
+  /**
+   * One request per distinct set of other filters (a burst of changes is one request, the last one wins, and an
+   * unchanged set asks nothing). A failed request leaves the choices unknown, which the screen answers with 0..50.
+   */
+  private watchFloorOptions(): void {
+    this.floorScope$
+      .pipe(
+        debounceTime(200),
+        map(prune => ({ prune, scope: toFloorScope(this.buildFilterFromState(1)) })),
+        distinctUntilChanged((a, b) => JSON.stringify(a.scope) === JSON.stringify(b.scope)),
+        switchMap(({ prune, scope }) =>
+          this.api.getAvailableFloors(scope).pipe(
+            map(options => ({ prune, options })),
+            catchError(() => of({ prune, options: null }))
+          )
+        ),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(({ prune, options }) => {
+        this.floorOptions.set(options);
+        // Only a change made in the panel drops the choice. A floor that arrived in the URL stays visible, because it
+        // is what the list below was asked for.
+        if (prune && options && !selectionStillPossible(this.floorSelection, options)) {
+          this.clearFloorFilter(false);
+        }
+      });
+  }
+
   applyFilters(): void {
     if (this.priceRangeInverted) {
       // Said here, in the reader's language, instead of sending a request the server would refuse.
@@ -740,13 +1098,13 @@ export class PropertyListPage implements OnInit {
     }
 
     this.filterError.set('');
+    this.commitPlaceDraft();
     this.setFiltersOpen(false);
-    // Applying filters runs the normal (URL-driven) search, so a previously active "near me"
-    // result set must not stay flagged as active while it is no longer what is shown.
-    this.geoModeActive.set(false);
+    this.scrollToResultsWhenLoaded = true;
     // A new/changed search or filter always returns to page 1 — the previous
     // page from a different result set is otherwise very likely to come back
-    // empty and read as a spurious "no results" error.
+    // empty and read as a spurious "no results" error. "Near me", if on, stays on: it is a mode of the
+    // search, and the filters now apply inside it.
     this.navigateWithCurrentState(1);
   }
 
@@ -763,15 +1121,26 @@ export class PropertyListPage implements OnInit {
     this.governorateId = null;
     this.districtId = null;
     this.neighborhoodId = null;
+    this.districtText = '';
+    this.neighborhoodText = '';
+    this.locationId = null;
+    this.locationPlace.set(null);
+    this.addressText = '';
+    this.placeDraft = null;
+    this.placeBox?.reset();
     this.propertyTypeId = null;
+    this.clearFloorFilter(false);
     this.districts.set([]);
     this.neighborhoods.set([]);
-    this.citySuggestionScope.next(null);
     this.geoModeActive.set(false);
+    this.geoCoords.set(null);
     this.setFiltersOpen(false);
     // Clears the URL entirely (not just component state) so a refresh or a
-    // shared link after Reset doesn't resurrect the filters that were just cleared.
-    this.router.navigate([], { relativeTo: this.route, queryParams: {} });
+    // shared link after Reset doesn't resurrect the filters that were just cleared. When the URL was
+    // already clean (only "near me" was on) the list is reloaded instead, so Reset always refreshes.
+    // The office scope (agencyId) is not a filter of the panel and stays: its own bar removes it.
+    this.scrollToResultsWhenLoaded = true;
+    this.navigateWithCurrentState(1, false, true);
   }
 
   /**
@@ -800,13 +1169,19 @@ export class PropertyListPage implements OnInit {
         MaxPrice: this.maxPrice,
         // The range means nothing without the currency it was written in (the matcher compares
         // listings in other currencies by it).
-        CurrencyCode: this.hasPriceFilter && this.currencyCode ? this.currencyCode : null
+        CurrencyCode: this.hasPriceFilter && this.currencyCode ? this.currencyCode : null,
+        // "Highest/lowest available floor" moves with the market, so only a concrete floor or range is saved.
+        FloorFrom: this.floorMode ? null : this.floorFrom,
+        FloorTo: this.floorMode ? null : this.floorTo
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           this.savingSearch.set(false);
           this.toast.success(this.translate.instant('PROPERTY_LIST.SAVE_SEARCH_SUCCESS'));
+          if (this.floorMode) {
+            this.toast.info(this.translate.instant('PROPERTY_LIST.FLOOR_FILTER.SAVE_MODE_NOTE'));
+          }
         },
         error: () => {
           this.savingSearch.set(false);

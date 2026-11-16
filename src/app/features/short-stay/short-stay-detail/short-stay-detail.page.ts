@@ -27,7 +27,7 @@ import { ImageFallbackDirective } from '../../../shared/directives/image-fallbac
 import { PageMetaService } from '../../../core/services/page-meta.service';
 import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
 import { apiErrorText } from '../../../core/api/api-error-text';
-import { ListingTranslationService } from '../../../core/api/listing-translation.service';
+import { ListingTranslationService, TranslationLanguage } from '../../../core/api/listing-translation.service';
 import { ListingTranslationController } from '../../property-detail/listing-translation.controller';
 import { TranslationNoticeComponent } from '../../property-detail/translation-notice.component';
 import { mergeViewCount } from '../../../shared/utils/view-count';
@@ -136,7 +136,7 @@ export class ShortStayDetailPage implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(event => {
         const current = this.listing();
-        if (current) this.translation.start(current.id, event.lang as 'ar' | 'de' | 'en', 'short-stay');
+        if (current) this.translation.start(current.id, event.lang as TranslationLanguage, 'short-stay');
       });
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) { this.error.set('SHORTSTAY.DETAIL.NOT_FOUND'); this.pageMeta.markNotFound(); return; }
@@ -155,11 +155,13 @@ export class ShortStayDetailPage implements OnInit {
     this.listingsApi.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: listing => {
         this.listing.set(listing);
-        this.translation.start(listing.id, (this.translate.currentLang || 'ar') as 'ar' | 'de' | 'en', 'short-stay');
+        this.translation.start(listing.id, (this.translate.currentLang || 'ar') as TranslationLanguage, 'short-stay');
         this.pageMeta.applyDynamic({ title: listing.title, description: listing.description, path: `/short-stay/${listing.id}` });
+        this.applyStayFromQuery(listing);
         this.loading.set(false);
         this.loadAvailability();
         this.recordView(listing.id);
+        if (this.checkIn && this.checkOut) this.refreshPricing();
       },
       error: (err: unknown) => {
         this.error.set('SHORTSTAY.DETAIL.LOAD_ERROR');
@@ -170,6 +172,37 @@ export class ShortStayDetailPage implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  /**
+   * The list passes the dates and the number of guests of the search (?checkIn=&checkOut=&guests=), so the booking form
+   * opens already filled in instead of asking for them again. The link is user-editable, so every value is checked:
+   * dates that are not valid, in the past, or shorter than the minimum stay are ignored; the guests are kept within
+   * what the room takes.
+   */
+  private applyStayFromQuery(listing: ShortStayListing): void {
+    const query = this.route.snapshot.queryParamMap;
+    const checkIn = this.isoDate(query.get('checkIn'));
+    const checkOut = this.isoDate(query.get('checkOut'));
+    const today = this.toIso(new Date());
+
+    if (checkIn && checkOut && checkIn >= today && checkOut > checkIn) {
+      const nights = Math.round((Date.parse(checkOut) - Date.parse(checkIn)) / 86_400_000);
+      if (nights >= this.minNights()) {
+        this.checkIn = checkIn;
+        this.checkOut = checkOut;
+      }
+    }
+
+    const guests = Math.trunc(Number(query.get('guests')));
+    if (Number.isFinite(guests) && guests >= 1) {
+      const room = this.bookableUnit()?.roomType;
+      this.adults = Math.min(guests, room?.capacity ?? listing.capacity);
+    }
+  }
+
+  private isoDate(value: string | null): string | null {
+    return value && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value)) ? value : null;
   }
 
   /** View counter: the detail page is on screen, so tell the server once (never blocks or surfaces an error). */

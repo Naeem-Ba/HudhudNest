@@ -107,13 +107,6 @@
           <div class="form-section__body">
             <div class="form-grid-2">
               <div class="form-group">
-                <label for="street">{{ 'property_add.address' | translate }} <span class="required">*</span></label>
-                <input id="street" type="text" formControlName="street"
-                  [placeholder]="'property_add.street_placeholder' | translate" />
-                <p class="field-error" *ngIf="hasError(f.street)">{{ 'property_add.validation_address' | translate }}</p>
-              </div>
-
-              <div class="form-group">
                 <label for="countryCode">{{ 'PROPERTY_FORM.COUNTRY' | translate }}</label>
                 <!-- ✅ تبسيط بناءً على طلب المستخدم: التطبيق يخدم سوريا فقط حالياً،
                      فتم تثبيت الحقل بدل قائمة اختيار من عدة دول (أو حقل نصي حر
@@ -130,70 +123,20 @@
             </div>
 
             <!--
-              ✅ تحديث: استُبدلت حقول المدينة/المنطقة النصية الحرة بقوائم اختيار
-              إجبارية (محافظة/منطقة) — كانت تُعرض سابقاً جنباً إلى جنب مع هذه
-              القوائم كحقول إضافية اختيارية، وهذا كان مربكاً (نص حر عشوائي +
-              قوائم فارغة لأن بيانات المحافظات لم تكن مُعبّأة بالباك اند بعد).
-              الآن City/Region يُشتقان تلقائياً من الاختيار (انظر
-              bindCascadingLocationChanges بالـ .ts) ولم يعودا مرئيين هنا.
+              منتقي المواقع الموحّد: المحافظة وحدها إلزامية. المدينة والمنطقة والحي والشارع اختيارية،
+              تُبحث ضمن المنطقة المختارة بالأعلى، ويمكن تخطي أي مستوى. ما لا يوجد بالقائمة يُكتب كنص
+              ويُقترح على الإدارة بعد الحفظ دون تعطيل النشر.
             -->
+            <app-geo-picker
+              idPrefix="property-geo"
+              [lang]="currentLang()"
+              [initial]="geoInitial()"
+              [coordinates]="geoPin()"
+              (valueChange)="onGeoChange($event)"
+            ></app-geo-picker>
+            <p class="field-error" *ngIf="hasError(f.governorateId)">{{ 'PROPERTY_FORM.GOVERNORATE_REQUIRED' | translate }}</p>
+
             <div class="form-grid-2">
-              <div class="form-group">
-                <label for="governorateId">{{ 'PROPERTY_FORM.GOVERNORATE' | translate }} <span class="required">*</span></label>
-                <select id="governorateId" formControlName="governorateId">
-                  <option [ngValue]="null">{{ 'PROPERTY_FORM.SELECT_PLACEHOLDER' | translate }}</option>
-                  <option *ngFor="let g of governorates()" [ngValue]="g.id">{{ localizedName(g) }}</option>
-                </select>
-                <p class="field-error" *ngIf="hasError(f.governorateId)">{{ 'PROPERTY_FORM.GOVERNORATE_REQUIRED' | translate }}</p>
-                <p class="field-error" *ngIf="structuredLocationLoadFailed() && !governorates().length">
-                  {{ 'PROPERTY_FORM.STRUCTURED_LOCATION_LOAD_ERROR' | translate }}
-                </p>
-              </div>
-
-              <div class="form-group">
-                <label for="districtId">{{ 'PROPERTY_FORM.DISTRICT' | translate }} <span class="required">*</span></label>
-                <!-- ✅ حقل بحث موحّد (اكتب واختر من الاقتراحات، أو أضف اسمًا
-                     جديدًا غير موجود بالقائمة) بدل select + حقل يدوي منفصلين.
-                     يستخدم districtId/districtText نفسهما — نفس آلية
-                     LocationSuggestion الموجودة أصلًا بالباك اند لم تتغيّر. -->
-                <app-location-combo
-                  inputId="districtId"
-                  [options]="districts()"
-                  [idControl]="f.districtId"
-                  [textControl]="f.districtText"
-                  [lang]="currentLang()"
-                  [disabled]="!f.governorateId.value"
-                  placeholderKey="PROPERTY_FORM.DISTRICT_MANUAL_PLACEHOLDER"
-                ></app-location-combo>
-                <p class="field-error" *ngIf="form.errors?.['districtRequired'] && (f.districtId.touched || f.districtText.touched)">
-                  {{ 'PROPERTY_FORM.DISTRICT_REQUIRED' | translate }}
-                </p>
-              </div>
-
-              <div class="form-group">
-                <label for="neighborhoodId">{{ 'PROPERTY_FORM.NEIGHBORHOOD' | translate }}</label>
-                <!-- ✅ الحي يبقى مفعّلاً حتى لو المنطقة نفسها لسا اقتراح
-                     (districtText بدون districtId حقيقي بعد) — بدل تعطيله
-                     بالكامل وإجبار المستخدم ينتظر اعتماد المنطقة أولاً قبل
-                     ما يقدر حتى يكتب اسم الحي. الشرط الوحيد: يكون فيه شيء
-                     مُدخَل للمنطقة أصلاً (محدّدة من القائمة أو مكتوبة). -->
-                <app-location-combo
-                  inputId="neighborhoodId"
-                  [options]="neighborhoods()"
-                  [idControl]="f.neighborhoodId"
-                  [textControl]="f.neighborhoodText"
-                  [lang]="currentLang()"
-                  [disabled]="!f.districtId.value && !f.districtText.value"
-                  placeholderKey="PROPERTY_FORM.NEIGHBORHOOD_MANUAL_PLACEHOLDER"
-                ></app-location-combo>
-                <p class="field-hint" *ngIf="f.districtId.value && !neighborhoods().length">
-                  {{ 'PROPERTY_FORM.NEIGHBORHOOD_HINT' | translate }}
-                </p>
-                <p class="field-hint" *ngIf="!f.districtId.value && f.districtText.value">
-                  {{ 'PROPERTY_FORM.NEIGHBORHOOD_PENDING_DISTRICT_HINT' | translate }}
-                </p>
-              </div>
-
               <div class="form-group">
                 <label for="propertyTypeId">{{ 'PROPERTY_FORM.PROPERTY_TYPE' | translate }} <span class="required">*</span></label>
                 <select id="propertyTypeId" formControlName="propertyTypeId">
@@ -201,7 +144,20 @@
                   <option *ngFor="let pt of propertyTypeCatalog()" [ngValue]="pt.id">{{ localizedName(pt) }}</option>
                 </select>
                 <p class="field-error" *ngIf="hasError(f.propertyTypeId)">{{ 'PROPERTY_FORM.PROPERTY_TYPE_REQUIRED' | translate }}</p>
+                <p class="field-error" *ngIf="structuredLocationLoadFailed() && !propertyTypeCatalog().length">
+                  {{ 'PROPERTY_FORM.STRUCTURED_LOCATION_LOAD_ERROR' | translate }}
+                </p>
               </div>
+            </div>
+
+            <!-- The branch of the publisher's office the listing is handled from: optional, own office only. -->
+            <div class="form-group" *ngIf="showBranchPicker()" data-testid="listing-branch">
+              <label for="agencyBranchId">{{ 'PROPERTY_FORM.BRANCH.LABEL' | translate }}</label>
+              <select id="agencyBranchId" [value]="selectedBranchId()" (change)="onBranchChange($any($event.target).value)">
+                <option value="">{{ 'PROPERTY_FORM.BRANCH.NONE' | translate }}</option>
+                <option *ngFor="let b of officeBranches()" [value]="b.id" [selected]="b.id === selectedBranchId()">{{ b.name }}</option>
+              </select>
+              <small class="hide-location__hint">{{ 'PROPERTY_FORM.BRANCH.HINT' | translate }}</small>
             </div>
 
             <!-- Map Picker -->
@@ -215,7 +171,9 @@
               <app-map-picker
                 [lang]="currentLang()"
                 [center]="mapCenter()"
-                (locationChange)="onLocationSelected($event)">
+                [searchable]="true"
+                (locationChange)="onLocationSelected($event)"
+                (placeSelected)="onMapPlaceSelected($event)">
               </app-map-picker>
               <p class="location-preview" *ngIf="f.latitude.value !== null && f.latitude.value !== undefined && f.longitude.value !== null && f.longitude.value !== undefined">
                 ✓ {{ 'property_add.location_selected' | translate }}: {{ f.latitude.value | localNumber:'1.4-4' }}, {{ f.longitude.value | localNumber:'1.4-4' }}
@@ -363,7 +321,8 @@
                    question that has no meaningful answer for a plot of land. -->
               <div class="form-group" *ngIf="!isLandCategory">
                 <label for="rooms">{{ 'property_add.rooms' | translate }}</label>
-                <input id="rooms" type="number" formControlName="rooms" min="0" step="0.5" />
+                <input id="rooms" type="number" inputmode="numeric" formControlName="rooms" min="1" step="1" />
+                <p class="field-error" *ngIf="hasError(f.rooms) && f.rooms.errors?.['wholeNumber']">{{ 'PROPERTY_FORM.ROOMS_WHOLE_NUMBER' | translate }}</p>
               </div>
               <div class="form-group">
                 <label for="area">{{ 'property_add.area' | translate }}</label>
@@ -387,7 +346,8 @@
               </div>
               <div class="form-group" *ngIf="!isLandCategory">
                 <label for="floor">{{ 'property_add.floor' | translate }}</label>
-                <input id="floor" type="number" formControlName="floor" />
+                <input id="floor" type="number" inputmode="numeric" formControlName="floor" step="1" />
+                <p class="field-error" *ngIf="hasError(f.floor) && f.floor.errors?.['wholeNumber']">{{ 'PROPERTY_FORM.FLOOR_WHOLE_NUMBER' | translate }}</p>
               </div>
               <div class="form-group">
                 <label for="availableFrom">{{ 'property_add.available_from' | translate }}</label>

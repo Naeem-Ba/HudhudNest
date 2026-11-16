@@ -28,6 +28,7 @@ import { ValuationApiService } from '../../core/api/valuation-api.service';
 import { LookupsApiService, StructuredLocationLookup } from '../../core/api/lookups-api.service';
 import { CreateValuationInquiryResultDto, ValuationInquiryStatusDto } from '../../core/models/valuation.model';
 import { LanguageService } from '../../core/services/language.service';
+import { PlaceProposalService } from '../../core/api/place-proposal.service';
 import { ToastService } from '../../shared/services/toast.service';
 
 const GOVERNORATES: StructuredLocationLookup[] = [
@@ -241,4 +242,59 @@ describe('ValuationRequestPage', () => {
       expect(component.form.value.governorateId).toBeNull();
     });
   });
+
+  // ── A district / neighborhood typed because it is not in the lists ──
+  describe('place typed by hand', () => {
+    function withProposals(component: ValuationRequestPage, canPropose: boolean) {
+      const proposals = jasmine.createSpyObj<PlaceProposalService>('PlaceProposalService', ['propose', 'canPropose']);
+      proposals.canPropose.and.returnValue(canPropose);
+      proposals.propose.and.returnValue(of(true));
+      (component as unknown as { injector: unknown }).injector = { get: () => proposals };
+      return proposals;
+    }
+
+    it('✅ the typed names become proposals once the request is accepted, and the request still goes out', () => {
+      const component = createComponent();
+      const proposals = withProposals(component, true);
+      valuationApiSpy.create.and.returnValue(of({ inquiryId: 'i1', status: 'Completed' } as unknown as CreateValuationInquiryResultDto));
+      fillMinimalValidForm(component);
+      component.onDistrictTyped('الشعلان');
+      component.onNeighborhoodTyped('حارة جديدة');
+
+      component.submit();
+
+      expect(valuationApiSpy.create).toHaveBeenCalledTimes(1);
+      expect(proposals.propose).toHaveBeenCalledWith({ governorateId: 1, type: 'District', name: 'الشعلان' });
+      expect(proposals.propose).toHaveBeenCalledWith({ governorateId: 1, districtId: null, type: 'Neighborhood', name: 'حارة جديدة' });
+    });
+
+    it('✅ nothing is proposed when nothing was typed, or when the request fails', () => {
+      const component = createComponent();
+      const proposals = withProposals(component, true);
+      valuationApiSpy.create.and.returnValue(throwError(() => new Error('boom')));
+      fillMinimalValidForm(component);
+      component.onDistrictTyped('الشعلان');
+      component.submit();
+      expect(proposals.propose).not.toHaveBeenCalled();
+
+      valuationApiSpy.create.and.returnValue(of({ inquiryId: 'i2' } as unknown as CreateValuationInquiryResultDto));
+      component.onDistrictTyped(null);
+      component.submit();
+      expect(proposals.propose).not.toHaveBeenCalled();
+    });
+
+    it('✅ changing the governorate clears the typed names, which belonged to the previous one', () => {
+      const component = createComponent();
+      component.onDistrictTyped('الشعلان');
+      component.form.controls.governorateId.setValue(1);
+      expect(component.districtText).toBe('');
+    });
+
+    it('✅ the lists are shown in the page language', () => {
+      const component = createComponent();
+      component.districts.set([{ id: 5, nameAr: 'المزة', nameEn: 'Mazzeh' }]);
+      expect(component.districtOptions()).toEqual([{ value: 5, label: 'المزة' }]);
+    });
+  });
+
 });

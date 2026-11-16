@@ -1,0 +1,77 @@
+<a class="skip" href="#main">{{ 'SITE.NAV.SKIP' | translate }}</a>
+
+<header class="hdr">
+  <div class="wrap hdr__bar">
+    <a routerLink="/landing" class="hdr__brand" [attr.aria-label]="'SITE.NAV.HOME_ARIA' | translate">
+      <img src="/images/horizontal-logo-dark-480.png" alt="HudhudNest" width="150" height="48" />
+    </a>
+
+    <div class="hdr__tools">
+      <div class="lang">
+        <label for="site-lang" class="sr-only">{{ 'SITE.NAV.LANG_ARIA' | translate }}</label>
+        <select id="site-lang" [value]="currentLang()" (change)="setLanguage($event)">
+          @for (l of languages; track l.code) {
+            <option [value]="l.code" [attr.lang]="l.code" [selected]="l.code === currentLang()">{{ l.label }}</option>
+          }
+        </select>
+      </div>
+
+      <button type="button" class="hdr__burger" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen()"
+              aria-controls="site-menu" [attr.aria-label]="(menuOpen() ? 'SITE.NAV.MENU_CLOSE' : 'SITE.NAV.MENU_OPEN') | translate">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          @if (menuOpen()) { <path d="M6 6l12 12M18 6L6 18" /> } @else { <path d="M4 7h16M4 12h16M4 17h16" /> }
+        </svg>
+      </button>
+    </div>
+
+    <nav id="site-menu" class="menu" [class.menu--open]="menuOpen()" [attr.aria-label]="'SITE.NAV.MAIN_ARIA' | translate">
+      <a [routerLink]="listingsLive ? '/properties' : '/landing'" (click)="openProperties($event)">{{ 'SITE.NAV.PROPERTIES' | translate }}</a>
+      <a routerLink="/ueber-uns" routerLinkActive="is-active" ariaCurrentWhenActive="page">{{ 'SITE.NAV.ABOUT' | translate }}</a>
+      <a routerLink="/fuer-anbieter" routerLinkActive="is-active" ariaCurrentWhenActive="page">{{ 'SITE.NAV.PROVIDERS' | translate }}</a>
+      <a routerLink="/kontakt">{{ 'SITE.NAV.CONTACT' | translate }}</a>
+      <a class="menu__platform" [href]="platformHref">{{ 'SITE.NAV.PLATFORM' | translate }}</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+  <router-outlet></router-outlet>
+</main>
+
+<footer class="ftr">
+  <div class="wrap ftr__inner">
+    <div class="ftr__brand">
+      <img src="/images/horizontal-logo-dark-480.png" alt="HudhudNest" width="140" height="45" loading="lazy" />
+      <p>{{ 'SITE.FOOTER.TAGLINE' | translate }}</p>
+    </div>
+
+    <nav class="ftr__nav" [attr.aria-label]="'SITE.FOOTER.NAV_ARIA' | translate">
+      <a routerLink="/ueber-uns">{{ 'SITE.NAV.ABOUT' | translate }}</a>
+      <a routerLink="/fuer-anbieter">{{ 'SITE.NAV.PROVIDERS' | translate }}</a>
+      <a routerLink="/kontakt">{{ 'SITE.NAV.CONTACT' | translate }}</a>
+    </nav>
+
+    <nav class="ftr__nav" [attr.aria-label]="'SITE.FOOTER.LEGAL_ARIA' | translate">
+      <a routerLink="/impressum">{{ 'SITE.FOOTER.IMPRESSUM' | translate }}</a>
+      <a routerLink="/privacy-policy">{{ 'SITE.FOOTER.PRIVACY' | translate }}</a>
+      <a routerLink="/terms-of-service">{{ 'SITE.FOOTER.TERMS' | translate }}</a>
+    </nav>
+
+    <div class="lang lang--footer">
+      <label for="site-lang-footer" class="sr-only">{{ 'SITE.NAV.LANG_ARIA' | translate }}</label>
+      <select id="site-lang-footer" [value]="currentLang()" (change)="setLanguage($event)">
+        @for (l of languages; track l.code) {
+          <option [value]="l.code" [attr.lang]="l.code" [selected]="l.code === currentLang()">{{ l.label }}</option>
+        }
+      </select>
+    </div>
+
+    <p class="ftr__copy">&copy; {{ year }} HudhudNest</p>
+  </div>
+</footer>
+
+@if (waitlist.requested()) {
+  @defer {
+    <app-waitlist-dialog />
+  }
+}

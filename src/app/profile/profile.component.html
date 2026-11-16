@@ -187,21 +187,29 @@
         <div class="password-fields" *ngIf="showPasswordForm()">
           <div class="field">
             <label for="profile-f8">{{ 'PROFILE.CURRENT_PASS' | translate }} *</label>
-            <input id="profile-f8" type="password" [(ngModel)]="passwordData.currentPassword" name="currentPassword" autocomplete="new-password" placeholder="••••••••">
-            <div class="field-error" *ngIf="passwordSubmitted && !passwordData.currentPassword">⚠️ {{ 'VALIDATION.REQUIRED' | translate }}</div>
+            <input id="profile-f8" type="password" [(ngModel)]="passwordData.currentPassword" (ngModelChange)="clearPasswordError('currentPassword')" name="currentPassword" autocomplete="current-password" placeholder="••••••••" [attr.aria-invalid]="passwordErrors().currentPassword ? 'true' : null">
+            <div class="field-error" role="alert" *ngIf="passwordErrors().currentPassword as message">⚠️ {{ message }}</div>
           </div>
 
           <div class="field">
             <label for="profile-f9">{{ 'PROFILE.NEW_PASS' | translate }} *</label>
-            <input id="profile-f9" type="password" [(ngModel)]="passwordData.newPassword" name="newPassword" autocomplete="new-password" placeholder="••••••••">
-            <div class="field-error" *ngIf="passwordSubmitted && passwordData.newPassword.length < 8">⚠️ {{ 'AUTH.ERRORS.PASSWORD_MIN' | translate }}</div>
+            <input id="profile-f9" type="password" [(ngModel)]="passwordData.newPassword" (ngModelChange)="clearPasswordError('newPassword')" name="newPassword" autocomplete="new-password" placeholder="••••••••" aria-describedby="profile-new-password-rules" [attr.aria-invalid]="passwordErrors().newPassword ? 'true' : null">
+            <div class="field-error" role="alert" *ngIf="passwordErrors().newPassword as message">⚠️ {{ message }}</div>
+            <app-password-rules
+              listId="profile-new-password-rules"
+              [password]="passwordData.newPassword"
+              [context]="passwordContext()"
+              [personal]="true">
+            </app-password-rules>
           </div>
 
           <div class="field">
             <label for="profile-f10">{{ 'PROFILE.CONFIRM_PASS' | translate }} *</label>
-            <input id="profile-f10" type="password" [(ngModel)]="passwordData.confirmPassword" name="confirmPassword" autocomplete="new-password" placeholder="••••••••">
-            <div class="field-error" *ngIf="passwordSubmitted && passwordMismatch()">⚠️ {{ 'PROFILE.MESSAGES.PASS_MISMATCH' | translate }}</div>
+            <input id="profile-f10" type="password" [(ngModel)]="passwordData.confirmPassword" (ngModelChange)="clearPasswordError('confirmPassword')" name="confirmPassword" autocomplete="new-password" placeholder="••••••••" [attr.aria-invalid]="passwordErrors().confirmPassword ? 'true' : null">
+            <div class="field-error" role="alert" *ngIf="passwordErrors().confirmPassword as message">⚠️ {{ message }}</div>
           </div>
+
+          <p class="field-error" role="alert" data-auth-form-error *ngIf="passwordErrors().form as message">⚠️ {{ message }}</p>
 
           <button type="button" class="btn-save-pass" [disabled]="isSaving()" (click)="onChangePassword()">
             {{ isSaving() ? ('COMMON.SAVING' | translate) : ('PROFILE.SAVE_PASS' | translate) }}

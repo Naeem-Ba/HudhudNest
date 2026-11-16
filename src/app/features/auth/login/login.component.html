@@ -83,6 +83,17 @@
         </button>
       </div>
 
+      <!-- Google/Apple have no checkbox: continuing with them is the acceptance, so say so right here and record it
+           after the sign-in (ConsentApiService.ensureCurrentAcceptance). -->
+      @if (googleAvailable || appleAvailable) {
+        <p class="social-consent">
+          {{ 'CONSENT.SOCIAL_LEAD' | translate }}
+          <a routerLink="/terms-of-service" target="_blank" rel="noopener">{{ 'CONSENT.TERMS' | translate }}</a>
+          {{ 'CONSENT.SOCIAL_MIDDLE' | translate }}
+          <a routerLink="/privacy-policy" target="_blank" rel="noopener">{{ 'CONSENT.PRIVACY' | translate }}</a>{{ 'CONSENT.SOCIAL_TRAIL' | translate }}
+        </p>
+      }
+
       <div class="auth-divider">{{ 'AUTH.OR' | translate }}</div>
 
       <div
@@ -95,6 +106,19 @@
         <span aria-hidden="true">{{ success ? '✅' : '⚠️' }}</span>
         {{ message }}
       </div>
+
+      <!-- Right password, address never confirmed (P4-D11): a new link was already sent; offer another. -->
+      <p *ngIf="emailNotConfirmed && !success" class="auth-alert__help">
+        <button
+          type="button"
+          class="auth-switch__btn"
+          [disabled]="resendingConfirmation"
+          (click)="resendConfirmation()"
+          data-testid="resend-confirmation"
+        >
+          {{ 'AUTH.RESEND_CONFIRMATION.BUTTON' | translate }}
+        </button>
+      </p>
 
       <!-- After a rejected sign-in: what to do next. The sentence above is the same whether or not the
            account exists; these links are the next step for either case. -->

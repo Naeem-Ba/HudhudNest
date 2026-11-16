@@ -1,20 +1,22 @@
 // src/app/features/agency-public/agency-public.page.ts
 //
-// الصفحة العامة للمكتب العقاري بالرابط القصير /agencies/{slug} (/F-AGY-05/): الشعار،
+// الصفحة العامة للمكتب العقاري بالرابط /offices/{slug} (والقديم /agencies/{slug} يحوّل إليه) (/F-AGY-05/): الشعار،
 // الوصف، بيانات التواصل، الفريق، وإعلانات المكتب المنشورة (GET /api/Properties?agencyId=…
 // — فلتر عرض عام، PropertyFilterDto.AgencyId بالباك اند).
 //
 // رقم الترخيص لا يُعرض هنا عمدًا: AgencyDto.LicenseNumber يقول صراحةً إنه لم يُتحقق منه
 // أبدًا، وعرضه على صفحة عامة يقرأه الزائر كاعتماد رسمي.
 //
+// الفروع (P2): قائمة بالمحافظة/المنطقة والعنوان والهاتف، وخريطة صغيرة لما له إحداثيات فقط (لا موقع افتراضي).
+//
 // نفس نمط الملف الواحد المستخدم في user-profile.page.ts.
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { catchError, of, switchMap, tap } from 'rxjs';
+import { catchError, forkJoin, of, switchMap, tap } from 'rxjs';
 
 import { AgenciesApiService } from '../../core/api/agencies-api.service';
 import { PropertyApiService } from '../../core/api/property-api.service';
@@ -22,22 +24,42 @@ import {
   AGENCY_RATING_COMMENT_MAX_LENGTH,
   AGENCY_RATING_CRITERIA,
   Agency,
+  AgencyBranch,
+  AgencyEventSource,
+  AgencyProfileEvent,
   AgencyRatingDto,
+  OFFICE_VISIT_SOURCE_STATE,
   AgencyRatingEligibilityDto,
-  AgencyRatingSummaryDto
+  AgencyRatingSummaryDto,
+  AGENCY_SOCIAL_NETWORKS,
+  AgencySocialNetwork,
 } from '../../core/models/agency.model';
+import { isOpenNow, normalizeWeek, officeClock, rangesText, safeHttps, socialHref, websiteLabel, whatsAppLink } from '../../shared/utils/agency-profile';
 import { starsFor } from '../../core/models/user-profile.model';
 import { AuthService } from '../../core/auth/auth.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { Property } from '../../core/models/property.model';
 import { PageMetaService } from '../../core/services/page-meta.service';
+import { BREADCRUMB_JSON_LD_ID, StructuredDataService } from '../../core/services/structured-data.service';
+import { OfficePlace, buildOfficeJsonLd, officeMetaDescription } from '../../shared/utils/office-seo';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { isReservedListing, listingLifecycle, listingStatusTagKey } from '../../shared/utils/listing-status';
 import { ListingViewCountComponent } from '../../shared/ui/listing-view-count.component';
 import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
+import { OfficeMapPoint, OfficesMapComponent } from '../../shared/ui/offices-map.component';
+import { PropertyShareUrlService } from '../../core/sharing/property-share-url.service';
+import { LookupsApiService, StructuredLocationLookup, pickLocalizedName } from '../../core/api/lookups-api.service';
+import { LanguageService } from '../../core/services/language.service';
 
 const LISTINGS_PAGE_SIZE = 12;
+
+/** Where this visit came from, from the navigation state set by /o/{code}, the directory or a listing. */
+function visitSource(): Exclude<AgencyEventSource, 'None'> {
+  const state = typeof history !== 'undefined' ? (history.state as Record<string, unknown> | null) : null;
+  const value = state?.[OFFICE_VISIT_SOURCE_STATE];
+  return value === 'Qr' || value === 'Directory' || value === 'Listing' ? value : 'Direct';
+}
 
 type AgencyListingsTab = 'active' | 'sold' | 'rented';
 
@@ -47,11 +69,14 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
   return value.length > 0 && value.trim().length === 0 ? { blank: true } : null;
 }
 
+/** The office's own schema.org block; removed when leaving the page so it never describes the next one. */
+const OFFICE_JSON_LD_ID = 'ld-office';
+
 @Component({
   selector: 'app-agency-public-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ LocalizedDatePipe,ListingViewCountComponent, CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, EmptyStateComponent, ImageFallbackDirective],
+  imports: [ LocalizedDatePipe,ListingViewCountComponent, CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, EmptyStateComponent, ImageFallbackDirective, OfficesMapComponent],
   template: `
     <section class="container agency-page" *ngIf="!loading(); else loadingTpl">
       <app-empty-state
@@ -62,12 +87,20 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
       ></app-empty-state>
 
       <ng-container *ngIf="agency() as a">
+        <img *ngIf="a.coverImageUrl" class="agency-cover" [src]="a.coverImageUrl" alt="" data-testid="office-cover" />
         <header class="agency-header">
           <img *ngIf="a.logoUrl; else noLogo" class="agency-header__logo" [src]="a.logoUrl" [alt]="a.name" />
           <ng-template #noLogo><div class="agency-header__logo agency-header__logo--empty" aria-hidden="true">🏢</div></ng-template>
           <div class="agency-header__info">
-            <h1>{{ a.name }}</h1>
+            <h1><bdi>{{ a.name }}</bdi></h1>
+            <span class="verified-badge" *ngIf="a.verificationStatus === 'Verified'" data-testid="verified-badge"
+                  [attr.title]="'AGENCY_PUBLIC.VERIFIED_HINT' | translate">
+              ✓ {{ 'OFFICES.VERIFICATION.VERIFIED' | translate }}
+            </span>
             <p class="agency-header__meta" *ngIf="a.city">📍 {{ a.city }}</p>
+            <p class="agency-header__meta" *ngIf="a.activeListingCount != null" data-testid="active-listing-count">
+              {{ 'OFFICES.ACTIVE_LISTINGS' | translate: { count: a.activeListingCount } }}
+            </p>
             <p class="agency-header__meta">
               {{ 'AGENCY_PUBLIC.MEMBERS_COUNT' | translate: { count: a.memberCount } }}
             </p>
@@ -92,14 +125,79 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
           <button type="button" class="btn btn--outline agency-header__rate-cta" *ngIf="showRateCta()" (click)="scrollToRate()">
             ⭐ {{ 'AGENCY_RATING.RATE_CTA' | translate }}
           </button>
+          <button type="button" class="btn btn--ghost agency-header__share" (click)="share(a)" data-testid="share-office">
+            🔗 {{ 'OFFICE_STATS.SHARE' | translate }}
+          </button>
         </header>
 
         <p class="agency-description" *ngIf="a.description">{{ a.description }}</p>
 
-        <div class="agency-contact" *ngIf="a.contactPhone || a.contactEmail">
-          <a *ngIf="a.contactPhone" class="btn btn--outline btn--sm" [href]="'tel:' + a.contactPhone" dir="ltr">📞 {{ a.contactPhone }}</a>
-          <a *ngIf="a.contactEmail" class="btn btn--outline btn--sm" [href]="'mailto:' + a.contactEmail">✉️ {{ a.contactEmail }}</a>
+        <div class="agency-contact" *ngIf="a.contactPhone || a.contactEmail || whatsApp()">
+          <a *ngIf="whatsApp() as wa" class="btn btn--outline btn--sm agency-contact__wa" [href]="wa" target="_blank" rel="noopener noreferrer"
+             (click)="track({ type: 'ContactClick', channel: 'WhatsApp' })" data-testid="contact-whatsapp">💬 {{ 'OFFICE_PROFILE.NETWORK.WHATSAPP' | translate }}</a>
+          <a *ngIf="a.contactPhone" class="btn btn--outline btn--sm" [href]="'tel:' + a.contactPhone" dir="ltr"
+             (click)="track({ type: 'ContactClick', channel: 'Phone' })" data-testid="contact-phone">📞 {{ a.contactPhone }}</a>
+          <a *ngIf="a.contactEmail" class="btn btn--outline btn--sm" [href]="'mailto:' + a.contactEmail"
+             (click)="track({ type: 'ContactClick', channel: 'Email' })" data-testid="contact-email">✉️ {{ a.contactEmail }}</a>
         </div>
+
+        <!-- ── الموقع وروابط التواصل الاجتماعي (روابط https فقط؛ socialHref يرفض غيرها) ── -->
+        <ul class="agency-links" *ngIf="websiteHref() || profileLinks().length > 0" data-testid="office-links">
+          <li *ngIf="websiteHref() as href">
+            <a class="agency-links__item" [href]="href" target="_blank" rel="noopener noreferrer nofollow" dir="ltr"
+               (click)="track({ type: 'ContactClick', channel: 'Website' })" data-testid="office-website">🌐 {{ websiteText() }}</a>
+          </li>
+          <li *ngFor="let l of profileLinks()">
+            <a class="agency-links__item" [href]="l.href" target="_blank" rel="noopener noreferrer nofollow"
+               (click)="track({ type: 'ContactClick', channel: l.channel })" [attr.data-testid]="'office-link-' + l.channel">
+              {{ 'OFFICE_PROFILE.NETWORK.' + l.channel.toUpperCase() | translate }}
+            </a>
+          </li>
+        </ul>
+
+        <!-- ── ساعات العمل (بتوقيت دمشق) ── -->
+        <section class="agency-hours" *ngIf="hours() as week" data-testid="office-hours">
+          <h2 class="section-title">
+            {{ 'OFFICE_PROFILE.HOURS' | translate }}
+            <span class="agency-hours__now" *ngIf="openNow() !== null" [class.agency-hours__now--open]="openNow()" data-testid="open-now">
+              {{ (openNow() ? 'OFFICE_PROFILE.OPEN_NOW' : 'OFFICE_PROFILE.CLOSED_NOW') | translate }}
+            </span>
+          </h2>
+          <dl class="agency-hours__list">
+            <ng-container *ngFor="let d of week">
+              <dt [class.agency-hours__today]="d.day === today()">{{ 'OFFICE_PROFILE.DAY.' + d.day.toUpperCase() | translate }}</dt>
+              <dd [class.agency-hours__today]="d.day === today()">
+                <span *ngIf="d.ranges.length; else closedDay" dir="ltr">{{ rangesText(d.ranges) }}</span>
+                <ng-template #closedDay>{{ 'OFFICE_PROFILE.CLOSED' | translate }}</ng-template>
+              </dd>
+            </ng-container>
+          </dl>
+          <p class="agency-hours__tz">{{ 'OFFICE_PROFILE.HOURS_TZ' | translate }}</p>
+        </section>
+
+        <!-- ── الفروع: القائمة دائمًا، والخريطة لما له إحداثيات فقط ── -->
+        <section class="branches" *ngIf="branches().length > 0" data-testid="office-branches">
+          <h2 class="section-title">{{ 'OFFICE_BRANCHES.TITLE' | translate: { count: branches().length } }}</h2>
+          <app-offices-map *ngIf="branchPoints().length > 0" height="280px" [fitToPoints]="true"
+                           [ariaLabel]="'OFFICE_BRANCHES.MAP_LABEL' | translate" [points]="branchPoints()"></app-offices-map>
+          <ul class="branches__list">
+            <li class="branches__item" *ngFor="let b of branches()" data-testid="office-branch">
+              <div class="branches__name">
+                <bdi>{{ b.name }}</bdi>
+                <span class="branches__main" *ngIf="b.isMain">{{ 'OFFICE_BRANCHES.MAIN' | translate }}</span>
+              </div>
+              <p class="branches__place" *ngIf="branchPlace(b) as place">📍 {{ place }}</p>
+              <p class="branches__address" *ngIf="b.address"><bdi>{{ b.address }}</bdi></p>
+              <div class="branches__actions">
+                <a *ngIf="b.contactPhone" class="btn btn--outline btn--sm" [href]="'tel:' + b.contactPhone" dir="ltr"
+                   (click)="track({ type: 'ContactClick', channel: 'Phone' })">📞 {{ b.contactPhone }}</a>
+                <a *ngIf="directionsUrl(b) as url" class="btn btn--outline btn--sm" [href]="url" target="_blank" rel="noopener noreferrer">
+                  🧭 {{ 'OFFICE_BRANCHES.DIRECTIONS' | translate }}
+                </a>
+              </div>
+            </li>
+          </ul>
+        </section>
 
         <!-- ── تفصيل تقييم المكتب حسب المحور ── -->
         <div class="detail-card" *ngIf="summary() && summary()!.totalCount > 0">
@@ -226,7 +324,13 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
           </li>
         </ul>
 
-        <h2 class="section-title">{{ 'AGENCY_PUBLIC.LISTINGS' | translate }}</h2>
+        <div class="section-head">
+          <h2 class="section-title">{{ 'AGENCY_PUBLIC.LISTINGS' | translate }}</h2>
+          <a class="btn btn--outline btn--sm" data-testid="browse-office-listings"
+             [routerLink]="['/properties']" [queryParams]="{ agencyId: a.id, office: a.slug }">
+            {{ 'AGENCY_PUBLIC.BROWSE_WITH_FILTERS' | translate }}
+          </a>
+        </div>
 
         <!-- التبويبات: المتاحة دائمًا، والمباعة/المؤجرة لا تظهر إلا إن وُجدت صفقات منها (سجل توثيق، لا تظهر في البحث). -->
         <div class="listing-tabs" role="tablist" *ngIf="soldCount() > 0 || rentedCount() > 0">
@@ -246,6 +350,7 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
         <p class="muted" *ngIf="!listingsLoading() && listings().length === 0">{{ emptyListingsKey() | translate }}</p>
         <div class="listing-grid" *ngIf="listings().length > 0">
           <a class="listing-card" *ngFor="let listing of listings()" [routerLink]="['/properties', listing.id]"
+            (click)="track({ type: 'ListingClick' })"
             [class.listing-muted]="isMuted(listing)" [class.listing-muted--closed]="activeTab() !== 'active'">
             <div class="listing-card__media">
               <img
@@ -279,6 +384,18 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
   `,
   styles: [`
     .agency-page { padding-block: 2rem; max-width: 960px; }
+    .agency-cover { display: block; width: 100%; aspect-ratio: 3 / 1; max-height: 320px; object-fit: cover; border-radius: var(--r-lg, 14px); margin: 0 0 1rem; background: var(--gray-50); }
+    .agency-links { list-style: none; margin: 0 0 1.25rem; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
+    .agency-links__item { display: inline-flex; align-items: center; gap: .3rem; padding: .35rem .8rem; border: 1px solid var(--border); border-radius: 999px; font-size: .85rem; color: var(--text-strong); text-decoration: none; background: var(--surface); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .agency-links__item:hover { border-color: var(--primary); }
+    .agency-hours { margin: 0 0 1.5rem; }
+    .agency-hours__now { margin-inline-start: .5rem; font-size: .75rem; font-weight: 700; padding: .1rem .5rem; border-radius: 999px; background: var(--gray-100, var(--gray-50)); color: var(--gray-700); vertical-align: middle; }
+    .agency-hours__now--open { background: var(--success-bg, var(--gray-50)); color: var(--success-text); }
+    .agency-hours__list { display: grid; grid-template-columns: max-content 1fr; gap: .3rem 1.25rem; margin: 0; font-size: .9rem; }
+    .agency-hours__list dt { color: var(--gray-700); }
+    .agency-hours__list dd { margin: 0; }
+    .agency-hours__today { font-weight: 700; color: var(--text-strong); }
+    .agency-hours__tz { margin: .4rem 0 0; font-size: .75rem; color: var(--gray-500); }
     .agency-header { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
     .agency-header__logo { width: 96px; height: 96px; border-radius: var(--r-lg); border: 1px solid var(--border); object-fit: contain; background: var(--surface); }
     .agency-header__logo--empty { display: flex; align-items: center; justify-content: center; font-size: 2.5rem; }
@@ -286,7 +403,17 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
     .agency-header h1 { margin: 0 0 .25rem; font-size: clamp(1.3rem, 2.5vw, 1.75rem); font-weight: 800; color: var(--gray-900); overflow-wrap: anywhere; }
     .agency-header__meta { margin: 0; font-size: .85rem; color: var(--gray-500); }
     .agency-description { white-space: pre-line; line-height: 1.8; color: var(--gray-700); margin: 0 0 1rem; }
+    .branches app-offices-map { margin-bottom: .75rem; }
+    .branches__list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .75rem; }
+    .branches__item { border: 1px solid var(--border); border-radius: 12px; background: var(--surface); padding: .85rem; display: flex; flex-direction: column; gap: .35rem; min-width: 0; }
+    .branches__name { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; font-weight: 700; color: var(--gray-900); overflow-wrap: anywhere; }
+    .branches__main { padding: .05rem .5rem; border-radius: 999px; background: var(--primary-soft); color: var(--primary-text); font-size: .72rem; font-weight: 700; }
+    .branches__place, .branches__address { margin: 0; font-size: .85rem; color: var(--gray-700); overflow-wrap: anywhere; }
+    .branches__actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .25rem; }
     .agency-contact { display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .section-head { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; margin: 1.5rem 0 .75rem; }
+    .section-head .section-title { margin: 0; }
+    .verified-badge { display: inline-flex; align-items: center; gap: .25rem; margin-bottom: .3rem; padding: .15rem .6rem; border-radius: 999px; background: var(--success-soft); color: var(--success-text); font-size: .78rem; font-weight: 700; }
     .section-title { font-size: 1.05rem; font-weight: 700; color: var(--gray-900); margin: 1.5rem 0 .75rem; }
     .team { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .75rem; }
     .team__member { display: flex; align-items: center; gap: .5rem; padding: .4rem .8rem .4rem .4rem; border: 1px solid var(--border); border-radius: 999px; text-decoration: none; color: var(--gray-800); background: var(--surface); }
@@ -314,7 +441,7 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
     .agency-header__overall-score { font-size: 1.8rem; font-weight: 700; color: var(--warning-text); }
     .agency-header__overall-max { font-size: .95rem; color: var(--gray-500); margin-inline-start: -.35rem; }
     .agency-header__overall-count { font-size: .75rem; color: var(--gray-500); }
-    .agency-header__rate-cta { flex: 0 0 auto; white-space: nowrap; }
+    .agency-header__rate-cta, .agency-header__share { flex: 0 0 auto; white-space: nowrap; }
     .stars { color: var(--gray-300); font-size: 1.1rem; line-height: 1; }
     .stars--sm { font-size: .85rem; }
     .stars .star--filled { color: var(--warning-text); }
@@ -361,6 +488,10 @@ export class AgencyPublicPage implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly fb = inject(FormBuilder);
+  private readonly lookups = inject(LookupsApiService);
+  private readonly shareUrls = inject(PropertyShareUrlService);
+  private readonly lang = inject(LanguageService);
+  private readonly structuredData = inject(StructuredDataService);
 
   readonly criteria = AGENCY_RATING_CRITERIA;
   readonly starsFn = starsFor;
@@ -395,6 +526,83 @@ export class AgencyPublicPage implements OnInit {
   readonly loading = signal(true);
   readonly notFound = signal(false);
   readonly agency = signal<Agency | null>(null);
+  readonly branches = computed<AgencyBranch[]>(() => this.agency()?.branches ?? []);
+
+  // ── ملف المكتب (P4) ──
+  readonly whatsApp = computed(() => {
+    const value = this.agency()?.socialLinks?.find(l => l.network === 'WhatsApp')?.value;
+    return whatsAppLink(value);
+  });
+  readonly websiteHref = computed(() => safeHttps(this.agency()?.website));
+  readonly websiteText = computed(() => {
+    const href = this.websiteHref();
+    return href ? websiteLabel(href) : '';
+  });
+  /** روابط الشبكات بترتيب ثابت، بلا واتساب (له زر في التواصل) وبلا أي رابط ليس https. */
+  readonly profileLinks = computed(() => AGENCY_SOCIAL_NETWORKS
+    .filter((n): n is Exclude<AgencySocialNetwork, 'WhatsApp'> => n !== 'WhatsApp')
+    .map(channel => {
+      const link = this.agency()?.socialLinks?.find(l => l.network === channel);
+      const href = link ? socialHref(link) : null;
+      return href ? { channel, href } : null;
+    })
+    .filter((l): l is { channel: Exclude<AgencySocialNetwork, 'WhatsApp'>; href: string } => l !== null));
+  readonly hours = computed(() => normalizeWeek(this.agency()?.workingHours));
+  /** يُحسب مرة عند التحميل؛ لا مؤقت يعيد الرسم كل دقيقة لصفحة تُقرأ في ثوانٍ. */
+  private readonly loadedAt = new Date();
+  readonly openNow = computed(() => isOpenNow(this.agency()?.workingHours, this.loadedAt));
+  readonly today = computed(() => officeClock(this.loadedAt).day);
+  readonly rangesText = rangesText;
+  readonly branchPoints = computed<OfficeMapPoint[]>(() => this.branches()
+    .filter(b => b.latitude != null && b.longitude != null)
+    .map(b => ({ id: b.id, latitude: b.latitude as number, longitude: b.longitude as number, label: b.name, main: b.isMain })));
+  /** أسماء المحافظات والمناطق التي فيها فروع، بلغة الزائر. */
+  private readonly placeNames = signal<Map<string, StructuredLocationLookup>>(new Map());
+  private readonly currentLang = signal(this.lang.getCurrent());
+
+  /**
+   * Search metadata (P5): title, description, canonical, and the office's schema.org data plus breadcrumb. Re-applied
+   * when the place names or the ratings arrive, or the language changes, so the description and address are in the
+   * visitor's language and never wait on each other.
+   */
+  /** Bumped whenever the translations load or change, so the effect below re-reads its wording. */
+  private readonly i18nTick = signal(0);
+  private readonly seo = effect(() => {
+    const agency = this.agency();
+    this.i18nTick();
+    if (!agency) {
+      this.structuredData.removeJsonLd(OFFICE_JSON_LD_ID);
+      this.structuredData.removeJsonLd(BREADCRUMB_JSON_LD_ID);
+      return;
+    }
+    const lang = this.currentLang();
+    const officePlace = this.placeText(this.placeOf(null));
+    const description = officeMetaDescription(
+      agency,
+      (name, place) => this.translate.instant(place ? 'SEO.OFFICE_PROFILE.DESCRIPTION_PLACE' : 'SEO.OFFICE_PROFILE.DESCRIPTION', { name, place }),
+      officePlace
+    );
+    const path = `/offices/${agency.slug}`;
+    this.pageMeta.applyDynamic({ title: agency.name, description, path, image: agency.coverImageUrl || agency.logoUrl });
+
+    const origin = this.shareUrls.getSiteOrigin();
+    const summary = this.summary();
+    const office = buildOfficeJsonLd({
+      agency,
+      url: `${origin}${path}`,
+      placeOf: b => this.placeOf(b),
+      ratingAverage: summary?.averageOverall,
+      ratingCount: summary?.totalCount
+    });
+    if (office) this.structuredData.setJsonLd(OFFICE_JSON_LD_ID, office);
+    else this.structuredData.removeJsonLd(OFFICE_JSON_LD_ID);
+
+    this.structuredData.setJsonLd(BREADCRUMB_JSON_LD_ID, this.structuredData.buildBreadcrumbList([
+      { name: lang === 'ar' ? 'الرئيسية' : 'HudhudNest', url: `${origin}/` },
+      { name: this.translate.instant('SEO.OFFICES.TITLE'), url: `${origin}/offices` },
+      { name: agency.name, url: `${origin}${path}` }
+    ]));
+  });
   readonly listings = signal<Property[]>([]);
   readonly listingsLoading = signal(false);
   readonly hasMore = signal(false);
@@ -408,8 +616,99 @@ export class AgencyPublicPage implements OnInit {
   readonly soldCount = signal(0);
   readonly rentedCount = signal(0);
 
+  /**
+   * Records one action on the office page. Fire-and-forget: errors are swallowed (the API call already
+   * skips the error toast), so a statistic never gets in the way of the visitor.
+   */
+  track(event: AgencyProfileEvent, agencyId = this.agency()?.id): void {
+    if (!agencyId) return;
+    this.agenciesApi.recordEvent(agencyId, event).pipe(catchError(() => of(null))).subscribe();
+  }
+
+  /** Native share sheet where there is one, else copy the link. The shared URL is the clean office URL. */
+  async share(a: Agency): Promise<void> {
+    const url = `${this.shareUrls.getSiteOrigin()}/offices/${encodeURIComponent(a.slug)}`;
+    const nav = typeof navigator !== 'undefined' ? navigator : null;
+    try {
+      if (nav?.share) {
+        await nav.share({ title: a.name, url });
+        this.track({ type: 'Share', channel: 'NativeShare' }, a.id);
+        return;
+      }
+      // No clipboard (insecure context, old browser): claim nothing and count nothing.
+      if (!nav?.clipboard) return;
+      await nav.clipboard.writeText(url);
+      this.toast.success(this.translate.instant('OFFICE_STATS.LINK_COPIED'));
+      this.track({ type: 'Share', channel: 'CopyLink' }, a.id);
+    } catch {
+      // Cancelled share sheet or no clipboard permission: nothing was shared, nothing to count.
+    }
+  }
+
+  /** Place names of a branch, or of the office itself (null), in the visitor's language. */
+  private placeOf(b: AgencyBranch | null): OfficePlace {
+    const names = this.placeNames();
+    const a = this.agency();
+    const governorateId = b ? b.governorateId : a?.governorateId;
+    const districtId = b ? b.districtId : a?.districtId;
+    const name = (key: string) => {
+      const p = names.get(key);
+      return p ? pickLocalizedName(p, this.currentLang()) : null;
+    };
+    return { region: governorateId ? name(`g${governorateId}`) : null, locality: districtId ? name(`d${districtId}`) : null };
+  }
+
+  private placeText(place: OfficePlace): string | null {
+    const parts = [place.locality, place.region].filter((p): p is string => !!p);
+    if (!parts.length) {
+      const main = this.branches().find(br => br.isMain) ?? this.branches()[0];
+      if (main) return this.placeText(this.placeOf(main));
+      return this.agency()?.city?.trim() || null;
+    }
+    return parts.join(this.currentLang() === 'ar' ? '، ' : ', ');
+  }
+
+  /** «المنطقة، المحافظة» بلغة الزائر؛ null إن لم تصل الأسماء بعد. */
+  branchPlace(b: AgencyBranch): string | null {
+    const names = this.placeNames();
+    const parts = [names.get(`d${b.districtId}`), names.get(`g${b.governorateId}`)]
+      .filter((p): p is StructuredLocationLookup => !!p)
+      .map(p => pickLocalizedName(p, this.currentLang()));
+    return parts.length ? parts.join(this.currentLang() === 'ar' ? '، ' : ', ') : null;
+  }
+
+  /** رابط اتجاهات خارجي لفرع له إحداثيات (يفتح تطبيق الخرائط على الجوال). */
+  directionsUrl(b: AgencyBranch): string | null {
+    if (b.latitude == null || b.longitude == null) return null;
+    return `https://www.google.com/maps/dir/?api=1&destination=${b.latitude},${b.longitude}`;
+  }
+
+  /** Names for the branches' places and the office's own (the search description and address need them too). */
+  private loadBranchPlaces(branches: AgencyBranch[], office?: Agency): void {
+    const own = office?.governorateId && office.districtId ? [office.governorateId] : [];
+    if (!branches.length && !office?.governorateId) return;
+    const governorateIds = [...new Set([...branches.filter(b => b.districtId).map(b => b.governorateId), ...own])];
+    forkJoin({
+      governorates: this.lookups.getGovernorates().pipe(catchError(() => of([] as StructuredLocationLookup[]))),
+      districts: governorateIds.length
+        ? forkJoin(governorateIds.map(id => this.lookups.getDistricts(id).pipe(catchError(() => of([] as StructuredLocationLookup[])))))
+        : of([] as StructuredLocationLookup[][])
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(({ governorates, districts }) => {
+      const map = new Map<string, StructuredLocationLookup>();
+      governorates.forEach(g => map.set(`g${g.id}`, g));
+      districts.flat().forEach(d => map.set(`d${d.id}`, d));
+      this.placeNames.set(map);
+    });
+  }
+
   ngOnInit(): void {
-    this.destroyRef.onDestroy(() => this.pageMeta.clear());
+    this.destroyRef.onDestroy(() => {
+      this.pageMeta.clear();
+      this.structuredData.removeJsonLd(OFFICE_JSON_LD_ID);
+      this.structuredData.removeJsonLd(BREADCRUMB_JSON_LD_ID);
+    });
+    this.lang.currentLang$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(l => this.currentLang.set(l));
+    this.translate.stream('SEO.OFFICES.TITLE').pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.i18nTick.update(n => n + 1));
 
     this.route.paramMap
       .pipe(
@@ -444,12 +743,8 @@ export class AgencyPublicPage implements OnInit {
 
           this.agency.set(agency);
           this.loading.set(false);
-          this.pageMeta.applyDynamic({
-            title: agency.name,
-            description: agency.description,
-            path: `/agencies/${agency.slug}`,
-            image: agency.logoUrl
-          });
+          this.loadBranchPlaces(agency.branches ?? [], agency);
+          this.track({ type: 'ProfileView', source: visitSource() }, agency.id);
           this.loadListings(agency.id, 1);
           this.loadClosedDealCounts(agency.id);
           this.loadRatings(agency.id);

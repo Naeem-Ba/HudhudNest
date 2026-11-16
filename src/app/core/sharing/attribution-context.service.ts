@@ -20,6 +20,7 @@
 import { Injectable, inject } from '@angular/core';
 import { UtmAttributionService } from './utm-attribution.service';
 import { AttributionContext } from './utm-attribution.model';
+import { MeasurementConsentService } from '../consent/measurement-consent.service';
 
 interface StoredTouch {
   readonly context: AttributionContext;
@@ -50,6 +51,7 @@ const UTM_QUERY_PARAM_NAMES = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_
 @Injectable({ providedIn: 'root' })
 export class AttributionContextService {
   private readonly utmAttribution = inject(UtmAttributionService);
+  private readonly consent = inject(MeasurementConsentService);
 
   /** In-memory fallback for when localStorage throws or is unavailable — attribution then only
    *  survives the current page session instead of the full window, a documented, acceptable
@@ -177,7 +179,8 @@ export class AttributionContextService {
   private write(value: StoredAttribution): void {
     this.memoryFallback = value;
     try {
-      window.localStorage?.setItem(STORAGE_KEY, JSON.stringify(value));
+      // Kept on the device only with consent where the law requires it (MeasurementConsentService).
+      if (this.consent.canPersist()) window.localStorage?.setItem(STORAGE_KEY, JSON.stringify(value));
     } catch {
       // First-party localStorage unavailable — the in-memory fallback above still makes
       // attribution work for the rest of this page session.

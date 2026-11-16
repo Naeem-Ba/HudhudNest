@@ -3,18 +3,22 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  Injector,
   Input,
   OnChanges,
   OnDestroy,
   Output,
   SimpleChanges,
   ViewChild,
+  inject,
   signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
 import { LangCode } from '../core/services/language.service';
 import { isValidCoordinates } from '../core/models/property-location';
+import { LocationsApiService } from '../core/api/locations-api.service';
+import { GeoMapSuggestion, GeoProviderStatus } from '../core/models/geo-location.model';
 
 /** OpenStreetMap tiles need no key and include local place labels. */
 export const MAP_TILE_LAYER = {
@@ -42,10 +46,27 @@ export class MapPickerComponent implements AfterViewInit, OnChanges, OnDestroy {
   /** Parent controlled marker for saved locations and GPS fixes. */
   @Input() marker?: { lat: number; lng: number } | null;
 
+  /** Shows a search box: catalog places first, then the map provider through the backend (signed-in users only). */
+  @Input() searchable = false;
+  /** Keeps the search inside this catalog place (for example the governorate already chosen). */
+  @Input() searchParentId: number | null = null;
+
   @Output() locationChange = new EventEmitter<{ lat: number; lng: number }>();
+  /** A search result the user picked; the pin has already moved to it. */
+  @Output() placeSelected = new EventEmitter<GeoMapSuggestion>();
 
   readonly tilesUnavailable = signal(false);
   readonly locationMessage = signal('');
+
+  readonly searchText = signal('');
+  readonly searching = signal(false);
+  readonly searchResults = signal<GeoMapSuggestion[]>([]);
+  readonly searchStatus = signal<GeoProviderStatus | 'error' | null>(null);
+  readonly searchAttribution = signal<string | null>(null);
+  readonly searched = signal(false);
+
+  private readonly injector = inject(Injector);
+  private searchToken = 0;
 
   private map?: L.Map;
   private pin?: L.Marker;
@@ -195,11 +216,97 @@ export class MapPickerComponent implements AfterViewInit, OnChanges, OnDestroy {
     );
   }
 
+  /** Explicit search only (button or Enter): typing alone never reaches the map provider. */
+  runSearch(): void {
+    const query = this.searchText().trim();
+    if (query.length < 3) {
+      this.searchResults.set([]);
+      this.searched.set(false);
+      return;
+    }
+
+    const token = ++this.searchToken;
+    this.searching.set(true);
+    this.searched.set(true);
+    this.searchStatus.set(null);
+
+    this.injector.get(LocationsApiService).mapSearch(query, { parentId: this.searchParentId, language: this.lang }).subscribe({
+      next: result => {
+        if (token !== this.searchToken) return;
+        // Only results that can be placed on the map are useful here.
+        this.searchResults.set(result.suggestions.filter(s => s.latitude !== null && s.longitude !== null));
+        this.searchStatus.set(result.providerStatus);
+        this.searchAttribution.set(result.attribution);
+        this.searching.set(false);
+      },
+      error: () => {
+        if (token !== this.searchToken) return;
+        this.searchResults.set([]);
+        this.searchStatus.set('error');
+        this.searching.set(false);
+      }
+    });
+  }
+
+  chooseSearchResult(result: GeoMapSuggestion): void {
+    if (result.latitude === null || result.longitude === null || !isValidCoordinates(result.latitude, result.longitude)) return;
+
+    this.map?.setView([result.latitude, result.longitude], 16);
+    this.setMarker(result.latitude, result.longitude, true);
+    this.searchResults.set([]);
+    this.searched.set(false);
+    this.searchText.set('');
+    this.placeSelected.emit(result);
+  }
+
+  searchNotice(): string {
+    const status = this.searchStatus();
+    if (this.searching() || !this.searched()) return '';
+    if (status === 'error' || status === 'unavailable' || status === 'rate_limited') return this.searchText_('unavailable');
+    if (!this.searchResults().length) return this.searchText_('none');
+    return '';
+  }
+
+  searchText_(key: 'placeholder' | 'button' | 'none' | 'unavailable' | 'searching'): string {
+    const texts = {
+      ar: {
+        placeholder: 'ابحث عن شارع أو حي أو معلم على الخريطة',
+        button: 'بحث',
+        none: 'لا نتائج. يمكنك تحديد الموقع بالنقر على الخريطة.',
+        unavailable: 'بحث الخريطة غير متاح الآن. حدّد الموقع بالنقر على الخريطة أو عبر الحقول أعلاه.',
+        searching: 'جارٍ البحث…'
+      },
+      de: {
+        placeholder: 'Straße, Viertel oder Ort auf der Karte suchen',
+        button: 'Suchen',
+        none: 'Keine Ergebnisse. Sie können den Standort per Klick auf die Karte setzen.',
+        unavailable: 'Die Kartensuche ist gerade nicht verfügbar. Setzen Sie den Standort per Klick auf die Karte oder über die Felder oben.',
+        searching: 'Suche läuft …'
+      },
+      en: {
+        placeholder: 'Search for a street, district or landmark on the map',
+        button: 'Search',
+        none: 'No results. You can place the pin by clicking the map.',
+        unavailable: 'Map search is unavailable right now. Place the pin by clicking the map or use the fields above.',
+        searching: 'Searching…'
+      },
+      tr: {
+        placeholder: 'Haritada sokak, mahalle veya yer arayın',
+        button: 'Ara',
+        none: 'Sonuç yok. Haritaya tıklayarak konumu belirleyebilirsiniz.',
+        unavailable: 'Harita araması şu anda kullanılamıyor. Konumu haritaya tıklayarak veya yukarıdaki alanlarla belirleyin.',
+        searching: 'Aranıyor…'
+      }
+    } as const;
+    return (texts[this.lang] ?? texts.ar)[key];
+  }
+
   private controlTitles(): { zoomIn: string; zoomOut: string } {
     const titles = {
       ar: { zoomIn: 'تكبير', zoomOut: 'تصغير' },
       de: { zoomIn: 'Vergrößern', zoomOut: 'Verkleinern' },
-      en: { zoomIn: 'Zoom in', zoomOut: 'Zoom out' }
+      en: { zoomIn: 'Zoom in', zoomOut: 'Zoom out' },
+      tr: { zoomIn: 'Yakınlaştır', zoomOut: 'Uzaklaştır' }
     } as const;
     return titles[this.lang] ?? titles.ar;
   }
@@ -217,9 +324,13 @@ export class MapPickerComponent implements AfterViewInit, OnChanges, OnDestroy {
       en: {
         locationDenied: 'Location access was denied. You can select the property location manually on the map.',
         locationUnavailable: 'The device location is unavailable. You can select the property location manually on the map.'
+      },
+      tr: {
+        locationDenied: 'Konum erişimi reddedildi. Mülkün konumunu haritadan elle seçebilirsiniz.',
+        locationUnavailable: 'Cihaz konumu alınamıyor. Mülkün konumunu haritadan elle seçebilirsiniz.'
       }
     } as const;
-    return messages[this.lang][key];
+    return (messages[this.lang] ?? messages.ar)[key];
   }
 
   ngOnDestroy(): void {

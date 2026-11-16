@@ -28,9 +28,9 @@ import { NativeShareProvider } from './providers/native-share.provider';
 import { numberLocaleFor } from '../i18n/supported-preferences';
 import { CopyLinkProvider } from './providers/copy-link.provider';
 
-export type OfferShareLanguage = 'ar' | 'en' | 'de';
+export type OfferShareLanguage = 'ar' | 'en' | 'de' | 'tr';
 
-export const OFFER_SHARE_LANGUAGES: readonly OfferShareLanguage[] = ['ar', 'en', 'de'];
+export const OFFER_SHARE_LANGUAGES: readonly OfferShareLanguage[] = ['ar', 'en', 'de', 'tr'];
 
 /** Path of the page that shows the live offer. */
 export const OFFER_PUBLIC_PATH = '/landing';

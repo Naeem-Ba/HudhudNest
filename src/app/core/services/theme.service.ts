@@ -12,6 +12,8 @@ const LEGACY_STORAGE_KEY = 'aqar-tech-theme';
 /** Browser chrome colour per theme (must match the navbar/page background). */
 const THEME_COLOR: Record<AppTheme, string> = { light: '#0F2742', dark: '#0a0a0c' };
 const DARK_QUERY = '(prefers-color-scheme: dark)';
+/** What a visitor sees until they pick a theme themselves. */
+export const DEFAULT_THEME: AppTheme = 'light';
 
 /**
  * ThemeService — owns light/dark for the whole app.
@@ -20,8 +22,10 @@ const DARK_QUERY = '(prefers-color-scheme: dark)';
  * styles/_tokens.scss that changes with that attribute, so no component listens for theme changes.
  *
  * Preference model:
- *  - 'system' (default, nothing stored): follows the OS setting live, including while the app is open.
+ *  - nothing stored: light. Light is the product's default look; the OS dark setting does not change it.
  *  - 'light' | 'dark': an explicit choice, stored under THEME_STORAGE_KEY and never overridden by the OS.
+ *  - 'system': an explicit "follow the device" choice, stored as 'system'; follows the OS setting live,
+ *    including while the app is open.
  * The same decision runs before first paint from an inline script in index.html (no flash); this service
  * takes over once Angular boots and keeps both in agreement.
  */
@@ -54,11 +58,7 @@ export class ThemeService {
   setPreference(pref: ThemePreference): void {
     this.preference.set(pref);
     try {
-      if (pref === 'system') {
-        localStorage.removeItem(THEME_STORAGE_KEY);
-      } else {
-        localStorage.setItem(THEME_STORAGE_KEY, pref);
-      }
+      localStorage.setItem(THEME_STORAGE_KEY, pref);
     } catch {
       /* localStorage قد يكون غير متاح (وضع خاص) — نتجاهل بصمت */
     }
@@ -115,12 +115,13 @@ export class ThemeService {
     try {
       return this.parse(localStorage.getItem(THEME_STORAGE_KEY) ?? this.migrateLegacyTheme());
     } catch {
-      return 'system';
+      return DEFAULT_THEME;
     }
   }
 
+  /** Anything that is not a stored choice (nothing, or a damaged value) means the default: light. */
   private parse(value: string | null | undefined): ThemePreference {
-    return value === 'dark' || value === 'light' ? value : 'system';
+    return value === 'dark' || value === 'light' || value === 'system' ? value : DEFAULT_THEME;
   }
 
   private systemPrefersDark(): boolean {

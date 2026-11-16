@@ -1,4 +1,4 @@
-<header class="navbar" role="banner" [class.navbar--compact]="compactNav">
+<header class="navbar" role="banner" [class.navbar--compact]="compactNav" [class.navbar--condensed]="condensedNav">
   <div class="navbar__inner" #innerRef>
 
     <!-- Logo -->
@@ -73,9 +73,17 @@
       </a>
 
       <a
+        routerLink="/offices"
+        routerLinkActive="navbar__link--active"
+        class="navbar__link navbar__link--secondary"
+      >
+        {{ 'NAVBAR.OFFICES' | translate }}
+      </a>
+
+      <a
         routerLink="/price-estimate"
         routerLinkActive="navbar__link--active"
-        class="navbar__link"
+        class="navbar__link navbar__link--secondary"
       >
         {{ 'NAVBAR.PRICE_ESTIMATE' | translate }}
       </a>
@@ -83,7 +91,7 @@
       <a
         routerLink="/valuation"
         routerLinkActive="navbar__link--active"
-        class="navbar__link"
+        class="navbar__link navbar__link--secondary"
       >
         {{ 'NAVBAR.VALUATION' | translate }}
       </a>
@@ -91,7 +99,7 @@
       <a
         routerLink="/pricing"
         routerLinkActive="navbar__link--active"
-        class="navbar__link"
+        class="navbar__link navbar__link--secondary"
       >
         {{ 'NAVBAR.PRICING' | translate }}
       </a>
@@ -125,7 +133,7 @@
         routerLink="/kontakt"
         routerLinkActive="navbar__link--active"
         [routerLinkActiveOptions]="{ exact: true }"
-        class="navbar__link"
+        class="navbar__link navbar__link--secondary"
       >
         {{ 'NAVBAR.CONTACT' | translate }}
       </a>
@@ -133,7 +141,7 @@
       <a
         *ngIf="showDownloadLink"
         href="/download"
-        class="navbar__link navbar__link--download"
+        class="navbar__link navbar__link--secondary navbar__link--download"
       >
         {{ 'NAVBAR.DOWNLOAD_APP' | translate }}
       </a>
@@ -254,6 +262,18 @@
           >
             <span aria-hidden="true">🇩🇪</span>
             <span>Deutsch</span>
+          </li>
+
+          <li
+            role="menuitem"
+            tabindex="0"
+            lang="tr"
+            (click)="changeLang('tr')"
+            (keydown.enter)="changeLang('tr')"
+            [class.lang-menu__item--active]="currentLang === 'tr'"
+          >
+            <span aria-hidden="true">🇹🇷</span>
+            <span>Türkçe</span>
           </li>
         </ul>
       </div>
@@ -613,6 +633,14 @@
       </a>
 
       <a
+        routerLink="/offices"
+        class="mobile-drawer__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ 'NAVBAR.OFFICES' | translate }}
+      </a>
+
+      <a
         routerLink="/pricing"
         class="mobile-drawer__link"
         (click)="closeMobileMenu()"
@@ -833,6 +861,16 @@
         >
           Deutsch
         </button>
+
+        <button
+          type="button"
+          class="mobile-lang__btn"
+          lang="tr"
+          [class.mobile-lang__btn--active]="currentLang === 'tr'"
+          (click)="changeLang('tr')"
+        >
+          Türkçe
+        </button>
       </div>
     </nav>
   </div>
@@ -918,8 +956,11 @@
       [hidden]="!managementOpen"
     >
       <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/my-listings', label: 'PROFILE.MY_ADS', icon: '📋' }"></ng-container>
+      <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/payments', label: 'NAVBAR.MY_PAYMENTS', icon: '🧾' }"></ng-container>
       <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/short-stay/manage', label: 'NAVBAR.SHORT_STAY_LISTINGS', icon: '🏡' }"></ng-container>
-      <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/my-agency', label: 'NAVBAR.MY_AGENCY', icon: '🏢' }"></ng-container>
+      <ng-container *ngIf="showMyAgency$ | async">
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/my-agency', label: 'NAVBAR.MY_AGENCY', icon: '🏢' }"></ng-container>
+      </ng-container>
 
       <ng-container *ngIf="isProvider$ | async">
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/provider/requests', label: 'NAVBAR.PROVIDER_INBOX', icon: '🧰' }"></ng-container>
@@ -936,10 +977,13 @@
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/services', label: 'NAVBAR.ADMIN_SERVICES', icon: '📈' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/short-stay', label: 'NAVBAR.ADMIN_SHORT_STAY', icon: '🏡' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/service-providers', label: 'NAVBAR.ADMIN_SERVICE_PROVIDERS', icon: '🧰' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/agencies', label: 'NAVBAR.ADMIN_AGENCIES', icon: '🏢' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/listing-reports', label: 'NAVBAR.ADMIN_LISTING_REPORTS', icon: '🚩' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/payment-requests', label: 'NAVBAR.ADMIN_PAYMENT_REQUESTS', icon: '💳' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/payments', label: 'NAVBAR.ADMIN_PAYMENTS', icon: '🏦' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/investments', label: 'NAVBAR.ADMIN_INVESTMENTS', icon: '💼' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/location-suggestions', label: 'NAVBAR.ADMIN_LOCATION_SUGGESTIONS', icon: '📍' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/geo', label: 'NAVBAR.ADMIN_GEO', icon: '🗺️' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/marketing', label: 'NAVBAR.ADMIN_MARKETING', icon: '📣' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/growth', label: 'NAVBAR.ADMIN_GROWTH', icon: '📈' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/referrals', label: 'NAVBAR.ADMIN_REFERRALS', icon: '🎁' }"></ng-container>

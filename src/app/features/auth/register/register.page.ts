@@ -135,6 +135,15 @@ import { ToastService } from '../../../shared/services/toast.service';
           (checkedChange)="privacyConsentAccepted.set($event); consentError.set('')">
         </app-consent-checkbox>
 
+        <label class="newsletter-opt-in">
+          <input
+            type="checkbox"
+            data-testid="newsletter-opt-in"
+            [checked]="newsletterOptIn()"
+            (change)="newsletterOptIn.set($any($event.target).checked)" />
+          <span>{{ 'NEWSLETTER.OPT_IN_LABEL' | translate }}</span>
+        </label>
+
         <button type="submit" [disabled]="loading()">
           <ng-container *ngIf="loading(); else registerText">
             ⏳ {{ 'AUTH.LOADING' | translate }}
@@ -155,6 +164,8 @@ import { ToastService } from '../../../shared/services/toast.service';
     </section>
   `,
   styles: [`
+    .newsletter-opt-in { display: flex; gap: 0.5rem; align-items: flex-start; margin: 0.5rem 0 1rem; font-size: 0.9rem; line-height: 1.5; cursor: pointer; }
+    .newsletter-opt-in input { margin-top: 0.25rem; min-width: 18px; min-height: 18px; }
     .auth-page {
       min-height: 70vh;
       display: grid;
@@ -264,6 +275,10 @@ export class RegisterPage {
   // ومطلوب فعلياً (الزر معطَّل بدونه)، انظر docs/privacy/privacy-gaps.md (P1).
   readonly privacyConsentAccepted = signal(false);
 
+  // Newsletter: optional, separate from the box above, never pre-ticked and never required. Ticking it only asks the
+  // API to send the double opt-in mail; nothing marketing goes out until its link is opened.
+  readonly newsletterOptIn = signal(false);
+
   // ✅ B-15 (RELEASE-BLOCKERS-AR.md): حالة "أُرسل رابط التأكيد" + إعادة الإرسال.
   readonly registered = signal(false);
   readonly registeredEmail = signal('');
@@ -368,7 +383,8 @@ export class RegisterPage {
       privacyPolicyVersion: PRIVACY_POLICY_VERSION,
       termsAccepted: this.privacyConsentAccepted(),
       termsVersion: TERMS_OF_SERVICE_VERSION,
-      consentSource: ConsentApiService.currentSource()
+      consentSource: ConsentApiService.currentSource(),
+      ...(this.newsletterOptIn() ? { newsletterOptIn: true } : {})
     };
 
     this.auth.register(request).subscribe({

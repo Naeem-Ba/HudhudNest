@@ -1,6 +1,6 @@
-// Text of the public /account-deletion page in the three shipped languages. Static content kept in
+// Text of the public /account-deletion page in the four shipped languages. Static content kept in
 // code (not in the i18n bundles) for the same reason as the privacy policy and terms: one
-// reviewable reference text per language. Keep the three versions in step -- the spec checks that
+// reviewable reference text per language. Keep the four versions in step -- the spec checks that
 // they have the same structure.
 //
 // Inline markup: **bold** and [label](/route) or [label](mailto:...) links, parsed by
@@ -72,9 +72,9 @@ export const ACCOUNT_DELETION_CONTENT: Record<LangCode, AccountDeletionContent> 
         blocks: [
           {
             ul: [
-              'الإعلانات العقارية والرسائل والتقييمات التي نشرتها سابقاً تبقى ظاهرة للمستخدمين الآخرين — لكن باسم **"مستخدم محذوف"** بدل اسمك الحقيقي، وليس باسمك أو بياناتك الشخصية.',
+              'الرسائل والتقييمات التي نشرتها سابقاً تبقى ظاهرة للمستخدمين الآخرين — لكن باسم **"مستخدم محذوف"** بدل اسمك الحقيقي، وليس باسمك أو بياناتك الشخصية.',
               'سجلات أمنية داخلية محدودة (لمنع إساءة الاستخدام ومتابعة حوادث أمنية)، لا تحتوي أي من بياناتك الشخصية بعد إتمام الحذف.',
-              '**ملاحظة:** حذف الحساب لا يحذف إعلاناتك ولا يُلغي نشرها فوراً: تبقى ظاهرة حتى انتهاء مدتها العادية (شهر واحد من تاريخ النشر) ثم تُؤرشف. وإن كنت عضواً في مكتب عقاري تبقى إعلاناتك وتنتقل إلى صاحب المكتب، فتصله الاستفسارات عنها. إن رغبت بإزالتها قبل ذلك، احذفها من صفحة "إعلاناتي" قبل حذف الحساب.'
+              '**ملاحظة:** عند تنفيذ حذف الحساب تُخفى إعلاناتك عن الموقع فوراً (فلا تبقى إعلانات بلا جهة اتصال)، ثم تُحذف نهائياً مع صورها بعد مهلة 30 يوماً. أما خلال مهلة التراجع التي تسبق التنفيذ فتبقى إعلاناتك كما هي. وإن كنت عضواً في مكتب عقاري تبقى إعلاناتك وتنتقل إلى صاحب المكتب، فتصله الاستفسارات عنها.'
             ]
           }
         ]
@@ -157,9 +157,9 @@ export const ACCOUNT_DELETION_CONTENT: Record<LangCode, AccountDeletionContent> 
         blocks: [
           {
             ul: [
-              'Listings, messages and ratings you posted earlier stay visible to other users — but under the name **"Deleted User"** instead of your real name, and not with your name or personal data.',
+              'Messages and ratings you posted earlier stay visible to other users — but under the name **"Deleted User"** instead of your real name, and not with your name or personal data.',
               'A limited set of internal security logs (to prevent abuse and follow up security incidents), which contain none of your personal data once the deletion is complete.',
-              '**Note:** deleting your account does not delete your listings and does not unpublish them right away: they stay visible until their normal period ends (one month from the publication date) and are then archived. If you are a member of a real-estate office, your listings stay up and move to the office owner, who then receives the inquiries about them. If you would rather remove them earlier, delete them from the "My listings" page before deleting your account.'
+              '**Note:** when the account deletion is carried out, your listings are taken off the site right away (so no listing is left without a contact person) and are permanently deleted, with their photos, after a 30-day period. While the cancellation period before the deletion runs, your listings stay as they are. If you are a member of a real-estate office, your listings stay up and move to the office owner, who then receives the inquiries about them.'
             ]
           }
         ]
@@ -242,9 +242,9 @@ export const ACCOUNT_DELETION_CONTENT: Record<LangCode, AccountDeletionContent> 
         blocks: [
           {
             ul: [
-              'Von Ihnen früher veröffentlichte Anzeigen, Nachrichten und Bewertungen bleiben für andere Nutzer sichtbar — aber unter dem Namen **„Gelöschter Nutzer“** statt Ihres echten Namens und nicht mit Ihrem Namen oder Ihren persönlichen Daten.',
+              'Von Ihnen früher veröffentlichte Nachrichten und Bewertungen bleiben für andere Nutzer sichtbar — aber unter dem Namen **„Gelöschter Nutzer“** statt Ihres echten Namens und nicht mit Ihrem Namen oder Ihren persönlichen Daten.',
               'Begrenzte interne Sicherheitsprotokolle (zur Missbrauchsvermeidung und zur Verfolgung von Sicherheitsvorfällen), die nach Abschluss der Löschung keine personenbezogenen Daten von Ihnen mehr enthalten.',
-              '**Hinweis:** Die Kontolöschung löscht Ihre Anzeigen nicht und nimmt sie auch nicht sofort offline: Sie bleiben bis zum Ende ihrer normalen Laufzeit (ein Monat ab Veröffentlichung) sichtbar und werden dann archiviert. Wenn Sie Mitglied eines Immobilienbüros sind, bleiben Ihre Anzeigen bestehen und gehen auf den Büroinhaber über, der dann die Anfragen dazu erhält. Wenn Sie sie früher entfernen möchten, löschen Sie sie vor der Kontolöschung auf der Seite „Meine Anzeigen“.'
+              '**Hinweis:** Sobald die Kontolöschung ausgeführt wird, werden Ihre Anzeigen sofort offline genommen (damit keine Anzeige ohne Ansprechperson online bleibt) und nach einer Frist von 30 Tagen samt Fotos endgültig gelöscht. Während der Rücktrittsfrist vor der Ausführung bleiben Ihre Anzeigen unverändert. Wenn Sie Mitglied eines Immobilienbüros sind, bleiben Ihre Anzeigen bestehen und gehen auf den Büroinhaber über, der dann die Anfragen dazu erhält.'
             ]
           }
         ]
@@ -283,5 +283,89 @@ export const ACCOUNT_DELETION_CONTENT: Record<LangCode, AccountDeletionContent> 
       }
     ],
     back: 'Zurück zur Startseite'
+  },
+  tr: {
+    title: 'Hesabınızı silin — HudhudNest',
+    metaTitle: 'Hesabınızı ve verilerinizi silin',
+    metaDescription:
+      'HudhudNest hesabınızın ve verilerinizin silinmesini nasıl talep edeceğiniz; nelerin silindiği, nelerin saklandığı ve nedenleri.',
+    updated: 'Son güncelleme: 13 Ekim 2026',
+    intro:
+      'HudhudNest hesabınızı istediğiniz zaman uygulama içinden (Android ve iOS) veya web sitesinden kalıcı olarak silebilirsiniz. Bizimle doğrudan iletişime geçmeyi tercih ederseniz, uygulamayı yüklemeden de talebi başlatabilirsiniz (aşağıdaki son bölüme bakın).',
+    sections: [
+      {
+        heading: 'Hesabınızı nasıl silersiniz (uygulamada veya web\'de)',
+        blocks: [
+          {
+            ol: [
+              'Hesabınızda oturum açın.',
+              '**Profil** → sayfanın altındaki **Tehlikeli Bölge** (Danger Zone) bölümünü açın → **"Hesabı kalıcı olarak sil"** düğmesine dokunun.',
+              '(İsteğe bağlı) Bundan önce, aynı sayfadaki **"Verileriniz"** bölümünden verilerinizin bir kopyasını indirebilirsiniz.',
+              'Nelerin silineceğini ve nelerin saklanacağını açıklayan uyarıyı okuyun, ardından "Devam"a dokunun.',
+              'Geçerli parolanızı girin (hesabınız parola kullanıyorsa — yalnızca Google/Apple ile giriş yapan hesaplardan istenmez), ardından son onay alanına **DELETE** yazın.',
+              'Onayladığınızda **silme işlemi 30 gün sonrasına planlanır** ve hiçbir şey hemen silinmez: hesabınız bu süre boyunca çalışmaya devam eder ve silme tarihini gösteren bir not ile **"Silme talebini iptal et"** düğmesi görünür. Süre dolduğunda silme otomatik olarak çalışır ve tüm cihazlarınızdaki oturumunuz kapatılır. **Çalıştıktan sonra geri alınamaz.**'
+            ]
+          }
+        ]
+      },
+      {
+        heading: 'Silme işlemi çalıştığında nelerin silindiği',
+        blocks: [
+          {
+            ul: [
+              'Adınız, profil fotoğrafınız, özgeçmişiniz ve iletişim bilgileriniz.',
+              'Hesaba kayıtlı e-posta adresi ve telefon numarası ile bir Google/Apple hesabına olan her bağlantı — artık bunlarla bu hesapta oturum açamazsınız.',
+              'Saklanan parola (özet biçiminde) ve cihazlarınızın bildirim belirteçleri.',
+              'Tüm cihazlarınızdaki etkin oturumların hepsi.'
+            ]
+          }
+        ]
+      },
+      {
+        heading: 'Nelerin saklandığı (kişisel verileriniz olmadan)',
+        blocks: [
+          {
+            ul: [
+              'Daha önce yayınladığınız mesajlar ve puanlar diğer kullanıcılara görünür kalır — ancak gerçek adınız yerine **"Silinmiş Kullanıcı"** adı altında ve adınız veya kişisel verileriniz olmadan.',
+              'Sınırlı sayıda dahili güvenlik günlüğü (kötüye kullanımı önlemek ve güvenlik olaylarını izlemek için); silme tamamlandıktan sonra bunlar kişisel verilerinizin hiçbirini içermez.',
+              '**Not:** hesap silme işlemi gerçekleştirildiğinde ilanlarınız hemen siteden kaldırılır (böylece hiçbir ilan iletişim kişisiz kalmaz) ve 30 günlük bir sürenin ardından fotoğraflarıyla birlikte kalıcı olarak silinir. Silme çalışmadan önceki iptal süresi boyunca ilanlarınız olduğu gibi kalır. Bir emlak ofisinin üyesiyseniz, ilanlarınız yayında kalır ve ofis sahibine devredilir; ilanlara ilişkin sorular artık ona ulaşır.'
+            ]
+          }
+        ]
+      },
+      {
+        heading: 'Silme talebini iptal etme',
+        blocks: [
+          {
+            p: 'Otuz gün içinde fikrinizi değiştirirseniz, oturum açın ve sayfanın üstündeki notta veya profilinizin **Tehlikeli Bölge**sinde **"Silme talebini iptal et"** düğmesine dokunun. İptal için parola gerekmez ve hesabınız tamamen eskisi gibi kalır.'
+          }
+        ]
+      },
+      {
+        heading: 'Kimlik doğrulama gerekli',
+        blocks: [
+          {
+            p: 'Hesap silme hassas ve kesin bir işlemdir; bu nedenle bir silme talebi kabul edilmeden önce önce oturum açmanızı, ek bir onay olarak geçerli parolanızı yeniden girmenizi (yalnızca e-posta/parola hesapları için) ve açık bir onay sözcüğü yazmanızı isteriz.'
+          }
+        ]
+      },
+      {
+        heading: 'Oturum açamıyor musunuz?',
+        blocks: [
+          {
+            p: 'Hesabınıza erişemiyorsanız (örneğin parolanıza veya telefon numaranıza erişiminizi kaybettiniz) ve hesabınızın ve verilerinizin silinmesini talep etmek istiyorsanız, hesabınıza kayıtlı e-posta adresinden [support@hudhudnest.com](mailto:support@hudhudnest.com?subject=Hesap%20silme%20talebi) adresine talebinizi açıklayan bir e-posta yazın. Silmeyi elle gerçekleştirmeden önce kimliğinizi doğrularız.'
+          }
+        ]
+      },
+      {
+        heading: 'Gizlilik politikası',
+        blocks: [
+          {
+            p: 'Topladığımız veriler ve ne kadar süre sakladığımız hakkında daha fazla bilgi için [Gizlilik Politikası](/privacy-policy)\'na bakın.'
+          }
+        ]
+      }
+    ],
+    back: 'Ana sayfaya dön'
   }
 };

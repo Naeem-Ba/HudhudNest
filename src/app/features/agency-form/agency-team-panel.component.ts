@@ -84,7 +84,7 @@ type PendingAction =
             <button type="button" class="btn btn--outline btn--sm" (click)="copy(publicUrl())">
               {{ 'AGENCY_MANAGE.COPY' | translate }}
             </button>
-            <a class="btn btn--ghost btn--sm" [routerLink]="['/agencies', agency.slug]">
+            <a class="btn btn--ghost btn--sm" [routerLink]="['/offices', agency.slug]">
               {{ 'AGENCY_MANAGE.OPEN_PUBLIC_PAGE' | translate }}
             </a>
           </div>
@@ -269,7 +269,7 @@ export class AgencyTeamPanelComponent implements OnChanges {
 
   // أصل الموقع العام لا window.location.origin — داخل تطبيق Capacitor الأخير هو
   // capacitor://localhost، وهو رابط لا يفيد أحدًا خارج الجهاز.
-  readonly publicUrl = (): string => `${this.shareUrl.getSiteOrigin()}/agencies/${this.agency.slug}`;
+  readonly publicUrl = (): string => `${this.shareUrl.getSiteOrigin()}/offices/${this.agency.slug}`;
 
   readonly pendingMemberName = computed(() => {
     const p = this.pending();

@@ -24,6 +24,24 @@ import { LanguageService } from '../services/language.service';
 import { ApiPagedResult, unwrapItems } from '../models/api.model';
 import { NotificationItem, toNotificationItem } from '../models/notification.model';
 
+export interface MessageReceivedEvent {
+  propertyId: string;
+  senderId: string;
+  messageId: string;
+}
+
+/** The hub sends camelCase ids; anything else (an older server, a malformed payload) is ignored. */
+export function toMessageReceivedEvent(payload: unknown): MessageReceivedEvent | null {
+  const raw = (payload ?? {}) as Record<string, unknown>;
+  const propertyId = raw['propertyId'] ?? raw['PropertyId'];
+  const senderId = raw['senderId'] ?? raw['SenderId'];
+  const messageId = raw['messageId'] ?? raw['MessageId'];
+  if (typeof propertyId !== 'string' || typeof senderId !== 'string' || typeof messageId !== 'string') {
+    return null;
+  }
+  return { propertyId, senderId, messageId };
+}
+
 @Injectable({ providedIn: 'root' })
 export class NotificationsApiService {
   private hub?: signalR.HubConnection;
@@ -36,6 +54,14 @@ export class NotificationsApiService {
   /** Another tab or device marked notifications as read: ids, or all=true. */
   private readonly readSyncSubject = new Subject<{ ids: string[] | null; all: boolean }>();
   readonly readSync$ = this.readSyncSubject.asObservable();
+
+  /**
+   * QA phase 25 (P25-D02): a message just arrived for this user, whether or not it also raised a notice (notices
+   * coalesce while an unread message exists, so the open conversation cannot rely on them). Ids only; the page
+   * that shows the conversation re-fetches it.
+   */
+  private readonly messageReceivedSubject = new Subject<MessageReceivedEvent>();
+  readonly messageReceived$ = this.messageReceivedSubject.asObservable();
 
   /** The live connection came back after a drop: anything raised meanwhile must be re-fetched. */
   private readonly resyncSubject = new Subject<void>();
@@ -150,6 +176,13 @@ export class NotificationsApiService {
         this.realtimeSubject.next(toNotificationItem(notification));
         this.unreadCount.update(value => value + 1);
       });
+    });
+
+    this.hub.on('MessageReceived', (payload: unknown) => {
+      const event = toMessageReceivedEvent(payload);
+      if (event) {
+        this.zone.run(() => this.messageReceivedSubject.next(event));
+      }
     });
 
     // ✅ إصلاح: تحديث عداد الإشعارات غير المقروءة عبر SignalR (مواصفات قسم 7.2)

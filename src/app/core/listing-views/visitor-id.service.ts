@@ -4,19 +4,22 @@
 // An opaque random id that stands for "this browser/app install" when nobody is signed in, so the
 // server can tell the same visitor opening a listing again (not counted twice) from a different one.
 // It is a random UUID with no relation to the person, the device hardware or the network, it is
-// never sent anywhere except as the X-Visitor-Id header of the view-count call, and the server only
+// never sent anywhere except as the X-Visitor-Id header of the listing view-count and office visit calls, and the server only
 // ever keeps a keyed hash of it. Not a fingerprint and not for advertising.
 //
 // Storage can be unavailable (private window, blocked site data): the id then lives for the page
 // session only, which at worst makes the server count that visitor once more.
 // =============================================================
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+
+import { MeasurementConsentService } from '../consent/measurement-consent.service';
 
 const STORAGE_KEY = 'hn.visitorId';
 
 @Injectable({ providedIn: 'root' })
 export class VisitorIdService {
+  private readonly consent = inject(MeasurementConsentService);
   private inMemory: string | null = null;
 
   /** The visitor id: read from storage, created on first use, never empty. */
@@ -35,7 +38,8 @@ export class VisitorIdService {
     if (!id || !VisitorIdService.isValid(id)) {
       id = VisitorIdService.generate();
       try {
-        globalThis.localStorage?.setItem(STORAGE_KEY, id);
+        // Kept on the device only with consent where the law requires it; otherwise for this page only.
+        if (this.consent.canPersist()) globalThis.localStorage?.setItem(STORAGE_KEY, id);
       } catch {
         /* storage unavailable: keep it for this session only */
       }

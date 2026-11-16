@@ -1,0 +1,85 @@
+<section class="hero" aria-labelledby="hero-title">
+  <div class="wrap hero__inner">
+    <p class="hero__badge"><span class="hero__dot" aria-hidden="true"></span>{{ 'SITE.HERO.BADGE' | translate }}</p>
+    <h1 id="hero-title">{{ 'SITE.HERO.TITLE' | translate }}</h1>
+    <p class="hero__sub">{{ 'SITE.HERO.SUBLINE' | translate }}</p>
+
+    <div class="hero__ctas">
+      <ng-container *ngTemplateOutlet="cta; context: { $implicit: hero.primary, cls: 'btn btn--gold' }" />
+      @if (hero.secondary; as secondary) {
+        <ng-container *ngTemplateOutlet="cta; context: { $implicit: secondary, cls: 'btn btn--outline' }" />
+      }
+    </div>
+
+    <p class="hero__chip">{{ 'SITE.HERO.CHIP_FREE' | translate }}</p>
+  </div>
+</section>
+
+<section class="why" aria-labelledby="why-title">
+  <div class="wrap">
+    <h2 id="why-title">{{ 'SITE.WHY.TITLE' | translate }}</h2>
+    <p class="why__intro">{{ 'SITE.WHY.INTRO' | translate }}</p>
+    <ul class="why__list">
+      @for (k of whyKeys; track k) {
+        <li>
+          <h3>{{ 'SITE.WHY.' + k + '.T' | translate }}</h3>
+          <p>{{ 'SITE.WHY.' + k + '.D' | translate }}</p>
+        </li>
+      }
+    </ul>
+  </div>
+</section>
+
+<section class="start" aria-labelledby="start-title">
+  <div class="wrap">
+    <h2 id="start-title">{{ 'SITE.START.TITLE' | translate }}</h2>
+    <ul class="start__grid">
+      @for (c of cards; track c.key) {
+        <li>
+          @switch (c.target.kind) {
+            @case ('waitlist') {
+              <button type="button" class="card" (click)="openWaitlist(c.target)">
+                <ng-container *ngTemplateOutlet="cardBody; context: { $implicit: c }" />
+              </button>
+            }
+            @case ('platform') {
+              <a class="card" [href]="href(c.target)">
+                <ng-container *ngTemplateOutlet="cardBody; context: { $implicit: c }" />
+              </a>
+            }
+            @default {
+              <a class="card" [routerLink]="$any(c.target).path" [queryParams]="$any(c.target).query">
+                <ng-container *ngTemplateOutlet="cardBody; context: { $implicit: c }" />
+              </a>
+            }
+          }
+        </li>
+      }
+    </ul>
+  </div>
+</section>
+
+<ng-template #cta let-item let-cls="cls">
+  @switch (item.target.kind) {
+    @case ('waitlist') {
+      <button type="button" [class]="cls" (click)="openWaitlist(item.target)">{{ item.labelKey | translate }}</button>
+    }
+    @case ('platform') {
+      <a [class]="cls" [href]="href(item.target)">{{ item.labelKey | translate }}</a>
+    }
+    @default {
+      <a [class]="cls" [routerLink]="item.target.path">{{ item.labelKey | translate }}</a>
+    }
+  }
+</ng-template>
+
+<ng-template #cardBody let-c>
+  <span class="card__icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24">@for (d of icons[c.icon]; track d) {<path [attr.d]="d" />}</svg>
+  </span>
+  <span class="card__title">{{ 'SITE.START.' + c.key + '.T' | translate }}</span>
+  <span class="card__text">{{ 'SITE.START.' + c.key + '.D' | translate }}</span>
+  <span class="card__go" aria-hidden="true">
+    <svg viewBox="0 0 24 24" class="dir"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+  </span>
+</ng-template>

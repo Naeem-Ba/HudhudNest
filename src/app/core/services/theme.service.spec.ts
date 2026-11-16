@@ -35,14 +35,15 @@ describe('ThemeService', () => {
 
   // ────────────── التحديد الابتدائي ──────────────
 
-  it('✅ لا يوجد ثيم محفوظ + النظام يفضّل الداكن ⇒ يبدأ داكن', () => {
+  it('✅ لا يوجد ثيم محفوظ + النظام يفضّل الداكن ⇒ يبدأ فاتح (الفاتح هو الافتراضي)', () => {
     localStorage.removeItem(STORAGE_KEY);
     stubMatchMedia(true);
 
     const service = TestBed.inject(ThemeService);
 
-    expect(service.theme()).toBe('dark');
-    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    expect(service.preference()).toBe('light');
+    expect(service.theme()).toBe('light');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
   });
 
   it('✅ لا يوجد ثيم محفوظ + النظام يفضّل الفاتح ⇒ يبدأ فاتح', () => {
@@ -66,12 +67,22 @@ describe('ThemeService', () => {
     expect(service.theme()).toBe('dark');
   });
 
-  it('✅ قيمة تالفة بـlocalStorage (ليست dark/light) تُهمَل ويُرجع لتفضيل النظام', () => {
+  it('✅ قيمة تالفة بـlocalStorage (ليست dark/light/system) تُهمَل ويُرجع للفاتح الافتراضي', () => {
     localStorage.setItem(STORAGE_KEY, 'blue' as any);
     stubMatchMedia(true);
 
     const service = TestBed.inject(ThemeService);
 
+    expect(service.theme()).toBe('light');
+  });
+
+  it('✅ اختيار «حسب الجهاز» المحفوظ (system) يتبع النظام', () => {
+    localStorage.setItem(STORAGE_KEY, 'system');
+    stubMatchMedia(true);
+
+    const service = TestBed.inject(ThemeService);
+
+    expect(service.preference()).toBe('system');
     expect(service.theme()).toBe('dark');
   });
 
@@ -112,7 +123,8 @@ describe('ThemeService', () => {
   });
 
   it('✅ toggle() من داكن لفاتح', () => {
-    stubMatchMedia(true); // يبدأ داكن
+    localStorage.setItem(STORAGE_KEY, 'dark'); // يبدأ داكن
+    stubMatchMedia(false);
     const service = TestBed.inject(ThemeService);
     expect(service.theme()).toBe('dark');
 
@@ -134,13 +146,13 @@ describe('ThemeService', () => {
 
   // ────────────── مقاومة فشل localStorage (وضع خاص) ──────────────
 
-  it('✅ فشل localStorage.getItem عند البدء لا يكسر الخدمة (يرجع لتفضيل النظام)', () => {
+  it('✅ فشل localStorage.getItem عند البدء لا يكسر الخدمة (يرجع للفاتح الافتراضي)', () => {
     spyOn(localStorage, 'getItem').and.throwError('SecurityError: private mode');
     stubMatchMedia(true);
 
     let service!: ThemeService;
     expect(() => (service = TestBed.inject(ThemeService))).not.toThrow();
-    expect(service.theme()).toBe('dark');
+    expect(service.theme()).toBe('light');
   });
 
   it('✅ فشل localStorage.setItem عند setTheme لا يكسر تحديث الإشارة/الـDOM', () => {
@@ -172,10 +184,21 @@ describe('ThemeService', () => {
     return { setDark: v => { dark = v; listeners.forEach(fn => fn({ matches: v })); } };
   }
 
-  it('✅ بلا اختيار محفوظ: التطبيق يتبع تغيّر إعداد الجهاز مباشرةً دون إعادة تحميل', () => {
+  it('✅ بلا اختيار محفوظ: يبقى فاتحاً حتى لو تحوّل الجهاز للداكن', () => {
     const os = controllableMatchMedia(false);
     const service = TestBed.inject(ThemeService);
-    expect(service.preference()).toBe('system');
+    expect(service.preference()).toBe('light');
+
+    os.setDark(true);
+
+    expect(service.theme()).toBe('light');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+  });
+
+  it('✅ اختيار «حسب الجهاز»: التطبيق يتبع تغيّر إعداد الجهاز مباشرةً دون إعادة تحميل', () => {
+    const os = controllableMatchMedia(false);
+    const service = TestBed.inject(ThemeService);
+    service.setPreference('system');
     expect(service.theme()).toBe('light');
 
     os.setDark(true);
@@ -195,7 +218,7 @@ describe('ThemeService', () => {
     expect(document.documentElement.getAttribute('data-theme')).toBe('light');
   });
 
-  it('✅ setPreference("system") يمسح الاختيار المحفوظ ويعود لتتبّع الجهاز', () => {
+  it('✅ setPreference("system") يحفظ «حسب الجهاز» صراحةً ويعود لتتبّع الجهاز', () => {
     const os = controllableMatchMedia(true);
     const service = TestBed.inject(ThemeService);
     service.setPreference('light');
@@ -203,7 +226,7 @@ describe('ThemeService', () => {
 
     service.setPreference('system');
 
-    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('system');
     expect(service.theme()).toBe('dark');
     os.setDark(false);
     expect(service.theme()).toBe('light');

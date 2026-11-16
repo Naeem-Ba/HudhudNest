@@ -1,3 +1,4 @@
+import { PageMetaService } from '../../core/services/page-meta.service';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -113,6 +114,7 @@ export const EXPAT_SERVICES: Record<ExpatGoal, ServiceCategory[]> = {
 export class ExpatJourneyPage implements OnInit {
   private readonly offerings = inject(ServiceOfferingService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly pageMeta = inject(PageMetaService);
 
   readonly goals: ExpatGoal[] = ['own', 'find', 'invest'];
   readonly goal = signal<ExpatGoal | null>(null);
@@ -126,6 +128,7 @@ export class ExpatJourneyPage implements OnInit {
   });
 
   ngOnInit(): void {
+    this.pageMeta.applyTranslated('SEO.EXPATS', '/expats', this.destroyRef);
     this.offerings.getAvailability().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: items => {
         this.available.set(new Set(items.filter(i => i.offeringCount > 0).map(i => i.category)));

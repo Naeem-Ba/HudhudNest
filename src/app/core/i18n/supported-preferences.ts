@@ -22,6 +22,8 @@ export function numberLocaleFor(language: string | null | undefined): string {
       return 'de-DE';
     case 'en':
       return 'en-US';
+    case 'tr':
+      return 'tr-TR';
     default:
       // Latin digits on purpose: plain 'ar' gives Western digits in one engine and Arabic-Indic in
       // another, so one page could show both (QA Phase 16, P16-D11).

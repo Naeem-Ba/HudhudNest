@@ -10,7 +10,7 @@
 import { SupportedLanguage, toSupportedLanguage } from './first-visit-language';
 import { numberLocaleFor } from './supported-preferences';
 
-/** "ar" | "en" | "de" for the language on screen, or null when it cannot be told. */
+/** "ar" | "en" | "de" | "tr" for the language on screen, or null when it cannot be told. */
 export function currentUiLanguage(): SupportedLanguage | null {
   if (typeof document === 'undefined') {
     return null;

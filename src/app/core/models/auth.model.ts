@@ -15,6 +15,8 @@ export interface RegisterRequest {
   consentSource?: string;
   termsAccepted?: boolean;
   termsVersion?: string;
+  // Optional, separate and never pre-ticked: asks the API for the newsletter double opt-in mail. Absent = no request.
+  newsletterOptIn?: boolean;
   // Growth engine P4: first UTM touch (tags only), sent only when one was captured.
   acquisitionSource?: string;
   acquisitionMedium?: string;
@@ -172,7 +174,9 @@ export const LOGIN_ERROR_CODES = {
   RATE_LIMITED: 'RATE_LIMITED',
   ACCOUNT_DISABLED: 'ACCOUNT_DISABLED',
   PASSWORD_CHANGE_REQUIRED: 'PASSWORD_CHANGE_REQUIRED',
-  SERVER_ERROR: 'SERVER_ERROR'
+  SERVER_ERROR: 'SERVER_ERROR',
+  /** صحيحة كلمة السر لكن البريد لم يُؤكَّد؛ أُرسل رابط تأكيد جديد (QA المرحلة 4، P4-D11). */
+  EMAIL_NOT_CONFIRMED: 'EMAIL_NOT_CONFIRMED'
 } as const;
 
 export type LoginErrorCode = (typeof LOGIN_ERROR_CODES)[keyof typeof LOGIN_ERROR_CODES];

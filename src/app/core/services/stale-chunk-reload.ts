@@ -28,11 +28,21 @@ export interface StaleChunkReloadDeps {
   readLastReloadAt: () => number | null;
   writeLastReloadAt: (value: number) => void;
   load: (url: string) => void;
+  /**
+   * False while the device has no connection. A chunk that fails to load OFFLINE is not stale, it is
+   * unreachable; reloading would replace the whole app with the browser's "no internet" page
+   * (QA Phase 26, P26-D07). Omitted = assume online.
+   */
+  isOnline?: () => boolean;
 }
 
 /** @returns true when the page was sent to `url` for a fresh load, false when the error was left alone. */
 export function reloadForStaleChunk(error: unknown, url: string, deps: StaleChunkReloadDeps): boolean {
   if (!isChunkLoadError(error)) {
+    return false;
+  }
+
+  if (deps.isOnline && !deps.isOnline()) {
     return false;
   }
 
@@ -66,6 +76,7 @@ export function browserStaleChunkReloadDeps(): StaleChunkReloadDeps {
         // Without storage the loop guard is gone; the browser still reloads at most once per error.
       }
     },
-    load: url => window.location.assign(url)
+    load: url => window.location.assign(url),
+    isOnline: () => (typeof navigator === 'undefined' ? true : navigator.onLine !== false)
   };
 }

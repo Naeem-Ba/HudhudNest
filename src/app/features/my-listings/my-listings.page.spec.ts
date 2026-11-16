@@ -1,7 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { AgenciesApiService } from '../../core/api/agencies-api.service';
+import { Agency } from '../../core/models/agency.model';
 import { provideRouter } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { BehaviorSubject, of, throwError } from 'rxjs';
+import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
 
 import { ListingFeesApiService } from '../../core/api/listing-fees-api.service';
 import { PlansApiService } from '../../core/api/plans-api.service';
@@ -11,6 +13,9 @@ import { ShortStayListingApiService } from '../../core/api/short-stay-listing-ap
 import { Property } from '../../core/models/property.model';
 import { ToastService } from '../../shared/services/toast.service';
 import { MyListingsPage } from './my-listings.page';
+
+// The publisher's office (branch picker / "add to my office"); none by default.
+let agenciesApi: { getMine: () => Observable<Partial<Agency> | null> } = { getMine: () => of(null) };
 
 function listing(id: string, extra: Partial<Property> = {}): Property {
   return { id, title: `Listing ${id}`, isPublished: true, status: 'Available', ...extra } as Property;
@@ -39,6 +44,7 @@ describe('MyListingsPage — featuring', () => {
         provideRouter([]),
         { provide: ListingFeesApiService, useValue: feesApi },
         { provide: PropertyApiService, useValue: propertyApi },
+        { provide: AgenciesApiService, useValue: agenciesApi },
         { provide: ShortStayListingApiService, useValue: shortStay },
         { provide: ProfileService, useValue: { profile$: new BehaviorSubject(null) } },
         { provide: PlansApiService, useValue: jasmine.createSpyObj('PlansApiService', ['getPlans']) },
@@ -106,6 +112,7 @@ describe('MyListingsPage — listing status (QA Phase 7, P7-D08)', () => {
         provideRouter([]),
         { provide: ListingFeesApiService, useValue: feesApi },
         { provide: PropertyApiService, useValue: propertyApi },
+        { provide: AgenciesApiService, useValue: agenciesApi },
         { provide: ShortStayListingApiService, useValue: shortStay },
         { provide: ProfileService, useValue: { profile$: new BehaviorSubject(null) } },
         { provide: PlansApiService, useValue: jasmine.createSpyObj('PlansApiService', ['getPlans']) },
@@ -223,5 +230,160 @@ describe('MyListingsPage — listing status (QA Phase 7, P7-D08)', () => {
 
       expect(fixture.componentInstance.canPublish(fixture.componentInstance.listings()[0])).toBeTrue();
     });
+  });
+});
+
+describe('MyListingsPage — hide / show (P8-D06a)', () => {
+  let fixture: ComponentFixture<MyListingsPage>;
+  let propertyApi: jasmine.SpyObj<PropertyApiService>;
+  let toast: jasmine.SpyObj<ToastService>;
+
+  function setup(listings: Property[], hideFails = false): void {
+    propertyApi = jasmine.createSpyObj('PropertyApiService', ['getMyProperties', 'unpublishProperty', 'publishProperty']);
+    propertyApi.getMyProperties.and.returnValue(of(listings));
+    propertyApi.unpublishProperty.and.returnValue(hideFails ? throwError(() => new Error('boom')) : of(undefined));
+    propertyApi.publishProperty.and.returnValue(of(undefined));
+    const shortStay = jasmine.createSpyObj('ShortStayListingApiService', ['getMine']);
+    shortStay.getMine.and.returnValue(of([]));
+    const feesApi = jasmine.createSpyObj('ListingFeesApiService', ['getMyPendingFeatured']);
+    feesApi.getMyPendingFeatured.and.returnValue(of([]));
+    toast = jasmine.createSpyObj('ToastService', ['show', 'success', 'error']);
+
+    TestBed.configureTestingModule({
+      imports: [MyListingsPage, TranslateModule.forRoot()],
+      providers: [
+        provideRouter([]),
+        { provide: ListingFeesApiService, useValue: feesApi },
+        { provide: PropertyApiService, useValue: propertyApi },
+        { provide: AgenciesApiService, useValue: agenciesApi },
+        { provide: ShortStayListingApiService, useValue: shortStay },
+        { provide: ProfileService, useValue: { profile$: new BehaviorSubject(null) } },
+        { provide: PlansApiService, useValue: jasmine.createSpyObj('PlansApiService', ['getPlans']) },
+        { provide: ToastService, useValue: toast }
+      ]
+    });
+
+    fixture = TestBed.createComponent(MyListingsPage);
+    fixture.detectChanges();
+  }
+
+  const el = () => fixture.nativeElement as HTMLElement;
+
+  it('a published listing offers Hide; a draft, an expired and a taken-down listing do not', () => {
+    setup([
+      listing('live'),
+      listing('draft', { isPublished: false }),
+      listing('old', { status: 'Expired', isPublished: false }),
+      listing('down', { isPublished: false, isTakenDown: true })
+    ]);
+
+    expect(el().querySelectorAll('.btn--hide').length).toBe(1);
+  });
+
+  it('hiding calls the API, flips the card to a publishable one and tells the owner', () => {
+    setup([listing('live')]);
+
+    fixture.componentInstance.hide('live');
+    fixture.detectChanges();
+
+    expect(propertyApi.unpublishProperty).toHaveBeenCalledOnceWith('live');
+    expect(fixture.componentInstance.listings()[0].isPublished).toBeFalse();
+    expect(fixture.componentInstance.canPublish(fixture.componentInstance.listings()[0])).toBeTrue();
+    expect(fixture.componentInstance.canHide(fixture.componentInstance.listings()[0])).toBeFalse();
+    expect(toast.show).toHaveBeenCalledWith('MY_LISTINGS.HIDE_SUCCESS', 'success');
+  });
+
+  it('a failed hide keeps the listing published and shows the error', () => {
+    setup([listing('live')], true);
+
+    fixture.componentInstance.hide('live');
+
+    expect(fixture.componentInstance.listings()[0].isPublished).toBeTrue();
+    expect(toast.show).toHaveBeenCalledWith('MY_LISTINGS.HIDE_ERROR', 'error');
+    expect(fixture.componentInstance.hidingId()).toBeNull();
+  });
+});
+
+describe('MyListingsPage — adding older listings to my office (offices P4)', () => {
+  let fixture: ComponentFixture<MyListingsPage>;
+  let propertyApi: jasmine.SpyObj<PropertyApiService>;
+  let toast: jasmine.SpyObj<ToastService>;
+
+  afterEach(() => { agenciesApi = { getMine: () => of(null) }; });
+
+  function setup(listings: Property[], office: Partial<Agency> | null, linkResult = of(undefined as void)): void {
+    agenciesApi = { getMine: () => of(office) };
+    propertyApi = jasmine.createSpyObj('PropertyApiService', ['getMyProperties', 'linkPropertyToOffice']);
+    propertyApi.getMyProperties.and.returnValue(of(listings));
+    propertyApi.linkPropertyToOffice.and.returnValue(linkResult);
+    const shortStay = jasmine.createSpyObj('ShortStayListingApiService', ['getMine']);
+    shortStay.getMine.and.returnValue(of([]));
+    const feesApi = jasmine.createSpyObj('ListingFeesApiService', ['getMyPendingFeatured']);
+    feesApi.getMyPendingFeatured.and.returnValue(of([]));
+    toast = jasmine.createSpyObj('ToastService', ['show', 'success', 'error']);
+
+    TestBed.configureTestingModule({
+      imports: [MyListingsPage, TranslateModule.forRoot()],
+      providers: [
+        provideRouter([]),
+        { provide: ListingFeesApiService, useValue: feesApi },
+        { provide: PropertyApiService, useValue: propertyApi },
+        { provide: AgenciesApiService, useValue: agenciesApi },
+        { provide: ShortStayListingApiService, useValue: shortStay },
+        { provide: ProfileService, useValue: { profile$: new BehaviorSubject(null) } },
+        { provide: PlansApiService, useValue: jasmine.createSpyObj('PlansApiService', ['getPlans']) },
+        { provide: ToastService, useValue: toast }
+      ]
+    });
+
+    fixture = TestBed.createComponent(MyListingsPage);
+    fixture.detectChanges();
+  }
+
+  const buttons = () => (fixture.nativeElement as HTMLElement).querySelectorAll('[data-testid="link-to-office"]');
+
+  it('offers the action only on listings without an office, and only to an office member', () => {
+    setup([listing('old'), listing('mine', { agencyId: 'o1' })], { id: 'o1', name: 'Office' });
+    expect(buttons().length).toBe(1);
+    expect(fixture.componentInstance.canLinkToOffice(fixture.componentInstance.listings()[1])).toBeFalse();
+  });
+
+  it('shows nothing to someone outside any office', () => {
+    setup([listing('old')], null);
+    expect(buttons().length).toBe(0);
+  });
+
+  it('asks first, then links the listing and marks it as the office\'s', () => {
+    setup([listing('old')], { id: 'o1', name: 'Office' });
+    spyOn(window, 'confirm').and.returnValue(true);
+
+    fixture.componentInstance.linkToOffice(fixture.componentInstance.listings()[0]);
+    fixture.detectChanges();
+
+    expect(propertyApi.linkPropertyToOffice).toHaveBeenCalledOnceWith('old');
+    expect(fixture.componentInstance.listings()[0].agencyId).toBe('o1');
+    expect(buttons().length).toBe(0);
+    expect(toast.show).toHaveBeenCalledWith('MY_LISTINGS.OFFICE_LINK.DONE', 'success');
+  });
+
+  it('does nothing when the confirmation is declined', () => {
+    setup([listing('old')], { id: 'o1', name: 'Office' });
+    spyOn(window, 'confirm').and.returnValue(false);
+
+    fixture.componentInstance.linkToOffice(fixture.componentInstance.listings()[0]);
+
+    expect(propertyApi.linkPropertyToOffice).not.toHaveBeenCalled();
+  });
+
+  it('explains a full office quota and keeps the listing as it was', () => {
+    setup([listing('old')], { id: 'o1', name: 'Office' },
+      throwError(() => ({ status: 409, error: { code: 'LISTING_QUOTA_REACHED' } })));
+    spyOn(window, 'confirm').and.returnValue(true);
+
+    fixture.componentInstance.linkToOffice(fixture.componentInstance.listings()[0]);
+
+    expect(fixture.componentInstance.listings()[0].agencyId).toBeUndefined();
+    expect(toast.show).toHaveBeenCalledWith('MY_LISTINGS.OFFICE_LINK.QUOTA', 'error');
+    expect(fixture.componentInstance.linkingId()).toBeNull();
   });
 });

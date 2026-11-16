@@ -6,7 +6,7 @@ import { join, relative } from 'node:path';
 import { findKeyLiterals, flattenKeys, missingKeys, parityGaps } from './lib/i18n-keys.mjs';
 
 const root = process.cwd();
-const languages = ['ar', 'en', 'de'];
+const languages = ['ar', 'en', 'de', 'tr'];
 
 const keysByLanguage = Object.fromEntries(
   languages.map((language) => [

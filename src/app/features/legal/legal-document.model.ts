@@ -1,3 +1,6 @@
+import type { LangCode } from '../../core/services/language.service';
+import { interpolateLegalText } from './controller-identity';
+
 /**
  * Shape of public/i18n/legal/{lang}/{privacy|terms}.json. Strings may contain inline links in
  * the form [label](/route) or [label](mailto:address) — parsed by parseLegalText(), never
@@ -20,7 +23,27 @@ export interface LegalSection {
 export interface LegalDocumentContent {
   title: string;
   metaDescription: string;
+  /** Shown as a banner above the text. Set while a translation has not been reviewed by a lawyer. */
+  reviewNotice?: string;
   sections: LegalSection[];
+}
+
+/** Replaces the {{TOKENS}} in every string of a document from the central controller identity. */
+export function interpolateDocument(doc: LegalDocumentContent, lang: LangCode): LegalDocumentContent {
+  const t = (text: string) => interpolateLegalText(text, lang);
+  return {
+    ...doc,
+    title: t(doc.title),
+    metaDescription: t(doc.metaDescription),
+    reviewNotice: doc.reviewNotice ? t(doc.reviewNotice) : doc.reviewNotice,
+    sections: doc.sections.map(section => ({
+      heading: t(section.heading),
+      blocks: section.blocks.map(block => ({
+        ...(block.p !== undefined ? { p: t(block.p) } : {}),
+        ...(block.ul !== undefined ? { ul: block.ul.map(t) } : {})
+      }))
+    }))
+  };
 }
 
 export type LegalTextSegment =

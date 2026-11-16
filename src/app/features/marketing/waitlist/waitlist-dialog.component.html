@@ -1,0 +1,72 @@
+<dialog #dlg class="wl" aria-labelledby="wl-title" (close)="onNativeClose()" (click)="onBackdropClick($event)">
+  <div class="wl__panel">
+    <button type="button" class="wl__close" (click)="close()" [attr.aria-label]="'SITE.WAITLIST.CLOSE' | translate">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+    </button>
+
+    @if (state() === 'success') {
+      <div class="wl__done" role="status">
+        <h2 id="wl-title">{{ 'SITE.WAITLIST.SUCCESS_TITLE' | translate }}</h2>
+        <p>{{ 'SITE.WAITLIST.SUCCESS_TEXT' | translate }}</p>
+        <button type="button" class="wl__btn" (click)="close()">{{ 'SITE.WAITLIST.CLOSE' | translate }}</button>
+      </div>
+    } @else {
+      <h2 id="wl-title">{{ 'SITE.WAITLIST.TITLE' | translate }}</h2>
+      <p class="wl__intro">{{ 'SITE.WAITLIST.INTRO' | translate }}</p>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <div class="wl__field">
+          <label for="wl-contact">{{ 'SITE.WAITLIST.CONTACT_LABEL' | translate }}</label>
+          <input id="wl-contact" type="text" formControlName="contact" inputmode="email" autocomplete="email"
+                 dir="ltr" class="wl__ltr-input" [attr.aria-invalid]="invalid('contact')"
+                 [attr.aria-describedby]="invalid('contact') ? 'wl-contact-err' : 'wl-contact-hint'"
+                 [placeholder]="'SITE.WAITLIST.CONTACT_PLACEHOLDER' | translate" />
+          @if (invalid('contact')) {
+            <p id="wl-contact-err" class="wl__error" role="alert">{{ 'SITE.WAITLIST.ERR_CONTACT' | translate }}</p>
+          } @else {
+            <p id="wl-contact-hint" class="wl__hint">{{ 'SITE.WAITLIST.CONTACT_HINT' | translate }}</p>
+          }
+        </div>
+
+        <div class="wl__field">
+          <label for="wl-interest">{{ 'SITE.WAITLIST.INTEREST_LABEL' | translate }}</label>
+          <select id="wl-interest" formControlName="interest">
+            <option value="">{{ 'SITE.WAITLIST.INTEREST_NONE' | translate }}</option>
+            @for (i of interests; track i) {
+              <option [value]="i">{{ 'SITE.WAITLIST.INTEREST_' + i.toUpperCase() | translate }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Honeypot: off-screen, skipped by keyboard and screen readers, no autofill. -->
+        <div class="wl__trap" aria-hidden="true">
+          <label for="wl-website">Website</label>
+          <input id="wl-website" type="text" formControlName="website" tabindex="-1" autocomplete="off" />
+        </div>
+
+        <div class="wl__consent">
+          <input id="wl-consent" type="checkbox" formControlName="consent" [attr.aria-invalid]="invalid('consent')"
+                 [attr.aria-describedby]="invalid('consent') ? 'wl-consent-err' : null" />
+          <label for="wl-consent">
+            {{ 'SITE.WAITLIST.CONSENT_BEFORE' | translate }}
+            <a routerLink="/privacy-policy" target="_blank" rel="noopener">{{ 'SITE.WAITLIST.CONSENT_LINK' | translate }}</a>{{ 'SITE.WAITLIST.CONSENT_AFTER' | translate }}
+          </label>
+        </div>
+        @if (invalid('consent')) {
+          <p id="wl-consent-err" class="wl__error" role="alert">{{ 'SITE.WAITLIST.ERR_CONSENT' | translate }}</p>
+        }
+
+        @if (state() === 'error') {
+          <p class="wl__error wl__error--box" role="alert">{{ 'SITE.WAITLIST.ERR_SEND' | translate }}</p>
+        }
+        @if (state() === 'unavailable') {
+          <p class="wl__error wl__error--box" role="alert">{{ 'SITE.WAITLIST.ERR_UNAVAILABLE' | translate }}</p>
+        }
+
+        <button type="submit" class="wl__btn" [disabled]="state() === 'loading'" [attr.aria-busy]="state() === 'loading'">
+          {{ (state() === 'loading' ? 'SITE.WAITLIST.SENDING' : 'SITE.WAITLIST.SUBMIT') | translate }}
+        </button>
+      </form>
+    }
+  </div>
+</dialog>

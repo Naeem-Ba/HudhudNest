@@ -29,13 +29,25 @@ describe('first-visit language', () => {
       }
     });
 
-    it('elsewhere follows the device language when it is Arabic, English or German', () => {
+    it('elsewhere follows the device language when it is Arabic, English, German or Turkish', () => {
       expect(resolveFirstVisitLanguage({ country: 'TR', deviceLanguages: ['ar-SY'] })).toBe('ar');
+      expect(resolveFirstVisitLanguage({ country: 'TR', deviceLanguages: ['tr-TR'] })).toBe('tr');
+      expect(resolveFirstVisitLanguage({ country: 'FR', deviceLanguages: ['tr'] })).toBe('tr');
       expect(resolveFirstVisitLanguage({ country: 'TR', deviceLanguages: ['de-AT'] })).toBe('de');
       expect(resolveFirstVisitLanguage({ country: 'US', deviceLanguages: ['en-GB'] })).toBe('en');
     });
 
-    it('elsewhere falls back to English when the device language is not one of the three', () => {
+    it('Turkey has no country rule: a Turkish device gets Turkish, an English one gets English, an Arabic one Arabic', () => {
+      expect(resolveFirstVisitLanguage({ country: 'TR', deviceLanguages: ['en-US'] })).toBe('en');
+      expect(resolveFirstVisitLanguage({ country: 'TR', deviceLanguages: ['fr-FR'] })).toBe('en');
+    });
+
+    it('the Arab and German country rules still win over a Turkish device language', () => {
+      expect(resolveFirstVisitLanguage({ country: 'SA', deviceLanguages: ['tr-TR'] })).toBe('ar');
+      expect(resolveFirstVisitLanguage({ country: 'DE', deviceLanguages: ['tr-TR'] })).toBe('de');
+    });
+
+    it('elsewhere falls back to English when the device language is not one of the four', () => {
       expect(resolveFirstVisitLanguage({ country: 'FR', deviceLanguages: ['fr-FR'] })).toBe('en');
       expect(resolveFirstVisitLanguage({ country: 'JP', deviceLanguages: [] })).toBe('en');
     });
@@ -51,10 +63,11 @@ describe('first-visit language', () => {
       expect(resolveFirstVisitLanguage({ country: null, deviceLanguages: ['de-DE'] })).toBe('de');
       expect(resolveFirstVisitLanguage({ country: null, deviceLanguages: ['en-US'] })).toBe('en');
       expect(resolveFirstVisitLanguage({ country: null, deviceLanguages: ['ar'] })).toBe('ar');
+      expect(resolveFirstVisitLanguage({ country: null, deviceLanguages: ['tr-TR', 'en'] })).toBe('tr');
     });
 
     it('falls back to Arabic, the app default, for any other device language', () => {
-      expect(resolveFirstVisitLanguage({ country: null, deviceLanguages: ['fr-FR', 'tr'] })).toBe('ar');
+      expect(resolveFirstVisitLanguage({ country: null, deviceLanguages: ['fr-FR', 'es'] })).toBe('ar');
       expect(resolveFirstVisitLanguage({ country: null, deviceLanguages: [] })).toBe('ar');
     });
 
@@ -69,6 +82,8 @@ describe('first-visit language', () => {
       expect(toSupportedLanguage('ar-SY')).toBe('ar');
       expect(toSupportedLanguage('DE_ch')).toBe('de');
       expect(toSupportedLanguage('en')).toBe('en');
+      expect(toSupportedLanguage('TR-tr')).toBe('tr');
+      expect(toSupportedLanguage('tr_TR')).toBe('tr');
       expect(toSupportedLanguage('fr-CA')).toBeNull();
       expect(toSupportedLanguage(undefined)).toBeNull();
     });
@@ -76,6 +91,7 @@ describe('first-visit language', () => {
     it('picks the first supported language in the preference list, skipping unsupported ones', () => {
       expect(pickDeviceLanguage(['fr-FR', 'de-DE', 'en-US'])).toBe('de');
       expect(pickDeviceLanguage(['fr-FR'])).toBeNull();
+      expect(pickDeviceLanguage(['fr-FR', 'tr-TR', 'de-DE'])).toBe('tr');
     });
   });
 });

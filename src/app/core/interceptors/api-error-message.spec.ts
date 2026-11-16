@@ -129,6 +129,7 @@ describe('getFriendlyApiErrorMessage — agency eligibility codes are translated
   [
     'AGENCY_ACCOUNT_NOT_VERIFIED',
     'AGENCY_PAID_PLAN_REQUIRED',
+    'AGENCY_PLAN_EXPIRED',
     'AGENCY_FREE_PLAN_NOT_ALLOWED',
     'PAID_PLAN_ACTIVE'
   ].forEach(code => {
@@ -140,6 +141,15 @@ describe('getFriendlyApiErrorMessage — agency eligibility codes are translated
 
       expect(message).toBe(`API_ERRORS.${code}`);
     });
+  });
+
+  it('BOOKING_DUPLICATE_OPEN (a 409) is translated too, not shown in Arabic to an English reader', () => {
+    const message = getFriendlyApiErrorMessage(
+      fail(409, { title: 'Conflict', status: 409, message: 'لديك طلب حجز قائم لهذه الوحدة', code: 'BOOKING_DUPLICATE_OPEN' }),
+      translate
+    );
+
+    expect(message).toBe('API_ERRORS.BOOKING_DUPLICATE_OPEN');
   });
 
   it('an unknown 403 code keeps showing the server message', () => {
@@ -206,6 +216,22 @@ describe('getFriendlyApiErrorMessage — a message in another script is replaced
     expect(isInOtherScript('Sie können nur Ihre eigenen Bewertungen löschen.', 'de')).toBeFalse();
     expect(isInOtherScript('Reference ABC-123', 'de')).toBeFalse();
     expect(isInOtherScript('anything', null)).toBeFalse();
+  });
+
+  it('isInOtherScript on a Turkish page: Arabic and English sentences are replaced, Turkish and short text are kept', () => {
+    expect(isInOtherScript('خطتكم الحالية تسمح بـ 3 إعلانات.', 'tr')).toBeTrue();
+    expect(isInOtherScript('You can only delete your own reviews.', 'tr')).toBeTrue();
+    expect(isInOtherScript('Yalnızca kendi değerlendirmelerinizi silebilirsiniz.', 'tr')).toBeFalse();
+    expect(isInOtherScript('İstanbul Şişli Çağrı Üsküdar Iğdır', 'tr')).toBeFalse();
+    expect(isInOtherScript('Reference ABC-123', 'tr')).toBeFalse();
+  });
+
+  it('an English server message on a Turkish page becomes the translated text of the status', () => {
+    document.documentElement.lang = 'tr';
+
+    const message = getFriendlyApiErrorMessage(fail(403, { message: 'You can only delete your own reviews.' }), translate);
+
+    expect(message).toBe('API_ERRORS.FORBIDDEN');
   });
 
   it('an Arabic-only server message on a German page becomes the translated text of the status', () => {

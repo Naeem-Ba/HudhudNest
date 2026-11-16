@@ -12,16 +12,25 @@
 // المُختبَرة هنا (isRent/isSale/isLandCategory/form.errors).
 // =====================================================================
 import { TestBed } from '@angular/core/testing';
+import { AgenciesApiService } from '../../core/api/agencies-api.service';
+import { Agency } from '../../core/models/agency.model';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { of, throwError } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 
 import { PropertyFormPage, addMonthsToDateString } from './property-form.page';
 import { PropertyApiService } from '../../core/api/property-api.service';
 import { LookupsApiService, PropertyTypeLookup } from '../../core/api/lookups-api.service';
+import { LocationsApiService } from '../../core/api/locations-api.service';
+import { EMPTY_GEO_VALUE, GeoPickerValue } from '../../shared/ui/geo/geo-picker.models';
+import { locationsApiStub } from '../../shared/ui/geo/locations-api.stub.spec';
 import { EnumService, EnumItem } from '../../core/services/enum.service';
 import { LanguageService } from '../../core/services/language.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { SKIP_ERROR_TOAST } from '../../core/interceptors/api-error.interceptor';
+
+// The publisher's office (branch picker / "add to my office"); none by default.
+let agenciesApi: { getMine: () => Observable<Partial<Agency> | null> } = { getMine: () => of(null) };
 
 const PROPERTY_TYPES: PropertyTypeLookup[] = [
   { id: 1, code: 'apartment', nameAr: 'شقة سكنية', nameEn: 'Apartment', category: 'Residential', icon: null },
@@ -42,6 +51,8 @@ const AREA_UNIT_OPTIONS: EnumItem[] = [
 ];
 
 describe('PropertyFormPage', () => {
+  afterEach(() => { agenciesApi = { getMine: () => of(null) }; });
+
   let component: PropertyFormPage;
   let propertyApiSpy: jasmine.SpyObj<PropertyApiService>;
   let lookupsApiSpy: jasmine.SpyObj<LookupsApiService>;
@@ -78,7 +89,9 @@ describe('PropertyFormPage', () => {
       imports: [PropertyFormPage],
       providers: [
         { provide: PropertyApiService, useValue: propertyApiSpy },
+        { provide: AgenciesApiService, useValue: agenciesApi },
         { provide: LookupsApiService, useValue: lookupsApiSpy },
+        { provide: LocationsApiService, useValue: locationsApiStub() },
         { provide: EnumService, useValue: enumServiceSpy },
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
         {
@@ -103,6 +116,123 @@ describe('PropertyFormPage', () => {
     return instance;
   }
 
+  describe('office branch (offices P4)', () => {
+    const office = { id: 'o1', name: 'Office', branches: [
+      { id: 'b1', name: 'Mezzeh', isMain: true, governorateId: 1 },
+      { id: 'b2', name: 'Malki', isMain: false, governorateId: 1 }
+    ] } as unknown as Partial<Agency>;
+
+    const submit = (c: PropertyFormPage) => (c as unknown as { proceedWithSubmit(): void }).proceedWithSubmit();
+    const lastPayload = () => propertyApiSpy.createProperty.calls.mostRecent().args[0] as Record<string, unknown>;
+
+    async function editing(property: Record<string, unknown>): Promise<PropertyFormPage> {
+      const c = createComponent('p1');
+      propertyApiSpy.getPropertyForManagement.and.returnValue(of({ id: 'p1', ...property } as never));
+      (propertyApiSpy as unknown as Record<string, jasmine.Spy>)['setPropertyBranch'] = jasmine.createSpy('setPropertyBranch').and.returnValue(of(undefined));
+      await Promise.resolve();
+      await new Promise(r => setTimeout(r));
+      return c;
+    }
+
+    it('a member picks a branch of their office and it is sent with the new listing', () => {
+      agenciesApi = { getMine: () => of(office) };
+      component = createComponent();
+      expect(component.showBranchPicker()).toBeTrue();
+
+      component.onBranchChange('b2');
+      submit(component);
+      expect(lastPayload()['AgencyBranchId']).toBe('b2');
+    });
+
+    it('without an office there is no picker and no branch in the payload', () => {
+      component = createComponent();
+      expect(component.showBranchPicker()).toBeFalse();
+      submit(component);
+      expect('AgencyBranchId' in lastPayload()).toBeFalse();
+    });
+
+    it('an office without branches shows no picker', () => {
+      agenciesApi = { getMine: () => of({ id: 'o1', name: 'Office', branches: [] }) };
+      component = createComponent();
+      expect(component.showBranchPicker()).toBeFalse();
+    });
+
+    it('editing: a changed branch is saved through its own endpoint after the update', async () => {
+      agenciesApi = { getMine: () => of(office) };
+      component = await editing({ agencyId: 'o1', agencyBranchId: 'b1' });
+      expect(component.showBranchPicker()).toBeTrue();
+      expect(component.selectedBranchId()).toBe('b1');
+
+      component.onBranchChange('');
+      submit(component);
+
+      const setBranch = (propertyApiSpy as unknown as Record<string, jasmine.Spy>)['setPropertyBranch'];
+      expect(propertyApiSpy.updateProperty).toHaveBeenCalled();
+      expect(setBranch).toHaveBeenCalledOnceWith('p1', null);
+      expect('AgencyBranchId' in (propertyApiSpy.updateProperty.calls.mostRecent().args[1] as object)).toBeFalse();
+    });
+
+    it('editing: an unchanged branch makes no extra call', async () => {
+      agenciesApi = { getMine: () => of(office) };
+      component = await editing({ agencyId: 'o1', agencyBranchId: 'b1' });
+      submit(component);
+      expect((propertyApiSpy as unknown as Record<string, jasmine.Spy>)['setPropertyBranch']).not.toHaveBeenCalled();
+    });
+
+    it('editing a listing of another office shows no picker', async () => {
+      agenciesApi = { getMine: () => of(office) };
+      component = await editing({ agencyId: 'someone-else', agencyBranchId: null });
+      expect(component.showBranchPicker()).toBeFalse();
+    });
+
+    it('a branch removed meanwhile is explained and the list is refreshed', () => {
+      let calls = 0;
+      agenciesApi = { getMine: () => { calls++; return of(office); } };
+      component = createComponent();
+      propertyApiSpy.createProperty.and.returnValue(throwError(() => ({
+        status: 422, error: { errorCodes: { AgencyBranchId: ['LISTING_BRANCH_INVALID'] } }
+      })));
+      component.onBranchChange('b2');
+      submit(component);
+
+      expect(component.submitError()).toBe('PROPERTY_FORM.BRANCH.INVALID');
+      expect(component.selectedBranchId()).toBe('');
+      expect(calls).toBe(2);
+    });
+  });
+
+  // QA phase 25 (P25-D05): a failed photo upload after a successful save raised three toasts (the interceptor's
+  // generic error, the warning and "saved"). It must be exactly one: the warning that says both things.
+  describe('photo upload failing after the listing was saved', () => {
+    it('shows one toast, skips the interceptor toast, and still goes to the new listing', () => {
+      component = createComponent();
+      propertyApiSpy.uploadImages.and.returnValue(throwError(() => new Error('cloudinary down')));
+      const toast = TestBed.inject(ToastService) as jasmine.SpyObj<ToastService>;
+      const router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+      component.selectedFiles.set([new File(['x'], 'a.jpg', { type: 'image/jpeg' })]);
+
+      (component as unknown as { uploadImages(id: string): void }).uploadImages('new-id');
+
+      const options = propertyApiSpy.uploadImages.calls.mostRecent().args[2];
+      expect(options?.context?.get(SKIP_ERROR_TOAST)).toBeTrue();
+      expect(toast.error).toHaveBeenCalledTimes(1);
+      expect(toast.success).not.toHaveBeenCalled();
+      expect(router.navigate).toHaveBeenCalledWith(['/properties', 'new-id']);
+    });
+
+    it('a successful upload still announces the save once', () => {
+      component = createComponent();
+      propertyApiSpy.uploadImages.and.returnValue(of([]));
+      const toast = TestBed.inject(ToastService) as jasmine.SpyObj<ToastService>;
+      component.selectedFiles.set([new File(['x'], 'a.jpg', { type: 'image/jpeg' })]);
+
+      (component as unknown as { uploadImages(id: string): void }).uploadImages('new-id');
+
+      expect(toast.success).toHaveBeenCalledTimes(1);
+      expect(toast.error).not.toHaveBeenCalled();
+    });
+  });
+
   function selectApartment(): void {
     component.form.patchValue({ propertyTypeId: 1 });
   }
@@ -111,7 +241,101 @@ describe('PropertyFormPage', () => {
     component.form.patchValue({ propertyTypeId: 2 });
   }
 
+  describe('Location (hybrid catalog)', () => {
+    const value = (over: Partial<GeoPickerValue> = {}): GeoPickerValue => ({ ...EMPTY_GEO_VALUE, ...over });
+
+    beforeEach(() => {
+      component = createComponent();
+    });
+
+    it('only the governorate is mandatory: no street, city, district or neighborhood is needed', () => {
+      expect(component.form.controls.governorateId.errors?.['required']).toBeTrue();
+      expect(component.form.controls.street.errors).toBeNull();
+
+      component.onGeoChange(value({ governorateId: 3, locationId: 2, city: 'دمشق' }));
+      expect(component.form.controls.governorateId.errors).toBeNull();
+      expect(component.form.controls.districtId.errors).toBeNull();
+      expect(component.form.controls.neighborhoodId.errors).toBeNull();
+    });
+
+    it('the picker value fills the catalog place, the old ids and the readable address', () => {
+      component.onGeoChange(value({
+        locationId: 5, governorateId: 3, districtId: 30, neighborhoodId: 300, city: 'مدينة دمشق', region: 'المزة', street: 'شارع الأمين'
+      }));
+
+      expect(component.form.getRawValue()).toEqual(jasmine.objectContaining({
+        locationId: 5, governorateId: 3, districtId: 30, neighborhoodId: 300, city: 'مدينة دمشق', region: 'المزة', street: 'شارع الأمين'
+      }));
+    });
+
+    it('emptying the picker clears the place, so a stale one is never sent', () => {
+      component.onGeoChange(value({ locationId: 5, governorateId: 3, districtId: 30 }));
+      component.onGeoChange(value());
+      expect(component.form.controls.locationId.value).toBeNull();
+      expect(component.form.controls.governorateId.value).toBeNull();
+      expect(component.form.controls.districtId.value).toBeNull();
+    });
+
+    it('typed places the catalog lacks are proposed after the listing is saved, never before', () => {
+      const locations = TestBed.inject(LocationsApiService) as jasmine.SpyObj<LocationsApiService>;
+      locations.submitRequest.and.returnValue(of({ id: 'r', status: 'Pending' } as never));
+      component.onGeoChange(value({
+        locationId: 4, governorateId: 3,
+        proposals: [{ type: 'Street', parentLocationId: 4, name: 'شارع جديد', proof: 'signed', latitude: null, longitude: null }]
+      }));
+      expect(locations.submitRequest).not.toHaveBeenCalled();
+
+      component.form.patchValue({ latitude: 33.5, longitude: 36.3 });
+      (component as unknown as { submitGeoProposals(id: string): void }).submitGeoProposals('prop-1');
+
+      expect(locations.submitRequest).toHaveBeenCalledOnceWith({
+        type: 'Street', parentLocationId: 4, name: 'شارع جديد', proof: 'signed', latitude: 33.5, longitude: 36.3, propertyId: 'prop-1'
+      });
+    });
+
+    it('a failing proposal does not break the save, and each proposal is sent once', () => {
+      const locations = TestBed.inject(LocationsApiService) as jasmine.SpyObj<LocationsApiService>;
+      locations.submitRequest.and.returnValue(throwError(() => new Error('403')));
+      component.onGeoChange(value({
+        locationId: 4, governorateId: 3,
+        proposals: [{ type: 'Street', parentLocationId: 4, name: 'شارع', proof: null, latitude: null, longitude: null }]
+      }));
+
+      const run = () => (component as unknown as { submitGeoProposals(id: string): void }).submitGeoProposals('prop-1');
+      expect(run).not.toThrow();
+      run();
+      expect(locations.submitRequest).toHaveBeenCalledTimes(1);
+    });
+  });
+
   // ────────────── Rent: تفاصيل الإيجار ──────────────
+  describe('whole-number rooms and floor (P26-D02)', () => {
+    // Jasmine runs specs in random order. These specs read the shared `component` but never created it, so
+    // they only passed when an earlier spec had happened to assign it (TypeError on `form` otherwise).
+    beforeEach(() => {
+      component = createComponent();
+    });
+
+    it('rejects half rooms: the server stores rooms as an integer', () => {
+      component.form.patchValue({ rooms: 2.5 });
+      expect(component.f.rooms.errors?.['wholeNumber']).toBeTrue();
+    });
+
+    it('accepts whole rooms and an empty value', () => {
+      component.form.patchValue({ rooms: 3 });
+      expect(component.f.rooms.errors).toBeFalsy();
+      component.form.patchValue({ rooms: null });
+      expect(component.f.rooms.errors).toBeFalsy();
+    });
+
+    it('rejects a fractional floor', () => {
+      component.form.patchValue({ floor: 1.5 });
+      expect(component.f.floor.errors?.['wholeNumber']).toBeTrue();
+      component.form.patchValue({ floor: 2 });
+      expect(component.f.floor.errors).toBeFalsy();
+    });
+  });
+
   describe('Rent', () => {
     beforeEach(() => {
       component = createComponent();
@@ -326,7 +550,9 @@ describe('PropertyFormPage amenities loading', () => {
       imports: [PropertyFormPage],
       providers: [
         { provide: PropertyApiService, useValue: jasmine.createSpyObj('PropertyApiService', ['checkDuplicate']) },
+        { provide: AgenciesApiService, useValue: agenciesApi },
         { provide: LookupsApiService, useValue: lookups },
+        { provide: LocationsApiService, useValue: locationsApiStub() },
         { provide: EnumService, useValue: enumSvc },
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({}) } } },

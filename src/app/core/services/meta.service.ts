@@ -8,7 +8,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { environment } from '../../../environments/environment';
 import { currentUiLanguage } from '../i18n/ui-language';
 
-const OG_LOCALE: Record<string, string> = { ar: 'ar_SY', en: 'en_US', de: 'de_DE' };
+const OG_LOCALE: Record<string, string> = { ar: 'ar_SY', en: 'en_US', de: 'de_DE', tr: 'tr_TR' };
 
 export interface PageMeta {
   title:       string;

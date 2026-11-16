@@ -91,7 +91,7 @@ test('unpublished: no store address and no button anywhere in the page', () => {
 
 test('unpublished: each store card says it is not available yet, in every language', () => {
   const { html } = buildDownloadPage(config);
-  assert.equal((html.match(/<span class="tag">/g) ?? []).length, 6, 'two stores x three languages');
+  assert.equal((html.match(/<span class="tag">/g) ?? []).length, 8, 'two stores x four languages');
   assert.match(html, /<span class="tag">غير متاح بعد<\/span> التطبيق غير منشور على Google Play بعد\./);
   assert.match(html, /<span class="tag">Not available yet<\/span> The app is not published on Google Play yet\./);
   assert.match(html, /<span class="tag">Noch nicht verfügbar<\/span> Die App ist noch nicht im App Store veröffentlicht\./);
@@ -148,8 +148,8 @@ test('a malformed android.package is rejected once Google Play is published', ()
 
 test('published: each store gets a real link button in every language, and only the two derived addresses exist', () => {
   const { html } = buildDownloadPage(withStores({ android: { published: true }, ios: { published: true, appStoreId: '1234567890' } }));
-  assert.equal((html.match(new RegExp(`<a class="btn" href="${PLAY.replace(/[.?]/g, '\\$&')}">`, 'g')) ?? []).length, 3);
-  assert.equal((html.match(/<a class="btn" href="https:\/\/apps\.apple\.com\/app\/id1234567890">/g) ?? []).length, 3);
+  assert.equal((html.match(new RegExp(`<a class="btn" href="${PLAY.replace(/[.?]/g, '\\$&')}">`, 'g')) ?? []).length, 4);
+  assert.equal((html.match(/<a class="btn" href="https:\/\/apps\.apple\.com\/app\/id1234567890">/g) ?? []).length, 4);
   assert.doesNotMatch(html, /class="tag"/);
 
   const addresses = new Set(html.match(/https:\/\/(?:play\.google\.com|apps\.apple\.com)[^"'\s<\\]*/g));
@@ -158,7 +158,7 @@ test('published: each store gets a real link button in every language, and only 
 
 test('only a published store gets a button: Android published, iOS not', () => {
   const { html } = buildDownloadPage(withStores({ android: { published: true } }));
-  assert.equal((html.match(/<a class="btn"/g) ?? []).length, 3);
+  assert.equal((html.match(/<a class="btn"/g) ?? []).length, 4);
   assert.doesNotMatch(html, /apps\.apple\.com/);
 });
 
@@ -195,9 +195,9 @@ test('device detection only marks the page (data-os); it never changes where a b
 
 test('an approved release adds the direct-download card, the help block and the facts in every language', () => {
   const html = bodyOf(pageWith(RELEASE).html);
-  assert.equal((html.match(/card--direct/g) ?? []).length, 3);
-  assert.equal((html.match(/<details class="help">/g) ?? []).length, 3);
-  assert.equal((html.match(/<a class="btn" href="\/download\/android">/g) ?? []).length, 3);
+  assert.equal((html.match(/card--direct/g) ?? []).length, 4);
+  assert.equal((html.match(/<details class="help">/g) ?? []).length, 4);
+  assert.equal((html.match(/<a class="btn" href="\/download\/android">/g) ?? []).length, 4);
   assert.match(html, /1\.2\.0 \(7\)/);
   assert.match(html, /<bdi dir="ltr">8\.7 MB<\/bdi>/);
   assert.match(html, /Android <bdi dir="ltr">7\.0<\/bdi> or newer/);
@@ -205,8 +205,8 @@ test('an approved release adds the direct-download card, the help block and the 
   assert.match(html, /Android <bdi dir="ltr">7\.0<\/bdi> oder neuer/);
   assert.match(html, /3 November 2026/);
   assert.match(html, /3\. November 2026/);
-  assert.equal((html.match(new RegExp(RELEASE.sha256, 'g')) ?? []).length, 3, 'the real SHA-256, once per language');
-  assert.equal((html.match(new RegExp(RELEASE.signingCertSha256, 'g')) ?? []).length, 3);
+  assert.equal((html.match(new RegExp(RELEASE.sha256, 'g')) ?? []).length, 4, 'the real SHA-256, once per language');
+  assert.equal((html.match(new RegExp(RELEASE.signingCertSha256, 'g')) ?? []).length, 4);
   assert.match(html, /<code dir="ltr">HudhudNest-1\.2\.0\.apk<\/code>/);
 });
 
@@ -218,13 +218,13 @@ test('the page links to the fixed /download/android address only; the file host 
 
 test('without a Play listing the direct download carries the badge; with Play published Play does and the APK stays visible', () => {
   const noPlay = bodyOf(pageWith(RELEASE).html);
-  assert.equal((noPlay.match(/card card--android card--direct is-rec/g) ?? []).length, 3);
+  assert.equal((noPlay.match(/card card--android card--direct is-rec/g) ?? []).length, 4);
   assert.doesNotMatch(noPlay, /card card--android is-rec/);
 
   const both = bodyOf(buildDownloadPage(withStores({ android: { published: true } }), { release: RELEASE }).html);
   assert.doesNotMatch(both, /card--direct is-rec/);
-  assert.equal((both.match(/card card--android is-rec/g) ?? []).length, 3);
-  assert.equal((both.match(/card--direct/g) ?? []).length, 3, 'the alternative is still shown');
+  assert.equal((both.match(/card card--android is-rec/g) ?? []).length, 4);
+  assert.equal((both.match(/card--direct/g) ?? []).length, 4, 'the alternative is still shown');
 });
 
 test('iPhone: the page never claims an IPA can be installed directly', () => {
@@ -255,7 +255,7 @@ test('the page is noindex by default and indexable only when the build says Prod
   assert.doesNotMatch(buildDownloadPage(config, { indexable: true }).html, /noindex/);
 });
 
-test('the page has a canonical, share metadata and all three languages with the right direction', () => {
+test('the page has a canonical, share metadata and all four languages with the right direction', () => {
   const { html } = buildDownloadPage(config);
   assert.match(html, /<link rel="canonical" href="https:\/\/hudhudnest\.com\/download">/);
   assert.match(html, /<meta property="og:url" content="https:\/\/hudhudnest\.com\/download">/);
@@ -264,13 +264,14 @@ test('the page has a canonical, share metadata and all three languages with the 
   assert.match(html, /<div class="copy" data-l="ar" lang="ar" dir="rtl">/);
   assert.match(html, /<div class="copy" data-l="en" lang="en" dir="ltr">/);
   assert.match(html, /<div class="copy" data-l="de" lang="de" dir="ltr">/);
+  assert.match(html, /<div class="copy" data-l="tr" lang="tr" dir="ltr">/);
   assert.match(html, /<html lang="ar" dir="rtl">/);
 });
 
 test('every language offers the website, privacy, terms and support links', () => {
   const { html } = buildDownloadPage(config);
   for (const href of ['/', '/privacy-policy', '/terms-of-service', '/kontakt']) {
-    assert.equal((html.match(new RegExp(`<a href="${href}">`, 'g')) ?? []).length, 3, href);
+    assert.equal((html.match(new RegExp(`<a href="${href}">`, 'g')) ?? []).length, 4, href);
   }
 });
 

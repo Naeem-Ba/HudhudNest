@@ -3,8 +3,9 @@ import { TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject } from 'rxjs';
 
 import { pickDeviceLanguage } from '../i18n/first-visit-language';
+import { safeGetItem, safeRemoveItem, safeSetItem } from './safe-storage';
 
-export type LangCode = 'en' | 'ar' | 'de';
+export type LangCode = 'en' | 'ar' | 'de' | 'tr';
 
 /**
  * How a language change is remembered:
@@ -31,7 +32,8 @@ export class LanguageService {
   private readonly languages: readonly LanguageOption[] = [
     { code: 'ar', label: 'العربية', dir: 'rtl' },
     { code: 'en', label: 'English', dir: 'ltr' },
-    { code: 'de', label: 'Deutsch', dir: 'ltr' }
+    { code: 'de', label: 'Deutsch', dir: 'ltr' },
+    { code: 'tr', label: 'Türkçe', dir: 'ltr' }
   ];
 
   private readonly langSubject = new BehaviorSubject<LangCode>('ar');
@@ -55,10 +57,10 @@ export class LanguageService {
     this.translate.use(normalizedLang);
 
     if (persistence === 'user') {
-      localStorage.setItem(USER_LANG_KEY, normalizedLang);
-      localStorage.removeItem(AUTO_LANG_KEY);
+      safeSetItem(USER_LANG_KEY, normalizedLang);
+      safeRemoveItem(AUTO_LANG_KEY);
     } else if (persistence === 'auto') {
-      localStorage.setItem(AUTO_LANG_KEY, normalizedLang);
+      safeSetItem(AUTO_LANG_KEY, normalizedLang);
     }
 
     document.documentElement.dir = dir;
@@ -117,12 +119,12 @@ export class LanguageService {
   }
 
   private readStored(): { lang: LangCode; persistence: 'user' | 'auto' } | null {
-    const userLang = localStorage.getItem(USER_LANG_KEY);
+    const userLang = safeGetItem(USER_LANG_KEY);
     if (this.isSupported(userLang)) {
       return { lang: userLang, persistence: 'user' };
     }
 
-    const autoLang = localStorage.getItem(AUTO_LANG_KEY);
+    const autoLang = safeGetItem(AUTO_LANG_KEY);
     if (this.isSupported(autoLang)) {
       return { lang: autoLang, persistence: 'auto' };
     }
@@ -131,7 +133,7 @@ export class LanguageService {
   }
 
   private isSupported(lang: string | null | undefined): lang is LangCode {
-    return lang === 'ar' || lang === 'en' || lang === 'de';
+    return lang === 'ar' || lang === 'en' || lang === 'de' || lang === 'tr';
   }
 
   private setFallbackLanguage(lang: LangCode): void {

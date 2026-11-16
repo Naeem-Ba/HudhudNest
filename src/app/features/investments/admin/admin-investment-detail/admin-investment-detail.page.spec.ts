@@ -126,6 +126,9 @@ describe('AdminInvestmentDetailPage (QA phase 10)', () => {
       status: 400, error: { message: 'المبلغ المجمّع لا يمكن أن يتجاوز المبلغ المستهدف.' }
     })));
     const page = create('Published').componentInstance;
+    // The sentence is Arabic, shown as written only on an Arabic page (QA phase 25, P16-D04 stopgap). Set after create():
+    // building the page initialises the language service, which writes <html lang>.
+    document.documentElement.lang = 'ar';
 
     page.progressRaisedAmount = 999999;
     page.saveProgress();

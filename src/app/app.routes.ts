@@ -162,10 +162,30 @@ export const routes: Routes = [
       {
         // الصفحة العامة للمكتب بالرابط القصير (/F-AGY-05/) — مجهولة عمدًا، مثل
         // GET /api/Agencies/{slug} بالباك اند.
-        path: 'agencies/:slug',
+        // دليل المكاتب العقارية: بحث وفلاتر في الرابط، مجهول عمدًا مثل GET /api/agencies.
+        path: 'offices',
+        loadComponent: () =>
+          import('./features/offices-directory/offices-directory.page')
+            .then(m => m.OfficesDirectoryPage)
+      },
+      {
+        // الصفحة العامة للمكتب (/F-AGY-05/): الرابط المعتمد /offices/{slug}.
+        path: 'offices/:slug',
         loadComponent: () =>
           import('./features/agency-public/agency-public.page')
             .then(m => m.AgencyPublicPage)
+      },
+      {
+        // رابط رمز QR المطبوع للمكتب (P3): رمز قصير ثابت، يحوّل إلى /offices/{slug} ويُحتسب مسحًا.
+        path: 'o/:code',
+        loadComponent: () =>
+          import('./features/office-qr/office-qr-redirect.page')
+            .then(m => m.OfficeQrRedirectPage)
+      },
+      {
+        // الرابط القديم: يبقى صالحًا لمن شاركه، ويحوّل إلى الرابط المعتمد.
+        path: 'agencies/:slug',
+        redirectTo: 'offices/:slug'
       },
       {
         // Create only. ListingEligibilityGuard runs after AuthGuard (so an anonymous
@@ -399,6 +419,28 @@ export const routes: Routes = [
             .then(m => m.LegalDocumentPage)
       },
       {
+        // The Impressum lives at /impressum (marketing shell, filled from features/legal/controller-identity.ts).
+        // /imprint was its earlier address; Netlify answers it with a 301 too (public/_redirects).
+        path: 'imprint',
+        redirectTo: '/impressum',
+        pathMatch: 'full'
+      },
+      {
+        // Links in the newsletter e-mails (double opt-in and unsubscribe); public, no sign-in.
+        path: 'newsletter/confirm',
+        data: { mode: 'confirm' },
+        loadComponent: () =>
+          import('./features/newsletter/newsletter-token.page')
+            .then(m => m.NewsletterTokenPage)
+      },
+      {
+        path: 'newsletter/unsubscribe',
+        data: { mode: 'unsubscribe' },
+        loadComponent: () =>
+          import('./features/newsletter/newsletter-token.page')
+            .then(m => m.NewsletterTokenPage)
+      },
+      {
         // Phase 5 (Account Deletion) — public, no AuthGuard: Google Play/Apple App
         // Store both require a web path to account deletion reachable without
         // installing the app. See account-deletion.page.ts's doc comment.
@@ -434,6 +476,43 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/checkout/checkout.page')
             .then(m => m.CheckoutPage)
+      },
+      {
+        // Online payments (provider-hosted checkout). The return URL the API gives a provider is /payments/orders/:id.
+        path: 'payments/checkout',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/payments/payment-checkout.page')
+            .then(m => m.PaymentCheckoutPage)
+      },
+      {
+        path: 'payments/orders/:id',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/payments/payment-order.page')
+            .then(m => m.PaymentOrderPage)
+      },
+      {
+        path: 'payments/invoices/:id',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/payments/payment-invoice.page')
+            .then(m => m.PaymentInvoicePage)
+      },
+      {
+        // Stand-in for a provider's checkout page: development / staging only (the API refuses it in Production).
+        path: 'payments/sandbox/:orderId',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/payments/payment-sandbox.page')
+            .then(m => m.PaymentSandboxPage)
+      },
+      {
+        path: 'payments',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/payments/payment-history.page')
+            .then(m => m.PaymentHistoryPage)
       },
       // Account settings and the admin pages render inside the layout too, so they keep the
       // navbar (account menu + its "Administration" group) — before, opening any of them
@@ -538,6 +617,14 @@ export const routes: Routes = [
             .then(m => m.AdminShortStayPage)
       },
       {
+        // توثيق المكاتب العقارية: تغيير الحالة بسبب إلزامي وسجل. Role Admin على الخادم لكل نقطة.
+        path: 'admin/agencies',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/agencies/admin-agencies.page')
+            .then(m => m.AdminAgenciesPage)
+      },
+      {
         // إدارة مزوّدي الخدمات: طلبات الانضمام ثم المزوّدون المعتمدون. Role Admin على الخادم لكل نقطة.
         path: 'admin/service-providers',
         canActivate: [AdminGuard],
@@ -561,6 +648,14 @@ export const routes: Routes = [
       },
 
       {
+        // Online payments back office: transactions, subscriptions, refunds, providers, webhooks, reports.
+        path: 'admin/payments',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/payments/admin-payments.page')
+            .then(m => m.AdminPaymentsPage)
+      },
+      {
         // طلبات الخطط المدفوعة وتمييز الإعلانات بانتظار تأكيد الدفع — لا تفعيل تلقائي.
         path: 'admin/payment-requests',
         canActivate: [AdminGuard],
@@ -578,6 +673,16 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./admin/location-suggestions/location-suggestions.page')
             .then(m => m.AdminLocationSuggestionsPage)
+      },
+
+      {
+        // Hybrid location catalog administration: place requests, hierarchy, policy, import, change log.
+        // Backend: AdminLocationsController (Admin role); AdminGuard is only the UX gate.
+        path: 'admin/geo',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/geo/geo-admin.page')
+            .then(m => m.AdminGeoPage)
       },
 
       // Admin Investment Portal (Phase 2) — backend: AdminInvestmentsController,
@@ -650,13 +755,12 @@ export const routes: Routes = [
   },
 
   {
-    // Marketing landing page: deliberately a top-level route (a sibling of LayoutComponent, like
-    // /login) so the main Navbar is not rendered here. Nothing else changes: the Navbar and every
-    // other page keep using LayoutComponent. The page brings its own slim brand strip and footer.
-    path: 'landing',
-    loadComponent: () =>
-      import('./features/landing/landing-page.component')
-        .then(m => m.LandingPageComponent)
+    // Public marketing pages (/landing, /ueber-uns, /fuer-anbieter, /impressum, /datenschutz): top-level and
+    // pathless, a sibling of LayoutComponent like /login, so the app Navbar is not rendered here. They bring their own
+    // header and footer (features/marketing/shell).
+    path: '',
+    loadChildren: () =>
+      import('./features/marketing/marketing.routes').then(m => m.MARKETING_ROUTES)
   },
   {
     path: 'login',

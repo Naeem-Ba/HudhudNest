@@ -1,3 +1,4 @@
+import { PageMetaService } from '../../core/services/page-meta.service';
 import { AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnDestroy, ViewChild, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -57,6 +58,7 @@ export class PropertyMapPage implements AfterViewInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly pageMeta = inject(PageMetaService);
   private readonly requests = new Subject<void>();
 
   readonly result = signal<MapResult | null>(null);
@@ -69,6 +71,7 @@ export class PropertyMapPage implements AfterViewInit, OnDestroy {
   private layer?: L.LayerGroup;
 
   constructor() {
+    this.pageMeta.applyTranslated('SEO.MAP', '/map', this.destroyRef);
     this.requests.pipe(
       debounceTime(300),
       switchMap(() => {

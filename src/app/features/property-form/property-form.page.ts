@@ -3,6 +3,8 @@ import {
   Component,
   DestroyRef,
   OnInit,
+  ViewChild,
+  computed,
   inject,
   signal
 } from '@angular/core';
@@ -17,24 +19,30 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin, of, catchError, map, switchMap } from 'rxjs';
 
 import { PropertyApiService } from '../../core/api/property-api.service';
+import { AgenciesApiService } from '../../core/api/agencies-api.service';
+import { AgencyBranch } from '../../core/models/agency.model';
 import { hasCompleteCoordinates, isValidCoordinates } from '../../core/models/property-location';
 import {
   LookupsApiService,
   LookupAmenity,
   LookupItem,
   PropertyTypeLookup,
-  StructuredLocationLookup,
   pickLocalizedName
 } from '../../core/api/lookups-api.service';
+import { LocationsApiService } from '../../core/api/locations-api.service';
+import { GeoMapSuggestion } from '../../core/models/geo-location.model';
 import { Property, DuplicateCandidate } from '../../core/models/property.model';
 import { isMarketCurrency } from '../../core/pricing/market-currencies';
 import { ToastService } from '../../shared/services/toast.service';
+import { HttpContext } from '@angular/common/http';
+import { SKIP_ERROR_TOAST } from '../../core/interceptors/api-error.interceptor';
 import { MapPickerComponent } from '../../map-picker/map-picker.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
-import { LocationComboComponent } from '../../shared/ui/location-combo.component';
+import { GeoPickerComponent } from '../../shared/ui/geo/geo-picker.component';
+import { GeoPickerInitial, GeoPickerValue, GeoProposal } from '../../shared/ui/geo/geo-picker.models';
 import { LanguageService, LangCode } from '../../core/services/language.service';
 import { formatStepNumber } from '../../shared/utils/step-number';
 import { EnumItem, EnumService } from '../../core/services/enum.service';
@@ -75,6 +83,8 @@ interface PropertySavePayload {
   AmenityIds?: string[];
   // Phase-0, Task 0.
   GovernorateId?: number | null;
+  /** The most specific place chosen in the location catalog; the ids next to it follow from it on the server. */
+  LocationId?: number | null;
   DistrictId?: number | null;
   DistrictText?: string | null;
   NeighborhoodId?: number | null;
@@ -88,6 +98,8 @@ interface PropertySavePayload {
   RentalEndDate?: string | null;
   RentalDurationType?: number | null;
   FurnishingStatus?: number | null;
+  /** Create only: the branch of the publisher's office. Changed on an existing listing through PUT /properties/{id}/branch. */
+  AgencyBranchId?: string | null;
 }
 
 /** AreaUnit — must match HudhudNestApi.Domain.Listings.Enums.AreaUnit's ordinals. */
@@ -130,6 +142,12 @@ export function addMonthsToDateString(dateString: string, months: number): strin
 function positiveNumber(control: AbstractControl): ValidationErrors | null {
   const value = toNumberOrNull(control.value);
   return value === null || value > 0 ? null : { positiveNumber: true };
+}
+
+/** `rooms` and `floor` are whole numbers on the server (int); a half room used to end in a bare 400. */
+function wholeNumber(control: AbstractControl): ValidationErrors | null {
+  const value = toNumberOrNull(control.value);
+  return value === null || Number.isInteger(value) ? null : { wholeNumber: true };
 }
 
 function nonNegativeNumber(control: AbstractControl): ValidationErrors | null {
@@ -184,14 +202,8 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
     errors['warmRentBelowColdRent'] = true;
   }
 
-  // District: pick one from the list OR type its name manually (submitted as
-  // an admin-reviewed LocationSuggestion — see districtText's control doc
-  // comment). At least one must be present.
-  const districtId = group.get('districtId')?.value;
-  const districtText = String(group.get('districtText')?.value ?? '').trim();
-  if (!districtId && !districtText) {
-    errors['districtRequired'] = true;
-  }
+  // Only the governorate is mandatory (a plain Validators.required on its control). District, neighborhood
+  // and street are optional: a user who does not know the exact administrative names must still be able to publish.
 
   const latitude = group.get('latitude')?.value;
   const longitude = group.get('longitude')?.value;
@@ -213,7 +225,7 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
     RouterLink,
     MapPickerComponent,
     ImageFallbackDirective,
-    LocationComboComponent,
+    GeoPickerComponent,
     PhotoGuideSheetComponent,
     AmenityLabelPipe
   ],
@@ -222,7 +234,9 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
 })
 export class PropertyFormPage implements OnInit {
   private readonly propertyApi = inject(PropertyApiService);
+  private readonly agenciesApi = inject(AgenciesApiService);
   private readonly lookupsApi = inject(LookupsApiService);
+  private readonly locationsApi = inject(LocationsApiService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly translate = inject(TranslateService);
@@ -234,6 +248,23 @@ export class PropertyFormPage implements OnInit {
   private readonly scrollLock = inject(ScrollLockService);
 
   readonly isSaving = signal(false);
+
+  /** The publisher's office, when they belong to one; the branch picker needs its id and branches. */
+  private readonly myOfficeId = signal<string | null>(null);
+  readonly officeBranches = signal<AgencyBranch[]>([]);
+  /** Edit mode: the office the listing is published under (null for a listing without one). */
+  private readonly listingOfficeId = signal<string | null>(null);
+  private readonly savedBranchId = signal<string | null>(null);
+  readonly selectedBranchId = signal<string>('');
+  /**
+   * The picker shows only when the choice is real: the publisher's office has branches and, on an existing listing,
+   * the listing is published under that same office (a listing of a former office keeps its branch untouched).
+   */
+  readonly showBranchPicker = computed(() => {
+    const office = this.myOfficeId();
+    if (!office || this.officeBranches().length === 0) return false;
+    return !this.isEditMode() || this.listingOfficeId() === office;
+  });
   /** Photography guide (UX only): never part of the form value nor of the upload flow. */
   readonly photoGuideOpen = signal(false);
   readonly isEditMode = signal(false);
@@ -278,9 +309,12 @@ export class PropertyFormPage implements OnInit {
    * بيانات الأحياء موثّقة فقط لدمشق وحمص واللاذقية حالياً — عند غيابها يمكن
    * كتابة اسم الحي يدوياً عبر neighborhoodText.
    */
-  readonly governorates = signal<StructuredLocationLookup[]>([]);
-  readonly districts = signal<StructuredLocationLookup[]>([]);
-  readonly neighborhoods = signal<StructuredLocationLookup[]>([]);
+  readonly geoInitial = signal<GeoPickerInitial | null>(null);
+  /** The pin the user has just placed or moved (not the saved one): this is what triggers an address suggestion. */
+  readonly geoPin = signal<{ lat: number; lng: number } | null>(null);
+  /** Places typed by the user that the catalog lacks; proposed to the administrators once the listing is saved. */
+  private geoProposals: GeoProposal[] = [];
+  @ViewChild(GeoPickerComponent) private geoPicker?: GeoPickerComponent;
   readonly propertyTypeCatalog = signal<PropertyTypeLookup[]>([]);
   readonly structuredLocationLoadFailed = signal(false);
 
@@ -363,7 +397,7 @@ export class PropertyFormPage implements OnInit {
     listingType: [1, Validators.required],
     title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(200)]],
     description: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(5000)]],
-    street: ['', [Validators.required, Validators.maxLength(300)]],
+    street: ['', [Validators.maxLength(300)]],
     // city/region: no longer user-facing (see the class-level doc comment
     // above governorates()) — kept required internally and auto-derived from
     // the governorate/district selects in bindCascadingLocationChanges(),
@@ -382,6 +416,9 @@ export class PropertyFormPage implements OnInit {
     // the class doc comment). Both *Text fields auto-submit an admin-reviewed
     // LocationSuggestion — see property.model.ts's doc comments.
     governorateId: [null as number | null, Validators.required],
+    // The most specific catalog place chosen by the location picker (any level), or null.
+    locationId: [null as number | null],
+    // The old ids and texts below are filled by the picker (see onGeoChange).
     districtId: [null as number | null],
     districtText: [null as string | null, Validators.maxLength(150)],
     neighborhoodId: [null as number | null],
@@ -397,10 +434,10 @@ export class PropertyFormPage implements OnInit {
     purchasePrice: [null as number | null, positiveNumber],
     deposit: [null as number | null, nonNegativeNumber],
     additionalCosts: [null as number | null, nonNegativeNumber],
-    rooms: [null as number | null, [Validators.min(1), Validators.max(50)]],
+    rooms: [null as number | null, [Validators.min(1), Validators.max(50), wholeNumber]],
     area: [null as number | null, areaGreaterThanTen],
     areaUnit: [AREA_UNIT_SQUARE_METER, Validators.required],
-    floor: [null as number | null, Validators.min(0)],
+    floor: [null as number | null, [Validators.min(0), wholeNumber]],
     availableFrom: [null as string | null],
     heatingType: [0],
     hasBalcony: [false],
@@ -446,10 +483,9 @@ export class PropertyFormPage implements OnInit {
     }
 
     this.bindLanguage();
+    this.loadMyOffice();
     this.loadAmenities();
-    this.loadGovernorates();
     this.loadPropertyTypeCatalog();
-    this.bindCascadingLocationChanges();
     this.bindPropertyTypeCategoryTracking();
     this.bindRentalDurationAutoFill();
 
@@ -458,17 +494,6 @@ export class PropertyFormPage implements OnInit {
     this.destroyRef.onDestroy(() => {
       this.scrollLock.forceUnlockIfHeldBy(this.showDuplicateWarning());
     });
-  }
-
-  /** GET /api/lookups/governorates — Phase-0, Task 0 follow-up. */
-  private loadGovernorates(): void {
-    this.lookupsApi
-      .getGovernorates()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: items => this.governorates.set(items),
-        error: () => this.structuredLocationLoadFailed.set(true)
-      });
   }
 
   /** GET /api/lookups/property-type-catalog — Phase-0, Task 0 follow-up. */
@@ -572,111 +597,56 @@ export class PropertyFormPage implements OnInit {
   }
 
   /**
-   * Cascading dropdowns: choosing a governorate loads its districts and clears
-   * whatever district/neighborhood was previously selected (they'd belong to
-   * the old governorate); choosing a district loads its neighborhoods and
-   * clears the previously-selected neighborhood the same way. Skipped during
-   * the initial patch from loadExistingProperty (see the `emitEvent: false`
-   * there) so editing a property doesn't wipe its own saved selections.
+   * The location picker reports every change here. The old ids and texts stay on the form (the API and older
+   * screens still read them) but are now derived from the place chosen in the catalog, never typed twice.
+   * Written with emitEvent:false so no other subscriber reacts to the intermediate values.
    */
-  private bindCascadingLocationChanges(): void {
-    this.form.controls.governorateId.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(governorateId => {
-        this.districts.set([]);
-        this.neighborhoods.set([]);
-        this.form.patchValue({ districtId: null, neighborhoodId: null }, { emitEvent: false });
-
-        // ✅ city (required by the backend) is derived from the chosen
-        // governorate's name instead of being typed — see the class doc
-        // comment. Falls back to '' when cleared, which correctly re-fails
-        // Validators.required on city until a governorate is picked again.
-        const governorate = this.governorates().find(g => g.id === governorateId);
-        this.form.patchValue({ city: governorate ? this.localizedName(governorate) : '' });
-
-        if (governorateId) {
-          this.loadDistricts(governorateId);
-        }
-      });
-
-    this.form.controls.districtId.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(districtId => {
-        this.neighborhoods.set([]);
-        this.form.patchValue({ neighborhoodId: null }, { emitEvent: false });
-
-        // ✅ region derived from the chosen district's name, same reasoning
-        // as city above.
-        const district = this.districts().find(d => d.id === districtId);
-        this.form.patchValue({ region: district ? this.localizedName(district) : null });
-
-        if (districtId) {
-          this.loadNeighborhoods(districtId);
-        }
-      });
-
-    // Neighborhood dropdown and manual free-text entry are mutually
-    // exclusive in intent (see Property.NeighborhoodText's backend doc
-    // comment) — picking one clears the other so we never submit a stale
-    // value from whichever the user isn't currently using.
-    this.form.controls.neighborhoodId.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(neighborhoodId => {
-        if (neighborhoodId) {
-          this.form.patchValue({ neighborhoodText: null }, { emitEvent: false });
-        }
-      });
-
-    this.form.controls.neighborhoodText.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(text => {
-        if (text && text.trim() && this.form.controls.neighborhoodId.value) {
-          this.form.patchValue({ neighborhoodId: null }, { emitEvent: false });
-          this.neighborhoods.set([]);
-        }
-      });
-
-    // Same mutual-exclusivity pattern for district: picking from the list
-    // clears any manually-typed name, and typing a name clears the picked
-    // district (and its now-inapplicable neighborhood selection/list, since
-    // there's no real districtId left to load neighborhoods for).
-    this.form.controls.districtId.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(districtId => {
-        if (districtId) {
-          this.form.patchValue({ districtText: null }, { emitEvent: false });
-        }
-      });
-
-    this.form.controls.districtText.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(text => {
-        if (text && text.trim() && this.form.controls.districtId.value) {
-          this.form.patchValue({ districtId: null, neighborhoodId: null }, { emitEvent: false });
-          this.districts.set([]);
-          this.neighborhoods.set([]);
-        }
-      });
+  onGeoChange(value: GeoPickerValue): void {
+    this.geoProposals = value.proposals;
+    this.form.patchValue({
+      locationId: value.locationId,
+      governorateId: value.governorateId,
+      districtId: value.districtId,
+      neighborhoodId: value.neighborhoodId,
+      districtText: value.districtText,
+      neighborhoodText: value.neighborhoodText,
+      city: value.city,
+      region: value.region,
+      street: value.street
+    }, { emitEvent: false });
+    this.form.controls.governorateId.markAsTouched();
+    this.form.markAsDirty();
   }
 
-  private loadDistricts(governorateId: number): void {
-    this.lookupsApi
-      .getDistricts(governorateId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: items => this.districts.set(items),
-        error: () => this.districts.set([])
-      });
+  /** A result chosen in the map's search box: fill the place levels from it (the pin has already moved). */
+  onMapPlaceSelected(place: GeoMapSuggestion): void {
+    this.geoPicker?.applyMapSuggestion(place);
   }
 
-  private loadNeighborhoods(districtId: number): void {
-    this.lookupsApi
-      .getNeighborhoods(districtId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: items => this.neighborhoods.set(items),
-        error: () => this.neighborhoods.set([])
-      });
+  /**
+   * "Location not found? Suggest adding it." Runs after the listing is saved and never blocks or fails it:
+   * each proposal is its own request, an error on one is ignored, and the administrators decide the rest.
+   */
+  private submitGeoProposals(propertyId: string): void {
+    const proposals = this.geoProposals;
+    if (!proposals.length || !propertyId) return;
+    this.geoProposals = [];
+
+    forkJoin(
+      proposals.map(p =>
+        this.locationsApi
+          .submitRequest({
+            type: p.type,
+            parentLocationId: p.parentLocationId,
+            name: p.name,
+            proof: p.proof,
+            latitude: p.latitude ?? this.form.controls.latitude.value,
+            longitude: p.longitude ?? this.form.controls.longitude.value,
+            propertyId
+          })
+          .pipe(catchError(() => of(null)))
+      )
+    ).subscribe();
   }
 
   stepNumber(n: number): string {
@@ -796,6 +766,21 @@ export class PropertyFormPage implements OnInit {
       .subscribe(lang => this.currentLang.set(lang));
   }
 
+  /** The branch picker is optional: any failure (no office, an older server) simply leaves it hidden. */
+  private loadMyOffice(): void {
+    this.agenciesApi
+      .getMine()
+      .pipe(catchError(() => of(null)), takeUntilDestroyed(this.destroyRef))
+      .subscribe(office => {
+        this.myOfficeId.set(office?.id ?? null);
+        this.officeBranches.set(office?.branches ?? []);
+      });
+  }
+
+  onBranchChange(value: string): void {
+    this.selectedBranchId.set(value);
+  }
+
   private loadExistingProperty(id: string): void {
     // ✅ إصلاح: كانت هذه الدالة تستخدم GET /properties/{id} العام، الذي يرفض
     // بـ 404 أي عقار غير منشور بعد (Draft) حتى لصاحبه — ما كان يمنع فتح نموذج
@@ -807,6 +792,9 @@ export class PropertyFormPage implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (property: Property) => {
+          this.listingOfficeId.set(property.agencyId ?? null);
+          this.savedBranchId.set(property.agencyBranchId ?? null);
+          this.selectedBranchId.set(property.agencyBranchId ?? '');
           this.form.patchValue({
             listingType: property.listingType === 'ForSale' || property.listingType === 2 ? 2 : 1,
             title: property.title ?? '',
@@ -849,12 +837,10 @@ export class PropertyFormPage implements OnInit {
             heatingType: this.heatingTypeId(property.heatingType)
           });
 
-          // Phase-0, Task 0 follow-up: patched with emitEvent:false so the
-          // governorateId/districtId valueChanges cascade above (which clears
-          // child selections on change) doesn't wipe the very values we're
-          // restoring here. District/neighborhood options for the saved
-          // governorate/district are then loaded explicitly below instead.
+          // The location picker restores the saved places itself (from locationId, or from the old ids for a
+          // listing that has none); the form only keeps the values so saving without touching it changes nothing.
           this.form.patchValue({
+            locationId: property.locationId ?? null,
             governorateId: property.governorateId ?? null,
             districtId: property.districtId ?? null,
             districtText: property.districtText ?? null,
@@ -862,17 +848,14 @@ export class PropertyFormPage implements OnInit {
             neighborhoodText: property.neighborhoodText ?? null
           }, { emitEvent: false });
 
-          if (property.governorateId) {
-            this.lookupsApi.getDistricts(property.governorateId)
-              .pipe(takeUntilDestroyed(this.destroyRef))
-              .subscribe({ next: items => this.districts.set(items), error: () => this.districts.set([]) });
-          }
-
-          if (property.districtId) {
-            this.lookupsApi.getNeighborhoods(property.districtId)
-              .pipe(takeUntilDestroyed(this.destroyRef))
-              .subscribe({ next: items => this.neighborhoods.set(items), error: () => this.neighborhoods.set([]) });
-          }
+          this.geoInitial.set({
+            locationId: property.locationId ?? null,
+            governorateId: property.governorateId ?? null,
+            city: property.city ?? null,
+            districtText: property.districtText ?? null,
+            neighborhoodText: property.neighborhoodText ?? null,
+            street: property.street ?? null
+          });
 
           // ✅ الصور المحفوظة فعلياً تُعرض وتُدار بشكل منفصل عن معاينات الرفع
           // الجديدة، لأن لها id على الخادم ويمكن حذفها/تعيينها كغلاف فردياً
@@ -901,6 +884,8 @@ export class PropertyFormPage implements OnInit {
   onLocationSelected(location: { lat: number; lng: number }): void {
     if (!isValidCoordinates(location.lat, location.lng)) return;
     this.form.patchValue({ latitude: location.lat, longitude: location.lng });
+    // A pin the user placed: the picker asks the backend (after it settles) which place it falls in.
+    this.geoPin.set({ lat: location.lat, lng: location.lng });
   }
 
   async onFileSelected(event: Event): Promise<void> {
@@ -1141,7 +1126,7 @@ export class PropertyFormPage implements OnInit {
       Title: f.title!.trim(),
       Description: f.description!.trim(),
       ListingType: f.listingType!,
-      Street: f.street!.trim(),
+      Street: (f.street ?? '').trim(),
       City: f.city!.trim(),
       Region: f.region?.trim() ?? null,
       CountryCode: f.countryCode!.trim().toUpperCase(),
@@ -1169,6 +1154,7 @@ export class PropertyFormPage implements OnInit {
       AmenityIds: Array.from(this.selectedAmenityIds()),
       // Phase-0, Task 0.
       GovernorateId: f.governorateId ?? null,
+      LocationId: f.locationId ?? null,
       DistrictId: f.districtId ?? null,
       DistrictText: f.districtText?.trim() || null,
       NeighborhoodId: f.neighborhoodId ?? null,
@@ -1183,10 +1169,18 @@ export class PropertyFormPage implements OnInit {
       FurnishingStatus: isLand ? null : (f.furnishingStatus ?? null)
     };
 
+    const branchId = this.showBranchPicker() ? (this.selectedBranchId() || null) : null;
+    if (!this.isEditMode() && branchId) payload.AgencyBranchId = branchId;
+    // On an existing listing the branch has its own endpoint, called only when the choice changed.
+    const branchChanged = this.isEditMode() && this.showBranchPicker() && branchId !== this.savedBranchId();
+
     this.isSaving.set(true);
 
     const request$ = this.isEditMode()
-      ? this.propertyApi.updateProperty(this.propertyId(), payload)
+      ? this.propertyApi.updateProperty(this.propertyId(), payload).pipe(
+          switchMap(result => branchChanged
+            ? this.propertyApi.setPropertyBranch(this.propertyId(), branchId).pipe(map(() => result))
+            : of(result)))
       : this.propertyApi.createProperty(payload);
 
     request$
@@ -1219,8 +1213,16 @@ export class PropertyFormPage implements OnInit {
    * specially handled before this method existed — falls through to the generic
    * message unchanged.
    */
-  private handleSaveError(err: { status?: number; error?: { code?: string } }): void {
+  private handleSaveError(err: { status?: number; error?: { code?: string; errorCodes?: Record<string, string[]> } }): void {
     const code = err?.error?.code;
+
+    // The branch was removed meanwhile: refresh the list so the picker no longer offers it.
+    if (err?.error?.errorCodes?.['AgencyBranchId']?.includes('LISTING_BRANCH_INVALID')) {
+      this.submitError.set('PROPERTY_FORM.BRANCH.INVALID');
+      this.selectedBranchId.set('');
+      this.loadMyOffice();
+      return;
+    }
 
     if (err?.status === 403 && code === 'LISTING_CONTACT_NOT_CONFIRMED') {
       this.submitError.set('PROPERTY_FORM.CONTACT_NOT_CONFIRMED');
@@ -1245,26 +1247,32 @@ export class PropertyFormPage implements OnInit {
     }
 
     this.propertyApi
-      .uploadImages(propertyId, formData)
+      // QA phase 25 (P25-D05): the interceptor's generic error toast is skipped here. A failed photo upload used to
+      // raise three toasts at once (the generic error, this warning and "saved successfully"); now it is one
+      // sentence that says both things: the listing is saved, the photos are not.
+      .uploadImages(propertyId, formData, { context: new HttpContext().set(SKIP_ERROR_TOAST, true) })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => this.onSaveSuccess(propertyId),
         error: () => {
           this.showToast(this.translate.instant('PROPERTY_FORM.IMAGE_UPLOAD_WARNING'), 'error');
-          this.onSaveSuccess(propertyId);
+          this.onSaveSuccess(propertyId, false);
         }
       });
   }
 
-  private onSaveSuccess(id: string): void {
+  private onSaveSuccess(id: string, announce = true): void {
     this.isSaving.set(false);
+    this.submitGeoProposals(id);
 
-    this.showToast(
-      this.translate.instant(
-        this.isEditMode() ? 'PROPERTY_FORM.UPDATE_SUCCESS' : 'PROPERTY_FORM.CREATE_SUCCESS'
-      ),
-      'success'
-    );
+    if (announce) {
+      this.showToast(
+        this.translate.instant(
+          this.isEditMode() ? 'PROPERTY_FORM.UPDATE_SUCCESS' : 'PROPERTY_FORM.CREATE_SUCCESS'
+        ),
+        'success'
+      );
+    }
 
     if (id) {
       void this.router.navigate(['/properties', id]);
@@ -1298,7 +1306,6 @@ export class PropertyFormPage implements OnInit {
     if (errors['warmRentBelowColdRent']) return 'PROPERTY_FORM.WARM_RENT_BELOW_COLD_RENT';
     if (errors['invalidCountryCode']) return 'PROPERTY_FORM.INVALID_COUNTRY_CODE';
     if (errors['invalidCurrencyCode']) return 'PROPERTY_FORM.INVALID_CURRENCY_CODE';
-    if (errors['districtRequired']) return 'PROPERTY_FORM.DISTRICT_REQUIRED';
     if (errors['invalidCoordinates']) return 'PROPERTY_FORM.INVALID_COORDINATES';
 
     // Dynamic listing form (ListingType × PropertyType redesign, Syrian market).
@@ -1311,6 +1318,8 @@ export class PropertyFormPage implements OnInit {
 
     if (this.f.governorateId.errors?.['required']) return 'PROPERTY_FORM.GOVERNORATE_REQUIRED';
     if (this.f.propertyTypeId.errors?.['required']) return 'PROPERTY_FORM.PROPERTY_TYPE_REQUIRED';
+    if (this.f.rooms.errors?.['wholeNumber']) return 'PROPERTY_FORM.ROOMS_WHOLE_NUMBER';
+    if (this.f.floor.errors?.['wholeNumber']) return 'PROPERTY_FORM.FLOOR_WHOLE_NUMBER';
     if (this.f.area.errors?.['areaGreaterThanTen']) return 'PROPERTY_FORM.AREA_TOO_SMALL';
     if (this.f.coldRent.errors?.['positiveNumber']) return 'PROPERTY_FORM.COLD_RENT_REQUIRED';
     if (this.f.warmRent.errors?.['positiveNumber']) return 'PROPERTY_FORM.WARM_RENT_REQUIRED';

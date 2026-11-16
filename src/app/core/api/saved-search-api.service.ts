@@ -80,7 +80,9 @@ export class SavedSearchApiService {
         frequency: (item['frequency'] === 'Daily' ? 'Daily' : 'Instant') as SavedSearchFrequency,
         isPaused: item['isPaused'] === true,
         lastNotifiedAt: (item['lastNotifiedAt'] as string | null | undefined) ?? null,
-        notifiedCount: Number(item['notifiedCount'] ?? 0) || 0
+        notifiedCount: Number(item['notifiedCount'] ?? 0) || 0,
+        floorFrom: item['floorFrom'] === undefined || item['floorFrom'] === null ? null : Number(item['floorFrom']),
+        floorTo: item['floorTo'] === undefined || item['floorTo'] === null ? null : Number(item['floorTo'])
       }))
       .filter(item => !!item.id);
   }

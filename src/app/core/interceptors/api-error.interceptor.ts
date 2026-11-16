@@ -86,7 +86,19 @@ const KNOWN_VALIDATION_MESSAGE_KEYS: readonly (readonly [RegExp, string])[] = [
   [/^(SearchTerm|City|Region) contains characters that are not allowed\.?$/i, 'API_ERRORS.FILTER_TEXT_NOT_ALLOWED'],
   [/^SortBy=Price requires ListingType/i, 'API_ERRORS.FILTER_SORT_PRICE_NEEDS_TYPE'],
   [/^(Latitude|Longitude) is required\.?$/i, 'API_ERRORS.GEO_COORDS_REQUIRED'],
-  [/^(Latitude|Longitude) must be between/i, 'API_ERRORS.GEO_COORDS_INVALID']
+  [/^(Latitude|Longitude) must be between/i, 'API_ERRORS.GEO_COORDS_INVALID'],
+  // The password rules (PasswordPolicy.cs, ASP.NET Identity defaults): servers that predate the stable
+  // codes, and any path that still answers with the sentence alone, must not show English to an Arabic reader.
+  [/^Password is required\.?$/i, 'AUTH.ERRORS.PASSWORD_REQUIRED'],
+  [/^Passwords? must be at least \d+ characters/i, 'AUTH.ERRORS.PASSWORD_MIN'],
+  [/^Passwords? must (contain|have) at least one upper ?case/i, 'AUTH.ERRORS.PASSWORD_NO_UPPERCASE'],
+  [/^Passwords? must (contain|have) at least one lower ?case/i, 'AUTH.ERRORS.PASSWORD_NO_LOWERCASE'],
+  [/^Passwords? must (contain|have) at least one digit/i, 'AUTH.ERRORS.PASSWORD_NO_DIGIT'],
+  [/^Passwords? must (contain|have) at least one (special|non alphanumeric)/i, 'AUTH.ERRORS.PASSWORD_NO_SPECIAL'],
+  [/^Password is based on a commonly used word/i, 'AUTH.ERRORS.PASSWORD_COMMON_WORD'],
+  [/^Password contains a run of more than/i, 'AUTH.ERRORS.PASSWORD_LONG_RUN'],
+  [/^Password must not contain your name/i, 'AUTH.ERRORS.PASSWORD_PERSONAL_INFO'],
+  [/^This password has been exposed in known data breaches/i, 'AUTH.ERRORS.PASSWORD_BREACHED']
 ];
 
 export function knownValidationMessageKey(message: string): string | null {
@@ -153,8 +165,8 @@ function extractBackendMessage(error: HttpErrorResponse, translate: TranslateSer
 
 /**
  * True when a server message is clearly written in a script the reader's page is not in: Arabic
- * letters on an English or German page, or Latin-only text on an Arabic page. Short or mixed text
- * (a name, a code) is left alone. An English sentence on a German page is recognised by its common
+ * letters on an English, German or Turkish page, or Latin-only text on an Arabic page. Short or mixed text
+ * (a name, a code) is left alone. An English sentence on a German or Turkish page is recognised by its common
  * words; any other Latin text stays as is, and the stable codes cover the cases that matter.
  */
 export function isInOtherScript(message: string, language: string | null = currentUiLanguage()): boolean {
@@ -173,8 +185,8 @@ export function isInOtherScript(message: string, language: string | null = curre
     return true;
   }
 
-  // On a German page an English sentence is Latin too; it is recognised by its common words.
-  return language === 'de' && arabic === 0 && looksEnglish(message);
+  // On a German or Turkish page an English sentence is Latin too; it is recognised by its common words.
+  return (language === 'de' || language === 'tr') && arabic === 0 && looksEnglish(message);
 }
 
 const ENGLISH_WORDS = new Set([
@@ -253,12 +265,27 @@ export function getFriendlyApiErrorMessage(error: HttpErrorResponse, translate: 
 const KNOWN_ERROR_CODE_KEYS: Readonly<Record<string, string>> = {
   AGENCY_ACCOUNT_NOT_VERIFIED: 'API_ERRORS.AGENCY_ACCOUNT_NOT_VERIFIED',
   AGENCY_PAID_PLAN_REQUIRED: 'API_ERRORS.AGENCY_PAID_PLAN_REQUIRED',
+  AGENCY_PLAN_EXPIRED: 'API_ERRORS.AGENCY_PLAN_EXPIRED',
   AGENCY_FREE_PLAN_NOT_ALLOWED: 'API_ERRORS.AGENCY_FREE_PLAN_NOT_ALLOWED',
   PAID_PLAN_ACTIVE: 'API_ERRORS.PAID_PLAN_ACTIVE',
+  BOOKING_DUPLICATE_OPEN: 'API_ERRORS.BOOKING_DUPLICATE_OPEN',
   SERVICE_CATEGORY_NOT_APPROVED: 'API_ERRORS.SERVICE_CATEGORY_NOT_APPROVED',
   CONCURRENCY_CONFLICT: 'API_ERRORS.CONCURRENCY_CONFLICT',
   CSRF_VALIDATION_FAILED: 'API_ERRORS.CSRF_VALIDATION_FAILED',
-  LISTING_QUOTA_REACHED: 'API_ERRORS.LISTING_QUOTA_REACHED'
+  LISTING_QUOTA_REACHED: 'API_ERRORS.LISTING_QUOTA_REACHED',
+  PAYMENTS_DISABLED: 'API_ERRORS.PAYMENTS_DISABLED',
+  PAYMENT_PROVIDER_UNAVAILABLE: 'API_ERRORS.PAYMENT_PROVIDER_UNAVAILABLE',
+  PAYMENT_PROVIDER_UNAVAILABLE_FOR_REQUEST: 'API_ERRORS.PAYMENT_PROVIDER_UNAVAILABLE_FOR_REQUEST',
+  PAYMENT_TOO_MANY_OPEN_ORDERS: 'API_ERRORS.PAYMENT_TOO_MANY_OPEN_ORDERS',
+  PAYMENT_ORDER_ALREADY_PAID: 'API_ERRORS.PAYMENT_ORDER_ALREADY_PAID',
+  PAYMENT_ORDER_NOT_CANCELLABLE: 'API_ERRORS.PAYMENT_ORDER_NOT_CANCELLABLE',
+  PAYMENT_TERMS_VERSION_MISMATCH: 'API_ERRORS.PAYMENT_TERMS_VERSION_MISMATCH',
+  PAYMENT_RENEWAL_UNSUPPORTED: 'API_ERRORS.PAYMENT_RENEWAL_UNSUPPORTED',
+  PAYMENT_IDEMPOTENCY_KEY_REUSED: 'API_ERRORS.PAYMENT_IDEMPOTENCY_KEY_REUSED',
+  PAYMENT_CURRENCY_UNSUPPORTED: 'API_ERRORS.PAYMENT_CURRENCY_UNSUPPORTED',
+  REFUND_WINDOW_CLOSED: 'API_ERRORS.REFUND_WINDOW_CLOSED',
+  REFUND_ALREADY_OPEN: 'API_ERRORS.REFUND_ALREADY_OPEN',
+  REFUND_ORDER_NOT_REFUNDABLE: 'API_ERRORS.REFUND_ORDER_NOT_REFUNDABLE'
 };
 
 /** The i18n key for a refusal's stable `code`, or null when there is none we translate. */
