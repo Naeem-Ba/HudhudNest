@@ -3,7 +3,7 @@ import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angul
 import { TranslateModule } from '@ngx-translate/core';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 
-import { OFFICES_PAGE_SIZE, OfficesDirectoryPage, filterFromParams } from './offices-directory.page';
+import { OFFICES_PAGE_SIZE, OfficesDirectoryPage, clampMapBounds, filterFromParams, roundCoordinate } from './offices-directory.page';
 import { AgenciesApiService } from '../../core/api/agencies-api.service';
 import { LookupsApiService } from '../../core/api/lookups-api.service';
 import { AgencyDirectoryItem } from '../../core/models/agency.model';
@@ -50,6 +50,20 @@ describe('filterFromParams', () => {
   });
 });
 
+describe('near me and map helpers', () => {
+  it('rounds the visitor position to three decimals', () => {
+    expect(roundCoordinate(33.513456)).toBe(33.513);
+    expect(roundCoordinate(36.27651)).toBe(36.277);
+  });
+
+  it('keeps a small map box and narrows a wide one around its centre to what the server accepts', () => {
+    const small = { minLat: 33, minLng: 36, maxLat: 34, maxLng: 37 };
+    expect(clampMapBounds(small)).toEqual(small);
+    const wide = clampMapBounds({ minLat: 30, minLng: 30, maxLat: 40, maxLng: 50 });
+    expect(wide).toEqual({ minLat: 30, minLng: 34, maxLat: 40, maxLng: 46 });
+  });
+});
+
 describe('OfficesDirectoryPage', () => {
   let api: jasmine.SpyObj<AgenciesApiService>;
   let lookups: jasmine.SpyObj<LookupsApiService>;
@@ -73,7 +87,8 @@ describe('OfficesDirectoryPage', () => {
 
   beforeEach(() => {
     params$ = new BehaviorSubject(convertToParamMap({}));
-    api = jasmine.createSpyObj('AgenciesApiService', ['searchDirectory', 'getDirectoryFacets']);
+    api = jasmine.createSpyObj('AgenciesApiService', ['searchDirectory', 'getDirectoryFacets', 'getDirectoryMap']);
+    api.getDirectoryMap.and.returnValue(of({ markers: [], isTruncated: false }));
     lookups = jasmine.createSpyObj('LookupsApiService', ['getGovernorates', 'getDistricts', 'getNeighborhoods', 'getPropertyTypeCatalog']);
     api.searchDirectory.and.returnValue(of(page([office(), office({ id: 'b2', name: 'Beta', slug: 'beta', verificationStatus: 'Verified' })])));
     api.getDirectoryFacets.and.returnValue(of({ governorates: [{ id: 1, count: 2 }, { id: 5, count: 1 }], districts: [], neighborhoods: [], totalCount: 2 }));
@@ -136,5 +151,100 @@ describe('OfficesDirectoryPage', () => {
     const page = create().componentInstance;
     expect(page.placeOf(office({ governorateId: 99, city: 'Homs' }))).toBe('Homs');
     expect(page.placeOf(office({ governorateId: null, city: null }))).toBeNull();
+  });
+
+  describe('near me', () => {
+    it('sends the rounded position, the radius and the Nearest order, and never puts the position in the URL', () => {
+      const fixture = create();
+      const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+      fixture.componentInstance.useLocation(33.513456, 36.276512);
+      expect(api.searchDirectory).toHaveBeenCalledWith(jasmine.objectContaining({
+        latitude: 33.513, longitude: 36.277, radiusKm: 10, sort: 'Nearest', page: 1
+      }));
+      expect(navigate).not.toHaveBeenCalled();
+    });
+
+    it('a new radius searches again without asking for the position again', () => {
+      const fixture = create();
+      const page = fixture.componentInstance;
+      page.useLocation(33.5, 36.3);
+      const geo = spyOn(navigator.geolocation, 'getCurrentPosition');
+      page.setRadius(25);
+      expect(api.searchDirectory).toHaveBeenCalledWith(jasmine.objectContaining({ radiusKm: 25 }));
+      expect(geo).not.toHaveBeenCalled();
+      page.setRadius(999);
+      expect(page.radiusKm()).toBe(25);
+    });
+
+    it('shows the distance and the nearest branch on the card', () => {
+      api.searchDirectory.and.returnValue(of(page([office({ distanceMeters: 1234, nearestBranchName: 'Mezzeh' })])));
+      const fixture = create();
+      fixture.componentInstance.useLocation(33.5, 36.3);
+      fixture.detectChanges();
+      const text = (fixture.nativeElement as HTMLElement).querySelector('[data-testid="distance"]')!.textContent!;
+      expect(text).toContain('OFFICES.NEAR.DISTANCE_KM');
+      expect(text).toContain('Mezzeh');
+      expect(fixture.componentInstance.distanceKey(1234)).toEqual({ key: 'OFFICES.NEAR.DISTANCE_KM', value: '1.2' });
+      expect(fixture.componentInstance.distanceKey(347)).toEqual({ key: 'OFFICES.NEAR.DISTANCE_M', value: '350' });
+    });
+
+    it('offers Nearest only while the position is known; picking another order leaves near me', () => {
+      const fixture = create();
+      const page = fixture.componentInstance;
+      expect(page.sortOptions()).not.toContain('Nearest');
+      page.useLocation(33.5, 36.3);
+      expect(page.sortOptions()[0]).toBe('Nearest');
+      expect(page.currentSort()).toBe('Nearest');
+      const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+      page.setSort('TopRated');
+      expect(page.near()).toBeNull();
+      expect(navigate.calls.mostRecent().args[1]!.queryParams!['sort']).toBe('TopRated');
+    });
+
+    it('says so when the visitor refuses the location', () => {
+      const fixture = create();
+      spyOn(navigator.geolocation, 'getCurrentPosition').and.callFake((_ok, fail) => fail!({} as GeolocationPositionError));
+      fixture.componentInstance.findNearMe();
+      expect(fixture.componentInstance.geoError()).toBe('OFFICES.NEAR.DENIED');
+      expect(fixture.componentInstance.near()).toBeNull();
+    });
+  });
+
+  describe('map view', () => {
+    it('does not search the list and asks the server for the visible box, clamped', () => {
+      params$.next(convertToParamMap({ view: 'map', verified: '1' }));
+      const fixture = create();
+      expect(api.searchDirectory).not.toHaveBeenCalled();
+      fixture.componentInstance.onMapBounds({ minLat: 30, minLng: 30, maxLat: 40, maxLng: 50 });
+      return new Promise<void>(resolve => setTimeout(resolve, 350)).then(() => {
+        expect(api.getDirectoryMap).toHaveBeenCalledWith({ minLat: 30, minLng: 34, maxLat: 40, maxLng: 46 }, true);
+      });
+    });
+
+    it('turns markers into points that open the office page', () => {
+      api.getDirectoryMap.and.returnValue(of({ markers: [{
+        agencyId: 'a1', slug: 'alpha', name: 'Alpha', isVerified: true, branchId: 'b1', branchName: 'Mezzeh',
+        isMain: true, latitude: 33.5, longitude: 36.3
+      }], isTruncated: true }));
+      params$.next(convertToParamMap({ view: 'map' }));
+      const fixture = create();
+      fixture.componentInstance.onMapBounds({ minLat: 33, minLng: 36, maxLat: 34, maxLng: 37 });
+      return new Promise<void>(resolve => setTimeout(resolve, 350)).then(() => {
+        fixture.detectChanges();
+        expect(fixture.componentInstance.mapPoints()).toEqual([jasmine.objectContaining({
+          id: 'b1', label: 'Alpha', detail: 'Mezzeh', verified: true, link: ['/offices', 'alpha']
+        })]);
+        expect((fixture.nativeElement as HTMLElement).textContent).toContain('OFFICES.MAP.TRUNCATED');
+      });
+    });
+
+    it('switching views keeps the filters and drops the page', () => {
+      const fixture = create();
+      const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+      fixture.componentInstance.setView('map');
+      const extras = navigate.calls.mostRecent().args[1]!;
+      expect(extras.queryParams).toEqual({ view: 'map', page: null });
+      expect(extras.queryParamsHandling).toBe('merge');
+    });
   });
 });

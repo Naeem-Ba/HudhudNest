@@ -14,6 +14,9 @@ import {
   AgencyRatingSummaryDto,
   SubmitAgencyRatingRequest,
   Agency,
+  AgencyBranch,
+  AgencyBranchInput,
+  AgencyMapResult,
   AgencyDirectoryFacets,
   AgencyDirectoryFilter,
   AgencyDirectoryPage,
@@ -58,6 +61,29 @@ export class AgenciesApiService {
     if (governorateId) query['governorateId'] = governorateId;
     if (districtId) query['districtId'] = districtId;
     return this.api.get<AgencyDirectoryFacets>(`${this.endpoint}/directory/facets`, query);
+  }
+
+  /** GET /api/agencies/directory/map — فروع المكاتب المدرجة داخل حدود الخريطة (500 علامة كحد أقصى). */
+  getDirectoryMap(bounds: { minLat: number; minLng: number; maxLat: number; maxLng: number }, verifiedOnly = false): Observable<AgencyMapResult> {
+    const round = (n: number) => Math.round(n * 1000) / 1000;
+    const query: Record<string, number | boolean> = {
+      minLat: round(bounds.minLat), minLng: round(bounds.minLng), maxLat: round(bounds.maxLat), maxLng: round(bounds.maxLng)
+    };
+    if (verifiedOnly) query['verifiedOnly'] = true;
+    return this.api.get<AgencyMapResult>(`${this.endpoint}/directory/map`, query);
+  }
+
+  // ── الفروع (للمالك فقط؛ الخادم يتحقق أنه مالك هذا المكتب). كل نداء يعيد قائمة الفروع كاملة. ──
+  addBranch(agencyId: string, branch: AgencyBranchInput): Observable<AgencyBranch[]> {
+    return this.api.post<AgencyBranch[]>(`${this.endpoint}/${agencyId}/branches`, branch);
+  }
+
+  updateBranch(agencyId: string, branchId: string, branch: AgencyBranchInput): Observable<AgencyBranch[]> {
+    return this.api.put<AgencyBranch[]>(`${this.endpoint}/${agencyId}/branches/${branchId}`, branch);
+  }
+
+  deleteBranch(agencyId: string, branchId: string): Observable<AgencyBranch[]> {
+    return this.api.delete<AgencyBranch[]>(`${this.endpoint}/${agencyId}/branches/${branchId}`);
   }
 
   /** GET /api/agencies/{slug} — الصفحة العامة (مجهول؛ 404 لمكتب غير مفعّل). */

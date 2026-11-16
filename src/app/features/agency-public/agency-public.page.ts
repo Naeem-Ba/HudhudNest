@@ -7,6 +7,8 @@
 // رقم الترخيص لا يُعرض هنا عمدًا: AgencyDto.LicenseNumber يقول صراحةً إنه لم يُتحقق منه
 // أبدًا، وعرضه على صفحة عامة يقرأه الزائر كاعتماد رسمي.
 //
+// الفروع (P2): قائمة بالمحافظة/المنطقة والعنوان والهاتف، وخريطة صغيرة لما له إحداثيات فقط (لا موقع افتراضي).
+//
 // نفس نمط الملف الواحد المستخدم في user-profile.page.ts.
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -14,7 +16,7 @@ import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, Validati
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { catchError, of, switchMap, tap } from 'rxjs';
+import { catchError, forkJoin, of, switchMap, tap } from 'rxjs';
 
 import { AgenciesApiService } from '../../core/api/agencies-api.service';
 import { PropertyApiService } from '../../core/api/property-api.service';
@@ -22,6 +24,7 @@ import {
   AGENCY_RATING_COMMENT_MAX_LENGTH,
   AGENCY_RATING_CRITERIA,
   Agency,
+  AgencyBranch,
   AgencyRatingDto,
   AgencyRatingEligibilityDto,
   AgencyRatingSummaryDto
@@ -36,6 +39,9 @@ import { ImageFallbackDirective } from '../../shared/directives/image-fallback.d
 import { isReservedListing, listingLifecycle, listingStatusTagKey } from '../../shared/utils/listing-status';
 import { ListingViewCountComponent } from '../../shared/ui/listing-view-count.component';
 import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
+import { OfficeMapPoint, OfficesMapComponent } from '../../shared/ui/offices-map.component';
+import { LookupsApiService, StructuredLocationLookup, pickLocalizedName } from '../../core/api/lookups-api.service';
+import { LanguageService } from '../../core/services/language.service';
 
 const LISTINGS_PAGE_SIZE = 12;
 
@@ -51,7 +57,7 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
   selector: 'app-agency-public-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ LocalizedDatePipe,ListingViewCountComponent, CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, EmptyStateComponent, ImageFallbackDirective],
+  imports: [ LocalizedDatePipe,ListingViewCountComponent, CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, EmptyStateComponent, ImageFallbackDirective, OfficesMapComponent],
   template: `
     <section class="container agency-page" *ngIf="!loading(); else loadingTpl">
       <app-empty-state
@@ -107,6 +113,29 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
           <a *ngIf="a.contactPhone" class="btn btn--outline btn--sm" [href]="'tel:' + a.contactPhone" dir="ltr">📞 {{ a.contactPhone }}</a>
           <a *ngIf="a.contactEmail" class="btn btn--outline btn--sm" [href]="'mailto:' + a.contactEmail">✉️ {{ a.contactEmail }}</a>
         </div>
+
+        <!-- ── الفروع: القائمة دائمًا، والخريطة لما له إحداثيات فقط ── -->
+        <section class="branches" *ngIf="branches().length > 0" data-testid="office-branches">
+          <h2 class="section-title">{{ 'OFFICE_BRANCHES.TITLE' | translate: { count: branches().length } }}</h2>
+          <app-offices-map *ngIf="branchPoints().length > 0" height="280px" [fitToPoints]="true"
+                           [ariaLabel]="'OFFICE_BRANCHES.MAP_LABEL' | translate" [points]="branchPoints()"></app-offices-map>
+          <ul class="branches__list">
+            <li class="branches__item" *ngFor="let b of branches()" data-testid="office-branch">
+              <div class="branches__name">
+                <bdi>{{ b.name }}</bdi>
+                <span class="branches__main" *ngIf="b.isMain">{{ 'OFFICE_BRANCHES.MAIN' | translate }}</span>
+              </div>
+              <p class="branches__place" *ngIf="branchPlace(b) as place">📍 {{ place }}</p>
+              <p class="branches__address" *ngIf="b.address"><bdi>{{ b.address }}</bdi></p>
+              <div class="branches__actions">
+                <a *ngIf="b.contactPhone" class="btn btn--outline btn--sm" [href]="'tel:' + b.contactPhone" dir="ltr">📞 {{ b.contactPhone }}</a>
+                <a *ngIf="directionsUrl(b) as url" class="btn btn--outline btn--sm" [href]="url" target="_blank" rel="noopener noreferrer">
+                  🧭 {{ 'OFFICE_BRANCHES.DIRECTIONS' | translate }}
+                </a>
+              </div>
+            </li>
+          </ul>
+        </section>
 
         <!-- ── تفصيل تقييم المكتب حسب المحور ── -->
         <div class="detail-card" *ngIf="summary() && summary()!.totalCount > 0">
@@ -299,6 +328,13 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
     .agency-header h1 { margin: 0 0 .25rem; font-size: clamp(1.3rem, 2.5vw, 1.75rem); font-weight: 800; color: var(--gray-900); overflow-wrap: anywhere; }
     .agency-header__meta { margin: 0; font-size: .85rem; color: var(--gray-500); }
     .agency-description { white-space: pre-line; line-height: 1.8; color: var(--gray-700); margin: 0 0 1rem; }
+    .branches app-offices-map { margin-bottom: .75rem; }
+    .branches__list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .75rem; }
+    .branches__item { border: 1px solid var(--border); border-radius: 12px; background: var(--surface); padding: .85rem; display: flex; flex-direction: column; gap: .35rem; min-width: 0; }
+    .branches__name { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; font-weight: 700; color: var(--gray-900); overflow-wrap: anywhere; }
+    .branches__main { padding: .05rem .5rem; border-radius: 999px; background: var(--primary-soft); color: var(--primary-text); font-size: .72rem; font-weight: 700; }
+    .branches__place, .branches__address { margin: 0; font-size: .85rem; color: var(--gray-700); overflow-wrap: anywhere; }
+    .branches__actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .25rem; }
     .agency-contact { display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
     .section-head { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; margin: 1.5rem 0 .75rem; }
     .section-head .section-title { margin: 0; }
@@ -377,6 +413,8 @@ export class AgencyPublicPage implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly fb = inject(FormBuilder);
+  private readonly lookups = inject(LookupsApiService);
+  private readonly lang = inject(LanguageService);
 
   readonly criteria = AGENCY_RATING_CRITERIA;
   readonly starsFn = starsFor;
@@ -411,6 +449,13 @@ export class AgencyPublicPage implements OnInit {
   readonly loading = signal(true);
   readonly notFound = signal(false);
   readonly agency = signal<Agency | null>(null);
+  readonly branches = computed<AgencyBranch[]>(() => this.agency()?.branches ?? []);
+  readonly branchPoints = computed<OfficeMapPoint[]>(() => this.branches()
+    .filter(b => b.latitude != null && b.longitude != null)
+    .map(b => ({ id: b.id, latitude: b.latitude as number, longitude: b.longitude as number, label: b.name, main: b.isMain })));
+  /** أسماء المحافظات والمناطق التي فيها فروع، بلغة الزائر. */
+  private readonly placeNames = signal<Map<string, StructuredLocationLookup>>(new Map());
+  private readonly currentLang = signal(this.lang.getCurrent());
   readonly listings = signal<Property[]>([]);
   readonly listingsLoading = signal(false);
   readonly hasMore = signal(false);
@@ -424,8 +469,40 @@ export class AgencyPublicPage implements OnInit {
   readonly soldCount = signal(0);
   readonly rentedCount = signal(0);
 
+  /** «المنطقة، المحافظة» بلغة الزائر؛ null إن لم تصل الأسماء بعد. */
+  branchPlace(b: AgencyBranch): string | null {
+    const names = this.placeNames();
+    const parts = [names.get(`d${b.districtId}`), names.get(`g${b.governorateId}`)]
+      .filter((p): p is StructuredLocationLookup => !!p)
+      .map(p => pickLocalizedName(p, this.currentLang()));
+    return parts.length ? parts.join(this.currentLang() === 'ar' ? '، ' : ', ') : null;
+  }
+
+  /** رابط اتجاهات خارجي لفرع له إحداثيات (يفتح تطبيق الخرائط على الجوال). */
+  directionsUrl(b: AgencyBranch): string | null {
+    if (b.latitude == null || b.longitude == null) return null;
+    return `https://www.google.com/maps/dir/?api=1&destination=${b.latitude},${b.longitude}`;
+  }
+
+  private loadBranchPlaces(branches: AgencyBranch[]): void {
+    if (!branches.length) return;
+    const governorateIds = [...new Set(branches.filter(b => b.districtId).map(b => b.governorateId))];
+    forkJoin({
+      governorates: this.lookups.getGovernorates().pipe(catchError(() => of([] as StructuredLocationLookup[]))),
+      districts: governorateIds.length
+        ? forkJoin(governorateIds.map(id => this.lookups.getDistricts(id).pipe(catchError(() => of([] as StructuredLocationLookup[])))))
+        : of([] as StructuredLocationLookup[][])
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(({ governorates, districts }) => {
+      const map = new Map<string, StructuredLocationLookup>();
+      governorates.forEach(g => map.set(`g${g.id}`, g));
+      districts.flat().forEach(d => map.set(`d${d.id}`, d));
+      this.placeNames.set(map);
+    });
+  }
+
   ngOnInit(): void {
     this.destroyRef.onDestroy(() => this.pageMeta.clear());
+    this.lang.currentLang$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(l => this.currentLang.set(l));
 
     this.route.paramMap
       .pipe(
@@ -460,6 +537,7 @@ export class AgencyPublicPage implements OnInit {
 
           this.agency.set(agency);
           this.loading.set(false);
+          this.loadBranchPlaces(agency.branches ?? []);
           this.pageMeta.applyDynamic({
             title: agency.name,
             description: agency.description,

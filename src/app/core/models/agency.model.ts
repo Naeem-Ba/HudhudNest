@@ -48,6 +48,57 @@ export interface Agency {
   verifiedAt?: string | null;
   /** الإعلانات النشطة المنسوبة إلى المكتب؛ تأتي من الصفحة العامة فقط. */
   activeListingCount?: number | null;
+  /** فروع المكتب، الرئيسي أولًا. تأتي من الصفحة العامة ومن /me؛ غائبة من خادم أقدم. */
+  branches?: AgencyBranch[] | null;
+}
+
+/** فرع مكتب — يقابل AgencyBranchDto. الإحداثيات اختيارية؛ بلاها لا يظهر الفرع في «القريبة مني» ولا على الخريطة. */
+export interface AgencyBranch {
+  id: string;
+  name: string;
+  isMain: boolean;
+  governorateId: number;
+  districtId?: number | null;
+  neighborhoodId?: number | null;
+  address?: string | null;
+  contactPhone?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
+/** جسم POST/PUT /api/agencies/{id}/branches[/{branchId}]. */
+export interface AgencyBranchInput {
+  name: string;
+  governorateId: number;
+  districtId?: number | null;
+  neighborhoodId?: number | null;
+  address?: string | null;
+  contactPhone?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  isMain?: boolean;
+}
+
+/** الحد الأقصى للفروع (AgencyBranch.MaxPerAgency بالخادم). */
+export const AGENCY_BRANCH_LIMIT = 20;
+
+/** فرع على خريطة المكاتب — يقابل AgencyMapMarkerDto. */
+export interface AgencyMapMarker {
+  agencyId: string;
+  slug: string;
+  name: string;
+  logoUrl?: string | null;
+  isVerified: boolean;
+  branchId: string;
+  branchName: string;
+  isMain: boolean;
+  latitude: number;
+  longitude: number;
+}
+
+export interface AgencyMapResult {
+  markers: AgencyMapMarker[];
+  isTruncated: boolean;
 }
 
 /** يقابل HudhudNestApi.Domain.Agencies.Enums.AgencyVerificationStatus (يُسلسَل نصًّا). */
@@ -62,7 +113,7 @@ export const AGENCY_VERIFICATION_STATUSES: readonly AgencyVerificationStatus[] =
 export type AgencyDirectoryDeal = 'Sale' | 'Rent' | 'ShortStay' | 'Investment';
 
 /** الترتيب. لا يوجد «الموثّق أولًا» عمدًا: التوثيق فلتر وشارة، لا ترتيب. */
-export type AgencyDirectorySort = 'MostListings' | 'TopRated' | 'Newest';
+export type AgencyDirectorySort = 'MostListings' | 'TopRated' | 'Newest' | 'Nearest';
 
 export interface AgencyDirectoryFilter {
   search?: string | null;
@@ -76,6 +127,10 @@ export interface AgencyDirectoryFilter {
   sort?: AgencyDirectorySort;
   page?: number;
   pageSize?: number;
+  /** «القريبة مني»: تُرسل في الطلب فقط ولا تدخل الرابط أبدًا (قاعدة 2026-11-13)، مقرّبة إلى 3 منازل. */
+  latitude?: number | null;
+  longitude?: number | null;
+  radiusKm?: number | null;
 }
 
 /** بطاقة مكتب في الدليل — يقابل AgencyDirectoryItemDto. */
@@ -96,6 +151,9 @@ export interface AgencyDirectoryItem {
   ratingAverage: number;
   ratingCount: number;
   createdAt: string;
+  /** «القريبة مني» فقط: المسافة بالأمتار إلى أقرب فرع، واسم ذلك الفرع. */
+  distanceMeters?: number | null;
+  nearestBranchName?: string | null;
 }
 
 export interface AgencyDirectoryPage {

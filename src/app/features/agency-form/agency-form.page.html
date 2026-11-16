@@ -206,5 +206,10 @@
         (left)="onLeftAgency()"
       ></app-agency-team-panel>
     </div>
+
+    <!-- فروع المكتب وموقعها على الخريطة: للمالك فقط (الخادم يتحقق من الملكية) -->
+    <div class="page-block" *ngIf="!loading() && agency() as a">
+      <app-agency-branches-panel *ngIf="a.ownerUserId === currentUserId()" [agency]="a"></app-agency-branches-panel>
+    </div>
   </div>
 </div>

@@ -53,6 +53,7 @@ import { AgencyEligibility, ProfileService, agencyEligibility } from '../../core
 import { knownErrorCodeKey } from '../../core/interceptors/api-error.interceptor';
 import { RouterLink } from '@angular/router';
 import { AgencyTeamPanelComponent } from './agency-team-panel.component';
+import { AgencyBranchesPanelComponent } from './agency-branches-panel.component';
 import { AgencyInvitationsComponent } from './agency-invitations.component';
 import { ComboBoxComponent, ComboOption } from '../../shared/ui/combo-box.component';
 import { PlaceProposalService } from '../../core/api/place-proposal.service';
@@ -64,7 +65,7 @@ const SUPPORTED_COUNTRY_CODES = ['SY', 'DE', 'US', 'GB', 'FR', 'AE', 'SA', 'TR',
   selector: 'app-agency-form',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, ComboBoxComponent, AgencyTeamPanelComponent, AgencyInvitationsComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, ComboBoxComponent, AgencyTeamPanelComponent, AgencyBranchesPanelComponent, AgencyInvitationsComponent],
   templateUrl: './agency-form.page.html',
   styleUrl: './agency-form.page.scss'
 })
