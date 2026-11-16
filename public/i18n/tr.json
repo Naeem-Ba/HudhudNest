@@ -4705,7 +4705,8 @@
     "SORT": {
       "MOSTLISTINGS": "En çok ilan",
       "TOPRATED": "En yüksek puan",
-      "NEWEST": "En yeni"
+      "NEWEST": "En yeni",
+      "NEAREST": "En yakın"
     },
     "FILTER": {
       "GOVERNORATE": "İl",
@@ -4726,7 +4727,6 @@
       "INVESTMENT": "Yatırım"
     },
     "CLEAR": "Filtreleri temizle",
-    "NEARBY_SOON": "Yakınımdaki ofisleri arama ve harita yakında geliyor.",
     "RESULTS": "{{count}} ofis",
     "LOAD_ERROR": "Ofisler şu anda yüklenemedi.",
     "EMPTY_TITLE": "Eşleşen ofis yok",
@@ -4745,7 +4745,34 @@
     "CONTACT": "İletişim",
     "PAGINATION": "Ofis sayfaları",
     "PREVIOUS": "Önceki sayfa",
-    "NEXT": "Sonraki sayfa"
+    "NEXT": "Sonraki sayfa",
+    "NEAR": {
+      "BUTTON": "Yakınımdaki ofisler",
+      "LOCATING": "Konumunuz bulunuyor…",
+      "ACTIVE": "Yakınınızda",
+      "RADIUS": "Mesafe",
+      "RADIUS_KM": "{{value}} km",
+      "CLEAR": "İptal",
+      "PRIVACY": "Yaklaşık konumunuzu yalnızca bu arama için kullanırız ve saklamayız.",
+      "UNSUPPORTED": "Tarayıcınız konum belirlemeyi desteklemiyor.",
+      "DENIED": "Konumunuz alınamadı. Konum erişimine izin verip tekrar deneyin.",
+      "EMPTY": "{{value}} km içinde harita konumu olan ofis yok. Daha büyük bir mesafe deneyin.",
+      "DISTANCE_KM": "{{value}} km uzaklıkta",
+      "DISTANCE_M": "{{value}} m uzaklıkta"
+    },
+    "VIEW": {
+      "LABEL": "Görünüm",
+      "LIST": "Liste",
+      "MAP": "Harita"
+    },
+    "MAP": {
+      "LABEL": "Emlak ofisleri haritası",
+      "COUNT": "Bu bölgede {{count}} şube",
+      "TRUNCATED": "Yalnızca ilk {{count}} şube gösteriliyor. Kalanları görmek için yakınlaştırın.",
+      "LOAD_ERROR": "Harita şu anda yüklenemedi.",
+      "ONLY_PINNED": "Burada yalnızca sahiplerinin haritaya yerleştirdiği şubeler görünür.",
+      "FILTERS_NOTE": "Haritada yalnızca \"yalnızca doğrulanmış\" filtresi uygulanır."
+    }
   },
   "ADMIN_AGENCIES": {
     "TITLE": "Emlak ofisi doğrulama",
@@ -4774,5 +4801,38 @@
     "HISTORY_EMPTY": "Önceki değişiklik yok.",
     "SAVED": "Doğrulama durumu kaydedildi.",
     "SAVE_ERROR": "Durum kaydedilemedi."
+  },
+  "AGENCY_BRANCHES": {
+    "TITLE": "Şubeler ve harita konumu",
+    "DESC": "Merkez ofisinizi ve şubelerinizi ekleyin. Harita konumu olan bir şube \"Yakınımdaki ofisler\" ve ofis haritasında görünür.",
+    "EMPTY": "Henüz şube yok. Konumlu bir şube ekleyene kadar ofisiniz haritada görünmez.",
+    "MAIN": "Merkez",
+    "ON_MAP": "Haritada",
+    "NOT_ON_MAP": "Harita konumu yok",
+    "ADD": "Şube ekle",
+    "LIMIT": "Sınıra ulaştınız ({{max}} şube).",
+    "NAME": "Şube adı",
+    "GOVERNORATE": "İl",
+    "DISTRICT": "İlçe",
+    "NEIGHBORHOOD": "Mahalle",
+    "CHOOSE": "Seçin",
+    "OPTIONAL": "İsteğe bağlı",
+    "ADDRESS": "Adres",
+    "PHONE": "Şube telefonu",
+    "PIN": "Harita konumu",
+    "PIN_HINT": "İğneyi şubenin tam yerine koymak için haritaya tıklayın.",
+    "CLEAR_PIN": "Konumu kaldır",
+    "MAKE_MAIN": "Merkez şube yap",
+    "DELETE_TITLE": "Şubeyi sil",
+    "DELETE_TEXT": "\"{{name}}\" şubesi silinsin mi?",
+    "SAVED": "Şube kaydedildi.",
+    "DELETED": "Şube silindi.",
+    "SAVE_ERROR": "Şube kaydedilemedi."
+  },
+  "OFFICE_BRANCHES": {
+    "TITLE": "Şubeler ({{count}})",
+    "MAP_LABEL": "Ofisin şube haritası",
+    "MAIN": "Merkez",
+    "DIRECTIONS": "Yol tarifi"
   }
 }

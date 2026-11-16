@@ -6,8 +6,11 @@
 // /api/agencies/directory/facets)، والأسماء من نفس قوائم المواقع المستعملة في بحث الإعلانات.
 //
 // الخادم يقرر من يُدرج (مكتب فعّال وخطة مالكه سارية أو ضمن المهلة)؛ هذه الصفحة لا تفلتر شيئًا بنفسها.
-// «الأقرب إليّ» والخريطة مرحلة لاحقة (P2) لأن المكاتب لا تملك إحداثيات بعد، ولا نضع موقعًا افتراضيًا مضلّلًا.
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+//
+// «القريبة مني» (P2): موقع الزائر يُطلب بضغطة زر، يُقرَّب إلى 3 منازل (نحو 100 م) ويبقى في الذاكرة فقط، فلا يدخل
+// الرابط ولا السجلات. الخادم يحسب المسافة إلى أقرب فرع له إحداثيات؛ مكتب بلا فرع على الخريطة لا يظهر فيها.
+// عرض الخريطة (?view=map) يجلب فروع المكاتب داخل حدود الخريطة، ويطبّق فلتر «الموثّقة فقط» وحده.
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, ParamMap, Router, RouterLink } from '@angular/router';
@@ -27,19 +30,44 @@ import {
   AgencyDirectoryFacets,
   AgencyDirectoryFilter,
   AgencyDirectoryItem,
-  AgencyDirectorySort
+  AgencyDirectorySort,
+  AgencyMapResult
 } from '../../core/models/agency.model';
 import { LanguageService } from '../../core/services/language.service';
 import { PageMetaService } from '../../core/services/page-meta.service';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { SkeletonCardGridComponent } from '../../shared/ui/skeleton-card-grid.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
+import { OfficeMapBounds, OfficeMapPoint, OfficesMapComponent } from '../../shared/ui/offices-map.component';
 
 export const OFFICES_PAGE_SIZE = 12;
 
 const DEALS: readonly AgencyDirectoryDeal[] = ['Sale', 'Rent', 'ShortStay', 'Investment'];
 const SORTS: readonly AgencyDirectorySort[] = ['MostListings', 'TopRated', 'Newest'];
 const RATINGS: readonly number[] = [4, 3];
+export const NEAR_RADII_KM: readonly number[] = [5, 10, 25, 50];
+const DEFAULT_RADIUS_KM = 10;
+/** يطابق حد الخادم لعرض صندوق الخريطة (GetAgencyMapQueryValidator). */
+const MAP_MAX_SPAN_DEGREES = 12;
+
+export type OfficesView = 'list' | 'map';
+
+/** ثلاثة منازل عشرية (نحو 100 م): يكفي لترتيب المكاتب ولا يحمل موقع الزائر الدقيق. */
+export function roundCoordinate(value: number): number {
+  return Math.round(value * 1000) / 1000;
+}
+
+/** صندوق الخريطة مقصوصًا حول مركزه إلى ما يقبله الخادم؛ عند التصغير الشديد تُعرض المنطقة الوسطى فقط. */
+export function clampMapBounds(b: OfficeMapBounds): OfficeMapBounds {
+  const clampSpan = (min: number, max: number, lo: number, hi: number): [number, number] => {
+    if (max - min <= MAP_MAX_SPAN_DEGREES) return [min, max];
+    const mid = (min + max) / 2;
+    return [Math.max(lo, mid - MAP_MAX_SPAN_DEGREES / 2), Math.min(hi, mid + MAP_MAX_SPAN_DEGREES / 2)];
+  };
+  const [minLat, maxLat] = clampSpan(b.minLat, b.maxLat, -90, 90);
+  const [minLng, maxLng] = clampSpan(b.minLng, b.maxLng, -180, 180);
+  return { minLat, minLng, maxLat, maxLng };
+}
 
 interface PlaceOption {
   id: number;
@@ -76,7 +104,10 @@ export function filterFromParams(params: ParamMap): AgencyDirectoryFilter {
   selector: 'app-offices-directory-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, EmptyStateComponent, SkeletonCardGridComponent, ImageFallbackDirective],
+  imports: [
+    CommonModule, FormsModule, RouterLink, TranslateModule, EmptyStateComponent, SkeletonCardGridComponent,
+    ImageFallbackDirective, OfficesMapComponent
+  ],
   templateUrl: './offices-directory.page.html',
   styleUrls: ['./offices-directory.page.scss']
 })
@@ -92,6 +123,9 @@ export class OfficesDirectoryPage implements OnInit {
   readonly deals = DEALS;
   readonly sorts = SORTS;
   readonly ratings = RATINGS;
+  readonly radii = NEAR_RADII_KM;
+
+  @ViewChild(OfficesMapComponent) private officesMap?: OfficesMapComponent;
 
   readonly filter = signal<AgencyDirectoryFilter>({ sort: 'MostListings', page: 1, pageSize: OFFICES_PAGE_SIZE });
   readonly items = signal<AgencyDirectoryItem[]>([]);
@@ -100,12 +134,39 @@ export class OfficesDirectoryPage implements OnInit {
   readonly failed = signal(false);
   readonly filtersOpen = signal(false);
 
+  /** موقع الزائر مقرّبًا — في الذاكرة فقط. */
+  readonly near = signal<{ latitude: number; longitude: number } | null>(null);
+  readonly radiusKm = signal(DEFAULT_RADIUS_KM);
+  readonly geoLoading = signal(false);
+  /** مفتاح ترجمة لخطأ تحديد الموقع، أو null. */
+  readonly geoError = signal<string | null>(null);
+
+  readonly view = signal<OfficesView>('list');
+  readonly mapResult = signal<AgencyMapResult | null>(null);
+  readonly mapFailed = signal(false);
+  private readonly mapBounds$ = new Subject<OfficeMapBounds>();
+  private readonly reload$ = new Subject<void>();
+
   readonly facets = signal<AgencyDirectoryFacets | null>(null);
   private readonly governorateNames = signal<StructuredLocationLookup[]>([]);
   private readonly districtNames = signal<StructuredLocationLookup[]>([]);
   private readonly neighborhoodNames = signal<StructuredLocationLookup[]>([]);
   readonly propertyTypes = signal<PropertyTypeLookup[]>([]);
   private readonly currentLang = signal(this.lang.getCurrent());
+
+  /** «الأقرب» يظهر في قائمة الترتيب فقط حين يُعرف موقع الزائر. */
+  readonly sortOptions = computed<readonly AgencyDirectorySort[]>(() => this.near() ? ['Nearest', ...SORTS] : SORTS);
+  readonly currentSort = computed<AgencyDirectorySort>(() => this.near() ? 'Nearest' : (this.filter().sort ?? 'MostListings'));
+
+  readonly mapPoints = computed<OfficeMapPoint[]>(() => (this.mapResult()?.markers ?? []).map(m => ({
+    id: m.branchId,
+    latitude: m.latitude,
+    longitude: m.longitude,
+    label: m.name,
+    detail: m.branchName,
+    verified: m.isVerified,
+    link: ['/offices', m.slug]
+  })));
 
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / OFFICES_PAGE_SIZE)));
   readonly activeFilterCount = computed(() => {
@@ -133,18 +194,13 @@ export class OfficesDirectoryPage implements OnInit {
     this.search$.pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
       .subscribe(q => this.navigate({ search: q || null, page: 1 }));
 
-    this.route.queryParamMap
+    this.reload$
       .pipe(
-        tap(params => {
-          const next = filterFromParams(params);
-          const previous = this.filter();
-          this.filter.set(next);
-          this.searchText = next.search ?? '';
+        tap(() => {
           this.loading.set(true);
           this.failed.set(false);
-          this.loadPlaces(previous, next);
         }),
-        switchMap(() => this.api.searchDirectory(this.filter()).pipe(catchError(() => of(null)))),
+        switchMap(() => this.api.searchDirectory(this.requestFilter()).pipe(catchError(() => of(null)))),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(page => {
@@ -158,6 +214,112 @@ export class OfficesDirectoryPage implements OnInit {
         this.items.set(page.items ?? []);
         this.total.set(page.totalCount ?? 0);
       });
+
+    this.mapBounds$
+      .pipe(
+        debounceTime(300),
+        switchMap(b => this.api.getDirectoryMap(clampMapBounds(b), !!this.filter().verifiedOnly).pipe(catchError(() => of(null)))),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(result => {
+        this.mapFailed.set(!result);
+        if (result) this.mapResult.set(result);
+      });
+
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
+      const next = filterFromParams(params);
+      const previous = this.filter();
+      this.filter.set(next);
+      this.searchText = next.search ?? '';
+      const view: OfficesView = params.get('view') === 'map' ? 'map' : 'list';
+      const verifiedChanged = previous.verifiedOnly !== next.verifiedOnly;
+      this.view.set(view);
+      this.loadPlaces(previous, next);
+      if (view === 'list') this.reload$.next();
+      else if (verifiedChanged && this.lastBounds) this.mapBounds$.next(this.lastBounds);
+    });
+  }
+
+  /** الطلب الفعلي: فلتر الرابط، ومعه موقع الزائر إن طلب «القريبة مني». */
+  requestFilter(): AgencyDirectoryFilter {
+    const f = this.filter();
+    const point = this.near();
+    if (!point) return f;
+    return { ...f, sort: 'Nearest', latitude: point.latitude, longitude: point.longitude, radiusKm: this.radiusKm() };
+  }
+
+  /** يطلب موقع الزائر مرة واحدة؛ بعدها تغيير المسافة لا يعيد طلب الإذن. */
+  findNearMe(): void {
+    this.geoError.set(null);
+    if (typeof navigator === 'undefined' || !('geolocation' in navigator)) {
+      this.geoError.set('OFFICES.NEAR.UNSUPPORTED');
+      return;
+    }
+    this.geoLoading.set(true);
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        this.geoLoading.set(false);
+        this.useLocation(position.coords.latitude, position.coords.longitude);
+      },
+      () => {
+        this.geoLoading.set(false);
+        this.geoError.set('OFFICES.NEAR.DENIED');
+      },
+      { enableHighAccuracy: false, timeout: 15_000, maximumAge: 60_000 }
+    );
+  }
+
+  /** عام للاختبارات: يعتمد موقعًا (مقرّبًا) ويعيد البحث من الصفحة الأولى. */
+  useLocation(latitude: number, longitude: number): void {
+    const point = { latitude: roundCoordinate(latitude), longitude: roundCoordinate(longitude) };
+    this.near.set(point);
+    if (this.view() === 'map') {
+      this.officesMap?.centerOn(point.latitude, point.longitude);
+      return;
+    }
+    this.restartFromFirstPage();
+  }
+
+  setRadius(km: number): void {
+    if (!NEAR_RADII_KM.includes(km)) return;
+    this.radiusKm.set(km);
+    if (this.near()) this.restartFromFirstPage();
+  }
+
+  clearNearMe(): void {
+    this.near.set(null);
+    this.geoError.set(null);
+    if (this.view() === 'list') this.restartFromFirstPage();
+  }
+
+  setView(view: OfficesView): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { view: view === 'map' ? 'map' : null, page: null },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  private lastBounds: OfficeMapBounds | null = null;
+
+  onMapBounds(bounds: OfficeMapBounds): void {
+    this.lastBounds = bounds;
+    this.mapBounds$.next(bounds);
+  }
+
+  /** «على بعد 1.2 كم» أو «على بعد 350 م». */
+  distanceKey(meters: number): { key: string; value: string } {
+    if (meters < 1000) return { key: 'OFFICES.NEAR.DISTANCE_M', value: String(Math.max(0, Math.round(meters / 10) * 10)) };
+    const km = meters / 1000;
+    return { key: 'OFFICES.NEAR.DISTANCE_KM', value: km < 10 ? km.toFixed(1) : String(Math.round(km)) };
+  }
+
+  private restartFromFirstPage(): void {
+    if ((this.filter().page ?? 1) > 1) {
+      this.navigate({ page: 1 });
+      return;
+    }
+    this.reload$.next();
   }
 
   onSearchInput(value: string): void {
@@ -193,6 +355,15 @@ export class OfficesDirectoryPage implements OnInit {
   }
 
   setSort(sort: AgencyDirectorySort): void {
+    if (sort === 'Nearest') return;
+    if (this.near()) {
+      // Picking another order leaves "near me": the list goes back to the whole directory in that order.
+      this.near.set(null);
+      if (sort === this.filter().sort) {
+        this.restartFromFirstPage();
+        return;
+      }
+    }
     this.navigate({ sort, page: 1 });
   }
 
@@ -207,6 +378,10 @@ export class OfficesDirectoryPage implements OnInit {
       search: null, governorateId: null, districtId: null, neighborhoodId: null,
       propertyTypeId: null, deal: null, verifiedOnly: false, minRating: null, page: 1
     });
+  }
+
+  retry(): void {
+    this.reload$.next();
   }
 
   toggleFilters(): void {
@@ -289,7 +464,8 @@ export class OfficesDirectoryPage implements OnInit {
         verified: f.verifiedOnly ? 1 : null,
         minRating: f.minRating || null,
         sort: f.sort && f.sort !== 'MostListings' ? f.sort : null,
-        page: f.page && f.page > 1 ? f.page : null
+        page: f.page && f.page > 1 ? f.page : null,
+        view: this.view() === 'map' ? 'map' : null
       }
     });
   }

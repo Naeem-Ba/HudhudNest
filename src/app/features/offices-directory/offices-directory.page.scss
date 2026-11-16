@@ -49,6 +49,43 @@
   }
 }
 
+.offices__near {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin-bottom: 1rem;
+
+  .offices__note { flex: 1 1 200px; }
+}
+
+.offices__near-chip {
+  display: inline-flex; align-items: center; gap: .3rem; padding: .35rem .75rem; border-radius: 999px;
+  background: var(--primary); color: var(--on-primary); font-size: .85rem; font-weight: 700;
+}
+
+.offices__near-radius {
+  display: flex; align-items: center; gap: .4rem; font-size: .85rem; color: var(--gray-500); white-space: nowrap;
+
+  select {
+    border: 1px solid var(--border); border-radius: var(--r-md); padding: .4rem .5rem; background: var(--surface);
+    color: var(--text-strong); font: inherit; font-size: 16px;
+  }
+}
+
+.offices__near-clear {
+  background: none; border: 0; padding: 0; color: var(--primary-text); font: inherit; font-weight: 600; cursor: pointer;
+}
+
+.offices__geo-error { flex-basis: 100%; margin: 0; font-size: .85rem; color: var(--danger-text); }
+
+.offices__view {
+  display: inline-flex; margin-inline-start: auto; border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden;
+
+  button {
+    border: 0; background: var(--surface); color: var(--text-strong); padding: .45rem .9rem; font: inherit; font-weight: 600;
+    cursor: pointer;
+
+    &.is-active { background: var(--primary); color: var(--on-primary); }
+  }
+}
+
 .offices__layout {
   display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 1.25rem; align-items: start;
 }
@@ -132,6 +169,8 @@
   li { overflow-wrap: anywhere; }
 }
 
+.office-card__distance { font-weight: 700; color: var(--text-strong); }
+
 .office-card__star { color: var(--warning-text); }
 
 .office-card__actions {
@@ -154,7 +193,44 @@
 /* ‹ and › are bidi-mirrored characters: in a right-to-left page the browser already turns them, so no flip here. */
 
 @include bp.tablet {
-  .offices__layout { grid-template-columns: minmax(0, 1fr); }
+  .offices__near {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin-bottom: 1rem;
+
+  .offices__note { flex: 1 1 200px; }
+}
+
+.offices__near-chip {
+  display: inline-flex; align-items: center; gap: .3rem; padding: .35rem .75rem; border-radius: 999px;
+  background: var(--primary); color: var(--on-primary); font-size: .85rem; font-weight: 700;
+}
+
+.offices__near-radius {
+  display: flex; align-items: center; gap: .4rem; font-size: .85rem; color: var(--gray-500); white-space: nowrap;
+
+  select {
+    border: 1px solid var(--border); border-radius: var(--r-md); padding: .4rem .5rem; background: var(--surface);
+    color: var(--text-strong); font: inherit; font-size: 16px;
+  }
+}
+
+.offices__near-clear {
+  background: none; border: 0; padding: 0; color: var(--primary-text); font: inherit; font-weight: 600; cursor: pointer;
+}
+
+.offices__geo-error { flex-basis: 100%; margin: 0; font-size: .85rem; color: var(--danger-text); }
+
+.offices__view {
+  display: inline-flex; margin-inline-start: auto; border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden;
+
+  button {
+    border: 0; background: var(--surface); color: var(--text-strong); padding: .45rem .9rem; font: inherit; font-weight: 600;
+    cursor: pointer;
+
+    &.is-active { background: var(--primary); color: var(--on-primary); }
+  }
+}
+
+.offices__layout { grid-template-columns: minmax(0, 1fr); }
 
   .offices__filters-toggle { display: inline-flex; }
 
@@ -167,7 +243,9 @@
 
 @include bp.mobile {
   .offices__search { flex-basis: 100%; }
+  .offices__near-btn { flex: 1 1 auto; justify-content: center; }
   .offices__sort { flex: 1 1 0; min-width: 0; justify-content: flex-end; }
   .offices__sort select { flex: 1 1 auto; min-width: 0; }
   .offices__grid { grid-template-columns: minmax(0, 1fr); }
+  .offices__view { margin-inline-start: 0; }
 }

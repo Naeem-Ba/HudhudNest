@@ -16,6 +16,8 @@ import { PropertyApiService } from '../../core/api/property-api.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { Agency, AgencyRatingEligibilityDto, AgencyRatingSummaryDto } from '../../core/models/agency.model';
+import { LookupsApiService } from '../../core/api/lookups-api.service';
+import { LanguageService } from '../../core/services/language.service';
 
 const AGENCY: Agency = {
   id: 'agency-1',
@@ -49,6 +51,7 @@ describe('AgencyPublicPage', () => {
   let agencies: jasmine.SpyObj<AgenciesApiService>;
   let properties: jasmine.SpyObj<PropertyApiService>;
   let toast: jasmine.SpyObj<ToastService>;
+  let lookups: jasmine.SpyObj<LookupsApiService>;
 
   function create(opts: { slug?: string; userId?: string | null } = {}): AgencyPublicPage {
     TestBed.configureTestingModule({
@@ -60,7 +63,9 @@ describe('AgencyPublicPage', () => {
         { provide: PropertyApiService, useValue: properties },
         { provide: AuthService, useValue: { getCurrentUserId: () => (opts.userId === undefined ? 'user-1' : opts.userId) } },
         { provide: ToastService, useValue: toast },
-        { provide: TranslateService, useValue: { instant: (k: string) => k } }
+        { provide: TranslateService, useValue: { instant: (k: string) => k } },
+        { provide: LookupsApiService, useValue: lookups },
+        { provide: LanguageService, useValue: { getCurrent: () => 'en', currentLang$: of('en') } }
       ]
     });
     return TestBed.inject(AgencyPublicPage);
@@ -70,6 +75,9 @@ describe('AgencyPublicPage', () => {
     agencies = jasmine.createSpyObj<AgenciesApiService>('AgenciesApiService', ['getBySlug', 'getRatings', 'getRatingEligibility', 'submitRating']);
     properties = jasmine.createSpyObj<PropertyApiService>('PropertyApiService', ['getPropertiesPaged']);
     toast = jasmine.createSpyObj<ToastService>('ToastService', ['success', 'error']);
+    lookups = jasmine.createSpyObj<LookupsApiService>('LookupsApiService', ['getGovernorates', 'getDistricts']);
+    lookups.getGovernorates.and.returnValue(of([{ id: 1, nameAr: 'دمشق', nameEn: 'Damascus' }] as never));
+    lookups.getDistricts.and.returnValue(of([{ id: 4, nameAr: 'المزة', nameEn: 'Mezzeh' }] as never));
 
     agencies.getBySlug.and.returnValue(of(AGENCY));
     agencies.getRatings.and.returnValue(of(SUMMARY));
@@ -251,5 +259,45 @@ describe('AgencyPublicPage', () => {
 
     expect(toast.error).toHaveBeenCalledWith('يجب إتمام زيارة أو التواصل أولاً');
     expect(page.submittingRating()).toBeFalse();
+  });
+
+  describe('branches', () => {
+    const withBranches: Agency = {
+      ...AGENCY,
+      branches: [
+        { id: 'b1', name: 'Head office', isMain: true, governorateId: 1, districtId: 4, latitude: 33.5, longitude: 36.27 },
+        { id: 'b2', name: 'Kiosk', isMain: false, governorateId: 1, latitude: null, longitude: null }
+      ]
+    };
+
+    it('lists every branch but puts only the pinned ones on the map', () => {
+      agencies.getBySlug.and.returnValue(of(withBranches));
+      const page = create();
+      page.ngOnInit();
+      expect(page.branches().map(b => b.id)).toEqual(['b1', 'b2']);
+      expect(page.branchPoints()).toEqual([jasmine.objectContaining({ id: 'b1', latitude: 33.5, longitude: 36.27, main: true })]);
+    });
+
+    it('names the branch place from the lookups and loads districts only where a branch has one', () => {
+      agencies.getBySlug.and.returnValue(of(withBranches));
+      const page = create();
+      page.ngOnInit();
+      expect(lookups.getDistricts).toHaveBeenCalledOnceWith(1);
+      expect(page.branchPlace(withBranches.branches![0])).toBe('Mezzeh, Damascus');
+      expect(page.branchPlace(withBranches.branches![1])).toBe('Damascus');
+    });
+
+    it('offers directions only for a branch with coordinates', () => {
+      const page = create();
+      expect(page.directionsUrl(withBranches.branches![0])).toBe('https://www.google.com/maps/dir/?api=1&destination=33.5,36.27');
+      expect(page.directionsUrl(withBranches.branches![1])).toBeNull();
+    });
+
+    it('does not ask for place names when the office has no branches', () => {
+      const page = create();
+      page.ngOnInit();
+      expect(page.branches()).toEqual([]);
+      expect(lookups.getGovernorates).not.toHaveBeenCalled();
+    });
   });
 });

@@ -4705,7 +4705,8 @@
     "SORT": {
       "MOSTLISTINGS": "Meiste Anzeigen",
       "TOPRATED": "Beste Bewertung",
-      "NEWEST": "Neueste"
+      "NEWEST": "Neueste",
+      "NEAREST": "Am nächsten"
     },
     "FILTER": {
       "GOVERNORATE": "Gouvernement",
@@ -4726,7 +4727,6 @@
       "INVESTMENT": "Investition"
     },
     "CLEAR": "Filter zurücksetzen",
-    "NEARBY_SOON": "Die Suche nach Büros in meiner Nähe und die Karte kommen bald.",
     "RESULTS": "{{count}} Büros",
     "LOAD_ERROR": "Die Büros konnten gerade nicht geladen werden.",
     "EMPTY_TITLE": "Keine passenden Büros",
@@ -4745,7 +4745,34 @@
     "CONTACT": "Kontakt",
     "PAGINATION": "Seiten der Büros",
     "PREVIOUS": "Vorherige Seite",
-    "NEXT": "Nächste Seite"
+    "NEXT": "Nächste Seite",
+    "NEAR": {
+      "BUTTON": "Büros in meiner Nähe",
+      "LOCATING": "Standort wird ermittelt…",
+      "ACTIVE": "In Ihrer Nähe",
+      "RADIUS": "Umkreis",
+      "RADIUS_KM": "{{value}} km",
+      "CLEAR": "Abbrechen",
+      "PRIVACY": "Wir verwenden Ihren ungefähren Standort nur für diese Suche und speichern ihn nicht.",
+      "UNSUPPORTED": "Ihr Browser unterstützt keine Standortbestimmung.",
+      "DENIED": "Ihr Standort konnte nicht ermittelt werden. Erlauben Sie den Standortzugriff und versuchen Sie es erneut.",
+      "EMPTY": "Keine Büros mit Kartenstandort im Umkreis von {{value}} km. Versuchen Sie eine größere Entfernung.",
+      "DISTANCE_KM": "{{value}} km entfernt",
+      "DISTANCE_M": "{{value}} m entfernt"
+    },
+    "VIEW": {
+      "LABEL": "Ansicht",
+      "LIST": "Liste",
+      "MAP": "Karte"
+    },
+    "MAP": {
+      "LABEL": "Karte der Immobilienbüros",
+      "COUNT": "{{count}} Filialen in diesem Gebiet",
+      "TRUNCATED": "Nur die ersten {{count}} Filialen werden angezeigt. Zoomen Sie hinein, um den Rest zu sehen.",
+      "LOAD_ERROR": "Die Karte konnte gerade nicht geladen werden.",
+      "ONLY_PINNED": "Hier erscheinen nur Filialen, deren Inhaber sie auf der Karte platziert haben.",
+      "FILTERS_NOTE": "Auf der Karte gilt nur der Filter „nur verifizierte“."
+    }
   },
   "ADMIN_AGENCIES": {
     "TITLE": "Verifizierung der Immobilienbüros",
@@ -4774,5 +4801,38 @@
     "HISTORY_EMPTY": "Keine früheren Änderungen.",
     "SAVED": "Verifizierungsstatus gespeichert.",
     "SAVE_ERROR": "Der Status konnte nicht gespeichert werden."
+  },
+  "AGENCY_BRANCHES": {
+    "TITLE": "Filialen und Kartenstandort",
+    "DESC": "Fügen Sie Ihren Hauptsitz und Ihre Filialen hinzu. Eine Filiale mit Kartenstandort erscheint unter „Büros in meiner Nähe“ und auf der Bürokarte.",
+    "EMPTY": "Noch keine Filialen. Ihr Büro erscheint erst auf der Karte, wenn Sie eine Filiale mit Standort hinzufügen.",
+    "MAIN": "Hauptsitz",
+    "ON_MAP": "Auf der Karte",
+    "NOT_ON_MAP": "Kein Kartenstandort",
+    "ADD": "Filiale hinzufügen",
+    "LIMIT": "Sie haben das Maximum erreicht ({{max}} Filialen).",
+    "NAME": "Name der Filiale",
+    "GOVERNORATE": "Gouvernement",
+    "DISTRICT": "Bezirk",
+    "NEIGHBORHOOD": "Viertel",
+    "CHOOSE": "Auswählen",
+    "OPTIONAL": "Optional",
+    "ADDRESS": "Adresse",
+    "PHONE": "Telefon der Filiale",
+    "PIN": "Kartenstandort",
+    "PIN_HINT": "Klicken Sie auf die Karte, um die Markierung genau an der Filiale zu setzen.",
+    "CLEAR_PIN": "Standort entfernen",
+    "MAKE_MAIN": "Zum Hauptsitz machen",
+    "DELETE_TITLE": "Filiale löschen",
+    "DELETE_TEXT": "Die Filiale „{{name}}“ löschen?",
+    "SAVED": "Filiale gespeichert.",
+    "DELETED": "Filiale gelöscht.",
+    "SAVE_ERROR": "Die Filiale konnte nicht gespeichert werden."
+  },
+  "OFFICE_BRANCHES": {
+    "TITLE": "Filialen ({{count}})",
+    "MAP_LABEL": "Karte der Filialen des Büros",
+    "MAIN": "Hauptsitz",
+    "DIRECTIONS": "Route"
   }
 }

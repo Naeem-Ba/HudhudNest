@@ -4705,7 +4705,8 @@
     "SORT": {
       "MOSTLISTINGS": "Most listings",
       "TOPRATED": "Top rated",
-      "NEWEST": "Newest"
+      "NEWEST": "Newest",
+      "NEAREST": "Nearest"
     },
     "FILTER": {
       "GOVERNORATE": "Governorate",
@@ -4726,7 +4727,6 @@
       "INVESTMENT": "Investment"
     },
     "CLEAR": "Clear filters",
-    "NEARBY_SOON": "Searching for agencies near me and the map are coming soon.",
     "RESULTS": "{{count}} agencies",
     "LOAD_ERROR": "The agencies could not be loaded right now.",
     "EMPTY_TITLE": "No matching agencies",
@@ -4745,7 +4745,34 @@
     "CONTACT": "Contact",
     "PAGINATION": "Agency pages",
     "PREVIOUS": "Previous page",
-    "NEXT": "Next page"
+    "NEXT": "Next page",
+    "NEAR": {
+      "BUTTON": "Agencies near me",
+      "LOCATING": "Finding your location…",
+      "ACTIVE": "Near you",
+      "RADIUS": "Within",
+      "RADIUS_KM": "{{value}} km",
+      "CLEAR": "Cancel",
+      "PRIVACY": "We use your approximate location for this search only and do not store it.",
+      "UNSUPPORTED": "Your browser does not support location.",
+      "DENIED": "We could not get your location. Allow location access and try again.",
+      "EMPTY": "No agencies with a map location within {{value}} km. Try a larger distance.",
+      "DISTANCE_KM": "{{value}} km away",
+      "DISTANCE_M": "{{value}} m away"
+    },
+    "VIEW": {
+      "LABEL": "View",
+      "LIST": "List",
+      "MAP": "Map"
+    },
+    "MAP": {
+      "LABEL": "Map of real estate agencies",
+      "COUNT": "{{count}} branches in this area",
+      "TRUNCATED": "Showing the first {{count}} branches only. Zoom in to see the rest.",
+      "LOAD_ERROR": "Could not load the map right now.",
+      "ONLY_PINNED": "Only branches whose owners placed them on the map appear here.",
+      "FILTERS_NOTE": "On the map, only the \"verified only\" filter applies."
+    }
   },
   "ADMIN_AGENCIES": {
     "TITLE": "Agency verification",
@@ -4774,5 +4801,38 @@
     "HISTORY_EMPTY": "No earlier changes.",
     "SAVED": "Verification status saved.",
     "SAVE_ERROR": "The status could not be saved."
+  },
+  "AGENCY_BRANCHES": {
+    "TITLE": "Branches and map location",
+    "DESC": "Add your main office and branches. A branch with a map location appears in \"Agencies near me\" and on the agencies map.",
+    "EMPTY": "No branches yet. Your agency will not appear on the map until you add a branch with a location.",
+    "MAIN": "Main",
+    "ON_MAP": "On the map",
+    "NOT_ON_MAP": "No map location",
+    "ADD": "Add branch",
+    "LIMIT": "You have reached the limit ({{max}} branches).",
+    "NAME": "Branch name",
+    "GOVERNORATE": "Governorate",
+    "DISTRICT": "District",
+    "NEIGHBORHOOD": "Neighborhood",
+    "CHOOSE": "Choose",
+    "OPTIONAL": "Optional",
+    "ADDRESS": "Address",
+    "PHONE": "Branch phone",
+    "PIN": "Map location",
+    "PIN_HINT": "Click the map to place the pin exactly where the branch is.",
+    "CLEAR_PIN": "Remove location",
+    "MAKE_MAIN": "Make this the main branch",
+    "DELETE_TITLE": "Delete branch",
+    "DELETE_TEXT": "Delete the branch \"{{name}}\"?",
+    "SAVED": "Branch saved.",
+    "DELETED": "Branch deleted.",
+    "SAVE_ERROR": "Could not save the branch."
+  },
+  "OFFICE_BRANCHES": {
+    "TITLE": "Branches ({{count}})",
+    "MAP_LABEL": "Map of the agency's branches",
+    "MAIN": "Main",
+    "DIRECTIONS": "Directions"
   }
 }
