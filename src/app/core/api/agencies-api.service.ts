@@ -30,7 +30,9 @@ import {
   AgencyDirectoryPage,
   AgencyInvitation,
   AgencySentInvitation,
+  AgencyContactLinksInput,
   AgencyMember,
+  AgencyWorkingDay,
   CreateAgencyRequest,
   UpdateAgencyRequest
 } from '../models/agency.model';
@@ -187,6 +189,28 @@ export class AgenciesApiService {
     const formData = new FormData();
     formData.append('file', file, file.name);
     return this.api.upload<Agency>(`${this.endpoint}/${agencyId}/logo`, formData);
+  }
+
+  /** POST /api/agencies/{id}/cover — صورة الغلاف (multipart، الحقل `file`، حتى 5MB، PNG/JPEG). للمالك. */
+  uploadCover(agencyId: string, file: File): Observable<Agency> {
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    return this.api.upload<Agency>(`${this.endpoint}/${agencyId}/cover`, formData);
+  }
+
+  /** DELETE /api/agencies/{id}/cover — يزيل صورة الغلاف. للمالك. */
+  removeCover(agencyId: string): Observable<Agency> {
+    return this.api.delete<Agency>(`${this.endpoint}/${agencyId}/cover`);
+  }
+
+  /** PUT /api/agencies/{id}/links — الموقع وروابط التواصل كلها دفعة واحدة. 422 برمز لكل حقل غير صالح. */
+  setContactLinks(agencyId: string, input: AgencyContactLinksInput): Observable<Agency> {
+    return this.api.put<Agency>(`${this.endpoint}/${agencyId}/links`, input);
+  }
+
+  /** PUT /api/agencies/{id}/hours — الأيام السبعة، أو null لمسح ساعات العمل. */
+  setWorkingHours(agencyId: string, days: AgencyWorkingDay[] | null): Observable<Agency> {
+    return this.api.put<Agency>(`${this.endpoint}/${agencyId}/hours`, { days });
   }
 
   /** POST /api/agencies/{id}/invitations — ينشئ دعوة معلّقة فقط، لا عضوية. */
