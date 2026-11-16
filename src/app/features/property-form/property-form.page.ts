@@ -829,6 +829,8 @@ export class PropertyFormPage implements OnInit {
             areaUnit: this.enumIdByKey('AreaUnit', property.areaUnit) ?? AREA_UNIT_SQUARE_METER,
             rentalStartDate: property.rentalStartDate ?? null,
             rentalEndDate: property.rentalEndDate ?? null,
+            // <input type="date"> takes yyyy-MM-dd; the API returns the stored DateTime.
+            availableFrom: property.availableFrom ? String(property.availableFrom).slice(0, 10) : null,
             rentalDurationType: this.enumIdByKey('RentalDurationType', property.rentalDurationType),
             ownershipType: this.enumIdByKey('OwnershipType', property.legalStatus),
             furnishingStatus: this.enumIdByKey('FurnishingStatus', property.furnishingStatus),

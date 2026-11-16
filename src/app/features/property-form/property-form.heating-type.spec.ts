@@ -42,7 +42,7 @@ describe('PropertyFormPage heating type', () => {
   let http: HttpTestingController;
   let propertyApi: jasmine.SpyObj<PropertyApiService>;
 
-  function setup(editId?: string): void {
+  function setup(editId?: string, saved: Record<string, unknown> = {}): void {
     const lookups = jasmine.createSpyObj('LookupsApiService', [
       'getGovernorates', 'getDistricts', 'getNeighborhoods', 'getPropertyTypeCatalog', 'getAmenities', 'getCities'
     ]);
@@ -54,7 +54,7 @@ describe('PropertyFormPage heating type', () => {
     ]));
     propertyApi = jasmine.createSpyObj('PropertyApiService', ['checkDuplicate', 'getPropertyForManagement']);
     propertyApi.getPropertyForManagement.and.returnValue(of({
-      id: editId, title: 'Edit me', description: 'd', listingType: 'ForRent', heatingType: 'Gas', countryCode: 'SY'
+      id: editId, title: 'Edit me', description: 'd', listingType: 'ForRent', heatingType: 'Gas', countryCode: 'SY', ...saved
     } as never));
 
     TestBed.configureTestingModule({
@@ -117,6 +117,20 @@ describe('PropertyFormPage heating type', () => {
 
     expect(propertyApi.getPropertyForManagement).toHaveBeenCalled();
     expect(fixture.componentInstance.form.get('heatingType')?.value).toBe(2);
+  });
+
+  // Full consistency audit 2026-11-16: the form saves AvailableFrom, but edit mode never loaded it, so the date
+  // input opened empty on every edit (the API now returns it, with AdditionalCosts, in PropertyDto).
+  it('edit mode loads the saved available-from date and additional costs', async () => {
+    setup('11111111-1111-1111-1111-111111111111', { availableFrom: '2026-12-01T00:00:00Z', additionalCosts: 150 });
+    const fixture = TestBed.createComponent(PropertyFormPage);
+    fixture.detectChanges();
+    flushEnums();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.form.get('availableFrom')?.value).toBe('2026-12-01');
+    expect(fixture.componentInstance.form.get('additionalCosts')?.value).toBe(150);
   });
 
   it('edit mode keeps the owner\'s "hide exact location" choice (growth engine P8)', async () => {
