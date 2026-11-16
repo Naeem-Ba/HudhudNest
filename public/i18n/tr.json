@@ -4834,5 +4834,57 @@
     "MAP_LABEL": "Ofisin şube haritası",
     "MAIN": "Merkez",
     "DIRECTIONS": "Yol tarifi"
+  },
+  "OFFICE_QR": {
+    "TITLE": "Ofis QR kodu",
+    "DESC": "Vitrininize, kartvizitlerinize veya tabelalarınıza basın. Tarayan kişi doğrudan ofis sayfanıza gelir.",
+    "LOAD_ERROR": "QR kodu şu anda yüklenemedi.",
+    "ALT": "{{name}} sayfasının QR kodu",
+    "PERMANENT": "Bu bağlantı kalıcıdır: ofisin adını değiştirseniz de değişmez, bastığınız her şey çalışmaya devam eder.",
+    "DOWNLOAD_PNG": "Baskı için indir (PNG)",
+    "DOWNLOAD_SVG": "SVG indir",
+    "COPY": "Bağlantıyı kopyala",
+    "COPY_FAILED": "Bağlantı kopyalanamadı.",
+    "PRINT_TIP": "Baskı için: kod en az 3 cm genişliğinde, beyaz üzerine siyah olsun.",
+    "NOT_FOUND_TITLE": "Bilinmeyen kod",
+    "NOT_FOUND_TEXT": "Bu koda ait bir ofis bulunamadı veya ofis artık listelenmiyor.",
+    "BROWSE": "Emlak ofislerine göz at",
+    "OPENING": "Ofis sayfası açılıyor…"
+  },
+  "OFFICE_STATS": {
+    "TITLE": "Ofis sayfası istatistikleri",
+    "DESC": "Kaç kişinin ofis sayfanızı ziyaret ettiği, QR kodunuzu taradığı ve sizinle iletişime geçtiği.",
+    "RANGE": "Dönem",
+    "DAYS": "Son {{count}} gün",
+    "LOAD_ERROR": "İstatistikler şu anda yüklenemedi.",
+    "TILE": {
+      "profileViews": "Sayfa ziyaretleri",
+      "uniqueVisitors": "Farklı ziyaretçiler",
+      "qrScans": "QR taramaları",
+      "contactClicks": "İletişim tıklamaları",
+      "listingClicks": "Açılan ilanlar",
+      "shares": "Paylaşımlar"
+    },
+    "EMPTY": "Bu dönemde henüz kayıtlı etkinlik yok.",
+    "CHART_LABEL": "Son {{count}} günün günlük ziyaretleri",
+    "SOURCES": "Ziyaretçiler nereden geldi",
+    "CONTACTS": "Size nasıl ulaştılar",
+    "SOURCE": {
+      "DIRECT": "Doğrudan",
+      "QR": "QR kodu",
+      "DIRECTORY": "Ofis rehberi",
+      "LISTING": "İlan sayfası",
+      "SHARE": "Paylaşılan bağlantı"
+    },
+    "CHANNEL": {
+      "PHONE": "Arama",
+      "WHATSAPP": "WhatsApp",
+      "EMAIL": "E-posta",
+      "NATIVESHARE": "Paylaş",
+      "COPYLINK": "Bağlantı kopyalandı"
+    },
+    "NOTE": "Siz, ekibiniz ve otomatik programlar sayılmaz; aynı ziyaretçi 24 saatte bir sayılır. Günler UTC saatine göredir.",
+    "SHARE": "Paylaş",
+    "LINK_COPIED": "Bağlantı kopyalandı."
   }
 }

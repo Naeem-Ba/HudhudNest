@@ -25,7 +25,10 @@ import {
   AGENCY_RATING_CRITERIA,
   Agency,
   AgencyBranch,
+  AgencyEventSource,
+  AgencyProfileEvent,
   AgencyRatingDto,
+  OFFICE_VISIT_SOURCE_STATE,
   AgencyRatingEligibilityDto,
   AgencyRatingSummaryDto
 } from '../../core/models/agency.model';
@@ -40,10 +43,18 @@ import { isReservedListing, listingLifecycle, listingStatusTagKey } from '../../
 import { ListingViewCountComponent } from '../../shared/ui/listing-view-count.component';
 import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 import { OfficeMapPoint, OfficesMapComponent } from '../../shared/ui/offices-map.component';
+import { PropertyShareUrlService } from '../../core/sharing/property-share-url.service';
 import { LookupsApiService, StructuredLocationLookup, pickLocalizedName } from '../../core/api/lookups-api.service';
 import { LanguageService } from '../../core/services/language.service';
 
 const LISTINGS_PAGE_SIZE = 12;
+
+/** Where this visit came from, from the navigation state set by /o/{code}, the directory or a listing. */
+function visitSource(): Exclude<AgencyEventSource, 'None'> {
+  const state = typeof history !== 'undefined' ? (history.state as Record<string, unknown> | null) : null;
+  const value = state?.[OFFICE_VISIT_SOURCE_STATE];
+  return value === 'Qr' || value === 'Directory' || value === 'Listing' ? value : 'Direct';
+}
 
 type AgencyListingsTab = 'active' | 'sold' | 'rented';
 
@@ -105,13 +116,18 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
           <button type="button" class="btn btn--outline agency-header__rate-cta" *ngIf="showRateCta()" (click)="scrollToRate()">
             ⭐ {{ 'AGENCY_RATING.RATE_CTA' | translate }}
           </button>
+          <button type="button" class="btn btn--ghost agency-header__share" (click)="share(a)" data-testid="share-office">
+            🔗 {{ 'OFFICE_STATS.SHARE' | translate }}
+          </button>
         </header>
 
         <p class="agency-description" *ngIf="a.description">{{ a.description }}</p>
 
         <div class="agency-contact" *ngIf="a.contactPhone || a.contactEmail">
-          <a *ngIf="a.contactPhone" class="btn btn--outline btn--sm" [href]="'tel:' + a.contactPhone" dir="ltr">📞 {{ a.contactPhone }}</a>
-          <a *ngIf="a.contactEmail" class="btn btn--outline btn--sm" [href]="'mailto:' + a.contactEmail">✉️ {{ a.contactEmail }}</a>
+          <a *ngIf="a.contactPhone" class="btn btn--outline btn--sm" [href]="'tel:' + a.contactPhone" dir="ltr"
+             (click)="track({ type: 'ContactClick', channel: 'Phone' })" data-testid="contact-phone">📞 {{ a.contactPhone }}</a>
+          <a *ngIf="a.contactEmail" class="btn btn--outline btn--sm" [href]="'mailto:' + a.contactEmail"
+             (click)="track({ type: 'ContactClick', channel: 'Email' })" data-testid="contact-email">✉️ {{ a.contactEmail }}</a>
         </div>
 
         <!-- ── الفروع: القائمة دائمًا، والخريطة لما له إحداثيات فقط ── -->
@@ -128,7 +144,8 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
               <p class="branches__place" *ngIf="branchPlace(b) as place">📍 {{ place }}</p>
               <p class="branches__address" *ngIf="b.address"><bdi>{{ b.address }}</bdi></p>
               <div class="branches__actions">
-                <a *ngIf="b.contactPhone" class="btn btn--outline btn--sm" [href]="'tel:' + b.contactPhone" dir="ltr">📞 {{ b.contactPhone }}</a>
+                <a *ngIf="b.contactPhone" class="btn btn--outline btn--sm" [href]="'tel:' + b.contactPhone" dir="ltr"
+                   (click)="track({ type: 'ContactClick', channel: 'Phone' })">📞 {{ b.contactPhone }}</a>
                 <a *ngIf="directionsUrl(b) as url" class="btn btn--outline btn--sm" [href]="url" target="_blank" rel="noopener noreferrer">
                   🧭 {{ 'OFFICE_BRANCHES.DIRECTIONS' | translate }}
                 </a>
@@ -288,6 +305,7 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
         <p class="muted" *ngIf="!listingsLoading() && listings().length === 0">{{ emptyListingsKey() | translate }}</p>
         <div class="listing-grid" *ngIf="listings().length > 0">
           <a class="listing-card" *ngFor="let listing of listings()" [routerLink]="['/properties', listing.id]"
+            (click)="track({ type: 'ListingClick' })"
             [class.listing-muted]="isMuted(listing)" [class.listing-muted--closed]="activeTab() !== 'active'">
             <div class="listing-card__media">
               <img
@@ -366,7 +384,7 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
     .agency-header__overall-score { font-size: 1.8rem; font-weight: 700; color: var(--warning-text); }
     .agency-header__overall-max { font-size: .95rem; color: var(--gray-500); margin-inline-start: -.35rem; }
     .agency-header__overall-count { font-size: .75rem; color: var(--gray-500); }
-    .agency-header__rate-cta { flex: 0 0 auto; white-space: nowrap; }
+    .agency-header__rate-cta, .agency-header__share { flex: 0 0 auto; white-space: nowrap; }
     .stars { color: var(--gray-300); font-size: 1.1rem; line-height: 1; }
     .stars--sm { font-size: .85rem; }
     .stars .star--filled { color: var(--warning-text); }
@@ -414,6 +432,7 @@ export class AgencyPublicPage implements OnInit {
   private readonly translate = inject(TranslateService);
   private readonly fb = inject(FormBuilder);
   private readonly lookups = inject(LookupsApiService);
+  private readonly shareUrls = inject(PropertyShareUrlService);
   private readonly lang = inject(LanguageService);
 
   readonly criteria = AGENCY_RATING_CRITERIA;
@@ -468,6 +487,35 @@ export class AgencyPublicPage implements OnInit {
   readonly activeTab = signal<AgencyListingsTab>('active');
   readonly soldCount = signal(0);
   readonly rentedCount = signal(0);
+
+  /**
+   * Records one action on the office page. Fire-and-forget: errors are swallowed (the API call already
+   * skips the error toast), so a statistic never gets in the way of the visitor.
+   */
+  track(event: AgencyProfileEvent, agencyId = this.agency()?.id): void {
+    if (!agencyId) return;
+    this.agenciesApi.recordEvent(agencyId, event).pipe(catchError(() => of(null))).subscribe();
+  }
+
+  /** Native share sheet where there is one, else copy the link. The shared URL is the clean office URL. */
+  async share(a: Agency): Promise<void> {
+    const url = `${this.shareUrls.getSiteOrigin()}/offices/${encodeURIComponent(a.slug)}`;
+    const nav = typeof navigator !== 'undefined' ? navigator : null;
+    try {
+      if (nav?.share) {
+        await nav.share({ title: a.name, url });
+        this.track({ type: 'Share', channel: 'NativeShare' }, a.id);
+        return;
+      }
+      // No clipboard (insecure context, old browser): claim nothing and count nothing.
+      if (!nav?.clipboard) return;
+      await nav.clipboard.writeText(url);
+      this.toast.success(this.translate.instant('OFFICE_STATS.LINK_COPIED'));
+      this.track({ type: 'Share', channel: 'CopyLink' }, a.id);
+    } catch {
+      // Cancelled share sheet or no clipboard permission: nothing was shared, nothing to count.
+    }
+  }
 
   /** «المنطقة، المحافظة» بلغة الزائر؛ null إن لم تصل الأسماء بعد. */
   branchPlace(b: AgencyBranch): string | null {
@@ -538,6 +586,7 @@ export class AgencyPublicPage implements OnInit {
           this.agency.set(agency);
           this.loading.set(false);
           this.loadBranchPlaces(agency.branches ?? []);
+          this.track({ type: 'ProfileView', source: visitSource() }, agency.id);
           this.pageMeta.applyDynamic({
             title: agency.name,
             description: agency.description,

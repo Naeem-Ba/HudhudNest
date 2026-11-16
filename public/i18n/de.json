@@ -4834,5 +4834,57 @@
     "MAP_LABEL": "Karte der Filialen des Büros",
     "MAIN": "Hauptsitz",
     "DIRECTIONS": "Route"
+  },
+  "OFFICE_QR": {
+    "TITLE": "QR-Code des Büros",
+    "DESC": "Drucken Sie ihn auf Schaufenster, Visitenkarten oder Schilder. Wer ihn scannt, landet direkt auf Ihrer Büroseite.",
+    "LOAD_ERROR": "Der QR-Code konnte gerade nicht geladen werden.",
+    "ALT": "QR-Code zur Seite von {{name}}",
+    "PERMANENT": "Dieser Link bleibt gleich, auch wenn Sie das Büro umbenennen. Gedrucktes bleibt also gültig.",
+    "DOWNLOAD_PNG": "Für den Druck herunterladen (PNG)",
+    "DOWNLOAD_SVG": "SVG herunterladen",
+    "COPY": "Link kopieren",
+    "COPY_FAILED": "Der Link konnte nicht kopiert werden.",
+    "PRINT_TIP": "Für den Druck: mindestens 3 cm breit, schwarz auf weiß.",
+    "NOT_FOUND_TITLE": "Unbekannter Code",
+    "NOT_FOUND_TEXT": "Zu diesem Code gibt es kein Büro, oder das Büro wird nicht mehr angezeigt.",
+    "BROWSE": "Immobilienbüros durchsuchen",
+    "OPENING": "Büroseite wird geöffnet…"
+  },
+  "OFFICE_STATS": {
+    "TITLE": "Statistik der Büroseite",
+    "DESC": "Wie viele Menschen Ihre Büroseite besucht, Ihren QR-Code gescannt und Sie kontaktiert haben.",
+    "RANGE": "Zeitraum",
+    "DAYS": "Letzte {{count}} Tage",
+    "LOAD_ERROR": "Die Statistik konnte gerade nicht geladen werden.",
+    "TILE": {
+      "profileViews": "Seitenbesuche",
+      "uniqueVisitors": "Verschiedene Besucher",
+      "qrScans": "QR-Scans",
+      "contactClicks": "Kontaktklicks",
+      "listingClicks": "Geöffnete Inserate",
+      "shares": "Geteilt"
+    },
+    "EMPTY": "In diesem Zeitraum wurde noch nichts erfasst.",
+    "CHART_LABEL": "Tägliche Besuche der letzten {{count}} Tage",
+    "SOURCES": "Woher die Besucher kamen",
+    "CONTACTS": "Wie Sie kontaktiert wurden",
+    "SOURCE": {
+      "DIRECT": "Direkt",
+      "QR": "QR-Code",
+      "DIRECTORY": "Bürosuche",
+      "LISTING": "Inseratsseite",
+      "SHARE": "Geteilter Link"
+    },
+    "CHANNEL": {
+      "PHONE": "Anruf",
+      "WHATSAPP": "WhatsApp",
+      "EMAIL": "E-Mail",
+      "NATIVESHARE": "Teilen",
+      "COPYLINK": "Link kopiert"
+    },
+    "NOTE": "Ohne Sie, Ihr Team und automatisierte Programme; derselbe Besucher zählt einmal alle 24 Stunden. Tage in UTC.",
+    "SHARE": "Teilen",
+    "LINK_COPIED": "Link kopiert."
   }
 }

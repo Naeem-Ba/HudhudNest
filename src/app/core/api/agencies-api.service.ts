@@ -5,9 +5,12 @@
 // الملكية، الشعار، والتعطيل. كل تحقق صلاحيات يجري في الخادم (المقارنة مع
 // OwnerUserId الفعلي — ADR-006)؛ ما تخفيه الواجهة هنا تجميلي فقط.
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpContext } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
+import { SKIP_ERROR_TOAST } from '../interceptors/api-error.interceptor';
+import { VisitorIdService } from '../listing-views/visitor-id.service';
 import {
   AgencyRatingDto,
   AgencyRatingEligibilityDto,
@@ -16,6 +19,11 @@ import {
   Agency,
   AgencyBranch,
   AgencyBranchInput,
+  AgencyEventResult,
+  AgencyProfileEvent,
+  AgencyQrCode,
+  AgencyQrResolution,
+  AgencyStats,
   AgencyMapResult,
   AgencyDirectoryFacets,
   AgencyDirectoryFilter,
@@ -30,6 +38,7 @@ import {
 @Injectable({ providedIn: 'root' })
 export class AgenciesApiService {
   private readonly endpoint = '/agencies';
+  private readonly visitorId = inject(VisitorIdService);
 
   constructor(private readonly api: BackendApiService) {}
 
@@ -84,6 +93,34 @@ export class AgenciesApiService {
 
   deleteBranch(agencyId: string, branchId: string): Observable<AgencyBranch[]> {
     return this.api.delete<AgencyBranch[]>(`${this.endpoint}/${agencyId}/branches/${branchId}`);
+  }
+
+  // ── P3: QR والإحصاءات ──
+
+  /** GET /api/agencies/qr/{code} — يحوّل رمز QR المطبوع إلى slug المكتب ويسجّل المسح (مرة لكل زائر في النافذة). */
+  resolveQrCode(code: string): Observable<AgencyQrResolution> {
+    return this.api.get<AgencyQrResolution>(`${this.endpoint}/qr/${encodeURIComponent(code)}`, undefined, {
+      context: new HttpContext().set(SKIP_ERROR_TOAST, true),
+      headers: { 'X-Visitor-Id': this.visitorId.get() }
+    });
+  }
+
+  /** POST /api/agencies/{id}/events — حدث على صفحة المكتب. الفشل صامت: الإحصاء لا يعطّل الصفحة أبدًا. */
+  recordEvent(agencyId: string, event: AgencyProfileEvent): Observable<AgencyEventResult> {
+    return this.api.post<AgencyEventResult>(`${this.endpoint}/${agencyId}/events`, event, {
+      context: new HttpContext().set(SKIP_ERROR_TOAST, true),
+      headers: { 'X-Visitor-Id': this.visitorId.get() }
+    });
+  }
+
+  /** GET /api/agencies/{id}/qr — رمز QR الثابت للمكتب (للمالك؛ يُنشأ عند أول طلب ولا يتغير). */
+  getQrCode(agencyId: string): Observable<AgencyQrCode> {
+    return this.api.get<AgencyQrCode>(`${this.endpoint}/${agencyId}/qr`);
+  }
+
+  /** GET /api/agencies/{id}/stats?days= — إحصاءات المكتب (للمالك). */
+  getStats(agencyId: string, days: number): Observable<AgencyStats> {
+    return this.api.get<AgencyStats>(`${this.endpoint}/${agencyId}/stats`, { days });
   }
 
   /** GET /api/agencies/{slug} — الصفحة العامة (مجهول؛ 404 لمكتب غير مفعّل). */
