@@ -10,6 +10,7 @@ import {
   buildPropertyUrlEntries,
   buildShortStayUrlEntries,
   buildInvestmentUrlEntries,
+  buildOfficeUrlEntries,
   MAX_SITEMAP_URLS,
   buildSitemapXml,
   buildEmptySitemapXml,
@@ -157,4 +158,20 @@ test('fetchAllPublishedProperties never loops past maxPages even if totalCount l
 
   assert.equal(calls, 3);
   assert.equal(properties.length, 3);
+});
+
+test('buildOfficeUrlEntries lists each directory office once, by slug, with no lastmod', () => {
+  const entries = buildOfficeUrlEntries('https://hudhudnest.com', [
+    { id: 'a1', slug: 'yasmin' },
+    { id: 'a2', slug: '' },
+    { id: 'a3' },
+    null,
+    { id: 'a1', slug: 'yasmin' },
+    { id: 'a4', slug: 'مكتب-الشام' }
+  ]);
+  assert.deepEqual(entries.map(e => e.loc), [
+    'https://hudhudnest.com/offices/yasmin',
+    `https://hudhudnest.com/offices/${encodeURIComponent('مكتب-الشام')}`
+  ]);
+  assert.ok(entries.every(e => e.lastmod === null));
 });

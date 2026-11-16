@@ -292,9 +292,9 @@ test('/landing: real visitors and search engines never trigger a backend call', 
   }
 });
 
-test('the edge function is mounted on /landing as well as /properties/*', async () => {
+test('the edge function is mounted on /properties/*, /landing and the office pages', async () => {
   const { config } = await import('../social-crawler-meta.mjs');
-  assert.deepEqual(config.path, ['/properties/*', '/landing']);
+  assert.deepEqual(config.path, ['/properties/*', '/landing', '/offices/*']);
 });
 
 test('a crawler on a link with ?lang=de gets the German preview, with the canonical URL untouched', async () => {
@@ -322,4 +322,71 @@ test('a crawler on a link without ?lang= still gets the Arabic preview', async (
   );
 
   assert.match(await response.text(), /<html lang="ar" dir="rtl">/);
+});
+
+// ── Office pages (offices directory P5) ──────────────────────────────
+
+const OFFICE = {
+  id: 'a1', name: 'مكتب الياسمين <b>العقاري</b>', slug: 'yasmin', description: '',
+  coverImageUrl: 'https://res.cloudinary.com/x/cover.jpg', logoUrl: 'https://res.cloudinary.com/x/logo.png'
+};
+
+test('a social crawler on an office page gets a preview from the public office endpoint', async () => {
+  const context = makeNextContext();
+  const request = new Request('https://www.hudhudnest.com/offices/yasmin?lang=en', { headers: { 'user-agent': 'WhatsApp/2.23' } });
+
+  const response = await withNetlifyEnvStub({ API_URL: 'https://api.example.test/api' }, () =>
+    withFetchStub(async url => {
+      assert.equal(url, 'https://api.example.test/api/agencies/yasmin');
+      return new Response(JSON.stringify(OFFICE), { status: 200 });
+    }, () => handler(request, context))
+  );
+
+  assert.equal(context.wasCalled, false);
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /<link rel="canonical" href="https:\/\/hudhudnest\.com\/offices\/yasmin">/);
+  assert.match(html, /og:image" content="https:\/\/res\.cloudinary\.com\/x\/cover\.jpg"/);
+  // Markup in the name is stripped; an office without a description gets the generic line in the link's language.
+  assert.match(html, /<title>مكتب الياسمين العقاري \| HudhudNest<\/title>/);
+  assert.match(html, /real estate office on HudhudNest/);
+  assert.doesNotMatch(html, /<b>/);
+});
+
+test('an unknown office gives a social crawler the minimal noindex page with a 404', async () => {
+  const context = makeNextContext();
+  const request = new Request('https://hudhudnest.com/offices/nobody', { headers: { 'user-agent': 'facebookexternalhit/1.1' } });
+
+  const response = await withNetlifyEnvStub({}, () =>
+    withFetchStub(async () => new Response('', { status: 404 }), () => handler(request, context))
+  );
+
+  assert.equal(response.status, 404);
+  const html = await response.text();
+  assert.match(html, /noindex/);
+  assert.doesNotMatch(html, /nobody/);
+});
+
+test('Googlebot gets the SPA for an office, with a real 404 status only when the office does not exist', async () => {
+  for (const [status, expected] of [[200, 200], [404, 404], [500, 200]]) {
+    const context = makeNextContext();
+    const request = new Request('https://hudhudnest.com/offices/yasmin', { headers: { 'user-agent': GOOGLEBOT_UA } });
+    const response = await withNetlifyEnvStub({ API_URL: 'https://api.example.test/api' }, () =>
+      withFetchStub(async url => {
+        assert.equal(url, 'https://api.example.test/api/agencies/yasmin');
+        return new Response('{}', { status });
+      }, () => handler(request, context))
+    );
+    assert.equal(response.status, expected);
+    assert.equal(await response.text(), 'spa-passthrough');
+  }
+});
+
+test('the directory itself and nested office paths are left to the SPA', async () => {
+  for (const path of ['/offices', '/offices/', '/offices/yasmin/extra']) {
+    const context = makeNextContext();
+    const request = new Request(`https://hudhudnest.com${path}`, { headers: { 'user-agent': 'facebookexternalhit/1.1' } });
+    await withFetchStub(async () => { throw new Error('must not call the backend'); }, () => handler(request, context));
+    assert.equal(context.wasCalled, true, path);
+  }
 });

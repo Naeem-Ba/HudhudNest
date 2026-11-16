@@ -10,7 +10,7 @@
 // الفروع (P2): قائمة بالمحافظة/المنطقة والعنوان والهاتف، وخريطة صغيرة لما له إحداثيات فقط (لا موقع افتراضي).
 //
 // نفس نمط الملف الواحد المستخدم في user-profile.page.ts.
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -40,6 +40,8 @@ import { AuthService } from '../../core/auth/auth.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { Property } from '../../core/models/property.model';
 import { PageMetaService } from '../../core/services/page-meta.service';
+import { BREADCRUMB_JSON_LD_ID, StructuredDataService } from '../../core/services/structured-data.service';
+import { OfficePlace, buildOfficeJsonLd, officeMetaDescription } from '../../shared/utils/office-seo';
 import { EmptyStateComponent } from '../../shared/ui/empty-state.component';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { isReservedListing, listingLifecycle, listingStatusTagKey } from '../../shared/utils/listing-status';
@@ -66,6 +68,9 @@ function notBlankIfPresent(control: AbstractControl): ValidationErrors | null {
   const value = (control.value ?? '') as string;
   return value.length > 0 && value.trim().length === 0 ? { blank: true } : null;
 }
+
+/** The office's own schema.org block; removed when leaving the page so it never describes the next one. */
+const OFFICE_JSON_LD_ID = 'ld-office';
 
 @Component({
   selector: 'app-agency-public-page',
@@ -486,6 +491,7 @@ export class AgencyPublicPage implements OnInit {
   private readonly lookups = inject(LookupsApiService);
   private readonly shareUrls = inject(PropertyShareUrlService);
   private readonly lang = inject(LanguageService);
+  private readonly structuredData = inject(StructuredDataService);
 
   readonly criteria = AGENCY_RATING_CRITERIA;
   readonly starsFn = starsFor;
@@ -553,6 +559,50 @@ export class AgencyPublicPage implements OnInit {
   /** أسماء المحافظات والمناطق التي فيها فروع، بلغة الزائر. */
   private readonly placeNames = signal<Map<string, StructuredLocationLookup>>(new Map());
   private readonly currentLang = signal(this.lang.getCurrent());
+
+  /**
+   * Search metadata (P5): title, description, canonical, and the office's schema.org data plus breadcrumb. Re-applied
+   * when the place names or the ratings arrive, or the language changes, so the description and address are in the
+   * visitor's language and never wait on each other.
+   */
+  /** Bumped whenever the translations load or change, so the effect below re-reads its wording. */
+  private readonly i18nTick = signal(0);
+  private readonly seo = effect(() => {
+    const agency = this.agency();
+    this.i18nTick();
+    if (!agency) {
+      this.structuredData.removeJsonLd(OFFICE_JSON_LD_ID);
+      this.structuredData.removeJsonLd(BREADCRUMB_JSON_LD_ID);
+      return;
+    }
+    const lang = this.currentLang();
+    const officePlace = this.placeText(this.placeOf(null));
+    const description = officeMetaDescription(
+      agency,
+      (name, place) => this.translate.instant(place ? 'SEO.OFFICE_PROFILE.DESCRIPTION_PLACE' : 'SEO.OFFICE_PROFILE.DESCRIPTION', { name, place }),
+      officePlace
+    );
+    const path = `/offices/${agency.slug}`;
+    this.pageMeta.applyDynamic({ title: agency.name, description, path, image: agency.coverImageUrl || agency.logoUrl });
+
+    const origin = this.shareUrls.getSiteOrigin();
+    const summary = this.summary();
+    const office = buildOfficeJsonLd({
+      agency,
+      url: `${origin}${path}`,
+      placeOf: b => this.placeOf(b),
+      ratingAverage: summary?.averageOverall,
+      ratingCount: summary?.totalCount
+    });
+    if (office) this.structuredData.setJsonLd(OFFICE_JSON_LD_ID, office);
+    else this.structuredData.removeJsonLd(OFFICE_JSON_LD_ID);
+
+    this.structuredData.setJsonLd(BREADCRUMB_JSON_LD_ID, this.structuredData.buildBreadcrumbList([
+      { name: lang === 'ar' ? 'الرئيسية' : 'HudhudNest', url: `${origin}/` },
+      { name: this.translate.instant('SEO.OFFICES.TITLE'), url: `${origin}/offices` },
+      { name: agency.name, url: `${origin}${path}` }
+    ]));
+  });
   readonly listings = signal<Property[]>([]);
   readonly listingsLoading = signal(false);
   readonly hasMore = signal(false);
@@ -595,6 +645,29 @@ export class AgencyPublicPage implements OnInit {
     }
   }
 
+  /** Place names of a branch, or of the office itself (null), in the visitor's language. */
+  private placeOf(b: AgencyBranch | null): OfficePlace {
+    const names = this.placeNames();
+    const a = this.agency();
+    const governorateId = b ? b.governorateId : a?.governorateId;
+    const districtId = b ? b.districtId : a?.districtId;
+    const name = (key: string) => {
+      const p = names.get(key);
+      return p ? pickLocalizedName(p, this.currentLang()) : null;
+    };
+    return { region: governorateId ? name(`g${governorateId}`) : null, locality: districtId ? name(`d${districtId}`) : null };
+  }
+
+  private placeText(place: OfficePlace): string | null {
+    const parts = [place.locality, place.region].filter((p): p is string => !!p);
+    if (!parts.length) {
+      const main = this.branches().find(br => br.isMain) ?? this.branches()[0];
+      if (main) return this.placeText(this.placeOf(main));
+      return this.agency()?.city?.trim() || null;
+    }
+    return parts.join(this.currentLang() === 'ar' ? '، ' : ', ');
+  }
+
   /** «المنطقة، المحافظة» بلغة الزائر؛ null إن لم تصل الأسماء بعد. */
   branchPlace(b: AgencyBranch): string | null {
     const names = this.placeNames();
@@ -610,9 +683,11 @@ export class AgencyPublicPage implements OnInit {
     return `https://www.google.com/maps/dir/?api=1&destination=${b.latitude},${b.longitude}`;
   }
 
-  private loadBranchPlaces(branches: AgencyBranch[]): void {
-    if (!branches.length) return;
-    const governorateIds = [...new Set(branches.filter(b => b.districtId).map(b => b.governorateId))];
+  /** Names for the branches' places and the office's own (the search description and address need them too). */
+  private loadBranchPlaces(branches: AgencyBranch[], office?: Agency): void {
+    const own = office?.governorateId && office.districtId ? [office.governorateId] : [];
+    if (!branches.length && !office?.governorateId) return;
+    const governorateIds = [...new Set([...branches.filter(b => b.districtId).map(b => b.governorateId), ...own])];
     forkJoin({
       governorates: this.lookups.getGovernorates().pipe(catchError(() => of([] as StructuredLocationLookup[]))),
       districts: governorateIds.length
@@ -627,8 +702,13 @@ export class AgencyPublicPage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.destroyRef.onDestroy(() => this.pageMeta.clear());
+    this.destroyRef.onDestroy(() => {
+      this.pageMeta.clear();
+      this.structuredData.removeJsonLd(OFFICE_JSON_LD_ID);
+      this.structuredData.removeJsonLd(BREADCRUMB_JSON_LD_ID);
+    });
     this.lang.currentLang$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(l => this.currentLang.set(l));
+    this.translate.stream('SEO.OFFICES.TITLE').pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.i18nTick.update(n => n + 1));
 
     this.route.paramMap
       .pipe(
@@ -663,14 +743,8 @@ export class AgencyPublicPage implements OnInit {
 
           this.agency.set(agency);
           this.loading.set(false);
-          this.loadBranchPlaces(agency.branches ?? []);
+          this.loadBranchPlaces(agency.branches ?? [], agency);
           this.track({ type: 'ProfileView', source: visitSource() }, agency.id);
-          this.pageMeta.applyDynamic({
-            title: agency.name,
-            description: agency.description,
-            path: `/offices/${agency.slug}`,
-            image: agency.logoUrl
-          });
           this.loadListings(agency.id, 1);
           this.loadClosedDealCounts(agency.id);
           this.loadRatings(agency.id);

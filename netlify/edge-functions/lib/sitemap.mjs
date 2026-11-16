@@ -54,7 +54,7 @@ export function buildStaticUrlEntries(siteUrl) {
     // QA phase 20 (P20-D02): the other public sections. Each one sets its own title, description and
     // canonical (PageMetaService). Not listed on purpose: private routes (tools/lib/private-paths.mjs),
     // /users/* (kept out of the index), /landing (a campaign page that changes with the live offer)
-    // and the office profiles /offices/:slug (listed with the SEO phase of the offices directory).
+    // Office profiles /offices/:slug are listed one by one below (buildOfficeUrlEntries).
     { loc: `${siteUrl}/short-stay`, changefreq: 'daily', priority: '0.7' },
     { loc: `${siteUrl}/investments`, changefreq: 'daily', priority: '0.7' },
     { loc: `${siteUrl}/services`, changefreq: 'weekly', priority: '0.6' },
@@ -107,6 +107,24 @@ export function buildInvestmentUrlEntries(siteUrl, projects) {
       lastmod: toLastmod(project.updatedAt ?? project.publishedAt),
       changefreq: 'weekly',
       priority: '0.6'
+    }));
+}
+
+/** The directory endpoint (GET /api/agencies) answers at most this many offices per page. */
+export const OFFICE_DIRECTORY_PAGE_SIZE = 50;
+
+/** One <url> entry per office in the public directory (GET /api/agencies). The directory lists only active offices
+ *  whose owner's plan is in force or in its grace period, the same set the directory page shows; an office outside it
+ *  keeps its page but is not advertised here. The card has no update date, so <lastmod> is left out. */
+export function buildOfficeUrlEntries(siteUrl, offices) {
+  const seen = new Set();
+  return offices
+    .filter(office => office && typeof office.slug === 'string' && office.slug && !seen.has(office.slug) && seen.add(office.slug))
+    .map(office => ({
+      loc: `${siteUrl}/offices/${encodeURIComponent(office.slug)}`,
+      lastmod: null,
+      changefreq: 'weekly',
+      priority: '0.5'
     }));
 }
 

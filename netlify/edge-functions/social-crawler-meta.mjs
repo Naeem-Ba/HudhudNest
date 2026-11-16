@@ -53,7 +53,10 @@ import {
   buildPropertyMetaHtml,
   buildOfferMetaHtml,
   buildNotFoundHtml,
-  resolveShareLanguage
+  resolveShareLanguage,
+  extractOfficeSlugFromPath,
+  buildOfficeMetaHtml,
+  buildOfficeNotFoundHtml
 } from './lib/social-crawler.mjs';
 
 const DEFAULT_API_BASE_URL = 'https://api.hudhudnest.com/api';
@@ -71,9 +74,9 @@ const SEARCH_ENGINE_STATUS_CHECK_TIMEOUT_MS = 3000;
  * status instead. Only an explicit 404 changes anything: any other outcome (200, 5xx, timeout,
  * network error) passes the SPA through as a 200, so this can never de-list a live property.
  */
-async function respondForSearchEngine(propertyId, apiBaseUrl, context) {
+async function respondForSearchEngine(resourceUrl, context) {
   try {
-    const response = await fetch(`${apiBaseUrl}/properties/${encodeURIComponent(propertyId)}`, {
+    const response = await fetch(resourceUrl, {
       headers: { accept: 'application/json' },
       signal: AbortSignal.timeout(SEARCH_ENGINE_STATUS_CHECK_TIMEOUT_MS)
     });
@@ -129,6 +132,56 @@ async function respondForLandingCrawler(request, context) {
   }
 }
 
+/**
+ * Social crawler on an office page: a preview card from the public office endpoint. An unknown or deactivated office
+ * (404) gets the minimal noindex document; any other failure falls through to the SPA, like the property preview.
+ */
+async function respondForOfficeCrawler(request, slug, officeUrl, context) {
+  const canonicalOrigin = resolveCanonicalOrigin(request.url);
+  const lang = resolveShareLanguage(new URL(request.url).searchParams.get('lang'));
+
+  try {
+    const response = await fetch(officeUrl, {
+      headers: { accept: 'application/json' },
+      signal: AbortSignal.timeout(SEARCH_ENGINE_STATUS_CHECK_TIMEOUT_MS)
+    });
+
+    if (response.status === 404) {
+      return new Response(buildOfficeNotFoundHtml(lang), {
+        status: 404,
+        headers: { 'content-type': 'text/html; charset=utf-8' }
+      });
+    }
+    if (!response.ok) {
+      return context.next();
+    }
+
+    const agency = await response.json();
+    // The canonical uses the office's own slug as the server returns it, the same URL the app declares.
+    const canonicalUrl = `${canonicalOrigin}/offices/${encodeURIComponent(agency?.slug || slug)}`;
+    const html = buildOfficeMetaHtml({
+      agency,
+      canonicalUrl,
+      fallbackImageUrl: `${canonicalOrigin}${FALLBACK_IMAGE_PATH}`,
+      lang
+    });
+
+    if (!html) {
+      return context.next();
+    }
+
+    return new Response(html, {
+      status: 200,
+      headers: {
+        'content-type': 'text/html; charset=utf-8',
+        'cache-control': 'public, max-age=300'
+      }
+    });
+  } catch {
+    return context.next();
+  }
+}
+
 export default async (request, context) => {
   const userAgent = request.headers.get('user-agent') ?? '';
   const isSocialCrawler = isSocialCrawlerUserAgent(userAgent);
@@ -151,6 +204,15 @@ export default async (request, context) => {
     return isSocialCrawler ? respondForLandingCrawler(request, context) : context.next();
   }
 
+  const officeSlug = extractOfficeSlugFromPath(url.pathname);
+  if (officeSlug) {
+    const apiBaseUrl = (Netlify.env.get('API_URL') || DEFAULT_API_BASE_URL).replace(/\/+$/, '');
+    const officeUrl = `${apiBaseUrl}/agencies/${encodeURIComponent(officeSlug)}`;
+    return isSearchEngine
+      ? respondForSearchEngine(officeUrl, context)
+      : respondForOfficeCrawler(request, officeSlug, officeUrl, context);
+  }
+
   const propertyId = extractPropertyIdFromPath(url.pathname);
   if (!propertyId) {
     return context.next();
@@ -159,7 +221,7 @@ export default async (request, context) => {
   const apiBaseUrl = (Netlify.env.get('API_URL') || DEFAULT_API_BASE_URL).replace(/\/+$/, '');
 
   if (isSearchEngine) {
-    return respondForSearchEngine(propertyId, apiBaseUrl, context);
+    return respondForSearchEngine(`${apiBaseUrl}/properties/${encodeURIComponent(propertyId)}`, context);
   }
 
   // Alias hosts (old domain, *.netlify.app) must declare the production URL canonical, not
@@ -206,5 +268,5 @@ export default async (request, context) => {
 };
 
 export const config = {
-  path: ['/properties/*', '/landing']
+  path: ['/properties/*', '/landing', '/offices/*']
 };

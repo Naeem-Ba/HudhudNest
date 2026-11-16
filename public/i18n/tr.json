@@ -3057,6 +3057,10 @@
     "OFFICES": {
       "TITLE": "Emlak ofisleri rehberi",
       "DESCRIPTION": "Suriye'de il, ilçe, mahalle ve emlak türüne göre emlak ofisi bulun; doğrulanmış ofisleri, puanlarını ve aktif ilanlarını görün."
+    },
+    "OFFICE_PROFILE": {
+      "DESCRIPTION": "{{name}}: HudhudNest üzerinde emlak ofisi. İlanlar, çalışma saatleri ve iletişim bilgileri.",
+      "DESCRIPTION_PLACE": "{{name}}: {{place}} bölgesinde emlak ofisi. İlanlar, çalışma saatleri ve iletişim bilgileri HudhudNest'te."
     }
   },
   "ADMIN_PAYMENTS": {
