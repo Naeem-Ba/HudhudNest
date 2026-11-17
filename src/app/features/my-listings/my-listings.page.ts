@@ -34,6 +34,7 @@ import {
 } from '../../shared/utils/listing-status';
 import { ListingViewCountComponent } from '../../shared/ui/listing-view-count.component';
 import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
+import { digitalPurchasesAllowed } from '../../core/native/digital-purchases';
 
 @Component({
   selector: 'app-my-listings',
@@ -172,8 +173,11 @@ export class MyListingsPage implements OnInit {
    * Featuring is offered for a published, unexpired listing: the server refuses anything
    * else (a hidden listing would be paid-for promotion nobody can see).
    */
+  /** False in the installed app: featuring is a digital purchase (see digital-purchases.ts). */
+  readonly canBuyDigital = digitalPurchasesAllowed();
+
   canFeature(property: Property): boolean {
-    return this.isPublished(property) && property.status !== 'Expired';
+    return this.canBuyDigital && this.isPublished(property) && property.status !== 'Expired';
   }
 
   hasPendingFeatured(property: Property): boolean {

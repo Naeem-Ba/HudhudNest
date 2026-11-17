@@ -12,6 +12,7 @@ import { ToastService } from './shared/services/toast.service';
 import { ApiErrorInterceptor } from './core/interceptors/api-error.interceptor';
 import { AuthInterceptor } from './core/interceptors/auth-interceptor';
 import { CsrfInterceptor } from './core/interceptors/csrf.interceptor';
+import { UtcDatesInterceptor } from './core/interceptors/utc-dates.interceptor';
 import { isCsrfFailure, readRefreshErrorCode, sessionEndReason } from './core/interceptors/refresh-auth.interceptor';
 import { AuthService } from './core/auth/auth.service';
 import { normalizeAuthTokenResponse } from './core/models/auth.model';
@@ -195,7 +196,7 @@ export const appConfig: ApplicationConfig = {
         reloadForStaleChunk(navigationError.error, navigationError.url, deps);
       })
     ),
-    provideHttpClient(withInterceptors([CsrfInterceptor, AuthInterceptor, ApiErrorInterceptor])),
+    provideHttpClient(withInterceptors([CsrfInterceptor, AuthInterceptor, ApiErrorInterceptor, UtcDatesInterceptor])),
     // Unhandled errors also go to our own API (no third party), see core/diagnostics.
     { provide: ErrorHandler, useClass: ClientErrorHandler },
     {

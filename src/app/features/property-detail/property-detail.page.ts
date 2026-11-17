@@ -86,6 +86,7 @@ import { AdSlotComponent } from '../../core/ads/ad-slot.component';
 import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
 import { listSeparator } from '../../core/i18n/ui-language';
+import { digitalPurchasesAllowed } from '../../core/native/digital-purchases';
 
 const LISTING_JSON_LD_ID = 'ld-real-estate-listing';
 
@@ -341,6 +342,9 @@ export class PropertyDetailPage implements OnInit {
   currentUserDisplayName(): string {
     return this.authService.currentUserSnapshot?.displayName ?? '';
   }
+
+  /** False in the installed app: extending and featuring are digital purchases (see digital-purchases.ts). */
+  readonly canBuyDigital = digitalPurchasesAllowed();
 
   readonly isOwner = computed(() =>
     !!this.property()?.ownerId &&

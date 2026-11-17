@@ -460,11 +460,10 @@ jobs:
     # (workflow_dispatch) يشغّله دائمًا.
     needs: build
     if: needs.build.outputs.native == 'true' && github.ref_type != 'tag'
-    # macos-14 يدخل طور التقاعد في 2026-07-06 ويُسحَب نهائياً في 2026-11-02
-    # (راجع: https://github.com/actions/runner-images/issues/13518) — macos-15 هو
-    # أحدث صورة مستقرة غير مؤقَّتة اليوم؛ لا نستخدم macos-latest لأنه تحوّل مؤخراً
-    # إلى macos-26 (Xcode 26 افتراضياً)، وهو أحدث من أن يُعتمَد بلا تحقّق صريح هنا.
-    runs-on: macos-15
+    # App Store Connect accepts only uploads built with Xcode 26 / the iOS 26 SDK since 2026-04-28
+    # (https://developer.apple.com/news/upcoming-requirements/?id=04282026a), so CI builds with the same
+    # Xcode the store build uses (codemagic.yaml). macos-26 ships Xcode 26; the version is still pinned below.
+    runs-on: macos-26
     timeout-minutes: 30
     # Validates that the Capacitor iOS project actually compiles (xcodebuild), catching
     # native-project breakage (e.g. a stale ios/ scaffold, a broken Package.swift) that
@@ -485,14 +484,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # نثبّت نسخة Xcode صراحةً بدل الاعتماد على افتراضي الصورة (الذي يتغيّر بصمت مع
-      # كل تحديث لـ macos-15). 16.4 هي نسخة Xcode 16 الافتراضية المؤكَّدة على هذه
-      # الصورة حالياً وتفوق الحد الأدنى الذي يتطلّبه @capacitor/ios@8. حدِّثها هنا
-      # عمداً (لا تتركها "latest") عند رفع iOS deployment target أو Capacitor مستقبلاً.
-      - name: Select Xcode 16.4
+      # Pin Xcode explicitly instead of the image default, which changes silently with image updates. Xcode 26 is
+      # the minimum App Store Connect accepts (see runs-on above); keep it equal to codemagic.yaml's `xcode:`.
+      - name: Select Xcode 26
         uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
         with:
-          xcode-version: '16.4'
+          xcode-version: '26'
 
       - name: Log toolchain versions
         run: |

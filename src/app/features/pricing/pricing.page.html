@@ -40,7 +40,7 @@
 
   <div class="plans-grid" *ngIf="!loading() && !error()">
     <article
-      *ngFor="let plan of plans(); trackBy: trackByTier"
+      *ngFor="let plan of visiblePlans(); trackBy: trackByTier"
       class="plan-card"
       role="button"
       tabindex="0"

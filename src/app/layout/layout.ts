@@ -9,7 +9,7 @@ import { PendingDeletionBannerComponent } from '../shared/ui/pending-deletion-ba
   imports: [RouterOutlet, NavbarComponent, PendingDeletionBannerComponent],
   template: `
     <app-navbar></app-navbar>
-    <app-pending-deletion-banner></app-pending-deletion-banner>
+    @defer (on idle) { <app-pending-deletion-banner></app-pending-deletion-banner> }
     <main class="page-container">
       <router-outlet></router-outlet>
     </main>

@@ -773,6 +773,7 @@
     "INVALID_FILE_TYPE": "Nicht unterstützter Dateityp. Zulässig sind: PNG, JPG, WebP.",
     "FILE_TOO_LARGE": "Die Datei {{name}} ist größer als 5 MB.",
     "IMAGE_UPLOAD_WARNING": "Die Immobilie wurde gespeichert, aber die Bilder konnten nicht hochgeladen werden.",
+    "TOO_MANY_PHOTOS": "Du kannst diesmal höchstens {{max}} Fotos hinzufügen. Nur die ersten wurden übernommen.",
     "PHOTOS_PROCESSING": "Fotos werden vorbereitet und verkleinert...",
     "COUNTRY": "Land",
     "REGION": "Region",

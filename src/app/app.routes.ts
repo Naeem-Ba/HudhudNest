@@ -2,9 +2,9 @@
 import { LayoutComponent } from './layout/layout';
 import { AuthGuard } from './core/guards/auth-guard';
 import { ListingEligibilityGuard } from './core/guards/listing-eligibility.guard';
-import { AdminMessagesComponent } from './admin/messages/messages.component';
 import { AdminGuard } from './core/guards/admin-guard';
 import { ProviderGuard } from './core/guards/provider-guard';
+import { digitalPurchaseGuard } from './core/native/digital-purchases';
 
 export const routes: Routes = [
   {
@@ -472,7 +472,7 @@ export const routes: Routes = [
         // Authenticated because both endpoints behind it are owner-only — an anonymous
         // visitor reaching this page could only ever be shown a 401.
         path: 'checkout/:kind/:propertyId',
-        canActivate: [AuthGuard],
+        canActivate: [AuthGuard, digitalPurchaseGuard],
         loadComponent: () =>
           import('./features/checkout/checkout.page')
             .then(m => m.CheckoutPage)
@@ -527,7 +527,7 @@ export const routes: Routes = [
 
       {
         path: 'admin/messages',
-        component: AdminMessagesComponent,
+        loadComponent: () => import('./admin/messages/messages.component').then(m => m.AdminMessagesComponent),
         canActivate: [AdminGuard]
       },
       {
