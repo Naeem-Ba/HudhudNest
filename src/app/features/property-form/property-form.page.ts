@@ -1,10 +1,13 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ComponentRef,
   DestroyRef,
   OnInit,
   ViewChild,
+  ViewContainerRef,
   computed,
+  effect,
   inject,
   signal
 } from '@angular/core';
@@ -39,7 +42,8 @@ import { isMarketCurrency } from '../../core/pricing/market-currencies';
 import { ToastService } from '../../shared/services/toast.service';
 import { HttpContext } from '@angular/common/http';
 import { SKIP_ERROR_TOAST } from '../../core/interceptors/api-error.interceptor';
-import { MapPickerComponent } from '../../map-picker/map-picker.component';
+import type { MapPickerComponent } from '../../map-picker/map-picker.component';
+import { InViewDirective } from '../../shared/directives/in-view.directive';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { GeoPickerComponent } from '../../shared/ui/geo/geo-picker.component';
 import { GeoPickerInitial, GeoPickerValue, GeoProposal } from '../../shared/ui/geo/geo-picker.models';
@@ -246,7 +250,7 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
     ReactiveFormsModule,
     TranslateModule,
     RouterLink,
-    MapPickerComponent,
+    InViewDirective,
     ImageFallbackDirective,
     GeoPickerComponent,
     PhotoGuideSheetComponent,
@@ -294,6 +298,19 @@ export class PropertyFormPage implements OnInit {
   readonly propertyId = signal('');
   readonly currentLang = signal<LangCode>('ar');
   readonly submitError = signal('');
+  /** The map is loaded when it nears the viewport (see loadMap). */
+  @ViewChild('mapHost', { read: ViewContainerRef }) private mapHost?: ViewContainerRef;
+  private mapRef?: ComponentRef<MapPickerComponent>;
+  private mapLoading = false;
+  readonly mapLoaded = signal(false);
+  readonly mapLoadFailed = signal(false);
+  // Keeps the map's inputs in step once it exists (they are set once at creation in loadMap).
+  private readonly mapInputsSync = effect(() => {
+    const lang = this.currentLang();
+    const center = this.mapCenter();
+    this.mapRef?.setInput('lang', lang);
+    this.mapRef?.setInput('center', center);
+  });
   readonly mapCenter = signal<{ lat: number; lng: number } | undefined>(undefined);
 
   readonly selectedFiles = signal<File[]>([]);
@@ -908,6 +925,29 @@ export class PropertyFormPage implements OnInit {
             err?.status === 403 ? 'PROPERTY_FORM.NOT_AUTHORIZED' : 'PROPERTY_FORM.LOAD_ERROR'
           )
       });
+  }
+
+  /** Loads the map picker (and Leaflet) into #mapHost. A failed download shows the network error with a retry. */
+  async loadMap(): Promise<void> {
+    if (this.mapRef || this.mapLoading || !this.mapHost) return;
+    this.mapLoading = true;
+    this.mapLoadFailed.set(false);
+    try {
+      const { MapPickerComponent } = await import('../../map-picker/map-picker.component');
+      if (this.mapRef || !this.mapHost) return;
+      const ref = this.mapHost.createComponent(MapPickerComponent);
+      ref.setInput('lang', this.currentLang());
+      ref.setInput('center', this.mapCenter());
+      ref.setInput('searchable', true);
+      ref.instance.locationChange.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(location => this.onLocationSelected(location));
+      ref.instance.placeSelected.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(place => this.onMapPlaceSelected(place));
+      this.mapRef = ref;
+      this.mapLoaded.set(true);
+    } catch {
+      this.mapLoadFailed.set(true);
+    } finally {
+      this.mapLoading = false;
+    }
   }
 
   onLocationSelected(location: { lat: number; lng: number }): void {

@@ -8,14 +8,20 @@
       class="navbar__brand"
       aria-label="HudhudNest"
     >
+      <!-- WebP (18 kB instead of 50 kB on every first visit; every supported browser and the app's WebView read it);
+           width/height reserve the box so the menu does not shift when the logo arrives (UI performance audit 2026-11-17). -->
       <img
-        src="/images/horizontal-logo-480.png"
+        src="/images/horizontal-logo-480.webp"
+        width="480"
+        height="151"
         alt="HudhudNest"
         appImageFallback="/images/no-image.svg"
         class="navbar__logo navbar__logo--light"
       />
       <img
-        src="/images/horizontal-logo-dark-480.png"
+        src="/images/horizontal-logo-dark-480.webp"
+        width="480"
+        height="153"
         alt=""
         aria-hidden="true"
         loading="lazy"

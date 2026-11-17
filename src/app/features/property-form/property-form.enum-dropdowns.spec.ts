@@ -139,4 +139,27 @@ describe('PropertyFormPage enum dropdowns', () => {
     expect(fixture.componentInstance.enumOptionsLoadFailed()).toBeTrue();
     expect(optionCount(fixture.nativeElement, 'ownershipType')).toBe(1);
   });
+
+  // UI performance audit 2026-11-17 (U-2): the map and Leaflet are loaded only when the map area nears the viewport.
+  it('shows a same-height placeholder and loads the map picker only when asked', async () => {
+    const preload = enums.loadAll();
+    flushEnums(false);
+    await preload;
+    const fixture = TestBed.createComponent(PropertyFormPage);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('[data-testid="map-placeholder"]')).not.toBeNull();
+    expect(root.querySelector('app-map-picker')).toBeNull();
+
+    await fixture.componentInstance.loadMap();
+    fixture.detectChanges();
+    expect(root.querySelector('app-map-picker')).not.toBeNull();
+    expect(root.querySelector('[data-testid="map-placeholder"]')).toBeNull();
+
+    await fixture.componentInstance.loadMap(); // a second call does not build a second map
+    expect(root.querySelectorAll('app-map-picker').length).toBe(1);
+    fixture.destroy();
+  });
 });
+

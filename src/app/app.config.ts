@@ -1,6 +1,6 @@
 import { APP_INITIALIZER, ApplicationConfig, ErrorHandler, importProvidersFrom, inject } from '@angular/core';
 import { HttpErrorResponse, provideHttpClient, withInterceptors, HttpBackend, HttpClient } from '@angular/common/http';
-import { provideRouter, withNavigationErrorHandler } from '@angular/router';
+import { provideRouter, withNavigationErrorHandler, withPreloading } from '@angular/router';
 import { firstValueFrom, timeout, TimeoutError } from 'rxjs';
 
 import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -24,6 +24,7 @@ import { LanguageService } from './core/services/language.service';
 import { resolveFirstVisitLanguage, toSupportedLanguage } from './core/i18n/first-visit-language';
 import { browserStaleChunkReloadDeps, isChunkLoadError, reloadForStaleChunk } from './core/services/stale-chunk-reload';
 import { TokenStorageService } from './core/services/token-storage.service';
+import { NextPagePreloading } from './core/services/next-page-preloading';
 import { environment } from '../environments/environment';
 
 const REFRESH_TIMEOUT_MS = 15000;
@@ -194,7 +195,9 @@ export const appConfig: ApplicationConfig = {
           return;
         }
         reloadForStaleChunk(navigationError.error, navigationError.url, deps);
-      })
+      }),
+      // Only the page a visitor most likely opens next, see next-page-preloading.ts.
+      withPreloading(NextPagePreloading)
     ),
     provideHttpClient(withInterceptors([CsrfInterceptor, AuthInterceptor, ApiErrorInterceptor, UtcDatesInterceptor])),
     // Unhandled errors also go to our own API (no third party), see core/diagnostics.
