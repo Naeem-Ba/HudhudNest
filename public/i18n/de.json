@@ -148,7 +148,8 @@
     "ADMIN_PAYMENTS": "Zahlungen (online)",
     "ADMIN_GEO": "Standortkatalog",
     "OFFICES": "Makler",
-    "ADMIN_AGENCIES": "Makler-Verifizierung"
+    "ADMIN_AGENCIES": "Makler-Verifizierung",
+    "ADMIN_LEGAL_HOLDS": "Rechtliche Sperren"
   },
   "AUTH": {
     "LOGIN_TITLE": "Willkommen",
@@ -1164,7 +1165,8 @@
     "ENABLE_EXPLANATION": "Die Person kann sich wieder anmelden und Anzeigen, die durch die Deaktivierung offline gingen, kommen zurück. Aus anderen Gründen gesperrte Anzeigen bleiben offline.",
     "ENABLE_REASON": "Grund der Reaktivierung (Pflicht)",
     "ENABLE_SUCCESS": "Konto wieder aktiviert.",
-    "ENABLE_NOT_POSSIBLE": "Dieses Konto kann nicht reaktiviert werden: Die Person hat es selbst gelöscht (unwiderruflich) oder es ist nicht deaktiviert."
+    "ENABLE_NOT_POSSIBLE": "Dieses Konto kann nicht reaktiviert werden: Die Person hat es selbst gelöscht (unwiderruflich) oder es ist nicht deaktiviert.",
+    "LEGAL_HOLDS": "Rechtliche Sperren"
   },
   "ADMIN_USER_PROPERTIES": {
     "TAKEN_DOWN": "Gesperrt",
@@ -2363,7 +2365,12 @@
       "PUBLISH": "Veröffentlichen",
       "UNPUBLISH": "Zurückziehen",
       "TOGGLE_SUCCESS": "Veröffentlichungsstatus aktualisiert.",
-      "TOGGLE_ERROR": "Status konnte nicht aktualisiert werden."
+      "TOGGLE_ERROR": "Status konnte nicht aktualisiert werden.",
+      "DELETE": "Löschen",
+      "CONFIRM_DELETE": "„{{title}}“ endgültig löschen? Das kann nicht rückgängig gemacht werden.",
+      "DELETE_SUCCESS": "Inserat gelöscht.",
+      "DELETE_HAS_BOOKINGS": "Für dieses Inserat laufen noch Buchungen. Schließe sie ab, lehne sie ab oder storniere sie und lösche es dann.",
+      "DELETE_ERROR": "Das Inserat konnte nicht gelöscht werden. Bitte versuche es erneut."
     },
     "FORM": {
       "EDIT_TITLE": "Anzeige bearbeiten",
@@ -2847,7 +2854,9 @@
       "INSUFFICIENT_COVERAGE": "Wir konnten nicht mindestens 3 Immobilienbüros in Ihrer Nähe finden. Möglicherweise erhalten Sie Schätzungen von weniger Büros.",
       "EXPIRES_AT": "Sie erhalten innerhalb von 24 Stunden eine Antwort, spätestens bis {{date}}.",
       "CHECK_STATUS": "Antworten prüfen",
-      "NO_ESTIMATES_YET": "Noch keine Schätzungen. Bitte später erneut prüfen."
+      "NO_ESTIMATES_YET": "Noch keine Schätzungen. Bitte später erneut prüfen.",
+      "OFF_LIMITED": "Es wurden nur wenige vergleichbare Inserate gefunden, daher ist dies nur eine vorläufige Schätzung. Die Bewertung durch Immobilienbüros ist noch nicht verfügbar.",
+      "OFF_NONE": "In deiner Gegend gibt es derzeit nicht genug vergleichbare Inserate für eine Schätzung. Die Bewertung durch Immobilienbüros ist noch nicht verfügbar; versuche es später oder erweitere das Gebiet."
     },
     "NEW_REQUEST": "Neue Bewertungsanfrage",
     "STATUS": {
@@ -4922,11 +4931,11 @@
     "DESC": "Titelbild, Website, Social-Media-Links und Öffnungszeiten, wie sie auf Ihrer öffentlichen Büroseite erscheinen.",
     "COVER": "Titelbild",
     "NO_COVER": "Noch kein Titelbild",
-    "COVER_HINT": "Ein breites Bild (am besten 1600×530 px), PNG oder JPEG bis 5 MB.",
+    "COVER_HINT": "Ein breites Bild (am besten 1600×530 px), PNG, JPEG oder WebP bis 5 MB.",
     "UPLOAD_COVER": "Titelbild hochladen",
     "CHANGE_COVER": "Titelbild ändern",
     "REMOVE_COVER": "Titelbild entfernen",
-    "COVER_TYPE": "Nur PNG oder JPEG.",
+    "COVER_TYPE": "Nur PNG, JPEG oder WebP.",
     "COVER_TOO_LARGE": "Das Bild ist größer als 5 MB.",
     "COVER_SAVED": "Titelbild gespeichert.",
     "COVER_REMOVED": "Titelbild entfernt.",
@@ -4978,5 +4987,32 @@
       "THURSDAY": "Donnerstag",
       "FRIDAY": "Freitag"
     }
+  },
+  "ADMIN_LEGAL_HOLDS": {
+    "TITLE": "Rechtliche Sperren",
+    "SUBTITLE": "Solange eine Sperre aktiv ist, wird die geplante Löschung des Kontos nicht ausgeführt. Sperren werden aufgehoben, nie gelöscht; jede Aktion steht im Audit-Log.",
+    "PLACE_TITLE": "Neue Sperre",
+    "ACCOUNT_ID": "Konto-ID",
+    "REASON": "Grund",
+    "PLACE": "Sperre setzen",
+    "FILTER_ACCOUNT": "Nach Konto-ID filtern",
+    "ACTIVE_ONLY": "Nur aktive",
+    "SEARCH": "Suchen",
+    "LOAD_ERROR": "Die Sperren konnten nicht geladen werden.",
+    "ACCOUNT": "Konto",
+    "PLACED_AT": "Gesetzt am",
+    "STATE": "Status",
+    "ACTIVE": "Aktiv",
+    "RELEASED": "Aufgehoben",
+    "RELEASE": "Aufheben",
+    "EMPTY": "Keine Sperren.",
+    "INVALID_ID": "Die Konto-ID ist ungültig.",
+    "REASON_REQUIRED": "Gib den Grund für die Sperre an.",
+    "CONFIRM_PLACE": "Eine rechtliche Sperre verhindert die Löschung dieses Kontos, bis sie aufgehoben wird. Fortfahren?",
+    "CONFIRM_RELEASE": "Nach dem Aufheben kann die geplante Löschung des Kontos laufen. Sperre aufheben?",
+    "PLACED": "Sperre gesetzt.",
+    "RELEASED_OK": "Sperre aufgehoben.",
+    "UNKNOWN_ACCOUNT": "Kein Konto mit dieser ID.",
+    "SAVE_ERROR": "Speichern fehlgeschlagen. Bitte erneut versuchen."
   }
 }

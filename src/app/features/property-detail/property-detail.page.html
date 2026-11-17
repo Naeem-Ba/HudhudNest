@@ -693,10 +693,6 @@
                 <dt>{{ 'PROPERTY_DETAIL.AVAILABLE_FROM' | translate }}</dt>
                 <dd>{{ p.availableFrom | localDate:'dd/MM/yyyy' }}</dd>
               </div>
-              <div class="info-row" *ngIf="p.condition">
-                <dt>{{ 'PROPERTY_DETAIL.CONDITION' | translate }}</dt>
-                <dd>{{ safe(p.condition) }}</dd>
-              </div>
             </dl>
           </div>
 

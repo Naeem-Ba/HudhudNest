@@ -107,6 +107,11 @@ export class ShortStayListingApiService {
     return this.api.put<void>(`${this.endpoint}/${id}/unpublish`);
   }
 
+  /** Soft delete by the owner. 409 while the listing still has bookings in progress. */
+  delete(id: string): Observable<void> {
+    return this.api.delete<void>(`${this.endpoint}/${id}`);
+  }
+
   setAmenities(listingId: string, amenityIds: string[]): Observable<void> {
     return this.api.put<void>(`${this.endpoint}/${listingId}/amenities`, amenityIds);
   }

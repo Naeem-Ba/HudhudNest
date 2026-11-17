@@ -148,7 +148,8 @@
     "ADMIN_PAYMENTS": "Ödemeler (çevrimiçi)",
     "ADMIN_GEO": "Konum kataloğu",
     "OFFICES": "Emlak ofisleri",
-    "ADMIN_AGENCIES": "Ofis doğrulama"
+    "ADMIN_AGENCIES": "Ofis doğrulama",
+    "ADMIN_LEGAL_HOLDS": "Yasal bekletmeler"
   },
   "AUTH": {
     "LOGIN_TITLE": "Hoş geldiniz",
@@ -1211,7 +1212,8 @@
     "ENABLE_EXPLANATION": "Hesap sahibi yeniden giriş yapabilir ve devre dışı bırakma nedeniyle kaldırılan ilanlar geri gelir. Başka bir nedenle kaldırılan ilanlar kaldırılmış olarak kalır.",
     "ENABLE_REASON": "Yeniden etkinleştirme gerekçesi (zorunlu)",
     "ENABLE_SUCCESS": "Hesap yeniden etkinleştirildi.",
-    "ENABLE_NOT_POSSIBLE": "Bu hesap yeniden etkinleştirilemez: hesap sahibi hesabını kendisi sildi (geri alınamaz) veya hesap devre dışı değil."
+    "ENABLE_NOT_POSSIBLE": "Bu hesap yeniden etkinleştirilemez: hesap sahibi hesabını kendisi sildi (geri alınamaz) veya hesap devre dışı değil.",
+    "LEGAL_HOLDS": "Yasal bekletmeler"
   },
   "ADMIN_USER_PROPERTIES": {
     "TAKEN_DOWN": "Yayından kaldırıldı",
@@ -2363,7 +2365,12 @@
       "PUBLISH": "Yayınla",
       "UNPUBLISH": "Yayından kaldır",
       "TOGGLE_SUCCESS": "Yayın durumu güncellendi.",
-      "TOGGLE_ERROR": "Yayın durumu güncellenemedi."
+      "TOGGLE_ERROR": "Yayın durumu güncellenemedi.",
+      "DELETE": "Sil",
+      "CONFIRM_DELETE": "\"{{title}}\" kalıcı olarak silinsin mi? Bu işlem geri alınamaz.",
+      "DELETE_SUCCESS": "İlan silindi.",
+      "DELETE_HAS_BOOKINGS": "Bu ilanın devam eden rezervasyonları var. Önce bunları tamamlayın, reddedin veya iptal edin, sonra silin.",
+      "DELETE_ERROR": "İlan silinemedi. Lütfen tekrar deneyin."
     },
     "FORM": {
       "EDIT_TITLE": "İlanı düzenle",
@@ -2847,7 +2854,9 @@
       "INSUFFICIENT_COVERAGE": "Bölgenizde en az 3 emlak ofisi bulamadık. Daha az sayıda ofisten tahmin alabilirsiniz.",
       "EXPIRES_AT": "24 saat içinde, en geç {{date}} tarihine kadar yanıt alırsınız.",
       "CHECK_STATUS": "Yanıtları kontrol et",
-      "NO_ESTIMATES_YET": "Henüz tahmin yok. Lütfen daha sonra tekrar bakın."
+      "NO_ESTIMATES_YET": "Henüz tahmin yok. Lütfen daha sonra tekrar bakın.",
+      "OFF_LIMITED": "Yalnızca birkaç benzer ilan bulundu, bu nedenle bu ön bir tahmindir. Emlak ofisleri tarafından değerleme henüz kullanılamıyor.",
+      "OFF_NONE": "Bölgenizde şu anda fiyat tahmini için yeterli benzer ilan yok. Emlak ofisleri tarafından değerleme henüz kullanılamıyor; daha sonra tekrar deneyin veya bölgeyi genişletin."
     },
     "NEW_REQUEST": "Yeni değerleme talebi",
     "STATUS": {
@@ -4922,11 +4931,11 @@
     "DESC": "Kapak görseli, web sitesi, sosyal medya bağlantıları ve çalışma saatleri, herkese açık ofis sayfanızda göründüğü gibi.",
     "COVER": "Kapak görseli",
     "NO_COVER": "Henüz kapak görseli yok",
-    "COVER_HINT": "Geniş bir görsel (en iyisi 1600×530 px), en fazla 5 MB PNG veya JPEG.",
+    "COVER_HINT": "Geniş bir görsel (en iyisi 1600×530 px), en fazla 5 MB PNG, JPEG veya WebP.",
     "UPLOAD_COVER": "Kapak görseli yükle",
     "CHANGE_COVER": "Kapağı değiştir",
     "REMOVE_COVER": "Kapağı kaldır",
-    "COVER_TYPE": "Yalnızca PNG veya JPEG.",
+    "COVER_TYPE": "Yalnızca PNG, JPEG veya WebP.",
     "COVER_TOO_LARGE": "Görsel 5 MB’tan büyük.",
     "COVER_SAVED": "Kapak görseli kaydedildi.",
     "COVER_REMOVED": "Kapak görseli kaldırıldı.",
@@ -4978,5 +4987,32 @@
       "THURSDAY": "Perşembe",
       "FRIDAY": "Cuma"
     }
+  },
+  "ADMIN_LEGAL_HOLDS": {
+    "TITLE": "Yasal bekletmeler",
+    "SUBTITLE": "Bekletme etkin olduğu sürece hesabın planlanmış silinmesi çalışmaz. Bekletmeler kaldırılır, asla silinmez; her işlem denetim günlüğüne yazılır.",
+    "PLACE_TITLE": "Yeni bekletme",
+    "ACCOUNT_ID": "Hesap kimliği",
+    "REASON": "Neden",
+    "PLACE": "Bekletme koy",
+    "FILTER_ACCOUNT": "Hesap kimliğine göre filtrele",
+    "ACTIVE_ONLY": "Yalnızca etkin",
+    "SEARCH": "Ara",
+    "LOAD_ERROR": "Bekletmeler yüklenemedi.",
+    "ACCOUNT": "Hesap",
+    "PLACED_AT": "Konulma",
+    "STATE": "Durum",
+    "ACTIVE": "Etkin",
+    "RELEASED": "Kaldırıldı",
+    "RELEASE": "Kaldır",
+    "EMPTY": "Bekletme yok.",
+    "INVALID_ID": "Hesap kimliği geçerli değil.",
+    "REASON_REQUIRED": "Bekletmenin nedenini yazın.",
+    "CONFIRM_PLACE": "Yasal bekletme, kaldırılana kadar bu hesabın silinmesini engeller. Devam edilsin mi?",
+    "CONFIRM_RELEASE": "Kaldırıldıktan sonra hesabın planlanmış silinmesi çalışabilir. Bekletme kaldırılsın mı?",
+    "PLACED": "Bekletme konuldu.",
+    "RELEASED_OK": "Bekletme kaldırıldı.",
+    "UNKNOWN_ACCOUNT": "Bu kimliğe sahip hesap yok.",
+    "SAVE_ERROR": "Kaydedilemedi. Lütfen tekrar deneyin."
   }
 }

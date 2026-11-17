@@ -56,6 +56,8 @@ export interface CreateValuationInquiryResultDto {
   insufficientOfficeCoverage: boolean;
   /** The Nearby-Governorate disclosure rule. */
   matchedNeighboringGovernorate: boolean;
+  /** False while offices cannot receive valuation requests: a request that needed them was closed at once. */
+  officePathAvailable: boolean;
 }
 
 /** Mirrors ValuationEstimateDto — deliberately no agency identity. */

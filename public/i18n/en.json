@@ -148,7 +148,8 @@
     "ADMIN_PAYMENTS": "Payments (online)",
     "ADMIN_GEO": "Location catalog",
     "OFFICES": "Agencies",
-    "ADMIN_AGENCIES": "Agency verification"
+    "ADMIN_AGENCIES": "Agency verification",
+    "ADMIN_LEGAL_HOLDS": "Legal holds"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -1211,7 +1212,8 @@
     "ENABLE_EXPLANATION": "The owner can sign in again and listings that the disabling took down come back. Listings taken down for another reason stay down.",
     "ENABLE_REASON": "Reason for re-enabling (required)",
     "ENABLE_SUCCESS": "Account re-enabled.",
-    "ENABLE_NOT_POSSIBLE": "This account cannot be re-enabled: the owner deleted it themselves (irreversible) or it is not disabled."
+    "ENABLE_NOT_POSSIBLE": "This account cannot be re-enabled: the owner deleted it themselves (irreversible) or it is not disabled.",
+    "LEGAL_HOLDS": "Legal holds"
   },
   "ADMIN_USER_PROPERTIES": {
     "TAKEN_DOWN": "Taken down",
@@ -2363,7 +2365,12 @@
       "PUBLISH": "Publish",
       "UNPUBLISH": "Unpublish",
       "TOGGLE_SUCCESS": "Publish status updated.",
-      "TOGGLE_ERROR": "Could not update publish status."
+      "TOGGLE_ERROR": "Could not update publish status.",
+      "DELETE": "Delete",
+      "CONFIRM_DELETE": "Delete \"{{title}}\" for good? This cannot be undone.",
+      "DELETE_SUCCESS": "Listing deleted.",
+      "DELETE_HAS_BOOKINGS": "This listing has bookings in progress. Complete, reject or cancel them first, then delete it.",
+      "DELETE_ERROR": "The listing could not be deleted. Please try again."
     },
     "FORM": {
       "EDIT_TITLE": "Edit Listing",
@@ -2847,7 +2854,9 @@
       "INSUFFICIENT_COVERAGE": "We could not find at least 3 real-estate offices in your area. You may receive estimates from fewer offices.",
       "EXPIRES_AT": "You'll hear back within 24 hours, by {{date}} at the latest.",
       "CHECK_STATUS": "Check for responses",
-      "NO_ESTIMATES_YET": "No estimates yet. Please check back later."
+      "NO_ESTIMATES_YET": "No estimates yet. Please check back later.",
+      "OFF_LIMITED": "Only a few similar listings were found, so this is a preliminary estimate. Valuation by real-estate offices is not available yet.",
+      "OFF_NONE": "There are not enough similar listings in your area to estimate a price right now. Valuation by real-estate offices is not available yet; try again later or widen the area."
     },
     "NEW_REQUEST": "New valuation request",
     "STATUS": {
@@ -4922,11 +4931,11 @@
     "DESC": "Cover image, website, social links and opening hours, as shown on your public office page.",
     "COVER": "Cover image",
     "NO_COVER": "No cover image yet",
-    "COVER_HINT": "A wide image (1600×530 px works best), PNG or JPEG up to 5 MB.",
+    "COVER_HINT": "A wide image (1600×530 px works best), PNG, JPEG or WebP up to 5 MB.",
     "UPLOAD_COVER": "Upload a cover image",
     "CHANGE_COVER": "Change cover",
     "REMOVE_COVER": "Remove cover",
-    "COVER_TYPE": "Only PNG or JPEG.",
+    "COVER_TYPE": "Only PNG, JPEG or WebP.",
     "COVER_TOO_LARGE": "The image is larger than 5 MB.",
     "COVER_SAVED": "Cover image saved.",
     "COVER_REMOVED": "Cover image removed.",
@@ -4978,5 +4987,32 @@
       "THURSDAY": "Thursday",
       "FRIDAY": "Friday"
     }
+  },
+  "ADMIN_LEGAL_HOLDS": {
+    "TITLE": "Legal holds",
+    "SUBTITLE": "While a hold is active, the account's scheduled erasure does not run. Holds are released, never deleted, and every action is written to the audit log.",
+    "PLACE_TITLE": "New hold",
+    "ACCOUNT_ID": "Account id",
+    "REASON": "Reason",
+    "PLACE": "Place hold",
+    "FILTER_ACCOUNT": "Filter by account id",
+    "ACTIVE_ONLY": "Active only",
+    "SEARCH": "Search",
+    "LOAD_ERROR": "The holds could not be loaded.",
+    "ACCOUNT": "Account",
+    "PLACED_AT": "Placed",
+    "STATE": "State",
+    "ACTIVE": "Active",
+    "RELEASED": "Released",
+    "RELEASE": "Release",
+    "EMPTY": "No holds.",
+    "INVALID_ID": "The account id is not valid.",
+    "REASON_REQUIRED": "Write the reason for the hold.",
+    "CONFIRM_PLACE": "A legal hold keeps this account from being erased until it is released. Continue?",
+    "CONFIRM_RELEASE": "After release, the account's scheduled erasure may run. Release the hold?",
+    "PLACED": "Hold placed.",
+    "RELEASED_OK": "Hold released.",
+    "UNKNOWN_ACCOUNT": "No account has this id.",
+    "SAVE_ERROR": "Could not save. Please try again."
   }
 }

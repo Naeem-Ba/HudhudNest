@@ -546,6 +546,13 @@ export const routes: Routes = [
             .then(m => m.AdminGrowthPage)
       },
       {
+        path: 'admin/legal-holds',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/legal-holds/admin-legal-holds.page')
+            .then(m => m.AdminLegalHoldsPage)
+      },
+      {
         path: 'admin/referrals',
         canActivate: [AdminGuard],
         loadComponent: () =>

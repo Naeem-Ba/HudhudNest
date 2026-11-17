@@ -53,6 +53,27 @@ import { AmenityLabelPipe } from '../../pipes/amenity-label.pipe';
 import { PhotoGuideKind, photoGuideKindForListingType } from '../../shared/ui/photo-guide/photo-guide.data';
 import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
 
+/**
+ * Optional fields an edit can empty. The update endpoint treats null as "keep the stored value", so without
+ * naming them here an owner could never remove additional costs, a deposit or an availability date again.
+ * Must match UpdatePropertyCommand.ClearableFields in the API (TotalFloors is not on this form).
+ */
+export const CLEARABLE_PROPERTY_FIELDS = [
+  'Deposit',
+  'AdditionalCosts',
+  'Floor',
+  'AvailableFrom',
+  'RentalStartDate',
+  'RentalEndDate',
+  'RentalDurationType'
+] as const;
+
+/** The clearable fields this save sends without a value: empty on the form, or not applicable to the listing. */
+export function clearableFieldsLeftEmpty(payload: object): string[] {
+  const values = payload as Record<string, unknown>;
+  return CLEARABLE_PROPERTY_FIELDS.filter(field => values[field] === null || values[field] === undefined || values[field] === '');
+}
+
 interface PropertySavePayload {
   Title: string;
   Description: string;
@@ -100,6 +121,8 @@ interface PropertySavePayload {
   FurnishingStatus?: number | null;
   /** Create only: the branch of the publisher's office. Changed on an existing listing through PUT /properties/{id}/branch. */
   AgencyBranchId?: string | null;
+  /** Edit only: optional fields to empty (the API treats null as "keep"). */
+  ClearFields?: string[];
 }
 
 /** AreaUnit — must match HudhudNestApi.Domain.Listings.Enums.AreaUnit's ordinals. */
@@ -1175,7 +1198,7 @@ export class PropertyFormPage implements OnInit {
       HasElevator: !isLand && (f.hasElevator ?? false),
       HasParkingSpace: !isLand && (f.hasParkingSpace ?? false),
       HeatingType: this.heatingTypeForSave(),
-      AvailableFrom: f.availableFrom ?? null,
+      AvailableFrom: f.availableFrom || null,
       // ✅ إصلاح: كان الحقل معرَّفاً في الـ payload لكن لم يُملأ أبداً — المرافق
       // المختارة من المستخدم لم تكن تُرسَل إلى الباك اند إطلاقاً.
       AmenityIds: Array.from(this.selectedAmenityIds()),
@@ -1190,14 +1213,15 @@ export class PropertyFormPage implements OnInit {
       // Dynamic listing form (ListingType × PropertyType redesign, Syrian market).
       LegalStatus: isSale ? (f.ownershipType ?? null) : null,
       AreaUnit: f.areaUnit ?? AREA_UNIT_SQUARE_METER,
-      RentalStartDate: isRent ? (f.rentalStartDate ?? null) : null,
-      RentalEndDate: isRent ? (f.rentalEndDate ?? null) : null,
+      RentalStartDate: isRent ? (f.rentalStartDate || null) : null,
+      RentalEndDate: isRent ? (f.rentalEndDate || null) : null,
       RentalDurationType: isRent ? (f.rentalDurationType ?? null) : null,
       FurnishingStatus: isLand ? null : (f.furnishingStatus ?? null)
     };
 
     const branchId = this.showBranchPicker() ? (this.selectedBranchId() || null) : null;
     if (!this.isEditMode() && branchId) payload.AgencyBranchId = branchId;
+    if (this.isEditMode()) payload.ClearFields = clearableFieldsLeftEmpty(payload);
     // On an existing listing the branch has its own endpoint, called only when the choice changed.
     const branchChanged = this.isEditMode() && this.showBranchPicker() && branchId !== this.savedBranchId();
 

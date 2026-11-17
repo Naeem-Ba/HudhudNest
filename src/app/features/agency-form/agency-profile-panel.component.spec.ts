@@ -73,7 +73,7 @@ describe('AgencyProfilePanelComponent', () => {
     expect(toast.error).toHaveBeenCalled();
   });
 
-  it('refuses a cover that is too large or not PNG/JPEG before uploading', () => {
+  it('refuses a cover that is too large or not PNG/JPEG/WebP before uploading', () => {
     const fixture = create();
     const panel = fixture.componentInstance;
     const pick = (file: File) => panel.onCoverSelected({ files: [file], value: '' } as unknown as HTMLInputElement);
@@ -87,6 +87,10 @@ describe('AgencyProfilePanelComponent', () => {
     api.uploadCover.and.returnValue(of({ ...AGENCY, coverImageUrl: 'https://img/cover.png' }));
     pick(new File(['x'], 'a.png', { type: 'image/png' }));
     expect(api.uploadCover).toHaveBeenCalled();
+    expect(panel.coverError()).toBeNull();
+    // WebP is accepted by the API for the cover and the logo (it already was for listing photos).
+    pick(new File(['x'], 'a.webp', { type: 'image/webp' }));
+    expect(api.uploadCover).toHaveBeenCalledTimes(2);
     expect(panel.coverError()).toBeNull();
   });
 
