@@ -18,6 +18,7 @@ import { Observable, Subject, map } from 'rxjs';
 import type * as signalR from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
 import { SKIP_ERROR_TOAST } from '../interceptors/api-error.interceptor';
+import { normalizeUtcInstants } from '../interceptors/utc-dates.interceptor';
 import { BackendApiService } from './backend-api.service';
 import { TokenStorageService } from '../services/token-storage.service';
 import { LanguageService } from '../services/language.service';
@@ -173,13 +174,13 @@ export class NotificationsApiService {
     // ✅ إشعار جديد وصل
     this.hub.on('ReceiveNotification', notification => {
       this.zone.run(() => {
-        this.realtimeSubject.next(toNotificationItem(notification));
+        this.realtimeSubject.next(toNotificationItem(normalizeUtcInstants(notification)));
         this.unreadCount.update(value => value + 1);
       });
     });
 
     this.hub.on('MessageReceived', (payload: unknown) => {
-      const event = toMessageReceivedEvent(payload);
+      const event = toMessageReceivedEvent(normalizeUtcInstants(payload));
       if (event) {
         this.zone.run(() => this.messageReceivedSubject.next(event));
       }
