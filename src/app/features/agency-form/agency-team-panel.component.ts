@@ -47,7 +47,8 @@ import { PropertyShareUrlService } from '../../core/sharing/property-share-url.s
 import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 
 /** نفس قيود SetAgencyLogoCommandHandler تقريبًا؛ الخادم هو الحكم النهائي. */
-const LOGO_MAX_BYTES = 2 * 1024 * 1024;
+/** Matches SetAgencyLogoCommandHandler.MaxLogoSize: decimal 2 MB (2,000,000 bytes), not 2 MiB. */
+const LOGO_MAX_BYTES = 2_000_000;
 const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 
 type PendingAction =
