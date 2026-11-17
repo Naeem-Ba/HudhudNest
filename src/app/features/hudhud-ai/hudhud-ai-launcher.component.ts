@@ -54,7 +54,7 @@ export function launcherHiddenOn(url: string): boolean {
       display: inline-flex; align-items: center; gap: .45rem;
       min-height: 48px; padding: .6rem 1rem;
       border: 0; border-radius: var(--r-pill, 9999px);
-      background: var(--navy); color: #fff;
+      background: var(--navy); color: var(--text-on-navy);
       font: inherit; font-weight: 700; cursor: pointer;
       box-shadow: var(--shadow-lg);
     }
