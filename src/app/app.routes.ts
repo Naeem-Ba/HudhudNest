@@ -35,13 +35,17 @@ export const routes: Routes = [
         path: 'properties',
         loadComponent: () =>
           import('./features/properties/property-list/property-list.page')
-            .then(m => m.PropertyListPage)
+            .then(m => m.PropertyListPage),
+        // Fetched while the home page is open (NextPagePreloading).
+        data: { prefetchFrom: ['/home'] }
       },
       {
         path: 'properties/:id',
         loadComponent: () =>
           import('./features/property-detail/property-detail.page')
-            .then(m => m.PropertyDetailPage)
+            .then(m => m.PropertyDetailPage),
+        // Fetched while the listings page is open (NextPagePreloading).
+        data: { prefetchFrom: ['/properties'] }
       },
       // Short-Stay Accommodation — backend-first PR's frontend follow-up. MVP: single-unit
       // booking flow only (see the plan's decision on hotel/multi-room-type UX being deferred).
