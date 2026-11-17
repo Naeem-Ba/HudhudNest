@@ -2,7 +2,6 @@
 import { LayoutComponent } from './layout/layout';
 import { AuthGuard } from './core/guards/auth-guard';
 import { ListingEligibilityGuard } from './core/guards/listing-eligibility.guard';
-import { AdminMessagesComponent } from './admin/messages/messages.component';
 import { AdminGuard } from './core/guards/admin-guard';
 import { ProviderGuard } from './core/guards/provider-guard';
 
@@ -527,7 +526,7 @@ export const routes: Routes = [
 
       {
         path: 'admin/messages',
-        component: AdminMessagesComponent,
+        loadComponent: () => import('./admin/messages/messages.component').then(m => m.AdminMessagesComponent),
         canActivate: [AdminGuard]
       },
       {

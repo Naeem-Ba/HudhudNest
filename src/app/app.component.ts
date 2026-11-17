@@ -37,10 +37,13 @@ import { AppUpdateNativeGateway } from './core/api/app-update-native.gateway';
   template: `
     <router-outlet></router-outlet>
     <app-toast-container></app-toast-container>
-    <app-environment-badge></app-environment-badge>
-    <app-ads-consent-banner></app-ads-consent-banner>
-    <app-measurement-consent-banner></app-measurement-consent-banner>
-    <app-reconsent-prompt></app-reconsent-prompt>
+    <!-- Loaded once the first page is idle, so they stay out of the initial bundle (600 kB budget). -->
+    @defer (on idle) {
+      <app-environment-badge></app-environment-badge>
+      <app-ads-consent-banner></app-ads-consent-banner>
+      <app-measurement-consent-banner></app-measurement-consent-banner>
+      <app-reconsent-prompt></app-reconsent-prompt>
+    }
 
     <!-- App Update Management: تحديث اختياري — قابل للتجاهل، مرة واحدة لكل إقلاع تطبيق. -->
     <app-confirm-modal
