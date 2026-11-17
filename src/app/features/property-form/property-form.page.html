@@ -168,13 +168,16 @@
                 </svg>
                 {{ 'property_add.map_hint' | translate }}
               </p>
-              <app-map-picker
-                [lang]="currentLang()"
-                [center]="mapCenter()"
-                [searchable]="true"
-                (locationChange)="onLocationSelected($event)"
-                (placeSelected)="onMapPlaceSelected($event)">
-              </app-map-picker>
+              <!-- The map (and Leaflet with it) is loaded when it nears the viewport: it sits ~1,900 px down on a phone
+                   and building it with the page was a 125 ms+ long task (UI performance audit 2026-11-17, U-2). The
+                   placeholder has the map's own height, so nothing moves when it arrives. -->
+              <ng-container #mapHost></ng-container>
+              <div class="map-placeholder" *ngIf="!mapLoaded()" (appInView)="loadMap()" data-testid="map-placeholder">
+                <p class="map-placeholder__error" *ngIf="mapLoadFailed()" role="alert">
+                  {{ 'API_ERRORS.NETWORK' | translate }}
+                  <button type="button" class="btn btn--outline btn--sm" (click)="loadMap()">{{ 'COMMON.RETRY' | translate }}</button>
+                </p>
+              </div>
               <p class="location-preview" *ngIf="f.latitude.value !== null && f.latitude.value !== undefined && f.longitude.value !== null && f.longitude.value !== undefined">
                 ✓ {{ 'property_add.location_selected' | translate }}: {{ f.latitude.value | localNumber:'1.4-4' }}, {{ f.longitude.value | localNumber:'1.4-4' }}
               </p>
