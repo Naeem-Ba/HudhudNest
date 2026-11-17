@@ -245,13 +245,13 @@
                  page, which reviews the fee before recording anything. Ownership is
                  enforced server-side (403) — these *ngIf guards are UX, not security. -->
             <a class="btn btn--outline"
-              *ngIf="isOwner()"
+              *ngIf="isOwner() && canBuyDigital"
               [routerLink]="['/checkout', 'extension', p.id]">
               <span aria-hidden="true">🔁</span>
               {{ 'PROPERTY_DETAIL.EXTEND_LISTING' | translate }}
             </a>
             <a class="btn btn--outline"
-              *ngIf="isOwner()"
+              *ngIf="isOwner() && canBuyDigital"
               [routerLink]="['/checkout', 'featured', p.id]">
               <span aria-hidden="true">⭐</span>
               {{ 'PROPERTY_DETAIL.FEATURE_LISTING' | translate }}
