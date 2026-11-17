@@ -18,7 +18,7 @@ import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { Observable, of, throwError } from 'rxjs';
 
-import { PropertyFormPage, addMonthsToDateString } from './property-form.page';
+import { CLEARABLE_PROPERTY_FIELDS, PropertyFormPage, addMonthsToDateString, clearableFieldsLeftEmpty } from './property-form.page';
 import { PropertyApiService } from '../../core/api/property-api.service';
 import { LookupsApiService, PropertyTypeLookup } from '../../core/api/lookups-api.service';
 import { LocationsApiService } from '../../core/api/locations-api.service';
@@ -198,6 +198,46 @@ describe('PropertyFormPage', () => {
       expect(component.submitError()).toBe('PROPERTY_FORM.BRANCH.INVALID');
       expect(component.selectedBranchId()).toBe('');
       expect(calls).toBe(2);
+    });
+  });
+
+  describe('emptying optional fields on edit (audit P3-1)', () => {
+    const submit = (c: PropertyFormPage) => (c as unknown as { proceedWithSubmit(): void }).proceedWithSubmit();
+    const lastUpdate = () => propertyApiSpy.updateProperty.calls.mostRecent().args[1] as unknown as Record<string, unknown>;
+
+    async function editing(property: Record<string, unknown>): Promise<PropertyFormPage> {
+      const c = createComponent('p1');
+      propertyApiSpy.getPropertyForManagement.and.returnValue(of({ id: 'p1', ...property } as never));
+      await Promise.resolve();
+      await new Promise(r => setTimeout(r));
+      return c;
+    }
+
+    it('names the fields the owner emptied, and never a field that still has a value', async () => {
+      component = await editing({ listingType: 'ForRent', additionalCosts: 120, deposit: 500, availableFrom: '2026-12-01T00:00:00' });
+      component.form.patchValue({ additionalCosts: null, availableFrom: '' });
+      submit(component);
+
+      const payload = lastUpdate();
+      const cleared = payload['ClearFields'] as string[];
+      expect(cleared).toContain('AdditionalCosts');
+      expect(cleared).toContain('AvailableFrom');
+      expect(cleared).not.toContain('Deposit');
+      expect(payload['Deposit']).toBe(500);
+      expect(payload['AvailableFrom']).toBeNull();
+    });
+
+    it('a new listing sends no ClearFields', () => {
+      component = createComponent();
+      submit(component);
+      expect('ClearFields' in (propertyApiSpy.createProperty.calls.mostRecent().args[0] as object)).toBeFalse();
+    });
+
+    it('only names fields the API accepts', () => {
+      const cleared = clearableFieldsLeftEmpty({ Title: null, ColdRent: null, Deposit: 5 });
+      expect(cleared).toEqual(CLEARABLE_PROPERTY_FIELDS.filter(f => f !== 'Deposit'));
+      expect(cleared).not.toContain('ColdRent');
+      expect(cleared).not.toContain('Title');
     });
   });
 
