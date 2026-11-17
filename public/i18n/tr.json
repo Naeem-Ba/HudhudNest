@@ -773,6 +773,7 @@
     "INVALID_FILE_TYPE": "Desteklenmeyen dosya türü. İzin verilenler: PNG, JPG, WebP.",
     "FILE_TOO_LARGE": "{{name}} dosyası 5 MB'tan büyük.",
     "IMAGE_UPLOAD_WARNING": "İlan kaydedildi ancak görseller yüklenemedi.",
+    "TOO_MANY_PHOTOS": "Bu seferde en fazla {{max}} fotoğraf ekleyebilirsiniz. Yalnızca ilkleri eklendi.",
     "PHOTOS_PROCESSING": "Fotoğraflar hazırlanıyor ve yeniden boyutlandırılıyor...",
     "COUNTRY": "Ülke",
     "REGION": "Bölge",

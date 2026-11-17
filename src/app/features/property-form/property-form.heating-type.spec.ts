@@ -179,6 +179,31 @@ describe('PropertyFormPage heating type', () => {
     expect(fixture.componentInstance.form.get('isPriceNegotiable')?.value).toBeFalse();
     expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="price-negotiable"] input')).not.toBeNull();
   });
+
+  // Comprehensive audit 2026-11-17 (R-06): the server takes at most 10 photos per upload and 20 per listing, and all
+  // picked photos go up in one request, so picking 11 used to reject the whole upload and save the listing bare.
+  it('keeps the picked photos within the per-upload and per-listing limits', async () => {
+    setup();
+    const fixture = TestBed.createComponent(PropertyFormPage);
+    fixture.detectChanges();
+    flushEnums();
+    await fixture.whenStable();
+    const page = fixture.componentInstance;
+    const pick = (n: number) => ({
+      target: { files: Array.from({ length: n }, (_, i) => new File(['x'], `p${i}.png`, { type: 'image/png' })), value: '' }
+    } as unknown as Event);
+
+    await page.onFileSelected(pick(12));
+    expect(page.selectedFiles().length).toBe(10);
+    await page.onFileSelected(pick(1));
+    expect(page.selectedFiles().length).toBe(10);
+
+    page.selectedFiles.set([]);
+    page.existingImages.set(Array.from({ length: 15 }, (_, i) => ({ id: `${i}`, url: `u${i}`, isMain: i === 0 })));
+    expect(page.photoLimit()).toBe(5);
+    await page.onFileSelected(pick(7));
+    expect(page.selectedFiles().length).toBe(5);
+  });
 });
 
 describe('PropertyFormPage heating type in the save payload', () => {

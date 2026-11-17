@@ -773,6 +773,7 @@
     "INVALID_FILE_TYPE": "Unsupported file type. Allowed: PNG, JPG, WebP.",
     "FILE_TOO_LARGE": "The file {{name}} is larger than 5 MB.",
     "IMAGE_UPLOAD_WARNING": "The property was saved, but the images could not be uploaded.",
+    "TOO_MANY_PHOTOS": "You can add at most {{max}} photos this time. Only the first ones were added.",
     "PHOTOS_PROCESSING": "Preparing and resizing photos...",
     "COUNTRY": "Country",
     "REGION": "Region",

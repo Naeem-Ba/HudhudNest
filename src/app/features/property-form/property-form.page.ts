@@ -282,6 +282,10 @@ export class PropertyFormPage implements OnInit {
   readonly maxSizeMB = 5;
   /** Matches UploadPropertyImagesCommandHandler.MaxImageSize (decimal 5 MB, not 5 MiB). */
   private readonly maxUploadBytes = 5_000_000;
+  /** Match UploadPropertyImagesCommandHandler.MaxImagesPerUpload / MaxImagesPerProperty. All picked photos go up in
+   * one request, so going over either limit used to reject the whole upload and save the listing with no photos. */
+  static readonly MAX_IMAGES_PER_UPLOAD = 10;
+  static readonly MAX_IMAGES_PER_PROPERTY = 20;
   /** True while picked photos are being shrunk in the browser (see image-compression.ts). */
   readonly processingPhotos = signal(false);
 
@@ -907,6 +911,15 @@ export class PropertyFormPage implements OnInit {
       typed.push(file);
     }
 
+    const room = this.remainingPhotoSlots();
+    if (typed.length > room) {
+      this.showToast(
+        this.translate.instant('PROPERTY_FORM.TOO_MANY_PHOTOS', { max: this.photoLimit() }),
+        'error',
+      );
+      typed.splice(room);
+    }
+
     // Camera photos routinely exceed the server's 5 MB cap; shrink them here instead of rejecting them.
     this.processingPhotos.set(true);
     let prepared: File[];
@@ -936,6 +949,18 @@ export class PropertyFormPage implements OnInit {
       };
       reader.readAsDataURL(file);
     }
+  }
+
+  /** Photos this save may still add: the per-upload cap, lowered by photos the listing already has. */
+  photoLimit(): number {
+    return Math.max(0, Math.min(
+      PropertyFormPage.MAX_IMAGES_PER_UPLOAD,
+      PropertyFormPage.MAX_IMAGES_PER_PROPERTY - this.existingImages().length,
+    ));
+  }
+
+  remainingPhotoSlots(): number {
+    return Math.max(0, this.photoLimit() - this.selectedFiles().length);
   }
 
   removeImage(index: number): void {
