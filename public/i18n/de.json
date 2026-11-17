@@ -2363,7 +2363,12 @@
       "PUBLISH": "Veröffentlichen",
       "UNPUBLISH": "Zurückziehen",
       "TOGGLE_SUCCESS": "Veröffentlichungsstatus aktualisiert.",
-      "TOGGLE_ERROR": "Status konnte nicht aktualisiert werden."
+      "TOGGLE_ERROR": "Status konnte nicht aktualisiert werden.",
+      "DELETE": "Löschen",
+      "CONFIRM_DELETE": "„{{title}}“ endgültig löschen? Das kann nicht rückgängig gemacht werden.",
+      "DELETE_SUCCESS": "Inserat gelöscht.",
+      "DELETE_HAS_BOOKINGS": "Für dieses Inserat laufen noch Buchungen. Schließe sie ab, lehne sie ab oder storniere sie und lösche es dann.",
+      "DELETE_ERROR": "Das Inserat konnte nicht gelöscht werden. Bitte versuche es erneut."
     },
     "FORM": {
       "EDIT_TITLE": "Anzeige bearbeiten",

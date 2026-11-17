@@ -30,6 +30,7 @@ export class MyShortStayListingsPage implements OnInit {
   readonly loading = signal(false);
   readonly error = signal('');
   readonly togglingId = signal<string | null>(null);
+  readonly deletingId = signal<string | null>(null);
   readonly fallbackImage = '/images/no-image.svg';
 
   ngOnInit(): void {
@@ -78,6 +79,31 @@ export class MyShortStayListingsPage implements OnInit {
       error: err => {
         this.togglingId.set(null);
         this.toast.show(apiErrorText(err) ?? this.translate.instant('SHORTSTAY.MY_LISTINGS.TOGGLE_ERROR'), 'error');
+      }
+    });
+  }
+
+  /**
+   * Removes the listing for good (soft delete on the server, frees the plan slot). The API refuses it with 409 while
+   * bookings are still in progress, so the host is told to finish or cancel them first.
+   */
+  deleteListing(listing: ShortStayListingSummary): void {
+    if (this.deletingId()) return;
+    if (!confirm(this.translate.instant('SHORTSTAY.MY_LISTINGS.CONFIRM_DELETE', { title: listing.title }))) return;
+    this.deletingId.set(listing.id);
+
+    this.api.delete(listing.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.listings.update(items => items.filter(item => item.id !== listing.id));
+        this.deletingId.set(null);
+        this.toast.show(this.translate.instant('SHORTSTAY.MY_LISTINGS.DELETE_SUCCESS'), 'success');
+      },
+      error: err => {
+        this.deletingId.set(null);
+        const key = err?.status === 409 ? 'SHORTSTAY.MY_LISTINGS.DELETE_HAS_BOOKINGS' : null;
+        this.toast.show(
+          key ? this.translate.instant(key) : (apiErrorText(err) ?? this.translate.instant('SHORTSTAY.MY_LISTINGS.DELETE_ERROR')),
+          'error');
       }
     });
   }

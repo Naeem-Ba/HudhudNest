@@ -2363,7 +2363,12 @@
       "PUBLISH": "Yayınla",
       "UNPUBLISH": "Yayından kaldır",
       "TOGGLE_SUCCESS": "Yayın durumu güncellendi.",
-      "TOGGLE_ERROR": "Yayın durumu güncellenemedi."
+      "TOGGLE_ERROR": "Yayın durumu güncellenemedi.",
+      "DELETE": "Sil",
+      "CONFIRM_DELETE": "\"{{title}}\" kalıcı olarak silinsin mi? Bu işlem geri alınamaz.",
+      "DELETE_SUCCESS": "İlan silindi.",
+      "DELETE_HAS_BOOKINGS": "Bu ilanın devam eden rezervasyonları var. Önce bunları tamamlayın, reddedin veya iptal edin, sonra silin.",
+      "DELETE_ERROR": "İlan silinemedi. Lütfen tekrar deneyin."
     },
     "FORM": {
       "EDIT_TITLE": "İlanı düzenle",

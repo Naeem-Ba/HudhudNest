@@ -49,6 +49,15 @@
         >
           {{ (listing.isPublished ? 'SHORTSTAY.MY_LISTINGS.UNPUBLISH' : 'SHORTSTAY.MY_LISTINGS.PUBLISH') | translate }}
         </button>
+        <button
+          type="button"
+          data-testid="delete-listing"
+          class="btn btn--sm btn--outline msl__delete"
+          [disabled]="deletingId() === listing.id"
+          (click)="deleteListing(listing)"
+        >
+          {{ 'SHORTSTAY.MY_LISTINGS.DELETE' | translate }}
+        </button>
       </div>
     </li>
   </ul>

@@ -2363,7 +2363,12 @@
       "PUBLISH": "Publish",
       "UNPUBLISH": "Unpublish",
       "TOGGLE_SUCCESS": "Publish status updated.",
-      "TOGGLE_ERROR": "Could not update publish status."
+      "TOGGLE_ERROR": "Could not update publish status.",
+      "DELETE": "Delete",
+      "CONFIRM_DELETE": "Delete \"{{title}}\" for good? This cannot be undone.",
+      "DELETE_SUCCESS": "Listing deleted.",
+      "DELETE_HAS_BOOKINGS": "This listing has bookings in progress. Complete, reject or cancel them first, then delete it.",
+      "DELETE_ERROR": "The listing could not be deleted. Please try again."
     },
     "FORM": {
       "EDIT_TITLE": "Edit Listing",
