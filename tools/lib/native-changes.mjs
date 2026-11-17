@@ -1,7 +1,7 @@
 // Decides whether a change can affect the native iOS build, so Frontend CI only spends macOS minutes on
 // changes that can break it.
 //
-// Why: the "iOS Unsigned Simulator Build" job runs on macos-15. On a private repository a macOS minute is
+// Why: the "iOS Unsigned Simulator Build" job runs on macos-26. On a private repository a macOS minute is
 // billed at $0.062 against $0.006 for Linux (about 10x), and the free quota is 2,000 minutes a month for the
 // whole account. Compiling the Capacitor project proves nothing about a change that only touches Angular
 // code: `npm run build:prod` (the Linux job) already type-checks and builds that, and xcodebuild just
