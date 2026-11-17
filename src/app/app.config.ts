@@ -17,7 +17,7 @@ import { isCsrfFailure, readRefreshErrorCode, sessionEndReason } from './core/in
 import { AuthService } from './core/auth/auth.service';
 import { normalizeAuthTokenResponse } from './core/models/auth.model';
 import { resolveAuthApiBaseUrl } from './core/auth/auth-api-base-url';
-import { readSessionHint, writeSessionHint } from './core/auth/session-hint';
+import { canSkipSessionCheck, hasSessionMarker, readSessionHint, writeSessionHint } from './core/auth/session-hint';
 import { CsrfTokenService } from './core/services/csrf-token.service';
 import { GeoCountryService } from './core/services/geo-country.service';
 import { LanguageService } from './core/services/language.service';
@@ -119,8 +119,9 @@ export function restoreSession(
     // راجع تعليق AuthStatus في auth.service.ts.
     authService.beginSessionRefresh();
     try {
-      // A browser that knows it is signed out (see session-hint.ts) does not ask the server again.
-      if (readSessionHint() === 'no') {
+      // A browser that knows it is signed out, or a first visit to the web app with no session marker
+      // (see session-hint.ts), does not ask the server.
+      if (canSkipSessionCheck(readSessionHint(), resolveAuthApiBaseUrl(environment), hasSessionMarker())) {
         return;
       }
 
