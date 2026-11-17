@@ -105,7 +105,13 @@
       </div>
 
       <!-- تقدير أولي محدود (1-2 إعلان) قبل الانتقال لمسار المكاتب. -->
-      <div class="alert alert--info" *ngIf="r.requiresOfficeValuation && r.fastPath.hasComparableListings" role="status">
+      <!-- Offices cannot receive requests yet: say plainly what the listings could and could not tell. -->
+      <div class="alert alert--info" *ngIf="r.requiresOfficeValuation && !r.officePathAvailable" role="status" data-testid="office-path-off">
+        <span aria-hidden="true">ℹ️</span>
+        <p>{{ (r.fastPath.hasComparableListings ? 'VALUATION.OFFICE_PATH.OFF_LIMITED' : 'VALUATION.OFFICE_PATH.OFF_NONE') | translate }}</p>
+      </div>
+
+      <div class="alert alert--info" *ngIf="r.requiresOfficeValuation && r.officePathAvailable && r.fastPath.hasComparableListings" role="status">
         <span aria-hidden="true">ℹ️</span>
         <p>{{ r.fastPath.message }}</p>
       </div>
@@ -132,7 +138,7 @@
       </div>
 
       <!-- مسار المكاتب: تم إرسال الطلب لمكاتب عقارية مطابقة جغرافيًا. -->
-      <div class="office-path" *ngIf="r.requiresOfficeValuation">
+      <div class="office-path" *ngIf="r.requiresOfficeValuation && r.officePathAvailable">
         <div class="alert alert--info" role="status">
           <span aria-hidden="true">🏢</span>
           <p>{{ 'VALUATION.OFFICE_PATH.SENT_TO' | translate: { count: r.officeMatchCount } }}</p>

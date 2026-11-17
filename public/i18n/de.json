@@ -2847,7 +2847,9 @@
       "INSUFFICIENT_COVERAGE": "Wir konnten nicht mindestens 3 Immobilienbüros in Ihrer Nähe finden. Möglicherweise erhalten Sie Schätzungen von weniger Büros.",
       "EXPIRES_AT": "Sie erhalten innerhalb von 24 Stunden eine Antwort, spätestens bis {{date}}.",
       "CHECK_STATUS": "Antworten prüfen",
-      "NO_ESTIMATES_YET": "Noch keine Schätzungen. Bitte später erneut prüfen."
+      "NO_ESTIMATES_YET": "Noch keine Schätzungen. Bitte später erneut prüfen.",
+      "OFF_LIMITED": "Es wurden nur wenige vergleichbare Inserate gefunden, daher ist dies nur eine vorläufige Schätzung. Die Bewertung durch Immobilienbüros ist noch nicht verfügbar.",
+      "OFF_NONE": "In deiner Gegend gibt es derzeit nicht genug vergleichbare Inserate für eine Schätzung. Die Bewertung durch Immobilienbüros ist noch nicht verfügbar; versuche es später oder erweitere das Gebiet."
     },
     "NEW_REQUEST": "Neue Bewertungsanfrage",
     "STATUS": {

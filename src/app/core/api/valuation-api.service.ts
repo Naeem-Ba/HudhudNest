@@ -53,7 +53,9 @@ export class ValuationApiService {
       officeMatchCount: Number(r['officeMatchCount'] ?? 0),
       hasMinimumOfficeCoverage: !!r['hasMinimumOfficeCoverage'],
       insufficientOfficeCoverage: !!r['insufficientOfficeCoverage'],
-      matchedNeighboringGovernorate: !!r['matchedNeighboringGovernorate']
+      matchedNeighboringGovernorate: !!r['matchedNeighboringGovernorate'],
+      // An API from before this field existed always ran the office path.
+      officePathAvailable: r['officePathAvailable'] !== false
     };
   }
 

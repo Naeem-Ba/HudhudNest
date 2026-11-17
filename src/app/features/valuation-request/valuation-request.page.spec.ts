@@ -111,7 +111,8 @@ describe('ValuationRequestPage', () => {
         officeMatchCount: 0,
         hasMinimumOfficeCoverage: false,
         insufficientOfficeCoverage: false,
-        matchedNeighboringGovernorate: false
+        matchedNeighboringGovernorate: false,
+        officePathAvailable: true
       };
       valuationApiSpy.create.and.returnValue(of(completed));
 
@@ -168,7 +169,8 @@ describe('ValuationRequestPage', () => {
         officeMatchCount: 2,
         hasMinimumOfficeCoverage: false,
         insufficientOfficeCoverage: true,
-        matchedNeighboringGovernorate: true
+        matchedNeighboringGovernorate: true,
+        officePathAvailable: true
       };
       valuationApiSpy.create.and.returnValue(of(officePath));
 
@@ -197,7 +199,8 @@ describe('ValuationRequestPage', () => {
         officeMatchCount: 1,
         hasMinimumOfficeCoverage: false,
         insufficientOfficeCoverage: true,
-        matchedNeighboringGovernorate: false
+        matchedNeighboringGovernorate: false,
+        officePathAvailable: true
       } satisfies CreateValuationInquiryResultDto));
       component.submit();
 
@@ -229,7 +232,8 @@ describe('ValuationRequestPage', () => {
         officeMatchCount: 0,
         hasMinimumOfficeCoverage: false,
         insufficientOfficeCoverage: false,
-        matchedNeighboringGovernorate: false
+        matchedNeighboringGovernorate: false,
+        officePathAvailable: true
       } satisfies CreateValuationInquiryResultDto));
       component.submit();
 

@@ -2847,7 +2847,9 @@
       "INSUFFICIENT_COVERAGE": "We could not find at least 3 real-estate offices in your area. You may receive estimates from fewer offices.",
       "EXPIRES_AT": "You'll hear back within 24 hours, by {{date}} at the latest.",
       "CHECK_STATUS": "Check for responses",
-      "NO_ESTIMATES_YET": "No estimates yet. Please check back later."
+      "NO_ESTIMATES_YET": "No estimates yet. Please check back later.",
+      "OFF_LIMITED": "Only a few similar listings were found, so this is a preliminary estimate. Valuation by real-estate offices is not available yet.",
+      "OFF_NONE": "There are not enough similar listings in your area to estimate a price right now. Valuation by real-estate offices is not available yet; try again later or widen the area."
     },
     "NEW_REQUEST": "New valuation request",
     "STATUS": {

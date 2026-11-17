@@ -118,4 +118,19 @@ describe('ValuationApiService', () => {
       ]
     });
   });
+
+  // Comprehensive audit 2026-11-17: offices cannot answer yet, so the API may switch the office path off.
+  it('create: reads officePathAvailable, and treats an API without the field as the office path being on', done => {
+    const results: boolean[] = [];
+    service.create({ governorateId: 1, requestType: 'ForRent' }).subscribe(r => results.push(r.officePathAvailable));
+    service.create({ governorateId: 1, requestType: 'ForRent' }).subscribe(r => {
+      results.push(r.officePathAvailable);
+      expect(results).toEqual([false, true]);
+      done();
+    });
+
+    const [off, legacy] = httpMock.match(`${environment.apiBaseUrl}/ValuationInquiries`);
+    off.flush({ inquiryId: 'a', status: 'Expired', fastPath: {}, requiresOfficeValuation: true, officePathAvailable: false });
+    legacy.flush({ inquiryId: 'b', status: 'AwaitingOfficeResponses', fastPath: {}, requiresOfficeValuation: true });
+  });
 });

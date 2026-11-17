@@ -2847,7 +2847,9 @@
       "INSUFFICIENT_COVERAGE": "Bölgenizde en az 3 emlak ofisi bulamadık. Daha az sayıda ofisten tahmin alabilirsiniz.",
       "EXPIRES_AT": "24 saat içinde, en geç {{date}} tarihine kadar yanıt alırsınız.",
       "CHECK_STATUS": "Yanıtları kontrol et",
-      "NO_ESTIMATES_YET": "Henüz tahmin yok. Lütfen daha sonra tekrar bakın."
+      "NO_ESTIMATES_YET": "Henüz tahmin yok. Lütfen daha sonra tekrar bakın.",
+      "OFF_LIMITED": "Yalnızca birkaç benzer ilan bulundu, bu nedenle bu ön bir tahmindir. Emlak ofisleri tarafından değerleme henüz kullanılamıyor.",
+      "OFF_NONE": "Bölgenizde şu anda fiyat tahmini için yeterli benzer ilan yok. Emlak ofisleri tarafından değerleme henüz kullanılamıyor; daha sonra tekrar deneyin veya bölgeyi genişletin."
     },
     "NEW_REQUEST": "Yeni değerleme talebi",
     "STATUS": {
