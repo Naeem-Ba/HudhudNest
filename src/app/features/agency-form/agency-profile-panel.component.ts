@@ -22,7 +22,7 @@ import { ProfileFieldErrors, defaultWeek, linkFieldErrors, normalizeWeek, weekEr
 
 /** نفس قيود الخادم (SetAgencyLogoCommandHandler مع Slot = Cover). */
 export const COVER_MAX_BYTES = 5_000_000;
-const COVER_TYPES = ['image/png', 'image/jpeg'];
+const COVER_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 
 const PLACEHOLDERS: Record<AgencySocialNetwork, string> = {
   WhatsApp: '+963 9XX XXX XXX',
@@ -71,7 +71,7 @@ const PLACEHOLDERS: Record<AgencySocialNetwork, string> = {
           <img *ngIf="agency.coverImageUrl; else noCover" class="cover-preview" [src]="agency.coverImageUrl" alt="" data-testid="cover-preview" />
           <ng-template #noCover><div class="cover-empty">{{ 'OFFICE_PROFILE.NO_COVER' | translate }}</div></ng-template>
           <p class="field-hint">{{ 'OFFICE_PROFILE.COVER_HINT' | translate }}</p>
-          <input #coverInput class="file-input" type="file" accept="image/png,image/jpeg" (change)="onCoverSelected(coverInput)" />
+          <input #coverInput class="file-input" type="file" accept="image/png,image/jpeg,image/webp" (change)="onCoverSelected(coverInput)" />
           <div class="row-actions">
             <button type="button" class="btn btn--outline btn--sm" [disabled]="busy() !== null" (click)="coverInput.click()" data-testid="cover-upload">
               {{ (busy() === 'cover' ? 'COMMON.SAVING' : (agency.coverImageUrl ? 'OFFICE_PROFILE.CHANGE_COVER' : 'OFFICE_PROFILE.UPLOAD_COVER')) | translate }}
