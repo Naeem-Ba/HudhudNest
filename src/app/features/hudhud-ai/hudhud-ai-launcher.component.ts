@@ -49,7 +49,8 @@ export function launcherHiddenOn(url: string): boolean {
       position: fixed;
       inset-inline-end: max(1rem, env(safe-area-inset-right));
       inset-block-end: calc(1rem + env(safe-area-inset-bottom, 0px));
-      z-index: var(--z-overlay, 300);
+      /* Below the consent banners (z-overlay - 1): a choice the visitor must make is never covered. */
+      z-index: calc(var(--z-overlay, 300) - 2);
       display: inline-flex; align-items: center; gap: .45rem;
       min-height: 48px; padding: .6rem 1rem;
       border: 0; border-radius: var(--r-pill, 9999px);
