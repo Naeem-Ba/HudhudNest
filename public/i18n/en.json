@@ -148,7 +148,8 @@
     "ADMIN_PAYMENTS": "Payments (online)",
     "ADMIN_GEO": "Location catalog",
     "OFFICES": "Agencies",
-    "ADMIN_AGENCIES": "Agency verification"
+    "ADMIN_AGENCIES": "Agency verification",
+    "ADMIN_LEGAL_HOLDS": "Legal holds"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -1211,7 +1212,8 @@
     "ENABLE_EXPLANATION": "The owner can sign in again and listings that the disabling took down come back. Listings taken down for another reason stay down.",
     "ENABLE_REASON": "Reason for re-enabling (required)",
     "ENABLE_SUCCESS": "Account re-enabled.",
-    "ENABLE_NOT_POSSIBLE": "This account cannot be re-enabled: the owner deleted it themselves (irreversible) or it is not disabled."
+    "ENABLE_NOT_POSSIBLE": "This account cannot be re-enabled: the owner deleted it themselves (irreversible) or it is not disabled.",
+    "LEGAL_HOLDS": "Legal holds"
   },
   "ADMIN_USER_PROPERTIES": {
     "TAKEN_DOWN": "Taken down",
@@ -4985,5 +4987,32 @@
       "THURSDAY": "Thursday",
       "FRIDAY": "Friday"
     }
+  },
+  "ADMIN_LEGAL_HOLDS": {
+    "TITLE": "Legal holds",
+    "SUBTITLE": "While a hold is active, the account's scheduled erasure does not run. Holds are released, never deleted, and every action is written to the audit log.",
+    "PLACE_TITLE": "New hold",
+    "ACCOUNT_ID": "Account id",
+    "REASON": "Reason",
+    "PLACE": "Place hold",
+    "FILTER_ACCOUNT": "Filter by account id",
+    "ACTIVE_ONLY": "Active only",
+    "SEARCH": "Search",
+    "LOAD_ERROR": "The holds could not be loaded.",
+    "ACCOUNT": "Account",
+    "PLACED_AT": "Placed",
+    "STATE": "State",
+    "ACTIVE": "Active",
+    "RELEASED": "Released",
+    "RELEASE": "Release",
+    "EMPTY": "No holds.",
+    "INVALID_ID": "The account id is not valid.",
+    "REASON_REQUIRED": "Write the reason for the hold.",
+    "CONFIRM_PLACE": "A legal hold keeps this account from being erased until it is released. Continue?",
+    "CONFIRM_RELEASE": "After release, the account's scheduled erasure may run. Release the hold?",
+    "PLACED": "Hold placed.",
+    "RELEASED_OK": "Hold released.",
+    "UNKNOWN_ACCOUNT": "No account has this id.",
+    "SAVE_ERROR": "Could not save. Please try again."
   }
 }

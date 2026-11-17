@@ -148,7 +148,8 @@
     "ADMIN_PAYMENTS": "Zahlungen (online)",
     "ADMIN_GEO": "Standortkatalog",
     "OFFICES": "Makler",
-    "ADMIN_AGENCIES": "Makler-Verifizierung"
+    "ADMIN_AGENCIES": "Makler-Verifizierung",
+    "ADMIN_LEGAL_HOLDS": "Rechtliche Sperren"
   },
   "AUTH": {
     "LOGIN_TITLE": "Willkommen",
@@ -1164,7 +1165,8 @@
     "ENABLE_EXPLANATION": "Die Person kann sich wieder anmelden und Anzeigen, die durch die Deaktivierung offline gingen, kommen zurück. Aus anderen Gründen gesperrte Anzeigen bleiben offline.",
     "ENABLE_REASON": "Grund der Reaktivierung (Pflicht)",
     "ENABLE_SUCCESS": "Konto wieder aktiviert.",
-    "ENABLE_NOT_POSSIBLE": "Dieses Konto kann nicht reaktiviert werden: Die Person hat es selbst gelöscht (unwiderruflich) oder es ist nicht deaktiviert."
+    "ENABLE_NOT_POSSIBLE": "Dieses Konto kann nicht reaktiviert werden: Die Person hat es selbst gelöscht (unwiderruflich) oder es ist nicht deaktiviert.",
+    "LEGAL_HOLDS": "Rechtliche Sperren"
   },
   "ADMIN_USER_PROPERTIES": {
     "TAKEN_DOWN": "Gesperrt",
@@ -4985,5 +4987,32 @@
       "THURSDAY": "Donnerstag",
       "FRIDAY": "Freitag"
     }
+  },
+  "ADMIN_LEGAL_HOLDS": {
+    "TITLE": "Rechtliche Sperren",
+    "SUBTITLE": "Solange eine Sperre aktiv ist, wird die geplante Löschung des Kontos nicht ausgeführt. Sperren werden aufgehoben, nie gelöscht; jede Aktion steht im Audit-Log.",
+    "PLACE_TITLE": "Neue Sperre",
+    "ACCOUNT_ID": "Konto-ID",
+    "REASON": "Grund",
+    "PLACE": "Sperre setzen",
+    "FILTER_ACCOUNT": "Nach Konto-ID filtern",
+    "ACTIVE_ONLY": "Nur aktive",
+    "SEARCH": "Suchen",
+    "LOAD_ERROR": "Die Sperren konnten nicht geladen werden.",
+    "ACCOUNT": "Konto",
+    "PLACED_AT": "Gesetzt am",
+    "STATE": "Status",
+    "ACTIVE": "Aktiv",
+    "RELEASED": "Aufgehoben",
+    "RELEASE": "Aufheben",
+    "EMPTY": "Keine Sperren.",
+    "INVALID_ID": "Die Konto-ID ist ungültig.",
+    "REASON_REQUIRED": "Gib den Grund für die Sperre an.",
+    "CONFIRM_PLACE": "Eine rechtliche Sperre verhindert die Löschung dieses Kontos, bis sie aufgehoben wird. Fortfahren?",
+    "CONFIRM_RELEASE": "Nach dem Aufheben kann die geplante Löschung des Kontos laufen. Sperre aufheben?",
+    "PLACED": "Sperre gesetzt.",
+    "RELEASED_OK": "Sperre aufgehoben.",
+    "UNKNOWN_ACCOUNT": "Kein Konto mit dieser ID.",
+    "SAVE_ERROR": "Speichern fehlgeschlagen. Bitte erneut versuchen."
   }
 }

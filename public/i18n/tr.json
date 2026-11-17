@@ -148,7 +148,8 @@
     "ADMIN_PAYMENTS": "Ödemeler (çevrimiçi)",
     "ADMIN_GEO": "Konum kataloğu",
     "OFFICES": "Emlak ofisleri",
-    "ADMIN_AGENCIES": "Ofis doğrulama"
+    "ADMIN_AGENCIES": "Ofis doğrulama",
+    "ADMIN_LEGAL_HOLDS": "Yasal bekletmeler"
   },
   "AUTH": {
     "LOGIN_TITLE": "Hoş geldiniz",
@@ -1211,7 +1212,8 @@
     "ENABLE_EXPLANATION": "Hesap sahibi yeniden giriş yapabilir ve devre dışı bırakma nedeniyle kaldırılan ilanlar geri gelir. Başka bir nedenle kaldırılan ilanlar kaldırılmış olarak kalır.",
     "ENABLE_REASON": "Yeniden etkinleştirme gerekçesi (zorunlu)",
     "ENABLE_SUCCESS": "Hesap yeniden etkinleştirildi.",
-    "ENABLE_NOT_POSSIBLE": "Bu hesap yeniden etkinleştirilemez: hesap sahibi hesabını kendisi sildi (geri alınamaz) veya hesap devre dışı değil."
+    "ENABLE_NOT_POSSIBLE": "Bu hesap yeniden etkinleştirilemez: hesap sahibi hesabını kendisi sildi (geri alınamaz) veya hesap devre dışı değil.",
+    "LEGAL_HOLDS": "Yasal bekletmeler"
   },
   "ADMIN_USER_PROPERTIES": {
     "TAKEN_DOWN": "Yayından kaldırıldı",
@@ -4985,5 +4987,32 @@
       "THURSDAY": "Perşembe",
       "FRIDAY": "Cuma"
     }
+  },
+  "ADMIN_LEGAL_HOLDS": {
+    "TITLE": "Yasal bekletmeler",
+    "SUBTITLE": "Bekletme etkin olduğu sürece hesabın planlanmış silinmesi çalışmaz. Bekletmeler kaldırılır, asla silinmez; her işlem denetim günlüğüne yazılır.",
+    "PLACE_TITLE": "Yeni bekletme",
+    "ACCOUNT_ID": "Hesap kimliği",
+    "REASON": "Neden",
+    "PLACE": "Bekletme koy",
+    "FILTER_ACCOUNT": "Hesap kimliğine göre filtrele",
+    "ACTIVE_ONLY": "Yalnızca etkin",
+    "SEARCH": "Ara",
+    "LOAD_ERROR": "Bekletmeler yüklenemedi.",
+    "ACCOUNT": "Hesap",
+    "PLACED_AT": "Konulma",
+    "STATE": "Durum",
+    "ACTIVE": "Etkin",
+    "RELEASED": "Kaldırıldı",
+    "RELEASE": "Kaldır",
+    "EMPTY": "Bekletme yok.",
+    "INVALID_ID": "Hesap kimliği geçerli değil.",
+    "REASON_REQUIRED": "Bekletmenin nedenini yazın.",
+    "CONFIRM_PLACE": "Yasal bekletme, kaldırılana kadar bu hesabın silinmesini engeller. Devam edilsin mi?",
+    "CONFIRM_RELEASE": "Kaldırıldıktan sonra hesabın planlanmış silinmesi çalışabilir. Bekletme kaldırılsın mı?",
+    "PLACED": "Bekletme konuldu.",
+    "RELEASED_OK": "Bekletme kaldırıldı.",
+    "UNKNOWN_ACCOUNT": "Bu kimliğe sahip hesap yok.",
+    "SAVE_ERROR": "Kaydedilemedi. Lütfen tekrar deneyin."
   }
 }
