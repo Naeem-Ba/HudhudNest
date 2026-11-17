@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, catchError, combineLatest, map, Observable, of, Subject, tap, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, combineLatest, distinctUntilChanged, map, Observable, of, Subject, tap, throwError } from 'rxjs';
 
 import { AuthApiService } from './auth-api.service';
 import { LOGIN_METHOD_STORAGE_KEY, LoginMethod } from './login-identifier';
@@ -52,9 +52,16 @@ export class AuthService {
   private readonly recentAreas = inject(RecentAreasService);
 
   private readonly loggedIn = new BehaviorSubject<boolean>(false);
-  readonly isLoggedIn$ = this.loggedIn.asObservable();
+  /**
+   * Changes only (signed in / signed out). loggedIn is pushed again on every token refresh and after the profile
+   * loads, and each repeat re-ran every subscriber: on one signed-in page load GET /notifications/unread-count went
+   * out 4 times (UI performance audit 2026-11-17).
+   */
+  readonly isLoggedIn$ = this.loggedIn.asObservable().pipe(distinctUntilChanged());
 
   private readonly currentUserSubject = new BehaviorSubject<AuthenticatedUser | null>(null);
+  /** The access token whose GET /users/me was last requested (see validateSession). */
+  private profileToken: string | null = null;
   readonly currentUser$ = this.currentUserSubject.asObservable();
 
   readonly isAdmin$ = this.currentUser$.pipe(
@@ -167,7 +174,13 @@ export class AuthService {
     });
     this.loggedIn.next(true);
 
-    this.hydrateProfile();
+    // Guards re-validate the same token on every guarded navigation; the profile fetched for that token is still
+    // current (edits reach currentUser$ through updateCurrentUser). A new token (sign-in, refresh) fetches it again.
+    // UI performance audit 2026-11-17: this was a second GET /users/me on every signed-in page load.
+    if (token !== this.profileToken) {
+      this.profileToken = token;
+      this.hydrateProfile();
+    }
   }
 
   /**
@@ -214,6 +227,8 @@ export class AuthService {
       .pipe(catchError(() => of(null)))
       .subscribe(profile => {
         if (!profile) {
+          // Not fetched: the next validation tries again.
+          this.profileToken = null;
           return;
         }
 
@@ -358,6 +373,7 @@ export class AuthService {
   }
 
   private setAnonymousState(): void {
+    this.profileToken = null;
     this.currentUserSubject.next(null);
     this.loggedIn.next(false);
   }
