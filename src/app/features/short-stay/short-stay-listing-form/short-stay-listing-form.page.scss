@@ -47,14 +47,18 @@
       border: 1px solid var(--border, #e5e7eb);
       border-radius: 8px;
       font: inherit;
+      // A form control's intrinsic width (~170px) must not push the page sideways at 320px.
+      min-width: 0;
+      max-width: 100%;
     }
   }
 
   &__row {
     display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
 
-    .ssf__field { flex: 1; }
+    .ssf__field { flex: 1 1 8rem; min-width: 0; }
   }
 
   &__checkbox {
@@ -78,7 +82,7 @@
     margin-bottom: 0.6rem;
     flex-wrap: wrap;
 
-    select, input { padding: 0.4rem; border: 1px solid var(--border, #e5e7eb); border-radius: 6px; }
+    select, input { padding: 0.4rem; border: 1px solid var(--border, #e5e7eb); border-radius: 6px; min-width: 0; max-width: 100%; }
   }
 
   &__photos {
@@ -200,3 +204,6 @@
 }
 .ssf__camera-btn:disabled { opacity: .6; cursor: default; }
 .ssf__camera-btn:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+
+// The native file picker has a wide intrinsic width; keep it inside the form at 320px.
+.ssf input[type='file'] { max-width: 100%; min-width: 0; }
