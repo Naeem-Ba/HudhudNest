@@ -28,7 +28,11 @@
 
 ## المسارات المفتوحة في التطبيق
 
-`/` (يفتح الرئيسية)، `/properties`، `/short-stay`، `/investments`، `/users`، `/wohnungen` (روابط قديمة)، `/kontakt`، `/valuation`، `/pricing`.
+`/` (يفتح الرئيسية)، `/properties`، `/short-stay`، `/investments`، `/users`، `/offices` (صفحات المكاتب)، `/o` (رمز QR للمكتب)، `/agencies` (رابط المكتب القديم)، `/wohnungen` (روابط قديمة)، `/kontakt`، `/valuation`، `/pricing`.
+
+كل بادئة تُسجَّل في Android كمسار مطابق (`path`) زائد ما تحته (`pathPrefix` ينتهي بـ `/`)، لا كبادئة نصية: هكذا لا يلتقط `/o` رابطًا مثل `/onboarding`، ولا `/users` رابطًا مثل `/usersettings`. هذا يطابق ما يولّده ملف iOS (`prefix` و`prefix/*`).
+
+داخل التطبيق: الرابط نفسه لا يُفتح مرتين (iOS قد يسلّمه مرتين عند الإقلاع البارد)، ورابط لإقامة قصيرة أو مشروع استثماري أو ملف مستخدم آخر يفتح صفحة جديدة لا الصفحة السابقة (`ParamAwareReuseStrategy`).
 
 **لا تُفتح أبدًا:** `/auth/*` (روابط تأكيد البريد وإعادة كلمة المرور تبقى في المتصفح)، `/admin/*`، `/checkout/*`، `/profile`، `/messages`، `/favorites`، `/my-listings`، `/property-form`، و`/properties/edit/*`. الاختبارات تتحقق من ذلك.
 
@@ -91,7 +95,7 @@ adb shell am start -a android.intent.action.VIEW -d "https://hudhudnest.com/prop
 ## إضافة مسار جديد قابل للفتح
 1. أضفه في `deep-links.config.json` (`paths.prefixes`).
 2. أضفه في `DEEP_LINK_PATH_PREFIXES` داخل `deep-link-routes.ts`.
-3. أضف `<data android:pathPrefix="…"/>` في `AndroidManifest.xml`.
+3. أضف `<data android:path="…"/>` و`<data android:pathPrefix="…/"/>` في `AndroidManifest.xml`.
 4. `npm run test:tools` يفشل إن نسيت واحدة من الثلاث؛ وملف iOS يتولّد تلقائيًا.
 
 ## ملاحظات

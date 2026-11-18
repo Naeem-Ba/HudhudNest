@@ -30,8 +30,9 @@
               Android App Links: https://hudhudnest.com/... opens this app instead of the browser once Android has
               verified https://hudhudnest.com/.well-known/assetlinks.json against the app's signing certificate
               (autoVerify). The <data> list mirrors deep-links.config.json; tools/lib/deep-links.test.mjs fails
-              if the two drift. /properties/edit is refused inside the app (deep-link-routes.ts) because a
-              pathPrefix cannot express an exclusion. See docs/DEEP-LINKS.md.
+              if the two drift. Each allowed prefix is listed as the exact path plus "prefix/" so a link such as
+              /onboarding never matches /o. /properties/edit is refused inside the app (deep-link-routes.ts)
+              because a pathPrefix cannot express an exclusion. See docs/DEEP-LINKS.md.
             -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
@@ -39,14 +40,28 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="hudhudnest.com" />
                 <data android:path="/" />
-                <data android:pathPrefix="/properties" />
-                <data android:pathPrefix="/short-stay" />
-                <data android:pathPrefix="/investments" />
-                <data android:pathPrefix="/users" />
-                <data android:pathPrefix="/wohnungen" />
-                <data android:pathPrefix="/kontakt" />
-                <data android:pathPrefix="/valuation" />
-                <data android:pathPrefix="/pricing" />
+                <data android:path="/properties" />
+                <data android:pathPrefix="/properties/" />
+                <data android:path="/short-stay" />
+                <data android:pathPrefix="/short-stay/" />
+                <data android:path="/investments" />
+                <data android:pathPrefix="/investments/" />
+                <data android:path="/users" />
+                <data android:pathPrefix="/users/" />
+                <data android:path="/offices" />
+                <data android:pathPrefix="/offices/" />
+                <data android:path="/o" />
+                <data android:pathPrefix="/o/" />
+                <data android:path="/agencies" />
+                <data android:pathPrefix="/agencies/" />
+                <data android:path="/wohnungen" />
+                <data android:pathPrefix="/wohnungen/" />
+                <data android:path="/kontakt" />
+                <data android:pathPrefix="/kontakt/" />
+                <data android:path="/valuation" />
+                <data android:pathPrefix="/valuation/" />
+                <data android:path="/pricing" />
+                <data android:pathPrefix="/pricing/" />
             </intent-filter>
 
         </activity>

@@ -104,7 +104,10 @@ export function expectedAndroidDataElements(config) {
   return [
     `scheme=https host=${config.host}`,
     ...config.paths.exact.map(path => `path=${path}`),
-    ...config.paths.prefixes.map(prefix => `pathPrefix=${prefix}`)
+    // A bare pathPrefix is a string prefix, not a path segment: "/o" would also claim "/onboarding" and "/users"
+    // "/usersettings", opening the app on links it then refuses. Each prefix is therefore the exact path plus
+    // everything below it, the same pair the apple-app-site-association file lists (prefix and prefix/*).
+    ...config.paths.prefixes.flatMap(prefix => [`path=${prefix}`, `pathPrefix=${prefix}/`])
   ];
 }
 

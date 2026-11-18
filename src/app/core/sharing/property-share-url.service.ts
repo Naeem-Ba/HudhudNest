@@ -72,6 +72,22 @@ export class PropertyShareUrlService {
   }
 
   /**
+   * The public URL of an office page, "https://hudhudnest.com/offices/{slug}" (share-links audit M-05). Office
+   * slugs may contain Arabic letters, so the slug is always percent-encoded here and nowhere else. Null for an
+   * empty slug, so a caller never shares the directory by accident.
+   */
+  getOfficePublicUrl(slug: string | null | undefined): string | null {
+    const value = slug?.trim();
+    return value ? `${this.getSiteOrigin()}/offices/${encodeURIComponent(value)}` : null;
+  }
+
+  /** The address printed in an office's QR code, "https://hudhudnest.com/o/{code}"; null without a code. */
+  getOfficeQrUrl(code: string | null | undefined): string | null {
+    const value = code?.trim();
+    return value ? `${this.getSiteOrigin()}/o/${encodeURIComponent(value)}` : null;
+  }
+
+  /**
    * The public origin to build share links against. Prefers the configured environment.siteUrl
    * (real domain in staging/production — see environment.model.ts's siteUrl doc comment); falls
    * back to window.location.origin only when that isn't configured (local dev, where there is no

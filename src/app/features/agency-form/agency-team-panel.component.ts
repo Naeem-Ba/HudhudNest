@@ -270,7 +270,7 @@ export class AgencyTeamPanelComponent implements OnChanges {
 
   // أصل الموقع العام لا window.location.origin — داخل تطبيق Capacitor الأخير هو
   // capacitor://localhost، وهو رابط لا يفيد أحدًا خارج الجهاز.
-  readonly publicUrl = (): string => `${this.shareUrl.getSiteOrigin()}/offices/${this.agency.slug}`;
+  readonly publicUrl = (): string => this.shareUrl.getOfficePublicUrl(this.agency.slug) ?? '';
 
   readonly pendingMemberName = computed(() => {
     const p = this.pending();

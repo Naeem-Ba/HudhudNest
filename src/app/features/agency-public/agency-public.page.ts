@@ -48,6 +48,7 @@ import { isReservedListing, listingLifecycle, listingStatusTagKey } from '../../
 import { ListingViewCountComponent } from '../../shared/ui/listing-view-count.component';
 import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 import { OfficeMapPoint, OfficesMapComponent } from '../../shared/ui/offices-map.component';
+import { NativeShareProvider } from '../../core/sharing/providers/native-share.provider';
 import { PropertyShareUrlService } from '../../core/sharing/property-share-url.service';
 import { LookupsApiService, StructuredLocationLookup, pickLocalizedName } from '../../core/api/lookups-api.service';
 import { LanguageService } from '../../core/services/language.service';
@@ -490,6 +491,7 @@ export class AgencyPublicPage implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly lookups = inject(LookupsApiService);
   private readonly shareUrls = inject(PropertyShareUrlService);
+  private readonly nativeShare = inject(NativeShareProvider);
   private readonly lang = inject(LanguageService);
   private readonly structuredData = inject(StructuredDataService);
 
@@ -625,23 +627,39 @@ export class AgencyPublicPage implements OnInit {
     this.agenciesApi.recordEvent(agencyId, event).pipe(catchError(() => of(null))).subscribe();
   }
 
-  /** Native share sheet where there is one, else copy the link. The shared URL is the clean office URL. */
+  /**
+   * The device's share sheet where there is one, else copy the link. Inside the installed app the sheet is the
+   * native one (@capacitor/share through NativeShareProvider): Android's WebView has no navigator.share, so this
+   * used to fall back to copying there (share-links audit L-04). The shared URL is the clean office URL.
+   */
   async share(a: Agency): Promise<void> {
-    const url = `${this.shareUrls.getSiteOrigin()}/offices/${encodeURIComponent(a.slug)}`;
-    const nav = typeof navigator !== 'undefined' ? navigator : null;
-    try {
-      if (nav?.share) {
-        await nav.share({ title: a.name, url });
+    const url = this.shareUrls.getOfficePublicUrl(a.slug);
+    if (!url) return;
+
+    if (this.nativeShare.isAvailable()) {
+      const result = await this.nativeShare.share({
+        title: a.name,
+        text: this.translate.instant('SHARE.OFFICE_TEXT', { name: a.name }),
+        url
+      });
+      if (result.success) {
         this.track({ type: 'Share', channel: 'NativeShare' }, a.id);
         return;
       }
-      // No clipboard (insecure context, old browser): claim nothing and count nothing.
-      if (!nav?.clipboard) return;
+      // Dismissing the sheet is a normal outcome: nothing was shared, nothing to count or report.
+      if (result.cancelled) return;
+      // The sheet failed for another reason: copying the link still lets the visitor share it.
+    }
+
+    const nav = typeof navigator !== 'undefined' ? navigator : null;
+    // No clipboard (insecure context, old browser): claim nothing and count nothing.
+    if (!nav?.clipboard) return;
+    try {
       await nav.clipboard.writeText(url);
       this.toast.success(this.translate.instant('OFFICE_STATS.LINK_COPIED'));
       this.track({ type: 'Share', channel: 'CopyLink' }, a.id);
     } catch {
-      // Cancelled share sheet or no clipboard permission: nothing was shared, nothing to count.
+      // No clipboard permission: nothing was copied, nothing to count.
     }
   }
 

@@ -744,7 +744,8 @@
       "MODE_BOTH": "zum Verkauf oder zur Miete",
       "FALLBACK_TITLE_CITY": "Immobilie {{mode}} in {{city}}",
       "FALLBACK_TITLE": "Immobilie {{mode}}"
-    }
+    },
+    "OFFICE_TEXT": "{{name}}: Immobilienbüro auf HudhudNest"
   },
   "PROPERTY": {
     "MODE_RENT": "Zu vermieten",
