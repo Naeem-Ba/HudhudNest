@@ -149,7 +149,8 @@
     "ADMIN_GEO": "Location catalog",
     "OFFICES": "Agencies",
     "ADMIN_AGENCIES": "Agency verification",
-    "ADMIN_LEGAL_HOLDS": "Legal holds"
+    "ADMIN_LEGAL_HOLDS": "Legal holds",
+    "VALUATION_REQUESTS": "Valuation requests"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -2898,13 +2899,6 @@
       "LINK": "Price opinion requests",
       "NO_AGENCY": "This page is for members of real estate agencies only.",
       "LOAD_ERROR": "Could not load the requests. Please try again.",
-      "EMPTY": "No requests yet. We will notify you when a customer near your agency asks.",
-      "STATUS": {
-        "OPEN": "Waiting for your answer",
-        "SENT": "Closed",
-        "RESPONDED": "Answered",
-        "EXPIRED": "Closed"
-      },
       "AREA": "Area: {{area}} m²",
       "ROOMS": "Rooms: {{rooms}}",
       "RECEIVED": "Received {{date}}",
@@ -2920,7 +2914,19 @@
       "SENT": "Your answer reached the customer.",
       "CLOSED": "This request can no longer be answered.",
       "SEND_ERROR": "Could not send the answer. Please try again.",
-      "REFRESH": "Refresh"
+      "REFRESH": "Refresh",
+      "TABS": {
+        "OPEN": "Waiting for you",
+        "ANSWERED": "Answered",
+        "MISSED": "Missed"
+      },
+      "TAB_EMPTY": {
+        "OPEN": "No requests are waiting for your answer.",
+        "ANSWERED": "Your agency has not answered any request yet.",
+        "MISSED": "No requests closed before you answered."
+      },
+      "BACK_TO_LIST": "All valuation requests",
+      "NOT_FOUND": "This request is not in your agency's inbox."
     }
   },
   "PROVIDER": {

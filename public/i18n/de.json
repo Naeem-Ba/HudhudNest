@@ -149,7 +149,8 @@
     "ADMIN_GEO": "Standortkatalog",
     "OFFICES": "Makler",
     "ADMIN_AGENCIES": "Makler-Verifizierung",
-    "ADMIN_LEGAL_HOLDS": "Rechtliche Sperren"
+    "ADMIN_LEGAL_HOLDS": "Rechtliche Sperren",
+    "VALUATION_REQUESTS": "Bewertungsanfragen"
   },
   "AUTH": {
     "LOGIN_TITLE": "Willkommen",
@@ -2898,13 +2899,6 @@
       "LINK": "Anfragen zur Preiseinschätzung",
       "NO_AGENCY": "Diese Seite ist nur für Mitglieder von Immobilienbüros.",
       "LOAD_ERROR": "Die Anfragen konnten nicht geladen werden. Bitte erneut versuchen.",
-      "EMPTY": "Noch keine Anfragen. Wir benachrichtigen Sie, sobald ein Kunde in Ihrer Nähe fragt.",
-      "STATUS": {
-        "OPEN": "Wartet auf Ihre Antwort",
-        "SENT": "Abgelaufen",
-        "RESPONDED": "Beantwortet",
-        "EXPIRED": "Abgelaufen"
-      },
       "AREA": "Fläche: {{area}} m²",
       "ROOMS": "Zimmer: {{rooms}}",
       "RECEIVED": "Eingegangen am {{date}}",
@@ -2920,7 +2914,19 @@
       "SENT": "Ihre Antwort ist beim Kunden angekommen.",
       "CLOSED": "Diese Anfrage kann nicht mehr beantwortet werden.",
       "SEND_ERROR": "Die Antwort konnte nicht gesendet werden. Bitte erneut versuchen.",
-      "REFRESH": "Aktualisieren"
+      "REFRESH": "Aktualisieren",
+      "TABS": {
+        "OPEN": "Warten auf Sie",
+        "ANSWERED": "Beantwortet",
+        "MISSED": "Verpasst"
+      },
+      "TAB_EMPTY": {
+        "OPEN": "Keine Anfragen warten auf Ihre Antwort.",
+        "ANSWERED": "Ihr Büro hat noch keine Anfrage beantwortet.",
+        "MISSED": "Keine Anfragen sind ohne Ihre Antwort abgelaufen."
+      },
+      "BACK_TO_LIST": "Alle Bewertungsanfragen",
+      "NOT_FOUND": "Diese Anfrage ist nicht im Posteingang Ihres Büros."
     }
   },
   "PROVIDER": {

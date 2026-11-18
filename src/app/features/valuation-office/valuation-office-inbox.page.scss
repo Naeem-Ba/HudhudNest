@@ -89,3 +89,66 @@
   display: flex;
   gap: .75rem;
 }
+
+.inbox-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  margin-block-end: 1rem;
+}
+
+.inbox-tab {
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  padding: .5rem .6rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--gray-700);
+  font: inherit;
+  font-weight: 700;
+  font-size: .82rem;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &__count {
+    min-width: 1.4rem;
+    padding: 0 .35rem;
+    border-radius: 999px;
+    background: var(--gray-100);
+    font-size: .78rem;
+  }
+
+  &--active {
+    border-color: var(--gold-text);
+    color: var(--gold-text);
+    background: var(--gold-soft);
+  }
+}
+
+.office-requests > li { list-style: none; }
+
+.office-request--link {
+  text-decoration: none;
+  color: inherit;
+  gap: .3rem;
+
+  &:hover { border-color: var(--gold-text); }
+}
+
+.office-request__line {
+  font-size: .86rem;
+  color: var(--gray-700);
+  overflow-wrap: anywhere;
+}
+
+.office-request__chev {
+  font-size: 1.3rem;
+  color: var(--text-muted);
+  line-height: 1;
+}
+
+:host-context([dir='rtl']) .office-request__chev { transform: scaleX(-1); }

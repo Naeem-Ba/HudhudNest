@@ -8,10 +8,10 @@
 // The office is asked because it knows the area, not because it has listings there: matching never looks at how many
 // listings an office has (see OfficeMatchingService on the API).
 
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { forkJoin, of } from 'rxjs';
@@ -33,6 +33,14 @@ import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
 import { formatListingPrice } from '../../shared/utils/listing-price';
 import { PageMetaService } from '../../core/services/page-meta.service';
+
+/** The three lists an office works from: waiting for its answer, answered, and closed before it answered. */
+export type InboxTab = 'open' | 'answered' | 'missed';
+
+export function inboxTabOf(item: ValuationOfficeInvitation): InboxTab {
+  if (item.invitationStatus === 'Responded' || item.myEstimatedPrice != null) return 'answered';
+  return item.canRespond ? 'open' : 'missed';
+}
 
 /** What the office is typing for one request. */
 interface Draft {
@@ -75,7 +83,34 @@ export class ValuationOfficeInboxPage implements OnInit {
 
   readonly drafts = new Map<string, Draft>();
 
+  readonly tabs: InboxTab[] = ['open', 'answered', 'missed'];
+  readonly tab = signal<InboxTab>('open');
+  readonly counts = computed(() => {
+    const counts: Record<InboxTab, number> = { open: 0, answered: 0, missed: 0 };
+    for (const item of this.invitations()) counts[inboxTabOf(item)]++;
+    return counts;
+  });
+  readonly visible = computed(() => this.invitations().filter(item => inboxTabOf(item) === this.tab()));
+
+  /** /my-agency/valuations/:invitationId shows one request in full, with the answer form when still open. */
+  private readonly route = inject(ActivatedRoute);
+  readonly selectedId = signal<string | null>(null);
+  readonly selected = computed(() => {
+    const id = this.selectedId();
+    return id ? this.invitations().find(item => item.invitationId === id) ?? null : null;
+  });
+
+  tabOf(item: ValuationOfficeInvitation): InboxTab {
+    return inboxTabOf(item);
+  }
+
+  selectTab(tab: InboxTab): void {
+    this.tab.set(tab);
+  }
+
   ngOnInit(): void {
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => this.selectedId.set(params.get('invitationId')));
     // A private screen: never indexed.
     this.pageMeta.noindex(this.destroyRef);
     this.lookups.getGovernorates().pipe(catchError(() => of([] as StructuredLocationLookup[])), takeUntilDestroyed(this.destroyRef))

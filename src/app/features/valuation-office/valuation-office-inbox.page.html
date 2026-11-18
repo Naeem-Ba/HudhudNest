@@ -14,70 +14,105 @@
       <p>{{ (e === 'no-agency' ? 'VALUATION.OFFICE_INBOX.NO_AGENCY' : 'VALUATION.OFFICE_INBOX.LOAD_ERROR') | translate }}</p>
     </div>
 
-    <p class="estimates__empty" *ngIf="!loading() && !error() && !invitations().length" data-testid="office-inbox-empty">
-      {{ 'VALUATION.OFFICE_INBOX.EMPTY' | translate }}
-    </p>
+    <ng-container *ngIf="!loading() && !error()">
+      <!-- One request in full: /my-agency/valuations/:invitationId -->
+      <ng-container *ngIf="selectedId(); else listView">
+        <p><a routerLink="/my-agency/valuations" data-testid="office-request-back">{{ 'VALUATION.OFFICE_INBOX.BACK_TO_LIST' | translate }}</a></p>
 
-    <ul class="office-requests" *ngIf="!loading() && invitations().length">
-      <li class="office-request" *ngFor="let item of invitations(); trackBy: trackById" data-testid="office-request">
-        <div class="office-request__head">
-          <strong>{{ ('VALUATION.REQUEST_TYPES.' + item.requestType) | translate }} · {{ propertyType(item) }}</strong>
-          <span class="status-badge" [class.status-badge--open]="item.canRespond">
-            {{ ('VALUATION.OFFICE_INBOX.STATUS.' + (item.canRespond ? 'OPEN' : item.invitationStatus.toUpperCase())) | translate }}
-          </span>
-        </div>
+        <article class="office-request" *ngIf="selected() as item; else notFound" data-testid="office-request-detail">
+          <div class="office-request__head">
+            <strong>{{ ('VALUATION.REQUEST_TYPES.' + item.requestType) | translate }} · {{ propertyType(item) }}</strong>
+            <span class="status-badge" [class.status-badge--open]="tabOf(item) === 'open'">
+              {{ ('VALUATION.OFFICE_INBOX.TABS.' + tabOf(item).toUpperCase()) | translate }}
+            </span>
+          </div>
+          <ul class="office-request__facts">
+            <li *ngIf="place(item)">📍 {{ place(item) }}</li>
+            <li *ngIf="item.area != null">📐 {{ 'VALUATION.OFFICE_INBOX.AREA' | translate: { area: (item.area | localNumber) } }}</li>
+            <li *ngIf="item.rooms != null">🚪 {{ 'VALUATION.OFFICE_INBOX.ROOMS' | translate: { rooms: item.rooms } }}</li>
+            <li>🕒 {{ 'VALUATION.OFFICE_INBOX.RECEIVED' | translate: { date: (item.sentAt | localDate: 'short') } }}</li>
+            <li *ngIf="item.canRespond">⏳ {{ 'VALUATION.OFFICE_INBOX.DEADLINE' | translate: { date: (item.inquiryExpiresAt | localDate: 'short') } }}</li>
+          </ul>
 
-        <ul class="office-request__facts">
-          <li *ngIf="place(item)">📍 {{ place(item) }}</li>
-          <li *ngIf="item.area != null">📐 {{ 'VALUATION.OFFICE_INBOX.AREA' | translate: { area: (item.area | localNumber) } }}</li>
-          <li *ngIf="item.rooms != null">🚪 {{ 'VALUATION.OFFICE_INBOX.ROOMS' | translate: { rooms: item.rooms } }}</li>
-          <li>🕒 {{ 'VALUATION.OFFICE_INBOX.RECEIVED' | translate: { date: (item.sentAt | localDate: 'short') } }}</li>
-          <li *ngIf="item.canRespond">⏳ {{ 'VALUATION.OFFICE_INBOX.DEADLINE' | translate: { date: (item.inquiryExpiresAt | localDate: 'short') } }}</li>
-        </ul>
+          <!-- Already answered: what this office said. -->
+          <div class="office-request__answer" *ngIf="item.myEstimatedPrice != null">
+            <span>{{ 'VALUATION.OFFICE_INBOX.YOUR_ANSWER' | translate }}</span>
+            <strong dir="ltr">{{ money(item.myEstimatedPrice, item.myCurrencyCode) }}</strong>
+            <p *ngIf="item.myNotes">{{ item.myNotes }}</p>
+          </div>
 
-        <!-- Already answered: what this office said. -->
-        <div class="office-request__answer" *ngIf="item.myEstimatedPrice != null">
-          <span>{{ 'VALUATION.OFFICE_INBOX.YOUR_ANSWER' | translate }}</span>
-          <strong dir="ltr">{{ money(item.myEstimatedPrice, item.myCurrencyCode) }}</strong>
-          <p *ngIf="item.myNotes">{{ item.myNotes }}</p>
-        </div>
+          <!-- The customer's contact, only after the customer chose to share it with this office. -->
+          <div class="office-request__contact" *ngIf="item.customerContactPhone || item.customerContactEmail">
+            <span>{{ 'VALUATION.OFFICE_INBOX.CONTACT' | translate }}</span>
+            <a *ngIf="item.customerContactPhone" [href]="'tel:' + item.customerContactPhone" dir="ltr">{{ item.customerContactPhone }}</a>
+            <a *ngIf="item.customerContactEmail" [href]="'mailto:' + item.customerContactEmail" dir="ltr">{{ item.customerContactEmail }}</a>
+          </div>
 
-        <!-- The customer's contact, only after the customer chose to share it with this office. -->
-        <div class="office-request__contact" *ngIf="item.customerContactPhone || item.customerContactEmail">
-          <span>{{ 'VALUATION.OFFICE_INBOX.CONTACT' | translate }}</span>
-          <a *ngIf="item.customerContactPhone" [href]="'tel:' + item.customerContactPhone" dir="ltr">{{ item.customerContactPhone }}</a>
-          <a *ngIf="item.customerContactEmail" [href]="'mailto:' + item.customerContactEmail" dir="ltr">{{ item.customerContactEmail }}</a>
-        </div>
-
-        <form class="office-request__form" *ngIf="item.canRespond" (ngSubmit)="submit(item)" #f="ngForm">
-          <div class="form-row">
-            <div class="form-group">
-              <label [for]="'price-' + item.invitationId">
-                {{ (item.requestType === 'ForRent' ? 'VALUATION.OFFICE_INBOX.PRICE_RENT' : 'VALUATION.OFFICE_INBOX.PRICE_SALE') | translate }} *
-              </label>
-              <input [id]="'price-' + item.invitationId" type="number" inputmode="decimal" min="1"
-                     [name]="'price-' + item.invitationId" [(ngModel)]="draft(item).price" required />
+          <form class="office-request__form" *ngIf="item.canRespond" (ngSubmit)="submit(item)" #f="ngForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label [for]="'price-' + item.invitationId">
+                  {{ (item.requestType === 'ForRent' ? 'VALUATION.OFFICE_INBOX.PRICE_RENT' : 'VALUATION.OFFICE_INBOX.PRICE_SALE') | translate }} *
+                </label>
+                <input [id]="'price-' + item.invitationId" type="number" inputmode="decimal" min="1"
+                       [name]="'price-' + item.invitationId" [(ngModel)]="draft(item).price" required />
+              </div>
+              <div class="form-group">
+                <label [for]="'currency-' + item.invitationId">{{ 'VALUATION.CURRENCY' | translate }} *</label>
+                <select [id]="'currency-' + item.invitationId" [name]="'currency-' + item.invitationId" [(ngModel)]="draft(item).currency">
+                  <option *ngFor="let c of currencies" [value]="c">{{ c }}</option>
+                </select>
+              </div>
             </div>
             <div class="form-group">
-              <label [for]="'currency-' + item.invitationId">{{ 'VALUATION.CURRENCY' | translate }} *</label>
-              <select [id]="'currency-' + item.invitationId" [name]="'currency-' + item.invitationId" [(ngModel)]="draft(item).currency">
-                <option *ngFor="let c of currencies" [value]="c">{{ c }}</option>
-              </select>
+              <label [for]="'notes-' + item.invitationId">{{ 'VALUATION.OFFICE_INBOX.NOTES' | translate }}</label>
+              <textarea [id]="'notes-' + item.invitationId" rows="3" maxlength="2000" [name]="'notes-' + item.invitationId"
+                        [(ngModel)]="draft(item).notes" [placeholder]="'VALUATION.OFFICE_INBOX.NOTES_PLACEHOLDER' | translate"></textarea>
             </div>
-          </div>
-          <div class="form-group">
-            <label [for]="'notes-' + item.invitationId">{{ 'VALUATION.OFFICE_INBOX.NOTES' | translate }}</label>
-            <textarea [id]="'notes-' + item.invitationId" rows="3" maxlength="2000" [name]="'notes-' + item.invitationId"
-                      [(ngModel)]="draft(item).notes" [placeholder]="'VALUATION.OFFICE_INBOX.NOTES_PLACEHOLDER' | translate"></textarea>
-          </div>
-          <p class="field-hint">{{ 'VALUATION.OFFICE_INBOX.ONCE_HINT' | translate }}</p>
-          <button type="submit" class="valuation-submit" [disabled]="!canSubmit(item)" data-testid="office-respond">
-            <span class="spinner" *ngIf="submitting() === item.invitationId"></span>
-            <span>{{ 'VALUATION.OFFICE_INBOX.SEND' | translate }}</span>
+            <p class="field-hint">{{ 'VALUATION.OFFICE_INBOX.ONCE_HINT' | translate }}</p>
+            <button type="submit" class="valuation-submit" [disabled]="!canSubmit(item)" data-testid="office-respond">
+              <span class="spinner" *ngIf="submitting() === item.invitationId"></span>
+              <span>{{ 'VALUATION.OFFICE_INBOX.SEND' | translate }}</span>
+            </button>
+          </form>
+        </article>
+        <ng-template #notFound>
+          <p class="estimates__empty">{{ 'VALUATION.OFFICE_INBOX.NOT_FOUND' | translate }}</p>
+        </ng-template>
+      </ng-container>
+
+      <ng-template #listView>
+        <div class="inbox-tabs" role="tablist">
+          <button type="button" role="tab" *ngFor="let t of tabs" class="inbox-tab" [class.inbox-tab--active]="tab() === t"
+                  [attr.aria-selected]="tab() === t" (click)="selectTab(t)" [attr.data-testid]="'office-tab-' + t">
+            {{ ('VALUATION.OFFICE_INBOX.TABS.' + t.toUpperCase()) | translate }}
+            <span class="inbox-tab__count">{{ counts()[t] }}</span>
           </button>
-        </form>
-      </li>
-    </ul>
+        </div>
+
+        <p class="estimates__empty" *ngIf="!visible().length" data-testid="office-tab-empty">
+          {{ ('VALUATION.OFFICE_INBOX.TAB_EMPTY.' + tab().toUpperCase()) | translate }}
+        </p>
+
+        <ul class="office-requests" *ngIf="visible().length">
+          <li *ngFor="let item of visible(); trackBy: trackById">
+            <a class="office-request office-request--link" [routerLink]="['/my-agency/valuations', item.invitationId]" data-testid="office-request">
+              <div class="office-request__head">
+                <strong>{{ ('VALUATION.REQUEST_TYPES.' + item.requestType) | translate }} · {{ propertyType(item) }}</strong>
+                <span class="office-request__chev" aria-hidden="true">›</span>
+              </div>
+              <span class="office-request__line" *ngIf="place(item)">📍 {{ place(item) }}</span>
+              <span class="office-request__line">
+                <ng-container *ngIf="item.area != null">📐 {{ 'VALUATION.OFFICE_INBOX.AREA' | translate: { area: (item.area | localNumber) } }} · </ng-container>
+                <ng-container *ngIf="tabOf(item) === 'open'">⏳ {{ 'VALUATION.OFFICE_INBOX.DEADLINE' | translate: { date: (item.inquiryExpiresAt | localDate: 'short') } }}</ng-container>
+                <ng-container *ngIf="tabOf(item) === 'answered'">✅ <span dir="ltr">{{ money(item.myEstimatedPrice, item.myCurrencyCode) }}</span></ng-container>
+                <ng-container *ngIf="tabOf(item) === 'missed'">🕒 {{ 'VALUATION.OFFICE_INBOX.RECEIVED' | translate: { date: (item.sentAt | localDate: 'short') } }}</ng-container>
+              </span>
+            </a>
+          </li>
+        </ul>
+      </ng-template>
+    </ng-container>
 
     <div class="result-actions" *ngIf="!loading()">
       <button type="button" class="valuation-refresh" (click)="load()">{{ 'VALUATION.OFFICE_INBOX.REFRESH' | translate }}</button>

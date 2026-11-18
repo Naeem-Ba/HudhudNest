@@ -149,7 +149,8 @@
     "ADMIN_GEO": "Konum kataloğu",
     "OFFICES": "Emlak ofisleri",
     "ADMIN_AGENCIES": "Ofis doğrulama",
-    "ADMIN_LEGAL_HOLDS": "Yasal bekletmeler"
+    "ADMIN_LEGAL_HOLDS": "Yasal bekletmeler",
+    "VALUATION_REQUESTS": "Değerleme talepleri"
   },
   "AUTH": {
     "LOGIN_TITLE": "Hoş geldiniz",
@@ -2898,13 +2899,6 @@
       "LINK": "Fiyat görüşü talepleri",
       "NO_AGENCY": "Bu sayfa yalnızca emlak ofisi üyeleri içindir.",
       "LOAD_ERROR": "Talepler yüklenemedi. Lütfen tekrar deneyin.",
-      "EMPTY": "Henüz talep yok. Ofisinize yakın bir müşteri sorduğunda size bildiririz.",
-      "STATUS": {
-        "OPEN": "Yanıtınızı bekliyor",
-        "SENT": "Süresi doldu",
-        "RESPONDED": "Yanıtlandı",
-        "EXPIRED": "Süresi doldu"
-      },
       "AREA": "Alan: {{area}} m²",
       "ROOMS": "Oda: {{rooms}}",
       "RECEIVED": "Geliş: {{date}}",
@@ -2920,7 +2914,19 @@
       "SENT": "Yanıtınız müşteriye ulaştı.",
       "CLOSED": "Bu talep artık yanıtlanamaz.",
       "SEND_ERROR": "Yanıt gönderilemedi. Lütfen tekrar deneyin.",
-      "REFRESH": "Yenile"
+      "REFRESH": "Yenile",
+      "TABS": {
+        "OPEN": "Yanıtınızı bekliyor",
+        "ANSWERED": "Yanıtlandı",
+        "MISSED": "Kaçırıldı"
+      },
+      "TAB_EMPTY": {
+        "OPEN": "Yanıtınızı bekleyen talep yok.",
+        "ANSWERED": "Ofisiniz henüz hiçbir talebi yanıtlamadı.",
+        "MISSED": "Yanıtlamadan süresi dolan talep yok."
+      },
+      "BACK_TO_LIST": "Tüm değerleme talepleri",
+      "NOT_FOUND": "Bu talep ofisinizin gelen kutusunda yok."
     }
   },
   "PROVIDER": {

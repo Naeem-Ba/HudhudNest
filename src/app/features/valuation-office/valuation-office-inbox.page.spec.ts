@@ -1,11 +1,11 @@
 // The office's valuation inbox: requests near the office, a one-time answer of one price in one market currency,
 // and the customer's contact only once the customer shared it.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { of, throwError } from 'rxjs';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 
-import { ValuationOfficeInboxPage } from './valuation-office-inbox.page';
+import { ValuationOfficeInboxPage, inboxTabOf } from './valuation-office-inbox.page';
 import { ValuationApiService } from '../../core/api/valuation-api.service';
 import { LookupsApiService } from '../../core/api/lookups-api.service';
 import { ValuationOfficeInvitation } from '../../core/models/valuation.model';
@@ -30,7 +30,10 @@ describe('ValuationOfficeInboxPage', () => {
     myCurrencyCode: 'USD', myNotes: 'حسب الإكساء', customerContactPhone: '+963991112233'
   };
 
-  function create(preferred: string | null = 'SYP'): ComponentFixture<ValuationOfficeInboxPage> {
+  const missed: ValuationOfficeInvitation = { ...open, invitationId: 'inv-3', canRespond: false };
+
+  function create(preferred: string | null = 'SYP', invitationId: string | null = null): ComponentFixture<ValuationOfficeInboxPage> {
+    const params = new BehaviorSubject(convertToParamMap(invitationId ? { invitationId } : {}));
     api = jasmine.createSpyObj('ValuationApiService', ['getMyOfficeInvitations', 'respond']);
     toast = jasmine.createSpyObj('ToastService', ['show']);
     const lookups = jasmine.createSpyObj('LookupsApiService', ['getGovernorates', 'getDistricts', 'getNeighborhoods', 'getPropertyTypeCatalog']);
@@ -48,27 +51,70 @@ describe('ValuationOfficeInboxPage', () => {
         { provide: LanguageService, useValue: { getCurrent: () => 'ar' } },
         { provide: PreferencesService, useValue: { currency: preferred } },
         { provide: PageMetaService, useValue: { noindex: jasmine.createSpy('noindex') } },
-        { provide: ToastService, useValue: toast }
+        { provide: ToastService, useValue: toast },
+        { provide: ActivatedRoute, useValue: { paramMap: params } }
       ]
     });
     return TestBed.createComponent(ValuationOfficeInboxPage);
   }
 
-  it('lists the requests with their place in words, and a form only where the office can still answer', () => {
+  it('sorts each request into waiting, answered or missed', () => {
+    expect(inboxTabOf(open)).toBe('open');
+    expect(inboxTabOf(answered)).toBe('answered');
+    expect(inboxTabOf(missed)).toBe('missed');
+  });
+
+  it('opens on the waiting tab with counts per tab, each request linking to its own page', () => {
     const fixture = create();
+    api.getMyOfficeInvitations.and.returnValue(of([open, answered, missed]));
+    fixture.detectChanges();
+
+    const page = fixture.componentInstance;
+    expect(page.counts()).toEqual({ open: 1, answered: 1, missed: 1 });
+    const el = fixture.nativeElement as HTMLElement;
+    let rows = el.querySelectorAll('[data-testid="office-request"]');
+    expect(rows.length).toBe(1);
+    expect(rows[0].getAttribute('href')).toBe('/my-agency/valuations/inv-1');
+    expect(rows[0].textContent).toContain('فيلات غربية، المزة، دمشق');
+    expect(rows[0].textContent).toContain('شقة');
+
+    page.selectTab('answered');
+    fixture.detectChanges();
+    rows = el.querySelectorAll('[data-testid="office-request"]');
+    expect(rows.length).toBe(1);
+    expect(rows[0].getAttribute('href')).toBe('/my-agency/valuations/inv-2');
+
+    page.selectTab('missed');
+    fixture.detectChanges();
+    expect(el.querySelectorAll('[data-testid="office-request"]').length).toBe(1);
+  });
+
+  it('an open request page shows the details and the answer form', () => {
+    const fixture = create('SYP', 'inv-1');
     api.getMyOfficeInvitations.and.returnValue(of([open, answered]));
     fixture.detectChanges();
 
-    const el = fixture.nativeElement as HTMLElement;
-    const rows = el.querySelectorAll('[data-testid="office-request"]');
-    expect(rows.length).toBe(2);
-    expect(rows[0].textContent).toContain('فيلات غربية، المزة، دمشق');
-    expect(rows[0].textContent).toContain('شقة');
-    expect(rows[0].querySelector('form')).not.toBeNull();
-    expect(rows[1].querySelector('form')).toBeNull();
-    // The answered one shows what this office said and the contact the customer shared.
-    expect(rows[1].textContent).toContain('حسب الإكساء');
-    expect(rows[1].querySelector('a[href="tel:+963991112233"]')).not.toBeNull();
+    const detail = (fixture.nativeElement as HTMLElement).querySelector('[data-testid="office-request-detail"]')!;
+    expect(detail.textContent).toContain('فيلات غربية، المزة، دمشق');
+    expect(detail.querySelector('form')).not.toBeNull();
+  });
+
+  it('an answered request page shows what the office said and the contact the customer shared, without a form', () => {
+    const fixture = create('SYP', 'inv-2');
+    api.getMyOfficeInvitations.and.returnValue(of([open, answered]));
+    fixture.detectChanges();
+
+    const detail = (fixture.nativeElement as HTMLElement).querySelector('[data-testid="office-request-detail"]')!;
+    expect(detail.querySelector('form')).toBeNull();
+    expect(detail.textContent).toContain('حسب الإكساء');
+    expect(detail.querySelector('a[href="tel:+963991112233"]')).not.toBeNull();
+  });
+
+  it('a request that is not in this office\'s inbox says so', () => {
+    const fixture = create('SYP', 'other');
+    api.getMyOfficeInvitations.and.returnValue(of([open]));
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('VALUATION.OFFICE_INBOX.NOT_FOUND');
   });
 
   it('starts the currency at the person\'s market currency, and cannot send without a price', () => {
@@ -123,10 +169,10 @@ describe('ValuationOfficeInboxPage', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('VALUATION.OFFICE_INBOX.NO_AGENCY');
   });
 
-  it('an empty inbox says so', () => {
+  it('an empty tab says so', () => {
     const fixture = create();
     api.getMyOfficeInvitations.and.returnValue(of([]));
     fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="office-inbox-empty"]')).not.toBeNull();
+    expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="office-tab-empty"]')).not.toBeNull();
   });
 });

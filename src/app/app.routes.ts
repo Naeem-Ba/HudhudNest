@@ -185,6 +185,14 @@ export const routes: Routes = [
             .then(m => m.ValuationOfficeInboxPage)
       },
       {
+        // One request in full, with the answer form while it is still open.
+        path: 'my-agency/valuations/:invitationId',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/valuation-office/valuation-office-inbox.page')
+            .then(m => m.ValuationOfficeInboxPage)
+      },
+      {
         // الصفحة العامة للمكتب بالرابط القصير (/F-AGY-05/) — مجهولة عمدًا، مثل
         // GET /api/Agencies/{slug} بالباك اند.
         // دليل المكاتب العقارية: بحث وفلاتر في الرابط، مجهول عمدًا مثل GET /api/agencies.
