@@ -2841,13 +2841,18 @@
     "SUBMIT_ERROR": "Ihre Bewertungsanfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
     "STATUS_ERROR": "Der Anfragestatus konnte nicht geprüft werden.",
     "OFFICE_PATH": {
-      "SENT_TO": "Ihre Anfrage wurde an {{count}} Immobilienbüro(s) in Ihrer Nähe für eine genaue Schätzung gesendet.",
+      "SENT_TO": "Wir haben Ihre Anfrage an {{count}} Immobilienbüros in der Nähe Ihrer Immobilie geschickt, mit der Bitte um ihre Preiseinschätzung.",
       "NEIGHBORING_GOVERNORATE_DISCLOSURE": "Da nicht genügend Büros in Ihrem Gouvernement verfügbar waren, wurde die Suche auf Büros aus benachbarten Gouvernements ausgeweitet.",
       "INSUFFICIENT_COVERAGE": "Wir konnten nicht mindestens 3 Immobilienbüros in Ihrer Nähe finden. Möglicherweise erhalten Sie Schätzungen von weniger Büros.",
       "EXPIRES_AT": "Sie erhalten innerhalb von 24 Stunden eine Antwort, spätestens bis {{date}}.",
       "CHECK_STATUS": "Antworten prüfen",
       "NO_ESTIMATES_YET": "Noch keine Schätzungen. Bitte später erneut prüfen.",
-      "OFF": "Eine Bewertung durch Immobilienbüros ist noch nicht verfügbar. Versuchen Sie es später oder wählen Sie nur das Gouvernement, um die Gegend zu erweitern."
+      "OFF": "Eine Bewertung durch Immobilienbüros ist noch nicht verfügbar. Versuchen Sie es später oder wählen Sie nur das Gouvernement, um die Gegend zu erweitern.",
+      "FOLLOW": "Antworten der Büros ansehen",
+      "NO_OFFICES": "In Ihrer Gegend ist noch kein Immobilienbüro registriert, das wir fragen könnten.",
+      "LOGIN_TO_ASK": "Büros vor Ort kennen die Preise ihrer Gegend, auch wenn es wenige Anzeigen gibt. Melden Sie sich an, dann fragen wir bis zu 3 Büros in der Nähe; sie antworten innerhalb von 24 Stunden.",
+      "ASK_HINT": "Möchten Sie auch die Einschätzung vor Ort? Wir fragen bis zu 3 Immobilienbüros in der Nähe; sie antworten innerhalb von 24 Stunden.",
+      "ASK": "Einschätzung der Büros anfragen"
     },
     "NEW_REQUEST": "Neue Bewertungsanfrage",
     "STATUS": {
@@ -2875,6 +2880,47 @@
       "PER_SQM": "Preis pro m²",
       "DISCLAIMER": "Dies sind Angebotspreise aus Inseraten, keine tatsächlichen Verkaufspreise. Es ist keine Bewertung Ihrer Immobilie, kein Kaufangebot und keine Garantie für einen Verkaufspreis. Zustand, Etage, Ausstattung und Rechtslage können den Wert stark verändern.",
       "NONE_TITLE": "Nicht genug Daten für eine verlässliche Schätzung"
+    },
+    "RESULT": {
+      "TITLE": "Preiseinschätzungen der Büros zu Ihrer Immobilie",
+      "SUBTITLE": "Hier erscheinen die Antworten der Büros, die wir zu Ihrer Anfrage gefragt haben.",
+      "LOADING": "Wird geladen...",
+      "NOT_FOUND": "Diese Anfrage wurde in Ihrem Konto nicht gefunden.",
+      "ANSWERED": "{{answered}} von {{asked}} Büros haben geantwortet.",
+      "CLOSED_NO_ANSWERS": "Die Frist ist abgelaufen, ohne dass ein Büro geantwortet hat. Sie können eine neue Anfrage stellen.",
+      "DISCLAIMER": "Dies ist die Preiseinschätzung des Büros auf Grundlage Ihrer Angaben, kein offizielles Gutachten und kein Kaufangebot. Eine Besichtigung und die Rechtslage können den Preis verändern."
+    },
+    "OFFICE_INBOX": {
+      "EYEBROW": "Mein Büro",
+      "TITLE": "Anfragen zur Preiseinschätzung",
+      "SUBTITLE": "Kunden in der Nähe Ihres Büros fragen, was ihre Immobilie wert ist. Geben Sie Ihre Einschätzung innerhalb von 24 Stunden ab.",
+      "BACK": "Zurück zu meinem Büro",
+      "LINK": "Anfragen zur Preiseinschätzung",
+      "NO_AGENCY": "Diese Seite ist nur für Mitglieder von Immobilienbüros.",
+      "LOAD_ERROR": "Die Anfragen konnten nicht geladen werden. Bitte erneut versuchen.",
+      "EMPTY": "Noch keine Anfragen. Wir benachrichtigen Sie, sobald ein Kunde in Ihrer Nähe fragt.",
+      "STATUS": {
+        "OPEN": "Wartet auf Ihre Antwort",
+        "SENT": "Abgelaufen",
+        "RESPONDED": "Beantwortet",
+        "EXPIRED": "Abgelaufen"
+      },
+      "AREA": "Fläche: {{area}} m²",
+      "ROOMS": "Zimmer: {{rooms}}",
+      "RECEIVED": "Eingegangen am {{date}}",
+      "DEADLINE": "Antwort bis {{date}}",
+      "YOUR_ANSWER": "Antwort Ihres Büros",
+      "CONTACT": "Der Kunde hat seine Kontaktdaten mit Ihnen geteilt:",
+      "PRICE_SALE": "Erwarteter Verkaufspreis",
+      "PRICE_RENT": "Erwartete Monatsmiete",
+      "NOTES": "Hinweis für den Kunden (optional)",
+      "NOTES_PLACEHOLDER": "Zum Beispiel: Der Preis hängt stark von Stockwerk, Ausbau und Rechtslage ab.",
+      "ONCE_HINT": "Sie können einmal antworten; der Kunde sieht die Antwort unter dem Namen Ihres Büros.",
+      "SEND": "Einschätzung senden",
+      "SENT": "Ihre Antwort ist beim Kunden angekommen.",
+      "CLOSED": "Diese Anfrage kann nicht mehr beantwortet werden.",
+      "SEND_ERROR": "Die Antwort konnte nicht gesendet werden. Bitte erneut versuchen.",
+      "REFRESH": "Aktualisieren"
     }
   },
   "PROVIDER": {

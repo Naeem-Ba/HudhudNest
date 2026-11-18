@@ -137,13 +137,13 @@
           <div>
             <p class="alert-title">{{ 'VALUATION.ESTIMATE.NONE_TITLE' | translate }}</p>
             <p>{{ ('PRICE_ESTIMATE.REASON.' + (r.estimate.reason || 'not_enough_data')) | translate }}</p>
-            <p *ngIf="!r.officePathAvailable" data-testid="office-path-off">{{ 'VALUATION.OFFICE_PATH.OFF' | translate }}</p>
+            <p *ngIf="loggedIn() && !r.officePathAvailable" data-testid="office-path-off">{{ 'VALUATION.OFFICE_PATH.OFF' | translate }}</p>
           </div>
         </div>
       </ng-template>
 
-      <!-- مسار المكاتب: تم إرسال الطلب لمكاتب عقارية مطابقة جغرافيًا. -->
-      <div class="office-path" *ngIf="r.requiresOfficeValuation && r.officePathAvailable">
+      <!-- The local offices: sent automatically when there is no estimate, or on request next to one. -->
+      <div class="office-path" *ngIf="r.officesRequested; else officeChoice" data-testid="office-path-sent">
         <div class="alert alert--info" role="status">
           <span aria-hidden="true">🏢</span>
           <p>{{ 'VALUATION.OFFICE_PATH.SENT_TO' | translate: { count: r.officeMatchCount } }}</p>
@@ -162,27 +162,35 @@
 
         <p class="expiry-note">{{ 'VALUATION.OFFICE_PATH.EXPIRES_AT' | translate: { date: (r.expiresAt | localDate: 'short') } }}</p>
 
-        <button type="button" class="valuation-refresh" (click)="checkStatus()" [disabled]="checkingStatus()">
-          <span class="spinner" *ngIf="checkingStatus()"></span>
-          <span>{{ 'VALUATION.OFFICE_PATH.CHECK_STATUS' | translate }}</span>
-        </button>
-
-        <div class="estimates" *ngIf="statusResult() as s">
-          <p class="estimates__status">
-            {{ ('VALUATION.STATUS.' + s.status.toUpperCase()) | translate }}
-          </p>
-
-          <ng-container *ngIf="s.estimates.length; else noEstimates">
-            <div class="estimate-row" *ngFor="let e of s.estimates">
-              <strong>{{ e.estimatedPrice | localNumber }}</strong>
-              <span *ngIf="e.notes">{{ e.notes }}</span>
-            </div>
-          </ng-container>
-          <ng-template #noEstimates>
-            <p class="estimates__empty">{{ 'VALUATION.OFFICE_PATH.NO_ESTIMATES_YET' | translate }}</p>
-          </ng-template>
-        </div>
+        <a class="valuation-refresh follow-link" [routerLink]="['/valuation', r.inquiryId]" data-testid="office-path-follow">
+          {{ 'VALUATION.OFFICE_PATH.FOLLOW' | translate }}
+        </a>
       </div>
+
+      <ng-template #officeChoice>
+        <!-- Offices were wanted but none is registered anywhere near. -->
+        <div class="alert alert--warning" *ngIf="r.insufficientOfficeCoverage; else askChoice" role="status" data-testid="office-path-none">
+          <span aria-hidden="true">🏢</span>
+          <p>{{ 'VALUATION.OFFICE_PATH.NO_OFFICES' | translate }}</p>
+        </div>
+      </ng-template>
+
+      <ng-template #askChoice>
+        <div class="office-ask" *ngIf="!loggedIn(); else signedInChoice" data-testid="office-path-login">
+          <p>{{ 'VALUATION.OFFICE_PATH.LOGIN_TO_ASK' | translate }}</p>
+          <a class="valuation-restart" routerLink="/login" [queryParams]="{ returnUrl: '/valuation' }">{{ 'AUTH.LOGIN_BUTTON' | translate }}</a>
+        </div>
+      </ng-template>
+
+      <ng-template #signedInChoice>
+        <div class="office-ask" *ngIf="r.officePathAvailable && r.estimate.available" data-testid="office-path-ask">
+          <p>{{ 'VALUATION.OFFICE_PATH.ASK_HINT' | translate }}</p>
+          <button type="button" class="valuation-refresh" (click)="askOffices()" [disabled]="askingOffices()">
+            <span class="spinner" *ngIf="askingOffices()"></span>
+            <span>{{ 'VALUATION.OFFICE_PATH.ASK' | translate }}</span>
+          </button>
+        </div>
+      </ng-template>
 
       <button type="button" class="valuation-restart" (click)="reset()">
         {{ 'VALUATION.NEW_REQUEST' | translate }}

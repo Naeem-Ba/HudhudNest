@@ -6,9 +6,10 @@
 //      asking prices in one currency, or "not enough data") and, only when there is none and offices can receive
 //      requests, matches nearby offices in the same call — see CreateValuationInquiryCommandHandler. This page shows
 //      whichever happened, with the Nearby-Governorate disclosure banner when matching widened beyond the governorate.
-//   3. For the Office Path, a manual "check for responses" refresh — same convention this
-//      codebase's other async-status views (my-service-requests, visits) already use; no
-//      polling anywhere in this app.
+//   3. Local offices know their area even where too few listings exist, so a signed-in customer's request goes to up
+//      to three nearby offices whenever there is no estimate, and the customer may also ask for their opinion next to
+//      an estimate ("ask the offices" button, which resends the same request with requestOfficeOpinion). The answers
+//      are followed on /valuation/:id (ValuationResultPage), which a notification also opens.
 //
 // Anonymous by design (ValuationInquiry.RequesterId is nullable for a guest visitor on the
 // backend) — this route carries no AuthGuard.
@@ -17,7 +18,7 @@ import { RouterLink } from '@angular/router';
 import { ChangeDetectionStrategy, Component, DestroyRef, Injector, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { ValuationApiService } from '../../core/api/valuation-api.service';
@@ -30,7 +31,6 @@ import {
 import {
   CreateValuationInquiryPayload,
   CreateValuationInquiryResultDto,
-  ValuationInquiryStatusDto,
   ValuationRequestType,
   validateCreateValuationInquiry
 } from '../../core/models/valuation.model';
@@ -38,17 +38,17 @@ import { LanguageService, LangCode } from '../../core/services/language.service'
 import { ToastService } from '../../shared/services/toast.service';
 import { PageMetaService } from '../../core/services/page-meta.service';
 import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
-import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
 import { ComboBoxComponent, ComboOption } from '../../shared/ui/combo-box.component';
 import { PlaceProposalService } from '../../core/api/place-proposal.service';
 import { MARKET_CURRENCY_CODES, isMarketCurrency } from '../../core/pricing/market-currencies';
 import { PreferencesService } from '../../core/services/preferences.service';
 import { formatListingPrice } from '../../shared/utils/listing-price';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-valuation-request-page',
   standalone: true,
-  imports: [LocalizedDatePipe, LocalizedNumberPipe, ComboBoxComponent, CommonModule, ReactiveFormsModule, TranslateModule, RouterLink],
+  imports: [LocalizedDatePipe, ComboBoxComponent, CommonModule, ReactiveFormsModule, TranslateModule, RouterLink],
   templateUrl: './valuation-request.page.html',
   styleUrls: ['./valuation-request.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -63,6 +63,10 @@ export class ValuationRequestPage implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly pageMeta = inject(PageMetaService);
   private readonly preferences = inject(PreferencesService);
+  private readonly auth = inject(AuthService);
+
+  /** Offices are only asked for an account: their answer has to reach someone. */
+  readonly loggedIn = toSignal(this.auth.isLoggedIn$, { initialValue: false });
 
   readonly currentLang = signal<LangCode>(this.language.getCurrent());
 
@@ -90,8 +94,9 @@ export class ValuationRequestPage implements OnInit {
   readonly submitting = signal(false);
   readonly result = signal<CreateValuationInquiryResultDto | null>(null);
 
-  readonly checkingStatus = signal(false);
-  readonly statusResult = signal<ValuationInquiryStatusDto | null>(null);
+  readonly askingOffices = signal(false);
+  /** The request as last sent, so "ask the offices" can send the same one again with the offices included. */
+  private lastPayload: CreateValuationInquiryPayload | null = null;
 
   readonly requestTypes: ValuationRequestType[] = ['ForSale', 'ForRent'];
   readonly currencies = MARKET_CURRENCY_CODES;
@@ -160,7 +165,7 @@ export class ValuationRequestPage implements OnInit {
 
     this.submitting.set(true);
     this.result.set(null);
-    this.statusResult.set(null);
+    this.lastPayload = payload;
 
     this.valuationApi.create(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: created => {
@@ -175,29 +180,32 @@ export class ValuationRequestPage implements OnInit {
     });
   }
 
-  checkStatus(): void {
-    const inquiryId = this.result()?.inquiryId;
-    if (!inquiryId) {
+  /** Sends the same request again, this time to the nearby offices as well (signed-in only). */
+  askOffices(): void {
+    if (!this.lastPayload || this.askingOffices()) {
       return;
     }
 
-    this.checkingStatus.set(true);
-    this.valuationApi.getStatus(inquiryId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: status => {
-        this.statusResult.set(status);
-        this.checkingStatus.set(false);
-      },
-      error: () => {
-        this.checkingStatus.set(false);
-        this.toast.show(this.translate.instant('VALUATION.STATUS_ERROR'), 'error');
-      }
-    });
+    this.askingOffices.set(true);
+    this.valuationApi.create({ ...this.lastPayload, requestOfficeOpinion: true })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: created => {
+          this.askingOffices.set(false);
+          // Keeps the estimate on screen (same request, same statistics) and adds the offices' part.
+          this.result.set(created);
+        },
+        error: () => {
+          this.askingOffices.set(false);
+          this.toast.show(this.translate.instant('VALUATION.SUBMIT_ERROR'), 'error');
+        }
+      });
   }
 
   /** Start over — clears the result so the form reappears. */
   reset(): void {
     this.result.set(null);
-    this.statusResult.set(null);
+    this.lastPayload = null;
     this.form.reset({ requestType: 'ForSale', currencyCode: this.defaultCurrency() });
     this.districtText = '';
     this.neighborhoodText = '';
