@@ -3,8 +3,9 @@
 // Stage 7 — the two required flows spelled out for this stage:
 //   1. Automatic estimate available → an immediate result: a range of asking prices in one currency.
 //   2. Office Path: no automatic estimate → the request is sent to matched
-//      offices, including the Nearby-Governorate disclosure flag, then a
-//      manual "check status" refresh surfaces any estimates received so far.
+//      offices, including the Nearby-Governorate disclosure flag; the answers are
+//      followed on /valuation/:id (valuation-result.page.spec.ts).
+//   3. Next to an estimate, a signed-in customer may ask the offices too (askOffices()).
 //
 // No E2E framework (Cypress/Playwright/Protractor) exists anywhere in this
 // repository (confirmed before writing this file) — introducing one would be
@@ -12,7 +13,7 @@
 // are therefore full-flow tests written in this codebase's own existing
 // Karma/Jasmine convention instead: constructing the real component via
 // TestBed with spied dependencies and driving its public API exactly as the
-// template does (form.patchValue → submit() → result()/statusResult()
+// template does (form.patchValue → submit() → result()
 // signals), the same "call ngOnInit() directly, assert on the class's own
 // state rather than the rendered DOM" style property-form.page.spec.ts
 // already established for a comparably form-heavy page — not a placeholder
@@ -26,7 +27,8 @@ import { of, throwError } from 'rxjs';
 import { ValuationRequestPage } from './valuation-request.page';
 import { ValuationApiService } from '../../core/api/valuation-api.service';
 import { LookupsApiService, StructuredLocationLookup } from '../../core/api/lookups-api.service';
-import { CreateValuationInquiryResultDto, ValuationInquiryStatusDto } from '../../core/models/valuation.model';
+import { CreateValuationInquiryResultDto } from '../../core/models/valuation.model';
+import { AuthService } from '../../core/auth/auth.service';
 import { LanguageService } from '../../core/services/language.service';
 import { PlaceProposalService } from '../../core/api/place-proposal.service';
 import { ToastService } from '../../shared/services/toast.service';
@@ -55,7 +57,7 @@ describe('ValuationRequestPage', () => {
   let valuationApiSpy: jasmine.SpyObj<ValuationApiService>;
   let toastSpy: jasmine.SpyObj<ToastService>;
 
-  function createComponent(preferredCurrency: string | null = null): ValuationRequestPage {
+  function createComponent(preferredCurrency: string | null = null, loggedIn = true): ValuationRequestPage {
     valuationApiSpy = jasmine.createSpyObj('ValuationApiService', ['create', 'getStatus']);
 
     const lookupsApiSpy = jasmine.createSpyObj('LookupsApiService', [
@@ -77,6 +79,7 @@ describe('ValuationRequestPage', () => {
         { provide: LanguageService, useValue: { getCurrent: () => 'ar', currentLang$: of('ar') } },
         { provide: ToastService, useValue: toastSpy },
         { provide: PreferencesService, useValue: { currency: preferredCurrency } },
+        { provide: AuthService, useValue: { isLoggedIn$: of(loggedIn) } },
         {
           provide: TranslateService,
           // `stream` is what PageMetaService (SEO meta for the page) subscribes to on ngOnInit.
@@ -117,7 +120,8 @@ describe('ValuationRequestPage', () => {
         hasMinimumOfficeCoverage: false,
         insufficientOfficeCoverage: false,
         matchedNeighboringGovernorate: false,
-        officePathAvailable: true
+        officePathAvailable: true,
+        officesRequested: false
       };
       valuationApiSpy.create.and.returnValue(of(completed));
 
@@ -197,7 +201,8 @@ describe('ValuationRequestPage', () => {
         hasMinimumOfficeCoverage: false,
         insufficientOfficeCoverage: true,
         matchedNeighboringGovernorate: true,
-        officePathAvailable: true
+        officePathAvailable: true,
+        officesRequested: true
       };
       valuationApiSpy.create.and.returnValue(of(officePath));
 
@@ -213,38 +218,68 @@ describe('ValuationRequestPage', () => {
       expect(result!.matchedNeighboringGovernorate).toBeTrue();
     });
 
-    it('✅ checkStatus() after submit() surfaces estimates received so far (manual refresh, no polling)', () => {
+    it('askOffices() sends the same request again with the offices included, and shows that they were asked', () => {
       const component = createComponent();
       fillMinimalValidForm(component);
 
-      valuationApiSpy.create.and.returnValue(of({
+      const withEstimate = {
         inquiryId: 'inq-3',
-        status: 'AwaitingOfficeResponses',
+        status: 'Completed',
         expiresAt: '2026-03-02T12:00:00Z',
-        estimate: estimate(false),
-        requiresOfficeValuation: true,
-        officeMatchCount: 1,
+        estimate: estimate(true),
+        requiresOfficeValuation: false,
+        officeMatchCount: 0,
         hasMinimumOfficeCoverage: false,
-        insufficientOfficeCoverage: true,
+        insufficientOfficeCoverage: false,
         matchedNeighboringGovernorate: false,
-        officePathAvailable: true
-      } satisfies CreateValuationInquiryResultDto));
+        officePathAvailable: true,
+        officesRequested: false
+      } satisfies CreateValuationInquiryResultDto;
+      const sent = { ...withEstimate, inquiryId: 'inq-4', status: 'AwaitingOfficeResponses' as const, officeMatchCount: 3,
+        hasMinimumOfficeCoverage: true, officesRequested: true };
+      valuationApiSpy.create.and.returnValues(of(withEstimate), of(sent));
+
       component.submit();
+      component.askOffices();
 
-      const statusWithEstimate: ValuationInquiryStatusDto = {
-        inquiryId: 'inq-3',
-        status: 'AwaitingOfficeResponses',
-        expiresAt: '2026-03-02T12:00:00Z',
-        estimates: [{ estimatedPrice: 175000, notes: 'تقدير أولي', submittedAt: '2026-03-01T20:00:00Z', matchLevel: 'District' }]
-      };
-      valuationApiSpy.getStatus.and.returnValue(of(statusWithEstimate));
+      expect(valuationApiSpy.create).toHaveBeenCalledTimes(2);
+      const second = valuationApiSpy.create.calls.mostRecent().args[0];
+      expect(second).toEqual(jasmine.objectContaining({
+        governorateId: 1, propertyTypeId: 2, area: 120, requestType: 'ForSale', currencyCode: 'USD', requestOfficeOpinion: true
+      }));
+      expect(component.askingOffices()).toBeFalse();
+      expect(component.result()!.officesRequested).toBeTrue();
+      expect(component.result()!.inquiryId).toBe('inq-4');
+      // The estimate stays on screen next to the offices' part.
+      expect(component.result()!.estimate.available).toBeTrue();
+    });
 
-      component.checkStatus();
+    it('askOffices() keeps the estimate and shows a toast when the request fails', () => {
+      const component = createComponent();
+      fillMinimalValidForm(component);
+      valuationApiSpy.create.and.returnValues(of({
+        inquiryId: 'inq-5', status: 'Completed', expiresAt: '2026-03-02T12:00:00Z', estimate: estimate(true),
+        requiresOfficeValuation: false, officeMatchCount: 0, hasMinimumOfficeCoverage: false, insufficientOfficeCoverage: false,
+        matchedNeighboringGovernorate: false, officePathAvailable: true, officesRequested: false
+      } satisfies CreateValuationInquiryResultDto), throwError(() => new Error('boom')));
 
-      expect(valuationApiSpy.getStatus).toHaveBeenCalledWith('inq-3');
-      expect(component.checkingStatus()).toBeFalse();
-      expect(component.statusResult()?.estimates.length).toBe(1);
-      expect(component.statusResult()?.estimates[0].estimatedPrice).toBe(175000);
+      component.submit();
+      component.askOffices();
+
+      expect(component.result()!.inquiryId).toBe('inq-5');
+      expect(component.askingOffices()).toBeFalse();
+      expect(toastSpy.show).toHaveBeenCalled();
+    });
+
+    it('askOffices() does nothing before a request was sent', () => {
+      const component = createComponent();
+      component.askOffices();
+      expect(valuationApiSpy.create).not.toHaveBeenCalled();
+    });
+
+    it('a guest is not signed in, so the page offers sign-in instead of the offices', () => {
+      const component = createComponent(null, false);
+      expect(component.loggedIn()).toBeFalse();
     });
 
     it('reset() clears the result so the form reappears for a new request', () => {
@@ -260,7 +295,8 @@ describe('ValuationRequestPage', () => {
         hasMinimumOfficeCoverage: false,
         insufficientOfficeCoverage: false,
         matchedNeighboringGovernorate: false,
-        officePathAvailable: true
+        officePathAvailable: true,
+        officesRequested: false
       } satisfies CreateValuationInquiryResultDto));
       component.submit();
 
@@ -269,7 +305,6 @@ describe('ValuationRequestPage', () => {
       component.reset();
 
       expect(component.result()).toBeNull();
-      expect(component.statusResult()).toBeNull();
       expect(component.form.value.governorateId).toBeNull();
     });
   });

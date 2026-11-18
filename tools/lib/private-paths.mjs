@@ -57,7 +57,9 @@ export const PRIVATE_PATHS = [
   // (reachable from a listing), but are thin and personal -- not something to put in a search
   // index until the owner decides otherwise.
   '/users/',
-  '/newsletter/'
+  '/newsletter/',
+  // One's own valuation request and the offices' answers; the request form itself (/valuation) stays public.
+  '/valuation/'
 ];
 
 /** Netlify `_headers` path patterns for one robots-style path: a prefix without a trailing slash

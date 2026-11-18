@@ -149,7 +149,8 @@
     "ADMIN_GEO": "Location catalog",
     "OFFICES": "Agencies",
     "ADMIN_AGENCIES": "Agency verification",
-    "ADMIN_LEGAL_HOLDS": "Legal holds"
+    "ADMIN_LEGAL_HOLDS": "Legal holds",
+    "VALUATION_REQUESTS": "Valuation requests"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -2841,13 +2842,18 @@
     "SUBMIT_ERROR": "Could not submit your valuation request. Please try again.",
     "STATUS_ERROR": "Could not check the request status.",
     "OFFICE_PATH": {
-      "SENT_TO": "Your request was sent to {{count}} real-estate office(s) in your area for a precise estimate.",
+      "SENT_TO": "We sent your request to {{count}} real estate agencies near your property for their price opinion.",
       "NEIGHBORING_GOVERNORATE_DISCLOSURE": "Not enough offices were available in your governorate, so the search was expanded to include offices from neighboring governorates.",
       "INSUFFICIENT_COVERAGE": "We could not find at least 3 real-estate offices in your area. You may receive estimates from fewer offices.",
       "EXPIRES_AT": "You'll hear back within 24 hours, by {{date}} at the latest.",
       "CHECK_STATUS": "Check for responses",
       "NO_ESTIMATES_YET": "No estimates yet. Please check back later.",
-      "OFF": "Valuation by real-estate offices is not available yet. Try again later, or choose only the governorate to widen the area."
+      "OFF": "Valuation by real-estate offices is not available yet. Try again later, or choose only the governorate to widen the area.",
+      "FOLLOW": "Follow the agencies' answers",
+      "NO_OFFICES": "No real estate agency near your area is registered yet to be asked about the price.",
+      "LOGIN_TO_ASK": "Local agencies know their area's prices even where listings are few. Sign in and we will ask up to 3 nearby agencies; they answer within 24 hours.",
+      "ASK_HINT": "Want the locals' view too? We ask up to 3 nearby real estate agencies; they answer within 24 hours.",
+      "ASK": "Ask the agencies' opinion"
     },
     "NEW_REQUEST": "New valuation request",
     "STATUS": {
@@ -2875,6 +2881,52 @@
       "PER_SQM": "Price per m²",
       "DISCLAIMER": "These are asking prices from listings, not actual sale prices. This is not a valuation of your property, not a purchase offer and not a guaranteed sale price. Condition, floor, finishing and legal status can change the value a lot.",
       "NONE_TITLE": "Not enough data for a reliable estimate"
+    },
+    "RESULT": {
+      "TITLE": "Agencies' price opinions on your property",
+      "SUBTITLE": "The answers of the agencies we asked about your request appear here.",
+      "LOADING": "Loading...",
+      "NOT_FOUND": "We could not find this request in your account.",
+      "ANSWERED": "{{answered}} of {{asked}} agencies answered.",
+      "CLOSED_NO_ANSWERS": "The window closed without any agency answering. You can submit a new request.",
+      "DISCLAIMER": "This is the agency's opinion of the price based on what you entered. It is not an official valuation or a purchase offer. A viewing and the legal status can change the price."
+    },
+    "OFFICE_INBOX": {
+      "EYEBROW": "My agency",
+      "TITLE": "Price opinion requests",
+      "SUBTITLE": "Customers near your agency are asking what their property is worth. Give your opinion within 24 hours.",
+      "BACK": "Back to my agency",
+      "LINK": "Price opinion requests",
+      "NO_AGENCY": "This page is for members of real estate agencies only.",
+      "LOAD_ERROR": "Could not load the requests. Please try again.",
+      "AREA": "Area: {{area}} m²",
+      "ROOMS": "Rooms: {{rooms}}",
+      "RECEIVED": "Received {{date}}",
+      "DEADLINE": "Answer by {{date}}",
+      "YOUR_ANSWER": "Your agency's answer",
+      "CONTACT": "The customer shared their contact with you:",
+      "PRICE_SALE": "Expected sale price",
+      "PRICE_RENT": "Expected monthly rent",
+      "NOTES": "Note for the customer (optional)",
+      "NOTES_PLACEHOLDER": "For example: the price depends a lot on the floor, finishing and legal status.",
+      "ONCE_HINT": "You can answer once; the customer sees it under your agency's name.",
+      "SEND": "Send the agency's opinion",
+      "SENT": "Your answer reached the customer.",
+      "CLOSED": "This request can no longer be answered.",
+      "SEND_ERROR": "Could not send the answer. Please try again.",
+      "REFRESH": "Refresh",
+      "TABS": {
+        "OPEN": "Waiting for you",
+        "ANSWERED": "Answered",
+        "MISSED": "Missed"
+      },
+      "TAB_EMPTY": {
+        "OPEN": "No requests are waiting for your answer.",
+        "ANSWERED": "Your agency has not answered any request yet.",
+        "MISSED": "No requests closed before you answered."
+      },
+      "BACK_TO_LIST": "All valuation requests",
+      "NOT_FOUND": "This request is not in your agency's inbox."
     }
   },
   "PROVIDER": {

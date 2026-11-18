@@ -33,6 +33,8 @@ export interface CreateValuationInquiryPayload {
   requestType: ValuationRequestType;
   /** USD, EUR or SYP; the estimate comes back in this one currency. */
   currencyCode?: string | null;
+  /** Signed-in only: also ask the local offices for their price opinion, even when there is an estimate. */
+  requestOfficeOpinion?: boolean;
 }
 
 /** Mirrors CreateValuationInquiryResultDto. */
@@ -52,13 +54,22 @@ export interface CreateValuationInquiryResultDto {
   insufficientOfficeCoverage: boolean;
   /** The Nearby-Governorate disclosure rule. */
   matchedNeighboringGovernorate: boolean;
-  /** False while offices cannot receive valuation requests: a request that needed them was closed at once. */
+  /**
+   * False while offices cannot receive valuation requests, and for a guest (an office answer can only reach an
+   * account). A request that needed offices was then closed at once.
+   */
   officePathAvailable: boolean;
+  /** True when this request was sent to local offices; their answers appear on /valuation/:inquiryId. */
+  officesRequested: boolean;
 }
 
-/** Mirrors ValuationEstimateDto — deliberately no agency identity. */
+/** One office's price opinion, as the customer sees it (Mirrors ValuationEstimateDto). The office name is public. */
 export interface ValuationEstimateDto {
+  invitationId: string;
+  agencyName: string;
   estimatedPrice: number;
+  /** Null only for answers recorded before offices were asked for a currency. */
+  currencyCode: string | null;
   notes?: string | null;
   submittedAt: string;
   matchLevel: ValuationMatchLevel;
@@ -69,7 +80,44 @@ export interface ValuationInquiryStatusDto {
   inquiryId: string;
   status: ValuationInquiryStatus;
   expiresAt: string;
+  /** How many offices were asked, for "2 of 3 answered". */
+  invitedOfficeCount: number;
   estimates: ValuationEstimateDto[];
+}
+
+export type ValuationOfficeInvitationStatus = 'Sent' | 'Responded' | 'Expired';
+
+/** One request in an office's valuation inbox (Mirrors ValuationOfficeInvitationDashboardDto). */
+export interface ValuationOfficeInvitation {
+  invitationId: string;
+  inquiryId: string;
+  matchLevel: ValuationMatchLevel;
+  invitationStatus: ValuationOfficeInvitationStatus;
+  sentAt: string;
+  respondedAt: string | null;
+  /** Still open and before the deadline; the server re-checks on submit. */
+  canRespond: boolean;
+  governorateId: number;
+  districtId: number | null;
+  neighborhoodId: number | null;
+  propertyTypeId: number | null;
+  area: number | null;
+  rooms: number | null;
+  requestType: ValuationRequestType;
+  inquiryExpiresAt: string;
+  myEstimatedPrice: number | null;
+  myCurrencyCode: string | null;
+  myNotes: string | null;
+  /** Only once the customer chose to share them with this office. */
+  customerContactPhone: string | null;
+  customerContactEmail: string | null;
+}
+
+/** An office's answer: one price in one market currency, with an optional note. */
+export interface ValuationOfficeResponsePayload {
+  estimatedPrice: number;
+  currencyCode: string;
+  notes?: string | null;
 }
 
 /** Client-side mirror of CreateValuationInquiryCommandValidator — a fast, friendly check

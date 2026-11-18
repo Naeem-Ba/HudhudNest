@@ -48,6 +48,11 @@ test('the inbox itself, not only a conversation, is private', () => {
   assert.ok(isCovered('/messages/abc'));
 });
 
+test('a valuation request page is private while the valuation form stays public', () => {
+  assert.ok(isCovered('/valuation/abc'));
+  assert.equal(isCovered('/valuation'), false);
+});
+
 test('public pages are not accidentally private', () => {
   for (const publicPath of ['/', '/home', '/properties', '/properties/123', '/short-stay', '/investments', '/pricing']) {
     assert.equal(isCovered(publicPath), false, `${publicPath} must stay indexable`);

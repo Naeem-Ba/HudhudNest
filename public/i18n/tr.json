@@ -149,7 +149,8 @@
     "ADMIN_GEO": "Konum kataloğu",
     "OFFICES": "Emlak ofisleri",
     "ADMIN_AGENCIES": "Ofis doğrulama",
-    "ADMIN_LEGAL_HOLDS": "Yasal bekletmeler"
+    "ADMIN_LEGAL_HOLDS": "Yasal bekletmeler",
+    "VALUATION_REQUESTS": "Değerleme talepleri"
   },
   "AUTH": {
     "LOGIN_TITLE": "Hoş geldiniz",
@@ -2841,13 +2842,18 @@
     "SUBMIT_ERROR": "Değerleme talebiniz gönderilemedi. Lütfen tekrar deneyin.",
     "STATUS_ERROR": "Talep durumu kontrol edilemedi.",
     "OFFICE_PATH": {
-      "SENT_TO": "Talebiniz, kesin bir tahmin için bölgenizdeki {{count}} emlak ofisine gönderildi.",
+      "SENT_TO": "Talebinizi mülkünüze yakın {{count}} emlak ofisine fiyat görüşü için gönderdik.",
       "NEIGHBORING_GOVERNORATE_DISCLOSURE": "İlinizde yeterli sayıda ofis bulunmadığından arama, komşu illerdeki ofisleri de kapsayacak şekilde genişletildi.",
       "INSUFFICIENT_COVERAGE": "Bölgenizde en az 3 emlak ofisi bulamadık. Daha az sayıda ofisten tahmin alabilirsiniz.",
       "EXPIRES_AT": "24 saat içinde, en geç {{date}} tarihine kadar yanıt alırsınız.",
       "CHECK_STATUS": "Yanıtları kontrol et",
       "NO_ESTIMATES_YET": "Henüz tahmin yok. Lütfen daha sonra tekrar bakın.",
-      "OFF": "Emlak ofislerinden değerleme henüz mevcut değil. Daha sonra tekrar deneyin veya bölgeyi genişletmek için yalnızca ili seçin."
+      "OFF": "Emlak ofislerinden değerleme henüz mevcut değil. Daha sonra tekrar deneyin veya bölgeyi genişletmek için yalnızca ili seçin.",
+      "FOLLOW": "Ofislerin yanıtlarını takip edin",
+      "NO_OFFICES": "Bölgenizde fiyat sorulabilecek kayıtlı bir emlak ofisi henüz yok.",
+      "LOGIN_TO_ASK": "Yerel ofisler, ilan az olsa bile bölgelerinin fiyatlarını bilir. Giriş yapın, yakındaki en fazla 3 ofise soralım; 24 saat içinde yanıt verirler.",
+      "ASK_HINT": "Bölgeyi bilenlerin görüşünü de ister misiniz? Yakındaki en fazla 3 emlak ofisine sorarız; 24 saat içinde yanıt verirler.",
+      "ASK": "Ofislerin görüşünü iste"
     },
     "NEW_REQUEST": "Yeni değerleme talebi",
     "STATUS": {
@@ -2875,6 +2881,52 @@
       "PER_SQM": "m² fiyatı",
       "DISCLAIMER": "Bunlar ilanlardaki talep fiyatlarıdır, gerçek satış fiyatları değildir. Mülkünüzün değerlemesi, bir satın alma teklifi veya satış fiyatı garantisi değildir. Durum, kat, iç donanım ve hukuki durum değeri çok değiştirebilir.",
       "NONE_TITLE": "Güvenilir bir tahmin için yeterli veri yok"
+    },
+    "RESULT": {
+      "TITLE": "Emlak ofislerinin mülkünüz için fiyat görüşleri",
+      "SUBTITLE": "Talebiniz için sorduğumuz ofislerin yanıtları burada görünür.",
+      "LOADING": "Yükleniyor...",
+      "NOT_FOUND": "Bu talep hesabınızda bulunamadı.",
+      "ANSWERED": "{{asked}} ofisten {{answered}} tanesi yanıt verdi.",
+      "CLOSED_NO_ANSWERS": "Süre hiçbir ofis yanıt vermeden doldu. Yeni bir talep gönderebilirsiniz.",
+      "DISCLAIMER": "Bu, girdiğiniz bilgilere göre ofisin fiyat görüşüdür; resmi bir değerleme veya satın alma teklifi değildir. Yerinde inceleme ve hukuki durum fiyatı değiştirebilir."
+    },
+    "OFFICE_INBOX": {
+      "EYEBROW": "Ofisim",
+      "TITLE": "Fiyat görüşü talepleri",
+      "SUBTITLE": "Ofisinize yakın müşteriler mülklerinin ne kadar ettiğini soruyor. Görüşünüzü 24 saat içinde verin.",
+      "BACK": "Ofisime dön",
+      "LINK": "Fiyat görüşü talepleri",
+      "NO_AGENCY": "Bu sayfa yalnızca emlak ofisi üyeleri içindir.",
+      "LOAD_ERROR": "Talepler yüklenemedi. Lütfen tekrar deneyin.",
+      "AREA": "Alan: {{area}} m²",
+      "ROOMS": "Oda: {{rooms}}",
+      "RECEIVED": "Geliş: {{date}}",
+      "DEADLINE": "Son yanıt: {{date}}",
+      "YOUR_ANSWER": "Ofisinizin yanıtı",
+      "CONTACT": "Müşteri iletişim bilgilerini sizinle paylaştı:",
+      "PRICE_SALE": "Beklenen satış fiyatı",
+      "PRICE_RENT": "Beklenen aylık kira",
+      "NOTES": "Müşteriye not (isteğe bağlı)",
+      "NOTES_PLACEHOLDER": "Örneğin: fiyat kata, işçiliğe ve hukuki duruma göre çok değişir.",
+      "ONCE_HINT": "Yalnızca bir kez yanıt verebilirsiniz; müşteri yanıtı ofisinizin adıyla görür.",
+      "SEND": "Ofisin görüşünü gönder",
+      "SENT": "Yanıtınız müşteriye ulaştı.",
+      "CLOSED": "Bu talep artık yanıtlanamaz.",
+      "SEND_ERROR": "Yanıt gönderilemedi. Lütfen tekrar deneyin.",
+      "REFRESH": "Yenile",
+      "TABS": {
+        "OPEN": "Yanıtınızı bekliyor",
+        "ANSWERED": "Yanıtlandı",
+        "MISSED": "Kaçırıldı"
+      },
+      "TAB_EMPTY": {
+        "OPEN": "Yanıtınızı bekleyen talep yok.",
+        "ANSWERED": "Ofisiniz henüz hiçbir talebi yanıtlamadı.",
+        "MISSED": "Yanıtlamadan süresi dolan talep yok."
+      },
+      "BACK_TO_LIST": "Tüm değerleme talepleri",
+      "NOT_FOUND": "Bu talep ofisinizin gelen kutusunda yok."
     }
   },
   "PROVIDER": {

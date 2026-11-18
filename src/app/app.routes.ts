@@ -152,6 +152,14 @@ export const routes: Routes = [
             .then(m => m.ValuationRequestPage)
       },
       {
+        // One's own valuation request and the offices' answers. Signed-in: only an account's request goes to offices.
+        path: 'valuation/:id',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/valuation-request/valuation-result.page')
+            .then(m => m.ValuationResultPage)
+      },
+      {
         path: 'my-listings',
         canActivate: [AuthGuard],
         loadComponent: () =>
@@ -167,6 +175,22 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/agency-form/agency-form.page')
             .then(m => m.AgencyFormPage)
+      },
+      {
+        // The office's valuation inbox: customers near the office asking for its price opinion.
+        path: 'my-agency/valuations',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/valuation-office/valuation-office-inbox.page')
+            .then(m => m.ValuationOfficeInboxPage)
+      },
+      {
+        // One request in full, with the answer form while it is still open.
+        path: 'my-agency/valuations/:invitationId',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/valuation-office/valuation-office-inbox.page')
+            .then(m => m.ValuationOfficeInboxPage)
       },
       {
         // الصفحة العامة للمكتب بالرابط القصير (/F-AGY-05/) — مجهولة عمدًا، مثل

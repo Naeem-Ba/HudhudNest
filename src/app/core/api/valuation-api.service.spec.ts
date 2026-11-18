@@ -52,7 +52,8 @@ describe('ValuationApiService', () => {
       Area: 120,
       Rooms: 3,
       RequestType: 'ForSale',
-      CurrencyCode: 'SYP'
+      CurrencyCode: 'SYP',
+      RequestOfficeOpinion: false
     });
 
     req.flush({
@@ -94,14 +95,16 @@ describe('ValuationApiService', () => {
     });
   });
 
-  it('✅ getStatus: يطبّع قائمة التقديرات دون أي حقل يخص هوية المكتب', done => {
+  it('getStatus: reads each office answer with its public office name and currency, and how many offices were asked', done => {
     service.getStatus('inq-2').subscribe(status => {
       expect(status.status).toBe('AwaitingOfficeResponses');
+      expect(status.invitedOfficeCount).toBe(3);
       expect(status.estimates.length).toBe(1);
       expect(status.estimates[0].estimatedPrice).toBe(150000);
+      expect(status.estimates[0].currencyCode).toBe('USD');
+      expect(status.estimates[0].agencyName).toBe('Al-Bayt Realty');
       expect(status.estimates[0].matchLevel).toBe('District');
-      // لا يوجد أي حقل agencyId/agencyName في الواجهة أصلاً — انظر
-      // valuation.model.ts's ValuationEstimateDto.
+      // The office's id is not carried into the app: only its public name.
       expect((status.estimates[0] as unknown as Record<string, unknown>)['agencyId']).toBeUndefined();
       done();
     });
@@ -110,10 +113,50 @@ describe('ValuationApiService', () => {
       inquiryId: 'inq-2',
       status: 'AwaitingOfficeResponses',
       expiresAt: '2026-03-02T12:00:00Z',
+      invitedOfficeCount: 3,
       estimates: [
-        { estimatedPrice: 150000, notes: null, submittedAt: '2026-03-01T18:00:00Z', matchLevel: 'District' }
+        { invitationId: 'inv-1', agencyId: 'ag-1', agencyName: 'Al-Bayt Realty', estimatedPrice: 150000, currencyCode: 'USD',
+          notes: null, submittedAt: '2026-03-01T18:00:00Z', matchLevel: 'District' }
       ]
     });
+  });
+
+  it('create: sends the office-opinion wish and reads whether offices were asked', done => {
+    service.create({ governorateId: 1, propertyTypeId: 2, area: 90, requestType: 'ForSale', requestOfficeOpinion: true })
+      .subscribe(r => {
+        expect(r.officesRequested).toBeTrue();
+        done();
+      });
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/ValuationInquiries`);
+    expect(req.request.body.RequestOfficeOpinion).toBeTrue();
+    req.flush({ inquiryId: 'd', status: 'AwaitingOfficeResponses', officesRequested: true, officeMatchCount: 3 });
+  });
+
+  it('getMyOfficeInvitations: reads the office inbox', done => {
+    service.getMyOfficeInvitations().subscribe(items => {
+      expect(items.length).toBe(1);
+      expect(items[0].invitationId).toBe('inv-1');
+      expect(items[0].canRespond).toBeTrue();
+      expect(items[0].requestType).toBe('ForRent');
+      expect(items[0].area).toBe(120);
+      expect(items[0].myEstimatedPrice).toBeNull();
+      expect(items[0].customerContactPhone).toBeNull();
+      done();
+    });
+    httpMock.expectOne(`${environment.apiBaseUrl}/ValuationOfficeInvitations/mine`).flush([
+      { invitationId: 'inv-1', inquiryId: 'inq-1', matchLevel: 'District', invitationStatus: 'Sent', sentAt: '2026-03-01T12:00:00Z',
+        respondedAt: null, canRespond: true, governorateId: 1, districtId: 10, neighborhoodId: null, propertyTypeId: 2,
+        area: 120, rooms: 3, requestType: 'ForRent', inquiryStatus: 'AwaitingOfficeResponses', inquiryExpiresAt: '2026-03-02T12:00:00Z',
+        myEstimatedPrice: null, myNotes: null, customerContactPhone: null, customerContactEmail: null, myCurrencyCode: null }
+    ]);
+  });
+
+  it('respond: sends one price in one currency, and an empty note as null', done => {
+    service.respond('inv-1', { estimatedPrice: 95000, currencyCode: 'USD', notes: '   ' }).subscribe(() => done());
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/ValuationOfficeInvitations/inv-1/respond`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ EstimatedPrice: 95000, CurrencyCode: 'USD', Notes: null });
+    req.flush({});
   });
 
   // Comprehensive audit 2026-11-17: offices cannot answer yet, so the API may switch the office path off.
