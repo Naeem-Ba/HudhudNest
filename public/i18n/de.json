@@ -876,6 +876,7 @@
     "HIDE_EXACT_LOCATION_HINT": "Besucher sehen statt der Stecknadel einen ungefähren Bereich von etwa 500 m und keinen Straßennamen. Sie und die Administration sehen den genauen Ort.",
     "PRICE_NEGOTIABLE": "Preis verhandelbar",
     "PRICE_NEGOTIABLE_HINT": "Aktivieren Sie dies, wenn Sie über den Preis verhandeln möchten. Besucher sehen es nur auf der Detailseite der Anzeige.",
+    "FEATURES_AND_AMENITIES": "Merkmale und Ausstattung",
     "BRANCH": {
       "LABEL": "Filiale des Büros",
       "NONE": "Keine bestimmte Filiale",

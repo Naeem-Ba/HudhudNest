@@ -876,6 +876,7 @@
     "HIDE_EXACT_LOCATION_HINT": "Ziyaretçiler işaretçi yerine yaklaşık 500 m'lik bir bölge görür ve sokak adı gösterilmez. Siz ve yöneticiler tam konumu görmeye devam edersiniz.",
     "PRICE_NEGOTIABLE": "Fiyat pazarlığa açık",
     "PRICE_NEGOTIABLE_HINT": "Fiyat konusunda pazarlığa açıksanız bunu etkinleştirin. Ziyaretçiler bunu yalnızca ilan ayrıntıları sayfasında görür.",
+    "FEATURES_AND_AMENITIES": "Özellikler ve olanaklar",
     "BRANCH": {
       "LABEL": "Ofis şubesi",
       "NONE": "Belirli bir şube yok",

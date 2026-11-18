@@ -163,6 +163,8 @@ describe('PropertyFormPage heating type', () => {
 
     expect(fixture.componentInstance.form.get('isPriceNegotiable')?.value).toBeTrue();
     expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="price-negotiable"] input')).not.toBeNull();
+    // The native box is hidden by the global input reset, so the styled box that draws the tick must exist.
+    expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="price-negotiable"] .checkbox-box')).not.toBeNull();
   });
 
   it('edit mode defaults "price negotiable" to off when the listing never set it', async () => {
@@ -254,5 +256,58 @@ describe('PropertyFormPage heating type in the save payload', () => {
     component.form.controls.heatingType.setValue(3);
     component.form.controls.heatingType.markAsDirty();
     expect(component.heatingTypeForSave()).toBe(3);
+  });
+});
+
+describe('PropertyFormPage features and amenities in one group', () => {
+  const catalog = [
+    { id: 'a-balcony', name: 'شرفة', category: null, iconName: 'balcony' },
+    { id: 'a-elevator', name: 'مصعد', category: null, iconName: 'elevator' },
+    { id: 'a-parking', name: 'موقف', category: null, iconName: 'parking' },
+    { id: 'a-pool', name: 'مسبح', category: null, iconName: 'pool' }
+  ];
+
+  function build(): { component: PropertyFormPage; ids: () => string[] } {
+    const lookups = jasmine.createSpyObj('LookupsApiService', [
+      'getGovernorates', 'getDistricts', 'getNeighborhoods', 'getPropertyTypeCatalog', 'getAmenities', 'getCities'
+    ]);
+    for (const name of ['getGovernorates', 'getDistricts', 'getNeighborhoods', 'getCities', 'getPropertyTypeCatalog']) {
+      lookups[name].and.returnValue(of([]));
+    }
+    lookups.getAmenities.and.returnValue(of(catalog));
+    const api = jasmine.createSpyObj('PropertyApiService', ['checkDuplicate', 'getPropertyForManagement']);
+    TestBed.configureTestingModule({
+      imports: [PropertyFormPage, TranslateModule.forRoot()],
+      providers: [
+        provideHttpClient(), provideHttpClientTesting(), provideRouter([]),
+        { provide: LookupsApiService, useValue: lookups },
+        { provide: PropertyApiService, useValue: api },
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({}) } } },
+        { provide: LanguageService, useValue: { getCurrentLang: () => 'ar', getCurrent: () => 'ar', currentLang$: of('ar') } }
+      ]
+    });
+    TestBed.overrideComponent(PropertyFormPage, {
+      remove: { imports: [MapPickerComponent, LocationComboComponent] },
+      add: { schemas: [NO_ERRORS_SCHEMA] }
+    });
+    const component = TestBed.createComponent(PropertyFormPage).componentInstance;
+    component.amenities.set(catalog);
+    return { component, ids: () => (component as unknown as { amenityIdsForSave(): string[] }).amenityIdsForSave().sort() };
+  }
+
+  it('the catalog list hides balcony, elevator and parking (the flags row already offers them)', () => {
+    const { component } = build();
+    expect(component.selectableAmenities().map(a => a.id)).toEqual(['a-pool']);
+  });
+
+  it('a ticked flag saves its catalog row too, and an unticked flag removes it', () => {
+    const { component, ids } = build();
+    component.toggleAmenity('a-pool');
+    component.form.patchValue({ hasBalcony: true, hasParkingSpace: true });
+    expect(ids()).toEqual(['a-balcony', 'a-parking', 'a-pool']);
+
+    component.selectedAmenityIds.set(new Set(['a-elevator', 'a-pool']));
+    component.form.patchValue({ hasBalcony: false, hasElevator: false, hasParkingSpace: false });
+    expect(ids()).toEqual(['a-pool']);
   });
 });

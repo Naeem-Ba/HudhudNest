@@ -876,6 +876,7 @@
     "HIDE_EXACT_LOCATION_HINT": "Visitors see an approximate area of about 500 m instead of the pin, and no street name. You and the admins still see the exact spot.",
     "PRICE_NEGOTIABLE": "The price is negotiable",
     "PRICE_NEGOTIABLE_HINT": "Turn this on if you are open to negotiating the price. Visitors see it on the listing details page only.",
+    "FEATURES_AND_AMENITIES": "Features and amenities",
     "BRANCH": {
       "LABEL": "Office branch",
       "NONE": "No specific branch",

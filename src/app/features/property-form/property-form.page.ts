@@ -779,6 +779,44 @@ export class PropertyFormPage implements OnInit {
       });
   }
 
+  /**
+   * Balcony, elevator and parking are both quick yes/no flags (searchable columns) and rows of the
+   * amenities catalog. The form shows them once, in the flags row; the catalog list hides them so the
+   * same choice is never offered twice. Land has no flags row, so its catalog list is left whole.
+   */
+  private static readonly FLAG_AMENITY_KEYS: Readonly<Record<string, 'hasBalcony' | 'hasElevator' | 'hasParkingSpace'>> = {
+    balcony: 'hasBalcony',
+    elevator: 'hasElevator',
+    parking: 'hasParkingSpace'
+  };
+
+  private static flagKeyOf(amenity: { iconName?: string | null; icon?: string | null }):
+    'hasBalcony' | 'hasElevator' | 'hasParkingSpace' | null {
+    const key = (amenity.iconName ?? amenity.icon ?? '').trim();
+    return PropertyFormPage.FLAG_AMENITY_KEYS[key] ?? null;
+  }
+
+  /** The amenities catalog without the rows already covered by the flags (everything on land). */
+  selectableAmenities(): LookupAmenity[] {
+    // A method, not a computed(): isLandCategory reads the live form value, which is not a signal.
+    return this.isLandCategory ? this.amenities() : this.amenities().filter(a => PropertyFormPage.flagKeyOf(a) === null);
+  }
+
+  /** Amenity ids to save: the user's picks, with the flag-backed rows following their flag. */
+  private amenityIdsForSave(): string[] {
+    const ids = new Set(this.selectedAmenityIds());
+    if (!this.isLandCategory) {
+      const raw = this.form.getRawValue();
+      for (const amenity of this.amenities()) {
+        const flag = PropertyFormPage.flagKeyOf(amenity);
+        if (flag === null) continue;
+        if (raw[flag]) ids.add(amenity.id);
+        else ids.delete(amenity.id);
+      }
+    }
+    return Array.from(ids);
+  }
+
   isAmenitySelected(amenityId: string): boolean {
     return this.selectedAmenityIds().has(amenityId);
   }
@@ -917,6 +955,12 @@ export class PropertyFormPage implements OnInit {
             .map(amenity => amenity.id)
             .filter((id): id is string => !!id);
           this.selectedAmenityIds.set(new Set(existingAmenityIds));
+          // An amenity row that mirrors a flag (balcony/elevator/parking) turns that flag on when the
+          // flag column was never set, so the single combined checkbox shows what the listing has.
+          for (const amenity of property.amenities ?? []) {
+            const flag = PropertyFormPage.flagKeyOf(amenity);
+            if (flag !== null) this.form.get(flag)?.setValue(true);
+          }
         },
         // ✅ إضافة: رسالة أوضح عند 403 (محاولة تعديل عقار مستخدم آخر) بدل رسالة
         // "تعذر التحميل" العامة المضلِّلة.
@@ -1241,7 +1285,7 @@ export class PropertyFormPage implements OnInit {
       AvailableFrom: f.availableFrom || null,
       // ✅ إصلاح: كان الحقل معرَّفاً في الـ payload لكن لم يُملأ أبداً — المرافق
       // المختارة من المستخدم لم تكن تُرسَل إلى الباك اند إطلاقاً.
-      AmenityIds: Array.from(this.selectedAmenityIds()),
+      AmenityIds: this.amenityIdsForSave(),
       // Phase-0, Task 0.
       GovernorateId: f.governorateId ?? null,
       LocationId: f.locationId ?? null,
