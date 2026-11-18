@@ -17,6 +17,8 @@ describe('listing status (QA Phase 7, P7-D08)', () => {
     expect(listingLifecycle({ status: 2 })).toBe('sold');
     expect(listingLifecycle({ status: 3 })).toBe('rented');
     expect(listingLifecycle({ status: 4 })).toBe('archived');
+    // Platform audit 2026-11-18, HN-21: the numeric form of Expired (API enum value 5).
+    expect(listingLifecycle({ status: 5 })).toBe('expired');
   });
 
   it('treats a missing or unknown status as an ordinary listing, never as a closed one', () => {

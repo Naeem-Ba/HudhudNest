@@ -32,6 +32,7 @@
     "CONCURRENCY_CONFLICT": "This item was changed by someone else at the same moment. Refresh the page and try again.",
     "CSRF_VALIDATION_FAILED": "The request could not be verified as safe. Reload the page and try again.",
     "LISTING_QUOTA_REACHED": "You've reached the active-listing limit of your plan. Delete an existing listing or upgrade your plan to add a new one.",
+    "LISTING_EXPIRED_EXTEND_ONLY": "This listing's publication period has ended. Renew it with an extension; the \"Expired\" status cannot be changed by hand.",
     "PAYMENTS_DISABLED": "Online payment is not available right now. Nothing was charged.",
     "PAYMENT_PROVIDER_UNAVAILABLE": "The payment provider is not available right now. Nothing was charged. Try again shortly.",
     "PAYMENT_PROVIDER_UNAVAILABLE_FOR_REQUEST": "This payment method is not available for this currency or country.",

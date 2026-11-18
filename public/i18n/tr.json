@@ -32,6 +32,7 @@
     "CONCURRENCY_CONFLICT": "Bu öğe, aynı anda başka biri tarafından değiştirildi. Sayfayı yenileyip tekrar deneyin.",
     "CSRF_VALIDATION_FAILED": "İsteğin güvenli olduğu doğrulanamadı. Sayfayı yeniden yükleyip tekrar deneyin.",
     "LISTING_QUOTA_REACHED": "Planınızdaki aktif ilan sınırına ulaştınız. Yeni bir ilan eklemek için mevcut bir ilanı silin veya planınızı yükseltin.",
+    "LISTING_EXPIRED_EXTEND_ONLY": "Bu ilanın yayın süresi doldu. Süre uzatma ile yenileyin; \"Süresi doldu\" durumu elle değiştirilemez.",
     "PAYMENTS_DISABLED": "Çevrimiçi ödeme şu anda kullanılamıyor. Hesabınızdan herhangi bir tutar çekilmedi.",
     "PAYMENT_PROVIDER_UNAVAILABLE": "Ödeme sağlayıcısı şu anda kullanılamıyor. Hesabınızdan herhangi bir tutar çekilmedi. Kısa süre sonra tekrar deneyin.",
     "PAYMENT_PROVIDER_UNAVAILABLE_FOR_REQUEST": "Bu ödeme yöntemi bu para birimi veya ülke için kullanılamıyor.",

@@ -20,7 +20,8 @@ const BY_NUMBER: Readonly<Record<number, ListingLifecycle>> = {
   1: 'reserved',
   2: 'sold',
   3: 'rented',
-  4: 'archived'
+  4: 'archived',
+  5: 'expired'
 };
 
 export function listingLifecycle(listing: { status?: unknown } | null | undefined): ListingLifecycle {
