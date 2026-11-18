@@ -390,3 +390,39 @@ test('the directory itself and nested office paths are left to the SPA', async (
     assert.equal(context.wasCalled, true, path);
   }
 });
+
+// ── Share-links audit 2026-11-18 (L-03): a backend hiccup must not look like a deleted listing ──────────
+
+test('a 5xx or 429 from the backend gives a social crawler the SPA (generic preview), never "unavailable"', async () => {
+  for (const status of [500, 502, 503, 429]) {
+    const context = makeNextContext();
+    const request = new Request('https://hudhudnest.com/properties/p1', {
+      headers: { 'user-agent': 'WhatsApp/2.24.1.0 A' }
+    });
+
+    const response = await withNetlifyEnvStub({}, () =>
+      withFetchStub(async () => new Response('', { status }), () => handler(request, context))
+    );
+
+    assert.equal(context.wasCalled, true, `status ${status} must fall through to the SPA`);
+    assert.equal(response.status, 200);
+  }
+});
+
+test('the property preview request is bounded by a timeout signal', async () => {
+  const context = makeNextContext();
+  const request = new Request('https://hudhudnest.com/properties/p1', {
+    headers: { 'user-agent': 'facebookexternalhit/1.1' }
+  });
+  let signal;
+
+  await withNetlifyEnvStub({}, () =>
+    withFetchStub(async (_url, init) => {
+      signal = init?.signal;
+      throw new DOMException('The operation timed out.', 'TimeoutError');
+    }, () => handler(request, context))
+  );
+
+  assert.ok(signal instanceof AbortSignal);
+  assert.equal(context.wasCalled, true);
+});

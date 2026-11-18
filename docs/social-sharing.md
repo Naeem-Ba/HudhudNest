@@ -100,6 +100,19 @@ that runs in front of `/properties/*`. It inspects the request's User-Agent:
 - **anyone else** (real visitors, Googlebot, Bingbot, Yandex, unrecognized bots) →
   `context.next()`, i.e. the normal Angular `index.html`, completely untouched.
 
+Rules added by the share-links audit (2026-11-18), pinned by `npm run test:edge-functions`:
+- **Image**: a Cloudinary photo is delivered as a 1200x630 JPEG (`c_fill,g_auto,…,f_jpg`; an office
+  logo with `c_pad,b_white`) with `og:image:width/height/alt`. The stored original can be several
+  MB, which unfurlers such as WhatsApp drop. Other hosts and already-transformed URLs pass unchanged.
+- **Backend errors**: only a 404 produces the "listing unavailable" card. A 5xx, 429 or a request
+  slower than 8 s falls through to the SPA's generic preview, so a waking API never gets a live
+  listing cached as deleted.
+- **Description**: sale/rent first, rent marked monthly, city plus region; the office card leads with
+  its city. Viber, Snapchat, Bluesky (Cardyb) and Mastodon are recognized as unfurlers.
+- **Not done**: the title stays in the language it was written in. `GET /properties/{id}` has no
+  language parameter, and calling the translation endpoint from here would spend translation quota
+  on every crawler hit.
+
 **Googlebot/Bingbot/Yandex were removed from the crawler list in 2026-10** (see
 `ARD-HudhudNest.md` ADR-001-R). They were originally included for the same reason as the social
 crawlers — hash routing made the real path-based page unreachable by a plain request — but unlike

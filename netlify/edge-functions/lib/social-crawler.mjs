@@ -53,7 +53,13 @@ const CRAWLER_USER_AGENT_SIGNATURES = [
   'outbrain',
   'nuzzel',
   'flipboard',
-  'w3c_validator'
+  'w3c_validator',
+  // Added 2026-11-18 (share-links audit M-04): Viber is widely used in Syria; Snapchat, Bluesky's
+  // card fetcher and Mastodon instances also unfurl links without running JavaScript.
+  'viber',
+  'snapchat',
+  'cardyb',
+  'mastodon'
 ];
 
 /**
@@ -160,10 +166,14 @@ const SHARE_TEXT = {
   ar: {
     dir: 'rtl',
     locale: 'ar_SY',
+    listSep: '، ',
     siteName: 'هدهد نيست',
     squareMeter: 'م²',
     rooms: n => `${n} غرف`,
     defaultTitle: 'تفاصيل العقار',
+    forSale: 'للبيع',
+    forRent: 'للإيجار',
+    perMonth: price => `${price} شهريًا`,
     percent: v => `خصم ${v}%`,
     fixed: v => `خصم ${v}$`,
     freeMonths: v => (v === 1 ? 'شهر مجاني' : `${v} أشهر مجانية`),
@@ -176,10 +186,14 @@ const SHARE_TEXT = {
   en: {
     dir: 'ltr',
     locale: 'en_US',
+    listSep: ', ',
     siteName: 'HudhudNest',
     squareMeter: 'm²',
     rooms: n => `${n} ${Number(n) === 1 ? 'room' : 'rooms'}`,
     defaultTitle: 'Property details',
+    forSale: 'For sale',
+    forRent: 'For rent',
+    perMonth: price => `${price}/month`,
     percent: v => `${v}% off`,
     fixed: v => `$${v} off`,
     freeMonths: v => (v === 1 ? '1 month free' : `${v} months free`),
@@ -192,10 +206,14 @@ const SHARE_TEXT = {
   de: {
     dir: 'ltr',
     locale: 'de_DE',
+    listSep: ', ',
     siteName: 'HudhudNest',
     squareMeter: 'm²',
     rooms: n => `${n} Zimmer`,
     defaultTitle: 'Immobiliendetails',
+    forSale: 'Zu verkaufen',
+    forRent: 'Zu vermieten',
+    perMonth: price => `${price}/Monat`,
     percent: v => `${v} % Rabatt`,
     fixed: v => `${v} $ Rabatt`,
     freeMonths: v => (v === 1 ? '1 Monat gratis' : `${v} Monate gratis`),
@@ -208,10 +226,14 @@ const SHARE_TEXT = {
   tr: {
     dir: 'ltr',
     locale: 'tr_TR',
+    listSep: ', ',
     siteName: 'HudhudNest',
     squareMeter: 'm²',
     rooms: n => `${n} oda`,
     defaultTitle: 'İlan ayrıntıları',
+    forSale: 'Satılık',
+    forRent: 'Kiralık',
+    perMonth: price => `${price}/ay`,
     percent: v => `%${v} indirim`,
     fixed: v => `${v} $ indirim`,
     freeMonths: v => (v === 1 ? '1 ay ücretsiz' : `${v} ay ücretsiz`),
@@ -241,6 +263,13 @@ export function buildSummary(property, lang = 'ar') {
   const text = shareText(lang);
   const parts = [];
 
+  // Sale or rent first: the one fact a reader needs before the numbers mean anything (audit M-02).
+  if (property.listingType === 'ForSale') {
+    parts.push(text.forSale);
+  } else if (property.listingType === 'ForRent') {
+    parts.push(text.forRent);
+  }
+
   if (property.area) {
     const unit = !property.areaUnit || property.areaUnit === 'SquareMeter' ? text.squareMeter : property.areaUnit;
     parts.push(`${property.area} ${unit}`);
@@ -250,18 +279,80 @@ export function buildSummary(property, lang = 'ar') {
     parts.push(text.rooms(property.rooms));
   }
 
+  const isRent = property.purchasePrice == null && (property.coldRent != null || property.warmRent != null);
   const price = property.purchasePrice ?? property.coldRent ?? property.warmRent;
   if (price) {
     const currency = property.currencyCode ?? 'USD';
-    parts.push(`${Number(price).toLocaleString('en-US')} ${currency}`);
+    const amount = `${Number(price).toLocaleString('en-US')} ${currency}`;
+    parts.push(isRent ? text.perMonth(amount) : amount);
   }
 
-  if (property.city) {
-    parts.push(sanitizeText(property.city));
+  // City, then the region when it adds something (free text: either may be missing or repeat the other).
+  const city = sanitizeText(property.city);
+  const region = sanitizeText(property.region);
+  const place = [city, region && region !== city ? region : ''].filter(Boolean).join(text.listSep);
+  if (place) {
+    parts.push(place);
   }
 
   const summary = parts.join(' • ');
   return summary.length > MAX_SUMMARY_LENGTH ? `${summary.slice(0, MAX_SUMMARY_LENGTH - 1)}…` : summary;
+}
+
+/** Size every preview image is delivered at: the 1.91:1 card WhatsApp, Facebook, Telegram and X all crop to. */
+export const PREVIEW_IMAGE_WIDTH = 1200;
+export const PREVIEW_IMAGE_HEIGHT = 630;
+
+const CLOUDINARY_UPLOAD = /^(https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(.+)$/i;
+const CLOUDINARY_TRANSFORM_SEGMENT = /^[a-z]{1,3}_[^/]*(,[a-z]{1,3}_[^/]*)*$/i;
+
+/**
+ * A Cloudinary photo as a preview-sized JPEG (audit L-02). Uploads are stored as the original file, which can be
+ * several megabytes; link unfurlers (WhatsApp in particular) drop a large image and show a card without one.
+ * `mode` 'fill' crops a photo to the card; 'pad' fits a logo inside it on white so nothing is cut off.
+ * Returns null for anything that is not a plain Cloudinary upload URL (another host, or a URL that already
+ * carries a transformation, whose order we would otherwise change), so the caller keeps the original.
+ */
+export function cloudinaryPreviewUrl(value, mode = 'fill') {
+  if (typeof value !== 'string') return null;
+  const match = CLOUDINARY_UPLOAD.exec(value.trim());
+  if (!match) return null;
+  const [, base, rest] = match;
+  const firstSegment = rest.split('/', 1)[0];
+  if (CLOUDINARY_TRANSFORM_SEGMENT.test(firstSegment)) return null;
+  const size = `w_${PREVIEW_IMAGE_WIDTH},h_${PREVIEW_IMAGE_HEIGHT}`;
+  const transform = mode === 'pad' ? `c_pad,b_white,${size},q_auto,f_jpg` : `c_fill,g_auto,${size},q_auto,f_jpg`;
+  return `${base}${transform}/${rest}`;
+}
+
+/**
+ * The preview image and whether its pixel size is known. Known = a Cloudinary image we resized, or the site's own
+ * 1200x630 default; an image on any other host is used as is, without width/height tags it might contradict.
+ */
+function previewImage(candidates, fallbackImageUrl) {
+  for (const { url, mode } of candidates) {
+    if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) continue;
+    const resized = cloudinaryPreviewUrl(url, mode);
+    return resized ? { url: resized, sized: true } : { url, sized: false };
+  }
+  return { url: fallbackImageUrl, sized: true };
+}
+
+function imageMetaTags(image, alt) {
+  const img = escapeHtml(image.url);
+  const a = escapeHtml(alt);
+  const lines = [
+    `<meta property="og:image" content="${img}">`,
+    `<meta property="og:image:alt" content="${a}">`
+  ];
+  if (image.sized) {
+    lines.push(
+      `<meta property="og:image:width" content="${PREVIEW_IMAGE_WIDTH}">`,
+      `<meta property="og:image:height" content="${PREVIEW_IMAGE_HEIGHT}">`
+    );
+  }
+  lines.push(`<meta name="twitter:image" content="${img}">`, `<meta name="twitter:image:alt" content="${a}">`);
+  return lines.join('\n');
 }
 
 /** schema.org/Offer.businessFunction — same GoodRelations terms schema.org itself points to.
@@ -363,16 +454,18 @@ export function buildPropertyMetaHtml({ property, canonicalUrl, fallbackImageUrl
   const text = shareText(lang);
   const title = sanitizeText(property.title) || text.defaultTitle;
   const description = buildSummary(property, lang) || title;
-  const image =
-    (typeof property.mainImageUrl === 'string' && /^https?:\/\//i.test(property.mainImageUrl) && property.mainImageUrl) ||
-    (Array.isArray(property.images) && property.images.find(img => img && /^https?:\/\//i.test(img.url))?.url) ||
-    fallbackImageUrl;
+  const image = previewImage(
+    [
+      { url: property.mainImageUrl, mode: 'fill' },
+      ...(Array.isArray(property.images) ? property.images.map(img => ({ url: img && img.url, mode: 'fill' })) : [])
+    ],
+    fallbackImageUrl
+  );
 
   const fullTitle = `${title} | ${text.siteName}`;
   const t = escapeHtml(fullTitle);
   const d = escapeHtml(description);
   const u = escapeHtml(canonicalUrl);
-  const img = escapeHtml(image);
   // < escapes '<' so a value containing a literal "</script>" (e.g. an address or
   // description field that somehow bypassed sanitizeText above) can never break out of this
   // <script> tag's content and start injecting markup -- JSON.parse treats < identically
@@ -389,7 +482,7 @@ export function buildPropertyMetaHtml({ property, canonicalUrl, fallbackImageUrl
 <link rel="canonical" href="${u}">
 <meta property="og:title" content="${t}">
 <meta property="og:description" content="${d}">
-<meta property="og:image" content="${img}">
+${imageMetaTags(image, title)}
 <meta property="og:url" content="${u}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="${text.siteName}">
@@ -397,7 +490,6 @@ export function buildPropertyMetaHtml({ property, canonicalUrl, fallbackImageUrl
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${t}">
 <meta name="twitter:description" content="${d}">
-<meta name="twitter:image" content="${img}">
 <script type="application/ld+json">${jsonLd}</script>
 </head>
 <body>
@@ -511,15 +603,23 @@ export function buildOfficeMetaHtml({ agency, canonicalUrl, fallbackImageUrl, la
   }
 
   const own = sanitizeText(agency.description);
-  const description = own
-    ? (own.length > MAX_SUMMARY_LENGTH ? `${own.slice(0, MAX_SUMMARY_LENGTH - 1)}…` : own)
-    : text.officeDescription(name);
-  const image = httpsUrl(agency.coverImageUrl) || httpsUrl(agency.logoUrl) || fallbackImageUrl;
+  // The office's city leads the text when the office has one (audit M-02): who and where, before the pitch.
+  const city = sanitizeText(agency.city);
+  const body = own || text.officeDescription(name);
+  const full = city ? `${city} • ${body}` : body;
+  const description = full.length > MAX_SUMMARY_LENGTH ? `${full.slice(0, MAX_SUMMARY_LENGTH - 1)}…` : full;
+  // The cover is a photo (cropped to the card); a logo is padded so it is never cut off.
+  const image = previewImage(
+    [
+      { url: httpsUrl(agency.coverImageUrl), mode: 'fill' },
+      { url: httpsUrl(agency.logoUrl), mode: 'pad' }
+    ],
+    fallbackImageUrl
+  );
 
   const t = escapeHtml(`${name} | ${text.siteName}`);
   const d = escapeHtml(description);
   const u = escapeHtml(canonicalUrl);
-  const img = escapeHtml(image);
 
   return `<!doctype html>
 <html lang="${resolveShareLanguage(lang)}" dir="${text.dir}">
@@ -530,7 +630,7 @@ export function buildOfficeMetaHtml({ agency, canonicalUrl, fallbackImageUrl, la
 <link rel="canonical" href="${u}">
 <meta property="og:title" content="${t}">
 <meta property="og:description" content="${d}">
-<meta property="og:image" content="${img}">
+${imageMetaTags(image, name)}
 <meta property="og:url" content="${u}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="${text.siteName}">
@@ -538,7 +638,6 @@ export function buildOfficeMetaHtml({ agency, canonicalUrl, fallbackImageUrl, la
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${t}">
 <meta name="twitter:description" content="${d}">
-<meta name="twitter:image" content="${img}">
 </head>
 <body>
 <h1>${t}</h1>
