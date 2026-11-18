@@ -33,6 +33,7 @@
     "CSRF_VALIDATION_FAILED": "Die Anfrage konnte nicht als sicher bestätigt werden. Laden Sie die Seite neu und versuchen Sie es erneut.",
     "LISTING_QUOTA_REACHED": "Sie haben das Limit aktiver Anzeigen Ihres Pakets erreicht. Löschen Sie eine bestehende Anzeige oder wechseln Sie in ein höheres Paket, um eine neue hinzuzufügen.",
     "LISTING_EXPIRED_EXTEND_ONLY": "Die Laufzeit dieser Anzeige ist abgelaufen. Verlängern Sie sie; der Status „Abgelaufen“ lässt sich nicht von Hand ändern.",
+    "LISTING_STATUS_NOT_FOR_TYPE": "Dieser Status passt nicht zur Anzeigenart: „Verkauft“ gilt für Verkaufsanzeigen, „Vermietet“ für Mietanzeigen.",
     "PAYMENTS_DISABLED": "Online-Zahlung ist derzeit nicht verfügbar. Es wurde nichts abgebucht.",
     "PAYMENT_PROVIDER_UNAVAILABLE": "Der Zahlungsanbieter ist gerade nicht erreichbar. Es wurde nichts abgebucht. Bitte gleich erneut versuchen.",
     "PAYMENT_PROVIDER_UNAVAILABLE_FOR_REQUEST": "Diese Zahlungsart ist für diese Währung oder dieses Land nicht verfügbar.",
@@ -3388,7 +3389,8 @@
     "CONFIRM_CLOSED": "Wird die Anzeige als verkauft oder vermietet markiert, verschwindet sie aus der Suche. Sie bleibt als Nachweis auf der Seite Ihres Büros, und die Fotos werden nach 14 Tagen komprimiert, um Speicher zu sparen. Fortfahren?",
     "CONFIRM_ARCHIVED": "Eine archivierte Anzeige ist für die Öffentlichkeit nicht sichtbar; nur Sie sehen sie. Fortfahren?",
     "CHANGED": "Status der Anzeige aktualisiert.",
-    "CHANGE_ERROR": "Der Status der Anzeige konnte nicht aktualisiert werden."
+    "CHANGE_ERROR": "Der Status der Anzeige konnte nicht aktualisiert werden.",
+    "OFFICE_OWNER_HINT": "Sie sind Inhaber dieses Büros: Sie ändern den Status der Anzeige eines Ihrer Makler, der Makler wird benachrichtigt."
   },
   "OFFER_COMMON": {
     "DISCOUNT_PERCENT": "{{value}} % Rabatt",

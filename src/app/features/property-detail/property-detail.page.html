@@ -241,6 +241,9 @@
                   ? ('COMMON.SAVING' | translate)
                   : ('PROPERTY_DETAIL.CONFIRM_AVAILABILITY' | translate) }}
             </button>
+            <!-- Listing status (Reserved / Available / Sold / Rented / Archived) for the publisher and for the
+                 owner of the listing's office; the panel decides whether to show itself, the server enforces it. -->
+            <app-listing-status-panel [property]="p" (statusChanged)="onStatusChanged($event)" />
             <!-- Owner-only paid actions. Links, not buttons: they navigate to the checkout
                  page, which reviews the fee before recording anything. Ownership is
                  enforced server-side (403) — these *ngIf guards are UX, not security. -->

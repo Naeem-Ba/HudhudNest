@@ -33,6 +33,7 @@
     "CSRF_VALIDATION_FAILED": "İsteğin güvenli olduğu doğrulanamadı. Sayfayı yeniden yükleyip tekrar deneyin.",
     "LISTING_QUOTA_REACHED": "Planınızdaki aktif ilan sınırına ulaştınız. Yeni bir ilan eklemek için mevcut bir ilanı silin veya planınızı yükseltin.",
     "LISTING_EXPIRED_EXTEND_ONLY": "Bu ilanın yayın süresi doldu. Süre uzatma ile yenileyin; \"Süresi doldu\" durumu elle değiştirilemez.",
+    "LISTING_STATUS_NOT_FOR_TYPE": "Bu durum ilan türüne uymuyor: \"Satıldı\" satılık ilanlar, \"Kiralandı\" kiralık ilanlar içindir.",
     "PAYMENTS_DISABLED": "Çevrimiçi ödeme şu anda kullanılamıyor. Hesabınızdan herhangi bir tutar çekilmedi.",
     "PAYMENT_PROVIDER_UNAVAILABLE": "Ödeme sağlayıcısı şu anda kullanılamıyor. Hesabınızdan herhangi bir tutar çekilmedi. Kısa süre sonra tekrar deneyin.",
     "PAYMENT_PROVIDER_UNAVAILABLE_FOR_REQUEST": "Bu ödeme yöntemi bu para birimi veya ülke için kullanılamıyor.",
@@ -3388,7 +3389,8 @@
     "CONFIRM_CLOSED": "Bu ilanı satıldı veya kiralandı olarak işaretlemek, ilanı aramadan kaldırır. Kayıt olarak ofis sayfanızda kalır ve depolamadan tasarruf için fotoğrafları 14 gün sonra sıkıştırılır. Devam edilsin mi?",
     "CONFIRM_ARCHIVED": "Arşivlenen ilan herkesten gizlenir; yalnızca siz görebilirsiniz. Devam edilsin mi?",
     "CHANGED": "İlan durumu güncellendi.",
-    "CHANGE_ERROR": "İlan durumu güncellenemedi."
+    "CHANGE_ERROR": "İlan durumu güncellenemedi.",
+    "OFFICE_OWNER_HINT": "Bu ofisin sahibisiniz: temsilcilerinizden birinin ilanının durumunu değiştiriyorsunuz; temsilciye bildirim gider."
   },
   "OFFER_COMMON": {
     "DISCOUNT_PERCENT": "%{{value}} indirim",

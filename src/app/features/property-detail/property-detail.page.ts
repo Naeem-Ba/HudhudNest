@@ -52,6 +52,7 @@ import { ListingTranslationService } from '../../core/api/listing-translation.se
 import { ListingTranslationController } from './listing-translation.controller';
 import { TranslationNoticeComponent } from './translation-notice.component';
 import { PriceHistoryComponent } from './price-history.component';
+import { ListingStatusPanelComponent } from './listing-status-panel.component';
 import { getGallerySwipeNavigation } from './gallery-swipe';
 import { REVIEW_COMMENT_MAX_LENGTH, ReviewDto, validateCreateReview } from '../../core/models/review.model';
 import { CreateVisitRequest, validateCreateVisit } from '../../core/models/visit.model';
@@ -79,7 +80,7 @@ import { PropertyStructuredDataService } from '../../core/sharing/property-struc
 import { PropertyShareUrlService } from '../../core/sharing/property-share-url.service';
 import { isGuid } from '../../shared/utils/guid';
 import { formatListingPrice } from '../../shared/utils/listing-price';
-import { listingLifecycle, listingStatusTagKey } from '../../shared/utils/listing-status';
+import { OwnerSelectableStatus, listingLifecycle, listingStatusTagKey } from '../../shared/utils/listing-status';
 import { StructuredDataService, BREADCRUMB_JSON_LD_ID } from '../../core/services/structured-data.service';
 import { AmenityLabelPipe } from '../../pipes/amenity-label.pipe';
 import { AdSlotComponent } from '../../core/ads/ad-slot.component';
@@ -102,6 +103,7 @@ const LIGHTBOX_IMAGE_WIDTH = 2048;
   imports: [ LocalizedDatePipe, LocalizedNumberPipe,
     AdSlotComponent,
     PriceHistoryComponent,
+    ListingStatusPanelComponent,
     AmenityLabelPipe,
     CommonModule,
     RouterModule,
@@ -897,6 +899,11 @@ export class PropertyDetailPage implements OnInit {
    * updates LastConfirmedAvailableAt locally on success so the staleness
    * banner disappears immediately without a full reload.
    */
+  /** The status panel saved a new status: show it at once (tag, notice) without reloading the page. */
+  onStatusChanged(status: OwnerSelectableStatus): void {
+    this.property.update(current => (current ? { ...current, status } : current));
+  }
+
   confirmStillAvailable(): void {
     const property = this.property();
     if (!property?.id || this.confirmingAvailability()) return;
