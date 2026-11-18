@@ -1,8 +1,8 @@
 // =====================================================================
 // ✅ Unit Tests – valuation-request.page.spec.ts
 // Stage 7 — the two required flows spelled out for this stage:
-//   1. Fast Path: enough comparable listings → an immediate, complete result.
-//   2. Office Path: too few comparables → the request is sent to matched
+//   1. Automatic estimate available → an immediate result: a range of asking prices in one currency.
+//   2. Office Path: no automatic estimate → the request is sent to matched
 //      offices, including the Nearby-Governorate disclosure flag, then a
 //      manual "check status" refresh surfaces any estimates received so far.
 //
@@ -30,6 +30,22 @@ import { CreateValuationInquiryResultDto, ValuationInquiryStatusDto } from '../.
 import { LanguageService } from '../../core/services/language.service';
 import { PlaceProposalService } from '../../core/api/place-proposal.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { PreferencesService } from '../../core/services/preferences.service';
+import { PriceEstimate } from '../../core/api/price-estimate-api.service';
+
+function estimate(available: boolean): PriceEstimate {
+  return available
+    ? {
+        available: true, reason: null, kind: 'Sale', currencyCode: 'USD', low: 96000, mid: 120000, high: 150000,
+        lowPerSqm: 800, midPerSqm: 1000, highPerSqm: 1250, sampleCount: 12, basis: 'DistrictAndType', confidence: 'Low',
+        dataComputedAt: '2026-11-18T06:00:00', oldestListingAt: '2026-09-01T00:00:00', newestListingAt: '2026-11-17T00:00:00'
+      }
+    : {
+        available: false, reason: 'not_enough_data', kind: 'Sale', currencyCode: 'USD', low: null, mid: null, high: null,
+        lowPerSqm: null, midPerSqm: null, highPerSqm: null, sampleCount: 0, basis: null, confidence: null,
+        dataComputedAt: null, oldestListingAt: null, newestListingAt: null
+      };
+}
 
 const GOVERNORATES: StructuredLocationLookup[] = [
   { id: 1, nameAr: 'دمشق', nameEn: 'Damascus' }
@@ -39,7 +55,7 @@ describe('ValuationRequestPage', () => {
   let valuationApiSpy: jasmine.SpyObj<ValuationApiService>;
   let toastSpy: jasmine.SpyObj<ToastService>;
 
-  function createComponent(): ValuationRequestPage {
+  function createComponent(preferredCurrency: string | null = null): ValuationRequestPage {
     valuationApiSpy = jasmine.createSpyObj('ValuationApiService', ['create', 'getStatus']);
 
     const lookupsApiSpy = jasmine.createSpyObj('LookupsApiService', [
@@ -60,6 +76,7 @@ describe('ValuationRequestPage', () => {
         { provide: LookupsApiService, useValue: lookupsApiSpy },
         { provide: LanguageService, useValue: { getCurrent: () => 'ar', currentLang$: of('ar') } },
         { provide: ToastService, useValue: toastSpy },
+        { provide: PreferencesService, useValue: { currency: preferredCurrency } },
         {
           provide: TranslateService,
           // `stream` is what PageMetaService (SEO meta for the page) subscribes to on ngOnInit.
@@ -80,13 +97,13 @@ describe('ValuationRequestPage', () => {
   }
 
   function fillMinimalValidForm(component: ValuationRequestPage): void {
-    component.form.patchValue({ governorateId: 1, requestType: 'ForSale' });
+    component.form.patchValue({ governorateId: 1, propertyTypeId: 2, area: 120, requestType: 'ForSale' });
   }
 
   // ── Flow 1: Fast Path ───────────────────────────────────────────
 
-  describe('Flow 1 — Fast Path (enough comparable listings)', () => {
-    it('✅ submit() with 3+ comparables completes immediately with no office-path fields set', () => {
+  describe('Flow 1 — automatic estimate available', () => {
+    it('✅ submit() with an available estimate completes immediately with no office-path fields set', () => {
       const component = createComponent();
       fillMinimalValidForm(component);
 
@@ -94,19 +111,7 @@ describe('ValuationRequestPage', () => {
         inquiryId: 'inq-1',
         status: 'Completed',
         expiresAt: '2026-03-02T12:00:00Z',
-        fastPath: {
-          hasComparableListings: true,
-          comparableCount: 5,
-          minPrice: 100000,
-          maxPrice: 200000,
-          averagePrice: 150000,
-          medianPrice: 145000,
-          isPreliminary: true,
-          requiresOfficeValuation: false,
-          matchLevel: 'Neighborhood',
-          source: '📊 مبني على إعلانات مشابهة',
-          disclaimer: 'الأسعار المعروضة هنا أسعار طلب.'
-        },
+        estimate: estimate(true),
         requiresOfficeValuation: false,
         officeMatchCount: 0,
         hasMinimumOfficeCoverage: false,
@@ -121,7 +126,35 @@ describe('ValuationRequestPage', () => {
       expect(component.submitting()).toBeFalse();
       expect(component.result()).toEqual(completed);
       expect(component.result()!.requiresOfficeValuation).toBeFalse();
-      expect(component.result()!.fastPath.averagePrice).toBe(150000);
+      expect(component.result()!.estimate.currencyCode).toBe('USD');
+      expect(valuationApiSpy.create).toHaveBeenCalledWith(jasmine.objectContaining({
+        governorateId: 1, propertyTypeId: 2, area: 120, requestType: 'ForSale', currencyCode: 'USD'
+      }));
+    });
+
+    it('❌ a request without a property type or an area never reaches the API (valuation audit P0)', () => {
+      const component = createComponent();
+      component.form.patchValue({ governorateId: 1, propertyTypeId: null, area: 120 });
+      component.submit();
+      component.form.patchValue({ propertyTypeId: 2, area: null });
+      component.submit();
+
+      expect(valuationApiSpy.create).not.toHaveBeenCalled();
+    });
+
+    it('✅ only sale or rent can be asked, never both together', () => {
+      expect(createComponent().requestTypes).toEqual(['ForSale', 'ForRent']);
+    });
+
+    it('✅ the currency starts at the person\'s display currency when the estimate supports it, else USD', () => {
+      expect(createComponent('SYP').form.controls.currencyCode.value).toBe('SYP');
+      TestBed.resetTestingModule();
+      expect(createComponent('TRY').form.controls.currencyCode.value).toBe('USD');
+    });
+
+    it('✅ money() always names the currency', () => {
+      const text = createComponent().money(120000, 'EUR');
+      expect(text).toMatch(/EUR|€/);
     });
 
     it('❌ submit() with an invalid form (no governorate) never calls the API', () => {
@@ -149,8 +182,8 @@ describe('ValuationRequestPage', () => {
 
   // ── Flow 2: Office Path + Nearby-Governorate disclosure ─────────
 
-  describe('Flow 2 — Office Path (too few comparables) + Nearby-Governorate disclosure', () => {
-    it('✅ submit() with too few comparables surfaces the office-match summary and the disclosure flag', () => {
+  describe('Flow 2 — Office Path (no automatic estimate) + Nearby-Governorate disclosure', () => {
+    it('✅ submit() without an automatic estimate surfaces the office-match summary and the disclosure flag', () => {
       const component = createComponent();
       fillMinimalValidForm(component);
 
@@ -158,13 +191,7 @@ describe('ValuationRequestPage', () => {
         inquiryId: 'inq-2',
         status: 'AwaitingOfficeResponses',
         expiresAt: '2026-03-02T12:00:00Z',
-        fastPath: {
-          hasComparableListings: false,
-          comparableCount: 0,
-          isPreliminary: false,
-          requiresOfficeValuation: true,
-          matchLevel: 'Governorate'
-        },
+        estimate: estimate(false),
         requiresOfficeValuation: true,
         officeMatchCount: 2,
         hasMinimumOfficeCoverage: false,
@@ -194,7 +221,7 @@ describe('ValuationRequestPage', () => {
         inquiryId: 'inq-3',
         status: 'AwaitingOfficeResponses',
         expiresAt: '2026-03-02T12:00:00Z',
-        fastPath: { hasComparableListings: false, comparableCount: 0, isPreliminary: false, requiresOfficeValuation: true, matchLevel: 'Governorate' },
+        estimate: estimate(false),
         requiresOfficeValuation: true,
         officeMatchCount: 1,
         hasMinimumOfficeCoverage: false,
@@ -227,7 +254,7 @@ describe('ValuationRequestPage', () => {
         inquiryId: 'inq-4',
         status: 'Completed',
         expiresAt: '2026-03-02T12:00:00Z',
-        fastPath: { hasComparableListings: true, comparableCount: 3, isPreliminary: true, requiresOfficeValuation: false, matchLevel: 'Neighborhood' },
+        estimate: estimate(true),
         requiresOfficeValuation: false,
         officeMatchCount: 0,
         hasMinimumOfficeCoverage: false,

@@ -98,18 +98,35 @@
     justify-content: space-between;
     font-size: .92rem;
     color: var(--gray-700);
-
-    &--highlight {
-      font-size: 1.1rem;
-      font-weight: 800;
-      color: var(--gold-text);
-    }
   }
 
-  &__source {
-    margin: .5rem 0 0;
-    font-size: .78rem;
+  &__title {
+    margin: 0;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  &__range {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--gold-text);
+    overflow-wrap: anywhere;
+  }
+
+  &__row strong {
+    overflow-wrap: anywhere;
+    text-align: end;
+  }
+
+  &__facts {
+    margin: .25rem 0 0;
+    padding-inline-start: 1.1rem;
+    font-size: .82rem;
     color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
   }
 
   &__disclaimer {

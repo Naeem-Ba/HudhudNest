@@ -9,8 +9,8 @@
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
+import { PriceEstimate } from './price-estimate-api.service';
 import {
-  ComparableListingsResultDto,
   CreateValuationInquiryPayload,
   CreateValuationInquiryResultDto,
   ValuationEstimateDto,
@@ -31,7 +31,8 @@ export class ValuationApiService {
       PropertyTypeId: payload.propertyTypeId ?? null,
       Area: payload.area ?? null,
       Rooms: payload.rooms ?? null,
-      RequestType: payload.requestType
+      RequestType: payload.requestType,
+      CurrencyCode: payload.currencyCode ?? null
     };
 
     return this.api.post<unknown>(this.endpoint, body).pipe(map(response => this.toCreateResult(response)));
@@ -48,7 +49,7 @@ export class ValuationApiService {
       inquiryId: String(r['inquiryId'] ?? ''),
       status: (r['status'] as CreateValuationInquiryResultDto['status']) ?? 'Pending',
       expiresAt: String(r['expiresAt'] ?? ''),
-      fastPath: this.toFastPath(r['fastPath']),
+      estimate: this.toEstimateRange(r['estimate']),
       requiresOfficeValuation: !!r['requiresOfficeValuation'],
       officeMatchCount: Number(r['officeMatchCount'] ?? 0),
       hasMinimumOfficeCoverage: !!r['hasMinimumOfficeCoverage'],
@@ -59,22 +60,27 @@ export class ValuationApiService {
     };
   }
 
-  private toFastPath(raw: unknown): ComparableListingsResultDto {
-    const r = (raw ?? {}) as Record<string, unknown>;
-
+  /** A response without an estimate (an API older than this app) reads as "no estimate", never as numbers. */
+  private toEstimateRange(raw: unknown): PriceEstimate {
+    const r = (raw ?? {}) as Partial<PriceEstimate>;
+    const available = r.available === true;
     return {
-      hasComparableListings: !!r['hasComparableListings'],
-      comparableCount: Number(r['comparableCount'] ?? 0),
-      minPrice: r['minPrice'] as number | null | undefined,
-      maxPrice: r['maxPrice'] as number | null | undefined,
-      averagePrice: r['averagePrice'] as number | null | undefined,
-      medianPrice: r['medianPrice'] as number | null | undefined,
-      isPreliminary: !!r['isPreliminary'],
-      requiresOfficeValuation: !!r['requiresOfficeValuation'],
-      matchLevel: (r['matchLevel'] as ComparableListingsResultDto['matchLevel']) ?? 'Governorate',
-      source: r['source'] as string | null | undefined,
-      disclaimer: r['disclaimer'] as string | null | undefined,
-      message: r['message'] as string | null | undefined
+      available,
+      reason: available ? null : (r.reason ?? 'not_enough_data'),
+      kind: r.kind === 'Rent' ? 'Rent' : 'Sale',
+      currencyCode: r.currencyCode ?? 'USD',
+      low: r.low ?? null,
+      mid: r.mid ?? null,
+      high: r.high ?? null,
+      lowPerSqm: r.lowPerSqm ?? null,
+      midPerSqm: r.midPerSqm ?? null,
+      highPerSqm: r.highPerSqm ?? null,
+      sampleCount: Number(r.sampleCount ?? 0),
+      basis: r.basis ?? null,
+      confidence: r.confidence ?? null,
+      dataComputedAt: r.dataComputedAt ?? null,
+      oldestListingAt: r.oldestListingAt ?? null,
+      newestListingAt: r.newestListingAt ?? null
     };
   }
 

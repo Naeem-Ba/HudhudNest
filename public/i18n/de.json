@@ -2820,7 +2820,7 @@
   "VALUATION": {
     "EYEBROW": "Immobilienbewertung",
     "TITLE": "Was ist Ihre Immobilie wert?",
-    "SUBTITLE": "Erhalten Sie eine schnelle Schätzung basierend auf ähnlichen Anzeigen, oder lassen Sie uns Ihre Anfrage an Immobilienbüros in Ihrer Nähe senden.",
+    "SUBTITLE": "Sehen Sie die Spanne der Angebotspreise für ähnliche Immobilien in Ihrer Gegend, aus echten Inseraten auf HudhudNest. Das ist eine erste Schätzung, keine Bewertung Ihrer Immobilie.",
     "GOVERNORATE": "Gouvernement",
     "DISTRICT": "Bezirk",
     "NEIGHBORHOOD": "Viertel",
@@ -2828,8 +2828,7 @@
     "REQUEST_TYPE": "Anfrageart",
     "REQUEST_TYPES": {
       "ForSale": "Verkauf",
-      "ForRent": "Miete",
-      "ForRentAndSale": "Verkauf oder Miete"
+      "ForRent": "Miete"
     },
     "AREA": "Fläche (m²)",
     "AREA_PLACEHOLDER": "z. B. 120",
@@ -2840,14 +2839,6 @@
     "LOOKUP_ERROR": "Die Liste der Gouvernements konnte nicht geladen werden.",
     "SUBMIT_ERROR": "Ihre Bewertungsanfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
     "STATUS_ERROR": "Der Anfragestatus konnte nicht geprüft werden.",
-    "MIN_PRICE": "Mindestpreis",
-    "MAX_PRICE": "Höchstpreis",
-    "AVERAGE_PRICE": "Durchschnittspreis",
-    "MEDIAN_PRICE": "Median",
-    "FAST_PATH": {
-      "COMPLETE_TITLE": "Bewertung abgeschlossen",
-      "COMPLETE_BODY": "Es wurden genügend ähnliche Anzeigen gefunden, um eine verlässliche Schätzung zu liefern."
-    },
     "OFFICE_PATH": {
       "SENT_TO": "Ihre Anfrage wurde an {{count}} Immobilienbüro(s) in Ihrer Nähe für eine genaue Schätzung gesendet.",
       "NEIGHBORING_GOVERNORATE_DISCLOSURE": "Da nicht genügend Büros in Ihrem Gouvernement verfügbar waren, wurde die Suche auf Büros aus benachbarten Gouvernements ausgeweitet.",
@@ -2855,8 +2846,7 @@
       "EXPIRES_AT": "Sie erhalten innerhalb von 24 Stunden eine Antwort, spätestens bis {{date}}.",
       "CHECK_STATUS": "Antworten prüfen",
       "NO_ESTIMATES_YET": "Noch keine Schätzungen. Bitte später erneut prüfen.",
-      "OFF_LIMITED": "Es wurden nur wenige vergleichbare Inserate gefunden, daher ist dies nur eine vorläufige Schätzung. Die Bewertung durch Immobilienbüros ist noch nicht verfügbar.",
-      "OFF_NONE": "In deiner Gegend gibt es derzeit nicht genug vergleichbare Inserate für eine Schätzung. Die Bewertung durch Immobilienbüros ist noch nicht verfügbar; versuche es später oder erweitere das Gebiet."
+      "OFF": "Eine Bewertung durch Immobilienbüros ist noch nicht verfügbar. Versuchen Sie es später oder wählen Sie nur das Gouvernement, um die Gegend zu erweitern."
     },
     "NEW_REQUEST": "Neue Bewertungsanfrage",
     "STATUS": {
@@ -2871,9 +2861,20 @@
       "REQUEST_TYPE_REQUIRED": "Bitte wählen Sie eine Anfrageart aus.",
       "NEIGHBORHOOD_NEEDS_DISTRICT": "Ein Viertel kann nicht ohne Bezirk ausgewählt werden.",
       "AREA_INVALID": "Die Fläche muss größer als null sein.",
-      "ROOMS_INVALID": "Ungültige Zimmeranzahl."
+      "ROOMS_INVALID": "Ungültige Zimmeranzahl.",
+      "PROPERTY_TYPE_REQUIRED": "Wählen Sie die Immobilienart.",
+      "AREA_REQUIRED": "Geben Sie die Fläche in Quadratmetern ein."
     },
-    "QUICK_RANGE_LINK": "Erst einen schnellen Überblick? Sehen Sie die Angebotspreise in Ihrer Gegend"
+    "QUICK_RANGE_LINK": "Erst einen schnellen Überblick? Sehen Sie die Angebotspreise in Ihrer Gegend",
+    "CURRENCY": "Währung",
+    "ESTIMATE": {
+      "TITLE_SALE": "Spanne der Angebotspreise für ähnliche Kaufobjekte in Ihrer Gegend",
+      "TITLE_RENT": "Spanne der geforderten Monatsmieten für ähnliche Objekte in Ihrer Gegend",
+      "MIDDLE": "Mittelwert",
+      "PER_SQM": "Preis pro m²",
+      "DISCLAIMER": "Dies sind Angebotspreise aus Inseraten, keine tatsächlichen Verkaufspreise. Es ist keine Bewertung Ihrer Immobilie, kein Kaufangebot und keine Garantie für einen Verkaufspreis. Zustand, Etage, Ausstattung und Rechtslage können den Wert stark verändern.",
+      "NONE_TITLE": "Nicht genug Daten für eine verlässliche Schätzung"
+    }
   },
   "PROVIDER": {
     "INBOX": {

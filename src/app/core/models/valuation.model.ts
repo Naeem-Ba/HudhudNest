@@ -7,7 +7,10 @@
 // backend's own DTOs never expose one either (see ValuationOfficeInvitationDashboardDto's and
 // ValuationEstimateDto's doc comments on the backend).
 
-export type ValuationRequestType = 'ForRent' | 'ForSale' | 'ForRentAndSale';
+import { PriceEstimate } from '../api/price-estimate-api.service';
+
+/** Sale or rent only: the estimate is a sale price or a monthly rent (valuation audit 2026-11-17). */
+export type ValuationRequestType = 'ForRent' | 'ForSale';
 
 export type ValuationInquiryStatus =
   | 'Pending'
@@ -22,26 +25,14 @@ export interface CreateValuationInquiryPayload {
   governorateId: number;
   districtId?: number | null;
   neighborhoodId?: number | null;
-  propertyTypeId?: number | null;
-  area?: number | null;
+  /** Required: without it the estimate would mix every kind of property. */
+  propertyTypeId: number | null;
+  /** Required, in square metres. */
+  area: number | null;
   rooms?: number | null;
   requestType: ValuationRequestType;
-}
-
-/** Mirrors HudhudNestApi.Application.Valuation.DTOs.ComparableListingsResult (Stage 3). */
-export interface ComparableListingsResultDto {
-  hasComparableListings: boolean;
-  comparableCount: number;
-  minPrice?: number | null;
-  maxPrice?: number | null;
-  averagePrice?: number | null;
-  medianPrice?: number | null;
-  isPreliminary: boolean;
-  requiresOfficeValuation: boolean;
-  matchLevel: ValuationMatchLevel;
-  source?: string | null;
-  disclaimer?: string | null;
-  message?: string | null;
+  /** USD, EUR or SYP; the estimate comes back in this one currency. */
+  currencyCode?: string | null;
 }
 
 /** Mirrors CreateValuationInquiryResultDto. */
@@ -49,7 +40,12 @@ export interface CreateValuationInquiryResultDto {
   inquiryId: string;
   status: ValuationInquiryStatus;
   expiresAt: string;
-  fastPath: ComparableListingsResultDto;
+  /**
+   * The automatic estimate: the same area price statistics as /price-estimate (a range of asking prices in one
+   * currency, with sample size, confidence and dates), or available = false with a reason.
+   */
+  estimate: PriceEstimate;
+  /** True when there is no automatic estimate, so only an office could answer. */
   requiresOfficeValuation: boolean;
   officeMatchCount: number;
   hasMinimumOfficeCoverage: boolean;
@@ -83,7 +79,9 @@ export function validateCreateValuationInquiry(payload: CreateValuationInquiryPa
   if (!payload.governorateId) return 'VALUATION.ERRORS.GOVERNORATE_REQUIRED';
   if (!payload.requestType) return 'VALUATION.ERRORS.REQUEST_TYPE_REQUIRED';
   if (payload.neighborhoodId && !payload.districtId) return 'VALUATION.ERRORS.NEIGHBORHOOD_NEEDS_DISTRICT';
-  if (payload.area != null && payload.area <= 0) return 'VALUATION.ERRORS.AREA_INVALID';
+  if (!payload.propertyTypeId) return 'VALUATION.ERRORS.PROPERTY_TYPE_REQUIRED';
+  if (payload.area == null) return 'VALUATION.ERRORS.AREA_REQUIRED';
+  if (payload.area <= 0) return 'VALUATION.ERRORS.AREA_INVALID';
   if (payload.rooms != null && payload.rooms <= 0) return 'VALUATION.ERRORS.ROOMS_INVALID';
   return null;
 }
