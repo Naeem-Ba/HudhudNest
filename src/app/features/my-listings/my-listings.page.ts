@@ -30,7 +30,8 @@ import {
   OwnerSelectableStatus,
   isClosedDealListing,
   listingLifecycle,
-  listingStatusTagKey
+  listingStatusTagKey,
+  ownerSelectableStatusesFor
 } from '../../shared/utils/listing-status';
 import { ListingViewCountComponent } from '../../shared/ui/listing-view-count.component';
 import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
@@ -77,7 +78,6 @@ export class MyListingsPage implements OnInit {
   readonly myOffice = signal<{ id: string; name: string } | null>(null);
   readonly linkingId = signal<string | null>(null);
 
-  readonly selectableStatuses = OWNER_SELECTABLE_STATUSES;
 
   /**
    * Listings whose featured request is waiting for an administrator to confirm the payment.
@@ -403,6 +403,11 @@ export class MyListingsPage implements OnInit {
   /** Only a published listing has a status to manage (a draft is not on the market, an expired one is extended). */
   canChangeStatus(property: Property): boolean {
     return !!property.id && property.isPublished === true && this.currentStatus(property) !== null;
+  }
+
+  /** Sold only for a listing for sale, Rented only for one for rent (the API refuses the rest). */
+  selectableStatuses(property: Property): OwnerSelectableStatus[] {
+    return ownerSelectableStatusesFor(property);
   }
 
   statusOptionKey(status: OwnerSelectableStatus): string {

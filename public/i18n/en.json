@@ -33,6 +33,7 @@
     "CSRF_VALIDATION_FAILED": "The request could not be verified as safe. Reload the page and try again.",
     "LISTING_QUOTA_REACHED": "You've reached the active-listing limit of your plan. Delete an existing listing or upgrade your plan to add a new one.",
     "LISTING_EXPIRED_EXTEND_ONLY": "This listing's publication period has ended. Renew it with an extension; the \"Expired\" status cannot be changed by hand.",
+    "LISTING_STATUS_NOT_FOR_TYPE": "This status does not fit the listing type: \"Sold\" is for listings for sale and \"Rented\" for listings for rent.",
     "PAYMENTS_DISABLED": "Online payment is not available right now. Nothing was charged.",
     "PAYMENT_PROVIDER_UNAVAILABLE": "The payment provider is not available right now. Nothing was charged. Try again shortly.",
     "PAYMENT_PROVIDER_UNAVAILABLE_FOR_REQUEST": "This payment method is not available for this currency or country.",
@@ -3388,7 +3389,8 @@
     "CONFIRM_CLOSED": "Marking this listing as sold or rented removes it from search. It stays on your agency page as a record, and its photos are compressed after 14 days to save storage. Continue?",
     "CONFIRM_ARCHIVED": "An archived listing is hidden from the public; only you can see it. Continue?",
     "CHANGED": "Listing status updated.",
-    "CHANGE_ERROR": "Could not update the listing status."
+    "CHANGE_ERROR": "Could not update the listing status.",
+    "OFFICE_OWNER_HINT": "You own this office: you are changing the status of one of your agents' listings, and the agent is notified."
   },
   "OFFER_COMMON": {
     "DISCOUNT_PERCENT": "{{value}}% off",

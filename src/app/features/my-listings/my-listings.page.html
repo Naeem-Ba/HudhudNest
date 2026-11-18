@@ -128,7 +128,7 @@
             [disabled]="statusChangingId() === p.id"
             (change)="changeStatus(p, $any($event.target))"
           >
-            <option *ngFor="let status of selectableStatuses" [value]="status" [selected]="status === currentStatus(p)">
+            <option *ngFor="let status of selectableStatuses(p)" [value]="status" [selected]="status === currentStatus(p)">
               {{ statusOptionKey(status) | translate }}
             </option>
           </select>
