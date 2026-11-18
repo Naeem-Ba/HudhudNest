@@ -11,7 +11,9 @@ import {
   buildSummary,
   buildListingJsonLd,
   buildPropertyMetaHtml,
-  buildNotFoundHtml
+  buildNotFoundHtml,
+  buildOfficeMetaHtml,
+  cloudinaryPreviewUrl
 } from './social-crawler.mjs';
 
 test('isSocialCrawlerUserAgent recognizes known crawlers (case-insensitive)', () => {
@@ -125,7 +127,10 @@ test('buildPropertyMetaHtml includes every required tag', () => {
   assert.match(html, /<title>شقة للبيع في طرطوس \| هدهد نيست<\/title>/);
   assert.match(html, /property="og:title" content="شقة للبيع في طرطوس \| هدهد نيست"/);
   assert.match(html, /property="og:description"/);
-  assert.match(html, /property="og:image" content="https:\/\/res\.cloudinary\.com\/demo\/image\/upload\/cover\.jpg"/);
+  assert.match(html, /property="og:image" content="https:\/\/res\.cloudinary\.com\/demo\/image\/upload\/c_fill,g_auto,w_1200,h_630,q_auto,f_jpg\/cover\.jpg"/);
+  assert.match(html, /property="og:image:width" content="1200"/);
+  assert.match(html, /property="og:image:height" content="630"/);
+  assert.match(html, /property="og:image:alt" content="شقة للبيع في طرطوس"/);
   assert.match(html, /property="og:url" content="https:\/\/hudhudnest.com\/properties\/p1"/);
   assert.match(html, /property="og:type" content="website"/);
   assert.match(html, /property="og:site_name" content="هدهد نيست"/);
@@ -335,4 +340,94 @@ test('buildNotFoundHtml is translated and still noindex', () => {
   assert.match(html, /Anzeige nicht verfügbar \| HudhudNest/);
   assert.match(html, /noindex/);
   assert.match(buildNotFoundHtml(), /الإعلان غير متاح \| هدهد نيست/);
+});
+
+// ── Share-links audit 2026-11-18: preview images, richer summary, more unfurlers ─────────────
+
+test('cloudinaryPreviewUrl resizes a plain upload (with or without a version) to a 1200x630 JPEG', () => {
+  assert.equal(
+    cloudinaryPreviewUrl('https://res.cloudinary.com/hn/image/upload/v1712345678/hudhudnest/properties/a.png'),
+    'https://res.cloudinary.com/hn/image/upload/c_fill,g_auto,w_1200,h_630,q_auto,f_jpg/v1712345678/hudhudnest/properties/a.png'
+  );
+  assert.equal(
+    cloudinaryPreviewUrl('https://res.cloudinary.com/hn/image/upload/v1/logos/x.webp', 'pad'),
+    'https://res.cloudinary.com/hn/image/upload/c_pad,b_white,w_1200,h_630,q_auto,f_jpg/v1/logos/x.webp'
+  );
+});
+
+test('cloudinaryPreviewUrl leaves other hosts, http, videos and already-transformed URLs alone', () => {
+  assert.equal(cloudinaryPreviewUrl('https://example.com/image/upload/a.jpg'), null);
+  assert.equal(cloudinaryPreviewUrl('http://res.cloudinary.com/hn/image/upload/a.jpg'), null);
+  assert.equal(cloudinaryPreviewUrl('https://res.cloudinary.com/hn/video/upload/a.mp4'), null);
+  assert.equal(cloudinaryPreviewUrl('https://res.cloudinary.com/hn/image/upload/w_400,c_limit/a.jpg'), null);
+  assert.equal(cloudinaryPreviewUrl(undefined), null);
+});
+
+test('an image on another host is used as is, without a size it might contradict', () => {
+  const html = buildPropertyMetaHtml({
+    property: { title: 'شقة', mainImageUrl: 'https://cdn.example.com/a.jpg' },
+    canonicalUrl: 'https://hudhudnest.com/properties/p1',
+    fallbackImageUrl: 'https://hudhudnest.com/images/og-default.png'
+  });
+  assert.match(html, /og:image" content="https:\/\/cdn\.example\.com\/a\.jpg"/);
+  assert.doesNotMatch(html, /og:image:width/);
+});
+
+test('the default image declares its real 1200x630 size', () => {
+  const html = buildPropertyMetaHtml({
+    property: { title: 'شقة' },
+    canonicalUrl: 'https://hudhudnest.com/properties/p1',
+    fallbackImageUrl: 'https://hudhudnest.com/images/og-default.png'
+  });
+  assert.match(html, /og:image:width" content="1200"/);
+});
+
+test('buildSummary says sale or rent first, marks rent as monthly and adds the region', () => {
+  assert.equal(
+    buildSummary({ listingType: 'ForRent', area: 90, coldRent: 300, currencyCode: 'USD', city: 'اللاذقية', region: 'اللاذقية' }),
+    'للإيجار • 90 م² • 300 USD شهريًا • اللاذقية'
+  );
+  assert.equal(
+    buildSummary({ listingType: 'ForSale', purchasePrice: 50000, currencyCode: 'USD', city: 'Jableh', region: 'Latakia' }, 'en'),
+    'For sale • 50,000 USD • Jableh, Latakia'
+  );
+  assert.equal(buildSummary({ listingType: 'ForRent', warmRent: 400, currencyCode: 'EUR' }, 'de'), 'Zu vermieten • 400 EUR/Monat');
+  assert.equal(buildSummary({ listingType: 'ForSale', city: 'Halep' }, 'tr'), 'Satılık • Halep');
+});
+
+test('a listing for rent and sale shows the sale price without a monthly suffix', () => {
+  assert.equal(
+    buildSummary({ listingType: 'ForRentAndSale', purchasePrice: 90000, coldRent: 500, currencyCode: 'USD' }, 'en'),
+    '90,000 USD'
+  );
+});
+
+test('the office preview pads a logo, crops a cover and leads with the city', () => {
+  const withLogo = buildOfficeMetaHtml({
+    agency: { name: 'مكتب النور', city: 'حمص', logoUrl: 'https://res.cloudinary.com/hn/image/upload/v1/l.png' },
+    canonicalUrl: 'https://hudhudnest.com/offices/alnoor',
+    fallbackImageUrl: 'https://hudhudnest.com/images/og-default.png'
+  });
+  assert.match(withLogo, /upload\/c_pad,b_white,w_1200,h_630,q_auto,f_jpg\/v1\/l\.png/);
+  assert.match(withLogo, /og:description" content="حمص • مكتب النور: مكتب عقاري/);
+
+  const withCover = buildOfficeMetaHtml({
+    agency: {
+      name: 'Al Noor',
+      coverImageUrl: 'https://res.cloudinary.com/hn/image/upload/v1/c.jpg',
+      logoUrl: 'https://res.cloudinary.com/hn/image/upload/v1/l.png'
+    },
+    canonicalUrl: 'https://hudhudnest.com/offices/alnoor',
+    fallbackImageUrl: 'https://hudhudnest.com/images/og-default.png',
+    lang: 'en'
+  });
+  assert.match(withCover, /upload\/c_fill,g_auto,w_1200,h_630,q_auto,f_jpg\/v1\/c\.jpg/);
+  assert.match(withCover, /og:image:alt" content="Al Noor"/);
+});
+
+test('Viber, Snapchat, Bluesky and Mastodon fetchers get the pre-rendered preview', () => {
+  assert.equal(isSocialCrawlerUserAgent('Viber/22.4 CFNetwork'), true);
+  assert.equal(isSocialCrawlerUserAgent('Mozilla/5.0 (compatible; Snapchat/1.0)'), true);
+  assert.equal(isSocialCrawlerUserAgent('Bluesky Cardyb/1.1'), true);
+  assert.equal(isSocialCrawlerUserAgent('http.rb/5.1 (Mastodon/4.2.0; +https://social.example/)'), true);
 });

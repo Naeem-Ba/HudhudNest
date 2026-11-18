@@ -744,7 +744,8 @@
       "MODE_BOTH": "satılık veya kiralık",
       "FALLBACK_TITLE_CITY": "{{city}}, {{mode}} gayrimenkul",
       "FALLBACK_TITLE": "{{mode}} gayrimenkul"
-    }
+    },
+    "OFFICE_TEXT": "{{name}}: HudhudNest üzerinde emlak ofisi"
   },
   "PROPERTY": {
     "MODE_RENT": "Kiralık",

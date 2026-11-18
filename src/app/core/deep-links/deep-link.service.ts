@@ -22,6 +22,8 @@ export class DeepLinkService {
 
   private listener?: PluginListenerHandle;
   private initialized = false;
+  /** The link being navigated to right now, so a duplicate delivery of it is not navigated twice. */
+  private pendingTarget: string | null = null;
 
   initialize(): void {
     if (this.initialized || !Capacitor.isNativePlatform()) {
@@ -57,8 +59,20 @@ export class DeepLinkService {
       return false;
     }
 
+    // The same link can arrive twice: on an iOS cold start getLaunchUrl() and the retained appUrlOpen event both
+    // carry it, and a second tap on a link to the page already open repeats it. Navigating again would restart the
+    // page (and its requests), so a link to where the app already is, or is already going, is accepted and ignored.
+    if (target === this.pendingTarget || target === this.router.url) {
+      return true;
+    }
+
+    this.pendingTarget = target;
     this.zone.run(() => {
-      void this.router.navigateByUrl(target);
+      void this.router.navigateByUrl(target).finally(() => {
+        if (this.pendingTarget === target) {
+          this.pendingTarget = null;
+        }
+      });
     });
 
     return true;

@@ -744,7 +744,8 @@
       "MODE_BOTH": "للبيع أو الإيجار",
       "FALLBACK_TITLE_CITY": "عقار {{mode}} في {{city}}",
       "FALLBACK_TITLE": "عقار {{mode}}"
-    }
+    },
+    "OFFICE_TEXT": "{{name}}: مكتب عقاري على هدهد نيست"
   },
   "PROPERTY": {
     "MODE_RENT": "للإيجار",

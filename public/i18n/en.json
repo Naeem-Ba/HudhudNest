@@ -744,7 +744,8 @@
       "MODE_BOTH": "for sale or rent",
       "FALLBACK_TITLE_CITY": "Property {{mode}} in {{city}}",
       "FALLBACK_TITLE": "Property {{mode}}"
-    }
+    },
+    "OFFICE_TEXT": "{{name}}: real estate office on HudhudNest"
   },
   "PROPERTY": {
     "MODE_RENT": "For rent",

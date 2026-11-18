@@ -1,6 +1,6 @@
 import { APP_INITIALIZER, ApplicationConfig, ErrorHandler, importProvidersFrom, inject } from '@angular/core';
 import { HttpErrorResponse, provideHttpClient, withInterceptors, HttpBackend, HttpClient } from '@angular/common/http';
-import { provideRouter, withNavigationErrorHandler, withPreloading } from '@angular/router';
+import { RouteReuseStrategy, provideRouter, withNavigationErrorHandler, withPreloading } from '@angular/router';
 import { firstValueFrom, timeout, TimeoutError } from 'rxjs';
 
 import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -25,6 +25,7 @@ import { resolveFirstVisitLanguage, toSupportedLanguage } from './core/i18n/firs
 import { browserStaleChunkReloadDeps, isChunkLoadError, reloadForStaleChunk } from './core/services/stale-chunk-reload';
 import { TokenStorageService } from './core/services/token-storage.service';
 import { NextPagePreloading } from './core/services/next-page-preloading';
+import { ParamAwareReuseStrategy } from './core/routing/param-aware-reuse.strategy';
 import { environment } from '../environments/environment';
 
 const REFRESH_TIMEOUT_MS = 15000;
@@ -200,6 +201,8 @@ export const appConfig: ApplicationConfig = {
       // Only the page a visitor most likely opens next, see next-page-preloading.ts.
       withPreloading(NextPagePreloading)
     ),
+    // A shared link to another listing of the same kind opens a fresh page (see param-aware-reuse.strategy.ts).
+    { provide: RouteReuseStrategy, useClass: ParamAwareReuseStrategy },
     provideHttpClient(withInterceptors([CsrfInterceptor, AuthInterceptor, ApiErrorInterceptor, UtcDatesInterceptor])),
     // Unhandled errors also go to our own API (no third party), see core/diagnostics.
     { provide: ErrorHandler, useClass: ClientErrorHandler },

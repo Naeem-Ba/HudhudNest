@@ -5,6 +5,7 @@ import { ListingEligibilityGuard } from './core/guards/listing-eligibility.guard
 import { AdminGuard } from './core/guards/admin-guard';
 import { ProviderGuard } from './core/guards/provider-guard';
 import { digitalPurchaseGuard } from './core/native/digital-purchases';
+import { RELOAD_ON_PARAM_CHANGE } from './core/routing/param-aware-reuse.strategy';
 
 export const routes: Routes = [
   {
@@ -90,7 +91,9 @@ export const routes: Routes = [
         path: 'short-stay/:id',
         loadComponent: () =>
           import('./features/short-stay/short-stay-detail/short-stay-detail.page')
-            .then(m => m.ShortStayDetailPage)
+            .then(m => m.ShortStayDetailPage),
+        // Opened from a shared link while another one is on screen: a fresh page, not the old id (audit L-05).
+        data: { [RELOAD_ON_PARAM_CHANGE]: true }
       },
       // Investment Discovery Portal (Phase 1) — discovery/analysis + watchlist + Expression of
       // Interest only, no payment/investment flow. 'watchlist' must be declared before the
@@ -129,7 +132,9 @@ export const routes: Routes = [
         path: 'investments/:id',
         loadComponent: () =>
           import('./features/investments/investment-details/investment-details.page')
-            .then(m => m.InvestmentDetailsPage)
+            .then(m => m.InvestmentDetailsPage),
+        // Opened from a shared link while another one is on screen: a fresh page, not the old id (audit L-05).
+        data: { [RELOAD_ON_PARAM_CHANGE]: true }
       },
       {
         path: 'kontakt',
@@ -351,7 +356,9 @@ export const routes: Routes = [
         path: 'users/:id',
         loadComponent: () =>
           import('./features/user-profile/user-profile.page')
-            .then(m => m.UserProfilePage)
+            .then(m => m.UserProfilePage),
+        // Opened from a shared link while another one is on screen: a fresh page, not the old id (audit L-05).
+        data: { [RELOAD_ON_PARAM_CHANGE]: true }
       },
       {
         path: 'settings',

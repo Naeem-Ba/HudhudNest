@@ -3,7 +3,7 @@
   "host": "hudhudnest.com",
   "paths": {
     "exact": ["/"],
-    "prefixes": ["/properties", "/short-stay", "/investments", "/users", "/wohnungen", "/kontakt", "/valuation", "/pricing"],
+    "prefixes": ["/properties", "/short-stay", "/investments", "/users", "/offices", "/o", "/agencies", "/wohnungen", "/kontakt", "/valuation", "/pricing"],
     "excludePrefixes": ["/properties/edit"]
   },
   "android": {
