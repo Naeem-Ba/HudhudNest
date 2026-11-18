@@ -1,12 +1,11 @@
 // src/app/features/valuation-request/valuation-request.page.ts
 //
 // Stage 7 (Valuation module) — customer-facing "what is my property worth?" flow:
-//   1. Submit governorate/district/neighborhood + property type/area/rooms + sale-or-rent.
-//   2. The backend runs the Fast Path (comparable listings) synchronously and, only if that
-//      alone was not enough, matches nearby offices in the same call — see
-//      CreateValuationInquiryCommandHandler on the backend. This page shows whichever
-//      happened, with the Nearby-Governorate disclosure banner when Stage 4's matching had to
-//      widen beyond the customer's own governorate.
+//   1. Submit governorate/district/neighborhood + property type/area (both required)/rooms + sale-or-rent + currency.
+//   2. The backend answers with the automatic estimate (the same area price statistics as /price-estimate: a range of
+//      asking prices in one currency, or "not enough data") and, only when there is none and offices can receive
+//      requests, matches nearby offices in the same call — see CreateValuationInquiryCommandHandler. This page shows
+//      whichever happened, with the Nearby-Governorate disclosure banner when matching widened beyond the governorate.
 //   3. For the Office Path, a manual "check for responses" refresh — same convention this
 //      codebase's other async-status views (my-service-requests, visits) already use; no
 //      polling anywhere in this app.
@@ -42,6 +41,9 @@ import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
 import { ComboBoxComponent, ComboOption } from '../../shared/ui/combo-box.component';
 import { PlaceProposalService } from '../../core/api/place-proposal.service';
+import { MARKET_CURRENCY_CODES, isMarketCurrency } from '../../core/pricing/market-currencies';
+import { PreferencesService } from '../../core/services/preferences.service';
+import { formatListingPrice } from '../../shared/utils/listing-price';
 
 @Component({
   selector: 'app-valuation-request-page',
@@ -60,6 +62,7 @@ export class ValuationRequestPage implements OnInit {
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly pageMeta = inject(PageMetaService);
+  private readonly preferences = inject(PreferencesService);
 
   readonly currentLang = signal<LangCode>(this.language.getCurrent());
 
@@ -90,16 +93,24 @@ export class ValuationRequestPage implements OnInit {
   readonly checkingStatus = signal(false);
   readonly statusResult = signal<ValuationInquiryStatusDto | null>(null);
 
-  readonly requestTypes: ValuationRequestType[] = ['ForSale', 'ForRent', 'ForRentAndSale'];
+  readonly requestTypes: ValuationRequestType[] = ['ForSale', 'ForRent'];
+  readonly currencies = MARKET_CURRENCY_CODES;
+
+  /** The person's display currency when it is one the estimate supports, otherwise USD. */
+  private defaultCurrency(): string {
+    const preferred = this.preferences.currency;
+    return preferred && isMarketCurrency(preferred) ? preferred : 'USD';
+  }
 
   readonly form = this.fb.nonNullable.group({
     governorateId: this.fb.control<number | null>(null, Validators.required),
     districtId: this.fb.control<number | null>(null),
     neighborhoodId: this.fb.control<number | null>(null),
-    propertyTypeId: this.fb.control<number | null>(null),
-    area: this.fb.control<number | null>(null, [Validators.min(1)]),
+    propertyTypeId: this.fb.control<number | null>(null, Validators.required),
+    area: this.fb.control<number | null>(null, [Validators.required, Validators.min(1), Validators.max(100000)]),
     rooms: this.fb.control<number | null>(null, [Validators.min(1), Validators.max(50)]),
-    requestType: this.fb.nonNullable.control<ValuationRequestType>('ForSale', Validators.required)
+    requestType: this.fb.nonNullable.control<ValuationRequestType>('ForSale', Validators.required),
+    currencyCode: this.fb.nonNullable.control<string>(this.defaultCurrency())
   });
 
   ngOnInit(): void {
@@ -112,8 +123,8 @@ export class ValuationRequestPage implements OnInit {
     });
 
     this.lookupsApi.getPropertyTypeCatalog().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: items => this.propertyTypes.set(items)
-      // Non-fatal if this one fails — property type is optional on the request.
+      next: items => this.propertyTypes.set(items),
+      error: () => this.toast.show(this.translate.instant('VALUATION.LOOKUP_ERROR'), 'error')
     });
 
     this.bindCascadingLocationChanges();
@@ -137,7 +148,8 @@ export class ValuationRequestPage implements OnInit {
       propertyTypeId: raw.propertyTypeId,
       area: raw.area,
       rooms: raw.rooms,
-      requestType: raw.requestType
+      requestType: raw.requestType,
+      currencyCode: raw.currencyCode
     };
 
     const validationError = validateCreateValuationInquiry(payload);
@@ -186,11 +198,22 @@ export class ValuationRequestPage implements OnInit {
   reset(): void {
     this.result.set(null);
     this.statusResult.set(null);
-    this.form.reset({ requestType: 'ForSale' });
+    this.form.reset({ requestType: 'ForSale', currencyCode: this.defaultCurrency() });
     this.districtText = '';
     this.neighborhoodText = '';
     this.districts.set([]);
     this.neighborhoods.set([]);
+  }
+
+  money(value: number | null, currency: string): string {
+    return formatListingPrice(value, currency);
+  }
+
+  /** yyyy-mm-dd of an API timestamp (UTC), the same short form /price-estimate shows. */
+  date(iso: string | null): string {
+    if (!iso) return '';
+    const d = new Date(iso.endsWith('Z') ? iso : `${iso}Z`);
+    return Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
   }
 
   get canProposePlaces(): boolean {

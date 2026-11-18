@@ -2821,7 +2821,7 @@
   "VALUATION": {
     "EYEBROW": "Mülk değerleme",
     "TITLE": "Mülkünüz ne kadar değerli?",
-    "SUBTITLE": "Benzer ilanlara dayalı hızlı bir tahmin alın veya talebinizi bölgenizdeki emlak ofislerine göndermemize izin verin.",
+    "SUBTITLE": "Bölgenizdeki benzer mülklerin talep fiyatı aralığını HudhudNest'teki gerçek ilanlardan görün. Bu bir ilk tahmindir, mülkünüzün değerlemesi değildir.",
     "GOVERNORATE": "İl",
     "DISTRICT": "İlçe",
     "NEIGHBORHOOD": "Mahalle",
@@ -2829,8 +2829,7 @@
     "REQUEST_TYPE": "Talep türü",
     "REQUEST_TYPES": {
       "ForSale": "Satış",
-      "ForRent": "Kiralama",
-      "ForRentAndSale": "Satış veya kiralama"
+      "ForRent": "Kiralama"
     },
     "AREA": "Alan (m²)",
     "AREA_PLACEHOLDER": "ör. 120",
@@ -2841,14 +2840,6 @@
     "LOOKUP_ERROR": "İl listesi yüklenemedi.",
     "SUBMIT_ERROR": "Değerleme talebiniz gönderilemedi. Lütfen tekrar deneyin.",
     "STATUS_ERROR": "Talep durumu kontrol edilemedi.",
-    "MIN_PRICE": "En düşük fiyat",
-    "MAX_PRICE": "En yüksek fiyat",
-    "AVERAGE_PRICE": "Ortalama fiyat",
-    "MEDIAN_PRICE": "Medyan",
-    "FAST_PATH": {
-      "COMPLETE_TITLE": "Değerleme tamamlandı",
-      "COMPLETE_BODY": "Güvenilir bir tahmin sunmak için yeterli sayıda benzer ilan bulundu."
-    },
     "OFFICE_PATH": {
       "SENT_TO": "Talebiniz, kesin bir tahmin için bölgenizdeki {{count}} emlak ofisine gönderildi.",
       "NEIGHBORING_GOVERNORATE_DISCLOSURE": "İlinizde yeterli sayıda ofis bulunmadığından arama, komşu illerdeki ofisleri de kapsayacak şekilde genişletildi.",
@@ -2856,8 +2847,7 @@
       "EXPIRES_AT": "24 saat içinde, en geç {{date}} tarihine kadar yanıt alırsınız.",
       "CHECK_STATUS": "Yanıtları kontrol et",
       "NO_ESTIMATES_YET": "Henüz tahmin yok. Lütfen daha sonra tekrar bakın.",
-      "OFF_LIMITED": "Yalnızca birkaç benzer ilan bulundu, bu nedenle bu ön bir tahmindir. Emlak ofisleri tarafından değerleme henüz kullanılamıyor.",
-      "OFF_NONE": "Bölgenizde şu anda fiyat tahmini için yeterli benzer ilan yok. Emlak ofisleri tarafından değerleme henüz kullanılamıyor; daha sonra tekrar deneyin veya bölgeyi genişletin."
+      "OFF": "Emlak ofislerinden değerleme henüz mevcut değil. Daha sonra tekrar deneyin veya bölgeyi genişletmek için yalnızca ili seçin."
     },
     "NEW_REQUEST": "Yeni değerleme talebi",
     "STATUS": {
@@ -2872,9 +2862,20 @@
       "REQUEST_TYPE_REQUIRED": "Lütfen bir talep türü seçin.",
       "NEIGHBORHOOD_NEEDS_DISTRICT": "İlçe seçilmeden mahalle seçilemez.",
       "AREA_INVALID": "Alan sıfırdan büyük olmalıdır.",
-      "ROOMS_INVALID": "Geçersiz oda sayısı."
+      "ROOMS_INVALID": "Geçersiz oda sayısı.",
+      "PROPERTY_TYPE_REQUIRED": "Mülk türünü seçin.",
+      "AREA_REQUIRED": "Alanı metrekare olarak girin."
     },
-    "QUICK_RANGE_LINK": "Önce hızlı bir fikir mi edinmek istiyorsunuz? Bölgenizdeki istenen fiyat aralığına bakın"
+    "QUICK_RANGE_LINK": "Önce hızlı bir fikir mi edinmek istiyorsunuz? Bölgenizdeki istenen fiyat aralığına bakın",
+    "CURRENCY": "Para birimi",
+    "ESTIMATE": {
+      "TITLE_SALE": "Bölgenizdeki benzer satılık mülklerin talep fiyatı aralığı",
+      "TITLE_RENT": "Bölgenizdeki benzer mülklerin talep edilen aylık kira aralığı",
+      "MIDDLE": "Orta değer",
+      "PER_SQM": "m² fiyatı",
+      "DISCLAIMER": "Bunlar ilanlardaki talep fiyatlarıdır, gerçek satış fiyatları değildir. Mülkünüzün değerlemesi, bir satın alma teklifi veya satış fiyatı garantisi değildir. Durum, kat, iç donanım ve hukuki durum değeri çok değiştirebilir.",
+      "NONE_TITLE": "Güvenilir bir tahmin için yeterli veri yok"
+    }
   },
   "PROVIDER": {
     "INBOX": {

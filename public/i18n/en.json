@@ -2821,7 +2821,7 @@
   "VALUATION": {
     "EYEBROW": "Property Valuation",
     "TITLE": "What is your property worth?",
-    "SUBTITLE": "Get a quick estimate based on similar listings, or let us send your request to real-estate offices in your area.",
+    "SUBTITLE": "See the range of asking prices for properties like yours in your area, from real listings on HudhudNest. This is a first estimate, not a valuation of your property.",
     "GOVERNORATE": "Governorate",
     "DISTRICT": "District",
     "NEIGHBORHOOD": "Neighborhood",
@@ -2829,8 +2829,7 @@
     "REQUEST_TYPE": "Request type",
     "REQUEST_TYPES": {
       "ForSale": "Sale",
-      "ForRent": "Rent",
-      "ForRentAndSale": "Sale or rent"
+      "ForRent": "Rent"
     },
     "AREA": "Area (m²)",
     "AREA_PLACEHOLDER": "e.g. 120",
@@ -2841,14 +2840,6 @@
     "LOOKUP_ERROR": "Could not load the list of governorates.",
     "SUBMIT_ERROR": "Could not submit your valuation request. Please try again.",
     "STATUS_ERROR": "Could not check the request status.",
-    "MIN_PRICE": "Min price",
-    "MAX_PRICE": "Max price",
-    "AVERAGE_PRICE": "Average price",
-    "MEDIAN_PRICE": "Median",
-    "FAST_PATH": {
-      "COMPLETE_TITLE": "Valuation complete",
-      "COMPLETE_BODY": "Enough similar listings were found to provide a reliable estimate."
-    },
     "OFFICE_PATH": {
       "SENT_TO": "Your request was sent to {{count}} real-estate office(s) in your area for a precise estimate.",
       "NEIGHBORING_GOVERNORATE_DISCLOSURE": "Not enough offices were available in your governorate, so the search was expanded to include offices from neighboring governorates.",
@@ -2856,8 +2847,7 @@
       "EXPIRES_AT": "You'll hear back within 24 hours, by {{date}} at the latest.",
       "CHECK_STATUS": "Check for responses",
       "NO_ESTIMATES_YET": "No estimates yet. Please check back later.",
-      "OFF_LIMITED": "Only a few similar listings were found, so this is a preliminary estimate. Valuation by real-estate offices is not available yet.",
-      "OFF_NONE": "There are not enough similar listings in your area to estimate a price right now. Valuation by real-estate offices is not available yet; try again later or widen the area."
+      "OFF": "Valuation by real-estate offices is not available yet. Try again later, or choose only the governorate to widen the area."
     },
     "NEW_REQUEST": "New valuation request",
     "STATUS": {
@@ -2872,9 +2862,20 @@
       "REQUEST_TYPE_REQUIRED": "Please select a request type.",
       "NEIGHBORHOOD_NEEDS_DISTRICT": "A neighborhood cannot be selected without a district.",
       "AREA_INVALID": "Area must be greater than zero.",
-      "ROOMS_INVALID": "Invalid number of rooms."
+      "ROOMS_INVALID": "Invalid number of rooms.",
+      "PROPERTY_TYPE_REQUIRED": "Choose the property type.",
+      "AREA_REQUIRED": "Enter the area in square metres."
     },
-    "QUICK_RANGE_LINK": "Want a quick idea first? See the asking-price range in your area"
+    "QUICK_RANGE_LINK": "Want a quick idea first? See the asking-price range in your area",
+    "CURRENCY": "Currency",
+    "ESTIMATE": {
+      "TITLE_SALE": "Asking-price range for similar properties for sale in your area",
+      "TITLE_RENT": "Monthly asking-rent range for similar properties in your area",
+      "MIDDLE": "Middle value",
+      "PER_SQM": "Price per m²",
+      "DISCLAIMER": "These are asking prices from listings, not actual sale prices. This is not a valuation of your property, not a purchase offer and not a guaranteed sale price. Condition, floor, finishing and legal status can change the value a lot.",
+      "NONE_TITLE": "Not enough data for a reliable estimate"
+    }
   },
   "PROVIDER": {
     "INBOX": {

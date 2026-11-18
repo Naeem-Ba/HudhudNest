@@ -37,7 +37,8 @@ describe('ValuationApiService', () => {
         propertyTypeId: 2,
         area: 120,
         rooms: 3,
-        requestType: 'ForSale'
+        requestType: 'ForSale',
+        currencyCode: 'SYP'
       })
       .subscribe(() => done());
 
@@ -50,14 +51,15 @@ describe('ValuationApiService', () => {
       PropertyTypeId: 2,
       Area: 120,
       Rooms: 3,
-      RequestType: 'ForSale'
+      RequestType: 'ForSale',
+      CurrencyCode: 'SYP'
     });
 
     req.flush({
       inquiryId: 'inq-1',
       status: 'Completed',
       expiresAt: '2026-03-02T12:00:00Z',
-      fastPath: { hasComparableListings: true, comparableCount: 5, requiresOfficeValuation: false, matchLevel: 'Neighborhood' },
+      estimate: { available: true, kind: 'Sale', currencyCode: 'SYP', low: 1, mid: 2, high: 3, sampleCount: 9 },
       requiresOfficeValuation: false,
       officeMatchCount: 0,
       hasMinimumOfficeCoverage: false,
@@ -66,15 +68,16 @@ describe('ValuationApiService', () => {
     });
   });
 
-  it('✅ create: يطبّع النتيجة الكاملة (fastPath المتداخل + الأعلام على المستوى الأعلى)', done => {
-    service.create({ governorateId: 1, requestType: 'ForRent' }).subscribe(result => {
+  it('✅ create: يطبّع النتيجة الكاملة (التقدير المتداخل + الأعلام على المستوى الأعلى)', done => {
+    service.create({ governorateId: 1, propertyTypeId: 2, area: 90, requestType: 'ForRent' }).subscribe(result => {
       expect(result.inquiryId).toBe('inq-2');
       expect(result.status).toBe('AwaitingOfficeResponses');
       expect(result.requiresOfficeValuation).toBeTrue();
       expect(result.officeMatchCount).toBe(2);
       expect(result.matchedNeighboringGovernorate).toBeTrue();
-      expect(result.fastPath.comparableCount).toBe(1);
-      expect(result.fastPath.hasComparableListings).toBeTrue();
+      expect(result.estimate.available).toBeFalse();
+      expect(result.estimate.reason).toBe('not_enough_data');
+      expect(result.estimate.low).toBeNull();
       done();
     });
 
@@ -82,13 +85,7 @@ describe('ValuationApiService', () => {
       inquiryId: 'inq-2',
       status: 'AwaitingOfficeResponses',
       expiresAt: '2026-03-02T12:00:00Z',
-      fastPath: {
-        hasComparableListings: true,
-        comparableCount: 1,
-        requiresOfficeValuation: true,
-        matchLevel: 'Neighborhood',
-        message: 'تقدير محدود'
-      },
+      estimate: { available: false, reason: 'not_enough_data', kind: 'Rent', currencyCode: 'USD', sampleCount: 0 },
       requiresOfficeValuation: true,
       officeMatchCount: 2,
       hasMinimumOfficeCoverage: false,
@@ -122,15 +119,27 @@ describe('ValuationApiService', () => {
   // Comprehensive audit 2026-11-17: offices cannot answer yet, so the API may switch the office path off.
   it('create: reads officePathAvailable, and treats an API without the field as the office path being on', done => {
     const results: boolean[] = [];
-    service.create({ governorateId: 1, requestType: 'ForRent' }).subscribe(r => results.push(r.officePathAvailable));
-    service.create({ governorateId: 1, requestType: 'ForRent' }).subscribe(r => {
+    service.create({ governorateId: 1, propertyTypeId: 2, area: 90, requestType: 'ForRent' }).subscribe(r => results.push(r.officePathAvailable));
+    service.create({ governorateId: 1, propertyTypeId: 2, area: 90, requestType: 'ForRent' }).subscribe(r => {
       results.push(r.officePathAvailable);
       expect(results).toEqual([false, true]);
       done();
     });
 
     const [off, legacy] = httpMock.match(`${environment.apiBaseUrl}/ValuationInquiries`);
-    off.flush({ inquiryId: 'a', status: 'Expired', fastPath: {}, requiresOfficeValuation: true, officePathAvailable: false });
-    legacy.flush({ inquiryId: 'b', status: 'AwaitingOfficeResponses', fastPath: {}, requiresOfficeValuation: true });
+    off.flush({ inquiryId: 'a', status: 'Expired', requiresOfficeValuation: true, officePathAvailable: false });
+    legacy.flush({ inquiryId: 'b', status: 'AwaitingOfficeResponses', requiresOfficeValuation: true });
+  });
+
+  // Valuation audit 2026-11-17: a response without an estimate (an older API) must never read as numbers.
+  it('create: an answer without an estimate reads as "no estimate"', done => {
+    service.create({ governorateId: 1, propertyTypeId: 2, area: 90, requestType: 'ForSale' }).subscribe(r => {
+      expect(r.estimate.available).toBeFalse();
+      expect(r.estimate.low).toBeNull();
+      expect(r.estimate.reason).toBe('not_enough_data');
+      done();
+    });
+    httpMock.expectOne(`${environment.apiBaseUrl}/ValuationInquiries`)
+      .flush({ inquiryId: 'c', status: 'Completed', fastPath: { hasComparableListings: true, minPrice: 5 } });
   });
 });
