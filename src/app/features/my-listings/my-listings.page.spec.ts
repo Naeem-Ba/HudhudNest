@@ -58,6 +58,12 @@ describe('MyListingsPage — featuring', () => {
 
   const el = () => fixture.nativeElement as HTMLElement;
 
+  it('لا زر «إضافة عقار» في صفحة إعلاناتي (يكفي الموجود في النافبار)', () => {
+    setup([listing('p1')]);
+
+    expect(el().querySelector('a[href="/property-form"]')).toBeNull();
+  });
+
   it('إعلان منشور: يظهر رابط طلب التمييز إلى صفحة الدفع الحالية', () => {
     setup([listing('p1')]);
 

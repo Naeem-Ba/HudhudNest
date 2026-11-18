@@ -111,6 +111,21 @@ describe('NavbarComponent (Phase 6)', () => {
     fixture.detectChanges();
   }
 
+  it('«إضافة عقار» في النافبار نص فقط: بلا علامة + في الشريط ولا في القائمة الجانبية', () => {
+    auth.signIn({});
+    profile.profileSubject.next({ Id: 'u1', EmailConfirmed: true, PlanTier: 'Free' } as UserProfile);
+    fixture.detectChanges();
+
+    const link = el().querySelector<HTMLAnchorElement>('a.navbar__link--add');
+    expect(link).not.toBeNull();
+    expect(link!.querySelector('svg')).toBeNull();
+    expect(link!.textContent).not.toContain('+');
+
+    const drawerLink = el().querySelector<HTMLAnchorElement>('a.mobile-drawer__link--highlight[href="/property-form"]');
+    expect(drawerLink).not.toBeNull();
+    expect(drawerLink!.textContent).not.toContain('➕');
+  });
+
   // ────────────── الصورة الشخصية ──────────────
 
   it('✅ صورة موجودة ⇒ تظهر في الزر وفي رأس القائمة، بلا "?" إطلاقاً', () => {
