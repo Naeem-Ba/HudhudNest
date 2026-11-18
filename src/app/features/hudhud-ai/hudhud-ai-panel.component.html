@@ -1,0 +1,223 @@
+<div class="ai-backdrop" (click)="close()" aria-hidden="true"></div>
+<section class="ai-panel" role="dialog" aria-modal="true" [attr.aria-label]="'AI.NAME' | translate" (keydown.escape)="close()">
+  <header class="ai-head">
+    <div class="ai-head__title">
+      <span class="ai-head__mark" aria-hidden="true">✦</span>
+      <div>
+        <h2>{{ 'AI.NAME' | translate }}</h2>
+        <p class="ai-head__sub">{{ 'AI.SUBTITLE' | translate }}</p>
+      </div>
+    </div>
+    <div class="ai-head__actions">
+      @if (loggedIn()) {
+        <button type="button" class="ai-icon-btn" (click)="view() === 'history' ? view.set('chat') : openHistory()"
+                [attr.aria-label]="'AI.HISTORY' | translate" [attr.aria-pressed]="view() === 'history'">☰</button>
+      }
+      <button type="button" class="ai-icon-btn" (click)="newConversation()" [attr.aria-label]="'AI.NEW_CHAT' | translate">＋</button>
+      <button type="button" class="ai-icon-btn" (click)="close()" [attr.aria-label]="'AI.CLOSE' | translate" data-testid="ai-close">✕</button>
+    </div>
+  </header>
+
+  @if (view() === 'history') {
+    <div class="ai-history">
+      <h3>{{ 'AI.HISTORY' | translate }}</h3>
+      @if (history() === null) {
+        <p class="ai-muted">{{ 'AI.LOADING' | translate }}</p>
+      } @else if (history()!.length === 0) {
+        <p class="ai-muted">{{ (historyError() ? 'AI.ERROR.AI_FAILED' : 'AI.HISTORY_EMPTY') | translate }}</p>
+      } @else {
+        <ul>
+          @for (c of history(); track c.id) {
+            <li class="ai-history__row">
+              <button type="button" class="ai-history__open" (click)="openConversation(c)">
+                <span class="ai-history__title">{{ c.title || ('AI.UNTITLED' | translate) }}</span>
+                <span class="ai-muted">{{ 'AI.MESSAGES_COUNT' | translate: { n: (c.messageCount | localNumber) } }}</span>
+              </button>
+              <button type="button" class="ai-icon-btn ai-icon-btn--danger" (click)="deleteConversation(c.id)"
+                      [attr.aria-label]="'AI.DELETE_CHAT' | translate">🗑</button>
+            </li>
+          }
+        </ul>
+      }
+      <p class="ai-muted ai-small">{{ 'AI.RETENTION_NOTE' | translate }}</p>
+    </div>
+  } @else {
+    <div class="ai-log" #log aria-live="polite" aria-relevant="additions">
+      @if (items().length === 0) {
+        <div class="ai-welcome">
+          <p>{{ 'AI.WELCOME' | translate }}</p>
+          <div class="ai-suggestions">
+            @for (s of starterSuggestions(); track s) {
+              <button type="button" class="ai-chip ai-chip--action" (click)="useSuggestion(s)" [disabled]="busy() || guestBlocked()">{{ s }}</button>
+            }
+          </div>
+        </div>
+      }
+
+      @for (item of items(); track item.localId) {
+        @if (item.role === 'user') {
+          <div class="ai-msg ai-msg--user">
+            <p class="ai-bubble ai-bubble--user">{{ item.text === '⇄' ? ('AI.COMPARE_REQUEST' | translate) : item.text }}</p>
+            @if (item.failed; as f) {
+              <p class="ai-failed">
+                {{ ('AI.ERROR.' + f.code) | translate }}
+                @if (f.code !== 'AI_QUOTA_DAILY' && f.code !== 'AI_QUOTA_MONTHLY' && f.code !== 'AI_DISABLED' && f.code !== 'AI_SIGN_IN_REQUIRED') {
+                  <button type="button" class="ai-link-btn" (click)="retry(item)" [disabled]="busy()">{{ 'AI.RETRY' | translate }}</button>
+                }
+                @if (f.code === 'AI_SIGN_IN_REQUIRED' || (f.code === 'AI_QUOTA_DAILY' && !loggedIn())) {
+                  <a class="ai-link-btn" routerLink="/auth/login" (click)="close()">{{ 'AI.SIGN_IN' | translate }}</a>
+                }
+              </p>
+            }
+          </div>
+        } @else {
+          <div class="ai-msg ai-msg--assistant">
+            <p class="ai-bubble">{{ item.text }}</p>
+
+            @if (chipsOf(item.filter); as chips) {
+              @if (chips.length) {
+                <ul class="ai-chips" [attr.aria-label]="'AI.UNDERSTOOD' | translate">
+                  @for (chip of chips; track chip.key) {
+                    <li class="ai-chip" [class.ai-chip--guess]="chip.guessed">
+                      {{ chip.key | translate: chip.params }}@if (chip.guessed) { <span class="ai-small"> · {{ 'AI.GUESSED' | translate }}</span> }
+                    </li>
+                  }
+                </ul>
+              }
+            }
+
+            @if (item.cards?.length) {
+              <ul class="ai-cards">
+                @for (card of item.cards; track card.id) {
+                  <li class="ai-card">
+                    <a class="ai-card__link" [routerLink]="['/properties', card.id]" (click)="close()">
+                      @if (card.mainImageUrl) {
+                        <img class="ai-card__img" [src]="card.mainImageUrl" [alt]="card.title" loading="lazy" width="96" height="72">
+                      } @else {
+                        <span class="ai-card__img ai-card__img--empty" aria-hidden="true">🏠</span>
+                      }
+                      <span class="ai-card__body">
+                        <span class="ai-card__title">{{ card.title }}</span>
+                        @if (card.price != null) {
+                          <span class="ai-card__price">
+                            {{ card.price | localNumber }} {{ card.currencyCode }}@if (priceSuffixKey(card); as k) { {{ k | translate }} }
+                          </span>
+                        } @else {
+                          <span class="ai-muted">{{ 'AI.PRICE_ON_REQUEST' | translate }}</span>
+                        }
+                        <span class="ai-card__facts">
+                          @if (card.rooms != null) { <span>{{ 'AI.ROOMS_N' | translate: { n: (card.rooms | localNumber) } }}</span> }
+                          @if (card.area != null) { <span>{{ card.area | localNumber }} {{ ('AI.UNIT.' + card.areaUnit) | translate }}</span> }
+                          @if (card.floor != null) { <span>{{ (card.floor === 0 ? 'AI.FLOOR_GROUND' : 'AI.FLOOR_N') | translate: { n: (card.floor | localNumber) } }}</span> }
+                        </span>
+                        @if (card.placeLabel) { <span class="ai-muted ai-small">{{ card.placeLabel }}</span> }
+                        @if (card.agency; as a) {
+                          <span class="ai-small ai-card__agency">{{ a.name }}@if (a.isVerified) { <span class="ai-verified"> ✓ {{ 'AI.VERIFIED' | translate }}</span> }</span>
+                        }
+                      </span>
+                    </a>
+                    <label class="ai-card__select">
+                      <input type="checkbox" [checked]="isSelected(card.id)" (change)="toggleSelected(card.id)"
+                             [disabled]="!isSelected(card.id) && selected().length >= 4">
+                      {{ 'AI.SELECT_TO_COMPARE' | translate }}
+                    </label>
+                  </li>
+                }
+              </ul>
+            }
+
+            @if (item.response?.results; as r) {
+              <p class="ai-results-meta">
+                <button type="button" class="ai-link-btn" (click)="openSearch(r.searchUrl)">
+                  {{ 'AI.SHOW_ALL' | translate: { n: (r.totalCount | localNumber) } }}
+                </button>
+                @if (!r.searchUrlComplete) { <span class="ai-muted ai-small">{{ 'AI.SEARCH_PAGE_BROADER' | translate }}</span> }
+              </p>
+            }
+
+            @if (item.response?.comparison; as cmp) {
+              <div class="ai-table-wrap" tabindex="0" [attr.aria-label]="'AI.COMPARISON' | translate">
+                <table class="ai-table">
+                  <thead>
+                    <tr>
+                      <th scope="col"><span class="visually-hidden">{{ 'AI.COMPARISON' | translate }}</span></th>
+                      @for (l of cmp.listings; track l.id) {
+                        <th scope="col"><a [routerLink]="['/properties', l.id]" (click)="close()">{{ l.title }}</a></th>
+                      }
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of cmp.rows; track row.key) {
+                      <tr [class.ai-row--warn]="!row.comparable">
+                        <th scope="row">
+                          {{ ('AI.ROW.' + row.key) | translate }}
+                          @if (row.note) { <span class="ai-small ai-note">{{ ('AI.NOTE.' + row.note) | translate }}</span> }
+                        </th>
+                        @for (v of row.values; track $index) {
+                          <td>{{ v === null ? '—' : v === 'true' ? ('AI.YES' | translate) : v === 'false' ? ('AI.NO' | translate) : v }}</td>
+                        }
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+
+            @if (item.response?.suggestions?.length) {
+              <div class="ai-suggestions">
+                @for (s of item.response!.suggestions; track s) {
+                  <button type="button" class="ai-chip ai-chip--action" (click)="useSuggestion(s)" [disabled]="busy()">{{ s }}</button>
+                }
+              </div>
+            }
+
+            @if (loggedIn() && item.messageId) {
+              <div class="ai-feedback">
+                <button type="button" class="ai-icon-btn ai-icon-btn--sm" [class.is-on]="item.rating === 1" (click)="rate(item, 1)"
+                        [attr.aria-pressed]="item.rating === 1" [attr.aria-label]="'AI.HELPFUL' | translate">👍</button>
+                <button type="button" class="ai-icon-btn ai-icon-btn--sm" [class.is-on]="item.rating === -1" (click)="rate(item, -1)"
+                        [attr.aria-pressed]="item.rating === -1" [attr.aria-label]="'AI.NOT_HELPFUL' | translate">👎</button>
+              </div>
+            }
+          </div>
+        }
+      }
+
+      @if (busy()) {
+        <div class="ai-msg ai-msg--assistant" role="status">
+          <p class="ai-bubble ai-typing">{{ 'AI.THINKING' | translate }}
+            <button type="button" class="ai-link-btn" (click)="stop()">{{ 'AI.STOP' | translate }}</button>
+          </p>
+        </div>
+      }
+    </div>
+
+    @if (selected().length > 0) {
+      <div class="ai-compare-bar">
+        <span>{{ 'AI.SELECTED_N' | translate: { n: (selected().length | localNumber) } }}</span>
+        <button type="button" class="ai-btn" (click)="compareSelected()" [disabled]="selected().length < 2 || busy()">{{ 'AI.COMPARE' | translate }}</button>
+        <button type="button" class="ai-link-btn" (click)="selected.set([])">{{ 'AI.CLEAR' | translate }}</button>
+      </div>
+    }
+
+    <footer class="ai-foot">
+      @if (guestBlocked()) {
+        <p class="ai-notice">{{ 'AI.ERROR.AI_SIGN_IN_REQUIRED' | translate }} <a routerLink="/auth/login" (click)="close()">{{ 'AI.SIGN_IN' | translate }}</a></p>
+      }
+      <form class="ai-form" (ngSubmit)="submit()">
+        <label class="visually-hidden" for="ai-input">{{ 'AI.INPUT_LABEL' | translate }}</label>
+        <textarea id="ai-input" #input rows="1" [ngModel]="draft()" (ngModelChange)="draft.set($event)" name="draft"
+                  [attr.maxlength]="maxLength()" [placeholder]="'AI.PLACEHOLDER' | translate" (keydown)="onKeydown($event)"
+                  [disabled]="guestBlocked()" autocomplete="off" dir="auto"></textarea>
+        <button type="submit" class="ai-btn ai-send" [disabled]="!canSend()" [attr.aria-label]="'AI.SEND' | translate">➤</button>
+      </form>
+      <div class="ai-foot__meta">
+        @if (usage(); as u) {
+          @if (u.remainingToday != null) { <span>{{ 'AI.REMAINING_TODAY' | translate: { n: (u.remainingToday | localNumber) } }}</span> }
+        }
+        @if (draft().length > maxLength() * 0.8) { <span>{{ draft().length | localNumber }} / {{ maxLength() | localNumber }}</span> }
+      </div>
+      <p class="ai-disclaimer">{{ (loggedIn() ? 'AI.DISCLAIMER_USER' : 'AI.DISCLAIMER_GUEST') | translate }}</p>
+    </footer>
+  }
+</section>

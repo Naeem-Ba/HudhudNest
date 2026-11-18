@@ -126,7 +126,11 @@ export const TR_SAME_AS_ENGLISH = new Set([
   'property_detail.Unit_of_measurement',
   'CHECKOUT.USD',
   // "3+": a number and a sign, the same in every language.
-  'SHORTSTAY.LIST.BEDROOMS_AT_LEAST'
+  'SHORTSTAY.LIST.BEDROOMS_AT_LEAST',
+  // Hudhud AI: the product name, a pin plus the place name, and "Villa" (the Turkish word is the same).
+  'AI.NAME',
+  'AI.CHIP.PLACE',
+  'AI.TYPE.VILLA'
 ]);
 
 /** Turkish values that are deliberately in another script. None at the moment (the landing language chip row was removed). */
