@@ -510,36 +510,54 @@
     }
   },
   "KONTAKT": {
-    "PLAN_SUBJECT": "Abonelik planı talebi: {{plan}}",
     "PLAN_REF_LINE": "Plan talebi referansı: {{ref}}",
-    "SERVICE_PROVIDER_SUBJECT": "Hizmet sağlayıcı olarak katılma talebi",
-    "SERVICE_PROVIDER_MESSAGE_PLACEHOLDER": "İşletmenizi anlatın: işletme adı, hizmet türü (nakliyat, temizlik, fotoğrafçılık...), bir telefon numarası ve hizmet verdiğiniz bölge. Ekibimiz hesabınızı incelemek ve etkinleştirmek için sizinle iletişime geçecek.",
     "title": "Bize ulaşın",
     "subtitle": "Mesajınızı gönderin, en kısa sürede yanıtlayalım.",
     "name": "Ad soyad",
     "nameCtrl": "Lütfen en az üç karakterden oluşan bir ad girin.",
     "email": "E-posta",
-    "emailCtrl": "Lütfen geçerli bir e-posta adresi girin.",
-    "subject": "Konu",
-    "subCtrl": "Lütfen en az üç karakterden oluşan kısa bir konu girin.",
     "message": "Mesaj",
     "msgCtrl": "Lütfen en az 10 karakterden oluşan bir mesaj girin.",
     "send": "Gönder",
     "sending": "Gönderiliyor...",
     "info_title": "İletişim bilgileri",
     "telefon": "Telefon",
-    "adresse": "Adres",
-    "stadt": "Şehir",
-    "strasse": "Sokak",
     "success_msg": "Mesajınız başarıyla gönderildi!",
     "error_msg": "Gönderilirken bir hata oluştu. Daha sonra tekrar deneyin.",
     "error_validation": "Lütfen zorunlu alanları doğru şekilde doldurun.",
     "name_placeholder": "Ad soyadınızı girin",
-    "subject_placeholder": "Mesaj konusunu girin",
-    "message_placeholder": "Mesajınızı açıkça yazın",
     "response_note": "Genellikle 24 iş saati içinde yanıt veriyoruz.",
     "SERVICE_PROVIDER_NOTICE": "Hizmet sağlayıcı olarak katılmak için yeni başvuru formunu kullanın: başvurunuzu orada takip edebilir ve ekibimizin sorularını yanıtlayabilirsiniz.",
-    "SERVICE_PROVIDER_NOTICE_LINK": "Başvuru formunu aç"
+    "SERVICE_PROVIDER_NOTICE_LINK": "Başvuru formunu aç",
+    "REASON_LABEL": "Konu nedir?",
+    "REASONS": {
+      "GENERAL": {
+        "LABEL": "Genel soru",
+        "PLACEHOLDER": "Sorunuzu açık ve anlaşılır biçimde yazın"
+      },
+      "PLANS": {
+        "LABEL": "Paketler, ödeme ve fatura",
+        "PLACEHOLDER": "Talebiniz hangi paket veya ödemeyle ilgili? Varsa sipariş referansını yazın."
+      },
+      "SUPPORT": {
+        "LABEL": "Hesap veya ilanla ilgili sorun",
+        "PLACEHOLDER": "Ne oldu ve ne denediniz? Bir ilanla ilgiliyse lütfen ilanın bağlantısını ekleyin."
+      },
+      "PROVIDER": {
+        "LABEL": "Hizmet sağlayıcı olarak katılma",
+        "PLACEHOLDER": "İşletmenizi anlatın: işletme adı, hizmet türü (nakliyat, temizlik, fotoğrafçılık...), bir telefon numarası ve hizmet verdiğiniz bölge. Ekibimiz hesabınızı incelemek ve etkinleştirmek için sizinle iletişime geçecek."
+      },
+      "PRIVACY": {
+        "LABEL": "Gizlilik ve veri talebi",
+        "PLACEHOLDER": "Talebinizi (erişim, düzeltme, silme, itiraz) açıklayın ve HudhudNest'e kayıtlı e-posta adresinizi belirtin."
+      },
+      "PARTNERSHIP": {
+        "LABEL": "İş birliği, emlak ofisleri ve basın",
+        "PLACEHOLDER": "Kendinizi kısaca tanıtın ve nasıl iş birliği yapabileceğimizi anlatın."
+      }
+    },
+    "CONSENT_TEXT": "Göndererek, bilgilerinizin talebinizi işlemek için kullanılmasını kabul edersiniz. Ayrıntılar:",
+    "CONSENT_LINK": "gizlilik politikası"
   },
   "ADMIN_MSG": {
     "title": "İletişim mesajları",
