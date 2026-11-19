@@ -11,11 +11,30 @@ import { ProfileService } from '../../core/api/profile.service';
 import { PropertyApiService } from '../../core/api/property-api.service';
 import { ShortStayListingApiService } from '../../core/api/short-stay-listing-api.service';
 import { Property } from '../../core/models/property.model';
+import { ExtraListingStatus } from '../../core/models/listing-fee.model';
 import { ToastService } from '../../shared/services/toast.service';
 import { MyListingsPage } from './my-listings.page';
 
 // The publisher's office (branch picker / "add to my office"); none by default.
 let agenciesApi: { getMine: () => Observable<Partial<Agency> | null> } = { getMine: () => of(null) };
+
+// What GET /extra-listing returns for the owner; null makes the call fail (the page must still show the plain add button).
+let extraListingStatus: ExtraListingStatus | null = null;
+
+function extra(overrides: Partial<ExtraListingStatus> = {}): ExtraListingStatus {
+  return {
+    canRequest: false, blockedCode: null, hasPendingRequest: false, pendingRequestId: null,
+    availableCredits: 0, priceUsd: 1, listingDays: 30, activeListings: 1, limit: 1, ...overrides
+  };
+}
+
+function stubExtraListing(api: jasmine.SpyObj<ListingFeesApiService>): void {
+  api.getExtraListingStatus.and.returnValue(
+    extraListingStatus ? of(extraListingStatus) : throwError(() => new Error('boom'))
+  );
+}
+
+beforeEach(() => { extraListingStatus = null; });
 
 function listing(id: string, extra: Partial<Property> = {}): Property {
   return { id, title: `Listing ${id}`, isPublished: true, status: 'Available', ...extra } as Property;
@@ -26,7 +45,8 @@ describe('MyListingsPage — featuring', () => {
   let feesApi: jasmine.SpyObj<ListingFeesApiService>;
 
   function setup(listings: Property[], pending: { propertyId: string }[] = [], pendingFails = false): void {
-    feesApi = jasmine.createSpyObj('ListingFeesApiService', ['getMyPendingFeatured']);
+    feesApi = jasmine.createSpyObj('ListingFeesApiService', ['getMyPendingFeatured', 'getExtraListingStatus']);
+    stubExtraListing(feesApi);
     feesApi.getMyPendingFeatured.and.returnValue(
       pendingFails
         ? throwError(() => new Error('boom'))
@@ -57,6 +77,53 @@ describe('MyListingsPage — featuring', () => {
   }
 
   const el = () => fixture.nativeElement as HTMLElement;
+
+  beforeEach(() => { extraListingStatus = extra(); });
+
+  it('زر «إضافة عقار جديد» موجود في صفحة إعلاناتي بلا أيقونة + (لمن لديه مجال)', () => {
+    setup([listing('p1')]);
+
+    const add = el().querySelector('a[data-testid="add-new"]') as HTMLAnchorElement;
+    expect(add).not.toBeNull();
+    expect(add.getAttribute('href')).toBe('/property-form');
+    expect(add.textContent).not.toContain('➕');
+    expect(el().querySelector('[data-testid="buy-extra-listing"]')).toBeNull();
+  });
+
+  it('مالك الخطة المجانية الذي بلغ حدّه: يُعرض شراء إعلان إضافي بدل زر الإضافة', () => {
+    extraListingStatus = extra({ canRequest: true });
+    setup([listing('p1')]);
+
+    const buy = el().querySelector('a[data-testid="buy-extra-listing"]') as HTMLAnchorElement;
+    expect(buy).not.toBeNull();
+    expect(buy.getAttribute('href')).toBe('/checkout/extra-listing');
+    expect(el().querySelector('a[data-testid="add-new"]')).toBeNull();
+  });
+
+  it('طلب إعلان إضافي بانتظار تأكيد المشرف: لا زر إضافة ولا زر شراء، وتظهر رسالة الانتظار', () => {
+    extraListingStatus = extra({ hasPendingRequest: true, pendingRequestId: 'r1' });
+    setup([listing('p1')]);
+
+    expect(el().querySelector('[data-testid="extra-listing-pending"]')).not.toBeNull();
+    expect(el().querySelector('a[data-testid="add-new"]')).toBeNull();
+    expect(el().querySelector('[data-testid="buy-extra-listing"]')).toBeNull();
+  });
+
+  it('إعلان إضافي مدفوع لم يُستخدم: زر الإضافة العادي مع رسالة أنه جاهز', () => {
+    extraListingStatus = extra({ availableCredits: 1 });
+    setup([listing('p1')]);
+
+    expect(el().querySelector('a[data-testid="add-new"]')).not.toBeNull();
+    expect(el().querySelector('[data-testid="extra-listing-credit"]')).not.toBeNull();
+  });
+
+  it('فشل قراءة الحالة (خادم قديم أو شبكة): يبقى زر الإضافة العادي ولا يختفي طريق الإضافة', () => {
+    extraListingStatus = null;
+    setup([listing('p1')]);
+
+    expect(el().querySelector('a[data-testid="add-new"]')).not.toBeNull();
+    expect(el().querySelector('[data-testid="buy-extra-listing"]')).toBeNull();
+  });
 
   it('إعلان منشور: يظهر رابط طلب التمييز إلى صفحة الدفع الحالية', () => {
     setup([listing('p1')]);
@@ -100,7 +167,8 @@ describe('MyListingsPage — listing status (QA Phase 7, P7-D08)', () => {
     propertyApi = jasmine.createSpyObj('PropertyApiService', ['getMyProperties', 'updateStatus']);
     propertyApi.getMyProperties.and.returnValue(of(listings));
     propertyApi.updateStatus.and.callFake(updateStatus as never);
-    const feesApi = jasmine.createSpyObj('ListingFeesApiService', ['getMyPendingFeatured']);
+    const feesApi = jasmine.createSpyObj('ListingFeesApiService', ['getMyPendingFeatured', 'getExtraListingStatus']);
+    stubExtraListing(feesApi);
     feesApi.getMyPendingFeatured.and.returnValue(of([]));
     const shortStay = jasmine.createSpyObj('ShortStayListingApiService', ['getMine']);
     shortStay.getMine.and.returnValue(of([]));
@@ -245,7 +313,8 @@ describe('MyListingsPage — hide / show (P8-D06a)', () => {
     propertyApi.publishProperty.and.returnValue(of(undefined));
     const shortStay = jasmine.createSpyObj('ShortStayListingApiService', ['getMine']);
     shortStay.getMine.and.returnValue(of([]));
-    const feesApi = jasmine.createSpyObj('ListingFeesApiService', ['getMyPendingFeatured']);
+    const feesApi = jasmine.createSpyObj('ListingFeesApiService', ['getMyPendingFeatured', 'getExtraListingStatus']);
+    stubExtraListing(feesApi);
     feesApi.getMyPendingFeatured.and.returnValue(of([]));
     toast = jasmine.createSpyObj('ToastService', ['show', 'success', 'error']);
 
@@ -318,7 +387,8 @@ describe('MyListingsPage — adding older listings to my office (offices P4)', (
     propertyApi.linkPropertyToOffice.and.returnValue(linkResult);
     const shortStay = jasmine.createSpyObj('ShortStayListingApiService', ['getMine']);
     shortStay.getMine.and.returnValue(of([]));
-    const feesApi = jasmine.createSpyObj('ListingFeesApiService', ['getMyPendingFeatured']);
+    const feesApi = jasmine.createSpyObj('ListingFeesApiService', ['getMyPendingFeatured', 'getExtraListingStatus']);
+    stubExtraListing(feesApi);
     feesApi.getMyPendingFeatured.and.returnValue(of([]));
     toast = jasmine.createSpyObj('ToastService', ['show', 'success', 'error']);
 

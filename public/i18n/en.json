@@ -876,6 +876,7 @@
     "HIDE_EXACT_LOCATION_HINT": "Visitors see an approximate area of about 500 m instead of the pin, and no street name. You and the admins still see the exact spot.",
     "PRICE_NEGOTIABLE": "The price is negotiable",
     "PRICE_NEGOTIABLE_HINT": "Turn this on if you are open to negotiating the price. Visitors see it on the listing details page only.",
+    "FEATURES_AND_AMENITIES": "Features and amenities",
     "BRANCH": {
       "LABEL": "Office branch",
       "NONE": "No specific branch",
@@ -1000,6 +1001,11 @@
       "PLAN_EXPIRED": "The office owner’s plan has ended, so active listings cannot be added until it is renewed.",
       "OTHER_OFFICE": "This listing belongs to another office.",
       "ERROR": "The listing could not be added. Please try again."
+    },
+    "EXTRA_LISTING": {
+      "BUY": "Add one more listing for ${{price}}",
+      "PENDING": "Your extra-listing request is waiting for an administrator to confirm the payment. After that you can add your listing.",
+      "PAID_READY": "You have a paid extra listing ready. Add your listing now."
     }
   },
   "VIEW_COUNT": {
@@ -2128,7 +2134,11 @@
     "STEP_TWO": "Make the transfer, quoting the reference number above.",
     "STEP_THREE": "Once the money is confirmed, the request is applied to your listing and you get a notification.",
     "TRANSFER_DETAILS": "Bank account details are sent directly and are not published on this page.",
-    "CONTACT_US": "Contact us to complete the transfer"
+    "CONTACT_US": "Contact us to complete the transfer",
+    "EXTRA_LISTING": {
+      "TITLE": "One extra listing",
+      "DESCRIPTION": "Your free plan allows one active listing and you have reached it. Once the payment is confirmed you can publish one more listing, live for 30 days like any other."
+    }
   },
   "DATE_RANGE": {
     "PREV_MONTH": "Previous month",
@@ -3154,7 +3164,11 @@
     "FEATURED_APPROVED": "Listing featured.",
     "REJECTED": "Request rejected.",
     "LOAD_ERROR": "Could not load the requests.",
-    "ACTION_ERROR": "The action failed. The request may already have been handled; the list was refreshed."
+    "ACTION_ERROR": "The action failed. The request may already have been handled; the list was refreshed.",
+    "EXTRA_LISTINGS_TITLE": "Extra-listing requests",
+    "APPROVE_EXTRA_LISTING": "Confirm payment and allow an extra listing",
+    "CONFIRM_APPROVE_EXTRA_LISTING": "Confirm the payment arrived and allow \"{{name}}\" to publish one extra listing?",
+    "EXTRA_LISTING_APPROVED": "The owner may now publish one extra listing."
   },
   "SERVICES_CATALOG": {
     "EYEBROW": "Services marketplace",

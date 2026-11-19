@@ -184,8 +184,9 @@
               <p class="field-error" *ngIf="form.errors?.['invalidCoordinates'] && (f.latitude.touched || f.longitude.touched)">
                 {{ 'PROPERTY_FORM.INVALID_COORDINATES' | translate }}
               </p>
-              <label class="hide-location" data-testid="hide-exact-location">
+              <label class="checkbox-item" data-testid="hide-exact-location">
                 <input type="checkbox" formControlName="hideExactLocation">
+                <span class="checkbox-box"></span>
                 <span>{{ 'PROPERTY_FORM.HIDE_EXACT_LOCATION' | translate }}</span>
               </label>
               <small class="hide-location__hint">{{ 'PROPERTY_FORM.HIDE_EXACT_LOCATION_HINT' | translate }}</small>
@@ -262,8 +263,9 @@
 
               <!-- السعر قابل للتفاوض (بيع أو إيجار) — يظهر في تفاصيل الإعلان فقط -->
               <div class="form-group form-group--full" *ngIf="isRent || isSale">
-                <label class="hide-location" data-testid="price-negotiable">
+                <label class="checkbox-item" data-testid="price-negotiable">
                   <input type="checkbox" formControlName="isPriceNegotiable">
+                  <span class="checkbox-box"></span>
                   <span>{{ 'PROPERTY_FORM.PRICE_NEGOTIABLE' | translate }}</span>
                 </label>
                 <small class="hide-location__hint">{{ 'PROPERTY_FORM.PRICE_NEGOTIABLE_HINT' | translate }}</small>
@@ -379,33 +381,10 @@
                 <p class="field-hint" *ngIf="enumOptionsLoadFailed()">{{ 'PROPERTY_FORM.OPTIONS_LOAD_FAILED' | translate }}</p>
               </div>
 
-              <!-- Checkboxes: not applicable to Land, same reasoning as Rooms/Floor. -->
-              <div class="form-group form-group--full" *ngIf="!isLandCategory">
-                <label class="section-sublabel">{{ 'property_add.features' | translate }}</label>
-                <div class="checkbox-grid">
-                  <label class="checkbox-item">
-                    <input type="checkbox" formControlName="hasBalcony" />
-                    <span class="checkbox-box"></span>
-                    <span>{{ 'property_add.balcony' | translate }}</span>
-                  </label>
-                  <label class="checkbox-item">
-                    <input type="checkbox" formControlName="hasElevator" />
-                    <span class="checkbox-box"></span>
-                    <span>{{ 'property_add.elevator' | translate }}</span>
-                  </label>
-                  <label class="checkbox-item">
-                    <input type="checkbox" formControlName="hasParkingSpace" />
-                    <span class="checkbox-box"></span>
-                    <span>{{ 'property_add.parking' | translate }}</span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- ✅ إضافة: مرافق العقار — تستهلك GET /api/lookups/amenities التي
-                   لم تكن مستخدَمة إطلاقاً، والحقل AmenityIds كان موجوداً في نموذج
-                   البيانات دون أي واجهة اختيار فعلية. -->
+              <!-- Features and amenities in ONE group: the three quick flags (not for land) come first, then
+                   the amenities catalog without the rows those flags already cover. -->
               <div class="form-group form-group--full">
-                <label class="section-sublabel">{{ 'PROPERTY_FORM.AMENITIES' | translate }}</label>
+                <label class="section-sublabel">{{ 'PROPERTY_FORM.FEATURES_AND_AMENITIES' | translate }}</label>
                 <p class="field-hint" *ngIf="amenitiesLoading()">{{ 'COMMON.LOADING' | translate }}</p>
                 <p class="field-hint field-hint--error" *ngIf="amenitiesLoadFailed() && !amenitiesLoading()" role="alert">
                   {{ 'PROPERTY_FORM.AMENITIES_LOAD_ERROR' | translate }}
@@ -415,8 +394,25 @@
                   {{ 'PROPERTY_FORM.AMENITIES_EMPTY' | translate }}
                   <button type="button" class="link-btn" (click)="loadAmenities()">{{ 'COMMON.RETRY' | translate }}</button>
                 </p>
-                <div class="checkbox-grid" *ngIf="amenities().length > 0">
-                  <label class="checkbox-item" *ngFor="let amenity of amenities()">
+                <div class="checkbox-grid">
+                  <ng-container *ngIf="!isLandCategory">
+                    <label class="checkbox-item">
+                      <input type="checkbox" formControlName="hasBalcony" />
+                      <span class="checkbox-box"></span>
+                      <span>{{ 'property_add.balcony' | translate }}</span>
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" formControlName="hasElevator" />
+                      <span class="checkbox-box"></span>
+                      <span>{{ 'property_add.elevator' | translate }}</span>
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" formControlName="hasParkingSpace" />
+                      <span class="checkbox-box"></span>
+                      <span>{{ 'property_add.parking' | translate }}</span>
+                    </label>
+                  </ng-container>
+                  <label class="checkbox-item" *ngFor="let amenity of selectableAmenities()">
                     <input type="checkbox"
                       [checked]="isAmenitySelected(amenity.id)"
                       (change)="toggleAmenity(amenity.id)" />

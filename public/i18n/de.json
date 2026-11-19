@@ -876,6 +876,7 @@
     "HIDE_EXACT_LOCATION_HINT": "Besucher sehen statt der Stecknadel einen ungefähren Bereich von etwa 500 m und keinen Straßennamen. Sie und die Administration sehen den genauen Ort.",
     "PRICE_NEGOTIABLE": "Preis verhandelbar",
     "PRICE_NEGOTIABLE_HINT": "Aktivieren Sie dies, wenn Sie über den Preis verhandeln möchten. Besucher sehen es nur auf der Detailseite der Anzeige.",
+    "FEATURES_AND_AMENITIES": "Merkmale und Ausstattung",
     "BRANCH": {
       "LABEL": "Filiale des Büros",
       "NONE": "Keine bestimmte Filiale",
@@ -1000,6 +1001,11 @@
       "PLAN_EXPIRED": "Der Tarif des Büroinhabers ist abgelaufen. Aktive Inserate können erst nach der Verlängerung zugeordnet werden.",
       "OTHER_OFFICE": "Dieses Inserat gehört zu einem anderen Büro.",
       "ERROR": "Das Inserat konnte nicht zugeordnet werden. Bitte erneut versuchen."
+    },
+    "EXTRA_LISTING": {
+      "BUY": "Eine weitere Anzeige für {{price}} $ hinzufügen",
+      "PENDING": "Ihre Anfrage für eine zusätzliche Anzeige wartet auf die Zahlungsbestätigung durch einen Administrator. Danach können Sie Ihre Anzeige hinzufügen.",
+      "PAID_READY": "Sie haben eine bezahlte zusätzliche Anzeige bereit. Fügen Sie Ihre Anzeige jetzt hinzu."
     }
   },
   "VIEW_COUNT": {
@@ -2128,7 +2134,11 @@
     "STEP_TWO": "Führe die Überweisung aus und gib die Referenznummer oben an.",
     "STEP_THREE": "Nach bestätigtem Zahlungseingang wird die Anforderung auf Ihre Anzeige angewendet und Sie erhalten eine Benachrichtigung.",
     "TRANSFER_DETAILS": "Bankdaten werden direkt zugesendet und nicht auf dieser Seite veröffentlicht.",
-    "CONTACT_US": "Kontaktiere uns für die Überweisung"
+    "CONTACT_US": "Kontaktiere uns für die Überweisung",
+    "EXTRA_LISTING": {
+      "TITLE": "Eine zusätzliche Anzeige",
+      "DESCRIPTION": "Ihr kostenloser Tarif erlaubt eine aktive Anzeige, und Sie haben dieses Limit erreicht. Nach der Zahlungsbestätigung können Sie eine weitere Anzeige veröffentlichen, die wie jede andere 30 Tage online bleibt."
+    }
   },
   "DATE_RANGE": {
     "PREV_MONTH": "Vorheriger Monat",
@@ -3154,7 +3164,11 @@
     "FEATURED_APPROVED": "Anzeige hervorgehoben.",
     "REJECTED": "Anfrage abgelehnt.",
     "LOAD_ERROR": "Die Anfragen konnten nicht geladen werden.",
-    "ACTION_ERROR": "Die Aktion ist fehlgeschlagen. Die Anfrage wurde evtl. bereits bearbeitet; die Liste wurde aktualisiert."
+    "ACTION_ERROR": "Die Aktion ist fehlgeschlagen. Die Anfrage wurde evtl. bereits bearbeitet; die Liste wurde aktualisiert.",
+    "EXTRA_LISTINGS_TITLE": "Anfragen für zusätzliche Anzeigen",
+    "APPROVE_EXTRA_LISTING": "Zahlung bestätigen und zusätzliche Anzeige erlauben",
+    "CONFIRM_APPROVE_EXTRA_LISTING": "Bestätigen, dass die Zahlung eingegangen ist, und „{{name}}“ eine zusätzliche Anzeige erlauben?",
+    "EXTRA_LISTING_APPROVED": "Der Inhaber darf jetzt eine zusätzliche Anzeige veröffentlichen."
   },
   "SERVICES_CATALOG": {
     "EYEBROW": "Service-Marktplatz",

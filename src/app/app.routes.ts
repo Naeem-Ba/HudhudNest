@@ -503,6 +503,15 @@ export const routes: Routes = [
             .then(m => m.NotFoundPage)
       },
       {
+        // Pay for ONE more listing (free plan, already at the limit). No property id: it buys permission to create one.
+        path: 'checkout/extra-listing',
+        data: { kind: 'extra-listing' },
+        canActivate: [AuthGuard, digitalPurchaseGuard],
+        loadComponent: () =>
+          import('./features/checkout/checkout.page')
+            .then(m => m.CheckoutPage)
+      },
+      {
         // One-off listing fees: :kind is 'extension' or 'featured'.
         // Authenticated because both endpoints behind it are owner-only — an anonymous
         // visitor reaching this page could only ever be shown a 401.

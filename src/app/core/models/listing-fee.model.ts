@@ -6,9 +6,14 @@
 // because there is no payment gateway in the system — see FRONTEND_BACKEND_CONTRACT.md.
 
 /** Which fee the checkout page is quoting. Doubles as the :kind route segment. */
-export type ListingFeeKind = 'extension' | 'featured';
+export type ListingFeeKind = 'extension' | 'featured' | 'extra-listing';
 
-export const LISTING_FEE_KINDS: readonly ListingFeeKind[] = ['extension', 'featured'];
+export const LISTING_FEE_KINDS: readonly ListingFeeKind[] = ['extension', 'featured', 'extra-listing'];
+
+/** The one fee that is not about an existing listing: it buys permission to publish one more (no :propertyId). */
+export function isListingFeeWithoutProperty(kind: ListingFeeKind): boolean {
+  return kind === 'extra-listing';
+}
 
 export function isListingFeeKind(value: string): value is ListingFeeKind {
   return (LISTING_FEE_KINDS as readonly string[]).includes(value);
@@ -44,6 +49,13 @@ export const LISTING_FEE_PREVIEWS: Readonly<Record<ListingFeeKind, ListingFeePre
     days: 30,
     titleKey: 'CHECKOUT.FEATURED.TITLE',
     descriptionKey: 'CHECKOUT.FEATURED.DESCRIPTION'
+  },
+  'extra-listing': {
+    kind: 'extra-listing',
+    amountUsd: 1,
+    days: 30,
+    titleKey: 'CHECKOUT.EXTRA_LISTING.TITLE',
+    descriptionKey: 'CHECKOUT.EXTRA_LISTING.DESCRIPTION'
   }
 };
 
@@ -82,4 +94,22 @@ export interface PendingFeaturedRequest {
   amountUsd: number;
   featuredDays: number;
   requestedAt: string;
+}
+
+/**
+ * Whether the owner may buy permission to publish ONE more listing (GET /extra-listing).
+ *
+ * `blockedCode` says why not (office member, paid plan, no plan, or still has room); `availableCredits` are
+ * paid permissions an administrator confirmed and the owner has not spent yet.
+ */
+export interface ExtraListingStatus {
+  canRequest: boolean;
+  blockedCode: string | null;
+  hasPendingRequest: boolean;
+  pendingRequestId: string | null;
+  availableCredits: number;
+  priceUsd: number;
+  listingDays: number;
+  activeListings: number;
+  limit: number;
 }
