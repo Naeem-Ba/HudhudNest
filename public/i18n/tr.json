@@ -1001,6 +1001,11 @@
       "PLAN_EXPIRED": "Ofis sahibinin planı sona erdi; plan yenilenene kadar aktif ilan eklenemez.",
       "OTHER_OFFICE": "Bu ilan başka bir ofise ait.",
       "ERROR": "İlan eklenemedi. Lütfen tekrar deneyin."
+    },
+    "EXTRA_LISTING": {
+      "BUY": "{{price}} $ karşılığında bir ilan daha ekle",
+      "PENDING": "Ek ilan talebiniz yöneticinin ödemeyi onaylamasını bekliyor. Onaydan sonra ilanınızı ekleyebilirsiniz.",
+      "PAID_READY": "Ödenmiş bir ek ilan hakkınız hazır. İlanınızı şimdi ekleyin."
     }
   },
   "VIEW_COUNT": {
@@ -2129,7 +2134,11 @@
     "STEP_TWO": "Yukarıdaki referans numarasını belirterek havaleyi yapın.",
     "STEP_THREE": "Para onaylandığında talep ilanınıza uygulanır ve size bir bildirim gönderilir.",
     "TRANSFER_DETAILS": "Banka hesap bilgileri doğrudan gönderilir ve bu sayfada yayınlanmaz.",
-    "CONTACT_US": "Havaleyi tamamlamak için bize ulaşın"
+    "CONTACT_US": "Havaleyi tamamlamak için bize ulaşın",
+    "EXTRA_LISTING": {
+      "TITLE": "Bir ek ilan",
+      "DESCRIPTION": "Ücretsiz planınız bir aktif ilana izin veriyor ve bu sınıra ulaştınız. Ödeme onaylandıktan sonra bir ilan daha yayınlayabilirsiniz; diğer ilanlar gibi 30 gün yayında kalır."
+    }
   },
   "DATE_RANGE": {
     "PREV_MONTH": "Önceki ay",
@@ -3155,7 +3164,11 @@
     "FEATURED_APPROVED": "İlan öne çıkarıldı.",
     "REJECTED": "Talep reddedildi.",
     "LOAD_ERROR": "Talepler yüklenemedi.",
-    "ACTION_ERROR": "İşlem başarısız oldu. Talep zaten işlenmiş olabilir; liste yenilendi."
+    "ACTION_ERROR": "İşlem başarısız oldu. Talep zaten işlenmiş olabilir; liste yenilendi.",
+    "EXTRA_LISTINGS_TITLE": "Ek ilan talepleri",
+    "APPROVE_EXTRA_LISTING": "Ödemeyi onayla ve ek ilana izin ver",
+    "CONFIRM_APPROVE_EXTRA_LISTING": "Ödemenin ulaştığını onaylayıp «{{name}}» için bir ek ilan yayınlamaya izin verilsin mi?",
+    "EXTRA_LISTING_APPROVED": "İlan sahibi artık bir ek ilan yayınlayabilir."
   },
   "SERVICES_CATALOG": {
     "EYEBROW": "Hizmetler pazarı",

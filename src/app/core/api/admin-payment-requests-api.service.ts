@@ -7,6 +7,7 @@ import { Observable, map } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
 import {
   PendingExtensionPayment,
+  PendingExtraListingPayment,
   PendingFeaturedPayment,
   PendingPaymentRequests,
   PendingPlanRequest
@@ -57,11 +58,21 @@ export class AdminPaymentRequestsApiService {
     });
   }
 
+  /** POST …/extra-listings/{requestId}/approve — confirms the payment; the owner may then publish one more listing. */
+  approveExtraListing(requestId: string, reason?: string): Observable<unknown> {
+    return this.api.post<unknown>(`${this.endpoint}/extra-listings/${requestId}/approve`, { reason: reason ?? null });
+  }
+
+  rejectExtraListing(requestId: string, reason?: string): Observable<unknown> {
+    return this.api.post<unknown>(`${this.endpoint}/extra-listings/${requestId}/reject`, { reason: reason ?? null });
+  }
+
   private toPending(response: unknown): PendingPaymentRequests {
     const root = (response ?? {}) as Record<string, unknown>;
     const plans = Array.isArray(root['plans']) ? (root['plans'] as Record<string, unknown>[]) : [];
     const featured = Array.isArray(root['featured']) ? (root['featured'] as Record<string, unknown>[]) : [];
     const extensions = Array.isArray(root['extensions']) ? (root['extensions'] as Record<string, unknown>[]) : [];
+    const extraListings = Array.isArray(root['extraListings']) ? (root['extraListings'] as Record<string, unknown>[]) : [];
 
     return {
       plans: plans
@@ -99,7 +110,17 @@ export class AdminPaymentRequestsApiService {
           requestedAt: String(e['requestedAt'] ?? ''),
           listingExpiresAt: (e['listingExpiresAt'] as string | null | undefined) ?? null
         }))
-        .filter(e => !!e.transactionId)
+        .filter(e => !!e.transactionId),
+      extraListings: extraListings
+        .map<PendingExtraListingPayment>(x => ({
+          requestId: String(x['requestId'] ?? ''),
+          userId: String(x['userId'] ?? ''),
+          userName: String(x['userName'] ?? ''),
+          email: (x['email'] as string | null | undefined) ?? null,
+          amountUsd: Number(x['amountUsd'] ?? 0),
+          requestedAt: String(x['requestedAt'] ?? '')
+        }))
+        .filter(x => !!x.requestId)
     };
   }
 }

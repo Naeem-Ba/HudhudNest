@@ -4,7 +4,26 @@
 
   <header class="page-header">
     <h1>{{ 'MY_LISTINGS.TITLE' | translate }}</h1>
+
+    <!-- «إضافة إعلان جديد»: الزر العادي، إلا إذا بلغ مالك الخطة المجانية حدّه فيُعرض شراء إعلان واحد إضافي
+         (طلب يؤكده المشرف بعد الدفع — لا بوابة دفع). بلا أيقونة + (طلب 2026-11-18). -->
+    <a *ngIf="showAddButton()" class="btn btn--primary" routerLink="/property-form" data-testid="add-new">
+      {{ 'MY_LISTINGS.ADD_NEW' | translate }}
+    </a>
+    <a *ngIf="offerExtraListing()" class="btn btn--gold" routerLink="/checkout/extra-listing" data-testid="buy-extra-listing">
+      {{ 'MY_LISTINGS.EXTRA_LISTING.BUY' | translate: { price: extraListing()?.priceUsd } }}
+    </a>
   </header>
+
+  <!-- حالة الإعلان الإضافي المدفوع: بانتظار تأكيد المشرف، أو مدفوع ينتظر الاستخدام. -->
+  <p class="quota-summary" *ngIf="extraListingPending()" role="status" data-testid="extra-listing-pending">
+    <span class="quota-summary__icon" aria-hidden="true">⏳</span>
+    {{ 'MY_LISTINGS.EXTRA_LISTING.PENDING' | translate }}
+  </p>
+  <p class="quota-summary" *ngIf="extraListingCredits() > 0" role="status" data-testid="extra-listing-credit">
+    <span class="quota-summary__icon" aria-hidden="true">✅</span>
+    {{ 'MY_LISTINGS.EXTRA_LISTING.PAID_READY' | translate }}
+  </p>
 
   <!-- Quota summary: "X of Y" across every listing type that shares the plan quota
        (Property + Short-Stay — see ActiveListingCounter on the backend). -->

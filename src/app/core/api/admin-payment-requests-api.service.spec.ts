@@ -33,13 +33,18 @@ describe('AdminPaymentRequestsApiService', () => {
       extensions: [
         { transactionId: 'x1', propertyId: 'pr3', propertyTitle: 'Flat', ownerId: 'u3', ownerName: 'Lea', ownerEmail: 'l@x.de', amountUsd: 1, requestedAt: '2026-10-03T10:00:00Z', listingExpiresAt: '2026-10-01T00:00:00Z' },
         { propertyTitle: 'no id' }
+      ],
+      extraListings: [
+        { requestId: 'e1', userId: 'u4', userName: 'Omar', email: 'o@x.de', amountUsd: 1, requestedAt: '2026-10-04T10:00:00Z' },
+        { userName: 'no id' }
       ]
     });
 
     expect(result).toEqual({
       plans: [{ requestId: 'p1', userId: 'u1', userName: 'Ali', email: 'a@x.de', tier: 'premium', priceUsd: 49, requestedAt: '2026-10-01T10:00:00Z' }],
       featured: [{ transactionId: 't1', propertyId: 'pr1', propertyTitle: 'Villa', ownerId: 'u2', ownerName: 'Sam', ownerEmail: null, amountUsd: 10, requestedAt: '2026-10-02T10:00:00Z' }],
-      extensions: [{ transactionId: 'x1', propertyId: 'pr3', propertyTitle: 'Flat', ownerId: 'u3', ownerName: 'Lea', ownerEmail: 'l@x.de', amountUsd: 1, requestedAt: '2026-10-03T10:00:00Z', listingExpiresAt: '2026-10-01T00:00:00Z' }]
+      extensions: [{ transactionId: 'x1', propertyId: 'pr3', propertyTitle: 'Flat', ownerId: 'u3', ownerName: 'Lea', ownerEmail: 'l@x.de', amountUsd: 1, requestedAt: '2026-10-03T10:00:00Z', listingExpiresAt: '2026-10-01T00:00:00Z' }],
+      extraListings: [{ requestId: 'e1', userId: 'u4', userName: 'Omar', email: 'o@x.de', amountUsd: 1, requestedAt: '2026-10-04T10:00:00Z' }]
     });
   });
 
@@ -47,7 +52,20 @@ describe('AdminPaymentRequestsApiService', () => {
     let result: unknown;
     service.getPending().subscribe(r => (result = r));
     httpMock.expectOne(base).flush(null);
-    expect(result).toEqual({ plans: [], featured: [], extensions: [] });
+    expect(result).toEqual({ plans: [], featured: [], extensions: [], extraListings: [] });
+  });
+
+  it('approveExtraListing / rejectExtraListing: مسار الطلب والسبب', () => {
+    service.approveExtraListing('e1', 'paid').subscribe();
+    const approve = httpMock.expectOne(`${base}/extra-listings/e1/approve`);
+    expect(approve.request.method).toBe('POST');
+    expect(approve.request.body).toEqual({ reason: 'paid' });
+    approve.flush({});
+
+    service.rejectExtraListing('e1').subscribe();
+    const reject = httpMock.expectOne(`${base}/extra-listings/e1/reject`);
+    expect(reject.request.body).toEqual({ reason: null });
+    reject.flush({});
   });
 
   it('approvePlan يرسل durationDays إلى مسار الطلب', () => {

@@ -7,7 +7,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
-import { ListingFeeKind, ListingFeeQuote, PendingFeaturedRequest } from '../models/listing-fee.model';
+import { ExtraListingStatus, ListingFeeKind, ListingFeeQuote, PendingFeaturedRequest } from '../models/listing-fee.model';
 
 @Injectable({ providedIn: 'root' })
 export class ListingFeesApiService {
@@ -22,6 +22,12 @@ export class ListingFeesApiService {
    * than stacking a second charge, and flags the reuse in `isExistingPendingFee`.
    */
   request(kind: ListingFeeKind, propertyId: string): Observable<ListingFeeQuote> {
+    if (kind === 'extra-listing') {
+      return this.api
+        .post<unknown>('/extra-listing/request', {})
+        .pipe(map(response => this.toExtraListingQuote(response)));
+    }
+
     const path = kind === 'extension'
       ? `${this.endpoint}/${propertyId}/extension`
       : `${this.endpoint}/${propertyId}/featured`;
@@ -29,6 +35,24 @@ export class ListingFeesApiService {
     return this.api
       .post<unknown>(path, {})
       .pipe(map(response => this.toQuote(kind, response)));
+  }
+
+  /** GET /extra-listing — can the owner pay for one more listing, and what is already pending or paid. */
+  getExtraListingStatus(): Observable<ExtraListingStatus> {
+    return this.api.get<unknown>('/extra-listing').pipe(map(response => {
+      const row = (response ?? {}) as Record<string, unknown>;
+      return {
+        canRequest: row['canRequest'] === true,
+        blockedCode: this.asNullableString(row['blockedCode']),
+        hasPendingRequest: row['hasPendingRequest'] === true,
+        pendingRequestId: this.asNullableString(row['pendingRequestId']),
+        availableCredits: Number(row['availableCredits'] ?? 0),
+        priceUsd: Number(row['priceUsd'] ?? 0),
+        listingDays: Number(row['listingDays'] ?? 0),
+        activeListings: Number(row['activeListings'] ?? 0),
+        limit: Number(row['limit'] ?? 0)
+      };
+    }));
   }
 
   /**
@@ -49,6 +73,23 @@ export class ListingFeesApiService {
           requestedAt: String(row['requestedAt'] ?? '')
         };
       })));
+  }
+
+  /** The request id is the reference the owner quotes on the payment, like a transaction id for the other fees. */
+  private toExtraListingQuote(response: unknown): ListingFeeQuote {
+    const item = (response ?? {}) as Record<string, unknown>;
+    return {
+      kind: 'extra-listing',
+      transactionId: String(item['requestId'] ?? ''),
+      propertyId: '',
+      amountUsd: Number(item['amountUsd'] ?? 0),
+      days: Number(item['listingDays'] ?? 0),
+      expiresAt: null,
+      graceEndsAt: null,
+      currentFeaturedUntil: null,
+      projectedFeaturedUntil: null,
+      isExistingPendingFee: item['isExistingPendingRequest'] === true
+    };
   }
 
   private toQuote(kind: ListingFeeKind, response: unknown): ListingFeeQuote {
