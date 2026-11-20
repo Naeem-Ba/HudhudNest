@@ -4753,6 +4753,13 @@
       "A3": "Sobald Angebote online sind, nehmen Sie direkt über die Plattform Kontakt auf.",
       "Q4": "Welche Daten speichert die Warteliste?",
       "A4": "Nur Ihre E-Mail-Adresse oder WhatsApp-Nummer, optional Ihr Interesse, die Sprache und den Zeitpunkt Ihrer Einwilligung."
+    },
+    "OFFER": {
+      "EYEBROW": "Sonderangebot für Immobilienbüros",
+      "ENDS_ON": "Angebot endet am {{date}}",
+      "PROGRESS_ARIA": "{{count}} von {{max}} beigetreten",
+      "PROGRESS_LABEL": "{{count}} von {{max}} Büros sind bereits beigetreten",
+      "CTA": "So nutzen Sie das Angebot"
     }
   },
   "NEWSLETTER": {

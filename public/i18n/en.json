@@ -4753,6 +4753,13 @@
       "A3": "Once listings are online, you contact them directly through the platform.",
       "Q4": "What data does the waitlist store?",
       "A4": "Only your email address or WhatsApp number, optionally your interest, the language and the time of your consent."
+    },
+    "OFFER": {
+      "EYEBROW": "Special offer for real-estate offices",
+      "ENDS_ON": "Offer ends on {{date}}",
+      "PROGRESS_ARIA": "{{count}} of {{max}} joined so far",
+      "PROGRESS_LABEL": "{{count}} of {{max}} offices have joined so far",
+      "CTA": "See how to use the offer"
     }
   },
   "NEWSLETTER": {

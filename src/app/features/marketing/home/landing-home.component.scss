@@ -64,3 +64,20 @@ h3 { font-size: 1.125rem; color: var(--text-strong); }
   .start__grid { grid-template-columns: repeat(4, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) { .card { transition: none; &:hover { transform: none; } } }
+
+// Live marketing offer (admin-created). Same navy/gold card as before the redesign; only rendered when an offer is active.
+.offer { padding-block: 2rem 0; background: var(--page-bg); }
+.offer__card {
+  display: grid; gap: 0.75rem; justify-items: start; padding: 1.5rem;
+  background: var(--navy); color: var(--text-on-navy); border: 1px solid var(--gold); border-radius: 24px; box-shadow: var(--shadow-lg);
+  h2 { color: var(--text-on-navy); }
+  .btn { margin-block-start: 0.5rem; }
+}
+.offer__badge { margin: 0; padding: 0.25rem 1rem; border-radius: 999px; background: var(--gold); color: var(--on-primary); font-weight: 800; }
+.offer__eyebrow { margin: 0; color: var(--gold-light); font-weight: 700; font-size: 0.875rem; }
+.offer__text { color: var(--text-on-navy-muted); max-width: 42rem; }
+.offer__meta { font-size: 0.875rem; color: var(--text-on-navy-muted); }
+.offer__progress { width: 100%; display: grid; gap: 0.5rem; }
+.offer__track { height: 10px; border-radius: 999px; overflow: hidden; background: color-mix(in srgb, var(--text-on-navy) 18%, transparent); }
+.offer__fill { height: 100%; background: var(--gold); border-radius: inherit; }
+@media (min-width: 900px) { .offer__card { padding: 2rem; } }

@@ -4753,6 +4753,13 @@
       "A3": "İlanlar yayına girdiğinde onlarla platform üzerinden doğrudan iletişime geçersiniz.",
       "Q4": "Bekleme listesi hangi verileri saklar?",
       "A4": "Yalnızca e-posta adresinizi veya WhatsApp numaranızı, isteğe bağlı olarak ilginizi, dili ve onayınızın zamanını."
+    },
+    "OFFER": {
+      "EYEBROW": "Emlak ofislerine özel teklif",
+      "ENDS_ON": "Teklif {{date}} tarihinde sona erer",
+      "PROGRESS_ARIA": "Şimdiye kadar {{max}} ofisten {{count}} tanesi katıldı",
+      "PROGRESS_LABEL": "Şimdiye kadar {{max}} ofisten {{count}} tanesi katıldı",
+      "CTA": "Tekliften nasıl yararlanılır"
     }
   },
   "NEWSLETTER": {
