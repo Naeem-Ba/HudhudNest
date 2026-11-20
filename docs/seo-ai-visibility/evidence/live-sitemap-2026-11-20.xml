@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://hudhudnest.com/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://hudhudnest.com/properties</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://hudhudnest.com/short-stay</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://hudhudnest.com/investments</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://hudhudnest.com/services</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://hudhudnest.com/offices</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
+  <url><loc>https://hudhudnest.com/map</loc><changefreq>daily</changefreq><priority>0.5</priority></url>
+  <url><loc>https://hudhudnest.com/price-estimate</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://hudhudnest.com/valuation</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://hudhudnest.com/expats</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://hudhudnest.com/pricing</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://hudhudnest.com/kontakt</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://hudhudnest.com/privacy-policy</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
+  <url><loc>https://hudhudnest.com/terms-of-service</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
+  <url><loc>https://hudhudnest.com/impressum</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
+  <url><loc>https://hudhudnest.com/download</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+</urlset>
