@@ -510,36 +510,54 @@
     }
   },
   "KONTAKT": {
-    "PLAN_SUBJECT": "Subscription plan enquiry: {{plan}}",
     "PLAN_REF_LINE": "Plan request reference: {{ref}}",
-    "SERVICE_PROVIDER_SUBJECT": "Request to join as a service provider",
-    "SERVICE_PROVIDER_MESSAGE_PLACEHOLDER": "Tell us about your business: business name, service type (moving, cleaning, photography...), a phone number, and your service area. Our team will reach out to review and activate your account.",
     "title": "Contact us",
     "subtitle": "Send your message and we will reply as soon as possible.",
     "name": "Full name",
     "nameCtrl": "Please enter a name with at least three characters.",
     "email": "Email",
-    "emailCtrl": "Please enter a valid email address.",
-    "subject": "Subject",
-    "subCtrl": "Please enter a short subject with at least three characters.",
     "message": "Message",
     "msgCtrl": "Please enter a message with at least 10 characters.",
     "send": "Send",
     "sending": "Sending...",
     "info_title": "Contact information",
     "telefon": "Phone",
-    "adresse": "Address",
-    "stadt": "City",
-    "strasse": "Street",
     "success_msg": "Your message was sent successfully!",
     "error_msg": "An error occurred while sending. Try again later.",
     "error_validation": "Please fill in the required fields correctly.",
     "name_placeholder": "Enter full name",
-    "subject_placeholder": "Enter the message subject",
-    "message_placeholder": "Write your message clearly",
     "response_note": "We usually reply within 24 business hours.",
     "SERVICE_PROVIDER_NOTICE": "To join as a service provider, use the new application form: you can follow your application and answer questions from our team there.",
-    "SERVICE_PROVIDER_NOTICE_LINK": "Open the application form"
+    "SERVICE_PROVIDER_NOTICE_LINK": "Open the application form",
+    "REASON_LABEL": "What is it about?",
+    "REASONS": {
+      "GENERAL": {
+        "LABEL": "General question",
+        "PLACEHOLDER": "Write your question clearly"
+      },
+      "PLANS": {
+        "LABEL": "Plans, payment & invoice",
+        "PLACEHOLDER": "Which plan or payment is your request about? Include the order reference if you have one."
+      },
+      "SUPPORT": {
+        "LABEL": "Problem with account or listing",
+        "PLACEHOLDER": "What happened and what did you try? If it concerns a listing, please paste the link to it."
+      },
+      "PROVIDER": {
+        "LABEL": "Join as a service provider",
+        "PLACEHOLDER": "Tell us about your business: business name, service type (moving, cleaning, photography...), a phone number, and your service area. Our team will reach out to review and activate your account."
+      },
+      "PRIVACY": {
+        "LABEL": "Privacy & data request",
+        "PLACEHOLDER": "Describe your request (access, correction, deletion, objection) and give the email address you are registered with on HudhudNest."
+      },
+      "PARTNERSHIP": {
+        "LABEL": "Partnership, real-estate offices & press",
+        "PLACEHOLDER": "Introduce yourself briefly and tell us how we could work together."
+      }
+    },
+    "CONSENT_TEXT": "By sending this message you agree that we use your details to handle your request. More in the",
+    "CONSENT_LINK": "privacy policy"
   },
   "ADMIN_MSG": {
     "title": "Contact messages",

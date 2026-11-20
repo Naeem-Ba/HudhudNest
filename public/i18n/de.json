@@ -510,36 +510,54 @@
     }
   },
   "KONTAKT": {
-    "PLAN_SUBJECT": "Anfrage zum Abo-Paket: {{plan}}",
     "PLAN_REF_LINE": "Referenz der Paketanfrage: {{ref}}",
-    "SERVICE_PROVIDER_SUBJECT": "Anfrage zur Aufnahme als Dienstleister",
-    "SERVICE_PROVIDER_MESSAGE_PLACEHOLDER": "Erzählen Sie uns von Ihrem Geschäft: Firmenname, Art der Dienstleistung (Umzug, Reinigung, Fotografie ...), eine Telefonnummer und Ihr Einsatzgebiet. Unser Team meldet sich zur Prüfung und Freischaltung bei Ihnen.",
     "title": "Kontakt",
     "subtitle": "Senden Sie uns Ihre Nachricht. Wir antworten so schnell wie möglich.",
     "name": "Vollständiger Name",
     "nameCtrl": "Bitte geben Sie einen Namen mit mindestens drei Zeichen ein.",
     "email": "E-Mail",
-    "emailCtrl": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
-    "subject": "Betreff",
-    "subCtrl": "Bitte geben Sie einen kurzen Betreff mit mindestens drei Zeichen ein.",
     "message": "Nachricht",
     "msgCtrl": "Bitte geben Sie eine Nachricht mit mindestens 10 Zeichen ein.",
     "send": "Senden",
     "sending": "Wird gesendet...",
     "info_title": "Kontaktinformationen",
     "telefon": "Telefon",
-    "adresse": "Adresse",
-    "stadt": "Stadt",
-    "strasse": "Straße",
     "success_msg": "Ihre Nachricht wurde erfolgreich gesendet!",
     "error_msg": "Beim Senden ist ein Fehler aufgetreten. Versuchen Sie es später erneut.",
     "error_validation": "Bitte füllen Sie die erforderlichen Felder korrekt aus.",
     "name_placeholder": "Vollständigen Namen eingeben",
-    "subject_placeholder": "Betreff der Nachricht eingeben",
-    "message_placeholder": "Schreiben Sie Ihre Nachricht klar und verständlich",
     "response_note": "Wir antworten in der Regel innerhalb von 24 Werktagsstunden.",
     "SERVICE_PROVIDER_NOTICE": "Um als Dienstleister beizutreten, nutzen Sie das neue Bewerbungsformular: Dort verfolgen Sie den Stand und beantworten Rückfragen unseres Teams.",
-    "SERVICE_PROVIDER_NOTICE_LINK": "Zum Bewerbungsformular"
+    "SERVICE_PROVIDER_NOTICE_LINK": "Zum Bewerbungsformular",
+    "REASON_LABEL": "Worum geht es?",
+    "REASONS": {
+      "GENERAL": {
+        "LABEL": "Allgemeine Frage",
+        "PLACEHOLDER": "Schreiben Sie Ihre Frage klar und verständlich"
+      },
+      "PLANS": {
+        "LABEL": "Pakete, Zahlung & Rechnung",
+        "PLACEHOLDER": "Welches Paket oder welche Zahlung betrifft Ihre Anfrage? Nennen Sie, falls vorhanden, die Referenz Ihrer Bestellung."
+      },
+      "SUPPORT": {
+        "LABEL": "Problem mit Konto oder Inserat",
+        "PLACEHOLDER": "Was ist passiert und was haben Sie versucht? Betrifft es ein Inserat, fügen Sie bitte den Link zur Anzeige ein."
+      },
+      "PROVIDER": {
+        "LABEL": "Als Dienstleister aufgenommen werden",
+        "PLACEHOLDER": "Erzählen Sie uns von Ihrem Geschäft: Firmenname, Art der Dienstleistung (Umzug, Reinigung, Fotografie ...), eine Telefonnummer und Ihr Einsatzgebiet. Unser Team meldet sich zur Prüfung und Freischaltung bei Ihnen."
+      },
+      "PRIVACY": {
+        "LABEL": "Datenschutz & Datenanfrage",
+        "PLACEHOLDER": "Beschreiben Sie Ihr Anliegen (Auskunft, Berichtigung, Löschung, Widerspruch) und nennen Sie die E-Mail-Adresse, mit der Sie bei HudhudNest angemeldet sind."
+      },
+      "PARTNERSHIP": {
+        "LABEL": "Zusammenarbeit, Immobilienbüros & Presse",
+        "PLACEHOLDER": "Stellen Sie sich kurz vor und schildern Sie, wie wir zusammenarbeiten können."
+      }
+    },
+    "CONSENT_TEXT": "Mit dem Absenden willigen Sie ein, dass wir Ihre Angaben zur Bearbeitung Ihrer Anfrage verwenden. Mehr dazu in der",
+    "CONSENT_LINK": "Datenschutzerklärung"
   },
   "ADMIN_MSG": {
     "title": "Kontaktanfragen",
