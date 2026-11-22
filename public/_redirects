@@ -57,6 +57,8 @@ http://www.realestateworld.world/*   https://hudhudnest.com/:splat   301!
 # WhatsApp keep their parameters.
 /survey/offices    /survey/survey-offices.html   200!
 /survey/offices/   /survey/survey-offices.html   200!
+/survey/users      /survey/survey-users.html     200!
+/survey/users/     /survey/survey-users.html     200!
 #
 # Original rule — SPA fallback. Load-bearing since hash-based routing was removed (see
 # ARD-Wohnungsmieten.md ADR-001): every in-app route (/properties/:id, /auth/verify-email, …) is

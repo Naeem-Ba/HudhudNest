@@ -6,6 +6,10 @@ The marketing pages store waitlist signups in Supabase, not in the ASP.NET backe
 survey table in a Supabase project that does NOT hold the app database, and paste that project's URL and anon key into
 the CONFIG block at the top of the survey file's script.
 
+The users survey `public/survey/survey-users.html` (served at `/survey/users`) writes to `survey_users_responses`
+(`migrations/20261122101000_survey_users.sql`; optional retention job in `20261122101100_survey_users_retention.sql`,
+which must match the page's `CONFIG.RETENTION_TEXT`). Same rules: separate Supabase project, anon key only, INSERT-only.
+
 ## Apply the migration
 
 Nothing runs it automatically. Pick the project (staging first), then either:
