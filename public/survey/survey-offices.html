@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>استبيان المكاتب العقارية | HUDHUDNEST هدهد نيست</title>
+<meta name="description" content="استبيان بحثي قصير لأصحاب المكاتب العقارية والوسطاء في دمشق وريفها. أقل من 4 دقائق.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="theme-color" content="#0F2742">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ar_SY">
+<meta property="og:site_name" content="HUDHUDNEST هدهد نيست">
+<meta property="og:title" content="رأيكم كمكتب عقاري يهمّنا">
+<meta property="og:description" content="استبيان بحثي قصير قبل إطلاق منصة عقارية في دمشق وريفها. أقل من 4 دقائق.">
+<meta property="og:image" content="https://hudhudnest.com/images/og-default.png">
+<link rel="icon" href="/favicon.ico">
+<style>
+/* Font: IBM Plex Sans Arabic, self-hosted by the app under /fonts/ (same files as public/fonts/fonts.css), so the page
+   makes no request to Google and sends no visitor IP to a third party. font-display: swap keeps text visible while it
+   loads; if the files fail, the stack falls back to Tahoma, system-ui, sans-serif. Not counted in this file's size. */
+@font-face{font-family:'IBM Plex Sans Arabic';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2') format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC}
+@font-face{font-family:'IBM Plex Sans Arabic';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/ibm-plex-sans-arabic-arabic-600-normal.woff2') format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC}
+@font-face{font-family:'IBM Plex Sans Arabic';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/ibm-plex-sans-arabic-latin-400-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+:root {
+  /* PLACEHOLDER colours: temporary values copied from the app's current tokens (src/styles), not final brand
+     decisions. Replace freely; every colour on the page comes from these variables. */
+  --navy: #0F2742;   /* PLACEHOLDER */
+  --white: #FFFFFF;  /* PLACEHOLDER */
+  --gold: #D6A84F;   /* PLACEHOLDER (accents only: borders, progress; never small text on white) */
+  --text: #16202C;   /* PLACEHOLDER */
+  --muted: #4A5565;  /* PLACEHOLDER */
+  --error: #B42318;  /* PLACEHOLDER */
+  --line: #D5DAE1;
+  --soft: #F4F6F9;
+  --selected: #EEF2F8;
+  --radius: 12px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;background:var(--soft);color:var(--text);font-family:'IBM Plex Sans Arabic',Tahoma,system-ui,sans-serif;font-size:17px;line-height:1.65;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+.wrap{width:100%;max-width:640px;margin:0 auto;padding:0 16px}
+header.top{background:var(--white);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:60px}
+.logo{height:34px;width:auto;max-width:170px;display:block}
+.brand-text{font-weight:600;color:var(--navy);font-size:17px}
+.progress{flex:1;max-width:220px;height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.progress>span{display:block;height:100%;width:0;background:var(--gold);transition:width .25s ease}
+.progress[hidden]{display:none}
+main{flex:1;padding:20px 0 120px}
+.card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:20px 18px;box-shadow:0 1px 2px rgba(15,39,66,.05)}
+h1{font-size:24px;line-height:1.4;margin:0 0 12px;color:var(--navy);font-weight:600}
+.q-title,legend.q-title{font-size:20px;line-height:1.5;font-weight:600;color:var(--navy);margin:0 0 6px;padding:0;outline:none}
+h1:focus,.q-title:focus{outline:none}
+.q-help{color:var(--muted);font-size:16px;margin:0 0 14px}
+.q-req{color:var(--muted);font-size:15px;font-weight:400}
+fieldset{border:0;margin:0 0 18px;padding:0;min-width:0}
+fieldset:last-child{margin-bottom:0}
+.sub-title{font-size:18px;font-weight:600;color:var(--navy);margin:0 0 8px;padding:0}
+.opts{display:grid;gap:10px}
+.opt{position:relative;display:flex;align-items:center;gap:12px;min-height:52px;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--white);cursor:pointer;font-size:17px;line-height:1.45}
+.opt:hover{border-color:var(--muted)}
+.opt input{width:22px;height:22px;margin:0;flex:0 0 auto;accent-color:var(--navy);cursor:pointer}
+.opt.is-on{border-color:var(--navy);background:var(--selected)}
+.opt:focus-within{outline:3px solid var(--navy);outline-offset:2px}
+.field{margin-top:14px}
+.field label{display:block;font-size:16px;font-weight:600;margin-bottom:6px;color:var(--text)}
+.field .hint{display:block;font-size:15px;color:var(--muted);margin-top:4px}
+input[type=text],input[type=tel],textarea{width:100%;font:inherit;font-size:17px;color:var(--text);background:var(--white);border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;min-height:48px}
+textarea{min-height:110px;resize:vertical}
+input[type=text]:focus,input[type=tel]:focus,textarea:focus{outline:3px solid var(--navy);outline-offset:1px;border-color:var(--navy)}
+input[dir=ltr]{text-align:left}
+[aria-invalid=true]{border-color:var(--error)!important}
+.counter{font-size:14px;color:var(--muted);text-align:left;margin-top:2px}
+.consent{display:flex;align-items:flex-start;gap:12px;min-height:48px;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;margin-top:14px;cursor:pointer;font-size:16px}
+.consent input{width:22px;height:22px;margin:3px 0 0;flex:0 0 auto;accent-color:var(--navy)}
+.consent:focus-within{outline:3px solid var(--navy);outline-offset:2px}
+.note{background:var(--soft);border-inline-start:4px solid var(--gold);border-radius:8px;padding:10px 12px;margin-top:14px;font-size:16px;color:var(--text)}
+.error{color:var(--error);font-size:16px;font-weight:600;margin:12px 0 0;min-height:1px}
+.error:empty{display:none}
+.privacy{font-size:16px;color:var(--text);margin:14px 0 0;padding:0 0 0 0;list-style:none}
+.privacy li{position:relative;padding-inline-start:18px;margin-bottom:6px}
+.privacy li::before{content:"";position:absolute;inset-inline-start:2px;top:.7em;width:7px;height:7px;border-radius:50%;background:var(--gold)}
+a{color:var(--navy);text-underline-offset:3px}
+a:focus-visible,button:focus-visible{outline:3px solid var(--navy);outline-offset:2px}
+.actions{position:fixed;inset-inline:0;bottom:0;background:var(--white);border-top:1px solid var(--line);padding:12px 0 calc(12px + env(safe-area-inset-bottom));z-index:5}
+.actions .wrap{display:flex;gap:10px}
+.actions[hidden]{display:none}
+.btn{font:inherit;font-size:17px;font-weight:600;min-height:50px;padding:10px 18px;border-radius:10px;border:1.5px solid var(--navy);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary{background:var(--navy);color:var(--white);flex:1}
+.btn-secondary{background:var(--white);color:var(--navy);min-width:96px}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.btn[hidden]{display:none}
+.stack{display:grid;gap:10px;margin-top:18px}
+.stack .btn{width:100%}
+.center{text-align:center}
+.status{font-size:17px;margin:10px 0 0}
+.spinner{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--navy);border-radius:50%;margin:8px auto;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spinner{animation:none}.progress>span{transition:none}}
+.hp{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;inset-inline-start:0;top:0}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+@media (min-width:600px){
+  main{padding-top:32px}
+  .card{padding:28px 28px}
+  h1{font-size:28px}
+  .q-title,legend.q-title{font-size:22px}
+}
+@media (orientation:landscape) and (max-height:500px){
+  main{padding:12px 0 96px}
+  .actions{padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
+  .btn{min-height:46px}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <span id="brand"><img id="logo" class="logo" alt="HUDHUDNEST هدهد نيست" width="108" height="34"></span>
+    <div id="progress" class="progress" role="progressbar" aria-label="تقدّم الاستبيان" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><span></span></div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <form id="form" class="card" novalidate autocomplete="off">
+      <div id="screen"></div>
+      <p id="error" class="error" role="alert" aria-live="assertive"></p>
+      <!-- Anti-spam field: invisible to people, left empty by them. Do not rename (the script reads name="website"). -->
+      <div class="hp" aria-hidden="true">
+        <label for="website">Website</label>
+        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+      </div>
+    </form>
+  </div>
+</main>
+
+<nav id="actions" class="actions" aria-label="التنقل بين الأسئلة" hidden>
+  <div class="wrap">
+    <button type="button" id="back" class="btn btn-secondary">رجوع</button>
+    <button type="button" id="next" class="btn btn-primary">متابعة</button>
+  </div>
+</nav>
+
+<noscript><div class="wrap"><p class="card">يحتاج هذا الاستبيان إلى تفعيل JavaScript في المتصفح.</p></div></noscript>
+
+<script>
+/* ===================================================================================================================
+   CONFIG: every value the founder may need to change. Nothing below this block needs editing.
+   - SUPABASE_URL / SUPABASE_ANON_KEY: the survey Supabase project (anon/publishable key only, NEVER service_role).
+     The anon key is public by design; protection comes from RLS, column grants and CHECK constraints in the SQL.
+   - PRICE_RANGES: labels can be edited freely. Each id must stay one of the values allowed by the database constraint
+     so_price_chk (zero, lt10, 10_25, 25_50, gt50, unsure); a new id needs the same change in the SQL. These ranges are
+     research options, not approved prices.
+   - RETENTION_TEXT must match the retention job in the SQL (12 months by default).
+   - FOLLOWUP_DAYS: shown on the thank-you screen to people who left a number and agreed to be contacted. 0 hides it.
+   - MAX_TEXT_LENGTH: limit for the free notes field (Q15). Clamped to 50..600 to stay inside the database limits.
+   =================================================================================================================== */
+const CONFIG = {
+  SUPABASE_URL: "",
+  SUPABASE_ANON_KEY: "",
+
+  LOGO_URL: "/images/horizontal-logo-480.png",
+
+  CONTACT_EMAIL: "",
+  PRIVACY_URL: "",
+
+  RETENTION_TEXT: "12 شهراً",
+  FOLLOWUP_DAYS: 3,
+
+  CURRENCY_LABEL: "دولار",
+
+  SURVEY_URL: "",
+
+  MAX_TEXT_LENGTH: 400,
+
+  AUTO_RETRY_ENABLED: true,
+  ENABLE_LOCAL_SAVE: true,
+
+  SURVEY_VERSION: "1.0.0",
+
+  PRICE_RANGES: [
+    { id: "zero", label: "لا شيء، يجب أن تبقى مجانية" },
+    { id: "lt10", label: "أقل من 10 دولار شهرياً" },
+    { id: "10_25", label: "10 – 25 دولار شهرياً" },
+    { id: "25_50", label: "25 – 50 دولار شهرياً" },
+    { id: "gt50", label: "أكثر من 50 دولار إذا جلبت زبائن جادين" },
+    { id: "unsure", label: "لا أعرف قبل أن أجرّب" }
+  ]
+};
+
+(function () {
+  "use strict";
+
+  /* ---------- Constants derived from CONFIG ---------- */
+  var TABLE = "survey_offices_responses";
+  var STORE_KEY = "hn_survey_offices_progress";
+  var PENDING_KEY = "hn_survey_offices_pending";
+  var NOTES_MAX = Math.max(50, Math.min(600, parseInt(CONFIG.MAX_TEXT_LENGTH, 10) || 400));
+  var LIMITS = { office_name: 100, area_detail: 100, q5_platform_names: 150, q8_other: 150, q9_platform_name: 100,
+                 q9_stop_reason: 300, q10_other: 150, q14_name: 80, q14_whatsapp: 24, q15: NOTES_MAX };
+  var ANSWERS_MAX_BYTES = 7600;   /* database limit is 8192 bytes (pg_column_size); keep a margin */
+  var REQUEST_TIMEOUT_MS = 20000;
+  var CUR = String(CONFIG.CURRENCY_LABEL || "");
+
+  /* ---------- Question options (codes are stored; labels are shown) ---------- */
+  var OPT = {
+    q1: [["owner", "صاحب المكتب"], ["partner", "شريك"], ["employee", "موظف أو وسيط يعمل مع المكتب"],
+         ["independent_broker", "وسيط مستقل بلا مكتب"]],
+    area: [["damascus", "دمشق"], ["rif_damascus", "ريف دمشق"]],
+    q3: [["lt10", "أقل من 10"], ["10_30", "10 – 30"], ["31_100", "31 – 100"], ["gt100", "أكثر من 100"]],
+    q4: [["rent", "إيجار"], ["sale", "بيع"], ["equal", "تقريباً بالتساوي"]],
+    q5: [["fb_groups", "مجموعات Facebook"], ["fb_ig_page", "صفحة المكتب على Facebook أو Instagram"],
+         ["whatsapp", "حالة واتساب أو مجموعات واتساب"], ["ad_platforms", "تطبيقات أو مواقع إعلانات"],
+         ["storefront", "واجهة المكتب أو لافتات"], ["word_of_mouth", "لا ننشر، والزبائن يأتون بالمعرفة"],
+         ["other", "أخرى"]],
+    /* Q6 uses the same channel codes as Q5, worded as a source of customers. */
+    q6: [["fb_groups", "مجموعات Facebook"], ["fb_ig_page", "صفحة المكتب على Facebook أو Instagram"],
+         ["whatsapp", "حالة واتساب أو مجموعات واتساب"], ["ad_platforms", "تطبيقات أو مواقع إعلانات"],
+         ["storefront", "واجهة المكتب أو لافتات"], ["word_of_mouth", "المعارف وتوصيات الزبائن (دون نشر)"],
+         ["other", "أخرى"]],
+    q7: [["zero", "لا شيء"], ["lt25", "أقل من 25 " + CUR], ["25_100", "25 – 100 " + CUR],
+         ["gt100", "أكثر من 100 " + CUR], ["prefer_not", "أفضّل عدم الإجابة"]],
+    q8: [["post_buried", "المنشور يضيع بسرعة ونضطر لإعادة النشر"], ["unserious_leads", "زبائن غير جادين يأخذون الوقت"],
+         ["copied_listings", "إعلاناتنا أو صورنا تُنسخ وتُنشر باسم غيرنا"], ["hard_to_stand_out", "صعوبة إظهار احترافية المكتب"],
+         ["unlicensed_competition", "منافسة وسطاء غير مرخصين"], ["no_tracking", "لا نعرف أي إعلان جلب أي زبون"],
+         ["management_hassle", "إدارة العقارات المعروضة مرهقة"], ["other", "أخرى"]],
+    q9: [["still_using", "نعم، وما زلنا نستخدمه"], ["stopped", "نعم، وتوقفنا"], ["never_used", "لا"]],
+    q10: [["serious_leads", "تجلب زبائن جادين فعلاً"], ["office_profile", "صفحة خاصة بالمكتب بشكل احترافي"],
+          ["qr_code", "رمز QR أضعه على الواجهة والكروت"], ["listing_views", "إحصائيات: كم شخصاً شاهد كل عقار"],
+          ["upload_assistance", "مساعدة في إدخال العقارات بدلاً عنا"],
+          ["listing_protection", "حماية إعلاناتنا من النسخ أو إظهار أنها منشورة من قبلنا"],
+          ["free_start", "مجانية في البداية"], ["other", "أخرى"]],
+    q11: [["self", "أنا بنفسي"], ["employee", "موظف في المكتب"], ["assistance_needed", "نحتاج من يساعدنا في الإدخال"]],
+    q12a: [["monthly_subscription", "اشتراك شهري ثابت"], ["per_listing", "دفع مقابل كل إعلان"],
+           ["free_featured", "مجاني، مع دفع لإبراز إعلانات معينة"], ["never_pay", "لا ندفع لأي منصة إطلاقاً"]],
+    q13: [["yes_commit", "نعم، ويمكننا إضافة حوالي 10 عقارات حقيقية خلال الشهر الأول"],
+          ["interested", "مهتمون، لكن نريد تفاصيل أولاً"], ["no", "ليس الآن"]]
+  };
+  function priceOptions() {
+    return (CONFIG.PRICE_RANGES || []).map(function (p) { return [String(p.id), String(p.label)]; });
+  }
+  function codes(list) { return list.map(function (o) { return o[0]; }); }
+
+  /* ---------- Safe storage (works in memory when localStorage is blocked) ---------- */
+  var storage = {
+    ok: (function () {
+      if (!CONFIG.ENABLE_LOCAL_SAVE) return false;
+      try { var k = "__hn_t"; window.localStorage.setItem(k, "1"); window.localStorage.removeItem(k); return true; }
+      catch (e) { return false; }
+    })(),
+    get: function (k) { if (!this.ok) return null; try { var v = window.localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } },
+    set: function (k, v) { if (!this.ok) return; try { window.localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* quota or blocked: keep working in memory */ } },
+    del: function (k) { if (!this.ok) return; try { window.localStorage.removeItem(k); } catch (e) { /* ignore */ } }
+  };
+
+  /* ---------- Helpers ---------- */
+  function uuid() {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
+    var b = new Uint8Array(16);
+    window.crypto.getRandomValues(b);
+    b[6] = (b[6] & 0x0f) | 0x40; b[8] = (b[8] & 0x3f) | 0x80;
+    var hx = Array.prototype.map.call(b, function (x) { return (x + 256).toString(16).slice(1); }).join("");
+    return hx.slice(0, 8) + "-" + hx.slice(8, 12) + "-" + hx.slice(12, 16) + "-" + hx.slice(16, 20) + "-" + hx.slice(20);
+  }
+  function randInt(n) { var a = new Uint32Array(1); window.crypto.getRandomValues(a); return a[0] % n; }
+  function shuffledWithOtherLast(list) {
+    var arr = codes(list).filter(function (c) { return c !== "other"; });
+    for (var i = arr.length - 1; i > 0; i--) { var j = randInt(i + 1); var t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+    arr.push("other");
+    return arr;
+  }
+  /* Remove control characters and bidi marks, trim; empty becomes null. */
+  function cleanText(v, max) {
+    if (typeof v !== "string") return null;
+    var s = v.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F‎‏‪-‮⁦-⁩]/g, "")
+             .replace(/\s+/g, " ").trim();
+    if (!s) return null;
+    return s.length > max ? s.slice(0, max) : s;
+  }
+  function cleanMultiline(v, max) {
+    if (typeof v !== "string") return null;
+    var s = v.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F‪-‮⁦-⁩]/g, "").trim();
+    if (!s) return null;
+    return s.length > max ? s.slice(0, max) : s;
+  }
+  /* WhatsApp number: accepts Arabic/Persian digits, spaces, dashes, dots, brackets and a leading 00; returns +E.164 or null. */
+  function normalizePhone(v) {
+    if (typeof v !== "string") return null;
+    var s = v.replace(/[٠-٩]/g, function (d) { return String(d.charCodeAt(0) - 0x0660); })
+             .replace(/[۰-۹]/g, function (d) { return String(d.charCodeAt(0) - 0x06F0); })
+             .replace(/[\s ‎‏‪-‮⁦-⁩\-.()\/]/g, "");
+    if (s.indexOf("00") === 0) s = "+" + s.slice(2);
+    return /^\+[1-9][0-9]{7,14}$/.test(s) ? s : null;
+  }
+  /* ref / UTM: kept as written when it is plain text of 1..100 characters without control characters; otherwise null. */
+  function readParam(params, name) {
+    var v = params.get(name);
+    if (typeof v !== "string") return null;
+    v = v.trim();
+    if (!v || v.length > 100 || /[\u0000-\u001F\u007F]/.test(v)) return null;
+    return v;
+  }
+  function deviceClass() {
+    var w = Math.min(window.screen && window.screen.width || window.innerWidth, window.screen && window.screen.height || window.innerHeight);
+    if (w < 600) return "mobile";
+    if (w < 1024) return "tablet";
+    return "desktop";
+  }
+  function referrerOrigin() {
+    try {
+      if (!document.referrer) return null;
+      var u = new URL(document.referrer);
+      if (u.origin === window.location.origin) return null;
+      return u.origin.slice(0, 200);
+    } catch (e) { return null; }
+  }
+  function el(tag, attrs, kids) {
+    var n = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      var v = attrs[k];
+      if (v === null || v === undefined || v === false) return;
+      if (k === "text") n.textContent = v;
+      else if (k === "className") n.className = v;
+      else if (k.indexOf("on") === 0) n.addEventListener(k.slice(2), v);
+      else n.setAttribute(k, v === true ? "" : v);
+    });
+    (kids || []).forEach(function (c) { if (c) n.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
+    return n;
+  }
+
+  /* ---------- State ---------- */
+  var CONTACT_KEYS = ["q14_name", "q14_whatsapp", "q14_consent"];   /* never written to progress storage */
+  function freshState() {
+    var params = new URLSearchParams(window.location.search);
+    return {
+      v: CONFIG.SURVEY_VERSION, sid: uuid(), startedAt: null, startedMs: null, current: "intro", history: [],
+      a: { q5: [], q8: [], q10: [], q14_consent: false },
+      orders: { q8: shuffledWithOtherLast(OPT.q8), q10: shuffledWithOtherLast(OPT.q10) },
+      track: { ref: readParam(params, "ref"), utm_source: readParam(params, "utm_source"),
+               utm_medium: readParam(params, "utm_medium"), utm_campaign: readParam(params, "utm_campaign"),
+               referrer: referrerOrigin() },
+      pending: null, done: false
+    };
+  }
+  var S = freshState();
+  var sending = false;
+
+  function saveProgress() {
+    if (S.done) return;
+    var copy = JSON.parse(JSON.stringify(S));
+    CONTACT_KEYS.forEach(function (k) { delete copy.a[k]; });
+    delete copy.pending;
+    storage.set(STORE_KEY, copy);
+  }
+  function clearAllLocal() { storage.del(STORE_KEY); storage.del(PENDING_KEY); }
+
+  /* Drop answers that the current answers no longer allow (keeps skipped branches empty). */
+  function sanitize() {
+    var a = S.a;
+    if (a.q9 !== "still_using") delete a.q9_platform_name;
+    if (a.q9 !== "stopped") delete a.q9_stop_reason;
+    if (a.q12a === "never_pay") delete a.q12b;
+    if (a.q5.indexOf("ad_platforms") < 0) delete a.q5_platform_names;
+    if (a.q8.indexOf("other") < 0) delete a.q8_other;
+    if (a.q10.indexOf("other") < 0) delete a.q10_other;
+  }
+  function contactRequired() { return S.a.q13 === "yes_commit" || S.a.q13 === "interested"; }
+
+  /* ---------- Screens (navigation follows answers, not fixed numbers) ---------- */
+  function isPick(v, list) { return codes(list).indexOf(v) >= 0; }
+  var SCREENS = [
+    { id: "q1", render: renderQ1, validate: function () { return isPick(S.a.q1, OPT.q1) ? null : "يرجى اختيار صفتكم في المكتب."; } },
+    { id: "q2", render: renderQ2, validate: function () { return isPick(S.a.area, OPT.area) ? null : "يرجى اختيار المنطقة."; } },
+    { id: "q3q4", render: renderQ3Q4, validate: function () {
+        if (!isPick(S.a.q3, OPT.q3)) return "يرجى اختيار عدد العقارات المعروضة تقريباً.";
+        if (!isPick(S.a.q4, OPT.q4)) return "يرجى اختيار نوع أغلب عقاراتكم المعروضة.";
+        return null; } },
+    { id: "q5", render: renderQ5, validate: function () { return S.a.q5.length ? null : "يرجى اختيار مكان واحد على الأقل."; } },
+    { id: "q6", render: renderQ6, validate: function () { return isPick(S.a.q6, OPT.q6) ? null : "يرجى اختيار مصدر واحد."; } },
+    { id: "q7", render: renderQ7, validate: function () { return isPick(S.a.q7, OPT.q7) ? null : "يرجى اختيار إجابة، ويمكنكم اختيار «أفضّل عدم الإجابة»."; } },
+    { id: "q8", render: renderQ8, validate: function () { return S.a.q8.length >= 1 && S.a.q8.length <= 2 ? null : "يرجى اختيار مشكلة واحدة أو مشكلتين."; } },
+    { id: "q9", render: renderQ9, validate: function () {
+        if (!isPick(S.a.q9, OPT.q9)) return "يرجى اختيار إجابة.";
+        if (S.a.q9 === "stopped" && !(S.a.q9_stop_reason && S.a.q9_stop_reason.length >= 2)) return "يرجى كتابة سبب التوقف باختصار.";
+        return null; } },
+    { id: "q10", render: renderQ10, validate: function () { return S.a.q10.length >= 1 && S.a.q10.length <= 3 ? null : "يرجى اختيار سبب واحد على الأقل، وحتى 3 أسباب."; } },
+    { id: "q11", render: renderQ11, validate: function () { return isPick(S.a.q11, OPT.q11) ? null : "يرجى اختيار إجابة."; } },
+    { id: "q12a", render: renderQ12a, validate: function () { return isPick(S.a.q12a, OPT.q12a) ? null : "يرجى اختيار طريقة، ويمكنكم اختيار «لا ندفع لأي منصة إطلاقاً»."; } },
+    { id: "q12b", when: function () { return !!S.a.q12a && S.a.q12a !== "never_pay"; }, render: renderQ12b,
+      validate: function () { return isPick(S.a.q12b, priceOptions()) ? null : "يرجى اختيار إجابة، ويمكنكم اختيار «لا أعرف قبل أن أجرّب»."; } },
+    { id: "q13", render: renderQ13, validate: function () { return isPick(S.a.q13, OPT.q13) ? null : "يرجى اختيار إجابة."; } },
+    { id: "q14", render: renderQ14, validate: validateQ14 },
+    { id: "q15", render: renderQ15, validate: function () { return null; } }
+  ];
+  function screenById(id) { for (var i = 0; i < SCREENS.length; i++) if (SCREENS[i].id === id) return SCREENS[i]; return null; }
+  function applies(s) { return !s.when || s.when(); }
+  function nextOf(id) {
+    var i = id === "intro" ? -1 : SCREENS.indexOf(screenById(id));
+    for (var j = i + 1; j < SCREENS.length; j++) if (applies(SCREENS[j])) return SCREENS[j].id;
+    return null;
+  }
+
+  /* ---------- DOM refs ---------- */
+  var $screen = document.getElementById("screen"), $error = document.getElementById("error");
+  var $actions = document.getElementById("actions"), $back = document.getElementById("back"), $next = document.getElementById("next");
+  var $progress = document.getElementById("progress"), $hp = document.getElementById("website");
+
+  function setError(msg) { $error.textContent = msg || ""; }
+  function updateProgress() {
+    var list = SCREENS.filter(applies).map(function (s) { return s.id; });
+    var idx = list.indexOf(S.current);
+    if (idx < 0) { $progress.hidden = true; return; }
+    $progress.hidden = false;
+    var pct = Math.round(((idx + 1) / list.length) * 100);
+    $progress.firstElementChild.style.width = pct + "%";
+    $progress.setAttribute("aria-valuenow", String(pct));
+    $progress.setAttribute("aria-valuetext", "السؤال " + (idx + 1) + " من " + list.length);
+  }
+
+  /* ---------- Building blocks ---------- */
+  function title(text, help, opt) {
+    var kids = [el("legend", { className: "q-title", tabindex: "-1", text: text })];
+    if (opt) kids[0].appendChild(el("span", { className: "q-req", text: " (" + opt + ")" }));
+    if (help) kids.push(el("p", { className: "q-help", text: help }));
+    return kids;
+  }
+  function radios(name, list, key, onChange) {
+    var box = el("div", { className: "opts" });
+    list.forEach(function (o) {
+      var id = name + "_" + o[0];
+      var input = el("input", { type: "radio", name: name, id: id, value: o[0] });
+      input.checked = S.a[key] === o[0];
+      var lab = el("label", { className: "opt" + (input.checked ? " is-on" : ""), "for": id }, [input, el("span", { text: o[1] })]);
+      input.addEventListener("change", function () {
+        S.a[key] = o[0];
+        box.querySelectorAll(".opt").forEach(function (l) { l.classList.toggle("is-on", l.firstChild.checked); });
+        setError(""); sanitize(); saveProgress();
+        if (onChange) onChange();
+      });
+      box.appendChild(lab);
+    });
+    return box;
+  }
+  function checks(name, list, key, max, maxMsg, exclusive, onChange) {
+    var box = el("div", { className: "opts" });
+    list.forEach(function (o) {
+      var id = name + "_" + o[0];
+      var input = el("input", { type: "checkbox", name: name, id: id, value: o[0] });
+      input.checked = S.a[key].indexOf(o[0]) >= 0;
+      var lab = el("label", { className: "opt" + (input.checked ? " is-on" : ""), "for": id }, [input, el("span", { text: o[1] })]);
+      input.addEventListener("change", function () {
+        var cur = S.a[key].slice();
+        if (input.checked) {
+          if (exclusive && o[0] === exclusive) cur = [o[0]];
+          else {
+            if (exclusive) cur = cur.filter(function (c) { return c !== exclusive; });
+            if (max && cur.length >= max) { input.checked = false; setError(maxMsg); return; }
+            cur.push(o[0]);
+          }
+        } else cur = cur.filter(function (c) { return c !== o[0]; });
+        /* keep the stored order identical to the displayed order */
+        var order = codes(list);
+        S.a[key] = order.filter(function (c) { return cur.indexOf(c) >= 0; });
+        box.querySelectorAll("input").forEach(function (i) {
+          i.checked = S.a[key].indexOf(i.value) >= 0; i.parentNode.classList.toggle("is-on", i.checked);
+        });
+        setError(""); sanitize(); saveProgress();
+        if (onChange) onChange();
+      });
+      box.appendChild(lab);
+    });
+    return box;
+  }
+  function textInput(key, labelText, opts) {
+    opts = opts || {};
+    var id = "f_" + key, max = LIMITS[key];
+    var attrs = { id: id, name: key, maxlength: String(max), autocomplete: opts.autocomplete || "off" };
+    var input;
+    if (opts.multiline) input = el("textarea", attrs);
+    else { attrs.type = opts.type || "text"; if (opts.dir) attrs.dir = opts.dir; if (opts.inputmode) attrs.inputmode = opts.inputmode;
+           if (opts.placeholder) attrs.placeholder = opts.placeholder; input = el("input", attrs); }
+    if (opts.required) input.setAttribute("aria-required", "true");
+    input.value = typeof S.a[key] === "string" ? S.a[key] : "";
+    var counter = opts.counter ? el("div", { className: "counter", "aria-hidden": "true" }) : null;
+    function upd() { if (counter) counter.textContent = input.value.length + " / " + max; }
+    input.addEventListener("input", function () {
+      var raw = input.value;
+      if (opts.raw) S.a[key] = raw;
+      else S.a[key] = opts.multiline ? cleanMultiline(raw, max) : cleanText(raw, max);
+      if (S.a[key] === null || S.a[key] === "") delete S.a[key];
+      input.removeAttribute("aria-invalid");
+      upd(); setError("");
+      if (CONTACT_KEYS.indexOf(key) < 0) saveProgress();
+    });
+    upd();
+    var kids = [el("label", { "for": id, text: labelText }), input];
+    if (opts.hint) { var hid = id + "_hint"; input.setAttribute("aria-describedby", hid); kids.push(el("span", { className: "hint", id: hid, text: opts.hint })); }
+    if (counter) kids.push(counter);
+    return el("div", { className: "field" }, kids);
+  }
+  function rerender() {
+    var active = document.activeElement && document.activeElement.id;
+    show(S.current, true);
+    if (active) { var n = document.getElementById(active); if (n) n.focus(); }
+  }
+
+  /* ---------- Screen renderers ---------- */
+  function renderIntro() {
+    var items = [
+      "الغرض: بحث لتطوير منصة عقارية في دمشق وريفها. هذا ليس عرض بيع.",
+      "المشاركة لا تتطلب معلومات شخصية، واسم المكتب اختياري.",
+      "رقم واتساب اختياري، إلا إذا أبديتم اهتماماً بالمرحلة التجريبية.",
+      "لن تُنشر الإجابات باسم المكتب.",
+      "نحتفظ بالإجابات مدة " + CONFIG.RETENTION_TEXT + " ثم نحذفها.",
+      "لا توجد إجابة صحيحة أو خاطئة، وإجابة «لا» مفيدة لنا بقدر «نعم»."
+    ];
+    var ul = el("ul", { className: "privacy" }, items.map(function (t) { return el("li", { text: t }); }));
+    if (CONFIG.CONTACT_EMAIL) {
+      ul.appendChild(el("li", null, ["لطلب حذف إجاباتكم راسلونا على ",
+        el("a", { href: "mailto:" + CONFIG.CONTACT_EMAIL, dir: "ltr", text: CONFIG.CONTACT_EMAIL }), "."]));
+    }
+    if (CONFIG.PRIVACY_URL) {
+      ul.appendChild(el("li", null, [el("a", { href: CONFIG.PRIVACY_URL, target: "_blank", rel: "noopener", text: "سياسة الخصوصية" })]));
+    }
+    return [
+      el("h1", { tabindex: "-1", text: "رأيكم كمكتب عقاري يهمّنا" }),
+      el("p", { className: "q-help", text: "نعمل على منصة عقارية في دمشق وريفها، ونريد أن نفهم كيف تعرضون عقاراتكم وما الذي ينقصكم، قبل أن نطلق أي شيء. يستغرق الاستبيان أقل من 4 دقائق." }),
+      el("p", { className: "note", text: "يمكنكم المشاركة دون تقديم معلومات التواصل. وإذا رغبتم بمتابعة المرحلة التجريبية، يمكنكم ترك رقم واتساب والموافقة على التواصل." }),
+      ul
+    ];
+  }
+  function renderQ1() { return [el("fieldset", null, title("ما صفتكم في المكتب؟").concat([radios("q1", OPT.q1, "q1")]))]; }
+  function renderQ2() {
+    return [
+      el("fieldset", null, title("في أي منطقة تعملون؟").concat([radios("area", OPT.area, "area")])),
+      textInput("area_detail", "الحي أو البلدة (اختياري)"),
+      textInput("office_name", "اسم المكتب (اختياري)", { hint: "لن يُنشر اسم المكتب مع الإجابات." })
+    ];
+  }
+  function renderQ3Q4() {
+    return [
+      el("fieldset", null, title("كم عقاراً تعرضون حالياً تقريباً؟").concat([radios("q3", OPT.q3, "q3")])),
+      el("fieldset", null, [el("legend", { className: "sub-title", text: "أغلب عقاراتكم المعروضة:" }), radios("q4", OPT.q4, "q4")])
+    ];
+  }
+  function renderQ5() {
+    var kids = [el("fieldset", null, title("أين تنشرون عقاراتكم حالياً؟", "يمكنكم اختيار أكثر من إجابة.")
+      .concat([checks("q5", OPT.q5, "q5", 0, "", "word_of_mouth", rerender)]))];
+    if (S.a.q5.indexOf("ad_platforms") >= 0) kids.push(textInput("q5_platform_names", "أيّ التطبيقات أو المواقع؟ (اختياري)"));
+    return kids;
+  }
+  function renderQ6() {
+    return [el("fieldset", null, title("من أين يأتيكم أغلب الزبائن الجادّين فعلاً؟", "اختاروا مصدراً واحداً فقط، حتى لو كنتم تنشرون في أماكن أخرى.")
+      .concat([radios("q6", OPT.q6, "q6")]))];
+  }
+  function renderQ7() { return [el("fieldset", null, title("كم تصرفون شهرياً على الإعلان المدفوع تقريباً؟").concat([radios("q7", OPT.q7, "q7")]))]; }
+  function orderedList(list, order) {
+    var map = {}; list.forEach(function (o) { map[o[0]] = o; });
+    return order.map(function (c) { return map[c]; }).filter(Boolean);
+  }
+  function renderQ8() {
+    var kids = [el("fieldset", null, title("ما أكبر مشكلتين في طريقة عرض العقارات الحالية؟", "اختاروا مشكلة واحدة أو مشكلتين.")
+      .concat([checks("q8", orderedList(OPT.q8, S.orders.q8), "q8", 2, "يمكن اختيار مشكلتين كحد أقصى. ألغوا اختياراً أولاً لاختيار غيره.", null, rerender)]))];
+    if (S.a.q8.indexOf("other") >= 0) kids.push(textInput("q8_other", "ما المشكلة الأخرى؟ (اختياري)"));
+    return kids;
+  }
+  function renderQ9() {
+    var kids = [el("fieldset", null, title("هل جرّبتم تطبيقاً أو موقعاً عقارياً لعرض عقاراتكم؟").concat([radios("q9", OPT.q9, "q9", rerender)]))];
+    if (S.a.q9 === "still_using") kids.push(textInput("q9_platform_name", "ما اسم التطبيق أو الموقع؟ (اختياري)"));
+    if (S.a.q9 === "stopped") kids.push(textInput("q9_stop_reason", "لماذا توقفتم؟", { multiline: true, required: true, counter: true }));
+    return kids;
+  }
+  function renderQ10() {
+    var kids = [el("fieldset", null, title("ما الذي يجعلكم تضعون عقاراتكم على منصة جديدة؟", "اختاروا حتى 3 أسباب. هذه أفكار نسأل عنها، وليست ميزات متاحة حالياً.")
+      .concat([checks("q10", orderedList(OPT.q10, S.orders.q10), "q10", 3, "يمكن اختيار 3 أسباب كحد أقصى. ألغوا اختياراً أولاً لاختيار غيره.", null, rerender)]))];
+    if (S.a.q10.indexOf("other") >= 0) kids.push(textInput("q10_other", "ما السبب الآخر؟ (اختياري)"));
+    return kids;
+  }
+  function renderQ11() { return [el("fieldset", null, title("من سيضيف العقارات على المنصة لو انضممتم؟").concat([radios("q11", OPT.q11, "q11")]))]; }
+  function renderQ12a() {
+    return [el("fieldset", null, title("إذا أثبتت المنصة أنها تجلب زبائن، أي طريقة دفع تناسبكم أكثر؟").concat([radios("q12a", OPT.q12a, "q12a")]))];
+  }
+  function renderQ12b() {
+    return [el("fieldset", null, title("بعد فترة تجريبية مجانية، ما المبلغ الشهري المعقول بالنسبة لكم؟", "هذا سؤال بحثي، ولا توجد أسعار معتمدة حتى الآن.")
+      .concat([radios("q12b", priceOptions(), "q12b")]))];
+  }
+  function renderQ13() {
+    var kids = [el("fieldset", null, title("نبحث عن عدد محدود من المكاتب في دمشق وريفها لتجربة المنصة في مرحلتها الأولى ومساعدتنا في تطويرها. هل يهمّكم ذلك؟")
+      .concat([radios("q13", OPT.q13, "q13", rerender)]))];
+    if (contactRequired()) kids.push(el("p", { className: "note", text: "سنرسل لكم التفاصيل والشروط عند اعتمادها، ولا يوجد أي التزام الآن." }));
+    return kids;
+  }
+  function renderQ14() {
+    var req = contactRequired();
+    var head = req
+      ? title("كيف نتواصل معكم بخصوص المرحلة التجريبية؟", "رقم واتساب والموافقة مطلوبان لأنكم أبديتم اهتماماً. الاسم اختياري.")
+      : title("هل ترغبون بترك رقم للتواصل؟", "هذا اختياري بالكامل، ويمكنكم ترك الحقول فارغة والمتابعة.", "اختياري");
+    var consentInput = el("input", { type: "checkbox", id: "f_q14_consent", name: "q14_consent" });
+    consentInput.checked = S.a.q14_consent === true;
+    if (req) consentInput.setAttribute("aria-required", "true");
+    consentInput.addEventListener("change", function () { S.a.q14_consent = consentInput.checked; setError(""); });
+    var kids = [el("fieldset", null, head.concat([
+      textInput("q14_name", "الاسم (اختياري)", { autocomplete: "name" }),
+      textInput("q14_whatsapp", req ? "رقم واتساب مع رمز الدولة" : "رقم واتساب مع رمز الدولة (اختياري)",
+        { type: "tel", dir: "ltr", inputmode: "tel", autocomplete: "tel", raw: true, required: req, placeholder: "+963 9xx xxx xxx",
+          hint: "مثال: ‎+963 944 123 456" }),
+      el("label", { className: "consent", "for": "f_q14_consent" }, [consentInput,
+        el("span", { text: "أوافق أن تتواصل معي HUDHUDNEST عبر واتساب بخصوص المرحلة التجريبية فقط." })])
+    ]))];
+    if (req) kids.push(el("p", { className: "q-help", text: "إذا كنتم لا تفضّلون ترك رقم الآن، يمكنكم الرجوع واختيار «ليس الآن» دون أي حرج." }));
+    return kids;
+  }
+  function validateQ14() {
+    var raw = S.a.q14_whatsapp || "", hasRaw = raw.trim() !== "";
+    var phone = hasRaw ? normalizePhone(raw) : null;
+    var phoneEl = document.getElementById("f_q14_whatsapp");
+    function bad(msg, target) { if (target) target.setAttribute("aria-invalid", "true"); return msg; }
+    if (contactRequired()) {
+      if (!hasRaw) return bad("يرجى كتابة رقم واتساب مع رمز الدولة.", phoneEl);
+      if (!phone) return bad("رقم واتساب غير صحيح. اكتبوه مع رمز الدولة، مثل ‎+963 944 123 456", phoneEl);
+      if (S.a.q14_consent !== true) return "يرجى الموافقة على التواصل عبر واتساب، أو الرجوع واختيار «ليس الآن».";
+      return null;
+    }
+    if (hasRaw && !phone) return bad("رقم واتساب غير صحيح. اكتبوه مع رمز الدولة، أو امسحوا الحقل.", phoneEl);
+    if (phone && S.a.q14_consent !== true) return "لإرسال الرقم يرجى الموافقة على التواصل، أو امسحوا الرقم.";
+    if (!phone && S.a.q14_consent === true) return "يرجى كتابة رقم واتساب، أو إلغاء الموافقة.";
+    return null;
+  }
+  function renderQ15() {
+    return [el("fieldset", null, title("أي شيء تريدون أن نعرفه أو نتجنبه؟", null, "اختياري").concat([
+      textInput("q15", "ملاحظاتكم", { multiline: true, counter: true })]))];
+  }
+
+  /* ---------- Show a screen ---------- */
+  function show(id, keepError) {
+    S.current = id;
+    if (!keepError) setError("");
+    $screen.textContent = "";
+    var nodes;
+    if (id === "intro") nodes = renderIntro();
+    else nodes = screenById(id).render();
+    nodes.forEach(function (n) { $screen.appendChild(n); });
+    $actions.hidden = false;
+    $back.hidden = id === "intro";
+    $next.disabled = false;
+    $next.textContent = id === "intro" ? "ابدأ" : (nextOf(id) === null ? "إرسال" : "متابعة");
+    updateProgress();
+    if (!keepError) {
+      var h = $screen.querySelector("[tabindex='-1']");
+      if (h) h.focus({ preventScroll: true });
+      window.scrollTo(0, 0);
+    }
+  }
+  function goNext() {
+    if (S.current === "intro") {
+      if (!S.startedAt) { S.startedAt = new Date().toISOString(); S.startedMs = Date.now(); }
+      S.history = [];
+      show(nextOf("intro")); saveProgress(); return;
+    }
+    var scr = screenById(S.current);
+    var err = scr.validate();
+    if (err) {
+      setError(err);
+      var inv = $screen.querySelector("[aria-invalid=true]") || $screen.querySelector("input,textarea");
+      if (inv) inv.focus();
+      return;
+    }
+    sanitize();
+    var nx = nextOf(S.current);
+    if (nx === null) { startSubmit(); return; }
+    S.history.push(S.current);
+    show(nx); saveProgress();
+  }
+  function goBack() {
+    if (sending) return;
+    var prev = S.history.pop();
+    while (prev && !applies(screenById(prev))) prev = S.history.pop();
+    show(prev || "intro"); saveProgress();
+  }
+
+  /* ---------- Payload ---------- */
+  function buildPayload() {
+    var a = S.a;
+    var consent = a.q14_consent === true;
+    var phone = consent ? normalizePhone(a.q14_whatsapp || "") : null;
+    if (!phone) consent = false;
+    var name = consent ? cleanText(a.q14_name || "", LIMITS.q14_name) : null;
+    var val = function (k) { return a[k] === undefined ? null : a[k]; };
+    var stopped = a.q9 === "stopped", using = a.q9 === "still_using";
+    var answers = {
+      survey_version: String(CONFIG.SURVEY_VERSION),
+      q1: a.q1, q2: { office_name: val("office_name"), area: a.area, area_detail: val("area_detail") },
+      q3: a.q3, q4: a.q4, q5: a.q5.slice(), q6: a.q6, q7: a.q7, q8: a.q8.slice(), q9: a.q9, q10: a.q10.slice(),
+      q11: a.q11, q12a: a.q12a, q12b: a.q12a === "never_pay" ? null : val("q12b"), q13: a.q13,
+      q14: { required: contactRequired(), provided: consent }, q15: val("q15"),
+      q5_platform_names: a.q5.indexOf("ad_platforms") >= 0 ? val("q5_platform_names") : null,
+      q8_order: S.orders.q8.slice(), q8_other: a.q8.indexOf("other") >= 0 ? val("q8_other") : null,
+      q9_platform_name: using ? val("q9_platform_name") : null, q9_stop_reason: stopped ? val("q9_stop_reason") : null,
+      q10_order: S.orders.q10.slice(), q10_other: a.q10.indexOf("other") >= 0 ? val("q10_other") : null,
+      q14_name: name, q14_whatsapp: phone, q14_consent: consent
+    };
+    var duration = S.startedMs ? Math.max(0, Math.round((Date.now() - S.startedMs) / 1000)) : null;
+    return {
+      submission_id: S.sid, started_at: S.startedAt, duration_sec: duration,
+      respondent_role: a.q1, office_name: answers.q2.office_name, area: a.area, area_detail: answers.q2.area_detail,
+      listings_count: a.q3, rent_share: a.q4, channels: answers.q5, best_lead_source: a.q6, monthly_ad_spend: a.q7,
+      top_problems: answers.q8, tried_platform: a.q9, join_drivers: answers.q10, uploader: a.q11,
+      payment_model: a.q12a, price_range: answers.q12b, founding_interest: a.q13, answers: answers,
+      contact_name: name, contact_whatsapp: phone, contact_consent: consent,
+      ref: S.track.ref, utm_source: S.track.utm_source, utm_medium: S.track.utm_medium, utm_campaign: S.track.utm_campaign,
+      referrer: S.track.referrer, device: deviceClass()
+    };
+  }
+  function byteLength(s) { try { return new TextEncoder().encode(s).length; } catch (e) { return s.length * 3; } }
+
+  /* ---------- Submission (idempotent by submission_id) ---------- */
+  function startSubmit() {
+    if (sending) return;
+    if ($hp.value) {            /* honeypot filled: show the normal thank-you, send nothing, store nothing */
+      S.done = true; clearAllLocal(); showThanks(false); return;
+    }
+    var payload = buildPayload();
+    if (byteLength(JSON.stringify(payload.answers)) > ANSWERS_MAX_BYTES) {
+      setError("النصوص المكتوبة طويلة جداً. يرجى اختصار الملاحظات ثم الإرسال."); return;
+    }
+    /* Freeze the exact payload: every retry sends the same body with the same submission_id. It is kept on this
+       device (with the number, if one was given) only until the server confirms, then deleted. */
+    S.pending = payload;
+    storage.set(PENDING_KEY, payload);
+    saveProgress();
+    send();
+  }
+  function showSending() {
+    S.current = "sending";
+    $screen.textContent = "";
+    $screen.appendChild(el("div", { className: "center" }, [
+      el("h1", { tabindex: "-1", text: "جارٍ إرسال إجاباتكم" }), el("div", { className: "spinner", "aria-hidden": "true" }),
+      el("p", { className: "status", role: "status", text: "يرجى الانتظار قليلاً ولا تغلقوا الصفحة." })]));
+    $actions.hidden = true; $progress.hidden = true; setError("");
+  }
+  function showRetry(kind) {
+    S.current = "retry";
+    $screen.textContent = "";
+    var msg = kind === "config"
+      ? "تعذّر حفظ الإجابات بسبب مشكلة في إعداد الاستبيان، وليس بسببكم. إجاباتكم محفوظة على هذا الجهاز، ويمكنكم المحاولة لاحقاً."
+      : "تعذّر الاتصال بالإنترنت أو بالخادم. إجاباتكم محفوظة مؤقتاً على هذا الجهاز ولن تضيع، وسنحذفها منه بعد نجاح الإرسال.";
+    var kids = [el("h1", { tabindex: "-1", text: "لم يكتمل الإرسال بعد" }), el("p", { className: "status", text: msg })];
+    if (kind !== "config" && CONFIG.AUTO_RETRY_ENABLED) kids.push(el("p", { className: "q-help", text: "سنعيد المحاولة تلقائياً عند عودة الاتصال." }));
+    if (kind === "config" && CONFIG.CONTACT_EMAIL) kids.push(el("p", { className: "q-help" }, ["للمساعدة: ", el("a", { href: "mailto:" + CONFIG.CONTACT_EMAIL, dir: "ltr", text: CONFIG.CONTACT_EMAIL })]));
+    var retryBtn = el("button", { type: "button", className: "btn btn-primary", id: "retry", text: "إعادة المحاولة", onclick: function () { send(); } });
+    kids.push(el("div", { className: "stack" }, [retryBtn]));
+    $screen.appendChild(el("div", null, kids));
+    $actions.hidden = true; $progress.hidden = true; setError("");
+    var h = $screen.querySelector("h1"); if (h) h.focus({ preventScroll: true });
+  }
+  function showThanks(withContact) {
+    S.current = "thanks";
+    $screen.textContent = "";
+    var kids = [el("h1", { tabindex: "-1", text: "شكراً لوقتكم" }), el("p", { className: "status", text: "تم حفظ إجاباتكم. ستساعدنا في فهم احتياجات المكاتب العقارية قبل إطلاق أي شيء." })];
+    if (withContact && Number(CONFIG.FOLLOWUP_DAYS) > 0) {
+      kids.push(el("p", { className: "note", text: "قد نتواصل معكم عبر واتساب خلال " + Number(CONFIG.FOLLOWUP_DAYS) + " أيام تقريباً بخصوص المرحلة التجريبية فقط، وسنرسل التفاصيل والشروط عند اعتمادها. لا يوجد أي التزام عليكم." }));
+    }
+    kids.push(el("p", { className: "q-help", text: "يمكنكم إغلاق هذه الصفحة الآن." }));
+    $screen.appendChild(el("div", { className: "center" }, kids));
+    $actions.hidden = true; $progress.hidden = true; setError("");
+    var h = $screen.querySelector("h1"); if (h) h.focus({ preventScroll: true });
+  }
+  function onSaved() {
+    var withContact = !!(S.pending && S.pending.contact_consent);
+    S.done = true; S.pending = null; sending = false;
+    clearAllLocal();                       /* removes progress and the pending copy (incl. the number) */
+    showThanks(withContact);
+  }
+  function send() {
+    if (sending || !S.pending) return;
+    if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_ANON_KEY) { showRetry("config"); return; }
+    sending = true;
+    var btn = document.getElementById("retry"); if (btn) btn.disabled = true;
+    showSending();
+    var ctrl = typeof AbortController === "function" ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, REQUEST_TIMEOUT_MS);
+    var url = CONFIG.SUPABASE_URL.replace(/\/+$/, "") + "/rest/v1/" + TABLE;
+    fetch(url, {
+      method: "POST",
+      headers: { "apikey": CONFIG.SUPABASE_ANON_KEY, "Authorization": "Bearer " + CONFIG.SUPABASE_ANON_KEY,
+                 "Content-Type": "application/json", "Prefer": "return=minimal" },
+      body: JSON.stringify(S.pending), signal: ctrl ? ctrl.signal : undefined, credentials: "omit", cache: "no-store",
+      referrerPolicy: "no-referrer"
+    }).then(function (res) {
+      clearTimeout(timer);
+      if (res.ok) { onSaved(); return; }
+      return res.text().then(function (txt) {
+        var body = {}; try { body = JSON.parse(txt); } catch (e) { body = {}; }
+        var detail = String(body.message || "") + " " + String(body.details || "");
+        /* 409 + 23505 on submission_id = this exact submission is already stored (an earlier attempt reached the
+           server but its answer was lost). Only this browser knows the random submission_id, so it is our row. */
+        if (res.status === 409 && body.code === "23505" && /submission_id/.test(detail)) { onSaved(); return; }
+        sending = false;
+        showRetry(res.status >= 500 || res.status === 408 || res.status === 429 ? "network" : "config");
+      });
+    }).catch(function () {
+      clearTimeout(timer);
+      sending = false;
+      showRetry("network");
+    });
+  }
+  window.addEventListener("online", function () {
+    if (CONFIG.AUTO_RETRY_ENABLED && S.pending && !sending && S.current === "retry") send();
+  });
+
+  /* ---------- Resume ---------- */
+  function showResume(saved, pending) {
+    S.current = "resume";
+    $screen.textContent = "";
+    $screen.appendChild(el("div", null, [
+      el("h1", { tabindex: "-1", text: "متابعة الاستبيان" }),
+      el("p", { className: "status", text: "يبدو أنكم بدأتم الاستبيان سابقاً ولم تكملوه. هل ترغبون في المتابعة من حيث توقفتم؟" }),
+      el("div", { className: "stack" }, [
+        el("button", { type: "button", className: "btn btn-primary", text: "متابعة", onclick: function () {
+          if (saved) { S = saved; S.a.q14_consent = false; }
+          if (pending) { S.pending = pending; S.sid = pending.submission_id; showRetry("network"); send(); return; }
+          var cur = screenById(S.current) && applies(screenById(S.current)) ? S.current : "intro";
+          show(cur);
+        } }),
+        el("button", { type: "button", className: "btn btn-secondary", text: "البدء من جديد", onclick: function () {
+          clearAllLocal(); S = freshState(); show("intro");
+        } })
+      ])
+    ]));
+    $actions.hidden = true; $progress.hidden = true;
+    var h = $screen.querySelector("h1"); if (h) h.focus({ preventScroll: true });
+  }
+  function validSaved(x) {
+    return x && typeof x === "object" && x.v === CONFIG.SURVEY_VERSION && typeof x.sid === "string" && x.a && x.orders &&
+      Array.isArray(x.history) && Array.isArray(x.a.q5) && Array.isArray(x.a.q8) && Array.isArray(x.a.q10);
+  }
+
+  /* ---------- Boot ---------- */
+  (function boot() {
+    var logo = document.getElementById("logo");
+    logo.addEventListener("error", function () {
+      var b = document.getElementById("brand"); b.textContent = ""; b.appendChild(el("span", { className: "brand-text", text: "HUDHUDNEST هدهد نيست" }));
+    });
+    if (CONFIG.LOGO_URL) logo.src = CONFIG.LOGO_URL; else logo.dispatchEvent(new Event("error"));
+    if (CONFIG.SURVEY_URL) document.head.appendChild(el("link", { rel: "canonical", href: CONFIG.SURVEY_URL }));
+    $next.addEventListener("click", goNext);
+    $back.addEventListener("click", goBack);
+    document.getElementById("form").addEventListener("submit", function (e) { e.preventDefault(); goNext(); });
+
+    var saved = storage.get(STORE_KEY), pending = storage.get(PENDING_KEY);
+    if (!validSaved(saved)) { saved = null; storage.del(STORE_KEY); }
+    if (pending && (typeof pending !== "object" || typeof pending.submission_id !== "string")) { pending = null; storage.del(PENDING_KEY); }
+    if (pending || (saved && saved.current !== "intro")) { showResume(saved, pending); return; }
+    show("intro");
+  })();
+})();
+</script>
+</body>
+</html>
