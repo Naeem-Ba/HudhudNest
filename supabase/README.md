@@ -1,6 +1,10 @@
-# Supabase (waitlist only)
+# Supabase (waitlist and research surveys)
 
-The marketing pages store waitlist signups in Supabase, not in the ASP.NET backend.
+The marketing pages store waitlist signups in Supabase, not in the ASP.NET backend. The market-validation survey
+`public/survey/survey-offices.html` (served at `/survey/offices`) writes to `survey_offices_responses`
+(`migrations/20261122100000_survey_offices.sql`, retention in `20261122100100_survey_offices_retention.sql`). Put the
+survey table in a Supabase project that does NOT hold the app database, and paste that project's URL and anon key into
+the CONFIG block at the top of the survey file's script.
 
 ## Apply the migration
 
