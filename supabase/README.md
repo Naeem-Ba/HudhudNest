@@ -9,6 +9,9 @@ the CONFIG block at the top of the survey file's script.
 The users survey `public/survey/survey-users.html` (served at `/survey/users`) writes to `survey_users_responses`
 (`migrations/20261122101000_survey_users.sql`; optional retention job in `20261122101100_survey_users_retention.sql`,
 which must match the page's `CONFIG.RETENTION_TEXT`). Same rules: separate Supabase project, anon key only, INSERT-only.
+Since 2026-11-23 the table lives in schema `survey`, not `public` (`20261123103000_survey_users_move_to_survey_schema.sql`;
+run it after the first file, then add `survey` under Project Settings -> Data API -> Exposed schemas). Reason: the API's
+Migrator revokes every anon grant on `public` tables on each run, which silently broke the survey on the shared staging project.
 
 ## Apply the migration
 
