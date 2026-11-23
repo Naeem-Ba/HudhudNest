@@ -99,4 +99,18 @@ describe('PropertyShareUrlService', () => {
 
     expect(url).toContain(encodeURIComponent('abc def'));
   });
+
+  it('builds office and office QR links on the public origin, percent-encoding Arabic slugs', () => {
+    const origin = service.getSiteOrigin();
+    expect(service.getOfficePublicUrl('al-noor')).toBe(`${origin}/offices/al-noor`);
+    expect(service.getOfficePublicUrl('مكتب-النور')).toBe(`${origin}/offices/${encodeURIComponent('مكتب-النور')}`);
+    expect(service.getOfficeQrUrl('AB12cd34')).toBe(`${origin}/o/AB12cd34`);
+  });
+
+  it('never builds an office link without a slug or code', () => {
+    expect(service.getOfficePublicUrl('')).toBeNull();
+    expect(service.getOfficePublicUrl('  ')).toBeNull();
+    expect(service.getOfficePublicUrl(null)).toBeNull();
+    expect(service.getOfficeQrUrl(undefined)).toBeNull();
+  });
 });

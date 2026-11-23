@@ -4,17 +4,21 @@
 //   POST /api/ValuationInquiries            ← إنشاء طلب تقييم جديد
 //   GET  /api/ValuationInquiries/{id}       ← التحقق من حالة الطلب (تحديث يدوي)
 // Both anonymous on the backend (a guest may request a valuation), so this service never
-// requires the caller to be authenticated either.
+// requires the caller to be authenticated either. Only a signed-in customer's request is sent to offices.
+//   GET  /api/ValuationOfficeInvitations/mine              ← صندوق طلبات التقييم لمكتبي (عضو مكتب)
+//   POST /api/ValuationOfficeInvitations/{id}/respond      ← رأي المكتب في السعر
 
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
+import { PriceEstimate } from './price-estimate-api.service';
 import {
-  ComparableListingsResultDto,
   CreateValuationInquiryPayload,
   CreateValuationInquiryResultDto,
   ValuationEstimateDto,
-  ValuationInquiryStatusDto
+  ValuationInquiryStatusDto,
+  ValuationOfficeInvitation,
+  ValuationOfficeResponsePayload
 } from '../models/valuation.model';
 
 @Injectable({ providedIn: 'root' })
@@ -31,7 +35,9 @@ export class ValuationApiService {
       PropertyTypeId: payload.propertyTypeId ?? null,
       Area: payload.area ?? null,
       Rooms: payload.rooms ?? null,
-      RequestType: payload.requestType
+      RequestType: payload.requestType,
+      CurrencyCode: payload.currencyCode ?? null,
+      RequestOfficeOpinion: payload.requestOfficeOpinion === true
     };
 
     return this.api.post<unknown>(this.endpoint, body).pipe(map(response => this.toCreateResult(response)));
@@ -41,6 +47,49 @@ export class ValuationApiService {
     return this.api.get<unknown>(`${this.endpoint}/${inquiryId}`).pipe(map(response => this.toStatus(response)));
   }
 
+  /** The signed-in office member's valuation inbox, newest first. */
+  getMyOfficeInvitations(): Observable<ValuationOfficeInvitation[]> {
+    return this.api.get<unknown>('/ValuationOfficeInvitations/mine').pipe(
+      map(response => (Array.isArray(response) ? response : []).map(item => this.toInvitation(item))));
+  }
+
+  respond(invitationId: string, payload: ValuationOfficeResponsePayload): Observable<void> {
+    return this.api.post<unknown>(`/ValuationOfficeInvitations/${invitationId}/respond`, {
+      EstimatedPrice: payload.estimatedPrice,
+      CurrencyCode: payload.currencyCode,
+      Notes: payload.notes?.trim() || null
+    }).pipe(map(() => undefined));
+  }
+
+  private toInvitation(raw: unknown): ValuationOfficeInvitation {
+    const r = raw as Record<string, unknown>;
+    const num = (value: unknown): number | null => (value == null ? null : Number(value));
+    const str = (value: unknown): string | null => (value == null ? null : String(value));
+
+    return {
+      invitationId: String(r['invitationId'] ?? ''),
+      inquiryId: String(r['inquiryId'] ?? ''),
+      matchLevel: (r['matchLevel'] as ValuationOfficeInvitation['matchLevel']) ?? 'Governorate',
+      invitationStatus: (r['invitationStatus'] as ValuationOfficeInvitation['invitationStatus']) ?? 'Sent',
+      sentAt: String(r['sentAt'] ?? ''),
+      respondedAt: str(r['respondedAt']),
+      canRespond: r['canRespond'] === true,
+      governorateId: Number(r['governorateId'] ?? 0),
+      districtId: num(r['districtId']),
+      neighborhoodId: num(r['neighborhoodId']),
+      propertyTypeId: num(r['propertyTypeId']),
+      area: num(r['area']),
+      rooms: num(r['rooms']),
+      requestType: r['requestType'] === 'ForRent' ? 'ForRent' : 'ForSale',
+      inquiryExpiresAt: String(r['inquiryExpiresAt'] ?? ''),
+      myEstimatedPrice: num(r['myEstimatedPrice']),
+      myCurrencyCode: str(r['myCurrencyCode']),
+      myNotes: str(r['myNotes']),
+      customerContactPhone: str(r['customerContactPhone']),
+      customerContactEmail: str(r['customerContactEmail'])
+    };
+  }
+
   private toCreateResult(raw: unknown): CreateValuationInquiryResultDto {
     const r = raw as Record<string, unknown>;
 
@@ -48,31 +97,39 @@ export class ValuationApiService {
       inquiryId: String(r['inquiryId'] ?? ''),
       status: (r['status'] as CreateValuationInquiryResultDto['status']) ?? 'Pending',
       expiresAt: String(r['expiresAt'] ?? ''),
-      fastPath: this.toFastPath(r['fastPath']),
+      estimate: this.toEstimateRange(r['estimate']),
       requiresOfficeValuation: !!r['requiresOfficeValuation'],
       officeMatchCount: Number(r['officeMatchCount'] ?? 0),
       hasMinimumOfficeCoverage: !!r['hasMinimumOfficeCoverage'],
       insufficientOfficeCoverage: !!r['insufficientOfficeCoverage'],
-      matchedNeighboringGovernorate: !!r['matchedNeighboringGovernorate']
+      matchedNeighboringGovernorate: !!r['matchedNeighboringGovernorate'],
+      // An API from before this field existed always ran the office path.
+      officePathAvailable: r['officePathAvailable'] !== false,
+      officesRequested: r['officesRequested'] === true
     };
   }
 
-  private toFastPath(raw: unknown): ComparableListingsResultDto {
-    const r = (raw ?? {}) as Record<string, unknown>;
-
+  /** A response without an estimate (an API older than this app) reads as "no estimate", never as numbers. */
+  private toEstimateRange(raw: unknown): PriceEstimate {
+    const r = (raw ?? {}) as Partial<PriceEstimate>;
+    const available = r.available === true;
     return {
-      hasComparableListings: !!r['hasComparableListings'],
-      comparableCount: Number(r['comparableCount'] ?? 0),
-      minPrice: r['minPrice'] as number | null | undefined,
-      maxPrice: r['maxPrice'] as number | null | undefined,
-      averagePrice: r['averagePrice'] as number | null | undefined,
-      medianPrice: r['medianPrice'] as number | null | undefined,
-      isPreliminary: !!r['isPreliminary'],
-      requiresOfficeValuation: !!r['requiresOfficeValuation'],
-      matchLevel: (r['matchLevel'] as ComparableListingsResultDto['matchLevel']) ?? 'Governorate',
-      source: r['source'] as string | null | undefined,
-      disclaimer: r['disclaimer'] as string | null | undefined,
-      message: r['message'] as string | null | undefined
+      available,
+      reason: available ? null : (r.reason ?? 'not_enough_data'),
+      kind: r.kind === 'Rent' ? 'Rent' : 'Sale',
+      currencyCode: r.currencyCode ?? 'USD',
+      low: r.low ?? null,
+      mid: r.mid ?? null,
+      high: r.high ?? null,
+      lowPerSqm: r.lowPerSqm ?? null,
+      midPerSqm: r.midPerSqm ?? null,
+      highPerSqm: r.highPerSqm ?? null,
+      sampleCount: Number(r.sampleCount ?? 0),
+      basis: r.basis ?? null,
+      confidence: r.confidence ?? null,
+      dataComputedAt: r.dataComputedAt ?? null,
+      oldestListingAt: r.oldestListingAt ?? null,
+      newestListingAt: r.newestListingAt ?? null
     };
   }
 
@@ -84,6 +141,7 @@ export class ValuationApiService {
       inquiryId: String(r['inquiryId'] ?? ''),
       status: (r['status'] as ValuationInquiryStatusDto['status']) ?? 'Pending',
       expiresAt: String(r['expiresAt'] ?? ''),
+      invitedOfficeCount: Number(r['invitedOfficeCount'] ?? estimates.length),
       estimates: estimates.map(item => this.toEstimate(item))
     };
   }
@@ -92,7 +150,10 @@ export class ValuationApiService {
     const r = raw as Record<string, unknown>;
 
     return {
+      invitationId: String(r['invitationId'] ?? ''),
+      agencyName: String(r['agencyName'] ?? ''),
       estimatedPrice: Number(r['estimatedPrice'] ?? 0),
+      currencyCode: r['currencyCode'] == null ? null : String(r['currencyCode']),
       notes: r['notes'] as string | null | undefined,
       submittedAt: String(r['submittedAt'] ?? ''),
       matchLevel: (r['matchLevel'] as ValuationEstimateDto['matchLevel']) ?? 'Governorate'

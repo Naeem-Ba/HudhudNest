@@ -14,6 +14,7 @@ import {
   Component,
   DestroyRef,
   OnInit,
+  computed,
   inject,
   signal
 } from '@angular/core';
@@ -26,6 +27,7 @@ import { catchError, map, of, switchMap } from 'rxjs';
 import { PlansApiService } from '../../core/api/plans-api.service';
 import { PaymentsApiService } from '../../core/api/payments-api.service';
 import { isNativeApp } from '../../core/native/is-native-app';
+import { digitalPurchasesAllowed } from '../../core/native/digital-purchases';
 import { AgenciesApiService } from '../../core/api/agencies-api.service';
 import { knownErrorCodeKey } from '../../core/interceptors/api-error.interceptor';
 import { ProfileService } from '../../core/api/profile.service';
@@ -114,6 +116,17 @@ export class PricingPage implements OnInit {
    * effective status, not from PlanTier alone: an expired plan keeps its tier but benefits nothing.
    */
   readonly currentPaidTier = signal<string | null>(null);
+
+  /**
+   * The installed app shows only the free plan, plus the user's current paid plan if they bought one on the website:
+   * paid plans are digital purchases that the app cannot sell without in-app billing (see digital-purchases.ts).
+   */
+  private readonly canBuyDigital = digitalPurchasesAllowed();
+  readonly visiblePlans = computed(() =>
+    this.canBuyDigital
+      ? this.plans()
+      : this.plans().filter(p => p.priceKind === 'free' || p.tier === this.currentPaidTier()),
+  );
 
   /** When the plan in force ends (ISO), or null for no fixed end. */
   readonly currentPlanExpiresAt = signal<string | null>(null);
@@ -310,6 +323,9 @@ export class PricingPage implements OnInit {
     // highlight to this plan (and only this plan) before submitting it, so the visual
     // state and the plan actually sent to the backend can never disagree.
     if (this.isBlockedForAgencyOwner(plan) || this.isBlockedByPaidPlan(plan)) {
+      return;
+    }
+    if (!this.canBuyDigital && plan.priceKind !== 'free') {
       return;
     }
 

@@ -31,3 +31,27 @@ export function writeSessionHint(value: SessionHint): void {
     // Unavailable storage only costs the optimisation.
   }
 }
+
+/**
+ * Readable companion of the HttpOnly refresh cookie, set and cleared with it by the API (RefreshTokenCookie.MarkerName).
+ * It holds no secret, only "1".
+ */
+export const SESSION_MARKER_COOKIE = 'hn_session';
+
+export function hasSessionMarker(cookie: string = typeof document === 'undefined' ? '' : document.cookie): boolean {
+  return cookie.split(';').some(part => part.trim().startsWith(`${SESSION_MARKER_COOKIE}=`));
+}
+
+/**
+ * True when the start-up "am I signed in?" check can be skipped for a browser that has never told us anything
+ * (UI performance audit 2026-11-17: the check cost a first-time visitor ~0.3 s before the first paint).
+ *
+ * Only on the deployed web app, where auth calls go through the same-origin proxy (`authApiBaseUrl` is relative):
+ * only there does the marker cookie land where the page can read it. A "yes" hint, or the marker, always means ask;
+ * the native app and local development always ask, exactly as before.
+ */
+export function canSkipSessionCheck(hint: SessionHint | null, authApiBaseUrl: string, markerPresent: boolean): boolean {
+  if (hint === 'no') return true;
+  if (hint === 'yes' || markerPresent) return false;
+  return authApiBaseUrl.startsWith('/');
+}

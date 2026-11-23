@@ -11,6 +11,10 @@
         <ng-template #memberTitle><h1>{{ agency()?.name }}</h1></ng-template>
         <p>{{ (canEditProfile() ? 'AGENCY_FORM.SUBTITLE' : 'AGENCY_MANAGE.MEMBER_SUBTITLE') | translate }}</p>
       </div>
+      <!-- Every member of an existing office can answer customers' valuation requests. -->
+      <a class="valuations-link" *ngIf="!loading() && agency()" routerLink="/my-agency/valuations" data-testid="agency-valuations-link">
+        🏷️ {{ 'VALUATION.OFFICE_INBOX.LINK' | translate }}
+      </a>
     </div>
 
     <div class="loading-state" *ngIf="loading()">

@@ -13,7 +13,8 @@ workflows:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
       node: 22.19.0
-      xcode: 16.4
+      # App Store Connect requires Xcode 26 / iOS 26 SDK since 2026-04-28; keep equal to frontend-ci.yml.
+      xcode: 26.0
     # Manual start only. Pull requests are already covered by the `ios-build` job in GitHub's Frontend CI
     # (same Xcode, only when native files change), so a second build per PR here only spends macOS minutes.
     scripts:
@@ -63,7 +64,8 @@ workflows:
         XCODE_SCHEME: "App"
         BUNDLE_ID: "com.hudhudnest.app"
       node: 22.19.0
-      xcode: 16.4
+      # App Store Connect requires Xcode 26 / iOS 26 SDK since 2026-04-28; keep equal to frontend-ci.yml.
+      xcode: 26.0
     # Only a version tag (v<major>.<minor>.<patch>) starts a store build, never a plain push to main.
     # The same tag also starts Frontend CI on GitHub, which runs the audit, the tests and the production
     # build on that commit; start the TestFlight build only after that run is green.

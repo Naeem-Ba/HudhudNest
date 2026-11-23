@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "environment": "production",
+  "apiUrl": "https://api.hudhudnest.com/api",
+  "netlifyContext": "production",
+  "branch": "release",
+  "commit": "4391f76df8d3a08047730a19a47fbcfe44e0a988",
+  "builtAt": "2026-11-16T20:15:55.701Z"
+}

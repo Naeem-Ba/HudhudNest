@@ -210,7 +210,8 @@ function job(name) {
 
 test('frontend-ci: the iOS job waits for the build and runs only when native files changed', () => {
   const ios = job('ios-build');
-  assert.match(ios, /runs-on: macos-15/);
+  assert.match(ios, /runs-on: macos-26/, 'App Store Connect accepts only Xcode 26 builds');
+  assert.match(ios, /xcode-version: '26'/);
   assert.match(ios, /needs: build\b/, 'a red web build must not cost macOS minutes');
   assert.match(ios, /if: needs\.build\.outputs\.native == 'true'/);
 });

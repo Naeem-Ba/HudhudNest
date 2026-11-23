@@ -20,7 +20,8 @@ const BY_NUMBER: Readonly<Record<number, ListingLifecycle>> = {
   1: 'reserved',
   2: 'sold',
   3: 'rented',
-  4: 'archived'
+  4: 'archived',
+  5: 'expired'
 };
 
 export function listingLifecycle(listing: { status?: unknown } | null | undefined): ListingLifecycle {
@@ -65,3 +66,41 @@ export function listingStatusTagKey(listing: { status?: unknown } | null | undef
 /** The values an owner can move a listing to by hand (Expired is set by the system only). */
 export const OWNER_SELECTABLE_STATUSES = ['Available', 'Reserved', 'Sold', 'Rented', 'Archived'] as const;
 export type OwnerSelectableStatus = (typeof OWNER_SELECTABLE_STATUSES)[number];
+
+/**
+ * What a listing offers, from the API's enum (by name, or by number: ForRent 1, ForSale 2, ForRentAndSale 3).
+ * Unknown values answer null, which keeps every option open so a new type is never locked out.
+ */
+function offers(listingType: unknown): { sale: boolean; rent: boolean } | null {
+  const normalized = typeof listingType === 'number'
+    ? ({ 1: 'forrent', 2: 'forsale', 3: 'forrentandsale' } as Record<number, string>)[listingType]
+    : typeof listingType === 'string' ? listingType.trim().toLowerCase() : undefined;
+
+  switch (normalized) {
+    case 'forrent': return { sale: false, rent: true };
+    case 'forsale': return { sale: true, rent: false };
+    case 'forrentandsale': return { sale: true, rent: true };
+    default: return null;
+  }
+}
+
+/**
+ * The statuses an owner can pick for this listing (listing status control, 2026-11-18): Sold only when it is
+ * offered for sale, Rented only when it is offered for rent, the same rule the API enforces
+ * (LISTING_STATUS_NOT_FOR_TYPE). The current status always stays in the list, so an older listing that already
+ * carries a status that does not fit its type still shows it instead of a wrong value.
+ */
+export function ownerSelectableStatusesFor(
+  listing: { listingType?: unknown; status?: unknown } | null | undefined
+): OwnerSelectableStatus[] {
+  const offer = offers(listing?.listingType);
+  const current = listingLifecycle(listing);
+
+  return OWNER_SELECTABLE_STATUSES.filter(status => {
+    if (status.toLowerCase() === current) return true;
+    if (!offer) return true;
+    if (status === 'Sold') return offer.sale;
+    if (status === 'Rented') return offer.rent;
+    return true;
+  });
+}

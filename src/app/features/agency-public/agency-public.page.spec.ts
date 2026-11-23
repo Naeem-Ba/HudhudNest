@@ -15,6 +15,8 @@ import { AgenciesApiService } from '../../core/api/agencies-api.service';
 import { PropertyApiService } from '../../core/api/property-api.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { NativeShareProvider } from '../../core/sharing/providers/native-share.provider';
+import { SharePlatform } from '../../core/sharing/share.model';
 import { Agency, AgencyRatingEligibilityDto, AgencyRatingSummaryDto } from '../../core/models/agency.model';
 import { LookupsApiService } from '../../core/api/lookups-api.service';
 import { LanguageService } from '../../core/services/language.service';
@@ -445,6 +447,32 @@ describe('AgencyPublicPage', () => {
       expect(write.calls.mostRecent().args[0]).toMatch(/\/offices\/xyz$/);
       expect(agencies.recordEvent).toHaveBeenCalledWith('agency-1', { type: 'Share', channel: 'CopyLink' });
       expect(toast.success).toHaveBeenCalled();
+    });
+
+    it('opens the native share sheet with the office name, a short text and the clean link (audit L-04)', async () => {
+      const page = create();
+      page.ngOnInit();
+      const native = TestBed.inject(NativeShareProvider);
+      spyOn(native, 'isAvailable').and.returnValue(true);
+      const share = spyOn(native, 'share').and.resolveTo({ success: true, platform: SharePlatform.Native });
+      await page.share(AGENCY);
+      const content = share.calls.mostRecent().args[0];
+      expect(content.title).toBe(AGENCY.name);
+      expect(content.url).toMatch(/^https?:\/\/[^/]+\/offices\/xyz$/);
+      expect(content.text).toBeTruthy();
+      expect(agencies.recordEvent).toHaveBeenCalledWith('agency-1', { type: 'Share', channel: 'NativeShare' });
+    });
+
+    it('a dismissed share sheet counts nothing, copies nothing and shows no message', async () => {
+      const page = create();
+      page.ngOnInit();
+      agencies.recordEvent.calls.reset();
+      const native = TestBed.inject(NativeShareProvider);
+      spyOn(native, 'isAvailable').and.returnValue(true);
+      spyOn(native, 'share').and.resolveTo({ success: false, platform: SharePlatform.Native, cancelled: true });
+      await page.share(AGENCY);
+      expect(agencies.recordEvent).not.toHaveBeenCalledWith('agency-1', jasmine.objectContaining({ type: 'Share' }));
+      expect(toast.success).not.toHaveBeenCalled();
     });
 
     it('neither claims a copy nor counts a share when the browser has no clipboard', async () => {

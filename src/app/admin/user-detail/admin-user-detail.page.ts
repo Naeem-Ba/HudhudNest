@@ -168,6 +168,9 @@ type ModalKind = 'activate' | 'extend' | 'cancel' | 'disable' | 'enable' | null;
           <a class="btn btn--primary" [routerLink]="['/admin/users', u.id, 'properties']">
             {{ 'ADMIN_USER_DETAIL.VIEW_LISTINGS' | translate }}
           </a>
+          <a class="btn btn--secondary" data-testid="legal-holds-link" [routerLink]="['/admin/legal-holds']" [queryParams]="{ user: u.id }">
+            {{ 'ADMIN_USER_DETAIL.LEGAL_HOLDS' | translate }}
+          </a>
         </div>
       </ng-container>
     </section>

@@ -58,7 +58,7 @@ const PRODUCT_TYPES: Readonly<Record<ProductQuery, PaymentProductType>> = {
         <p>{{ 'PAYMENTS.UNAVAILABLE.BODY' | translate }}</p>
         <div class="pay-actions" style="justify-content:center">
           <a class="btn btn--outline" routerLink="/pricing">{{ 'PAYMENTS.BACK_TO_PRICING' | translate }}</a>
-          <a class="btn btn--outline" routerLink="/kontakt">{{ 'PAYMENTS.CONTACT_US' | translate }}</a>
+          <a class="btn btn--outline" routerLink="/kontakt" [queryParams]="{ reason: 'plans' }">{{ 'PAYMENTS.CONTACT_US' | translate }}</a>
         </div>
       </div>
 

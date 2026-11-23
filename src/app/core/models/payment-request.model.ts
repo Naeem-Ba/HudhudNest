@@ -34,8 +34,19 @@ export interface PendingExtensionPayment {
   listingExpiresAt: string | null;
 }
 
+/** An owner's request to pay for ONE listing beyond the free plan's limit, waiting for payment confirmation. */
+export interface PendingExtraListingPayment {
+  requestId: string;
+  userId: string;
+  userName: string;
+  email: string | null;
+  amountUsd: number;
+  requestedAt: string;
+}
+
 export interface PendingPaymentRequests {
   plans: PendingPlanRequest[];
   featured: PendingFeaturedPayment[];
   extensions: PendingExtensionPayment[];
+  extraListings: PendingExtraListingPayment[];
 }

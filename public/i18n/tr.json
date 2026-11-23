@@ -32,6 +32,8 @@
     "CONCURRENCY_CONFLICT": "Bu öğe, aynı anda başka biri tarafından değiştirildi. Sayfayı yenileyip tekrar deneyin.",
     "CSRF_VALIDATION_FAILED": "İsteğin güvenli olduğu doğrulanamadı. Sayfayı yeniden yükleyip tekrar deneyin.",
     "LISTING_QUOTA_REACHED": "Planınızdaki aktif ilan sınırına ulaştınız. Yeni bir ilan eklemek için mevcut bir ilanı silin veya planınızı yükseltin.",
+    "LISTING_EXPIRED_EXTEND_ONLY": "Bu ilanın yayın süresi doldu. Süre uzatma ile yenileyin; \"Süresi doldu\" durumu elle değiştirilemez.",
+    "LISTING_STATUS_NOT_FOR_TYPE": "Bu durum ilan türüne uymuyor: \"Satıldı\" satılık ilanlar, \"Kiralandı\" kiralık ilanlar içindir.",
     "PAYMENTS_DISABLED": "Çevrimiçi ödeme şu anda kullanılamıyor. Hesabınızdan herhangi bir tutar çekilmedi.",
     "PAYMENT_PROVIDER_UNAVAILABLE": "Ödeme sağlayıcısı şu anda kullanılamıyor. Hesabınızdan herhangi bir tutar çekilmedi. Kısa süre sonra tekrar deneyin.",
     "PAYMENT_PROVIDER_UNAVAILABLE_FOR_REQUEST": "Bu ödeme yöntemi bu para birimi veya ülke için kullanılamıyor.",
@@ -148,7 +150,9 @@
     "ADMIN_PAYMENTS": "Ödemeler (çevrimiçi)",
     "ADMIN_GEO": "Konum kataloğu",
     "OFFICES": "Emlak ofisleri",
-    "ADMIN_AGENCIES": "Ofis doğrulama"
+    "ADMIN_AGENCIES": "Ofis doğrulama",
+    "ADMIN_LEGAL_HOLDS": "Yasal bekletmeler",
+    "VALUATION_REQUESTS": "Değerleme talepleri"
   },
   "AUTH": {
     "LOGIN_TITLE": "Hoş geldiniz",
@@ -506,36 +510,54 @@
     }
   },
   "KONTAKT": {
-    "PLAN_SUBJECT": "Abonelik planı talebi: {{plan}}",
     "PLAN_REF_LINE": "Plan talebi referansı: {{ref}}",
-    "SERVICE_PROVIDER_SUBJECT": "Hizmet sağlayıcı olarak katılma talebi",
-    "SERVICE_PROVIDER_MESSAGE_PLACEHOLDER": "İşletmenizi anlatın: işletme adı, hizmet türü (nakliyat, temizlik, fotoğrafçılık...), bir telefon numarası ve hizmet verdiğiniz bölge. Ekibimiz hesabınızı incelemek ve etkinleştirmek için sizinle iletişime geçecek.",
     "title": "Bize ulaşın",
     "subtitle": "Mesajınızı gönderin, en kısa sürede yanıtlayalım.",
     "name": "Ad soyad",
     "nameCtrl": "Lütfen en az üç karakterden oluşan bir ad girin.",
     "email": "E-posta",
-    "emailCtrl": "Lütfen geçerli bir e-posta adresi girin.",
-    "subject": "Konu",
-    "subCtrl": "Lütfen en az üç karakterden oluşan kısa bir konu girin.",
     "message": "Mesaj",
     "msgCtrl": "Lütfen en az 10 karakterden oluşan bir mesaj girin.",
     "send": "Gönder",
     "sending": "Gönderiliyor...",
     "info_title": "İletişim bilgileri",
     "telefon": "Telefon",
-    "adresse": "Adres",
-    "stadt": "Şehir",
-    "strasse": "Sokak",
     "success_msg": "Mesajınız başarıyla gönderildi!",
     "error_msg": "Gönderilirken bir hata oluştu. Daha sonra tekrar deneyin.",
     "error_validation": "Lütfen zorunlu alanları doğru şekilde doldurun.",
     "name_placeholder": "Ad soyadınızı girin",
-    "subject_placeholder": "Mesaj konusunu girin",
-    "message_placeholder": "Mesajınızı açıkça yazın",
     "response_note": "Genellikle 24 iş saati içinde yanıt veriyoruz.",
     "SERVICE_PROVIDER_NOTICE": "Hizmet sağlayıcı olarak katılmak için yeni başvuru formunu kullanın: başvurunuzu orada takip edebilir ve ekibimizin sorularını yanıtlayabilirsiniz.",
-    "SERVICE_PROVIDER_NOTICE_LINK": "Başvuru formunu aç"
+    "SERVICE_PROVIDER_NOTICE_LINK": "Başvuru formunu aç",
+    "REASON_LABEL": "Konu nedir?",
+    "REASONS": {
+      "GENERAL": {
+        "LABEL": "Genel soru",
+        "PLACEHOLDER": "Sorunuzu açık ve anlaşılır biçimde yazın"
+      },
+      "PLANS": {
+        "LABEL": "Paketler, ödeme ve fatura",
+        "PLACEHOLDER": "Talebiniz hangi paket veya ödemeyle ilgili? Varsa sipariş referansını yazın."
+      },
+      "SUPPORT": {
+        "LABEL": "Hesap veya ilanla ilgili sorun",
+        "PLACEHOLDER": "Ne oldu ve ne denediniz? Bir ilanla ilgiliyse lütfen ilanın bağlantısını ekleyin."
+      },
+      "PROVIDER": {
+        "LABEL": "Hizmet sağlayıcı olarak katılma",
+        "PLACEHOLDER": "İşletmenizi anlatın: işletme adı, hizmet türü (nakliyat, temizlik, fotoğrafçılık...), bir telefon numarası ve hizmet verdiğiniz bölge. Ekibimiz hesabınızı incelemek ve etkinleştirmek için sizinle iletişime geçecek."
+      },
+      "PRIVACY": {
+        "LABEL": "Gizlilik ve veri talebi",
+        "PLACEHOLDER": "Talebinizi (erişim, düzeltme, silme, itiraz) açıklayın ve HudhudNest'e kayıtlı e-posta adresinizi belirtin."
+      },
+      "PARTNERSHIP": {
+        "LABEL": "İş birliği, emlak ofisleri ve basın",
+        "PLACEHOLDER": "Kendinizi kısaca tanıtın ve nasıl iş birliği yapabileceğimizi anlatın."
+      }
+    },
+    "CONSENT_TEXT": "Göndererek, bilgilerinizin talebinizi işlemek için kullanılmasını kabul edersiniz. Ayrıntılar:",
+    "CONSENT_LINK": "gizlilik politikası"
   },
   "ADMIN_MSG": {
     "title": "İletişim mesajları",
@@ -743,7 +765,8 @@
       "MODE_BOTH": "satılık veya kiralık",
       "FALLBACK_TITLE_CITY": "{{city}}, {{mode}} gayrimenkul",
       "FALLBACK_TITLE": "{{mode}} gayrimenkul"
-    }
+    },
+    "OFFICE_TEXT": "{{name}}: HudhudNest üzerinde emlak ofisi"
   },
   "PROPERTY": {
     "MODE_RENT": "Kiralık",
@@ -773,6 +796,7 @@
     "INVALID_FILE_TYPE": "Desteklenmeyen dosya türü. İzin verilenler: PNG, JPG, WebP.",
     "FILE_TOO_LARGE": "{{name}} dosyası 5 MB'tan büyük.",
     "IMAGE_UPLOAD_WARNING": "İlan kaydedildi ancak görseller yüklenemedi.",
+    "TOO_MANY_PHOTOS": "Bu seferde en fazla {{max}} fotoğraf ekleyebilirsiniz. Yalnızca ilkleri eklendi.",
     "PHOTOS_PROCESSING": "Fotoğraflar hazırlanıyor ve yeniden boyutlandırılıyor...",
     "COUNTRY": "Ülke",
     "REGION": "Bölge",
@@ -870,6 +894,7 @@
     "HIDE_EXACT_LOCATION_HINT": "Ziyaretçiler işaretçi yerine yaklaşık 500 m'lik bir bölge görür ve sokak adı gösterilmez. Siz ve yöneticiler tam konumu görmeye devam edersiniz.",
     "PRICE_NEGOTIABLE": "Fiyat pazarlığa açık",
     "PRICE_NEGOTIABLE_HINT": "Fiyat konusunda pazarlığa açıksanız bunu etkinleştirin. Ziyaretçiler bunu yalnızca ilan ayrıntıları sayfasında görür.",
+    "FEATURES_AND_AMENITIES": "Özellikler ve olanaklar",
     "BRANCH": {
       "LABEL": "Ofis şubesi",
       "NONE": "Belirli bir şube yok",
@@ -994,6 +1019,11 @@
       "PLAN_EXPIRED": "Ofis sahibinin planı sona erdi; plan yenilenene kadar aktif ilan eklenemez.",
       "OTHER_OFFICE": "Bu ilan başka bir ofise ait.",
       "ERROR": "İlan eklenemedi. Lütfen tekrar deneyin."
+    },
+    "EXTRA_LISTING": {
+      "BUY": "{{price}} $ karşılığında bir ilan daha ekle",
+      "PENDING": "Ek ilan talebiniz yöneticinin ödemeyi onaylamasını bekliyor. Onaydan sonra ilanınızı ekleyebilirsiniz.",
+      "PAID_READY": "Ödenmiş bir ek ilan hakkınız hazır. İlanınızı şimdi ekleyin."
     }
   },
   "VIEW_COUNT": {
@@ -1210,7 +1240,8 @@
     "ENABLE_EXPLANATION": "Hesap sahibi yeniden giriş yapabilir ve devre dışı bırakma nedeniyle kaldırılan ilanlar geri gelir. Başka bir nedenle kaldırılan ilanlar kaldırılmış olarak kalır.",
     "ENABLE_REASON": "Yeniden etkinleştirme gerekçesi (zorunlu)",
     "ENABLE_SUCCESS": "Hesap yeniden etkinleştirildi.",
-    "ENABLE_NOT_POSSIBLE": "Bu hesap yeniden etkinleştirilemez: hesap sahibi hesabını kendisi sildi (geri alınamaz) veya hesap devre dışı değil."
+    "ENABLE_NOT_POSSIBLE": "Bu hesap yeniden etkinleştirilemez: hesap sahibi hesabını kendisi sildi (geri alınamaz) veya hesap devre dışı değil.",
+    "LEGAL_HOLDS": "Yasal bekletmeler"
   },
   "ADMIN_USER_PROPERTIES": {
     "TAKEN_DOWN": "Yayından kaldırıldı",
@@ -2121,7 +2152,11 @@
     "STEP_TWO": "Yukarıdaki referans numarasını belirterek havaleyi yapın.",
     "STEP_THREE": "Para onaylandığında talep ilanınıza uygulanır ve size bir bildirim gönderilir.",
     "TRANSFER_DETAILS": "Banka hesap bilgileri doğrudan gönderilir ve bu sayfada yayınlanmaz.",
-    "CONTACT_US": "Havaleyi tamamlamak için bize ulaşın"
+    "CONTACT_US": "Havaleyi tamamlamak için bize ulaşın",
+    "EXTRA_LISTING": {
+      "TITLE": "Bir ek ilan",
+      "DESCRIPTION": "Ücretsiz planınız bir aktif ilana izin veriyor ve bu sınıra ulaştınız. Ödeme onaylandıktan sonra bir ilan daha yayınlayabilirsiniz; diğer ilanlar gibi 30 gün yayında kalır."
+    }
   },
   "DATE_RANGE": {
     "PREV_MONTH": "Önceki ay",
@@ -2362,7 +2397,12 @@
       "PUBLISH": "Yayınla",
       "UNPUBLISH": "Yayından kaldır",
       "TOGGLE_SUCCESS": "Yayın durumu güncellendi.",
-      "TOGGLE_ERROR": "Yayın durumu güncellenemedi."
+      "TOGGLE_ERROR": "Yayın durumu güncellenemedi.",
+      "DELETE": "Sil",
+      "CONFIRM_DELETE": "\"{{title}}\" kalıcı olarak silinsin mi? Bu işlem geri alınamaz.",
+      "DELETE_SUCCESS": "İlan silindi.",
+      "DELETE_HAS_BOOKINGS": "Bu ilanın devam eden rezervasyonları var. Önce bunları tamamlayın, reddedin veya iptal edin, sonra silin.",
+      "DELETE_ERROR": "İlan silinemedi. Lütfen tekrar deneyin."
     },
     "FORM": {
       "EDIT_TITLE": "İlanı düzenle",
@@ -2812,7 +2852,7 @@
   "VALUATION": {
     "EYEBROW": "Mülk değerleme",
     "TITLE": "Mülkünüz ne kadar değerli?",
-    "SUBTITLE": "Benzer ilanlara dayalı hızlı bir tahmin alın veya talebinizi bölgenizdeki emlak ofislerine göndermemize izin verin.",
+    "SUBTITLE": "Bölgenizdeki benzer mülklerin talep fiyatı aralığını HudhudNest'teki gerçek ilanlardan görün. Bu bir ilk tahmindir, mülkünüzün değerlemesi değildir.",
     "GOVERNORATE": "İl",
     "DISTRICT": "İlçe",
     "NEIGHBORHOOD": "Mahalle",
@@ -2820,8 +2860,7 @@
     "REQUEST_TYPE": "Talep türü",
     "REQUEST_TYPES": {
       "ForSale": "Satış",
-      "ForRent": "Kiralama",
-      "ForRentAndSale": "Satış veya kiralama"
+      "ForRent": "Kiralama"
     },
     "AREA": "Alan (m²)",
     "AREA_PLACEHOLDER": "ör. 120",
@@ -2832,21 +2871,19 @@
     "LOOKUP_ERROR": "İl listesi yüklenemedi.",
     "SUBMIT_ERROR": "Değerleme talebiniz gönderilemedi. Lütfen tekrar deneyin.",
     "STATUS_ERROR": "Talep durumu kontrol edilemedi.",
-    "MIN_PRICE": "En düşük fiyat",
-    "MAX_PRICE": "En yüksek fiyat",
-    "AVERAGE_PRICE": "Ortalama fiyat",
-    "MEDIAN_PRICE": "Medyan",
-    "FAST_PATH": {
-      "COMPLETE_TITLE": "Değerleme tamamlandı",
-      "COMPLETE_BODY": "Güvenilir bir tahmin sunmak için yeterli sayıda benzer ilan bulundu."
-    },
     "OFFICE_PATH": {
-      "SENT_TO": "Talebiniz, kesin bir tahmin için bölgenizdeki {{count}} emlak ofisine gönderildi.",
+      "SENT_TO": "Talebinizi mülkünüze yakın {{count}} emlak ofisine fiyat görüşü için gönderdik.",
       "NEIGHBORING_GOVERNORATE_DISCLOSURE": "İlinizde yeterli sayıda ofis bulunmadığından arama, komşu illerdeki ofisleri de kapsayacak şekilde genişletildi.",
       "INSUFFICIENT_COVERAGE": "Bölgenizde en az 3 emlak ofisi bulamadık. Daha az sayıda ofisten tahmin alabilirsiniz.",
       "EXPIRES_AT": "24 saat içinde, en geç {{date}} tarihine kadar yanıt alırsınız.",
       "CHECK_STATUS": "Yanıtları kontrol et",
-      "NO_ESTIMATES_YET": "Henüz tahmin yok. Lütfen daha sonra tekrar bakın."
+      "NO_ESTIMATES_YET": "Henüz tahmin yok. Lütfen daha sonra tekrar bakın.",
+      "OFF": "Emlak ofislerinden değerleme henüz mevcut değil. Daha sonra tekrar deneyin veya bölgeyi genişletmek için yalnızca ili seçin.",
+      "FOLLOW": "Ofislerin yanıtlarını takip edin",
+      "NO_OFFICES": "Bölgenizde fiyat sorulabilecek kayıtlı bir emlak ofisi henüz yok.",
+      "LOGIN_TO_ASK": "Yerel ofisler, ilan az olsa bile bölgelerinin fiyatlarını bilir. Giriş yapın, yakındaki en fazla 3 ofise soralım; 24 saat içinde yanıt verirler.",
+      "ASK_HINT": "Bölgeyi bilenlerin görüşünü de ister misiniz? Yakındaki en fazla 3 emlak ofisine sorarız; 24 saat içinde yanıt verirler.",
+      "ASK": "Ofislerin görüşünü iste"
     },
     "NEW_REQUEST": "Yeni değerleme talebi",
     "STATUS": {
@@ -2861,9 +2898,66 @@
       "REQUEST_TYPE_REQUIRED": "Lütfen bir talep türü seçin.",
       "NEIGHBORHOOD_NEEDS_DISTRICT": "İlçe seçilmeden mahalle seçilemez.",
       "AREA_INVALID": "Alan sıfırdan büyük olmalıdır.",
-      "ROOMS_INVALID": "Geçersiz oda sayısı."
+      "ROOMS_INVALID": "Geçersiz oda sayısı.",
+      "PROPERTY_TYPE_REQUIRED": "Mülk türünü seçin.",
+      "AREA_REQUIRED": "Alanı metrekare olarak girin."
     },
-    "QUICK_RANGE_LINK": "Önce hızlı bir fikir mi edinmek istiyorsunuz? Bölgenizdeki istenen fiyat aralığına bakın"
+    "QUICK_RANGE_LINK": "Önce hızlı bir fikir mi edinmek istiyorsunuz? Bölgenizdeki istenen fiyat aralığına bakın",
+    "CURRENCY": "Para birimi",
+    "ESTIMATE": {
+      "TITLE_SALE": "Bölgenizdeki benzer satılık mülklerin talep fiyatı aralığı",
+      "TITLE_RENT": "Bölgenizdeki benzer mülklerin talep edilen aylık kira aralığı",
+      "MIDDLE": "Orta değer",
+      "PER_SQM": "m² fiyatı",
+      "DISCLAIMER": "Bunlar ilanlardaki talep fiyatlarıdır, gerçek satış fiyatları değildir. Mülkünüzün değerlemesi, bir satın alma teklifi veya satış fiyatı garantisi değildir. Durum, kat, iç donanım ve hukuki durum değeri çok değiştirebilir.",
+      "NONE_TITLE": "Güvenilir bir tahmin için yeterli veri yok"
+    },
+    "RESULT": {
+      "TITLE": "Emlak ofislerinin mülkünüz için fiyat görüşleri",
+      "SUBTITLE": "Talebiniz için sorduğumuz ofislerin yanıtları burada görünür.",
+      "LOADING": "Yükleniyor...",
+      "NOT_FOUND": "Bu talep hesabınızda bulunamadı.",
+      "ANSWERED": "{{asked}} ofisten {{answered}} tanesi yanıt verdi.",
+      "CLOSED_NO_ANSWERS": "Süre hiçbir ofis yanıt vermeden doldu. Yeni bir talep gönderebilirsiniz.",
+      "DISCLAIMER": "Bu, girdiğiniz bilgilere göre ofisin fiyat görüşüdür; resmi bir değerleme veya satın alma teklifi değildir. Yerinde inceleme ve hukuki durum fiyatı değiştirebilir."
+    },
+    "OFFICE_INBOX": {
+      "EYEBROW": "Ofisim",
+      "TITLE": "Fiyat görüşü talepleri",
+      "SUBTITLE": "Ofisinize yakın müşteriler mülklerinin ne kadar ettiğini soruyor. Görüşünüzü 24 saat içinde verin.",
+      "BACK": "Ofisime dön",
+      "LINK": "Fiyat görüşü talepleri",
+      "NO_AGENCY": "Bu sayfa yalnızca emlak ofisi üyeleri içindir.",
+      "LOAD_ERROR": "Talepler yüklenemedi. Lütfen tekrar deneyin.",
+      "AREA": "Alan: {{area}} m²",
+      "ROOMS": "Oda: {{rooms}}",
+      "RECEIVED": "Geliş: {{date}}",
+      "DEADLINE": "Son yanıt: {{date}}",
+      "YOUR_ANSWER": "Ofisinizin yanıtı",
+      "CONTACT": "Müşteri iletişim bilgilerini sizinle paylaştı:",
+      "PRICE_SALE": "Beklenen satış fiyatı",
+      "PRICE_RENT": "Beklenen aylık kira",
+      "NOTES": "Müşteriye not (isteğe bağlı)",
+      "NOTES_PLACEHOLDER": "Örneğin: fiyat kata, işçiliğe ve hukuki duruma göre çok değişir.",
+      "ONCE_HINT": "Yalnızca bir kez yanıt verebilirsiniz; müşteri yanıtı ofisinizin adıyla görür.",
+      "SEND": "Ofisin görüşünü gönder",
+      "SENT": "Yanıtınız müşteriye ulaştı.",
+      "CLOSED": "Bu talep artık yanıtlanamaz.",
+      "SEND_ERROR": "Yanıt gönderilemedi. Lütfen tekrar deneyin.",
+      "REFRESH": "Yenile",
+      "TABS": {
+        "OPEN": "Yanıtınızı bekliyor",
+        "ANSWERED": "Yanıtlandı",
+        "MISSED": "Kaçırıldı"
+      },
+      "TAB_EMPTY": {
+        "OPEN": "Yanıtınızı bekleyen talep yok.",
+        "ANSWERED": "Ofisiniz henüz hiçbir talebi yanıtlamadı.",
+        "MISSED": "Yanıtlamadan süresi dolan talep yok."
+      },
+      "BACK_TO_LIST": "Tüm değerleme talepleri",
+      "NOT_FOUND": "Bu talep ofisinizin gelen kutusunda yok."
+    }
   },
   "PROVIDER": {
     "INBOX": {
@@ -3088,7 +3182,11 @@
     "FEATURED_APPROVED": "İlan öne çıkarıldı.",
     "REJECTED": "Talep reddedildi.",
     "LOAD_ERROR": "Talepler yüklenemedi.",
-    "ACTION_ERROR": "İşlem başarısız oldu. Talep zaten işlenmiş olabilir; liste yenilendi."
+    "ACTION_ERROR": "İşlem başarısız oldu. Talep zaten işlenmiş olabilir; liste yenilendi.",
+    "EXTRA_LISTINGS_TITLE": "Ek ilan talepleri",
+    "APPROVE_EXTRA_LISTING": "Ödemeyi onayla ve ek ilana izin ver",
+    "CONFIRM_APPROVE_EXTRA_LISTING": "Ödemenin ulaştığını onaylayıp «{{name}}» için bir ek ilan yayınlamaya izin verilsin mi?",
+    "EXTRA_LISTING_APPROVED": "İlan sahibi artık bir ek ilan yayınlayabilir."
   },
   "SERVICES_CATALOG": {
     "EYEBROW": "Hizmetler pazarı",
@@ -3323,7 +3421,8 @@
     "CONFIRM_CLOSED": "Bu ilanı satıldı veya kiralandı olarak işaretlemek, ilanı aramadan kaldırır. Kayıt olarak ofis sayfanızda kalır ve depolamadan tasarruf için fotoğrafları 14 gün sonra sıkıştırılır. Devam edilsin mi?",
     "CONFIRM_ARCHIVED": "Arşivlenen ilan herkesten gizlenir; yalnızca siz görebilirsiniz. Devam edilsin mi?",
     "CHANGED": "İlan durumu güncellendi.",
-    "CHANGE_ERROR": "İlan durumu güncellenemedi."
+    "CHANGE_ERROR": "İlan durumu güncellenemedi.",
+    "OFFICE_OWNER_HINT": "Bu ofisin sahibisiniz: temsilcilerinizden birinin ilanının durumunu değiştiriyorsunuz; temsilciye bildirim gider."
   },
   "OFFER_COMMON": {
     "DISCOUNT_PERCENT": "%{{value}} indirim",
@@ -4672,6 +4771,13 @@
       "A3": "İlanlar yayına girdiğinde onlarla platform üzerinden doğrudan iletişime geçersiniz.",
       "Q4": "Bekleme listesi hangi verileri saklar?",
       "A4": "Yalnızca e-posta adresinizi veya WhatsApp numaranızı, isteğe bağlı olarak ilginizi, dili ve onayınızın zamanını."
+    },
+    "OFFER": {
+      "EYEBROW": "Emlak ofislerine özel teklif",
+      "ENDS_ON": "Teklif {{date}} tarihinde sona erer",
+      "PROGRESS_ARIA": "Şimdiye kadar {{max}} ofisten {{count}} tanesi katıldı",
+      "PROGRESS_LABEL": "Şimdiye kadar {{max}} ofisten {{count}} tanesi katıldı",
+      "CTA": "Tekliften nasıl yararlanılır"
     }
   },
   "NEWSLETTER": {
@@ -4921,11 +5027,11 @@
     "DESC": "Kapak görseli, web sitesi, sosyal medya bağlantıları ve çalışma saatleri, herkese açık ofis sayfanızda göründüğü gibi.",
     "COVER": "Kapak görseli",
     "NO_COVER": "Henüz kapak görseli yok",
-    "COVER_HINT": "Geniş bir görsel (en iyisi 1600×530 px), en fazla 5 MB PNG veya JPEG.",
+    "COVER_HINT": "Geniş bir görsel (en iyisi 1600×530 px), en fazla 5 MB PNG, JPEG veya WebP.",
     "UPLOAD_COVER": "Kapak görseli yükle",
     "CHANGE_COVER": "Kapağı değiştir",
     "REMOVE_COVER": "Kapağı kaldır",
-    "COVER_TYPE": "Yalnızca PNG veya JPEG.",
+    "COVER_TYPE": "Yalnızca PNG, JPEG veya WebP.",
     "COVER_TOO_LARGE": "Görsel 5 MB’tan büyük.",
     "COVER_SAVED": "Kapak görseli kaydedildi.",
     "COVER_REMOVED": "Kapak görseli kaldırıldı.",
@@ -4976,6 +5082,163 @@
       "WEDNESDAY": "Çarşamba",
       "THURSDAY": "Perşembe",
       "FRIDAY": "Cuma"
+    }
+  },
+  "ADMIN_LEGAL_HOLDS": {
+    "TITLE": "Yasal bekletmeler",
+    "SUBTITLE": "Bekletme etkin olduğu sürece hesabın planlanmış silinmesi çalışmaz. Bekletmeler kaldırılır, asla silinmez; her işlem denetim günlüğüne yazılır.",
+    "PLACE_TITLE": "Yeni bekletme",
+    "ACCOUNT_ID": "Hesap kimliği",
+    "REASON": "Neden",
+    "PLACE": "Bekletme koy",
+    "FILTER_ACCOUNT": "Hesap kimliğine göre filtrele",
+    "ACTIVE_ONLY": "Yalnızca etkin",
+    "SEARCH": "Ara",
+    "LOAD_ERROR": "Bekletmeler yüklenemedi.",
+    "ACCOUNT": "Hesap",
+    "PLACED_AT": "Konulma",
+    "STATE": "Durum",
+    "ACTIVE": "Etkin",
+    "RELEASED": "Kaldırıldı",
+    "RELEASE": "Kaldır",
+    "EMPTY": "Bekletme yok.",
+    "INVALID_ID": "Hesap kimliği geçerli değil.",
+    "REASON_REQUIRED": "Bekletmenin nedenini yazın.",
+    "CONFIRM_PLACE": "Yasal bekletme, kaldırılana kadar bu hesabın silinmesini engeller. Devam edilsin mi?",
+    "CONFIRM_RELEASE": "Kaldırıldıktan sonra hesabın planlanmış silinmesi çalışabilir. Bekletme kaldırılsın mı?",
+    "PLACED": "Bekletme konuldu.",
+    "RELEASED_OK": "Bekletme kaldırıldı.",
+    "UNKNOWN_ACCOUNT": "Bu kimliğe sahip hesap yok.",
+    "SAVE_ERROR": "Kaydedilemedi. Lütfen tekrar deneyin."
+  },
+  "AI": {
+    "NAME": "Hudhud AI",
+    "SUBTITLE": "Ücretsiz emlak arama asistanı",
+    "OPEN": "Hudhud asistanını aç",
+    "CLOSE": "Kapat",
+    "HISTORY": "Önceki sohbetler",
+    "NEW_CHAT": "Yeni sohbet",
+    "LOADING": "Yükleniyor…",
+    "HISTORY_EMPTY": "Kayıtlı sohbet yok.",
+    "UNTITLED": "Sohbet",
+    "MESSAGES_COUNT": "{{n}} mesaj",
+    "DELETE_CHAT": "Sohbeti sil",
+    "RETENTION_NOTE": "Sohbetler son mesajdan 30 gün sonra otomatik silinir; istediğin zaman silebilirsin.",
+    "WELCOME": "Aradığını kendi kelimelerinle yaz: tür, bölge, bütçe, oda sayısı… sana uygun yayındaki ilanları göstereyim.",
+    "COMPARE_REQUEST": "Seçili ilanları karşılaştır",
+    "RETRY": "Tekrar dene",
+    "SIGN_IN": "Giriş yap",
+    "UNDERSTOOD": "Anladıklarım",
+    "GUESSED": "para birimi tahmini, gerekirse düzelt",
+    "PRICE_ON_REQUEST": "Fiyat belirtilmemiş",
+    "PER_MONTH": "/ ay",
+    "ROOMS_N": "{{n}} oda",
+    "FLOOR_GROUND": "Zemin kat",
+    "FLOOR_N": "{{n}}. kat",
+    "VERIFIED": "doğrulanmış",
+    "SELECT_TO_COMPARE": "Karşılaştırmak için seç",
+    "SHOW_ALL": "Tüm sonuçları ({{n}}) arama sayfasında göster",
+    "SEARCH_PAGE_BROADER": "Arama sayfası bazı kriterleri (oda, alan, asansör gibi) desteklemez; bu yüzden daha fazla sonuç gösterebilir.",
+    "COMPARISON": "İlan karşılaştırması",
+    "YES": "Evet",
+    "NO": "Hayır",
+    "HELPFUL": "Faydalı yanıt",
+    "NOT_HELPFUL": "Faydalı değil",
+    "THINKING": "Arıyorum…",
+    "STOP": "Durdur",
+    "SELECTED_N": "{{n}} seçildi",
+    "COMPARE": "Karşılaştır",
+    "CLEAR": "Temizle",
+    "INPUT_LABEL": "Hudhud'a mesajın",
+    "PLACEHOLDER": "örn. Şam'da 500 doları geçmeyen 3 odalı kiralık daire",
+    "SEND": "Gönder",
+    "REMAINING_TODAY": "Bugün kalan: {{n}} mesaj",
+    "DISCLAIMER_USER": "Asistan yalnızca yayındaki ilanlarda arar ve yanlış anlayabilir; ayrıntıları ilan sayfasında kontrol et. Sohbetler 30 gün saklanır ve silinebilir.",
+    "DISCLAIMER_GUEST": "Asistan yalnızca yayındaki ilanlarda arar ve yanlış anlayabilir; ayrıntıları ilan sayfasında kontrol et. Misafir sohbetleri saklanmaz.",
+    "ERROR": {
+      "AI_DISABLED": "Asistan şu anda kullanılamıyor.",
+      "AI_SIGN_IN_REQUIRED": "Asistanı kullanmak için giriş yap.",
+      "AI_QUOTA_DAILY": "Günlük mesaj sınırına ulaştın. Yarın yenilenir.",
+      "AI_QUOTA_MONTHLY": "Aylık mesaj sınırına ulaştın.",
+      "AI_NOT_FOUND": "Bu sohbet artık yok. Yeni bir sohbet başlayacak.",
+      "AI_INVALID": "Mesaj geçersiz ya da çok uzun.",
+      "AI_RATE_LIMITED": "Kısa sürede çok fazla mesaj. Biraz bekleyip tekrar dene.",
+      "AI_OFFLINE": "İnternet bağlantısı yok.",
+      "AI_FAILED": "Yanıt gelmedi."
+    },
+    "CHIP": {
+      "FOR_RENT": "Kiralık",
+      "FOR_SALE": "Satılık",
+      "PLACE": "📍 {{place}}",
+      "PLACE_TEXT": "İçerir: {{place}}",
+      "PRICE_BETWEEN": "Fiyat {{min}}–{{max}} {{currency}}",
+      "PRICE_MAX": "en fazla {{max}} {{currency}}",
+      "PRICE_MIN": "en az {{min}} {{currency}}",
+      "ROOMS_EXACT": "{{n}} oda",
+      "ROOMS_MIN": "{{n}}+ oda",
+      "ROOMS_MAX": "en fazla {{n}} oda",
+      "AREA_BETWEEN": "Alan {{min}}–{{max}}",
+      "AREA_MIN": "alan {{n}}+",
+      "AREA_MAX": "alan en fazla {{n}}",
+      "FLOOR_HIGHEST": "En üst kat",
+      "FLOOR_LOWEST": "En alt kat",
+      "FLOOR_GROUND": "Zemin kat",
+      "FLOOR_NOT_GROUND": "Zemin kat değil",
+      "FLOOR_EXACT": "{{n}}. kat",
+      "FLOOR_FROM": "{{n}}. kattan itibaren",
+      "FLOOR_TO": "en fazla {{n}}. kat",
+      "ELEVATOR": "Asansörlü",
+      "NO_ELEVATOR": "Asansörsüz",
+      "BALCONY": "Balkonlu",
+      "NO_BALCONY": "Balkonsuz",
+      "PARKING": "Otoparklı",
+      "NO_PARKING": "Otoparksız",
+      "WORDS": "Kelimeler: {{words}}",
+      "SORT_PRICE_ASC": "Önce en ucuz",
+      "SORT_PRICE_DESC": "Önce en pahalı"
+    },
+    "TYPE": {
+      "APARTMENT": "Daire",
+      "HOTEL_APARTMENT": "Otel dairesi",
+      "VILLA": "Villa",
+      "HOUSE": "Müstakil ev",
+      "STUDIO": "Stüdyo",
+      "RESIDENTIAL_LAND": "Konut arsası",
+      "AGRICULTURAL_LAND": "Tarla",
+      "INDUSTRIAL_LAND": "Sanayi arsası",
+      "COMMERCIAL_LAND": "Ticari arsa",
+      "SHOP": "Dükkan",
+      "OFFICE": "Ofis",
+      "WAREHOUSE": "Depo",
+      "HOTEL": "Otel"
+    },
+    "UNIT": {
+      "SquareMeter": "m²",
+      "Qasabah": "kasaba",
+      "Dunum": "dönüm",
+      "Hectare": "hektar"
+    },
+    "ROW": {
+      "listingType": "İlan türü",
+      "price": "Fiyat",
+      "priceKind": "Fiyat türü",
+      "area": "Alan",
+      "pricePerSquareMeter": "m² fiyatı",
+      "rooms": "Oda",
+      "floor": "Kat",
+      "place": "Konum",
+      "hasElevator": "Asansör",
+      "hasBalcony": "Balkon",
+      "hasParkingSpace": "Otopark",
+      "furnishingStatus": "Eşya durumu",
+      "heatingType": "Isıtma",
+      "legalStatus": "Yasal durum",
+      "agency": "Ofis"
+    },
+    "NOTE": {
+      "CURRENCY_DIFFERS": "Farklı para birimleri: doğrudan karşılaştırılamaz",
+      "UNITS_DIFFER": "Farklı alan birimleri: doğrudan karşılaştırılamaz",
+      "NOT_COMPUTABLE": "Bu ilanlar için hesaplanamaz"
     }
   }
 }

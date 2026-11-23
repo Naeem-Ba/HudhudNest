@@ -1,4 +1,4 @@
-// Checkout for the two one-off listing fees (/checkout/:kind/:propertyId).
+// Checkout for the one-off listing fees (/checkout/:kind/:propertyId, and /checkout/extra-listing for one more listing).
 //
 // WHAT THIS PAGE IS NOT: it does not take a payment. There is no payment gateway in this
 // system, so there are no card fields, no gateway redirect, and no "processing payment"
@@ -37,7 +37,8 @@ import {
   ListingFeeKind,
   ListingFeePreview,
   ListingFeeQuote,
-  isListingFeeKind
+  isListingFeeKind,
+  isListingFeeWithoutProperty
 } from '../../core/models/listing-fee.model';
 import { LoadingSpinnerComponent } from '../../shared/ui/loading-spinner.component';
 import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
@@ -64,16 +65,20 @@ export class CheckoutPage implements OnInit {
   readonly error = signal<string | null>(null);
   readonly referenceCopied = signal(false);
 
+  /** Where "back" goes: the owner's listings for the one-more-listing fee, the form for the others (as before). */
+  readonly backLink = computed(() => (this.preview()?.kind === 'extra-listing' ? '/my-listings' : '/property-form'));
+
   /** The review step is over once the server has given us a reference to pay against. */
   readonly isRecorded = computed(() => this.quote() !== null);
 
   ngOnInit(): void {
-    const kind = this.route.snapshot.paramMap.get('kind') ?? '';
+    // /checkout/extra-listing has no :kind segment (the route carries it as data); the other two are /checkout/:kind/:propertyId.
+    const kind = this.route.snapshot.paramMap.get('kind') ?? (this.route.snapshot.data['kind'] as string | undefined) ?? '';
     const propertyId = this.route.snapshot.paramMap.get('propertyId') ?? '';
 
     // A bad URL must not render an empty page that still shows a confirm button. Anything
     // unrecognised goes home rather than offering to charge for an unknown product.
-    if (!isListingFeeKind(kind) || propertyId.length === 0) {
+    if (!isListingFeeKind(kind) || (propertyId.length === 0 && !isListingFeeWithoutProperty(kind))) {
       void this.router.navigate(['/home']);
       return;
     }

@@ -31,8 +31,10 @@ import { MeasurementConsentService } from './measurement-consent.service';
     }
   `,
   styles: [
+    // Above page content and sticky bars, below overlays, drawers and dialogs (--z-overlay and up): at 999 it covered
+    // the Apply button of the mobile filter panel on a first visit (UI performance audit 2026-11-17, U-3).
     `
-      .m-consent { position: fixed; inset-inline: 1rem; inset-block-end: 1rem; z-index: 999; max-width: 34rem; margin-inline: auto; padding: 1rem 1.1rem; border-radius: 14px; background: var(--card-bg, #fff); color: var(--gray-900, #111827); border: 1px solid var(--gray-300, #d1d5db); box-shadow: var(--shadow-lg); }
+      .m-consent { position: fixed; inset-inline: 1rem; inset-block-end: 1rem; z-index: calc(var(--z-overlay, 300) - 1); max-width: 34rem; margin-inline: auto; padding: 1rem 1.1rem; border-radius: 14px; background: var(--card-bg, #fff); color: var(--gray-900, #111827); border: 1px solid var(--gray-300, #d1d5db); box-shadow: var(--shadow-lg); }
       .m-consent__title { margin: 0 0 .35rem; font-size: 1rem; }
       .m-consent__text { margin: 0 0 .75rem; font-size: .88rem; line-height: 1.5; }
       .m-consent__text a { color: inherit; text-decoration: underline; }

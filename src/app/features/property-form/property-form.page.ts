@@ -1,10 +1,13 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ComponentRef,
   DestroyRef,
   OnInit,
   ViewChild,
+  ViewContainerRef,
   computed,
+  effect,
   inject,
   signal
 } from '@angular/core';
@@ -39,7 +42,8 @@ import { isMarketCurrency } from '../../core/pricing/market-currencies';
 import { ToastService } from '../../shared/services/toast.service';
 import { HttpContext } from '@angular/common/http';
 import { SKIP_ERROR_TOAST } from '../../core/interceptors/api-error.interceptor';
-import { MapPickerComponent } from '../../map-picker/map-picker.component';
+import type { MapPickerComponent } from '../../map-picker/map-picker.component';
+import { InViewDirective } from '../../shared/directives/in-view.directive';
 import { ImageFallbackDirective } from '../../shared/directives/image-fallback.directive';
 import { GeoPickerComponent } from '../../shared/ui/geo/geo-picker.component';
 import { GeoPickerInitial, GeoPickerValue, GeoProposal } from '../../shared/ui/geo/geo-picker.models';
@@ -52,6 +56,27 @@ import { PhotoGuideSheetComponent } from '../../shared/ui/photo-guide/photo-guid
 import { AmenityLabelPipe } from '../../pipes/amenity-label.pipe';
 import { PhotoGuideKind, photoGuideKindForListingType } from '../../shared/ui/photo-guide/photo-guide.data';
 import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
+
+/**
+ * Optional fields an edit can empty. The update endpoint treats null as "keep the stored value", so without
+ * naming them here an owner could never remove additional costs, a deposit or an availability date again.
+ * Must match UpdatePropertyCommand.ClearableFields in the API (TotalFloors is not on this form).
+ */
+export const CLEARABLE_PROPERTY_FIELDS = [
+  'Deposit',
+  'AdditionalCosts',
+  'Floor',
+  'AvailableFrom',
+  'RentalStartDate',
+  'RentalEndDate',
+  'RentalDurationType'
+] as const;
+
+/** The clearable fields this save sends without a value: empty on the form, or not applicable to the listing. */
+export function clearableFieldsLeftEmpty(payload: object): string[] {
+  const values = payload as Record<string, unknown>;
+  return CLEARABLE_PROPERTY_FIELDS.filter(field => values[field] === null || values[field] === undefined || values[field] === '');
+}
 
 interface PropertySavePayload {
   Title: string;
@@ -100,6 +125,8 @@ interface PropertySavePayload {
   FurnishingStatus?: number | null;
   /** Create only: the branch of the publisher's office. Changed on an existing listing through PUT /properties/{id}/branch. */
   AgencyBranchId?: string | null;
+  /** Edit only: optional fields to empty (the API treats null as "keep"). */
+  ClearFields?: string[];
 }
 
 /** AreaUnit — must match HudhudNestApi.Domain.Listings.Enums.AreaUnit's ordinals. */
@@ -223,7 +250,7 @@ function propertyFormValidator(group: AbstractControl): ValidationErrors | null 
     ReactiveFormsModule,
     TranslateModule,
     RouterLink,
-    MapPickerComponent,
+    InViewDirective,
     ImageFallbackDirective,
     GeoPickerComponent,
     PhotoGuideSheetComponent,
@@ -271,6 +298,19 @@ export class PropertyFormPage implements OnInit {
   readonly propertyId = signal('');
   readonly currentLang = signal<LangCode>('ar');
   readonly submitError = signal('');
+  /** The map is loaded when it nears the viewport (see loadMap). */
+  @ViewChild('mapHost', { read: ViewContainerRef }) private mapHost?: ViewContainerRef;
+  private mapRef?: ComponentRef<MapPickerComponent>;
+  private mapLoading = false;
+  readonly mapLoaded = signal(false);
+  readonly mapLoadFailed = signal(false);
+  // Keeps the map's inputs in step once it exists (they are set once at creation in loadMap).
+  private readonly mapInputsSync = effect(() => {
+    const lang = this.currentLang();
+    const center = this.mapCenter();
+    this.mapRef?.setInput('lang', lang);
+    this.mapRef?.setInput('center', center);
+  });
   readonly mapCenter = signal<{ lat: number; lng: number } | undefined>(undefined);
 
   readonly selectedFiles = signal<File[]>([]);
@@ -282,6 +322,10 @@ export class PropertyFormPage implements OnInit {
   readonly maxSizeMB = 5;
   /** Matches UploadPropertyImagesCommandHandler.MaxImageSize (decimal 5 MB, not 5 MiB). */
   private readonly maxUploadBytes = 5_000_000;
+  /** Match UploadPropertyImagesCommandHandler.MaxImagesPerUpload / MaxImagesPerProperty. All picked photos go up in
+   * one request, so going over either limit used to reject the whole upload and save the listing with no photos. */
+  static readonly MAX_IMAGES_PER_UPLOAD = 10;
+  static readonly MAX_IMAGES_PER_PROPERTY = 20;
   /** True while picked photos are being shrunk in the browser (see image-compression.ts). */
   readonly processingPhotos = signal(false);
 
@@ -735,6 +779,44 @@ export class PropertyFormPage implements OnInit {
       });
   }
 
+  /**
+   * Balcony, elevator and parking are both quick yes/no flags (searchable columns) and rows of the
+   * amenities catalog. The form shows them once, in the flags row; the catalog list hides them so the
+   * same choice is never offered twice. Land has no flags row, so its catalog list is left whole.
+   */
+  private static readonly FLAG_AMENITY_KEYS: Readonly<Record<string, 'hasBalcony' | 'hasElevator' | 'hasParkingSpace'>> = {
+    balcony: 'hasBalcony',
+    elevator: 'hasElevator',
+    parking: 'hasParkingSpace'
+  };
+
+  private static flagKeyOf(amenity: { iconName?: string | null; icon?: string | null }):
+    'hasBalcony' | 'hasElevator' | 'hasParkingSpace' | null {
+    const key = (amenity.iconName ?? amenity.icon ?? '').trim();
+    return PropertyFormPage.FLAG_AMENITY_KEYS[key] ?? null;
+  }
+
+  /** The amenities catalog without the rows already covered by the flags (everything on land). */
+  selectableAmenities(): LookupAmenity[] {
+    // A method, not a computed(): isLandCategory reads the live form value, which is not a signal.
+    return this.isLandCategory ? this.amenities() : this.amenities().filter(a => PropertyFormPage.flagKeyOf(a) === null);
+  }
+
+  /** Amenity ids to save: the user's picks, with the flag-backed rows following their flag. */
+  private amenityIdsForSave(): string[] {
+    const ids = new Set(this.selectedAmenityIds());
+    if (!this.isLandCategory) {
+      const raw = this.form.getRawValue();
+      for (const amenity of this.amenities()) {
+        const flag = PropertyFormPage.flagKeyOf(amenity);
+        if (flag === null) continue;
+        if (raw[flag]) ids.add(amenity.id);
+        else ids.delete(amenity.id);
+      }
+    }
+    return Array.from(ids);
+  }
+
   isAmenitySelected(amenityId: string): boolean {
     return this.selectedAmenityIds().has(amenityId);
   }
@@ -829,6 +911,8 @@ export class PropertyFormPage implements OnInit {
             areaUnit: this.enumIdByKey('AreaUnit', property.areaUnit) ?? AREA_UNIT_SQUARE_METER,
             rentalStartDate: property.rentalStartDate ?? null,
             rentalEndDate: property.rentalEndDate ?? null,
+            // <input type="date"> takes yyyy-MM-dd; the API returns the stored DateTime.
+            availableFrom: property.availableFrom ? String(property.availableFrom).slice(0, 10) : null,
             rentalDurationType: this.enumIdByKey('RentalDurationType', property.rentalDurationType),
             ownershipType: this.enumIdByKey('OwnershipType', property.legalStatus),
             furnishingStatus: this.enumIdByKey('FurnishingStatus', property.furnishingStatus),
@@ -871,6 +955,12 @@ export class PropertyFormPage implements OnInit {
             .map(amenity => amenity.id)
             .filter((id): id is string => !!id);
           this.selectedAmenityIds.set(new Set(existingAmenityIds));
+          // An amenity row that mirrors a flag (balcony/elevator/parking) turns that flag on when the
+          // flag column was never set, so the single combined checkbox shows what the listing has.
+          for (const amenity of property.amenities ?? []) {
+            const flag = PropertyFormPage.flagKeyOf(amenity);
+            if (flag !== null) this.form.get(flag)?.setValue(true);
+          }
         },
         // ✅ إضافة: رسالة أوضح عند 403 (محاولة تعديل عقار مستخدم آخر) بدل رسالة
         // "تعذر التحميل" العامة المضلِّلة.
@@ -879,6 +969,29 @@ export class PropertyFormPage implements OnInit {
             err?.status === 403 ? 'PROPERTY_FORM.NOT_AUTHORIZED' : 'PROPERTY_FORM.LOAD_ERROR'
           )
       });
+  }
+
+  /** Loads the map picker (and Leaflet) into #mapHost. A failed download shows the network error with a retry. */
+  async loadMap(): Promise<void> {
+    if (this.mapRef || this.mapLoading || !this.mapHost) return;
+    this.mapLoading = true;
+    this.mapLoadFailed.set(false);
+    try {
+      const { MapPickerComponent } = await import('../../map-picker/map-picker.component');
+      if (this.mapRef || !this.mapHost) return;
+      const ref = this.mapHost.createComponent(MapPickerComponent);
+      ref.setInput('lang', this.currentLang());
+      ref.setInput('center', this.mapCenter());
+      ref.setInput('searchable', true);
+      ref.instance.locationChange.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(location => this.onLocationSelected(location));
+      ref.instance.placeSelected.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(place => this.onMapPlaceSelected(place));
+      this.mapRef = ref;
+      this.mapLoaded.set(true);
+    } catch {
+      this.mapLoadFailed.set(true);
+    } finally {
+      this.mapLoading = false;
+    }
   }
 
   onLocationSelected(location: { lat: number; lng: number }): void {
@@ -903,6 +1016,15 @@ export class PropertyFormPage implements OnInit {
       }
 
       typed.push(file);
+    }
+
+    const room = this.remainingPhotoSlots();
+    if (typed.length > room) {
+      this.showToast(
+        this.translate.instant('PROPERTY_FORM.TOO_MANY_PHOTOS', { max: this.photoLimit() }),
+        'error',
+      );
+      typed.splice(room);
     }
 
     // Camera photos routinely exceed the server's 5 MB cap; shrink them here instead of rejecting them.
@@ -934,6 +1056,18 @@ export class PropertyFormPage implements OnInit {
       };
       reader.readAsDataURL(file);
     }
+  }
+
+  /** Photos this save may still add: the per-upload cap, lowered by photos the listing already has. */
+  photoLimit(): number {
+    return Math.max(0, Math.min(
+      PropertyFormPage.MAX_IMAGES_PER_UPLOAD,
+      PropertyFormPage.MAX_IMAGES_PER_PROPERTY - this.existingImages().length,
+    ));
+  }
+
+  remainingPhotoSlots(): number {
+    return Math.max(0, this.photoLimit() - this.selectedFiles().length);
   }
 
   removeImage(index: number): void {
@@ -1148,10 +1282,10 @@ export class PropertyFormPage implements OnInit {
       HasElevator: !isLand && (f.hasElevator ?? false),
       HasParkingSpace: !isLand && (f.hasParkingSpace ?? false),
       HeatingType: this.heatingTypeForSave(),
-      AvailableFrom: f.availableFrom ?? null,
+      AvailableFrom: f.availableFrom || null,
       // ✅ إصلاح: كان الحقل معرَّفاً في الـ payload لكن لم يُملأ أبداً — المرافق
       // المختارة من المستخدم لم تكن تُرسَل إلى الباك اند إطلاقاً.
-      AmenityIds: Array.from(this.selectedAmenityIds()),
+      AmenityIds: this.amenityIdsForSave(),
       // Phase-0, Task 0.
       GovernorateId: f.governorateId ?? null,
       LocationId: f.locationId ?? null,
@@ -1163,14 +1297,15 @@ export class PropertyFormPage implements OnInit {
       // Dynamic listing form (ListingType × PropertyType redesign, Syrian market).
       LegalStatus: isSale ? (f.ownershipType ?? null) : null,
       AreaUnit: f.areaUnit ?? AREA_UNIT_SQUARE_METER,
-      RentalStartDate: isRent ? (f.rentalStartDate ?? null) : null,
-      RentalEndDate: isRent ? (f.rentalEndDate ?? null) : null,
+      RentalStartDate: isRent ? (f.rentalStartDate || null) : null,
+      RentalEndDate: isRent ? (f.rentalEndDate || null) : null,
       RentalDurationType: isRent ? (f.rentalDurationType ?? null) : null,
       FurnishingStatus: isLand ? null : (f.furnishingStatus ?? null)
     };
 
     const branchId = this.showBranchPicker() ? (this.selectedBranchId() || null) : null;
     if (!this.isEditMode() && branchId) payload.AgencyBranchId = branchId;
+    if (this.isEditMode()) payload.ClearFields = clearableFieldsLeftEmpty(payload);
     // On an existing listing the branch has its own endpoint, called only when the choice changed.
     const branchChanged = this.isEditMode() && this.showBranchPicker() && branchId !== this.savedBranchId();
 

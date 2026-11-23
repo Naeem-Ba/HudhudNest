@@ -16,6 +16,7 @@
 //      يغيّر خطة أحد).
 // =====================================================================
 import { HttpErrorResponse } from '@angular/common/http';
+import { Capacitor } from '@capacitor/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
@@ -466,4 +467,32 @@ describe('PricingPage', () => {
 
     expect(plansApiSpy.selectPlan).toHaveBeenCalledWith('premium');
   });
+
+  // Comprehensive audit 2026-11-17 (R-09): App Store 3.1.1 / Play billing. The installed app cannot sell paid plans
+  // without in-app billing, so it shows only the free plan (and a plan already bought on the website).
+  describe('in the installed app', () => {
+    beforeEach(() => spyOn(Capacitor, 'isNativePlatform').and.returnValue(true));
+
+    it('shows only the free plan and does not start a paid selection', () => {
+      const component = createComponent('token-123');
+
+      expect(component.visiblePlans().map(p => p.priceKind)).toEqual(['free']);
+      component.onSelectPlan(PLANS[1]);
+      expect(plansApiSpy.selectPlan).not.toHaveBeenCalled();
+      expect(routerSpy.navigate).not.toHaveBeenCalled();
+    });
+
+    it('still shows the paid plan the user already has', () => {
+      const component = createComponent('token-123');
+      component.currentPaidTier.set('premium');
+
+      expect(component.visiblePlans().map(p => p.tier)).toContain('premium');
+    });
+  });
+
+  it('the website shows every plan', () => {
+    const component = createComponent('token-123');
+    expect(component.visiblePlans().length).toBe(PLANS.length);
+  });
 });
+

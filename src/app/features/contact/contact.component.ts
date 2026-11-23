@@ -2,7 +2,6 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { take } from 'rxjs';
 
@@ -17,6 +16,17 @@ const REQUEST_REF = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{1
 /** Tiers accepted from ?plan=. Anything else is ignored rather than echoed back. */
 const PLAN_TIERS: readonly PlanTier[] = ['free', 'basic', 'premium', 'elite'];
 
+export type ContactReason = 'general' | 'plans' | 'support' | 'provider' | 'privacy' | 'partnership';
+
+export const CONTACT_REASONS: readonly { code: ContactReason; subject: string; labelKey: string; placeholderKey: string }[] = [
+  { code: 'general', subject: 'Allgemeine Frage', labelKey: 'KONTAKT.REASONS.GENERAL.LABEL', placeholderKey: 'KONTAKT.REASONS.GENERAL.PLACEHOLDER' },
+  { code: 'plans', subject: 'Pakete, Zahlung & Rechnung', labelKey: 'KONTAKT.REASONS.PLANS.LABEL', placeholderKey: 'KONTAKT.REASONS.PLANS.PLACEHOLDER' },
+  { code: 'support', subject: 'Problem mit Konto oder Inserat', labelKey: 'KONTAKT.REASONS.SUPPORT.LABEL', placeholderKey: 'KONTAKT.REASONS.SUPPORT.PLACEHOLDER' },
+  { code: 'provider', subject: 'Aufnahme als Dienstleister', labelKey: 'KONTAKT.REASONS.PROVIDER.LABEL', placeholderKey: 'KONTAKT.REASONS.PROVIDER.PLACEHOLDER' },
+  { code: 'privacy', subject: 'Datenschutz & Datenanfrage', labelKey: 'KONTAKT.REASONS.PRIVACY.LABEL', placeholderKey: 'KONTAKT.REASONS.PRIVACY.PLACEHOLDER' },
+  { code: 'partnership', subject: 'Zusammenarbeit, Büros & Presse', labelKey: 'KONTAKT.REASONS.PARTNERSHIP.LABEL', placeholderKey: 'KONTAKT.REASONS.PARTNERSHIP.PLACEHOLDER' }
+];
+
 @Component({
   selector: 'app-kontakt',
   standalone: true,
@@ -28,6 +38,10 @@ export class KontaktComponent implements OnInit {
   /** Short FAQ under the form; wording in SITE.FAQ. */
   readonly faqItems = [1, 2, 3, 4].map(n => ({ q: `SITE.FAQ.Q${n}`, a: `SITE.FAQ.A${n}` }));
 
+  /** Reasons offered in the select. Order = order shown. The German label is what the admin inbox
+   * receives as the message subject, so the team can sort by reason whatever language the visitor used. */
+  readonly reasons = CONTACT_REASONS;
+
   model = {
     Name: '',
     Email: '',
@@ -35,32 +49,19 @@ export class KontaktComponent implements OnInit {
     Message: ''
   };
 
+  /** Current reason; drives the placeholder, the hint and the subject that is sent. */
+  reason: ContactReason = 'general';
+
+  /** Tier from ?plan= (validated), appended to the subject so the team sees which plan it is about. */
+  private planTier: PlanTier | null = null;
+
   sending = false;
   messageText = '';
   success = false;
   submitted = false;
 
-  /**
-   * ✅ إضافة: بوابة "اطلب أن تصبح مزوّد خدمة" — الباك اند يُبقي إنشاء ServiceProvider
-   * (ServiceProvidersController.Create) صلاحية Admin فقط عمداً (تسجيل موثَّق لا ذاتي)،
-   * فلا يوجد ولا ينبغي أن يوجد Endpoint لإنشاء ذاتي. بدل بناء تدفّق موافقة/رفض جديد
-   * بالكامل، هذا يعيد استخدام نموذج التواصل الموجود فعلاً (ContactController، الذي
-   * تراجعه الإدارة أصلاً عبر GET /api/contact) بنفس آلية Subject Prefill المستخدمة
-   * أعلاه لروابط /pricing?plan=. لا حقول قاعدة بيانات جديدة، لا Endpoint جديد.
-   */
-  messagePlaceholderKey = 'KONTAKT.message_placeholder';
-
-  /** True for the old published /kontakt?intent=service-provider links: the page keeps working
-   * but points the visitor at the real application form (/services/join). */
-  serviceProviderIntent = false;
-
   private readonly destroyRef = inject(DestroyRef);
   private readonly pageMeta = inject(PageMetaService);
-
-  /** Tracks whatever this component itself last wrote into model.Subject, so a language
-   * switch can refresh a still-untouched prefill without ever overwriting text the visitor
-   * typed themselves. */
-  private lastAutoSubject: string | null = null;
 
   constructor(
     private readonly contactService: ContactService,
@@ -70,32 +71,46 @@ export class KontaktComponent implements OnInit {
     private readonly route: ActivatedRoute
   ) {}
 
+  /** The visitor sees the application form instead of a free message for provider requests. */
+  get serviceProviderIntent(): boolean {
+    return this.reason === 'provider';
+  }
+
+  get messagePlaceholderKey(): string {
+    return CONTACT_REASONS.find(r => r.code === this.reason)?.placeholderKey ?? '';
+  }
+
   /**
-   * The /pricing CTAs link here as /kontakt?plan=<tier>, and the "become a provider" CTAs
-   * as /kontakt?intent=service-provider. Prefill the subject so the reason the visitor came
-   * is not lost on the way over. Re-applied on every language switch (onLangChange) — a
-   * translate.instant() snapshot taken once in ngOnInit would otherwise freeze the prefilled
-   * Subject in whatever language was active on load, even after the visitor switches to
-   * Arabic/English/German, while everything else on the page (including this same field's
-   * placeholder) updates immediately.
+   * Links from elsewhere in the app arrive with the reason already known:
+   *   /kontakt?reason=<code>            explicit (payment pages, footer links)
+   *   /kontakt?plan=<tier>              pricing CTAs  -> plans
+   *   /kontakt?ref=<planRequestId>      checkout      -> plans (+ reference quoted in the message)
+   *   /kontakt?intent=service-provider  older published links -> provider
    */
   ngOnInit(): void {
     this.pageMeta.applyTranslated('SEO.CONTACT', '/kontakt', this.destroyRef);
-    this.applyQueryParamPrefill();
+    this.applyQueryParams();
     this.prefillPlanReference();
-
-    this.translate.onLangChange
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.applyQueryParamPrefill());
   }
 
-  private applyQueryParamPrefill(): void {
-    const intent = this.route.snapshot.queryParamMap.get('intent');
-    this.serviceProviderIntent = intent === 'service-provider';
-    if (this.serviceProviderIntent) {
-      this.setAutoSubject(this.translate.instant('KONTAKT.SERVICE_PROVIDER_SUBJECT'));
-      this.messagePlaceholderKey = 'KONTAKT.SERVICE_PROVIDER_MESSAGE_PLACEHOLDER';
+  private applyQueryParams(): void {
+    const q = this.route.snapshot.queryParamMap;
+    const explicit = (q.get('reason') ?? '').toLowerCase();
+    const plan = (q.get('plan') ?? '').toLowerCase();
 
+    if (PLAN_TIERS.includes(plan as PlanTier)) {
+      this.planTier = plan as PlanTier;
+    }
+
+    if (CONTACT_REASONS.some(r => r.code === explicit)) {
+      this.reason = explicit as ContactReason;
+    } else if (q.get('intent') === 'service-provider') {
+      this.reason = 'provider';
+    } else if (this.planTier || REQUEST_REF.test(q.get('ref') ?? '')) {
+      this.reason = 'plans';
+    }
+
+    if (this.reason === 'provider') {
       // Best-effort prefill for an already logged-in visitor — profile$ is a cached,
       // BehaviorSubject-backed stream (already populated on login), so take(1) reads
       // whatever is there right now without triggering its own HTTP call.
@@ -106,21 +121,7 @@ export class KontaktComponent implements OnInit {
         this.model.Email = profile.Email ?? this.model.Email;
         this.model.Name = profile.DisplayName || profile.Name || this.model.Name;
       });
-
-      return;
     }
-
-    const raw = (this.route.snapshot.queryParamMap.get('plan') ?? '').toLowerCase();
-    if (!PLAN_TIERS.includes(raw as PlanTier)) {
-      return;
-    }
-
-    const planKey = 'PRICING.' + raw.toUpperCase() + '.NAME';
-    this.translate.get([planKey, 'KONTAKT.PLAN_SUBJECT']).subscribe(values => {
-      this.setAutoSubject(
-        this.translate.instant('KONTAKT.PLAN_SUBJECT', { plan: values[planKey] })
-      );
-    });
   }
 
   /**
@@ -142,13 +143,10 @@ export class KontaktComponent implements OnInit {
     });
   }
 
-  /** Only overwrites model.Subject when it still holds our own last auto-fill (untouched by
-   * the visitor) or is empty — never clobbers something the visitor actually typed. */
-  private setAutoSubject(value: string): void {
-    if (this.model.Subject === '' || this.model.Subject === this.lastAutoSubject) {
-      this.model.Subject = value;
-    }
-    this.lastAutoSubject = value;
+  /** The subject the team receives: always the German reason label, plus the plan tier when known. */
+  buildSubject(): string {
+    const label = CONTACT_REASONS.find(r => r.code === this.reason)?.subject ?? '';
+    return this.reason === 'plans' && this.planTier ? `${label} (${this.planTier})` : label;
   }
 
   onSubmit(form: NgForm): void {
@@ -165,7 +163,7 @@ export class KontaktComponent implements OnInit {
     this.sending = true;
     this.messageText = '';
 
-    this.contactService.sendContact(this.model).subscribe({
+    this.contactService.sendContact({ ...this.model, Subject: this.buildSubject() }).subscribe({
       next: () => {
         this.sending = false;
         this.success = true;
@@ -173,6 +171,7 @@ export class KontaktComponent implements OnInit {
         this.messageText = this.translate.instant('KONTAKT.success_msg');
         this.toast.success(this.messageText);
         form.resetForm();
+        this.model = { Name: '', Email: '', Subject: '', Message: '' };
       },
       error: err => {
         console.error('Kontakt senden Fehler', err);

@@ -45,7 +45,11 @@ export function routeForNotification(item: Pick<NotificationItem, 'type' | 'targ
     case 'agency':
       return ['/my-agency'];
     case 'valuation':
-      return ['/valuation'];
+      // The customer's own request: its office answers, or why it closed.
+      return entityId ? ['/valuation', entityId] : ['/valuation'];
+    case 'valuation-office':
+      // Addressed to an office: its valuation inbox.
+      return ['/my-agency/valuations'];
     case 'profile':
       return entityId ? ['/users', entityId] : null;
     case 'phone-verify':

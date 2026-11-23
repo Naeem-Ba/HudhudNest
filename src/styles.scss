@@ -629,6 +629,12 @@ button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 }
 
 /* Leaflet third-party chrome follows the theme (attribution, zoom buttons, popups). */
+/* Leaflet's panes (400) and controls (1000) stay inside the map instead of rising above fixed page layers such as
+   the consent banners (UI performance audit 2026-11-17, U-3). */
+.leaflet-container {
+  isolation: isolate;
+}
+
 .leaflet-container .leaflet-control-attribution {
   background: var(--map-attribution-bg);
   color: var(--map-attribution-text);

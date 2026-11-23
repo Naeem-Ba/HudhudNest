@@ -107,7 +107,7 @@ const POLL_MAX = 40; // two minutes, then the customer is told it may take longe
             <button type="button" class="btn btn--outline" *ngIf="o.canCancel" [disabled]="busy()" (click)="cancel()">{{ 'PAYMENTS.ORDER.CANCEL' | translate }}</button>
             <button type="button" class="btn btn--outline" *ngIf="o.canRequestRefund && !refundOpen()" (click)="refundOpen.set(true)">{{ 'PAYMENTS.ORDER.REQUEST_REFUND' | translate }}</button>
             <a class="btn btn--outline" routerLink="/payments">{{ 'PAYMENTS.HISTORY.TITLE' | translate }}</a>
-            <a class="btn btn--outline" routerLink="/kontakt">{{ 'PAYMENTS.CONTACT_US' | translate }}</a>
+            <a class="btn btn--outline" routerLink="/kontakt" [queryParams]="{ reason: 'plans' }">{{ 'PAYMENTS.CONTACT_US' | translate }}</a>
           </div>
 
           <form *ngIf="refundOpen()" class="pay-note" (submit)="$event.preventDefault(); sendRefund()">

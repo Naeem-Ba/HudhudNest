@@ -76,7 +76,7 @@ export class AgencyQrPanelComponent implements OnInit {
   readonly code = signal<string | null>(null);
   readonly loading = signal(true);
   readonly failed = signal(false);
-  readonly url = computed(() => (this.code() ? `${this.shareUrls.getSiteOrigin()}/o/${this.code()}` : ''));
+  readonly url = computed(() => this.shareUrls.getOfficeQrUrl(this.code()) ?? '');
   readonly matrix = computed<QrMatrix | null>(() => (this.url() ? buildQrMatrix(this.url()) : null));
 
   ngOnInit(): void {

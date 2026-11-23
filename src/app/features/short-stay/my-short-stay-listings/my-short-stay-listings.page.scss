@@ -78,3 +78,8 @@
     flex-shrink: 0;
   }
 }
+
+.msl__delete {
+  color: var(--danger-text);
+  border-color: var(--danger-text);
+}

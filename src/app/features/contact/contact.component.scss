@@ -80,6 +80,33 @@
   }
 }
 
+.contact-form select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: .75rem .9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: .95rem;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--gray-900);
+
+  &:focus {
+    outline: none;
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px var(--gold-soft);
+  }
+}
+
+.contact-consent {
+  margin: 0;
+  font-size: .8rem;
+  line-height: 1.6;
+  color: var(--gray-500);
+
+  a { font-weight: 700; }
+}
+
 .contact-form textarea {
   resize: vertical;
   min-height: 140px;

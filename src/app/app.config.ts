@@ -1,6 +1,6 @@
 import { APP_INITIALIZER, ApplicationConfig, ErrorHandler, importProvidersFrom, inject } from '@angular/core';
 import { HttpErrorResponse, provideHttpClient, withInterceptors, HttpBackend, HttpClient } from '@angular/common/http';
-import { provideRouter, withNavigationErrorHandler } from '@angular/router';
+import { RouteReuseStrategy, provideRouter, withNavigationErrorHandler, withPreloading } from '@angular/router';
 import { firstValueFrom, timeout, TimeoutError } from 'rxjs';
 
 import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -12,17 +12,20 @@ import { ToastService } from './shared/services/toast.service';
 import { ApiErrorInterceptor } from './core/interceptors/api-error.interceptor';
 import { AuthInterceptor } from './core/interceptors/auth-interceptor';
 import { CsrfInterceptor } from './core/interceptors/csrf.interceptor';
+import { UtcDatesInterceptor } from './core/interceptors/utc-dates.interceptor';
 import { isCsrfFailure, readRefreshErrorCode, sessionEndReason } from './core/interceptors/refresh-auth.interceptor';
 import { AuthService } from './core/auth/auth.service';
 import { normalizeAuthTokenResponse } from './core/models/auth.model';
 import { resolveAuthApiBaseUrl } from './core/auth/auth-api-base-url';
-import { readSessionHint, writeSessionHint } from './core/auth/session-hint';
+import { canSkipSessionCheck, hasSessionMarker, readSessionHint, writeSessionHint } from './core/auth/session-hint';
 import { CsrfTokenService } from './core/services/csrf-token.service';
 import { GeoCountryService } from './core/services/geo-country.service';
 import { LanguageService } from './core/services/language.service';
 import { resolveFirstVisitLanguage, toSupportedLanguage } from './core/i18n/first-visit-language';
 import { browserStaleChunkReloadDeps, isChunkLoadError, reloadForStaleChunk } from './core/services/stale-chunk-reload';
 import { TokenStorageService } from './core/services/token-storage.service';
+import { NextPagePreloading } from './core/services/next-page-preloading';
+import { ParamAwareReuseStrategy } from './core/routing/param-aware-reuse.strategy';
 import { environment } from '../environments/environment';
 
 const REFRESH_TIMEOUT_MS = 15000;
@@ -117,8 +120,9 @@ export function restoreSession(
     // راجع تعليق AuthStatus في auth.service.ts.
     authService.beginSessionRefresh();
     try {
-      // A browser that knows it is signed out (see session-hint.ts) does not ask the server again.
-      if (readSessionHint() === 'no') {
+      // A browser that knows it is signed out, or a first visit to the web app with no session marker
+      // (see session-hint.ts), does not ask the server.
+      if (canSkipSessionCheck(readSessionHint(), resolveAuthApiBaseUrl(environment), hasSessionMarker())) {
         return;
       }
 
@@ -193,9 +197,13 @@ export const appConfig: ApplicationConfig = {
           return;
         }
         reloadForStaleChunk(navigationError.error, navigationError.url, deps);
-      })
+      }),
+      // Only the page a visitor most likely opens next, see next-page-preloading.ts.
+      withPreloading(NextPagePreloading)
     ),
-    provideHttpClient(withInterceptors([CsrfInterceptor, AuthInterceptor, ApiErrorInterceptor])),
+    // A shared link to another listing of the same kind opens a fresh page (see param-aware-reuse.strategy.ts).
+    { provide: RouteReuseStrategy, useClass: ParamAwareReuseStrategy },
+    provideHttpClient(withInterceptors([CsrfInterceptor, AuthInterceptor, ApiErrorInterceptor, UtcDatesInterceptor])),
     // Unhandled errors also go to our own API (no third party), see core/diagnostics.
     { provide: ErrorHandler, useClass: ClientErrorHandler },
     {

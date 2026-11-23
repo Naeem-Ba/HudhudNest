@@ -241,17 +241,20 @@
                   ? ('COMMON.SAVING' | translate)
                   : ('PROPERTY_DETAIL.CONFIRM_AVAILABILITY' | translate) }}
             </button>
+            <!-- Listing status (Reserved / Available / Sold / Rented / Archived) for the publisher and for the
+                 owner of the listing's office; the panel decides whether to show itself, the server enforces it. -->
+            <app-listing-status-panel [property]="p" (statusChanged)="onStatusChanged($event)" />
             <!-- Owner-only paid actions. Links, not buttons: they navigate to the checkout
                  page, which reviews the fee before recording anything. Ownership is
                  enforced server-side (403) — these *ngIf guards are UX, not security. -->
             <a class="btn btn--outline"
-              *ngIf="isOwner()"
+              *ngIf="isOwner() && canBuyDigital"
               [routerLink]="['/checkout', 'extension', p.id]">
               <span aria-hidden="true">🔁</span>
               {{ 'PROPERTY_DETAIL.EXTEND_LISTING' | translate }}
             </a>
             <a class="btn btn--outline"
-              *ngIf="isOwner()"
+              *ngIf="isOwner() && canBuyDigital"
               [routerLink]="['/checkout', 'featured', p.id]">
               <span aria-hidden="true">⭐</span>
               {{ 'PROPERTY_DETAIL.FEATURE_LISTING' | translate }}
@@ -692,10 +695,6 @@
               <div class="info-row" *ngIf="p.availableFrom">
                 <dt>{{ 'PROPERTY_DETAIL.AVAILABLE_FROM' | translate }}</dt>
                 <dd>{{ p.availableFrom | localDate:'dd/MM/yyyy' }}</dd>
-              </div>
-              <div class="info-row" *ngIf="p.condition">
-                <dt>{{ 'PROPERTY_DETAIL.CONDITION' | translate }}</dt>
-                <dd>{{ safe(p.condition) }}</dd>
               </div>
             </dl>
           </div>

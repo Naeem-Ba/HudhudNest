@@ -27,7 +27,7 @@ import { AdsConsentService } from './ads-consent.service';
   `,
   styles: [
     `
-      .ads-consent { position: fixed; inset-inline: 1rem; inset-block-end: 1rem; z-index: 1000; max-width: 34rem; margin-inline: auto; padding: 1rem 1.1rem; border-radius: 14px; background: var(--card-bg, #fff); color: var(--gray-900, #111827); border: 1px solid var(--gray-300, #d1d5db); box-shadow: 0 8px 28px rgba(15, 23, 42, .18); }
+      .ads-consent { position: fixed; inset-inline: 1rem; inset-block-end: 1rem; z-index: calc(var(--z-overlay, 300) - 1); max-width: 34rem; margin-inline: auto; padding: 1rem 1.1rem; border-radius: 14px; background: var(--card-bg, #fff); color: var(--gray-900, #111827); border: 1px solid var(--gray-300, #d1d5db); box-shadow: 0 8px 28px rgba(15, 23, 42, .18); }
       .ads-consent__title { margin: 0 0 .35rem; font-size: 1rem; }
       .ads-consent__text { margin: 0 0 .75rem; font-size: .88rem; line-height: 1.5; }
       .ads-consent__actions { display: flex; gap: .6rem; justify-content: flex-end; }

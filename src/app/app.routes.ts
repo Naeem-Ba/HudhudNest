@@ -2,9 +2,10 @@
 import { LayoutComponent } from './layout/layout';
 import { AuthGuard } from './core/guards/auth-guard';
 import { ListingEligibilityGuard } from './core/guards/listing-eligibility.guard';
-import { AdminMessagesComponent } from './admin/messages/messages.component';
 import { AdminGuard } from './core/guards/admin-guard';
 import { ProviderGuard } from './core/guards/provider-guard';
+import { digitalPurchaseGuard } from './core/native/digital-purchases';
+import { RELOAD_ON_PARAM_CHANGE } from './core/routing/param-aware-reuse.strategy';
 
 export const routes: Routes = [
   {
@@ -35,13 +36,17 @@ export const routes: Routes = [
         path: 'properties',
         loadComponent: () =>
           import('./features/properties/property-list/property-list.page')
-            .then(m => m.PropertyListPage)
+            .then(m => m.PropertyListPage),
+        // Fetched while the home page is open (NextPagePreloading).
+        data: { prefetchFrom: ['/home'] }
       },
       {
         path: 'properties/:id',
         loadComponent: () =>
           import('./features/property-detail/property-detail.page')
-            .then(m => m.PropertyDetailPage)
+            .then(m => m.PropertyDetailPage),
+        // Fetched while the listings page is open (NextPagePreloading).
+        data: { prefetchFrom: ['/properties'] }
       },
       // Short-Stay Accommodation — backend-first PR's frontend follow-up. MVP: single-unit
       // booking flow only (see the plan's decision on hotel/multi-room-type UX being deferred).
@@ -86,7 +91,9 @@ export const routes: Routes = [
         path: 'short-stay/:id',
         loadComponent: () =>
           import('./features/short-stay/short-stay-detail/short-stay-detail.page')
-            .then(m => m.ShortStayDetailPage)
+            .then(m => m.ShortStayDetailPage),
+        // Opened from a shared link while another one is on screen: a fresh page, not the old id (audit L-05).
+        data: { [RELOAD_ON_PARAM_CHANGE]: true }
       },
       // Investment Discovery Portal (Phase 1) — discovery/analysis + watchlist + Expression of
       // Interest only, no payment/investment flow. 'watchlist' must be declared before the
@@ -125,7 +132,9 @@ export const routes: Routes = [
         path: 'investments/:id',
         loadComponent: () =>
           import('./features/investments/investment-details/investment-details.page')
-            .then(m => m.InvestmentDetailsPage)
+            .then(m => m.InvestmentDetailsPage),
+        // Opened from a shared link while another one is on screen: a fresh page, not the old id (audit L-05).
+        data: { [RELOAD_ON_PARAM_CHANGE]: true }
       },
       {
         path: 'kontakt',
@@ -143,6 +152,14 @@ export const routes: Routes = [
             .then(m => m.ValuationRequestPage)
       },
       {
+        // One's own valuation request and the offices' answers. Signed-in: only an account's request goes to offices.
+        path: 'valuation/:id',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/valuation-request/valuation-result.page')
+            .then(m => m.ValuationResultPage)
+      },
+      {
         path: 'my-listings',
         canActivate: [AuthGuard],
         loadComponent: () =>
@@ -158,6 +175,22 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/agency-form/agency-form.page')
             .then(m => m.AgencyFormPage)
+      },
+      {
+        // The office's valuation inbox: customers near the office asking for its price opinion.
+        path: 'my-agency/valuations',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/valuation-office/valuation-office-inbox.page')
+            .then(m => m.ValuationOfficeInboxPage)
+      },
+      {
+        // One request in full, with the answer form while it is still open.
+        path: 'my-agency/valuations/:invitationId',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./features/valuation-office/valuation-office-inbox.page')
+            .then(m => m.ValuationOfficeInboxPage)
       },
       {
         // الصفحة العامة للمكتب بالرابط القصير (/F-AGY-05/) — مجهولة عمدًا، مثل
@@ -347,7 +380,9 @@ export const routes: Routes = [
         path: 'users/:id',
         loadComponent: () =>
           import('./features/user-profile/user-profile.page')
-            .then(m => m.UserProfilePage)
+            .then(m => m.UserProfilePage),
+        // Opened from a shared link while another one is on screen: a fresh page, not the old id (audit L-05).
+        data: { [RELOAD_ON_PARAM_CHANGE]: true }
       },
       {
         path: 'settings',
@@ -468,11 +503,20 @@ export const routes: Routes = [
             .then(m => m.NotFoundPage)
       },
       {
+        // Pay for ONE more listing (free plan, already at the limit). No property id: it buys permission to create one.
+        path: 'checkout/extra-listing',
+        data: { kind: 'extra-listing' },
+        canActivate: [AuthGuard, digitalPurchaseGuard],
+        loadComponent: () =>
+          import('./features/checkout/checkout.page')
+            .then(m => m.CheckoutPage)
+      },
+      {
         // One-off listing fees: :kind is 'extension' or 'featured'.
         // Authenticated because both endpoints behind it are owner-only — an anonymous
         // visitor reaching this page could only ever be shown a 401.
         path: 'checkout/:kind/:propertyId',
-        canActivate: [AuthGuard],
+        canActivate: [AuthGuard, digitalPurchaseGuard],
         loadComponent: () =>
           import('./features/checkout/checkout.page')
             .then(m => m.CheckoutPage)
@@ -527,7 +571,7 @@ export const routes: Routes = [
 
       {
         path: 'admin/messages',
-        component: AdminMessagesComponent,
+        loadComponent: () => import('./admin/messages/messages.component').then(m => m.AdminMessagesComponent),
         canActivate: [AdminGuard]
       },
       {
@@ -544,6 +588,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./admin/growth/admin-growth.page')
             .then(m => m.AdminGrowthPage)
+      },
+      {
+        path: 'admin/legal-holds',
+        canActivate: [AdminGuard],
+        loadComponent: () =>
+          import('./admin/legal-holds/admin-legal-holds.page')
+            .then(m => m.AdminLegalHoldsPage)
       },
       {
         path: 'admin/referrals',

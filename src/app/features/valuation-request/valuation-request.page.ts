@@ -1,15 +1,15 @@
 // src/app/features/valuation-request/valuation-request.page.ts
 //
 // Stage 7 (Valuation module) — customer-facing "what is my property worth?" flow:
-//   1. Submit governorate/district/neighborhood + property type/area/rooms + sale-or-rent.
-//   2. The backend runs the Fast Path (comparable listings) synchronously and, only if that
-//      alone was not enough, matches nearby offices in the same call — see
-//      CreateValuationInquiryCommandHandler on the backend. This page shows whichever
-//      happened, with the Nearby-Governorate disclosure banner when Stage 4's matching had to
-//      widen beyond the customer's own governorate.
-//   3. For the Office Path, a manual "check for responses" refresh — same convention this
-//      codebase's other async-status views (my-service-requests, visits) already use; no
-//      polling anywhere in this app.
+//   1. Submit governorate/district/neighborhood + property type/area (both required)/rooms + sale-or-rent + currency.
+//   2. The backend answers with the automatic estimate (the same area price statistics as /price-estimate: a range of
+//      asking prices in one currency, or "not enough data") and, only when there is none and offices can receive
+//      requests, matches nearby offices in the same call — see CreateValuationInquiryCommandHandler. This page shows
+//      whichever happened, with the Nearby-Governorate disclosure banner when matching widened beyond the governorate.
+//   3. Local offices know their area even where too few listings exist, so a signed-in customer's request goes to up
+//      to three nearby offices whenever there is no estimate, and the customer may also ask for their opinion next to
+//      an estimate ("ask the offices" button, which resends the same request with requestOfficeOpinion). The answers
+//      are followed on /valuation/:id (ValuationResultPage), which a notification also opens.
 //
 // Anonymous by design (ValuationInquiry.RequesterId is nullable for a guest visitor on the
 // backend) — this route carries no AuthGuard.
@@ -18,7 +18,7 @@ import { RouterLink } from '@angular/router';
 import { ChangeDetectionStrategy, Component, DestroyRef, Injector, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { ValuationApiService } from '../../core/api/valuation-api.service';
@@ -31,7 +31,6 @@ import {
 import {
   CreateValuationInquiryPayload,
   CreateValuationInquiryResultDto,
-  ValuationInquiryStatusDto,
   ValuationRequestType,
   validateCreateValuationInquiry
 } from '../../core/models/valuation.model';
@@ -39,14 +38,17 @@ import { LanguageService, LangCode } from '../../core/services/language.service'
 import { ToastService } from '../../shared/services/toast.service';
 import { PageMetaService } from '../../core/services/page-meta.service';
 import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
-import { LocalizedNumberPipe } from '../../shared/pipes/localized-number.pipe';
 import { ComboBoxComponent, ComboOption } from '../../shared/ui/combo-box.component';
 import { PlaceProposalService } from '../../core/api/place-proposal.service';
+import { MARKET_CURRENCY_CODES, isMarketCurrency } from '../../core/pricing/market-currencies';
+import { PreferencesService } from '../../core/services/preferences.service';
+import { formatListingPrice } from '../../shared/utils/listing-price';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-valuation-request-page',
   standalone: true,
-  imports: [LocalizedDatePipe, LocalizedNumberPipe, ComboBoxComponent, CommonModule, ReactiveFormsModule, TranslateModule, RouterLink],
+  imports: [LocalizedDatePipe, ComboBoxComponent, CommonModule, ReactiveFormsModule, TranslateModule, RouterLink],
   templateUrl: './valuation-request.page.html',
   styleUrls: ['./valuation-request.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -60,6 +62,11 @@ export class ValuationRequestPage implements OnInit {
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly pageMeta = inject(PageMetaService);
+  private readonly preferences = inject(PreferencesService);
+  private readonly auth = inject(AuthService);
+
+  /** Offices are only asked for an account: their answer has to reach someone. */
+  readonly loggedIn = toSignal(this.auth.isLoggedIn$, { initialValue: false });
 
   readonly currentLang = signal<LangCode>(this.language.getCurrent());
 
@@ -87,19 +94,28 @@ export class ValuationRequestPage implements OnInit {
   readonly submitting = signal(false);
   readonly result = signal<CreateValuationInquiryResultDto | null>(null);
 
-  readonly checkingStatus = signal(false);
-  readonly statusResult = signal<ValuationInquiryStatusDto | null>(null);
+  readonly askingOffices = signal(false);
+  /** The request as last sent, so "ask the offices" can send the same one again with the offices included. */
+  private lastPayload: CreateValuationInquiryPayload | null = null;
 
-  readonly requestTypes: ValuationRequestType[] = ['ForSale', 'ForRent', 'ForRentAndSale'];
+  readonly requestTypes: ValuationRequestType[] = ['ForSale', 'ForRent'];
+  readonly currencies = MARKET_CURRENCY_CODES;
+
+  /** The person's display currency when it is one the estimate supports, otherwise USD. */
+  private defaultCurrency(): string {
+    const preferred = this.preferences.currency;
+    return preferred && isMarketCurrency(preferred) ? preferred : 'USD';
+  }
 
   readonly form = this.fb.nonNullable.group({
     governorateId: this.fb.control<number | null>(null, Validators.required),
     districtId: this.fb.control<number | null>(null),
     neighborhoodId: this.fb.control<number | null>(null),
-    propertyTypeId: this.fb.control<number | null>(null),
-    area: this.fb.control<number | null>(null, [Validators.min(1)]),
+    propertyTypeId: this.fb.control<number | null>(null, Validators.required),
+    area: this.fb.control<number | null>(null, [Validators.required, Validators.min(1), Validators.max(100000)]),
     rooms: this.fb.control<number | null>(null, [Validators.min(1), Validators.max(50)]),
-    requestType: this.fb.nonNullable.control<ValuationRequestType>('ForSale', Validators.required)
+    requestType: this.fb.nonNullable.control<ValuationRequestType>('ForSale', Validators.required),
+    currencyCode: this.fb.nonNullable.control<string>(this.defaultCurrency())
   });
 
   ngOnInit(): void {
@@ -112,8 +128,8 @@ export class ValuationRequestPage implements OnInit {
     });
 
     this.lookupsApi.getPropertyTypeCatalog().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: items => this.propertyTypes.set(items)
-      // Non-fatal if this one fails — property type is optional on the request.
+      next: items => this.propertyTypes.set(items),
+      error: () => this.toast.show(this.translate.instant('VALUATION.LOOKUP_ERROR'), 'error')
     });
 
     this.bindCascadingLocationChanges();
@@ -137,7 +153,8 @@ export class ValuationRequestPage implements OnInit {
       propertyTypeId: raw.propertyTypeId,
       area: raw.area,
       rooms: raw.rooms,
-      requestType: raw.requestType
+      requestType: raw.requestType,
+      currencyCode: raw.currencyCode
     };
 
     const validationError = validateCreateValuationInquiry(payload);
@@ -148,7 +165,7 @@ export class ValuationRequestPage implements OnInit {
 
     this.submitting.set(true);
     this.result.set(null);
-    this.statusResult.set(null);
+    this.lastPayload = payload;
 
     this.valuationApi.create(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: created => {
@@ -163,34 +180,48 @@ export class ValuationRequestPage implements OnInit {
     });
   }
 
-  checkStatus(): void {
-    const inquiryId = this.result()?.inquiryId;
-    if (!inquiryId) {
+  /** Sends the same request again, this time to the nearby offices as well (signed-in only). */
+  askOffices(): void {
+    if (!this.lastPayload || this.askingOffices()) {
       return;
     }
 
-    this.checkingStatus.set(true);
-    this.valuationApi.getStatus(inquiryId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: status => {
-        this.statusResult.set(status);
-        this.checkingStatus.set(false);
-      },
-      error: () => {
-        this.checkingStatus.set(false);
-        this.toast.show(this.translate.instant('VALUATION.STATUS_ERROR'), 'error');
-      }
-    });
+    this.askingOffices.set(true);
+    this.valuationApi.create({ ...this.lastPayload, requestOfficeOpinion: true })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: created => {
+          this.askingOffices.set(false);
+          // Keeps the estimate on screen (same request, same statistics) and adds the offices' part.
+          this.result.set(created);
+        },
+        error: () => {
+          this.askingOffices.set(false);
+          this.toast.show(this.translate.instant('VALUATION.SUBMIT_ERROR'), 'error');
+        }
+      });
   }
 
   /** Start over — clears the result so the form reappears. */
   reset(): void {
     this.result.set(null);
-    this.statusResult.set(null);
-    this.form.reset({ requestType: 'ForSale' });
+    this.lastPayload = null;
+    this.form.reset({ requestType: 'ForSale', currencyCode: this.defaultCurrency() });
     this.districtText = '';
     this.neighborhoodText = '';
     this.districts.set([]);
     this.neighborhoods.set([]);
+  }
+
+  money(value: number | null, currency: string): string {
+    return formatListingPrice(value, currency);
+  }
+
+  /** yyyy-mm-dd of an API timestamp (UTC), the same short form /price-estimate shows. */
+  date(iso: string | null): string {
+    if (!iso) return '';
+    const d = new Date(iso.endsWith('Z') ? iso : `${iso}Z`);
+    return Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
   }
 
   get canProposePlaces(): boolean {

@@ -12,7 +12,7 @@
 // راجع تقرير الفحص لمزيد من التفاصيل قبل ربطهما بأي شاشة.
 
 import { Injectable } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable, catchError, map, shareReplay, throwError } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
 
 export interface LookupAmenity {
@@ -120,12 +120,30 @@ export class LookupsApiService {
       .pipe(map(response => this.toLookupItems(response)));
   }
 
-  /** GET /api/lookups/governorates?countryCode= — يفتَرض "SY" افتراضيًا إذا لم يُمرَّر. */
+  /**
+   * GET /api/lookups/governorates?countryCode= — يفتَرض "SY" افتراضيًا إذا لم يُمرَّر.
+   * Shared per country for the session: several components of one page asked for the same list at the same time
+   * (two identical requests on Home and Properties, UI performance audit 2026-11-17). A failed request is
+   * forgotten so the next caller tries again.
+   */
   getGovernorates(countryCode = 'SY'): Observable<StructuredLocationLookup[]> {
-    return this.api
+    const cached = this.governoratesByCountry.get(countryCode);
+    if (cached) return cached;
+    const request = this.api
       .get<unknown[]>(`${this.endpoint}/governorates`, { countryCode })
-      .pipe(map(response => this.toStructuredLocations(response)));
+      .pipe(
+        map(response => this.toStructuredLocations(response)),
+        catchError(error => {
+          this.governoratesByCountry.delete(countryCode);
+          return throwError(() => error);
+        }),
+        shareReplay({ bufferSize: 1, refCount: false })
+      );
+    this.governoratesByCountry.set(countryCode, request);
+    return request;
   }
+
+  private readonly governoratesByCountry = new Map<string, Observable<StructuredLocationLookup[]>>();
 
   /** GET /api/lookups/districts?governorateId= — governorateId إلزامي. */
   getDistricts(governorateId: number): Observable<StructuredLocationLookup[]> {

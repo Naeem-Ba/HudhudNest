@@ -37,7 +37,13 @@ describe('Agency QR and statistics panels', () => {
       imports: [AgencyQrPanelComponent, AgencyStatsPanelComponent, TranslateModule.forRoot()],
       providers: [
         { provide: AgenciesApiService, useValue: api },
-        { provide: PropertyShareUrlService, useValue: { getSiteOrigin: () => 'https://hudhudnest.com' } },
+        {
+          provide: PropertyShareUrlService,
+          useValue: {
+            getSiteOrigin: () => 'https://hudhudnest.com',
+            getOfficeQrUrl: (code: string | null) => (code ? `https://hudhudnest.com/o/${code}` : null)
+          }
+        },
         { provide: ToastService, useValue: jasmine.createSpyObj('ToastService', ['success', 'error']) },
         { provide: LanguageService, useValue: { getCurrent: () => 'ar', currentLang$: of('ar') } }
       ]

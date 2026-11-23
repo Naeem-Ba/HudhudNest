@@ -31,6 +31,12 @@ type Sort = NonNullable<ListingReportFilter['sort']>;
  * sent to the server (the list never loads everything). The stat cards double as quick filters.
  * A report count is only a signal: nothing here hides or deletes a listing by itself.
  */
+type PendingStats = { [K in keyof AdminListingReportStatsDto]: null };
+const PENDING_STATS: PendingStats = {
+  total: null, new: null, underReview: null, waitingForInformation: null, actionRequired: null, open: null, resolved: null,
+  dismissed: null, highPriorityOpen: null, overdue: null, averageResolutionHours: null, resolvedSampleSize: null
+};
+
 @Component({
   selector: 'app-admin-listing-reports-page',
   standalone: true,
@@ -43,30 +49,32 @@ type Sort = NonNullable<ListingReportFilter['sort']>;
         <p>{{ 'ADMIN_REPORTS.SUBTITLE' | translate }}</p>
       </header>
 
-      <div class="stats" *ngIf="stats() as s" data-testid="report-stats">
-        <button type="button" class="stat" [class.on]="quick() === 'open'" (click)="setQuick('open')">
-          <strong>{{ s.open }}</strong><span>{{ 'ADMIN_REPORTS.STAT_OPEN' | translate }}</span>
+      <!-- Shown with dashes until the numbers arrive: appearing late pushed the filters and the list ~380 px down on a
+           phone (CLS 0.27, UI performance audit 2026-11-17). -->
+      <div class="stats" *ngIf="statsView() as s" data-testid="report-stats" [attr.aria-busy]="!stats()">
+        <button type="button" class="stat" [disabled]="!stats()" [class.on]="quick() === 'open'" (click)="setQuick('open')">
+          <strong>{{ s.open ?? '–' }}</strong><span>{{ 'ADMIN_REPORTS.STAT_OPEN' | translate }}</span>
         </button>
-        <button type="button" class="stat" [class.on]="quick() === 'New'" (click)="setQuick('New')">
-          <strong>{{ s.new }}</strong><span>{{ 'ADMIN_REPORTS.STATUS.New' | translate }}</span>
+        <button type="button" class="stat" [disabled]="!stats()" [class.on]="quick() === 'New'" (click)="setQuick('New')">
+          <strong>{{ s.new ?? '–' }}</strong><span>{{ 'ADMIN_REPORTS.STATUS.New' | translate }}</span>
         </button>
-        <button type="button" class="stat" [class.on]="quick() === 'UnderReview'" (click)="setQuick('UnderReview')">
-          <strong>{{ s.underReview }}</strong><span>{{ 'ADMIN_REPORTS.STATUS.UnderReview' | translate }}</span>
+        <button type="button" class="stat" [disabled]="!stats()" [class.on]="quick() === 'UnderReview'" (click)="setQuick('UnderReview')">
+          <strong>{{ s.underReview ?? '–' }}</strong><span>{{ 'ADMIN_REPORTS.STATUS.UnderReview' | translate }}</span>
         </button>
-        <button type="button" class="stat" [class.on]="quick() === 'WaitingForInformation'" (click)="setQuick('WaitingForInformation')">
-          <strong>{{ s.waitingForInformation }}</strong><span>{{ 'ADMIN_REPORTS.STATUS.WaitingForInformation' | translate }}</span>
+        <button type="button" class="stat" [disabled]="!stats()" [class.on]="quick() === 'WaitingForInformation'" (click)="setQuick('WaitingForInformation')">
+          <strong>{{ s.waitingForInformation ?? '–' }}</strong><span>{{ 'ADMIN_REPORTS.STATUS.WaitingForInformation' | translate }}</span>
         </button>
-        <button type="button" class="stat stat--warn" [class.on]="quick() === 'overdue'" (click)="setQuick('overdue')">
-          <strong>{{ s.overdue }}</strong><span>{{ 'ADMIN_REPORTS.STAT_OVERDUE' | translate }}</span>
+        <button type="button" class="stat stat--warn" [disabled]="!stats()" [class.on]="quick() === 'overdue'" (click)="setQuick('overdue')">
+          <strong>{{ s.overdue ?? '–' }}</strong><span>{{ 'ADMIN_REPORTS.STAT_OVERDUE' | translate }}</span>
         </button>
-        <button type="button" class="stat stat--warn" [class.on]="quick() === 'high'" (click)="setQuick('high')">
-          <strong>{{ s.highPriorityOpen }}</strong><span>{{ 'ADMIN_REPORTS.STAT_HIGH' | translate }}</span>
+        <button type="button" class="stat stat--warn" [disabled]="!stats()" [class.on]="quick() === 'high'" (click)="setQuick('high')">
+          <strong>{{ s.highPriorityOpen ?? '–' }}</strong><span>{{ 'ADMIN_REPORTS.STAT_HIGH' | translate }}</span>
         </button>
-        <button type="button" class="stat" [class.on]="quick() === 'Resolved'" (click)="setQuick('Resolved')">
-          <strong>{{ s.resolved }}</strong><span>{{ 'ADMIN_REPORTS.STATUS.Resolved' | translate }}</span>
+        <button type="button" class="stat" [disabled]="!stats()" [class.on]="quick() === 'Resolved'" (click)="setQuick('Resolved')">
+          <strong>{{ s.resolved ?? '–' }}</strong><span>{{ 'ADMIN_REPORTS.STATUS.Resolved' | translate }}</span>
         </button>
-        <button type="button" class="stat" [class.on]="quick() === 'Dismissed'" (click)="setQuick('Dismissed')">
-          <strong>{{ s.dismissed }}</strong><span>{{ 'ADMIN_REPORTS.STATUS.Dismissed' | translate }}</span>
+        <button type="button" class="stat" [disabled]="!stats()" [class.on]="quick() === 'Dismissed'" (click)="setQuick('Dismissed')">
+          <strong>{{ s.dismissed ?? '–' }}</strong><span>{{ 'ADMIN_REPORTS.STATUS.Dismissed' | translate }}</span>
         </button>
         <div class="stat stat--static" *ngIf="s.averageResolutionHours !== null">
           <strong>{{ s.averageResolutionHours | localNumber:'1.0-1' }}</strong>
@@ -155,7 +163,7 @@ type Sort = NonNullable<ListingReportFilter['sort']>;
     .stat span{font-size:var(--text-sm);color:var(--gray-600)}
     .stat.on{border-color:var(--primary);background:var(--primary-soft)}
     .stat--warn strong{color:var(--danger-text)}
-    .stat--static{cursor:default}
+    .stat--static,.stat:disabled{cursor:default}
     .filters{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:1rem;align-items:end}
     .filters select,.filters input{width:auto;min-width:150px}
     .filters select,.filters input,.search-input{border:1px solid var(--border);border-radius:var(--r-md);padding:.5rem .8rem;background:var(--surface);font-size:16px}
@@ -196,6 +204,10 @@ export class AdminListingReportsPage implements OnInit {
 
   readonly items = signal<AdminListingReportSummaryDto[]>([]);
   readonly stats = signal<AdminListingReportStatsDto | null>(null);
+  /** Set when the numbers could not be loaded: the cards are then left out, as before. */
+  private readonly statsFailed = signal(false);
+  readonly statsView = computed<PendingStats | AdminListingReportStatsDto | null>(() =>
+    this.stats() ?? (this.statsFailed() ? null : PENDING_STATS));
   readonly assignees = signal<AdminAssigneeDto[]>([]);
   readonly total = signal(0);
   readonly page = signal(1);
@@ -272,8 +284,8 @@ export class AdminListingReportsPage implements OnInit {
       error: () => { if (seq === this.seq) { this.failed.set(true); this.loading.set(false); } }
     });
     this.api.stats(filter).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: s => { if (seq === this.seq) this.stats.set(s); },
-      error: () => {}
+      next: s => { if (seq === this.seq) { this.statsFailed.set(false); this.stats.set(s); } },
+      error: () => { if (seq === this.seq && !this.stats()) this.statsFailed.set(true); }
     });
   }
 

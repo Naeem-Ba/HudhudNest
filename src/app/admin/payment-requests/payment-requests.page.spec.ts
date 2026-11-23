@@ -17,6 +17,9 @@ const QUEUE: PendingPaymentRequests = {
   ],
   extensions: [
     { transactionId: 'x1', propertyId: 'pr3', propertyTitle: 'Flat', ownerId: 'u3', ownerName: 'Lea', ownerEmail: null, amountUsd: 1, requestedAt: '2026-10-03T10:00:00Z', listingExpiresAt: null }
+  ],
+  extraListings: [
+    { requestId: 'e1', userId: 'u4', userName: 'Omar', email: null, amountUsd: 1, requestedAt: '2026-10-04T10:00:00Z' }
   ]
 };
 
@@ -28,7 +31,8 @@ describe('AdminPaymentRequestsPage', () => {
 
   beforeEach(() => {
     api = jasmine.createSpyObj('AdminPaymentRequestsApiService',
-      ['getPending', 'approvePlan', 'rejectPlan', 'approveFeatured', 'rejectFeatured', 'approveExtension', 'rejectExtension']);
+      ['getPending', 'approvePlan', 'rejectPlan', 'approveFeatured', 'rejectFeatured', 'approveExtension', 'rejectExtension',
+       'approveExtraListing', 'rejectExtraListing']);
     api.getPending.and.returnValue(of(QUEUE));
     api.approvePlan.and.returnValue(of({}));
     api.rejectPlan.and.returnValue(of({}));
@@ -36,6 +40,8 @@ describe('AdminPaymentRequestsPage', () => {
     api.rejectFeatured.and.returnValue(of({}));
     api.approveExtension.and.returnValue(of({}));
     api.rejectExtension.and.returnValue(of({}));
+    api.approveExtraListing.and.returnValue(of({}));
+    api.rejectExtraListing.and.returnValue(of({}));
     toast = jasmine.createSpyObj('ToastService', ['success', 'error']);
     spyOn(window, 'confirm').and.returnValue(true);
 
@@ -58,6 +64,25 @@ describe('AdminPaymentRequestsPage', () => {
     expect(el.querySelectorAll('[data-testid="plan-request"]').length).toBe(1);
     expect(el.querySelectorAll('[data-testid="featured-request"]').length).toBe(1);
     expect(el.querySelectorAll('[data-testid="extension-request"]').length).toBe(1);
+    expect(el.querySelectorAll('[data-testid="extra-listing-request"]').length).toBe(1);
+  });
+
+  it('إعلان إضافي: تأكيد يزيل الطلب ويرسل معرّف الطلب، ورفض يزيله ولا يمنح شيئاً', () => {
+    component.approveExtraListing(QUEUE.extraListings[0]);
+    expect(api.approveExtraListing).toHaveBeenCalledWith('e1');
+    expect(component.extraListings().length).toBe(0);
+
+    component.extraListings.set([...QUEUE.extraListings]);
+    component.rejectExtraListing(QUEUE.extraListings[0]);
+    expect(api.rejectExtraListing).toHaveBeenCalledWith('e1');
+    expect(component.extraListings().length).toBe(0);
+  });
+
+  it('طابور فيه طلب إعلان إضافي فقط لا يظهر كأنه فارغ', () => {
+    api.getPending.and.returnValue(of({ plans: [], featured: [], extensions: [], extraListings: QUEUE.extraListings }));
+    component.load();
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-empty-state')).toBeNull();
   });
 
   it('رسوم التمديد: تأكيد يزيل الطلب، ورفض يزيله أيضاً', () => {
@@ -72,7 +97,7 @@ describe('AdminPaymentRequestsPage', () => {
   });
 
   it('طابور فيه رسوم تمديد فقط لا يظهر كأنه فارغ', () => {
-    api.getPending.and.returnValue(of({ plans: [], featured: [], extensions: QUEUE.extensions }));
+    api.getPending.and.returnValue(of({ plans: [], featured: [], extensions: QUEUE.extensions, extraListings: [] }));
     component.load();
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).querySelector('app-empty-state')).toBeNull();
