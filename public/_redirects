@@ -48,7 +48,7 @@ http://www.realestateworld.world/*   https://hudhudnest.com/:splat   301!
 # (tools/generate-download-page.mjs) from downloads/android-release.json: an approved release redirects to its one
 # validated address; with none it returns to /download. Do not edit it by hand.
 # BEGIN generated:download-android (tools/generate-download-page.mjs; edit downloads/android-release.json instead)
-/download/android   https://github.com/Naeem-Ba/HudhudNest-Releases/releases/download/v1.3.0/HudhudNest-1.3.0.apk   302!
+/download/android   https://github.com/Naeem-Ba/HudhudNest-Releases/releases/download/v1.4.0/HudhudNest-1.4.0.apk   302!
 # END generated:download-android
 #
 # Research surveys (market validation, 2026-11-22). Static single-file pages, not Angular routes: the forced rewrites
