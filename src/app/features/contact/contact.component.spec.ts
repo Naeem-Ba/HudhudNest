@@ -11,7 +11,7 @@ import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject } from 'rxjs';
 
-import { KontaktComponent } from './contact.component';
+import { CONTACT_REASONS, KontaktComponent } from './contact.component';
 import { ProfileService, UserProfile } from '../../core/api/profile.service';
 
 function makeActivatedRoute(queryParams: Record<string, string>): ActivatedRoute {
@@ -45,24 +45,6 @@ describe('KontaktComponent — query-param prefills', () => {
     return fixture.componentInstance;
   }
 
-  it('✅ عند تبديل اللغة: يُعاد ملء العنوان التلقائي بالترجمة الجديدة دون المساس بتعديل المستخدم', () => {
-    const component = build({ intent: 'service-provider' });
-    const translate = TestBed.inject(TranslateService);
-    translate.setTranslation('ar', { KONTAKT: { SERVICE_PROVIDER_SUBJECT: 'طلب بالعربية' } });
-    translate.setTranslation('en', { KONTAKT: { SERVICE_PROVIDER_SUBJECT: 'English request' } });
-    translate.setTranslation('de', { KONTAKT: { SERVICE_PROVIDER_SUBJECT: 'Deutsche Anfrage' } });
-    translate.use('ar');
-
-    const originalSubject = component.model.Subject;
-    translate.use('en');
-    expect(component.model.Subject).not.toBe(originalSubject); // re-translated, not frozen
-
-    // A subject the visitor edited by hand must never be silently overwritten again.
-    component.model.Subject = 'كتبته أنا بنفسي';
-    translate.use('de');
-    expect(component.model.Subject).toBe('كتبته أنا بنفسي');
-  });
-
   it('✅ "?ref=<guid>": يُكتب مرجع طلب الخطة في أول سطر من الرسالة الفارغة', () => {
     const component = build(
       { plan: 'basic', ref: '3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b' },
@@ -77,11 +59,46 @@ describe('KontaktComponent — query-param prefills', () => {
     expect(component.model.Message).toBe('');
   });
 
-  it('✅ "?intent=service-provider": يملأ العنوان تلقائياً ويغيّر نص التلميح', () => {
+  it('✅ "?intent=service-provider" (روابط قديمة): يختار سبب "مزوّد خدمة" ويغيّر نص التلميح', () => {
     const component = build({ intent: 'service-provider' });
 
-    expect(component.model.Subject).toBeTruthy();
-    expect(component.messagePlaceholderKey).toBe('KONTAKT.SERVICE_PROVIDER_MESSAGE_PLACEHOLDER');
+    expect(component.reason).toBe('provider');
+    expect(component.serviceProviderIntent).toBeTrue();
+    expect(component.messagePlaceholderKey).toBe('KONTAKT.REASONS.PROVIDER.PLACEHOLDER');
+  });
+
+  it('✅ "?reason=privacy": يختار السبب صراحةً ويرسل العنوان الألماني الثابت', () => {
+    const component = build({ reason: 'privacy' });
+
+    expect(component.reason).toBe('privacy');
+    expect(component.buildSubject()).toBe('Datenschutz & Datenanfrage');
+  });
+
+  it('✅ "?reason=" غير معروف يُتجاهل ويبقى السبب العام', () => {
+    const component = build({ reason: '<script>' });
+
+    expect(component.reason).toBe('general');
+    expect(component.buildSubject()).toBe('Allgemeine Frage');
+  });
+
+  it('✅ "?plan=basic": سبب الباقات والعنوان يذكر الباقة', () => {
+    const component = build({ plan: 'basic' });
+
+    expect(component.reason).toBe('plans');
+    expect(component.buildSubject()).toBe('Pakete, Zahlung & Rechnung (basic)');
+  });
+
+  it('✅ "?plan=" غير صالح لا يغيّر السبب ولا يظهر في العنوان', () => {
+    const component = build({ plan: 'hacker' });
+
+    expect(component.reason).toBe('general');
+    expect(component.buildSubject()).toBe('Allgemeine Frage');
+  });
+
+  it('✅ "?ref=<guid>" وحده (من صفحة الدفع): سبب الباقات', () => {
+    const component = build({ ref: '3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b' });
+
+    expect(component.reason).toBe('plans');
   });
 
   it('✅ "?intent=service-provider" لمستخدم مسجَّل دخول: يملأ الاسم والبريد من الملف الشخصي المخزَّن', () => {
@@ -94,10 +111,20 @@ describe('KontaktComponent — query-param prefills', () => {
     expect(component.model.Name).toBe('مضيف تجريبي');
   });
 
-  it('✅ بلا أي query param: النموذج يبقى فارغاً كما كان', () => {
+  it('✅ بلا أي query param: السبب العام والنموذج فارغ', () => {
     const component = build({});
 
-    expect(component.model.Subject).toBe('');
-    expect(component.messagePlaceholderKey).toBe('KONTAKT.message_placeholder');
+    expect(component.reason).toBe('general');
+    expect(component.model.Message).toBe('');
+    expect(component.messagePlaceholderKey).toBe('KONTAKT.REASONS.GENERAL.PLACEHOLDER');
+  });
+
+  it('✅ كل سبب له تسمية وتلميح وعنوان ألماني غير فارغ', () => {
+    expect(CONTACT_REASONS.length).toBe(6);
+    for (const r of CONTACT_REASONS) {
+      expect(r.subject.length).toBeGreaterThan(2);
+      expect(r.labelKey).toContain(r.code.toUpperCase());
+      expect(r.placeholderKey).toContain(r.code.toUpperCase());
+    }
   });
 });

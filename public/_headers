@@ -167,3 +167,6 @@
 
 /newsletter/*
   X-Robots-Tag: noindex, nofollow
+
+/valuation/*
+  X-Robots-Tag: noindex, nofollow

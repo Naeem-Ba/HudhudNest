@@ -66,6 +66,11 @@ const FALLBACK_IMAGE_PATH = '/images/og-default.png';
  *  normal SPA with 200) on timeout, so a slow backend can never make a live listing look gone. */
 const SEARCH_ENGINE_STATUS_CHECK_TIMEOUT_MS = 3000;
 
+/** How long a social crawler's preview may wait for the backend. Longer than the search-engine check because a
+ *  rich preview is the whole point of this request, but bounded: a backend that is waking up (Render) or down must
+ *  end in the generic preview, not in an unfurler giving up with no card at all (share-links audit L-03). */
+const SOCIAL_PREVIEW_TIMEOUT_MS = 8000;
+
 /**
  * Search engines (Googlebot, Bingbot...) get the normal SPA body -- see social-crawler.mjs for why
  * they are not served pre-rendered HTML -- but the SPA shell is a 200 for EVERY path, so a deleted
@@ -143,7 +148,7 @@ async function respondForOfficeCrawler(request, slug, officeUrl, context) {
   try {
     const response = await fetch(officeUrl, {
       headers: { accept: 'application/json' },
-      signal: AbortSignal.timeout(SEARCH_ENGINE_STATUS_CHECK_TIMEOUT_MS)
+      signal: AbortSignal.timeout(SOCIAL_PREVIEW_TIMEOUT_MS)
     });
 
     if (response.status === 404) {
@@ -238,14 +243,21 @@ export default async (request, context) => {
     // see GetPropertyByIdQueryHandler on the backend) — this function trusts that same rule
     // rather than re-implementing "is this property public" here.
     const response = await fetch(`${apiBaseUrl}/properties/${encodeURIComponent(propertyId)}`, {
-      headers: { accept: 'application/json' }
+      headers: { accept: 'application/json' },
+      signal: AbortSignal.timeout(SOCIAL_PREVIEW_TIMEOUT_MS)
     });
 
-    if (!response.ok) {
+    // Only a definitive 404 means "this listing is gone". Anything else (5xx while the API wakes up, 429, a
+    // gateway error) used to produce the same "listing unavailable" card, which WhatsApp and Facebook then cache
+    // for days on a live listing (share-links audit L-03). Those now get the normal SPA and its generic preview.
+    if (response.status === 404) {
       return new Response(buildNotFoundHtml(lang), {
-        status: response.status === 404 ? 404 : 502,
+        status: 404,
         headers: { 'content-type': 'text/html; charset=utf-8' }
       });
+    }
+    if (!response.ok) {
+      return context.next();
     }
 
     const property = await response.json();

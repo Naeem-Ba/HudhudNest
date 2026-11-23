@@ -78,7 +78,10 @@
 .pay-state h1 { margin: 0 0 var(--space-2); font-size: var(--text-xl); }
 .pay-state p { margin: 0 auto var(--space-4); max-width: 46ch; color: var(--gray-500); line-height: 1.7; }
 
-.pay-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.pay-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); min-width: 0; }
+.pay-actions > * { min-width: 0; max-width: 100%; }
+.pay-actions .pay-field { flex: 1 1 10rem; }
+.pay-actions input, .pay-actions select { min-width: 0; max-width: 100%; }
 
 .pay-note {
   font-size: var(--text-sm); color: var(--gray-500); line-height: 1.7; background: var(--bg-secondary);

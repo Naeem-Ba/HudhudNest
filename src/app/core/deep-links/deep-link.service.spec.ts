@@ -89,6 +89,23 @@ describe('resolveDeepLink', () => {
     expect(resolveDeepLink('https://hudhudnest.com/properties/..%5cadmin')).toBeNull();
   });
 
+  it('opens office pages, office QR codes and the old office address (audit L-01)', () => {
+    expect(resolveDeepLink('https://hudhudnest.com/offices/al-noor')).toBe('/offices/al-noor');
+    expect(resolveDeepLink('https://hudhudnest.com/offices')).toBe('/offices');
+    expect(resolveDeepLink('https://hudhudnest.com/offices/%D8%A7%D9%84%D9%86%D9%88%D8%B1')).toBe('/offices/%D8%A7%D9%84%D9%86%D9%88%D8%B1');
+    expect(resolveDeepLink('https://hudhudnest.com/o/AB12cd34')).toBe('/o/AB12cd34');
+    expect(resolveDeepLink('https://hudhudnest.com/agencies/al-noor')).toBe('/agencies/al-noor');
+    // "/o" is a whole segment, never a string prefix.
+    expect(resolveDeepLink('https://hudhudnest.com/onboarding')).toBeNull();
+    expect(resolveDeepLink('https://hudhudnest.com/officesx/1')).toBeNull();
+  });
+
+  it('never opens staging or preview hosts in the production app', () => {
+    expect(resolveDeepLink('https://staging--hudhudnest.netlify.app/properties/1')).toBeNull();
+    expect(resolveDeepLink('https://deploy-preview-12--hudhudnest.netlify.app/offices/x')).toBeNull();
+    expect(resolveDeepLink('https://localhost/properties/1')).toBeNull();
+  });
+
   it('ignores empty and malformed input', () => {
     expect(resolveDeepLink('')).toBeNull();
     expect(resolveDeepLink(null)).toBeNull();
@@ -100,10 +117,12 @@ describe('resolveDeepLink', () => {
 describe('DeepLinkService', () => {
   let navigateByUrl: jasmine.Spy;
   let service: DeepLinkService;
+  let router: { navigateByUrl: jasmine.Spy; url: string };
 
   beforeEach(() => {
     navigateByUrl = jasmine.createSpy('navigateByUrl').and.resolveTo(true);
-    TestBed.configureTestingModule({ providers: [{ provide: Router, useValue: { navigateByUrl } }] });
+    router = { navigateByUrl, url: '/home' };
+    TestBed.configureTestingModule({ providers: [{ provide: Router, useValue: router }] });
     service = TestBed.inject(DeepLinkService);
   });
 
@@ -117,6 +136,30 @@ describe('DeepLinkService', () => {
     expect(service.open('https://evil.example/properties/5')).toBeFalse();
     expect(service.open(undefined)).toBeFalse();
     expect(navigateByUrl).not.toHaveBeenCalled();
+  });
+
+  it('navigates once when the same link arrives twice while it is still opening (iOS cold start)', () => {
+    navigateByUrl.and.returnValue(new Promise(() => undefined));
+    expect(service.open('https://hudhudnest.com/offices/al-noor')).toBeTrue();
+    expect(service.open('https://hudhudnest.com/offices/al-noor')).toBeTrue();
+    expect(navigateByUrl).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not reload the page that is already open, but opens another one', async () => {
+    router.url = '/properties/5';
+    expect(service.open('https://hudhudnest.com/properties/5')).toBeTrue();
+    expect(navigateByUrl).not.toHaveBeenCalled();
+    expect(service.open('https://hudhudnest.com/properties/6')).toBeTrue();
+    expect(navigateByUrl).toHaveBeenCalledOnceWith('/properties/6');
+  });
+
+  it('opens the same link again after the first navigation finished elsewhere', async () => {
+    expect(service.open('https://hudhudnest.com/properties/7')).toBeTrue();
+    await Promise.resolve();
+    await Promise.resolve();
+    router.url = '/home';
+    expect(service.open('https://hudhudnest.com/properties/7')).toBeTrue();
+    expect(navigateByUrl).toHaveBeenCalledTimes(2);
   });
 
   it('initialize() is a no-op in a browser (no native bridge)', () => {

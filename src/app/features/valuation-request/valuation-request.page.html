@@ -57,11 +57,14 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label for="propertyTypeId">{{ 'VALUATION.PROPERTY_TYPE' | translate }}</label>
+            <label for="propertyTypeId">{{ 'VALUATION.PROPERTY_TYPE' | translate }} *</label>
             <select id="propertyTypeId" formControlName="propertyTypeId">
               <option [ngValue]="null">{{ 'VALUATION.SELECT_PLACEHOLDER' | translate }}</option>
               <option *ngFor="let t of propertyTypes()" [ngValue]="t.id">{{ localizedName(t) }}</option>
             </select>
+            <p class="field-error" *ngIf="form.controls.propertyTypeId.invalid && form.controls.propertyTypeId.touched">
+              ⚠️ {{ 'VALIDATION.REQUIRED' | translate }}
+            </p>
           </div>
 
           <div class="form-group">
@@ -74,13 +77,23 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label for="area">{{ 'VALUATION.AREA' | translate }}</label>
-            <input id="area" type="number" min="1" formControlName="area" [placeholder]="'VALUATION.AREA_PLACEHOLDER' | translate" />
+            <label for="area">{{ 'VALUATION.AREA' | translate }} *</label>
+            <input id="area" type="number" inputmode="decimal" min="1" formControlName="area" [placeholder]="'VALUATION.AREA_PLACEHOLDER' | translate" />
+            <p class="field-error" *ngIf="form.controls.area.invalid && form.controls.area.touched">
+              ⚠️ {{ (form.controls.area.value == null ? 'VALIDATION.REQUIRED' : 'VALUATION.ERRORS.AREA_INVALID') | translate }}
+            </p>
           </div>
 
           <div class="form-group">
             <label for="rooms">{{ 'VALUATION.ROOMS' | translate }}</label>
             <input id="rooms" type="number" min="1" max="50" formControlName="rooms" />
+          </div>
+
+          <div class="form-group">
+            <label for="currencyCode">{{ 'VALUATION.CURRENCY' | translate }}</label>
+            <select id="currencyCode" formControlName="currencyCode">
+              <option *ngFor="let c of currencies" [value]="c">{{ c }}</option>
+            </select>
           </div>
         </div>
 
@@ -95,44 +108,42 @@
     <!-- ── النتيجة ── -->
     <section class="valuation-result" *ngIf="result() as r">
 
-      <!-- المسار السريع: عدد كافٍ من الإعلانات المشابهة (3+) — اكتمل التقييم فورًا. -->
-      <div class="alert alert--success" *ngIf="!r.requiresOfficeValuation" role="alert">
-        <span aria-hidden="true">✅</span>
-        <div>
-          <p class="alert-title">{{ 'VALUATION.FAST_PATH.COMPLETE_TITLE' | translate }}</p>
-          <p>{{ r.fastPath.message || ('VALUATION.FAST_PATH.COMPLETE_BODY' | translate) }}</p>
-        </div>
-      </div>
-
-      <!-- تقدير أولي محدود (1-2 إعلان) قبل الانتقال لمسار المكاتب. -->
-      <div class="alert alert--info" *ngIf="r.requiresOfficeValuation && r.fastPath.hasComparableListings" role="status">
-        <span aria-hidden="true">ℹ️</span>
-        <p>{{ r.fastPath.message }}</p>
-      </div>
-
-      <div class="price-card" *ngIf="r.fastPath.hasComparableListings">
+      <!-- The automatic estimate: a range of asking prices in one currency (the same statistics as /price-estimate),
+           never presented as a valuation of this property. -->
+      <div class="price-card" *ngIf="r.estimate.available; else noEstimate" data-testid="valuation-estimate">
+        <p class="price-card__title">{{ (r.estimate.kind === 'Rent' ? 'VALUATION.ESTIMATE.TITLE_RENT' : 'VALUATION.ESTIMATE.TITLE_SALE') | translate }}</p>
+        <p class="price-card__range" dir="ltr" data-testid="valuation-range">{{ money(r.estimate.low, r.estimate.currencyCode) }} – {{ money(r.estimate.high, r.estimate.currencyCode) }}</p>
+        <!-- Deliberately not highlighted: the range is the answer, not one number inside it. -->
         <div class="price-card__row">
-          <span>{{ 'VALUATION.MIN_PRICE' | translate }}</span>
-          <strong>{{ r.fastPath.minPrice | localNumber }}</strong>
+          <span>{{ 'VALUATION.ESTIMATE.MIDDLE' | translate }}</span>
+          <strong dir="ltr">{{ money(r.estimate.mid, r.estimate.currencyCode) }}</strong>
         </div>
         <div class="price-card__row">
-          <span>{{ 'VALUATION.MAX_PRICE' | translate }}</span>
-          <strong>{{ r.fastPath.maxPrice | localNumber }}</strong>
+          <span>{{ 'VALUATION.ESTIMATE.PER_SQM' | translate }}</span>
+          <strong dir="ltr">{{ money(r.estimate.lowPerSqm, r.estimate.currencyCode) }} – {{ money(r.estimate.highPerSqm, r.estimate.currencyCode) }}</strong>
         </div>
-        <div class="price-card__row price-card__row--highlight">
-          <span>{{ 'VALUATION.AVERAGE_PRICE' | translate }}</span>
-          <strong>{{ r.fastPath.averagePrice | localNumber }}</strong>
-        </div>
-        <div class="price-card__row">
-          <span>{{ 'VALUATION.MEDIAN_PRICE' | translate }}</span>
-          <strong>{{ r.fastPath.medianPrice | localNumber }}</strong>
-        </div>
-        <p class="price-card__source" *ngIf="r.fastPath.source">{{ r.fastPath.source }}</p>
-        <p class="price-card__disclaimer" *ngIf="r.fastPath.disclaimer">{{ r.fastPath.disclaimer }}</p>
+        <ul class="price-card__facts">
+          <li data-testid="valuation-sample">{{ 'PRICE_ESTIMATE.SAMPLE' | translate: { count: r.estimate.sampleCount } }}</li>
+          <li *ngIf="r.estimate.basis">{{ ('PRICE_ESTIMATE.BASIS.' + r.estimate.basis) | translate }}</li>
+          <li *ngIf="r.estimate.confidence" data-testid="valuation-confidence">{{ ('PRICE_ESTIMATE.CONFIDENCE.' + r.estimate.confidence) | translate }}</li>
+          <li>{{ 'PRICE_ESTIMATE.DATES' | translate: { from: date(r.estimate.oldestListingAt), to: date(r.estimate.newestListingAt), at: date(r.estimate.dataComputedAt) } }}</li>
+        </ul>
+        <p class="price-card__disclaimer" data-testid="valuation-disclaimer">{{ 'VALUATION.ESTIMATE.DISCLAIMER' | translate }}</p>
       </div>
 
-      <!-- مسار المكاتب: تم إرسال الطلب لمكاتب عقارية مطابقة جغرافيًا. -->
-      <div class="office-path" *ngIf="r.requiresOfficeValuation">
+      <ng-template #noEstimate>
+        <div class="alert alert--info" role="status" data-testid="valuation-no-estimate">
+          <span aria-hidden="true">ℹ️</span>
+          <div>
+            <p class="alert-title">{{ 'VALUATION.ESTIMATE.NONE_TITLE' | translate }}</p>
+            <p>{{ ('PRICE_ESTIMATE.REASON.' + (r.estimate.reason || 'not_enough_data')) | translate }}</p>
+            <p *ngIf="loggedIn() && !r.officePathAvailable" data-testid="office-path-off">{{ 'VALUATION.OFFICE_PATH.OFF' | translate }}</p>
+          </div>
+        </div>
+      </ng-template>
+
+      <!-- The local offices: sent automatically when there is no estimate, or on request next to one. -->
+      <div class="office-path" *ngIf="r.officesRequested; else officeChoice" data-testid="office-path-sent">
         <div class="alert alert--info" role="status">
           <span aria-hidden="true">🏢</span>
           <p>{{ 'VALUATION.OFFICE_PATH.SENT_TO' | translate: { count: r.officeMatchCount } }}</p>
@@ -151,27 +162,35 @@
 
         <p class="expiry-note">{{ 'VALUATION.OFFICE_PATH.EXPIRES_AT' | translate: { date: (r.expiresAt | localDate: 'short') } }}</p>
 
-        <button type="button" class="valuation-refresh" (click)="checkStatus()" [disabled]="checkingStatus()">
-          <span class="spinner" *ngIf="checkingStatus()"></span>
-          <span>{{ 'VALUATION.OFFICE_PATH.CHECK_STATUS' | translate }}</span>
-        </button>
-
-        <div class="estimates" *ngIf="statusResult() as s">
-          <p class="estimates__status">
-            {{ ('VALUATION.STATUS.' + s.status.toUpperCase()) | translate }}
-          </p>
-
-          <ng-container *ngIf="s.estimates.length; else noEstimates">
-            <div class="estimate-row" *ngFor="let e of s.estimates">
-              <strong>{{ e.estimatedPrice | localNumber }}</strong>
-              <span *ngIf="e.notes">{{ e.notes }}</span>
-            </div>
-          </ng-container>
-          <ng-template #noEstimates>
-            <p class="estimates__empty">{{ 'VALUATION.OFFICE_PATH.NO_ESTIMATES_YET' | translate }}</p>
-          </ng-template>
-        </div>
+        <a class="valuation-refresh follow-link" [routerLink]="['/valuation', r.inquiryId]" data-testid="office-path-follow">
+          {{ 'VALUATION.OFFICE_PATH.FOLLOW' | translate }}
+        </a>
       </div>
+
+      <ng-template #officeChoice>
+        <!-- Offices were wanted but none is registered anywhere near. -->
+        <div class="alert alert--warning" *ngIf="r.insufficientOfficeCoverage; else askChoice" role="status" data-testid="office-path-none">
+          <span aria-hidden="true">🏢</span>
+          <p>{{ 'VALUATION.OFFICE_PATH.NO_OFFICES' | translate }}</p>
+        </div>
+      </ng-template>
+
+      <ng-template #askChoice>
+        <div class="office-ask" *ngIf="!loggedIn(); else signedInChoice" data-testid="office-path-login">
+          <p>{{ 'VALUATION.OFFICE_PATH.LOGIN_TO_ASK' | translate }}</p>
+          <a class="valuation-restart" routerLink="/login" [queryParams]="{ returnUrl: '/valuation' }">{{ 'AUTH.LOGIN_BUTTON' | translate }}</a>
+        </div>
+      </ng-template>
+
+      <ng-template #signedInChoice>
+        <div class="office-ask" *ngIf="r.officePathAvailable && r.estimate.available" data-testid="office-path-ask">
+          <p>{{ 'VALUATION.OFFICE_PATH.ASK_HINT' | translate }}</p>
+          <button type="button" class="valuation-refresh" (click)="askOffices()" [disabled]="askingOffices()">
+            <span class="spinner" *ngIf="askingOffices()"></span>
+            <span>{{ 'VALUATION.OFFICE_PATH.ASK' | translate }}</span>
+          </button>
+        </div>
+      </ng-template>
 
       <button type="button" class="valuation-restart" (click)="reset()">
         {{ 'VALUATION.NEW_REQUEST' | translate }}

@@ -42,7 +42,7 @@ describe('PropertyFormPage heating type', () => {
   let http: HttpTestingController;
   let propertyApi: jasmine.SpyObj<PropertyApiService>;
 
-  function setup(editId?: string): void {
+  function setup(editId?: string, saved: Record<string, unknown> = {}): void {
     const lookups = jasmine.createSpyObj('LookupsApiService', [
       'getGovernorates', 'getDistricts', 'getNeighborhoods', 'getPropertyTypeCatalog', 'getAmenities', 'getCities'
     ]);
@@ -54,7 +54,7 @@ describe('PropertyFormPage heating type', () => {
     ]));
     propertyApi = jasmine.createSpyObj('PropertyApiService', ['checkDuplicate', 'getPropertyForManagement']);
     propertyApi.getPropertyForManagement.and.returnValue(of({
-      id: editId, title: 'Edit me', description: 'd', listingType: 'ForRent', heatingType: 'Gas', countryCode: 'SY'
+      id: editId, title: 'Edit me', description: 'd', listingType: 'ForRent', heatingType: 'Gas', countryCode: 'SY', ...saved
     } as never));
 
     TestBed.configureTestingModule({
@@ -119,6 +119,20 @@ describe('PropertyFormPage heating type', () => {
     expect(fixture.componentInstance.form.get('heatingType')?.value).toBe(2);
   });
 
+  // Full consistency audit 2026-11-16: the form saves AvailableFrom, but edit mode never loaded it, so the date
+  // input opened empty on every edit (the API now returns it, with AdditionalCosts, in PropertyDto).
+  it('edit mode loads the saved available-from date and additional costs', async () => {
+    setup('11111111-1111-1111-1111-111111111111', { availableFrom: '2026-12-01T00:00:00Z', additionalCosts: 150 });
+    const fixture = TestBed.createComponent(PropertyFormPage);
+    fixture.detectChanges();
+    flushEnums();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.form.get('availableFrom')?.value).toBe('2026-12-01');
+    expect(fixture.componentInstance.form.get('additionalCosts')?.value).toBe(150);
+  });
+
   it('edit mode keeps the owner\'s "hide exact location" choice (growth engine P8)', async () => {
     setup('11111111-1111-1111-1111-111111111111');
     propertyApi.getPropertyForManagement.and.returnValue(of({
@@ -149,6 +163,8 @@ describe('PropertyFormPage heating type', () => {
 
     expect(fixture.componentInstance.form.get('isPriceNegotiable')?.value).toBeTrue();
     expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="price-negotiable"] input')).not.toBeNull();
+    // The native box is hidden by the global input reset, so the styled box that draws the tick must exist.
+    expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="price-negotiable"] .checkbox-box')).not.toBeNull();
   });
 
   it('edit mode defaults "price negotiable" to off when the listing never set it', async () => {
@@ -164,6 +180,31 @@ describe('PropertyFormPage heating type', () => {
 
     expect(fixture.componentInstance.form.get('isPriceNegotiable')?.value).toBeFalse();
     expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="price-negotiable"] input')).not.toBeNull();
+  });
+
+  // Comprehensive audit 2026-11-17 (R-06): the server takes at most 10 photos per upload and 20 per listing, and all
+  // picked photos go up in one request, so picking 11 used to reject the whole upload and save the listing bare.
+  it('keeps the picked photos within the per-upload and per-listing limits', async () => {
+    setup();
+    const fixture = TestBed.createComponent(PropertyFormPage);
+    fixture.detectChanges();
+    flushEnums();
+    await fixture.whenStable();
+    const page = fixture.componentInstance;
+    const pick = (n: number) => ({
+      target: { files: Array.from({ length: n }, (_, i) => new File(['x'], `p${i}.png`, { type: 'image/png' })), value: '' }
+    } as unknown as Event);
+
+    await page.onFileSelected(pick(12));
+    expect(page.selectedFiles().length).toBe(10);
+    await page.onFileSelected(pick(1));
+    expect(page.selectedFiles().length).toBe(10);
+
+    page.selectedFiles.set([]);
+    page.existingImages.set(Array.from({ length: 15 }, (_, i) => ({ id: `${i}`, url: `u${i}`, isMain: i === 0 })));
+    expect(page.photoLimit()).toBe(5);
+    await page.onFileSelected(pick(7));
+    expect(page.selectedFiles().length).toBe(5);
   });
 });
 
@@ -215,5 +256,58 @@ describe('PropertyFormPage heating type in the save payload', () => {
     component.form.controls.heatingType.setValue(3);
     component.form.controls.heatingType.markAsDirty();
     expect(component.heatingTypeForSave()).toBe(3);
+  });
+});
+
+describe('PropertyFormPage features and amenities in one group', () => {
+  const catalog = [
+    { id: 'a-balcony', name: 'شرفة', category: null, iconName: 'balcony' },
+    { id: 'a-elevator', name: 'مصعد', category: null, iconName: 'elevator' },
+    { id: 'a-parking', name: 'موقف', category: null, iconName: 'parking' },
+    { id: 'a-pool', name: 'مسبح', category: null, iconName: 'pool' }
+  ];
+
+  function build(): { component: PropertyFormPage; ids: () => string[] } {
+    const lookups = jasmine.createSpyObj('LookupsApiService', [
+      'getGovernorates', 'getDistricts', 'getNeighborhoods', 'getPropertyTypeCatalog', 'getAmenities', 'getCities'
+    ]);
+    for (const name of ['getGovernorates', 'getDistricts', 'getNeighborhoods', 'getCities', 'getPropertyTypeCatalog']) {
+      lookups[name].and.returnValue(of([]));
+    }
+    lookups.getAmenities.and.returnValue(of(catalog));
+    const api = jasmine.createSpyObj('PropertyApiService', ['checkDuplicate', 'getPropertyForManagement']);
+    TestBed.configureTestingModule({
+      imports: [PropertyFormPage, TranslateModule.forRoot()],
+      providers: [
+        provideHttpClient(), provideHttpClientTesting(), provideRouter([]),
+        { provide: LookupsApiService, useValue: lookups },
+        { provide: PropertyApiService, useValue: api },
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({}) } } },
+        { provide: LanguageService, useValue: { getCurrentLang: () => 'ar', getCurrent: () => 'ar', currentLang$: of('ar') } }
+      ]
+    });
+    TestBed.overrideComponent(PropertyFormPage, {
+      remove: { imports: [MapPickerComponent, LocationComboComponent] },
+      add: { schemas: [NO_ERRORS_SCHEMA] }
+    });
+    const component = TestBed.createComponent(PropertyFormPage).componentInstance;
+    component.amenities.set(catalog);
+    return { component, ids: () => (component as unknown as { amenityIdsForSave(): string[] }).amenityIdsForSave().sort() };
+  }
+
+  it('the catalog list hides balcony, elevator and parking (the flags row already offers them)', () => {
+    const { component } = build();
+    expect(component.selectableAmenities().map(a => a.id)).toEqual(['a-pool']);
+  });
+
+  it('a ticked flag saves its catalog row too, and an unticked flag removes it', () => {
+    const { component, ids } = build();
+    component.toggleAmenity('a-pool');
+    component.form.patchValue({ hasBalcony: true, hasParkingSpace: true });
+    expect(ids()).toEqual(['a-balcony', 'a-parking', 'a-pool']);
+
+    component.selectedAmenityIds.set(new Set(['a-elevator', 'a-pool']));
+    component.form.patchValue({ hasBalcony: false, hasElevator: false, hasParkingSpace: false });
+    expect(ids()).toEqual(['a-pool']);
   });
 });

@@ -32,6 +32,8 @@
     "CONCURRENCY_CONFLICT": "This item was changed by someone else at the same moment. Refresh the page and try again.",
     "CSRF_VALIDATION_FAILED": "The request could not be verified as safe. Reload the page and try again.",
     "LISTING_QUOTA_REACHED": "You've reached the active-listing limit of your plan. Delete an existing listing or upgrade your plan to add a new one.",
+    "LISTING_EXPIRED_EXTEND_ONLY": "This listing's publication period has ended. Renew it with an extension; the \"Expired\" status cannot be changed by hand.",
+    "LISTING_STATUS_NOT_FOR_TYPE": "This status does not fit the listing type: \"Sold\" is for listings for sale and \"Rented\" for listings for rent.",
     "PAYMENTS_DISABLED": "Online payment is not available right now. Nothing was charged.",
     "PAYMENT_PROVIDER_UNAVAILABLE": "The payment provider is not available right now. Nothing was charged. Try again shortly.",
     "PAYMENT_PROVIDER_UNAVAILABLE_FOR_REQUEST": "This payment method is not available for this currency or country.",
@@ -148,7 +150,9 @@
     "ADMIN_PAYMENTS": "Payments (online)",
     "ADMIN_GEO": "Location catalog",
     "OFFICES": "Agencies",
-    "ADMIN_AGENCIES": "Agency verification"
+    "ADMIN_AGENCIES": "Agency verification",
+    "ADMIN_LEGAL_HOLDS": "Legal holds",
+    "VALUATION_REQUESTS": "Valuation requests"
   },
   "AUTH": {
     "LOGIN_TITLE": "Welcome",
@@ -506,36 +510,54 @@
     }
   },
   "KONTAKT": {
-    "PLAN_SUBJECT": "Subscription plan enquiry: {{plan}}",
     "PLAN_REF_LINE": "Plan request reference: {{ref}}",
-    "SERVICE_PROVIDER_SUBJECT": "Request to join as a service provider",
-    "SERVICE_PROVIDER_MESSAGE_PLACEHOLDER": "Tell us about your business: business name, service type (moving, cleaning, photography...), a phone number, and your service area. Our team will reach out to review and activate your account.",
     "title": "Contact us",
     "subtitle": "Send your message and we will reply as soon as possible.",
     "name": "Full name",
     "nameCtrl": "Please enter a name with at least three characters.",
     "email": "Email",
-    "emailCtrl": "Please enter a valid email address.",
-    "subject": "Subject",
-    "subCtrl": "Please enter a short subject with at least three characters.",
     "message": "Message",
     "msgCtrl": "Please enter a message with at least 10 characters.",
     "send": "Send",
     "sending": "Sending...",
     "info_title": "Contact information",
     "telefon": "Phone",
-    "adresse": "Address",
-    "stadt": "City",
-    "strasse": "Street",
     "success_msg": "Your message was sent successfully!",
     "error_msg": "An error occurred while sending. Try again later.",
     "error_validation": "Please fill in the required fields correctly.",
     "name_placeholder": "Enter full name",
-    "subject_placeholder": "Enter the message subject",
-    "message_placeholder": "Write your message clearly",
     "response_note": "We usually reply within 24 business hours.",
     "SERVICE_PROVIDER_NOTICE": "To join as a service provider, use the new application form: you can follow your application and answer questions from our team there.",
-    "SERVICE_PROVIDER_NOTICE_LINK": "Open the application form"
+    "SERVICE_PROVIDER_NOTICE_LINK": "Open the application form",
+    "REASON_LABEL": "What is it about?",
+    "REASONS": {
+      "GENERAL": {
+        "LABEL": "General question",
+        "PLACEHOLDER": "Write your question clearly"
+      },
+      "PLANS": {
+        "LABEL": "Plans, payment & invoice",
+        "PLACEHOLDER": "Which plan or payment is your request about? Include the order reference if you have one."
+      },
+      "SUPPORT": {
+        "LABEL": "Problem with account or listing",
+        "PLACEHOLDER": "What happened and what did you try? If it concerns a listing, please paste the link to it."
+      },
+      "PROVIDER": {
+        "LABEL": "Join as a service provider",
+        "PLACEHOLDER": "Tell us about your business: business name, service type (moving, cleaning, photography...), a phone number, and your service area. Our team will reach out to review and activate your account."
+      },
+      "PRIVACY": {
+        "LABEL": "Privacy & data request",
+        "PLACEHOLDER": "Describe your request (access, correction, deletion, objection) and give the email address you are registered with on HudhudNest."
+      },
+      "PARTNERSHIP": {
+        "LABEL": "Partnership, real-estate offices & press",
+        "PLACEHOLDER": "Introduce yourself briefly and tell us how we could work together."
+      }
+    },
+    "CONSENT_TEXT": "By sending this message you agree that we use your details to handle your request. More in the",
+    "CONSENT_LINK": "privacy policy"
   },
   "ADMIN_MSG": {
     "title": "Contact messages",
@@ -743,7 +765,8 @@
       "MODE_BOTH": "for sale or rent",
       "FALLBACK_TITLE_CITY": "Property {{mode}} in {{city}}",
       "FALLBACK_TITLE": "Property {{mode}}"
-    }
+    },
+    "OFFICE_TEXT": "{{name}}: real estate office on HudhudNest"
   },
   "PROPERTY": {
     "MODE_RENT": "For rent",
@@ -773,6 +796,7 @@
     "INVALID_FILE_TYPE": "Unsupported file type. Allowed: PNG, JPG, WebP.",
     "FILE_TOO_LARGE": "The file {{name}} is larger than 5 MB.",
     "IMAGE_UPLOAD_WARNING": "The property was saved, but the images could not be uploaded.",
+    "TOO_MANY_PHOTOS": "You can add at most {{max}} photos this time. Only the first ones were added.",
     "PHOTOS_PROCESSING": "Preparing and resizing photos...",
     "COUNTRY": "Country",
     "REGION": "Region",
@@ -870,6 +894,7 @@
     "HIDE_EXACT_LOCATION_HINT": "Visitors see an approximate area of about 500 m instead of the pin, and no street name. You and the admins still see the exact spot.",
     "PRICE_NEGOTIABLE": "The price is negotiable",
     "PRICE_NEGOTIABLE_HINT": "Turn this on if you are open to negotiating the price. Visitors see it on the listing details page only.",
+    "FEATURES_AND_AMENITIES": "Features and amenities",
     "BRANCH": {
       "LABEL": "Office branch",
       "NONE": "No specific branch",
@@ -994,6 +1019,11 @@
       "PLAN_EXPIRED": "The office owner’s plan has ended, so active listings cannot be added until it is renewed.",
       "OTHER_OFFICE": "This listing belongs to another office.",
       "ERROR": "The listing could not be added. Please try again."
+    },
+    "EXTRA_LISTING": {
+      "BUY": "Add one more listing for ${{price}}",
+      "PENDING": "Your extra-listing request is waiting for an administrator to confirm the payment. After that you can add your listing.",
+      "PAID_READY": "You have a paid extra listing ready. Add your listing now."
     }
   },
   "VIEW_COUNT": {
@@ -1210,7 +1240,8 @@
     "ENABLE_EXPLANATION": "The owner can sign in again and listings that the disabling took down come back. Listings taken down for another reason stay down.",
     "ENABLE_REASON": "Reason for re-enabling (required)",
     "ENABLE_SUCCESS": "Account re-enabled.",
-    "ENABLE_NOT_POSSIBLE": "This account cannot be re-enabled: the owner deleted it themselves (irreversible) or it is not disabled."
+    "ENABLE_NOT_POSSIBLE": "This account cannot be re-enabled: the owner deleted it themselves (irreversible) or it is not disabled.",
+    "LEGAL_HOLDS": "Legal holds"
   },
   "ADMIN_USER_PROPERTIES": {
     "TAKEN_DOWN": "Taken down",
@@ -2121,7 +2152,11 @@
     "STEP_TWO": "Make the transfer, quoting the reference number above.",
     "STEP_THREE": "Once the money is confirmed, the request is applied to your listing and you get a notification.",
     "TRANSFER_DETAILS": "Bank account details are sent directly and are not published on this page.",
-    "CONTACT_US": "Contact us to complete the transfer"
+    "CONTACT_US": "Contact us to complete the transfer",
+    "EXTRA_LISTING": {
+      "TITLE": "One extra listing",
+      "DESCRIPTION": "Your free plan allows one active listing and you have reached it. Once the payment is confirmed you can publish one more listing, live for 30 days like any other."
+    }
   },
   "DATE_RANGE": {
     "PREV_MONTH": "Previous month",
@@ -2362,7 +2397,12 @@
       "PUBLISH": "Publish",
       "UNPUBLISH": "Unpublish",
       "TOGGLE_SUCCESS": "Publish status updated.",
-      "TOGGLE_ERROR": "Could not update publish status."
+      "TOGGLE_ERROR": "Could not update publish status.",
+      "DELETE": "Delete",
+      "CONFIRM_DELETE": "Delete \"{{title}}\" for good? This cannot be undone.",
+      "DELETE_SUCCESS": "Listing deleted.",
+      "DELETE_HAS_BOOKINGS": "This listing has bookings in progress. Complete, reject or cancel them first, then delete it.",
+      "DELETE_ERROR": "The listing could not be deleted. Please try again."
     },
     "FORM": {
       "EDIT_TITLE": "Edit Listing",
@@ -2812,7 +2852,7 @@
   "VALUATION": {
     "EYEBROW": "Property Valuation",
     "TITLE": "What is your property worth?",
-    "SUBTITLE": "Get a quick estimate based on similar listings, or let us send your request to real-estate offices in your area.",
+    "SUBTITLE": "See the range of asking prices for properties like yours in your area, from real listings on HudhudNest. This is a first estimate, not a valuation of your property.",
     "GOVERNORATE": "Governorate",
     "DISTRICT": "District",
     "NEIGHBORHOOD": "Neighborhood",
@@ -2820,8 +2860,7 @@
     "REQUEST_TYPE": "Request type",
     "REQUEST_TYPES": {
       "ForSale": "Sale",
-      "ForRent": "Rent",
-      "ForRentAndSale": "Sale or rent"
+      "ForRent": "Rent"
     },
     "AREA": "Area (m²)",
     "AREA_PLACEHOLDER": "e.g. 120",
@@ -2832,21 +2871,19 @@
     "LOOKUP_ERROR": "Could not load the list of governorates.",
     "SUBMIT_ERROR": "Could not submit your valuation request. Please try again.",
     "STATUS_ERROR": "Could not check the request status.",
-    "MIN_PRICE": "Min price",
-    "MAX_PRICE": "Max price",
-    "AVERAGE_PRICE": "Average price",
-    "MEDIAN_PRICE": "Median",
-    "FAST_PATH": {
-      "COMPLETE_TITLE": "Valuation complete",
-      "COMPLETE_BODY": "Enough similar listings were found to provide a reliable estimate."
-    },
     "OFFICE_PATH": {
-      "SENT_TO": "Your request was sent to {{count}} real-estate office(s) in your area for a precise estimate.",
+      "SENT_TO": "We sent your request to {{count}} real estate agencies near your property for their price opinion.",
       "NEIGHBORING_GOVERNORATE_DISCLOSURE": "Not enough offices were available in your governorate, so the search was expanded to include offices from neighboring governorates.",
       "INSUFFICIENT_COVERAGE": "We could not find at least 3 real-estate offices in your area. You may receive estimates from fewer offices.",
       "EXPIRES_AT": "You'll hear back within 24 hours, by {{date}} at the latest.",
       "CHECK_STATUS": "Check for responses",
-      "NO_ESTIMATES_YET": "No estimates yet. Please check back later."
+      "NO_ESTIMATES_YET": "No estimates yet. Please check back later.",
+      "OFF": "Valuation by real-estate offices is not available yet. Try again later, or choose only the governorate to widen the area.",
+      "FOLLOW": "Follow the agencies' answers",
+      "NO_OFFICES": "No real estate agency near your area is registered yet to be asked about the price.",
+      "LOGIN_TO_ASK": "Local agencies know their area's prices even where listings are few. Sign in and we will ask up to 3 nearby agencies; they answer within 24 hours.",
+      "ASK_HINT": "Want the locals' view too? We ask up to 3 nearby real estate agencies; they answer within 24 hours.",
+      "ASK": "Ask the agencies' opinion"
     },
     "NEW_REQUEST": "New valuation request",
     "STATUS": {
@@ -2861,9 +2898,66 @@
       "REQUEST_TYPE_REQUIRED": "Please select a request type.",
       "NEIGHBORHOOD_NEEDS_DISTRICT": "A neighborhood cannot be selected without a district.",
       "AREA_INVALID": "Area must be greater than zero.",
-      "ROOMS_INVALID": "Invalid number of rooms."
+      "ROOMS_INVALID": "Invalid number of rooms.",
+      "PROPERTY_TYPE_REQUIRED": "Choose the property type.",
+      "AREA_REQUIRED": "Enter the area in square metres."
     },
-    "QUICK_RANGE_LINK": "Want a quick idea first? See the asking-price range in your area"
+    "QUICK_RANGE_LINK": "Want a quick idea first? See the asking-price range in your area",
+    "CURRENCY": "Currency",
+    "ESTIMATE": {
+      "TITLE_SALE": "Asking-price range for similar properties for sale in your area",
+      "TITLE_RENT": "Monthly asking-rent range for similar properties in your area",
+      "MIDDLE": "Middle value",
+      "PER_SQM": "Price per m²",
+      "DISCLAIMER": "These are asking prices from listings, not actual sale prices. This is not a valuation of your property, not a purchase offer and not a guaranteed sale price. Condition, floor, finishing and legal status can change the value a lot.",
+      "NONE_TITLE": "Not enough data for a reliable estimate"
+    },
+    "RESULT": {
+      "TITLE": "Agencies' price opinions on your property",
+      "SUBTITLE": "The answers of the agencies we asked about your request appear here.",
+      "LOADING": "Loading...",
+      "NOT_FOUND": "We could not find this request in your account.",
+      "ANSWERED": "{{answered}} of {{asked}} agencies answered.",
+      "CLOSED_NO_ANSWERS": "The window closed without any agency answering. You can submit a new request.",
+      "DISCLAIMER": "This is the agency's opinion of the price based on what you entered. It is not an official valuation or a purchase offer. A viewing and the legal status can change the price."
+    },
+    "OFFICE_INBOX": {
+      "EYEBROW": "My agency",
+      "TITLE": "Price opinion requests",
+      "SUBTITLE": "Customers near your agency are asking what their property is worth. Give your opinion within 24 hours.",
+      "BACK": "Back to my agency",
+      "LINK": "Price opinion requests",
+      "NO_AGENCY": "This page is for members of real estate agencies only.",
+      "LOAD_ERROR": "Could not load the requests. Please try again.",
+      "AREA": "Area: {{area}} m²",
+      "ROOMS": "Rooms: {{rooms}}",
+      "RECEIVED": "Received {{date}}",
+      "DEADLINE": "Answer by {{date}}",
+      "YOUR_ANSWER": "Your agency's answer",
+      "CONTACT": "The customer shared their contact with you:",
+      "PRICE_SALE": "Expected sale price",
+      "PRICE_RENT": "Expected monthly rent",
+      "NOTES": "Note for the customer (optional)",
+      "NOTES_PLACEHOLDER": "For example: the price depends a lot on the floor, finishing and legal status.",
+      "ONCE_HINT": "You can answer once; the customer sees it under your agency's name.",
+      "SEND": "Send the agency's opinion",
+      "SENT": "Your answer reached the customer.",
+      "CLOSED": "This request can no longer be answered.",
+      "SEND_ERROR": "Could not send the answer. Please try again.",
+      "REFRESH": "Refresh",
+      "TABS": {
+        "OPEN": "Waiting for you",
+        "ANSWERED": "Answered",
+        "MISSED": "Missed"
+      },
+      "TAB_EMPTY": {
+        "OPEN": "No requests are waiting for your answer.",
+        "ANSWERED": "Your agency has not answered any request yet.",
+        "MISSED": "No requests closed before you answered."
+      },
+      "BACK_TO_LIST": "All valuation requests",
+      "NOT_FOUND": "This request is not in your agency's inbox."
+    }
   },
   "PROVIDER": {
     "INBOX": {
@@ -3088,7 +3182,11 @@
     "FEATURED_APPROVED": "Listing featured.",
     "REJECTED": "Request rejected.",
     "LOAD_ERROR": "Could not load the requests.",
-    "ACTION_ERROR": "The action failed. The request may already have been handled; the list was refreshed."
+    "ACTION_ERROR": "The action failed. The request may already have been handled; the list was refreshed.",
+    "EXTRA_LISTINGS_TITLE": "Extra-listing requests",
+    "APPROVE_EXTRA_LISTING": "Confirm payment and allow an extra listing",
+    "CONFIRM_APPROVE_EXTRA_LISTING": "Confirm the payment arrived and allow \"{{name}}\" to publish one extra listing?",
+    "EXTRA_LISTING_APPROVED": "The owner may now publish one extra listing."
   },
   "SERVICES_CATALOG": {
     "EYEBROW": "Services marketplace",
@@ -3323,7 +3421,8 @@
     "CONFIRM_CLOSED": "Marking this listing as sold or rented removes it from search. It stays on your agency page as a record, and its photos are compressed after 14 days to save storage. Continue?",
     "CONFIRM_ARCHIVED": "An archived listing is hidden from the public; only you can see it. Continue?",
     "CHANGED": "Listing status updated.",
-    "CHANGE_ERROR": "Could not update the listing status."
+    "CHANGE_ERROR": "Could not update the listing status.",
+    "OFFICE_OWNER_HINT": "You own this office: you are changing the status of one of your agents' listings, and the agent is notified."
   },
   "OFFER_COMMON": {
     "DISCOUNT_PERCENT": "{{value}}% off",
@@ -4672,6 +4771,13 @@
       "A3": "Once listings are online, you contact them directly through the platform.",
       "Q4": "What data does the waitlist store?",
       "A4": "Only your email address or WhatsApp number, optionally your interest, the language and the time of your consent."
+    },
+    "OFFER": {
+      "EYEBROW": "Special offer for real-estate offices",
+      "ENDS_ON": "Offer ends on {{date}}",
+      "PROGRESS_ARIA": "{{count}} of {{max}} joined so far",
+      "PROGRESS_LABEL": "{{count}} of {{max}} offices have joined so far",
+      "CTA": "See how to use the offer"
     }
   },
   "NEWSLETTER": {
@@ -4921,11 +5027,11 @@
     "DESC": "Cover image, website, social links and opening hours, as shown on your public office page.",
     "COVER": "Cover image",
     "NO_COVER": "No cover image yet",
-    "COVER_HINT": "A wide image (1600×530 px works best), PNG or JPEG up to 5 MB.",
+    "COVER_HINT": "A wide image (1600×530 px works best), PNG, JPEG or WebP up to 5 MB.",
     "UPLOAD_COVER": "Upload a cover image",
     "CHANGE_COVER": "Change cover",
     "REMOVE_COVER": "Remove cover",
-    "COVER_TYPE": "Only PNG or JPEG.",
+    "COVER_TYPE": "Only PNG, JPEG or WebP.",
     "COVER_TOO_LARGE": "The image is larger than 5 MB.",
     "COVER_SAVED": "Cover image saved.",
     "COVER_REMOVED": "Cover image removed.",
@@ -4976,6 +5082,163 @@
       "WEDNESDAY": "Wednesday",
       "THURSDAY": "Thursday",
       "FRIDAY": "Friday"
+    }
+  },
+  "ADMIN_LEGAL_HOLDS": {
+    "TITLE": "Legal holds",
+    "SUBTITLE": "While a hold is active, the account's scheduled erasure does not run. Holds are released, never deleted, and every action is written to the audit log.",
+    "PLACE_TITLE": "New hold",
+    "ACCOUNT_ID": "Account id",
+    "REASON": "Reason",
+    "PLACE": "Place hold",
+    "FILTER_ACCOUNT": "Filter by account id",
+    "ACTIVE_ONLY": "Active only",
+    "SEARCH": "Search",
+    "LOAD_ERROR": "The holds could not be loaded.",
+    "ACCOUNT": "Account",
+    "PLACED_AT": "Placed",
+    "STATE": "State",
+    "ACTIVE": "Active",
+    "RELEASED": "Released",
+    "RELEASE": "Release",
+    "EMPTY": "No holds.",
+    "INVALID_ID": "The account id is not valid.",
+    "REASON_REQUIRED": "Write the reason for the hold.",
+    "CONFIRM_PLACE": "A legal hold keeps this account from being erased until it is released. Continue?",
+    "CONFIRM_RELEASE": "After release, the account's scheduled erasure may run. Release the hold?",
+    "PLACED": "Hold placed.",
+    "RELEASED_OK": "Hold released.",
+    "UNKNOWN_ACCOUNT": "No account has this id.",
+    "SAVE_ERROR": "Could not save. Please try again."
+  },
+  "AI": {
+    "NAME": "Hudhud AI",
+    "SUBTITLE": "Free assistant for finding property",
+    "OPEN": "Open the Hudhud assistant",
+    "CLOSE": "Close",
+    "HISTORY": "Previous conversations",
+    "NEW_CHAT": "New conversation",
+    "LOADING": "Loading…",
+    "HISTORY_EMPTY": "No saved conversations.",
+    "UNTITLED": "Conversation",
+    "MESSAGES_COUNT": "{{n}} messages",
+    "DELETE_CHAT": "Delete conversation",
+    "RETENTION_NOTE": "Conversations are deleted automatically 30 days after the last message; you can delete them any time.",
+    "WELCOME": "Describe what you are looking for in your own words: type, area, budget, rooms… and I will show matching published listings.",
+    "COMPARE_REQUEST": "Compare the selected listings",
+    "RETRY": "Try again",
+    "SIGN_IN": "Sign in",
+    "UNDERSTOOD": "What I understood",
+    "GUESSED": "currency guessed, correct it if needed",
+    "PRICE_ON_REQUEST": "Price not given",
+    "PER_MONTH": "/ month",
+    "ROOMS_N": "{{n}} rooms",
+    "FLOOR_GROUND": "Ground floor",
+    "FLOOR_N": "Floor {{n}}",
+    "VERIFIED": "verified",
+    "SELECT_TO_COMPARE": "Select to compare",
+    "SHOW_ALL": "Show all results ({{n}}) on the search page",
+    "SEARCH_PAGE_BROADER": "The search page does not support some criteria (such as rooms, area or elevator), so it may show more results.",
+    "COMPARISON": "Listing comparison",
+    "YES": "Yes",
+    "NO": "No",
+    "HELPFUL": "Helpful answer",
+    "NOT_HELPFUL": "Not helpful",
+    "THINKING": "Searching…",
+    "STOP": "Stop",
+    "SELECTED_N": "{{n}} selected",
+    "COMPARE": "Compare",
+    "CLEAR": "Clear",
+    "INPUT_LABEL": "Your message to Hudhud",
+    "PLACEHOLDER": "e.g. 3-room apartment for rent in Damascus under 500 dollars",
+    "SEND": "Send",
+    "REMAINING_TODAY": "{{n}} messages left today",
+    "DISCLAIMER_USER": "The assistant only searches published listings and may misunderstand; check the details on the listing page. Conversations are kept for 30 days and can be deleted.",
+    "DISCLAIMER_GUEST": "The assistant only searches published listings and may misunderstand; check the details on the listing page. Guest conversations are not stored.",
+    "ERROR": {
+      "AI_DISABLED": "The assistant is not available right now.",
+      "AI_SIGN_IN_REQUIRED": "Sign in to use the assistant.",
+      "AI_QUOTA_DAILY": "You have reached today's message limit. It resets tomorrow.",
+      "AI_QUOTA_MONTHLY": "You have reached this month's message limit.",
+      "AI_NOT_FOUND": "This conversation no longer exists. A new one will start.",
+      "AI_INVALID": "The message is not valid or too long.",
+      "AI_RATE_LIMITED": "Too many messages in a short time. Wait a moment and try again.",
+      "AI_OFFLINE": "No internet connection.",
+      "AI_FAILED": "The answer did not arrive."
+    },
+    "CHIP": {
+      "FOR_RENT": "For rent",
+      "FOR_SALE": "For sale",
+      "PLACE": "📍 {{place}}",
+      "PLACE_TEXT": "Contains: {{place}}",
+      "PRICE_BETWEEN": "Price {{min}}–{{max}} {{currency}}",
+      "PRICE_MAX": "up to {{max}} {{currency}}",
+      "PRICE_MIN": "from {{min}} {{currency}}",
+      "ROOMS_EXACT": "{{n}} rooms",
+      "ROOMS_MIN": "{{n}}+ rooms",
+      "ROOMS_MAX": "up to {{n}} rooms",
+      "AREA_BETWEEN": "Area {{min}}–{{max}}",
+      "AREA_MIN": "area {{n}}+",
+      "AREA_MAX": "area up to {{n}}",
+      "FLOOR_HIGHEST": "Top floor",
+      "FLOOR_LOWEST": "Lowest floor",
+      "FLOOR_GROUND": "Ground floor",
+      "FLOOR_NOT_GROUND": "Not ground floor",
+      "FLOOR_EXACT": "Floor {{n}}",
+      "FLOOR_FROM": "From floor {{n}}",
+      "FLOOR_TO": "Up to floor {{n}}",
+      "ELEVATOR": "With elevator",
+      "NO_ELEVATOR": "No elevator",
+      "BALCONY": "With balcony",
+      "NO_BALCONY": "No balcony",
+      "PARKING": "With parking",
+      "NO_PARKING": "No parking",
+      "WORDS": "Words: {{words}}",
+      "SORT_PRICE_ASC": "Cheapest first",
+      "SORT_PRICE_DESC": "Most expensive first"
+    },
+    "TYPE": {
+      "APARTMENT": "Apartment",
+      "HOTEL_APARTMENT": "Hotel apartment",
+      "VILLA": "Villa",
+      "HOUSE": "House",
+      "STUDIO": "Studio",
+      "RESIDENTIAL_LAND": "Residential land",
+      "AGRICULTURAL_LAND": "Agricultural land",
+      "INDUSTRIAL_LAND": "Industrial land",
+      "COMMERCIAL_LAND": "Commercial land",
+      "SHOP": "Shop",
+      "OFFICE": "Office",
+      "WAREHOUSE": "Warehouse",
+      "HOTEL": "Hotel"
+    },
+    "UNIT": {
+      "SquareMeter": "m²",
+      "Qasabah": "qasabah",
+      "Dunum": "dunum",
+      "Hectare": "ha"
+    },
+    "ROW": {
+      "listingType": "Offer",
+      "price": "Price",
+      "priceKind": "Price type",
+      "area": "Area",
+      "pricePerSquareMeter": "Price per m²",
+      "rooms": "Rooms",
+      "floor": "Floor",
+      "place": "Location",
+      "hasElevator": "Elevator",
+      "hasBalcony": "Balcony",
+      "hasParkingSpace": "Parking",
+      "furnishingStatus": "Furnishing",
+      "heatingType": "Heating",
+      "legalStatus": "Legal status",
+      "agency": "Office"
+    },
+    "NOTE": {
+      "CURRENCY_DIFFERS": "Different currencies: not directly comparable",
+      "UNITS_DIFFER": "Different area units: not directly comparable",
+      "NOT_COMPUTABLE": "Cannot be computed for these listings"
     }
   }
 }

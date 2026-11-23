@@ -8,14 +8,20 @@
       class="navbar__brand"
       aria-label="HudhudNest"
     >
+      <!-- WebP (18 kB instead of 50 kB on every first visit; every supported browser and the app's WebView read it);
+           width/height reserve the box so the menu does not shift when the logo arrives (UI performance audit 2026-11-17). -->
       <img
-        src="/images/horizontal-logo-480.png"
+        src="/images/horizontal-logo-480.webp"
+        width="480"
+        height="151"
         alt="HudhudNest"
         appImageFallback="/images/no-image.svg"
         class="navbar__logo navbar__logo--light"
       />
       <img
-        src="/images/horizontal-logo-dark-480.png"
+        src="/images/horizontal-logo-dark-480.webp"
+        width="480"
+        height="153"
         alt=""
         aria-hidden="true"
         loading="lazy"
@@ -110,21 +116,6 @@
         routerLinkActive="navbar__link--active"
         class="navbar__link navbar__link--add"
       >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 14 14"
-          fill="none"
-          aria-hidden="true"
-        >
-          <path
-            d="M7 1v12M1 7h12"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-          />
-        </svg>
-
         {{ 'NAVBAR.ADD' | translate }}
       </a>
 
@@ -686,7 +677,6 @@
         class="mobile-drawer__link mobile-drawer__link--highlight"
         (click)="closeMobileMenu()"
       >
-        <span aria-hidden="true">➕</span>
         {{ 'NAVBAR.ADD' | translate }}
       </a>
 
@@ -960,6 +950,7 @@
       <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/short-stay/manage', label: 'NAVBAR.SHORT_STAY_LISTINGS', icon: '🏡' }"></ng-container>
       <ng-container *ngIf="showMyAgency$ | async">
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/my-agency', label: 'NAVBAR.MY_AGENCY', icon: '🏢' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/my-agency/valuations', label: 'NAVBAR.VALUATION_REQUESTS', icon: '🏷️' }"></ng-container>
       </ng-container>
 
       <ng-container *ngIf="isProvider$ | async">
@@ -990,6 +981,7 @@
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/app-updates', label: 'NAVBAR.ADMIN_APP_UPDATES', icon: '📲' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/social-distribution', label: 'NAVBAR.ADMIN_SOCIAL_DISTRIBUTION', icon: '📡' }"></ng-container>
         <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/audit-logs', label: 'NAVBAR.ADMIN_AUDIT_LOGS', icon: '🧾' }"></ng-container>
+        <ng-container *ngTemplateOutlet="managementLinkTpl; context: { $implicit: variant, link: '/admin/legal-holds', label: 'NAVBAR.ADMIN_LEGAL_HOLDS', icon: '⚖️' }"></ng-container>
       </ng-container>
     </div>
   </ng-template>

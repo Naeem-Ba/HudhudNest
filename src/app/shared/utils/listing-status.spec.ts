@@ -2,7 +2,8 @@ import {
   isClosedDealListing,
   isReservedListing,
   listingLifecycle,
-  listingStatusTagKey
+  listingStatusTagKey,
+  ownerSelectableStatusesFor
 } from './listing-status';
 
 describe('listing status (QA Phase 7, P7-D08)', () => {
@@ -17,6 +18,8 @@ describe('listing status (QA Phase 7, P7-D08)', () => {
     expect(listingLifecycle({ status: 2 })).toBe('sold');
     expect(listingLifecycle({ status: 3 })).toBe('rented');
     expect(listingLifecycle({ status: 4 })).toBe('archived');
+    // Platform audit 2026-11-18, HN-21: the numeric form of Expired (API enum value 5).
+    expect(listingLifecycle({ status: 5 })).toBe('expired');
   });
 
   it('treats a missing or unknown status as an ordinary listing, never as a closed one', () => {
@@ -42,5 +45,32 @@ describe('listing status (QA Phase 7, P7-D08)', () => {
     expect(listingStatusTagKey({ status: 'Archived' })).toBe('LISTING_STATUS.ARCHIVED');
     expect(listingStatusTagKey({ status: 'Available' })).toBeNull();
     expect(listingStatusTagKey({ status: 'Expired' })).toBeNull();
+  });
+});
+
+describe('ownerSelectableStatusesFor (listing status control, 2026-11-18)', () => {
+  it('offers Sold but not Rented for a listing for sale', () => {
+    expect(ownerSelectableStatusesFor({ listingType: 'ForSale', status: 'Available' }))
+      .toEqual(['Available', 'Reserved', 'Sold', 'Archived']);
+    expect(ownerSelectableStatusesFor({ listingType: 2, status: 'Available' }))
+      .toEqual(['Available', 'Reserved', 'Sold', 'Archived']);
+  });
+
+  it('offers Rented but not Sold for a listing for rent', () => {
+    expect(ownerSelectableStatusesFor({ listingType: 'ForRent', status: 'Reserved' }))
+      .toEqual(['Available', 'Reserved', 'Rented', 'Archived']);
+    expect(ownerSelectableStatusesFor({ listingType: 1, status: 'Available' }))
+      .toEqual(['Available', 'Reserved', 'Rented', 'Archived']);
+  });
+
+  it('offers both for a listing for rent and sale, and for an unknown type', () => {
+    const all: string[] = ['Available', 'Reserved', 'Sold', 'Rented', 'Archived'];
+    expect(ownerSelectableStatusesFor({ listingType: 'ForRentAndSale', status: 'Available' }) as string[]).toEqual(all);
+    expect(ownerSelectableStatusesFor({ listingType: undefined, status: 'Available' }) as string[]).toEqual(all);
+  });
+
+  it('keeps an older mismatching current status visible', () => {
+    expect(ownerSelectableStatusesFor({ listingType: 'ForSale', status: 'Rented' }))
+      .toEqual(['Available', 'Reserved', 'Sold', 'Rented', 'Archived']);
   });
 });

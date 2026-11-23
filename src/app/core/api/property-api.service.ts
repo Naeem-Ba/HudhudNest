@@ -134,8 +134,12 @@ export class PropertyApiService {
    * no dedicated endpoint: PUT /properties/{id} applies only the fields present in the body, so
    * sending `status` alone changes nothing else. Owner (or agency member) only, enforced by the server.
    */
+  /**
+   * PATCH /properties/{id}/status: the publisher, or the owner of the listing's office (for an agent's listing).
+   * The API refuses Sold on a rental and Rented on a sale (409 LISTING_STATUS_NOT_FOR_TYPE) and Expired either way.
+   */
   updateStatus(id: string, status: OwnerSelectableStatus): Observable<unknown> {
-    return this.api.put<unknown>(`/properties/${id}`, { status });
+    return this.api.patch<unknown>(`/properties/${id}/status`, { status });
   }
 
   uploadImages(propertyId: string, formData: FormData, options?: RequestOptions): Observable<unknown[]> {

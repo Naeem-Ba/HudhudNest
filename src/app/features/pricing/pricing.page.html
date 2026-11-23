@@ -40,15 +40,10 @@
 
   <div class="plans-grid" *ngIf="!loading() && !error()">
     <article
-      *ngFor="let plan of plans(); trackBy: trackByTier"
+      *ngFor="let plan of visiblePlans(); trackBy: trackByTier"
       class="plan-card"
-      role="button"
-      tabindex="0"
-      [attr.aria-pressed]="selectedTier() === plan.tier"
       [class.plan-card--featured]="selectedTier() === plan.tier"
       (click)="selectCard(plan)"
-      (keydown.enter)="selectCard(plan)"
-      (keydown.space)="selectCard(plan); $event.preventDefault()"
     >
       <span class="plan-card__flag" *ngIf="selectedTier() === plan.tier" aria-hidden="true"></span>
 

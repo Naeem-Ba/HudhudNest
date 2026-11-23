@@ -9,6 +9,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpContext } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { BackendApiService } from './backend-api.service';
+import { MY_AGENCY_PATH } from './my-agency-path';
 import { SKIP_ERROR_TOAST } from '../interceptors/api-error.interceptor';
 import { VisitorIdService } from '../listing-views/visitor-id.service';
 import {
@@ -50,7 +51,7 @@ export class AgenciesApiService {
    * 204 الفارغ إلى null تلقائيًا، فتُعاد Observable<null> بلا أي معالجة خاصة هنا.
    */
   getMine(): Observable<Agency | null> {
-    return this.api.get<Agency | null>(`${this.endpoint}/me`);
+    return this.api.get<Agency | null>(MY_AGENCY_PATH);
   }
 
   /**

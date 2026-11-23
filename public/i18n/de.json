@@ -32,6 +32,8 @@
     "CONCURRENCY_CONFLICT": "Dieser Eintrag wurde gleichzeitig von jemand anderem geändert. Aktualisieren Sie die Seite und versuchen Sie es erneut.",
     "CSRF_VALIDATION_FAILED": "Die Anfrage konnte nicht als sicher bestätigt werden. Laden Sie die Seite neu und versuchen Sie es erneut.",
     "LISTING_QUOTA_REACHED": "Sie haben das Limit aktiver Anzeigen Ihres Pakets erreicht. Löschen Sie eine bestehende Anzeige oder wechseln Sie in ein höheres Paket, um eine neue hinzuzufügen.",
+    "LISTING_EXPIRED_EXTEND_ONLY": "Die Laufzeit dieser Anzeige ist abgelaufen. Verlängern Sie sie; der Status „Abgelaufen“ lässt sich nicht von Hand ändern.",
+    "LISTING_STATUS_NOT_FOR_TYPE": "Dieser Status passt nicht zur Anzeigenart: „Verkauft“ gilt für Verkaufsanzeigen, „Vermietet“ für Mietanzeigen.",
     "PAYMENTS_DISABLED": "Online-Zahlung ist derzeit nicht verfügbar. Es wurde nichts abgebucht.",
     "PAYMENT_PROVIDER_UNAVAILABLE": "Der Zahlungsanbieter ist gerade nicht erreichbar. Es wurde nichts abgebucht. Bitte gleich erneut versuchen.",
     "PAYMENT_PROVIDER_UNAVAILABLE_FOR_REQUEST": "Diese Zahlungsart ist für diese Währung oder dieses Land nicht verfügbar.",
@@ -148,7 +150,9 @@
     "ADMIN_PAYMENTS": "Zahlungen (online)",
     "ADMIN_GEO": "Standortkatalog",
     "OFFICES": "Makler",
-    "ADMIN_AGENCIES": "Makler-Verifizierung"
+    "ADMIN_AGENCIES": "Makler-Verifizierung",
+    "ADMIN_LEGAL_HOLDS": "Rechtliche Sperren",
+    "VALUATION_REQUESTS": "Bewertungsanfragen"
   },
   "AUTH": {
     "LOGIN_TITLE": "Willkommen",
@@ -506,36 +510,54 @@
     }
   },
   "KONTAKT": {
-    "PLAN_SUBJECT": "Anfrage zum Abo-Paket: {{plan}}",
     "PLAN_REF_LINE": "Referenz der Paketanfrage: {{ref}}",
-    "SERVICE_PROVIDER_SUBJECT": "Anfrage zur Aufnahme als Dienstleister",
-    "SERVICE_PROVIDER_MESSAGE_PLACEHOLDER": "Erzählen Sie uns von Ihrem Geschäft: Firmenname, Art der Dienstleistung (Umzug, Reinigung, Fotografie ...), eine Telefonnummer und Ihr Einsatzgebiet. Unser Team meldet sich zur Prüfung und Freischaltung bei Ihnen.",
     "title": "Kontakt",
     "subtitle": "Senden Sie uns Ihre Nachricht. Wir antworten so schnell wie möglich.",
     "name": "Vollständiger Name",
     "nameCtrl": "Bitte geben Sie einen Namen mit mindestens drei Zeichen ein.",
     "email": "E-Mail",
-    "emailCtrl": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
-    "subject": "Betreff",
-    "subCtrl": "Bitte geben Sie einen kurzen Betreff mit mindestens drei Zeichen ein.",
     "message": "Nachricht",
     "msgCtrl": "Bitte geben Sie eine Nachricht mit mindestens 10 Zeichen ein.",
     "send": "Senden",
     "sending": "Wird gesendet...",
     "info_title": "Kontaktinformationen",
     "telefon": "Telefon",
-    "adresse": "Adresse",
-    "stadt": "Stadt",
-    "strasse": "Straße",
     "success_msg": "Ihre Nachricht wurde erfolgreich gesendet!",
     "error_msg": "Beim Senden ist ein Fehler aufgetreten. Versuchen Sie es später erneut.",
     "error_validation": "Bitte füllen Sie die erforderlichen Felder korrekt aus.",
     "name_placeholder": "Vollständigen Namen eingeben",
-    "subject_placeholder": "Betreff der Nachricht eingeben",
-    "message_placeholder": "Schreiben Sie Ihre Nachricht klar und verständlich",
     "response_note": "Wir antworten in der Regel innerhalb von 24 Werktagsstunden.",
     "SERVICE_PROVIDER_NOTICE": "Um als Dienstleister beizutreten, nutzen Sie das neue Bewerbungsformular: Dort verfolgen Sie den Stand und beantworten Rückfragen unseres Teams.",
-    "SERVICE_PROVIDER_NOTICE_LINK": "Zum Bewerbungsformular"
+    "SERVICE_PROVIDER_NOTICE_LINK": "Zum Bewerbungsformular",
+    "REASON_LABEL": "Worum geht es?",
+    "REASONS": {
+      "GENERAL": {
+        "LABEL": "Allgemeine Frage",
+        "PLACEHOLDER": "Schreiben Sie Ihre Frage klar und verständlich"
+      },
+      "PLANS": {
+        "LABEL": "Pakete, Zahlung & Rechnung",
+        "PLACEHOLDER": "Welches Paket oder welche Zahlung betrifft Ihre Anfrage? Nennen Sie, falls vorhanden, die Referenz Ihrer Bestellung."
+      },
+      "SUPPORT": {
+        "LABEL": "Problem mit Konto oder Inserat",
+        "PLACEHOLDER": "Was ist passiert und was haben Sie versucht? Betrifft es ein Inserat, fügen Sie bitte den Link zur Anzeige ein."
+      },
+      "PROVIDER": {
+        "LABEL": "Als Dienstleister aufgenommen werden",
+        "PLACEHOLDER": "Erzählen Sie uns von Ihrem Geschäft: Firmenname, Art der Dienstleistung (Umzug, Reinigung, Fotografie ...), eine Telefonnummer und Ihr Einsatzgebiet. Unser Team meldet sich zur Prüfung und Freischaltung bei Ihnen."
+      },
+      "PRIVACY": {
+        "LABEL": "Datenschutz & Datenanfrage",
+        "PLACEHOLDER": "Beschreiben Sie Ihr Anliegen (Auskunft, Berichtigung, Löschung, Widerspruch) und nennen Sie die E-Mail-Adresse, mit der Sie bei HudhudNest angemeldet sind."
+      },
+      "PARTNERSHIP": {
+        "LABEL": "Zusammenarbeit, Immobilienbüros & Presse",
+        "PLACEHOLDER": "Stellen Sie sich kurz vor und schildern Sie, wie wir zusammenarbeiten können."
+      }
+    },
+    "CONSENT_TEXT": "Mit dem Absenden willigen Sie ein, dass wir Ihre Angaben zur Bearbeitung Ihrer Anfrage verwenden. Mehr dazu in der",
+    "CONSENT_LINK": "Datenschutzerklärung"
   },
   "ADMIN_MSG": {
     "title": "Kontaktanfragen",
@@ -743,7 +765,8 @@
       "MODE_BOTH": "zum Verkauf oder zur Miete",
       "FALLBACK_TITLE_CITY": "Immobilie {{mode}} in {{city}}",
       "FALLBACK_TITLE": "Immobilie {{mode}}"
-    }
+    },
+    "OFFICE_TEXT": "{{name}}: Immobilienbüro auf HudhudNest"
   },
   "PROPERTY": {
     "MODE_RENT": "Zu vermieten",
@@ -773,6 +796,7 @@
     "INVALID_FILE_TYPE": "Nicht unterstützter Dateityp. Zulässig sind: PNG, JPG, WebP.",
     "FILE_TOO_LARGE": "Die Datei {{name}} ist größer als 5 MB.",
     "IMAGE_UPLOAD_WARNING": "Die Immobilie wurde gespeichert, aber die Bilder konnten nicht hochgeladen werden.",
+    "TOO_MANY_PHOTOS": "Du kannst diesmal höchstens {{max}} Fotos hinzufügen. Nur die ersten wurden übernommen.",
     "PHOTOS_PROCESSING": "Fotos werden vorbereitet und verkleinert...",
     "COUNTRY": "Land",
     "REGION": "Region",
@@ -870,6 +894,7 @@
     "HIDE_EXACT_LOCATION_HINT": "Besucher sehen statt der Stecknadel einen ungefähren Bereich von etwa 500 m und keinen Straßennamen. Sie und die Administration sehen den genauen Ort.",
     "PRICE_NEGOTIABLE": "Preis verhandelbar",
     "PRICE_NEGOTIABLE_HINT": "Aktivieren Sie dies, wenn Sie über den Preis verhandeln möchten. Besucher sehen es nur auf der Detailseite der Anzeige.",
+    "FEATURES_AND_AMENITIES": "Merkmale und Ausstattung",
     "BRANCH": {
       "LABEL": "Filiale des Büros",
       "NONE": "Keine bestimmte Filiale",
@@ -994,6 +1019,11 @@
       "PLAN_EXPIRED": "Der Tarif des Büroinhabers ist abgelaufen. Aktive Inserate können erst nach der Verlängerung zugeordnet werden.",
       "OTHER_OFFICE": "Dieses Inserat gehört zu einem anderen Büro.",
       "ERROR": "Das Inserat konnte nicht zugeordnet werden. Bitte erneut versuchen."
+    },
+    "EXTRA_LISTING": {
+      "BUY": "Eine weitere Anzeige für {{price}} $ hinzufügen",
+      "PENDING": "Ihre Anfrage für eine zusätzliche Anzeige wartet auf die Zahlungsbestätigung durch einen Administrator. Danach können Sie Ihre Anzeige hinzufügen.",
+      "PAID_READY": "Sie haben eine bezahlte zusätzliche Anzeige bereit. Fügen Sie Ihre Anzeige jetzt hinzu."
     }
   },
   "VIEW_COUNT": {
@@ -1163,7 +1193,8 @@
     "ENABLE_EXPLANATION": "Die Person kann sich wieder anmelden und Anzeigen, die durch die Deaktivierung offline gingen, kommen zurück. Aus anderen Gründen gesperrte Anzeigen bleiben offline.",
     "ENABLE_REASON": "Grund der Reaktivierung (Pflicht)",
     "ENABLE_SUCCESS": "Konto wieder aktiviert.",
-    "ENABLE_NOT_POSSIBLE": "Dieses Konto kann nicht reaktiviert werden: Die Person hat es selbst gelöscht (unwiderruflich) oder es ist nicht deaktiviert."
+    "ENABLE_NOT_POSSIBLE": "Dieses Konto kann nicht reaktiviert werden: Die Person hat es selbst gelöscht (unwiderruflich) oder es ist nicht deaktiviert.",
+    "LEGAL_HOLDS": "Rechtliche Sperren"
   },
   "ADMIN_USER_PROPERTIES": {
     "TAKEN_DOWN": "Gesperrt",
@@ -2121,7 +2152,11 @@
     "STEP_TWO": "Führe die Überweisung aus und gib die Referenznummer oben an.",
     "STEP_THREE": "Nach bestätigtem Zahlungseingang wird die Anforderung auf Ihre Anzeige angewendet und Sie erhalten eine Benachrichtigung.",
     "TRANSFER_DETAILS": "Bankdaten werden direkt zugesendet und nicht auf dieser Seite veröffentlicht.",
-    "CONTACT_US": "Kontaktiere uns für die Überweisung"
+    "CONTACT_US": "Kontaktiere uns für die Überweisung",
+    "EXTRA_LISTING": {
+      "TITLE": "Eine zusätzliche Anzeige",
+      "DESCRIPTION": "Ihr kostenloser Tarif erlaubt eine aktive Anzeige, und Sie haben dieses Limit erreicht. Nach der Zahlungsbestätigung können Sie eine weitere Anzeige veröffentlichen, die wie jede andere 30 Tage online bleibt."
+    }
   },
   "DATE_RANGE": {
     "PREV_MONTH": "Vorheriger Monat",
@@ -2362,7 +2397,12 @@
       "PUBLISH": "Veröffentlichen",
       "UNPUBLISH": "Zurückziehen",
       "TOGGLE_SUCCESS": "Veröffentlichungsstatus aktualisiert.",
-      "TOGGLE_ERROR": "Status konnte nicht aktualisiert werden."
+      "TOGGLE_ERROR": "Status konnte nicht aktualisiert werden.",
+      "DELETE": "Löschen",
+      "CONFIRM_DELETE": "„{{title}}“ endgültig löschen? Das kann nicht rückgängig gemacht werden.",
+      "DELETE_SUCCESS": "Inserat gelöscht.",
+      "DELETE_HAS_BOOKINGS": "Für dieses Inserat laufen noch Buchungen. Schließe sie ab, lehne sie ab oder storniere sie und lösche es dann.",
+      "DELETE_ERROR": "Das Inserat konnte nicht gelöscht werden. Bitte versuche es erneut."
     },
     "FORM": {
       "EDIT_TITLE": "Anzeige bearbeiten",
@@ -2812,7 +2852,7 @@
   "VALUATION": {
     "EYEBROW": "Immobilienbewertung",
     "TITLE": "Was ist Ihre Immobilie wert?",
-    "SUBTITLE": "Erhalten Sie eine schnelle Schätzung basierend auf ähnlichen Anzeigen, oder lassen Sie uns Ihre Anfrage an Immobilienbüros in Ihrer Nähe senden.",
+    "SUBTITLE": "Sehen Sie die Spanne der Angebotspreise für ähnliche Immobilien in Ihrer Gegend, aus echten Inseraten auf HudhudNest. Das ist eine erste Schätzung, keine Bewertung Ihrer Immobilie.",
     "GOVERNORATE": "Gouvernement",
     "DISTRICT": "Bezirk",
     "NEIGHBORHOOD": "Viertel",
@@ -2820,8 +2860,7 @@
     "REQUEST_TYPE": "Anfrageart",
     "REQUEST_TYPES": {
       "ForSale": "Verkauf",
-      "ForRent": "Miete",
-      "ForRentAndSale": "Verkauf oder Miete"
+      "ForRent": "Miete"
     },
     "AREA": "Fläche (m²)",
     "AREA_PLACEHOLDER": "z. B. 120",
@@ -2832,21 +2871,19 @@
     "LOOKUP_ERROR": "Die Liste der Gouvernements konnte nicht geladen werden.",
     "SUBMIT_ERROR": "Ihre Bewertungsanfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
     "STATUS_ERROR": "Der Anfragestatus konnte nicht geprüft werden.",
-    "MIN_PRICE": "Mindestpreis",
-    "MAX_PRICE": "Höchstpreis",
-    "AVERAGE_PRICE": "Durchschnittspreis",
-    "MEDIAN_PRICE": "Median",
-    "FAST_PATH": {
-      "COMPLETE_TITLE": "Bewertung abgeschlossen",
-      "COMPLETE_BODY": "Es wurden genügend ähnliche Anzeigen gefunden, um eine verlässliche Schätzung zu liefern."
-    },
     "OFFICE_PATH": {
-      "SENT_TO": "Ihre Anfrage wurde an {{count}} Immobilienbüro(s) in Ihrer Nähe für eine genaue Schätzung gesendet.",
+      "SENT_TO": "Wir haben Ihre Anfrage an {{count}} Immobilienbüros in der Nähe Ihrer Immobilie geschickt, mit der Bitte um ihre Preiseinschätzung.",
       "NEIGHBORING_GOVERNORATE_DISCLOSURE": "Da nicht genügend Büros in Ihrem Gouvernement verfügbar waren, wurde die Suche auf Büros aus benachbarten Gouvernements ausgeweitet.",
       "INSUFFICIENT_COVERAGE": "Wir konnten nicht mindestens 3 Immobilienbüros in Ihrer Nähe finden. Möglicherweise erhalten Sie Schätzungen von weniger Büros.",
       "EXPIRES_AT": "Sie erhalten innerhalb von 24 Stunden eine Antwort, spätestens bis {{date}}.",
       "CHECK_STATUS": "Antworten prüfen",
-      "NO_ESTIMATES_YET": "Noch keine Schätzungen. Bitte später erneut prüfen."
+      "NO_ESTIMATES_YET": "Noch keine Schätzungen. Bitte später erneut prüfen.",
+      "OFF": "Eine Bewertung durch Immobilienbüros ist noch nicht verfügbar. Versuchen Sie es später oder wählen Sie nur das Gouvernement, um die Gegend zu erweitern.",
+      "FOLLOW": "Antworten der Büros ansehen",
+      "NO_OFFICES": "In Ihrer Gegend ist noch kein Immobilienbüro registriert, das wir fragen könnten.",
+      "LOGIN_TO_ASK": "Büros vor Ort kennen die Preise ihrer Gegend, auch wenn es wenige Anzeigen gibt. Melden Sie sich an, dann fragen wir bis zu 3 Büros in der Nähe; sie antworten innerhalb von 24 Stunden.",
+      "ASK_HINT": "Möchten Sie auch die Einschätzung vor Ort? Wir fragen bis zu 3 Immobilienbüros in der Nähe; sie antworten innerhalb von 24 Stunden.",
+      "ASK": "Einschätzung der Büros anfragen"
     },
     "NEW_REQUEST": "Neue Bewertungsanfrage",
     "STATUS": {
@@ -2861,9 +2898,66 @@
       "REQUEST_TYPE_REQUIRED": "Bitte wählen Sie eine Anfrageart aus.",
       "NEIGHBORHOOD_NEEDS_DISTRICT": "Ein Viertel kann nicht ohne Bezirk ausgewählt werden.",
       "AREA_INVALID": "Die Fläche muss größer als null sein.",
-      "ROOMS_INVALID": "Ungültige Zimmeranzahl."
+      "ROOMS_INVALID": "Ungültige Zimmeranzahl.",
+      "PROPERTY_TYPE_REQUIRED": "Wählen Sie die Immobilienart.",
+      "AREA_REQUIRED": "Geben Sie die Fläche in Quadratmetern ein."
     },
-    "QUICK_RANGE_LINK": "Erst einen schnellen Überblick? Sehen Sie die Angebotspreise in Ihrer Gegend"
+    "QUICK_RANGE_LINK": "Erst einen schnellen Überblick? Sehen Sie die Angebotspreise in Ihrer Gegend",
+    "CURRENCY": "Währung",
+    "ESTIMATE": {
+      "TITLE_SALE": "Spanne der Angebotspreise für ähnliche Kaufobjekte in Ihrer Gegend",
+      "TITLE_RENT": "Spanne der geforderten Monatsmieten für ähnliche Objekte in Ihrer Gegend",
+      "MIDDLE": "Mittelwert",
+      "PER_SQM": "Preis pro m²",
+      "DISCLAIMER": "Dies sind Angebotspreise aus Inseraten, keine tatsächlichen Verkaufspreise. Es ist keine Bewertung Ihrer Immobilie, kein Kaufangebot und keine Garantie für einen Verkaufspreis. Zustand, Etage, Ausstattung und Rechtslage können den Wert stark verändern.",
+      "NONE_TITLE": "Nicht genug Daten für eine verlässliche Schätzung"
+    },
+    "RESULT": {
+      "TITLE": "Preiseinschätzungen der Büros zu Ihrer Immobilie",
+      "SUBTITLE": "Hier erscheinen die Antworten der Büros, die wir zu Ihrer Anfrage gefragt haben.",
+      "LOADING": "Wird geladen...",
+      "NOT_FOUND": "Diese Anfrage wurde in Ihrem Konto nicht gefunden.",
+      "ANSWERED": "{{answered}} von {{asked}} Büros haben geantwortet.",
+      "CLOSED_NO_ANSWERS": "Die Frist ist abgelaufen, ohne dass ein Büro geantwortet hat. Sie können eine neue Anfrage stellen.",
+      "DISCLAIMER": "Dies ist die Preiseinschätzung des Büros auf Grundlage Ihrer Angaben, kein offizielles Gutachten und kein Kaufangebot. Eine Besichtigung und die Rechtslage können den Preis verändern."
+    },
+    "OFFICE_INBOX": {
+      "EYEBROW": "Mein Büro",
+      "TITLE": "Anfragen zur Preiseinschätzung",
+      "SUBTITLE": "Kunden in der Nähe Ihres Büros fragen, was ihre Immobilie wert ist. Geben Sie Ihre Einschätzung innerhalb von 24 Stunden ab.",
+      "BACK": "Zurück zu meinem Büro",
+      "LINK": "Anfragen zur Preiseinschätzung",
+      "NO_AGENCY": "Diese Seite ist nur für Mitglieder von Immobilienbüros.",
+      "LOAD_ERROR": "Die Anfragen konnten nicht geladen werden. Bitte erneut versuchen.",
+      "AREA": "Fläche: {{area}} m²",
+      "ROOMS": "Zimmer: {{rooms}}",
+      "RECEIVED": "Eingegangen am {{date}}",
+      "DEADLINE": "Antwort bis {{date}}",
+      "YOUR_ANSWER": "Antwort Ihres Büros",
+      "CONTACT": "Der Kunde hat seine Kontaktdaten mit Ihnen geteilt:",
+      "PRICE_SALE": "Erwarteter Verkaufspreis",
+      "PRICE_RENT": "Erwartete Monatsmiete",
+      "NOTES": "Hinweis für den Kunden (optional)",
+      "NOTES_PLACEHOLDER": "Zum Beispiel: Der Preis hängt stark von Stockwerk, Ausbau und Rechtslage ab.",
+      "ONCE_HINT": "Sie können einmal antworten; der Kunde sieht die Antwort unter dem Namen Ihres Büros.",
+      "SEND": "Einschätzung senden",
+      "SENT": "Ihre Antwort ist beim Kunden angekommen.",
+      "CLOSED": "Diese Anfrage kann nicht mehr beantwortet werden.",
+      "SEND_ERROR": "Die Antwort konnte nicht gesendet werden. Bitte erneut versuchen.",
+      "REFRESH": "Aktualisieren",
+      "TABS": {
+        "OPEN": "Warten auf Sie",
+        "ANSWERED": "Beantwortet",
+        "MISSED": "Verpasst"
+      },
+      "TAB_EMPTY": {
+        "OPEN": "Keine Anfragen warten auf Ihre Antwort.",
+        "ANSWERED": "Ihr Büro hat noch keine Anfrage beantwortet.",
+        "MISSED": "Keine Anfragen sind ohne Ihre Antwort abgelaufen."
+      },
+      "BACK_TO_LIST": "Alle Bewertungsanfragen",
+      "NOT_FOUND": "Diese Anfrage ist nicht im Posteingang Ihres Büros."
+    }
   },
   "PROVIDER": {
     "INBOX": {
@@ -3088,7 +3182,11 @@
     "FEATURED_APPROVED": "Anzeige hervorgehoben.",
     "REJECTED": "Anfrage abgelehnt.",
     "LOAD_ERROR": "Die Anfragen konnten nicht geladen werden.",
-    "ACTION_ERROR": "Die Aktion ist fehlgeschlagen. Die Anfrage wurde evtl. bereits bearbeitet; die Liste wurde aktualisiert."
+    "ACTION_ERROR": "Die Aktion ist fehlgeschlagen. Die Anfrage wurde evtl. bereits bearbeitet; die Liste wurde aktualisiert.",
+    "EXTRA_LISTINGS_TITLE": "Anfragen für zusätzliche Anzeigen",
+    "APPROVE_EXTRA_LISTING": "Zahlung bestätigen und zusätzliche Anzeige erlauben",
+    "CONFIRM_APPROVE_EXTRA_LISTING": "Bestätigen, dass die Zahlung eingegangen ist, und „{{name}}“ eine zusätzliche Anzeige erlauben?",
+    "EXTRA_LISTING_APPROVED": "Der Inhaber darf jetzt eine zusätzliche Anzeige veröffentlichen."
   },
   "SERVICES_CATALOG": {
     "EYEBROW": "Service-Marktplatz",
@@ -3323,7 +3421,8 @@
     "CONFIRM_CLOSED": "Wird die Anzeige als verkauft oder vermietet markiert, verschwindet sie aus der Suche. Sie bleibt als Nachweis auf der Seite Ihres Büros, und die Fotos werden nach 14 Tagen komprimiert, um Speicher zu sparen. Fortfahren?",
     "CONFIRM_ARCHIVED": "Eine archivierte Anzeige ist für die Öffentlichkeit nicht sichtbar; nur Sie sehen sie. Fortfahren?",
     "CHANGED": "Status der Anzeige aktualisiert.",
-    "CHANGE_ERROR": "Der Status der Anzeige konnte nicht aktualisiert werden."
+    "CHANGE_ERROR": "Der Status der Anzeige konnte nicht aktualisiert werden.",
+    "OFFICE_OWNER_HINT": "Sie sind Inhaber dieses Büros: Sie ändern den Status der Anzeige eines Ihrer Makler, der Makler wird benachrichtigt."
   },
   "OFFER_COMMON": {
     "DISCOUNT_PERCENT": "{{value}} % Rabatt",
@@ -4672,6 +4771,13 @@
       "A3": "Sobald Angebote online sind, nehmen Sie direkt über die Plattform Kontakt auf.",
       "Q4": "Welche Daten speichert die Warteliste?",
       "A4": "Nur Ihre E-Mail-Adresse oder WhatsApp-Nummer, optional Ihr Interesse, die Sprache und den Zeitpunkt Ihrer Einwilligung."
+    },
+    "OFFER": {
+      "EYEBROW": "Sonderangebot für Immobilienbüros",
+      "ENDS_ON": "Angebot endet am {{date}}",
+      "PROGRESS_ARIA": "{{count}} von {{max}} beigetreten",
+      "PROGRESS_LABEL": "{{count}} von {{max}} Büros sind bereits beigetreten",
+      "CTA": "So nutzen Sie das Angebot"
     }
   },
   "NEWSLETTER": {
@@ -4921,11 +5027,11 @@
     "DESC": "Titelbild, Website, Social-Media-Links und Öffnungszeiten, wie sie auf Ihrer öffentlichen Büroseite erscheinen.",
     "COVER": "Titelbild",
     "NO_COVER": "Noch kein Titelbild",
-    "COVER_HINT": "Ein breites Bild (am besten 1600×530 px), PNG oder JPEG bis 5 MB.",
+    "COVER_HINT": "Ein breites Bild (am besten 1600×530 px), PNG, JPEG oder WebP bis 5 MB.",
     "UPLOAD_COVER": "Titelbild hochladen",
     "CHANGE_COVER": "Titelbild ändern",
     "REMOVE_COVER": "Titelbild entfernen",
-    "COVER_TYPE": "Nur PNG oder JPEG.",
+    "COVER_TYPE": "Nur PNG, JPEG oder WebP.",
     "COVER_TOO_LARGE": "Das Bild ist größer als 5 MB.",
     "COVER_SAVED": "Titelbild gespeichert.",
     "COVER_REMOVED": "Titelbild entfernt.",
@@ -4976,6 +5082,163 @@
       "WEDNESDAY": "Mittwoch",
       "THURSDAY": "Donnerstag",
       "FRIDAY": "Freitag"
+    }
+  },
+  "ADMIN_LEGAL_HOLDS": {
+    "TITLE": "Rechtliche Sperren",
+    "SUBTITLE": "Solange eine Sperre aktiv ist, wird die geplante Löschung des Kontos nicht ausgeführt. Sperren werden aufgehoben, nie gelöscht; jede Aktion steht im Audit-Log.",
+    "PLACE_TITLE": "Neue Sperre",
+    "ACCOUNT_ID": "Konto-ID",
+    "REASON": "Grund",
+    "PLACE": "Sperre setzen",
+    "FILTER_ACCOUNT": "Nach Konto-ID filtern",
+    "ACTIVE_ONLY": "Nur aktive",
+    "SEARCH": "Suchen",
+    "LOAD_ERROR": "Die Sperren konnten nicht geladen werden.",
+    "ACCOUNT": "Konto",
+    "PLACED_AT": "Gesetzt am",
+    "STATE": "Status",
+    "ACTIVE": "Aktiv",
+    "RELEASED": "Aufgehoben",
+    "RELEASE": "Aufheben",
+    "EMPTY": "Keine Sperren.",
+    "INVALID_ID": "Die Konto-ID ist ungültig.",
+    "REASON_REQUIRED": "Gib den Grund für die Sperre an.",
+    "CONFIRM_PLACE": "Eine rechtliche Sperre verhindert die Löschung dieses Kontos, bis sie aufgehoben wird. Fortfahren?",
+    "CONFIRM_RELEASE": "Nach dem Aufheben kann die geplante Löschung des Kontos laufen. Sperre aufheben?",
+    "PLACED": "Sperre gesetzt.",
+    "RELEASED_OK": "Sperre aufgehoben.",
+    "UNKNOWN_ACCOUNT": "Kein Konto mit dieser ID.",
+    "SAVE_ERROR": "Speichern fehlgeschlagen. Bitte erneut versuchen."
+  },
+  "AI": {
+    "NAME": "Hudhud AI",
+    "SUBTITLE": "Kostenloser Assistent für die Immobiliensuche",
+    "OPEN": "Hudhud-Assistent öffnen",
+    "CLOSE": "Schließen",
+    "HISTORY": "Frühere Gespräche",
+    "NEW_CHAT": "Neues Gespräch",
+    "LOADING": "Wird geladen…",
+    "HISTORY_EMPTY": "Keine gespeicherten Gespräche.",
+    "UNTITLED": "Gespräch",
+    "MESSAGES_COUNT": "{{n}} Nachrichten",
+    "DELETE_CHAT": "Gespräch löschen",
+    "RETENTION_NOTE": "Gespräche werden 30 Tage nach der letzten Nachricht automatisch gelöscht; du kannst sie jederzeit löschen.",
+    "WELCOME": "Beschreibe in eigenen Worten, was du suchst: Art, Gegend, Budget, Zimmer … und ich zeige dir passende veröffentlichte Angebote.",
+    "COMPARE_REQUEST": "Ausgewählte Angebote vergleichen",
+    "RETRY": "Erneut versuchen",
+    "SIGN_IN": "Anmelden",
+    "UNDERSTOOD": "Das habe ich verstanden",
+    "GUESSED": "Währung geschätzt, bitte korrigieren",
+    "PRICE_ON_REQUEST": "Preis auf Anfrage",
+    "PER_MONTH": "/ Monat",
+    "ROOMS_N": "{{n}} Zimmer",
+    "FLOOR_GROUND": "Erdgeschoss",
+    "FLOOR_N": "{{n}}. Etage",
+    "VERIFIED": "verifiziert",
+    "SELECT_TO_COMPARE": "Zum Vergleich auswählen",
+    "SHOW_ALL": "Alle Ergebnisse ({{n}}) in der Suche anzeigen",
+    "SEARCH_PAGE_BROADER": "Die Suchseite kennt einige Kriterien nicht (z. B. Zimmer, Fläche, Aufzug) und zeigt daher eventuell mehr Treffer.",
+    "COMPARISON": "Vergleich der Angebote",
+    "YES": "Ja",
+    "NO": "Nein",
+    "HELPFUL": "Hilfreiche Antwort",
+    "NOT_HELPFUL": "Nicht hilfreich",
+    "THINKING": "Ich suche …",
+    "STOP": "Stopp",
+    "SELECTED_N": "{{n}} ausgewählt",
+    "COMPARE": "Vergleichen",
+    "CLEAR": "Auswahl aufheben",
+    "INPUT_LABEL": "Deine Nachricht an Hudhud",
+    "PLACEHOLDER": "z. B. 3-Zimmer-Wohnung zur Miete in Damaskus bis 500 Dollar",
+    "SEND": "Senden",
+    "REMAINING_TODAY": "Heute noch {{n}} Nachrichten",
+    "DISCLAIMER_USER": "Der Assistent durchsucht nur veröffentlichte Angebote und kann sich irren; prüfe die Details auf der Angebotsseite. Gespräche werden 30 Tage gespeichert und können gelöscht werden.",
+    "DISCLAIMER_GUEST": "Der Assistent durchsucht nur veröffentlichte Angebote und kann sich irren; prüfe die Details auf der Angebotsseite. Gespräche von Gästen werden nicht gespeichert.",
+    "ERROR": {
+      "AI_DISABLED": "Der Assistent ist gerade nicht verfügbar.",
+      "AI_SIGN_IN_REQUIRED": "Melde dich an, um den Assistenten zu nutzen.",
+      "AI_QUOTA_DAILY": "Tageslimit erreicht. Es wird morgen zurückgesetzt.",
+      "AI_QUOTA_MONTHLY": "Monatslimit erreicht.",
+      "AI_NOT_FOUND": "Dieses Gespräch gibt es nicht mehr. Es wird ein neues begonnen.",
+      "AI_INVALID": "Die Nachricht ist ungültig oder zu lang.",
+      "AI_RATE_LIMITED": "Zu viele Nachrichten in kurzer Zeit. Bitte kurz warten.",
+      "AI_OFFLINE": "Keine Internetverbindung.",
+      "AI_FAILED": "Die Antwort ist nicht angekommen."
+    },
+    "CHIP": {
+      "FOR_RENT": "Zur Miete",
+      "FOR_SALE": "Zum Kauf",
+      "PLACE": "📍 {{place}}",
+      "PLACE_TEXT": "Enthält: {{place}}",
+      "PRICE_BETWEEN": "Preis {{min}}–{{max}} {{currency}}",
+      "PRICE_MAX": "bis {{max}} {{currency}}",
+      "PRICE_MIN": "ab {{min}} {{currency}}",
+      "ROOMS_EXACT": "{{n}} Zimmer",
+      "ROOMS_MIN": "ab {{n}} Zimmer",
+      "ROOMS_MAX": "bis {{n}} Zimmer",
+      "AREA_BETWEEN": "Fläche {{min}}–{{max}}",
+      "AREA_MIN": "ab {{n}} Fläche",
+      "AREA_MAX": "Fläche bis {{n}}",
+      "FLOOR_HIGHEST": "Oberstes Stockwerk",
+      "FLOOR_LOWEST": "Unterstes Stockwerk",
+      "FLOOR_GROUND": "Erdgeschoss",
+      "FLOOR_NOT_GROUND": "Nicht im Erdgeschoss",
+      "FLOOR_EXACT": "{{n}}. Etage",
+      "FLOOR_FROM": "ab {{n}}. Etage",
+      "FLOOR_TO": "bis {{n}}. Etage",
+      "ELEVATOR": "Mit Aufzug",
+      "NO_ELEVATOR": "Ohne Aufzug",
+      "BALCONY": "Mit Balkon",
+      "NO_BALCONY": "Ohne Balkon",
+      "PARKING": "Mit Stellplatz",
+      "NO_PARKING": "Ohne Stellplatz",
+      "WORDS": "Begriffe: {{words}}",
+      "SORT_PRICE_ASC": "Günstigste zuerst",
+      "SORT_PRICE_DESC": "Teuerste zuerst"
+    },
+    "TYPE": {
+      "APARTMENT": "Wohnung",
+      "HOTEL_APARTMENT": "Hotelapartment",
+      "VILLA": "Villa",
+      "HOUSE": "Haus",
+      "STUDIO": "Studio",
+      "RESIDENTIAL_LAND": "Wohngrundstück",
+      "AGRICULTURAL_LAND": "Landwirtschaftliches Grundstück",
+      "INDUSTRIAL_LAND": "Industriegrundstück",
+      "COMMERCIAL_LAND": "Gewerbegrundstück",
+      "SHOP": "Laden",
+      "OFFICE": "Büro",
+      "WAREHOUSE": "Lager",
+      "HOTEL": "Hotel"
+    },
+    "UNIT": {
+      "SquareMeter": "m²",
+      "Qasabah": "Qasabah",
+      "Dunum": "Dunam",
+      "Hectare": "ha"
+    },
+    "ROW": {
+      "listingType": "Angebotsart",
+      "price": "Preis",
+      "priceKind": "Preisart",
+      "area": "Fläche",
+      "pricePerSquareMeter": "Preis pro m²",
+      "rooms": "Zimmer",
+      "floor": "Etage",
+      "place": "Lage",
+      "hasElevator": "Aufzug",
+      "hasBalcony": "Balkon",
+      "hasParkingSpace": "Stellplatz",
+      "furnishingStatus": "Möblierung",
+      "heatingType": "Heizung",
+      "legalStatus": "Rechtsstatus",
+      "agency": "Büro"
+    },
+    "NOTE": {
+      "CURRENCY_DIFFERS": "Unterschiedliche Währungen: nicht direkt vergleichbar",
+      "UNITS_DIFFER": "Unterschiedliche Flächeneinheiten: nicht direkt vergleichbar",
+      "NOT_COMPUTABLE": "Für diese Angebote nicht berechenbar"
     }
   }
 }

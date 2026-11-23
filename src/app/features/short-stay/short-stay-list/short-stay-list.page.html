@@ -72,9 +72,12 @@
 
     <!-- The range is written in this currency; the server compares every listing in it, so a stay priced in another
          currency is found at its equivalent price (search audit S05). -->
-    <div class="ssl__field" *ngIf="currencies().length > 0">
+    <!-- Always rendered (disabled until the list arrives): appearing late reflowed the whole filter grid and pushed the
+         results down (CLS 0.29 on desktop, UI performance audit 2026-11-17). -->
+    <div class="ssl__field">
       <label for="ssl-currency">{{ 'SHORTSTAY.LIST.PRICE_CURRENCY' | translate }}</label>
-      <select id="ssl-currency" [(ngModel)]="currencyCode" name="currencyCode">
+      <select id="ssl-currency" [(ngModel)]="currencyCode" name="currencyCode" [disabled]="currencies().length === 0">
+        <option *ngIf="currencies().length === 0" [value]="currencyCode">{{ currencyCode || '…' }}</option>
         <option *ngFor="let c of currencies()" [value]="c.code">{{ currencyLabel(c) }}</option>
       </select>
     </div>

@@ -12,7 +12,8 @@ import { NavbarComponent, navLayoutFor } from './navbar.component';
 import { AuthService, AuthenticatedUser } from '../core/auth/auth.service';
 import { LoginMethod } from '../core/auth/login-identifier';
 import { ProfileService, UserProfile } from '../core/api/profile.service';
-import { AgenciesApiService } from '../core/api/agencies-api.service';
+import { BackendApiService } from '../core/api/backend-api.service';
+import { MY_AGENCY_PATH } from '../core/api/my-agency-path';
 import { Agency } from '../core/models/agency.model';
 import { ServiceProviderService } from '../core/api/service-provider.service';
 import { NotificationsApiService } from '../core/api/notifications-api.service';
@@ -81,7 +82,10 @@ describe('NavbarComponent (Phase 6)', () => {
         ]),
         { provide: AuthService, useValue: auth },
         { provide: ProfileService, useValue: profile },
-        { provide: AgenciesApiService, useValue: { getMine: () => of(myAgency) } },
+        {
+          provide: BackendApiService,
+          useValue: { get: (path: string) => (path === MY_AGENCY_PATH ? of(myAgency) : of(null)) }
+        },
         {
           provide: ServiceProviderService,
           useValue: { myProvider$: of(null), refresh: providerRefresh }
@@ -106,6 +110,21 @@ describe('NavbarComponent (Phase 6)', () => {
     (el().querySelector('.account__trigger') as HTMLButtonElement).click();
     fixture.detectChanges();
   }
+
+  it('«إضافة عقار» في النافبار نص فقط: بلا علامة + في الشريط ولا في القائمة الجانبية', () => {
+    auth.signIn({});
+    profile.profileSubject.next({ Id: 'u1', EmailConfirmed: true, PlanTier: 'Free' } as UserProfile);
+    fixture.detectChanges();
+
+    const link = el().querySelector<HTMLAnchorElement>('a.navbar__link--add');
+    expect(link).not.toBeNull();
+    expect(link!.querySelector('svg')).toBeNull();
+    expect(link!.textContent).not.toContain('+');
+
+    const drawerLink = el().querySelector<HTMLAnchorElement>('a.mobile-drawer__link--highlight[href="/property-form"]');
+    expect(drawerLink).not.toBeNull();
+    expect(drawerLink!.textContent).not.toContain('➕');
+  });
 
   // ────────────── الصورة الشخصية ──────────────
 

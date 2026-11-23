@@ -413,6 +413,12 @@ describe('AuthService', () => {
       service.currentUser$.subscribe(u => seen.push(u?.ImageUrl));
 
       service.validateSession(); // ما يفعله AuthGuard عند كل تنقّل
+      // Same token: the profile fetched for it is still current, no second GET /users/me (UI performance audit 2026-11-17).
+      httpMock.expectNone(`${environment.apiUrl}/users/me`);
+
+      // A refreshed token for the same user fetches the profile again.
+      tokenStorage.setAccessToken(makeJwt({ sub: 'u5', email: 'img@example.com', name: 'img@example.com', exp: Math.floor(Date.now() / 1000) + 7200 }));
+      service.validateSession();
 
       // لا توجد لحظة بلا صورة قبل وصول الجلب الجديد.
       expect(seen.every(url => url === 'https://cdn.example.com/u5.png')).toBeTrue();
@@ -424,6 +430,16 @@ describe('AuthService', () => {
         imageUrl: 'https://cdn.example.com/u5-new.png'
       });
       expect(service.currentUserSnapshot?.ImageUrl).toBe('https://cdn.example.com/u5-new.png');
+    });
+
+    it('✅ a failed GET /users/me is tried again on the next validation of the same token', () => {
+      tokenStorage.setAccessToken(makeJwt({ sub: 'u6', email: 'r@example.com', exp: Math.floor(Date.now() / 1000) + 3600 }));
+      service = TestBed.inject(AuthService);
+      httpMock.expectOne(`${environment.apiUrl}/users/me`).flush({ message: 'error' }, { status: 503, statusText: 'Unavailable' });
+
+      service.validateSession();
+      httpMock.expectOne(`${environment.apiUrl}/users/me`).flush({ id: 'u6', displayName: 'R' });
+      expect(service.currentUserSnapshot?.displayName).toBe('R');
     });
 
     it('✅ مستخدم مختلف في نفس التبويب لا يرث صورة/اسم المستخدم السابق', () => {

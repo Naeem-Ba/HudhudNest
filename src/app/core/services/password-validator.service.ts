@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 
+import { PASSWORD_MIN_LENGTH, PASSWORD_SPECIAL_CHARACTERS } from '../auth/password-policy';
+
 /**
  * متطلبات كلمة المرور الموحدة بين الأمام والخلف
  */
@@ -26,8 +28,10 @@ export interface PasswordValidationResult {
  */
 @Injectable({ providedIn: 'root' })
 export class PasswordValidatorService {
-  private readonly MIN_LENGTH = 8;
-  private readonly SPECIAL_CHARS = /[!@#$%^&*()_+\-=\[\]{}|;:'",.<>?\/~`]/;
+  // Both from password-policy.ts, which mirrors the server's PasswordPolicy. The old local regex also accepted '"',
+  // which the server does not count as special, so the indicator could tick a rule the server then rejected.
+  private readonly MIN_LENGTH = PASSWORD_MIN_LENGTH;
+  private readonly SPECIAL_CHARS = { test: (p: string) => [...p].some(c => PASSWORD_SPECIAL_CHARACTERS.includes(c)) };
 
   /**
    * التحقق من قوة كلمة المرور

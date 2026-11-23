@@ -29,18 +29,24 @@ import { PageMetaService } from './core/services/page-meta.service';
 import { ClientErrorReporterService } from './core/diagnostics/client-error-reporter.service';
 import { installWindowErrorListeners } from './core/diagnostics/client-error-handler';
 import { AppUpdateNativeGateway } from './core/api/app-update-native.gateway';
+import { HudhudAiLauncherComponent } from './features/hudhud-ai/hudhud-ai-launcher.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, ToastContainerComponent, ConfirmModalComponent, EnvironmentBadgeComponent, AdsConsentBannerComponent, MeasurementConsentBannerComponent, ReconsentPromptComponent, TranslateModule],
+  imports: [RouterOutlet, CommonModule, ToastContainerComponent, ConfirmModalComponent, EnvironmentBadgeComponent, AdsConsentBannerComponent, MeasurementConsentBannerComponent, ReconsentPromptComponent, HudhudAiLauncherComponent, TranslateModule],
   template: `
     <router-outlet></router-outlet>
     <app-toast-container></app-toast-container>
-    <app-environment-badge></app-environment-badge>
-    <app-ads-consent-banner></app-ads-consent-banner>
-    <app-measurement-consent-banner></app-measurement-consent-banner>
-    <app-reconsent-prompt></app-reconsent-prompt>
+    <!-- Loaded once the first page is idle, so they stay out of the initial bundle (600 kB budget). -->
+    @defer (on idle) {
+      <app-environment-badge></app-environment-badge>
+      <app-ads-consent-banner></app-ads-consent-banner>
+      <app-measurement-consent-banner></app-measurement-consent-banner>
+      <app-reconsent-prompt></app-reconsent-prompt>
+      <!-- Hudhud AI: renders nothing unless the API reports the assistant switched on. -->
+      <app-hudhud-ai-launcher></app-hudhud-ai-launcher>
+    }
 
     <!-- App Update Management: تحديث اختياري — قابل للتجاهل، مرة واحدة لكل إقلاع تطبيق. -->
     <app-confirm-modal

@@ -31,7 +31,9 @@ import { isNativeApp } from '../core/native/is-native-app';
 import { NotificationsApiService } from '../core/api/notifications-api.service';
 import { ProfileService, UserProfile, hasActivePaidPlan, isEligibleForListing } from '../core/api/profile.service';
 import { ServiceProviderService } from '../core/api/service-provider.service';
-import { AgenciesApiService } from '../core/api/agencies-api.service';
+import { BackendApiService } from '../core/api/backend-api.service';
+import { MY_AGENCY_PATH } from '../core/api/my-agency-path';
+import { Agency } from '../core/models/agency.model';
 import { agencyGrace } from '../core/api/agency-grace';
 
 type AppLang = 'ar' | 'en' | 'de' | 'tr';
@@ -138,7 +140,10 @@ export class NavbarComponent implements OnInit, AfterViewInit {
   readonly notificationsApi = inject(NotificationsApiService);
   private readonly profileService = inject(ProfileService);
   private readonly serviceProviderService = inject(ServiceProviderService);
-  private readonly agenciesApi = inject(AgenciesApiService);
+  // GET /agencies/me directly instead of injecting AgenciesApiService: that service (about 3 kB with
+  // its dependencies) would otherwise sit in the initial bundle for this one call (platform audit
+  // 2026-11-18, HN-18). Same path constant as AgenciesApiService.getMine().
+  private readonly backendApi = inject(BackendApiService);
 
   @ViewChild('accountRef')
   private accountRef?: ElementRef<HTMLElement>;
@@ -205,7 +210,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
       if (hasActivePaidPlan(profile)) return of(true);
       // Plan ended: the link stays for 30 more days for the owner and the members of the office
       // (the owner's plan decides), so they can renew. Checked only for accounts without a paid plan.
-      return this.agenciesApi.getMine().pipe(
+      return this.backendApi.get<Agency | null>(MY_AGENCY_PATH).pipe(
         map(agency => agencyGrace(agency).active),
         catchError(() => of(false))
       );

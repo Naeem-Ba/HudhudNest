@@ -1,0 +1,51 @@
+<div class="valuation-page">
+  <div class="container">
+    <header class="page-header">
+      <span class="eyebrow">🏢 {{ 'VALUATION.EYEBROW' | translate }}</span>
+      <h1>{{ 'VALUATION.RESULT.TITLE' | translate }}</h1>
+      <p>{{ 'VALUATION.RESULT.SUBTITLE' | translate }}</p>
+    </header>
+
+    <p class="valuation-loading" *ngIf="loading()" role="status">{{ 'VALUATION.RESULT.LOADING' | translate }}</p>
+
+    <div class="alert alert--warning" *ngIf="error() as e" role="alert" data-testid="valuation-result-error">
+      <span aria-hidden="true">⚠️</span>
+      <p>{{ (e === 'not-found' ? 'VALUATION.RESULT.NOT_FOUND' : 'VALUATION.STATUS_ERROR') | translate }}</p>
+    </div>
+
+    <section class="valuation-result" *ngIf="!loading() && status() as s">
+      <div class="result-summary" data-testid="valuation-result-summary">
+        <span class="status-badge" [class.status-badge--open]="isOpen(s)">{{ ('VALUATION.STATUS.' + s.status.toUpperCase()) | translate }}</span>
+        <p *ngIf="s.invitedOfficeCount > 0">
+          {{ 'VALUATION.RESULT.ANSWERED' | translate: { answered: s.estimates.length, asked: s.invitedOfficeCount } }}
+        </p>
+        <p class="expiry-note" *ngIf="isOpen(s)">{{ 'VALUATION.OFFICE_PATH.EXPIRES_AT' | translate: { date: (s.expiresAt | localDate: 'short') } }}</p>
+      </div>
+
+      <ul class="office-answers" *ngIf="s.estimates.length; else noAnswers">
+        <li class="office-answer" *ngFor="let e of s.estimates" data-testid="valuation-office-answer">
+          <div class="office-answer__head">
+            <strong>{{ e.agencyName }}</strong>
+            <span class="office-answer__date">{{ e.submittedAt | localDate: 'short' }}</span>
+          </div>
+          <p class="office-answer__price" dir="ltr">{{ price(e.estimatedPrice, e.currencyCode) }}</p>
+          <p class="office-answer__notes" *ngIf="e.notes">{{ e.notes }}</p>
+        </li>
+      </ul>
+      <ng-template #noAnswers>
+        <p class="estimates__empty">
+          {{ (isOpen(s) ? 'VALUATION.OFFICE_PATH.NO_ESTIMATES_YET' : 'VALUATION.RESULT.CLOSED_NO_ANSWERS') | translate }}
+        </p>
+      </ng-template>
+
+      <p class="price-card__disclaimer" *ngIf="s.estimates.length">{{ 'VALUATION.RESULT.DISCLAIMER' | translate }}</p>
+
+      <div class="result-actions">
+        <button type="button" class="valuation-refresh" *ngIf="isOpen(s)" (click)="load()">
+          {{ 'VALUATION.OFFICE_PATH.CHECK_STATUS' | translate }}
+        </button>
+        <a class="valuation-restart" routerLink="/valuation">{{ 'VALUATION.NEW_REQUEST' | translate }}</a>
+      </div>
+    </section>
+  </div>
+</div>

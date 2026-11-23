@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { NEVER, of, throwError } from 'rxjs';
 
 import { AdminListingReportsPage } from './admin-listing-reports.page';
 import { AdminListingReportsService } from '../../core/api/admin-listing-reports.service';
@@ -70,5 +70,36 @@ describe('AdminListingReportsPage', () => {
     page.fixture.detectChanges();
     expect((page.fixture.nativeElement as HTMLElement).querySelector('[data-testid="report-preview"]')?.textContent)
       .toContain('the photos belong to another listing');
+  });
+
+  // UI performance audit 2026-11-17: the cards appeared only with the numbers and pushed the page down (CLS 0.27).
+  it('keeps the stat cards in place with dashes until the numbers arrive', () => {
+    api.search.and.returnValue(of({ items: [], total: 0, page: 1, pageSize: 20 }));
+    api.stats.and.returnValue(NEVER);
+    api.assignees.and.returnValue(of([]));
+    TestBed.configureTestingModule({
+      imports: [AdminListingReportsPage, TranslateModule.forRoot()],
+      providers: [provideRouter([]), { provide: AdminListingReportsService, useValue: api },
+        { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: { get: () => null } } } }]
+    });
+    const fixture = TestBed.createComponent(AdminListingReportsPage);
+    fixture.detectChanges();
+    const cards = [...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>('[data-testid="report-stats"] button.stat')];
+    expect(cards.length).toBe(8);
+    expect(cards.every(c => c.disabled && c.querySelector('strong')?.textContent?.trim() === '–')).toBeTrue();
+  });
+
+  it('leaves the stat cards out when the numbers cannot be loaded', () => {
+    api.search.and.returnValue(of({ items: [], total: 0, page: 1, pageSize: 20 }));
+    api.stats.and.returnValue(throwError(() => new Error('down')));
+    api.assignees.and.returnValue(of([]));
+    TestBed.configureTestingModule({
+      imports: [AdminListingReportsPage, TranslateModule.forRoot()],
+      providers: [provideRouter([]), { provide: AdminListingReportsService, useValue: api },
+        { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: { get: () => null } } } }]
+    });
+    const fixture = TestBed.createComponent(AdminListingReportsPage);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="report-stats"]')).toBeNull();
   });
 });

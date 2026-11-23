@@ -29,7 +29,9 @@ describe('routeForNotification', () => {
     expect(routeForNotification({ target: { kind: 'short-stay-booking', id: ENTITY } })).toEqual(['/short-stay/bookings']);
     expect(routeForNotification({ target: { kind: 'my-listings' } })).toEqual(['/my-listings']);
     expect(routeForNotification({ target: { kind: 'agency-invitation', id: ENTITY } })).toEqual(['/my-agency']);
-    expect(routeForNotification({ target: { kind: 'valuation', id: ENTITY } })).toEqual(['/valuation']);
+    expect(routeForNotification({ target: { kind: 'valuation', id: ENTITY } })).toEqual(['/valuation', ENTITY]);
+    expect(routeForNotification({ target: { kind: 'valuation', id: 'not-an-id' } })).toEqual(['/valuation']);
+    expect(routeForNotification({ target: { kind: 'valuation-office', id: ENTITY } })).toEqual(['/my-agency/valuations']);
     expect(routeForNotification({ target: { kind: 'phone-verify' } })).toEqual(['/profile/phone-reverify']);
   });
 

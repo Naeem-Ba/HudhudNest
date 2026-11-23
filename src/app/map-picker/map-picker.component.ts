@@ -20,6 +20,22 @@ import { isValidCoordinates } from '../core/models/property-location';
 import { LocationsApiService } from '../core/api/locations-api.service';
 import { GeoMapSuggestion, GeoProviderStatus } from '../core/models/geo-location.model';
 
+/**
+ * Leaflet guesses its default pin images from the stylesheet's url(), which the Angular build rewrites to /media/, and
+ * only the pin itself is emitted there: the shadow 404'd. angular.json copies all of Leaflet's images to
+ * assets/leaflet/, so point the default pin at that folder.
+ */
+const DEFAULT_PIN = L.icon({
+  iconUrl: 'assets/leaflet/marker-icon.png',
+  iconRetinaUrl: 'assets/leaflet/marker-icon-2x.png',
+  shadowUrl: 'assets/leaflet/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  tooltipAnchor: [16, -28],
+  shadowSize: [41, 41],
+});
+
 /** OpenStreetMap tiles need no key and include local place labels. */
 export const MAP_TILE_LAYER = {
   url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -166,7 +182,7 @@ export class MapPickerComponent implements AfterViewInit, OnChanges, OnDestroy {
     if (!this.map || !isValidCoordinates(lat, lng)) return;
 
     if (!this.pin) {
-      this.pin = L.marker([lat, lng], { draggable: this.interactive }).addTo(this.map);
+      this.pin = L.marker([lat, lng], { draggable: this.interactive, icon: DEFAULT_PIN }).addTo(this.map);
       this.pin.on('dragend', () => {
         const position = this.pin?.getLatLng();
         if (position && isValidCoordinates(position.lat, position.lng)) {

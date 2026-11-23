@@ -30,10 +30,13 @@ import {
   OwnerSelectableStatus,
   isClosedDealListing,
   listingLifecycle,
-  listingStatusTagKey
+  listingStatusTagKey,
+  ownerSelectableStatusesFor
 } from '../../shared/utils/listing-status';
 import { ListingViewCountComponent } from '../../shared/ui/listing-view-count.component';
 import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
+import { digitalPurchasesAllowed } from '../../core/native/digital-purchases';
+import { ExtraListingStatus } from '../../core/models/listing-fee.model';
 
 @Component({
   selector: 'app-my-listings',
@@ -76,13 +79,30 @@ export class MyListingsPage implements OnInit {
   readonly myOffice = signal<{ id: string; name: string } | null>(null);
   readonly linkingId = signal<string | null>(null);
 
-  readonly selectableStatuses = OWNER_SELECTABLE_STATUSES;
 
   /**
    * Listings whose featured request is waiting for an administrator to confirm the payment.
    * The listing is not featured yet; the card says so instead of offering to request again.
    */
   readonly pendingFeaturedIds = signal<ReadonlySet<string>>(new Set());
+
+  /**
+   * Paying for ONE more listing (free plan, at the limit). Null until loaded or when the call fails: then the page
+   * behaves as before and shows the plain add button, because a missing status must never hide the way to add.
+   */
+  readonly extraListing = signal<ExtraListingStatus | null>(null);
+
+  /** The installed app sells nothing (see digital-purchases.ts); the website offers the payment. */
+  readonly offerExtraListing = computed(() => this.canBuyDigital && this.extraListing()?.canRequest === true);
+  readonly extraListingCredits = computed(() => this.extraListing()?.availableCredits ?? 0);
+
+  /** A request waits for the administrator, the owner is at the limit and holds no paid permission: adding would fail. */
+  readonly extraListingPending = computed(() => {
+    const status = this.extraListing();
+    return !!status && status.hasPendingRequest && status.blockedCode === null && status.availableCredits === 0;
+  });
+
+  readonly showAddButton = computed(() => !this.offerExtraListing() && !this.extraListingPending());
 
   readonly fallbackImage = '/images/no-image.svg';
   private readonly now = Date.now();
@@ -111,6 +131,14 @@ export class MyListingsPage implements OnInit {
     this.loadQuotaUsage();
     this.loadPendingFeatured();
     this.loadMyOffice();
+    this.loadExtraListingStatus();
+  }
+
+  private loadExtraListingStatus(): void {
+    this.feesApi
+      .getExtraListingStatus()
+      .pipe(catchError(() => of(null)), takeUntilDestroyed(this.destroyRef))
+      .subscribe(status => this.extraListing.set(status));
   }
 
   private loadMyOffice(): void {
@@ -172,8 +200,11 @@ export class MyListingsPage implements OnInit {
    * Featuring is offered for a published, unexpired listing: the server refuses anything
    * else (a hidden listing would be paid-for promotion nobody can see).
    */
+  /** False in the installed app: featuring is a digital purchase (see digital-purchases.ts). */
+  readonly canBuyDigital = digitalPurchasesAllowed();
+
   canFeature(property: Property): boolean {
-    return this.isPublished(property) && property.status !== 'Expired';
+    return this.canBuyDigital && this.isPublished(property) && property.status !== 'Expired';
   }
 
   hasPendingFeatured(property: Property): boolean {
@@ -399,6 +430,11 @@ export class MyListingsPage implements OnInit {
   /** Only a published listing has a status to manage (a draft is not on the market, an expired one is extended). */
   canChangeStatus(property: Property): boolean {
     return !!property.id && property.isPublished === true && this.currentStatus(property) !== null;
+  }
+
+  /** Sold only for a listing for sale, Rented only for one for rent (the API refuses the rest). */
+  selectableStatuses(property: Property): OwnerSelectableStatus[] {
+    return ownerSelectableStatusesFor(property);
   }
 
   statusOptionKey(status: OwnerSelectableStatus): string {
