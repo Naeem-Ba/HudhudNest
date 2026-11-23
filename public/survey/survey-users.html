@@ -138,10 +138,11 @@ input[type=tel]{direction:ltr;text-align:right}
 var CONFIG = {
   // Supabase project URL, e.g. 'https://abcdefghijklm.supabase.co' (no trailing slash).
   // Recommended: a SEPARATE Supabase project for surveys (EU region), not the app's main database project.
-  SUPABASE_URL: '',
+  // 2026-11-23: points at the hudhudnest-staging project (eu-west-1) for testing; move to a dedicated survey project before production.
+  SUPABASE_URL: 'https://rtmlqjhfvlxmdovtpono.supabase.co',
   // The project's anon / publishable key. Public by design; protection comes from RLS + grants in the SQL file.
   // NEVER put the service_role key here.
-  SUPABASE_ANON_KEY: '',
+  SUPABASE_ANON_KEY: 'sb_publishable_PnC5e7ilHZHEYPPwCNWLLw_1_9UkDqU',
   // Logo image. Empty string = no logo and no empty space.
   LOGO_URL: '/images/horizontal-logo-480.webp',
   // Meta Pixel id. Empty = the pixel is never loaded and no consent banner is shown.
