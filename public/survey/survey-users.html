@@ -143,6 +143,10 @@ var CONFIG = {
   // The project's anon / publishable key. Public by design; protection comes from RLS + grants in the SQL file.
   // NEVER put the service_role key here.
   SUPABASE_ANON_KEY: 'sb_publishable_PnC5e7ilHZHEYPPwCNWLLw_1_9UkDqU',
+  // Database schema that holds survey_users_responses (sent as the Content-Profile header). It is NOT
+  // 'public' on purpose: the API's Migrator revokes anon grants on every public table on each run.
+  // The schema must be listed under Project Settings -> Data API -> Exposed schemas.
+  SUPABASE_SCHEMA: 'survey',
   // Logo image. Empty string = no logo and no empty space.
   LOGO_URL: '/images/horizontal-logo-480.webp',
   // Meta Pixel id. Empty = the pixel is never loaded and no consent banner is shown.
@@ -891,6 +895,7 @@ var CONFIG = {
         'apikey': CONFIG.SUPABASE_ANON_KEY,
         'Authorization': 'Bearer ' + CONFIG.SUPABASE_ANON_KEY,
         'Content-Type': 'application/json',
+        'Content-Profile': CONFIG.SUPABASE_SCHEMA || 'public',
         'Prefer': 'return=minimal'
       },
       body: body,
