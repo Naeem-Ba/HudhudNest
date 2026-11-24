@@ -228,7 +228,7 @@ const CONFIG = {
   /* ---------- Question options (codes are stored; labels are shown) ---------- */
   var OPT = {
     q1: [["owner", "صاحب المكتب"], ["partner", "شريك"], ["employee", "موظف أو وسيط يعمل مع المكتب"],
-         ["independent_broker", "وسيط مستقل بلا مكتب"]],
+         ["independent_broker", "وسيط مستقل بلا مكتب"], ["property_owner", "مالك عقار أعرضه بنفسي (ولست مكتباً)"]],
     area: [["damascus", "دمشق"], ["rif_damascus", "ريف دمشق"]],
     q3: [["lt10", "أقل من 10"], ["10_30", "10 – 30"], ["31_100", "31 – 100"], ["gt100", "أكثر من 100"]],
     q4: [["rent", "إيجار"], ["sale", "بيع"], ["equal", "تقريباً بالتساوي"]],
@@ -576,7 +576,7 @@ const CONFIG = {
       ul
     ];
   }
-  function renderQ1() { return [el("fieldset", null, title("ما صفتكم في المكتب؟").concat([radios("q1", OPT.q1, "q1")]))]; }
+  function renderQ1() { return [el("fieldset", null, title("ما صفتكم؟").concat([radios("q1", OPT.q1, "q1")]))]; }
   function renderQ2() {
     return [
       el("fieldset", null, title("في أي منطقة تعملون؟").concat([radios("area", OPT.area, "area")])),
