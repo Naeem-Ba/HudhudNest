@@ -150,21 +150,24 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--navy);outline-offse
    CONFIG: every value the founder may need to change. Nothing below this block needs editing.
    - SUPABASE_URL / SUPABASE_ANON_KEY: the survey Supabase project (anon/publishable key only, NEVER service_role).
      The anon key is public by design; protection comes from RLS, column grants and CHECK constraints in the SQL.
-   - PRICE_RANGES: labels can be edited freely. Each id must stay one of the values allowed by the database constraint
-     so_price_chk (zero, lt10, 10_25, 25_50, gt50, unsure); a new id needs the same change in the SQL. These ranges are
-     research options, not approved prices.
+   - PRICE_RANGES: one ladder per payment model (monthly_subscription, per_listing, free_featured), shown only for the
+     model the office chose in Q12a. Labels can be edited freely. Each id must stay one of the values allowed by the
+     database constraint so_price_chk, and its prefix must match the model (m_ monthly, l_ per listing, f_ featured);
+     a new id needs the same change in the SQL. These ranges are research hypotheses taken from the market-validation
+     plan (low-price pivot), NOT approved prices and NOT evidence about what offices pay. Read them as relative
+     preference between rungs, not as a price list.
    - RETENTION_TEXT must match the retention job in the SQL (12 months by default).
    - FOLLOWUP_DAYS: shown on the thank-you screen to people who left a number and agreed to be contacted. 0 hides it.
    - MAX_TEXT_LENGTH: limit for the free notes field (Q15). Clamped to 50..600 to stay inside the database limits.
    =================================================================================================================== */
 const CONFIG = {
-  SUPABASE_URL: "",
-  SUPABASE_ANON_KEY: "",
+  SUPABASE_URL: "https://rtmlqjhfvlxmdovtpono.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_PnC5e7ilHZHEYPPwCNWLLw_1_9UkDqU",
 
   LOGO_URL: "/images/horizontal-logo-480.png",
 
-  CONTACT_EMAIL: "",
-  PRIVACY_URL: "",
+  CONTACT_EMAIL: "privacy@hudhudnest.com",
+  PRIVACY_URL: "https://hudhudnest.com/privacy-policy",
 
   RETENTION_TEXT: "12 شهراً",
   FOLLOWUP_DAYS: 3,
@@ -178,16 +181,33 @@ const CONFIG = {
   AUTO_RETRY_ENABLED: true,
   ENABLE_LOCAL_SAVE: true,
 
-  SURVEY_VERSION: "1.0.0",
+  SURVEY_VERSION: "2.0.0",
+  SUPABASE_SCHEMA: "survey",
 
-  PRICE_RANGES: [
-    { id: "zero", label: "لا شيء، يجب أن تبقى مجانية" },
-    { id: "lt10", label: "أقل من 10 دولار شهرياً" },
-    { id: "10_25", label: "10 – 25 دولار شهرياً" },
-    { id: "25_50", label: "25 – 50 دولار شهرياً" },
-    { id: "gt50", label: "أكثر من 50 دولار إذا جلبت زبائن جادين" },
-    { id: "unsure", label: "لا أعرف قبل أن أجرّب" }
-  ]
+  PRICE_RANGES: {
+    monthly_subscription: [
+      { id: "zero", label: "لا شيء، يجب أن تبقى مجانية" },
+      { id: "m_lt5", label: "أقل من 5 دولار شهرياً" },
+      { id: "m_5_10", label: "5 – 10 دولار شهرياً" },
+      { id: "m_10_15", label: "10 – 15 دولار شهرياً" },
+      { id: "m_gt15", label: "أكثر من 15 دولار شهرياً إذا جلبت زبائن جادين" },
+      { id: "unsure", label: "لا أعرف قبل أن أجرّب" }
+    ],
+    per_listing: [
+      { id: "zero", label: "لا شيء، يجب أن تبقى مجانية" },
+      { id: "l_lt1", label: "أقل من 1 دولار للإعلان" },
+      { id: "l_1_2", label: "1 – 2 دولار للإعلان" },
+      { id: "l_gt2", label: "أكثر من 2 دولار للإعلان" },
+      { id: "unsure", label: "لا أعرف قبل أن أجرّب" }
+    ],
+    free_featured: [
+      { id: "zero", label: "لا شيء، لا أدفع للإبراز" },
+      { id: "f_lt3", label: "أقل من 3 دولار لإبراز الإعلان أسبوعاً" },
+      { id: "f_3_5", label: "3 – 5 دولار لإبراز الإعلان أسبوعاً" },
+      { id: "f_gt5", label: "أكثر من 5 دولار لإبراز الإعلان أسبوعاً" },
+      { id: "unsure", label: "لا أعرف قبل أن أجرّب" }
+    ]
+  }
 };
 
 (function () {
@@ -195,6 +215,7 @@ const CONFIG = {
 
   /* ---------- Constants derived from CONFIG ---------- */
   var TABLE = "survey_offices_responses";
+  var SCHEMA = String(CONFIG.SUPABASE_SCHEMA || "public");
   var STORE_KEY = "hn_survey_offices_progress";
   var PENDING_KEY = "hn_survey_offices_pending";
   var NOTES_MAX = Math.max(50, Math.min(600, parseInt(CONFIG.MAX_TEXT_LENGTH, 10) || 400));
@@ -222,24 +243,33 @@ const CONFIG = {
          ["other", "أخرى"]],
     q7: [["zero", "لا شيء"], ["lt25", "أقل من 25 " + CUR], ["25_100", "25 – 100 " + CUR],
          ["gt100", "أكثر من 100 " + CUR], ["prefer_not", "أفضّل عدم الإجابة"]],
+    q7b: [["none", "لا أحد"], ["1_2", "1 – 2"], ["3_5", "3 – 5"], ["gt5", "أكثر من 5"], ["unknown", "لا أعرف"]],
     q8: [["post_buried", "المنشور يضيع بسرعة ونضطر لإعادة النشر"], ["unserious_leads", "زبائن غير جادين يأخذون الوقت"],
          ["copied_listings", "إعلاناتنا أو صورنا تُنسخ وتُنشر باسم غيرنا"], ["hard_to_stand_out", "صعوبة إظهار احترافية المكتب"],
          ["unlicensed_competition", "منافسة وسطاء غير مرخصين"], ["no_tracking", "لا نعرف أي إعلان جلب أي زبون"],
-         ["management_hassle", "إدارة العقارات المعروضة مرهقة"], ["other", "أخرى"]],
+         ["management_hassle", "إدارة العقارات المعروضة مرهقة"], ["other", "أخرى"],
+         ["none", "لا توجد مشكلة تذكر"]],
     q9: [["still_using", "نعم، وما زلنا نستخدمه"], ["stopped", "نعم، وتوقفنا"], ["never_used", "لا"]],
     q10: [["serious_leads", "تجلب زبائن جادين فعلاً"], ["office_profile", "صفحة خاصة بالمكتب بشكل احترافي"],
           ["qr_code", "رمز QR أضعه على الواجهة والكروت"], ["listing_views", "إحصائيات: كم شخصاً شاهد كل عقار"],
           ["upload_assistance", "مساعدة في إدخال العقارات بدلاً عنا"],
           ["listing_protection", "حماية إعلاناتنا من النسخ أو إظهار أنها منشورة من قبلنا"],
           ["free_start", "مجانية في البداية"], ["other", "أخرى"]],
+    q10b: [["welcome", "أرحّب به"], ["neutral", "لا يهمني"], ["object", "لا أرغب به"]],
     q11: [["self", "أنا بنفسي"], ["employee", "موظف في المكتب"], ["assistance_needed", "نحتاج من يساعدنا في الإدخال"]],
     q12a: [["monthly_subscription", "اشتراك شهري ثابت"], ["per_listing", "دفع مقابل كل إعلان"],
            ["free_featured", "مجاني، مع دفع لإبراز إعلانات معينة"], ["never_pay", "لا ندفع لأي منصة إطلاقاً"]],
-    q13: [["yes_commit", "نعم، ويمكننا إضافة حوالي 10 عقارات حقيقية خلال الشهر الأول"],
-          ["interested", "مهتمون، لكن نريد تفاصيل أولاً"], ["no", "ليس الآن"]]
+    q13: [["yes_commit", "نعم، سنضيف عقارات حقيقية لدينا خلال الشهر الأول"],
+          ["interested", "مهتمون، لكن نريد تفاصيل أولاً"], ["no", "ليس الآن"]],
+    q13b: [["lt5", "أقل من 5"], ["5_10", "5 – 10"], ["11_20", "11 – 20"], ["gt20", "أكثر من 20"]],
+    q13c: [["need_details", "أحتاج تفاصيل أكثر قبل القرار"], ["trust_new", "لا أثق بمنصة جديدة بعد"],
+           ["no_time", "ليس لدينا وقت لإدخال العقارات"], ["no_value", "لا أرى فائدة تفوق ما نستخدمه الآن"],
+           ["already_enough", "القنوات الحالية تكفينا"], ["cost", "الكلفة"],
+           ["data_sharing", "لا أرغب بمشاركة بيانات المكتب"], ["other", "سبب آخر"]]
   };
   function priceOptions() {
-    return (CONFIG.PRICE_RANGES || []).map(function (p) { return [String(p.id), String(p.label)]; });
+    var list = (CONFIG.PRICE_RANGES || {})[S && S.a ? S.a.q12a : ""] || [];
+    return list.map(function (p) { return [String(p.id), String(p.label)]; });
   }
   function codes(list) { return list.map(function (o) { return o[0]; }); }
 
@@ -266,9 +296,10 @@ const CONFIG = {
   }
   function randInt(n) { var a = new Uint32Array(1); window.crypto.getRandomValues(a); return a[0] % n; }
   function shuffledWithOtherLast(list) {
-    var arr = codes(list).filter(function (c) { return c !== "other"; });
+    var arr = codes(list).filter(function (c) { return c !== "other" && c !== "none"; });
     for (var i = arr.length - 1; i > 0; i--) { var j = randInt(i + 1); var t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
     arr.push("other");
+    if (codes(list).indexOf("none") >= 0) arr.push("none");
     return arr;
   }
   /* Remove control characters and bidi marks, trim; empty becomes null. */
@@ -361,12 +392,17 @@ const CONFIG = {
     var a = S.a;
     if (a.q9 !== "still_using") delete a.q9_platform_name;
     if (a.q9 !== "stopped") delete a.q9_stop_reason;
+    if (a.q7 === "zero" || a.q7 === "prefer_not") delete a.q7b;
     if (a.q12a === "never_pay") delete a.q12b;
+    else if (a.q12b && !isPick(a.q12b, priceOptions())) delete a.q12b;
+    if (a.q13 !== "yes_commit") delete a.q13b;
+    if (a.q13 === "yes_commit") delete a.q13c;
     if (a.q5.indexOf("ad_platforms") < 0) delete a.q5_platform_names;
     if (a.q8.indexOf("other") < 0) delete a.q8_other;
     if (a.q10.indexOf("other") < 0) delete a.q10_other;
   }
-  function contactRequired() { return S.a.q13 === "yes_commit" || S.a.q13 === "interested"; }
+  /* v2: the phone number is never required (stated interest must not depend on leaving a number). */
+  function contactRequired() { return false; }
 
   /* ---------- Screens (navigation follows answers, not fixed numbers) ---------- */
   function isPick(v, list) { return codes(list).indexOf(v) >= 0; }
@@ -380,17 +416,26 @@ const CONFIG = {
     { id: "q5", render: renderQ5, validate: function () { return S.a.q5.length ? null : "يرجى اختيار مكان واحد على الأقل."; } },
     { id: "q6", render: renderQ6, validate: function () { return isPick(S.a.q6, OPT.q6) ? null : "يرجى اختيار مصدر واحد."; } },
     { id: "q7", render: renderQ7, validate: function () { return isPick(S.a.q7, OPT.q7) ? null : "يرجى اختيار إجابة، ويمكنكم اختيار «أفضّل عدم الإجابة»."; } },
+    { id: "q7b", when: function () { return !!S.a.q7 && S.a.q7 !== "zero" && S.a.q7 !== "prefer_not"; }, render: renderQ7b,
+      validate: function () { return isPick(S.a.q7b, OPT.q7b) ? null : "يرجى اختيار إجابة، ويمكنكم اختيار «لا أعرف»."; } },
     { id: "q8", render: renderQ8, validate: function () { return S.a.q8.length >= 1 && S.a.q8.length <= 2 ? null : "يرجى اختيار مشكلة واحدة أو مشكلتين."; } },
     { id: "q9", render: renderQ9, validate: function () {
         if (!isPick(S.a.q9, OPT.q9)) return "يرجى اختيار إجابة.";
-        if (S.a.q9 === "stopped" && !(S.a.q9_stop_reason && S.a.q9_stop_reason.length >= 2)) return "يرجى كتابة سبب التوقف باختصار.";
         return null; } },
     { id: "q10", render: renderQ10, validate: function () { return S.a.q10.length >= 1 && S.a.q10.length <= 3 ? null : "يرجى اختيار سبب واحد على الأقل، وحتى 3 أسباب."; } },
+    { id: "q10b", render: renderQ10b, validate: function () {
+        if (!isPick(S.a.q10b_verification, OPT.q10b) || !isPick(S.a.q10b_rating, OPT.q10b) || !isPick(S.a.q10b_updated, OPT.q10b))
+          return "يرجى اختيار إجابة لكل بند من البنود الثلاثة.";
+        return null; } },
     { id: "q11", render: renderQ11, validate: function () { return isPick(S.a.q11, OPT.q11) ? null : "يرجى اختيار إجابة."; } },
     { id: "q12a", render: renderQ12a, validate: function () { return isPick(S.a.q12a, OPT.q12a) ? null : "يرجى اختيار طريقة، ويمكنكم اختيار «لا ندفع لأي منصة إطلاقاً»."; } },
     { id: "q12b", when: function () { return !!S.a.q12a && S.a.q12a !== "never_pay"; }, render: renderQ12b,
       validate: function () { return isPick(S.a.q12b, priceOptions()) ? null : "يرجى اختيار إجابة، ويمكنكم اختيار «لا أعرف قبل أن أجرّب»."; } },
     { id: "q13", render: renderQ13, validate: function () { return isPick(S.a.q13, OPT.q13) ? null : "يرجى اختيار إجابة."; } },
+    { id: "q13b", when: function () { return S.a.q13 === "yes_commit"; }, render: renderQ13b,
+      validate: function () { return isPick(S.a.q13b, OPT.q13b) ? null : "يرجى اختيار إجابة تقريبية."; } },
+    { id: "q13c", when: function () { return S.a.q13 === "interested" || S.a.q13 === "no"; }, render: renderQ13c,
+      validate: function () { return isPick(S.a.q13c, OPT.q13c) ? null : "يرجى اختيار السبب الأقرب."; } },
     { id: "q14", render: renderQ14, validate: validateQ14 },
     { id: "q15", render: renderQ15, validate: function () { return null; } }
   ];
@@ -511,7 +556,7 @@ const CONFIG = {
     var items = [
       "الغرض: بحث لتطوير منصة عقارية في دمشق وريفها. هذا ليس عرض بيع.",
       "المشاركة لا تتطلب معلومات شخصية، واسم المكتب اختياري.",
-      "رقم واتساب اختياري، إلا إذا أبديتم اهتماماً بالمرحلة التجريبية.",
+      "رقم واتساب اختياري دائماً، ولا يؤثر على إجاباتكم.",
       "لن تُنشر الإجابات باسم المكتب.",
       "نحتفظ بالإجابات مدة " + CONFIG.RETENTION_TEXT + " ثم نحذفها.",
       "لا توجد إجابة صحيحة أو خاطئة، وإجابة «لا» مفيدة لنا بقدر «نعم»."
@@ -552,8 +597,12 @@ const CONFIG = {
     return kids;
   }
   function renderQ6() {
-    return [el("fieldset", null, title("من أين يأتيكم أغلب الزبائن الجادّين فعلاً؟", "اختاروا مصدراً واحداً فقط، حتى لو كنتم تنشرون في أماكن أخرى.")
+    return [el("fieldset", null, title("من أين يأتيكم أغلب الزبائن الجادّين فعلاً؟", "الزبون الجادّ هو من زار العقار أو فاوض على سعره. اختاروا مصدراً واحداً فقط، حتى لو كنتم تنشرون في أماكن أخرى.")
       .concat([radios("q6", OPT.q6, "q6")]))];
+  }
+  function renderQ7b() {
+    return [el("fieldset", null, title("من الإعلانات المدفوعة نفسها، كم زبوناً جادّاً جاءكم الشهر الماضي تقريباً؟", "الجادّ: من زار العقار أو فاوض على سعره.")
+      .concat([radios("q7b", OPT.q7b, "q7b")]))];
   }
   function renderQ7() { return [el("fieldset", null, title("كم تصرفون شهرياً على الإعلان المدفوع تقريباً؟").concat([radios("q7", OPT.q7, "q7")]))]; }
   function orderedList(list, order) {
@@ -561,15 +610,15 @@ const CONFIG = {
     return order.map(function (c) { return map[c]; }).filter(Boolean);
   }
   function renderQ8() {
-    var kids = [el("fieldset", null, title("ما أكبر مشكلتين في طريقة عرض العقارات الحالية؟", "اختاروا مشكلة واحدة أو مشكلتين.")
-      .concat([checks("q8", orderedList(OPT.q8, S.orders.q8), "q8", 2, "يمكن اختيار مشكلتين كحد أقصى. ألغوا اختياراً أولاً لاختيار غيره.", null, rerender)]))];
+    var kids = [el("fieldset", null, title("ما أكبر مشكلتين في طريقة عرض العقارات الحالية؟", "اختاروا مشكلة واحدة أو مشكلتين، أو «لا توجد مشكلة تذكر».")
+      .concat([checks("q8", orderedList(OPT.q8, S.orders.q8), "q8", 2, "يمكن اختيار مشكلتين كحد أقصى. ألغوا اختياراً أولاً لاختيار غيره.", "none", rerender)]))];
     if (S.a.q8.indexOf("other") >= 0) kids.push(textInput("q8_other", "ما المشكلة الأخرى؟ (اختياري)"));
     return kids;
   }
   function renderQ9() {
     var kids = [el("fieldset", null, title("هل جرّبتم تطبيقاً أو موقعاً عقارياً لعرض عقاراتكم؟").concat([radios("q9", OPT.q9, "q9", rerender)]))];
     if (S.a.q9 === "still_using") kids.push(textInput("q9_platform_name", "ما اسم التطبيق أو الموقع؟ (اختياري)"));
-    if (S.a.q9 === "stopped") kids.push(textInput("q9_stop_reason", "لماذا توقفتم؟", { multiline: true, required: true, counter: true }));
+    if (S.a.q9 === "stopped") kids.push(textInput("q9_stop_reason", "لماذا توقفتم؟ (اختياري)", { multiline: true, counter: true }));
     return kids;
   }
   function renderQ10() {
@@ -578,25 +627,40 @@ const CONFIG = {
     if (S.a.q10.indexOf("other") >= 0) kids.push(textInput("q10_other", "ما السبب الآخر؟ (اختياري)"));
     return kids;
   }
+  function renderQ10b() {
+    function group(key, label) { return el("fieldset", null, [el("legend", { className: "sub-title", text: label }), radios(key, OPT.q10b, key)]); }
+    return [el("fieldset", null, title("إذا توفرت هذه الأفكار على المنصة، ما موقفكم منها؟", "هذه أفكار نسأل عنها وليست ميزات متاحة حالياً.")),
+      group("q10b_verification", "توثيق المكتب بأوراق رسمية"),
+      group("q10b_rating", "تقييم علني للمكتب من الزبائن"),
+      group("q10b_updated", "إظهار تاريخ آخر تحديث لكل إعلان")];
+  }
   function renderQ11() { return [el("fieldset", null, title("من سيضيف العقارات على المنصة لو انضممتم؟").concat([radios("q11", OPT.q11, "q11")]))]; }
   function renderQ12a() {
     return [el("fieldset", null, title("إذا أثبتت المنصة أنها تجلب زبائن، أي طريقة دفع تناسبكم أكثر؟").concat([radios("q12a", OPT.q12a, "q12a")]))];
   }
   function renderQ12b() {
-    return [el("fieldset", null, title("بعد فترة تجريبية مجانية، ما المبلغ الشهري المعقول بالنسبة لكم؟", "هذا سؤال بحثي، ولا توجد أسعار معتمدة حتى الآن.")
+    return [el("fieldset", null, title(S.a.q12a === "per_listing" ? "ما المبلغ المعقول للإعلان الواحد بعد فترة تجريبية مجانية؟"
+        : (S.a.q12a === "free_featured" ? "ما المبلغ المعقول لإبراز إعلان واحد أسبوعاً؟" : "بعد فترة تجريبية مجانية، ما المبلغ الشهري المعقول بالنسبة لكم؟"),
+      "هذا سؤال بحثي، ولا توجد أسعار معتمدة حتى الآن، والخيارات ليست عرضاً.")
       .concat([radios("q12b", priceOptions(), "q12b")]))];
   }
   function renderQ13() {
     var kids = [el("fieldset", null, title("نبحث عن عدد محدود من المكاتب في دمشق وريفها لتجربة المنصة في مرحلتها الأولى ومساعدتنا في تطويرها. هل يهمّكم ذلك؟")
       .concat([radios("q13", OPT.q13, "q13", rerender)]))];
-    if (contactRequired()) kids.push(el("p", { className: "note", text: "سنرسل لكم التفاصيل والشروط عند اعتمادها، ولا يوجد أي التزام الآن." }));
+    if (S.a.q13 === "yes_commit" || S.a.q13 === "interested") kids.push(el("p", { className: "note", text: "سنرسل لكم التفاصيل والشروط عند اعتمادها، ولا يوجد أي التزام الآن." }));
     return kids;
   }
+  function renderQ13b() {
+    return [el("fieldset", null, title("كم عقاراً تتوقعون إضافته في الشهر الأول تقريباً؟", "تقدير تقريبي وغير ملزم.").concat([radios("q13b", OPT.q13b, "q13b")]))];
+  }
+  function renderQ13c() {
+    return [el("fieldset", null, title("ما السبب الأقرب لعدم الانضمام الآن؟").concat([radios("q13c", OPT.q13c, "q13c")]))];
+  }
   function renderQ14() {
-    var req = contactRequired();
+    var req = false;
     var head = req
       ? title("كيف نتواصل معكم بخصوص المرحلة التجريبية؟", "رقم واتساب والموافقة مطلوبان لأنكم أبديتم اهتماماً. الاسم اختياري.")
-      : title("هل ترغبون بترك رقم للتواصل؟", "هذا اختياري بالكامل، ويمكنكم ترك الحقول فارغة والمتابعة.", "اختياري");
+      : title("هل ترغبون بترك رقم للتواصل؟", "هذا اختياري بالكامل ولا يؤثر على إجاباتكم، ويمكنكم ترك الحقول فارغة والمتابعة.", "اختياري");
     var consentInput = el("input", { type: "checkbox", id: "f_q14_consent", name: "q14_consent" });
     consentInput.checked = S.a.q14_consent === true;
     if (req) consentInput.setAttribute("aria-required", "true");
@@ -609,7 +673,6 @@ const CONFIG = {
       el("label", { className: "consent", "for": "f_q14_consent" }, [consentInput,
         el("span", { text: "أوافق أن تتواصل معي HUDHUDNEST عبر واتساب بخصوص المرحلة التجريبية فقط." })])
     ]))];
-    if (req) kids.push(el("p", { className: "q-help", text: "إذا كنتم لا تفضّلون ترك رقم الآن، يمكنكم الرجوع واختيار «ليس الآن» دون أي حرج." }));
     return kids;
   }
   function validateQ14() {
@@ -692,9 +755,11 @@ const CONFIG = {
     var answers = {
       survey_version: String(CONFIG.SURVEY_VERSION),
       q1: a.q1, q2: { office_name: val("office_name"), area: a.area, area_detail: val("area_detail") },
-      q3: a.q3, q4: a.q4, q5: a.q5.slice(), q6: a.q6, q7: a.q7, q8: a.q8.slice(), q9: a.q9, q10: a.q10.slice(),
+      q3: a.q3, q4: a.q4, q5: a.q5.slice(), q6: a.q6, q7: a.q7, q7b: a.q7 === "zero" || a.q7 === "prefer_not" ? null : val("q7b"), q8: a.q8.slice(), q9: a.q9, q10: a.q10.slice(),
+      q10b: { verification: a.q10b_verification, rating: a.q10b_rating, updated: a.q10b_updated },
       q11: a.q11, q12a: a.q12a, q12b: a.q12a === "never_pay" ? null : val("q12b"), q13: a.q13,
-      q14: { required: contactRequired(), provided: consent }, q15: val("q15"),
+      q13b: a.q13 === "yes_commit" ? val("q13b") : null, q13c: a.q13 === "yes_commit" ? null : val("q13c"),
+      q14: { required: false, provided: consent }, q15: val("q15"),
       q5_platform_names: a.q5.indexOf("ad_platforms") >= 0 ? val("q5_platform_names") : null,
       q8_order: S.orders.q8.slice(), q8_other: a.q8.indexOf("other") >= 0 ? val("q8_other") : null,
       q9_platform_name: using ? val("q9_platform_name") : null, q9_stop_reason: stopped ? val("q9_stop_reason") : null,
@@ -708,6 +773,7 @@ const CONFIG = {
       listings_count: a.q3, rent_share: a.q4, channels: answers.q5, best_lead_source: a.q6, monthly_ad_spend: a.q7,
       top_problems: answers.q8, tried_platform: a.q9, join_drivers: answers.q10, uploader: a.q11,
       payment_model: a.q12a, price_range: answers.q12b, founding_interest: a.q13, answers: answers,
+      leads_from_ads: answers.q7b, expected_listings: answers.q13b, barrier: answers.q13c,
       contact_name: name, contact_whatsapp: phone, contact_consent: consent,
       ref: S.track.ref, utm_source: S.track.utm_source, utm_medium: S.track.utm_medium, utm_campaign: S.track.utm_campaign,
       referrer: S.track.referrer, device: deviceClass()
@@ -785,7 +851,7 @@ const CONFIG = {
     fetch(url, {
       method: "POST",
       headers: { "apikey": CONFIG.SUPABASE_ANON_KEY, "Authorization": "Bearer " + CONFIG.SUPABASE_ANON_KEY,
-                 "Content-Type": "application/json", "Prefer": "return=minimal" },
+                 "Content-Type": "application/json", "Prefer": "return=minimal", "Content-Profile": SCHEMA },
       body: JSON.stringify(S.pending), signal: ctrl ? ctrl.signal : undefined, credentials: "omit", cache: "no-store",
       referrerPolicy: "no-referrer"
     }).then(function (res) {
