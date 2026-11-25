@@ -72,7 +72,7 @@ create table if not exists survey.survey_offices_responses (
 
   -- Allowed values (must match the codes in survey-offices.html; CONFIG.PRICE_RANGES ids must match price_range).
   constraint so_role_chk        check (respondent_role in ('owner', 'partner', 'employee', 'independent_broker', 'property_owner')),
-  constraint so_area_chk        check (area in ('damascus', 'rif_damascus')),
+  constraint so_area_chk        check (area in ('damascus', 'rif_damascus', 'other')),
   constraint so_listings_chk    check (listings_count in ('lt10', '10_30', '31_100', 'gt100')),
   constraint so_rent_share_chk  check (rent_share in ('rent', 'sale', 'equal')),
   constraint so_channels_chk    check (

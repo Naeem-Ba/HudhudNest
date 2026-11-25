@@ -84,6 +84,7 @@ input[dir=ltr]{text-align:left}
 .privacy li::before{content:"";position:absolute;inset-inline-start:2px;top:.7em;width:7px;height:7px;border-radius:50%;background:var(--gold)}
 a{color:var(--navy);text-underline-offset:3px}
 a:focus-visible,button:focus-visible{outline:3px solid var(--navy);outline-offset:2px}
+.share{margin-top:22px}a.btn{text-decoration:none}.share-list{display:flex;flex-direction:column;gap:10px;margin-top:10px}.share-list .btn{width:100%}
 .actions{position:fixed;inset-inline:0;bottom:0;background:var(--white);border-top:1px solid var(--line);padding:12px 0 calc(12px + env(safe-area-inset-bottom));z-index:5}
 .actions .wrap{display:flex;gap:10px}
 .actions[hidden]{display:none}
@@ -174,7 +175,7 @@ const CONFIG = {
 
   CURRENCY_LABEL: "دولار",
 
-  SURVEY_URL: "",
+  SURVEY_URL: "https://hudhudnest.com/survey/offices",
 
   MAX_TEXT_LENGTH: 400,
 
@@ -229,7 +230,7 @@ const CONFIG = {
   var OPT = {
     q1: [["owner", "صاحب المكتب"], ["partner", "شريك"], ["employee", "موظف أو وسيط يعمل مع المكتب"],
          ["independent_broker", "وسيط مستقل بلا مكتب"], ["property_owner", "مالك عقار أعرضه بنفسي (ولست مكتباً)"]],
-    area: [["damascus", "دمشق"], ["rif_damascus", "ريف دمشق"]],
+    area: [["damascus", "دمشق"], ["rif_damascus", "ريف دمشق"], ["other", "منطقة أخرى في سوريا"]],
     q3: [["lt10", "أقل من 10"], ["10_30", "10 – 30"], ["31_100", "31 – 100"], ["gt100", "أكثر من 100"]],
     q4: [["rent", "إيجار"], ["sale", "بيع"], ["equal", "تقريباً بالتساوي"]],
     q5: [["fb_groups", "مجموعات Facebook"], ["fb_ig_page", "صفحة المكتب على Facebook أو Instagram"],
@@ -579,8 +580,8 @@ const CONFIG = {
   function renderQ1() { return [el("fieldset", null, title("ما صفتكم؟").concat([radios("q1", OPT.q1, "q1")]))]; }
   function renderQ2() {
     return [
-      el("fieldset", null, title("في أي منطقة تعملون؟").concat([radios("area", OPT.area, "area")])),
-      textInput("area_detail", "الحي أو البلدة (اختياري)"),
+      el("fieldset", null, title("في أي منطقة تعملون؟").concat([radios("area", OPT.area, "area", rerender)])),
+      textInput("area_detail", S.a.area === "other" ? "المحافظة والمدينة (اختياري)" : "الحي أو البلدة (اختياري)"),
       textInput("office_name", "اسم المكتب (اختياري)", { hint: "لن يُنشر اسم المكتب مع الإجابات." })
     ];
   }
@@ -821,6 +822,28 @@ const CONFIG = {
     $actions.hidden = true; $progress.hidden = true; setError("");
     var h = $screen.querySelector("h1"); if (h) h.focus({ preventScroll: true });
   }
+  /* Share options: the phone's share sheet when available, plus explicit links, so the person chooses. */
+  function shareBlock() {
+    var url = String(CONFIG.SURVEY_URL || (location.origin + location.pathname));
+    var text = "استبيان قصير لمكاتب العقارات في سوريا عن طريقة عرض العقارات:";
+    var enc = encodeURIComponent, list = [];
+    if (typeof navigator.share === "function") {
+      list.push(el("button", { type: "button", className: "btn btn-primary", id: "share_native", text: "مشاركة عبر تطبيقات هاتفك",
+        onclick: function () { navigator.share({ title: "استبيان HUDHUDNEST", text: text, url: url }).catch(function () { /* cancelled */ }); } }));
+    }
+    list.push(el("a", { className: "btn btn-secondary", id: "share_wa", target: "_blank", rel: "noopener", href: "https://wa.me/?text=" + enc(text + " " + url), text: "واتساب" }));
+    list.push(el("a", { className: "btn btn-secondary", id: "share_tg", target: "_blank", rel: "noopener", href: "https://t.me/share/url?url=" + enc(url) + "&text=" + enc(text), text: "تلغرام" }));
+    list.push(el("a", { className: "btn btn-secondary", id: "share_fb", target: "_blank", rel: "noopener", href: "https://www.facebook.com/sharer/sharer.php?u=" + enc(url), text: "فيسبوك" }));
+    var copy = el("button", { type: "button", className: "btn btn-secondary", id: "share_copy", text: "نسخ الرابط" });
+    copy.addEventListener("click", function () {
+      function done() { copy.textContent = "تم نسخ الرابط"; }
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, function () { window.prompt("انسخوا الرابط:", url); });
+      else window.prompt("انسخوا الرابط:", url);
+    });
+    list.push(copy);
+    return el("div", { className: "share" }, [el("h2", { className: "sub-title", text: "ساعدونا بنشر الاستبيان بين زملائكم" }),
+      el("p", { className: "q-help", text: "اختاروا الطريقة التي تناسبكم." }), el("div", { className: "share-list" }, list)]);
+  }
   function showThanks(withContact) {
     S.current = "thanks";
     $screen.textContent = "";
@@ -828,6 +851,7 @@ const CONFIG = {
     if (withContact && Number(CONFIG.FOLLOWUP_DAYS) > 0) {
       kids.push(el("p", { className: "note", text: "قد نتواصل معكم عبر واتساب خلال " + Number(CONFIG.FOLLOWUP_DAYS) + " أيام تقريباً بخصوص المرحلة التجريبية فقط، وسنرسل التفاصيل والشروط عند اعتمادها. لا يوجد أي التزام عليكم." }));
     }
+    kids.push(shareBlock());
     kids.push(el("p", { className: "q-help", text: "يمكنكم إغلاق هذه الصفحة الآن." }));
     $screen.appendChild(el("div", { className: "center" }, kids));
     $actions.hidden = true; $progress.hidden = true; setError("");

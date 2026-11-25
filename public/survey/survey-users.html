@@ -1019,6 +1019,32 @@ var CONFIG = {
     focusHeading();
   }
 
+  // Share options: the phone's own share sheet when available, plus explicit links, so the person chooses.
+  function shareNodes(url, text) {
+    var enc = encodeURIComponent, full = text, nodes = [];
+    nodes.push(h('h2', { style: 'font-size:1.05rem;margin:22px 0 4px' }, 'ساعدنا بمشاركة الاستبيان'));
+    nodes.push(h('p', { cls: 'hint', style: 'margin-top:0' }, 'اختر الطريقة التي تناسبك.'));
+    var list = [];
+    if (typeof navigator.share === 'function') {
+      list.push(h('button', { type: 'button', cls: 'btn btn-primary', id: 'share_native' }, 'مشاركة عبر تطبيقات هاتفك'));
+    }
+    list.push(h('a', { cls: 'btn btn-secondary', id: 'share', target: '_blank', rel: 'noopener', href: 'https://wa.me/?text=' + enc(full) }, 'واتساب'));
+    list.push(h('a', { cls: 'btn btn-secondary', id: 'share_tg', target: '_blank', rel: 'noopener', href: 'https://t.me/share/url?url=' + enc(url) + '&text=' + enc(text.replace(url, '').trim()) }, 'تلغرام'));
+    list.push(h('a', { cls: 'btn btn-secondary', id: 'share_fb', target: '_blank', rel: 'noopener', href: 'https://www.facebook.com/sharer/sharer.php?u=' + enc(url) }, 'فيسبوك'));
+    list.push(h('button', { type: 'button', cls: 'btn btn-secondary', id: 'share_copy' }, 'نسخ الرابط'));
+    nodes.push(h('div', { cls: 'stack', style: 'margin-top:0;padding-top:4px' }, list));
+    setTimeout(function () {
+      var n = document.getElementById('share_native'), c = document.getElementById('share_copy');
+      if (n) n.onclick = function () { navigator.share({ title: 'استبيان HUDHUDNEST', text: text.replace(url, '').trim(), url: url }).catch(function () { /* cancelled */ }); };
+      if (c) c.onclick = function () {
+        function done() { c.textContent = 'تم نسخ الرابط'; }
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, function () { window.prompt('انسخ الرابط:', url); });
+        else window.prompt('انسخ الرابط:', url);
+      };
+    }, 0);
+    return nodes;
+  }
+
   function renderThanks(screened, ref, withContact) {
     state.phase = 'done';
     setProgress(100);
@@ -1028,8 +1054,7 @@ var CONFIG = {
       h('h1', { 'data-focus': true }, 'شكراً لوقتك 🙏'),
       !screened ? h('p', null, 'إجاباتك ستساعدنا نبني شيئاً يحل مشكلة حقيقية.') : h('p', null, 'هذا الاستبيان مخصص لمن يبحث أو بحث عن عقار خلال آخر سنة. نقدّر وقتك.'),
       (!screened && withContact) ? h('p', null, 'سنتواصل معك عند فتح التجربة المبكرة.') : null,
-      h('div', { cls: 'stack' }, h('a', { cls: 'btn btn-primary', id: 'share', target: '_blank', rel: 'noopener',
-        href: 'https://wa.me/?text=' + encodeURIComponent(shareText) }, 'شارك الاستبيان')),
+      shareNodes(shareUrl, shareText),
       ref ? h('p', { cls: 'hint', style: 'margin-top:16px' }, 'الرقم المرجعي لردّك (لطلب الحذف لاحقاً): ', h('span', { cls: 'ref' }, ref.slice(0, 8))) : null);
     focusHeading();
   }
