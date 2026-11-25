@@ -317,6 +317,32 @@ jobs:
             --title "Android signed AAB ${version_name} (${version_code}) - ${short}" \
             --notes "Signed release AAB ${version_name} (versionCode ${version_code}) built from ${GITHUB_SHA} by ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. SHA-256: ${sha256}"
 
+      # رفع آلي إلى Google Play، مسار Internal testing فقط. الترقية إلى Closed/Production تبقى يدوية من Play Console.
+      # يعمل فقط عند وجود السر PLAY_SERVICE_ACCOUNT_JSON (حساب خدمة له صلاحية الإصدارات على التطبيق)؛ بدونه يُتخطى بإشعار.
+      # يأتي بعد نشر الـ AAB كـ Release عمدًا: فشل الرفع لا يمنع تسليم الملف. المسار يُغيَّر بالمتغير PLAY_TRACK (الافتراضي internal).
+      - name: Check Google Play upload credentials
+        id: play
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -n "$PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::PLAY_SERVICE_ACCOUNT_JSON is not configured; the AAB was not uploaded to Google Play."
+          fi
+
+      - name: Upload AAB to Google Play (Internal testing)
+        if: steps.signing.outputs.enabled == 'true' && steps.play.outputs.enabled == 'true'
+        uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5 # v1.1.5
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.hudhudnest.app
+          releaseFiles: android/app/build/outputs/bundle/release/*.aab
+          track: ${{ vars.PLAY_TRACK || 'internal' }}
+          status: completed
+
       # نسخة احتياطية فقط: فشلها (امتلاء الحصة) لا يُسقط البناء بعد أن نُشر الـ AAB كـ Release.
       # v6 يعمل على Node 24 (v4/v5 على Node 20 الذي تُزال دعمه نهائيًا من الـ runners في 2026-09-23).
       - name: Upload signed AAB

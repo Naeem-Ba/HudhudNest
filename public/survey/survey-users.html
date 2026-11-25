@@ -168,7 +168,8 @@ var CONFIG = {
   // Save progress on this device (localStorage). Name and WhatsApp number are never saved without explicit consent.
   ENABLE_LOCAL_SAVE: true,
   // Stored with every response (answers.survey_version). Change it whenever the questions change.
-  SURVEY_VERSION: 'users-v1-2026-11-22'
+  OFFICES_URL: '/survey/offices',
+  SURVEY_VERSION: 'users-v2-2026-11-24'
 };
 /* ===================================================================================================== */
 
@@ -185,7 +186,8 @@ var CONFIG = {
     ['looking_rent', 'أبحث عن بيت للإيجار'],
     ['looking_buy', 'أبحث عن عقار للشراء'],
     ['for_family', 'أبحث عن بيت لأحد من عائلتي'],
-    ['owner', 'عندي عقار وأريد عرضه للبيع أو الإيجار'],
+    ['owner', 'أنا مالك عقار وأريد عرضه للبيع أو الإيجار'],
+    ['office', 'أعمل في مكتب عقاري أو أعمل وسيطاً'],
     ['past_year', 'لا أبحث الآن، لكني بحثت خلال آخر سنة'],
     ['not_looking', 'لا أبحث ولم أبحث خلال آخر سنة']
   ];
@@ -210,9 +212,11 @@ var CONFIG = {
     ['other', 'أخرى']
   ];
   var Q5_OPTS = [
-    ['lt_week', 'أقل من أسبوع'], ['week_to_month', 'من أسبوع إلى شهر'], ['month_to_3m', 'من شهر إلى 3 أشهر'],
-    ['gt_3m', 'أكثر من 3 أشهر'], ['still_searching', 'ما زلت أبحث']
+    ['lt_week', 'أقل من أسبوع'], ['week_to_month', 'من أسبوع إلى أقل من شهر'], ['month_to_3m', 'من شهر إلى 3 أشهر'],
+    ['gt_3m', 'أكثر من 3 أشهر'], ['still_searching', 'ما زلت أبحث'], ['gave_up', 'توقفت دون أن أجد ما يناسبني']
   ];
+  // Roles that belong to the offices survey instead of this one (no response is stored for them).
+  var REDIRECT_ROLES = ['owner', 'office'];
   var Q6_OPTS = {
     fake_or_unavailable: 'إعلانات وهمية أو العقار لم يعد متاحاً',
     no_price: 'السعر غير مذكور',
@@ -222,7 +226,8 @@ var CONFIG = {
     commissions: 'عمولات وسماسرة',
     slow_response: 'بطء الرد أو عدم الرد',
     office_trust: 'لا أعرف بأي مكتب أثق',
-    other: 'أخرى'
+    other: 'أخرى',
+    none: 'لم أواجه أي مشكلة تذكر'
   };
   var Q7_OPTS = [['yes_multiple', 'نعم، أكثر من مرة'], ['yes_once', 'نعم، مرة واحدة'], ['no', 'لا'], ['not_sure', 'لست متأكداً']];
   var Q8_OPTS = {
@@ -237,7 +242,7 @@ var CONFIG = {
   var YESNO = [['yes', 'نعم'], ['no', 'لا']];
   var Q9C_OPTS = [['yes', 'نعم'], ['maybe', 'ربما'], ['no', 'لا']];
 
-  function notScreened(a) { return a.q1 !== 'not_looking'; }
+  function notScreened(a) { return a.q1 !== 'not_looking' && REDIRECT_ROLES.indexOf(a.q1) === -1; }
   function outside(a) { return notScreened(a) && a.q2 === 'outside'; }
 
   /* The navigation engine: the path is always derived from the answers, never from fixed screen numbers. */
@@ -248,8 +253,8 @@ var CONFIG = {
     { id: 'q4', show: notScreened },
     { id: 'q5', show: notScreened },
     { id: 'q6', show: notScreened },
-    { id: 'q7', show: notScreened },
     { id: 'q8', show: notScreened },
+    { id: 'q7', show: notScreened },
     { id: 'q9a', show: outside },
     { id: 'q9b', show: function (a) { return outside(a) && a.q9a === 'yes'; } },
     { id: 'q9c', show: outside },
@@ -363,7 +368,7 @@ var CONFIG = {
   function freshState() {
     return {
       v: CONFIG.SURVEY_VERSION, phase: 'intro', current: null, startedAt: null, answers: {},
-      q6Order: shuffle(Object.keys(Q6_OPTS).filter(function (k) { return k !== 'other'; })).concat(['other']),
+      q6Order: shuffle(Object.keys(Q6_OPTS).filter(function (k) { return k !== 'other' && k !== 'none'; })).concat(['other']),
       q8Order: shuffle(Object.keys(Q8_OPTS)),
       meta: captureMeta(), pending: null
     };
@@ -533,11 +538,11 @@ var CONFIG = {
           h('div', { id: 'q4more' })];
         break;
       case 'q5':
-        body = fieldset('q5', 'كم استغرق آخر بحث لك حتى وجدت ما يناسبك؟', null, radios('q5', Q5_OPTS, a.q5));
+        body = fieldset('q5', 'كم استغرق آخر بحث لك؟', 'اختر ما يصف بحثك الأخير.', radios('q5', Q5_OPTS, a.q5));
         break;
       case 'q6':
-        body = fieldset('q6', 'ما أكبر مشكلتين واجهتهما أثناء البحث؟', 'اختر خيارين كحد أقصى.',
-          checks('q6', state.q6Order.map(function (k) { return [k, Q6_OPTS[k]]; }), a.q6));
+        body = fieldset('q6', 'ما أكبر مشكلتين واجهتهما أثناء البحث؟', 'اختر خيارين كحد أقصى، أو «لم أواجه أي مشكلة تذكر».',
+          checks('q6', state.q6Order.concat(['none']).map(function (k) { return [k, Q6_OPTS[k]]; }), a.q6));
         break;
       case 'q7':
         body = [fieldset('q7', 'هل صادفت إعلاناً عقارياً تبيّن أنه غير صحيح أو مضلل؟', null, radios('q7', Q7_OPTS, a.q7)),
@@ -557,14 +562,14 @@ var CONFIG = {
         body = fieldset('q9c', 'لو توفّرت مستقبلاً خدمة معاينة للعقار نيابةً عنك، هل تهتم بها؟', null, radios('q9c', Q9C_OPTS, a.q9c));
         break;
       case 'q10':
-        body = fieldset('q10', 'لو وُجدت منصة متخصصة بالعقارات في دمشق وريفها، ما احتمال أن تجربها؟', 'من 1 (مستبعد جداً) إلى 5 (أكيد).', [
+        body = fieldset('q10', 'لو وُجدت منصة متخصصة بالعقارات في دمشق وريفها، ما احتمال أن تجربها؟', 'هذه فكرة ما زالت قيد الدراسة وليست متاحة بعد. من 1 (مستبعد جداً) إلى 5 (محتمل جداً).', [
           h('div', { cls: 'scale' }, [1, 2, 3, 4, 5].map(function (n) {
-            var label = n === 1 ? '1، مستبعد جداً' : n === 5 ? '5، أكيد' : String(n);
+            var label = n === 1 ? '1، مستبعد جداً' : n === 5 ? '5، محتمل جداً' : String(n);
             return h('label', { cls: 'opt' + (a.q10 === n ? ' sel' : ''), 'for': 'q10_' + n },
               h('input', { type: 'radio', id: 'q10_' + n, name: 'q10', value: n, checked: a.q10 === n, 'aria-label': label }),
               h('span', { 'aria-hidden': 'true' }, String(n)));
           })),
-          h('div', { cls: 'scale-ends', 'aria-hidden': 'true' }, h('span', null, '1 = مستبعد جداً'), h('span', null, '5 = أكيد'))]);
+          h('div', { cls: 'scale-ends', 'aria-hidden': 'true' }, h('span', null, '1 = مستبعد جداً'), h('span', null, '5 = محتمل جداً'))]);
         break;
       case 'q11':
         body = [optionalHeading('q11', 'ما الذي قد يمنعك من تجربتها؟'), textField('q11_in', 'إجابتك', max, true, a.q11_text)];
@@ -654,6 +659,13 @@ var CONFIG = {
       var limit = id === 'q6' ? 2 : 3;
       onChange(id, function (ev) {
         var n = checkedValues(id).length;
+        if (id === 'q6' && ev.target.checked) {
+          // "none" is exclusive: choosing it clears the problems, choosing a problem clears it
+          Array.prototype.forEach.call(formEl.querySelectorAll('input[name="q6"]'), function (i) {
+            if ((ev.target.value === 'none' && i !== ev.target) || (ev.target.value !== 'none' && i.value === 'none')) i.checked = false;
+          });
+          n = checkedValues(id).length;
+        }
         if (n > limit) {
           ev.target.checked = false;
           setErr(id === 'q6'
@@ -788,6 +800,7 @@ var CONFIG = {
     var id = state.current;
     var msg = commit(id);
     if (msg) { setErr(msg); var f = screenEl.querySelector('input,select,textarea'); if (f && id !== 'q12') { try { f.focus(); } catch (e) { /* ignore */ } } return; }
+    if (id === 'q1' && REDIRECT_ROLES.indexOf(state.answers.q1) !== -1) { return renderRedirect(); }
     prune();
     var on = path(), idx = on.indexOf(id);
     if (idx === on.length - 1) { persist(); return finish(); }
@@ -990,17 +1003,58 @@ var CONFIG = {
     focusHeading();
   }
 
+  function renderRedirect() {
+    // Owners and offices answer the offices survey; nothing is stored for them here.
+    var role = state.answers.q1;
+    setProgress(null);
+    mount(screenEl,
+      h('h1', { 'data-focus': true }, 'لديكم استبيان خاص'),
+      h('p', null, role === 'office'
+        ? 'هذا الاستبيان موجّه للباحثين عن عقار. للمكاتب والوسطاء استبيان خاص بأسئلة تناسب عملكم.'
+        : 'هذا الاستبيان موجّه للباحثين عن عقار. للملاك استبيان خاص بأسئلة تناسب عرض العقارات.'),
+      h('div', { cls: 'stack' },
+        h('a', { cls: 'btn btn-primary', id: 'go_offices', href: CONFIG.OFFICES_URL || '/survey/offices' }, 'افتحوا استبيان المكاتب والملاك'),
+        h('button', { type: 'button', cls: 'btn btn-secondary', id: 'redir_back' }, 'رجوع')));
+    document.getElementById('redir_back').onclick = function () { delete state.answers.q1; state.phase = 'questions'; state.current = 'q1'; render(); };
+    focusHeading();
+  }
+
+  // Share options: the phone's own share sheet when available, plus explicit links, so the person chooses.
+  function shareNodes(url, text) {
+    var enc = encodeURIComponent, full = text, nodes = [];
+    nodes.push(h('h2', { style: 'font-size:1.05rem;margin:22px 0 4px' }, 'ساعدنا بمشاركة الاستبيان'));
+    nodes.push(h('p', { cls: 'hint', style: 'margin-top:0' }, 'اختر الطريقة التي تناسبك.'));
+    var list = [];
+    if (typeof navigator.share === 'function') {
+      list.push(h('button', { type: 'button', cls: 'btn btn-primary', id: 'share_native' }, 'مشاركة عبر تطبيقات هاتفك'));
+    }
+    list.push(h('a', { cls: 'btn btn-secondary', id: 'share', target: '_blank', rel: 'noopener', href: 'https://wa.me/?text=' + enc(full) }, 'واتساب'));
+    list.push(h('a', { cls: 'btn btn-secondary', id: 'share_tg', target: '_blank', rel: 'noopener', href: 'https://t.me/share/url?url=' + enc(url) + '&text=' + enc(text.replace(url, '').trim()) }, 'تلغرام'));
+    list.push(h('a', { cls: 'btn btn-secondary', id: 'share_fb', target: '_blank', rel: 'noopener', href: 'https://www.facebook.com/sharer/sharer.php?u=' + enc(url) }, 'فيسبوك'));
+    list.push(h('button', { type: 'button', cls: 'btn btn-secondary', id: 'share_copy' }, 'نسخ الرابط'));
+    nodes.push(h('div', { cls: 'stack', style: 'margin-top:0;padding-top:4px' }, list));
+    setTimeout(function () {
+      var n = document.getElementById('share_native'), c = document.getElementById('share_copy');
+      if (n) n.onclick = function () { navigator.share({ title: 'استبيان HUDHUDNEST', text: text.replace(url, '').trim(), url: url }).catch(function () { /* cancelled */ }); };
+      if (c) c.onclick = function () {
+        function done() { c.textContent = 'تم نسخ الرابط'; }
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, function () { window.prompt('انسخ الرابط:', url); });
+        else window.prompt('انسخ الرابط:', url);
+      };
+    }, 0);
+    return nodes;
+  }
+
   function renderThanks(screened, ref, withContact) {
     state.phase = 'done';
     setProgress(100);
-    var shareUrl = CONFIG.SURVEY_URL || (location.origin + location.pathname);
+    var shareUrl = (CONFIG.SURVEY_URL || (location.origin + location.pathname)) + '?utm_source=share';
     var shareText = 'استبيان قصير (أقل من 3 دقائق) عن تجربة البحث عن عقار في دمشق وريفها: ' + shareUrl;
     mount(screenEl,
       h('h1', { 'data-focus': true }, 'شكراً لوقتك 🙏'),
       !screened ? h('p', null, 'إجاباتك ستساعدنا نبني شيئاً يحل مشكلة حقيقية.') : h('p', null, 'هذا الاستبيان مخصص لمن يبحث أو بحث عن عقار خلال آخر سنة. نقدّر وقتك.'),
       (!screened && withContact) ? h('p', null, 'سنتواصل معك عند فتح التجربة المبكرة.') : null,
-      h('div', { cls: 'stack' }, h('a', { cls: 'btn btn-primary', id: 'share', target: '_blank', rel: 'noopener',
-        href: 'https://wa.me/?text=' + encodeURIComponent(shareText) }, 'شارك الاستبيان')),
+      shareNodes(shareUrl, shareText),
       ref ? h('p', { cls: 'hint', style: 'margin-top:16px' }, 'الرقم المرجعي لردّك (لطلب الحذف لاحقاً): ', h('span', { cls: 'ref' }, ref.slice(0, 8))) : null);
     focusHeading();
   }
