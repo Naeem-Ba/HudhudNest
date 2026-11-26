@@ -173,8 +173,12 @@ describe('MapPickerComponent controls layout', () => {
     document.documentElement.dir = dir;
     const fixture = TestBed.createComponent(MapPickerComponent);
     fixture.componentInstance.lang = lang;
-    fixture.nativeElement.style.cssText = `display:block;width:${width}px;position:absolute;top:0;left:0`;
+    // Topmost and scrolled into view: other specs may leave elements on the page (CI runs the specs in random
+    // order), and elementFromPoint() only sees what is on top inside the visible viewport.
+    fixture.nativeElement.style.cssText =
+      `display:block;width:${width}px;position:fixed;top:0;left:0;z-index:2147483647;background:#fff`;
     document.body.appendChild(fixture.nativeElement);
+    window.scrollTo(0, 0);
     fixture.detectChanges();
     (fixture.componentInstance as unknown as { map: L.Map }).map.invalidateSize();
 
