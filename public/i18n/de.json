@@ -5240,5 +5240,17 @@
       "UNITS_DIFFER": "Unterschiedliche Flächeneinheiten: nicht direkt vergleichbar",
       "NOT_COMPUTABLE": "Für diese Angebote nicht berechenbar"
     }
+  },
+  "PHOTO_PICKER": {
+    "CHOOSE": "Bilder auswählen",
+    "NONE": "Keine Dateien ausgewählt",
+    "SELECTED_ONE": "1 Datei ausgewählt",
+    "SELECTED_TWO": "{{count}} Dateien ausgewählt",
+    "SELECTED_FEW": "{{count}} Dateien ausgewählt",
+    "SELECTED_MANY": "{{count}} Dateien ausgewählt",
+    "SELECTED_OTHER": "{{count}} Dateien ausgewählt",
+    "UPLOADING": "Bilder werden hochgeladen...",
+    "SUCCESS": "Bilder erfolgreich hochgeladen",
+    "ERROR": "Bilder konnten nicht hochgeladen werden"
   }
 }

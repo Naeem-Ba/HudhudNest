@@ -162,3 +162,47 @@ describe('MapPickerComponent', () => {
     });
   });
 });
+
+describe('MapPickerComponent controls layout', () => {
+  const rect = (el: Element): DOMRect => el.getBoundingClientRect();
+  const overlap = (a: DOMRect, b: DOMRect): boolean =>
+    a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+
+  async function layout(lang: 'ar' | 'en' | 'de' | 'tr', dir: 'rtl' | 'ltr', width: number): Promise<void> {
+    const previousDir = document.documentElement.dir;
+    document.documentElement.dir = dir;
+    const fixture = TestBed.createComponent(MapPickerComponent);
+    fixture.componentInstance.lang = lang;
+    fixture.nativeElement.style.cssText = `display:block;width:${width}px;position:absolute;top:0;left:0`;
+    document.body.appendChild(fixture.nativeElement);
+    fixture.detectChanges();
+    (fixture.componentInstance as unknown as { map: L.Map }).map.invalidateSize();
+
+    const wrapper = fixture.nativeElement.querySelector('.map-wrapper') as HTMLElement;
+    const zoomIn = fixture.nativeElement.querySelector('.leaflet-control-zoom-in') as HTMLElement;
+    const zoomOut = fixture.nativeElement.querySelector('.leaflet-control-zoom-out') as HTMLElement;
+    const locate = fixture.nativeElement.querySelector('.map-action') as HTMLElement;
+
+    for (const zoom of [zoomIn, zoomOut]) {
+      expect(overlap(rect(zoom), rect(locate)))
+        .withContext(`${lang}/${dir}/${width}px: the location button must not cover a zoom button`).toBeFalse();
+      // Whichever element is on top at the centre of a zoom button must be the zoom button itself (it can be clicked).
+      const c = rect(zoom);
+      const hit = document.elementFromPoint(c.left + c.width / 2, c.top + c.height / 2);
+      expect(zoom.contains(hit)).withContext(`${lang}/${dir}/${width}px: zoom button reachable`).toBeTrue();
+    }
+    const w = rect(wrapper);
+    const l = rect(locate);
+    expect(l.left).withContext('location button inside the map (left)').toBeGreaterThanOrEqual(w.left);
+    expect(l.right).withContext('location button inside the map (right)').toBeLessThanOrEqual(w.right + 0.5);
+
+    fixture.destroy();
+    document.documentElement.dir = previousDir;
+  }
+
+  for (const width of [320, 390, 768, 1280]) {
+    it(`does not overlap the zoom buttons in Arabic (RTL) at ${width}px`, async () => layout('ar', 'rtl', width));
+    it(`does not overlap the zoom buttons in German (LTR) at ${width}px`, async () => layout('de', 'ltr', width));
+    it(`does not overlap the zoom buttons in English (LTR) at ${width}px`, async () => layout('en', 'ltr', width));
+  }
+});
