@@ -5240,5 +5240,17 @@
       "UNITS_DIFFER": "Different area units: not directly comparable",
       "NOT_COMPUTABLE": "Cannot be computed for these listings"
     }
+  },
+  "PHOTO_PICKER": {
+    "CHOOSE": "Choose images",
+    "NONE": "No files selected",
+    "SELECTED_ONE": "1 file selected",
+    "SELECTED_TWO": "{{count}} files selected",
+    "SELECTED_FEW": "{{count}} files selected",
+    "SELECTED_MANY": "{{count}} files selected",
+    "SELECTED_OTHER": "{{count}} files selected",
+    "UPLOADING": "Uploading images...",
+    "SUCCESS": "Images uploaded successfully",
+    "ERROR": "Could not upload images"
   }
 }

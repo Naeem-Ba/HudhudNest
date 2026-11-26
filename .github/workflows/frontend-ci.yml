@@ -250,7 +250,9 @@ jobs:
 
       - name: Sync Capacitor Android
         if: steps.signing.outputs.enabled == 'true'
-        run: npx cap sync android
+        run: |
+          node tools/prune-web-only-assets.mjs
+          npx cap sync android
 
       # JDK 21 مطلوب: Capacitor 8 يضبط sourceCompatibility = VERSION_21
       # (android/app/capacitor.build.gradle)، وGradle 8.14.3 / AGP 8.13.0 يدعمانه.

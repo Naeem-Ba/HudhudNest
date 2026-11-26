@@ -127,7 +127,7 @@ export class MapPickerComponent implements AfterViewInit, OnChanges, OnDestroy {
     }).setView([lat, lng], zoom);
 
     const controls = this.controlTitles();
-    L.control.zoom({ zoomInTitle: controls.zoomIn, zoomOutTitle: controls.zoomOut }).addTo(map);
+    L.control.zoom({ position: 'topleft', zoomInTitle: controls.zoomIn, zoomOutTitle: controls.zoomOut }).addTo(map);
     // The default prefix is a link titled "A JavaScript library for interactive maps" (English).
     map.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener" title="Leaflet">Leaflet</a>');
 
