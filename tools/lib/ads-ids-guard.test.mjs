@@ -49,6 +49,16 @@ test('native app ids are Google sample ids (replace deliberately, see docs/MONET
   assert.match(manifest, /com\.google\.android\.gms\.ads\.APPLICATION_ID/);
 });
 
+test('Android manifest strips AdMob auto-start and ad-id permissions while ads are off (Play audit H-01)', () => {
+  const manifest = readFileSync(join(root, 'android/app/src/main/AndroidManifest.xml'), 'utf8');
+  assert.match(manifest, /xmlns:tools=/);
+  assert.match(manifest, /MobileAdsInitProvider"\s+tools:node="remove"/);
+  for (const perm of ['com.google.android.gms.permission.AD_ID', 'android.permission.ACCESS_ADSERVICES_AD_ID',
+    'android.permission.ACCESS_ADSERVICES_ATTRIBUTION', 'android.permission.ACCESS_ADSERVICES_TOPICS']) {
+    assert.match(manifest, new RegExp(`${perm.replace(/\./g, '\\.')}"\\s+tools:node="remove"`), perm);
+  }
+});
+
 test('ads stay off by default in every environment file and the generated env', () => {
   const gen = readFileSync(join(root, 'tools/generate-env.mjs'), 'utf8');
   assert.match(gen, /ADS_ENABLED: readEnv\('ADS_ENABLED'\)/);
