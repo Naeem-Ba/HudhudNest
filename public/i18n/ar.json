@@ -5240,5 +5240,17 @@
       "UNITS_DIFFER": "وحدات مساحة مختلفة: لا تُقارن مباشرة",
       "NOT_COMPUTABLE": "لا يمكن حسابه لهذه العقارات"
     }
+  },
+  "PHOTO_PICKER": {
+    "CHOOSE": "اختيار صور",
+    "NONE": "لم يتم اختيار صور",
+    "SELECTED_ONE": "تم اختيار صورة واحدة",
+    "SELECTED_TWO": "تم اختيار صورتين",
+    "SELECTED_FEW": "تم اختيار {{count}} صور",
+    "SELECTED_MANY": "تم اختيار {{count}} صورة",
+    "SELECTED_OTHER": "تم اختيار {{count}} صورة",
+    "UPLOADING": "جارٍ رفع الصور...",
+    "SUCCESS": "تم رفع الصور بنجاح",
+    "ERROR": "تعذر رفع الصور"
   }
 }

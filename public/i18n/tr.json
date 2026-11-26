@@ -5240,5 +5240,17 @@
       "UNITS_DIFFER": "Farklı alan birimleri: doğrudan karşılaştırılamaz",
       "NOT_COMPUTABLE": "Bu ilanlar için hesaplanamaz"
     }
+  },
+  "PHOTO_PICKER": {
+    "CHOOSE": "Görsel seç",
+    "NONE": "Dosya seçilmedi",
+    "SELECTED_ONE": "1 dosya seçildi",
+    "SELECTED_TWO": "{{count}} dosya seçildi",
+    "SELECTED_FEW": "{{count}} dosya seçildi",
+    "SELECTED_MANY": "{{count}} dosya seçildi",
+    "SELECTED_OTHER": "{{count}} dosya seçildi",
+    "UPLOADING": "Görseller yükleniyor...",
+    "SUCCESS": "Görseller başarıyla yüklendi",
+    "ERROR": "Görseller yüklenemedi"
   }
 }

@@ -243,13 +243,14 @@
       <div class="ssf__photos" *ngIf="pendingPhotos().length > 0">
         <figure class="ssf__photo-pending" *ngFor="let photo of pendingPhotos(); let i = index">
           <img [src]="photo.previewUrl" class="ssf__photo" alt="" />
+          <figcaption class="ssf__photo-name" dir="auto">{{ photo.file.name }}</figcaption>
           <button type="button" class="btn btn--sm btn--danger" (click)="removePendingPhoto(i)" [disabled]="saving()">
             {{ 'SHORTSTAY.FORM.REMOVE' | translate }}
           </button>
         </figure>
       </div>
-      <input #createPhotoInput [attr.aria-label]="'SHORTSTAY.FORM.PHOTOS' | translate" type="file" accept="image/png,image/jpeg,image/webp" multiple
-             (change)="onPendingPhotosSelected($event)" [disabled]="saving()" />
+      <app-photo-file-picker #createPicker [count]="pendingPhotos().length" [busy]="uploadingPhotos()" [disabled]="saving()"
+                             (picked)="onPendingPhotosPicked($event)" />
       <button type="button" class="ssf__camera-btn" [disabled]="saving() || processingPhotos()" (click)="createCameraInput.click()">
         <span aria-hidden="true">📷</span> {{ 'LISTING_PHOTOS.TAKE_PHOTO' | translate }}
       </button>
@@ -259,9 +260,8 @@
         [open]="photoGuideOpen() && !isEditMode"
         kind="shortStay"
         (closed)="photoGuideOpen.set(false)"
-        (start)="photoGuideOpen.set(false); createPhotoInput.click()" />
+        (start)="photoGuideOpen.set(false); createPicker.open()" />
       <p *ngIf="processingPhotos()" role="status">{{ 'SHORTSTAY.FORM.PHOTOS_PROCESSING' | translate }}</p>
-      <p *ngIf="uploadingPhotos()">{{ 'SHORTSTAY.FORM.PHOTOS_UPLOADING' | translate }}</p>
     </section>
 
     <section class="ssf__section" *ngIf="isEditMode && listing() as l">
@@ -272,7 +272,8 @@
       <div class="ssf__photos">
         <img *ngFor="let url of l.photoUrls" [src]="url" class="ssf__photo" alt="" />
       </div>
-      <input #editPhotoInput [attr.aria-label]="'SHORTSTAY.FORM.PHOTOS' | translate" type="file" accept="image/png,image/jpeg,image/webp" multiple (change)="onPhotosSelected($event)" [disabled]="uploadingPhotos()" />
+      <app-photo-file-picker #editPicker [count]="uploadingFileCount()" [busy]="uploadingPhotos()"
+                             (picked)="onPhotosPicked($event)" />
       <button type="button" class="ssf__camera-btn" [disabled]="uploadingPhotos() || processingPhotos()" (click)="editCameraInput.click()">
         <span aria-hidden="true">📷</span> {{ 'LISTING_PHOTOS.TAKE_PHOTO' | translate }}
       </button>
@@ -281,9 +282,8 @@
         [open]="photoGuideOpen() && isEditMode"
         kind="shortStay"
         (closed)="photoGuideOpen.set(false)"
-        (start)="photoGuideOpen.set(false); editPhotoInput.click()" />
+        (start)="photoGuideOpen.set(false); editPicker.open()" />
       <p *ngIf="processingPhotos()" role="status">{{ 'SHORTSTAY.FORM.PHOTOS_PROCESSING' | translate }}</p>
-      <p *ngIf="uploadingPhotos()">{{ 'SHORTSTAY.FORM.PHOTOS_UPLOADING' | translate }}</p>
     </section>
 
     <div class="ssf__actions">

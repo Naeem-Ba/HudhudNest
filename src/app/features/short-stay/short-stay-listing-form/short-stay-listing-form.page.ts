@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PhotoGuideSheetComponent } from '../../../shared/ui/photo-guide/photo-guide-sheet.component';
+import { PhotoFilePickerComponent } from '../../../shared/ui/photo-file-picker.component';
 import { catchError, forkJoin, of } from 'rxjs';
 
 import { ShortStayListingApiService } from '../../../core/api/short-stay-listing-api.service';
@@ -37,6 +38,11 @@ const PHOTO_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 // Server cap is 5,000,000 bytes (AddShortStayListingPhotosCommandHandler.MaxImageSize), not 5 MiB.
 const PHOTO_MAX_BYTES = 5_000_000;
 const PHOTO_MAX_PER_REQUEST = 10;
+
+/** Same name, size and modification time = the same picked file. */
+function photoIdentity(file: File): string {
+  return `${file.name}|${file.size}|${file.lastModified}`;
+}
 
 interface PendingPhoto {
   file: File;
@@ -83,7 +89,7 @@ type PricingRuleForm = {
 @Component({
   selector: 'app-short-stay-listing-form-page',
   standalone: true,
-  imports: [ LocalizedNumberPipe,CommonModule, RouterModule, FormsModule, TranslateModule, PhotoGuideSheetComponent, MapPickerComponent, GeoPickerComponent, AmenityLabelPipe, UnitAvailabilityPanelComponent],
+  imports: [ LocalizedNumberPipe,CommonModule, RouterModule, FormsModule, TranslateModule, PhotoGuideSheetComponent, PhotoFilePickerComponent, MapPickerComponent, GeoPickerComponent, AmenityLabelPipe, UnitAvailabilityPanelComponent],
   templateUrl: './short-stay-listing-form.page.html',
   styleUrls: ['./short-stay-listing-form.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -115,6 +121,8 @@ export class ShortStayListingFormPage implements OnInit {
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly uploadingPhotos = signal(false);
+  /** Photos in the upload that is running now (edit page, where picking starts the upload at once). */
+  readonly uploadingFileCount = signal(0);
   /** Photography guide (UX only): closing or reading it changes nothing in the form. */
   readonly photoGuideOpen = signal(false);
   /** Photos picked on the create form; uploaded right after the listing exists (the API needs its id). */
@@ -524,10 +532,19 @@ export class ShortStayListingFormPage implements OnInit {
     });
   }
 
+  /** From the hidden camera input (create page). */
   async onPendingPhotosSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const files = Array.from(input.files ?? []);
     input.value = '';
+    await this.onPendingPhotosPicked(files);
+  }
+
+  async onPendingPhotosPicked(picked: File[]): Promise<void> {
+    if (this.saving() || this.processingPhotos()) return;
+    // The same file twice (a repeated event, or picked again) is kept once.
+    const known = new Set(this.pendingPhotos().map(p => photoIdentity(p.file)));
+    const files = picked.filter(file => !known.has(photoIdentity(file)));
 
     // Type and count are checked first so no time is spent shrinking a photo that would be refused anyway.
     const candidates: File[] = [];
@@ -698,12 +715,19 @@ export class ShortStayListingFormPage implements OnInit {
       });
   }
 
+  /** From the hidden camera input (edit page). */
   async onPhotosSelected(event: Event): Promise<void> {
-    const id = this.listingId();
     const input = event.target as HTMLInputElement;
-    if (!id || !input.files || input.files.length === 0) return;
+    const files = Array.from(input.files ?? []);
+    input.value = '';
+    await this.onPhotosPicked(files);
+  }
 
-    const files = Array.from(input.files);
+  async onPhotosPicked(files: File[]): Promise<void> {
+    const id = this.listingId();
+    // One upload at a time: a second pick while one is running would send the same listing a second request.
+    if (!id || files.length === 0 || this.uploadingPhotos() || this.processingPhotos()) return;
+
     const prepared = (await this.shrinkPhotos(files.filter(file => PHOTO_ALLOWED_TYPES.includes(file.type) || !file.type)))
       .filter(file => {
         if (file.size > PHOTO_MAX_BYTES) {
@@ -713,24 +737,21 @@ export class ShortStayListingFormPage implements OnInit {
         return true;
       });
 
-    if (prepared.length === 0) {
-      input.value = '';
-      return;
-    }
+    if (prepared.length === 0) return;
 
+    this.uploadingFileCount.set(prepared.length);
     this.uploadingPhotos.set(true);
     this.api.uploadPhotos(id, prepared).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.uploadingPhotos.set(false);
-        input.value = '';
-        this.toast.show(this.translate.instant('SHORTSTAY.FORM.PHOTOS_SUCCESS'), 'success');
+        this.uploadingFileCount.set(0);
+        this.toast.show(this.translate.instant('PHOTO_PICKER.SUCCESS'), 'success');
         this.loadForEdit(id);
       },
       error: () => {
         this.uploadingPhotos.set(false);
-        // Cleared so the same photo can be picked again for the retry (a change event only fires on a new value).
-        input.value = '';
-        this.toast.show(this.translate.instant('SHORTSTAY.FORM.PHOTOS_ERROR'), 'error');
+        this.uploadingFileCount.set(0);
+        this.toast.show(this.translate.instant('PHOTO_PICKER.ERROR'), 'error');
       }
     });
   }

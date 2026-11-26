@@ -24,14 +24,21 @@
   touch-action: auto;
 }
 
+// The zoom buttons are Leaflet's own control, pinned to the PHYSICAL top-left corner in every language
+// (Leaflet does not mirror for RTL). "Use my current location" therefore sits at the PHYSICAL top-right:
+// a logical inline-end offset put it on the left in Arabic, right on top of the + button.
 .map-actions {
   position: absolute;
   z-index: 500;
-  inset-block-start: 12px;
-  inset-inline-end: 12px;
+  top: 12px;
+  right: 12px;
+  left: auto;
+  // Never wider than the space right of the zoom buttons (34px + gaps) on a 320px phone.
+  max-width: calc(100% - 72px);
 }
 
 .map-action {
+  max-width: 100%;
   min-height: 44px;
   padding: 0 14px;
   border: 1px solid rgba(15, 23, 42, .2);
