@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>استبيان المكاتب العقارية | HUDHUDNEST هدهد نيست</title>
-<meta name="description" content="استبيان بحثي قصير لأصحاب المكاتب العقارية والوسطاء في دمشق وريفها. نحو 6 إلى 8 دقائق.">
+<meta name="description" content="استبيان بحثي قصير لأصحاب المكاتب العقارية والوسطاء في دمشق وريفها. نحو 7 إلى 9 دقائق.">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0F2742">
@@ -12,7 +12,7 @@
 <meta property="og:locale" content="ar_SY">
 <meta property="og:site_name" content="HUDHUDNEST هدهد نيست">
 <meta property="og:title" content="رأيكم كمكتب عقاري يهمّنا">
-<meta property="og:description" content="استبيان بحثي قصير قبل إطلاق منصة عقارية في دمشق وريفها. نحو 6 إلى 8 دقائق.">
+<meta property="og:description" content="استبيان بحثي قصير قبل إطلاق منصة عقارية في دمشق وريفها. نحو 7 إلى 9 دقائق.">
 <meta property="og:image" content="https://hudhudnest.com/images/og-default.png">
 <link rel="icon" href="/favicon.ico">
 <style>
@@ -178,7 +178,7 @@ const CONFIG = {
   AUTO_RETRY_ENABLED: true,
   ENABLE_LOCAL_SAVE: true,
 
-  SURVEY_VERSION: "3.0.0",
+  SURVEY_VERSION: "3.1.0",
   SUPABASE_SCHEMA: "survey"
 };
 
@@ -192,7 +192,7 @@ const CONFIG = {
   var PENDING_KEY = "hn_survey_offices_pending";
   var NOTES_MAX = Math.max(50, Math.min(600, parseInt(CONFIG.MAX_TEXT_LENGTH, 10) || 400));
   var LIMITS = { office_name: 100, area_detail: 100, q5_platform_names: 150, q8_other: 150, q9_platform_name: 100,
-                 q9_stop_reason: 300, q10_other: 150, q12b_amount: 6, q14_name: 80, q14_whatsapp: 24, q15: NOTES_MAX };
+                 q9_stop_reason: 300, q10_other: 150, q10c_other: 150, q12b_amount: 6, q14_name: 80, q14_whatsapp: 24, q15: NOTES_MAX };
   var ANSWERS_MAX_BYTES = 7600;   /* database limit is 8192 bytes (pg_column_size); keep a margin */
   var REQUEST_TIMEOUT_MS = 20000;
   var CUR = String(CONFIG.CURRENCY_LABEL || "");
@@ -204,6 +204,10 @@ const CONFIG = {
     area: [["damascus", "دمشق"], ["rif_damascus", "ريف دمشق"], ["other", "منطقة أخرى في سوريا"]],
     q3: [["lt10", "أقل من 10"], ["10_30", "10 – 30"], ["31_100", "31 – 100"], ["gt100", "أكثر من 100"]],
     q4: [["rent", "إيجار"], ["sale", "بيع"], ["equal", "تقريباً بالتساوي"]],
+    /* v3.1: what the office handles, and how often it meets clients who live abroad (decides how much translation matters). */
+    q4b: [["residential", "سكني (شقق وبيوت)"], ["commercial", "تجاري (محلات ومكاتب)"], ["land", "أراضٍ"],
+          ["short_stay", "إيجار قصير (يومي أو أسبوعي)"], ["investment", "فرص استثمارية أو مشاريع قيد الإنشاء"], ["other", "أخرى"]],
+    q4c: [["often", "كثيراً"], ["sometimes", "أحياناً"], ["rarely", "نادراً"], ["never", "أبداً"]],
     q5: [["fb_groups", "مجموعات Facebook"], ["fb_ig_page", "صفحة المكتب على Facebook أو Instagram"],
          ["whatsapp", "حالة واتساب أو مجموعات واتساب"], ["ad_platforms", "تطبيقات أو مواقع إعلانات"],
          ["storefront", "واجهة المكتب أو لافتات"], ["word_of_mouth", "لا ننشر، والزبائن يأتون بالمعرفة"],
@@ -227,6 +231,16 @@ const CONFIG = {
           ["upload_assistance", "مساعدة في إدخال العقارات بدلاً عنا"],
           ["listing_protection", "حماية إعلاناتنا من النسخ أو إظهار أنها منشورة من قبلنا"],
           ["other", "أخرى"], ["none", "لا شيء يدفعني لذلك"]],
+    /* v3.1: ideas about features the platform has been built with. Asked as ideas, never offered as available. */
+    q10c: [["translation", "ترجمة إعلاناتكم تلقائياً إلى الإنجليزية والألمانية والتركية ليراها زبائن من خارج سوريا"],
+           ["short_stay", "قسم للإيجار القصير (يومي أو أسبوعي)"],
+           ["investment", "قسم للفرص الاستثمارية والمشاريع قيد الإنشاء"],
+           ["buyer_requests", "لوحة بطلبات زبائن يبحثون عن عقار بمواصفات محددة، لتقترحوا عليهم عقاراتكم"],
+           ["appointments", "تنظيم مواعيد معاينة العقارات"],
+           ["team_accounts", "حسابات لموظفي المكتب تحت صفحة المكتب نفسها"],
+           ["price_tool", "أداة تقدير سعر العقار حسب المنطقة تساعد في التسعير"],
+           ["valuation_requests", "وصول طلبات تقييم عقارات من الزبائن إلى مكتبكم"],
+           ["other", "أخرى"], ["none", "لا شيء من هذه يهمني"]],
     q10b: [["welcome", "أرحّب به"], ["neutral", "لا يهمني"], ["object", "لا أرغب به"]],
     q11: [["self", "أنا بنفسي"], ["employee", "موظف في المكتب"], ["assistance_needed", "نحتاج من يساعدنا في الإدخال"]],
     q12a: [["monthly_subscription", "اشتراك شهري ثابت"], ["per_listing", "دفع مقابل كل إعلان"],
@@ -352,8 +366,8 @@ const CONFIG = {
     var params = new URLSearchParams(window.location.search);
     return {
       v: CONFIG.SURVEY_VERSION, sid: uuid(), startedAt: null, startedMs: null, current: "intro", history: [],
-      a: { q5: [], q8: [], q10: [], q14_consent: false },
-      orders: { q8: shuffledWithOtherLast(OPT.q8), q10: shuffledWithOtherLast(OPT.q10) },
+      a: { q4b: [], q5: [], q8: [], q10: [], q10c: [], q14_consent: false },
+      orders: { q8: shuffledWithOtherLast(OPT.q8), q10: shuffledWithOtherLast(OPT.q10), q10c: shuffledWithOtherLast(OPT.q10c) },
       track: { ref: readParam(params, "ref"), utm_source: readParam(params, "utm_source"),
                utm_medium: readParam(params, "utm_medium"), utm_campaign: readParam(params, "utm_campaign"),
                referrer: referrerOrigin() },
@@ -386,6 +400,7 @@ const CONFIG = {
     if (a.q5.indexOf("ad_platforms") < 0) delete a.q5_platform_names;
     if (a.q8.indexOf("other") < 0) delete a.q8_other;
     if (a.q10.indexOf("other") < 0) delete a.q10_other;
+    if (a.q10c.indexOf("other") < 0) delete a.q10c_other;
   }
   /* v2/v3: the phone number is never required for stated interest; see contactRequired() below. */
   /* v3: a number is required only for the one level that asks for a call (the respondent chose it). */
@@ -399,6 +414,10 @@ const CONFIG = {
     { id: "q3q4", render: renderQ3Q4, validate: function () {
         if (!isPick(S.a.q3, OPT.q3)) return "يرجى اختيار عدد العقارات المعروضة تقريباً.";
         if (!isPick(S.a.q4, OPT.q4)) return "يرجى اختيار نوع أغلب عقاراتكم المعروضة.";
+        return null; } },
+    { id: "q4b", render: renderQ4b, validate: function () {
+        if (!S.a.q4b.length) return "يرجى اختيار نوع واحد على الأقل من العقارات التي تتعاملون بها.";
+        if (!isPick(S.a.q4c, OPT.q4c)) return "يرجى اختيار إجابة عن التعامل مع زبائن يقيمون خارج سوريا.";
         return null; } },
     { id: "q5", render: renderQ5, validate: function () { return S.a.q5.length ? null : "يرجى اختيار مكان واحد على الأقل."; } },
     { id: "q6", render: renderQ6, validate: function () { return isPick(S.a.q6, OPT.q6) ? null : "يرجى اختيار مصدر واحد."; } },
@@ -414,6 +433,8 @@ const CONFIG = {
         if (!isPick(S.a.q10b_verification, OPT.q10b) || !isPick(S.a.q10b_rating, OPT.q10b) || !isPick(S.a.q10b_updated, OPT.q10b))
           return "يرجى اختيار إجابة لكل بند من البنود الثلاثة.";
         return null; } },
+    { id: "q10c", render: renderQ10c, validate: function () {
+        return S.a.q10c.length >= 1 && S.a.q10c.length <= 3 ? null : "يرجى اختيار فكرة واحدة على الأقل وحتى 3 أفكار، أو «لا شيء من هذه يهمني»."; } },
     { id: "q11", render: renderQ11, validate: function () { return isPick(S.a.q11, OPT.q11) ? null : "يرجى اختيار إجابة."; } },
     { id: "q12a", render: renderQ12a, validate: function () { return isPick(S.a.q12a, OPT.q12a) ? null : "يرجى اختيار طريقة، ويمكنكم اختيار «لا ندفع لأي منصة إطلاقاً»."; } },
     { id: "q12b", when: function () { return !!S.a.q12a && S.a.q12a !== "never_pay"; }, render: renderQ12b,
@@ -561,7 +582,7 @@ const CONFIG = {
     }
     return [
       el("h1", { tabindex: "-1", text: "رأيكم كمكتب عقاري يهمّنا" }),
-      el("p", { className: "q-help", text: "نعمل على منصة عقارية في دمشق وريفها، ونريد أن نفهم كيف تعرضون عقاراتكم وما الذي ينقصكم، قبل أن نطلق أي شيء. يستغرق الاستبيان نحو 6 إلى 8 دقائق." }),
+      el("p", { className: "q-help", text: "نعمل على منصة عقارية في دمشق وريفها، ونريد أن نفهم كيف تعرضون عقاراتكم وما الذي ينقصكم، قبل أن نطلق أي شيء. يستغرق الاستبيان نحو 7 إلى 9 دقائق." }),
       el("p", { className: "note", text: "يمكنكم المشاركة دون تقديم معلومات التواصل. وإذا رغبتم بمتابعة المرحلة التجريبية، يمكنكم ترك رقم واتساب والموافقة على التواصل." }),
       ul
     ];
@@ -578,6 +599,13 @@ const CONFIG = {
     return [
       el("fieldset", null, title("كم عقاراً تعرضون حالياً تقريباً؟").concat([radios("q3", OPT.q3, "q3")])),
       el("fieldset", null, [el("legend", { className: "sub-title", text: "أغلب عقاراتكم المعروضة:" }), radios("q4", OPT.q4, "q4")])
+    ];
+  }
+  function renderQ4b() {
+    return [
+      el("fieldset", null, title("ما أنواع العقارات التي تعرضونها؟", "يمكنكم اختيار أكثر من إجابة.")
+        .concat([checks("q4b", OPT.q4b, "q4b", 0, "", null, null)])),
+      el("fieldset", null, [el("legend", { className: "sub-title", text: "كم مرة تتعاملون مع زبائن يقيمون خارج سوريا (مغتربين أو أجانب)؟" }), radios("q4c", OPT.q4c, "q4c")])
     ];
   }
   function renderQ5() {
@@ -623,6 +651,12 @@ const CONFIG = {
       group("q10b_verification", isOwnerRole() ? "توثيق المعلن بأوراق رسمية" : "توثيق المكتب بأوراق رسمية"),
       group("q10b_rating", isOwnerRole() ? "تقييم علني للمعلن من الزبائن" : "تقييم علني للمكتب من الزبائن"),
       group("q10b_updated", "إظهار تاريخ آخر تحديث لكل إعلان")];
+  }
+  function renderQ10c() {
+    var kids = [el("fieldset", null, title("أي من هذه الأفكار يفيدكم أكثر في عرض عقاراتكم؟", "اختاروا حتى 3، أو «لا شيء من هذه يهمني». هذه أفكار نسأل عنها وليست ميزات متاحة حالياً.")
+      .concat([checks("q10c", orderedList(OPT.q10c, S.orders.q10c), "q10c", 3, "يمكن اختيار 3 أفكار كحد أقصى. ألغوا اختياراً أولاً لاختيار غيره.", "none", rerender)]))];
+    if (S.a.q10c.indexOf("other") >= 0) kids.push(textInput("q10c_other", "ما الفكرة الأخرى؟ (اختياري)"));
+    return kids;
   }
   function renderQ11() { return [el("fieldset", null, title("من سيضيف العقارات على المنصة لو انضممتم؟").concat([radios("q11", OPT.q11, "q11")]))]; }
   function renderQ12a() {
@@ -753,7 +787,9 @@ const CONFIG = {
     var answers = {
       survey_version: String(CONFIG.SURVEY_VERSION),
       q1: a.q1, q2: { office_name: val("office_name"), area: a.area, area_detail: val("area_detail") },
-      q3: a.q3, q4: a.q4, q5: a.q5.slice(), q6: a.q6, q7: a.q7, q7b: a.q7 === "zero" || a.q7 === "prefer_not" ? null : val("q7b"), q8: a.q8.slice(), q9: a.q9, q10: a.q10.slice(),
+      q3: a.q3, q4: a.q4, q4b: a.q4b.slice(), q4c: a.q4c, q5: a.q5.slice(), q6: a.q6, q7: a.q7, q7b: a.q7 === "zero" || a.q7 === "prefer_not" ? null : val("q7b"), q8: a.q8.slice(), q9: a.q9, q10: a.q10.slice(),
+      q10c: a.q10c.slice(), q10c_order: S.orders.q10c.slice(),
+      q10c_other: a.q10c.indexOf("other") >= 0 ? val("q10c_other") : null,
       q10b: { verification: a.q10b_verification, rating: a.q10b_rating, updated: a.q10b_updated },
       q11: a.q11, q12a: a.q12a, q12b: a.q12a === "never_pay" ? null : val("q12b"),
       q12b_amount: (a.q12a !== "never_pay" && a.q12b === "amount") ? parseAmount(a.q12b_amount) : null, q13: a.q13,
@@ -772,6 +808,7 @@ const CONFIG = {
       listings_count: a.q3, rent_share: a.q4, channels: answers.q5, best_lead_source: a.q6, monthly_ad_spend: a.q7,
       top_problems: answers.q8, tried_platform: a.q9, join_drivers: answers.q10, uploader: a.q11,
       payment_model: a.q12a, price_range: answers.q12b, price_amount: answers.q12b_amount, founding_interest: a.q13, answers: answers,
+      listing_types: answers.q4b, foreign_clients: a.q4c, feature_interest: answers.q10c,
       leads_from_ads: answers.q7b, expected_listings: answers.q13b, barrier: answers.q13c,
       contact_name: name, contact_whatsapp: phone, contact_consent: consent,
       ref: S.track.ref, utm_source: S.track.utm_source, utm_medium: S.track.utm_medium, utm_campaign: S.track.utm_campaign,

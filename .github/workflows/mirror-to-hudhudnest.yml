@@ -1,0 +1,93 @@
+name: Mirror to hudhudnest
+
+# Keeps the git mirror github.com/hudhudnest/HudhudNest identical to this repository, so that
+# CI/CD running under the hudhudnest account (VPS Release, GHCR images) always builds the code that
+# was merged here. Before this workflow the mirror was fed by hand and lagged (PR #460 was merged here
+# but missing there, so the fixed API was never deployed).
+#
+# Rules: branches fast-forward only, never forced; tags are added when missing, only the floating tag android-latest is moved. If the mirror has a commit that
+# this repository lacks, the push is rejected and the job fails loudly instead of overwriting it.
+# Needs the secret HUDHUDNEST_MIRROR_TOKEN (fine-grained token of the hudhudnest account: only
+# repository HudhudNest, permissions Contents: read/write and Workflows: read/write). Without it the job
+# skips with a warning, so forks and fresh setups do not fail.
+# Branches moved by another workflow's own GITHUB_TOKEN do not trigger "push" events, hence the
+# workflow_run trigger below.
+
+on:
+  push:
+    branches: [main, release, staging]
+    tags: ["*"]
+  workflow_run:
+    workflows: ["Promote to production", "Sync staging branch"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mirror-to-hudhudnest
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    name: Push to hudhudnest/HudhudNest
+    if: github.repository_owner == 'Naeem-Ba'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      MIRROR_TOKEN: ${{ secrets.HUDHUDNEST_MIRROR_TOKEN }}
+      TARGET: hudhudnest/HudhudNest
+      BRANCHES: "main release staging"
+    steps:
+      - name: Check token
+        id: token
+        shell: bash
+        run: |
+          if [ -z "$MIRROR_TOKEN" ]; then
+            echo "::warning::HUDHUDNEST_MIRROR_TOKEN is not set; mirror not updated"
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout full history
+        if: steps.token.outputs.present == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fast-forward mirror (no force)
+        if: steps.token.outputs.present == 'true'
+        shell: bash
+        run: |
+          set -u
+          git remote add mirror "https://x-access-token:${MIRROR_TOKEN}@github.com/${TARGET}.git"
+          git fetch --no-tags --quiet origin "+refs/heads/*:refs/remotes/origin/*"
+          failed=0
+          for b in $BRANCHES; do
+            if git rev-parse --verify --quiet "refs/remotes/origin/$b" > /dev/null; then
+              git push mirror "refs/remotes/origin/$b:refs/heads/$b" || { echo "::error::could not fast-forward $b on $TARGET"; failed=1; }
+            fi
+          done
+          # Tags: push the ones the mirror lacks. `android-latest` is a floating tag that the Android release
+          # moves on purpose, so it alone is moved with a lease on the value the mirror has now. Any other
+          # tag that differs is never overwritten: the job reports it and fails.
+          git fetch --tags --quiet origin
+          git ls-remote --tags mirror > /tmp/mirror-tags.txt || { echo "::error::could not list tags on $TARGET"; exit 1; }
+          for t in $(git tag); do
+            local_sha="$(git rev-parse "refs/tags/$t")"
+            remote_sha="$(awk -v r="refs/tags/$t" '$2==r {print $1}' /tmp/mirror-tags.txt)"
+            if [ -z "$remote_sha" ]; then
+              git push mirror "refs/tags/$t:refs/tags/$t" || { echo "::error::could not push tag $t"; failed=1; }
+            elif [ "$remote_sha" != "$local_sha" ]; then
+              if [ "$t" = "android-latest" ]; then
+                git push mirror "+refs/tags/$t:refs/tags/$t" || { echo "::error::could not move tag $t"; failed=1; }
+              else
+                echo "::error::tag $t differs on $TARGET (mirror $remote_sha, here $local_sha); not overwritten"
+                failed=1
+              fi
+            fi
+          done
+          exit $failed
