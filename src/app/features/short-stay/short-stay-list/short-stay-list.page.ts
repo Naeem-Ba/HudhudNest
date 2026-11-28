@@ -5,7 +5,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, ParamMap, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { accommodationTypeLabel } from '../../../core/i18n/accommodation-type-label';
 import { EMPTY, Observable, Subject, catchError, merge, switchMap, tap } from 'rxjs';
 
 import { ShortStayListingApiService } from '../../../core/api/short-stay-listing-api.service';
@@ -69,6 +70,7 @@ export class ShortStayListPage implements OnInit {
   private readonly currencyRates = inject(CurrencyRatesService);
   private readonly preferences = inject(PreferencesService);
   private readonly langService = inject(LanguageService);
+  private readonly translate = inject(TranslateService);
 
   readonly listings = signal<ShortStayListingSummary[]>([]);
   readonly loading = signal(false);
@@ -193,7 +195,12 @@ export class ShortStayListPage implements OnInit {
   }
 
   typeLabel(type: AccommodationTypeDto): string {
-    return pickLocalizedName(type, this.langService.getCurrent());
+    return accommodationTypeLabel(this.translate, type);
+  }
+
+  /** A card's type name, translated from its code (the summary carries no English name). */
+  cardTypeName(listing: ShortStayListingSummary): string {
+    return accommodationTypeLabel(this.translate, { code: listing.accommodationTypeCode, nameAr: listing.accommodationTypeNameAr });
   }
 
   // ── the form ─────────────────────────────────────────────────────────────────────────────────

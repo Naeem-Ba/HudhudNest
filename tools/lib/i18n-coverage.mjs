@@ -90,6 +90,9 @@ export function measureCoverage(reference, candidate, options) {
 
 /** Values that legitimately equal the English text in Turkish: brand names, units, separators, numbers, loanwords. */
 export const TR_SAME_AS_ENGLISH = new Set([
+  // Turkish uses the same word for these (a loanword / the currency name), not an untranslated copy.
+  'SHORTSTAY.CURRENCY.EUR',
+  'SHORTSTAY.TYPE.villa',
   'COMMON.area_unit',
   'AUTH.CHANNELS.NAMES.Telegram',
   'AUTH.CHANNELS.NAMES.WhatsApp',

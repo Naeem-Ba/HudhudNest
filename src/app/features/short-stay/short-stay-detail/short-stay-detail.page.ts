@@ -1,5 +1,8 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { LocationNamesService } from '../../../core/api/location-names.service';
+import { LocationsApiService } from '../../../core/api/locations-api.service';
+import { GeoNode, geoBreadcrumb } from '../../../core/models/geo-location.model';
+import { accommodationTypeLabel } from '../../../core/i18n/accommodation-type-label';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -55,6 +58,7 @@ export class ShortStayDetailPage implements OnInit {
   private readonly router = inject(Router);
   private readonly listingsApi = inject(ShortStayListingApiService);
   readonly locations = inject(LocationNamesService);
+  private readonly locationsApi = inject(LocationsApiService);
   private readonly bookingsApi = inject(ShortStayBookingApiService);
   private readonly lookupsApi = inject(LookupsApiService);
   private readonly auth = inject(AuthService);
@@ -68,6 +72,31 @@ export class ShortStayDetailPage implements OnInit {
   readonly liveViewCount = signal<number | null>(null);
 
   readonly listing = signal<ShortStayListing | null>(null);
+  /** Read by the labels below so OnPush re-renders them when the visitor switches language. */
+  private readonly lang = signal(this.translate.currentLang || 'ar');
+  /** The listing's place from the translated catalog tree (governorate › city › district ...); null until loaded or when absent. */
+  private readonly placePath = signal<GeoNode[] | null>(null);
+
+  /** "Damascus › Mazzeh" in the app language; falls back to the governorate name for a listing without a catalog place. */
+  placeLine(l: ShortStayListing): string {
+    const path = this.placePath();
+    const line = path && path.length > 0 ? geoBreadcrumb(path, this.lang()) : '';
+    return line || this.locations.city(l);
+  }
+
+  typeName(l: ShortStayListing): string {
+    this.lang();
+    return accommodationTypeLabel(this.translate, { code: l.accommodationTypeCode });
+  }
+
+  /** Quiet hours as "22:00 – 07:00" only when the host set both ends. */
+  quietHours(l: ShortStayListing): { from: string; to: string } | null {
+    return l.quietHoursStart && l.quietHoursEnd ? { from: l.quietHoursStart.slice(0, 5), to: l.quietHoursEnd.slice(0, 5) } : null;
+  }
+
+  petsPolicyOf(l: ShortStayListing): 'NotAllowed' | 'Allowed' | 'Conditional' {
+    return l.petsPolicy ?? (l.allowsPets ? 'Allowed' : 'NotAllowed');
+  }
 
   // Automatic translation of title/description: additive, the original text always renders first.
   readonly translation = new ListingTranslationController(inject(ListingTranslationService));
@@ -135,6 +164,7 @@ export class ShortStayDetailPage implements OnInit {
     this.translate.onLangChange
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(event => {
+        this.lang.set(event.lang);
         const current = this.listing();
         if (current) this.translation.start(current.id, event.lang as TranslationLanguage, 'short-stay');
       });
@@ -155,6 +185,7 @@ export class ShortStayDetailPage implements OnInit {
     this.listingsApi.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: listing => {
         this.listing.set(listing);
+        this.loadPlace(listing);
         this.translation.start(listing.id, (this.translate.currentLang || 'ar') as TranslationLanguage, 'short-stay');
         this.pageMeta.applyDynamic({ title: listing.title, description: listing.description, path: `/short-stay/${listing.id}` });
         this.applyStayFromQuery(listing);
@@ -172,6 +203,14 @@ export class ShortStayDetailPage implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  private loadPlace(listing: ShortStayListing): void {
+    this.placePath.set(null);
+    if (listing.locationId == null) return;
+    this.locationsApi.getHierarchy(listing.locationId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: path => this.placePath.set(path), error: () => this.placePath.set(null) });
   }
 
   /**

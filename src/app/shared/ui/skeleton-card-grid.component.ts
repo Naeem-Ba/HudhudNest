@@ -18,7 +18,7 @@ import { Component, Input } from '@angular/core';
   styles: [`
     .skeleton-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
       gap: 1rem;
       width: 100%;
     }
