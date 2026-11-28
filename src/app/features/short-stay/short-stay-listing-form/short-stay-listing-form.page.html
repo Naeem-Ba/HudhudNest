@@ -29,7 +29,8 @@
   <form *ngIf="!loading()" class="ssf__form" novalidate [class.ssf__form--submitted]="submitAttempted()" (ngSubmit)="isEditMode ? saveChanges() : createListing()">
 
     <section class="ssf__section" *ngIf="!isEditMode">
-      <h2>{{ 'SHORTSTAY.FORM.TYPE' | translate }}</h2>
+      <h2>{{ 'SHORTSTAY.FORM.TYPE' | translate }} <abbr class="ssf__req" [attr.title]="'SHORTSTAY.FORM.REQUIRED' | translate">*</abbr></h2>
+      <p class="ssf__hint">{{ 'SHORTSTAY.FORM.TYPE_HINT' | translate }}</p>
       <select [attr.aria-label]="'SHORTSTAY.FORM.TYPE' | translate" [(ngModel)]="accommodationTypeId" name="accommodationTypeId" required>
         <option [ngValue]="null" disabled>{{ 'SHORTSTAY.FORM.SELECT_TYPE' | translate }}</option>
         <option *ngFor="let type of accommodationTypes()" [ngValue]="type.id">{{ typeLabel(type) }}</option>
@@ -39,34 +40,35 @@
     <section class="ssf__section">
       <h2>{{ 'SHORTSTAY.FORM.BASIC_INFO' | translate }}</h2>
       <div class="ssf__field">
-        <label for="short-stay-listing-form-f1">{{ 'SHORTSTAY.FORM.TITLE_LABEL' | translate }}</label>
-        <input id="short-stay-listing-form-f1" type="text" [(ngModel)]="title" name="title" required maxlength="150" />
+        <label for="short-stay-listing-form-f1">{{ 'SHORTSTAY.FORM.TITLE_LABEL' | translate }} <abbr class="ssf__req" [attr.title]="'SHORTSTAY.FORM.REQUIRED' | translate">*</abbr></label>
+        <input id="short-stay-listing-form-f1" type="text" [(ngModel)]="title" name="title" required maxlength="150" [attr.placeholder]="'SHORTSTAY.FORM.TITLE_PLACEHOLDER' | translate" />
+        <p class="ssf__hint">{{ 'SHORTSTAY.FORM.TITLE_HINT' | translate }}</p>
       </div>
       <div class="ssf__field">
-        <label for="short-stay-listing-form-f2">{{ 'SHORTSTAY.FORM.DESCRIPTION' | translate }}</label>
-        <textarea id="short-stay-listing-form-f2" [(ngModel)]="description" name="description" rows="4" required></textarea>
+        <label for="short-stay-listing-form-f2">{{ 'SHORTSTAY.FORM.DESCRIPTION' | translate }} <abbr class="ssf__req" [attr.title]="'SHORTSTAY.FORM.REQUIRED' | translate">*</abbr></label>
+        <textarea id="short-stay-listing-form-f2" [(ngModel)]="description" name="description" rows="4" required [attr.placeholder]="'SHORTSTAY.FORM.DESCRIPTION_PLACEHOLDER' | translate"></textarea>
       </div>
       <div class="ssf__row">
         <div class="ssf__field">
-          <label for="short-stay-listing-form-f3">{{ 'SHORTSTAY.FORM.CAPACITY' | translate }}</label>
+          <label for="short-stay-listing-form-f3">{{ 'SHORTSTAY.FORM.CAPACITY' | translate }} <abbr class="ssf__req" [attr.title]="'SHORTSTAY.FORM.REQUIRED' | translate">*</abbr> <span class="ssf__unit">({{ 'SHORTSTAY.FORM.UNIT_GUESTS' | translate }})</span></label>
           <input id="short-stay-listing-form-f3" type="number" min="1" [(ngModel)]="capacity" name="capacity" required />
         </div>
         <div class="ssf__field">
-          <label for="short-stay-listing-form-f4">{{ 'SHORTSTAY.FORM.BEDROOMS' | translate }}</label>
+          <label for="short-stay-listing-form-f4">{{ 'SHORTSTAY.FORM.BEDROOMS' | translate }} <abbr class="ssf__req" [attr.title]="'SHORTSTAY.FORM.REQUIRED' | translate">*</abbr> <span class="ssf__unit">({{ 'SHORTSTAY.FORM.UNIT_ROOMS' | translate }})</span></label>
           <input id="short-stay-listing-form-f4" type="number" min="0" [(ngModel)]="bedrooms" name="bedrooms" required />
         </div>
         <div class="ssf__field">
-          <label for="short-stay-listing-form-f5">{{ 'SHORTSTAY.FORM.BATHROOMS' | translate }}</label>
+          <label for="short-stay-listing-form-f5">{{ 'SHORTSTAY.FORM.BATHROOMS' | translate }} <abbr class="ssf__req" [attr.title]="'SHORTSTAY.FORM.REQUIRED' | translate">*</abbr> <span class="ssf__unit">({{ 'SHORTSTAY.FORM.UNIT_ROOMS' | translate }})</span></label>
           <input id="short-stay-listing-form-f5" type="number" min="0" [(ngModel)]="bathrooms" name="bathrooms" required />
         </div>
       </div>
       <div class="ssf__row">
         <div class="ssf__field">
-          <label for="short-stay-listing-form-f6">{{ 'SHORTSTAY.FORM.CHECK_IN_TIME' | translate }}</label>
+          <label for="short-stay-listing-form-f6">{{ 'SHORTSTAY.FORM.CHECK_IN_TIME' | translate }} <abbr class="ssf__req" [attr.title]="'SHORTSTAY.FORM.REQUIRED' | translate">*</abbr></label>
           <input id="short-stay-listing-form-f6" type="time" step="60" [(ngModel)]="checkInTime" name="checkInTime" required />
         </div>
         <div class="ssf__field">
-          <label for="short-stay-listing-form-f7">{{ 'SHORTSTAY.FORM.CHECK_OUT_TIME' | translate }}</label>
+          <label for="short-stay-listing-form-f7">{{ 'SHORTSTAY.FORM.CHECK_OUT_TIME' | translate }} <abbr class="ssf__req" [attr.title]="'SHORTSTAY.FORM.REQUIRED' | translate">*</abbr></label>
           <input id="short-stay-listing-form-f7" type="time" step="60" [(ngModel)]="checkOutTime" name="checkOutTime" required />
         </div>
       </div>
@@ -74,24 +76,32 @@
       <p class="ssf__error" role="alert" *ngIf="submitAttempted() && (!checkInTime || !checkOutTime)">
         {{ 'SHORTSTAY.FORM.ERR_TIMES' | translate }}
       </p>
-      <div class="ssf__field" *ngIf="!isEditMode">
-        <label for="short-stay-listing-form-f8">{{ 'SHORTSTAY.FORM.CURRENCY' | translate }}</label>
-        <select id="short-stay-listing-form-f8" [(ngModel)]="currencyCode" name="currencyCode" required>
-          <option *ngFor="let c of currencies" [value]="c.code">{{ c.label }}</option>
-        </select>
+    </section>
+
+    <section class="ssf__section" data-testid="price-section" *ngIf="!isEditMode || hasRoomType()">
+      <h2>{{ 'SHORTSTAY.FORM.PRICE_SECTION' | translate }}</h2>
+      <p class="ssf__hint">{{ 'SHORTSTAY.FORM.PRICE_SECTION_HINT' | translate }}</p>
+      <div class="ssf__row">
+        <div class="ssf__field" *ngIf="!isEditMode">
+          <label for="short-stay-listing-form-f8">{{ 'SHORTSTAY.FORM.CURRENCY' | translate }} <abbr class="ssf__req" [attr.title]="'SHORTSTAY.FORM.REQUIRED' | translate">*</abbr></label>
+          <select id="short-stay-listing-form-f8" [(ngModel)]="currencyCode" name="currencyCode" required>
+            <option *ngFor="let c of currencies" [value]="c.code">{{ c.symbol }} — {{ c.labelKey | translate }}</option>
+          </select>
+        </div>
+        <div class="ssf__field">
+          <label for="ssf2-f1">{{ 'SHORTSTAY.FORM.BASE_PRICE' | translate }} <abbr class="ssf__req" [attr.title]="'SHORTSTAY.FORM.REQUIRED' | translate">*</abbr> <span class="ssf__unit">({{ currencyCode }} / {{ 'SHORTSTAY.LIST.NIGHT' | translate }})</span></label>
+          <input id="ssf2-f1" type="number" min="1" inputmode="decimal" [(ngModel)]="defaultBasePricePerNight" name="defaultBasePricePerNight" required />
+          <p class="ssf__error" role="alert" *ngIf="submitAttempted() && !(defaultBasePricePerNight > 0)">{{ 'SHORTSTAY.FORM.PRICE_REQUIRED' | translate }}</p>
+        </div>
       </div>
-      <div class="ssf__field" *ngIf="!isEditMode">
-        <label for="ssf2-f1">{{ 'SHORTSTAY.FORM.BASE_PRICE' | translate }} ({{ currencyCode }} / {{ 'SHORTSTAY.LIST.NIGHT' | translate }})</label>
-        <input id="ssf2-f1" type="number" min="1" [(ngModel)]="defaultBasePricePerNight" name="defaultBasePricePerNight" required />
-        <p class="ssf__hint">{{ 'SHORTSTAY.FORM.CURRENCY_FIXED_HINT' | translate }}</p>
-      </div>
+      <p class="ssf__hint" *ngIf="!isEditMode">{{ 'SHORTSTAY.FORM.CURRENCY_FIXED_HINT' | translate }}</p>
       <p class="ssf__hint" *ngIf="isEditMode">
         {{ 'SHORTSTAY.FORM.CURRENCY' | translate }}: <strong>{{ currencyCode }}</strong> — {{ 'SHORTSTAY.FORM.CURRENCY_FIXED_HINT' | translate }}
       </p>
     </section>
 
     <section class="ssf__section ssf__location">
-      <h2>{{ 'SHORTSTAY.FORM.LOCATION' | translate }}</h2>
+      <h2>{{ 'SHORTSTAY.FORM.LOCATION' | translate }} <abbr class="ssf__req" [attr.title]="'SHORTSTAY.FORM.REQUIRED' | translate">*</abbr></h2>
       <p class="ssf__hint">{{ 'SHORTSTAY.FORM.LOCATION_HINT' | translate }}</p>
       <app-geo-picker
         idPrefix="ssf-geo"
@@ -122,7 +132,7 @@
       </div>
 
       <div class="ssf__field">
-        <label for="short-stay-listing-form-f10">{{ 'SHORTSTAY.FORM.LOCATION_VISIBILITY' | translate }}</label>
+        <label for="short-stay-listing-form-f10">{{ 'SHORTSTAY.FORM.LOCATION_VISIBILITY' | translate }} <span class="ssf__opt">({{ 'SHORTSTAY.FORM.OPTIONAL' | translate }})</span></label>
         <select id="short-stay-listing-form-f10" [(ngModel)]="locationVisibility" name="locationVisibility">
           <option value="Exact">{{ 'SHORTSTAY.FORM.EXACT' | translate }}</option>
           <option value="Approximate">{{ 'SHORTSTAY.FORM.APPROXIMATE' | translate }}</option>
@@ -140,21 +150,18 @@
 
     <section class="ssf__section" *ngIf="isEditMode">
       <h2>{{ 'SHORTSTAY.FORM.FEES' | translate }}</h2>
+      <p class="ssf__hint">{{ 'SHORTSTAY.FORM.FEES_HINT' | translate }}</p>
       <div class="ssf__row">
         <div class="ssf__field">
-          <label for="short-stay-listing-form-f11">{{ 'SHORTSTAY.FORM.CLEANING_FEE' | translate }}</label>
+          <label for="short-stay-listing-form-f11">{{ 'SHORTSTAY.FORM.CLEANING_FEE' | translate }} <span class="ssf__unit">({{ currencyCode }}, {{ 'SHORTSTAY.FORM.PER_STAY' | translate }})</span> <span class="ssf__opt">({{ 'SHORTSTAY.FORM.OPTIONAL' | translate }})</span></label>
           <input id="short-stay-listing-form-f11" type="number" min="0" [(ngModel)]="cleaningFee" name="cleaningFee" />
         </div>
         <div class="ssf__field">
-          <label for="short-stay-listing-form-f12">{{ 'SHORTSTAY.FORM.EXTRA_GUEST_FEE' | translate }}</label>
+          <label for="short-stay-listing-form-f12">{{ 'SHORTSTAY.FORM.EXTRA_GUEST_FEE' | translate }} <span class="ssf__unit">({{ currencyCode }}, {{ 'SHORTSTAY.FORM.PER_EXTRA_GUEST_NIGHT' | translate }})</span> <span class="ssf__opt">({{ 'SHORTSTAY.FORM.OPTIONAL' | translate }})</span></label>
           <input id="short-stay-listing-form-f12" type="number" min="0" [(ngModel)]="extraGuestFee" name="extraGuestFee" />
         </div>
         <div class="ssf__field">
-          <label for="short-stay-listing-form-f13">{{ 'SHORTSTAY.FORM.EXTRA_BED_FEE' | translate }}</label>
-          <input id="short-stay-listing-form-f13" type="number" min="0" [(ngModel)]="extraBedFee" name="extraBedFee" />
-        </div>
-        <div class="ssf__field">
-          <label for="short-stay-listing-form-f14">{{ 'SHORTSTAY.FORM.DEPOSIT_PERCENTAGE' | translate }}</label>
+          <label for="short-stay-listing-form-f14">{{ 'SHORTSTAY.FORM.DEPOSIT_PERCENTAGE' | translate }} <span class="ssf__unit">(%)</span> <span class="ssf__opt">({{ 'SHORTSTAY.FORM.OPTIONAL' | translate }})</span></label>
           <input id="short-stay-listing-form-f14" type="number" min="0" max="100" [(ngModel)]="depositPercentage" name="depositPercentage" />
         </div>
       </div>
@@ -164,14 +171,20 @@
       <h2>{{ 'SHORTSTAY.FORM.HOUSE_RULES' | translate }}</h2>
       <label class="ssf__checkbox"><input type="checkbox" [(ngModel)]="allowsSmoking" name="allowsSmoking" /> {{ 'SHORTSTAY.FORM.ALLOWS_SMOKING' | translate }}</label>
       <label class="ssf__checkbox"><input type="checkbox" [(ngModel)]="allowsParties" name="allowsParties" /> {{ 'SHORTSTAY.FORM.ALLOWS_PARTIES' | translate }}</label>
-      <label class="ssf__checkbox"><input type="checkbox" [(ngModel)]="allowsPets" name="allowsPets" /> {{ 'SHORTSTAY.FORM.ALLOWS_PETS' | translate }}</label>
+      <div class="ssf__field">
+        <label for="ssf-pets">{{ 'SHORTSTAY.FORM.PETS_POLICY' | translate }}</label>
+        <select id="ssf-pets" [(ngModel)]="petsPolicy" name="petsPolicy" data-testid="pets-policy">
+          <option *ngFor="let p of petsPolicies" [value]="p">{{ 'SHORTSTAY.PETS.' + p | translate }}</option>
+        </select>
+        <p class="ssf__hint" *ngIf="petsPolicy === 'Conditional'">{{ 'SHORTSTAY.FORM.PETS_CONDITIONAL_HINT' | translate }}</p>
+      </div>
       <div class="ssf__row">
         <div class="ssf__field">
-          <label for="short-stay-listing-form-f15">{{ 'SHORTSTAY.FORM.QUIET_HOURS_START' | translate }}</label>
+          <label for="short-stay-listing-form-f15">{{ 'SHORTSTAY.FORM.QUIET_HOURS_START' | translate }} <span class="ssf__opt">({{ 'SHORTSTAY.FORM.OPTIONAL' | translate }})</span></label>
           <input id="short-stay-listing-form-f15" type="time" step="60" [(ngModel)]="quietHoursStart" name="quietHoursStart" />
         </div>
         <div class="ssf__field">
-          <label for="short-stay-listing-form-f16">{{ 'SHORTSTAY.FORM.QUIET_HOURS_END' | translate }}</label>
+          <label for="short-stay-listing-form-f16">{{ 'SHORTSTAY.FORM.QUIET_HOURS_END' | translate }} <span class="ssf__opt">({{ 'SHORTSTAY.FORM.OPTIONAL' | translate }})</span></label>
           <input id="short-stay-listing-form-f16" type="time" step="60" [(ngModel)]="quietHoursEnd" name="quietHoursEnd" />
         </div>
       </div>
@@ -185,7 +198,7 @@
         {{ 'SHORTSTAY.FORM.ERR_QUIET_HOURS' | translate }}
       </p>
       <div class="ssf__field">
-        <label for="short-stay-listing-form-f17">{{ 'SHORTSTAY.FORM.CUSTOM_RULES' | translate }}</label>
+        <label for="short-stay-listing-form-f17">{{ 'SHORTSTAY.FORM.CUSTOM_RULES' | translate }} <span class="ssf__opt">({{ 'SHORTSTAY.FORM.OPTIONAL' | translate }})</span></label>
         <textarea id="short-stay-listing-form-f17" [(ngModel)]="customRulesText" name="customRulesText" rows="2"></textarea>
       </div>
     </section>
@@ -193,45 +206,76 @@
     <section class="ssf__section" *ngIf="isEditMode">
       <h2>{{ 'SHORTSTAY.FORM.CANCELLATION_POLICY' | translate }}</h2>
       <div class="ssf__field">
-        <label for="short-stay-listing-form-f18">{{ 'SHORTSTAY.FORM.FREE_CANCELLATION_DAYS' | translate }}</label>
+        <label for="short-stay-listing-form-f18">{{ 'SHORTSTAY.FORM.FREE_CANCELLATION_DAYS' | translate }} <span class="ssf__unit">({{ 'SHORTSTAY.FORM.UNIT_DAYS' | translate }})</span></label>
         <input id="short-stay-listing-form-f18" type="number" min="0" [(ngModel)]="cancellationFreeCancellationDays" name="cancellationFreeCancellationDays" />
       </div>
       <label class="ssf__checkbox"><input type="checkbox" [(ngModel)]="cancellationDepositRefundable" name="cancellationDepositRefundable" /> {{ 'SHORTSTAY.FORM.DEPOSIT_REFUNDABLE' | translate }}</label>
     </section>
 
+    <section class="ssf__section" data-testid="min-stay-section" *ngIf="isEditMode && hasRoomType()">
+      <h2>{{ 'SHORTSTAY.FORM.MIN_STAY' | translate }}</h2>
+      <p class="ssf__hint">{{ 'SHORTSTAY.FORM.MIN_STAY_HINT' | translate }}</p>
+      <div class="ssf__field">
+        <label for="ssf-minstay">{{ 'SHORTSTAY.FORM.MIN_NIGHTS' | translate }} <span class="ssf__unit">({{ 'SHORTSTAY.FORM.UNIT_NIGHTS' | translate }})</span></label>
+        <input id="ssf-minstay" type="number" min="1" max="365" step="1" [(ngModel)]="minimumNights" name="minimumNights" />
+      </div>
+    </section>
+
     <section class="ssf__section" *ngIf="isEditMode">
       <h2>{{ 'SHORTSTAY.FORM.AMENITIES' | translate }}</h2>
       <p class="ssf__hint" *ngIf="amenitiesLoading()">{{ 'COMMON.LOADING' | translate }}</p>
-      <p class="ssf__hint" role="alert" *ngIf="!amenitiesLoading() && (amenitiesLoadFailed() || amenityCatalog().length === 0)">
+      <p class="ssf__hint" role="alert" *ngIf="!amenitiesLoading() && (amenitiesLoadFailed() || offeredAmenities().length === 0)">
         {{ (amenitiesLoadFailed() ? 'PROPERTY_FORM.AMENITIES_LOAD_ERROR' : 'PROPERTY_FORM.AMENITIES_EMPTY') | translate }}
         <button type="button" class="ssf__link-btn" (click)="loadAmenities()">{{ 'COMMON.RETRY' | translate }}</button>
       </p>
       <div class="ssf__amenities-grid">
-        <label class="ssf__checkbox" *ngFor="let amenity of amenityCatalog()">
+        <label class="ssf__checkbox" *ngFor="let amenity of offeredAmenities()">
           <input type="checkbox" [checked]="isAmenitySelected(amenity.id)" (change)="toggleAmenity(amenity.id)" />
           {{ amenity | amenityLabel }}
         </label>
       </div>
     </section>
 
-    <section class="ssf__section" *ngIf="isEditMode">
+    <section class="ssf__section" data-testid="pricing-rules-section" *ngIf="isEditMode && hasRoomType()">
       <h2>{{ 'SHORTSTAY.FORM.PRICING_RULES' | translate }}</h2>
       <p class="ssf__hint">{{ 'SHORTSTAY.FORM.PRICING_RULES_HINT' | translate }}</p>
-      <div class="ssf__pricing-rule" *ngFor="let rule of pricingRules(); let i = index">
-        <select [attr.aria-label]="'SHORTSTAY.FORM.PRICING_RULES' | translate" [(ngModel)]="rule.ruleType" [name]="'ruleType' + i">
-          <option value="Base">{{ 'SHORTSTAY.FORM.RULE_BASE' | translate }}</option>
-          <option value="Weekday">{{ 'SHORTSTAY.FORM.RULE_WEEKDAY' | translate }}</option>
-          <option value="Weekend">{{ 'SHORTSTAY.FORM.RULE_WEEKEND' | translate }}</option>
-          <option value="Seasonal">{{ 'SHORTSTAY.FORM.RULE_SEASONAL' | translate }}</option>
-          <option value="Holiday">{{ 'SHORTSTAY.FORM.RULE_HOLIDAY' | translate }}</option>
-          <option value="CustomDate">{{ 'SHORTSTAY.FORM.RULE_CUSTOM_DATE' | translate }}</option>
-        </select>
-        <input type="number" min="0" [(ngModel)]="rule.pricePerNight" [name]="'price' + i" [placeholder]="('SHORTSTAY.FORM.PRICE_PER_NIGHT' | translate) + ' (' + currencyCode + ')'" />
-        <input type="date" [(ngModel)]="rule.dateRangeStart" [name]="'rangeStart' + i" *ngIf="rule.ruleType === 'Seasonal' || rule.ruleType === 'Holiday' || rule.ruleType === 'CustomDate'" />
-        <input type="date" [(ngModel)]="rule.dateRangeEnd" [name]="'rangeEnd' + i" *ngIf="rule.ruleType === 'Seasonal' || rule.ruleType === 'Holiday' || rule.ruleType === 'CustomDate'" />
-        <button type="button" class="btn btn--sm btn--danger" (click)="removePricingRule(i)">{{ 'SHORTSTAY.FORM.REMOVE' | translate }}</button>
+
+      <h3 class="ssf__sub">{{ 'SHORTSTAY.FORM.RULES_DAYS_TITLE' | translate }}</h3>
+      <p class="ssf__hint">{{ 'SHORTSTAY.FORM.RULES_DAYS_HINT' | translate }}</p>
+      <div class="ssf__rule" data-testid="day-rule" *ngFor="let row of dayRows(); let i = index">
+        <fieldset class="ssf__days">
+          <legend>{{ 'SHORTSTAY.FORM.RULES_DAYS_LABEL' | translate }} <abbr class="ssf__req" [attr.title]="'SHORTSTAY.FORM.REQUIRED' | translate">*</abbr></legend>
+          <label class="ssf__day" *ngFor="let day of weekdays" [class.ssf__day--on]="row.days.includes(day)" [class.ssf__day--taken]="dayTakenElsewhere(row, day)">
+            <input type="checkbox" [checked]="row.days.includes(day)" [disabled]="dayTakenElsewhere(row, day)" (change)="toggleRowDay(row, day)" />
+            {{ 'SHORTSTAY.DAY_SHORT.' + day | translate }}
+          </label>
+        </fieldset>
+        <div class="ssf__field">
+          <label [attr.for]="'ssf-day-price-' + i">{{ 'SHORTSTAY.FORM.RULE_PRICE' | translate }} <abbr class="ssf__req" [attr.title]="'SHORTSTAY.FORM.REQUIRED' | translate">*</abbr> <span class="ssf__unit">({{ currencyCode }} / {{ 'SHORTSTAY.LIST.NIGHT' | translate }})</span></label>
+          <input [id]="'ssf-day-price-' + i" type="number" min="1" inputmode="decimal" [(ngModel)]="row.pricePerNight" [name]="'dayPrice' + i" />
+        </div>
+        <button type="button" class="btn btn--sm btn--danger" (click)="removeDayRow(i)">{{ 'SHORTSTAY.FORM.REMOVE' | translate }}</button>
       </div>
-      <button type="button" class="btn btn--sm btn--outline" (click)="addPricingRule()">{{ 'SHORTSTAY.FORM.ADD_RULE' | translate }}</button>
+      <button type="button" class="btn btn--sm btn--outline" data-testid="add-day-rule" (click)="addDayRow()">{{ 'SHORTSTAY.FORM.ADD_DAYS_RULE' | translate }}</button>
+
+      <h3 class="ssf__sub">{{ 'SHORTSTAY.FORM.RULES_PERIOD_TITLE' | translate }}</h3>
+      <p class="ssf__hint">{{ 'SHORTSTAY.FORM.RULES_PERIOD_HINT' | translate }}</p>
+      <div class="ssf__rule" data-testid="period-rule" *ngFor="let row of periodRows(); let i = index">
+        <div class="ssf__field">
+          <label [attr.for]="'ssf-from-' + i">{{ 'SHORTSTAY.FORM.RULE_FROM' | translate }} <abbr class="ssf__req" [attr.title]="'SHORTSTAY.FORM.REQUIRED' | translate">*</abbr></label>
+          <input [id]="'ssf-from-' + i" type="date" [(ngModel)]="row.dateRangeStart" [name]="'rangeStart' + i" />
+        </div>
+        <div class="ssf__field">
+          <label [attr.for]="'ssf-to-' + i">{{ 'SHORTSTAY.FORM.RULE_TO' | translate }} <abbr class="ssf__req" [attr.title]="'SHORTSTAY.FORM.REQUIRED' | translate">*</abbr></label>
+          <input [id]="'ssf-to-' + i" type="date" [(ngModel)]="row.dateRangeEnd" [name]="'rangeEnd' + i" />
+        </div>
+        <div class="ssf__field">
+          <label [attr.for]="'ssf-period-price-' + i">{{ 'SHORTSTAY.FORM.RULE_PRICE' | translate }} <abbr class="ssf__req" [attr.title]="'SHORTSTAY.FORM.REQUIRED' | translate">*</abbr> <span class="ssf__unit">({{ currencyCode }} / {{ 'SHORTSTAY.LIST.NIGHT' | translate }})</span></label>
+          <input [id]="'ssf-period-price-' + i" type="number" min="1" inputmode="decimal" [(ngModel)]="row.pricePerNight" [name]="'periodPrice' + i" />
+        </div>
+        <button type="button" class="btn btn--sm btn--danger" (click)="removePeriodRow(i)">{{ 'SHORTSTAY.FORM.REMOVE' | translate }}</button>
+      </div>
+      <button type="button" class="btn btn--sm btn--outline" data-testid="add-period-rule" (click)="addPeriodRow()">{{ 'SHORTSTAY.FORM.ADD_PERIOD_RULE' | translate }}</button>
     </section>
 
     <section class="ssf__section" *ngIf="!isEditMode">
