@@ -12,7 +12,7 @@
       *ngFor="let url of l.photoUrls.slice(0, 5); let i = index"
       [src]="url"
       [appImageFallback]="fallbackImage"
-      [alt]="l.title + ' - صورة ' + (i + 1)"
+      [alt]="'SHORTSTAY.DETAIL.PHOTO_ALT' | translate:{ title: l.title, n: i + 1 }"
       class="ssd__gallery-img"
     />
   </div>
@@ -25,10 +25,10 @@
   <div class="ssd__layout">
     <div class="ssd__main">
       <header class="ssd__header">
-        <p class="ssd__type">{{ l.accommodationTypeCode }}</p>
+        <p class="ssd__type">{{ typeName(l) }}</p>
         <h1 dir="auto">{{ displayTitle(l) }}</h1>
+        <p class="ssd__place" data-testid="place-line" *ngIf="placeLine(l) as place"><span aria-hidden="true">📍</span> <bdi>{{ place }}</bdi></p>
         <p class="ssd__meta">
-          {{ locations.city(l) || '—' }} ·
           {{ l.capacity }} {{ 'SHORTSTAY.DETAIL.GUESTS_SHORT' | translate }} ·
           {{ l.bedrooms }} {{ 'SHORTSTAY.DETAIL.BEDROOMS_SHORT' | translate }} ·
           {{ l.bathrooms }} {{ 'SHORTSTAY.DETAIL.BATHROOMS_SHORT' | translate }}
@@ -60,23 +60,62 @@
         </ul>
       </section>
 
-      <section class="ssd__section">
-        <h2>{{ 'SHORTSTAY.DETAIL.HOUSE_RULES' | translate }}</h2>
+      <section class="ssd__section" data-testid="stay-times">
+        <h2>{{ 'SHORTSTAY.DETAIL.STAY_TIMES' | translate }}</h2>
         <ul class="ssd__rules">
-          <li>{{ 'SHORTSTAY.DETAIL.CHECK_IN_TIME' | translate }}: {{ l.checkInTime.slice(0,5) }}</li>
-          <li>{{ 'SHORTSTAY.DETAIL.CHECK_OUT_TIME' | translate }}: {{ l.checkOutTime.slice(0,5) }}</li>
-          <li>{{ (l.allowsSmoking ? 'SHORTSTAY.DETAIL.SMOKING_ALLOWED' : 'SHORTSTAY.DETAIL.SMOKING_NOT_ALLOWED') | translate }}</li>
-          <li>{{ (l.allowsParties ? 'SHORTSTAY.DETAIL.PARTIES_ALLOWED' : 'SHORTSTAY.DETAIL.PARTIES_NOT_ALLOWED') | translate }}</li>
-          <li>{{ (l.allowsPets ? 'SHORTSTAY.DETAIL.PETS_ALLOWED' : 'SHORTSTAY.DETAIL.PETS_NOT_ALLOWED') | translate }}</li>
-          <li *ngIf="l.customRulesText">{{ l.customRulesText }}</li>
+          <li>{{ 'SHORTSTAY.DETAIL.CHECKIN_FROM' | translate:{ time: l.checkInTime.slice(0,5) } }}</li>
+          <li>{{ 'SHORTSTAY.DETAIL.CHECKOUT_BY' | translate:{ time: l.checkOutTime.slice(0,5) } }}</li>
+          <li *ngIf="l.selfCheckInEnabled">{{ 'SHORTSTAY.DETAIL.SELF_CHECK_IN' | translate }}</li>
         </ul>
       </section>
 
-      <section class="ssd__section">
+      <section class="ssd__section" data-testid="house-rules">
+        <h2>{{ 'SHORTSTAY.DETAIL.HOUSE_RULES' | translate }}</h2>
+        <ul class="ssd__rules">
+          <li>{{ (l.allowsSmoking ? 'SHORTSTAY.DETAIL.SMOKING_ALLOWED' : 'SHORTSTAY.DETAIL.SMOKING_NOT_ALLOWED') | translate }}</li>
+          <li>{{ (l.allowsParties ? 'SHORTSTAY.DETAIL.PARTIES_ALLOWED' : 'SHORTSTAY.DETAIL.PARTIES_NOT_ALLOWED') | translate }}</li>
+          <li data-testid="pets-rule">{{ (petsPolicyOf(l) === 'Conditional' ? 'SHORTSTAY.DETAIL.PETS_CONDITIONAL' : petsPolicyOf(l) === 'Allowed' ? 'SHORTSTAY.DETAIL.PETS_ALLOWED' : 'SHORTSTAY.DETAIL.PETS_NOT_ALLOWED') | translate }}</li>
+          <li *ngIf="quietHours(l) as quiet">{{ 'SHORTSTAY.DETAIL.QUIET_HOURS' | translate:quiet }}</li>
+        </ul>
+        <ng-container *ngIf="l.customRulesText">
+          <h3 class="ssd__sub">{{ 'SHORTSTAY.DETAIL.CUSTOM_RULES' | translate }}</h3>
+          <p class="ssd__description" dir="auto">{{ l.customRulesText }}</p>
+        </ng-container>
+      </section>
+
+      <section class="ssd__section" data-testid="fees">
+        <h2>{{ 'SHORTSTAY.DETAIL.FEES_TITLE' | translate }}</h2>
+        <ul class="ssd__rules">
+          <li>{{ 'SHORTSTAY.DETAIL.CLEANING_FEE' | translate }}:
+            <ng-container *ngIf="l.cleaningFee > 0; else noFee">{{ l.cleaningFee | localNumber:'1.0-2' }} {{ l.currencyCode }} ({{ 'SHORTSTAY.DETAIL.PER_STAY' | translate }})</ng-container>
+          </li>
+          <li>{{ 'SHORTSTAY.DETAIL.EXTRA_GUEST_FEE' | translate }}:
+            <ng-container *ngIf="l.extraGuestFee > 0; else noFee">{{ l.extraGuestFee | localNumber:'1.0-2' }} {{ l.currencyCode }} ({{ 'SHORTSTAY.DETAIL.PER_EXTRA_GUEST_NIGHT' | translate }})</ng-container>
+          </li>
+          <li *ngIf="l.depositPercentage && l.depositPercentage > 0; else noDeposit">{{ 'SHORTSTAY.DETAIL.DEPOSIT_PERCENT' | translate:{ percent: l.depositPercentage } }}</li>
+        </ul>
+        <ng-template #noFee>{{ 'SHORTSTAY.DETAIL.FEE_NONE' | translate }}</ng-template>
+        <ng-template #noDeposit><li>{{ 'SHORTSTAY.DETAIL.DEPOSIT_NONE' | translate }}</li></ng-template>
+      </section>
+
+      <section class="ssd__section" data-testid="cancellation">
         <h2>{{ 'SHORTSTAY.DETAIL.CANCELLATION_POLICY' | translate }}</h2>
-        <p>
-          {{ 'SHORTSTAY.DETAIL.FREE_CANCELLATION' | translate:{ days: l.cancellationFreeCancellationDays } }}
-        </p>
+        <ul class="ssd__rules">
+          <li>{{ (l.cancellationFreeCancellationDays > 0 ? 'SHORTSTAY.DETAIL.FREE_CANCELLATION' : 'SHORTSTAY.DETAIL.NO_FREE_CANCELLATION') | translate:{ days: l.cancellationFreeCancellationDays } }}</li>
+          <li *ngIf="l.depositPercentage && l.depositPercentage > 0">{{ (l.cancellationDepositRefundable ? 'SHORTSTAY.DETAIL.DEPOSIT_REFUNDABLE' : 'SHORTSTAY.DETAIL.DEPOSIT_NON_REFUNDABLE') | translate }}</li>
+        </ul>
+        <ng-container *ngIf="l.cancellationCustomTermsText">
+          <h3 class="ssd__sub">{{ 'SHORTSTAY.DETAIL.CANCELLATION_TERMS' | translate }}</h3>
+          <p class="ssd__description" dir="auto">{{ l.cancellationCustomTermsText }}</p>
+        </ng-container>
+      </section>
+
+      <section class="ssd__section ssd__host" data-testid="host-section" *ngIf="l.agency as office">
+        <h2>{{ 'SHORTSTAY.DETAIL.HOST_TITLE' | translate }}</h2>
+        <a class="ssd__host-link" [routerLink]="['/offices', office.slug]" [state]="{ officeVisitSource: 'Listing' }">
+          <img *ngIf="office.logoUrl" class="ssd__host-logo" [src]="office.logoUrl" alt="" width="48" height="48" />
+          <span><bdi>{{ office.name }}</bdi><small>{{ 'SHORTSTAY.DETAIL.HOST_VIEW' | translate }}</small></span>
+        </a>
       </section>
 
       <section class="ssd__section">

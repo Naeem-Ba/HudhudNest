@@ -36,11 +36,14 @@ export interface AccommodationTypeDto {
 }
 
 /** Same currencies the sale/rent property form offers; the backend validates the full ISO allowlist. */
-export const SHORT_STAY_CURRENCIES: ReadonlyArray<{ code: string; label: string }> = [
-  { code: 'SYP', label: 'ل.س — الليرة السورية' },
-  { code: 'USD', label: '$ — الدولار الأمريكي' },
-  { code: 'EUR', label: '€ — اليورو' }
+export const SHORT_STAY_CURRENCIES: ReadonlyArray<{ code: string; symbol: string; labelKey: string }> = [
+  { code: 'SYP', symbol: 'ل.س', labelKey: 'SHORTSTAY.CURRENCY.SYP' },
+  { code: 'USD', symbol: '$', labelKey: 'SHORTSTAY.CURRENCY.USD' },
+  { code: 'EUR', symbol: '€', labelKey: 'SHORTSTAY.CURRENCY.EUR' }
 ];
+
+/** Hosts decide pets per listing: allowed, not allowed, or only on conditions described in the house rules. */
+export type PetsPolicy = 'NotAllowed' | 'Allowed' | 'Conditional';
 
 export interface AccommodationUnitDto {
   id: string;
@@ -87,6 +90,8 @@ export interface ShortStayListingSummary {
   /** ISO 4217 code `fromPricePerNight` (and every other price on the listing) is quoted in. */
   currencyCode: string;
   city: string | null;
+  /** The governorate, to show its name in the app language; absent from an older API. */
+  governorateId?: number | null;
   latitude: number | null;
   longitude: number | null;
   isPublished: boolean;
@@ -124,6 +129,8 @@ export interface ShortStayListing {
   governorateId: number | null;
   districtId: number | null;
   neighborhoodId: number | null;
+  /** Catalog place (any level); absent from an older API and for listings whose place is hidden (Approximate). */
+  locationId?: number | null;
   city: string | null;
   locationVisibility: LocationVisibility;
   poolType: 'Private' | 'Shared' | null;
@@ -136,6 +143,12 @@ export interface ShortStayListing {
   allowsSmoking: boolean;
   allowsParties: boolean;
   allowsPets: boolean;
+  /** Absent from an older API: derive it from allowsPets. */
+  petsPolicy?: PetsPolicy;
+  /** The office/agency behind the listing, when there is one; absent from an older API. */
+  agencyId?: string | null;
+  /** Name, page and logo of that office when it is active. */
+  agency?: { name: string; slug: string; logoUrl: string | null; isVerified: boolean } | null;
   quietHoursStart: string | null;
   quietHoursEnd: string | null;
   customRulesText: string | null;
@@ -262,6 +275,8 @@ export interface CreateShortStayListingRequest {
   governorateId?: number | null;
   districtId?: number | null;
   neighborhoodId?: number | null;
+  /** The most specific catalog place picked; the server derives the legacy ids from it. */
+  locationId?: number | null;
   locationVisibility?: LocationVisibility;
   defaultBasePricePerNight: number;
   currencyCode: string;
@@ -296,6 +311,10 @@ export interface UpdateShortStayListingRequest {
   allowsSmoking: boolean;
   allowsParties: boolean;
   allowsPets: boolean;
+  petsPolicy?: PetsPolicy;
+  /** The nightly price (the room type's base price); the only price a booking is quoted from, besides period rules. */
+  basePricePerNight?: number;
+  locationId?: number | null;
   quietHoursStart: string | null;
   quietHoursEnd: string | null;
   customRulesText: string | null;

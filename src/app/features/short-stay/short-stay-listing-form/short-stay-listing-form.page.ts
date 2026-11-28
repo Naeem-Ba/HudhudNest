@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnInit, ViewChild, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,7 +6,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PhotoGuideSheetComponent } from '../../../shared/ui/photo-guide/photo-guide-sheet.component';
 import { PhotoFilePickerComponent } from '../../../shared/ui/photo-file-picker.component';
-import { catchError, forkJoin, of } from 'rxjs';
+import { Observable, catchError, forkJoin, of, switchMap } from 'rxjs';
 
 import { ShortStayListingApiService } from '../../../core/api/short-stay-listing-api.service';
 import { LookupsApiService, LookupAmenity } from '../../../core/api/lookups-api.service';
@@ -25,11 +25,14 @@ import { LISTING_PHOTO_COMPRESSION, compressImagesForUpload } from '../../../sha
 import {
   AccommodationTypeDto,
   LocationVisibility,
+  MinimumStayRuleDto,
+  PetsPolicy,
   PricingRuleDto,
   SHORT_STAY_CURRENCIES,
   ShortStayListing,
   canPublishShortStay
 } from '../../../core/models/short-stay.model';
+import { accommodationTypeLabel } from '../../../core/i18n/accommodation-type-label';
 import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
 import { LocalizedNumberPipe } from '../../../shared/pipes/localized-number.pipe';
 
@@ -78,13 +81,101 @@ export function cityMapFor(nameEn: string): { lat: number; lng: number; zoom: nu
   return hit ? { lat: hit.lat, lng: hit.lng, zoom: hit.zoom } : null;
 }
 
-type PricingRuleForm = {
-  ruleType: PricingRuleDto['ruleType'];
-  dayOfWeek: number | null;
+/** One price for several weekdays; saved as one API rule per day (DayOfWeek 0 = Sunday ... 6 = Saturday). */
+export type DayPriceRow = { days: number[]; pricePerNight: number | null };
+/** One price for a date range (season, holiday or a single date). */
+export type PeriodPriceRow = {
+  ruleType: 'Seasonal' | 'Holiday' | 'CustomDate';
   dateRangeStart: string | null;
   dateRangeEnd: string | null;
-  pricePerNight: number;
+  pricePerNight: number | null;
 };
+export type PricingRuleInput = Pick<PricingRuleDto, 'ruleType' | 'dayOfWeek' | 'dateRangeStart' | 'dateRangeEnd' | 'pricePerNight'>;
+
+/** Weekdays in the order the form lists them (the week of the region starts on Saturday). */
+export const WEEKDAY_ORDER = [6, 0, 1, 2, 3, 4, 5] as const;
+
+/**
+ * The saved rules as the form shows them. A Base rule is no longer a price (the nightly price is the single
+ * base price field), and a weekday/weekend rule without a day never applied, so both are left out. Day
+ * rules with the same price become one row.
+ */
+export function rulesToRows(rules: ReadonlyArray<PricingRuleDto>): { dayRows: DayPriceRow[]; periodRows: PeriodPriceRow[] } {
+  const byPrice = new Map<number, number[]>();
+  const periodRows: PeriodPriceRow[] = [];
+  for (const r of rules) {
+    if ((r.ruleType === 'Weekday' || r.ruleType === 'Weekend') && r.dayOfWeek !== null && r.dayOfWeek !== undefined) {
+      const list = byPrice.get(r.pricePerNight) ?? [];
+      if (!list.includes(r.dayOfWeek)) list.push(r.dayOfWeek);
+      byPrice.set(r.pricePerNight, list);
+    } else if (r.ruleType === 'Seasonal' || r.ruleType === 'Holiday' || r.ruleType === 'CustomDate') {
+      periodRows.push({
+        ruleType: r.ruleType,
+        dateRangeStart: r.dateRangeStart?.slice(0, 10) ?? null,
+        dateRangeEnd: r.dateRangeEnd?.slice(0, 10) ?? null,
+        pricePerNight: r.pricePerNight
+      });
+    }
+  }
+  const dayRows = [...byPrice.entries()].map(([pricePerNight, days]) => ({ days: sortDays(days), pricePerNight }));
+  return { dayRows, periodRows };
+}
+
+function sortDays(days: number[]): number[] {
+  return [...days].sort((a, b) => WEEKDAY_ORDER.indexOf(a as never) - WEEKDAY_ORDER.indexOf(b as never));
+}
+
+/** The API rules for the rows: one Weekday rule per chosen day, then the period rules. */
+export function rowsToRules(dayRows: ReadonlyArray<DayPriceRow>, periodRows: ReadonlyArray<PeriodPriceRow>): PricingRuleInput[] {
+  const rules: PricingRuleInput[] = [];
+  for (const row of dayRows) {
+    for (const day of row.days) {
+      rules.push({ ruleType: 'Weekday', dayOfWeek: day, dateRangeStart: null, dateRangeEnd: null, pricePerNight: row.pricePerNight as number });
+    }
+  }
+  for (const row of periodRows) {
+    rules.push({
+      ruleType: row.ruleType, dayOfWeek: null,
+      dateRangeStart: row.dateRangeStart, dateRangeEnd: row.dateRangeEnd, pricePerNight: row.pricePerNight as number
+    });
+  }
+  return rules;
+}
+
+/** Translation key of the first problem in the price fields, or null when they can be sent. */
+export function firstPricingProblem(
+  basePrice: number | null,
+  dayRows: ReadonlyArray<DayPriceRow>,
+  periodRows: ReadonlyArray<PeriodPriceRow>
+): string | null {
+  const price = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0;
+  if (!price(basePrice)) return 'SHORTSTAY.FORM.PRICE_REQUIRED';
+
+  const seen = new Set<number>();
+  for (const row of dayRows) {
+    if (row.days.length === 0) return 'SHORTSTAY.FORM.ERR_RULE_DAYS';
+    if (!price(row.pricePerNight)) return 'SHORTSTAY.FORM.ERR_RULE_PRICE';
+    for (const day of row.days) {
+      if (seen.has(day)) return 'SHORTSTAY.FORM.ERR_RULE_DUP_DAY';
+      seen.add(day);
+    }
+  }
+  for (const row of periodRows) {
+    if (!row.dateRangeStart || !row.dateRangeEnd) return 'SHORTSTAY.FORM.ERR_RULE_DATES';
+    if (row.dateRangeStart > row.dateRangeEnd) return 'SHORTSTAY.FORM.ERR_RULE_DATE_ORDER';
+    if (!price(row.pricePerNight)) return 'SHORTSTAY.FORM.ERR_RULE_PRICE';
+  }
+  return null;
+}
+
+/**
+ * Amenities that describe a building (sale/rent) or the house rules, not a night's stay: they stay in the
+ * shared catalog but are not offered on a short-stay listing. Ones already saved on a listing are kept.
+ */
+export const SHORT_STAY_HIDDEN_AMENITIES: ReadonlySet<string> = new Set([
+  'pets-allowed', 'solar-energy', 'solar-heater', 'generator', 'ups-batteries', 'water-tank',
+  'central-heating', 'storage-room', 'roof-access', 'fire-safety'
+]);
 
 @Component({
   selector: 'app-short-stay-listing-form-page',
@@ -116,7 +207,12 @@ export class ShortStayListingFormPage implements OnInit {
   readonly amenitiesLoading = signal(false);
   readonly amenitiesLoadFailed = signal(false);
   readonly selectedAmenityIds = signal<Set<string>>(new Set());
-  readonly pricingRules = signal<PricingRuleForm[]>([]);
+  readonly dayRows = signal<DayPriceRow[]>([]);
+  readonly periodRows = signal<PeriodPriceRow[]>([]);
+  readonly weekdays = WEEKDAY_ORDER;
+  /** Amenities a short-stay host can pick (see SHORT_STAY_HIDDEN_AMENITIES); a saved hidden one stays selected. */
+  readonly offeredAmenities = computed(() =>
+    this.amenityCatalog().filter(a => !SHORT_STAY_HIDDEN_AMENITIES.has((a.iconName ?? '').trim())));
 
   readonly loading = signal(false);
   readonly saving = signal(false);
@@ -134,6 +230,8 @@ export class ShortStayListingFormPage implements OnInit {
 
   // ── الموقع: المحافظة ← المنطقة ← الحي + نقطة على الخريطة ──
   readonly geoInitial = signal<GeoPickerInitial | null>(null);
+  /** The most specific catalog place picked; saved next to the legacy ids. */
+  locationId: number | null = null;
   /** The pin the host has just placed or moved: this is what triggers an address suggestion. */
   readonly geoPin = signal<{ lat: number; lng: number } | null>(null);
   /** Places the host typed that the catalog lacks; proposed to the administrators once the listing exists. */
@@ -186,7 +284,11 @@ export class ShortStayListingFormPage implements OnInit {
   extraBedFee = 0;
   allowsSmoking = false;
   allowsParties = false;
-  allowsPets = false;
+  petsPolicy: PetsPolicy = 'NotAllowed';
+  readonly petsPolicies: ReadonlyArray<PetsPolicy> = ['NotAllowed', 'Allowed', 'Conditional'];
+  /** Nights every booking needs (no dates); rules with dates are kept untouched and saved back with it. */
+  minimumNights: number | null = 1;
+  private datedMinimumStayRules: Array<Pick<MinimumStayRuleDto, 'minimumNights' | 'dateRangeStart' | 'dateRangeEnd'>> = [];
   quietHoursStart: string | null = null;
   quietHoursEnd: string | null = null;
   customRulesText = '';
@@ -260,7 +362,9 @@ export class ShortStayListingFormPage implements OnInit {
     this.governorateId = listing.governorateId;
     this.districtId = listing.districtId;
     this.neighborhoodId = listing.neighborhoodId;
+    this.locationId = listing.locationId ?? null;
     this.geoInitial.set({
+      locationId: listing.locationId ?? null,
       governorateId: listing.governorateId,
       districtId: listing.districtId,
       neighborhoodId: listing.neighborhoodId,
@@ -275,7 +379,7 @@ export class ShortStayListingFormPage implements OnInit {
     this.extraBedFee = listing.extraBedFee;
     this.allowsSmoking = listing.allowsSmoking;
     this.allowsParties = listing.allowsParties;
-    this.allowsPets = listing.allowsPets;
+    this.petsPolicy = listing.petsPolicy ?? (listing.allowsPets ? 'Allowed' : 'NotAllowed');
     this.quietHoursStart = listing.quietHoursStart?.slice(0, 5) ?? null;
     this.quietHoursEnd = listing.quietHoursEnd?.slice(0, 5) ?? null;
     this.customRulesText = listing.customRulesText ?? '';
@@ -286,12 +390,17 @@ export class ShortStayListingFormPage implements OnInit {
     this.selectedAmenityIds.set(new Set(listing.amenityIds));
 
     const roomType = listing.roomTypes[0];
-    this.pricingRules.set(
-      (roomType?.pricingRules ?? []).map(r => ({
-        ruleType: r.ruleType, dayOfWeek: r.dayOfWeek,
-        dateRangeStart: r.dateRangeStart, dateRangeEnd: r.dateRangeEnd, pricePerNight: r.pricePerNight
-      }))
-    );
+    if (roomType) this.defaultBasePricePerNight = roomType.basePricePerNight;
+    const { dayRows, periodRows } = rulesToRows(roomType?.pricingRules ?? []);
+    this.dayRows.set(dayRows);
+    this.periodRows.set(periodRows);
+
+    const stay = roomType?.minimumStayRules ?? [];
+    const always = stay.find(r => !r.dateRangeStart && !r.dateRangeEnd);
+    this.minimumNights = always?.minimumNights ?? 1;
+    this.datedMinimumStayRules = stay
+      .filter(r => r.dateRangeStart || r.dateRangeEnd)
+      .map(r => ({ minimumNights: r.minimumNights, dateRangeStart: r.dateRangeStart, dateRangeEnd: r.dateRangeEnd }));
   }
 
   private get lang(): LangCode {
@@ -309,6 +418,7 @@ export class ShortStayListingFormPage implements OnInit {
    */
   onGeoChange(value: GeoPickerValue): void {
     const governorateChanged = value.governorateId !== this.governorateId;
+    this.locationId = value.locationId;
     this.governorateId = value.governorateId;
     this.districtId = value.districtId;
     this.neighborhoodId = value.neighborhoodId;
@@ -384,7 +494,7 @@ export class ShortStayListingFormPage implements OnInit {
   }
 
   typeLabel(type: AccommodationTypeDto): string {
-    return this.translate.currentLang === 'ar' ? type.nameAr : (type.nameEn || type.nameAr);
+    return accommodationTypeLabel(this.translate, type);
   }
 
   toggleAmenity(id: string): void {
@@ -399,14 +509,35 @@ export class ShortStayListingFormPage implements OnInit {
     return this.selectedAmenityIds().has(id);
   }
 
-  addPricingRule(): void {
-    this.pricingRules.update(rules => [
-      ...rules, { ruleType: 'Weekend', dayOfWeek: null, dateRangeStart: null, dateRangeEnd: null, pricePerNight: 0 }
-    ]);
+  addDayRow(): void {
+    this.dayRows.update(rows => [...rows, { days: [], pricePerNight: null }]);
   }
 
-  removePricingRule(index: number): void {
-    this.pricingRules.update(rules => rules.filter((_, i) => i !== index));
+  removeDayRow(index: number): void {
+    this.dayRows.update(rows => rows.filter((_, i) => i !== index));
+  }
+
+  toggleRowDay(row: DayPriceRow, day: number): void {
+    row.days = row.days.includes(day) ? row.days.filter(d => d !== day) : sortDays([...row.days, day]);
+    this.dayRows.update(rows => [...rows]);
+  }
+
+  /** A day already used by another row cannot be picked twice (one price per day). */
+  dayTakenElsewhere(row: DayPriceRow, day: number): boolean {
+    return this.dayRows().some(r => r !== row && r.days.includes(day));
+  }
+
+  addPeriodRow(): void {
+    this.periodRows.update(rows => [...rows, { ruleType: 'Seasonal', dateRangeStart: null, dateRangeEnd: null, pricePerNight: null }]);
+  }
+
+  removePeriodRow(index: number): void {
+    this.periodRows.update(rows => rows.filter((_, i) => i !== index));
+  }
+
+  /** True once the listing has its (single) room type: price, price rules and minimum stay live on it. */
+  hasRoomType(): boolean {
+    return !!this.listing()?.roomTypes[0];
   }
 
   /**
@@ -425,6 +556,12 @@ export class ShortStayListingFormPage implements OnInit {
     if (includeFees && !this.quietHoursStart !== !this.quietHoursEnd) return 'SHORTSTAY.FORM.ERR_QUIET_HOURS';
     if (!this.governorateId) return 'SHORTSTAY.FORM.ERR_GOVERNORATE';
     if (!isNum(this.latitude) || !isNum(this.longitude)) return 'SHORTSTAY.FORM.ERR_PIN';
+    if (includeFees && this.hasRoomType()) {
+      const pricing = firstPricingProblem(this.defaultBasePricePerNight, this.dayRows(), this.periodRows());
+      if (pricing) return pricing;
+      const nights = this.minimumNights;
+      if (nights !== null && (!Number.isInteger(nights) || nights < 1 || nights > 365)) return 'SHORTSTAY.FORM.ERR_MIN_NIGHTS';
+    }
     if (includeFees && [this.cleaningFee, this.extraGuestFee, this.extraBedFee].some(fee => !isNum(fee) || fee < 0)) {
       return 'SHORTSTAY.FORM.ERR_FEES';
     }
@@ -485,6 +622,7 @@ export class ShortStayListingFormPage implements OnInit {
       governorateId: this.governorateId,
       districtId: this.districtId,
       neighborhoodId: this.neighborhoodId,
+      locationId: this.locationId,
       locationVisibility: this.locationVisibility,
       defaultBasePricePerNight: this.defaultBasePricePerNight,
       currencyCode: this.currencyCode
@@ -670,6 +808,7 @@ export class ShortStayListingFormPage implements OnInit {
       governorateId: this.governorateId,
       districtId: this.districtId,
       neighborhoodId: this.neighborhoodId,
+      locationId: this.locationId,
       city: this.city || null,
       locationVisibility: this.locationVisibility,
       poolType: this.poolType,
@@ -681,7 +820,9 @@ export class ShortStayListingFormPage implements OnInit {
       extraBedFee: this.extraBedFee,
       allowsSmoking: this.allowsSmoking,
       allowsParties: this.allowsParties,
-      allowsPets: this.allowsPets,
+      allowsPets: this.petsPolicy !== 'NotAllowed',
+      petsPolicy: this.petsPolicy,
+      ...(this.hasRoomType() ? { basePricePerNight: this.defaultBasePricePerNight } : {}),
       quietHoursStart: toApiTime(this.quietHoursStart),
       quietHoursEnd: toApiTime(this.quietHoursEnd),
       customRulesText: this.customRulesText || null,
@@ -691,15 +832,20 @@ export class ShortStayListingFormPage implements OnInit {
       depositPercentage: this.depositPercentage
     });
 
-    const amenities$ = this.api.setAmenities(id, [...this.selectedAmenityIds()]);
-
     const roomTypeId = this.listing()?.roomTypes[0]?.id;
-    const pricing$ = roomTypeId
-      ? this.api.setPricingRules(roomTypeId, this.pricingRules())
-      : undefined;
+    const minimumStay = this.minimumStayPayload();
+    let completed = 0;
+    const step = <T>(source$: Observable<T>) => source$.pipe(switchMap(value => { completed++; return of(value); }));
 
-    forkJoin(pricing$ ? [update$, amenities$, pricing$] : [update$, amenities$])
-      .pipe(takeUntilDestroyed(this.destroyRef))
+    // One request after the other, never in parallel: when a step is refused, the ones after it are not
+    // sent and the user is told the save is incomplete, instead of a random mix of saved and unsaved parts.
+    step(update$)
+      .pipe(
+        switchMap(() => step(this.api.setAmenities(id, [...this.selectedAmenityIds()]))),
+        switchMap(() => roomTypeId ? step(this.api.setPricingRules(roomTypeId, rowsToRules(this.dayRows(), this.periodRows()))) : of(undefined)),
+        switchMap(() => roomTypeId && minimumStay ? step(this.api.setMinimumStayRules(roomTypeId, minimumStay)) : of(undefined)),
+        takeUntilDestroyed(this.destroyRef)
+      )
       .subscribe({
         next: () => {
           this.saving.set(false);
@@ -709,10 +855,20 @@ export class ShortStayListingFormPage implements OnInit {
         },
         error: (err: { status?: number }) => {
           this.saving.set(false);
+          // Saving again is safe: every part replaces what is stored.
+          if (completed > 0) this.toast.show(this.translate.instant('SHORTSTAY.FORM.SAVE_PARTIAL'), 'error');
           if (err?.status === 400 || err?.status === 422) return; // reason already shown by the interceptor
-          this.toast.show(this.translate.instant('SHORTSTAY.FORM.SAVE_ERROR'), 'error');
+          if (completed === 0) this.toast.show(this.translate.instant('SHORTSTAY.FORM.SAVE_ERROR'), 'error');
         }
       });
+  }
+
+  /** The minimum-stay rules to store: the undated one (only when above 1 night) plus the untouched dated ones. */
+  private minimumStayPayload(): Array<Pick<MinimumStayRuleDto, 'minimumNights' | 'dateRangeStart' | 'dateRangeEnd'>> | null {
+    if (!this.hasRoomType()) return null;
+    const nights = this.minimumNights ?? 1;
+    const always = nights > 1 ? [{ minimumNights: nights, dateRangeStart: null, dateRangeEnd: null }] : [];
+    return [...always, ...this.datedMinimumStayRules];
   }
 
   /** From the hidden camera input (edit page). */

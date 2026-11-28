@@ -11,6 +11,9 @@
   border: 1px solid var(--border, #e5e7eb);
   border-radius: 12px;
   overflow: hidden;
+  // Leaflet panes/controls use z-index 400-1000. Without their own stacking context they paint over
+  // the geo-autocomplete dropdown that opens above the map. Isolate them; the dropdown keeps its z-index.
+  isolation: isolate;
   background: var(--gray-100);
 }
 
