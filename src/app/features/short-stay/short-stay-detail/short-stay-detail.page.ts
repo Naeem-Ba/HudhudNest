@@ -26,7 +26,7 @@ import {
   UnitAvailabilityRange
 } from '../../../core/models/short-stay.model';
 import { DateRangePickerComponent, DateRangeValue } from '../../../shared/ui/date-range-picker.component';
-import { ImageFallbackDirective } from '../../../shared/directives/image-fallback.directive';
+import { GalleryImage, PhotoGalleryComponent } from '../../../shared/ui/photo-gallery/photo-gallery.component';
 import { PageMetaService } from '../../../core/services/page-meta.service';
 import { AmenityLabelPipe } from '../../../pipes/amenity-label.pipe';
 import { apiErrorText } from '../../../core/api/api-error-text';
@@ -48,7 +48,7 @@ const BLOCKING_STATUSES = new Set(['Reserved', 'CheckedIn', 'Blocked']);
 @Component({
   selector: 'app-short-stay-detail-page',
   standalone: true,
-  imports: [ LocalizedDatePipe, LocalizedNumberPipe,CommonModule, RouterModule, FormsModule, TranslateModule, DateRangePickerComponent, ImageFallbackDirective, AmenityLabelPipe, ShortStayReviewsSectionComponent, ListingViewCountComponent, TranslationNoticeComponent],
+  imports: [ LocalizedDatePipe, LocalizedNumberPipe,CommonModule, RouterModule, FormsModule, TranslateModule, DateRangePickerComponent, PhotoGalleryComponent, AmenityLabelPipe, ShortStayReviewsSectionComponent, ListingViewCountComponent, TranslationNoticeComponent],
   templateUrl: './short-stay-detail.page.html',
   styleUrls: ['./short-stay-detail.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -109,7 +109,9 @@ export class ShortStayDetailPage implements OnInit {
 
   readonly loading = signal(false);
   readonly error = signal('');
-  readonly fallbackImage = '/images/no-image.svg';
+  galleryImages(l: { photoUrls: string[] }): GalleryImage[] {
+    return (l.photoUrls ?? []).map(url => ({ url }));
+  }
   /** Values for the instant-booking hint; the API enforces the same limits (400/409 with its own message). */
   readonly instantLimits = { days: INSTANT_BOOKING_MAX_ADVANCE_DAYS, nights: INSTANT_BOOKING_MAX_NIGHTS };
 

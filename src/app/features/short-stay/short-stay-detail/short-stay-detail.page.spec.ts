@@ -101,7 +101,7 @@ describe('ShortStayDetailPage (rendered)', () => {
 
   it('translates the photo alt text', async () => {
     const el = await render(base, 'de');
-    expect(el.querySelector('.ssd__gallery-img')?.getAttribute('alt')).toBe('Sea chalet - Foto 1');
+    expect(el.querySelector('.pg__img')?.getAttribute('alt')).toBe('Sea chalet - Foto 1 von 1');
   });
 
   it('has a separate check-in/out section with the self check-in note', async () => {

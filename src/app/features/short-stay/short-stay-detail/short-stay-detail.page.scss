@@ -7,37 +7,7 @@
 
   &__error { color: var(--danger-text); }
 
-  &__gallery {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
-    grid-auto-rows: 140px;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
-    border-radius: var(--r-md, 12px);
-    overflow: hidden;
-
-    &-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-
-      &:first-child {
-        grid-row: span 2;
-        height: 100%;
-      }
-    }
-  }
-
-  &__layout {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 2rem;
-    align-items: start;
-
-    @include bp.max(860px) {
-      grid-template-columns: 1fr;
-    }
-  }
+  &__gallery { display: block; margin-bottom: 1.5rem; }
 
   &__type {
     color: var(--primary-text);

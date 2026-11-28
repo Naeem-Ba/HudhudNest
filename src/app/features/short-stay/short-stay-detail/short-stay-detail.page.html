@@ -7,15 +7,8 @@
 </div>
 
 <div class="ssd" *ngIf="!loading() && !error() && listing() as l">
-  <div class="ssd__gallery" *ngIf="l.photoUrls.length > 0">
-    <img
-      *ngFor="let url of l.photoUrls.slice(0, 5); let i = index"
-      [src]="url"
-      [appImageFallback]="fallbackImage"
-      [alt]="'SHORTSTAY.DETAIL.PHOTO_ALT' | translate:{ title: l.title, n: i + 1 }"
-      class="ssd__gallery-img"
-    />
-  </div>
+  <app-photo-gallery class="ssd__gallery" *ngIf="l.photoUrls.length > 0"
+    [images]="galleryImages(l)" [title]="displayTitle(l)"></app-photo-gallery>
 
   <p class="ssd__taken-down" role="alert" data-testid="taken-down-banner" *ngIf="l.isTakenDown">
     🚫 {{ 'SHORTSTAY.TAKEN_DOWN.BANNER' | translate }}
