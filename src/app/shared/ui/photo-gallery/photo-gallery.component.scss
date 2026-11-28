@@ -1,0 +1,234 @@
+:host { display: block; min-width: 0; }
+
+/* The gallery's own box decides the layout (container query), so the same component is a swipe carousel in a
+   narrow column and a mosaic when it has room - on both the property and the short-stay page. */
+.pg {
+  position: relative;
+  container-type: inline-size;
+  container-name: pg;
+  border-radius: var(--r-lg, 16px);
+  overflow: hidden;
+  background: var(--gray-100, #1a1a1a);
+}
+
+/* ── Carousel (narrow) ── */
+.pg__track {
+  display: flex;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  aspect-ratio: 4 / 3;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.pg__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  position: relative;
+  overflow: hidden;
+
+  &:focus-visible { outline: 3px solid var(--primary, #2563eb); outline-offset: -3px; }
+}
+
+/* contain, not cover: a photo is only scaled down, never cropped, so windows, balconies and room
+   proportions stay visible. The placeholder colour shows the letterbox until the file arrives. */
+.pg__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  background: var(--gray-100, #1a1a1a);
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+.pg__counter,
+.pg__all {
+  position: absolute;
+  bottom: .75rem;
+  background: rgba(0, 0, 0, .62);
+  color: #fff;
+  border-radius: var(--r-pill, 999px);
+  backdrop-filter: blur(4px);
+  font-size: .8rem;
+  line-height: 1;
+}
+
+.pg__counter {
+  inset-inline-end: .75rem;
+  margin: 0;
+  padding: .4rem .7rem;
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.pg__all {
+  display: none;
+  inset-inline-end: .75rem;
+  align-items: center;
+  gap: .4rem;
+  padding: .55rem .9rem;
+  min-height: 44px;
+  border: 0;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover { background: rgba(0, 0, 0, .8); }
+  &:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+}
+
+/* ── Mosaic (wide): one large photo + up to four previews ── */
+@container pg (min-width: 640px) {
+  .pg__track {
+    display: grid;
+    gap: 6px;
+    overflow: hidden;
+    scroll-snap-type: none;
+    aspect-ratio: 16 / 9;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+  }
+
+  .pg__slide { scroll-snap-align: none; background: var(--gray-100, #1a1a1a); }
+  .pg__slide--extra { display: none; }
+  /* The small tiles are previews: a centred crop reads better there; the first tile and the viewer never crop. */
+  .pg__slide:not(:first-child) .pg__img { object-fit: cover; }
+
+  .pg[data-tiles='2'] .pg__track { grid-template-columns: 1fr 1fr; }
+  .pg[data-tiles='3'] .pg__track { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
+  .pg[data-tiles='3'] .pg__slide:first-child { grid-row: span 2; }
+  .pg[data-tiles='4'] .pg__track { grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
+  .pg[data-tiles='4'] .pg__slide:first-child { grid-row: span 2; }
+  .pg[data-tiles='4'] .pg__slide:nth-child(4) { grid-column: span 2; }
+  .pg[data-tiles='5'] .pg__track { grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
+  .pg[data-tiles='5'] .pg__slide:first-child { grid-row: span 2; }
+
+  .pg__counter { display: none; }
+  .pg__all { display: inline-flex; }
+}
+
+/* ── Full-screen viewer ── */
+.pg-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal, 400);
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, .96);
+  color: #fff;
+  padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+
+  &__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .5rem .75rem;
+  }
+
+  &__counter {
+    margin: 0;
+    font-size: .9rem;
+    font-variant-numeric: tabular-nums;
+    color: rgba(255, 255, 255, .85);
+  }
+
+  &__close,
+  &__nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .14);
+    color: #fff;
+    cursor: pointer;
+    transition: background .15s;
+
+    &:hover { background: rgba(255, 255, 255, .28); }
+    &:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  }
+
+  &__stage {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: pan-y pinch-zoom;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  &__img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+
+  &__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 52px;
+    height: 52px;
+
+    &--prev { inset-inline-start: .75rem; }
+    &--next { inset-inline-end: .75rem; }
+  }
+
+  &__thumbs {
+    display: flex;
+    gap: .5rem;
+    padding: .6rem .75rem .75rem;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    justify-content: safe center;
+  }
+
+  &__thumb {
+    flex: 0 0 auto;
+    width: 72px;
+    height: 54px;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: var(--r-sm, 6px);
+    overflow: hidden;
+    background: rgba(255, 255, 255, .1);
+    cursor: pointer;
+    opacity: .7;
+
+    img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    &:hover { opacity: 1; }
+    &:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+    &--active { border-color: var(--gold, #d4a017); opacity: 1; }
+  }
+}
+
+/* The arrow icons are drawn for LTR; the start-side button points toward the start in RTL too. */
+:host-context([dir='rtl']) .pg-viewer__nav svg { transform: scaleX(-1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pg__track { scroll-behavior: auto; }
+  .pg-viewer__close,
+  .pg-viewer__nav { transition: none; }
+}
+
+@media (max-width: 640px) {
+  .pg { border-radius: var(--r-md, 12px); }
+  .pg-viewer__thumb { width: 56px; height: 42px; }
+}

@@ -5358,5 +5358,11 @@
     "UPLOADING": "Görseller yükleniyor...",
     "SUCCESS": "Görseller başarıyla yüklendi",
     "ERROR": "Görseller yüklenemedi"
+  },
+  "GALLERY": {
+    "OPEN": "{{total}} fotoğraftan {{n}}. fotoğrafı aç",
+    "ALT": "{{title}} - fotoğraf {{n}} / {{total}}",
+    "ALT_N": "Fotoğraf {{n}} / {{total}}",
+    "VIEW_ALL": "Tüm {{count}} fotoğrafı gör"
   }
 }

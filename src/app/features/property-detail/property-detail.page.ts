@@ -18,10 +18,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
-  ElementRef,
-  HostListener,
   OnInit,
-  ViewChild,
   computed,
   inject,
   signal
@@ -44,7 +41,7 @@ import { MessagesApiService } from '../../core/api/messages-api.service';
 import { ProfileService, PublicUserProfile } from '../../core/api/profile.service';
 import { UserProfileApiService } from '../../core/api/user-profile-api.service';
 import { AuthService } from '../../core/auth/auth.service';
-import { Property, PropertyImage } from '../../core/models/property.model';
+import { Property } from '../../core/models/property.model';
 import { isValidCoordinates } from '../../core/models/property-location';
 import { MapPickerComponent } from '../../map-picker/map-picker.component';
 import { LangCode } from '../../core/services/language.service';
@@ -53,7 +50,7 @@ import { ListingTranslationController } from './listing-translation.controller';
 import { TranslationNoticeComponent } from './translation-notice.component';
 import { PriceHistoryComponent } from './price-history.component';
 import { ListingStatusPanelComponent } from './listing-status-panel.component';
-import { getGallerySwipeNavigation } from './gallery-swipe';
+import { GalleryImage, PhotoGalleryComponent } from '../../shared/ui/photo-gallery/photo-gallery.component';
 import { REVIEW_COMMENT_MAX_LENGTH, ReviewDto, validateCreateReview } from '../../core/models/review.model';
 import { CreateVisitRequest, validateCreateVisit } from '../../core/models/visit.model';
 import { SERVICE_CATEGORIES, ServiceCategory, ServiceOfferingDto, ServiceRequestDto, ServiceRequestIntent, validateCreateServiceRequest } from '../../core/models/service.model';
@@ -71,8 +68,6 @@ import { ListingViewTrackingService } from '../../core/listing-views/listing-vie
 import { ReportListingButtonComponent } from '../../shared/ui/report-listing-button.component';
 import { PRINT_QUERY_PARAM, PropertyPrintService } from '../../core/print/property-print.service';
 import { ToastService } from '../../shared/services/toast.service';
-import { OverlayBackHandlerService } from '../../core/services/overlay-back-handler.service';
-import { ScrollLockService } from '../../core/services/scroll-lock.service';
 import { PropertyMetaService } from '../../core/sharing/property-meta.service';
 import { PropertyAttributionTrackingService } from '../../core/sharing/property-attribution-tracking.service';
 import { UrlService } from '../../core/services/url.service';
@@ -91,11 +86,6 @@ import { digitalPurchasesAllowed } from '../../core/native/digital-purchases';
 
 const LISTING_JSON_LD_ID = 'ld-real-estate-listing';
 
-/** عروض النسخ المصغّرة المطلوبة من Cloudinary للصورة الرئيسية (srcset). */
-const GALLERY_IMAGE_WIDTHS = [480, 768, 1024, 1440, 1920] as const;
-const GALLERY_THUMB_WIDTH = 160;
-const LIGHTBOX_IMAGE_WIDTH = 2048;
-
 @Component({
   selector: 'app-property-detail',
   standalone: true,
@@ -113,6 +103,7 @@ const LIGHTBOX_IMAGE_WIDTH = 2048;
     MapPickerComponent,
     ServiceConversationComponent,
     ImageFallbackDirective,
+    PhotoGalleryComponent,
     LoadingSpinnerComponent,
     EmptyStateComponent,
     FavoriteToggleButtonComponent,
@@ -125,8 +116,6 @@ const LIGHTBOX_IMAGE_WIDTH = 2048;
   styleUrls: ['./property-detail.page.scss']
 })
 export class PropertyDetailPage implements OnInit {
-  @ViewChild('lightboxClose') private lightboxClose?: ElementRef<HTMLButtonElement>;
-
   /** The total from the last POST .../views, when it is newer than the one in the loaded listing. */
   readonly liveViewCount = signal<number | null>(null);
 
@@ -169,8 +158,6 @@ export class PropertyDetailPage implements OnInit {
   private readonly toast         = inject(ToastService);
   private readonly destroyRef    = inject(DestroyRef);
   private readonly fb            = inject(FormBuilder);
-  private readonly overlayBackHandler = inject(OverlayBackHandlerService);
-  private readonly scrollLock = inject(ScrollLockService);
   private readonly propertyMeta = inject(PropertyMetaService);
   private readonly attributionTracking = inject(PropertyAttributionTrackingService);
   private readonly listingViews = inject(ListingViewTrackingService);
@@ -205,8 +192,6 @@ export class PropertyDetailPage implements OnInit {
   readonly loading        = signal(true);
   readonly loadingReviews = signal(false);
   readonly error          = signal('');
-  readonly currentIndex   = signal(0);
-  readonly modalOpen      = signal(false);
   readonly currentLang    = signal<LangCode>('ar');
   readonly validLocation  = computed(() => {
     const property = this.property();
@@ -222,27 +207,11 @@ export class PropertyDetailPage implements OnInit {
   readonly isLoggedIn     = computed(() => !!this.authService.getAccessToken());
 
   // ── Computed ──────────────────────────────────────────────────────────
-  readonly images = computed(() =>
-    this.property()?.images?.filter(img => !!img.url) ?? []
-  );
-  readonly hasImages = computed(() => this.images().length > 0);
-  readonly currentImageUrl = computed(() =>
-    this.images()[this.currentIndex()]?.url ?? '/images/no-image.svg'
-  );
-  // نسخ بحجم العرض من Cloudinary (c_limit: تصغير فقط مع الحفاظ على نسبة الأبعاد)
-  // بدل تحميل الأصل (قد يكون 4000px وعدة ميغابايت) في إطار عرضه ~400px.
-  // روابط غير Cloudinary تُعاد كما هي.
-  readonly currentImageDisplayUrl = computed(() =>
-    this.urlService.buildResponsiveUrl(this.currentImageUrl(), 1440) ?? this.currentImageUrl()
-  );
-  readonly currentImageSrcSet = computed(() =>
-    this.urlService.buildResponsiveSrcSet(this.currentImageUrl(), GALLERY_IMAGE_WIDTHS)
-  );
-  readonly currentImageLightboxUrl = computed(() =>
-    this.urlService.buildResponsiveUrl(this.currentImageUrl(), LIGHTBOX_IMAGE_WIDTH) ?? this.currentImageUrl()
-  );
-  readonly currentImageAlt = computed(() =>
-    this.images()[this.currentIndex()]?.altText ?? this.property()?.title ?? ''
+  /** Photos for the shared gallery, in the order the API returns them. */
+  readonly galleryImages = computed<GalleryImage[]>(() =>
+    (this.property()?.images ?? [])
+      .filter(img => !!img.url)
+      .map(img => ({ url: img.url, alt: img.altText }))
   );
   readonly isRTL = computed(() =>
     this.currentLang() === 'ar' || document.documentElement.dir === 'rtl'
@@ -394,11 +363,6 @@ export class PropertyDetailPage implements OnInit {
 
   readonly fallbackImage = '/images/no-image.svg';
 
-  // ── Drag/Swipe state ──────────────────────────────────────────────────
-  private pointerStart?: { id: number; x: number; y: number };
-  private suppressGalleryClickUntil = 0;
-  private modalReturnFocus?: HTMLElement;
-
   ngOnInit(): void {
     this.currentLang.set((this.translate.currentLang || 'ar') as LangCode);
     this.translate.onLangChange
@@ -416,25 +380,6 @@ export class PropertyDetailPage implements OnInit {
     this.route.paramMap
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => this.loadForId(params.get('id') ?? ''));
-
-    // ✅ إضافة: زر الرجوع (Android hardware back) يُغلق معرض الصور بدل ما يخرج
-    // من الصفحة كاملةً — نفس النمط المستخدم بقائمة الموبايل بالـ navbar.
-    const unregisterBackHandler = this.overlayBackHandler.register(() => {
-      if (!this.modalOpen()) {
-        return false;
-      }
-
-      this.closeModal();
-      return true;
-    });
-
-    this.destroyRef.onDestroy(unregisterBackHandler);
-
-    // نفس منطق قفل التمرير المستخدم بـ Drawer الـ navbar وفلاتر قائمة
-    // العقارات: المعرض Overlay كامل الشاشة، فلا يجب أن تتمرّر الصفحة خلفه.
-    this.destroyRef.onDestroy(() => {
-      this.scrollLock.forceUnlockIfHeldBy(this.modalOpen());
-    });
 
     // Structured data (JSON-LD) must not leak into whatever page is visited next — removed on
     // leaving this page the same way PropertyMetaService's tags are left stale deliberately
@@ -586,27 +531,6 @@ export class PropertyDetailPage implements OnInit {
     }, 0);
   }
 
-  // ✅ إضافة: تنقّل بلوحة المفاتيح داخل عارض الصور (Escape / الأسهم) —
-  // يحترم اتجاه RTL مثل بقية دوال التنقّل بالمعرض.
-  @HostListener('document:keydown.escape')
-  onEscapeKey(): void {
-    if (this.modalOpen()) {
-      this.closeModal();
-    }
-  }
-
-  @HostListener('document:keydown.arrowleft')
-  onArrowLeftKey(): void {
-    if (!this.modalOpen()) return;
-    this.isRTL() ? this.next() : this.prev();
-  }
-
-  @HostListener('document:keydown.arrowright')
-  onArrowRightKey(): void {
-    if (!this.modalOpen()) return;
-    this.isRTL() ? this.prev() : this.next();
-  }
-
   // ── Data Loading ──────────────────────────────────────────────────────
   private currentId = '';
   private propertySub?: Subscription;
@@ -631,7 +555,6 @@ export class PropertyDetailPage implements OnInit {
     this.translation.reset();
     this.reviews.set([]);
     this.error.set('');
-    this.currentIndex.set(0);
 
     if (!id) {
       this.error.set('PROPERTY_DETAIL.NO_ID');
@@ -663,7 +586,6 @@ export class PropertyDetailPage implements OnInit {
       .subscribe({
         next: data => {
           this.property.set(data);
-          this.currentIndex.set(0);
           this.loading.set(false);
           this.openServiceFormFromQuery();
           this.loadOwnerProfile(data.ownerId);
@@ -794,103 +716,6 @@ export class PropertyDetailPage implements OnInit {
         },
         error: () => this.loadingReviews.set(false)
       });
-  }
-
-  // ── Gallery ───────────────────────────────────────────────────────────
-  prev(): void {
-    if (this.currentIndex() > 0) {
-      this.currentIndex.update(i => i - 1);
-    }
-  }
-
-  next(): void {
-    if (this.currentIndex() < this.images().length - 1) {
-      this.currentIndex.update(i => i + 1);
-    }
-  }
-
-  openModal(): void {
-    if (!this.hasImages()) return;
-    this.modalReturnFocus = document.activeElement instanceof HTMLElement
-      ? document.activeElement
-      : undefined;
-    this.modalOpen.set(true);
-    this.scrollLock.lock();
-    setTimeout(() => this.lightboxClose?.nativeElement.focus(), 0);
-  }
-
-  closeModal(): void {
-    if (!this.modalOpen()) return;
-
-    this.modalOpen.set(false);
-    this.scrollLock.unlock();
-    this.modalReturnFocus?.focus();
-    this.modalReturnFocus = undefined;
-  }
-
-  onGalleryPointerDown(event: PointerEvent): void {
-    this.suppressGalleryClickUntil = 0;
-    if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) return;
-    if (event.target instanceof Element && event.target.closest('button, a, input, textarea, select')) return;
-
-    this.pointerStart = { id: event.pointerId, x: event.clientX, y: event.clientY };
-    try {
-      (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
-    } catch {
-      // Pointer capture is unavailable in a few embedded browser implementations.
-    }
-  }
-
-  onGalleryPointerUp(event: PointerEvent): void {
-    const start = this.pointerStart;
-    this.pointerStart = undefined;
-    if (!start || start.id !== event.pointerId) return;
-
-    const navigation = getGallerySwipeNavigation(
-      event.clientX - start.x,
-      event.clientY - start.y,
-      this.isRTL()
-    );
-    if (!navigation) return;
-
-    this.suppressGalleryClickUntil = Date.now() + 500;
-    if (navigation === 'next') this.next();
-    else this.prev();
-  }
-
-  onGalleryPointerCancel(): void {
-    this.pointerStart = undefined;
-  }
-
-  onGalleryClick(event: MouseEvent): void {
-    if (Date.now() < this.suppressGalleryClickUntil) {
-      event.preventDefault();
-      event.stopPropagation();
-      return;
-    }
-    this.openModal();
-  }
-
-  onLightboxKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Tab') this.trapLightboxFocus(event);
-  }
-
-  private trapLightboxFocus(event: KeyboardEvent): void {
-    const lightbox = event.currentTarget as HTMLElement;
-    const focusable = Array.from(lightbox.querySelectorAll<HTMLElement>(
-      'button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
-    ));
-    const first = focusable.at(0);
-    const last = focusable.at(-1);
-    if (!first || !last) return;
-
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
   }
 
   // ── Availability confirmation (Phase-0, Task 2) ──────────────────────
@@ -1148,17 +973,6 @@ export class PropertyDetailPage implements OnInit {
   safe(value: unknown, fallback = '—'): string {
     const text = value == null ? '' : String(value).trim();
     return text || fallback;
-  }
-
-  thumbnailUrl(url: string | null | undefined): string {
-    return this.urlService.buildResponsiveUrl(url, GALLERY_THUMB_WIDTH) ?? '/images/no-image.svg';
-  }
-
-  thumbnailAlt(img: PropertyImage, index: number): string {
-    const descriptive = img.altText?.trim() || this.property()?.title?.trim();
-    return descriptive
-      ? this.translate.instant('PROPERTY_DETAIL.IMAGE_ALT', { title: descriptive, n: index + 1 })
-      : this.translate.instant('PROPERTY_DETAIL.IMAGE_N', { n: index + 1 });
   }
 
   /** رانج النجوم 1-5 للعرض */
