@@ -24,6 +24,17 @@ const TILE_WIDTH = 640;
 const THUMB_WIDTH = 160;
 const LIGHTBOX_WIDTHS = [1024, 1600, 2048] as const;
 const LIGHTBOX_FALLBACK_WIDTH = 1600;
+/**
+ * Whether a photo may fill its frame (object-fit: cover) without losing anything that matters: only when its
+ * proportions are within ~20% of the frame's, so the crop is a sliver. Anything else is shown whole (contain),
+ * so a tall room shot or a panorama is never cut to a strip.
+ */
+export function photoMayFillFrame(photoRatio: number, frameRatio: number, tolerance = 1.2): boolean {
+  if (!(photoRatio > 0) || !(frameRatio > 0) || !Number.isFinite(photoRatio) || !Number.isFinite(frameRatio)) return false;
+  const off = photoRatio > frameRatio ? photoRatio / frameRatio : frameRatio / photoRatio;
+  return off <= tolerance;
+}
+
 /** How many photos the desktop mosaic shows; the rest are one tap away in the viewer. */
 export const MOSAIC_TILES = 5;
 
@@ -62,6 +73,7 @@ export class PhotoGalleryComponent {
   private readonly track = viewChild<ElementRef<HTMLElement>>('track');
   private readonly closeButton = viewChild<ElementRef<HTMLButtonElement>>('closeButton');
   private readonly thumbStrip = viewChild<ElementRef<HTMLElement>>('thumbStrip');
+  private readonly viewerRoot = viewChild<ElementRef<HTMLElement>>('viewer');
 
   /** Valid photos only, without duplicates of the same URL. */
   readonly items = computed<GalleryImage[]>(() => {
@@ -104,6 +116,14 @@ export class PhotoGalleryComponent {
       }
     });
 
+    // The viewer is a full-screen layer: it lives directly under <body> while open, otherwise a stacking
+    // context of the page (or the sticky navbar, which sits above the page content) can end up on top of it
+    // and swallow taps on its buttons. Angular still owns the node and removes it when it closes.
+    effect(() => {
+      const root = this.viewerRoot()?.nativeElement;
+      if (root && root.parentElement !== document.body) document.body.appendChild(root);
+    });
+
     // Keep the highlighted thumbnail in view.
     effect(() => {
       if (!this.viewerOpen()) return;
@@ -123,9 +143,30 @@ export class PhotoGalleryComponent {
       unregisterBack();
       if (this.scrollFrame) cancelAnimationFrame(this.scrollFrame);
       this.scrollLock.forceUnlockIfHeldBy(this.viewerOpen());
+      // Angular does not remove nodes of a destroyed component one by one, and the viewer is no longer inside
+      // the host, so it has to be taken out of <body> here.
+      this.viewerRoot()?.nativeElement.remove();
     });
 
-    afterNextRender(() => this.syncTrack());
+    afterNextRender(() => {
+      this.syncTrack();
+      if (typeof ResizeObserver === 'undefined') return;
+      const observer = new ResizeObserver(() => this.fitAll());
+      const track = this.track()?.nativeElement;
+      if (track) observer.observe(track);
+      this.destroyRef.onDestroy(() => observer.disconnect());
+    });
+  }
+
+  /** Chooses fill or whole-photo for one hero image once its size is known (and again when the frame resizes). */
+  fitImage(img: HTMLImageElement): void {
+    const frame = img.parentElement?.getBoundingClientRect();
+    if (!frame || frame.width === 0 || frame.height === 0 || !img.naturalWidth || !img.naturalHeight) return;
+    img.classList.toggle('pg__img--fill', photoMayFillFrame(img.naturalWidth / img.naturalHeight, frame.width / frame.height));
+  }
+
+  private fitAll(): void {
+    this.track()?.nativeElement.querySelectorAll<HTMLImageElement>('.pg__img').forEach(img => this.fitImage(img));
   }
 
   isRtl(): boolean {
@@ -189,9 +230,16 @@ export class PhotoGalleryComponent {
   }
 
   /** Puts the carousel on the current photo (after the viewer closes or the list changes). */
-  private syncTrack(): void {
+  private syncTrack(smooth = false): void {
     const slide = this.track()?.nativeElement.children.item(this.index()) as HTMLElement | null;
-    slide?.scrollIntoView?.({ block: 'nearest', inline: 'center', behavior: 'auto' });
+    const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    slide?.scrollIntoView?.({ block: 'nearest', inline: 'center', behavior: smooth && !reduce ? 'smooth' : 'auto' });
+  }
+
+  /** Previous/next buttons of the carousel (shown for mouse users, who cannot swipe). */
+  stepCarousel(delta: -1 | 1): void {
+    this.step(delta);
+    this.syncTrack(true);
   }
 
   // ── Viewer ──────────────────────────────────────────────────────────

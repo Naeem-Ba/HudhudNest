@@ -1,12 +1,13 @@
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import ar from '../../../../../public/i18n/ar.json';
 import de from '../../../../../public/i18n/de.json';
 import en from '../../../../../public/i18n/en.json';
 import tr from '../../../../../public/i18n/tr.json';
 import { ScrollLockService } from '../../../core/services/scroll-lock.service';
-import { GalleryImage, PhotoGalleryComponent } from './photo-gallery.component';
+import { GalleryImage, PhotoGalleryComponent, photoMayFillFrame } from './photo-gallery.component';
 
 const cloud = (n: number): string => `https://res.cloudinary.com/demo/image/upload/v1/photo-${n}.jpg`;
 const photos = (n: number): GalleryImage[] => Array.from({ length: n }, (_, i) => ({ url: cloud(i + 1) }));
@@ -21,15 +22,38 @@ class HostComponent {
   title = 'Sea chalet';
 }
 
+describe('photoMayFillFrame', () => {
+  it('lets a photo fill a frame of nearly the same proportions', () => {
+    expect(photoMayFillFrame(3 / 2, 4 / 3)).toBeTrue();
+    expect(photoMayFillFrame(4 / 3, 4 / 3)).toBeTrue();
+    expect(photoMayFillFrame(16 / 9, 3 / 2)).toBeTrue();
+  });
+  it('keeps odd shapes whole: portrait, square-in-wide, panorama', () => {
+    expect(photoMayFillFrame(9 / 16, 4 / 3)).toBeFalse();
+    expect(photoMayFillFrame(1, 16 / 9)).toBeFalse();
+    expect(photoMayFillFrame(3, 4 / 3)).toBeFalse();
+    expect(photoMayFillFrame(4 / 3, 1 / 2)).toBeFalse();
+  });
+  it('is symmetric and never fills on unusable sizes', () => {
+    expect(photoMayFillFrame(1.5, 1.3)).toBe(photoMayFillFrame(1.3, 1.5));
+    for (const bad of [0, -1, NaN, Infinity]) {
+      expect(photoMayFillFrame(bad, 1.5)).toBeFalse();
+      expect(photoMayFillFrame(1.5, bad)).toBeFalse();
+    }
+  });
+});
+
 describe('PhotoGalleryComponent', () => {
   let fixture: ComponentFixture<HostComponent>;
   let translate: TranslateService;
   let lock: ScrollLockService;
 
   const el = (): HTMLElement => fixture.nativeElement;
-  const q = <T extends HTMLElement>(sel: string): T | null => el().querySelector<T>(sel);
-  const all = (sel: string): HTMLElement[] => Array.from(el().querySelectorAll<HTMLElement>(sel));
+  // The open viewer is moved under <body>, so look there too.
+  const q = <T extends HTMLElement>(sel: string): T | null => el().querySelector<T>(sel) ?? document.body.querySelector<T>(sel);
+  const all = (sel: string): HTMLElement[] => Array.from(new Set([...Array.from(el().querySelectorAll<HTMLElement>(sel)), ...Array.from(document.body.querySelectorAll<HTMLElement>(sel))]));
   const flush = async (): Promise<void> => { fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges(); };
+  const component = (): PhotoGalleryComponent => fixture.debugElement.query(By.directive(PhotoGalleryComponent)).componentInstance;
   const counter = (): string => (q('.pg-viewer__counter')?.textContent ?? '').trim();
   const key = (k: string): void => { document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true })); fixture.detectChanges(); };
 
@@ -109,9 +133,31 @@ describe('PhotoGalleryComponent', () => {
       expect(second.getAttribute('srcset')).toBeNull();
     });
 
-    it('never crops the carousel, the first tile or the viewer photo', async () => {
-      await render(photos(3));
-      expect(getComputedStyle(q('.pg__img')!).objectFit).toBe('contain');
+    it('shows a photo whole by default and fills only when its shape matches the frame', async () => {
+      await render(photos(2));
+      const img = q<HTMLImageElement>('.pg__img')!;
+      expect(getComputedStyle(img).objectFit).toBe('contain');
+      const size = (w: number, h: number): void => {
+        Object.defineProperty(img, 'naturalWidth', { value: w, configurable: true });
+        Object.defineProperty(img, 'naturalHeight', { value: h, configurable: true });
+      };
+      q('app-photo-gallery')!.style.width = '400px';
+      fixture.detectChanges();
+      const frame = img.parentElement!.getBoundingClientRect();
+      const ratio = frame.width / frame.height;
+      size(Math.round(ratio * 1000), 1000);
+      component().fitImage(img);
+      expect(getComputedStyle(img).objectFit).toBe('cover');
+      size(500, 1000);
+      component().fitImage(img);
+      expect(getComputedStyle(img).objectFit).toBe('contain');
+    });
+
+    it('never crops the photo in the viewer', async () => {
+      await render(photos(2));
+      q<HTMLButtonElement>('.pg__slide')!.click();
+      await flush();
+      expect(getComputedStyle(q('.pg-viewer__img')!).objectFit).toBe('contain');
     });
 
     it('shows the position counter for the carousel', async () => {
@@ -280,6 +326,22 @@ describe('PhotoGalleryComponent', () => {
       expect(document.activeElement).toBe(focusable[0]);
     });
 
+    it('lives under <body> while open, so no page stacking context can cover it, and leaves no node behind', async () => {
+      await render(photos(3));
+      q<HTMLButtonElement>('.pg__slide')!.click();
+      await flush();
+      const viewer = q('.pg-viewer')!;
+      expect(viewer.parentElement).toBe(document.body);
+      expect(Number(getComputedStyle(viewer).zIndex)).toBeGreaterThan(1200);
+      key('Escape');
+      await flush();
+      expect(document.body.querySelector('.pg-viewer')).toBeNull();
+      q<HTMLButtonElement>('.pg__slide')!.click();
+      await flush();
+      fixture.destroy();
+      expect(document.body.querySelector('.pg-viewer')).toBeNull();
+    });
+
     it('releases the scroll lock when the page is left with the viewer open', async () => {
       await render(photos(3));
       q<HTMLButtonElement>('.pg__slide')!.click();
@@ -374,7 +436,7 @@ describe('PhotoGalleryComponent', () => {
       fixture.detectChanges();
     };
 
-    for (const width of [320, 360, 375, 390, 430, 639]) {
+    for (const width of [320, 360, 375, 390, 430, 559]) {
       it(`${width}px wide: a swipe carousel, one photo per screen, no overflow`, async () => {
         await hostAt(width, 8);
         const pg = q('.pg')!;
@@ -395,7 +457,7 @@ describe('PhotoGalleryComponent', () => {
       });
     }
 
-    for (const width of [640, 768, 1024, 1366, 1920]) {
+    for (const width of [560, 640, 768, 1024, 1366, 1920]) {
       it(`${width}px wide: a mosaic with the first photo large and a "view all" button`, async () => {
         await hostAt(width, 8);
         const pg = q('.pg')!;
@@ -444,6 +506,28 @@ describe('PhotoGalleryComponent', () => {
       await hostAt(900, 5, 'ar', 'rtl');
       const [first, second] = all('.pg__slide').map(rect);
       expect(first.left).toBeGreaterThan(second.left);
+    });
+
+    it('mouse users get previous/next on the carousel; they step one photo and hide at the ends', async () => {
+      await hostAt(390, 4);
+      expect(q('[data-testid="gallery-hero-prev"]')).toBeNull();
+      const next = q<HTMLButtonElement>('[data-testid="gallery-hero-next"]')!;
+      // visible only for fine pointers (a mouse); a touch screen swipes instead
+      if (matchMedia('(hover: hover) and (pointer: fine)').matches) expect(rect(next).width).toBeGreaterThanOrEqual(44);
+      else expect(getComputedStyle(next).display).toBe('none');
+      next.click();
+      fixture.detectChanges();
+      expect((q('.pg__counter')!.textContent ?? '').trim()).toBe('2 / 4');
+      expect(q('[data-testid="gallery-hero-prev"]')).not.toBeNull();
+      for (let i = 0; i < 5; i++) q<HTMLButtonElement>('[data-testid="gallery-hero-next"]')?.click();
+      fixture.detectChanges();
+      expect((q('.pg__counter')!.textContent ?? '').trim()).toBe('4 / 4');
+      expect(q('[data-testid="gallery-hero-next"]')).toBeNull();
+    });
+
+    it('the carousel arrows are hidden in the mosaic', async () => {
+      await hostAt(900, 4);
+      for (const a of all('.pg__arrow')) expect(getComputedStyle(a).display).toBe('none');
     });
 
     it('the carousel keeps its height when the photo is missing (no layout shift)', async () => {

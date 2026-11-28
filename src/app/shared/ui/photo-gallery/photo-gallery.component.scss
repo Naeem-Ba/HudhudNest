@@ -8,7 +8,7 @@
   container-name: pg;
   border-radius: var(--r-lg, 16px);
   overflow: hidden;
-  background: var(--gray-100, #1a1a1a);
+  background: #14161a;
 }
 
 /* ── Carousel (narrow) ── */
@@ -39,17 +39,20 @@
   &:focus-visible { outline: 3px solid var(--primary, #2563eb); outline-offset: -3px; }
 }
 
-/* contain, not cover: a photo is only scaled down, never cropped, so windows, balconies and room
-   proportions stay visible. The placeholder colour shows the letterbox until the file arrives. */
+/* contain by default: a photo is only scaled down, never cropped, so windows, balconies and room proportions
+   stay visible. Once the file has loaded, a photo whose proportions already match its frame (within ~20%) fills
+   it instead (.pg__img--fill), so well-shaped photos have no bars and odd ones are never cut to a strip. */
 .pg__img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
   object-position: center;
-  background: var(--gray-100, #1a1a1a);
+  background: #14161a;
   pointer-events: none;
   -webkit-user-drag: none;
+
+  &--fill { object-fit: cover; }
 }
 
 .pg__counter,
@@ -87,8 +90,36 @@
   &:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
 }
 
+/* Previous/next on the carousel for mouse users (touch users swipe). */
+.pg__arrow {
+  display: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .55);
+  color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  z-index: 2;
+
+  &:hover { background: rgba(0, 0, 0, .8); }
+  &:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  &--prev { inset-inline-start: .75rem; }
+  &--next { inset-inline-end: .75rem; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pg__arrow { display: flex; }
+}
+
 /* ── Mosaic (wide): one large photo + up to four previews ── */
-@container pg (min-width: 640px) {
+@container pg (min-width: 560px) {
   .pg__track {
     display: grid;
     gap: 6px;
@@ -99,7 +130,7 @@
     grid-template-rows: 1fr;
   }
 
-  .pg__slide { scroll-snap-align: none; background: var(--gray-100, #1a1a1a); }
+  .pg__slide { scroll-snap-align: none; background: #14161a; }
   .pg__slide--extra { display: none; }
   /* The small tiles are previews: a centred crop reads better there; the first tile and the viewer never crop. */
   .pg__slide:not(:first-child) .pg__img { object-fit: cover; }
@@ -113,7 +144,8 @@
   .pg[data-tiles='5'] .pg__track { grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
   .pg[data-tiles='5'] .pg__slide:first-child { grid-row: span 2; }
 
-  .pg__counter { display: none; }
+  .pg__counter,
+  .pg__arrow { display: none; }
   .pg__all { display: inline-flex; }
 }
 
@@ -121,10 +153,11 @@
 .pg-viewer {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal, 400);
+  /* above the sticky navbar (1000) and its drawer (1200) */
+  z-index: 1300;
   display: flex;
   flex-direction: column;
-  background: rgba(0, 0, 0, .96);
+  background: #000;
   color: #fff;
   padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
 
@@ -219,8 +252,10 @@
   }
 }
 
-/* The arrow icons are drawn for LTR; the start-side button points toward the start in RTL too. */
-:host-context([dir='rtl']) .pg-viewer__nav svg { transform: scaleX(-1); }
+/* The arrow icons are drawn for LTR; the start-side button points toward the start in RTL too. The direction
+   is a class (not :host-context) because the open viewer lives under <body>, outside the host. */
+.pg--rtl .pg__arrow svg,
+.pg-viewer--rtl .pg-viewer__nav svg { transform: scaleX(-1); }
 
 @media (prefers-reduced-motion: reduce) {
   .pg__track { scroll-behavior: auto; }

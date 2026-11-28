@@ -1,5 +1,5 @@
 @if (count() > 0) {
-  <div class="pg" [attr.data-tiles]="tileCount()">
+  <div class="pg" [class.pg--rtl]="isRtl()" [attr.data-tiles]="tileCount()">
     <div #track class="pg__track" role="group" aria-roledescription="carousel"
          [attr.aria-label]="title() || ('COMMON.IMAGE_VIEWER' | translate)"
          (scroll)="onTrackScroll()">
@@ -16,12 +16,29 @@
                decoding="async"
                draggable="false"
                [alt]="altFor(image, i)"
+               (load)="fitImage($any($event.target))"
                [appImageFallback]="fallback" />
         </button>
       }
     </div>
 
     @if (count() > 1) {
+      @if (hasPrevious) {
+        <button type="button" class="pg__arrow pg__arrow--prev" data-testid="gallery-hero-prev"
+                [attr.aria-label]="'COMMON.PREVIOUS' | translate" (click)="stepCarousel(-1)">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M13 4l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      }
+      @if (hasNext) {
+        <button type="button" class="pg__arrow pg__arrow--next" data-testid="gallery-hero-next"
+                [attr.aria-label]="'COMMON.NEXT' | translate" (click)="stepCarousel(1)">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M7 4l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      }
       <p class="pg__counter" aria-live="polite" aria-atomic="true">{{ index() + 1 }} / {{ count() }}</p>
       <button type="button" class="pg__all" data-testid="gallery-view-all" (click)="openViewer(0)">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -36,7 +53,7 @@
   </div>
 
   @if (viewerOpen()) {
-    <div class="pg-viewer" role="dialog" aria-modal="true" data-testid="gallery-viewer"
+    <div #viewer class="pg-viewer" [class.pg-viewer--rtl]="isRtl()" role="dialog" aria-modal="true" data-testid="gallery-viewer"
          [attr.aria-label]="'COMMON.IMAGE_VIEWER' | translate">
       <div class="pg-viewer__bar">
         <p class="pg-viewer__counter" aria-live="polite" aria-atomic="true">{{ index() + 1 }} / {{ count() }}</p>
