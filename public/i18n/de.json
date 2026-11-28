@@ -5358,5 +5358,11 @@
     "UPLOADING": "Bilder werden hochgeladen...",
     "SUCCESS": "Bilder erfolgreich hochgeladen",
     "ERROR": "Bilder konnten nicht hochgeladen werden"
+  },
+  "GALLERY": {
+    "OPEN": "Foto {{n}} von {{total}} öffnen",
+    "ALT": "{{title}} - Foto {{n}} von {{total}}",
+    "ALT_N": "Foto {{n}} von {{total}}",
+    "VIEW_ALL": "Alle {{count}} Fotos ansehen"
   }
 }

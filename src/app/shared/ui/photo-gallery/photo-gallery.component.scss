@@ -1,0 +1,269 @@
+:host { display: block; min-width: 0; }
+
+/* The gallery's own box decides the layout (container query), so the same component is a swipe carousel in a
+   narrow column and a mosaic when it has room - on both the property and the short-stay page. */
+.pg {
+  position: relative;
+  container-type: inline-size;
+  container-name: pg;
+  border-radius: var(--r-lg, 16px);
+  overflow: hidden;
+  background: var(--gallery-letterbox);
+}
+
+/* ── Carousel (narrow) ── */
+.pg__track {
+  display: flex;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  aspect-ratio: 4 / 3;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.pg__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  position: relative;
+  overflow: hidden;
+
+  &:focus-visible { outline: 3px solid var(--primary, #2563eb); outline-offset: -3px; }
+}
+
+/* contain by default: a photo is only scaled down, never cropped, so windows, balconies and room proportions
+   stay visible. Once the file has loaded, a photo whose proportions already match its frame (within ~20%) fills
+   it instead (.pg__img--fill), so well-shaped photos have no bars and odd ones are never cut to a strip. */
+.pg__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  background: var(--gallery-letterbox);
+  pointer-events: none;
+  -webkit-user-drag: none;
+
+  &--fill { object-fit: cover; }
+}
+
+.pg__counter,
+.pg__all {
+  position: absolute;
+  bottom: .75rem;
+  background: var(--gallery-ctrl-bg);
+  color: var(--gallery-fg);
+  border-radius: var(--r-pill, 999px);
+  backdrop-filter: blur(4px);
+  font-size: .8rem;
+  line-height: 1;
+}
+
+.pg__counter {
+  inset-inline-end: .75rem;
+  margin: 0;
+  padding: .4rem .7rem;
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.pg__all {
+  display: none;
+  inset-inline-end: .75rem;
+  align-items: center;
+  gap: .4rem;
+  padding: .55rem .9rem;
+  min-height: 44px;
+  border: 0;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover { background: var(--gallery-ctrl-bg-hover); }
+  &:focus-visible { outline: 3px solid var(--gallery-fg); outline-offset: 2px; }
+}
+
+/* Previous/next on the carousel for mouse users (touch users swipe). */
+.pg__arrow {
+  display: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--gallery-ctrl-bg-soft);
+  color: var(--gallery-fg);
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  z-index: 2;
+
+  &:hover { background: var(--gallery-ctrl-bg-hover); }
+  &:focus-visible { outline: 3px solid var(--gallery-fg); outline-offset: 2px; }
+  &--prev { inset-inline-start: .75rem; }
+  &--next { inset-inline-end: .75rem; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pg__arrow { display: flex; }
+}
+
+/* ── Mosaic (wide): one large photo + up to four previews ── */
+@container pg (min-width: 560px) {
+  .pg__track {
+    display: grid;
+    gap: 6px;
+    overflow: hidden;
+    scroll-snap-type: none;
+    aspect-ratio: 16 / 9;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+  }
+
+  .pg__slide { scroll-snap-align: none; background: var(--gallery-letterbox); }
+  .pg__slide--extra { display: none; }
+  /* The small tiles are previews: a centred crop reads better there; the first tile and the viewer never crop. */
+  .pg__slide:not(:first-child) .pg__img { object-fit: cover; }
+
+  .pg[data-tiles='2'] .pg__track { grid-template-columns: 1fr 1fr; }
+  .pg[data-tiles='3'] .pg__track { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
+  .pg[data-tiles='3'] .pg__slide:first-child { grid-row: span 2; }
+  .pg[data-tiles='4'] .pg__track { grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
+  .pg[data-tiles='4'] .pg__slide:first-child { grid-row: span 2; }
+  .pg[data-tiles='4'] .pg__slide:nth-child(4) { grid-column: span 2; }
+  .pg[data-tiles='5'] .pg__track { grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
+  .pg[data-tiles='5'] .pg__slide:first-child { grid-row: span 2; }
+
+  .pg__counter,
+  .pg__arrow { display: none; }
+  .pg__all { display: inline-flex; }
+}
+
+/* ── Full-screen viewer ── */
+.pg-viewer {
+  position: fixed;
+  inset: 0;
+  /* above the sticky navbar (1000) and its drawer (1200) */
+  z-index: 1300;
+  display: flex;
+  flex-direction: column;
+  background: var(--gallery-viewer-bg);
+  color: var(--gallery-fg);
+  padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+
+  &__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .5rem .75rem;
+  }
+
+  &__counter {
+    margin: 0;
+    font-size: .9rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--gallery-fg-muted);
+  }
+
+  &__close,
+  &__nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--gallery-glass);
+    color: var(--gallery-fg);
+    cursor: pointer;
+    transition: background .15s;
+
+    &:hover { background: var(--gallery-glass-hover); }
+    &:focus-visible { outline: 3px solid var(--gallery-fg); outline-offset: 2px; }
+  }
+
+  &__stage {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: pan-y pinch-zoom;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  &__img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+
+  &__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 52px;
+    height: 52px;
+
+    &--prev { inset-inline-start: .75rem; }
+    &--next { inset-inline-end: .75rem; }
+  }
+
+  &__thumbs {
+    display: flex;
+    gap: .5rem;
+    padding: .6rem .75rem .75rem;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    justify-content: safe center;
+  }
+
+  &__thumb {
+    flex: 0 0 auto;
+    width: 72px;
+    height: 54px;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: var(--r-sm, 6px);
+    overflow: hidden;
+    background: var(--gallery-glass-faint);
+    cursor: pointer;
+    opacity: .7;
+
+    img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    &:hover { opacity: 1; }
+    &:focus-visible { outline: 3px solid var(--gallery-fg); outline-offset: 2px; }
+    &--active { border-color: var(--gold, #d4a017); opacity: 1; }
+  }
+}
+
+/* The arrow icons are drawn for LTR; the start-side button points toward the start in RTL too. The direction
+   is a class (not :host-context) because the open viewer lives under <body>, outside the host. */
+.pg--rtl .pg__arrow svg,
+.pg-viewer--rtl .pg-viewer__nav svg { transform: scaleX(-1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pg__track { scroll-behavior: auto; }
+  .pg-viewer__close,
+  .pg-viewer__nav { transition: none; }
+}
+
+@media (max-width: 640px) {
+  .pg { border-radius: var(--r-md, 12px); }
+  .pg-viewer__thumb { width: 56px; height: 42px; }
+}

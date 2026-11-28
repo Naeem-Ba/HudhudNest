@@ -189,6 +189,18 @@
   --text-on-image:   #ffffff;           /* only on top of a --scrim-image layer */
   --scrim-image:     linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.25) 60%, transparent);
 
+  /* — Photo gallery (always dark, same in both themes: photos need a neutral surround) — */
+  --gallery-letterbox:    #14161a;
+  --gallery-viewer-bg:    #000000;
+  --gallery-fg:           #ffffff;
+  --gallery-fg-muted:     rgba(255, 255, 255, .85);
+  --gallery-ctrl-bg:      rgba(0, 0, 0, .62);
+  --gallery-ctrl-bg-soft: rgba(0, 0, 0, .55);
+  --gallery-ctrl-bg-hover: rgba(0, 0, 0, .8);
+  --gallery-glass:        rgba(255, 255, 255, .14);
+  --gallery-glass-hover:  rgba(255, 255, 255, .28);
+  --gallery-glass-faint:  rgba(255, 255, 255, .1);
+
   /* — Interactive — */
   --primary-hover:   var(--gold-dark);
   --primary-active:  #9c7424;

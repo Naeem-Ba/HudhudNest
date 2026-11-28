@@ -33,70 +33,8 @@
     <section class="detail-hero">
       <div class="container detail-hero__inner">
 
-        <!-- Gallery -->
-        <div class="gallery">
-          <div class="gallery__window" [class.gallery__window--zoom]="hasImages()"
-            (pointerdown)="onGalleryPointerDown($event)"
-            (pointerup)="onGalleryPointerUp($event)"
-            (pointercancel)="onGalleryPointerCancel()"
-            (lostpointercapture)="onGalleryPointerCancel()"
-            (click)="onGalleryClick($event)">
-            <img
-              [src]="currentImageDisplayUrl()"
-              [attr.srcset]="currentImageSrcSet()"
-              sizes="(max-width: 980px) 100vw, 55vw"
-              [alt]="currentImageAlt()"
-              draggable="false"
-              class="gallery__img"
-              appImageFallback="/images/no-image.svg"
-            />
-            <!-- Prev arrow -->
-            <button *ngIf="hasImages() && currentIndex() > 0"
-              class="gallery__arrow gallery__arrow--prev" type="button"
-              (click)="isRTL() ? next() : prev(); $event.stopPropagation()"
-              [attr.aria-label]="'COMMON.PREVIOUS' | translate">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                <path d="M13 4l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </button>
-            <!-- Next arrow -->
-            <button *ngIf="hasImages() && currentIndex() < images().length - 1"
-              class="gallery__arrow gallery__arrow--next" type="button"
-              (click)="isRTL() ? prev() : next(); $event.stopPropagation()"
-              [attr.aria-label]="'COMMON.NEXT' | translate">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                <path d="M7 4l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </button>
-            <!-- Zoom hint -->
-            <span class="gallery__zoom-hint" *ngIf="hasImages()">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                <circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.5"/>
-                <path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                <path d="M4 6h4M6 4v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-              </svg>
-              {{ 'COMMON.CLICK_TO_ZOOM' | translate }}
-            </span>
-          </div>
-
-          <!-- Thumbnails -->
-          <div class="gallery__thumbs" *ngIf="images().length > 1">
-            <button *ngFor="let img of images(); let i = index"
-              type="button"
-              class="gallery__thumb"
-              [class.gallery__thumb--active]="currentIndex() === i"
-              [attr.aria-pressed]="currentIndex() === i"
-              (click)="currentIndex.set(i)"
-            >
-              <img [src]="thumbnailUrl(img.url)" [alt]="thumbnailAlt(img, i)" loading="lazy" appImageFallback="/images/no-image.svg" />
-            </button>
-          </div>
-
-          <!-- Counter -->
-          <p class="gallery__counter" *ngIf="hasImages()" aria-live="polite" aria-atomic="true">
-            {{ currentIndex() + 1 }} / {{ images().length }}
-          </p>
-        </div>
+        <!-- Gallery: shared with the short-stay page (carousel on narrow, mosaic on wide, full-screen viewer) -->
+        <app-photo-gallery class="gallery" [images]="galleryImages()" [title]="p.title ?? ''"></app-photo-gallery>
 
         <!-- ── Summary Card ── -->
         <div class="summary-card">
@@ -816,29 +754,5 @@
 
     </div>
   </ng-container>
-
-  <!-- ── Image Modal (Lightbox) ── -->
-  <div class="lightbox" [class.lightbox--open]="modalOpen()" role="dialog" aria-modal="true" [attr.aria-label]="'COMMON.IMAGE_VIEWER' | translate" tabindex="-1" (keydown)="onLightboxKeydown($event)" *ngIf="modalOpen()">
-    <button #lightboxClose type="button" class="lightbox__close" (click)="closeModal()" [attr.aria-label]="'COMMON.CLOSE' | translate">
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 3l16 16M19 3L3 19" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
-    </button>
-    <div class="lightbox__img-wrap"
-      (pointerdown)="onGalleryPointerDown($event)"
-      (pointerup)="onGalleryPointerUp($event)"
-      (pointercancel)="onGalleryPointerCancel()"
-      (lostpointercapture)="onGalleryPointerCancel()">
-      <img [src]="currentImageLightboxUrl()" [alt]="currentImageAlt()" class="lightbox__img" draggable="false" appImageFallback="/images/no-image.svg" />
-    </div>
-    <button *ngIf="currentIndex() > 0" class="lightbox__nav lightbox__nav--prev" type="button"
-      (click)="isRTL() ? next() : prev(); $event.stopPropagation()" [attr.aria-label]="'COMMON.PREVIOUS' | translate">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
-    </button>
-    <button *ngIf="currentIndex() < images().length - 1" class="lightbox__nav lightbox__nav--next" type="button"
-      (click)="isRTL() ? prev() : next(); $event.stopPropagation()" [attr.aria-label]="'COMMON.NEXT' | translate">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
-    </button>
-    <p class="lightbox__counter">{{ currentIndex() + 1 }} / {{ images().length }}</p>
-  </div>
-  <div class="lightbox-overlay" *ngIf="modalOpen()" (click)="closeModal()"></div>
 </div>
 
